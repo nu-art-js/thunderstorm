@@ -49,3 +49,4 @@ export type Proto_Account = Proto_DB_Object<DB_Account, GeneratedKeys, VersionsA
 
 export type DBProto_AccountType = DBProto<Proto_Account>;
 export type UI_Account = DBProto_AccountType['uiType'];
+export type SafeDB_Account = UI_Account & DB_BaseObject;

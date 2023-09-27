@@ -90,12 +90,15 @@ export class ModuleFE_PermissionsAssert_Class
 			return AccessLevel.NoAccessLevelsDefined;
 
 		const userAccessLevels = SessionKey_Permissions_FE.get();
-		const canAccess = keyData.accessLevelIds.reduce((hasAccess, levelId) => {
-			const dbLevel = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
-			return hasAccess && (userAccessLevels[dbLevel?.domainId] || -1) >= keyData._accessLevels[dbLevel?.domainId];
-		}, true);
-
-		return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
+		try {
+			const canAccess = keyData.accessLevelIds.reduce((hasAccess, levelId) => {
+				const dbLevel = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
+				return hasAccess && (userAccessLevels[dbLevel?.domainId] || -1) >= keyData._accessLevels[dbLevel?.domainId];
+			}, true);
+			return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
+		} catch (e) {
+			return AccessLevel.NoAccess;
+		}
 	}
 
 	getPermissionKey(key: string) {

@@ -3,7 +3,7 @@ import {
 	ApiException,
 	BadImplementationException,
 	cloneObj,
-	compare, DB_BaseObject,
+	compare,
 	dispatch_onApplicationException,
 	Dispatcher,
 	DontCallthisException,
@@ -20,7 +20,8 @@ import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/Firest
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
 import {Header_SessionId, MemKey_AccountEmail, MemKey_AccountId, SessionKey_Account_BE, SessionKey_Session_BE} from '../core/consts';
 import {
-	_SessionKey_Account, AccountType,
+	_SessionKey_Account,
+	AccountType,
 	ApiDefBE_Account,
 	DB_Account,
 	DBDef_Accounts,
@@ -33,13 +34,13 @@ import {
 	RequestBody_RegisterAccount,
 	RequestBody_SetPassword,
 	Response_Auth,
+	SafeDB_Account,
 	UI_Account
 } from '../../shared';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../shared/assertion';
 import Transaction = firestore.Transaction;
 
 
-type SafeDB_Account = UI_Account & DB_BaseObject;
 type AccountWithPassword = {
 	email: string
 	password: string
@@ -131,21 +132,24 @@ export class ModuleBE_AccountDB_Class
 	}
 
 	impl = {
+		fixEmail: (objectWithEmail: { email: string }) => {
+			objectWithEmail.email = objectWithEmail.email.toLowerCase();
+		},
 		assertPassword: (accountToAssert: AccountWithPassword) => {
 			this.password.assertPasswordExistence(accountToAssert.email, accountToAssert.password, accountToAssert.passwordCheck);
 			this.password.assertPasswordRules(accountToAssert.password!);
 		},
-		spiceAccount: (accountToSpice: Request_RegisterAccount): SpicedAccount => {
+		spiceAccount: (accountToSpice: AccountWithPassword): SpicedAccount => {
 			const salt = generateHex(32);
 			return {
 				email: accountToSpice.email,
-				type: accountToSpice.type,
+				type: 'user',
 				salt,
 				saltedPassword: hashPasswordWithSalt(salt, accountToSpice.password)
 			};
 		},
 		createWithPassword: (accountWithPassword: AccountWithPassword, transaction: Transaction) => {
-			const spicedAccount = this.impl.spiceAccount({...accountWithPassword, type: 'user'});
+			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
 			return this.impl.create(spicedAccount, transaction);
 		},
 		create: async (accountToCreate: AccountToCreate, transaction: Transaction) => {
@@ -163,11 +167,8 @@ export class ModuleBE_AccountDB_Class
 		onAccountCreated: async (account: SafeDB_Account, transaction: Transaction) => {
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(account, transaction);
 		},
-		login: async (email: string) => {
-			const dbAccount = (await this.query.custom({where: {email}, limit: 1}))[0];
-			if (dbAccount)
-				throw new ApiException(422, `User with email "${email}" already exists`);
-
+		createSession: async (accountId: string, transaction: Transaction) => {
+			return await ModuleBE_SessionDB.getOrCreateSessionV3(accountId, transaction);
 		},
 	};
 	/**
@@ -201,32 +202,53 @@ export class ModuleBE_AccountDB_Class
 	};
 
 	account = {
-		register: async (body: RequestBody_RegisterAccount, transaction?: Transaction): Promise<Response_Auth> => {
+		// this flow is for creating real human users with email and password
+		register: async (accountWithPassword: RequestBody_RegisterAccount, transaction?: Transaction): Promise<Response_Auth> => {
 			if (!this.config.canRegister)
 				throw new ApiException(418, 'Registration is disabled!!');
 
-			body.email = body.email.toLowerCase();
-
-			// this flow is for user accounts
-			const account = this.runTransaction(async transaction => {
-				this.impl.assertPassword(body);
-				const accountToSpice: AccountWithPassword = {...body, type: 'user'};
-				const spicedAccount = this.impl.spiceAccount(accountToSpice);
+			this.impl.fixEmail(accountWithPassword);
+			this.impl.assertPassword(accountWithPassword);
+			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
+			return this.runTransaction(async transaction => {
 				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
 				await this.impl.setAccountMemKeys(dbSafeAccount);
 				await this.impl.onAccountCreated(dbSafeAccount, transaction);
+				const encodedSessionData = await this.impl.createSession(dbSafeAccount._id, transaction);
+				return {sessionId: encodedSessionData, ...dbSafeAccount};
+			});
+		},
+		login: async (credentials: Request_LoginAccount): Promise<Response_Auth> => {
+			this.impl.fixEmail(credentials);
+
+			return this.runTransaction(async transaction => {
+				const firestoreQuery = FirestoreInterfaceV3.buildQuery<DBProto_AccountType>(this.collection, {where: {email: credentials.email}});
+				let results;
+				if (transaction)
+					results = (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
+				else
+					results = (await firestoreQuery.get()).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
+
+				if (results.length !== 1)
+					if (results.length === 0) {
+						await dispatch_onApplicationException.dispatchModuleAsync(new ApiException(401, `There is no account for email '${userEmail}'.`), this);
+						throw new ApiException(401, 'Wrong username or password.');
+					} else if (results.length > 1) {
+						throw new MUSTNeverHappenException('Too many users');
+					}
+
+				const account = results[0].data();
+				const safeAccount = getUIAccountV3(account);
+
+				await this.password.assertPasswordMatch(account, credentials.password);
+				const encodedSessionData = await this.impl.createSession(account._id, transaction);
+
+				MemKey_AccountId.set(account._id);
+
+				await dispatch_onUserLogin.dispatchModuleAsync(safeAccount, transaction!);
+				return {sessionId: encodedSessionData, ...safeAccount};
 			});
 
-			await this.getOrCreateV3(accountToCreate, true);
-			return this.account.login({email: body.email, password: body.password});
-		},
-		login: async (request: Request_LoginAccount, transaction?: Transaction): Promise<Response_Auth> => {
-			const {account, session} = await this.loginImpl(request, transaction);
-			MemKey_AccountId.set(account._id);
-
-			// TODO: TOFIX transaction
-			await dispatch_onUserLogin.dispatchModuleAsync(getUIAccountV3(account), transaction!);
-			return session;
 		},
 		create: async (request: Request_RegisterAccount, transaction?: Transaction) => {
 			if (request.type === 'user' && !request.password)
@@ -257,36 +279,14 @@ export class ModuleBE_AccountDB_Class
 			if (assertPassword)
 				throw new ApiException(444, `Password assertion failed with: ${__stringify(assertPassword)}`);
 		},
-		assertPasswordMatch: async (password: string, userEmail: string, transaction?: Transaction) => {
-			const account = await this.queryAccountWithPassword(userEmail, transaction);
-			if (!account.salt || !account.saltedPassword)
+		assertPasswordMatch: async (safeAccount: SafeDB_Account, password: string) => {
+			if (!safeAccount.salt || !safeAccount.saltedPassword)
 				throw new ApiException(401, 'Account was never logged in using username and password, probably logged using SAML');
 
-			if (hashPasswordWithSalt(account.salt, password) !== account.saltedPassword)
+			if (hashPasswordWithSalt(safeAccount.salt, password) !== safeAccount.saltedPassword)
 				throw new ApiException(401, 'Wrong username or password.');
-
-			return account;
 		}
 	};
-
-	private async queryAccountWithPassword(userEmail: string, transaction?: Transaction): Promise<DB_Account> {
-		const firestoreQuery = FirestoreInterfaceV3.buildQuery<DBProto_AccountType>(this.collection, {where: {email: userEmail}});
-		let results;
-		if (transaction)
-			results = (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
-		else
-			results = (await firestoreQuery.get()).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
-
-		if (results.length !== 1)
-			if (results.length === 0) {
-				await dispatch_onApplicationException.dispatchModuleAsync(new ApiException(401, `There is no account for email '${userEmail}'.`), this);
-				throw new ApiException(401, 'Wrong username or password.');
-			} else if (results.length > 1) {
-				throw new MUSTNeverHappenException('Too many users');
-			}
-
-		return results[0].data();
-	}
 
 	private async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
 		request.email = request.email.toLowerCase();

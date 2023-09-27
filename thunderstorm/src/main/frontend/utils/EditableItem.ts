@@ -1,4 +1,4 @@
-import {cloneObj, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {cloneObj, compare, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 
 /**
@@ -51,14 +51,15 @@ export class EditableItem<T> {
 	 */
 	set<K extends keyof T>(key: K, value: ResolvableContent<T[K] | undefined>) {
 		const finalValue = resolveContent(value);
-		if (finalValue === this.item[key])
+		if (!exists(finalValue) && exists(this.item[key])) {
+			delete this.item[key];
+			return true;
+		}
+
+		if (compare(finalValue, this.item[key]))
 			return false;
 
-		if (value === undefined)
-			delete this.item[key];
-		else
-			this.item[key] = finalValue;
-
+		this.item[key] = finalValue;
 		return true;
 	}
 

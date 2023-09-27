@@ -1,4 +1,5 @@
 import {
+	ApiDef_Permissions,
 	DBDef_PermissionAccessLevel,
 	DBDef_PermissionApi,
 	DBDef_PermissionDomain,
@@ -7,6 +8,7 @@ import {
 	DBDef_PermissionUser
 } from '../shared';
 import {DefaultDef_Domain, DefaultDef_Package} from '../shared/types';
+import {DefaultAccessLevel_Admin} from '../shared/consts';
 
 
 const Domain_PermissionsDefine_ID = '48d5ace0cbb2a14c8a0ca3773a4a2962';
@@ -17,6 +19,10 @@ const _Domain_PermissionsDefine: DefaultDef_Domain = {
 	_id: Domain_PermissionsDefine_ID,
 	namespace: 'Permissions Define',
 	dbNames: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbName),
+	customApis: [{
+		path: ApiDef_Permissions.v1.createProject.path,
+		accessLevel: DefaultAccessLevel_Admin.name
+	}]
 };
 
 const _Domain_PermissionsAssign: DefaultDef_Domain = {
@@ -39,7 +45,8 @@ export const PermissionsPackage_Permissions: DefaultDef_Package = {
 	domains: [
 		Domain_PermissionsDefine,
 		Domain_PermissionsAssign,
-	]
+	],
+
 };
 
 export const PermissionsPackage_Developer: DefaultDef_Package = {
