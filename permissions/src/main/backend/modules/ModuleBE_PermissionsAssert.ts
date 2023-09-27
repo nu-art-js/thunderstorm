@@ -19,7 +19,7 @@
 
 import {
 	_keys,
-	ApiException,
+	ApiException, arrayToMap,
 	BadImplementationException,
 	batchActionParallel,
 	exists,
@@ -30,10 +30,17 @@ import {
 	StringMap,
 	TypedMap
 } from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
+import {
+	addRoutes,
+	createBodyServerApi,
+	ModuleBE_BaseDBV2,
+	ModuleBE_BaseDBV3,
+	ModuleBE_v2_SyncManager,
+	ServerApi_Middleware, Storm
+} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {ApiDef_PermissionsAssert, Base_AccessLevel, DB_PermissionAccessLevel, Request_AssertApiForUser} from '../../shared';
+import {ApiDef_PermissionsAssert, Base_AccessLevel, DB_PermissionAccessLevel, DB_PermissionApi, Request_AssertApiForUser} from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {
@@ -45,6 +52,7 @@ import {
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {SessionKey_Permissions_BE} from '../consts';
 import {PermissionKey_BE} from '../PermissionKey_BE';
+import {ApiModule} from './ModuleBE_Permissions';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -130,7 +138,51 @@ export class ModuleBE_PermissionsAssert_Class
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
+		ModuleBE_v2_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
+			const userPermissions = MemKey_UserPermissions.get();
 
+			const mapDbNameToApiModules = arrayToMap(Storm.getInstance()
+				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+
+			const paths = dbModules.map(module => {
+				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbName];
+				if (!mapDbNameToApiModule) {
+					this.logWarning(`no module found for ${module.dbDef.dbName}`);
+					return undefined;
+				}
+
+				return mapDbNameToApiModule.apiDef['v1']['sync'].path;
+			});
+			const mapPathToDBApi: TypedMap<DB_PermissionApi> = arrayToMap(await batchActionParallel(filterInstances(paths), 10, chunk => ModuleBE_PermissionApi.query.where({path: {$in: chunk}})), api => api.path);
+
+			return dbModules.filter((dbModule, index) => {
+				const path = paths[index];
+				if (!path)
+					return false;
+
+				const dbApi = mapPathToDBApi[path];
+				if (!dbApi)
+					return ModuleBE_PermissionsAssert.isStrictMode();
+
+				const accessLevels = dbApi._accessLevels;
+				return _keys(accessLevels!).reduce((hasAccess, domainId) => {
+					if (!hasAccess)
+						return false;
+
+					const userDomainAccessValue = userPermissions[domainId];
+					const apiRequiredAccessValue = accessLevels![domainId];
+					if (!userDomainAccessValue)
+						return false;
+
+					if (!exists(userDomainAccessValue) || userDomainAccessValue < apiRequiredAccessValue) {
+						this.logErrorBold(`${(userDomainAccessValue ?? 0)} < ${apiRequiredAccessValue} === ${(userDomainAccessValue ?? 0) < apiRequiredAccessValue}`);
+						return false;
+					}
+
+					return hasAccess;
+				}, true);
+			});
+		});
 	}
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {
@@ -252,6 +304,10 @@ export class ModuleBE_PermissionsAssert_Class
 
 			this._keys[key] = true;
 		});
+	}
+
+	private isStrictMode() {
+		return !!this.config.strictMode;
 	}
 }
 

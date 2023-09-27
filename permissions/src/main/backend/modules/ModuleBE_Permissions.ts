@@ -63,6 +63,7 @@ const PermissionProject_Permissions: DefaultDef_Project = {
 		},
 	]
 };
+export type ApiModule = { dbModule: { dbDef: { dbName: string } }, apiDef: { [name: string]: { [name: string]: { path: string } } } }
 
 class ModuleBE_Permissions_Class
 	extends Module
@@ -169,7 +170,6 @@ class ModuleBE_Permissions_Class
 				accessLevelIds: [domainNameToLevelNameToDBAccessLevel[domain._id][api.accessLevel]._id]
 			})));
 
-			type ApiModule = { dbModule: { dbDef: { dbName: string } }, apiDef: { [name: string]: { [name: string]: { path: string } } } }
 			const apiModules = arrayToMap(Storm.getInstance()
 				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
 
