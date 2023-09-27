@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
@@ -90,11 +90,10 @@ export class ModuleFE_PermissionsAssert_Class
 			return AccessLevel.NoAccessLevelsDefined;
 
 		const userAccessLevels = SessionKey_Permissions_FE.get();
-		const canAccess = keyData.accessLevelIds.reduce((hasAccess, levelId) => {
-			const dbLevel = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
-			return hasAccess && (userAccessLevels[dbLevel?.domainId] || -1) >= keyData._accessLevels[dbLevel?.domainId];
-		}, true);
 
+		const canAccess = _keys(keyData._accessLevels).reduce((hasAccess, domainId) => {
+			return hasAccess && (userAccessLevels[domainId] || -1) >= keyData._accessLevels[domainId];
+		}, true);
 		return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
 	}
 
