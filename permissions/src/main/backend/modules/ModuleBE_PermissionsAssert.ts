@@ -19,7 +19,8 @@
 
 import {
 	_keys,
-	ApiException, arrayToMap,
+	ApiException,
+	arrayToMap,
 	BadImplementationException,
 	batchActionParallel,
 	exists,
@@ -36,11 +37,18 @@ import {
 	ModuleBE_BaseDBV2,
 	ModuleBE_BaseDBV3,
 	ModuleBE_v2_SyncManager,
-	ServerApi_Middleware, Storm
+	ServerApi_Middleware,
+	Storm
 } from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {ApiDef_PermissionsAssert, Base_AccessLevel, DB_PermissionAccessLevel, DB_PermissionApi, Request_AssertApiForUser} from '../../shared';
+import {
+	ApiDef_PermissionsAssert,
+	Base_AccessLevel,
+	DB_PermissionAccessLevel,
+	DB_PermissionApi,
+	Request_AssertApiForUser
+} from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {
@@ -139,6 +147,7 @@ export class ModuleBE_PermissionsAssert_Class
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
 		ModuleBE_v2_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
+			//Filter out any module we don't have permission to sync
 			const userPermissions = MemKey_UserPermissions.get();
 
 			const mapDbNameToApiModules = arrayToMap(Storm.getInstance()
@@ -153,16 +162,32 @@ export class ModuleBE_PermissionsAssert_Class
 
 				return mapDbNameToApiModule.apiDef['v1']['sync'].path;
 			});
-			const mapPathToDBApi: TypedMap<DB_PermissionApi> = arrayToMap(await batchActionParallel(filterInstances(paths), 10, chunk => ModuleBE_PermissionApi.query.where({path: {$in: chunk}})), api => api.path);
+			this.logWarning('Paths:', paths);
+			const _apisFfs = await ModuleBE_PermissionApi.query.where({});
+
+			const _1 = _apisFfs.filter(_api => paths.includes(_api.path));
+			const _2 = await batchActionParallel(filterInstances(paths), 10, chunk => ModuleBE_PermissionApi.query.where({path: {$in: chunk}}));
+			this.logInfoBold('-----------------------------------------------');
+			this.logError('1:', _apisFfs.map(_api => _api.path));
+			this.logError('1 filtered:', _1.map(_api => _api.path));
+			this.logInfoBold('-----------------------------------------------');
+			this.logInfoBold('-----------------------------------------------');
+			this.logError('2:', _2.map(_api => _api.path));
+			this.logInfoBold('-----------------------------------------------');
+			const mapPathToDBApi: TypedMap<DB_PermissionApi> = arrayToMap(_1, api => api.path);
 
 			return dbModules.filter((dbModule, index) => {
 				const path = paths[index];
-				if (!path)
+				if (!path) {
+					this.logWarningBold('no path');
 					return false;
+				}
 
 				const dbApi = mapPathToDBApi[path];
-				if (!dbApi)
+				if (!dbApi) {
+					this.logWarningBold(`no dbApi ${path}`);
 					return ModuleBE_PermissionsAssert.isStrictMode();
+				}
 
 				const accessLevels = dbApi._accessLevels;
 				return _keys(accessLevels!).reduce((hasAccess, domainId) => {
