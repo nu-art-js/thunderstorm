@@ -1,23 +1,7 @@
-import {
-	__stringify,
-	ApiException,
-	batchActionParallel,
-	currentTimeMillis,
-	Day, DB_BaseObject,
-	Dispatcher,
-	TS_Object,
-	TypedKeyValue,
-	UniqueId
-} from '@nu-art/ts-common';
+import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, TS_Object, TypedKeyValue, UniqueId} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
-import {
-	_SessionKey_Session,
-	DBDef_Session,
-	DBProto_SessionType,
-	Response_Auth, UI_Account,
-	UI_Session
-} from '../../shared';
+import {_SessionKey_Session, DBDef_Session, DBProto_SessionType, Response_Auth, SafeDB_Account, UI_Session} from '../../shared';
 import {Header_SessionId, MemKey_SessionData} from '../core/consts';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
@@ -99,7 +83,7 @@ export class ModuleBE_SessionDB_Class
 		return JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8'));
 	}
 
-	getOrCreateSession = async (uiAccount: UI_Account & DB_BaseObject, transaction?: Transaction): Promise<Response_Auth> => {
+	getOrCreateSession = async (uiAccount: SafeDB_Account, transaction?: Transaction): Promise<Response_Auth> => {
 		const session = (await this.query.custom({where: {accountId: uiAccount._id}}, transaction))[0];
 		if (session && !this.TTLExpired(session)) {
 			const sessionData = this.decodeSessionData(session.sessionId);
@@ -112,6 +96,41 @@ export class ModuleBE_SessionDB_Class
 
 		return {sessionId: sessionInfo._id, ...uiAccount};
 	};
+
+	getOrCreateSessionV3 = async (accountId: string, transaction?: Transaction): Promise<string> => {
+		const session = (await this.query.custom({where: {accountId}}, transaction))[0];
+		if (session && !this.TTLExpired(session)) {
+			const sessionData = this.decodeSessionData(session.sessionId);
+			MemKey_SessionData.set(sessionData);
+			return session.sessionId;
+		}
+
+		const sessionData = await this.createSessionV3(accountId);
+		MemKey_SessionData.set(sessionData.raw);
+
+		return sessionData.encoded;
+	};
+
+	async createSessionV3(accountId: UniqueId, manipulate?: (sessionData: TS_Object) => TS_Object) {
+		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(accountId));
+
+		let sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
+			sessionData[moduleSessionData.key] = moduleSessionData.value;
+			return sessionData;
+		}, {});
+
+		sessionData = manipulate?.(sessionData) ?? sessionData;
+		const encodedSessionData = await this.encodeSessionData(sessionData);
+
+		const session = {
+			accountId: accountId,
+			sessionId: encodedSessionData,
+			timestamp: currentTimeMillis()
+		};
+
+		await this.set.item(session);
+		return {encoded: encodedSessionData, raw: sessionData};
+	}
 
 	async createSession(accountId: UniqueId, manipulate?: (sessionData: TS_Object) => TS_Object) {
 		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(accountId));
