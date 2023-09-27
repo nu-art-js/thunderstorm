@@ -13,6 +13,7 @@ type Props = React.PropsWithChildren<{
 	transitionPrefix?: string;
 	onEnterDone?: () => void;
 	onExitDone?: () => void;
+	skipAnimationOnMount?: boolean;
 }>;
 
 type State = {
@@ -30,10 +31,23 @@ export class TS_ComponentTransition extends ComponentSync<Props, State> {
 		return this.props?.trigger !== nextProps.trigger;
 	}
 
-	protected deriveStateFromProps(nextProps: Props): State {
-		return {
-			transitionPhase: nextProps.trigger ? 'mount' : this.state?.transitionPhase === 'enter-done' ? 'exit' : 'unmount',
-		};
+	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+		return true;
+	}
+
+	protected deriveStateFromProps(nextProps: Props, state: State): State {
+		state ??= this.state ? {...this.state} : {} as State;
+
+		//First load
+		if (!state.transitionPhase)
+			state.transitionPhase = nextProps.trigger
+				? nextProps.skipAnimationOnMount ? 'enter-done' : 'mount'
+				: 'unmount';
+		//Triggered change
+		else
+			state.transitionPhase = nextProps.trigger ? 'mount' : 'exit';
+
+		return state;
 	}
 
 	private triggerNextTimeout = () => {
