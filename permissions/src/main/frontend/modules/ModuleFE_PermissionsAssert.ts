@@ -21,14 +21,10 @@ import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-a
 import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
-import {ModuleFE_PermissionsProject} from './manage/ModuleFE_PermissionsProject';
-import {ModuleFE_PermissionsDomain} from './manage/ModuleFE_PermissionsDomain';
-import {ModuleFE_PermissionsAccessLevel} from './manage/ModuleFE_PermissionsAccessLevel';
-import {ModuleFE_PermissionsGroup} from './assign/ModuleFE_PermissionsGroup';
-import {ModuleFE_PermissionsUser} from './assign/ModuleFE_PermissionsUser';
 import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE} from '../consts';
+import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 
 
 export type PermissionsModuleFEConfig = {
@@ -67,14 +63,15 @@ export class ModuleFE_PermissionsAssert_Class
 	}
 
 	private onProjectCreated = async () => {
-		await Promise.all([
-			ModuleFE_PermissionsProject,
-			ModuleFE_PermissionsApi,
-			ModuleFE_PermissionsDomain,
-			ModuleFE_PermissionsAccessLevel,
-			ModuleFE_PermissionsGroup,
-			ModuleFE_PermissionsUser,
-		].map(async module => await module.v1.sync().executeSync()));
+		ModuleFE_Account.logout();
+		// await Promise.all([
+		// 	ModuleFE_PermissionsProject,
+		// 	ModuleFE_PermissionsApi,
+		// 	ModuleFE_PermissionsDomain,
+		// 	ModuleFE_PermissionsAccessLevel,
+		// 	ModuleFE_PermissionsGroup,
+		// 	ModuleFE_PermissionsUser,
+		// ].map(async module => await module.v1.sync().executeSync()));
 	};
 
 	getAccessLevelByKeyString(key: string) {
