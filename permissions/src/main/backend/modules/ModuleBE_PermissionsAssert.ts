@@ -187,7 +187,7 @@ export class ModuleBE_PermissionsAssert_Class
 				const dbApi = mapPathToDBApi[path];
 				if (!dbApi) {
 					this.logWarningBold(`no dbApi ${path}`);
-					return ModuleBE_PermissionsAssert.isStrictMode();
+					return !ModuleBE_PermissionsAssert.isStrictMode();
 				}
 
 				const accessLevels = dbApi._accessLevels;
