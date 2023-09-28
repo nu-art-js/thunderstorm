@@ -12,47 +12,36 @@ export const QueryParam_SessionId = HeaderKey_SessionId;
 export const QueryParam_RedirectUrl = 'redirectUrl';
 export const HeaderKey_CurrentPage = 'current-page';
 
-export type Request_RegisterAccount = {
-	email: string
-	password: string
-	passwordCheck: string
-	type: AccountType
-	// customProps?: StringMap
-}
-
 export type Response_Auth = UI_Account & DB_BaseObject & {
 	sessionId: string
 }
 
-export type RequestBody_RegisterAccount = {
-	email: string
-	password: string
-	passwordCheck: string
-};
-
-export type Request_CreateAccount = {
-	email: string
+type DBAccountType = {
 	type: AccountType
-	password?: string
-	passwordCheck?: string
-};
-
-export type ResponseBody_CreateAccount = UI_Account;
-
-export type RequestBody_ValidateSession = {}
-export type ResponseBody_ValidateSession = {}
-
-export type RequestBody_ChangePassword = {
-	userEmail: string, originalPassword: string, newPassword: string, newpasswordCheck: string
 }
-export type ResponseBody_ChangePassword = Response_Auth & {}
-
-export type RequestBody_SetPassword = {
-	userEmail: string,
-	password: string,
-	passwordCheck: string;
+export type AccountEmail = {
+	email: string
 }
 
+type AccountPassword = {
+	password: string
+}
+
+export type PasswordWithCheck = AccountPassword & {
+	passwordCheck: string
+}
+
+export type BaseAccountWithType = DBAccountType & AccountEmail
+export type Request_RegisterAccount = BaseAccountWithType & PasswordWithCheck
+export type RequestBody_RegisterAccount = PasswordWithCheck & AccountEmail
+export type Request_CreateAccount = BaseAccountWithType & Partial<PasswordWithCheck>
+export type ResponseBody_ChangePassword = Response_Auth
+export type RequestBody_SetPassword = AccountEmail & PasswordWithCheck
+export type RequestBody_Login = AccountEmail & AccountPassword
+
+export type RequestBody_ChangePassword = PasswordWithCheck & {
+	oldPassword: string
+}
 export type RequestParams_LoginSAML = {
 	[QueryParam_RedirectUrl]: string
 };
@@ -61,10 +50,8 @@ export type Response_LoginSAML = {
 	loginUrl: string
 };
 
-export type Request_LoginAccount = {
-	email: string
-	password: string
-}
+export type Request_LoginAccount = AccountEmail & AccountPassword
+
 export type RequestBody_CreateToken = { accountId: UniqueId, ttl: number };
 export type Response_CreateToken = { token: string };
 

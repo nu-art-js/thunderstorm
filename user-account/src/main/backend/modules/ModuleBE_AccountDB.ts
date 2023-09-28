@@ -20,17 +20,17 @@ import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/Firest
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
 import {Header_SessionId, MemKey_AccountEmail, MemKey_AccountId, SessionKey_Account_BE, SessionKey_Session_BE} from '../core/consts';
 import {
-	_SessionKey_Account,
+	_SessionKey_Account, AccountEmail,
 	AccountType,
-	ApiDefBE_Account,
+	ApiDefBE_Account, BaseAccountWithType,
 	DB_Account,
 	DBDef_Accounts,
-	DBProto_AccountType,
+	DBProto_AccountType, PasswordWithCheck,
 	Request_CreateAccount,
 	Request_LoginAccount,
 	Request_RegisterAccount,
 	RequestBody_ChangePassword,
-	RequestBody_CreateToken,
+	RequestBody_CreateToken, RequestBody_Login,
 	RequestBody_RegisterAccount,
 	RequestBody_SetPassword,
 	Response_Auth,
@@ -41,11 +41,6 @@ import {assertPasswordRules, PasswordAssertionConfig} from '../../shared/asserti
 import Transaction = firestore.Transaction;
 
 
-type AccountWithPassword = {
-	email: string
-	password: string
-	passwordCheck: string
-};
 type BaseAccount = {
 	email: string,
 	type: AccountType,
@@ -103,7 +98,7 @@ export class ModuleBE_AccountDB_Class
 		return {
 			key: 'account' as const,
 			value: {
-				...getUIAccountV3(account),
+				...makeAccountSafe(account),
 				hasPassword: !!account.saltedPassword,
 			},
 		};
@@ -114,12 +109,12 @@ export class ModuleBE_AccountDB_Class
 
 		addRoutes([
 			createBodyServerApi(ApiDefBE_Account.vv1.registerAccount, this.account.register),
-			createBodyServerApi(ApiDefBE_Account.vv1.changePassword, this.changePassword),
+			createBodyServerApi(ApiDefBE_Account.vv1.changePassword, this.account.changePassword),
 			createBodyServerApi(ApiDefBE_Account.vv1.login, this.account.login),
 			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, this.account.create),
 			createQueryServerApi(ApiDefBE_Account.vv1.logout, this.account.logout),
 			createBodyServerApi(ApiDefBE_Account.vv1.createToken, this.createToken),
-			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.setPassword)
+			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.account.setPassword)
 		]);
 	}
 
@@ -135,11 +130,11 @@ export class ModuleBE_AccountDB_Class
 		fixEmail: (objectWithEmail: { email: string }) => {
 			objectWithEmail.email = objectWithEmail.email.toLowerCase();
 		},
-		assertPassword: (accountToAssert: AccountWithPassword) => {
+		assertPassword: (accountToAssert: RequestBody_SetPassword) => {
 			this.password.assertPasswordExistence(accountToAssert.email, accountToAssert.password, accountToAssert.passwordCheck);
 			this.password.assertPasswordRules(accountToAssert.password!);
 		},
-		spiceAccount: (accountToSpice: AccountWithPassword): SpicedAccount => {
+		spiceAccount: (accountToSpice: RequestBody_Login): SpicedAccount => {
 			const salt = generateHex(32);
 			return {
 				email: accountToSpice.email,
@@ -148,17 +143,13 @@ export class ModuleBE_AccountDB_Class
 				saltedPassword: hashPasswordWithSalt(salt, accountToSpice.password)
 			};
 		},
-		createWithPassword: (accountWithPassword: AccountWithPassword, transaction: Transaction) => {
-			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
-			return this.impl.create(spicedAccount, transaction);
-		},
 		create: async (accountToCreate: AccountToCreate, transaction: Transaction) => {
 			let dbAccount = (await this.query.custom({where: {email: accountToCreate.email}, limit: 1}, transaction))[0];
 			if (dbAccount)
 				throw new ApiException(422, `User with email "${accountToCreate.email}" already exists`);
 
 			dbAccount = await this.create.item(accountToCreate, transaction);
-			return getUIAccountV3(dbAccount);
+			return makeAccountSafe(dbAccount);
 		},
 		setAccountMemKeys: async (account: SafeDB_Account) => {
 			MemKey_AccountId.set(account._id);
@@ -170,7 +161,30 @@ export class ModuleBE_AccountDB_Class
 		createSession: async (accountId: string, transaction: Transaction) => {
 			return await ModuleBE_SessionDB.getOrCreateSessionV3(accountId, transaction);
 		},
+		queryUnsafeAccount: async (credentials: AccountEmail, transaction?: Transaction) => {
+			const firestoreQuery = FirestoreInterfaceV3.buildQuery<DBProto_AccountType>(this.collection, {where: {email: credentials.email}});
+			let results;
+			if (transaction)
+				results = (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
+			else
+				results = (await firestoreQuery.get()).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
+
+			if (results.length !== 1)
+				if (results.length === 0) {
+					await dispatch_onApplicationException.dispatchModuleAsync(new ApiException(401, `There is no account for email '${credentials.email}'.`), this);
+					throw new ApiException(401, 'Wrong username or password.');
+				} else if (results.length > 1) {
+					throw new MUSTNeverHappenException('Too many users');
+				}
+
+			return results[0].data();
+		},
+		querySafeAccount: async (credentials: AccountEmail, transaction?: Transaction) => {
+			const account = await this.impl.queryUnsafeAccount(credentials, transaction);
+			return makeAccountSafe(account);
+		}
 	};
+
 	/**
 	 * Create an account without passing through this.spiceAccount - as in without password/salt,
 	 * for loginSaml initial login
@@ -185,7 +199,7 @@ export class ModuleBE_AccountDB_Class
 			};
 
 			const dbAccount = await this.collection.uniqueGetOrCreate({email: accountToCreate.email}, create, transaction);
-			const uiAccount = getUIAccountV3(dbAccount);
+			const uiAccount = makeAccountSafe(dbAccount);
 
 			// if these were never set it means we are registering otherwise we are creating other accounts for others
 			try {
@@ -222,33 +236,71 @@ export class ModuleBE_AccountDB_Class
 			this.impl.fixEmail(credentials);
 
 			return this.runTransaction(async transaction => {
-				const firestoreQuery = FirestoreInterfaceV3.buildQuery<DBProto_AccountType>(this.collection, {where: {email: credentials.email}});
-				let results;
-				if (transaction)
-					results = (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
-				else
-					results = (await firestoreQuery.get()).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
+				const safeAccount = await this.impl.querySafeAccount(credentials, transaction);
+				await this.password.assertPasswordMatch(safeAccount, credentials.password);
+				const encodedSessionData = await this.impl.createSession(safeAccount._id, transaction);
 
-				if (results.length !== 1)
-					if (results.length === 0) {
-						await dispatch_onApplicationException.dispatchModuleAsync(new ApiException(401, `There is no account for email '${userEmail}'.`), this);
-						throw new ApiException(401, 'Wrong username or password.');
-					} else if (results.length > 1) {
-						throw new MUSTNeverHappenException('Too many users');
-					}
-
-				const account = results[0].data();
-				const safeAccount = getUIAccountV3(account);
-
-				await this.password.assertPasswordMatch(account, credentials.password);
-				const encodedSessionData = await this.impl.createSession(account._id, transaction);
-
-				MemKey_AccountId.set(account._id);
+				MemKey_AccountId.set(safeAccount._id);
 
 				await dispatch_onUserLogin.dispatchModuleAsync(safeAccount, transaction!);
 				return {sessionId: encodedSessionData, ...safeAccount};
 			});
 
+		},
+		createWithPassword: async (accountWithPassword: Request_RegisterAccount) => {
+			this.impl.fixEmail(accountWithPassword);
+			this.impl.assertPassword(accountWithPassword);
+			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
+			return this.runTransaction(async transaction => {
+				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
+				await this.impl.onAccountCreated(dbSafeAccount, transaction);
+			});
+		},
+		createWithoutPassword: async (accountWithoutPassword: BaseAccountWithType) => {
+			this.impl.fixEmail(accountWithoutPassword);
+			return this.runTransaction(async transaction => {
+				const dbSafeAccount = await this.impl.create(accountWithoutPassword, transaction);
+				await this.impl.onAccountCreated(dbSafeAccount, transaction);
+			});
+		},
+		changePassword: async (passwordToChange: RequestBody_ChangePassword): Promise<Response_Auth> => {
+			return this.runTransaction(async transaction => {
+				const email = MemKey_AccountEmail.get();
+
+				await this.account.login({email, password: passwordToChange.oldPassword}); // perform login to make sure the old password holds
+
+				if (!compare(passwordToChange.password, passwordToChange.passwordCheck))
+					throw new ApiException(401, 'Password check mismatch');
+
+				const safeAccount = await this.impl.querySafeAccount({email});
+
+				this.impl.assertPassword({email, password: passwordToChange.password, passwordCheck: passwordToChange.passwordCheck});
+				const spicedAccount = this.impl.spiceAccount({email, password: passwordToChange.password});
+				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
+				const newSession = await ModuleBE_SessionDB.createSession(updatedAccount._id);
+				return {
+					...makeAccountSafe(updatedAccount),
+					sessionId: newSession._id
+				};
+			});
+		},
+		setPassword: async (passwordBody: PasswordWithCheck) => {
+			return this.runTransaction(async transaction => {
+				const email = MemKey_AccountEmail.get();
+				const dbAccount = await this.impl.queryUnsafeAccount({email}, transaction);
+				if (dbAccount.saltedPassword)
+					throw new ApiException(403, 'account already has password');
+
+				const safeAccount = makeAccountSafe(dbAccount);
+				this.impl.assertPassword({email, ...passwordBody});
+				const spicedAccount = this.impl.spiceAccount({email, password: passwordBody.password});
+				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
+				const newSession = await ModuleBE_SessionDB.createSession(updatedAccount._id);
+				return {
+					...makeAccountSafe(updatedAccount),
+					sessionId: newSession._id
+				};
+			});
 		},
 		create: async (request: Request_RegisterAccount, transaction?: Transaction) => {
 			if (request.type === 'user' && !request.password)
@@ -263,7 +315,7 @@ export class ModuleBE_AccountDB_Class
 				throw new ApiException(404, 'Missing sessionId');
 
 			await ModuleBE_SessionDB.delete.query({where: {sessionId}});
-		},
+		}
 	};
 
 	password = {
@@ -287,14 +339,6 @@ export class ModuleBE_AccountDB_Class
 				throw new ApiException(401, 'Wrong username or password.');
 		}
 	};
-
-	private async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
-		request.email = request.email.toLowerCase();
-		const account = await this.password.assertPasswordMatch(request.password, request.email, transaction);
-
-		const session = await ModuleBE_SessionDB.getOrCreateSession(account, transaction);
-		return {account, session};
-	}
 
 	private composeUIAccountWithPassword(body: Request_CreateAccount) {
 		//Email always lowerCase
@@ -328,64 +372,9 @@ export class ModuleBE_AccountDB_Class
 
 		return {token: _id};
 	};
-
-	changePassword = async (body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> => {
-		const lowerCaseEmail = body.userEmail.toLowerCase();
-		const updatedAccount = await this.changePasswordImpl(lowerCaseEmail, body.originalPassword, body.newPassword, body.newpasswordCheck, transaction);
-		const newSession = await ModuleBE_SessionDB.createSession(updatedAccount._id);
-		return {
-			...getUIAccountV3(updatedAccount),
-			sessionId: newSession._id
-		};
-	};
-
-	private changePasswordImpl = async (userEmail: string, originalPassword: string, newPassword: string, newpasswordCheck: string, transaction?: Transaction) => await this.runTransaction(async (_transaction) => {
-
-		const assertedAccount = await this.password.assertPasswordMatch(originalPassword, userEmail);
-
-		if (!compare(newPassword, newpasswordCheck))
-			throw new ApiException(401, 'Password & password check mismatch');
-
-		const updatedAccount = this.spiceAccount({
-			type: 'user',
-			email: userEmail,
-			password: newPassword,
-			passwordCheck: newPassword
-		});
-
-		//Update the account with a new password
-		return this.set.item({...assertedAccount, ...updatedAccount});
-	}, transaction);
-
-	setPassword = async (body: RequestBody_SetPassword, transaction?: Transaction): Promise<Response_Auth> => {
-		const updatedAccount = await this.setPasswordImpl(body.userEmail, body.password, body.passwordCheck, transaction);
-		const newSession = await ModuleBE_SessionDB.createSession(updatedAccount._id);
-		return {
-			...getUIAccountV3(updatedAccount),
-			sessionId: newSession._id
-		};
-	};
-
-	private setPasswordImpl = async (userEmail: string, password: string, passwordCheck: string, transaction?: Transaction) => await this.runTransaction(async (_transaction) => {
-
-		const existingAccount = await this.queryAccountWithPassword(userEmail, transaction);
-
-		if (!compare(password, passwordCheck))
-			throw new ApiException(401, 'Password and password check do not match');
-
-		const updatedAccount = this.spiceAccount({
-			type: 'user',
-			email: userEmail,
-			password,
-			passwordCheck,
-		});
-
-		//Update the account with a new password
-		return this.set.item({...existingAccount, ...updatedAccount});
-	}, transaction);
 }
 
-export function getUIAccountV3(account: DB_Account): SafeDB_Account {
+export function makeAccountSafe(account: DB_Account): SafeDB_Account {
 	const uiAccount = cloneObj(account);
 	delete uiAccount.salt;
 	delete uiAccount.saltedPassword;
