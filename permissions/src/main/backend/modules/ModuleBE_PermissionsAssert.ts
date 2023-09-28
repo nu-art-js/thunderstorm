@@ -147,6 +147,7 @@ export class ModuleBE_PermissionsAssert_Class
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
 		ModuleBE_v2_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
+			// return dbModules;
 			//Filter out any module we don't have permission to sync
 			const userPermissions = MemKey_UserPermissions.get();
 
@@ -162,17 +163,17 @@ export class ModuleBE_PermissionsAssert_Class
 
 				return mapDbNameToApiModule.apiDef['v1']['sync'].path;
 			});
-			this.logWarning('Paths:', paths);
-			const _apisFfs = await ModuleBE_PermissionApi.query.where({});
+			this.logWarning(`Paths(${paths.length}):`, paths);
+			const _allApis = await ModuleBE_PermissionApi.query.where({});
 
-			const _1 = _apisFfs.filter(_api => paths.includes(_api.path));
+			const _1 = _allApis.filter(_api => paths.includes(_api.path));
 			const _2 = await batchActionParallel(filterInstances(paths), 10, chunk => ModuleBE_PermissionApi.query.where({path: {$in: chunk}}));
 			this.logInfoBold('-----------------------------------------------');
-			this.logError('1:', _apisFfs.map(_api => _api.path));
-			this.logError('1 filtered:', _1.map(_api => _api.path));
+			this.logError(`query all(${_allApis.length}):`, _allApis.map(_api => _api.path));
+			this.logError(`query all filtered(${_1.length}):`, _1.map(_api => _api.path));
 			this.logInfoBold('-----------------------------------------------');
 			this.logInfoBold('-----------------------------------------------');
-			this.logError('2:', _2.map(_api => _api.path));
+			this.logError(`batchActionParallel(${_2.length}):`, _2.map(_api => _api.path));
 			this.logInfoBold('-----------------------------------------------');
 			const mapPathToDBApi: TypedMap<DB_PermissionApi> = arrayToMap(_1, api => api.path);
 

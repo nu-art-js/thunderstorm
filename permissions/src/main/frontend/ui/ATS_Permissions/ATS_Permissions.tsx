@@ -1,14 +1,15 @@
 import * as React from 'react';
 import {
 	AppToolsScreen,
-	LL_V_L,
 	LL_H_C,
+	LL_V_L,
 	Props_SmartComponent,
 	SmartComponent,
 	State_SmartComponent,
 	Tab,
 	TS_AppTools,
-	TS_Tabs, TS_Button
+	TS_Button,
+	TS_Tabs
 } from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
 import {
@@ -78,9 +79,8 @@ export class ATS_Permissions
 				<div style={{width: 300}}><Permissions_DropDown.Project
 					selected={this.state.selectedProjectId}
 					onSelected={project => this.setState({selectedProjectId: project._id})}/></div>
-				<TS_Button className={'item-list__add-button'}
-						   onClick={() => ModuleFE_PermissionsAssert.v1.createProject({}).executeSync()}>Create
-					Project</TS_Button>
+				<TS_Button className={'item-list__add-button'} onClick={() => ModuleFE_PermissionsAssert
+					.v1.createProject({}).executeSync()}>Create Project</TS_Button>
 			</LL_H_C>
 			{this.renderTabs()}
 		</LL_V_L>;

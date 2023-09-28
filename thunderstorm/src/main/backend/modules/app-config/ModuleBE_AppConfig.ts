@@ -13,6 +13,10 @@ class ModuleBE_AppConfig_Class
 
 	constructor() {
 		super(DBDef_AppConfigs);
+	}
+
+	init() {
+		super.init();
 		addRoutes([createQueryServerApi(ApiDef_AppConfig.vv1.getConfigByKey, async (data) => {
 			return this.getResolverDataByKey(data.key);
 		})]);
