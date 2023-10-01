@@ -14,8 +14,8 @@ import {
 	DefaultAccessLevel_Write,
 	DuplicateDefaultAccessLevels,
 } from '../shared/consts';
-import {md5} from '@nu-art/ts-common';
-import {PermissionsAccessLevel_ReadSelf} from './modules/ModuleBE_Permissions';
+
+// export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
 
 const Domain_PermissionsDefine_ID = '48d5ace0cbb2a14c8a0ca3773a4a2962';
@@ -28,7 +28,7 @@ const _Domain_PermissionsDefine: DefaultDef_Domain = {
 	dbNames: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbName),
 	levels: [
 		...DuplicateDefaultAccessLevels(Domain_PermissionsDefine_ID),
-		{...PermissionsAccessLevel_ReadSelf, _id: md5(Domain_PermissionsDefine_ID)},
+		// {...PermissionsAccessLevel_ReadSelf, _id: md5(Domain_PermissionsDefine_ID)},
 	]
 };
 
