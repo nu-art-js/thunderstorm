@@ -31,7 +31,6 @@ import {
 	Domain_Developer,
 	Domain_PermissionsAssign,
 	Domain_PermissionsDefine,
-	PermissionsAccessLevel_ReadSelf,
 	PermissionsPackage_Developer,
 	PermissionsPackage_Permissions
 } from '../permissions';
