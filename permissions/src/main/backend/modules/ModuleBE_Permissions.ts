@@ -31,6 +31,7 @@ import {
 	Domain_Developer,
 	Domain_PermissionsAssign,
 	Domain_PermissionsDefine,
+	PermissionsAccessLevel_ReadSelf,
 	PermissionsPackage_Developer,
 	PermissionsPackage_Permissions
 } from '../permissions';
@@ -50,7 +51,6 @@ export interface CollectPermissionsProjects {
 
 const dispatcher_collectPermissionsProjects = new Dispatcher<CollectPermissionsProjects, '__collectPermissionsProjects'>('__collectPermissionsProjects');
 const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
-export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
 const PermissionProject_Permissions: DefaultDef_Project = {
 	_id: 'f60db83936835e0be33e89caa365f0c3',
@@ -74,14 +74,14 @@ const PermissionProject_Permissions: DefaultDef_Project = {
 				[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Write.name,
 			}
 		},
-		{
-			_id: '60a417683e4016f4d933fee88953f0d5',
-			name: 'Permissions Read Self',
-			accessLevels: {
-				[Domain_PermissionsDefine.namespace]: PermissionsAccessLevel_ReadSelf.name,
-				[Domain_PermissionsAssign.namespace]: PermissionsAccessLevel_ReadSelf.name,
-			}
-		},
+		// {
+		// 	_id: '60a417683e4016f4d933fee88953f0d5',
+		// 	name: 'Permissions Read Self',
+		// 	accessLevels: {
+		// 		[Domain_PermissionsDefine.namespace]: PermissionsAccessLevel_ReadSelf.name,
+		// 		[Domain_PermissionsAssign.namespace]: PermissionsAccessLevel_ReadSelf.name,
+		// 	}
+		// },
 	]
 };
 export type ApiModule = { dbModule: { dbDef: { dbName: string } }, apiDef: { [name: string]: { [name: string]: { path: string } } } }
@@ -118,7 +118,6 @@ class ModuleBE_Permissions_Class
 					permissionMap[domainId] = levelMap[domainId];
 			});
 		});
-
 
 
 		//All domains that are not defined for the user, are NoAccess by default.
