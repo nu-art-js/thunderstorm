@@ -1,4 +1,15 @@
-import {_keys, arrayToMap, Dispatcher, filterInstances, flatArray, Module, MUSTNeverHappenException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	arrayToMap,
+	Dispatcher,
+	filterInstances,
+	flatArray,
+	Module,
+	MUSTNeverHappenException,
+	PreDB,
+	reduceToMap,
+	TypedMap
+} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
@@ -25,6 +36,7 @@ import {
 } from '../permissions';
 import {
 	DefaultAccessLevel_Admin,
+	DefaultAccessLevel_NoAccess,
 	DefaultAccessLevel_Read,
 	DefaultAccessLevel_Write,
 	defaultLevelsRouteLookupWords,
@@ -38,6 +50,7 @@ export interface CollectPermissionsProjects {
 
 const dispatcher_collectPermissionsProjects = new Dispatcher<CollectPermissionsProjects, '__collectPermissionsProjects'>('__collectPermissionsProjects');
 const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
+export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
 const PermissionProject_Permissions: DefaultDef_Project = {
 	_id: 'f60db83936835e0be33e89caa365f0c3',
@@ -59,6 +72,14 @@ const PermissionProject_Permissions: DefaultDef_Project = {
 			accessLevels: {
 				[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
 				[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Write.name,
+			}
+		},
+		{
+			_id: '60a417683e4016f4d933fee88953f0d5',
+			name: 'Permissions Read Self',
+			accessLevels: {
+				[Domain_PermissionsDefine.namespace]: PermissionsAccessLevel_ReadSelf.name,
+				[Domain_PermissionsAssign.namespace]: PermissionsAccessLevel_ReadSelf.name,
 			}
 		},
 	]
@@ -98,6 +119,14 @@ class ModuleBE_Permissions_Class
 			});
 		});
 
+
+
+		//All domains that are not defined for the user, are NoAccess by default.
+		const allDomains = await ModuleBE_PermissionDomain.query.where({});
+		allDomains.forEach(domain => {
+			if (!permissionMap[domain._id])
+				permissionMap[domain._id] = DefaultAccessLevel_NoAccess.value; //"fill in the gaps" - All domains that are not defined for the user, are NoAccess by default.
+		});
 		return {key: 'permissions', value: permissionMap};
 	}
 

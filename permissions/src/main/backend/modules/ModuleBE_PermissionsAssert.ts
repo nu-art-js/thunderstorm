@@ -18,6 +18,7 @@
  */
 
 import {
+	__stringify,
 	_keys,
 	ApiException,
 	arrayToMap,
@@ -29,6 +30,7 @@ import {
 	ImplementationMissingException,
 	Module,
 	StringMap,
+	TypedKeyValue,
 	TypedMap
 } from '@nu-art/ts-common';
 import {
@@ -41,7 +43,7 @@ import {
 	Storm
 } from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {
 	ApiDef_PermissionsAssert,
 	Base_AccessLevel,
@@ -74,9 +76,11 @@ type Config = {
  * [DomainId uniqueString]: accessLevel's numerical value
  */
 export const MemKey_UserPermissions = new MemKey<TypedMap<number>>('user-permissions');
+export type SessionData_StrictMode = TypedKeyValue<'strictMode', boolean>
 
 export class ModuleBE_PermissionsAssert_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements CollectSessionData<SessionData_StrictMode> {
 
 	private projectId!: string;
 	_keys: TypedMap<boolean> = {};
@@ -142,6 +146,11 @@ export class ModuleBE_PermissionsAssert_Class
 	// 	this.setMinLevel(LogLevel.Debug);
 	// }
 
+	async __collectSessionData(accountId: string): Promise<SessionData_StrictMode> {
+		return {key: 'strictMode', value: this.isStrictMode()};
+	}
+
+
 	init() {
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
@@ -169,11 +178,11 @@ export class ModuleBE_PermissionsAssert_Class
 			const _1 = _allApis.filter(_api => paths.includes(_api.path));
 			const _2 = await batchActionParallel(filterInstances(paths), 10, chunk => ModuleBE_PermissionApi.query.where({path: {$in: chunk}}));
 			this.logInfoBold('-----------------------------------------------');
-			this.logError(`query all(${_allApis.length}):`, _allApis.map(_api => _api.path));
-			this.logError(`query all filtered(${_1.length}):`, _1.map(_api => _api.path));
+			this.logError(`query all sync(total before filtering on sync:${_allApis.length}):`, _allApis.filter(_api => _api.path.includes('sync')).map((_api, i) => `${i}: ${__stringify(_api.path)}`));
+			this.logError(`query all filtered(${_1.length}):`, _1.map((_api, i) => `${i}: ${__stringify(_api.path)}`));
 			this.logInfoBold('-----------------------------------------------');
 			this.logInfoBold('-----------------------------------------------');
-			this.logError(`batchActionParallel(${_2.length}):`, _2.map(_api => _api.path));
+			this.logError(`batchActionParallel(${_2.length}):`, _2.map((_api, i) => `${i}: ${_api.path}`));
 			this.logInfoBold('-----------------------------------------------');
 			const mapPathToDBApi: TypedMap<DB_PermissionApi> = arrayToMap(_1, api => api.path);
 
