@@ -36,7 +36,7 @@ import {
 	DB_BaseObject,
 	DB_Object,
 	DBDef,
-	Default_UniqueKey,
+	Default_UniqueKey, exists,
 	IndexKeys,
 	merge,
 	PreDB,
@@ -209,13 +209,16 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 
 	__syncIfNeeded = async (syncData: DBSyncData[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
-		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.IDB.getLastSync()) {
+		if (!exists(mySyncData))
+			return;
+
+		if (mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.IDB.getLastSync()) {
 			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.IDB.getLastSync()}`);
 			await this.IDB.clear();
 			this.cache.clear();
 		}
 
-		if (mySyncData && mySyncData.lastUpdated <= this.IDB.getLastSync()) {
+		if (mySyncData.lastUpdated <= this.IDB.getLastSync()) {
 			if (!this.cache.loaded)
 				await this.cache.load();
 

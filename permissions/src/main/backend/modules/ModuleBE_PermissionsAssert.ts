@@ -18,8 +18,10 @@
  */
 
 import {
+	__stringify,
 	_keys,
 	ApiException,
+	arrayToMap,
 	BadImplementationException,
 	batchActionParallel,
 	exists,
@@ -28,12 +30,27 @@ import {
 	ImplementationMissingException,
 	Module,
 	StringMap,
+	TypedKeyValue,
 	TypedMap
 } from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
+import {
+	addRoutes,
+	createBodyServerApi,
+	ModuleBE_BaseDBV2,
+	ModuleBE_BaseDBV3,
+	ModuleBE_v2_SyncManager,
+	ServerApi_Middleware,
+	Storm
+} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {ApiDef_PermissionsAssert, Base_AccessLevel, DB_PermissionAccessLevel, Request_AssertApiForUser} from '../../shared';
+import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {
+	ApiDef_PermissionsAssert,
+	Base_AccessLevel,
+	DB_PermissionAccessLevel,
+	DB_PermissionApi,
+	Request_AssertApiForUser
+} from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {
@@ -45,6 +62,7 @@ import {
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {SessionKey_Permissions_BE} from '../consts';
 import {PermissionKey_BE} from '../PermissionKey_BE';
+import {ApiModule} from './ModuleBE_Permissions';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -58,9 +76,11 @@ type Config = {
  * [DomainId uniqueString]: accessLevel's numerical value
  */
 export const MemKey_UserPermissions = new MemKey<TypedMap<number>>('user-permissions');
+export type SessionData_StrictMode = TypedKeyValue<'strictMode', boolean>
 
 export class ModuleBE_PermissionsAssert_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements CollectSessionData<SessionData_StrictMode> {
 
 	private projectId!: string;
 	_keys: TypedMap<boolean> = {};
@@ -126,11 +146,78 @@ export class ModuleBE_PermissionsAssert_Class
 	// 	this.setMinLevel(LogLevel.Debug);
 	// }
 
+	async __collectSessionData(accountId: string): Promise<SessionData_StrictMode> {
+		return {key: 'strictMode', value: this.isStrictMode()};
+	}
+
+
 	init() {
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
+		ModuleBE_v2_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
+			// return dbModules;
+			//Filter out any module we don't have permission to sync
+			const userPermissions = MemKey_UserPermissions.get();
 
+			const mapDbNameToApiModules = arrayToMap(Storm.getInstance()
+				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+
+			const paths = dbModules.map(module => {
+				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbName];
+				if (!mapDbNameToApiModule) {
+					this.logWarning(`no module found for ${module.dbDef.dbName}`);
+					return undefined;
+				}
+
+				return mapDbNameToApiModule.apiDef['v1']['sync'].path;
+			});
+			this.logWarning(`Paths(${paths.length}):`, paths);
+			const _allApis = await ModuleBE_PermissionApi.query.where({});
+
+			const _1 = _allApis.filter(_api => paths.includes(_api.path));
+			const _2 = await batchActionParallel(filterInstances(paths), 10, chunk => ModuleBE_PermissionApi.query.where({path: {$in: chunk}}));
+			this.logInfoBold('-----------------------------------------------');
+			this.logError(`query all sync(total before filtering on sync:${_allApis.length}):`, _allApis.filter(_api => _api.path.includes('sync')).map((_api, i) => `${i}: ${__stringify(_api.path)}`));
+			this.logError(`query all filtered(${_1.length}):`, _1.map((_api, i) => `${i}: ${__stringify(_api.path)}`));
+			this.logInfoBold('-----------------------------------------------');
+			this.logInfoBold('-----------------------------------------------');
+			this.logError(`batchActionParallel(${_2.length}):`, _2.map((_api, i) => `${i}: ${_api.path}`));
+			this.logInfoBold('-----------------------------------------------');
+			const mapPathToDBApi: TypedMap<DB_PermissionApi> = arrayToMap(_1, api => api.path);
+
+			return dbModules.filter((dbModule, index) => {
+				const path = paths[index];
+				if (!path) {
+					this.logWarningBold('no path');
+					return false;
+				}
+
+				const dbApi = mapPathToDBApi[path];
+				if (!dbApi) {
+					this.logWarningBold(`no dbApi ${path}`);
+					return !ModuleBE_PermissionsAssert.isStrictMode();
+				}
+
+				const accessLevels = dbApi._accessLevels;
+				return _keys(accessLevels!).reduce((hasAccess, domainId) => {
+					if (!hasAccess)
+						return false;
+
+					const userDomainAccessValue = userPermissions[domainId];
+					const apiRequiredAccessValue = accessLevels![domainId];
+					if (!userDomainAccessValue)
+						return false;
+
+					if (!exists(userDomainAccessValue) || userDomainAccessValue < apiRequiredAccessValue) {
+						this.logErrorBold(`${(userDomainAccessValue ?? 0)} < ${apiRequiredAccessValue} === ${(userDomainAccessValue ?? 0) < apiRequiredAccessValue}`);
+						return false;
+					}
+
+					return hasAccess;
+				}, true);
+			});
+		});
 	}
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {
@@ -252,6 +339,10 @@ export class ModuleBE_PermissionsAssert_Class
 
 			this._keys[key] = true;
 		});
+	}
+
+	private isStrictMode() {
+		return !!this.config.strictMode;
 	}
 }
 
