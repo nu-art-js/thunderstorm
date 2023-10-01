@@ -23,8 +23,9 @@ import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
 import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
-import {SessionKey_Permissions_FE} from '../consts';
+import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
+import {DefaultAccessLevel_Admin} from '../../shared/consts';
 
 
 export type PermissionsModuleFEConfig = {
@@ -81,7 +82,7 @@ export class ModuleFE_PermissionsAssert_Class
 	getAccessLevel(key: PermissionKey_FE<string>): AccessLevel {
 		const keyData = key.get();
 		if (!exists(keyData))
-			return AccessLevel.Undefined;
+			return SessionKey_StrictMode_FE.get() ? AccessLevel.Undefined : AccessLevel.HasAccess;
 
 		if (keyData.accessLevelIds.length === 0)
 			return AccessLevel.NoAccessLevelsDefined;
@@ -89,7 +90,7 @@ export class ModuleFE_PermissionsAssert_Class
 		const userAccessLevels = SessionKey_Permissions_FE.get();
 
 		const canAccess = _keys(keyData._accessLevels).reduce((hasAccess, domainId) => {
-			return hasAccess && (userAccessLevels[domainId] || -1) >= keyData._accessLevels[domainId];
+			return hasAccess && (userAccessLevels[domainId] || (SessionKey_StrictMode_FE.get() ? -1 : DefaultAccessLevel_Admin.value)) >= keyData._accessLevels[domainId];
 		}, true);
 		return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
 	}
