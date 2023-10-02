@@ -237,6 +237,7 @@ export class ModuleBE_AccountDB_Class
 		login: async (credentials: Request_LoginAccount): Promise<Response_Auth> => {
 			this.impl.fixEmail(credentials);
 
+
 			return this.runTransaction(async transaction => {
 				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email}, transaction);
 				await this.password.assertPasswordMatch(dbAccount, credentials.password);
