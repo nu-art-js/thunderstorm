@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {DB_Object, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {DB_Object, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {BaseComponent} from '../core';
 import {OnSyncStatusChangedListener} from '../core/db-api-gen/types';
 import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB';
@@ -72,6 +72,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	extends BaseComponent<Props, State>
 	implements OnSyncStatusChangedListener<DB_Object> {
 
+	static logLevel = LogLevel.Info;
 	// static defaultProps = {
 	// 	modules: []
 	// };
@@ -96,6 +97,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	constructor(p: Props) {
 		super(p);
 
+		this.logger.setMinLevel(SmartComponent.logLevel);
 		const _render = this.render?.bind(this);
 		this.render = () => {
 

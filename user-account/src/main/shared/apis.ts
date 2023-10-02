@@ -36,7 +36,7 @@ export type Request_RegisterAccount = BaseAccountWithType & PasswordWithCheck
 export type RequestBody_RegisterAccount = PasswordWithCheck & AccountEmail
 export type Request_CreateAccount = BaseAccountWithType & Partial<PasswordWithCheck>
 export type ResponseBody_ChangePassword = Response_Auth
-export type RequestBody_SetPassword = AccountEmail & PasswordWithCheck
+export type RequestBody_SetPassword = PasswordWithCheck
 export type RequestBody_Login = AccountEmail & AccountPassword
 
 export type RequestBody_ChangePassword = PasswordWithCheck & {
@@ -146,14 +146,13 @@ export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
 	}
 };
 
-export type PostAssertBody = {
-	SAMLResponse: string
+export type RequestBody_AssertSAML = {
 	RelayState: string
 };
 
 export type ApiStruct_SAML_BE = {
 	vv1: TypedApi_LoginSaml & {
-		assertSAML: BodyApi<void, PostAssertBody>
+		assertSAML: BodyApi<void, RequestBody_AssertSAML>
 	}
 }
 

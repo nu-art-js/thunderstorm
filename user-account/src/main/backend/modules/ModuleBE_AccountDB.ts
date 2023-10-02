@@ -13,26 +13,27 @@ import {
 } from '@nu-art/ts-common';
 import {CollectSessionData, ModuleBE_SessionDB} from './ModuleBE_SessionDB';
 import {firestore} from 'firebase-admin';
-import {QueryParams} from '@nu-art/thunderstorm';
 import {addRoutes, createBodyServerApi, createQueryServerApi, DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
 import {Header_SessionId, MemKey_AccountEmail, MemKey_AccountId, SessionKey_Account_BE, SessionKey_Session_BE} from '../core/consts';
 import {
-	_SessionKey_Account, AccountEmail,
+	_SessionKey_Account,
+	AccountEmail,
 	AccountType,
-	ApiDefBE_Account, BaseAccountWithType,
+	ApiDefBE_Account,
+	BaseAccountWithType,
 	DB_Account,
 	DBDef_Accounts,
-	DBProto_AccountType, PasswordWithCheck,
-	Request_CreateAccount,
+	DBProto_AccountType,
+	PasswordWithCheck,
 	Request_LoginAccount,
 	Request_RegisterAccount,
 	RequestBody_ChangePassword,
-	RequestBody_CreateToken, RequestBody_Login,
+	RequestBody_CreateToken,
+	RequestBody_Login,
 	RequestBody_RegisterAccount,
-	RequestBody_SetPassword,
 	Response_Auth,
 	SafeDB_Account,
 	UI_Account
@@ -111,7 +112,7 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDefBE_Account.vv1.registerAccount, this.account.register),
 			createBodyServerApi(ApiDefBE_Account.vv1.changePassword, this.account.changePassword),
 			createBodyServerApi(ApiDefBE_Account.vv1.login, this.account.login),
-			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, this.account.create),
+			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, this.account.createWithPassword),
 			createQueryServerApi(ApiDefBE_Account.vv1.logout, this.account.logout),
 			createBodyServerApi(ApiDefBE_Account.vv1.createToken, this.createToken),
 			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.account.setPassword)
@@ -130,7 +131,7 @@ export class ModuleBE_AccountDB_Class
 		fixEmail: (objectWithEmail: { email: string }) => {
 			objectWithEmail.email = objectWithEmail.email.toLowerCase();
 		},
-		assertPassword: (accountToAssert: RequestBody_SetPassword) => {
+		assertPassword: (accountToAssert: RequestBody_RegisterAccount) => {
 			this.password.assertPasswordExistence(accountToAssert.email, accountToAssert.password, accountToAssert.passwordCheck);
 			this.password.assertPasswordRules(accountToAssert.password!);
 		},
@@ -224,20 +225,22 @@ export class ModuleBE_AccountDB_Class
 			this.impl.fixEmail(accountWithPassword);
 			this.impl.assertPassword(accountWithPassword);
 			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
-			return this.runTransaction(async transaction => {
+			const dbSafeAccount = await this.runTransaction(async transaction => {
 				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
 				await this.impl.setAccountMemKeys(dbSafeAccount);
 				await this.impl.onAccountCreated(dbSafeAccount, transaction);
-				const encodedSessionData = await this.impl.createSession(dbSafeAccount._id, transaction);
-				return {sessionId: encodedSessionData, ...dbSafeAccount};
+				return dbSafeAccount;
 			});
+			const encodedSessionData = await this.account.login({email: accountWithPassword.email, password: accountWithPassword.password});
+			return {sessionId: encodedSessionData.sessionId, ...dbSafeAccount};
 		},
 		login: async (credentials: Request_LoginAccount): Promise<Response_Auth> => {
 			this.impl.fixEmail(credentials);
 
 			return this.runTransaction(async transaction => {
-				const safeAccount = await this.impl.querySafeAccount(credentials, transaction);
-				await this.password.assertPasswordMatch(safeAccount, credentials.password);
+				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email}, transaction);
+				await this.password.assertPasswordMatch(dbAccount, credentials.password);
+				const safeAccount = makeAccountSafe(dbAccount);
 				const encodedSessionData = await this.impl.createSession(safeAccount._id, transaction);
 
 				MemKey_AccountId.set(safeAccount._id);
@@ -254,6 +257,7 @@ export class ModuleBE_AccountDB_Class
 			return this.runTransaction(async transaction => {
 				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
 				await this.impl.onAccountCreated(dbSafeAccount, transaction);
+				return dbSafeAccount;
 			});
 		},
 		createWithoutPassword: async (accountWithoutPassword: BaseAccountWithType) => {
@@ -302,14 +306,7 @@ export class ModuleBE_AccountDB_Class
 				};
 			});
 		},
-		create: async (request: Request_RegisterAccount, transaction?: Transaction) => {
-			if (request.type === 'user' && !request.password)
-				throw new BadImplementationException('Trying to create a user from type user without password provided');
-
-			request.passwordCheck = request.password;
-			return await this.getOrCreateV3(this.composeUIAccountWithPassword(request), true, transaction);
-		},
-		logout: async (queryParams: QueryParams) => {
+		logout: async () => {
 			const sessionId = Header_SessionId.get();
 			if (!sessionId)
 				throw new ApiException(404, 'Missing sessionId');
@@ -339,22 +336,6 @@ export class ModuleBE_AccountDB_Class
 				throw new ApiException(401, 'Wrong username or password.');
 		}
 	};
-
-	private composeUIAccountWithPassword(body: Request_CreateAccount) {
-		//Email always lowerCase
-		const email = body.email.toLowerCase();
-
-		let account = {email, type: body.type} as UI_Account;
-
-		// TODO: this logic seems faulty.. need to re-done
-		if (body.password || body.passwordCheck) {
-			this.password.assertPasswordExistence(email, body.password, body.passwordCheck);
-			this.password.assertPasswordRules(body.password!);
-
-			account = this.impl.spiceAccount(body as Request_RegisterAccount);
-		}
-		return account;
-	}
 
 	private createToken = async ({accountId, ttl}: RequestBody_CreateToken) => {
 		const account = await this.query.unique(accountId);
