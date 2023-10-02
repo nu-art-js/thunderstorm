@@ -3,7 +3,7 @@ import {
 	ApiException,
 	BadImplementationException,
 	cloneObj,
-	compare,
+	compare, currentTimeMillis,
 	dispatch_onApplicationException,
 	Dispatcher,
 	DontCallthisException,
@@ -237,19 +237,28 @@ export class ModuleBE_AccountDB_Class
 		login: async (credentials: Request_LoginAccount): Promise<Response_Auth> => {
 			this.impl.fixEmail(credentials);
 
-
 			return this.runTransaction(async transaction => {
+				await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '1', timestamp: currentTimeMillis()});
 				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email}, transaction);
+
+				await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '2', timestamp: currentTimeMillis()});
 				await this.password.assertPasswordMatch(dbAccount, credentials.password);
+
+				await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '3', timestamp: currentTimeMillis()});
 				const safeAccount = makeAccountSafe(dbAccount);
+
+				await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '4', timestamp: currentTimeMillis()});
 				const encodedSessionData = await this.impl.createSession(safeAccount._id, transaction);
 
+				await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '5', timestamp: currentTimeMillis()});
 				MemKey_AccountId.set(safeAccount._id);
 
+				await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '6', timestamp: currentTimeMillis()});
 				await dispatch_onUserLogin.dispatchModuleAsync(safeAccount, transaction!);
+
+				await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '7', timestamp: currentTimeMillis()});
 				return {sessionId: encodedSessionData, ...safeAccount};
 			});
-
 		},
 		createWithPassword: async (accountWithPassword: Request_RegisterAccount) => {
 			this.impl.fixEmail(accountWithPassword);
