@@ -40,6 +40,8 @@ import {OnModuleCleanupV2} from '../backup/ModuleBE_v2_BackupScheduler';
 import {createQueryServerApi} from '../../core/typed-api';
 import {ApiDef_SyncManagerV2, DBSyncData} from '../../../shared';
 import {addRoutes} from '../ModuleBE_APIs';
+import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
+import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
 import Transaction = firestore.Transaction;
 
 
@@ -71,7 +73,7 @@ export class ModuleBE_v2_SyncManager_Class
 	public collection!: FirestoreCollectionV2<DeletedDBItem>;
 
 	private database!: DatabaseWrapperBE;
-	private dbModules!: any;
+	private dbModules!: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[];
 	private syncData!: FirebaseRef<Type_SyncData>;
 	private deletedCount!: FirebaseRef<number>;
 	public checkSyncApi;
@@ -166,8 +168,12 @@ export class ModuleBE_v2_SyncManager_Class
 
 	public fetchDBSyncData = async (_: undefined) => {
 		const fbSyncData = await this.syncData.get({});
+
+		const modulesToIterate = await this.filterModules(this.dbModules);
+		this.logWarning(`Filtered Modules to sync on(${modulesToIterate.length}):`, modulesToIterate.map(mod => mod.dbDef.dbName));
 		// @ts-ignore
-		const missingModules = this.dbModules.filter(dbModule => !fbSyncData[dbModule.getCollectionName()]);
+		const missingModules = modulesToIterate.filter(dbModule => !fbSyncData[dbModule.getCollectionName()]);
+
 		if (missingModules.length) {
 			// @ts-ignore
 			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.getCollectionName()));
@@ -181,14 +187,19 @@ export class ModuleBE_v2_SyncManager_Class
 					return [];
 				}
 			})));
+
 			newestItems.forEach((item, index) => fbSyncData[missingModules[index].getCollectionName()] = {lastUpdated: item[0]?.__updated || 0});
 			await this.syncData.set(fbSyncData);
 		}
 
 		const syncData = _keys(fbSyncData).reduce<DBSyncData[]>((response, dbName) => {
+			if (!modulesToIterate.find(module => module.dbDef.dbName === dbName))
+				return response;
+
 			response.push({name: String(dbName), ...fbSyncData[dbName]});
 			return response;
 		}, []);
+
 		return {
 			syncData
 		};
@@ -201,6 +212,15 @@ export class ModuleBE_v2_SyncManager_Class
 	async setOldestDeleted(collectionName: string, oldestDeleted: number) {
 		return this.database.patch<LastUpdated>(`/state/${this.getName()}/syncData/${collectionName}`, {oldestDeleted});
 	}
+
+	setModuleFilter = (filter: (modules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => Promise<(ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]>) => {
+		const previousFilter = this.filterModules;
+		this.filterModules = async modules => filter(await previousFilter(modules));
+	};
+
+	private filterModules = async (modules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
+		return modules;
+	};
 }
 
 export const DBDef_DeletedItems: DBDef<DeletedDBItem> = {

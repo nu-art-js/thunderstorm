@@ -9,6 +9,7 @@ import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
 
 export type createInput = {
+	withPassword: boolean,
 	createCredentials: PartialProperties<Request_RegisterAccount, 'password' | 'passwordCheck'>
 }
 
@@ -18,6 +19,7 @@ const TestCases_FB_Create: CreateAccountTest['testcases'] = [
 	{
 		description: 'Create With password',
 		input: {
+			withPassword: true,
 			createCredentials: {email: 'test@email.com', password: '1234', passwordCheck: '1234', type: 'user'},
 		},
 		result: true
@@ -25,6 +27,7 @@ const TestCases_FB_Create: CreateAccountTest['testcases'] = [
 	{
 		description: 'Without password',
 		input: {
+			withPassword: false,
 			createCredentials: {email: 'test@email.com', type: 'user'},
 		},
 		result: true
@@ -32,6 +35,7 @@ const TestCases_FB_Create: CreateAccountTest['testcases'] = [
 	{
 		description: 'Password without passwordCheck',
 		input: {
+			withPassword: true,
 			createCredentials: {email: 'test@email.com', password: '1234', type: 'user'},
 		},
 		result: false
@@ -39,6 +43,7 @@ const TestCases_FB_Create: CreateAccountTest['testcases'] = [
 	{
 		description: 'passwordCheck without password',
 		input: {
+			withPassword: true,
 			createCredentials: {email: 'test@email.com', passwordCheck: '1234', type: 'user'},
 		},
 		result: false
@@ -69,7 +74,7 @@ export const TestSuite_Accounts_Create: CreateAccountTest = {
 		try {
 			await new MemStorage().init(async () => {
 				MemKey_AccountEmail.set('test');
-				await ModuleBE_AccountDB.account.create(testCase.input.createCredentials as Request_RegisterAccount);
+				await ModuleBE_AccountDB.account[testCase.input.withPassword ? 'createWithPassword' : 'createWithoutPassword'](testCase.input.createCredentials as Request_RegisterAccount);
 			});
 
 			result = true;
