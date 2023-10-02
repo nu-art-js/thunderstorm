@@ -1,5 +1,9 @@
 import {ComponentSync} from '../../core/ComponentSync';
-import {DB_Notification, ModuleFE_Notifications, NotificationListener} from '../../component-modules/ModuleFE_Notifications';
+import {
+	DB_Notification,
+	ModuleFE_Notifications,
+	NotificationListener
+} from '../../component-modules/ModuleFE_Notifications';
 import * as React from 'react';
 import {LL_H_C, LL_V_L} from '../Layouts';
 import {formatTimestamp} from '@nu-art/ts-common';
@@ -98,7 +102,7 @@ export class TS_Notifications
 
 	private renderNotification(notification: DB_Notification) {
 		return <LL_V_L className={`ts-notification ts-notification__${notification.status}`} key={notification._id}
-									 onClick={e => this.onNotificationClick(e, notification)}>
+					   onClick={e => this.onNotificationClick(e, notification)}>
 			<LL_H_C className={'ts-notification__header'}>
 				<div className={'ts-notification__title'}>{notification.title}</div>
 				<span className={'ts-notification__close'} onClick={(e) => {
@@ -113,7 +117,8 @@ export class TS_Notifications
 				<div className={'ts-notification__message'}>{notification.message}</div>
 			</LL_V_L>
 			<LL_H_C className={'ts-notification__footer'}>
-				<div className={'ts-notification__timestamp'}>{formatTimestamp('DD/M - hh:mm A', notification.__created)}</div>
+				<div
+					className={'ts-notification__timestamp'}>{formatTimestamp('DD/M - hh:mm A', notification.__created)}</div>
 			</LL_H_C>
 		</LL_V_L>;
 	}
@@ -126,9 +131,12 @@ export class TS_Notifications
 
 	render() {
 		const className = _className('ts-notification-container', this.state.notifications.length > 1 ? 'list' : undefined);
-		return <TS_ComponentTransition trigger={this.state.showNotifications} transitionTimeout={this.transitionTimeout}>
-			<div className={'ts-notification-overlay'} onClick={e => this.onClickToClose(e, 'click')} onContextMenu={e => this.onClickToClose(e, 'contextmenu')}>
-				<LL_V_L className={className} onClick={e => this.onClickToClose(e, 'click')} onContextMenu={e => this.onClickToClose(e, 'contextmenu')}>
+		return <TS_ComponentTransition trigger={this.state.showNotifications}
+									   transitionTimeout={this.transitionTimeout}>
+			<div className={'ts-notification-overlay'} onClick={e => this.onClickToClose(e, 'click')}
+				 onContextMenu={e => this.onClickToClose(e, 'contextmenu')}>
+				<LL_V_L className={className} onClick={e => this.onClickToClose(e, 'click')}
+						onContextMenu={e => this.onClickToClose(e, 'contextmenu')}>
 					{this.renderNotifications()}
 				</LL_V_L>
 			</div>
