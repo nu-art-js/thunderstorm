@@ -40,7 +40,8 @@ export type DB_Account = DB_Object & AuditableV2 & {
 }
 
 export type SessionData_HasPassword = { hasPassword: boolean };
-export type _SessionKey_Account = TypedKeyValue<'account', UI_Account & DB_BaseObject & SessionData_HasPassword>
+export type UI_SessionAccount = UI_Account & DB_BaseObject & SessionData_HasPassword;
+export type _SessionKey_Account = TypedKeyValue<'account', UI_SessionAccount>
 
 type VersionsAccount = VersionsDeclaration<DB_Account, ['1.0.0'], [DB_Account]>;
 type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'saltedPassword';
