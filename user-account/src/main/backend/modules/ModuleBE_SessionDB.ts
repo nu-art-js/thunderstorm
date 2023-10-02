@@ -98,7 +98,7 @@ export class ModuleBE_SessionDB_Class
 	};
 
 	getOrCreateSessionV3 = async (accountId: string, transaction?: Transaction): Promise<string> => {
-		const session = (await this.query.custom({where: {accountId}}, transaction))[0];
+		let session: UI_Session = (await this.query.custom({where: {accountId}}, transaction))[0];
 		if (session && !this.TTLExpired(session)) {
 			const sessionData = this.decodeSessionData(session.sessionId);
 			MemKey_SessionData.set(sessionData);
@@ -106,13 +106,21 @@ export class ModuleBE_SessionDB_Class
 		}
 
 		const sessionData = await this.createSessionV3(accountId);
+		session = {
+			accountId: accountId,
+			sessionId: sessionData.encoded,
+			timestamp: currentTimeMillis()
+		};
+		await this.set.item(session, transaction);
+
 		MemKey_SessionData.set(sessionData.raw);
 
-		return sessionData.encoded;
+		return session.sessionId;
 	};
 
-	async createSessionV3(accountId: UniqueId, manipulate?: (sessionData: TS_Object) => TS_Object) {
-		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(accountId));
+	private async createSessionV3(accountId: UniqueId, manipulate?: (sessionData: TS_Object) => TS_Object) {
+		const collectedData:TypedKeyValue<any, any>[] =[]
+			// (await dispatch_CollectSessionData.dispatchModuleAsync(accountId));
 
 		let sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
 			sessionData[moduleSessionData.key] = moduleSessionData.value;
@@ -121,14 +129,6 @@ export class ModuleBE_SessionDB_Class
 
 		sessionData = manipulate?.(sessionData) ?? sessionData;
 		const encodedSessionData = await this.encodeSessionData(sessionData);
-
-		const session = {
-			accountId: accountId,
-			sessionId: encodedSessionData,
-			timestamp: currentTimeMillis()
-		};
-
-		await this.set.item(session);
 		return {encoded: encodedSessionData, raw: sessionData};
 	}
 
