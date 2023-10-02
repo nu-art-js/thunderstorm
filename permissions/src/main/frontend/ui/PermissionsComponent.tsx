@@ -55,15 +55,11 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 
 	render() {
 		const permitted = this.props.permissionKey.getAccessLevel();
-		if (permitted === AccessLevel.Undefined) {
-			this.logError(`${this.props.permissionKey.key} access undefined`);
+		if (permitted === AccessLevel.Undefined)
 			return this.renderWaitingOnPermissions();
-		}
-		if (permitted === AccessLevel.HasAccess) {
-			this.logError(`${this.props.permissionKey.key} access granted`);
+
+		if (permitted === AccessLevel.HasAccess)
 			return this.renderPermitted();
-		}
-		this.logError(`${this.props.permissionKey.key} access denied`);
 
 		return this.renderFallback();
 	}
