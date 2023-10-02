@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_PermissionsAccessLevel} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {AccessLevel, OnPermissionsChanged} from '../modules/ModuleFE_PermissionsAssert';
 
@@ -16,10 +15,6 @@ export type State_PermissionComponent = State_SmartComponent
 export class PermissionsComponent<P extends Props_PermissionComponent = Props_PermissionComponent, S extends State_PermissionComponent = State_PermissionComponent>
 	extends SmartComponent<P>
 	implements OnPermissionsChanged {
-
-	static defaultProps = {
-		modules: [ModuleFE_PermissionsAccessLevel]
-	};
 
 	shouldComponentUpdate(nextProps: Readonly<Props_SmartComponent & P>, nextState: Readonly<State_SmartComponent>, nextContext: any): boolean {
 		return true;
@@ -56,15 +51,11 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 
 	render() {
 		const permitted = this.props.permissionKey.getAccessLevel();
-		if (permitted === AccessLevel.Undefined) {
-			this.logError(`${this.props.permissionKey.key} access undefined`);
+		if (permitted === AccessLevel.Undefined)
 			return this.renderWaitingOnPermissions();
-		}
-		if (permitted === AccessLevel.HasAccess) {
-			this.logError(`${this.props.permissionKey.key} access granted`);
+
+		if (permitted === AccessLevel.HasAccess)
 			return this.renderPermitted();
-		}
-		this.logError(`${this.props.permissionKey.key} access denied`);
 
 		return this.renderFallback();
 	}
