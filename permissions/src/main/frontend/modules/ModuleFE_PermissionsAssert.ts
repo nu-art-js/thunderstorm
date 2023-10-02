@@ -25,7 +25,6 @@ import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
-import {DefaultAccessLevel_Admin} from '../../shared/consts';
 
 
 export type PermissionsModuleFEConfig = {
@@ -82,7 +81,7 @@ export class ModuleFE_PermissionsAssert_Class
 		const userAccessLevels = SessionKey_Permissions_FE.get();
 		try {
 			const canAccess = _keys(keyData._accessLevels).reduce((hasAccess, domainId) => {
-				return hasAccess && (userAccessLevels[domainId] || (SessionKey_StrictMode_FE.get() ? -1 : DefaultAccessLevel_Admin.value)) >= keyData._accessLevels[domainId];
+				return hasAccess && userAccessLevels[domainId]  >= keyData._accessLevels[domainId];
 			}, true);
 			return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
 		} catch (e) {

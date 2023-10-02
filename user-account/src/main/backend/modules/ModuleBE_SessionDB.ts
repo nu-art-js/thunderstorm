@@ -119,8 +119,8 @@ export class ModuleBE_SessionDB_Class
 	};
 
 	private async createSessionV3(accountId: UniqueId, manipulate?: (sessionData: TS_Object) => TS_Object) {
-		const collectedData:TypedKeyValue<any, any>[] =[]
-			// (await dispatch_CollectSessionData.dispatchModuleAsync(accountId));
+		// const collectedData: TypedKeyValue<any, any>[] = [] as TypedKeyValue<any, any>[];
+		const collectedData: TypedKeyValue<any, any>[] = (await dispatch_CollectSessionData.dispatchModuleAsync(accountId));
 
 		let sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
 			sessionData[moduleSessionData.key] = moduleSessionData.value;
