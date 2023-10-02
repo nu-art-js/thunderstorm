@@ -25,7 +25,6 @@ import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
-import {DefaultAccessLevel_Admin} from '../../shared/consts';
 
 
 export type PermissionsModuleFEConfig = {
@@ -65,14 +64,6 @@ export class ModuleFE_PermissionsAssert_Class
 
 	private onProjectCreated = async () => {
 		ModuleFE_Account.logout();
-		// await Promise.all([
-		// 	ModuleFE_PermissionsProject,
-		// 	ModuleFE_PermissionsApi,
-		// 	ModuleFE_PermissionsDomain,
-		// 	ModuleFE_PermissionsAccessLevel,
-		// 	ModuleFE_PermissionsGroup,
-		// 	ModuleFE_PermissionsUser,
-		// ].map(async module => await module.v1.sync().executeSync()));
 	};
 
 	getAccessLevelByKeyString(key: string) {
@@ -88,9 +79,8 @@ export class ModuleFE_PermissionsAssert_Class
 			return AccessLevel.NoAccessLevelsDefined;
 
 		const userAccessLevels = SessionKey_Permissions_FE.get();
-
 		const canAccess = _keys(keyData._accessLevels).reduce((hasAccess, domainId) => {
-			return hasAccess && (userAccessLevels[domainId] || (SessionKey_StrictMode_FE.get() ? -1 : DefaultAccessLevel_Admin.value)) >= keyData._accessLevels[domainId];
+			return hasAccess && userAccessLevels[domainId] >= keyData._accessLevels[domainId];
 		}, true);
 		return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
 	}
