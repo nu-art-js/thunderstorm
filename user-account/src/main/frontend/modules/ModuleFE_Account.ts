@@ -35,6 +35,7 @@ import {
 import {StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp} from '../core/consts';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
+
 export interface OnLoginStatusUpdated {
 	__onLoginStatusUpdated: () => void;
 }
@@ -119,13 +120,17 @@ class ModuleFE_Account_Class
 
 	private processSessionStatus(sessionId: string) {
 		const now = currentTimeMillis();
-		const sessionData = this.decode(sessionId);
-		if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
-			return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
+		try {
+			const sessionData = this.decode(sessionId);
+			if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
+				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
-		this.accountId = sessionData.account._id;
-		this.sessionData = sessionData;
-		return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+			this.accountId = sessionData.account._id;
+			this.sessionData = sessionData;
+			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+		} catch (e: any) {
+			return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+		}
 	}
 
 	protected setLoggedStatus = (newStatus: LoggedStatus) => {

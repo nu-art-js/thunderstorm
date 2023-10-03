@@ -3,10 +3,11 @@ import {
 	ApiException,
 	BadImplementationException,
 	cloneObj,
-	compare,
+	compare, currentTimeMillis,
 	dispatch_onApplicationException,
 	Dispatcher,
 	DontCallthisException,
+	exists,
 	generateHex,
 	hashPasswordWithSalt,
 	MUSTNeverHappenException
@@ -21,15 +22,15 @@ import {Header_SessionId, MemKey_AccountEmail, MemKey_AccountId, SessionKey_Acco
 import {
 	_SessionKey_Account,
 	AccountEmail,
+	AccountToAssertPassword,
 	AccountType,
 	ApiDefBE_Account,
-	BaseAccountWithType,
 	DB_Account,
 	DBDef_Accounts,
 	DBProto_AccountType,
 	PasswordWithCheck,
+	Request_CreateAccount,
 	Request_LoginAccount,
-	Request_RegisterAccount,
 	RequestBody_ChangePassword,
 	RequestBody_CreateToken,
 	RequestBody_Login,
@@ -60,9 +61,9 @@ export interface OnUserLogin {
 	__onUserLogin(account: SafeDB_Account, transaction: Transaction): void;
 }
 
-export const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
+export const dispatch_onAccountLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
 
-const dispatch_onNewUserRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
+const dispatch_onAccountRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
 
 type Config = DBApiConfigV3<DBProto_AccountType> & {
 	canRegister: boolean
@@ -112,7 +113,7 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDefBE_Account.vv1.registerAccount, this.account.register),
 			createBodyServerApi(ApiDefBE_Account.vv1.changePassword, this.account.changePassword),
 			createBodyServerApi(ApiDefBE_Account.vv1.login, this.account.login),
-			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, this.account.createWithPassword),
+			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, this.account.create),
 			createQueryServerApi(ApiDefBE_Account.vv1.logout, this.account.logout),
 			createBodyServerApi(ApiDefBE_Account.vv1.createToken, this.createToken),
 			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.account.setPassword)
@@ -131,7 +132,7 @@ export class ModuleBE_AccountDB_Class
 		fixEmail: (objectWithEmail: { email: string }) => {
 			objectWithEmail.email = objectWithEmail.email.toLowerCase();
 		},
-		assertPassword: (accountToAssert: RequestBody_RegisterAccount) => {
+		assertPasswordCheck: (accountToAssert: AccountToAssertPassword) => {
 			this.password.assertPasswordExistence(accountToAssert.email, accountToAssert.password, accountToAssert.passwordCheck);
 			this.password.assertPasswordRules(accountToAssert.password!);
 		},
@@ -157,10 +158,10 @@ export class ModuleBE_AccountDB_Class
 			MemKey_AccountEmail.set(account.email);
 		},
 		onAccountCreated: async (account: SafeDB_Account, transaction: Transaction) => {
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(account, transaction);
+			await dispatch_onAccountRegistered.dispatchModuleAsync(account, transaction);
 		},
-		createSession: async (accountId: string, transaction: Transaction) => {
-			return await ModuleBE_SessionDB.getOrCreateSessionV3(accountId, transaction);
+		onAccountLogin: async (account: SafeDB_Account, transaction: Transaction) => {
+			await dispatch_onAccountLogin.dispatchModuleAsync(account, transaction);
 		},
 		queryUnsafeAccount: async (credentials: AccountEmail, transaction?: Transaction) => {
 			const firestoreQuery = FirestoreInterfaceV3.buildQuery<DBProto_AccountType>(this.collection, {where: {email: credentials.email}});
@@ -172,8 +173,9 @@ export class ModuleBE_AccountDB_Class
 
 			if (results.length !== 1)
 				if (results.length === 0) {
-					await dispatch_onApplicationException.dispatchModuleAsync(new ApiException(401, `There is no account for email '${credentials.email}'.`), this);
-					throw new ApiException(401, 'Wrong username or password.');
+					const apiException = new ApiException(401, `There is no account for email '${credentials.email}'.`);
+					await dispatch_onApplicationException.dispatchModuleAsync(apiException, this);
+					throw apiException;
 				} else if (results.length > 1) {
 					throw new MUSTNeverHappenException('Too many users');
 				}
@@ -210,7 +212,7 @@ export class ModuleBE_AccountDB_Class
 				MemKey_AccountEmail.set(uiAccount.email);
 			}
 
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount, transaction);
+			await dispatch_onAccountRegistered.dispatchModuleAsync(uiAccount, transaction);
 
 			return uiAccount;
 		});
@@ -223,7 +225,7 @@ export class ModuleBE_AccountDB_Class
 				throw new ApiException(418, 'Registration is disabled!!');
 
 			this.impl.fixEmail(accountWithPassword);
-			this.impl.assertPassword(accountWithPassword);
+			this.impl.assertPasswordCheck(accountWithPassword);
 			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
 			const dbSafeAccount = await this.runTransaction(async transaction => {
 				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
@@ -238,44 +240,50 @@ export class ModuleBE_AccountDB_Class
 			this.impl.fixEmail(credentials);
 
 			return this.runTransaction(async transaction => {
-				// await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '1', timestamp: currentTimeMillis()});
 				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email}, transaction);
-
-				// await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '2', timestamp: currentTimeMillis()});
 				await this.password.assertPasswordMatch(dbAccount, credentials.password);
-
-				// await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '3', timestamp: currentTimeMillis()});
 				const safeAccount = makeAccountSafe(dbAccount);
-
-				// await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '4', timestamp: currentTimeMillis()});
-				const encodedSessionData = await this.impl.createSession(safeAccount._id, transaction);
-
-				// await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '5', timestamp: currentTimeMillis()});
+				const session = await ModuleBE_SessionDB.session.create(safeAccount._id, transaction);
 				MemKey_AccountId.set(safeAccount._id);
-
-				// await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '6', timestamp: currentTimeMillis()});
-				await dispatch_onUserLogin.dispatchModuleAsync(safeAccount, transaction!);
-
-				// await ModuleBE_SessionDB.set.item({accountId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', sessionId: '7', timestamp: currentTimeMillis()});
-				return {sessionId: encodedSessionData, ...safeAccount};
+				await dispatch_onAccountLogin.dispatchModuleAsync(safeAccount, transaction!);
+				return {sessionId: session.sessionId, ...safeAccount};
 			});
 		},
-		createWithPassword: async (accountWithPassword: Request_RegisterAccount) => {
-			this.impl.fixEmail(accountWithPassword);
-			this.impl.assertPassword(accountWithPassword);
-			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
+		create: async (createAccountRequest: Request_CreateAccount) => {
+			const password = createAccountRequest.password;
+			let dbSafeAccount: SafeDB_Account;
+			this.impl.fixEmail(createAccountRequest);
 			return this.runTransaction(async transaction => {
-				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
+				if (exists(password)) {
+					this.impl.assertPasswordCheck(createAccountRequest);
+					const spicedAccount = this.impl.spiceAccount(createAccountRequest as RequestBody_Login);
+					dbSafeAccount = await this.impl.create(spicedAccount, transaction);
+				} else
+					dbSafeAccount = await this.impl.create(createAccountRequest, transaction);
+
 				await this.impl.onAccountCreated(dbSafeAccount, transaction);
 				return dbSafeAccount;
 			});
 		},
-		createWithoutPassword: async (accountWithoutPassword: BaseAccountWithType) => {
-			this.impl.fixEmail(accountWithoutPassword);
-			return this.runTransaction(async transaction => {
-				const dbSafeAccount = await this.impl.create(accountWithoutPassword, transaction);
-				await this.impl.onAccountCreated(dbSafeAccount, transaction);
+		saml: async (oAuthAccount: AccountEmail) => {
+			this.impl.fixEmail(oAuthAccount);
+			const dbSafeAccount = await this.runTransaction(async transaction => {
+				let dbSafeAccount: SafeDB_Account;
+				try {
+					dbSafeAccount = await this.impl.querySafeAccount({...oAuthAccount}, transaction);
+					MemKey_AccountId.set(dbSafeAccount._id);
+					await this.impl.onAccountLogin(dbSafeAccount, transaction);
+				} catch (e: any) {
+					if ((e as ApiException).responseCode !== 401)
+						throw e;
+
+					dbSafeAccount = await this.impl.create({...oAuthAccount, type: 'user'}, transaction);
+					MemKey_AccountId.set(dbSafeAccount._id);
+					await this.impl.onAccountCreated(dbSafeAccount, transaction);
+				}
+				return dbSafeAccount;
 			});
+			return ModuleBE_SessionDB.session.create(dbSafeAccount._id);
 		},
 		changePassword: async (passwordToChange: RequestBody_ChangePassword): Promise<Response_Auth> => {
 			return this.runTransaction(async transaction => {
@@ -288,17 +296,17 @@ export class ModuleBE_AccountDB_Class
 
 				const safeAccount = await this.impl.querySafeAccount({email});
 
-				this.impl.assertPassword({email, password: passwordToChange.password, passwordCheck: passwordToChange.passwordCheck});
+				this.impl.assertPasswordCheck({email, password: passwordToChange.password, passwordCheck: passwordToChange.passwordCheck});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordToChange.password});
 				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
-				const newSession = await ModuleBE_SessionDB.createSession(updatedAccount._id);
+				const newSession = await ModuleBE_SessionDB.session.create(updatedAccount._id);
 				return {
 					...makeAccountSafe(updatedAccount),
-					sessionId: newSession._id
+					sessionId: newSession.sessionId
 				};
 			});
 		},
-		setPassword: async (passwordBody: PasswordWithCheck) => {
+		setPassword: async (passwordBody: PasswordWithCheck): Promise<Response_Auth> => {
 			return this.runTransaction(async transaction => {
 				const email = MemKey_AccountEmail.get();
 				const dbAccount = await this.impl.queryUnsafeAccount({email}, transaction);
@@ -306,13 +314,14 @@ export class ModuleBE_AccountDB_Class
 					throw new ApiException(403, 'account already has password');
 
 				const safeAccount = makeAccountSafe(dbAccount);
-				this.impl.assertPassword({email, ...passwordBody});
+
+				this.impl.assertPasswordCheck({email, ...passwordBody});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordBody.password});
 				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
-				const newSession = await ModuleBE_SessionDB.createSession(updatedAccount._id);
+				const newSession = await ModuleBE_SessionDB.session.create(updatedAccount._id);
 				return {
 					...makeAccountSafe(updatedAccount),
-					sessionId: newSession._id
+					sessionId: newSession.sessionId
 				};
 			});
 		},
@@ -356,12 +365,12 @@ export class ModuleBE_AccountDB_Class
 		if (account.type !== 'service')
 			throw new BadImplementationException('Can not generate a token for a non service account');
 
-		const {_id} = await ModuleBE_SessionDB.createSession(accountId, (sessionData) => {
-			SessionKey_Session_BE.get(sessionData).expiration = ttl;
+		const {sessionId} = await ModuleBE_SessionDB.session.createCustom(accountId, (sessionData) => {
+			SessionKey_Session_BE.get(sessionData).expiration = currentTimeMillis() + ttl;
 			return sessionData;
 		});
 
-		return {token: _id};
+		return {token: sessionId};
 	};
 }
 
