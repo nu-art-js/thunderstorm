@@ -188,36 +188,6 @@ export class ModuleBE_AccountDB_Class
 		}
 	};
 
-	/**
-	 * Create an account without passing through this.spiceAccount - as in without password/salt,
-	 * for loginSaml initial login
-	 */
-	getOrCreateV3 = async (accountToCreate: UI_Account, canCreate = false, transaction?: Transaction) => {
-		return await this.runTransaction(async (transaction: Transaction) => {
-			const create = async () => {
-				if (!canCreate)
-					throw new ApiException(422, `User with email "${accountToCreate.email}" already exists`);
-
-				return await this.create.item(accountToCreate, transaction);
-			};
-
-			const dbAccount = await this.collection.uniqueGetOrCreate({email: accountToCreate.email}, create, transaction);
-			const uiAccount = makeAccountSafe(dbAccount);
-
-			// if these were never set it means we are registering otherwise we are creating other accounts for others
-			try {
-				MemKey_AccountId.get();
-			} catch (e) {
-				MemKey_AccountId.set(uiAccount._id);
-				MemKey_AccountEmail.set(uiAccount.email);
-			}
-
-			await dispatch_onAccountRegistered.dispatchModuleAsync(uiAccount, transaction);
-
-			return uiAccount;
-		});
-	};
-
 	account = {
 		// this flow is for creating real human users with email and password
 		register: async (accountWithPassword: RequestBody_RegisterAccount, transaction?: Transaction): Promise<Response_Auth> => {
