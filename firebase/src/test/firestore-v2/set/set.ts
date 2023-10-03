@@ -22,11 +22,12 @@ import {
 	tsValidateMustExist
 } from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {updatedStringValue1, updatedStringValue2} from '../update/update';
 import {_EmptyQuery} from '../../../main';
 
 
 chai.use(require('chai-as-promised'));
+export const updatedStringValue1 = 'test update';
+export const updatedStringValue2 = 'test update 2';
 
 const dbDef: DBDef<DB_Type> = {
 	dbName: 'firestore-set-tests',

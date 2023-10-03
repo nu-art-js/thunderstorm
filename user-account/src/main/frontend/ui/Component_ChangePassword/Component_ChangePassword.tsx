@@ -4,6 +4,7 @@ import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
 import {SessionKey_Account_FE} from '../../core/consts';
 
+
 type Props = {
 	postSubmitAction?: () => void;
 };
@@ -34,14 +35,11 @@ export class Component_ChangePassword
 			return;
 		}
 
-		const account = ModuleFE_Account.cache.unique(ModuleFE_Account.accountId)!;
-
 		try {
 			if (!this.state.shouldGiveCurrentPassword)
 				await ModuleFE_Account.vv1.setPassword({
-					userEmail: account.email,
 					password: this.state.newPassword,
-					password_check: this.state.newPasswordCheck,
+					passwordCheck: this.state.newPasswordCheck,
 				}).executeSync();
 			else {
 				if (!this.state.currentPassword) {
@@ -49,10 +47,9 @@ export class Component_ChangePassword
 					return;
 				}
 				await ModuleFE_Account.vv1.changePassword({
-					userEmail: account.email,
-					originalPassword: this.state.currentPassword,
-					newPassword: this.state.newPassword,
-					newPassword_check: this.state.newPasswordCheck,
+					oldPassword: this.state.currentPassword,
+					password: this.state.newPassword,
+					passwordCheck: this.state.newPasswordCheck,
 				}).executeSync();
 			}
 			this.props.postSubmitAction?.();
@@ -68,7 +65,7 @@ export class Component_ChangePassword
 
 		return <TS_PropRenderer.Vertical label={'Current Password'}>
 			<TS_Input type={'password'} value={this.state.currentPassword}
-					  onChange={val => this.setState({currentPassword: val})}/>
+								onChange={val => this.setState({currentPassword: val})}/>
 		</TS_PropRenderer.Vertical>;
 	};
 
@@ -77,11 +74,11 @@ export class Component_ChangePassword
 			{this.renderCurrentPassword()}
 			<TS_PropRenderer.Vertical label={'New Password'}>
 				<TS_Input type={'password'} value={this.state.newPassword}
-						  onChange={val => this.setState({newPassword: val})}/>
+									onChange={val => this.setState({newPassword: val})}/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical label={'New Password Check'}>
 				<TS_Input type={'password'} value={this.state.newPasswordCheck}
-						  onChange={val => this.setState({newPasswordCheck: val})}/>
+									onChange={val => this.setState({newPasswordCheck: val})}/>
 			</TS_PropRenderer.Vertical>
 			<TS_BusyButton onClick={this.submitNewPassword}>Submit</TS_BusyButton>
 		</LL_V_L>;

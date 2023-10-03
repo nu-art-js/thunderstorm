@@ -13,7 +13,7 @@ import {
 	BadImplementationException,
 	cloneObj,
 	composeUrl,
-	currentTimeMillis,
+	currentTimeMillis, DB_BaseObject,
 	exists,
 	TS_Object,
 	TypedKeyValue
@@ -34,6 +34,7 @@ import {
 } from '../../shared';
 import {StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp} from '../core/consts';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+
 
 export interface OnLoginStatusUpdated {
 	__onLoginStatusUpdated: () => void;
@@ -91,7 +92,7 @@ class ModuleFE_Account_Class
 
 	isStatus = (status: LoggedStatus) => this.status === status;
 
-	private onAccountCreated = async (response: DB_Account) => {
+	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
 		await this.onEntriesUpdated([response as DB_Account]);
 	};
 
@@ -119,13 +120,17 @@ class ModuleFE_Account_Class
 
 	private processSessionStatus(sessionId: string) {
 		const now = currentTimeMillis();
-		const sessionData = this.decode(sessionId);
-		if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
-			return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
+		try {
+			const sessionData = this.decode(sessionId);
+			if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
+				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
-		this.accountId = sessionData.account._id;
-		this.sessionData = sessionData;
-		return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+			this.accountId = sessionData.account._id;
+			this.sessionData = sessionData;
+			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+		} catch (e: any) {
+			return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+		}
 	}
 
 	protected setLoggedStatus = (newStatus: LoggedStatus) => {

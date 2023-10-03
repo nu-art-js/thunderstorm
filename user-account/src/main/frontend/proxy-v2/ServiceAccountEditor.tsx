@@ -77,7 +77,7 @@ export class ServiceAccountEditor
 			async (item) => {
 				this.logInfo('save');
 				try {
-					await ModuleFE_Account.vv1.createAccount(item).executeSync();
+					// await ModuleFE_Account.vv1.createAccount(item).executeSync();
 					if (item === this.state.newAccount)
 						this.setState({newAccount: undefined});
 				} catch (e: any) {

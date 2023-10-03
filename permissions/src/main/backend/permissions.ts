@@ -1,4 +1,5 @@
 import {
+	ApiDef_Permissions,
 	DBDef_PermissionAccessLevel,
 	DBDef_PermissionApi,
 	DBDef_PermissionDomain,
@@ -17,7 +18,6 @@ import {
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
-
 const Domain_PermissionsDefine_ID = '48d5ace0cbb2a14c8a0ca3773a4a2962';
 const Domain_PermissionsAssign_ID = 'ecf9cfe952d034ad8d1f182bbec6e2db';
 const Domain_Developer_ID = '1f62a6e2fc4e2cfaa8aa1aa1a45b8c1b';
@@ -29,7 +29,11 @@ const _Domain_PermissionsDefine: DefaultDef_Domain = {
 	levels: [
 		...DuplicateDefaultAccessLevels(Domain_PermissionsDefine_ID),
 		// {...PermissionsAccessLevel_ReadSelf, _id: md5(Domain_PermissionsDefine_ID)},
-	]
+	],
+	customApis: [{
+		path: ApiDef_Permissions.v1.createProject.path,
+		accessLevel: DefaultAccessLevel_Admin.name
+	}]
 };
 
 const _Domain_PermissionsAssign: DefaultDef_Domain = {
@@ -52,7 +56,8 @@ export const PermissionsPackage_Permissions: DefaultDef_Package = {
 	domains: [
 		Domain_PermissionsDefine,
 		Domain_PermissionsAssign,
-	]
+	],
+
 };
 
 export const PermissionsPackage_Developer: DefaultDef_Package = {
@@ -93,7 +98,6 @@ export const PermissionGroup_PermissionsDefine_Admin: DefaultDef_Group = {
 		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Admin.name,
 	},
 };
-
 
 export const PermissionGroup_PermissionsAssign_NoAccess: DefaultDef_Group = {
 	_id: 'dafebd8f706d638400e696345c400fc3',
