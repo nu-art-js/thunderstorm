@@ -13,13 +13,6 @@ export interface CollectSessionData<R extends TypedKeyValue<any, any>> {
 
 export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<TypedKeyValue<any, any>>, '__collectSessionData'>('__collectSessionData');
 
-// type MapTypes<T extends CollectSessionData<any>[]> =
-// 	T extends [a: CollectSessionData<infer A>, ...rest: infer R] ?
-// 		R extends CollectSessionData<any>[] ?
-// 			[A, ...MapTypes<R>] :
-// 			[] :
-// 		[];
-
 type Config = DBApiConfigV3<DBProto_SessionType> & {
 	sessionTTLms: number
 }
@@ -44,7 +37,6 @@ export class ModuleBE_SessionDB_Class
 
 		if (!this.session.isValid())
 			throw new ApiException(401, 'Session timed out');
-
 	};
 
 	constructor() {
@@ -76,7 +68,6 @@ export class ModuleBE_SessionDB_Class
 			sessionData = manipulate?.(sessionData) ?? sessionData;
 			const encodedSessionData = await this.sessionData.encode(sessionData);
 			return {encoded: encodedSessionData, raw: sessionData};
-
 		},
 		setToMemKey: (sessionData: TS_Object) => MemKey_SessionData.set(sessionData),
 	};
@@ -130,7 +121,6 @@ export class ModuleBE_SessionDB_Class
 			await this.delete.query({where: {sessionId}}, transaction);
 		}
 	};
-
 }
 
 export const ModuleBE_SessionDB = new ModuleBE_SessionDB_Class();
