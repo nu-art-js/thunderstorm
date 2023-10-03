@@ -17,7 +17,7 @@
  */
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
-import {__stringify, ApiException, DB_BaseObject, decode, ImplementationMissingException, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {__stringify, ApiException, decode, ImplementationMissingException, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {
 	ApiDef_SAML_BE,
 	QueryParam_Email,
@@ -25,14 +25,12 @@ import {
 	QueryParam_SessionId,
 	RequestBody_AssertSAML,
 	RequestParams_LoginSAML,
-	Response_LoginSAML,
-	UI_Account
+	Response_LoginSAML
 } from './_imports';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {MemKey_AccountEmail} from '../core/consts';
 import {ModuleBE_AccountDB} from './ModuleBE_AccountDB';
-import {ModuleBE_SessionDB} from './ModuleBE_SessionDB';
 
 
 /**
@@ -107,26 +105,26 @@ export class ModuleBE_SAML_Class
 		this.identityProvider = new IdentityProvider(this.config.idConfig);
 	}
 
-	async assertSaml(body: RequestBody_AssertSAML) {
+	assertSaml = async (body: RequestBody_AssertSAML) => {
 		try {
 			const data = await this.assertImpl(body);
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
 
-			MemKey_AccountEmail.set(data.userId);
+			const accountWithoutPassword = {email: data.userId.toLowerCase(), type: 'user'};
+			MemKey_AccountEmail.set(accountWithoutPassword.email);
 
-			const uiAccount = await ModuleBE_AccountDB.getOrCreateV3({email: data.userId.toLowerCase(), type: 'user'});
-			const session = await ModuleBE_SessionDB.getOrCreateSession(uiAccount as UI_Account & DB_BaseObject);
+			const session = await ModuleBE_AccountDB.account.saml(accountWithoutPassword);
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 
 			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), 'g'), encodeURIComponent(session.sessionId));
-			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), encodeURIComponent(session.email));
+			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), encodeURIComponent(accountWithoutPassword.email));
 
 			MemKey_HttpResponse.get().redirect(302, redirectUrl);
 		} catch (error: any) {
 			throw new ApiException(401, 'Error authenticating user', error);
 		}
-	}
+	};
 
 	loginRequest = async (loginContext: RequestParams_LoginSAML) => {
 		return new Promise<Response_LoginSAML>((resolve, rejected) => {

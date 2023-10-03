@@ -17,20 +17,8 @@
  * limitations under the License.
  */
 
-import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
-import {
-	__stringify,
-	_keys,
-	ApiException,
-	batchActionParallel,
-	DB_BaseObject,
-	dbObjectToId,
-	exists,
-	filterDuplicates,
-	filterInstances,
-	flatArray,
-	TypedMap
-} from '@nu-art/ts-common';
+import {MemKey_AccountId, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {_keys, ApiException, batchActionParallel, DB_BaseObject, dbObjectToId, filterDuplicates, filterInstances, flatArray, TypedMap} from '@nu-art/ts-common';
 import {DB_EntityDependency} from '@nu-art/firebase';
 import {ApiDef_PermissionUser, DB_PermissionUser, DBDef_PermissionUser, Request_AssignPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
@@ -107,36 +95,29 @@ class ModuleBE_PermissionUserDB_Class
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 		const accountIds = filterDuplicates([...deleted, ...updated].map(i => i.accountId));
-		await ModuleBE_SessionDB.invalidateSessions(accountIds);
+		await ModuleBE_SessionDB.session.invalidate(accountIds);
 	}
 
 	async __onUserLogin(account: UI_Account, transaction: Transaction) {
-		console.log('________________________________');
-		console.log('__onUserLogin');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 		await this.insertIfNotExist(account as UI_Account & DB_BaseObject, transaction);
 	}
 
 	async __onNewUserRegistered(account: UI_Account, transaction: Transaction) {
-		console.log('________________________________');
-		console.log('__onNewUserRegistered');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 		await this.insertIfNotExist(account as UI_Account & DB_BaseObject, transaction);
 	}
 
 	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
 		// Verify an account exists, to give it a user permissions object
-		const account = await ModuleBE_AccountDB.query.unique(uiAccount._id, transaction);
-		if (!exists(account))
-			throw new ApiException(404, `account not found for id ${__stringify(uiAccount)}`);
-
-		const permissionsUserToCreate = {accountId: account._id, groups: [], _auditorId: MemKey_AccountId.get()};
+		// const account = await ModuleBE_AccountDB.query.unique(uiAccount._id, transaction);
+		// if (!exists(account))
+		// 	throw new ApiException(404, `account not found for id ${__stringify(uiAccount)}`);
+		const permissionsUserToCreate = {accountId: uiAccount._id, groups: [], _auditorId: MemKey_AccountId.get()};
 
 		const create = async (transaction?: Transaction) => {
 			return this.create.item(permissionsUserToCreate, transaction);
 		};
 
-		return this.collection.uniqueGetOrCreate({accountId: account._id}, create, transaction);
+		return this.collection.uniqueGetOrCreate({accountId: uiAccount._id}, create, transaction);
 	}
 
 	async assignPermissions(body: Request_AssignPermissions) {

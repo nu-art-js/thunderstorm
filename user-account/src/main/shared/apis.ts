@@ -31,9 +31,10 @@ export type PasswordWithCheck = AccountPassword & {
 	passwordCheck: string
 }
 
+export type AccountToAssertPassword= AccountEmail & Partial<PasswordWithCheck>
 export type BaseAccountWithType = DBAccountType & AccountEmail
 export type Request_RegisterAccount = BaseAccountWithType & PasswordWithCheck
-export type RequestBody_RegisterAccount = PasswordWithCheck & AccountEmail
+export type RequestBody_RegisterAccount = AccountEmail & PasswordWithCheck
 export type Request_CreateAccount = BaseAccountWithType & Partial<PasswordWithCheck>
 export type ResponseBody_ChangePassword = Response_Auth
 export type RequestBody_SetPassword = PasswordWithCheck
@@ -51,15 +52,15 @@ export type Response_LoginSAML = {
 };
 
 export type Request_LoginAccount = AccountEmail & AccountPassword
-
 export type RequestBody_CreateToken = { accountId: UniqueId, ttl: number };
+
 export type Response_CreateToken = { token: string };
 
 type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParams_LoginSAML> };
 type TypedApi_Login = { login: BodyApi<Response_Auth, Request_LoginAccount> };
 type TypedApi_Logout = { logout: QueryApi<void, {}> };
 type TypedAPI_RegisterAccount = { registerAccount: BodyApi<Response_Auth, RequestBody_RegisterAccount> };
-type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account & DB_BaseObject, Request_RegisterAccount> };
+type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account & DB_BaseObject, Request_CreateAccount> };
 type TypedApi_ChangedPassword = {
 	changePassword: BodyApi<ResponseBody_ChangePassword, RequestBody_ChangePassword>
 };
