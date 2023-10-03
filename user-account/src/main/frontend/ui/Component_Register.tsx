@@ -52,7 +52,7 @@ const form: Form<RequestBody_RegisterAccount> = {
 		hint: '****',
 		label: 'Password',
 	},
-	password_check: {
+	passwordCheck: {
 		type: 'password',
 		hint: '****',
 		label: 'Password Check',
