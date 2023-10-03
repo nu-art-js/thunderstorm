@@ -254,7 +254,7 @@ export class ModuleBE_AccountDB_Class
 			let dbSafeAccount: SafeDB_Account;
 			this.impl.fixEmail(createAccountRequest);
 			return this.runTransaction(async transaction => {
-				if (exists(password)) {
+				if (exists(password) || exists(createAccountRequest.passwordCheck)) {
 					this.impl.assertPasswordCheck(createAccountRequest);
 					const spicedAccount = this.impl.spiceAccount(createAccountRequest as RequestBody_Login);
 					dbSafeAccount = await this.impl.create(spicedAccount, transaction);
