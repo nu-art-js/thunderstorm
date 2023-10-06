@@ -36,7 +36,7 @@ export class ModuleFE_XHR_Class
 		super.init();
 		let origin = this.config.origin;
 		if (!origin)
-			throw new BadImplementationException('Did you forget to set the origin config key for the HttpModule?');
+			throw new BadImplementationException('Did yo\ forget to set the origin config key for the HttpModule?');
 
 		if (origin?.endsWith('/'))
 			origin = origin.substring(0, origin.length - 1);
@@ -49,6 +49,7 @@ export class ModuleFE_XHR_Class
 			.setLogger(this)
 			.setMethod(apiDef.method)
 			.setTimeout(this.timeout)
+			.setOnCompleted(this.defaultOnComplete)
 			.addHeaders(this.getDefaultHeaders());
 
 		if (apiDef.fullUrl)
@@ -189,16 +190,7 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 		if (!this.xhr.response)
 			throw new BadImplementationException(`xhr didn't return yet`);
 
-		// Chrome bug, if the response header is not present then it throws an error (not really problematic but just annoying)
-		// https://trackjs.com/blog/refused-unsafe-header/
-		if (this.xhr.getAllResponseHeaders().indexOf(headerKey) < 0)
-			return undefined;
-
-		const header = this.xhr.getResponseHeader(headerKey);
-		if (!header)
-			return undefined;
-
-		return header;
+		return this.xhr.getResponseHeader(headerKey) || undefined;
 	}
 }
 

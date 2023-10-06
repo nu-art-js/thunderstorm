@@ -3,6 +3,8 @@ import {TS_BusyButton} from '@nu-art/thunderstorm/frontend';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_GoogleSAMLLogin.scss';
 import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
+import {StorageKey_DeviceId} from '../../core/consts';
+
 
 type Props = {
 	text?: string;
@@ -12,7 +14,7 @@ export const Component_GoogleSAMLLogin = (props: Props) => {
 
 	const onClick = async () => {
 		const url = ModuleFE_Account.composeSAMLUrl();
-		await ModuleFE_Account.vv1.loginSaml({redirectUrl: url}).executeSync();
+		await ModuleFE_Account.vv1.loginSaml({redirectUrl: url, deviceId: StorageKey_DeviceId.get()}).executeSync();
 	};
 
 	return <TS_BusyButton

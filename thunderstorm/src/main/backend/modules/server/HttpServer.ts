@@ -55,7 +55,8 @@ type ConfigType = {
 	cors: {
 		origins?: string[],
 		methods?: string[],
-		headers: string[]
+		headers: string[],
+		responseHeaders: string[],
 	}
 	ssl: { key: string, cert: string }
 	bodyParserLimit: number | string
@@ -154,6 +155,7 @@ export class HttpServer_Class
 			res.header('Access-Control-Allow-Origin', origin || 'N/A');
 			res.header('Access-Control-Allow-Methods', (cors.methods || ALL_Methods).join(','));
 			res.header('Access-Control-Allow-Headers', cors.headers.join(','));
+			res.header('Access-Control-Expose-Headers', cors.responseHeaders.join(','));
 
 			next();
 		});

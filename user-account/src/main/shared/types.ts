@@ -15,18 +15,20 @@ export type AccountType = typeof accountTypes[number];
 
 export type DB_Session = DB_Object & {
 	accountId: string
+	deviceId: string
 	sessionId: string
 	timestamp: number
+	needToRefresh?: boolean
 }
 
 type VersionsSession = VersionsDeclaration<DB_Session, ['1.0.0'], [DB_Session]>
-type Proto_Session = Proto_DB_Object<DB_Session, keyof DB_Object, VersionsSession, 'accountId'>
+type Proto_Session = Proto_DB_Object<DB_Session, keyof DB_Object, VersionsSession, 'accountId' | 'deviceId'>
 
 export type DBProto_SessionType = DBProto<Proto_Session>
 export type UI_Session = DBProto_SessionType['uiType']
 
 export type _SessionKey_SessionId = TypedKeyValue<'_id', UniqueId>
-type SessionData_TTL = { timestamp: number, expiration: number, };
+type SessionData_TTL = { timestamp: number, expiration: number, deviceId: string };
 export type _SessionKey_Session = TypedKeyValue<'session', SessionData_TTL>
 
 export type DB_Account = DB_Object & AuditableV2 & {

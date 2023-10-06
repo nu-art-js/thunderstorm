@@ -34,9 +34,10 @@ type HttpConfig = {
 export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfig>
 	extends Module<Config> {
 
-	protected origin?: string;
+	protected origin!: string;
 	protected timeout: number = 10000;
 	private readonly defaultHeaders: { [s: string]: (() => string | string[]) | string | string[] } = {};
+	protected defaultOnComplete?: (response: unknown, input: unknown, request: BaseHttpRequest<any>) => Promise<any>;
 
 	constructor() {
 		super();
@@ -47,8 +48,16 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		this.timeout = this.config.timeout || this.timeout;
 	}
 
+	getOrigin() {
+		return this.origin;
+	}
+
 	shouldCompress() {
 		return this.config.compress;
+	}
+
+	setDefaultOnComplete(defaultOnComplete: (response: unknown, input: unknown, request: BaseHttpRequest<any>) => Promise<any>) {
+		this.defaultOnComplete = defaultOnComplete;
 	}
 
 	addDefaultHeader(key: string, header: (() => string | string[]) | string | string[]) {

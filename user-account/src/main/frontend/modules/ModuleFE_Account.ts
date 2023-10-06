@@ -69,12 +69,12 @@ class ModuleFE_Account_Class
 		this.vv1 = {
 			registerAccount: apiWithBody(ApiDefFE_Account.vv1.registerAccount, this.setLoginInfo),
 			createAccount: apiWithBody(ApiDefFE_Account.vv1.createAccount, this.onAccountCreated),
-			changePassword: apiWithBody(ApiDefFE_Account.vv1.changePassword),
+			changePassword: apiWithBody(ApiDefFE_Account.vv1.changePassword, this.setLoginInfo),
 			login: apiWithBody(ApiDefFE_Account.vv1.login, this.setLoginInfo),
 			loginSaml: apiWithQuery(ApiDefFE_Account.vv1.loginSaml, this.onLoginCompletedSAML),
 			logout: apiWithQuery(ApiDefFE_Account.vv1.logout),
 			createToken: apiWithBody(ApiDefFE_Account.vv1.createToken),
-			setPassword: apiWithBody(ApiDefFE_Account.vv1.setPassword),
+			setPassword: apiWithBody(ApiDefFE_Account.vv1.setPassword, this.setLoginInfo),
 		};
 	}
 
@@ -98,6 +98,18 @@ class ModuleFE_Account_Class
 
 	protected init(): void {
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
+		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
+			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
+				return;
+
+			const responseHeader = request.getResponseHeader(HeaderKey_SessionId);
+			if (!responseHeader)
+				return;
+
+			const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
+			StorageKey_SessionId.set(sessionId);
+			this.processSessionStatus(sessionId);
+		});
 		// ModuleFE_XHR.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
 		const email = getQueryParameter(QueryParam_Email);
@@ -147,9 +159,7 @@ class ModuleFE_Account_Class
 		dispatch_onLoginStatusChanged.dispatchModule();
 	};
 
-	private setLoginInfo = async (response: Response_Auth) => {
-		StorageKey_SessionId.set(response.sessionId);
-		this.processSessionStatus(response.sessionId);
+	private setLoginInfo = async (response: Response_Auth, body: any, request: BaseHttpRequest<any>) => {
 		this.accountId = response._id;
 		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	};
