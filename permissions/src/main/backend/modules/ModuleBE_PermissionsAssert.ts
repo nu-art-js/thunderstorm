@@ -145,10 +145,9 @@ export class ModuleBE_PermissionsAssert_Class
 	// 	this.setMinLevel(LogLevel.Debug);
 	// }
 
-	async __collectSessionData(accountId: string): Promise<SessionData_StrictMode> {
+	async __collectSessionData(): Promise<SessionData_StrictMode> {
 		return {key: 'strictMode', value: this.isStrictMode()};
 	}
-
 
 	init() {
 		super.init();
@@ -177,7 +176,8 @@ export class ModuleBE_PermissionsAssert_Class
 			const _1 = _allApis.filter(_api => paths.includes(_api.path));
 			// const _2 = await batchActionParallel(filterInstances(paths), 10, chunk => ModuleBE_PermissionApi.query.where({path: {$in: chunk}}));
 			// this.logInfoBold('-----------------------------------------------');
-			// this.logError(`query all sync(total before filtering on sync:${_allApis.length}):`, _allApis.filter(_api => _api.path.includes('sync')).map((_api, i) => `${i}: ${__stringify(_api.path)}`));
+			// this.logError(`query all sync(total before filtering on sync:${_allApis.length}):`, _allApis.filter(_api => _api.path.includes('sync'))
+				.map((_api, i) => `${i}: ${__stringify(_api.path)}`));
 			// this.logError(`query all filtered(${_1.length}):`, _1.map((_api, i) => `${i}: ${__stringify(_api.path)}`));
 			// this.logInfoBold('-----------------------------------------------');
 			// this.logInfoBold('-----------------------------------------------');

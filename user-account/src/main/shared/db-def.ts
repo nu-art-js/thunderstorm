@@ -16,9 +16,11 @@ import {_accountTypes} from './consts';
 
 
 export const Validator_Modifiable: DBProto_SessionType['modifiablePropsValidator'] = {
-	sessionId: tsValidateString(),
 	accountId: tsValidateUniqueId,
-	timestamp: tsValidateTimestamp()
+	deviceId: tsValidateUniqueId,
+	sessionId: tsValidateString(),
+	timestamp: tsValidateTimestamp(),
+	needToRefresh: tsValidateBoolean(false)
 };
 
 export const Validator_Generated: DBProto_SessionType['generatedPropsValidator'] = {
@@ -30,7 +32,7 @@ export const DBDef_Session: DBDef_V3<DBProto_SessionType> = {
 	generatedPropsValidator: Validator_Generated,
 	dbName: 'user-account--sessions',
 	entityName: 'Session',
-	uniqueKeys: ['accountId'],
+	uniqueKeys: ['accountId', 'deviceId'],
 	versions: ['1.0.0'],
 };
 

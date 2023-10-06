@@ -107,10 +107,6 @@ class ModuleBE_PermissionUserDB_Class
 	}
 
 	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
-		// Verify an account exists, to give it a user permissions object
-		// const account = await ModuleBE_AccountDB.query.unique(uiAccount._id, transaction);
-		// if (!exists(account))
-		// 	throw new ApiException(404, `account not found for id ${__stringify(uiAccount)}`);
 		const permissionsUserToCreate = {accountId: uiAccount._id, groups: [], _auditorId: MemKey_AccountId.get()};
 
 		const create = async (transaction?: Transaction) => {

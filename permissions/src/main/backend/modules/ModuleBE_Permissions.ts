@@ -24,7 +24,7 @@ import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain'
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
-import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account/backend';
+import {CollectSessionData, MemKey_AccountId, SessionCollectionParam} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {
@@ -102,8 +102,8 @@ class ModuleBE_Permissions_Class
 		return PermissionProject_Permissions;
 	}
 
-	async __collectSessionData(accountId: string): Promise<SessionData_Permissions> {
-		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId});
+	async __collectSessionData(data: SessionCollectionParam): Promise<SessionData_Permissions> {
+		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId: data.accountId});
 		const permissionMap: TypedMap<number> = {};
 		const groupIds = user.groups.map(g => g.groupId);
 		const groups = filterInstances(await ModuleBE_PermissionGroup.query.all(groupIds));
@@ -117,7 +117,6 @@ class ModuleBE_Permissions_Class
 					permissionMap[domainId] = levelMap[domainId];
 			});
 		});
-
 
 		//All domains that are not defined for the user, are NoAccess by default.
 		const allDomains = await ModuleBE_PermissionDomain.query.where({});

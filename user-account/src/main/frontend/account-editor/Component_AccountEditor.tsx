@@ -16,6 +16,7 @@ import {capitalizeFirstLetter, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 
+
 type Props = {
 	isPreview?: boolean,
 	user?: DB_Account,
@@ -27,7 +28,8 @@ type State = Partial<Request_CreateAccount> & {
 	user?: DB_Account
 }
 
-export class Component_AccountEditor extends ComponentSync<Props, State> {
+export class Component_AccountEditor
+	extends ComponentSync<Props, State> {
 
 	protected deriveStateFromProps(nextProps: Props, state?: State): State {
 		state = this.state ? {...this.state} : {} as State;
@@ -97,7 +99,6 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 				</TS_PropRenderer.Vertical>}
 			</LL_H_C>;
 
-
 		return <LL_H_C className={'inputs-row'}>
 			<TS_PropRenderer.Vertical label={'Email'}>
 				<TS_Input type={'text'} placeholder={'Email'} value={this.state.email}
@@ -137,7 +138,6 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 			}
 		}}>Generate Token</TS_BusyButton>;
 	};
-
 
 	render() {
 		return <LL_V_L className={'account-editor'}>

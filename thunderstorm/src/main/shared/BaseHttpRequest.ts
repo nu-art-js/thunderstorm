@@ -116,6 +116,10 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
+	getUrl() {
+		return this.url;
+	}
+
 	public setRelativeUrl(relativeUrl: string) {
 		if (!this.origin)
 			throw new BadImplementationException('if you want to use relative urls, you need to set an origin');
@@ -246,7 +250,14 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	setOnCompleted(onCompleted?: (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
-		this.onCompleted = onCompleted;
+		if (this.onCompleted && onCompleted) {
+			const _onCompleted = this.onCompleted;
+			this.onCompleted = async (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => {
+				await _onCompleted(response, input, request);
+				await onCompleted(response, input, request);
+			};
+		} else
+			this.onCompleted = onCompleted;
 		return this;
 	}
 
