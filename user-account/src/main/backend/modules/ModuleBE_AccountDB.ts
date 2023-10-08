@@ -3,7 +3,8 @@ import {
 	ApiException,
 	BadImplementationException,
 	cloneObj,
-	compare, currentTimeMillis,
+	compare,
+	currentTimeMillis,
 	dispatch_onApplicationException,
 	Dispatcher,
 	DontCallthisException,
@@ -12,7 +13,7 @@ import {
 	hashPasswordWithSalt,
 	MUSTNeverHappenException
 } from '@nu-art/ts-common';
-import {CollectSessionData, ModuleBE_SessionDB} from './ModuleBE_SessionDB';
+import {CollectSessionData, ModuleBE_SessionDB, SessionCollectionParam} from './ModuleBE_SessionDB';
 import {firestore} from 'firebase-admin';
 import {addRoutes, createBodyServerApi, createQueryServerApi, DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 import {FirestoreQuery} from '@nu-art/firebase';
@@ -22,24 +23,27 @@ import {Header_SessionId, MemKey_AccountEmail, MemKey_AccountId, SessionKey_Acco
 import {
 	_SessionKey_Account,
 	AccountEmail,
+	AccountEmailWithDevice,
 	AccountToAssertPassword,
+	AccountToSpice,
 	AccountType,
 	ApiDefBE_Account,
 	DB_Account,
 	DBDef_Accounts,
 	DBProto_AccountType,
+	HeaderKey_SessionId,
 	PasswordWithCheck,
 	Request_CreateAccount,
 	Request_LoginAccount,
 	RequestBody_ChangePassword,
 	RequestBody_CreateToken,
-	RequestBody_Login,
 	RequestBody_RegisterAccount,
 	Response_Auth,
 	SafeDB_Account,
 	UI_Account
 } from '../../shared';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../shared/assertion';
+import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import Transaction = firestore.Transaction;
 
 
@@ -95,8 +99,8 @@ export class ModuleBE_AccountDB_Class
 		throw new DontCallthisException('Cannot delete accounts yet');
 	}
 
-	async __collectSessionData(accountId: string) {
-		const account = await this.query.uniqueAssert(accountId);
+	async __collectSessionData(data: SessionCollectionParam) {
+		const account = await this.query.uniqueAssert(data.accountId);
 		return {
 			key: 'account' as const,
 			value: {
@@ -136,7 +140,7 @@ export class ModuleBE_AccountDB_Class
 			this.password.assertPasswordExistence(accountToAssert.email, accountToAssert.password, accountToAssert.passwordCheck);
 			this.password.assertPasswordRules(accountToAssert.password!);
 		},
-		spiceAccount: (accountToSpice: RequestBody_Login): SpicedAccount => {
+		spiceAccount: (accountToSpice: AccountToSpice): SpicedAccount => {
 			const salt = generateHex(32);
 			return {
 				email: accountToSpice.email,
@@ -203,8 +207,9 @@ export class ModuleBE_AccountDB_Class
 				await this.impl.onAccountCreated(dbSafeAccount, transaction);
 				return dbSafeAccount;
 			});
-			const encodedSessionData = await this.account.login({email: accountWithPassword.email, password: accountWithPassword.password});
-			return {sessionId: encodedSessionData.sessionId, ...dbSafeAccount};
+
+			await this.account.login({email: accountWithPassword.email, deviceId: accountWithPassword.deviceId, password: accountWithPassword.password});
+			return {...dbSafeAccount};
 		},
 		login: async (credentials: Request_LoginAccount): Promise<Response_Auth> => {
 			this.impl.fixEmail(credentials);
@@ -213,10 +218,11 @@ export class ModuleBE_AccountDB_Class
 				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email}, transaction);
 				await this.password.assertPasswordMatch(dbAccount, credentials.password);
 				const safeAccount = makeAccountSafe(dbAccount);
-				const session = await ModuleBE_SessionDB.session.create(safeAccount._id, transaction);
+				const session = await ModuleBE_SessionDB.session.create(safeAccount._id, credentials.deviceId, [], transaction);
 				MemKey_AccountId.set(safeAccount._id);
 				await dispatch_onAccountLogin.dispatchModuleAsync(safeAccount, transaction!);
-				return {sessionId: session.sessionId, ...safeAccount};
+				MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
+				return {...safeAccount};
 			});
 		},
 		create: async (createAccountRequest: Request_CreateAccount) => {
@@ -226,7 +232,7 @@ export class ModuleBE_AccountDB_Class
 			return this.runTransaction(async transaction => {
 				if (exists(password) || exists(createAccountRequest.passwordCheck)) {
 					this.impl.assertPasswordCheck(createAccountRequest);
-					const spicedAccount = this.impl.spiceAccount(createAccountRequest as RequestBody_Login);
+					const spicedAccount = this.impl.spiceAccount(createAccountRequest as AccountToSpice);
 					dbSafeAccount = await this.impl.create(spicedAccount, transaction);
 				} else
 					dbSafeAccount = await this.impl.create(createAccountRequest, transaction);
@@ -235,31 +241,33 @@ export class ModuleBE_AccountDB_Class
 				return dbSafeAccount;
 			});
 		},
-		saml: async (oAuthAccount: AccountEmail) => {
+		saml: async (oAuthAccount: AccountEmailWithDevice) => {
 			this.impl.fixEmail(oAuthAccount);
 			const dbSafeAccount = await this.runTransaction(async transaction => {
 				let dbSafeAccount: SafeDB_Account;
 				try {
 					dbSafeAccount = await this.impl.querySafeAccount({...oAuthAccount}, transaction);
+					this.logInfo('SAML login account');
 					MemKey_AccountId.set(dbSafeAccount._id);
 					await this.impl.onAccountLogin(dbSafeAccount, transaction);
 				} catch (e: any) {
 					if ((e as ApiException).responseCode !== 401)
 						throw e;
 
+					this.logInfo('SAML register account');
 					dbSafeAccount = await this.impl.create({...oAuthAccount, type: 'user'}, transaction);
 					MemKey_AccountId.set(dbSafeAccount._id);
 					await this.impl.onAccountCreated(dbSafeAccount, transaction);
 				}
 				return dbSafeAccount;
 			});
-			return ModuleBE_SessionDB.session.create(dbSafeAccount._id);
+			return ModuleBE_SessionDB.session.create(dbSafeAccount._id, oAuthAccount.deviceId);
 		},
 		changePassword: async (passwordToChange: RequestBody_ChangePassword): Promise<Response_Auth> => {
 			return this.runTransaction(async transaction => {
 				const email = MemKey_AccountEmail.get();
-
-				await this.account.login({email, password: passwordToChange.oldPassword}); // perform login to make sure the old password holds
+				const deviceId = SessionKey_Session_BE.get().deviceId;
+				await this.account.login({email, deviceId, password: passwordToChange.oldPassword}); // perform login to make sure the old password holds
 
 				if (!compare(passwordToChange.password, passwordToChange.passwordCheck))
 					throw new ApiException(401, 'Password check mismatch');
@@ -269,16 +277,17 @@ export class ModuleBE_AccountDB_Class
 				this.impl.assertPasswordCheck({email, password: passwordToChange.password, passwordCheck: passwordToChange.passwordCheck});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordToChange.password});
 				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
-				const newSession = await ModuleBE_SessionDB.session.create(updatedAccount._id);
-				return {
-					...makeAccountSafe(updatedAccount),
-					sessionId: newSession.sessionId
-				};
+				const newSession = await ModuleBE_SessionDB.session.create(updatedAccount._id, deviceId);
+				MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, newSession.sessionId);
+
+				return makeAccountSafe(updatedAccount);
 			});
 		},
 		setPassword: async (passwordBody: PasswordWithCheck): Promise<Response_Auth> => {
 			return this.runTransaction(async transaction => {
 				const email = MemKey_AccountEmail.get();
+				const deviceId = SessionKey_Session_BE.get().deviceId;
+
 				const dbAccount = await this.impl.queryUnsafeAccount({email}, transaction);
 				if (dbAccount.saltedPassword)
 					throw new ApiException(403, 'account already has password');
@@ -288,11 +297,10 @@ export class ModuleBE_AccountDB_Class
 				this.impl.assertPasswordCheck({email, ...passwordBody});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordBody.password});
 				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
-				const newSession = await ModuleBE_SessionDB.session.create(updatedAccount._id);
-				return {
-					...makeAccountSafe(updatedAccount),
-					sessionId: newSession.sessionId
-				};
+				const newSession = await ModuleBE_SessionDB.session.create(updatedAccount._id, deviceId);
+				MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, newSession.sessionId);
+
+				return makeAccountSafe(updatedAccount);
 			});
 		},
 		logout: async () => {
@@ -335,7 +343,7 @@ export class ModuleBE_AccountDB_Class
 		if (account.type !== 'service')
 			throw new BadImplementationException('Can not generate a token for a non service account');
 
-		const {sessionId} = await ModuleBE_SessionDB.session.createCustom(accountId, (sessionData) => {
+		const {sessionId} = await ModuleBE_SessionDB.session.createCustom(accountId, accountId, (sessionData) => {
 			SessionKey_Session_BE.get(sessionData).expiration = currentTimeMillis() + ttl;
 			return sessionData;
 		});

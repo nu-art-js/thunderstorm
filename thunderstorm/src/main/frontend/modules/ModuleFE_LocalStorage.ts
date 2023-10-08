@@ -37,8 +37,13 @@ export class StorageModule_Class
 	private cache: { [s: string]: string | number | object } = {};
 	private keys: StorageKey[] = [];
 
+	// private isIncognito!: boolean;
+
 	protected init(): void {
 		window.addEventListener('storage', this.handleStorageEvent);
+		// const IsIncognito = new StorageKey<boolean>('is-incognito');
+		// IsIncognito.set(false);
+		// this.isIncognito = IsIncognito.get(true);
 	}
 
 	async __onClearWebsiteData(resync: boolean) {
@@ -80,8 +85,9 @@ export class StorageModule_Class
 		value = this.getStorage(persist).getItem(key);
 		// this.logDebug(`get: ${key} = ${value}`)
 		if (!exists(value) || value === 'null' || value === 'undefined')
-				return defaultValue;
+			return defaultValue;
 
+		// if (!this.isIncognito)
 		return this.cache[key] = JSON.parse(value!);
 	}
 
@@ -163,4 +169,5 @@ export class StorageKey<ValueType = string | number | object> {
 		ModuleFE_LocalStorage.clearCache(this.key);
 	}
 }
+
 

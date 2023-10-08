@@ -1,30 +1,12 @@
-import {
-	_keys,
-	arrayToMap,
-	Dispatcher,
-	filterInstances,
-	flatArray,
-	Module,
-	MUSTNeverHappenException,
-	PreDB,
-	reduceToMap,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_keys, arrayToMap, Dispatcher, filterInstances, flatArray, Module, MUSTNeverHappenException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
-import {
-	ApiDef_Permissions,
-	DB_PermissionAccessLevel,
-	DB_PermissionApi,
-	DB_PermissionDomain,
-	DB_PermissionProject,
-	Request_ConnectDomainToRoutes
-} from '../../shared';
+import {ApiDef_Permissions, DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionProject, Request_ConnectDomainToRoutes} from '../../shared';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
-import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account/backend';
+import {CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB, SessionCollectionParam} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {
@@ -102,8 +84,8 @@ class ModuleBE_Permissions_Class
 		return PermissionProject_Permissions;
 	}
 
-	async __collectSessionData(accountId: string): Promise<SessionData_Permissions> {
-		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId});
+	async __collectSessionData(data: SessionCollectionParam): Promise<SessionData_Permissions> {
+		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId: data.accountId});
 		const permissionMap: TypedMap<number> = {};
 		const groupIds = user.groups.map(g => g.groupId);
 		const groups = filterInstances(await ModuleBE_PermissionGroup.query.all(groupIds));
@@ -117,7 +99,6 @@ class ModuleBE_Permissions_Class
 					permissionMap[domainId] = levelMap[domainId];
 			});
 		});
-
 
 		//All domains that are not defined for the user, are NoAccess by default.
 		const allDomains = await ModuleBE_PermissionDomain.query.where({});
@@ -138,7 +119,7 @@ class ModuleBE_Permissions_Class
 			name: project.name,
 			_auditorId
 		})));
-		const projectsMap_nameToDBProject: TypedMap<DB_PermissionProject> = reduceToMap(await Promise.all(preDBProjects), project => project.name, project => project);
+		const projectsMap_nameToDBProject: TypedMap<DB_PermissionProject> = reduceToMap(preDBProjects, project => project.name, project => project);
 
 		const domainsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => ({
 			_id: domain._id,
@@ -166,8 +147,6 @@ class ModuleBE_Permissions_Class
 		}))));
 
 		const dbLevels = await ModuleBE_PermissionAccessLevel.set.all(levelsToUpsert);
-		// @ts-ignore
-		const levelsMap_nameToDbAccessLevel = reduceToMap(dbLevels, level => level.name, level => level);
 		const domainNameToLevelNameToDBAccessLevel: { [domainName: string]: { [levelName: string]: DB_PermissionAccessLevel } } =
 			reduceToMap(dbLevels, level => level.domainId, (level, index, map) => {
 				const domainLevels = map[level.domainId] || (map[level.domainId] = {});
@@ -232,91 +211,31 @@ class ModuleBE_Permissions_Class
 
 			return apis;
 		}))));
-		// const duplicatesMap = apisToUpsert.reduce<TypedMap<number>>((_duplicates, api) => {
-		// 	const identifier = api.projectId + api.path;
-		// 	if (_duplicates[identifier] === undefined)
-		// 		_duplicates[identifier] = 0;
-		//
-		// 	_duplicates[identifier]++;
-		// 	return _duplicates;
-		// }, {});
 
-		// const duplicateApis = apisToUpsert.filter(_api => {
-		// 	const identifier = _api.projectId + _api.path;
-		//
-		// 	return _keys(duplicatesMap).includes(identifier);
-		// });
-
-		// this.logErrorBold(sortArray(duplicateApis.map(__api => `project: ${__api.projectId}, path: ${__api.path}`)));
 		await ModuleBE_PermissionApi.set.all(apisToUpsert);
 		await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
 		await this.assignSuperAdmin();
 
-		// const envConfigRef = Storm.getInstance().getEnvConfigRef(ModuleBE_PermissionsAssert);
-		// const currentConfig = await envConfigRef.get({});
-		// currentConfig.strictMode = true;
-		// await envConfigRef.set(currentConfig);
+		// MemKey_ServerApi.get().addPostCallAction(async () => {
+		// 	const envConfigRef = Storm.getInstance().getEnvConfigRef(ModuleBE_PermissionsAssert);
+		// 	const currentConfig = await envConfigRef.get({});
+		// 	currentConfig.strictMode = true;
+		// 	await envConfigRef.set(currentConfig);
+		// });
 	};
-
-	// _createProject = async () => {
-	// 	const existingProject = await ModuleBE_PermissionProject.query.custom({limit: 1});
-	// 	if (existingProject.length > 0)
-	// 		throw new BadImplementationException(`There are already ${existingProject.length} projects in the system.. there should be only 1`);
-	//
-	// 	//Create New Project
-	// 	const project = await ModuleBE_PermissionProject.create.item({name: 'New Project'} as PreDB<DB_PermissionProject>);
-	// 	// Create Project Structure & Super Admin
-	// 	const {domains, levels} = await this.createProjectStructure(project);
-	//
-	// 	const allRoutes = Storm.getInstance().getRoutes();
-	//
-	// 	//Map out apis
-	// 	const apis: Omit<PreDB<DB_PermissionApi>, '_auditorId'>[] = allRoutes.map(route => {
-	// 		return {
-	// 			projectId: project._id,
-	// 			path: route.path,
-	// 		};
-	// 	}).filter(i => i.path !== '*');
-	//
-	// 	// Create Project Routes
-	// 	await this.createProjectRoutes(project, domains, levels, apis);
-	// };
 
 	assignSuperAdmin = async () => {
 		const existingSuperAdmin = (await ModuleBE_PermissionUserDB.query.custom({where: {__groupIds: {$ac: GroupId_SuperAdmin}}, limit: 1}))[0];
 		if (existingSuperAdmin)
 			return;
 
-		const currentUser = (await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId: MemKey_AccountId.get()}));
+		const currentUser = (await ModuleBE_PermissionUserDB.query.custom({where: {accountId: MemKey_AccountId.get()}}))[0];
 		if (!currentUser)
 			throw new MUSTNeverHappenException('User permissions document must exist at this point');
 
 		(currentUser.groups || (currentUser.groups = [])).push({groupId: GroupId_SuperAdmin});
 		await ModuleBE_PermissionUserDB.set.item(currentUser);
-	};
-
-	createProjectRoutes = async (project: DB_PermissionProject, domains: DB_PermissionDomain[], levels: DB_PermissionAccessLevel[], apis: Omit<PreDB<DB_PermissionApi>, '_auditorId'>[]) => {
-		//Connect default domain access levels to correct apis
-		// _keys(defaultDomainDbDefMap).forEach(namespace => {
-		// 	const domain = domains.find(i => i.namespace === namespace)!;
-		// 	const relevantLevels = levels.filter(i => i.domainId === domain._id);
-		// 	const relevantApis = apis.filter(i => defaultDomainDbDefMap[namespace].some(dbDef => i.path.includes(dbDef.dbName)));
-		//
-		// 	relevantLevels.forEach(level => {
-		// 		const lookupWords = defaultLevelsRouteLookupWords[level.name];
-		// 		if (!lookupWords)
-		// 			return;
-		//
-		// 		relevantApis.filter(i => lookupWords.some(word => i.path.includes(word)))
-		// 			.forEach(api => {
-		// 				if (!api.accessLevelIds)
-		// 					api.accessLevelIds = [];
-		// 				api.accessLevelIds.push(level._id);
-		// 			});
-		// 	});
-		// });
-		//
-		// await ModuleBE_PermissionApi.create.all(apis as PreDB<DB_PermissionApi>[]);
+		await ModuleBE_SessionDB.session.rotate();
 	};
 
 	private connectDomainToRoutes = async (data: Request_ConnectDomainToRoutes) => {

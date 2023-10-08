@@ -18,9 +18,10 @@
 
 import * as React from 'react';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
-import {Request_RegisterAccount, RequestBody_RegisterAccount} from '../../shared';
+import {AccountEmail, PasswordWithCheck, Request_RegisterAccount, RequestBody_RegisterAccount} from '../../shared';
 import {ComponentSync, LL_V_C, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_Account} from '../modules/ModuleFE_Account';
+import {StorageKey_DeviceId} from '../core/consts';
 
 
 type State<T> = {
@@ -40,7 +41,7 @@ type InputField = {
 
 type Form<T> = { [K in keyof T]: InputField }
 
-const form: Form<RequestBody_RegisterAccount> = {
+const form: Form<AccountEmail & PasswordWithCheck> = {
 	email: {
 		className: '',
 		type: 'text',
@@ -97,7 +98,7 @@ export class Component_Register
 			)}
 			{this.renderErrorMessages()}
 			<TS_BusyButton onClick={this.registerClicked}
-						   className={`clickable ts-account__action-button`}>Register</TS_BusyButton>
+										 className={`clickable ts-account__action-button`}>Register</TS_BusyButton>
 		</LL_V_C>;
 	}
 
@@ -122,7 +123,7 @@ export class Component_Register
 			return this.setState({errorMessages: errors});
 
 		try {
-			await ModuleFE_Account.vv1.registerAccount(this.state.data as Request_RegisterAccount).executeSync();
+			await ModuleFE_Account.vv1.registerAccount({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Request_RegisterAccount).executeSync();
 		} catch (_err: any) {
 			const err = _err as Error;
 			this.setState({errorMessages: [err.message]});

@@ -24,7 +24,6 @@ import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
 import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 
 
 export type PermissionsModuleFEConfig = {
@@ -57,20 +56,16 @@ export class ModuleFE_PermissionsAssert_Class
 		super();
 
 		this.v1 = {
-			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject, this.onProjectCreated),
+			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject),
 			connectDomainToRoutes: apiWithBody(ApiDef_Permissions.v1.connectDomainToRoutes, async () => await ModuleFE_PermissionsApi.v1.sync().executeSync())
 		};
 	}
-
-	private onProjectCreated = async () => {
-		ModuleFE_Account.logout();
-	};
 
 	getAccessLevelByKeyString(key: string) {
 		return this.getAccessLevel(this.getPermissionKey(key));
 	}
 
-	getAccessLevel(key: PermissionKey_FE<string>): AccessLevel {
+	getAccessLevel(key: PermissionKey_FE): AccessLevel {
 		const keyData = key.get();
 		if (!exists(keyData))
 			return SessionKey_StrictMode_FE.get() ? AccessLevel.Undefined : AccessLevel.HasAccess;
@@ -81,7 +76,7 @@ export class ModuleFE_PermissionsAssert_Class
 		const userAccessLevels = SessionKey_Permissions_FE.get();
 		try {
 			const canAccess = _keys(keyData._accessLevels).reduce((hasAccess, domainId) => {
-				return hasAccess && userAccessLevels[domainId]  >= keyData._accessLevels[domainId];
+				return hasAccess && userAccessLevels[domainId] >= keyData._accessLevels[domainId];
 			}, true);
 			return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
 		} catch (e) {
@@ -89,7 +84,7 @@ export class ModuleFE_PermissionsAssert_Class
 		}
 	}
 
-	getPermissionKey(key: string) {
+	getPermissionKey(key: string): PermissionKey_FE {
 		return this.permissionKeys[key];
 	}
 

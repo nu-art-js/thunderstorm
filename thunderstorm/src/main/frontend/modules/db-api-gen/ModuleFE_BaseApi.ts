@@ -191,7 +191,7 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 				// @ts-ignore
 				// this.logInfo(`scheduling pending operation(${requestType}) for ${id}: ${item.label}`);
 				operation.pending = {request, requestType, onSuccess, onError};
-				operation.running.request.setOnCompleted(undefined);
+				operation.running.request.clearOnCompleted();
 			}
 
 			return request;
