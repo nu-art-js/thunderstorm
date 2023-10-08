@@ -107,7 +107,7 @@ export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defa
 		return Array.from(new Set(source));
 
 	const uniqueKeys = new Set(source.map(mapper));
-	return source.filter(item => exists(uniqueKeys.delete(mapper(item))));
+	return source.filter(item => uniqueKeys.delete(mapper(item)));
 }
 
 /**
