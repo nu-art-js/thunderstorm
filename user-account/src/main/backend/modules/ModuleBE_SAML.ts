@@ -110,7 +110,7 @@ export class ModuleBE_SAML_Class
 			const data = await this.assertImpl(body);
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
 
-			const accountWithoutPassword = {email: data.userId.toLowerCase(), type: 'user'};
+			const accountWithoutPassword = {email: data.userId.toLowerCase(), deviceId: data.loginContext.deviceId, type: 'user'};
 			MemKey_AccountEmail.set(accountWithoutPassword.email);
 
 			const session = await ModuleBE_AccountDB.account.saml(accountWithoutPassword);
@@ -167,7 +167,6 @@ export class ModuleBE_SAML_Class
 			});
 		});
 	});
-
 }
 
 export const ModuleBE_SAML = new ModuleBE_SAML_Class();

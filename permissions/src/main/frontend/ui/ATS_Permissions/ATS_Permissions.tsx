@@ -79,7 +79,7 @@ export class ATS_Permissions
 				<div style={{width: 300}}><Permissions_DropDown.Project
 					selected={this.state.selectedProjectId}
 					onSelected={project => this.setState({selectedProjectId: project._id})}/></div>
-				<TS_Button className={'item-list__add-button'} onClick={() => ModuleFE_PermissionsAssert
+				<TS_Button className={'item-list__add-button'} onClick={async () => await ModuleFE_PermissionsAssert
 					.v1.createProject({}).executeSync()}>Create Project</TS_Button>
 			</LL_H_C>
 			{this.renderTabs()}
