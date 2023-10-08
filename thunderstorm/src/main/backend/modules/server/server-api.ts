@@ -32,7 +32,8 @@ import {
 	isErrorOfType,
 	Logger,
 	LogLevel,
-	MUSTNeverHappenException, Promise_all_sequentially,
+	MUSTNeverHappenException,
+	Promise_all_sequentially,
 	tsValidate,
 	TypedMap,
 	ValidationException,
@@ -52,10 +53,13 @@ import {
 	MemKey_HttpRequestMethod,
 	MemKey_HttpRequestPath,
 	MemKey_HttpRequestQuery,
-	MemKey_HttpRequestUrl, MemKey_HttpResponse
+	MemKey_HttpRequestUrl,
+	MemKey_HttpResponse
 } from './consts';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
+
+export const MemKey_ServerApi = new MemKey<ServerApi<any>>('server-api', true);
 
 export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	extends Logger {
@@ -71,6 +75,8 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	private bodyValidator?: ValidatorTypeResolver<API['B']>;
 	private queryValidator?: ValidatorTypeResolver<API['P']>;
 	readonly apiDef: ApiDef<API>;
+	private postCallActions: (() => Promise<any>)[] = [];
+
 	// readonly method: HttpMethod;
 	// readonly relativePath: string;
 
@@ -82,6 +88,11 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 
 	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
 		this.middlewares = middlewares;
+		return this;
+	}
+
+	addPostCallAction(sideEffect: () => Promise<any>) {
+		this.postCallActions.push(sideEffect);
 		return this;
 	}
 
@@ -132,9 +143,24 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			path = `/${path}`;
 		const fullPath = `${prefixUrl ? prefixUrl : ''}${path}`;
 		this.setTag(fullPath);
-		router[this.apiDef.method](fullPath, this.call);
+		router[this.apiDef.method](fullPath, this.callWrapper);
 		this.url = `${HttpServer.getBaseUrl()}${fullPath}`;
 	}
+
+	private callWrapper = async (req: ExpressRequest, res: ExpressResponse) => {
+		await this.call(req, res);
+		await this.performPostCallActions();
+	};
+
+	private performPostCallActions = async () => {
+		try {
+			await Promise_all_sequentially(this.postCallActions);
+		} catch (e: any) {
+			this.logError('Error while performing post call actions', e);
+		} finally {
+			this.postCallActions = [];
+		}
+	};
 
 	call = async (req: ExpressRequest, res: ExpressResponse) => {
 		return new MemStorage().init(async () => {
@@ -171,6 +197,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			else
 				this.logVerbose(`-- No Body`);
 
+			MemKey_ServerApi.set(this);
 			MemKey_HttpRequest.set(req);
 			MemKey_HttpResponse.set(response);
 			MemKey_HttpRequestHeaders.set(req.headers);

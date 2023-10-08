@@ -6,6 +6,7 @@ import {
 	tsValidator_nonMandatoryString
 } from '@nu-art/ts-common/validator/validators';
 import {
+	tsValidateArray,
 	tsValidateBoolean,
 	tsValidateString,
 	tsValidateTimestamp,
@@ -18,6 +19,7 @@ import {_accountTypes} from './consts';
 export const Validator_Modifiable: DBProto_SessionType['modifiablePropsValidator'] = {
 	accountId: tsValidateUniqueId,
 	deviceId: tsValidateUniqueId,
+	prevSession: tsValidateArray(tsValidateString(), false),
 	sessionId: tsValidateString(),
 	timestamp: tsValidateTimestamp(),
 	needToRefresh: tsValidateBoolean(false)

@@ -1,8 +1,8 @@
 import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
-import {_SessionKey_Session, DBDef_Session, DBProto_SessionType, HeaderKey_SessionId} from '../../shared';
-import {Header_SessionId, MemKey_AccountId, MemKey_SessionData, SessionKey_Account_BE, SessionKey_Session_BE} from '../core/consts';
+import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_SessionType, HeaderKey_SessionId} from '../../shared';
+import {Header_SessionId, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Account_BE, SessionKey_Session_BE} from '../core/consts';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import Transaction = firestore.Transaction;
@@ -29,24 +29,28 @@ export class ModuleBE_SessionDB_Class
 		if (typeof sessionId !== 'string')
 			throw new ApiException(401, `Invalid session id: ${sessionId}`);
 
-		let dbSession;
-		try {
-			dbSession = await ModuleBE_SessionDB.query.uniqueWhere({sessionId});
-		} catch (err: any) {
-			throw new ApiException(401, `Invalid session id: ${sessionId}`, err);
-		}
+		const sessionData = await this.runTransaction(async transaction => {
+			let dbSession;
+			try {
+				dbSession = await ModuleBE_SessionDB.query.uniqueWhere({sessionId}, transaction);
+			} catch (err: any) {
+				try {
+					dbSession = await ModuleBE_SessionDB.query.uniqueWhere({prevSession: {$ac: sessionId}}, transaction);
+				} catch (err: any) {
+					throw new ApiException(401, `Invalid session id: ${sessionId}`, err);
+				}
+			}
 
-		let sessionData = this.sessionData.decode(sessionId);
-		if (!this.session.isValid(sessionData))
-			throw new ApiException(401, 'Session timed out');
+			MemKey_SessionObject.set(dbSession);
+			let sessionData = this.sessionData.decode(sessionId);
+			if (!this.session.isValid(sessionData))
+				throw new ApiException(401, 'Session timed out');
 
-		if (dbSession.needToRefresh || this.session.isAlmostExpired(dbSession.timestamp, sessionData)) {
-			this.logInfo(`Rotating sessionId for Account: ${SessionKey_Account_BE.get(sessionData)._id}`);
-
-			const session = await this.session.create(dbSession.accountId, dbSession.deviceId);
-			sessionData = session.sessionData;
-			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
-		}
+			if (dbSession.needToRefresh || this.session.isAlmostExpired(dbSession.timestamp, sessionData)) {
+				sessionData = await this.session.rotate(dbSession, sessionData);
+			}
+			return sessionData;
+		});
 
 		MemKey_SessionData.set(sessionData);
 	};
@@ -86,20 +90,21 @@ export class ModuleBE_SessionDB_Class
 	};
 
 	session = {
-		create: async (accountId: string, deviceId: string, transaction?: Transaction) => {
-			return this.session.createCustom(accountId, deviceId, d => d, transaction);
+		create: async (accountId: string, deviceId: string, prevSession: string[] = [], transaction?: Transaction) => {
+			return this.session.createCustom(accountId, deviceId, d => d, prevSession, transaction);
 		},
-		createCustom: async (accountId: string, deviceId: string, manipulate: (sessionData: TS_Object) => TS_Object, transaction?: Transaction) => {
-			const sessionData = await this.sessionData.collect(accountId, deviceId, manipulate);
+		createCustom: async (accountId: string, deviceId: string, manipulate: (sessionData: TS_Object) => TS_Object, prevSession?: string[], transaction?: Transaction) => {
+			const sessionData = await this.sessionData.collect(accountId, deviceId, manipulate, transaction);
 			const session = {
 				accountId,
 				deviceId,
+				prevSession,
 				sessionId: sessionData.encoded,
 				timestamp: currentTimeMillis()
 			};
 
 			await this.set.item(session, transaction);
-			return {sessionId: sessionData.encoded, sessionData};
+			return {sessionId: sessionData.encoded, sessionData: sessionData.raw};
 		},
 		isValid: (sessionData?: TS_Object) => {
 			const expiration = SessionKey_Session_BE.get(sessionData).expiration;
@@ -124,6 +129,13 @@ export class ModuleBE_SessionDB_Class
 				throw new ApiException(404, 'Missing sessionId');
 
 			await this.delete.query({where: {sessionId}}, transaction);
+		},
+		rotate: async (dbSession: DB_Session = MemKey_SessionObject.get(), sessionData: TS_Object = MemKey_SessionData.get(), transaction?: Transaction) => {
+			this.logInfo(`Rotating sessionId for Account: ${SessionKey_Account_BE.get(sessionData)._id}`);
+
+			const session = await this.session.create(dbSession.accountId, dbSession.deviceId, [dbSession.sessionId, ...(dbSession.prevSession || [])], transaction);
+			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
+			return session.sessionData;
 		}
 	};
 }

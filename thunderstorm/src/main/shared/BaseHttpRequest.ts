@@ -249,7 +249,14 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
-	setOnCompleted(onCompleted?: (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+	clearOnCompleted = () => {
+		delete this.onCompleted;
+	};
+
+	setOnCompleted = (onCompleted?: (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) => {
+		if (!onCompleted)
+			return this;
+
 		if (this.onCompleted && onCompleted) {
 			const _onCompleted = this.onCompleted;
 			this.onCompleted = async (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => {
@@ -257,9 +264,12 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 				await onCompleted(response, input, request);
 			};
 		} else
-			this.onCompleted = onCompleted;
+			this.onCompleted = async (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => {
+				await onCompleted?.(response, input, request);
+			};
+
 		return this;
-	}
+	};
 
 	setOnError(onError?: (errorResponse: HttpException, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
 		this.onError = onError;

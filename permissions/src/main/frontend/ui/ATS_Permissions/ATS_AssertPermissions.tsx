@@ -39,7 +39,7 @@ export class ATS_AssertPermissions
 	render() {
 		return <LL_V_L id={'dev-page__permissions'}>
 			<LL_H_C className="match_width flex__space-between">{TS_AppTools.renderPageHeader('Permissions Editor')}
-				<TS_Button className={'item-list__add-button'} onClick={() => ModuleFE_PermissionsAssert
+				<TS_Button className={'item-list__add-button'} onClick={async () => await ModuleFE_PermissionsAssert
 					.v1.createProject({}).executeSync()}>Create Project</TS_Button>
 			</LL_H_C>
 		</LL_V_L>;
