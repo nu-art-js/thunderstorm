@@ -19,6 +19,7 @@ export type DB_Session = DB_Object & {
 	sessionId: string
 	timestamp: number
 	needToRefresh?: boolean
+	prevSession?: string[]
 }
 
 type VersionsSession = VersionsDeclaration<DB_Session, ['1.0.0'], [DB_Session]>

@@ -213,7 +213,7 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 		// 	return undefined;
 
 		if (!(this.key in sessionData))
-			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
+			throw new BadImplementationException(`Couldn't find key "${this.key}" in session data`);
 
 		return sessionData[this.key] as Binder['value'];
 	}

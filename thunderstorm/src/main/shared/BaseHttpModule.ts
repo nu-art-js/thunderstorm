@@ -56,9 +56,9 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		return this.config.compress;
 	}
 
-	setDefaultOnComplete(defaultOnComplete: (response: unknown, input: unknown, request: BaseHttpRequest<any>) => Promise<any>) {
+	setDefaultOnComplete = (defaultOnComplete: (response: unknown, input: unknown, request: BaseHttpRequest<any>) => Promise<any>) => {
 		this.defaultOnComplete = defaultOnComplete;
-	}
+	};
 
 	addDefaultHeader(key: string, header: (() => string | string[]) | string | string[]) {
 		this.defaultHeaders[key] = header;

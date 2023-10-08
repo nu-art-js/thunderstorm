@@ -218,7 +218,7 @@ export class ModuleBE_AccountDB_Class
 				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email}, transaction);
 				await this.password.assertPasswordMatch(dbAccount, credentials.password);
 				const safeAccount = makeAccountSafe(dbAccount);
-				const session = await ModuleBE_SessionDB.session.create(safeAccount._id, credentials.deviceId, transaction);
+				const session = await ModuleBE_SessionDB.session.create(safeAccount._id, credentials.deviceId, [], transaction);
 				MemKey_AccountId.set(safeAccount._id);
 				await dispatch_onAccountLogin.dispatchModuleAsync(safeAccount, transaction!);
 				MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);

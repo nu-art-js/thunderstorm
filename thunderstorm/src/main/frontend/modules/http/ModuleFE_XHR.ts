@@ -187,9 +187,6 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 		if (!this.xhr)
 			throw new BadImplementationException('No xhr object!');
 
-		if (!this.xhr.response)
-			throw new BadImplementationException(`xhr didn't return yet`);
-
 		return this.xhr.getResponseHeader(headerKey) || undefined;
 	}
 }
