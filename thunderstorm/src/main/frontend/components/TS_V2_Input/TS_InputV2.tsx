@@ -28,7 +28,7 @@ import {UIProps_EditableItem} from '../../utils/EditableItem';
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
 type InputState = {
-	id: string,
+	id?: string,
 	name?: string,
 	initialValue?: string
 	value?: string
@@ -49,7 +49,7 @@ type BaseInfraProps_TS_InputV2 = {
 }
 
 type BaseAppLevelProps_TS_InputV2 = Omit<HTMLProps<HTMLInputElement>, 'onChange' | 'onBlur' | 'ref'> & BaseInfraProps_TS_InputV2 & {
-	id: string
+	id?: string
 	placeholder?: string
 	name?: string
 	focus?: boolean
