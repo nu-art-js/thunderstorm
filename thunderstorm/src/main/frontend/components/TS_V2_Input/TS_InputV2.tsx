@@ -40,10 +40,12 @@ type TypeProps_TS_Input = {
 }
 
 type BaseInfraProps_TS_InputV2 = {
+	saveEvent?: ('blur' | 'accept' | 'change')[]
+	forceAcceptKeys?: MetaKeys[]
+
 	className?: string
 	style?: CSSProperties
 	trim?: boolean,
-	forceAcceptKeys?: MetaKeys[]
 	autoComplete?: string
 	spellCheck?: boolean
 }
@@ -67,9 +69,7 @@ export type Props_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & TypeProps_TS_Input
 }
 
 export type NativeProps_TS_InputV2 = Props_TS_InputV2
-export type EditableItemProps_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & UIProps_EditableItem<any, any, string> & {
-	saveEvent: ('blur' | 'accept' | 'change')[]
-}
+export type EditableItemProps_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & UIProps_EditableItem<any, any, string>
 
 /**
  * A better way to capture user input
@@ -93,13 +93,13 @@ export class TS_InputV2
 			let onChange;
 			let onBlur;
 			let onAccept;
-			if (saveEvent.includes('change'))
+			if (saveEvent!.includes('change'))
 				onChange = (value: string) => editable.update(prop, value);
 
-			if (saveEvent.includes('blur'))
+			if (saveEvent!.includes('blur'))
 				onBlur = (value: string) => editable.update(prop, value);
 
-			if (saveEvent.includes('accept'))
+			if (saveEvent!.includes('accept'))
 				onAccept = (value: string) => editable.update(prop, value);
 
 			return <TS_InputV2
@@ -114,7 +114,8 @@ export class TS_InputV2
 	};
 
 	static defaultProps = {
-		forceAcceptKeys: ['ctrlKey', 'metaKey'] as MetaKeys[]
+		forceAcceptKeys: ['ctrlKey', 'metaKey'] as MetaKeys[],
+		saveEvent: ['accept']
 	};
 
 	protected ref?: HTMLInputElement;
