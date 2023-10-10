@@ -1,6 +1,6 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {Minute, UniqueId} from '@nu-art/ts-common';
-import {AccountType, DB_Account, UI_Account} from './types';
+import {DB_BaseObject, Minute, UniqueId} from '@nu-art/ts-common';
+import {AccountType, UI_Account} from './types';
 
 
 export const HeaderKey_SessionId = 'x-session-id';
@@ -12,74 +12,63 @@ export const QueryParam_SessionId = HeaderKey_SessionId;
 export const QueryParam_RedirectUrl = 'redirectUrl';
 export const HeaderKey_CurrentPage = 'current-page';
 
-export type Request_RegisterAccount = {
-	email: string
-	password: string
-	password_check: string
+export type Response_Auth = UI_Account & DB_BaseObject
+
+type DBAccountType = {
 	type: AccountType
-	// customProps?: StringMap
 }
 
-export type Response_Auth = DB_Account & {
-	sessionId: string
-}
-
-export type RequestBody_RegisterAccount = {
+export type AccountEmail = {
 	email: string
+}
+export type AccountEmailWithDevice = AccountEmail & {
+	deviceId: string
+}
+
+export type AccountPassword = {
 	password: string
-	password_check: string
-};
-
-export type Request_CreateAccount = {
-	email: string
-	type: AccountType
-	password?: string
-	password_check?: string
-};
-
-export type ResponseBody_CreateAccount = UI_Account;
-
-
-export type RequestBody_ValidateSession = {}
-export type ResponseBody_ValidateSession = {}
-
-export type RequestBody_ChangePassword = {
-	userEmail: string, originalPassword: string, newPassword: string, newPassword_check: string
-}
-export type ResponseBody_ChangePassword = Response_Auth & {}
-
-export type RequestBody_SetPassword = {
-	userEmail: string,
-	password: string,
-	password_check: string;
 }
 
+export type PasswordWithCheck = AccountPassword & {
+	passwordCheck: string
+}
+
+export type AccountToAssertPassword = AccountEmail & Partial<PasswordWithCheck>
+export type AccountToSpice = AccountEmail & AccountPassword
+export type Request_RegisterAccount = DBAccountType & AccountEmailWithDevice & PasswordWithCheck
+export type RequestBody_RegisterAccount = AccountEmailWithDevice & PasswordWithCheck
+export type Request_CreateAccount = DBAccountType & AccountEmail & Partial<PasswordWithCheck>
+export type ResponseBody_ChangePassword = Response_Auth
+export type RequestBody_SetPassword = PasswordWithCheck
+export type RequestBody_Login = AccountEmailWithDevice & AccountPassword
+
+export type RequestBody_ChangePassword = PasswordWithCheck & {
+	oldPassword: string
+}
 export type RequestParams_LoginSAML = {
 	[QueryParam_RedirectUrl]: string
+	deviceId: string
 };
 
 export type Response_LoginSAML = {
 	loginUrl: string
 };
 
-export type Request_LoginAccount = {
-	email: string
-	password: string
-}
+export type Request_LoginAccount = AccountEmailWithDevice & AccountPassword
 export type RequestBody_CreateToken = { accountId: UniqueId, ttl: number };
+
 export type Response_CreateToken = { token: string };
 
 type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParams_LoginSAML> };
 type TypedApi_Login = { login: BodyApi<Response_Auth, Request_LoginAccount> };
 type TypedApi_Logout = { logout: QueryApi<void, {}> };
 type TypedAPI_RegisterAccount = { registerAccount: BodyApi<Response_Auth, RequestBody_RegisterAccount> };
-type TypedApi_CreateAccount = { createAccount: BodyApi<DB_Account, Request_CreateAccount> };
+type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account & DB_BaseObject, Request_CreateAccount> };
 type TypedApi_ChangedPassword = {
 	changePassword: BodyApi<ResponseBody_ChangePassword, RequestBody_ChangePassword>
 };
 type TypedApi_CreateToken = { createToken: BodyApi<Response_CreateToken, RequestBody_CreateToken> };
 type TypedApi_SetPassword = { setPassword: BodyApi<Response_Auth, RequestBody_SetPassword> };
-
 
 const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'}} as const;
 const API_Login = {login: {method: HttpMethod.POST, path: 'v1/account/login', timeout: Minute}} as const;
@@ -113,7 +102,6 @@ const API_ValidateSession = {
 	}
 } as const;
 
-
 export type ApiStructBE_Account = {
 	vv1: TypedAPI_RegisterAccount
 		& TypedApi_CreateAccount
@@ -136,7 +124,6 @@ export const ApiDefBE_Account: ApiDefResolver<ApiStructBE_Account> = {
 		...API_SetPassword,
 	}
 };
-
 
 export type ApiStructFE_Account = {
 	vv1: TypedAPI_RegisterAccount
@@ -163,15 +150,13 @@ export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
 	}
 };
 
-
-export type PostAssertBody = {
-	SAMLResponse: string
+export type RequestBody_AssertSAML = {
 	RelayState: string
 };
 
 export type ApiStruct_SAML_BE = {
 	vv1: TypedApi_LoginSaml & {
-		assertSAML: BodyApi<void, PostAssertBody>
+		assertSAML: BodyApi<void, RequestBody_AssertSAML>
 	}
 }
 

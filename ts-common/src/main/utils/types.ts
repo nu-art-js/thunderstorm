@@ -139,7 +139,7 @@ export type UniqueParam<Type extends DB_Object, Ks extends keyof PreDB<Type> = D
 	| IndexKeys<Type, Ks>;
 
 export type Draftable = { _isDraft: boolean };
-export type ResolvableContent<T> = T | (() => T);
+export type ResolvableContent<T, K = never> = T | ((param: K) => T);
 
 export type Auditable = {
 	_audit?: AuditBy;

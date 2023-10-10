@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {RequestBody_RegisterAccount} from '../../main';
 import {PasswordAssertionConfig} from '../../main/shared/assertion';
-import {ModuleBE_v2_AccountDB} from '../../main/backend';
+import {ModuleBE_AccountDB} from '../../main/backend';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
 
@@ -19,14 +19,14 @@ type RegisterAccountTest = TestSuite<registerAccountInput, boolean>;
 
 const TestCases_FB_Register: RegisterAccountTest['testcases'] = [
 	{
-		description: 'Simple',
-		input: {account: {email: 'test@email.com', password: '1234', password_check: '1234'}},
+		description: 'Simple account',
+		input: {account: {email: 'test@email.com', password: '1234', passwordCheck: '1234'}},
 		result: true,
 	},
 	{
 		description: 'Can register false',
 		input: {
-			account: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			account: {email: 'test@email.com', password: '1234', passwordCheck: '1234'},
 			canRegister: false,
 			ignoreErrorWithText: 'Registration is disabled'
 		},
@@ -35,7 +35,7 @@ const TestCases_FB_Register: RegisterAccountTest['testcases'] = [
 	{
 		description: 'With Assertion - Pass',
 		input: {
-			account: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			account: {email: 'test@email.com', password: '1234', passwordCheck: '1234'},
 
 			assertionConfig: {'min-length': 0, 'max-length': 5}
 		},
@@ -44,7 +44,7 @@ const TestCases_FB_Register: RegisterAccountTest['testcases'] = [
 	{
 		description: 'With Assertion - Fail',
 		input: {
-			account: {email: 'test@email.com', password: '123456', password_check: '123456'},
+			account: {email: 'test@email.com', password: '123456', passwordCheck: '123456'},
 			ignoreErrorWithText: 'Password assertion failed',
 			assertionConfig: {'min-length': 0, 'max-length': 5}
 		},
@@ -53,7 +53,7 @@ const TestCases_FB_Register: RegisterAccountTest['testcases'] = [
 	{
 		description: 'Password Mismatch',
 		input: {
-			account: {email: 'test@email.com', password: '1234', password_check: '12345'},
+			account: {email: 'test@email.com', password: '1234', passwordCheck: '12345'},
 			ignoreErrorWithText: 'Password does not match password check',
 			assertionConfig: {'min-length': 0, 'max-length': 5}
 		},
@@ -74,21 +74,24 @@ export const TestSuite_Accounts_Register: RegisterAccountTest = {
 			'lower-case-letters': undefined,
 			'special-chars': undefined
 		};
-		ModuleBE_v2_AccountDB.setDefaultConfig({
+		ModuleBE_AccountDB.setDefaultConfig({
 			canRegister: testCase.input.canRegister ?? true,
 			passwordAssertion: {...cleanObject, ...testCase.input.assertionConfig} // setting all redundant fields as undefined verifies the config doesn't carry garbage fields.
 		});
 		// // @ts-ignore // debug only
-		// console.log(ModuleBE_v2_AccountDB.config); // debug only
+		// console.log(ModuleBE_AccountDB.config); // debug only
 
-		await ModuleBE_v2_AccountDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_AccountDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		let result: boolean | undefined;
 		try {
-			await new MemStorage().init(() => ModuleBE_v2_AccountDB.account.register(testCase.input.account));
+			await new MemStorage().init(() => ModuleBE_AccountDB.account.register(testCase.input.account));
 			result = true;
 		} catch (e: any) {
-			if (!testCase.input.ignoreErrorWithText || !(e as Exception).message.includes(testCase.input.ignoreErrorWithText))
+			if (!testCase.input.ignoreErrorWithText || !(e as Exception).message.includes(testCase.input.ignoreErrorWithText)) {
 				console.error(`${testCase.description} failed because: ${e.message}`);
+				throw e;
+			}
+
 			result = false;
 		}
 

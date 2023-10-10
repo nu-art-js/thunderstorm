@@ -20,22 +20,34 @@
 import {
 	_keys,
 	ApiException,
+	arrayToMap,
 	BadImplementationException,
 	batchActionParallel,
+	exists,
 	filterDuplicates,
 	filterInstances,
 	ImplementationMissingException,
 	Module,
 	StringMap,
+	TypedKeyValue,
 	TypedMap
 } from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
+import {
+	addRoutes,
+	createBodyServerApi,
+	ModuleBE_BaseDBV2,
+	ModuleBE_BaseDBV3,
+	ModuleBE_v2_SyncManager,
+	ServerApi_Middleware,
+	Storm
+} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {
 	ApiDef_PermissionsAssert,
 	Base_AccessLevel,
 	DB_PermissionAccessLevel,
+	DB_PermissionApi,
 	Request_AssertApiForUser
 } from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
@@ -49,6 +61,7 @@ import {
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {SessionKey_Permissions_BE} from '../consts';
 import {PermissionKey_BE} from '../PermissionKey_BE';
+import {ApiModule} from './ModuleBE_Permissions';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -62,13 +75,20 @@ type Config = {
  * [DomainId uniqueString]: accessLevel's numerical value
  */
 export const MemKey_UserPermissions = new MemKey<TypedMap<number>>('user-permissions');
+export type SessionData_StrictMode = TypedKeyValue<'strictMode', boolean>
 
 export class ModuleBE_PermissionsAssert_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements CollectSessionData<SessionData_StrictMode> {
 
 	private projectId!: string;
 	_keys: TypedMap<boolean> = {};
 	permissionKeys: TypedMap<PermissionKey_BE<any>> = {};
+
+	// constructor() {
+	// 	super();
+	// 	this.setMinLevel(LogLevel.Debug);
+	// }
 
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async () => {
 		await this.CustomMiddleware(keys, async (projectId: string) => {
@@ -78,7 +98,11 @@ export class ModuleBE_PermissionsAssert_Class
 	};
 
 	readonly LoadPermissionsMiddleware: ServerApi_Middleware = async () => {
-		MemKey_UserPermissions.set(SessionKey_Permissions_BE.get());
+		try {
+			MemKey_UserPermissions.get();
+		} catch (err) {
+			MemKey_UserPermissions.set(SessionKey_Permissions_BE.get());
+		}
 	};
 
 	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async () => {
@@ -121,11 +145,69 @@ export class ModuleBE_PermissionsAssert_Class
 	// 	this.setMinLevel(LogLevel.Debug);
 	// }
 
+	async __collectSessionData(): Promise<SessionData_StrictMode> {
+		return {key: 'strictMode', value: this.isStrictMode()};
+	}
+
 	init() {
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
+		ModuleBE_v2_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
+			// return dbModules;
+			//Filter out any module we don't have permission to sync
+			const userPermissions = MemKey_UserPermissions.get();
 
+			const mapDbNameToApiModules = arrayToMap(Storm.getInstance()
+				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+
+			const paths = dbModules.map(module => {
+				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbName];
+				if (!mapDbNameToApiModule) {
+					this.logWarning(`no module found for ${module.dbDef.dbName}`);
+					return undefined;
+				}
+
+				return mapDbNameToApiModule.apiDef['v1']['sync'].path;
+			});
+			// this.logWarning(`Paths(${paths.length}):`, paths);
+			const _allApis = await ModuleBE_PermissionApi.query.where({});
+
+			const apis = _allApis.filter(_api => paths.includes(_api.path));
+			const mapPathToDBApi: TypedMap<DB_PermissionApi> = arrayToMap(apis, api => api.path);
+
+			return dbModules.filter((dbModule, index) => {
+				const path = paths[index];
+				if (!path) {
+					this.logWarningBold('no path');
+					return false;
+				}
+
+				const dbApi = mapPathToDBApi[path];
+				if (!dbApi) {
+					this.logWarningBold(`no dbApi ${path}`);
+					return !ModuleBE_PermissionsAssert.isStrictMode();
+				}
+
+				const accessLevels = dbApi._accessLevels;
+				return _keys(accessLevels!).reduce((hasAccess, domainId) => {
+					if (!hasAccess)
+						return false;
+
+					const userDomainAccessValue = userPermissions[domainId];
+					const apiRequiredAccessValue = accessLevels![domainId];
+					if (!userDomainAccessValue)
+						return false;
+
+					if (!exists(userDomainAccessValue) || userDomainAccessValue < apiRequiredAccessValue) {
+						this.logErrorBold(`${(userDomainAccessValue ?? 0)} < ${apiRequiredAccessValue} === ${(userDomainAccessValue ?? 0) < apiRequiredAccessValue}`);
+						return false;
+					}
+
+					return hasAccess;
+				}, true);
+			});
+		});
 	}
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {
@@ -155,15 +237,19 @@ export class ModuleBE_PermissionsAssert_Class
 			if (!userPermissions[domainId])
 				throw new ApiException(403, 'Missing Access For This Domain');
 
-			if ((userPermissions[domainId] ?? 0) <= apiDetails.dbApi._accessLevels![domainId]) {
-				this.logErrorBold(`${(userPermissions[domainId] ?? 0)} <= ${apiDetails.dbApi._accessLevels![domainId]} === ${(userPermissions[domainId] ?? 0) <= apiDetails.dbApi._accessLevels![domainId]}`);
+			if (!exists(userPermissions[domainId]) || userPermissions[domainId] < apiDetails.dbApi._accessLevels![domainId]) {
+				this.logErrorBold(`${(userPermissions[domainId] ?? 0)} < ${apiDetails.dbApi._accessLevels![domainId]} === ${(userPermissions[domainId] ?? 0) < apiDetails.dbApi._accessLevels![domainId]}`);
 				throw new ApiException(403, 'Action Forbidden');
 			}
 		});
 	}
 
 	async getApiDetails(_path: string, projectId: string) {
-		const path = _path.substring(0, (_path + '?').indexOf('?')); //Get raw path without query
+		let path = _path.substring(0, (_path + '?').indexOf('?')); //Get raw path without query
+		if (path.at(0) === '/')
+			path = path.substring(1);
+
+		this.logDebug(`Fetching Permission API for path: ${path} and project id: ${projectId}`);
 		const dbApi = (await ModuleBE_PermissionApi.query.custom({
 			where: {
 				path,
@@ -243,6 +329,10 @@ export class ModuleBE_PermissionsAssert_Class
 
 			this._keys[key] = true;
 		});
+	}
+
+	private isStrictMode() {
+		return !!this.config.strictMode;
 	}
 }
 

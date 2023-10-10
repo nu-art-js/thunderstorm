@@ -49,6 +49,7 @@ import {Response_DBSync} from '../../../shared';
 import {ModuleBE_v2_SyncManager} from '../sync-manager/ModuleBE_v2_SyncManager';
 import Transaction = firestore.Transaction;
 
+
 export type BaseDBApiConfigV3 = {
 	projectId?: string,
 	maxChunkSize: number

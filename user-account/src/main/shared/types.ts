@@ -6,8 +6,7 @@
 
 // export type DBProto_Test = DBProto<Proto_Test>
 
-
-import {AuditableV2, DB_Object, TypedKeyValue, UniqueId} from '@nu-art/ts-common';
+import {AuditableV2, DB_BaseObject, DB_Object, TypedKeyValue, UniqueId} from '@nu-art/ts-common';
 import {DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common/db/types';
 import {accountTypes} from './consts';
 
@@ -16,19 +15,21 @@ export type AccountType = typeof accountTypes[number];
 
 export type DB_Session = DB_Object & {
 	accountId: string
+	deviceId: string
 	sessionId: string
 	timestamp: number
+	needToRefresh?: boolean
+	prevSession?: string[]
 }
 
 type VersionsSession = VersionsDeclaration<DB_Session, ['1.0.0'], [DB_Session]>
-type Proto_Session = Proto_DB_Object<DB_Session, keyof DB_Object, VersionsSession, 'accountId'>
+type Proto_Session = Proto_DB_Object<DB_Session, keyof DB_Object, VersionsSession, 'accountId' | 'deviceId'>
 
 export type DBProto_SessionType = DBProto<Proto_Session>
 export type UI_Session = DBProto_SessionType['uiType']
 
-
 export type _SessionKey_SessionId = TypedKeyValue<'_id', UniqueId>
-type SessionData_TTL = { timestamp: number, expiration: number, };
+type SessionData_TTL = { timestamp: number, expiration: number, deviceId: string };
 export type _SessionKey_Session = TypedKeyValue<'session', SessionData_TTL>
 
 export type DB_Account = DB_Object & AuditableV2 & {
@@ -42,11 +43,14 @@ export type DB_Account = DB_Object & AuditableV2 & {
 }
 
 export type SessionData_HasPassword = { hasPassword: boolean };
-export type _SessionKey_Account = TypedKeyValue<'account', DB_Account & SessionData_HasPassword>
-
+export type UI_SessionAccount = UI_Account & DB_BaseObject & SessionData_HasPassword;
+export type _SessionKey_Account = TypedKeyValue<'account', UI_SessionAccount>
 
 type VersionsAccount = VersionsDeclaration<DB_Account, ['1.0.0'], [DB_Account]>;
-export type Proto_Account = Proto_DB_Object<DB_Account, keyof DB_Object | keyof AuditableV2 | '_newPasswordRequired', VersionsAccount, 'email'>;
+type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'saltedPassword';
+
+export type Proto_Account = Proto_DB_Object<DB_Account, GeneratedKeys, VersionsAccount>;
 
 export type DBProto_AccountType = DBProto<Proto_Account>;
 export type UI_Account = DBProto_AccountType['uiType'];
+export type SafeDB_Account = UI_Account & DB_BaseObject;

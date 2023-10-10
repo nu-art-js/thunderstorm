@@ -79,10 +79,17 @@ export class Dispatcher<T,
 
 	public async dispatchModuleAsync(...p: P): Promise<R[]> {
 		return this.processModulesAsync<R>((listener: T) => {
+			// const newVar = this.resolveListenerName(listener);
+			// this.logVerbose(`Calling ${newVar} (${p})`);
 			// @ts-ignore
 			return listener[this.method](...p);
 		});
 	}
+
+	// private resolveListenerName(listener: any) {
+	// 	return 'name' in listener ? listener.name :
+	// 		'constructor' in listener ? listener['constructor']['name'] : '';
+	// }
 
 	public async dispatchModuleAsyncSerial(...p: P): Promise<R[]> {
 		return this.processModulesAsyncSerial<R>((listener: T) => {

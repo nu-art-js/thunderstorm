@@ -46,7 +46,7 @@ export type Proto_DB_Object<
 	Dependencies extends Exact<{ [K in SubsetKeys<keyof T, T, string | string[]>]?: DBProto<any> }, Dependencies> = never> = {
 
 	type: T,
-	generatedKeys: GeneratedKeys
+	generatedKeys: GeneratedKeys | keyof DB_Object
 	versions: Versions,
 	uniqueKeys: UniqueKeys
 	dependencies: Dependencies
@@ -55,10 +55,10 @@ export type Proto_DB_Object<
 export type DBProto<P extends Proto_DB_Object<any, any, any, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	dbType: P['type'],
-	generatedPropsValidator: ValidatorTypeResolver<GeneratedSubType>
+	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
-	generatedProps: (P['generatedKeys'] | keyof DB_Object)[]
+	generatedProps: P['generatedKeys'][]
 	versions: P['versions']['versions']
 	indices: DBIndex<P['type']>[]
 	uniqueParam: UniqueId | { [K in P['uniqueKeys']]: P['type'][K] }

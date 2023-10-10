@@ -17,6 +17,7 @@
  */
 
 import {utc} from 'moment';
+import * as moment from 'moment';
 import {AuditBy, Timestamp} from './types';
 
 
@@ -25,6 +26,7 @@ export const Minute = Second * 60;
 export const Hour = Minute * 60;
 export const Day = Hour * 24;
 export const Week = Day * 7;
+export const Year = Day * 365;
 
 export const Format_HHmmss_DDMMYYYY = 'HH:mm:ss_DD-MM-YYYY';
 export const Format_YYYYMMDD_HHmmss = 'YYYY-MM-DD_HH:mm:ss';
@@ -73,8 +75,7 @@ export function auditBy(user: string, comment?: string, timestamp: number = curr
 }
 
 export function currentTimeMillis() {
-	const date = new Date();
-	return date.getTime();
+	return Date.now();
 }
 
 export function specificTimeTodayMillis(hours: number, minutes: number) {
@@ -131,3 +132,25 @@ export const DateTimeFormat = (format: string) => {
 		format: (timestamp = currentTimeMillis()) => formatTimestamp(format, timestamp)
 	};
 };
+
+export function isSameDay(date1: Date, date2: Date): boolean {
+	return moment(date1).isSame(date2, 'day');
+}
+
+export function deltaDays(d1: Date | number, d2: Date | number): number {
+	const date1 = typeof d1 === 'number' ? new Date(d1) : d1;
+	const date2 = typeof d2 === 'number' ? new Date(d2) : d2;
+
+	//If both dates are the same day, return 0
+	if (isSameDay(date1, date2))
+		return 0;
+
+	const millis1 = typeof d1 === 'number' ? d1 : d1.getTime();
+	const millis2 = typeof d2 === 'number' ? d2 : d2.getTime();
+	const days = Math.floor((millis1 - millis2) / Day);
+
+	//If date2 + the amount of days calculated actually lands on the same day as date1, return days
+	//Else, an extra day needs to be given
+	const date2Offset = new Date(date2.getTime() + (days * Day));
+	return isSameDay(date1, date2Offset) ? days : days + 1;
+}

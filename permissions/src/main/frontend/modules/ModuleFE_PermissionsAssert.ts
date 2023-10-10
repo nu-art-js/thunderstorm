@@ -17,18 +17,13 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
-import {ModuleFE_PermissionsProject} from './manage/ModuleFE_PermissionsProject';
-import {ModuleFE_PermissionsDomain} from './manage/ModuleFE_PermissionsDomain';
-import {ModuleFE_PermissionsAccessLevel} from './manage/ModuleFE_PermissionsAccessLevel';
-import {ModuleFE_PermissionsGroup} from './assign/ModuleFE_PermissionsGroup';
-import {ModuleFE_PermissionsUser} from './assign/ModuleFE_PermissionsUser';
 import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
-import {SessionKey_Permissions_FE} from '../consts';
+import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts';
 
 
 export type PermissionsModuleFEConfig = {
@@ -61,40 +56,35 @@ export class ModuleFE_PermissionsAssert_Class
 		super();
 
 		this.v1 = {
-			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject, this.onProjectCreated),
+			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject),
 			connectDomainToRoutes: apiWithBody(ApiDef_Permissions.v1.connectDomainToRoutes, async () => await ModuleFE_PermissionsApi.v1.sync().executeSync())
 		};
 	}
 
-	private onProjectCreated = async () => {
-		await Promise.all([
-			ModuleFE_PermissionsProject,
-			ModuleFE_PermissionsApi,
-			ModuleFE_PermissionsDomain,
-			ModuleFE_PermissionsAccessLevel,
-			ModuleFE_PermissionsGroup,
-			ModuleFE_PermissionsUser,
-		].map(async module => await module.v1.sync().executeSync()));
-	};
+	getAccessLevelByKeyString(key: string) {
+		return this.getAccessLevel(this.getPermissionKey(key));
+	}
 
-	getAccessLevel(key: PermissionKey_FE<string>): AccessLevel {
+	getAccessLevel(key: PermissionKey_FE): AccessLevel {
 		const keyData = key.get();
 		if (!exists(keyData))
-			return AccessLevel.Undefined;
+			return SessionKey_StrictMode_FE.get() ? AccessLevel.Undefined : AccessLevel.HasAccess;
 
 		if (keyData.accessLevelIds.length === 0)
 			return AccessLevel.NoAccessLevelsDefined;
 
 		const userAccessLevels = SessionKey_Permissions_FE.get();
-		const canAccess = keyData.accessLevelIds.reduce((hasAccess, levelId) => {
-			const dbLevel = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
-			return hasAccess && (userAccessLevels[dbLevel.domainId] || -1) >= keyData._accessLevels[dbLevel.domainId];
-		}, true);
-
-		return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
+		try {
+			const canAccess = _keys(keyData._accessLevels).reduce((hasAccess, domainId) => {
+				return hasAccess && userAccessLevels[domainId] >= keyData._accessLevels[domainId];
+			}, true);
+			return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
+		} catch (e) {
+			return AccessLevel.NoAccess;
+		}
 	}
 
-	getPermissionKey(key: string) {
+	getPermissionKey(key: string): PermissionKey_FE {
 		return this.permissionKeys[key];
 	}
 

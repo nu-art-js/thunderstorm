@@ -13,7 +13,7 @@ import {
 	BadImplementationException,
 	cloneObj,
 	composeUrl,
-	currentTimeMillis,
+	currentTimeMillis, DB_BaseObject,
 	exists,
 	TS_Object,
 	TypedKeyValue
@@ -34,6 +34,7 @@ import {
 } from '../../shared';
 import {StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp} from '../core/consts';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+
 
 export interface OnLoginStatusUpdated {
 	__onLoginStatusUpdated: () => void;
@@ -68,12 +69,12 @@ class ModuleFE_Account_Class
 		this.vv1 = {
 			registerAccount: apiWithBody(ApiDefFE_Account.vv1.registerAccount, this.setLoginInfo),
 			createAccount: apiWithBody(ApiDefFE_Account.vv1.createAccount, this.onAccountCreated),
-			changePassword: apiWithBody(ApiDefFE_Account.vv1.changePassword),
+			changePassword: apiWithBody(ApiDefFE_Account.vv1.changePassword, this.setLoginInfo),
 			login: apiWithBody(ApiDefFE_Account.vv1.login, this.setLoginInfo),
 			loginSaml: apiWithQuery(ApiDefFE_Account.vv1.loginSaml, this.onLoginCompletedSAML),
 			logout: apiWithQuery(ApiDefFE_Account.vv1.logout),
 			createToken: apiWithBody(ApiDefFE_Account.vv1.createToken),
-			setPassword: apiWithBody(ApiDefFE_Account.vv1.setPassword),
+			setPassword: apiWithBody(ApiDefFE_Account.vv1.setPassword, this.setLoginInfo),
 		};
 	}
 
@@ -91,12 +92,24 @@ class ModuleFE_Account_Class
 
 	isStatus = (status: LoggedStatus) => this.status === status;
 
-	private onAccountCreated = async (response: DB_Account) => {
+	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
 		await this.onEntriesUpdated([response as DB_Account]);
 	};
 
 	protected init(): void {
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
+		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
+			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
+				return;
+
+			const responseHeader = request.getResponseHeader(HeaderKey_SessionId);
+			if (!responseHeader)
+				return;
+
+			const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
+			StorageKey_SessionId.set(sessionId);
+			this.processSessionStatus(sessionId);
+		});
 		// ModuleFE_XHR.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
 		const email = getQueryParameter(QueryParam_Email);
@@ -119,13 +132,17 @@ class ModuleFE_Account_Class
 
 	private processSessionStatus(sessionId: string) {
 		const now = currentTimeMillis();
-		const sessionData = this.decode(sessionId);
-		if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
-			return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
+		try {
+			const sessionData = this.decode(sessionId);
+			if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
+				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
-		this.accountId = sessionData.account._id;
-		this.sessionData = sessionData;
-		return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+			this.accountId = sessionData.account._id;
+			this.sessionData = sessionData;
+			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+		} catch (e: any) {
+			return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+		}
 	}
 
 	protected setLoggedStatus = (newStatus: LoggedStatus) => {
@@ -142,9 +159,7 @@ class ModuleFE_Account_Class
 		dispatch_onLoginStatusChanged.dispatchModule();
 	};
 
-	private setLoginInfo = async (response: Response_Auth) => {
-		StorageKey_SessionId.set(response.sessionId);
-		this.processSessionStatus(response.sessionId);
+	private setLoginInfo = async (response: Response_Auth, body: any, request: BaseHttpRequest<any>) => {
 		this.accountId = response._id;
 		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	};
@@ -198,7 +213,7 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 		// 	return undefined;
 
 		if (!(this.key in sessionData))
-			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
+			throw new BadImplementationException(`Couldn't find key "${this.key}" in session data`);
 
 		return sessionData[this.key] as Binder['value'];
 	}

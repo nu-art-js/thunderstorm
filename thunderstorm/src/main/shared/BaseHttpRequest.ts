@@ -116,6 +116,10 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
+	getUrl() {
+		return this.url;
+	}
+
 	public setRelativeUrl(relativeUrl: string) {
 		if (!this.origin)
 			throw new BadImplementationException('if you want to use relative urls, you need to set an origin');
@@ -245,10 +249,27 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
-	setOnCompleted(onCompleted?: (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
-		this.onCompleted = onCompleted;
+	clearOnCompleted = () => {
+		delete this.onCompleted;
+	};
+
+	setOnCompleted = (onCompleted?: (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) => {
+		if (!onCompleted)
+			return this;
+
+		if (this.onCompleted && onCompleted) {
+			const _onCompleted = this.onCompleted;
+			this.onCompleted = async (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => {
+				await _onCompleted(response, input, request);
+				await onCompleted(response, input, request);
+			};
+		} else
+			this.onCompleted = async (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => {
+				await onCompleted?.(response, input, request);
+			};
+
 		return this;
-	}
+	};
 
 	setOnError(onError?: (errorResponse: HttpException, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
 		this.onError = onError;
