@@ -20,33 +20,145 @@
  */
 
 import * as React from 'react';
-import {KeyboardEvent} from 'react';
-import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
-import './TS_TextAreaV2.scss';
+import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
+import './TS_TextAreaV2.scss';
+import {UIProps_EditableItem} from '../../utils/EditableItem';
 
 
-export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement>
+type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
+type InputState = {
+	id?: string,
+	name?: string,
+	initialValue?: string
+	value?: string
+}
 
-export class TS_TextAreaV2<Key extends string>
-	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
+export type InputType = 'text' | 'number' | 'password';
+
+type BaseInfraProps_TS_TextAreaV2 = {
+	className?: string
+	style?: CSSProperties
+	trim?: boolean,
+	forceAcceptKeys?: MetaKeys[]
+	autoComplete?: string
+	spellCheck?: boolean
+}
+
+type BaseAppLevelProps_TS_TextAreaV2 = Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref'> & BaseInfraProps_TS_TextAreaV2 & {
+	id?: string
+	placeholder?: string
+	name?: string
+	focus?: boolean
+	innerRef?: React.RefObject<HTMLTextAreaElement>;
+	onCancel?: () => void
+}
+
+export type TemplatingProps_TS_TextAreaV2 = BaseInfraProps_TS_TextAreaV2
+
+export type Props_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & {
+	value?: string
+	onChange?: (value: string, id: string) => void
+	onAccept?: (value: string, event: KeyboardEvent<HTMLTextAreaElement>) => void
+	onBlur?: (value: string, event: React.FocusEvent<HTMLTextAreaElement>) => void
+}
+
+export type NativeProps_TS_TextAreaV2 = Props_TS_TextAreaV2
+export type EditableItemProps_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & UIProps_EditableItem<any, any, string> & {
+	saveEvent: ('blur' | 'accept' | 'change')[]
+}
+
+/**
+ * A better way to capture user input
+ *
+ * <code>
+ * 		<input className="ts-input"/>
+ * </code>
+ *
+ */
+export class TS_TextAreaV2
+	extends React.Component<Props_TS_TextAreaV2, InputState> {
+
+	static readonly editableString = (mandatoryProps: TemplatingProps_TS_TextAreaV2) => {
+		return (props: NativeProps_TS_TextAreaV2) => <TS_TextAreaV2 {...mandatoryProps} {...props}/>;
+	};
+
+	static readonly editable = (templateProps: TemplatingProps_TS_TextAreaV2) => {
+		return (props: EditableItemProps_TS_TextAreaV2) => {
+			const {editable, prop, saveEvent, ...rest} = props;
+			let onChange;
+			let onBlur;
+			let onAccept;
+			if (saveEvent.includes('change'))
+				onChange = (value: string) => editable.update(prop, value);
+
+			if (saveEvent.includes('blur'))
+				onBlur = (value: string) => editable.update(prop, value);
+
+			if (saveEvent.includes('accept'))
+				onAccept = (value: string) => editable.update(prop, value);
+
+			return <TS_TextAreaV2
+				{...templateProps}
+				{...rest}
+				onChange={onChange}
+				onBlur={onBlur}
+				onAccept={onAccept}
+				value={props.editable.item[props.prop]}/>;
+		};
+
+	};
+
+	static defaultProps = {
+		forceAcceptKeys: ['ctrlKey', 'metaKey'] as MetaKeys[]
+	};
+
+	protected ref?: HTMLTextAreaElement;
+
+	constructor(props: Props_TS_TextAreaV2) {
+		super(props);
+
+		this.state = TS_TextAreaV2.getInitialState(props);
+	}
+
+	static getDerivedStateFromProps(props: Props_TS_TextAreaV2, state: InputState) {
+		if (props.id === state.id && state.name === props.name && state.initialValue === props.value)
+			return {value: state.value};
+
+		return TS_TextAreaV2.getInitialState(props);
+	}
+
+	private static getInitialState(props: Props_TS_TextAreaV2) {
+		return {
+			id: props.id,
+			name: props.name,
+			initialValue: props.value,
+			value: props.value || ''
+		};
+	}
+
+	changeValue = (event: ChangeEvent<HTMLTextAreaElement>) => {
+		const value = event.target.value;
+		this.setState({value});
+		this.props.onChange?.(value, event.target.id);
+	};
 
 	onKeyDown = (ev: KeyboardEvent<HTMLTextAreaElement>) => {
-		if (!(ev.shiftKey || ev.altKey)) {
-			if (ev.ctrlKey || ev.metaKey) {
-				if (ev.key === 'Enter') {
-					ev.persist();
-					const value = ev.currentTarget.value;
+		let value = ev.currentTarget.value;
+		if (!(ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)) {
+			if (ev.key === 'Enter') {
+				ev.persist();
+				if (this.props.trim)
+					value = value.trim();
 
-					//@ts-ignore - despite what typescript says, ev.target does have a blur function.
-					ev.target.blur();
+				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
+				ev.target.blur();
 
-					if (this.props.onAccept) {
+				if (this.props.onAccept) {
+					if (value !== this.props.value)
 						this.props.onAccept(value, ev);
-						ev.stopPropagation();
-					}
+					ev.stopPropagation();
 				}
-				return;
 			}
 
 			if (ev.key === 'Escape' && this.props.onCancel) {
@@ -55,39 +167,34 @@ export class TS_TextAreaV2<Key extends string>
 			}
 		}
 
+		if (ev.key === 'Enter' && this.props.forceAcceptKeys?.find(key => ev[key]))
+			if (this.props.onAccept) {
+				if (value !== this.props.value)
+					this.props.onAccept(value, ev);
+				ev.stopPropagation();
+			}
+
 		this.props.onKeyDown?.(ev);
 	};
 
 	render() {
-		const {onAccept, focus, enable, ...props} = this.props;
+		const {onAccept, trim, forceAcceptKeys, focus, ...props} = this.props;
 
 		return <textarea
 			{...props}
-			ref={input => {
-				if (this.ref || !input)
-					return;
-
-				this.ref = input;
-				this.props.focus && this.ref.focus();
-			}}
+			autoFocus={focus}
+			ref={props.innerRef}
 			onBlur={(event) => {
-				this.ref = undefined;
 				const value = event.target.value;
 				this.setState({value});
-				this.props.onBlur?.(value, event);
+				props.onBlur?.(value, event);
 			}}
-			disabled={this.props.disabled}
-			name={this.props.name || this.props.id}
-			key={this.props.id}
-			id={this.props.id}
-			className={_className('ts-textarea', this.props.className)}
-			style={this.props.style}
+			name={props.name || props.id}
+			className={_className('ts-input', props.className)}
 			value={this.state.value}
-			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
-			onKeyDown={this.props.onKeyDown || this.onKeyDown}
-			autoComplete={this.props.autoComplete ? 'on' : 'off'}
-			spellCheck={this.props.spellCheck}
+			onKeyDown={this.onKeyDown}
+			autoComplete={props.autoComplete ? 'on' : 'off'}
 		/>;
 	}
 }
