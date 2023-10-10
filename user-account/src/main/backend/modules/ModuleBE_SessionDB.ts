@@ -1,42 +1,20 @@
-import {
-	__stringify,
-	ApiException,
-	batchActionParallel,
-	currentTimeMillis,
-	Day,
-	Dispatcher,
-	TS_Object,
-	TypedKeyValue,
-	UniqueId
-} from '@nu-art/ts-common';
+import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
-import {
-	_SessionKey_Session,
-	DB_Account,
-	DBDef_Session,
-	DBProto_SessionType,
-	Response_Auth,
-	UI_Session
-} from '../../shared';
-import {Header_SessionId, MemKey_SessionData} from '../core/consts';
+import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_SessionType, HeaderKey_SessionId} from '../../shared';
+import {Header_SessionId, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Account_BE, SessionKey_Session_BE} from '../core/consts';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
+import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import Transaction = firestore.Transaction;
 
 
+export type SessionCollectionParam = { accountId: string, deviceId: string };
+
 export interface CollectSessionData<R extends TypedKeyValue<any, any>> {
-	__collectSessionData(accountId: string): Promise<R>;
+	__collectSessionData(data: SessionCollectionParam, transaction?: Transaction): Promise<R>;
 }
 
 export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<TypedKeyValue<any, any>>, '__collectSessionData'>('__collectSessionData');
-
-// type MapTypes<T extends CollectSessionData<any>[]> =
-// 	T extends [a: CollectSessionData<infer A>, ...rest: infer R] ?
-// 		R extends CollectSessionData<any>[] ?
-// 			[A, ...MapTypes<R>] :
-// 			[] :
-// 		[];
-
 
 type Config = DBApiConfigV3<DBProto_SessionType> & {
 	sessionTTLms: number
@@ -51,17 +29,29 @@ export class ModuleBE_SessionDB_Class
 		if (typeof sessionId !== 'string')
 			throw new ApiException(401, `Invalid session id: ${sessionId}`);
 
-		let session;
-		try {
-			session = await ModuleBE_SessionDB.query.uniqueWhere({sessionId});
-		} catch (err) {
-			throw new ApiException(401, `Invalid session id: ${sessionId}`);
-		}
+		const sessionData = await this.runTransaction(async transaction => {
+			let dbSession;
+			try {
+				dbSession = await ModuleBE_SessionDB.query.uniqueWhere({sessionId}, transaction);
+			} catch (err: any) {
+				try {
+					dbSession = await ModuleBE_SessionDB.query.uniqueWhere({prevSession: {$ac: sessionId}}, transaction);
+				} catch (err: any) {
+					throw new ApiException(401, `Invalid session id: ${sessionId}`, err);
+				}
+			}
 
-		if (ModuleBE_SessionDB.TTLExpired(session))
-			throw new ApiException(401, 'Session timed out');
+			MemKey_SessionObject.set(dbSession);
+			let sessionData = this.sessionData.decode(sessionId);
+			if (!this.session.isValid(sessionData))
+				throw new ApiException(401, 'Session timed out');
 
-		const sessionData = this.decodeSessionData(sessionId);
+			if (dbSession.needToRefresh || this.session.isAlmostExpired(dbSession.timestamp, sessionData)) {
+				sessionData = await this.session.rotate(dbSession, sessionData);
+			}
+			return sessionData;
+		});
+
 		MemKey_SessionData.set(sessionData);
 	};
 
@@ -70,82 +60,83 @@ export class ModuleBE_SessionDB_Class
 		this.setDefaultConfig({sessionTTLms: Day});
 	}
 
-	async __collectSessionData(accountId: string) {
+	async __collectSessionData(data: SessionCollectionParam) {
 		const now = currentTimeMillis();
 		return {
 			key: 'session' as const,
 			value: {
+				deviceId: data.deviceId,
 				timestamp: now,
 				expiration: now + this.config.sessionTTLms,
 			}
 		};
 	}
 
-	TTLExpired = (session: UI_Session) => {
-		const delta = currentTimeMillis() - session.timestamp;
-		return delta > this.config.sessionTTLms || delta < 0;
+	private sessionData = {
+		encode: async (sessionData: TS_Object) => gzipSync(Buffer.from(__stringify(sessionData), 'utf8')).toString('base64'),
+		decode: (sessionId: string): TS_Object => JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8')),
+		collect: async (accountId: string, deviceId: string, manipulate?: (sessionData: TS_Object) => TS_Object, transaction?: Transaction) => {
+			const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync({accountId, deviceId}, transaction));
+			let sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
+				sessionData[moduleSessionData.key] = moduleSessionData.value;
+				return sessionData;
+			}, {});
+
+			sessionData = manipulate?.(sessionData) ?? sessionData;
+			const encodedSessionData = await this.sessionData.encode(sessionData);
+			return {encoded: encodedSessionData, raw: sessionData};
+		},
+		setToMemKey: (sessionData: TS_Object) => MemKey_SessionData.set(sessionData),
 	};
 
-	private async encodeSessionData(sessionData: TS_Object) {
-		return (await gzipSync(Buffer.from(__stringify(sessionData), 'utf8'))).toString('base64');
-	}
+	session = {
+		create: async (accountId: string, deviceId: string, prevSession: string[] = [], transaction?: Transaction) => {
+			return this.session.createCustom(accountId, deviceId, d => d, prevSession, transaction);
+		},
+		createCustom: async (accountId: string, deviceId: string, manipulate: (sessionData: TS_Object) => TS_Object, prevSession?: string[], transaction?: Transaction) => {
+			const sessionData = await this.sessionData.collect(accountId, deviceId, manipulate, transaction);
+			const session = {
+				accountId,
+				deviceId,
+				prevSession,
+				sessionId: sessionData.encoded,
+				timestamp: currentTimeMillis()
+			};
 
-	// /**
-	//  * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
-	//  */
-	// getSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(...modules: T): MergeTypes<MapTypes<T>> {
-	// 	return MemKey_SessionData.get() as MergeTypes<MapTypes<T>>;
-	// }
+			await this.set.item(session, transaction);
+			return {sessionId: sessionData.encoded, sessionData: sessionData.raw};
+		},
+		isValid: (sessionData?: TS_Object) => {
+			const expiration = SessionKey_Session_BE.get(sessionData).expiration;
+			const now = currentTimeMillis();
+			return expiration > now;
+		},
+		isAlmostExpired: (createdAt: number, sessionData?: TS_Object) => {
+			const expiration = SessionKey_Session_BE.get(sessionData).expiration;
+			const renewSessionTTL = (expiration - createdAt) * 0.1;
 
-	private decodeSessionData(sessionId: string) {
-		return JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8'));
-	}
+			const now = currentTimeMillis();
+			return expiration - renewSessionTTL < now;
+		},
+		invalidate: async (accountIds: string[] = [MemKey_AccountId.get()]): Promise<void> => {
+			const sessions = await batchActionParallel(accountIds, 10, async ids => await this.query.custom({where: {accountId: {$in: ids}}}));
+			sessions.forEach(session => session.needToRefresh = true);
+			await this.set.all(sessions);
+		},
+		delete: async (transaction?: Transaction) => {
+			const sessionId = Header_SessionId.get();
+			if (!sessionId)
+				throw new ApiException(404, 'Missing sessionId');
 
-	getOrCreateSession = async (uiAccount: DB_Account, transaction?: Transaction): Promise<Response_Auth> => {
-		const session = (await this.query.custom({where: {accountId: uiAccount._id}}, transaction))[0];
-		if (session && !this.TTLExpired(session)) {
-			const sessionData = this.decodeSessionData(session.sessionId);
-			MemKey_SessionData.set(sessionData);
-			return {sessionId: session.sessionId, ...uiAccount};
+			await this.delete.query({where: {sessionId}}, transaction);
+		},
+		rotate: async (dbSession: DB_Session = MemKey_SessionObject.get(), sessionData: TS_Object = MemKey_SessionData.get(), transaction?: Transaction) => {
+			this.logInfo(`Rotating sessionId for Account: ${SessionKey_Account_BE.get(sessionData)._id}`);
+
+			const session = await this.session.create(dbSession.accountId, dbSession.deviceId, [dbSession.sessionId, ...(dbSession.prevSession || [])], transaction);
+			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
+			return session.sessionData;
 		}
-
-		const sessionInfo = await this.createSession(uiAccount._id);
-		MemKey_SessionData.set(sessionInfo.sessionData);
-
-		return {sessionId: sessionInfo._id, ...uiAccount};
-	};
-
-	async createSession(accountId: UniqueId, manipulate?: (sessionData: TS_Object) => TS_Object) {
-		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(accountId));
-
-		let sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
-			sessionData[moduleSessionData.key] = moduleSessionData.value;
-			return sessionData;
-		}, {});
-
-		sessionData = manipulate?.(sessionData) ?? sessionData;
-		const sessionId = await this.encodeSessionData(sessionData);
-
-		const session = {
-			accountId: accountId,
-			sessionId,
-			timestamp: currentTimeMillis()
-		};
-
-		await this.set.item(session);
-		return {_id: session.sessionId, sessionData: sessionData};
-	}
-
-	logout = async (transaction?: Transaction) => {
-		const sessionId = Header_SessionId.get();
-		if (!sessionId)
-			throw new ApiException(404, 'Missing sessionId');
-
-		await this.delete.query({where: {sessionId}}, transaction);
-	};
-
-	invalidateSessions = async (accountIds: string[]): Promise<void> => {
-		await batchActionParallel(accountIds, 10, async ids => await this.delete.query({where: {accountId: {$in: ids}}}));
 	};
 }
 

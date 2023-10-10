@@ -20,7 +20,7 @@
  */
 
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, merge, TypedMap} from '@nu-art/ts-common';
+import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, exists, IndexKeys, merge, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_v3_BaseDB} from './ModuleFE_v3_BaseDB';
 import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, DBSyncData, HttpException, QueryParams, TypedApi} from '../../shared';
 import {DBApiFEConfigV3} from '../../core/db-api-gen/v3-db-def';
@@ -169,7 +169,7 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 				// @ts-ignore
 				// this.logInfo(`scheduling pending operation(${requestType}) for ${id}: ${item.label}`);
 				operation.pending = {request, requestType, onSuccess, onError};
-				operation.running.request.setOnCompleted(undefined);
+				operation.running.request.clearOnCompleted();
 			}
 
 			return request;
@@ -187,13 +187,16 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 
 	__syncIfNeeded = async (syncData: DBSyncData[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
-		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.IDB.getLastSync()) {
+		if (!exists(mySyncData))
+			return;
+
+		if (mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.IDB.getLastSync()) {
 			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.IDB.getLastSync()}`);
 			await this.IDB.clear();
 			this.cache.clear();
 		}
 
-		if (mySyncData && mySyncData.lastUpdated <= this.IDB.getLastSync()) {
+		if (mySyncData.lastUpdated <= this.IDB.getLastSync()) {
 			if (!this.cache.loaded)
 				await this.cache.load();
 

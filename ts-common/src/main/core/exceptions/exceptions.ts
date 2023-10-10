@@ -22,6 +22,7 @@
 // noinspection TypeScriptPreferShortImport
 import {ErrorBody, ErrorResponse} from './types';
 import {Constructor, TS_Object, UniqueId} from '../../utils/types';
+import {_logger_logException} from '../logger/utils';
 
 
 /**
@@ -180,7 +181,8 @@ export type DependencyConflicts = {
  * This class inherits {@link CustomException} and represents an error of a entity trying to be deleted that has dependencies
  * @category Exceptions
  */
-export class HasDependenciesException extends CustomException {
+export class HasDependenciesException
+	extends CustomException {
 
 	public body?: DependencyConflicts[];
 	public entityName?: string;
@@ -244,13 +246,20 @@ export class ApiException<E extends TS_Object | void = void>
 		return this;
 	};
 
-	constructor(responseCode: number, debugMessage?: string, cause?: Error) {
-		super(ApiException, `${responseCode}-${JSON.stringify(debugMessage)}`, cause);
+	constructor(responseCode: number, causeOrMessage?: string | Error, cause?: Error) {
+		super(ApiException, `${responseCode}${ApiException.getMessage(causeOrMessage)}`, ApiException.getCause(causeOrMessage, cause));
 
 		this.responseCode = responseCode;
-		this.responseBody.debugMessage = debugMessage;
+		this.responseBody.debugMessage = _logger_logException(this);
 	}
 
+	private static getMessage(causeOrMessage?: string | Error) {
+		return typeof causeOrMessage === 'string' ? `-${JSON.stringify(causeOrMessage)}` : '';
+	}
+
+	private static getCause(causeOrMessage?: string | Error, cause?: Error) {
+		return typeof causeOrMessage != 'string' ? causeOrMessage : cause;
+	}
 }
 
 const allExceptions = [

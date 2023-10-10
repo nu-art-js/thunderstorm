@@ -1,40 +1,47 @@
-import {DB_Object, DBProto, Filter, sortArray} from '@nu-art/ts-common';
+import {DB_Object, DBProto, Filter, ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
+import {CSSProperties} from 'react';
 import {TS_DropDown} from '../TS_Dropdown';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {Adapter, SimpleListAdapter} from '../adapter/Adapter';
 import {ComponentSync} from '../../core';
+import {UIProps_EditableItem} from '../../utils/EditableItem';
 
 
-type OptionalCanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
+type Props_CanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
 
-type OptionalProps_GenericDropDownV3<T> = {
+type BaseInfraProps_TS_GenericDropDownV3<T> = {
+	className?: string
+	style?: CSSProperties
 	placeholder?: string;
 	mapper?: (item: T) => string[]
 	renderer?: (item: T) => React.ReactElement
-	queryFilter?: (item: T) => boolean
 	ifNoneShowAll?: boolean
-	sortBy?: ((keyof T) | ((item: T) => string | number))[];
-	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
+	limitItems?: number;
+	itemResolver?: () => T[]
+	queryFilter?: (item: T) => boolean
+	sortBy?: ((keyof T) | ((item: T) => string | number))[];
+}
+
+type BaseAppLevelProps_TS_GenericDropDownV3<T> = BaseInfraProps_TS_GenericDropDownV3<T> & {
+	inputValue?: string;
+	boundingParentSelector?: string;
 	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
 	limitItems?: number;
 	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
-	disabled?: boolean;
+	disabled?: boolean
 }
 
-export type PartialProps_GenericDropDownV3<T> = OptionalProps_GenericDropDownV3<T> & {
-	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
-	boundingParentSelector?: string;
-	inputValue?: string;
+type AppLevelProps_TS_GenericDropDownV3<T> = Props_CanUnselect<T> & BaseAppLevelProps_TS_GenericDropDownV3<T> & {
 	selected?: T | string | (() => T | undefined);
-	limitItems?: number;
-	itemResolver?: () => T[]
-} & OptionalCanUnselect<T>
+}
 
-export type MandatoryProps_GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
-	OptionalProps_GenericDropDownV3<T>
-	& {
+type EditableItemProps_GenericDropDownV3<T> = BaseAppLevelProps_TS_GenericDropDownV3<T> & UIProps_EditableItem<any, any, string>
+
+export type TemplatingProps_TS_GenericDropDown<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
+	BaseInfraProps_TS_GenericDropDownV3<T> & {
 	placeholder: string;
 	module: ModuleFE_v3_BaseApi<Proto>;
 	modules: ModuleFE_v3_BaseApi<Proto>[];
@@ -42,31 +49,12 @@ export type MandatoryProps_GenericDropDownV3<Proto extends DBProto<any>, T exten
 	renderer: (item: T) => React.ReactElement
 }
 
-type GenericDropDownV3Props<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> = {
-	placeholder?: string;
-	mapper: (item: T) => string[]
-	renderer: (item: T) => React.ReactElement
-	queryFilter?: (item: T) => boolean
-	ifNoneShowAll?: boolean
-	sortBy?: ((keyof T) | ((item: T) => string | number))[];
-	className?: string;
-	caret?: { open: React.ReactNode, close: React.ReactNode }
-	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
-
+type Props_TS_GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
+	TemplatingProps_TS_GenericDropDown<T> &
+	BaseAppLevelProps_TS_GenericDropDownV3<T> &
+	Props_CanUnselect<T> & {
 	selected?: Proto['dbType'] | string | (() => Proto['dbType'] | undefined);
-	inputValue?: string;
-	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
-
-	modules: ModuleFE_v3_BaseApi<Proto>[];
-	boundingParentSelector?: string;
-	limitItems?: number;
-	disabled?: boolean;
-	itemResolver?: () => T[]
-} & OptionalCanUnselect<T>
-
-export type Props_GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
-	{ module: ModuleFE_v3_BaseApi<Proto>; }
-	& GenericDropDownV3Props<Proto, T>
+}
 
 type State<T extends DB_Object> = {
 	items: T[]
@@ -78,9 +66,26 @@ type State<T extends DB_Object> = {
 // const defaultQueryFilter = () => true;
 
 export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']>
-	extends ComponentSync<Props_GenericDropDownV3<Proto>, State<T>> {
+	extends ComponentSync<Props_TS_GenericDropDownV3<Proto>, State<T>> {
+	static readonly prepareEditable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
+		return (props: EditableItemProps_GenericDropDownV3<Proto['dbType']>) => {
+			const {editable, prop, ...restProps} = props;
+			return <GenericDropDownV3<Proto> {...resolveContent(mandatoryProps)} {...restProps}
+																			 onSelected={item => editable.update(prop, item._id)}
+																			 selected={editable.item[prop]}/>;
+		};
+	};
+	static readonly prepareSelectable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
+		return (props: AppLevelProps_TS_GenericDropDownV3<Proto['dbType']>) => <GenericDropDownV3<Proto> {...resolveContent(mandatoryProps)} {...props}/>;
+	};
+	static readonly prepare = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
+		return {
+			editable: this.prepareEditable(mandatoryProps),
+			selectable: this.prepareSelectable(mandatoryProps)
+		};
+	};
 
-	protected deriveStateFromProps(nextProps: Props_GenericDropDownV3<Proto>): State<T> {
+	protected deriveStateFromProps(nextProps: Props_TS_GenericDropDownV3<Proto>): State<T> {
 		const state = {} as State<T>;
 		const items = this.props.itemResolver?.() || nextProps.module.cache.allMutable();
 

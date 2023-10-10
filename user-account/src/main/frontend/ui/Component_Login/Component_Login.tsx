@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {_keys} from '@nu-art/ts-common';
-import {Request_LoginAccount} from '../../../shared';
+import {AccountEmail, AccountPassword, Request_LoginAccount} from '../../../shared';
 import './Component_Login.scss';
 import {
 	ComponentSync,
@@ -29,6 +29,7 @@ import {
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
+import {StorageKey_DeviceId} from '../../core/consts';
 
 
 type State<T> = {
@@ -46,7 +47,7 @@ type InputField = {
 
 type Form<T> = { [K in keyof T]: InputField }
 
-const form: Form<Request_LoginAccount> = {
+const form: Form<AccountEmail & AccountPassword> = {
 	email: {
 		type: 'text',
 		hint: 'email',
@@ -97,7 +98,7 @@ export class Component_Login
 			)}
 			{this.renderErrorMessages()}
 			<TS_BusyButton onClick={this.loginClicked}
-						   className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
+										 className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
 		</LL_V_C>;
 	}
 
@@ -122,7 +123,7 @@ export class Component_Login
 			return ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
 
 		try {
-			await ModuleFE_Account.vv1.login(this.state.data as Request_LoginAccount).executeSync();
+			await ModuleFE_Account.vv1.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Request_LoginAccount).executeSync();
 		} catch (err) {
 			this.setState({errorMessages: ['Email or password incorrect']});
 		}

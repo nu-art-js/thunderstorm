@@ -6,9 +6,11 @@ import {Adapter, SimpleListAdapter} from '../adapter/Adapter';
 import {ComponentSync} from '../../core';
 
 
-type OptionalCanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
+type OptionalCanUnselect<T> = {
+	selected?: T | string | (() => T | undefined);
+} & ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
 
-type OptionalProps_GenericDropDown<T> = {
+export type OptionalProps_GenericDropDown<T> = {
 	placeholder?: string;
 	mapper?: (item: T) => string[]
 	renderer?: (item: T) => React.ReactElement
@@ -23,14 +25,15 @@ type OptionalProps_GenericDropDown<T> = {
 	disabled?: boolean;
 }
 
-export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> & {
+export type BasePartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> & {
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
 	boundingParentSelector?: string;
 	inputValue?: string;
-	selected?: T | string | (() => T | undefined);
 	limitItems?: number;
 	itemResolver?: () => T[]
-} & OptionalCanUnselect<T>
+}
+
+export type PartialProps_GenericDropDown<T> = BasePartialProps_GenericDropDown<T> & OptionalCanUnselect<T>
 
 export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof PreDB<T> = Default_UniqueKey> =
 	OptionalProps_GenericDropDown<T>

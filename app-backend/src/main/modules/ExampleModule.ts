@@ -33,6 +33,10 @@ class ExampleModule_Class
 
 	constructor() {
 		super();
+	}
+
+	protected init() {
+		super.init();
 		addRoutes([
 			createQueryServerApi(ApiDef_Examples.v1.getMax, DispatchModule.getMax),
 			createBodyServerApi(ApiDef_Examples.v1.setMax, (body) => {
@@ -89,6 +93,7 @@ class ExampleModule_Class
 				return 'needs to return a string';
 			})
 		]);
+
 	}
 
 	async __queryRequestInfo(): Promise<{ key: string; data: any }> {

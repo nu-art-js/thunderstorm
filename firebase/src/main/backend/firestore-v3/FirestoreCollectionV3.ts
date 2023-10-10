@@ -44,11 +44,7 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
 import {Transaction} from 'firebase-admin/firestore';
@@ -197,7 +193,15 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		},
 	});
 
-	// ############################## Create ##############################
+	uniqueGetOrCreate = async (where: Clause_Where<Proto['dbType']>, toCreate: (transaction?: Transaction) => Promise<Proto['dbType']>, transaction?: Transaction) => {
+		try {
+			return await this.query.uniqueWhere(where);
+		} catch (e: any) {
+			return toCreate(transaction);
+		}
+	};
+
+// ############################## Create ##############################
 	protected _createAll = async (preDBItems: Proto['uiType'][], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => {
 		if (preDBItems.length === 1)
 			return [await this.create.item(preDBItems[0], transaction)];
@@ -216,7 +220,8 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	};
 
 	create = Object.freeze({
-		item: async (preDBItem: Proto['uiType'], transaction?: Transaction): Promise<Proto['dbType']> => await this.doc.item(preDBItem).create(preDBItem, transaction),
+		item: async (preDBItem: Proto['uiType'], transaction?: Transaction): Promise<Proto['dbType']> => await this.doc.item(preDBItem)
+			.create(preDBItem, transaction),
 		all: this._createAll,
 	});
 

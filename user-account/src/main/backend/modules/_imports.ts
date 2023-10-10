@@ -19,11 +19,4 @@
 
 export * from '../../index';
 
-export type RequestBody_SamlAssertOptions = {
-	request_body: {
-		SAMLResponse: string
-		RelayState: string
-	},
-	allow_unencrypted_assertion?: boolean;
-}
 

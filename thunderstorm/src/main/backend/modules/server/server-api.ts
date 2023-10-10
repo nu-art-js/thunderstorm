@@ -32,7 +32,8 @@ import {
 	isErrorOfType,
 	Logger,
 	LogLevel,
-	MUSTNeverHappenException, Promise_all_sequentially,
+	MUSTNeverHappenException,
+	Promise_all_sequentially,
 	tsValidate,
 	TypedMap,
 	ValidationException,
@@ -52,10 +53,13 @@ import {
 	MemKey_HttpRequestMethod,
 	MemKey_HttpRequestPath,
 	MemKey_HttpRequestQuery,
-	MemKey_HttpRequestUrl, MemKey_HttpResponse
+	MemKey_HttpRequestUrl,
+	MemKey_HttpResponse
 } from './consts';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
+
+export const MemKey_ServerApi = new MemKey<ServerApi<any>>('server-api', true);
 
 export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	extends Logger {
@@ -71,6 +75,8 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	private bodyValidator?: ValidatorTypeResolver<API['B']>;
 	private queryValidator?: ValidatorTypeResolver<API['P']>;
 	readonly apiDef: ApiDef<API>;
+	private postCallActions: (() => Promise<any>)[] = [];
+
 	// readonly method: HttpMethod;
 	// readonly relativePath: string;
 
@@ -82,6 +88,11 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 
 	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
 		this.middlewares = middlewares;
+		return this;
+	}
+
+	addPostCallAction(sideEffect: () => Promise<any>) {
+		this.postCallActions.push(sideEffect);
 		return this;
 	}
 
@@ -132,9 +143,24 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			path = `/${path}`;
 		const fullPath = `${prefixUrl ? prefixUrl : ''}${path}`;
 		this.setTag(fullPath);
-		router[this.apiDef.method](fullPath, this.call);
+		router[this.apiDef.method](fullPath, this.callWrapper);
 		this.url = `${HttpServer.getBaseUrl()}${fullPath}`;
 	}
+
+	private callWrapper = async (req: ExpressRequest, res: ExpressResponse) => {
+		await this.call(req, res);
+		await this.performPostCallActions();
+	};
+
+	private performPostCallActions = async () => {
+		try {
+			await Promise_all_sequentially(this.postCallActions);
+		} catch (e: any) {
+			this.logError('Error while performing post call actions', e);
+		} finally {
+			this.postCallActions = [];
+		}
+	};
 
 	call = async (req: ExpressRequest, res: ExpressResponse) => {
 		return new MemStorage().init(async () => {
@@ -171,6 +197,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			else
 				this.logVerbose(`-- No Body`);
 
+			MemKey_ServerApi.set(this);
 			MemKey_HttpRequest.set(req);
 			MemKey_HttpResponse.set(response);
 			MemKey_HttpRequestHeaders.set(req.headers);
@@ -311,14 +338,30 @@ export class _ServerBodyApi<API extends BodyApi<any, any, any>>
 	}
 }
 
+function mergeHeaders(headers?: TypedMap<string>, _headers?: TypedMap<string>) {
+	if (!headers && !_headers)
+		return;
+
+	return {...headers || {}, ..._headers || {}};
+}
+
 export class ApiResponse {
 	private api: ServerApi<any>;
 	private readonly res: ExpressResponse;
 	private consumed: boolean = false;
+	private headers?: TypedMap<string>;
 
 	constructor(api: ServerApi<any>, res: ExpressResponse) {
 		this.api = api;
 		this.res = res;
+	}
+
+	setHeader(key: string, value: string) {
+		(this.headers || (this.headers = {}))[key] = value;
+	}
+
+	addHeader(key: string, value: string) {
+		(this.headers || (this.headers = {}))[key] = `${this.headers[key]};${value}`;
 	}
 
 	public isConsumed(): boolean {
@@ -334,7 +377,8 @@ export class ApiResponse {
 		this.consumed = true;
 	}
 
-	stream(responseCode: number, stream: Stream, headers?: any) {
+	stream(responseCode: number, stream: Stream, _headers?: {}) {
+		const headers = mergeHeaders(this.headers, _headers);
 		this.consume();
 
 		this.printHeaders(headers);
@@ -346,8 +390,10 @@ export class ApiResponse {
 		});
 	}
 
-	private printHeaders(headers?: any) {
-		if (!headers)
+	private printHeaders(_headers?: any) {
+		const headers = mergeHeaders(this.headers, _headers);
+
+		if (!headers || _keys(headers).length === 0)
 			return this.api.logVerbose(` -- No response headers`);
 
 		if (!this.api.printResponse)
@@ -366,20 +412,21 @@ export class ApiResponse {
 		this.api.logVerbose(` -- Response:`, response);
 	}
 
-	public code(responseCode: number, headers?: any) {
+	public code(responseCode: number, _headers?: any) {
+		const headers = mergeHeaders(this.headers, _headers);
 		this.printHeaders(headers);
 		this.end(responseCode, '', headers);
 	}
 
 	text(responseCode: number, response?: string, _headers?: any) {
-		const headers = (_headers || {});
+		const headers = mergeHeaders(this.headers, _headers) || {};
 		headers['content-type'] = 'text/plain';
 
 		this.end(responseCode, response, headers);
 	}
 
 	html(responseCode: number, response?: string, _headers?: any) {
-		const headers = (_headers || {});
+		const headers = mergeHeaders(this.headers, _headers) || {};
 		headers['content-type'] = 'text/html';
 
 		this.end(responseCode, response, headers);
@@ -390,14 +437,16 @@ export class ApiResponse {
 	}
 
 	private _json(responseCode: number, response?: object | string, _headers?: any) {
-		const headers = (_headers || {});
+		const headers = mergeHeaders(this.headers, _headers) || {};
 		headers['content-type'] = 'application/json';
 
 		this.end(responseCode, response, headers);
 	}
 
-	end(responseCode: number, response?: object | string, headers?: any) {
+	end(responseCode: number, response?: object | string, _headers?: any) {
 		this.consume();
+
+		const headers = mergeHeaders(this.headers, _headers);
 
 		this.printHeaders(headers);
 		this.printResponse(response);
@@ -407,7 +456,9 @@ export class ApiResponse {
 		this.res.end(typeof response !== 'string' ? JSON.stringify(response, null, 2) : response);
 	}
 
-	redirect(responseCode: number, url: string, headers: TypedMap<string> = {}) {
+	redirect(responseCode: number, url: string, _headers?: TypedMap<string>) {
+		const headers = mergeHeaders(this.headers, _headers) || {};
+
 		this.consume();
 		_keys(headers).reduce((res, headerKey) => {
 			res.setHeader((headerKey as string), headers[headerKey]);
@@ -416,7 +467,9 @@ export class ApiResponse {
 		this.res.redirect(responseCode, url);
 	}
 
-	exception(exception: ApiException, headers?: any) {
+	exception(exception: ApiException, _headers?: any) {
+		const headers = mergeHeaders(this.headers, _headers);
+
 		const responseBody = exception.responseBody;
 		if (!ServerApi.isDebug)
 			delete responseBody.debugMessage;
@@ -424,7 +477,9 @@ export class ApiResponse {
 		this._json(exception.responseCode, responseBody, headers);
 	}
 
-	serverError(error: Error & { cause?: Error }, headers?: any) {
+	serverError(error: Error & { cause?: Error }, _headers?: any) {
+		const headers = mergeHeaders(this.headers, _headers);
+
 		const stack = error.cause ? error.cause.stack : error.stack;
 		const message = (error.cause ? error.cause.message : error.message) || '';
 		this.text(500, ServerApi.isDebug && stack ? stack : message, headers);

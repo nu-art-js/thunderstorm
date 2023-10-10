@@ -41,6 +41,7 @@ import {ModuleBE_SessionDB} from '@nu-art/user-account/backend';
 import {ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
 
+
 export class ModuleBE_PermissionGroup_Class
 	extends ModuleBE_BaseDBV2<DB_PermissionGroup>
 	implements CanDeletePermissionEntities<'Level', 'Group'> {
@@ -80,7 +81,8 @@ export class ModuleBE_PermissionGroup_Class
 			return map;
 		}, {});
 		// Get all domainIds that appear more than once on this group
-		const duplicateDomainIds: string[] = filterInstances(_keys(duplicationMap).map(domainId => duplicationMap[domainId] > 1 ? domainId : undefined) as string[]);
+		const duplicateDomainIds: string[] = filterInstances(_keys(duplicationMap)
+			.map(domainId => duplicationMap[domainId] > 1 ? domainId : undefined) as string[]);
 
 		if (duplicateDomainIds.length > 0)
 			throw new ApiException(400, `Can't add a group with more than one access level per domain: ${duplicateDomainIds}`);
@@ -93,7 +95,7 @@ export class ModuleBE_PermissionGroup_Class
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId));
 		const users = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionUserDB.query.custom({where: {__groupIds: {$aca: ids}}}));
-		await ModuleBE_SessionDB.invalidateSessions(users.map(i => i.accountId));
+		await ModuleBE_SessionDB.session.invalidate(users.map(i => i.accountId));
 	}
 }
 

@@ -28,7 +28,7 @@ export function createUser() {
 	const scenario = __scenario('Create-User');
 	scenario.add(cleanup());
 	scenario.add(__custom(async () => {
-		return await ModuleBE_Account.createAccount({email: 'test-account1@gmail.com', password: 'pah', password_check: 'pah'});
+		return await ModuleBE_Account.createAccount({email: 'test-account1@gmail.com', password: 'pah', passwordCheck: 'pah'});
 	}).setWriteKey(userContextKey1));
 	return scenario;
 }
