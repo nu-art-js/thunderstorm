@@ -86,7 +86,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 	allowManualSelection?: boolean
 	className?: string;
 	boundingParentSelector?: string;
-	renderSearch: (dropDown: TS_DropDown<ItemType>) => React.ReactNode;
+	renderSearch?: (dropDown: TS_DropDown<ItemType>) => React.ReactNode;
 	limitItems?: number;
 	onContextMenu?: (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => void;
 }
@@ -162,10 +162,6 @@ export class TS_DropDown<ItemType>
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
 	}
-
-	// shouldComponentUpdate(nextProps: Readonly<Props_DropDown<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
-	// 	return true;
-	// }
 
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>, state?: Partial<State<ItemType>>): State<ItemType> | undefined {
 		const nextState: State<ItemType> = this.state ? {...this.state} : {} as State<ItemType>;
@@ -432,7 +428,7 @@ export class TS_DropDown<ItemType>
 			return this.renderSelectedItem(this.state.selected);
 		}
 
-		return this.props.renderSearch(this);
+		return this.props.renderSearch!(this);
 	};
 
 	// ######################## To Remove ########################
