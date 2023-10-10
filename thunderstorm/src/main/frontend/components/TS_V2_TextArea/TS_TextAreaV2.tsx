@@ -34,13 +34,12 @@ type InputState = {
 	value?: string
 }
 
-export type InputType = 'text' | 'number' | 'password';
-
 type BaseInfraProps_TS_TextAreaV2 = {
+	saveEvent?: ('blur' | 'accept' | 'change')[]
+	forceAcceptKeys?: MetaKeys[]
 	className?: string
 	style?: CSSProperties
 	trim?: boolean,
-	forceAcceptKeys?: MetaKeys[]
 	autoComplete?: string
 	spellCheck?: boolean
 }
@@ -64,9 +63,7 @@ export type Props_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & {
 }
 
 export type NativeProps_TS_TextAreaV2 = Props_TS_TextAreaV2
-export type EditableItemProps_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & UIProps_EditableItem<any, any, string> & {
-	saveEvent: ('blur' | 'accept' | 'change')[]
-}
+export type EditableItemProps_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & UIProps_EditableItem<any, any, string>
 
 /**
  * A better way to capture user input
@@ -89,13 +86,13 @@ export class TS_TextAreaV2
 			let onChange;
 			let onBlur;
 			let onAccept;
-			if (saveEvent.includes('change'))
+			if (saveEvent!.includes('change'))
 				onChange = (value: string) => editable.update(prop, value);
 
-			if (saveEvent.includes('blur'))
+			if (saveEvent!.includes('blur'))
 				onBlur = (value: string) => editable.update(prop, value);
 
-			if (saveEvent.includes('accept'))
+			if (saveEvent!.includes('accept'))
 				onAccept = (value: string) => editable.update(prop, value);
 
 			return <TS_TextAreaV2
@@ -110,7 +107,8 @@ export class TS_TextAreaV2
 	};
 
 	static defaultProps = {
-		forceAcceptKeys: ['ctrlKey', 'metaKey'] as MetaKeys[]
+		forceAcceptKeys: ['ctrlKey', 'metaKey'] as MetaKeys[],
+		saveEvent: ['accept']
 	};
 
 	protected ref?: HTMLTextAreaElement;

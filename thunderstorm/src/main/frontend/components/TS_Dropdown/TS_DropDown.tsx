@@ -121,8 +121,8 @@ export class TS_DropDown<ItemType>
 			{...resolveContent(mandatoryProps)} {...props}
 			onSelected={item => props.editable.update(props.prop, item)}
 			selected={props.editable.item[props.prop]}/>;
-
 	};
+
 	static readonly prepareSelectable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return (props: PartialProps_DropDown<T>) => <TS_DropDown<T> {...resolveContent(mandatoryProps)} {...props} />;
 	};
