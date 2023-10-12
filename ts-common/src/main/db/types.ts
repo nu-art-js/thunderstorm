@@ -55,7 +55,7 @@ export type Proto_DB_Object<
 export type DBProto<P extends Proto_DB_Object<any, any, any, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	dbType: P['type'],
-	generatedPropsValidator: ValidatorTypeResolver<GeneratedSubType>
+	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
 	generatedProps: P['generatedKeys'][]

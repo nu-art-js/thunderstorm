@@ -1,5 +1,10 @@
-import {cloneObj, compare, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {AssetValueType, cloneObj, compare, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
+
+export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, Type> = {
+	editable: EditableItem<EnclosingItem>,
+	prop: AssetValueType<EnclosingItem, K, Type | undefined>
+}
 
 /**
  * A utility class for editing any item of type T.

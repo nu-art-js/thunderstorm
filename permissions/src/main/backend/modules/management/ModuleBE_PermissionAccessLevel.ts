@@ -71,8 +71,9 @@ export class ModuleBE_PermissionAccessLevel_Class
 		//Collect all apis that hold an access level id in the levels that have changed
 		const deletedIds = deleted.map(dbObjectToId);
 		const levelIds = [...deletedIds, ...updated.map(dbObjectToId)];
-		const connectedApis = await batchActionParallel(levelIds, 10, async ids => await ModuleBE_PermissionApi.query.custom({where: {accessLevelIds: {$aca: ids}}}));
+		const _connectedApis = await batchActionParallel(levelIds, 10, async ids => await ModuleBE_PermissionApi.query.custom({where: {accessLevelIds: {$aca: ids}}}));
 
+		const connectedApis = filterDuplicates(_connectedApis, api => api._id);
 		deletedIds.forEach(id => {
 			//For each deleted level remove it from any api that held it
 			connectedApis.forEach(api => {

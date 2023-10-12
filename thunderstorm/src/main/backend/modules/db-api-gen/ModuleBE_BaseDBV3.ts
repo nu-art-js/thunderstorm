@@ -214,7 +214,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 	 * Override this method to customize processing that should be done after create, set, update or delete.
 	 * @param data
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Proto['dbType']>) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<Proto['dbType']>): FirestoreQuery<Proto['dbType']> {
