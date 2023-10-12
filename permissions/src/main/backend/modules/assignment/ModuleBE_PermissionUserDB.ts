@@ -53,7 +53,7 @@ class ModuleBE_PermissionUserDB_Class
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
-		return {collectionKey: 'User', conflictingIds: conflicts.map(dbObjectToId)};
+		return {collectionKey: 'User', conflictingIds: filterDuplicates(conflicts.map(dbObjectToId))};
 	};
 
 	// protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {

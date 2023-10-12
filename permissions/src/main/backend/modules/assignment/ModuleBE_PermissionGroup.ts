@@ -58,7 +58,7 @@ export class ModuleBE_PermissionGroup_Class
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
-		return {collectionKey: 'Group', conflictingIds: conflicts.map(dbObjectToId)};
+		return {collectionKey: 'Group', conflictingIds: filterDuplicates(conflicts.map(dbObjectToId))};
 	};
 
 	protected async preWriteProcessing(instance: DB_PermissionGroup, t?: Transaction) {
@@ -95,7 +95,7 @@ export class ModuleBE_PermissionGroup_Class
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId));
 		const users = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionUserDB.query.custom({where: {__groupIds: {$aca: ids}}}));
-		await ModuleBE_SessionDB.session.invalidate(users.map(i => i.accountId));
+		await ModuleBE_SessionDB.session.invalidate(filterDuplicates(users.map(i => i.accountId)));
 	}
 }
 

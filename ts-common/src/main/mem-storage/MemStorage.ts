@@ -19,6 +19,10 @@ export class MemStorage {
 		return asyncLocalStorage.run(this, makeItContext);
 	}
 
+	initSync<R>(makeItContext: () => R) {
+		return asyncLocalStorage.run(this, makeItContext);
+	}
+
 	private set = <T>(key: MemKey<T>, value: T): T => {
 		// console.log(`-- ${this.cache.__myId} set: ${key.key} -> `, value);
 		const currentValue = this.cache[key.key];
@@ -68,18 +72,23 @@ export class MemKey<T> {
 		// @ts-ignore
 		const memValue = asyncLocalStorage.getStore().get(this, value);
 		if (!exists(memValue))
-			throw new BadImplementationException(`Trying to access MemKey(${this.key}) before it was set!`)
+			throw new BadImplementationException(`Trying to access MemKey(${this.key}) before it was set!`);
 
 		return memValue;
 	};
 
-
 	set = (value: T) => {
 		// console.log(this.key, value);
 		if (!exists(value))
-			throw new BadImplementationException(`Cannot set MemKey(${this.key}) to undefined or null!`)
+			throw new BadImplementationException(`Cannot set MemKey(${this.key}) to undefined or null!`);
 
 		// @ts-ignore
 		return asyncLocalStorage.getStore().set(this, value);
+	};
+
+	merge = (value: T) => {
+		const currentValue = this.get();
+		// @ts-ignore
+		return asyncLocalStorage.getStore().set(this, merge(currentValue, value));
 	};
 }

@@ -67,7 +67,7 @@ export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
 	canDeleteItems: (dbItems: Proto['dbType'][], transaction?: Transaction) => Promise<void>,
 	preWriteProcessing?: (dbInstance: Proto['dbType'], transaction?: Transaction) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Proto['dbType']>) => FirestoreQuery<Proto['dbType']>,
-	postWriteProcessing?: (data: PostWriteProcessingData<Proto['dbType']>) => Promise<void>,
+	postWriteProcessing?: (data: PostWriteProcessingData<Proto>) => Promise<void>,
 }
 
 export type MultiWriteItem<Op extends MultiWriteOperation, Proto extends DBProto<any>> =
