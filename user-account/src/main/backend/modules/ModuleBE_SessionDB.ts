@@ -29,7 +29,7 @@ export class ModuleBE_SessionDB_Class
 		if (typeof sessionId !== 'string')
 			throw new ApiException(401, `Invalid session id: ${sessionId}`);
 
-		const sessionData = await this.runTransaction(async transaction => {
+		const dbSession = await this.runTransaction(async transaction => {
 			let dbSession;
 			try {
 				dbSession = await ModuleBE_SessionDB.query.uniqueWhere({sessionId}, transaction);
@@ -40,17 +40,17 @@ export class ModuleBE_SessionDB_Class
 					throw new ApiException(401, `Invalid session id: ${sessionId}`, err);
 				}
 			}
-
-			MemKey_SessionObject.set(dbSession);
-			let sessionData = this.sessionData.decode(sessionId);
-			if (!this.session.isValid(sessionData))
-				throw new ApiException(401, 'Session timed out');
-
-			if (dbSession.needToRefresh || this.session.isAlmostExpired(dbSession.timestamp, sessionData)) {
-				sessionData = await this.session.rotate(dbSession, sessionData);
-			}
-			return sessionData;
+			return dbSession;
 		});
+
+		MemKey_SessionObject.set(dbSession);
+		let sessionData = this.sessionData.decode(sessionId);
+		if (!this.session.isValid(sessionData))
+			throw new ApiException(401, 'Session timed out');
+
+		if (dbSession.needToRefresh || this.session.isAlmostExpired(dbSession.timestamp, sessionData)) {
+			sessionData = await this.session.rotate(dbSession, sessionData);
+		}
 
 		MemKey_SessionData.set(sessionData);
 	};

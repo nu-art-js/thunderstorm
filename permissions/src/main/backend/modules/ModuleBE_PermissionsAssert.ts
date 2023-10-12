@@ -238,7 +238,7 @@ export class ModuleBE_PermissionsAssert_Class
 				throw new ApiException(403, 'Missing Access For This Domain');
 
 			if (!exists(userPermissions[domainId]) || userPermissions[domainId] < apiDetails.dbApi._accessLevels![domainId]) {
-				this.logErrorBold(`${(userPermissions[domainId] ?? 0)} < ${apiDetails.dbApi._accessLevels![domainId]} === ${(userPermissions[domainId] ?? 0) < apiDetails.dbApi._accessLevels![domainId]}`);
+				this.logErrorBold(`for domain - userAccessLevel <> expectedAccessLevel: "${domainId}" ${(userPermissions[domainId] ?? 0)} <> ${apiDetails.dbApi._accessLevels![domainId]}`);
 				throw new ApiException(403, 'Action Forbidden');
 			}
 		});

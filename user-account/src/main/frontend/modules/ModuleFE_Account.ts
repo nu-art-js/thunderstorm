@@ -13,8 +13,10 @@ import {
 	BadImplementationException,
 	cloneObj,
 	composeUrl,
-	currentTimeMillis, DB_BaseObject,
-	exists, generateHex,
+	currentTimeMillis,
+	DB_BaseObject,
+	exists,
+	generateHex,
 	TS_Object,
 	TypedKeyValue
 } from '@nu-art/ts-common';
@@ -26,7 +28,6 @@ import {
 	DBDef_Accounts,
 	DBProto_AccountType,
 	HeaderKey_SessionId,
-	QueryParam_Email,
 	QueryParam_SessionId,
 	Response_Auth,
 	Response_LoginSAML,
@@ -116,15 +117,10 @@ class ModuleFE_Account_Class
 			StorageKey_SessionId.set(sessionId);
 			this.processSessionStatus(sessionId);
 		});
-		// ModuleFE_XHR.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
-		const email = getQueryParameter(QueryParam_Email);
 		const sessionId = getQueryParameter(QueryParam_SessionId);
-
-		if (email && sessionId) {
+		if (sessionId) {
 			StorageKey_SessionId.set(String(sessionId));
-
-			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_Email);
 			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_SessionId);
 		}
 
@@ -178,9 +174,15 @@ class ModuleFE_Account_Class
 	};
 
 	public composeSAMLUrl = () => {
-		return composeUrl(window.location.href, {
+		const params = new URLSearchParams(window.location.search);
+		const paramsObj: TS_Object = {};
+		for (const [key, value] of params) {
+			paramsObj[key] = value;
+		}
+
+		return composeUrl(window.location.origin + window.location.pathname, {
+			...paramsObj,
 			[QueryParam_SessionId]: QueryParam_SessionId.toUpperCase(),
-			[QueryParam_Email]: QueryParam_Email.toUpperCase(),
 		});
 	};
 
