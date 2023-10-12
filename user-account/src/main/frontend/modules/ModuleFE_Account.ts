@@ -14,7 +14,7 @@ import {
 	cloneObj,
 	composeUrl,
 	currentTimeMillis, DB_BaseObject,
-	exists,
+	exists, generateHex,
 	TS_Object,
 	TypedKeyValue
 } from '@nu-art/ts-common';
@@ -32,7 +32,7 @@ import {
 	Response_LoginSAML,
 	UI_Account
 } from '../../shared';
-import {StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp} from '../core/consts';
+import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp} from '../core/consts';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
@@ -97,6 +97,12 @@ class ModuleFE_Account_Class
 	};
 
 	protected init(): void {
+		if (!exists(StorageKey_DeviceId.get())) {
+			const deviceId = generateHex(32);
+			console.log(`Defining new device Id: ${deviceId}`);
+			StorageKey_DeviceId.set(deviceId);
+		}
+
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
 		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
 			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
@@ -141,7 +147,7 @@ class ModuleFE_Account_Class
 			this.sessionData = sessionData;
 			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 		} catch (e: any) {
-			return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+			return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 		}
 	}
 

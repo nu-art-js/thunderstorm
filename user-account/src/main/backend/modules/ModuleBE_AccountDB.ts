@@ -214,16 +214,18 @@ export class ModuleBE_AccountDB_Class
 		login: async (credentials: Request_LoginAccount): Promise<Response_Auth> => {
 			this.impl.fixEmail(credentials);
 
-			return this.runTransaction(async transaction => {
+			const safeAccount = await this.runTransaction(async transaction => {
 				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email}, transaction);
 				await this.password.assertPasswordMatch(dbAccount, credentials.password);
 				const safeAccount = makeAccountSafe(dbAccount);
-				const session = await ModuleBE_SessionDB.session.create(safeAccount._id, credentials.deviceId, [], transaction);
 				MemKey_AccountId.set(safeAccount._id);
-				await dispatch_onAccountLogin.dispatchModuleAsync(safeAccount, transaction!);
-				MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
-				return {...safeAccount};
+				await this.impl.onAccountLogin(safeAccount, transaction);
+				return safeAccount;
 			});
+
+			const session = await ModuleBE_SessionDB.session.create(safeAccount._id, credentials.deviceId, []);
+			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
+			return safeAccount;
 		},
 		create: async (createAccountRequest: Request_CreateAccount) => {
 			const password = createAccountRequest.password;

@@ -20,10 +20,10 @@ type ObjectPropDef<EnclosingType, Prop extends keyof EnclosingType, EditingType 
 	renderer: (value: ObjectProp<ObjectPropDef<EnclosingType, Prop>>) => React.ReactNode
 }
 
-export type FormV2<EditingType> = {
+export type FormV3<EditingType> = {
 	editingType: EditingType,
 	validator: ValidatorTypeResolver<EditingType>
 	properties: { [K in keyof EditingType]: ObjectPropDef<EditingType, K> }
 }
 
-export type FormRendererV2< Form extends FormV2<any>, > = { [K in keyof Form["editingType"]]: (value: ObjectProp<Form["properties"][K]>) => React.ReactNode }
+export type FormRendererV2< Form extends FormV3<any>, > = { [K in keyof Form["editingType"]]: (value: ObjectProp<Form["properties"][K]>) => React.ReactNode }

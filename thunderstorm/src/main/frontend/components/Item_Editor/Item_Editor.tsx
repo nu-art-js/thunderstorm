@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
-import {asArray, AssetValueType, DB_Object, dbObjectToId, merge, TS_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {asArray, AssetValueType, DB_Object, dbObjectToId, merge} from '@nu-art/ts-common';
 import {EditableDBItem} from '../../utils/EditableDBItem';
 import {EditableItem} from '../../utils/EditableItem';
 import {ComponentSync} from '../../core';
@@ -9,10 +9,6 @@ import {TS_Input} from '../TS_Input';
 import {TS_Checkbox} from '../TS_Checkbox';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
-import {Props_EditorRenderer} from './EditorRenderer_BaseImpl';
-import firebase from 'firebase/compat';
-import Item = firebase.analytics.Item;
-import {Form_FieldProps, InputField} from '../form/types';
 
 
 type InputProps<Value, Ex> = {
