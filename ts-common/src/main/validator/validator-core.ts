@@ -110,7 +110,7 @@ export const tsValidate = <T extends any>(instance: T | undefined, _validator: V
 
 export const tsValidateResult = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, parentInstance?: any) => {
 	if (!_validator)
-		return;
+		return "No validator provided!";
 
 	const validator: ValidatorImpl<T>[] | object = typeof _validator === 'function' ? [_validator] : _validator;
 	if (Array.isArray(validator)) {
