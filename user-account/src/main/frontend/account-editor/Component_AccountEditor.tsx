@@ -101,11 +101,14 @@ export class Component_AccountEditor
 
 		return <LL_H_C className={'inputs-row'}>
 			<TS_PropRenderer.Vertical label={'Email'}>
-				<TS_Input type={'text'} placeholder={'Email'} value={this.state.email}
+				<TS_Input type={'text'}
+									placeholder={'Email'}
+									value={this.state.email}
 									onBlur={(email) => this.setState({email})}/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical disabled={!(this.state.type === 'user')} label={'Temporary Password'}>
-				<TS_Input disabled={!(this.state.type === 'user')} type={'password'}
+				<TS_Input disabled={!(this.state.type === 'user')}
+									type={'password'}
 									value={this.state.password}
 									placeholder={'Temporary Password'}
 									onBlur={(password) => this.setState({password})}/>

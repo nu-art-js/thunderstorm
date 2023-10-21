@@ -195,7 +195,7 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 		return new Promise<void>(executor);
 	}
 
-	getResponseHeader(headerKey: string): string | string[] | undefined {
+	_getResponseHeader(headerKey: string): string | string[] | undefined {
 		if (!this.response)
 			throw new BadImplementationException(`axios didn't return yet`);
 
