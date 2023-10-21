@@ -18,11 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {_keys, asArray, BadImplementationException, exists, Logger, Minute, ModuleManager} from '@nu-art/ts-common';
+import {__stringify, _keys, asArray, BadImplementationException, exists, Logger, Minute, ModuleManager} from '@nu-art/ts-common';
 import {HttpMethod, TypedApi} from './types';
 import {HttpException, TS_Progress} from './request-types';
 import {ErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
 import {dispatcher_onAuthRequired} from './no-auth-listener';
+import {DefaultHttpServerConfig} from './consts';
 
 
 export type ErrorType = any
@@ -46,6 +47,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	protected aborted: boolean = false;
 	protected compress: boolean;
 	protected logger?: Logger;
+
 	private onCompleted?: ((response: API['R'], input: (API['P'] | API['B']), request: BaseHttpRequest<API>) => Promise<any>);
 	private onError?: (errorResponse: HttpException, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>;
 
@@ -203,7 +205,16 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return statusCode >= 200 && statusCode < 300;
 	}
 
-	async executeSync(): Promise<API['R']> {
+	protected print() {
+		this.logger?.logWarning(`Url: ${this.url}`);
+		this.logger?.logWarning(`Params:`, this.params);
+		this.logger?.logWarning(`Headers:`, this.headers);
+	}
+
+	async executeSync(print = false): Promise<API['R']> {
+		if (print)
+			this.print();
+
 		await this.executeImpl();
 		const status = this.getStatus();
 
@@ -284,7 +295,15 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 
 	abstract getStatus(): number;
 
-	abstract getResponseHeader(headerKey: string): string | string[] | undefined;
+	getResponseHeader(headerKey: string): string | string[] | undefined {
+		try {
+			return this._getResponseHeader(headerKey);
+		} catch (e: any) {
+			this.logger?.logError(`Need to add responseHeaders to backend config: ${__stringify(DefaultHttpServerConfig, true)}`, e);
+		}
+	}
+
+	abstract _getResponseHeader(headerKey: string): string | string[] | undefined;
 
 	abort() {
 		this.aborted = true;

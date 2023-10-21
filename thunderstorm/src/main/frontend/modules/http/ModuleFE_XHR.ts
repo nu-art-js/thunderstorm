@@ -183,7 +183,7 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 		});
 	}
 
-	getResponseHeader(headerKey: string): string | string[] | undefined {
+	_getResponseHeader(headerKey: string): string | string[] | undefined {
 		if (!this.xhr)
 			throw new BadImplementationException('No xhr object!');
 
