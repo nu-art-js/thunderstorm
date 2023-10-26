@@ -1,4 +1,4 @@
-import {_keys, ApiException, BadImplementationException, Module, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, BadImplementationException, Minute, Module, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {addRoutes} from '../ModuleBE_APIs';
@@ -16,11 +16,15 @@ import {
 } from '../../../shared';
 import {AxiosHttpModule} from '../http/AxiosHttpModule';
 import {ModuleBE_v2_Backup} from '../backup/ModuleBE_v2_Backup';
+import {MemKey_HttpRequest} from '../server/consts';
+import {Storm} from '../../core/Storm';
+import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
 
 
 type Config = {
 	urlMap: TypedMap<string>
 	fetchBackupDocsSecretsMap: TypedMap<string>,
+	sessionMap: TypedMap<TypedMap<string>>,
 	maxBatch: number
 }
 
@@ -35,6 +39,8 @@ class ModuleBE_v2_SyncEnv_Class
 	init() {
 		super.init();
 		addRoutes([
+
+			createBodyServerApi(ApiDef_SyncEnvV2.vv1.syncToEnv, this.pushToEnv),
 			createBodyServerApi(ApiDef_SyncEnvV2.vv1.fetchFromEnv, this.fetchFromEnv),
 			createQueryServerApi(ApiDef_SyncEnvV2.vv1.createBackup, this.createBackup),
 			createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata, this.fetchBackupMetadata),
@@ -54,25 +60,51 @@ class ModuleBE_v2_SyncEnv_Class
 		return backupInfo.metadata;
 	};
 
+	async pushToEnv(body: { env: 'dev' | 'prod', moduleName: string, items: any[] }) {
+		const remoteUrls = {
+			dev: 'https://us-central1-shopify-manager-tool-dev.cloudfunctions.net/api',
+			prod: 'https://mng.be.petitfawn.com'
+		};
+
+		const url = remoteUrls[body.env];
+		const sessionId = MemKey_HttpRequest.get().headers['x-session-id'];
+		const module = Storm.getInstance()
+			.filterModules(module => (module as ModuleBE_BaseApiV3_Class<any>).dbModule?.dbDef?.dbName === body.moduleName)[0] as ModuleBE_BaseApiV3_Class<any>;
+
+		const upsertAll = module.apiDef.v1.upsertAll;
+		const response: Response_BackupDocsV2 = await AxiosHttpModule
+			.createRequest({...upsertAll, fullUrl: url + '/' + upsertAll.path, timeout: 5 * Minute})
+			.setBody(body.items)
+			.setUrlParams(body.items)
+			.addHeader('x-session-id', sessionId!)
+			.executeSync(true);
+
+		console.log(response);
+	}
+
 	private async getBackupInfo(queryParams: { env: string, backupId: UniqueId }) {
 		const {backupId, env} = queryParams;
 		if (!env)
 			throw new BadImplementationException(`Did not receive env in the fetch from env api call!`);
 
 		const url: string = `${this.config.urlMap[env]}/v1/fetch-backup-docs-v2`;
-		const outputDef: ApiDef<QueryApi<any>> = {method: HttpMethod.GET, path: '', fullUrl: url};
-
-		const requestBody: Request_BackupId = {backupId};
+		const outputDef: ApiDef<QueryApi<Response_BackupDocsV2, Request_BackupId>> = {method: HttpMethod.GET, path: '', fullUrl: url};
+		const requestBody = {backupId};
 
 		try {
-
-			const response: Response_BackupDocsV2 = await AxiosHttpModule
+			let request = AxiosHttpModule
 				.createRequest(outputDef)
-				.setUrlParams(requestBody)
-				.addHeader('x-secret', this.config.fetchBackupDocsSecretsMap[env])
-				.addHeader('x-proxy', 'fetch-env')
-				.executeSync();
+				.setUrlParams(requestBody);
 
+			const sessionMap = this.config.sessionMap;
+			if (sessionMap)
+				request = request.addHeaders(sessionMap[env]);
+			else
+				request = request
+					.addHeader('x-secret', this.config.fetchBackupDocsSecretsMap[env])
+					.addHeader('x-proxy', 'fetch-env');
+
+			const response: Response_BackupDocsV2 = await request.executeSync();
 			const backupInfo = response.backupInfo;
 
 			const wrongBackupIdDescriptor = backupInfo?._id !== backupId;
@@ -93,7 +125,6 @@ class ModuleBE_v2_SyncEnv_Class
 	fetchFromEnv = async (body: Request_FetchFromEnvV2) => {
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
-
 
 		const backupInfo = await this.getBackupInfo(body);
 
@@ -157,7 +188,6 @@ class ModuleBE_v2_SyncEnv_Class
 			this.logInfo(`totalReadCount: ${totalReadCount}`);
 		} while (resultsArray.length > 0 && resultsArray.length % readBatchSize === 0);
 	};
-
 
 	fetchFirebaseBackup = async (queryParams: Request_FetchFirebaseBackup) => {
 		try {

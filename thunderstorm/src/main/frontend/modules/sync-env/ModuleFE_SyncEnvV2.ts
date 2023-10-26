@@ -11,6 +11,7 @@ class ModuleFE_SyncEnvV2_Class
 	constructor() {
 		super();
 		this.vv1 = {
+			syncToEnv: apiWithBody(ApiDef_SyncEnvV2.vv1.syncToEnv),
 			fetchFromEnv: apiWithBody(ApiDef_SyncEnvV2.vv1.fetchFromEnv),
 			createBackup: apiWithQuery(ApiDef_SyncEnvV2.vv1.createBackup),
 			fetchBackupMetadata: apiWithQuery(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata),

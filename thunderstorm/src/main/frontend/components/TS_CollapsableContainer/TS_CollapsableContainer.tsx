@@ -22,6 +22,7 @@ type Props = {
 	onMouseEnter?: (e: React.MouseEvent) => void;
 	onMouseLeave?: (e: React.MouseEvent) => void;
 	onMouseOver?: (e: React.MouseEvent) => void;
+	onHeaderRightClick?: (e: React.MouseEvent) => void;
 }
 
 type State = {
@@ -110,7 +111,7 @@ export class TS_CollapsableContainer
 
 	renderHeader() {
 		const className = _className('ts-collapsable-container__header', this.isCollapsed() ? 'collapsed' : undefined, this.props.flipHeaderOrder ? 'flip' : undefined);
-		return <div className={className} onClick={this.toggleCollapse}>
+		return <div className={className} onClick={this.toggleCollapse} onContextMenu={this.props.onHeaderRightClick}>
 			{this.renderCaret()}
 			{typeof this.props.headerRenderer === 'function' ? this.props.headerRenderer() : this.props.headerRenderer}
 		</div>;

@@ -257,7 +257,7 @@ export class ModuleBE_AccountDB_Class
 						throw e;
 
 					this.logInfo('SAML register account');
-					dbSafeAccount = await this.impl.create({...oAuthAccount, type: 'user'}, transaction);
+					dbSafeAccount = await this.impl.create({email: oAuthAccount.email, type: 'user'}, transaction);
 					MemKey_AccountId.set(dbSafeAccount._id);
 					await this.impl.onAccountCreated(dbSafeAccount, transaction);
 				}

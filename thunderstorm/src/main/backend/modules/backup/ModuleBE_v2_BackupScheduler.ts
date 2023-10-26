@@ -37,7 +37,7 @@ export class ModuleBE_v2_BackupScheduler_Class
 	constructor() {
 		super();
 		this.setSchedule('every 24 hours');
-		this.setRuntimeOptions({timeoutSeconds: 300});
+		this.runtimeOptions.set({timeoutSeconds: 540, maxInstances: 1});
 	}
 
 	onScheduledEvent = async (): Promise<any> => {

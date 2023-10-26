@@ -1,4 +1,4 @@
-import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
+import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, filterKeys, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
 import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_SessionType, HeaderKey_SessionId} from '../../shared';
@@ -95,13 +95,13 @@ export class ModuleBE_SessionDB_Class
 		},
 		createCustom: async (accountId: string, deviceId: string, manipulate: (sessionData: TS_Object) => TS_Object, prevSession?: string[], transaction?: Transaction) => {
 			const sessionData = await this.sessionData.collect(accountId, deviceId, manipulate, transaction);
-			const session = {
+			const session = filterKeys({
 				accountId,
 				deviceId,
 				prevSession,
 				sessionId: sessionData.encoded,
 				timestamp: currentTimeMillis()
-			};
+			}, 'prevSession');
 
 			await this.set.item(session, transaction);
 			return {sessionId: sessionData.encoded, sessionData: sessionData.raw};

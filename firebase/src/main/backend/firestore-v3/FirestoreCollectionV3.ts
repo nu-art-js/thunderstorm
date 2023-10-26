@@ -35,7 +35,7 @@ import {
 	filterDuplicates,
 	filterInstances,
 	generateHex,
-	InvalidResult,
+	InvalidResult, keepPartialObject,
 	Logger,
 	MUSTNeverHappenException,
 	StaticLogger,
@@ -93,6 +93,19 @@ export class FirestoreBulkException
 	}
 }
 
+const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']] | Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'] => {
+	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
+		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator};
+	else if (typeof dbDef.modifiablePropsValidator === 'function' && typeof dbDef.generatedPropsValidator === 'function')
+		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator];
+	else {
+		if (typeof dbDef.modifiablePropsValidator === 'function')
+			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)];
+
+		return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator)];
+	}
+};
+
 /**
  * FirestoreCollection is a class for handling Firestore collections.
  */
@@ -103,7 +116,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	readonly collection: FirestoreType_Collection;
 	readonly dbDef: DBDef_V3<Proto>;
 	readonly uniqueKeys: Proto['uniqueKeys'][] | string[];
-	private readonly validator!: ValidatorTypeResolver<Proto['dbType']>;
+	private readonly validator;
 	readonly hooks?: FirestoreCollectionHooks<Proto['dbType']>;
 
 	constructor(wrapper: FirestoreWrapperBEV3, _dbDef: DBDef_V3<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
@@ -116,7 +129,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		this.collection = wrapper.firestore.collection(_dbDef.dbName);
 		this.dbDef = _dbDef;
 		this.uniqueKeys = this.dbDef.uniqueKeys || Const_UniqueKeys;
-		// this.validator = getDbDefValidator(_dbDef);
+		this.validator = getDbDefValidator(_dbDef);
 		this.hooks = hooks;
 	}
 
@@ -438,7 +451,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	};
 
 	validateItem(dbItem: Proto['dbType']) {
-		const results = tsValidateResult(dbItem, this.validator);
+		const results = tsValidateResult(dbItem, this.validator as ValidatorTypeResolver<Proto['dbType']>);
 		if (results) {
 			this.onValidationError(dbItem, results);
 		}
