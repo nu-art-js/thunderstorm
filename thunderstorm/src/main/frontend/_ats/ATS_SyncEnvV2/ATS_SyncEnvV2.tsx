@@ -141,7 +141,7 @@ export class ATS_SyncEnvironmentV2
 						Select All
 					</TS_Checkbox>
 					<TS_Input onChange={val => this.setState({searchFilter: val})} type={'text'}
-							  placeholder={'sreach collection'}/>
+										placeholder={'sreach collection'}/>
 				</LL_H_C>
 				{this.state.moduleList.map(name => {
 					const collectionMetadata = this.state.metadata?.collectionsData.find(collection => collection.collectionName === name);
@@ -192,8 +192,7 @@ export class ATS_SyncEnvironmentV2
 		const envAdapter = SimpleListAdapter(this.state.envList, item => <div
 			className={'node-data'}>{item.item}</div>);
 		return <LL_V_L className={'sync-env-page'}>
-			<LL_H_C>{TS_AppTools.renderPageHeader('Sync Environment V2')}<TS_BusyButton onClick={this.createNewBackup}>Trigger
-				Backup</TS_BusyButton></LL_H_C>
+			<LL_H_C>{TS_AppTools.renderPageHeader('Sync Environment V2')}<TS_BusyButton onClick={this.createNewBackup}>Trigger Backup</TS_BusyButton></LL_H_C>
 			<LL_H_C className={'sync-env-page__main'}>
 				<TS_PropRenderer.Vertical label={'Environment'}>
 					<TS_DropDown
@@ -211,13 +210,13 @@ export class ATS_SyncEnvironmentV2
 
 				<TS_PropRenderer.Vertical label={'Backup ID'}>
 					<TS_Input type={'text'} value={this.state.backupId}
-							  onBlur={val => {
-								  if (!val.match(/^[0-9A-Fa-f]{32}$/))
-									  return;
+										onBlur={val => {
+											if (!val.match(/^[0-9A-Fa-f]{32}$/))
+												return;
 
-								  this.setState({backupId: val});
-								  return this.fetchMetadata();
-							  }}/>
+											this.setState({backupId: val});
+											return this.fetchMetadata();
+										}}/>
 				</TS_PropRenderer.Vertical>
 
 				<div className={_className(!this.state.fetchMetadataInProgress && 'hidden')}><TS_Loader/></div>
