@@ -18,6 +18,7 @@ export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<Typ
 
 type Config = DBApiConfigV3<DBProto_SessionType> & {
 	sessionTTLms: number
+	rotationFactor: number
 }
 
 export class ModuleBE_SessionDB_Class
@@ -48,7 +49,7 @@ export class ModuleBE_SessionDB_Class
 		if (!this.session.isValid(sessionData))
 			throw new ApiException(401, 'Session timed out');
 
-		if (dbSession.needToRefresh || this.session.isAlmostExpired(dbSession.timestamp, sessionData)) {
+		if (dbSession.needToRefresh || this.session.canRotate(dbSession.timestamp, sessionData)) {
 			sessionData = await this.session.rotate(dbSession, sessionData);
 		}
 
@@ -57,7 +58,7 @@ export class ModuleBE_SessionDB_Class
 
 	constructor() {
 		super(DBDef_Session);
-		this.setDefaultConfig({sessionTTLms: Day});
+		this.setDefaultConfig({sessionTTLms: Day, rotationFactor: 0.5});
 	}
 
 	async __collectSessionData(data: SessionCollectionParam) {
@@ -111,9 +112,9 @@ export class ModuleBE_SessionDB_Class
 			const now = currentTimeMillis();
 			return expiration > now;
 		},
-		isAlmostExpired: (createdAt: number, sessionData?: TS_Object) => {
+		canRotate: (createdAt: number, sessionData?: TS_Object) => {
 			const expiration = SessionKey_Session_BE.get(sessionData).expiration;
-			const renewSessionTTL = (expiration - createdAt) * 0.1;
+			const renewSessionTTL = (expiration - createdAt) * this.config.rotationFactor;
 
 			const now = currentTimeMillis();
 			return expiration - renewSessionTTL < now;
