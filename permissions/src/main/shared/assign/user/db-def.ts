@@ -17,20 +17,11 @@
  * limitations under the License.
  */
 
-import {
-	DBDef,
-	OmitDBObject,
-	tsValidateArray,
-	tsValidateString,
-	tsValidateStringAndNumbersWithDashes,
-	ValidatorTypeResolver
-} from '@nu-art/ts-common';
-import {validateUserUuid} from '../../validators';
+import {DBDef, OmitDBObject, tsValidateArray, tsValidateString, tsValidateStringAndNumbersWithDashes, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {DB_PermissionUser} from './types';
 
 
 const Validator_PermissionUser: ValidatorTypeResolver<OmitDBObject<DB_PermissionUser>> = {
-	accountId: validateUserUuid,
 	groups: tsValidateArray({
 		groupId: tsValidateStringAndNumbersWithDashes,
 	}, false),
@@ -42,5 +33,4 @@ export const DBDef_PermissionUser: DBDef<DB_PermissionUser> = {
 	validator: Validator_PermissionUser,
 	dbName: 'permissions--user',
 	entityName: 'permissions--user',
-	lockKeys: ['accountId']
 };
