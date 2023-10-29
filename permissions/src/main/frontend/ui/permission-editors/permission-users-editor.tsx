@@ -32,7 +32,7 @@ export class PermissionUsersEditor
 	readonly module = ModuleFE_PermissionsUser;
 	readonly itemName = 'Permission User';
 	readonly itemNamePlural = 'Permission Users';
-	readonly itemDisplay = (user: DB_PermissionUser) => this.props.renderAccount(user.accountId);
+	readonly itemDisplay = (user: DB_PermissionUser) => this.props.renderAccount(user._id);
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsUser],
 		renderAccount: (accountId: string) => ModuleFE_Account.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'
