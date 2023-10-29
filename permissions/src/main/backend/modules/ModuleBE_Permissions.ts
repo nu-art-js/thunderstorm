@@ -85,7 +85,7 @@ class ModuleBE_Permissions_Class
 	}
 
 	async __collectSessionData(data: SessionCollectionParam): Promise<SessionData_Permissions> {
-		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId: data.accountId});
+		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({_id: data.accountId});
 		const permissionMap: TypedMap<number> = {};
 		const groupIds = user.groups.map(g => g.groupId);
 		const groups = filterInstances(await ModuleBE_PermissionGroup.query.all(groupIds));
@@ -229,10 +229,7 @@ class ModuleBE_Permissions_Class
 		if (existingSuperAdmin)
 			return;
 
-		const currentUser = (await ModuleBE_PermissionUserDB.query.custom({where: {accountId: MemKey_AccountId.get()}}))[0];
-		if (!currentUser)
-			throw new MUSTNeverHappenException('User permissions document must exist at this point');
-
+		const currentUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(MemKey_AccountId.get());
 		(currentUser.groups || (currentUser.groups = [])).push({groupId: GroupId_SuperAdmin});
 		await ModuleBE_PermissionUserDB.set.item(currentUser);
 		await ModuleBE_SessionDB.session.rotate();

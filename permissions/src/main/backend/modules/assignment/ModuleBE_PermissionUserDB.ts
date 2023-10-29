@@ -94,7 +94,7 @@ class ModuleBE_PermissionUserDB_Class
 	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionUser>) {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
-		const accountIds = filterDuplicates([...deleted, ...updated].map(i => i.accountId));
+		const accountIds = filterDuplicates([...deleted, ...updated].map(i => i._id));
 		await ModuleBE_SessionDB.session.invalidate(accountIds);
 	}
 
@@ -107,13 +107,13 @@ class ModuleBE_PermissionUserDB_Class
 	}
 
 	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
-		const permissionsUserToCreate = {accountId: uiAccount._id, groups: [], _auditorId: MemKey_AccountId.get()};
+		const permissionsUserToCreate = {_id: uiAccount._id, groups: [], _auditorId: MemKey_AccountId.get()};
 
 		const create = async (transaction?: Transaction) => {
 			return this.create.item(permissionsUserToCreate, transaction);
 		};
 
-		return this.collection.uniqueGetOrCreate({accountId: uiAccount._id}, create, transaction);
+		return this.collection.uniqueGetOrCreate({_id: uiAccount._id}, create, transaction);
 	}
 
 	async assignPermissions(body: Request_AssignPermissions) {
