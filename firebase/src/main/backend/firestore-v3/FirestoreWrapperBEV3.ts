@@ -20,7 +20,7 @@ import {FirestoreCollectionHooks, FirestoreCollectionV3,} from './FirestoreColle
 import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {DBDef_V3, DBProto} from '@nu-art/ts-common';
+import {DBDef_V3, DBProto, Promise_all_sequentially} from '@nu-art/ts-common';
 import {DocumentReference, getFirestore, Transaction,} from 'firebase-admin/firestore';
 
 
@@ -39,8 +39,14 @@ export class FirestoreWrapperBEV3
 		if (transaction) // if a transaction was provided to be used, use it
 			return processor(transaction);
 
-		return this.firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
+		const postTransactionActions: (() => Promise<any>)[] = [];
+		const toRet = await this.firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
 			const writeActions: (() => void)[] = [];
+
+			// @ts-ignore
+			transaction.postTransaction = (action: () => Promise<any>) => {
+				return postTransactionActions.push(action);
+			};
 
 			// @ts-ignore
 			transaction.__nu_art__WriteActions = writeActions;
@@ -64,11 +70,13 @@ export class FirestoreWrapperBEV3
 			};
 
 			const toRet = await processor(transaction);
-
 			writeActions.forEach(action => action());
 
 			return toRet;
 		});
+
+		await Promise_all_sequentially(postTransactionActions);
+		return toRet;
 	};
 
 	public getCollection<Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>): FirestoreCollectionV3<Proto> {
