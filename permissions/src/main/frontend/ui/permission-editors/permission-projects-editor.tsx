@@ -29,6 +29,7 @@ import {Filter, sortArray, UniqueId} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {MultiSelect} from '../ui-props';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 
 
 type State = State_EditorBase<DB_PermissionProject> & {
@@ -100,9 +101,12 @@ export class PermissionProjectsEditor
 		if (this.state.items.length)
 			return <></>;
 
-		return <TS_Button className={'item-list__add-button'}
-											onClick={async () => await ModuleFE_PermissionsAssert.v1.createProject({}).executeSync()}>Create
-			Project</TS_Button>;
+		return <TS_Button
+			className={'item-list__add-button'}
+			onClick={async () => {
+				await ModuleFE_PermissionsAssert.v1.createProject({}).executeSync();
+				await ModuleFE_SyncManagerV2.v1.checkSync().executeSync();
+			}}>Create Project</TS_Button>;
 	};
 
 	private renderApis = () => {

@@ -65,7 +65,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 					throw new ApiException(404, `Could not find ${this.dbModule.collection.dbDef.entityName} with _id: ${queryObject._id}`);
 				return toReturnItem;
 			}),
-			createBodyServerApi(this.apiDef.v1.upsert, this.dbModule.set.item),
+			createBodyServerApi(this.apiDef.v1.upsert, (item) => this._upsert(item)),
 			createBodyServerApi(this.apiDef.v1.upsertAll, (body) => this.dbModule.set.all(body)),
 			createQueryServerApi(this.apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
 			createBodyServerApi(this.apiDef.v1.deleteQuery, this._deleteQuery),
@@ -92,6 +92,10 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 
 		return this.dbModule.delete.query(query);
 	};
+
+	protected async _upsert(item: PreDB<Type>) {
+		return this.dbModule.set.item(item);
+	}
 }
 
 export const createApisForDBModuleV2 = <DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey>(dbModule: ModuleBE_BaseDBV2<DBType, any, Ks>) => {

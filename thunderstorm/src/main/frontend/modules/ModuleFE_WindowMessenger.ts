@@ -1,12 +1,13 @@
 import {Logger, Module, removeItemFromArray, TypedMap} from '@nu-art/ts-common';
 
+
 interface Messagable {
 	postMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void;
 
 	postMessage(message: any, options?: WindowPostMessageOptions): void;
 }
 
-type Message = {
+export type Message = {
 	key: string
 }
 

@@ -41,7 +41,7 @@ import {
 	ServerApi_Middleware,
 	Storm
 } from '@nu-art/thunderstorm/backend';
-import {HttpMethod} from '@nu-art/thunderstorm';
+import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {
 	ApiDef_PermissionsAssert,
@@ -61,7 +61,6 @@ import {
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {SessionKey_Permissions_BE} from '../consts';
 import {PermissionKey_BE} from '../PermissionKey_BE';
-import {ApiModule} from './ModuleBE_Permissions';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
