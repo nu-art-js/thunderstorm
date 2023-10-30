@@ -18,7 +18,18 @@
  */
 
 import {MemKey_AccountId, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
-import {_keys, ApiException, batchActionParallel, DB_BaseObject, dbObjectToId, filterDuplicates, filterInstances, flatArray, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	ApiException,
+	asOptionalArray,
+	batchActionParallel,
+	DB_BaseObject,
+	dbObjectToId,
+	filterDuplicates,
+	filterInstances,
+	flatArray,
+	TypedMap
+} from '@nu-art/ts-common';
 import {DB_EntityDependency} from '@nu-art/firebase';
 import {ApiDef_PermissionUser, DB_PermissionUser, DBDef_PermissionUser, Request_AssignPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
@@ -92,10 +103,12 @@ class ModuleBE_PermissionUserDB_Class
 	}
 
 	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionUser>) {
-		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
-		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
-		const accountIds = filterDuplicates([...deleted, ...updated].map(i => i._id));
-		await ModuleBE_SessionDB.session.invalidate(accountIds);
+		const deleted = asOptionalArray(data.deleted) ?? [];
+		const updated = asOptionalArray(data.updated) ?? [];
+		const beforeIds = (asOptionalArray(data.before) ?? []).map(before => before?._id);
+
+		const accountIdToInvalidate = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i?._id))).filter(id => beforeIds.includes(id));
+		await ModuleBE_SessionDB.session.invalidate(accountIdToInvalidate);
 	}
 
 	async __onUserLogin(account: UI_Account, transaction: Transaction) {
