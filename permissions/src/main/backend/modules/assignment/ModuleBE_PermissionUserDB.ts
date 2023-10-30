@@ -165,64 +165,8 @@ class ModuleBE_PermissionUserDB_Class
 			return user;
 		});
 
-		await this.set.all(usersToUpdate);
+		await this.set.multi(usersToUpdate);
 	}
-
-	// async _assignAppPermissions(body: Request_AssignAppPermissions) {
-	//
-	// 	let assignAppPermissionsObj: AssignAppPermissions;
-	// 	const accountId = MemKey_AccountId.get();
-	// 	if (body.appAccountId)
-	// 		// when creating project
-	// 		assignAppPermissionsObj = {...body, granterUserId: body.appAccountId, sharedUserIds: [accountId]};
-	// 	else
-	// 		// when I share with you
-	// 		assignAppPermissionsObj = {...body, granterUserId: accountId, sharedUserIds: body.sharedUserIds};
-	// 	const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
-	// 	if (!sharedUserIds.length)
-	// 		throw new BadImplementationException('SharedUserIds is missing');
-	//
-	// 	const groupId = assignAppPermissionsObj.group._id;
-	// 	await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId, {groupId});
-	//
-	// 	if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
-	// 		throw new BadImplementationException('Group to must be a part of the groups to removed array');
-	//
-	// 	await this.runTransaction(async (transaction) => {
-	// 		const users = await batchAction(sharedUserIds, 10, (chunked) => {
-	// 			return this.query.custom({where: {accountId: {$in: chunked}}}, transaction);
-	// 		});
-	//
-	// 		if (users.length !== sharedUserIds.length)
-	// 			throw new ApiException(404, `No permissions USER for all user ids`); // TODO mention who miss?
-	//
-	// 		if (!assignAppPermissionsObj.customField || _keys(assignAppPermissionsObj.customField).length === 0)
-	// 			throw new ApiException(400, `Cannot set app permissions '${assignAppPermissionsObj.projectId}--${assignAppPermissionsObj.group._id}', request must have custom fields restriction!!`);
-	//
-	// 		const _group = await ModuleBE_PermissionGroup.query.uniqueAssert(groupId, transaction);
-	// 		if (!_group)
-	// 			throw new ApiException(404, `No permissions GROUP for id ${groupId}`);
-	//
-	// 		const updatedUsers = users.map(user => {
-	// 			const newGroups = (user.groups || [])?.filter(
-	// 				group => !assignAppPermissionsObj.groupsToRemove.find(groupToRemove => {
-	// 					if (groupToRemove._id !== group.groupId)
-	// 						return false;
-	//
-	// 					return compare(group.customField, assignAppPermissionsObj.customField, assignAppPermissionsObj.assertKeys);
-	// 				}));
-	//
-	// 			if (!newGroups.find(nGroup => nGroup.groupId === _group._id && compare(nGroup.customField, assignAppPermissionsObj.customField))) {
-	// 				newGroups.push({groupId: _group._id, customField: assignAppPermissionsObj.customField});
-	// 			}
-	//
-	// 			user.groups = newGroups;
-	// 			return user;
-	// 		});
-	//
-	// 		return this.set.all(updatedUsers, transaction);
-	// 	});
-	// }
 }
 
 export const ModuleBE_PermissionUserDB = new ModuleBE_PermissionUserDB_Class();
