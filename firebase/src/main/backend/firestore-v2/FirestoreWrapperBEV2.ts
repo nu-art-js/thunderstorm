@@ -20,7 +20,7 @@ import {FirestoreCollectionHooks, FirestoreCollectionV2,} from './FirestoreColle
 import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {DB_Object, DBDef, Default_UniqueKey, PreDB} from '@nu-art/ts-common';
+import {DB_Object, DBDef, Default_UniqueKey, PreDB, Promise_all_sequentially} from '@nu-art/ts-common';
 import {DocumentReference, getFirestore, Transaction,} from 'firebase-admin/firestore';
 
 
@@ -39,8 +39,14 @@ export class FirestoreWrapperBEV2
 		if (transaction) // if a transaction was provided to be used, use it
 			return processor(transaction);
 
-		return this.firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
+		const postTransactionActions: (() => Promise<any>)[] = [];
+		const toRet = await this.firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
 			const writeActions: (() => void)[] = [];
+
+			// @ts-ignore
+			transaction.postTransaction = (action: () => Promise<any>) => {
+				return postTransactionActions.push(action);
+			};
 
 			// @ts-ignore
 			transaction.__nu_art__WriteActions = writeActions;
@@ -64,11 +70,13 @@ export class FirestoreWrapperBEV2
 			};
 
 			const toRet = await processor(transaction);
-
 			writeActions.forEach(action => action());
 
 			return toRet;
 		});
+
+		await Promise_all_sequentially(postTransactionActions);
+		return toRet;
 	};
 
 	public getCollection<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey>(dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type, Ks> {

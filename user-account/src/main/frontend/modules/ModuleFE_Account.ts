@@ -61,6 +61,7 @@ class ModuleFE_Account_Class
 	readonly vv1: ApiDefCaller<ApiStructFE_Account>['vv1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	accountId!: string;
+
 	// @ts-ignore
 	private sessionData!: TS_Object;
 
@@ -115,6 +116,7 @@ class ModuleFE_Account_Class
 
 			const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
 			StorageKey_SessionId.set(sessionId);
+			this.sessionData = this.decode(sessionId);
 			this.processSessionStatus(sessionId);
 		});
 

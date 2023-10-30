@@ -10,16 +10,10 @@ import {
 	TS_BusyButton,
 	TS_Button
 } from '@nu-art/thunderstorm/frontend';
-import {
-	BadImplementationException,
-	cloneArr,
-	DB_Object,
-	sortArray,
-	ThisShouldNotHappenException,
-	UniqueId
-} from '@nu-art/ts-common';
+import {BadImplementationException, cloneArr, DB_Object, sortArray, ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
 
 import './editor-base.scss';
+import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 
 
 const newItemIdentifier = '##new-item##';
@@ -59,8 +53,10 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 
 		this.logDebug('Saving Item', this.state.editedItem.item);
 		await genericNotificationAction(
-			() => this.state.editedItem!.save(),
-			`Saving ${this.itemName}`, 3);
+			async () => {
+				await this.state.editedItem!.save();
+				return ModuleFE_SyncManagerV2.v1.checkSync().executeSync();
+			}, `Saving ${this.itemName}`, 3);
 	};
 
 	private deleteItem = async () => {
@@ -90,7 +86,7 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 				{items.map(item => {
 					const className = _className('item-list__list-item', item._id === this.state.selectedItemId ? 'selected' : undefined);
 					return <div className={className} onClick={() => this.selectItem(item._id)}
-								key={item._id}>{this.itemDisplay(item)}</div>;
+											key={item._id}>{this.itemDisplay(item)}</div>;
 				})}
 			</LL_V_L>
 			{this.renderListButton()}
@@ -118,7 +114,7 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 			</LL_V_L>
 			<LL_H_C className={'item-editor__buttons'}>
 				{item.item._id &&
-                    <TS_BusyButton onClick={this.deleteItem} className={'delete-button'}>Delete</TS_BusyButton>}
+					<TS_BusyButton onClick={this.deleteItem} className={'delete-button'}>Delete</TS_BusyButton>}
 				<TS_Button onClick={() => this.selectItem()}>Cancel</TS_Button>
 				<TS_BusyButton onClick={this.saveItem}>Save</TS_BusyButton>
 			</LL_H_C>
