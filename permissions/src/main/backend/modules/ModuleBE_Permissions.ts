@@ -24,6 +24,7 @@ import {
 	defaultLevelsRouteLookupWords,
 	DuplicateDefaultAccessLevels
 } from '../../shared/consts';
+import { ApiModule } from '@nu-art/thunderstorm';
 
 
 export interface CollectPermissionsProjects {
@@ -65,7 +66,6 @@ const PermissionProject_Permissions: DefaultDef_Project = {
 		// },
 	]
 };
-export type ApiModule = { dbModule: { dbDef: { dbName: string } }, apiDef: { [name: string]: { [name: string]: { path: string } } } }
 
 class ModuleBE_Permissions_Class
 	extends Module

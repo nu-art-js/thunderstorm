@@ -2,7 +2,7 @@ import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, 
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
 import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_SessionType, HeaderKey_SessionId} from '../../shared';
-import {Header_SessionId, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Account_BE, SessionKey_Session_BE} from '../core/consts';
+import {Header_SessionId, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Session_BE} from '../core/consts';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import Transaction = firestore.Transaction;
@@ -50,7 +50,7 @@ export class ModuleBE_SessionDB_Class
 			throw new ApiException(401, 'Session timed out');
 
 		if (dbSession.needToRefresh || this.session.canRotate(dbSession.timestamp, sessionData)) {
-			sessionData = await this.session.rotate(dbSession, sessionData);
+			sessionData = await this.session.rotate(dbSession);
 		}
 
 		MemKey_SessionData.set(sessionData);
@@ -119,10 +119,18 @@ export class ModuleBE_SessionDB_Class
 			const now = currentTimeMillis();
 			return expiration - renewSessionTTL < now;
 		},
-		invalidate: async (accountIds: string[] = [MemKey_AccountId.get()]): Promise<void> => {
-			const sessions = await batchActionParallel(accountIds, 10, async ids => await this.query.custom({where: {accountId: {$in: ids}}}));
-			sessions.forEach(session => session.needToRefresh = true);
-			await this.set.all(sessions);
+		invalidate: async (_accountIds: string[] = [MemKey_AccountId.get()]): Promise<void> => {
+			const accountIds = _accountIds.filter(id => id !== MemKey_AccountId.get());
+			const callerAccountIncluded = accountIds.length !== _accountIds.length;
+			if (accountIds.length > 0) {
+				const sessions = await batchActionParallel(accountIds, 10, async ids => await this.query.custom({where: {accountId: {$in: ids}}}));
+				sessions.forEach(session => session.needToRefresh = true);
+				await this.set.all(sessions);
+			}
+
+			if (callerAccountIncluded) {
+				await this.session.rotate(MemKey_SessionObject.get());
+			}
 		},
 		delete: async (transaction?: Transaction) => {
 			const sessionId = Header_SessionId.get();
@@ -131,8 +139,8 @@ export class ModuleBE_SessionDB_Class
 
 			await this.delete.query({where: {sessionId}}, transaction);
 		},
-		rotate: async (dbSession: DB_Session = MemKey_SessionObject.get(), sessionData: TS_Object = MemKey_SessionData.get(), transaction?: Transaction) => {
-			this.logInfo(`Rotating sessionId for Account: ${SessionKey_Account_BE.get(sessionData)._id}`);
+		rotate: async (dbSession: DB_Session = MemKey_SessionObject.get(), transaction?: Transaction) => {
+			this.logInfo(`Rotating sessionId for Account: ${dbSession.accountId}`);
 
 			const session = await this.session.create(dbSession.accountId, dbSession.deviceId, [dbSession.sessionId, ...(dbSession.prevSession || [])], transaction);
 			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
