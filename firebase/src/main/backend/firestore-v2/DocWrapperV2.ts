@@ -70,8 +70,11 @@ export class DocWrapperV2<T extends DB_Object> {
 		} else
 			await this.ref.create(dbItem);
 
-		// @ts-ignore
-		transaction?.postTransaction(() => this.collection.hooks?.postWriteProcessing?.({updated: dbItem}));
+		if (transaction)
+			// @ts-ignore
+			transaction.postTransaction(() => this.collection.hooks?.postWriteProcessing?.({updated: dbItem}));
+		else
+			this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
 
 		return dbItem;
 	};
@@ -100,7 +103,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		const currDBItem = await this.get(transaction);
 		const newDBItem = await this.prepareForSet(item as T, currDBItem!, transaction);
 		// Will always get here with a transaction!
-		transaction!.set(this.ref, newDBItem);
+		transaction.set(this.ref, newDBItem);
 		this.data = newDBItem;
 
 		/**
@@ -110,10 +113,8 @@ export class DocWrapperV2<T extends DB_Object> {
 		 * Need to find a better solution for this, perhaps our own transaction (import hell fixes)
 		 */
 		// @ts-ignore
-		transaction?.postTransaction(() => this.collection.hooks?.postWriteProcessing?.({before: currDBItem, updated: newDBItem}));
+		transaction.postTransaction(() => this.collection.hooks?.postWriteProcessing?.({before: currDBItem, updated: newDBItem}));
 
-		// @ts-ignore
-		console.log(transaction?.postTransaction);
 		return newDBItem;
 	};
 
@@ -172,7 +173,7 @@ export class DocWrapperV2<T extends DB_Object> {
 
 		this.cleanCache();
 		// @ts-ignore
-		transaction?.postTransaction(() => this.collection.hooks?.postWriteProcessing?.({deleted: dbItem}));
+			transaction?.postTransaction(() => this.collection.hooks?.postWriteProcessing?.({deleted: dbItem}));
 		return dbItem;
 	};
 }

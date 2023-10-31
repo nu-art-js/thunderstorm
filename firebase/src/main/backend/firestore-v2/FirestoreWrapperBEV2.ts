@@ -44,7 +44,7 @@ export class FirestoreWrapperBEV2
 			const writeActions: (() => void)[] = [];
 
 			// @ts-ignore
-			transaction?.postTransaction = (action: () => Promise<any>) => {
+			transaction.postTransaction = (action: () => Promise<any>) => {
 				return postTransactionActions.push(action);
 			};
 
