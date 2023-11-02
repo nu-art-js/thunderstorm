@@ -156,7 +156,7 @@ export const tsValidateValue = <T>(values: T[], mandatory = true): Validator<any
 			if (values.includes(input!))
 				return;
 
-			return `Input is not valid:\n  input: ${input}\n  options: ${__stringify(values)}\n`;
+			return `Input is not valid:\n  input: ${input && __stringify(input) || input}\n  options: ${__stringify(values)}\n`;
 		}];
 };
 
