@@ -121,7 +121,7 @@ export const tsValidateResult = <T extends any>(instance: T | undefined, _valida
 
 	if (typeof validator === 'object') {
 		if (!instance && validator)
-			return `Unexpected object:\n The key '${String(key)}' wasn't defined in the instance.`;
+			return `Missing Property:\n The key '${String(key)}' wasn't defined in the instance.`;
 		if (typeof instance !== 'object')
 			return `Unexpected instance '${instance}'.\nExpected to receive an object, but received something else.`;
 
