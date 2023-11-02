@@ -170,7 +170,7 @@ export class ModuleBE_v2_SyncManager_Class
 		const fbSyncData = await this.syncData.get({});
 
 		const modulesToIterate = await this.filterModules(this.dbModules);
-		this.logWarning(`Filtered Modules to sync on(${modulesToIterate.length}):`, modulesToIterate.map(mod => mod.dbDef.dbName));
+		// this.logWarning(`Filtered Modules to sync on(${modulesToIterate.length}):`, modulesToIterate.map(mod => mod.dbDef.dbName));
 		// @ts-ignore
 		const missingModules = modulesToIterate.filter(dbModule => !fbSyncData[dbModule.getCollectionName()]);
 
