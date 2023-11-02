@@ -156,7 +156,7 @@ export const tsValidateValue = <T>(values: T[], mandatory = true): Validator<any
 			if (values.includes(input!))
 				return;
 
-			return `Input is not valid:\n  input: ${input}\n  options: ${__stringify(values)}\n`;
+			return `Input is not valid:\n  input: ${input && __stringify(input) || input}\n  options: ${__stringify(values)}\n`;
 		}];
 };
 
@@ -221,6 +221,8 @@ export const tsValidateNonMandatoryObject = <T>(validator: ValidatorTypeResolver
 	return [tsValidateExists(false),
 		(input?: T) => tsValidateResult(input, validator)];
 };
+
+export const tsValidateOptionalObject = tsValidateNonMandatoryObject;
 
 export const tsValidator_valueByKey = <T extends any>(validatorObject: { [k: string]: ValidatorTypeResolver<any> }) => {
 	return tsValidateCustom((value?, parentObject?) => {
