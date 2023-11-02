@@ -163,7 +163,7 @@ export class ModuleBE_PermissionsAssert_Class
 			const paths = dbModules.map(module => {
 				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbName];
 				if (!mapDbNameToApiModule) {
-					this.logWarning(`no module found for ${module.dbDef.dbName}`);
+					// this.logWarning(`no module found for ${module.dbDef.dbName}`);
 					return undefined;
 				}
 
