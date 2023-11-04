@@ -64,8 +64,8 @@ import {
 	TempSecureUrl
 } from '../../shared';
 
-
 import {HttpMethod} from '@nu-art/thunderstorm';
+import {PushMessage} from '@nu-art/push-pub-sub';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -354,7 +354,7 @@ export class ModuleBE_AssetsDB_Class
 				return {...duplicatedAssets[0], feId: tempMeta.feId};
 			}
 
-			const doc = await this.collection.doc.item(tempMeta);
+			const doc = this.collection.doc.item(tempMeta);
 			await ModuleBE_AssetsTemp.delete.unique(tempMeta._id, transaction);
 			return await doc.set(tempMeta, transaction);
 		});
@@ -369,10 +369,12 @@ export class ModuleBE_AssetsDB_Class
 		}
 
 		this.logDebug(`notify FE about asset ${feId}: ${status}`);
-		return ModuleBE_PushPubSub.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {
-			status,
-			asset
-		});
+		const message: PushMessage<any> = {
+			topic: PushKey_FileUploaded,
+			props: {feId: feId || asset.feId},
+			data: {status, asset}
+		};
+		return ModuleBE_PushPubSub.pushToKey<Push_FileUploaded>(message);
 	};
 }
 

@@ -40,6 +40,7 @@
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.14.5",
     "@google-cloud/firestore": "^5.0.0",
+    "react": "$REACT_PKG_VERSION",
     "jszip": "^3.2.2",
     "express": "$EXPRESS_PKG_VERSION",
     "firebase": "$FIREBASE_PKG_VERSION",
@@ -50,6 +51,7 @@
     "file-type": "^16.3.0"
   },
   "devDependencies": {
+    "@types/react": "$REACT_TYPES_VERSION",
     "@types/compression": "^1.0.1",
     "@types/express": "$EXPRESS_TYPES_VERSION"
   }

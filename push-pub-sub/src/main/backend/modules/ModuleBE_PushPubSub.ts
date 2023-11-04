@@ -16,18 +16,7 @@
  * limitations under the License.
  */
 
-import {
-	__stringify,
-	batchAction,
-	batchActionParallel,
-	compare,
-	currentTimeMillis,
-	Day,
-	filterDuplicates,
-	generateHex,
-	ImplementationMissingException,
-	Module
-} from '@nu-art/ts-common';
+import {__stringify, batchAction, batchActionParallel, compare, currentTimeMillis, Day, filterDuplicates, generateHex, Module} from '@nu-art/ts-common';
 
 import {
 	FirebaseType_BatchResponse,
@@ -37,22 +26,11 @@ import {
 	ModuleBE_Firebase,
 	PushMessagesWrapperBE
 } from '@nu-art/firebase/backend';
-// noinspection TypeScriptPreferShortImport
-import {
-	ApiDef_PushMessages,
-	DB_Notifications,
-	DB_PushKeys,
-	DB_PushSession,
-	IFP,
-	ISP,
-	ITP,
-	MessageType,
-	Request_PushRegister,
-	SubscribeProps
-} from '../../index';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {ApiDef_PushMessages, DB_Notifications, DB_PushKeys, DB_PushSession, MessageDef, PushMessage, Request_PushRegister} from '../../index';
 
 import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 
 
 type Config = {
@@ -86,6 +64,7 @@ export class ModuleBE_PushPubSub_Class
 		this.messaging = session.getMessaging();
 
 		addRoutes([
+			createBodyServerApi(ApiDef_PushMessages.v1.test, (r) => this.pushToKey(r.message)),
 			createBodyServerApi(ApiDef_PushMessages.v1.register, this.register),
 			createBodyServerApi(ApiDef_PushMessages.v1.unregister, this.register),
 			createBodyServerApi(ApiDef_PushMessages.v1.registerAll, this.register)
@@ -94,9 +73,6 @@ export class ModuleBE_PushPubSub_Class
 
 	async register(body: Request_PushRegister) {
 		const userId = MemKey_AccountId.get();
-		if (!userId)
-			throw new ImplementationMissingException('Missing user from accounts Module');
-
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
 			pushSessionId: body.pushSessionId,
@@ -130,23 +106,20 @@ export class ModuleBE_PushPubSub_Class
 		});
 	}
 
-	async pushToKey<M extends MessageType<any, any, any> = never,
-		S extends string = IFP<M>,
-		P extends SubscribeProps = ISP<M>,
-		D = ITP<M>>(key: S, props?: P, data?: D, transaction?: FirestoreTransaction) {
+	async pushToKey<Def extends MessageDef<any, any, any>>(message: PushMessage<Def>, transaction?: FirestoreTransaction) {
 		const processor = async (_transaction: FirestoreTransaction) => {
-			let docs = await _transaction.query(this.pushKeys, {where: {pushKey: key}});
-			if (props)
-				docs = docs.filter(doc => !doc.props || compare(doc.props, props));
+			let docs = await _transaction.query(this.pushKeys, {where: {pushKey: message.topic}});
+			if (message.props)
+				docs = docs.filter(doc => !doc.props || compare(doc.props, message.props));
 
-			const notification = this.buildNotification(key, data, props);
+			const notification = this.buildNotification(message.topic, message.data, message.props);
 			if (docs.length === 0)
 				return;
 
 			const sessionsIds = docs.map(d => d.pushSessionId);
 			// I get the tokens relative to those sessions (query)
 			this.logDebug(
-				`Sending push to: \n Sessions: ${JSON.stringify(sessionsIds)}\n Key: ${key}\n Props: ${JSON.stringify(props)} \n Data: ${JSON.stringify(data)}`);
+				`Sending push to: \n Sessions: ${JSON.stringify(sessionsIds)}\n Key: ${message.topic}\n Props: ${JSON.stringify(message.props)} \n Data: ${JSON.stringify(message.data)}`);
 			const sessions = await batchAction(sessionsIds, 10, async elements => _transaction.query(this.pushSessions, {where: {pushSessionId: {$in: elements}}}));
 			const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
 				const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
@@ -171,13 +144,10 @@ export class ModuleBE_PushPubSub_Class
 		return this.pushKeys.runInTransaction(processor);
 	}
 
-	async pushToUser<M extends MessageType<any, any, any> = never,
-		S extends string = IFP<M>,
-		P extends SubscribeProps = ISP<M>,
-		D = ITP<M>>(user: string, key: string, props?: P, data?: D) {
-		this.logInfo('i am pushing to user...', user, props);
+	async pushToUser<Def extends MessageDef<any, any, any>>(user: string, message: PushMessage<Def>) {
+		this.logInfo('i am pushing to user...', user, message.props);
 
-		const notification = this.buildNotification(key, data, props, user);
+		const notification = this.buildNotification(message.topic, message.data, message.props, user);
 
 		const docs = await this.pushSessions.query({where: {userId: user}});
 		if (docs.length === 0)

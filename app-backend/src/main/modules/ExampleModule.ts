@@ -18,7 +18,7 @@
 import {ApiException, Dispatcher, Module, randomObject} from '@nu-art/ts-common';
 import {ApiDef_Examples, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {addRoutes, assertProperty, createBodyServerApi, createQueryServerApi,} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi,} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 
 
@@ -44,7 +44,6 @@ class ExampleModule_Class
 				return DispatchModule.setMax(body.n);
 			}),
 			createBodyServerApi(ApiDef_Examples.v1.anotherEndpoint, (body) => {
-				assertProperty(body, 'message');
 				this.logInfoBold(`got id: ${body.message}`);
 				return new Promise(() => 'another endpoint response');
 			}),
@@ -70,7 +69,7 @@ class ExampleModule_Class
 				return this.getRandomString();
 			}),
 			createQueryServerApi(ApiDef_Examples.v1.testPush, async () => {
-				await ModuleBE_PushPubSub.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
+				await ModuleBE_PushPubSub.pushToKey({topic: 'key', props: {a: 'prop'}, data: {some: 'more', data: 'here'}});
 				// await ModuleBE_PushPubSub.pushToUser('9226fa2e4c128b84fd46526ca6ee926c', 'key', {a: 'prop'}, {some: 'more', data: 'here'}, true);
 				return 'push succeeded!';
 			}),
@@ -81,8 +80,6 @@ class ExampleModule_Class
 				return 'another endpoint response';
 			}),
 			createBodyServerApi(ApiDef_Examples.v1.postWithoutResponse, async (body) => {
-				assertProperty(body, 'message');
-
 				if (!body.message)
 					return;
 

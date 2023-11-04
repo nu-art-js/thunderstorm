@@ -27,6 +27,7 @@ type State = {
 	fetchMetadataInProgress?: boolean;
 	metadata?: BackupMetaData;
 	selectAll: boolean
+	selectedChunkSize: 2000 | 1000 | 500 | 200 | 100 | 50
 }
 
 export class ATS_SyncEnvironmentV2
@@ -89,6 +90,7 @@ export class ATS_SyncEnvironmentV2
 			await ModuleFE_SyncEnvV2.vv1.fetchFromEnv(filterKeys({
 				env: this.state.selectedEnv!,
 				backupId: this.state.backupId!,
+				chunkSize: this.state.selectedChunkSize!,
 				selectedModules: Array.from(this.state.selectedModules)
 			}, 'selectedModules')).executeSync();
 		}, 'Syncing Env');
@@ -141,7 +143,7 @@ export class ATS_SyncEnvironmentV2
 						Select All
 					</TS_Checkbox>
 					<TS_Input onChange={val => this.setState({searchFilter: val})} type={'text'}
-							  placeholder={'sreach collection'}/>
+										placeholder={'sreach collection'}/>
 				</LL_H_C>
 				{this.state.moduleList.map(name => {
 					const collectionMetadata = this.state.metadata?.collectionsData.find(collection => collection.collectionName === name);
@@ -191,6 +193,8 @@ export class ATS_SyncEnvironmentV2
 	render() {
 		const envAdapter = SimpleListAdapter(this.state.envList, item => <div
 			className={'node-data'}>{item.item}</div>);
+		const chunkSizesAdapter = SimpleListAdapter([2000, 1000, 500, 200, 100, 50], item => <div
+			className={'node-data'}>{item.item}</div>);
 		return <LL_V_L className={'sync-env-page'}>
 			<LL_H_C>{TS_AppTools.renderPageHeader('Sync Environment V2')}<TS_BusyButton onClick={this.createNewBackup}>Trigger
 				Backup</TS_BusyButton></LL_H_C>
@@ -207,17 +211,28 @@ export class ATS_SyncEnvironmentV2
 						selected={this.state.selectedEnv}
 						canUnselect={true}
 					/>
+					<TS_DropDown
+						placeholder={'Chunk Size'}
+						className={'fancy'}
+						adapter={chunkSizesAdapter}
+						onSelected={chunkSize => {
+							this.setState({selectedChunkSize: chunkSize});
+							return this.fetchMetadata();
+						}}
+						selected={this.state.selectedChunkSize}
+						canUnselect={true}
+					/>
 				</TS_PropRenderer.Vertical>
 
 				<TS_PropRenderer.Vertical label={'Backup ID'}>
 					<TS_Input type={'text'} value={this.state.backupId}
-							  onBlur={val => {
-								  if (!val.match(/^[0-9A-Fa-f]{32}$/))
-									  return;
+										onBlur={val => {
+											if (!val.match(/^[0-9A-Fa-f]{32}$/))
+												return;
 
-								  this.setState({backupId: val});
-								  return this.fetchMetadata();
-							  }}/>
+											this.setState({backupId: val});
+											return this.fetchMetadata();
+										}}/>
 				</TS_PropRenderer.Vertical>
 
 				<div className={_className(!this.state.fetchMetadataInProgress && 'hidden')}><TS_Loader/></div>
@@ -227,11 +242,11 @@ export class ATS_SyncEnvironmentV2
 						disabled={!this.canSync()}
 					>Restore</TS_BusyButton>
 
-					<TS_BusyButton
+					{Thunder.getInstance().getConfig().name === this.state.selectedEnv && <TS_BusyButton
 						onClick={this.syncFirebase}
 						disabled={!this.canSync()}
 						className={'deter-users-from-this-button'}
-					>Restore Firebase</TS_BusyButton>
+					>Restore Firebase</TS_BusyButton>}
 				</LL_H_C>
 
 				{this.state.restoreTime && <div>{this.state.restoreTime}</div>}

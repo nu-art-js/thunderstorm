@@ -17,14 +17,16 @@
  */
 
 import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
-import {BaseSubscriptionData, Request_PushRegister, Request_ReadPush} from './types';
+import {BaseSubscriptionData, PushMessage, Request_PushRegister} from './types';
 
 
-export type PubSubRegisterClient = BodyApi<'v1/push/register', Request_PushRegister, void>
-export type PubSubReadNotification = BodyApi<'v1/push/read', Request_ReadPush, void>
+export type Request_PushTest = {
+	message: PushMessage<any>
+}
 
 export type ApiStruct_PushMessages = {
 	v1: {
+		test: BodyApi<void, Request_PushTest>
 		unregister: BodyApi<void, Request_PushRegister, BaseSubscriptionData>
 		register: BodyApi<void, Request_PushRegister, BaseSubscriptionData>
 		registerAll: BodyApi<void, Request_PushRegister, BaseSubscriptionData[]>
@@ -33,6 +35,7 @@ export type ApiStruct_PushMessages = {
 
 export const ApiDef_PushMessages: ApiDefResolver<ApiStruct_PushMessages> = {
 	v1: {
+		test: {method: HttpMethod.POST, path: 'v1/push-messages/test'},
 		unregister: {method: HttpMethod.POST, path: 'v1/push-messages/unregister'},
 		register: {method: HttpMethod.POST, path: 'v1/push-messages/register'},
 		registerAll: {method: HttpMethod.POST, path: 'v1/push-messages/register-all'}

@@ -48,7 +48,7 @@ export class ModuleFE_AssetUploader_Class
 		};
 	}
 
-	upload(files: File[], key?: string, _public?: boolean): BaseUploaderFile[] {
+	upload(files: File[], key: string, _public: boolean = false): BaseUploaderFile[] {
 		return this.uploadImpl(files.map((file => {
 			return {
 				name: file.name,

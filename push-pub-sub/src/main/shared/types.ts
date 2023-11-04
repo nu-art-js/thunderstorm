@@ -1,4 +1,5 @@
-import {DB_BaseObject, DB_Object} from "@nu-art/ts-common";
+import {DB_BaseObject, DB_Object} from '@nu-art/ts-common';
+
 
 export type SubscribeProps = { [prop: string]: string | number };
 
@@ -43,7 +44,14 @@ export type PushSessionId = {
 	pushSessionId: string
 }
 
-export type MessageType<S extends string, P extends SubscribeProps, D> = {}
-export type IFP<Binder extends MessageType<any, any, any>> = Binder extends MessageType<infer S, any, any> ? S extends string ? S : never : never;
-export type ISP<Binder extends MessageType<any, any, any>> = Binder extends MessageType<any, infer P, any> ? P extends SubscribeProps ? P : never : never;
-export type ITP<Binder extends MessageType<any, any, any>> = Binder extends MessageType<any, any, infer D> ? D : never;
+export type MessageDef<Topic extends string, Props extends SubscribeProps, Data> = {
+	topic: Topic,
+	props: Props,
+	data: Data
+}
+
+export type PushMessage<Def extends MessageDef<any, any, any>> = {
+	topic: Def['topic']
+	props: Def['props']
+	data: Def['data']
+}
