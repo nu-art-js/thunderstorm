@@ -19,8 +19,7 @@
 
 import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
+import {ApiDef_Permissions} from '../..';
 import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts';
@@ -49,8 +48,8 @@ export enum AccessLevel {
 
 export class ModuleFE_PermissionsAssert_Class
 	extends Module<PermissionsModuleFEConfig> {
-	readonly v1: ApiDefCaller<ApiStruct_Permissions>['v1'];
 	permissionKeys: TypedMap<PermissionKey_FE<any>> = {};
+	readonly v1;
 
 	constructor() {
 		super();

@@ -19,6 +19,7 @@ import {ModuleBE_v2_Backup} from '../backup/ModuleBE_v2_Backup';
 import {MemKey_HttpRequest} from '../server/consts';
 import {Storm} from '../../core/Storm';
 import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
+import {Readable} from 'stream';
 
 
 type Config = {
@@ -137,13 +138,27 @@ class ModuleBE_v2_SyncEnv_Class
 
 		const firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
 
-		let resultsArray: { ref: FirebaseFirestore.DocumentReference, data: any }[] = [];
-		const readBatchSize = this.config.maxBatch * 4;
-		let totalReadCount = 0;
+		const readBatchSize = body.chunkSize ?? this.config.maxBatch * 4;
 
-		const dataCallback = (row: any, index: number) => {
-			if (index < totalReadCount || resultsArray.length === readBatchSize)
-				return;
+		const signedUrlDef: ApiDef<QueryApi<any>> = {
+			method: HttpMethod.GET,
+			path: '',
+			fullUrl: backupInfo.firestoreSignedUrl
+		};
+
+		const stream: Readable = await AxiosHttpModule
+			.createRequest(signedUrlDef)
+			.setResponseType('stream')
+			.executeSync();
+
+		let writeBatch = firestore.batch();
+		let totalItems = 0;
+		let batchItemsCounter = 0;
+		let totalItemsCollected = 0;
+
+		await CSVModule.forEachCsvRowFromStreamSync(stream, (row: any, index: number, transform) => {
+			totalItems++;
+			this.logInfo(`index: ${index}`);
 
 			_keys(row).map(key => {
 				row[(key as string).trim()] = (row[key] as string).trim();
@@ -155,38 +170,35 @@ class ModuleBE_v2_SyncEnv_Class
 			const documentRef = firestore.doc(`${row.collectionName}/${row._id}`);
 			const data = JSON.parse(row.document);
 
-			resultsArray.push({ref: documentRef, data: data});
-		};
+			writeBatch.set(documentRef, data);
+			batchItemsCounter++;
+			if (batchItemsCounter < readBatchSize)
+				return;
 
-		do {
-			resultsArray = [];
+			this.logInfo(`calling pause`);
+			transform.pause();
 
-			const signedUrlDef: ApiDef<QueryApi<any>> = {
-				method: HttpMethod.GET,
-				path: '',
-				fullUrl: backupInfo.firestoreSignedUrl
-			};
-			const stream = await AxiosHttpModule
-				.createRequest(signedUrlDef)
-				.setResponseType('stream')
-				.executeSync();
+			const prevLimitCounter = batchItemsCounter;
+			const prevBatch = writeBatch;
+			batchItemsCounter = 0;
+			writeBatch = firestore.batch();
+			this.logInfo(`new batch created`);
 
-			await CSVModule.forEachCsvRowFromStreamSync(stream, dataCallback);
+			this.logInfo(`calling paused - committing`);
+			prevBatch.commit().then(() => {
+				this.logInfo(`committed ${prevLimitCounter} items`);
+				totalItemsCollected += prevLimitCounter;
 
-			for (let i = 0; i < resultsArray.length; i += this.config.maxBatch) {
-				const writeBatch = firestore.batch();
-				const batch = resultsArray.slice(i, i + this.config.maxBatch);
+				transform.resume();
+			}).catch(err => this.logError('error committing batch', err));
 
-				batch.map(item => writeBatch.set(item.ref, item.data));
+		});
 
-				await writeBatch.commit();
-			}
-
-			totalReadCount += resultsArray.length;
-			this.logInfo(`results Array: ${resultsArray.length}`);
-			this.logInfo(`readBatchSize: ${readBatchSize}`);
-			this.logInfo(`totalReadCount: ${totalReadCount}`);
-		} while (resultsArray.length > 0 && resultsArray.length % readBatchSize === 0);
+		if (batchItemsCounter > 0) {
+			await writeBatch.commit();
+			totalItemsCollected += batchItemsCounter;
+		}
+		this.logInfo(`---- DONE (${totalItemsCollected}/${totalItems})----`);
 	};
 
 	fetchFirebaseBackup = async (queryParams: Request_FetchFirebaseBackup) => {

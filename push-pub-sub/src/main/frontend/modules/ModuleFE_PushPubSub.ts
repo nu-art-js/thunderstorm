@@ -27,29 +27,15 @@ import {
 	ThisShouldNotHappenException
 } from '@nu-art/ts-common';
 import {apiWithBody, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {
-	ApiDef_PushMessages,
-	ApiStruct_PushMessages,
-	BaseSubscriptionData,
-	DB_Notifications,
-	IFP,
-	ISP,
-	ITP,
-	MessageType,
-	Request_PushRegister,
-	SubscribeProps
-} from '../../index';
+import {ApiDef_PushMessages, ApiStruct_PushMessages, BaseSubscriptionData, DB_Notifications, MessageDef, Request_PushRegister} from '../../index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {ModuleFE_Firebase, MessagingWrapperFE} from '@nu-art/firebase/frontend';
+import {MessagingWrapperFE, ModuleFE_Firebase} from '@nu-art/firebase/frontend';
 
 
 export const Command_SwToApp = 'SwToApp';
 
-export interface OnPushMessageReceived<M extends MessageType<any, any, any> = never,
-	S extends string = IFP<M>,
-	P extends SubscribeProps = ISP<M>,
-	D = ITP<M>> {
-	__onMessageReceived(notification: DB_Notifications<D>): void;
+export interface OnPushMessageReceived<Def extends MessageDef<any, any, any> = MessageDef<any, any, any>> {
+	__onMessageReceived(notification: DB_Notifications<Def['data']>): void;
 }
 
 type FirebaseConfig = {
@@ -78,7 +64,7 @@ export class ModuleFE_PushPubSub_Class
 	private firebaseToken?: string;
 	private messaging!: MessagingWrapperFE;
 
-	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, '__onMessageReceived'>('__onMessageReceived');
+	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageDef<any, any, any>>, '__onMessageReceived'>('__onMessageReceived');
 
 	readonly v1: ApiDefCaller<ApiStruct_PushMessages>['v1'];
 
@@ -91,6 +77,7 @@ export class ModuleFE_PushPubSub_Class
 		this.pushSessionId = pushSessionId.set(window.name);
 		const register = apiWithBody(ApiDef_PushMessages.v1.register);
 		this.v1 = {
+			test: apiWithBody(ApiDef_PushMessages.v1.test),
 			register: (subscription: BaseSubscriptionData) => {
 				this.subscribeImpl(subscription);
 				return register(this.composeRegisterRequest());
