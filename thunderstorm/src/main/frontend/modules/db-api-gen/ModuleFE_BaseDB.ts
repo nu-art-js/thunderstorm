@@ -334,6 +334,9 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
 		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
 
+		// FIXME: this breaks when deleting __deletedDocs from the db manually.
+		//  Maybe the latest timestamp should be the actual time the sync happens instead of aligning with the latest changed item?
+
 		if (latest !== -1)
 			this.lastSync.set(latest);
 	}
