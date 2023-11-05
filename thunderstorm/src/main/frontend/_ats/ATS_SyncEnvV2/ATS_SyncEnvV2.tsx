@@ -225,13 +225,13 @@ export class ATS_SyncEnvironmentV2
 					<TS_BusyButton
 						onClick={this.syncEnv}
 						disabled={!this.canSync()}
-					>Restore</TS_BusyButton>
+					>Sync Environment</TS_BusyButton>
 
 					<TS_BusyButton
 						onClick={this.syncFirebase}
 						disabled={!this.canSync()}
 						className={'deter-users-from-this-button'}
-					>Restore Firebase</TS_BusyButton>
+					>Restore Firebase To Older Backup</TS_BusyButton>
 				</LL_H_C>
 
 				{this.state.restoreTime && <div>{this.state.restoreTime}</div>}
