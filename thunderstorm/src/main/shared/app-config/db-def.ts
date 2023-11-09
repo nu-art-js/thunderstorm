@@ -14,8 +14,9 @@ const Validator_AppConfig: ValidatorTypeResolver<OmitDBObject<DB_AppConfig>> = {
 	data: tsValidateMustExist,
 };
 
-export const DBDef_AppConfigs: DBDef<DB_AppConfig> = {
+export const DBDef_AppConfigs: DBDef<DB_AppConfig, 'key'> = {
 	validator: Validator_AppConfig,
 	dbName: 'app-configs',
 	entityName: 'app-config',
+	uniqueKeys: ['key']
 };

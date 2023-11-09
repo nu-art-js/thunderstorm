@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery, DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
+import {_EmptyQuery, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	_keys,
 	ApiException,
@@ -37,10 +37,7 @@ import {
 	PreDB
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {
-	FirestoreCollectionV2,
-	PostWriteProcessingData
-} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import {FirestoreCollectionV2, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
@@ -273,9 +270,9 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	async canDeleteItems(dbItems: Type[], transaction?: Transaction) {
 		const dependencies = await this.collectDependencies(dbItems, transaction);
 		if (dependencies)
-			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({
+			throw new ApiException<EntityDependencyError>(422, 'entity has dependencies').setErrorBody({
 				type: 'has-dependencies',
-				body: dependencies
+				data: dependencies
 			});
 
 		//todo Add permission assertion, does the user have deletion permission over these objects

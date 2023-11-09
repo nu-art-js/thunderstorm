@@ -18,15 +18,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, _keys, asArray, BadImplementationException, exists, Logger, Minute, ModuleManager} from '@nu-art/ts-common';
+import {__stringify, _keys, asArray, BadImplementationException, exists, isErrorOfType, Logger, Minute, ModuleManager} from '@nu-art/ts-common';
 import {HttpMethod, TypedApi} from './types';
 import {HttpException, TS_Progress} from './request-types';
-import {ErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
+import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
 import {dispatcher_onAuthRequired} from './no-auth-listener';
 import {DefaultHttpServerConfig} from './consts';
 
-
-export type ErrorType = any
 
 export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> {
 
@@ -49,7 +47,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	protected logger?: Logger;
 
 	private onCompleted?: ((response: API['R'], input: (API['P'] | API['B']), request: BaseHttpRequest<API>) => Promise<any>);
-	private onError?: (errorResponse: HttpException, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>;
+	private onError?: (errorResponse: HttpException<API['E']>, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>;
 
 	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;
@@ -59,6 +57,11 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		// @ts-ignore
 		if (ModuleManager.instance.config.isDebug)
 			this.timeout = 5 * Minute;
+	}
+
+	resolveTypedException(exception: HttpException<any> | unknown): API['E'] | undefined {
+		if (isErrorOfType(exception, HttpException))
+			return (exception as HttpException<API['E']>).errorResponse?.error;
 	}
 
 	setLogger(logger?: Logger) {
@@ -227,7 +230,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 
 		if (!this.isValidStatus(status)) {
 			const errorResponse = this.getErrorResponse();
-			const httpException = new HttpException(status, this.url, errorResponse);
+			const httpException = new HttpException<API['E']>(status, this.url, errorResponse);
 			if (status === 401)
 				await dispatcher_onAuthRequired.dispatchModuleAsync(this);
 
@@ -251,7 +254,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	execute(onSuccess: (response: API['R'], data?: string) => Promise<void> | void = () => this.logger?.logVerbose(`Completed: ${this.label}`),
-					onError: (reason: HttpException) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
+					onError: (reason: HttpException<API['E']>) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
 
 		this.executeSync()
 			.then(onSuccess)
@@ -282,14 +285,14 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	};
 
-	setOnError(onError?: (errorResponse: HttpException, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+	setOnError(onError?: (errorResponse: HttpException<API['E']>, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
 		this.onError = onError;
 		return this;
 	}
 
 	protected abstract getResponse(): API['R']
 
-	abstract getErrorResponse(): ErrorResponse<ErrorType>
+	abstract getErrorResponse(): ApiErrorResponse<API['E']>
 
 	protected abstract abortImpl(): void
 

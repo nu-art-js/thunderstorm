@@ -99,16 +99,13 @@ class ModuleBE_ForceUpgrade_Class
 		if (requiredBrowserVersion)
 			browser = compareVersions(version, requiredBrowserVersion) === 1;
 
-		return {app, browser};
+		return {type: 'upgrade-required', data: {app, browser}};
 	}
 
 	async assertVersion(): Promise<void> {
 		const upgradeRequired = this.compareVersion();
-		if (upgradeRequired.app || upgradeRequired.browser)
-			throw new ApiException<UpgradeRequired>(426, 'require upgrade..').setErrorBody({
-				type: 'upgrade-required',
-				body: upgradeRequired
-			});
+		if (upgradeRequired.data.app || upgradeRequired.data.browser)
+			throw new ApiException<UpgradeRequired>(426, 'require upgrade..').setErrorBody(upgradeRequired);
 	}
 }
 

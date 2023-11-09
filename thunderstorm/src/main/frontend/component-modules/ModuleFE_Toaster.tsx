@@ -24,6 +24,7 @@ import {Module, Second} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {TS_Toast} from '../components/TS_Toaster';
 
+
 export type Toast_Model = {
 	duration: number;
 	content: React.ReactNode;
@@ -65,8 +66,6 @@ const dispatch_showToast = new ThunderDispatcher<ToastListener, '__showToast'>('
 
 export class ModuleFE_Toaster_Class
 	extends Module<{}> {
-	private DefaultBuilder: ToastBuilder = new ToastBuilder();
-
 
 	constructor() {
 		super();
@@ -76,24 +75,23 @@ export class ModuleFE_Toaster_Class
 	}
 
 	public toastError(errorMessage: string, interval: number = Interval_DefaultToast) {
-		this.toast(TS_Toast({text: errorMessage, toastType: 'error'}), interval);
+		this.toast(TS_Toast(errorMessage, 'error'), interval);
 	}
 
 	public toastSuccess(successMessage: string, interval: number = Interval_DefaultToast) {
-		this.toast(TS_Toast({text: successMessage, toastType: 'success'}), interval);
+		this.toast(TS_Toast(successMessage, 'success'), interval);
 	}
 
 	public toastInfo(infoMessage: string, interval: number = Interval_DefaultToast) {
-		this.toast(TS_Toast({text: infoMessage, toastType: 'info'}), interval);
+		this.toast(TS_Toast(infoMessage, 'info'), interval);
 	}
 
-	private toast(_message: React.ReactNode, interval: number = Interval_DefaultToast) {
+	private toast(_message: string | React.ReactNode, interval: number = Interval_DefaultToast) {
 		let content = _message;
 		if (typeof _message === 'string')
 			content = ModuleFE_Toaster.adjustStringMessage(_message);
 
-		// console.log("_message:", _message)
-		this.DefaultBuilder.setContent(content).setDuration(interval).show();
+		new ToastBuilder().setContent(content).setDuration(interval).show();
 	}
 
 	adjustStringMessage = (_message: string) => {

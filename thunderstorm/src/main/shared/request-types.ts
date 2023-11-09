@@ -19,14 +19,18 @@
  * limitations under the License.
  */
 
-export class HttpException
-	extends Error {
+import {ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {CustomException} from '@nu-art/ts-common';
+
+
+export class HttpException<E extends ResponseError = ResponseError>
+	extends CustomException {
 
 	responseCode: number;
-	errorResponse: any;
+	errorResponse?: ApiErrorResponse<E>;
 
-	constructor(responseCode: number, url: string, errorResponse?: any) {
-		super(`${responseCode} - ${url}`);
+	constructor(responseCode: number, url: string, errorResponse?: ApiErrorResponse<E>) {
+		super(HttpException, `${responseCode} - ${url}`);
 
 		this.responseCode = responseCode;
 		this.errorResponse = errorResponse;

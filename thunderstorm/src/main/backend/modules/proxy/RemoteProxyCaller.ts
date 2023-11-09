@@ -23,7 +23,7 @@ import {__stringify, ApiException, composeUrl, ImplementationMissingException, M
 import {BodyApi, QueryApi} from '../../../shared/types';
 import {promisifyRequest} from '../../utils/promisify-request';
 import {RequestOptions} from '../../../backend';
-import {ErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
+import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export type RemoteServerConfig = {
@@ -99,7 +99,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 			delete proxyRequest.headers[this.config.secretHeaderName];
 
 		if (response.statusCode !== 200) {
-			const errorResponse: ErrorResponse<any> = response.body;
+			const errorResponse: ApiErrorResponse<any> = response.body;
 			if (!errorResponse)
 				throw new ApiException(500, `Extraneous error ${__stringify(response)}, Proxy Request: ${__stringify(proxyRequest, true)}`);
 
