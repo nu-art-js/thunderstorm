@@ -1,0 +1,79 @@
+/*!
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+$percentage: 30%;
+@mixin box-shadow-color($color) {
+  box-shadow: 2px 2px 19px 1px rgba($color, 0.9);
+  -webkit-box-shadow: 2px 2px 19px 1px rgba($color, 0.9);
+  -moz-box-shadow: 2px 2px 19px 1px rgba($color, 0.9);
+}
+
+// container
+.ts-toast {
+  //Dimensions
+  min-height: 40px;
+  padding-inline: 8px;
+  padding-block: 4px;
+  min-width: 400px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  //Colors
+  background: #FFFFFF;
+
+  //Font
+  font: {
+    weight: 500;
+    size: 16px;
+  }
+  word-wrap: break-word;
+  letter-spacing: unset;
+
+  //Shadow
+  @include box-shadow-color(black);
+
+  //Border
+  border: 2px solid black;
+  border-radius: 6px;
+
+  &.info {
+    border-color: #49addb;
+    @include box-shadow-color(darken(#49addb, $percentage));
+  }
+
+  &.success {
+    border-color: #14a44c;
+    @include box-shadow-color(darken(#14a44c, $percentage));
+  }
+
+  &.warning {
+    border-color: #ffad42;
+    @include box-shadow-color(darken(#ffad42, $percentage));
+  }
+
+  &.error {
+    border-color: #bd1d12;
+    @include box-shadow-color(darken(#bd1d12, $percentage));
+  }
+}
+
+
