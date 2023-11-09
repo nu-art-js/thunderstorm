@@ -20,8 +20,8 @@
  */
 
 // noinspection TypeScriptPreferShortImport
-import {ErrorBody, ErrorResponse} from './types';
-import {Constructor, TS_Object, UniqueId} from '../../utils/types';
+import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from './types';
+import {Constructor, UniqueId} from '../../utils/types';
 import {_logger_logException} from '../logger/utils';
 
 
@@ -49,7 +49,7 @@ import {_logger_logException} from '../logger/utils';
  * }
  * ```
  */
-export function isErrorOfType<T extends Error>(e: Error, _exceptionType: Constructor<T>): T | undefined {
+export function isErrorOfType<T extends Error>(e: Error | unknown, _exceptionType: Constructor<T>): T | undefined {
 	const _e = e as any;
 	if (_e.isInstanceOf?.(_exceptionType))
 		return e as T;
@@ -201,11 +201,11 @@ export class HasDependenciesException
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "DontCallthisException",
  * @category Exceptions
  */
-export class DontCallthisException
+export class DontCallThisException
 	extends CustomException {
 
 	constructor(message: string, cause?: Error) {
-		super(DontCallthisException, message, cause);
+		super(DontCallThisException, message, cause);
 	}
 }
 
@@ -214,11 +214,11 @@ export class DontCallthisException
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "WhoCallthisException",
  * @category Exceptions
  */
-export class WhoCallthisException
+export class WhoCallThisException
 	extends CustomException {
 
 	constructor(message: string, cause?: Error) {
-		super(WhoCallthisException, message, cause);
+		super(WhoCallThisException, message, cause);
 	}
 }
 
@@ -235,13 +235,13 @@ export class AssertionException
 	}
 }
 
-export class ApiException<E extends TS_Object | void = void>
+export class ApiException<Err extends ResponseError = ApiError_GeneralErrorMessage>
 	extends CustomException {
 
-	public readonly responseBody: ErrorResponse<E> = {};
+	public readonly responseBody: ApiErrorResponse<Err> = {};
 	public readonly responseCode: number;
 
-	public readonly setErrorBody = (errorBody: ErrorBody<E>) => {
+	public readonly setErrorBody = (errorBody: Err) => {
 		this.responseBody.error = errorBody;
 		return this;
 	};
@@ -262,18 +262,4 @@ export class ApiException<E extends TS_Object | void = void>
 	}
 }
 
-const allExceptions = [
-	Exception,
-	BadImplementationException,
-	ImplementationMissingException,
-	MUSTNeverHappenException,
-	NotImplementedYetException,
-	ThisShouldNotHappenException,
-	DontCallthisException,
-	WhoCallthisException,
-	AssertionException,
-];
 
-export function isCustomException(e: Error) {
-	return allExceptions.some(exc => !!isErrorOfType(e, exc));
-}

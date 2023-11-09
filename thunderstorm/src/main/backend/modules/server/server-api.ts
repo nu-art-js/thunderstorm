@@ -259,11 +259,14 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 				if (!apiException)
 					throw new MUSTNeverHappenException('MUST NEVER REACH HERE!!!');
 
+				this.logErrorBold((e as ApiException).responseBody);
+
 				try {
 					await dispatch_onApplicationException.dispatchModuleAsync(e, HttpServer);
 				} catch (e: any) {
 					this.logError('Error while handing server error', e);
 				}
+
 				if (apiException.responseCode === 500)
 					return response.serverError(apiException);
 

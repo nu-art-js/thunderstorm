@@ -23,10 +23,10 @@ import {ApiDef, TypedApi} from '../../../shared/types';
 
 import {BadImplementationException, composeUrl} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {BaseHttpModule_Class, BaseHttpRequest, ErrorType, HttpException} from '../../../shared';
+import {BaseHttpModule_Class, BaseHttpRequest, HttpException} from '../../../shared';
 // noinspection TypeScriptPreferShortImport
 import {gzipSync} from 'zlib';
-import {ErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
+import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export class ModuleFE_XHR_Class
@@ -95,12 +95,12 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 		this.xhr?.abort();
 	}
 
-	getErrorResponse(): ErrorResponse<ErrorType> {
+	getErrorResponse(): ApiErrorResponse<ResponseError | ApiError_GeneralErrorMessage> {
 		const rawResponse = this.getResponse();
-		let response = undefined as unknown as ErrorResponse<ErrorType>;
+		let response = undefined as unknown as ApiErrorResponse<ResponseError | ApiError_GeneralErrorMessage>;
 		if (rawResponse) {
 			try {
-				response = rawResponse && JSON.parse(rawResponse as unknown as string) as ErrorResponse<ErrorType>;
+				response = rawResponse && JSON.parse(rawResponse as unknown as string) as ApiErrorResponse<ResponseError | ApiError_GeneralErrorMessage>;
 			} catch (e: any) {
 				response = {debugMessage: rawResponse};
 			}
