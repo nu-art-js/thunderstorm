@@ -13,13 +13,13 @@ class ModuleFE_BroadcastChannel_Class
 
 	private register = (receiver: TS_BroadcastChannel<any>) => {
 		if (this.channels[receiver.channelTopic])
-			return console.log(`already registered channel: ${receiver.channelTopic}`);
+			return this.logWarning(`already registered channel: ${receiver.channelTopic}`);
 
-		console.log(`registered channel: ${receiver.channelTopic}`);
+		this.logInfo(`registered channel: ${receiver.channelTopic}`);
 		const channel = new BroadcastChannel(receiver.channelTopic);
 		this.channels[receiver.channelTopic] = channel;
 		channel.onmessage = (message) => {
-			console.log('message', message);
+			this.logDebug('message', message);
 			receiver.execute(message.data);
 		};
 	};
@@ -34,7 +34,7 @@ class ModuleFE_BroadcastChannel_Class
 	};
 
 	private sendMessage = <T extends Message>(channel: TS_BroadcastChannel<T>, message: T) => {
-		console.log(`sending message: ${__stringify(message)}`);
+		this.logDebug(`sending message: ${__stringify(message)}`);
 		this.channels[channel.channelTopic].postMessage(message);
 	};
 }
@@ -82,7 +82,7 @@ export class TS_BroadcastChannel<T extends Message>
 			return;
 		}
 
-		console.log(`received message: ${__stringify(message)}`);
+		this.logDebug(`received message: ${__stringify(message)}`);
 		processor(message);
 	};
 }
