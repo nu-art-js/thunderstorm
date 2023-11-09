@@ -22,7 +22,6 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {Toast_Model, ToastListener, ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster';
-import './TS_ToastOverlay.scss';
 
 type State = { model?: Toast_Model };
 

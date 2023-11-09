@@ -18,10 +18,8 @@
  */
 import * as React from 'react';
 import {AppToolsScreen, ComponentSync} from '@nu-art/thunderstorm/frontend';
-import {_setTimeout, Second} from '@nu-art/ts-common';
 import {BaseSubscriptionData, DB_Notifications} from '../../shared';
 import {ModuleFE_PushPubSub} from '../modules/ModuleFE_PushPubSub';
-import {ExampleModule} from '../modules/ExampleModule';
 
 
 export type State = {
@@ -41,17 +39,17 @@ export class ATS_PushPubSubExample
 		return <div className={'ll_h_v'}>
 			<button onClick={ModuleFE_PushPubSub.requestPermissions}>request permissions</button>
 			<button onClick={() => this.registerForPush()}>Register</button>
-			<button onClick={() => this.triggerPush()}>Trigger Push</button>
-			<button onClick={() => this.triggerPush(Second)}>Trigger Delayed Push</button>
+			{/*<button onClick={() => this.triggerPush()}>Trigger Push</button>*/}
+			{/*<button onClick={() => this.triggerPush(Second)}>Trigger Delayed Push</button>*/}
 			{this.state.notifications.map(_notification => <div>{_notification.read.toString()}</div>)}
 		</div>;
 	}
 
-	private triggerPush(timeout?: number) {
-		return _setTimeout(() => {
-			ExampleModule.testPush();
-		}, timeout);
-	}
+	// private triggerPush(timeout?: number) {
+	// 	return _setTimeout(() => {
+	// 		ExampleModule.testPush();
+	// 	}, timeout);
+	// }
 
 	private registerForPush() {
 		const mySubscriptions: BaseSubscriptionData[] = [{

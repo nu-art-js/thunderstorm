@@ -20,16 +20,17 @@
  */
 
 import {ApiDef, ApiDefResolver, HttpMethod, QueryApi} from './types';
+import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export const HeaderKey_AppVersion = 'x-app-version';
 export const HeaderKey_BrowserType = 'x-browser-type';
 export const HeaderKey_UserAgent = 'user-agent';
 
-export type UpgradeRequired = {
+export type UpgradeRequired = ResponseError<'upgrade-required', {
 	browser: boolean,
 	app: boolean
-};
+}>;
 
 export const ApiDef_AssertAppVersion: ApiDef<QueryApi<UpgradeRequired>> = {
 	method: HttpMethod.GET,

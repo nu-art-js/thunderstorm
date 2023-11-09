@@ -1,11 +1,11 @@
-import {TS_Object} from '../../utils/types';
 
-export type ErrorBody<E extends TS_Object | void = void> = {
-	type: string
-	body: E
-};
+export type ResponseError<K extends string = string, Data extends any = any> = {
+	type: K
+	data: Data
+}
 
-export type  ErrorResponse<E extends TS_Object | void = void> = {
+export type ApiError_GeneralErrorMessage = ResponseError<'error-message', { message: string }>
+export type ApiErrorResponse<E extends ResponseError> = {
 	debugMessage?: string
-	error?: ErrorBody<E>
+	error?: E
 }

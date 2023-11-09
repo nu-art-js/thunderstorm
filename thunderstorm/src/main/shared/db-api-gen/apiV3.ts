@@ -19,10 +19,12 @@
  * limitations under the License.
  */
 
-import {FirestoreQuery} from '@nu-art/firebase';
+import {EntityDependencyError, FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DBDef_V3, DBProto, IndexKeys, Metadata, Second} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
 import {Response_DBSync, UpgradeCollectionBody} from './apiV1';
+import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+
 
 /**
  * !! Workaround !!
@@ -38,7 +40,7 @@ export type ApiStruct_DBApiGenV3<Proto extends DBProto<any>> = {
 	v1: {
 		sync: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>, undefined>,
 		query: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>, FirestoreQuery<Proto['dbType']> | undefined | {}>,
-		queryUnique: QueryApi<Proto['dbType'], DB_BaseObject, string>,
+		queryUnique: QueryApi<Proto['dbType'], DB_BaseObject, ResponseError<string, any>, string>,
 		upsert: BodyApi<Proto['dbType'], Proto['uiType']>,
 		upsertAll: BodyApi<Proto['dbType'][], Proto['uiType'][]>,
 		patch: BodyApi<Proto['dbType'], Proto['uiType']>
@@ -54,11 +56,11 @@ export type ApiStruct_DBApiGenIDBV3<Proto extends DBProto<any>> = {
 	v1: {
 		sync: BodyApi<Response_DBSync<Proto['dbType']>, FirestoreQuery<Proto['dbType']>, undefined>, //todo taken from original api file
 		query: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>>,
-		queryUnique: QueryApi<Proto['dbType'], DB_BaseObject, string | IndexKeys<Proto['dbType'], keyof Proto['dbType']>>,
+		queryUnique: QueryApi<Proto['dbType'], DB_BaseObject, ResponseError<string, any>, string | IndexKeys<Proto['dbType'], keyof Proto['dbType']>>,
 		upsert: BodyApi<Proto['dbType'], Proto['uiType']>,
 		upsertAll: BodyApi<Proto['dbType'][], Proto['uiType'][]>,
 		patch: BodyApi<Proto['dbType'], IndexKeys<Proto['dbType'], keyof Proto['dbType']> & Partial<Proto['dbType']>>
-		delete: QueryApi<Proto['dbType'] | undefined, DB_BaseObject>,
+		delete: QueryApi<Proto['dbType'] | undefined, DB_BaseObject, EntityDependencyError>,
 		deleteQuery: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>>,
 		deleteAll: QueryApi<Proto['dbType'][]>,
 		upgradeCollection: BodyApi<void, UpgradeCollectionBody>, //todo taken from original api file

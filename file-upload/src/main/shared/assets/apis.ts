@@ -1,5 +1,6 @@
 import {BaseUploaderFile, FileUploadResult, Request_GetReadSecuredUrl, SecureUrl, TempSecureUrl} from './types';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export type ApiStruct_Assets = {
@@ -17,7 +18,7 @@ export const ApiDef_Assets: ApiDefResolver<ApiStruct_Assets> = {
 
 export type ApiStruct_AssetUploader = {
 	vv1: {
-		uploadFile: BodyApi<FileUploadResult, any, any, HttpMethod.PUT>,
+		uploadFile: BodyApi<FileUploadResult, any, any, ResponseError, HttpMethod.PUT>,
 		getUploadUrl: BodyApi<TempSecureUrl[], BaseUploaderFile[]>,
 		processAssetManually: QueryApi<void[], { feId?: string }>,
 
