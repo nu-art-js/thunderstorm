@@ -114,6 +114,9 @@ export class ModuleBE_AccountDB_Class
 		super.init();
 
 		addRoutes([
+			createQueryServerApi(ApiDefBE_Account.vv1.refreshSession, async () => {
+				await ModuleBE_SessionDB.session.rotate();
+			}),
 			createBodyServerApi(ApiDefBE_Account.vv1.registerAccount, this.account.register),
 			createBodyServerApi(ApiDefBE_Account.vv1.changePassword, this.account.changePassword),
 			createBodyServerApi(ApiDefBE_Account.vv1.login, this.account.login),
