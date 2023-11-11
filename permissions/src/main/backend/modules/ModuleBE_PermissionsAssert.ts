@@ -229,15 +229,16 @@ export class ModuleBE_PermissionsAssert_Class
 			if (!this.config.strictMode)
 				return;
 
-			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${path}`);
+			throw new ApiException(403, `No permissions configuration specified for api: ${projectId ? `${projectId}--` : ''}${path}`);
 		}
 
 		_keys(apiDetails.dbApi._accessLevels!).forEach(domainId => {
-			if (!userPermissions[domainId])
+			const userDomainPermission = userPermissions[domainId];
+			if (!exists(userDomainPermission))
 				throw new ApiException(403, 'Missing Access For This Domain');
 
-			if (!exists(userPermissions[domainId]) || userPermissions[domainId] < apiDetails.dbApi._accessLevels![domainId]) {
-				this.logErrorBold(`for domain - userAccessLevel <> expectedAccessLevel: "${domainId}" ${(userPermissions[domainId] ?? 0)} <> ${apiDetails.dbApi._accessLevels![domainId]}`);
+			if (userDomainPermission < apiDetails.dbApi._accessLevels![domainId]) {
+				this.logErrorBold(`for domain - userAccessLevel <> expectedAccessLevel: "${domainId}" ${(userDomainPermission ?? 0)} <> ${apiDetails.dbApi._accessLevels![domainId]}`);
 				throw new ApiException(403, 'Action Forbidden');
 			}
 		});

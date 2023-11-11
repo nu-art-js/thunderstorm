@@ -1,5 +1,5 @@
 import {_keys, arrayToMap, Dispatcher, filterInstances, flatArray, Module, MUSTNeverHappenException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi, MemKey_ServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {ApiDef_Permissions, DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionProject, Request_ConnectDomainToRoutes} from '../../shared';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
@@ -24,7 +24,8 @@ import {
 	defaultLevelsRouteLookupWords,
 	DuplicateDefaultAccessLevels
 } from '../../shared/consts';
-import { ApiModule } from '@nu-art/thunderstorm';
+import {ApiModule} from '@nu-art/thunderstorm';
+import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
 
 
 export interface CollectPermissionsProjects {
@@ -69,20 +70,21 @@ const PermissionProject_Permissions: DefaultDef_Project = {
 
 class ModuleBE_Permissions_Class
 	extends Module
-	implements CollectSessionData<SessionData_Permissions>, CollectPermissionsProjects {
+	implements CollectSessionData<SessionData_Permissions> {
 
 	protected init() {
 		super.init();
 
 		addRoutes([
+			createQueryServerApi(ApiDef_Permissions.v1.toggleStrictMode, this.toggleStrictMode),
 			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.createProject),
 			createBodyServerApi(ApiDef_Permissions.v1.connectDomainToRoutes, this.connectDomainToRoutes)
 		]);
 	}
 
-	__collectPermissionsProjects() {
-		return PermissionProject_Permissions;
-	}
+	// __collectPermissionsProjects() {
+	// 	return PermissionProject_Permissions;
+	// }
 
 	async __collectSessionData(data: SessionCollectionParam): Promise<SessionData_Permissions> {
 		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({_id: data.accountId});
@@ -108,6 +110,15 @@ class ModuleBE_Permissions_Class
 		});
 		return {key: 'permissions', value: permissionMap};
 	}
+
+	toggleStrictMode = async () => {
+		MemKey_ServerApi.get().addPostCallAction(async () => {
+			const envConfigRef = Storm.getInstance().getEnvConfigRef(ModuleBE_PermissionsAssert);
+			const currentConfig = await envConfigRef.get({});
+			currentConfig.strictMode = !currentConfig.strictMode;
+			await envConfigRef.set(currentConfig);
+		});
+	};
 
 	createProject = async () => {
 		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
@@ -154,74 +165,72 @@ class ModuleBE_Permissions_Class
 				return domainLevels;
 			});
 
-		const groupsToUpsert = flatArray(projects.map(project => (project.groups || []).map(group => {
-			return {
-				projectId: project._id,
-				_id: group._id,
-				_auditorId,
-				label: group.name,
-				accessLevelIds: _keys(group.accessLevels)
-					.map(key => domainNameToLevelNameToDBAccessLevel[domainsMap_nameToDbDomain[key]._id][group.accessLevels[key]]._id)
-			};
-		})));
+		const groupsToUpsert = flatArray(projects.map(project => {
+			const groupsDef = flatArray([...project.packages.map(p => p.groups || []), ...project.groups || []]);
+			return (groupsDef).map(group => {
+				return {
+					projectId: project._id,
+					_id: group._id,
+					_auditorId,
+					label: group.name,
+					accessLevelIds: _keys(group.accessLevels)
+						.map(key => domainNameToLevelNameToDBAccessLevel[domainsMap_nameToDbDomain[key]._id][group.accessLevels[key]]._id)
+				};
+			});
+		}));
 
 		//get apis from each project -> project's packages -> packages' domains
-		const apisToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => {
-			const apis: PreDB<DB_PermissionApi>[] = [];
+		const apisToUpsert = flatArray(projects.map(project => {
+			return project.packages.map(_package => _package.domains.map(domain => {
+				const apis: PreDB<DB_PermissionApi>[] = [];
 
-			apis.push(...(domain.customApis || []).map(api => ({
-				projectId: project._id,
-				path: api.path,
-				_auditorId,
-				accessLevelIds: [domainNameToLevelNameToDBAccessLevel[domain._id][api.accessLevel]._id]
-			})));
+				apis.push(...(domain.customApis || []).map(api => ({
+					projectId: project._id,
+					path: api.path,
+					_auditorId,
+					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[domain._id][api.accessLevel]._id]
+				})));
 
-			const apiModules = arrayToMap(Storm.getInstance()
-				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+				const apiModules = arrayToMap(Storm.getInstance()
+					.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
 
-			this.logDebug(_keys(apiModules));
+				this.logDebug(_keys(apiModules));
 
-			// / I think there is a bug here... comment it and see what happens
-			const _apis = (domain.dbNames || []).map(dbName => {
-				const apiModule = apiModules[dbName];
-				if (!apiModule)
-					throw new MUSTNeverHappenException(`Could not find api module with dbName: ${dbName}`);
+				// / I think there is a bug here... comment it and see what happens
+				const _apis = (domain.dbNames || []).map(dbName => {
+					const apiModule = apiModules[dbName];
+					if (!apiModule)
+						throw new MUSTNeverHappenException(`Could not find api module with dbName: ${dbName}`);
 
-				const _apiDefs = apiModule.apiDef;
-				return _keys(_apiDefs).map(_apiDefKey => {
-					const apiDefs = _apiDefs[_apiDefKey];
-					return filterInstances(_keys(apiDefs).map(apiDefKey => {
-						const apiDef = apiDefs[apiDefKey];
-						const accessLevelNameToAssign = defaultLevelsRouteLookupWords[apiDef.path.substring(apiDef.path.lastIndexOf('/') + 1)];
-						const accessLevel = domainNameToLevelNameToDBAccessLevel[domain._id][accessLevelNameToAssign];
-						if (!accessLevel)
-							return;
+					const _apiDefs = apiModule.apiDef;
+					return _keys(_apiDefs).map(_apiDefKey => {
+						const apiDefs = _apiDefs[_apiDefKey];
+						return filterInstances(_keys(apiDefs).map(apiDefKey => {
+							const apiDef = apiDefs[apiDefKey];
+							const accessLevelNameToAssign = defaultLevelsRouteLookupWords[apiDef.path.substring(apiDef.path.lastIndexOf('/') + 1)];
+							const accessLevel = domainNameToLevelNameToDBAccessLevel[domain._id][accessLevelNameToAssign];
+							if (!accessLevel)
+								return;
 
-						const accessId = accessLevel._id;
-						return {
-							projectId: project._id,
-							path: apiDef.path,
-							_auditorId,
-							accessLevelIds: [accessId]
-						};
-					}));
+							const accessId = accessLevel._id;
+							return {
+								projectId: project._id,
+								path: apiDef.path,
+								_auditorId,
+								accessLevelIds: [accessId]
+							};
+						}));
+					});
 				});
-			});
-			apis.push(...flatArray(_apis));
+				apis.push(...flatArray(_apis));
 
-			return apis;
-		}))));
+				return apis;
+			}));
+		}));
 
 		await ModuleBE_PermissionApi.set.all(apisToUpsert);
 		await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
 		await this.assignSuperAdmin();
-
-		// MemKey_ServerApi.get().addPostCallAction(async () => {
-		// 	const envConfigRef = Storm.getInstance().getEnvConfigRef(ModuleBE_PermissionsAssert);
-		// 	const currentConfig = await envConfigRef.get({});
-		// 	currentConfig.strictMode = true;
-		// 	await envConfigRef.set(currentConfig);
-		// });
 	};
 
 	assignSuperAdmin = async () => {

@@ -15,6 +15,7 @@ import {
 	DefaultAccessLevel_Write,
 	DuplicateDefaultAccessLevels,
 } from '../shared/consts';
+import {ApiDefFE_Account} from '@nu-art/user-account';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
@@ -30,10 +31,11 @@ const _Domain_PermissionsDefine: DefaultDef_Domain = {
 		...DuplicateDefaultAccessLevels(Domain_PermissionsDefine_ID),
 		// {...PermissionsAccessLevel_ReadSelf, _id: md5(Domain_PermissionsDefine_ID)},
 	],
-	customApis: [{
-		path: ApiDef_Permissions.v1.createProject.path,
-		accessLevel: DefaultAccessLevel_Admin.name
-	}]
+	customApis: [
+		{path: ApiDefFE_Account.vv1.refreshSession.path, accessLevel: DefaultAccessLevel_NoAccess.name},
+		{path: ApiDef_Permissions.v1.createProject.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDef_Permissions.v1.toggleStrictMode.path, accessLevel: DefaultAccessLevel_Admin.name},
+	]
 };
 
 const _Domain_PermissionsAssign: DefaultDef_Domain = {
@@ -57,7 +59,6 @@ export const PermissionsPackage_Permissions: DefaultDef_Package = {
 		Domain_PermissionsDefine,
 		Domain_PermissionsAssign,
 	],
-
 };
 
 export const PermissionsPackage_Developer: DefaultDef_Package = {

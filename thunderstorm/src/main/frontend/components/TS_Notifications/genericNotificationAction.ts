@@ -1,7 +1,10 @@
 import {Second, StaticLogger} from '@nu-art/ts-common';
-import {ModuleFE_Notifications} from '../../component-modules/ModuleFE_Notifications';
+import {ModuleFE_Notifications, UI_Notification} from '../../component-modules/ModuleFE_Notifications';
 
-export const genericNotificationAction = async (action: () => Promise<any>, _title: string | { inProgress: string, failed?: string | ((e: any) => string), success?: string }, postDelay: number = 1.5) => {
+
+type UI_NotificationTitle = string | { inProgress: string, failed?: string | ((e: any) => string), success?: string };
+
+export const genericNotificationAction = async (action: (notification: UI_Notification) => Promise<any>, _title: UI_NotificationTitle, postDelay: number = 1.5) => {
 	const title = typeof _title === 'string' ? _title : _title.inProgress;
 	const successTitle = typeof _title === 'string' ? title + ' - Success' : _title.success || title + ' - Success';
 	const notification = ModuleFE_Notifications.create().content(title).postDelayed(postDelay * Second);

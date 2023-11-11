@@ -69,6 +69,7 @@ class ModuleFE_Account_Class
 		super(DBDef_Accounts, dispatch_onAccountsUpdated);
 
 		this.vv1 = {
+			refreshSession: apiWithQuery(ApiDefFE_Account.vv1.refreshSession),
 			registerAccount: apiWithBody(ApiDefFE_Account.vv1.registerAccount, this.setLoginInfo),
 			createAccount: apiWithBody(ApiDefFE_Account.vv1.createAccount, this.onAccountCreated),
 			changePassword: apiWithBody(ApiDefFE_Account.vv1.changePassword, this.setLoginInfo),
