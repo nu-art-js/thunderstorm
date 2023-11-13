@@ -96,8 +96,8 @@ class ModuleBE_v2_Backup_Class
 			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
 
 		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
-		const fireabseDescriptor = await (await bucket.getFile(backupDoc.firebasePath)).getReadSecuredUrl(10 * Minute);
-		const firestoreDescriptor = await (await bucket.getFile(backupDoc.backupPath)).getReadSecuredUrl(10 * Minute);
+		const fireabseDescriptor = await (await bucket.getFile(backupDoc.firebasePath)).getReadSignedUrl(10 * Minute);
+		const firestoreDescriptor = await (await bucket.getFile(backupDoc.backupPath)).getReadSignedUrl(10 * Minute);
 
 		return {
 			backupInfo: {
@@ -105,8 +105,8 @@ class ModuleBE_v2_Backup_Class
 				backupFilePath: backupDoc.backupPath,
 				metadataFilePath: backupDoc.metadataPath,
 				firebaseFilePath: backupDoc.firebasePath,
-				firebaseSignedUrl: fireabseDescriptor.securedUrl,
-				firestoreSignedUrl: firestoreDescriptor.securedUrl,
+				firebaseSignedUrl: fireabseDescriptor.signedUrl,
+				firestoreSignedUrl: firestoreDescriptor.signedUrl,
 				metadata: backupDoc.metadata
 			}
 		};
