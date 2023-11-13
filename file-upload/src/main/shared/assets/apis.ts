@@ -1,11 +1,11 @@
-import {BaseUploaderFile, FileUploadResult, Request_GetReadSecuredUrl, SecureUrl, TempSecureUrl} from './types';
+import {BaseUploaderFile, FileUploadResult, Request_GetReadSignedUrl, SecureUrl, TempSecureUrl} from './types';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export type ApiStruct_Assets = {
 	vv1: {
-		fetchSpecificFile: BodyApi<SecureUrl, Request_GetReadSecuredUrl>,
+		fetchSpecificFile: BodyApi<SecureUrl, Request_GetReadSignedUrl>,
 
 	}
 }

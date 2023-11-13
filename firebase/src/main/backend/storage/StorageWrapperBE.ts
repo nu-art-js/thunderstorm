@@ -136,25 +136,43 @@ export class FileWrapper {
 		this.isEmulator = isEmulator;
 	}
 
-	async getWriteSecuredUrl(contentType: string, expiresInMs: number) {
+	async getWriteSignedUrl(contentType: string, expiresInMs: number) {
 		const options: GetSignedUrlConfig = {
 			action: 'write',
 			contentType: contentType,
 			expires: currentTimeMillis() + expiresInMs,
 		};
 
+		if (this.isEmulator) {
+			const signedUrl = `http://127.0.0.1:8108/emulatorUpload?path=${this.path}`;
+
+			return {
+				fileName: this.path,
+				signedUrl: signedUrl,
+				publicUrl: signedUrl
+			};
+		}
+
 		return this.getSignedUrl(options);
 	}
 
-	async getReadSecuredUrl(expiresInMs: number = 5 * Minute, contentType?: string) {
+	async getReadSignedUrl(expiresInMs: number = 5 * Minute, contentType?: string) {
 		const options: GetSignedUrlConfig = {
 			action: 'read',
 			contentType,
 			expires: currentTimeMillis() + expiresInMs,
 		};
 
-		if (this.isEmulator)
+		if (this.isEmulator) {
 			await this.makePublic();
+			const signedUrl = decodeURIComponent(this.file.publicUrl());
+
+			return {
+				fileName: this.path,
+				signedUrl: signedUrl,
+				publicUrl: signedUrl
+			};
+		}
 
 		return this.getSignedUrl(options);
 	}
@@ -245,22 +263,12 @@ export class FileWrapper {
 	}
 
 	private async getSignedUrl(options: GetSignedUrlConfig) {
-		if (this.isEmulator) {
-			const encodedURIComponent = this.file.publicUrl();
-
-			return {
-				fileName: this.path,
-				securedUrl: decodeURIComponent(encodedURIComponent),
-				publicUrl: decodeURIComponent(encodedURIComponent)
-			};
-		}
-
 		const results = await this.file.getSignedUrl(options);
 		const url = results[0];
 
 		return {
 			fileName: this.path,
-			securedUrl: url,
+			signedUrl: url,
 			publicUrl: encodeURI(`https://storage.googleapis.com/${this.bucket.bucketName.replace(`gs://`, '')}${this.path}`)
 		};
 	}
