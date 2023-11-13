@@ -21,6 +21,7 @@ import {Express, Request, Response} from 'express';
 import {addItemToArray, StringMap} from '@nu-art/ts-common';
 import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
 import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
+import {ModuleBE_Firebase} from '../ModuleBE_Firebase';
 
 
 export interface LocalRequest
@@ -38,6 +39,21 @@ export interface FirebaseFunctionInterface {
 	onFunctionReady(): Promise<void>;
 }
 
+export const firebaseEmulatorSignedUrlUploader = {
+	emulatorUpload: onRequest({maxInstances: 10, concurrency: 1}, async (request: LocalRequest, response: Response) => {
+		const pathToFile = request.params['pathToFile'];
+		const file = await ModuleBE_Firebase.createAdminSession().getStorage().getFile(pathToFile);
+		const writable = file.createWriteStream({gzip: true});
+		request.pipe(writable)
+			.on('error', (err) => {
+				console.error('Stream error:', err);
+				response.status(500).send('Error uploading file');
+			})
+			.on('finish', () => {
+				response.status(200).send('File uploaded successfully');
+			});
+	})
+};
 
 export class Firebase_ExpressFunction
 	implements FirebaseFunctionInterface {
@@ -105,13 +121,11 @@ export type FirestoreConfigs = {
 	configs: any
 }
 
-
 export type BucketConfigs = {
 	runtimeOpts?: RuntimeOptions
 	path: string
 	bucketName?: string
 }
-
 
 export type FirebaseEventContext = EventContext;
 
