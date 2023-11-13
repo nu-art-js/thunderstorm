@@ -166,8 +166,12 @@ export class ModuleBE_v2_SyncManager_Class
 		}));
 	};
 
+	public getFullSyncData = async () => {
+		return (await this.syncData.get({}));
+	};
+
 	public fetchDBSyncData = async (_: undefined) => {
-		const fbSyncData = await this.syncData.get({});
+		const fbSyncData = await this.getFullSyncData();
 
 		const modulesToIterate = await this.filterModules(this.dbModules);
 		// this.logWarning(`Filtered Modules to sync on(${modulesToIterate.length}):`, modulesToIterate.map(mod => mod.dbDef.dbName));

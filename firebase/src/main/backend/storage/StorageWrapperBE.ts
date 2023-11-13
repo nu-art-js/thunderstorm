@@ -17,7 +17,7 @@
  */
 
 import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {Bucket, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
+import {Bucket, CreateWriteStreamOptions, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
 import {Firebase_CopyResponse, FirebaseType_Metadata, FirebaseType_Storage, ReturnType_Metadata} from './types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
@@ -142,6 +142,7 @@ export class FileWrapper {
 			contentType: contentType,
 			expires: currentTimeMillis() + expiresInMs,
 		};
+
 		return this.getSignedUrl(options);
 	}
 
@@ -151,6 +152,10 @@ export class FileWrapper {
 			contentType,
 			expires: currentTimeMillis() + expiresInMs,
 		};
+
+		if (this.isEmulator)
+			await this.makePublic();
+
 		return this.getSignedUrl(options);
 	}
 
@@ -241,12 +246,12 @@ export class FileWrapper {
 
 	private async getSignedUrl(options: GetSignedUrlConfig) {
 		if (this.isEmulator) {
-			await this.makePublic();
+			const encodedURIComponent = this.file.publicUrl();
 
 			return {
 				fileName: this.path,
-				securedUrl: this.file.publicUrl(),
-				publicUrl: this.file.publicUrl()
+				securedUrl: decodeURIComponent(encodedURIComponent),
+				publicUrl: decodeURIComponent(encodedURIComponent)
 			};
 		}
 
@@ -261,7 +266,7 @@ export class FileWrapper {
 	}
 
 	async writeToStream(feeder: (writable: Writable) => Promise<void | typeof END_OF_STREAM>): Promise<void> {
-		const writeable = this.file.createWriteStream({gzip: true});
+		const writeable = this.createWriteStream({gzip: true});
 		const promise: Promise<void> = new Promise((resolve, reject) => {
 			writeable.on('close', () => resolve());
 			writeable.on('error', (e) => reject(e));
@@ -274,6 +279,10 @@ export class FileWrapper {
 
 		writeable.end();
 		return promise;
+	}
+
+	public createWriteStream(options?: CreateWriteStreamOptions) {
+		return this.file.createWriteStream(options);
 	}
 
 	async makePublic(): Promise<MakeFilePublicResponse> {
