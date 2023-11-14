@@ -35,7 +35,7 @@ export interface CollectPermissionsProjects {
 const dispatcher_collectPermissionsProjects = new Dispatcher<CollectPermissionsProjects, '__collectPermissionsProjects'>('__collectPermissionsProjects');
 const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
 
-const PermissionProject_Permissions: DefaultDef_Project = {
+export const PermissionProject_Permissions: DefaultDef_Project = {
 	_id: 'f60db83936835e0be33e89caa365f0c3',
 	name: 'Permissions',
 	packages: [PermissionsPackage_Permissions, PermissionsPackage_Developer],

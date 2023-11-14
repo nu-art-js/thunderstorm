@@ -19,14 +19,14 @@
  * limitations under the License.
  */
 
-import {ApiModule, Response_DBSync,} from '../../shared';
+import {Response_DBSync,} from '../../shared';
 
 import {
 	arrayToMap,
 	DB_Object,
 	DBDef,
 	dbObjectToId,
-	Default_UniqueKey,
+	Default_UniqueKey, exists,
 	IndexKeys,
 	InvalidResult,
 	Logger,
@@ -55,16 +55,15 @@ import {
 	EventType_UpsertAll,
 	syncDispatcher
 } from '../../core/db-api-gen/consts';
-import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction, Thunder, ThunderDispatcher} from '../../core';
+import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction, ThunderDispatcher} from '../../core';
 import {ApiCallerEventType, MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
 import {StorageKey} from '../ModuleFE_LocalStorage';
-import {TS_BroadcastChannel} from '../ModuleFE_BroadcastChannel/ModuleFE_BroadcastChannel';
 
-
-type Message_CacheCollection = {
-	key: 'cache-sync'
-	dbName: string
-}
+// type Message_CacheCollection = {
+// 	key: 'cache-sync'
+// 	dbName: string
+// 	lastSync: number
+// }
 
 export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config>
@@ -76,16 +75,16 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	private dataStatus: DataStatus;
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>;
 
-	static dbChannel = new TS_BroadcastChannel<Message_CacheCollection>('need-to-cache')
-		.mount()
-		.addProcessor('cache-sync', async (message) => {
-			const module = Thunder.getInstance().filterModules(module => {
-				const apiModule = (module as unknown as ApiModule['dbModule']);
-				return apiModule?.dbDef?.dbName === message.dbName;
-			})[0];
-
-			await (module as ModuleFE_BaseDB<any>).cache.load();
-		});
+	// static dbChannel = new TS_BroadcastChannel<Message_CacheCollection>('need-to-cache')
+	// 	.mount()
+	// 	.addProcessor('cache-sync', async (message) => {
+	// 		const module = Thunder.getInstance().filterModules(module => {
+	// 			const apiModule = (module as unknown as ApiModule['dbModule']);
+	// 			return apiModule?.dbDef?.dbName === message.dbName;
+	// 		})[0];
+	//
+	// 		await (module as ModuleFE_BaseDB<any>).cache.load();
+	// 	});
 
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
@@ -102,6 +101,13 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 
 		this.cache = new MemCache<DBType, Ks>(this, config.dbConfig.uniqueKeys);
 		this.IDB = new IDBCache<DBType, Ks>(config.dbConfig, config.versions[0]);
+		this.IDB.onLastUpdateListener(async (after, before) => {
+			if (!exists(after) || after === before)
+				return;
+
+			this.logInfo('syncing...');
+			return this.cache.load();
+		});
 		this.dbDef = dbDef;
 	}
 
@@ -250,6 +256,10 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
 			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 
+	}
+
+	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
+		this.lastSync.onChange(onChangeListener);
 	}
 
 	forEach = async (processor: (item: DBType) => void) => {
@@ -424,19 +434,19 @@ class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Defaul
 
 	// @ts-ignore
 	private onEntriesDeleted(itemsDeleted: DBType[]) {
-		ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 		const ids = new Set<string>(itemsDeleted.map(dbObjectToId));
 		this.setCache(this.filter(i => !ids.has(i._id)));
+		// ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 	}
 
 	// @ts-ignore
 	private onEntriesUpdated(itemsUpdated: DBType[]) {
-		ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 		const frozenItems = itemsUpdated.map(item => Object.freeze(item));
 		const ids = new Set<string>(itemsUpdated.map(dbObjectToId));
 		const toCache = this.filter(i => !ids.has(i._id));
 		toCache.push(...frozenItems);
 		this.setCache(toCache);
+		// ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 	}
 
 	private setCache(cacheArray: Readonly<DBType>[]) {

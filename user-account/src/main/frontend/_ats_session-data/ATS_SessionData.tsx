@@ -4,7 +4,7 @@ import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 import {
 	AppToolsScreen,
 	ComponentSync,
-	LL_V_L,
+	LL_V_L, OnStorageKeyChangedListener,
 	Props_SmartComponent,
 	TS_Input,
 	TS_TextArea
@@ -19,7 +19,8 @@ type ATS_SessionData_State = {
 };
 
 export class ATS_SessionData
-	extends ComponentSync<ATS_SessionData_Props, ATS_SessionData_State> {
+	extends ComponentSync<ATS_SessionData_Props, ATS_SessionData_State>
+	implements OnStorageKeyChangedListener {
 
 	static screen: AppToolsScreen = {name: `DevTool - SessionData`, renderer: this, group: 'Permissions'};
 
@@ -35,6 +36,10 @@ export class ATS_SessionData
 
 	constructor(p: ATS_SessionData_Props) {
 		super(p);
+	}
+
+	__onStorageKeyEvent(event: StorageEvent) {
+		this.forceUpdate();
 	}
 
 	private getDecodedSessionId() {
@@ -58,7 +63,7 @@ export class ATS_SessionData
 				this.setState({sessionId: value});
 			}}/>
 			<TS_TextArea style={{fontFamily: 'monospace', fontSize: 15}} type="text" value={sessionDataAsJson}
-						 disabled/>
+									 disabled/>
 		</LL_V_L>;
 	}
 }
