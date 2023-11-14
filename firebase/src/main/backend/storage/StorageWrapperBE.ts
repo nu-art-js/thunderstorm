@@ -17,7 +17,7 @@
  */
 
 import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {Bucket, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
+import {Bucket, CreateWriteStreamOptions, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
 import {Firebase_CopyResponse, FirebaseType_Metadata, FirebaseType_Storage, ReturnType_Metadata} from './types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
@@ -136,21 +136,44 @@ export class FileWrapper {
 		this.isEmulator = isEmulator;
 	}
 
-	async getWriteSecuredUrl(contentType: string, expiresInMs: number) {
+	async getWriteSignedUrl(contentType: string, expiresInMs: number) {
 		const options: GetSignedUrlConfig = {
 			action: 'write',
 			contentType: contentType,
 			expires: currentTimeMillis() + expiresInMs,
 		};
+
+		if (this.isEmulator) {
+			const signedUrl = `http://127.0.0.1:8108/emulatorUpload?path=${this.path}`;
+
+			return {
+				fileName: this.path,
+				signedUrl: signedUrl,
+				publicUrl: signedUrl
+			};
+		}
+
 		return this.getSignedUrl(options);
 	}
 
-	async getReadSecuredUrl(expiresInMs: number = 5 * Minute, contentType?: string) {
+	async getReadSignedUrl(expiresInMs: number = 5 * Minute, contentType?: string) {
 		const options: GetSignedUrlConfig = {
 			action: 'read',
 			contentType,
 			expires: currentTimeMillis() + expiresInMs,
 		};
+
+		if (this.isEmulator) {
+			await this.makePublic();
+			const signedUrl = decodeURIComponent(this.file.publicUrl());
+
+			return {
+				fileName: this.path,
+				signedUrl: signedUrl,
+				publicUrl: signedUrl
+			};
+		}
+
 		return this.getSignedUrl(options);
 	}
 
@@ -240,28 +263,18 @@ export class FileWrapper {
 	}
 
 	private async getSignedUrl(options: GetSignedUrlConfig) {
-		if (this.isEmulator) {
-			await this.makePublic();
-
-			return {
-				fileName: this.path,
-				securedUrl: this.file.publicUrl(),
-				publicUrl: this.file.publicUrl()
-			};
-		}
-
 		const results = await this.file.getSignedUrl(options);
 		const url = results[0];
 
 		return {
 			fileName: this.path,
-			securedUrl: url,
+			signedUrl: url,
 			publicUrl: encodeURI(`https://storage.googleapis.com/${this.bucket.bucketName.replace(`gs://`, '')}${this.path}`)
 		};
 	}
 
 	async writeToStream(feeder: (writable: Writable) => Promise<void | typeof END_OF_STREAM>): Promise<void> {
-		const writeable = this.file.createWriteStream({gzip: true});
+		const writeable = this.createWriteStream({gzip: true});
 		const promise: Promise<void> = new Promise((resolve, reject) => {
 			writeable.on('close', () => resolve());
 			writeable.on('error', (e) => reject(e));
@@ -274,6 +287,10 @@ export class FileWrapper {
 
 		writeable.end();
 		return promise;
+	}
+
+	public createWriteStream(options?: CreateWriteStreamOptions) {
+		return this.file.createWriteStream(options);
 	}
 
 	async makePublic(): Promise<MakeFilePublicResponse> {

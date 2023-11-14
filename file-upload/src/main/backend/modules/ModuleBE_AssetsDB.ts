@@ -60,7 +60,7 @@ import {
 	FileStatus,
 	Push_FileUploaded,
 	PushKey_FileUploaded,
-	Request_GetReadSecuredUrl,
+	Request_GetReadSignedUrl,
 	TempSecureUrl
 } from '../../shared';
 
@@ -149,20 +149,20 @@ export class ModuleBE_AssetsDB_Class
 				if (await fileWrapper.exists())
 					return;
 
-				let _securedUrl;
+				let _signedUrl;
 				try {
-					const {securedUrl} = await AxiosHttpModule.createRequest({
+					const {signedUrl} = await AxiosHttpModule.createRequest({
 						...ApiDef_Assets.vv1.fetchSpecificFile,
 						fullUrl: 'https://api-hhvladacia-uc.a.run.app/v1/assets/get-read-secured-url'
 					})
 						.setBodyAsJson({bucketName: dbItem.bucketName, pathInBucket: dbItem.path})
 						.executeSync();
-					_securedUrl = securedUrl;
+					_signedUrl = signedUrl;
 				} catch (e) {
 					console.log(e);
 				}
 
-				const fileContent = await AxiosHttpModule.createRequest({method: HttpMethod.GET, fullUrl: _securedUrl, path: ''})
+				const fileContent = await AxiosHttpModule.createRequest({method: HttpMethod.GET, fullUrl: _signedUrl, path: ''})
 					.setResponseType('text')
 					.executeSync();
 
@@ -171,15 +171,15 @@ export class ModuleBE_AssetsDB_Class
 		}
 	}
 
-	fetchSpecificFile = async (body: Request_GetReadSecuredUrl) => {
+	fetchSpecificFile = async (body: Request_GetReadSignedUrl) => {
 		this.logInfo('fetchSpecificFile - got here');
 		const fileWrapper = await this.storage.getFile(body.pathInBucket, body.bucketName);
 
 		this.logInfo('fetchSpecificFile - got fileWrapper');
-		const securedUrl = await fileWrapper.getReadSecuredUrl();
+		const signedUrl = await fileWrapper.getReadSignedUrl();
 
-		this.logInfo('fetchSpecificFile - got securedUrl');
-		return securedUrl;
+		this.logInfo('fetchSpecificFile - got signedUrl');
+		return signedUrl;
 	};
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
@@ -198,9 +198,9 @@ export class ModuleBE_AssetsDB_Class
 		const asset = await super.query.uniqueCustom({where});
 		const signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
 		if (!signedUrl) {
-			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(Day, asset.mimeType);
+			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSignedUrl(Day, asset.mimeType);
 			asset.signedUrl = {
-				url: url.securedUrl,
+				url: url.signedUrl,
 				validUntil: currentTimeMillis() + Day - Minute
 			};
 		}
@@ -267,9 +267,9 @@ export class ModuleBE_AssetsDB_Class
 
 			const dbTempMeta = await ModuleBE_AssetsTemp.set.item(dbAsset);
 			const fileWrapper = await bucket.getFile(dbTempMeta.path);
-			const url = await fileWrapper.getWriteSecuredUrl(_file.mimeType, Hour);
+			const url = await fileWrapper.getWriteSignedUrl(_file.mimeType, Hour);
 			return {
-				securedUrl: url.securedUrl,
+				signedUrl: url.signedUrl,
 				asset: dbTempMeta
 			};
 		}));

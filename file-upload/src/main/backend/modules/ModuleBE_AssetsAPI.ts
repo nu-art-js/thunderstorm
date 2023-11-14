@@ -1,6 +1,6 @@
 import {addRoutes, createBodyServerApi, ModuleBE_BaseApiV2_Class} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_AssetsDB} from './ModuleBE_AssetsDB';
-import {ApiDef_Assets, DB_Asset, Request_GetReadSecuredUrl} from '../../shared';
+import {ApiDef_Assets, DB_Asset, Request_GetReadSignedUrl} from '../../shared';
 
 export class ModuleBE_AssetsAPI_Class
 	extends ModuleBE_BaseApiV2_Class<DB_Asset> {
@@ -16,7 +16,7 @@ export class ModuleBE_AssetsAPI_Class
 		]);
 	}
 
-	private fetchSpecificFile = async (body: Request_GetReadSecuredUrl) => {
+	private fetchSpecificFile = async (body: Request_GetReadSignedUrl) => {
 		return ModuleBE_AssetsDB.fetchSpecificFile(body);
 	};
 }
