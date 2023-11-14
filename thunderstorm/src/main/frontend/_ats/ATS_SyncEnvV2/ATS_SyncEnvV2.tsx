@@ -143,7 +143,7 @@ export class ATS_SyncEnvironmentV2
 						Select All
 					</TS_Checkbox>
 					<TS_Input onChange={val => this.setState({searchFilter: val})} type={'text'}
-										placeholder={'sreach collection'}/>
+										placeholder={'search collection'}/>
 				</LL_H_C>
 				{this.state.moduleList.map(name => {
 					const collectionMetadata = this.state.metadata?.collectionsData.find(collection => collection.collectionName === name);

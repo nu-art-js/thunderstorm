@@ -7,7 +7,6 @@ import {
 	currentTimeMillis,
 	dispatch_onApplicationException,
 	Dispatcher,
-	DontCallthisException,
 	exists,
 	generateHex,
 	hashPasswordWithSalt,
@@ -45,6 +44,8 @@ import {
 import {assertPasswordRules, PasswordAssertionConfig} from '../../shared/assertion';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import Transaction = firestore.Transaction;
+import {ApiError_GeneralErrorMessage} from '@nu-art/ts-common/core/exceptions/types';
+import {BadRequest} from '@nu-art/ts-common/utils/exception-tools';
 
 
 type BaseAccount = {
@@ -96,7 +97,11 @@ export class ModuleBE_AccountDB_Class
 	}
 
 	canDeleteItems(dbItems: DB_Account[], transaction?: FirebaseFirestore.Transaction): Promise<void> {
-		throw new DontCallthisException('Cannot delete accounts yet');
+		BadRequest
+		throw new ApiException<ApiError_GeneralErrorMessage>(403, 'Cannot delete accounts yet').setErrorBody({
+			type: 'error-message',
+			data: {message: 'Account Deletion is not implemented yet'}
+		});
 	}
 
 	async __collectSessionData(data: SessionCollectionParam) {

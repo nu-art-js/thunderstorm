@@ -20,7 +20,7 @@ import {__stringify, Module, Second} from '@nu-art/ts-common';
 
 import {apiWithBody, apiWithQuery, ModuleFE_Toaster, ThunderDispatcher, ModuleFE_XHR} from '@nu-art/thunderstorm/frontend';
 import {ApiStruct_Examples, CommonBodyReq, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
-import {ApiDef, ApiDefCaller, ErrorResponse, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDef, ApiDefCaller, ApiErrorResponse, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {Test} from '@modules/TestModule';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
 import {ModuleFE_Firebase} from '@nu-art/firebase/frontend';
@@ -98,7 +98,7 @@ export class ExampleModule_Class
 	}
 
 	callCustomErrorApi() {
-		this.v1.customError().execute(undefined, (request, resError?: ErrorResponse<CustomError1 | CustomError2>) => {
+		this.v1.customError().execute(undefined, (request, resError?: ApiErrorResponse<CustomError1 | CustomError2>) => {
 			const error = resError?.error;
 			if (!error)
 				return;

@@ -22,6 +22,7 @@
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB, Second} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi, QueryParams} from '../types';
+import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export type UpgradeCollectionBody = { forceUpdate?: boolean };
@@ -40,7 +41,7 @@ export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 	v1: {
 		sync: BodyApi<DBType[], FirestoreQuery<DBType>, undefined>,
 		query: BodyApi<DBType[], FirestoreQuery<DBType>, FirestoreQuery<DBType> | undefined | {}>,
-		queryUnique: QueryApi<DBType, DB_BaseObject, string>,
+		queryUnique: QueryApi<DBType, DB_BaseObject, ResponseError<string, any>, string>,
 		upsert: BodyApi<DBType, PreDB<DBType>>,
 		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
 		patch: BodyApi<DBType, PreDB<DBType>>
@@ -56,7 +57,7 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 	v1: {
 		sync: BodyApi<Response_DBSync<DBType>, FirestoreQuery<DBType>, undefined>,
 		query: BodyApi<DBType[], FirestoreQuery<DBType>>,
-		queryUnique: QueryApi<DBType, QueryParams, string | IndexKeys<DBType, Ks>>,
+		queryUnique: QueryApi<DBType, QueryParams, ResponseError<string, any>, string | IndexKeys<DBType, Ks>>,
 		upsert: BodyApi<DBType, PreDB<DBType>>,
 		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
 		patch: BodyApi<DBType, IndexKeys<DBType, Ks> & Partial<DBType>>
@@ -113,16 +114,14 @@ export type ApiStruct_SyncManager = {
 	},
 }
 
-
 export const ApiDef_SyncManager: ApiDefResolver<ApiStruct_SyncManager> = {
 	v1: {
 		checkSync: {method: HttpMethod.GET, path: 'v1/db-api/sync-all'},
 	}
 };
 
-
 export const ApiDef_SyncManagerV2: ApiDefResolver<ApiStruct_SyncManager> = {
 	v1: {
-		checkSync: {method: HttpMethod.GET, path: 'v2/db-api/sync-all-v2'},
+		checkSync: {method: HttpMethod.GET, path: 'v2/db-api/sync-all-v2', timeout: 60 * Second},
 	}
 };

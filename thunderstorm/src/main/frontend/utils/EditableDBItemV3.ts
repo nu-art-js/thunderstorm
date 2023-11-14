@@ -36,6 +36,10 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		};
 	}
 
+	async save(): Promise<Proto['dbType']> {
+		return super.save();
+	}
+
 	/**
 	 * Create a new instance of EditableDBItemV3 with the same properties and behaviors as the current instance.
 	 *

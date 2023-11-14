@@ -45,9 +45,9 @@ export function apiWithQueryAxios<API extends QueryApi<any, any>>(apiDef: ApiDef
 	};
 }
 
-export function apiWithBodyAxios<API extends BodyApi<any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>,
-																																											onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>,
-																																											onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+export function apiWithBodyAxios<API extends BodyApi<any, any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>,
+																																													 onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>,
+																																													 onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
 	return (body: API['B']): BaseHttpRequest<API> => {
 		return AxiosHttpModule
 			.createRequest<API>(apiDef)
