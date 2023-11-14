@@ -57,7 +57,7 @@ export type FileInfo = {
 };
 
 export type SecureUrl = {
-	securedUrl: string
+	signedUrl: string
 }
 
 export type TempSecureUrl = SecureUrl & {
@@ -66,4 +66,4 @@ export type TempSecureUrl = SecureUrl & {
 
 export type FileUploadResult = { status: FileStatus, asset: DB_Asset };
 
-export type Request_GetReadSecuredUrl = { pathInBucket: string; bucketName?: string };
+export type Request_GetReadSignedUrl = { pathInBucket: string; bucketName?: string };

@@ -58,7 +58,7 @@ export class ModuleBE_AdminBR_Class
 	downloadFiles = async (path: Paths) => {
 		const bucket = await this.storage.getOrCreateBucket(this.config?.bucket);
 		const file = await bucket.getFile(path.path);
-		return file.getReadSecuredUrl(600000, 'application/zip');
+		return file.getReadSignedUrl(600000, 'application/zip');
 	};
 }
 

@@ -71,7 +71,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 	placeholder?: string,
 	inputValue?: string;
 
-	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
+	noOptionsRenderer?: React.ReactNode | ((filter?: string) => React.ReactNode);
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: ItemType[], e: React.KeyboardEvent) => any
 
 	selected?: ItemType
@@ -380,7 +380,7 @@ export class TS_DropDown<ItemType>
 		if ((!this.props.filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0) {
 			if (this.props.noOptionsRenderer)
 				return <div className="ts-dropdown__empty" style={style}>
-					{(typeof this.props.noOptionsRenderer === 'function' ? this.props.noOptionsRenderer() : this.props.noOptionsRenderer)}
+					{(typeof this.props.noOptionsRenderer === 'function' ? this.props.noOptionsRenderer(this.state.filterText) : this.props.noOptionsRenderer)}
 				</div>;
 			return <div className="ts-dropdown__empty" style={style}>No options</div>;
 		}
