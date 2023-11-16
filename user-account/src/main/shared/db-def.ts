@@ -26,7 +26,6 @@ export const Validator_Modifiable: DBProto_SessionType['modifiablePropsValidator
 };
 
 export const Validator_Generated: DBProto_SessionType['generatedPropsValidator'] = {
-	...DB_Object_validator
 };
 
 export const DBDef_Session: DBDef_V3<DBProto_SessionType> = {
@@ -46,7 +45,6 @@ const modifiablePropsValidator: DBProto_AccountType['modifiablePropsValidator'] 
 };
 
 const generatedPropsValidator: DBProto_AccountType['generatedPropsValidator'] = {
-	...DB_Object_validator,
 	_auditorId: tsValidateString(),
 	_newPasswordRequired: tsValidateBoolean(false),
 	salt: tsValidator_nonMandatoryString,

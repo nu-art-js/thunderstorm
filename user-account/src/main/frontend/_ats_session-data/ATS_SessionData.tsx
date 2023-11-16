@@ -22,7 +22,7 @@ export class ATS_SessionData
 	extends ComponentSync<ATS_SessionData_Props, ATS_SessionData_State>
 	implements OnStorageKeyChangedListener {
 
-	static screen: AppToolsScreen = {name: `DevTool - SessionData`, renderer: this, group: 'Permissions'};
+	static screen: AppToolsScreen = {name: `SessionData`, renderer: this, group: 'Permissions'};
 
 	static defaultProps = {
 		modules: [],

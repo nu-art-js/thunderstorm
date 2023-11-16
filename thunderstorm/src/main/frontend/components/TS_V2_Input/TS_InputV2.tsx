@@ -183,7 +183,7 @@ export class TS_InputV2
 	};
 
 	render() {
-		const {onAccept, trim, forceAcceptKeys, focus, ...props} = this.props;
+		const {onAccept, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
 
 		return <input
 			{...props}

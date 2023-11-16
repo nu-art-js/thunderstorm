@@ -15,12 +15,13 @@ import {
 	DefaultAccessLevel_Write,
 	DuplicateDefaultAccessLevels,
 } from '../shared/consts';
-import {ApiDefFE_Account} from '@nu-art/user-account';
+import {ApiDefBE_Account, ApiDefFE_Account, DBDef_Accounts} from '@nu-art/user-account';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
 const Domain_PermissionsDefine_ID = '48d5ace0cbb2a14c8a0ca3773a4a2962';
 const Domain_PermissionsAssign_ID = 'ecf9cfe952d034ad8d1f182bbec6e2db';
+const Domain_AccountManagement_ID = 'a02fd6cef8ccae193ad7357d596131e4';
 const Domain_Developer_ID = '1f62a6e2fc4e2cfaa8aa1aa1a45b8c1b';
 
 const _Domain_PermissionsDefine: DefaultDef_Domain = {
@@ -44,6 +45,16 @@ const _Domain_PermissionsAssign: DefaultDef_Domain = {
 	dbNames: [DBDef_PermissionGroup.dbName, DBDef_PermissionUser.dbName],
 };
 
+const _Domain_AccountManagement: DefaultDef_Domain = {
+	_id: Domain_AccountManagement_ID,
+	namespace: 'Account Management',
+	dbNames: [DBDef_Accounts.dbName],
+	customApis: [
+		{path: ApiDefBE_Account.vv1.createAccount.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDefBE_Account.vv1.createToken.path, accessLevel: DefaultAccessLevel_Admin.name},
+	]
+};
+
 const _Domain_Developer: DefaultDef_Domain = {
 	_id: Domain_Developer_ID,
 	namespace: 'Developer',
@@ -51,11 +62,13 @@ const _Domain_Developer: DefaultDef_Domain = {
 
 export const Domain_PermissionsDefine = Object.freeze(_Domain_PermissionsDefine);
 export const Domain_PermissionsAssign = Object.freeze(_Domain_PermissionsAssign);
+export const Domain_AccountManagement = Object.freeze(_Domain_AccountManagement);
 export const Domain_Developer = Object.freeze(_Domain_Developer);
 
 export const PermissionsPackage_Permissions: DefaultDef_Package = {
 	name: 'Permissions',
 	domains: [
+		Domain_AccountManagement,
 		Domain_PermissionsDefine,
 		Domain_PermissionsAssign,
 	],

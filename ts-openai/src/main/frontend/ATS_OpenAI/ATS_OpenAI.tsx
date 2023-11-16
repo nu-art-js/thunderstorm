@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AppToolsScreen, ComponentSync, LL_H_T, LL_V_L, TS_BusyButton} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ATS_3rd_Party, ComponentSync, LL_H_T, LL_V_L, TS_BusyButton} from '@nu-art/thunderstorm/frontend';
 import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
 import {ModuleFE_OpenAI} from '../modules/ModuleFE_OpenAI';
 import {__stringify} from '@nu-art/ts-common';
@@ -29,7 +29,7 @@ type ATS_OpenAI_State = {
 export class ATS_OpenAI
 	extends ComponentSync<ATS_OpenAI_Props, ATS_OpenAI_State> {
 
-	static screen: AppToolsScreen = {name: `DevTool - OpenAI`, renderer: this};
+	static screen: AppToolsScreen = {name: `OpenAI`, renderer: this, group: ATS_3rd_Party};
 
 	static defaultProps = {
 		modules: [],
