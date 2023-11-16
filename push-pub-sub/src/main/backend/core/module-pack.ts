@@ -17,9 +17,15 @@
  */
 
 import {ModuleBE_PushPubSub} from '../modules/ModuleBE_PushPubSub';
+import {ModuleBE_PushKeysDB} from '../modules/ModuleBE_PushKeysDB';
+import {ModuleBE_PushRegistrationDB} from '../modules/ModuleBE_PushRegistrationDB';
 
 
-export const ModulePackBE_PushPubSub = [ModuleBE_PushPubSub,];
+export const ModulePackBE_PushPubSub = [
+	ModuleBE_PushPubSub,
+	ModuleBE_PushKeysDB,
+	ModuleBE_PushRegistrationDB,
+];
 
 export * from '../modules/ModuleBE_PushPubSub';
 export * from '../modules/PushKey';

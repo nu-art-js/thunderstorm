@@ -10,6 +10,7 @@ import {CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB, SessionCollect
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {
+	Domain_AccountManagement,
 	Domain_Developer,
 	Domain_PermissionsAssign,
 	Domain_PermissionsDefine,
@@ -46,15 +47,40 @@ export const PermissionProject_Permissions: DefaultDef_Project = {
 			accessLevels: {
 				[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Admin.name,
 				[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Admin.name,
+				[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
 				[Domain_Developer.namespace]: DefaultAccessLevel_Admin.name,
 			}
 		},
 		{
-			_id: '1524909cae174d0052b76a469b339218',
+			_id: '8c38d3bd2d76bbc37b5281f481c0bc1b',
 			name: 'Permissions Viewer',
 			accessLevels: {
+				[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
+				[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
+				[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Read.name,
+			}
+		},
+		{
+			_id: '1524909cae174d0052b76a469b339218',
+			name: 'Permissions Editor',
+			accessLevels: {
+				[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
 				[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
 				[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Write.name,
+			}
+		},
+		{
+			_id: '6bb5feb12d0712ecee77f7f44188ec79',
+			name: 'Accounts Manager',
+			accessLevels: {
+				[Domain_AccountManagement.namespace]: DefaultAccessLevel_Write.name,
+			}
+		},
+		{
+			_id: '761a84bdde3f9be3fde9c50402a60401',
+			name: 'Accounts Admin',
+			accessLevels: {
+				[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
 			}
 		},
 		// {

@@ -1,8 +1,21 @@
 import * as React from 'react';
-import {AppToolsScreen, CellRenderer, ComponentSync, TS_BusyButton, TS_Button, TS_Input, TS_Table} from '@nu-art/thunderstorm/frontend';
+import {
+	_className,
+	AppToolsScreen,
+	ATS_Fullstack,
+	CellRenderer,
+	ComponentSync, LL_H_C, LL_H_T, LL_V_L, ModuleFE_Toaster,
+	TS_BusyButton,
+	TS_Button,
+	TS_Input, TS_PropRenderer,
+	TS_Table
+} from '@nu-art/thunderstorm/frontend';
 import {__stringify, removeFromArrayByIndex, TS_Object,} from '@nu-art/ts-common';
+import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_PushPubSub, OnPushMessageReceived} from '../../modules/ModuleFE_PushPubSub';
 import {DB_Notifications} from '../../../shared';
+import './ATS_PushPubSub.scss';
+import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 
 
 type ObjProps = {
@@ -21,51 +34,72 @@ type State = {
 
 type Props = {}
 
-function createNewInstance() {
-	return {key: '', value: ''};
+function createNewInstance(key = '', value = '') {
+	return {key, value};
 }
+
+const ConfigPreset_1 = {
+	label: 'Matching simple',
+	config: {
+		registerKey: 'test-key',
+		registerProps: [createNewInstance('prop-key', 'value1')],
+		triggerKey: 'test-key',
+		triggerProps: [createNewInstance('prop-key', 'value1')],
+	}
+};
+
 
 export class ATS_PushPubSub
 	extends ComponentSync<Props, State>
 	implements OnPushMessageReceived {
 
-	static screen: AppToolsScreen = {name: `DevTool - PushPubSub`, renderer: this};
+	static screen: AppToolsScreen = {name: `Push Messages`, renderer: this, group: ATS_Fullstack};
 
 	constructor(p: Props) {
 		super(p);
 	}
 
 	protected deriveStateFromProps(nextProps: Props): State | undefined {
-		return {
-			registerKey: '',
-			registerProps: [createNewInstance()],
-			triggerKey: '',
-			triggerProps: [createNewInstance()],
-		};
+		return ConfigPreset_1.config;
 	}
 
 	__onMessageReceived(notification: DB_Notifications<any>): void {
-		console.log('GOT PUSH:', notification.pushKey, notification.props, notification.data);
+		console.log('GOT PUH:', notification.pushKey, notification.props, notification.data);
 	}
 
 	render() {
-		console.log("ZE ZEVEL")
-		return <div className="ll_h_t">
-			{ModuleFE_PushPubSub.isNotificationEnabled() ? 'Notification Enabled' :
-				<TS_Button onClick={ModuleFE_PushPubSub.requestPermissions}>request permissions</TS_Button>}
-			<div>{this.renderTable('Register', this.state.registerProps, 'registerKey', this.subscribe)}</div>
-			<div style={{margin: '4px'}}/>
-			<div>{this.renderTable('Trigger', this.state.triggerProps, 'triggerKey', this.trigger)}</div>
-			<TS_BusyButton onClick={ModuleFE_PushPubSub.deleteToken}>Delete Token</TS_BusyButton>
-		</div>;
+		const className = _className('notification-icon', ModuleFE_PushPubSub.isNotificationEnabled() ? 'notification-enabled' : 'notification-disabled',);
+		return <LL_V_L className="ats-PushPubSub">
+			<LL_H_C className="header match_width">
+				<div>{TS_Icons.bell.component({
+					className: className,
+					onClick: async (e) => {
+						await ModuleFE_PushPubSub.requestPermissions();
+					}
+				})}</div>
+				<TS_BusyButton onClick={ModuleFE_PushPubSub.deleteToken}>Delete Token</TS_BusyButton>
+				<TS_BusyButton onClick={ModuleFE_PushPubSub.getToken}>Generate Token</TS_BusyButton>
+			</LL_H_C>
+			<LL_H_T className="panels-container h-gap__n match_width">
+				{this.renderPanel('Register', this.state.registerProps, 'registerKey', this.subscribe)}
+				{this.renderPanel('Trigger', this.state.triggerProps, 'triggerKey', this.trigger)}
+			</LL_H_T>
+		</LL_V_L>;
 	}
 
-	private trigger = async () => {
-		const props = this.state.triggerProps.reduce((toRet, item) => {
+	private composeProps(objProps: ObjProps[]) {
+		return objProps.reduce((toRet, item) => {
 			if (!!item.key && item.key !== '')
 				toRet[item.key] = item.value;
 			return toRet;
 		}, {} as TS_Object);
+	}
+
+	private trigger = async () => {
+		if (!ModuleFE_PushPubSub.hasToken())
+			return ModuleFE_Toaster.toastError('No push token generated');
+
+		const props = this.composeProps(this.state.triggerProps);
 		const data = {'a': 'aaa'};
 
 		const message = {topic: this.state.triggerKey, props, data};
@@ -74,17 +108,16 @@ export class ATS_PushPubSub
 	};
 
 	private subscribe = async () => {
+		if (!ModuleFE_PushPubSub.hasToken())
+			return ModuleFE_Toaster.toastError('No push token generated');
+
 		await ModuleFE_PushPubSub.v1.register({
 			pushKey: this.state.registerKey,
-			props: this.state.registerProps.reduce((toRet, item) => {
-				if (!!item.key && item.key !== '')
-					toRet[item.key] = item.value;
-				return toRet;
-			}, {} as TS_Object)
+			props: this.composeProps(this.state.registerProps)
 		}).executeSync();
 	};
 
-	private renderTable(title: string, rows: ObjProps[], key: 'registerKey' | 'triggerKey', action: () => Promise<void>) {
+	private renderPanel(title: string, rows: ObjProps[], key: 'registerKey' | 'triggerKey', action: () => Promise<void>) {
 		const cellRenderer: CellRenderer<ObjProps, Actions> = (prop, item, index: number) => {
 			if (prop === 'delete')
 				return <TS_Button onClick={() => {
@@ -92,10 +125,17 @@ export class ATS_PushPubSub
 					this.forceUpdate();
 				}}>Delete Row</TS_Button>;
 
-			return this.renderInput(`${key}-${prop}-${index}`, item[prop], (value: string) => {
-				item[prop] = value;
-				this.forceUpdate();
-			});
+			return <TS_Input
+				onChange={(value: string) => {
+					item[prop] = value;
+					this.forceUpdate();
+				}}
+				className={'match_width'}
+				type="text"
+				placeholder={`Enter ${prop}`}
+				id={`${key}-${prop}-${index}`}
+				value={item[prop].toString()}/>;
+
 		};
 
 		const addNewRow = () => {
@@ -103,47 +143,37 @@ export class ATS_PushPubSub
 			this.forceUpdate();
 		};
 
-		return <div className="ll_v_l">
-			{this.title(title)}
-			{this.renderInputWithLabel(key, key, this.state[key], (value) => this.setState({[key]: value} as unknown as State))}
-			{<TS_Table<ObjProps, Actions>
-				id={key}
-				header={['key', 'value', 'delete']}
-				rows={rows}
-				headerRenderer={columnKey => <div>{columnKey}</div>}
-				cellRenderer={cellRenderer}
-				tr={{style: {padding: '5px'}}}
-			/>}
-			<TS_Button onClick={addNewRow}>Add</TS_Button>
-			<TS_BusyButton onClick={action}>Send</TS_BusyButton>
-		</div>;
+		return <LL_V_L className="panel">
+			<LL_H_C className="panel-header match_width flex__justify-center">
+				{title}
+				<TS_Button onClick={addNewRow}>Add</TS_Button>
+				<TS_BusyButton onClick={action}>Send</TS_BusyButton>
+			</LL_H_C>
+			<LL_V_L className="panel-content v-gap__n">
+				<TS_PropRenderer.Vertical label={'Key'}>
+					<TS_InputV2
+						onChange={(value) => this.setState({[key]: value} as unknown as State)}
+						type="text"
+						id={key}
+						value={this.state[key]}/>
+				</TS_PropRenderer.Vertical>
+
+				{<TS_Table<ObjProps, Actions>
+					id={key}
+					table={{className: 'match_width'}}
+					header={['key', 'value', 'delete']}
+					rows={rows}
+					headerRenderer={columnKey => <div>{columnKey}</div>}
+					cellRenderer={cellRenderer}
+					tr={{style: {padding: '5px'}}}
+				/>}
+			</LL_V_L>
+		</LL_V_L>;
 	}
 
 	title(title: string): React.ReactNode {
 		return <div>{title}</div>;
 	}
 
-	private renderInput(id: string, value: string | number, onChange: (value: string, id: string) => void) {
-		return <div className="ll_v_l">
-			<TS_Input
-				onChange={onChange}
-				type="text"
-				id={id}
-				style={{border: '1px solid black'}}
-				value={value.toString()}/>
-		</div>;
-	}
-
-	private renderInputWithLabel(label: string, id: string, value: string, onChange: (value: string, id: string) => void) {
-		return <div className="ll_v_l">
-			<div style={{marginBottom: '4px'}}>{label}</div>
-			<TS_Input
-				onChange={onChange}
-				type="text"
-				id={id}
-				style={{border: '1px solid black'}}
-				value={value}/>
-		</div>;
-	}
 }
 

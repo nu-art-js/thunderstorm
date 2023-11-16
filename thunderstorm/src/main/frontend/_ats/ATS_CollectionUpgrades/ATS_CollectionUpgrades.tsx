@@ -4,7 +4,7 @@ import './ATS_CollectionUpgrades.scss';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {SmartComponent, State_SmartComponent} from '../../core/SmartComponent';
 import {Thunder} from '../../core';
-import {AppToolsScreen, TS_AppTools} from '../../components/TS_AppTools';
+import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools';
 import {genericNotificationAction} from '../../components/TS_Notifications';
 import {LL_H_C} from '../../components/Layouts';
 import {TS_BusyButton} from '../../components/TS_BusyButton';
@@ -27,7 +27,7 @@ export class ATS_CollectionUpgrades
 		name: 'Collection Upgrades',
 		key: 'collection-upgrades',
 		renderer: this,
-		group: 'TS Dev Tools'
+		group: ATS_Backend
 	};
 
 	protected async deriveStateFromProps(nextProps: {}, state: State & State_SmartComponent) {

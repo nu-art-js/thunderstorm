@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {FirebaseAnalyticsModule} from '@nu-art/firebase/frontend';
 import {
-	AppToolsScreen,
+	AppToolsScreen, ATS_Fullstack,
 	LL_H_T,
 	LL_V_L,
 	openContent,
@@ -24,7 +24,7 @@ type ATS_FileUploader_State = {
 export class ATS_FileUploader
 	extends SmartComponent<ATS_FileUploader_Props, ATS_FileUploader_State> {
 
-	static screen: AppToolsScreen = {name: `DevTool - FileUploader`, renderer: this};
+	static screen: AppToolsScreen = {name: `FileUploader`, renderer: this, group: ATS_Fullstack};
 
 	static defaultProps = {
 		modules: [ModuleFE_Assets],

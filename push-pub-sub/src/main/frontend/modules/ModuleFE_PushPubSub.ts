@@ -191,7 +191,7 @@ export class ModuleFE_PushPubSub_Class
 		this.firebaseToken = await this.messaging.getToken(options);
 		this.logVerbose('new token received: ' + this.firebaseToken);
 	};
-
+	hasToken = () => !!this.firebaseToken;
 	private processMessageFromSw = (data: any) => {
 		this.logInfo('Got data from SW: ', data);
 		if (!data.command || !data.message || data.command !== Command_SwToApp)
