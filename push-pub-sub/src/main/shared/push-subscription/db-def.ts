@@ -8,10 +8,10 @@ import {
 	tsValidateResult,
 	tsValidateString
 } from '@nu-art/ts-common';
-import {DBProto_PushKeys} from './types';
+import {DBProto_PushSubscription} from './types';
 
 
-const Validator_ModifiableProps: DBProto_PushKeys['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DBProto_PushSubscription['modifiablePropsValidator'] = {
 	pushSessionId: tsValidateString(),
 	props: tsValidateDynamicObject((value?: number | string) => {
 			if (typeof value === 'string')
@@ -26,17 +26,17 @@ const Validator_ModifiableProps: DBProto_PushKeys['modifiablePropsValidator'] = 
 			return tsValidateResult(value, tsValidateMustExist);
 		}, tsValidateString()
 	),
-	pushKey: tsValidateString(200)
+	topic: tsValidateString(200)
 };
 
-const Validator_GeneratedProps: DBProto_PushKeys['generatedPropsValidator'] = {
+const Validator_GeneratedProps: DBProto_PushSubscription['generatedPropsValidator'] = {
 //
 };
 
-export const DBDef_PushKeys: DBDef_V3<DBProto_PushKeys> = {
+export const DBDef_PushSubscription: DBDef_V3<DBProto_PushSubscription> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: convertUpperCamelCase('PushKeys', '-').toLowerCase(),
-	entityName: convertUpperCamelCase('PushKeys', '-').toLowerCase(),
+	dbName: convertUpperCamelCase('PushSubscription', '-').toLowerCase(),
+	entityName: convertUpperCamelCase('PushSubscription', '-').toLowerCase(),
 };

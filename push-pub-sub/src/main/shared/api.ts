@@ -21,7 +21,7 @@ import {BaseSubscriptionData, PushMessage, Request_PushRegister} from './types';
 
 
 export type Request_PushTest = {
-	message: PushMessage<any>
+	message: PushMessage<any, any, any>
 }
 
 export type ApiStruct_PushMessages = {

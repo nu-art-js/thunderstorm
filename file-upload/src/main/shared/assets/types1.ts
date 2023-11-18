@@ -16,20 +16,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DBDef_TempAssets, DBProto_Assets} from '../..';
-import {ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
+
+import {BaseHttpRequest} from '@nu-art/thunderstorm';
+import {Auditable, DB_Object, TS_Object} from '@nu-art/ts-common';
+import {FileStatus} from '../types';
 
 
-export class ModuleBE_AssetsTemp_Class
-	extends ModuleBE_BaseDBV3<DBProto_Assets> {
+export type Request_Uploader = {
+	name: string
+	mimeType: string
+	key?: string
+	public?: boolean
+	metadata?: TS_Object
+}
 
-	constructor() {
-		super(DBDef_TempAssets);
+export type BaseUploaderFile = Request_Uploader & {
+	feId: string
+};
+
+export type DB_Asset = DB_Object & BaseUploaderFile & Auditable & Required<Pick<BaseUploaderFile, 'key'>> & {
+	timestamp: number
+	ext: string
+	md5Hash?: string
+	path: string
+	bucketName: string
+	signedUrl?: {
+		url: string,
+		validUntil: number
 	}
 }
 
-export const ModuleBE_AssetsTemp = new ModuleBE_AssetsTemp_Class();
-
+export type FileInfo = {
+	status: FileStatus
+	messageStatus?: string
+	progress?: number
+	name: string
+	request?: BaseHttpRequest<any>
+	file?: any
+	asset?: DB_Asset
+};
 
 
 

@@ -16,25 +16,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {apiWithBody, apiWithQuery, ThunderDispatcher, ModuleFE_XHR_Class} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {
 	ApiDef_AssetUploader,
 	ApiStruct_AssetUploader,
-	BaseUploaderFile,
 	FileStatus,
-	FileUploadResult,
 	OnFileStatusChanged,
 	PushKey_FileUploaded,
-	TempSecureUrl
+	TempSignedUrl,
+	UI_Asset
 } from '../../shared';
 import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader';
 import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
 import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub/frontend/modules/ModuleFE_PushPubSub';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {generateHex} from '@nu-art/ts-common';
+import {PushMessage_FileUploaded} from '../../shared/assets/messages';
 
 
 export class ModuleFE_AssetUploader_Class
-	extends ModuleBase_AssetUploader<ModuleFE_XHR_Class> {
+	extends ModuleBase_AssetUploader {
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 	readonly vv1: ApiDefCaller<ApiStruct_AssetUploader>['vv1'];
@@ -42,20 +43,21 @@ export class ModuleFE_AssetUploader_Class
 	constructor() {
 		super();
 		this.vv1 = {
-			uploadFile: apiWithBody(ApiDef_AssetUploader.vv1.uploadFile),
+			// uploadFile: apiWithBody(ApiDef_AssetUploader.vv1.uploadFile),
 			getUploadUrl: apiWithBody(ApiDef_AssetUploader.vv1.getUploadUrl),
 			processAssetManually: apiWithQuery(ApiDef_AssetUploader.vv1.processAssetManually),
 		};
 	}
 
-	upload(files: File[], key: string, _public: boolean = false): BaseUploaderFile[] {
+	upload(files: File[], key: string, _public: boolean = false): UI_Asset[] {
 		return this.uploadImpl(files.map((file => {
 			return {
+				feId: generateHex(32),
 				name: file.name,
 				mimeType: file.type,
 				key,
 				file,
-				public: _public
+				ext: ''
 			};
 		})));
 	}
@@ -64,15 +66,15 @@ export class ModuleFE_AssetUploader_Class
 		this.dispatch_fileStatusChange.dispatchUI(id);
 	}
 
-	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
-		const subscriptions: BaseSubscriptionData[] = toSubscribe.map<BaseSubscriptionData>(r => ({pushKey: PushKey_FileUploaded, props: {feId: r.asset.feId}}));
+	protected async subscribeToPush(toSubscribe: TempSignedUrl[]): Promise<void> {
+		const subscriptions: BaseSubscriptionData[] = toSubscribe.map<BaseSubscriptionData>(r => ({topic: PushKey_FileUploaded, props: {feId: r.asset.feId}}));
 		await ModuleFE_PushPubSub.v1.registerAll(subscriptions).executeSync();
 	}
 
-	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
+	__onMessageReceived(notification: DB_Notifications<PushMessage_FileUploaded>): void {
 		super.__onMessageReceived(notification);
-		if (notification.data?.status === FileStatus.Completed || notification.data?.status?.startsWith('Error'))
-			ModuleFE_PushPubSub.v1.unregister({pushKey: PushKey_FileUploaded, props: notification.props});
+		if (notification.message.data?.status === FileStatus.Completed || notification.message.data?.status?.startsWith('Error'))
+			ModuleFE_PushPubSub.v1.unregister({topic: PushKey_FileUploaded, props: notification.message.props});
 	}
 }
 

@@ -36,10 +36,6 @@ export class ModuleBE_BucketListener_Class
 		super();
 	}
 
-	init() {
-		super.init();
-	}
-
 	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
 		return new MemStorage().init(async () => {
 			const filePath = object.name;

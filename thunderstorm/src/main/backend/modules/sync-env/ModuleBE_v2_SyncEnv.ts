@@ -1,4 +1,4 @@
-import {_keys, ApiException, BadImplementationException, Minute, Module, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, BadImplementationException, Dispatcher, Minute, Module, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {addRoutes} from '../ModuleBE_APIs';
@@ -29,6 +29,13 @@ type Config = {
 	maxBatch: number
 }
 
+export interface OnSyncEnvCompleted {
+	__onSyncEnvCompleted: (env: string, baseUrl: string, requiredHeaders: TypedMap<string>) => void;
+}
+
+const dispatch_OnSyncEnvCompleted = new Dispatcher<OnSyncEnvCompleted, '__onSyncEnvCompleted'>(
+	'__onSyncEnvCompleted');
+
 class ModuleBE_v2_SyncEnv_Class
 	extends Module<Config> {
 
@@ -40,7 +47,6 @@ class ModuleBE_v2_SyncEnv_Class
 	init() {
 		super.init();
 		addRoutes([
-
 			createBodyServerApi(ApiDef_SyncEnvV2.vv1.syncToEnv, this.pushToEnv),
 			createBodyServerApi(ApiDef_SyncEnvV2.vv1.fetchFromEnv, this.fetchFromEnv),
 			createQueryServerApi(ApiDef_SyncEnvV2.vv1.createBackup, this.createBackup),
@@ -127,19 +133,14 @@ class ModuleBE_v2_SyncEnv_Class
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
 
+		this.logInfo(`----  Fetching Backup Info... ----`);
 		const backupInfo = await this.getBackupInfo(body);
-
 		this.logInfo(backupInfo);
 
 		if (!backupInfo.backupFilePath)
 			throw new ApiException(404, 'Backup file path not found');
 
-		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
-
-		const firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
-
-		const readBatchSize = body.chunkSize ?? this.config.maxBatch * 4;
-
+		this.logInfo(`----  Fetching Backup Stream... ----`);
 		const signedUrlDef: ApiDef<QueryApi<any>> = {
 			method: HttpMethod.GET,
 			path: '',
@@ -150,6 +151,11 @@ class ModuleBE_v2_SyncEnv_Class
 			.createRequest(signedUrlDef)
 			.setResponseType('stream')
 			.executeSync();
+
+		this.logInfo(`----  Syncing Firestore... ----`);
+		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
+		const firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
+		const readBatchSize = body.chunkSize ?? this.config.maxBatch * 4;
 
 		let writeBatch = firestore.batch();
 		let totalItems = 0;
@@ -198,7 +204,11 @@ class ModuleBE_v2_SyncEnv_Class
 			await writeBatch.commit();
 			totalItemsCollected += batchItemsCounter;
 		}
-		this.logInfo(`---- DONE (${totalItemsCollected}/${totalItems})----`);
+		this.logInfo(`---- DONE Syncing Firestore: (${totalItemsCollected}/${totalItems})----`);
+
+		this.logInfo(`----  Syncing Other Modules... ----`);
+		await dispatch_OnSyncEnvCompleted.dispatchModuleAsync(body.env, this.config.urlMap[body.env], this.config.sessionMap[body.env]!);
+		this.logInfo(`---- DONE Syncing Other Modules----`);
 	};
 
 	fetchFirebaseBackup = async (queryParams: Request_FetchFirebaseBackup) => {

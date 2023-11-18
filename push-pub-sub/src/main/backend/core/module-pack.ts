@@ -17,14 +17,17 @@
  */
 
 import {ModuleBE_PushPubSub} from '../modules/ModuleBE_PushPubSub';
-import {ModuleBE_PushKeysDB} from '../modules/ModuleBE_PushKeysDB';
-import {ModuleBE_PushRegistrationDB} from '../modules/ModuleBE_PushRegistrationDB';
+import {ModuleBE_PushSubscriptionAPI, ModuleBE_PushSubscriptionDB} from '../modules/ModuleBE_PushSubscriptionDB';
+import {ModuleBE_PushSessionDB} from '../modules/ModuleBE_PushSessionDB';
+import {ModuleBE_PushMessagesHistoryDB} from '../modules/ModuleBE_PushMessagesHistoryDB';
 
 
 export const ModulePackBE_PushPubSub = [
 	ModuleBE_PushPubSub,
-	ModuleBE_PushKeysDB,
-	ModuleBE_PushRegistrationDB,
+	ModuleBE_PushSubscriptionDB,
+	ModuleBE_PushSubscriptionAPI,
+	ModuleBE_PushMessagesHistoryDB,
+	ModuleBE_PushSessionDB,
 ];
 
 export * from '../modules/ModuleBE_PushPubSub';

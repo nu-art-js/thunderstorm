@@ -211,7 +211,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	uniqueGetOrCreate = async (where: Clause_Where<Proto['dbType']>, toCreate: (transaction?: Transaction) => Promise<Proto['uiType']>, transaction?: Transaction) => {
 		try {
-			return await this.query.uniqueWhere(where);
+			return await this.query.uniqueWhere(where, transaction);
 		} catch (e: any) {
 			return toCreate(transaction);
 		}

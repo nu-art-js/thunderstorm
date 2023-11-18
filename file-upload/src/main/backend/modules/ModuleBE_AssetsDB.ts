@@ -18,7 +18,6 @@
  */
 import {
 	ApiException,
-	auditBy,
 	BadImplementationException,
 	currentTimeMillis,
 	Day,
@@ -29,43 +28,18 @@ import {
 	MB,
 	Minute,
 	MUSTNeverHappenException,
-	PreDB,
 	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
-import {
-	FileWrapper,
-	FirebaseType_Metadata,
-	FirestoreTransaction,
-	ModuleBE_Firebase,
-	StorageWrapperBE
-} from '@nu-art/firebase/backend';
+import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
-import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {
-	AxiosHttpModule,
-	CleanupDetails,
-	DBApiConfig,
-	ModuleBE_BaseDBV2,
-	OnCleanupSchedulerAct
-} from '@nu-art/thunderstorm/backend';
+import {CleanupDetails, DBApiConfig, ModuleBE_BaseDBV3, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './ModuleBE_BucketListener';
-import {
-	ApiDef_Assets,
-	BaseUploaderFile,
-	DB_Asset,
-	DBDef_Assets,
-	FileStatus,
-	Push_FileUploaded,
-	PushKey_FileUploaded,
-	Request_GetReadSignedUrl,
-	TempSecureUrl
-} from '../../shared';
-
-import {HttpMethod} from '@nu-art/thunderstorm';
-import {PushMessage} from '@nu-art/push-pub-sub';
+import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage';
+import {DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '../../shared';
+import {PushMessageBE_FileUploadStatus} from '../core/messages';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -116,7 +90,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 };
 
 export class ModuleBE_AssetsDB_Class
-	extends ModuleBE_BaseDBV2<DB_Asset, MyConfig>
+	extends ModuleBE_BaseDBV3<DBProto_Assets, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
@@ -129,62 +103,33 @@ export class ModuleBE_AssetsDB_Class
 		});
 	}
 
-	private storage!: StorageWrapperBE;
-
 	mimeTypeValidator: TypedMap<FileValidator> = {};
 	fileValidator: TypedMap<FileTypeValidation> = {};
 
 	init() {
 		super.init();
-		this.storage = ModuleBE_Firebase.createAdminSession(this.config.authKey).getStorage();
-	}
-
-	protected async upgradeItem(dbItem: PreDB<DB_Asset>, toVersion: string): Promise<void> {
-		switch (dbItem._v) {
-			case '1.0.0': {
-
-				// @ts-ignore
-				delete dbItem.secureUrl;
-				const fileWrapper = await this.storage.getFile(dbItem.path, dbItem.bucketName);
-				if (await fileWrapper.exists())
-					return;
-
-				let _signedUrl;
-				try {
-					const {signedUrl} = await AxiosHttpModule.createRequest({
-						...ApiDef_Assets.vv1.fetchSpecificFile,
-						fullUrl: 'https://api-hhvladacia-uc.a.run.app/v1/assets/get-read-secured-url'
-					})
-						.setBodyAsJson({bucketName: dbItem.bucketName, pathInBucket: dbItem.path})
-						.executeSync();
-					_signedUrl = signedUrl;
-				} catch (e) {
-					console.log(e);
+		const originalQuery = this.query;
+		this.query = {
+			...originalQuery,
+			unique: async (_id, transaction) => {
+				const dbAsset = await originalQuery.uniqueAssert(_id, transaction);
+				const signedUrl = (dbAsset.signedUrl?.validUntil || 0) > currentTimeMillis() ? dbAsset.signedUrl : undefined;
+				if (!signedUrl) {
+					const url = await ModuleBE_AssetsStorage.getReadSignedUrl(dbAsset);
+					dbAsset.signedUrl = {
+						url,
+						validUntil: currentTimeMillis() + Day - Minute
+					};
 				}
 
-				const fileContent = await AxiosHttpModule.createRequest({method: HttpMethod.GET, fullUrl: _signedUrl, path: ''})
-					.setResponseType('text')
-					.executeSync();
-
-				await fileWrapper.write(fileContent);
+				return dbAsset;
 			}
-		}
+		};
 	}
-
-	fetchSpecificFile = async (body: Request_GetReadSignedUrl) => {
-		this.logInfo('fetchSpecificFile - got here');
-		const fileWrapper = await this.storage.getFile(body.pathInBucket, body.bucketName);
-
-		this.logInfo('fetchSpecificFile - got fileWrapper');
-		const signedUrl = await fileWrapper.getReadSignedUrl();
-
-		this.logInfo('fetchSpecificFile - got signedUrl');
-		return signedUrl;
-	};
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
 		const assetsToSync = filterInstances(await ModuleBE_AssetsDB.query.all(assetIds));
-		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)));
+		const assetFiles = await Promise.all(assetsToSync.map(asset => ModuleBE_AssetsStorage.getFile(asset)));
 		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()));
 
 		return assetIds.map((id, index) => ({asset: assetsToSync[index], content: assetContent[index]}));
@@ -195,16 +140,17 @@ export class ModuleBE_AssetsDB_Class
 	}
 
 	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: FirestoreTransaction): Promise<DB_Asset> {
-		const asset = await super.query.uniqueCustom({where});
-		const signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
+		const dbAsset = await super.query.uniqueCustom({where});
+		const signedUrl = (dbAsset.signedUrl?.validUntil || 0) > currentTimeMillis() ? dbAsset.signedUrl : undefined;
 		if (!signedUrl) {
-			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSignedUrl(Day, asset.mimeType);
-			asset.signedUrl = {
-				url: url.signedUrl,
+			const url = await ModuleBE_AssetsStorage.getReadSignedUrl(dbAsset);
+			dbAsset.signedUrl = {
+				url,
 				validUntil: currentTimeMillis() + Day - Minute
 			};
 		}
-		return asset;
+
+		return dbAsset;
 	}
 
 	register(key: string, validationConfig: FileTypeValidation) {
@@ -222,12 +168,10 @@ export class ModuleBE_AssetsDB_Class
 		};
 	}
 
-	private cleanup = async (interval = Hour, module: ModuleBE_BaseDBV2<DB_Asset> = ModuleBE_AssetsTemp) => {
+	private cleanup = async (interval = Hour, module = ModuleBE_AssetsTemp) => {
 		const entries: DB_Asset[] = await module.query.custom({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
-		const bucketName = this.config?.bucketName;
-		const bucket = await this.storage.getOrCreateBucket(bucketName);
 		await Promise.all(entries.map(async dbAsset => {
-			const file = await bucket.getFile(dbAsset.path);
+			const file = await ModuleBE_AssetsStorage.getFile(dbAsset);
 			if (!(await file.exists()))
 				return;
 
@@ -237,9 +181,9 @@ export class ModuleBE_AssetsDB_Class
 		await module.delete.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 	};
 
-	async getUrl(files: BaseUploaderFile[]): Promise<TempSecureUrl[]> {
+	async getUrl(files: UI_Asset[]): Promise<TempSignedUrl[]> {
 		const bucketName = this.config?.bucketName;
-		const bucket = await this.storage.getOrCreateBucket(bucketName);
+		const bucket = await ModuleBE_AssetsStorage.storage.getOrCreateBucket(bucketName);
 		return Promise.all(files.map(async _file => {
 			const key = _file.key || _file.mimeType;
 
@@ -249,7 +193,7 @@ export class ModuleBE_AssetsDB_Class
 
 			const _id = generateHex(32);
 			const path = `${this.config.storagePath}/${_id}`;
-			const dbAsset: PreDB<DB_Asset> = {
+			const dbAsset: DBProto_Assets['preDbType'] = {
 				timestamp: currentTimeMillis(),
 				_id,
 				feId: _file.feId,
@@ -258,7 +202,6 @@ export class ModuleBE_AssetsDB_Class
 				mimeType: _file.mimeType,
 				key,
 				path,
-				_audit: auditBy('be-stub'),
 				bucketName: bucket.bucketName
 			};
 
@@ -292,71 +235,70 @@ export class ModuleBE_AssetsDB_Class
 			return this.logVerbose(`File was added to storage in path: ${filePath}, NOT via file uploader`);
 
 		this.logDebug(`Looking for file with path: ${filePath}`);
-		let tempMeta: DB_Asset;
+		let dbTempAsset: DB_Asset;
 		try {
-			tempMeta = await ModuleBE_AssetsTemp.query.uniqueWhere({path: filePath});
+			dbTempAsset = await ModuleBE_AssetsTemp.query.uniqueWhere({path: filePath});
 		} catch (e) {
 			return;
 		}
-		if (!tempMeta)
+		if (!dbTempAsset)
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
-		await this.notifyFrontend(FileStatus.Processing, tempMeta);
-		this.logDebug(`Found temp meta with _id: ${tempMeta._id}`, tempMeta);
-		const validationConfig = this.fileValidator[tempMeta.key];
+		await this.notifyFrontend(FileStatus.Processing, dbTempAsset);
+		this.logDebug(`Found temp meta with _id: ${dbTempAsset._id}`, dbTempAsset);
+		const validationConfig = this.fileValidator[dbTempAsset.key];
 		if (!validationConfig)
-			return this.notifyFrontend(FileStatus.ErrorNoConfig, tempMeta);
+			return this.notifyFrontend(FileStatus.ErrorNoConfig, dbTempAsset);
 
 		let mimetypeValidator: FileValidator = DefaultMimetypeValidator;
 		if (validationConfig.validator)
 			mimetypeValidator = validationConfig.validator;
 
-		if (!mimetypeValidator && validationConfig.fileType && validationConfig.fileType.includes(tempMeta.mimeType))
-			mimetypeValidator = this.mimeTypeValidator[tempMeta.mimeType];
+		if (!mimetypeValidator && validationConfig.fileType && validationConfig.fileType.includes(dbTempAsset.mimeType))
+			mimetypeValidator = this.mimeTypeValidator[dbTempAsset.mimeType];
 
 		if (!mimetypeValidator)
-			return this.notifyFrontend(FileStatus.ErrorNoValidator, tempMeta);
+			return this.notifyFrontend(FileStatus.ErrorNoValidator, dbTempAsset);
 
-		const file = await this.storage.getFile(tempMeta.path, tempMeta.bucketName);
-
+		const file = await ModuleBE_AssetsStorage.getFile(dbTempAsset);
 		try {
 			const metadata = (await file.getDefaultMetadata()).metadata;
 			if (!metadata)
-				return this.notifyFrontend(FileStatus.ErrorRetrievingMetadata, tempMeta);
+				return this.notifyFrontend(FileStatus.ErrorRetrievingMetadata, dbTempAsset);
 
 			await fileSizeValidator(file, metadata, validationConfig.minSize, validationConfig.maxSize);
-			const fileType = await mimetypeValidator(file, tempMeta);
+			const fileType = await mimetypeValidator(file, dbTempAsset);
 
-			tempMeta.md5Hash = metadata.md5Hash;
-			if (fileType && tempMeta.ext !== fileType.ext) {
-				this.logWarning(`renaming the file extension name: ${tempMeta.ext} => ${fileType.ext}`);
-				tempMeta.ext = fileType.ext;
+			dbTempAsset.md5Hash = metadata.md5Hash;
+			if (fileType && dbTempAsset.ext !== fileType.ext) {
+				this.logWarning(`renaming the file extension name: ${dbTempAsset.ext} => ${fileType.ext}`);
+				dbTempAsset.ext = fileType.ext;
 			}
 		} catch (e: any) {
 			//TODO delete the file and the temp doc
-			this.logError(`Error while processing asset: ${tempMeta.name}`, e);
-			return this.notifyFrontend(FileStatus.ErrorWhileProcessing, tempMeta);
+			this.logError(`Error while processing asset: ${dbTempAsset.name}`, e);
+			return this.notifyFrontend(FileStatus.ErrorWhileProcessing, dbTempAsset);
 		}
 
-		if (tempMeta.public) {
+		if (dbTempAsset.public) {
 			try {
 				// need to handle the response status!
 				await file.makePublic();
 			} catch (e: any) {
-				return this.notifyFrontend(FileStatus.ErrorMakingPublic, tempMeta);
+				return this.notifyFrontend(FileStatus.ErrorMakingPublic, dbTempAsset);
 			}
 		}
 
 		const finalDbAsset = await this.runTransaction(async (transaction): Promise<DB_Asset> => {
-			const duplicatedAssets = await this.query.custom({where: {md5Hash: tempMeta.md5Hash}}, transaction);
+			const duplicatedAssets = await this.query.custom({where: {md5Hash: dbTempAsset.md5Hash}}, transaction);
 			if (duplicatedAssets.length && duplicatedAssets[0]) {
-				this.logWarning(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
-				return {...duplicatedAssets[0], feId: tempMeta.feId};
+				this.logWarning(`${dbTempAsset.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
+				return {...duplicatedAssets[0], feId: dbTempAsset.feId};
 			}
 
-			const doc = this.collection.doc.item(tempMeta);
-			await ModuleBE_AssetsTemp.delete.unique(tempMeta._id, transaction);
-			return await doc.set(tempMeta, transaction);
+			const doc = this.collection.doc.item(dbTempAsset);
+			await ModuleBE_AssetsTemp.delete.unique(dbTempAsset._id, transaction);
+			return await doc.set(dbTempAsset, transaction);
 		});
 
 		return this.notifyFrontend(FileStatus.Completed, finalDbAsset);
@@ -369,12 +311,7 @@ export class ModuleBE_AssetsDB_Class
 		}
 
 		this.logDebug(`notify FE about asset ${feId}: ${status}`);
-		const message: PushMessage<any> = {
-			topic: PushKey_FileUploaded,
-			props: {feId: feId || asset.feId},
-			data: {status, asset}
-		};
-		return ModuleBE_PushPubSub.pushToKey<Push_FileUploaded>(message);
+		return PushMessageBE_FileUploadStatus.push({status, asset}, {feId: feId || asset.feId});
 	};
 }
 

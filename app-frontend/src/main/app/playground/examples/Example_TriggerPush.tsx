@@ -52,10 +52,10 @@ class Example_TriggerPush_Renderer
 
 	private registerForPush() {
 		const mySubscriptions: BaseSubscriptionData[] = [{
-			pushKey: 'key',
+			topic: 'key',
 			props: {a: 'prop'}
 		}, {
-			pushKey: 'test',
+			topic: 'test',
 			props: {id: 'test1'}
 		}];
 		ModuleFE_PushPubSub.v1.registerAll(mySubscriptions);

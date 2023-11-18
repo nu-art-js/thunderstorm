@@ -43,10 +43,10 @@ class Example_TriggerPush_Renderer extends frontend_1.ComponentSync {
     }
     registerForPush() {
         const mySubscriptions = [{
-                pushKey: 'key',
+                topic: 'key',
                 props: { a: 'prop' }
             }, {
-                pushKey: 'test',
+                topic: 'test',
                 props: { id: 'test1' }
             }];
         frontend_2.ModuleFE_PushPubSub.v1.registerAll(mySubscriptions);

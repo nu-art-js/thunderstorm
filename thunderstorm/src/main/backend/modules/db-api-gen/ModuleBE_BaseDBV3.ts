@@ -59,8 +59,8 @@ export type DBApiConfigV3<Proto extends DBProto<any>> = BaseDBApiConfigV3 & DBAp
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType extends DBApiConfigV3<Proto> = DBApiConfigV3<Proto>>
-	extends Module<ConfigType>
+export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType extends {} = {}>
+	extends Module<ConfigType & DBApiConfigV3<Proto>>
 	implements OnFirestoreBackupSchedulerActV2 {
 
 	// @ts-ignore
