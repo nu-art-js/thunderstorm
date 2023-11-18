@@ -16,38 +16,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, _keys, BadImplementationException, Dispatcher, generateHex, Module, Queue} from '@nu-art/ts-common';
-import {ApiDefCaller, BaseHttpModule_Class} from '@nu-art/thunderstorm';
+import {__stringify, _keys, BadImplementationException, Dispatcher, Module, Queue} from '@nu-art/ts-common';
+import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 
-import {
-	ApiStruct_AssetUploader,
-	BaseUploaderFile,
-	FileInfo,
-	FileStatus,
-	FileUploadResult,
-	OnFileStatusChanged,
-	Push_FileUploaded,
-	PushKey_FileUploaded,
-	Request_Uploader,
-	TempSecureUrl
-} from '../../shared';
+import {ApiStruct_AssetUploader, DB_Asset, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '../../shared';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
 import {DB_Notifications} from '@nu-art/push-pub-sub';
+import {PushMessage_FileUploaded} from '../assets/messages';
 
 
-export type FilesToUpload = Request_Uploader & {
+export type FilesToUpload = UI_Asset & {
 	// Unfortunately be doesn't know File and File doesn't map to ArrayBuffer
 	file: any
 }
+
+export type FileInfo = {
+	status: FileStatus
+	messageStatus?: string
+	progress?: number
+	name: string
+	request?: BaseHttpRequest<any>
+	file?: any
+	asset?: DB_Asset
+};
 
 export type UploaderConfig = {
 	manualProcessTriggering: boolean
 	uploadQueueParallelCount?: number
 }
 
-export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule_Class, Config extends UploaderConfig = UploaderConfig>
+export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = UploaderConfig>
 	extends Module<Config>
-	implements OnPushMessageReceived<Push_FileUploaded> {
+	implements OnPushMessageReceived<PushMessage_FileUploaded> {
 
 	protected vv1!: ApiDefCaller<ApiStruct_AssetUploader>['vv1'];
 
@@ -60,11 +60,11 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		this.setDefaultConfig({manualProcessTriggering: false} as Partial<Config>);
 	}
 
-	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
-		if (notification.pushKey !== PushKey_FileUploaded)
+	__onMessageReceived(notification: DB_Notifications<PushMessage_FileUploaded>): void {
+		if (notification.message.topic !== PushKey_FileUploaded)
 			return;
 
-		const data = notification.data;
+		const data = notification.message.data;
 		if (!data)
 			return this.logError('file upload push without data');
 
@@ -80,7 +80,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 			this.uploadQueue.setParallelCount(this.config.uploadQueueParallelCount);
 	}
 
-	protected abstract subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void>
+	protected abstract subscribeToPush(toSubscribe: TempSignedUrl[]): Promise<void>
 
 	getFileInfo<K extends keyof FileInfo>(id: string, key: K): FileInfo[K] | undefined {
 		return this.files[id] && this.files[id][key];
@@ -106,22 +106,12 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		this.dispatch_fileStatusChange.dispatchModule(id);
 	}
 
-	uploadImpl(files: FilesToUpload[]): BaseUploaderFile[] {
-		const body: BaseUploaderFile[] = files.map(fileData => {
-			const fileInfo: BaseUploaderFile = {
-				name: fileData.name,
-				mimeType: fileData.mimeType,
-				feId: generateHex(32)
-			};
-
-			if (fileData.key)
-				fileInfo.key = fileData.key;
-
-			if (fileData.public)
-				fileInfo.public = fileData.public;
+	uploadImpl(files: FilesToUpload[]): UI_Asset[] {
+		const body: UI_Asset[] = files.map(fileData => {
+			const {file, ...fileInfo} = fileData;
 
 			this.files[fileInfo.feId] = {
-				file: fileData.file,
+				file,
 				status: FileStatus.ObtainingUrl,
 				name: fileData.name
 			};
@@ -130,7 +120,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		});
 
 		this.vv1.getUploadUrl?.(body)
-			.execute(async (response: TempSecureUrl[]) => {
+			.execute(async (response: TempSignedUrl[]) => {
 				body.forEach(f => this.setFileInfo(f.feId, {status: FileStatus.UrlObtained}));
 				if (!response)
 					return;
@@ -142,7 +132,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		return body;
 	}
 
-	private uploadFiles = async (response: TempSecureUrl[]) => {
+	private uploadFiles = async (response: TempSignedUrl[]) => {
 		// Subscribe
 		await this.subscribeToPush(response);
 
@@ -166,7 +156,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		});
 	};
 
-	private uploadFile = async (response: TempSecureUrl) => {
+	private uploadFile = async (response: TempSignedUrl) => {
 		const feId = response.asset.feId;
 		this.setFileInfo(feId, {
 			status: FileStatus.UploadingFile,
@@ -177,8 +167,8 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${feId} and name: ${response.asset.name}`);
 
-		const request = this.vv1.uploadFile(fileInfo.file, undefined as never)
-			.setUrl(response.signedUrl);
+		// const request = this.vv1.uploadFile(fileInfo.file, undefined as never)
+		// 	.setUrl(response.signedUrl);
 		// const request = this
 		// 	.httpModule
 		// 	.createRequest(HttpMethod.PUT, RequestKey_UploadFile, feId)
@@ -190,8 +180,8 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		// 		this.setFileInfo(feId, {progress: ev.loaded / ev.total});
 		// 	});
 
-		fileInfo.request = request;
-		await request.executeSync();
+		// fileInfo.request = request;
+		// await request.executeSync();
 	};
 
 	processAssetManually = (feId?: string) => {

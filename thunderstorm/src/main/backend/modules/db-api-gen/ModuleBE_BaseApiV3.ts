@@ -47,7 +47,7 @@ export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 	readonly dbModule: ModuleBE_BaseDBV3<Proto>;
 	readonly apiDef;
 
-	constructor(dbModule: ModuleBE_BaseDBV3<Proto>) {
+	constructor(dbModule: ModuleBE_BaseDBV3<Proto, any>) {
 		super(`Gen(${dbModule.getName()}, Api)`);
 		this.dbModule = dbModule;
 		this.apiDef = DBApiDefGeneratorIDBV3<Proto>(this.dbModule.dbDef);

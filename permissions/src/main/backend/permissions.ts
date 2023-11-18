@@ -8,13 +8,7 @@ import {
 	DBDef_PermissionUser
 } from '../shared';
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '../shared/types';
-import {
-	DefaultAccessLevel_Admin,
-	DefaultAccessLevel_NoAccess,
-	DefaultAccessLevel_Read,
-	DefaultAccessLevel_Write,
-	DuplicateDefaultAccessLevels,
-} from '../shared/consts';
+import {DefaultAccessLevel_Admin, DefaultAccessLevel_NoAccess, DefaultAccessLevel_Read, DefaultAccessLevel_Write,} from '../shared/consts';
 import {ApiDefBE_Account, ApiDefFE_Account, DBDef_Accounts} from '@nu-art/user-account';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
@@ -28,10 +22,6 @@ const _Domain_PermissionsDefine: DefaultDef_Domain = {
 	_id: Domain_PermissionsDefine_ID,
 	namespace: 'Permissions Define',
 	dbNames: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbName),
-	levels: [
-		...DuplicateDefaultAccessLevels(Domain_PermissionsDefine_ID),
-		// {...PermissionsAccessLevel_ReadSelf, _id: md5(Domain_PermissionsDefine_ID)},
-	],
 	customApis: [
 		{path: ApiDefFE_Account.vv1.refreshSession.path, accessLevel: DefaultAccessLevel_NoAccess.name},
 		{path: ApiDef_Permissions.v1.createProject.path, accessLevel: DefaultAccessLevel_Admin.name},

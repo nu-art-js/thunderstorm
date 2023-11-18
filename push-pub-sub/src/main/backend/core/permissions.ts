@@ -1,6 +1,9 @@
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions/shared/types';
-import {CreateDefaultAccessLevels} from '@nu-art/permissions/shared/consts';
+import {CreateDefaultAccessLevels, DefaultAccessLevel_Admin} from '@nu-art/permissions/shared/consts';
 import {ApiDef_PushMessages} from '../../shared';
+import {Domain_Developer} from '@nu-art/permissions/backend/permissions';
+import {ModuleBE_PushSubscriptionAPI} from '../modules/ModuleBE_PushSubscriptionDB';
+import {_values} from '@nu-art/ts-common';
 
 
 const Domain_PushMessages_ID = 'ce2e840bb639c34887ae19c2c7c82c11';
@@ -15,7 +18,15 @@ const _PermissionsDomain_PushMessages: DefaultDef_Domain = {
 	dbNames: [],
 	levels: CreateDefaultAccessLevels(Domain_PushMessages_ID, accessLevels),
 	customApis: [
-		{path: ApiDef_PushMessages.v1.test.path, accessLevel: DefaultAccessLevel_Tester.name},
+		..._values(ModuleBE_PushSubscriptionAPI.apiDef.v1).map(api => {
+			return {
+				path: api.path,
+				accessLevel: DefaultAccessLevel_Admin.name,
+				domainId: Domain_Developer._id
+
+			};
+		}),
+		{path: ApiDef_PushMessages.v1.test.path, accessLevel: DefaultAccessLevel_Admin.name, domainId: Domain_Developer._id},
 		{path: ApiDef_PushMessages.v1.register.path, accessLevel: DefaultAccessLevel_Active.name},
 		{path: ApiDef_PushMessages.v1.registerAll.path, accessLevel: DefaultAccessLevel_Active.name},
 		{path: ApiDef_PushMessages.v1.unregister.path, accessLevel: DefaultAccessLevel_Active.name},

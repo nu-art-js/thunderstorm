@@ -16,19 +16,19 @@
  * limitations under the License.
  */
 
-import {MessageDef} from '../../shared';
+import {PushMessage} from '../../shared';
 import {ModuleBE_PushPubSub} from './ModuleBE_PushPubSub';
 
 
-export class PushKey_BE<Def extends MessageDef<any, any, any>> {
+export class PushKey_BE<MessageType extends PushMessage<any, any, any>> {
 
-	private readonly topic: Def['topic'];
+	private readonly topic: MessageType['topic'];
 
-	constructor(topic: Def['topic']) {
+	constructor(topic: MessageType['topic']) {
 		this.topic = topic;
 	}
 
-	async push(data: Def['data'], props?: Def['props']) {
+	async push(data: MessageType['data'], props?: MessageType['props']) {
 		return ModuleBE_PushPubSub.pushToKey({topic: this.topic, props, data});
 	}
 }

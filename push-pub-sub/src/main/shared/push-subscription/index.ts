@@ -1,4 +1,4 @@
-// Generated DB Item type: PushRegistration
+// Generated DB Item type: PushSubscription
 export * from './types';
 export * from './db-def';
 export * from './api-def';

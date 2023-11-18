@@ -214,7 +214,7 @@ class ModuleBE_Permissions_Class
 					projectId: project._id,
 					path: api.path,
 					_auditorId,
-					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[domain._id][api.accessLevel]._id]
+					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
 
 				const apiModules = arrayToMap(Storm.getInstance()
