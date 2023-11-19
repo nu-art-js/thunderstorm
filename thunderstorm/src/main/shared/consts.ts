@@ -19,6 +19,10 @@
  * limitations under the License.
  */
 
+import {ApiError_GeneralErrorMessage} from '@nu-art/ts-common/core/exceptions/types';
+import {ApiException} from '@nu-art/ts-common';
+
+
 export const HeaderKey_Env = 'x-env';
 export const HeaderKey_CurrentPage = 'x-current-page';
 
@@ -42,6 +46,15 @@ export const DefaultHttpServerConfig = {
 	},
 	'host': 'localhost'
 };
+
+function createGeneralError(code: number) {
+	const errorFunction = (userMessage: string, debugMessage: string = userMessage, cause?: Error) =>
+		new ApiException<ApiError_GeneralErrorMessage>(code, debugMessage, cause).setErrorBody({
+			type: 'error-message',
+			data: {message: userMessage}
+		});
+	return Object.assign(errorFunction, {code});
+}
 
 export const HttpCodes = {
 	_1XX: {
@@ -73,10 +86,10 @@ export const HttpCodes = {
 		PERMANENT_REDIRECT: 308,
 	},
 	_4XX: {
-		BAD_REQUEST: 400,
+		BAD_REQUEST: createGeneralError(400),
 		UNAUTHORIZED: 401,
 		PAYMENT_REQUIRED: 402,
-		FORBIDDEN: 403,
+		FORBIDDEN: createGeneralError(403),
 		NOT_FOUND: 404,
 		METHOD_NOT_ALLOWED: 405,
 		NOT_ACCEPTABLE: 406,
@@ -109,7 +122,7 @@ export const HttpCodes = {
 	},
 	_5XX: {
 		INTERNAL_SERVER_ERROR: 500,
-		NOT_IMPLEMENTED: 501,
+		NOT_IMPLEMENTED: createGeneralError(501),
 		BAD_GATEWAY: 502,
 		SERVICE_UNAVAILABLE: 503,
 		GATEWAY_TIMEOUT: 504,

@@ -9,13 +9,14 @@ import {
 	TS_Input,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
-import {exists, UniqueId} from '@nu-art/ts-common';
+import {UniqueId} from '@nu-art/ts-common';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionGroup} from '../../shared';
 import {
 	ModuleFE_PermissionsAccessLevel,
 	ModuleFE_PermissionsDomain,
 	ModuleFE_PermissionsGroup,
+	ModuleFE_PermissionsProject,
 	OnPermissionsGroupsUpdated
 } from '../../core/module-pack';
 import {MultiSelect} from '../ui-props';
@@ -28,7 +29,7 @@ type State = State_EditorBase<DB_PermissionGroup> & {
 };
 
 export class PermissionGroupsEditor
-	extends EditorBase<DB_PermissionGroup, State, { projectId?: string }>
+	extends EditorBase<DB_PermissionGroup, State>
 	implements OnPermissionsGroupsUpdated {
 
 	//######################### Static #########################
@@ -36,7 +37,8 @@ export class PermissionGroupsEditor
 	readonly module = ModuleFE_PermissionsGroup;
 	readonly itemName = 'Permission Group';
 	readonly itemNamePlural = 'Permission Groups';
-	readonly itemDisplay = (item: DB_PermissionGroup) => item.label;
+	readonly itemDisplay = (item: DB_PermissionGroup) => `${ModuleFE_PermissionsProject.cache.unique(item.projectId)?.name || 'Global'}/${item.label}`;
+
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsGroup]
 	};
@@ -55,7 +57,7 @@ export class PermissionGroupsEditor
 	}
 
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
-		state.items = ModuleFE_PermissionsGroup.cache.filter(group => !exists(this.props.projectId) || group.projectId === this.props.projectId);
+		state.items = ModuleFE_PermissionsGroup.cache.all();
 
 		if (!state.editedItem && state.items.length > 0) {
 			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsGroup);

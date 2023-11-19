@@ -26,7 +26,11 @@ export type DB_PermissionKeyData = {
 	_accessLevels: { [domainId: UniqueId]: number }
 }
 
-export type DefaultDef_Api = { path: string, accessLevel: string /* access level name */ };
+export type DefaultDef_Api = {
+	path: string,
+	accessLevel: string /* access level name */
+	domainId?: string
+};
 
 export type DefaultDef_GeneratedApi = { domain: string, collections: string[] };
 

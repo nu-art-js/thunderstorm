@@ -28,10 +28,11 @@ import {
 	MulticastMessage,
 	MessagingTopicManagementResponse,
 } from 'firebase-admin/messaging';
+import {TypedMap} from '@nu-art/ts-common';
 
 
 type BaseMessage = {
-	data?: { [key: string]: string };
+	data?: TypedMap<string>;
 	notification?: Notification;
 	android?: AndroidConfig;
 	webpush?: WebpushConfig;

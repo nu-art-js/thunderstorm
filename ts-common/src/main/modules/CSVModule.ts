@@ -24,9 +24,10 @@ import {ExportToCsv, Options} from 'export-to-csv';
 import {createReadStream, promises as fs} from 'fs';
 import {StringMap, TS_Object} from '../utils/types';
 import {Module} from '../core/module';
-import {Readable} from 'stream';
+import {Readable, Transform} from 'stream';
 import {Queue} from '../utils/queue';
 import csvParser = require('csv-parser');
+import * as csv from 'fast-csv';
 
 
 type Config = {
@@ -129,17 +130,38 @@ class CSVModule_Class
 		});
 	}
 
-	async forEachCsvRowFromStreamSync<T extends TS_Object>(stream: Readable, callback: (instance: T, index: number) => void, readOptions: ReadOptions = {}): Promise<void> {
+	async forEachCsvRowFromStreamSync<T extends TS_Object>(stream: Readable, callback: (instance: T, index: number, csvStream: Transform) => void, readOptions: ReadOptions = {}): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			let rowIndex = 0;
+			const csvStream = csvParser(this.createReadParserOptions(readOptions));
 			stream
-				.pipe(csvParser(this.createReadParserOptions(readOptions)))
-				.on('data', (instance) => callback(instance, rowIndex++))
+				.pipe(csvStream)
+				.on('data', (instance) => callback(instance, rowIndex++, csvStream))
 				.on('error', (err) => reject(err))
 				.on('end', () => {
 					this.logInfo('read ended');
 					resolve();
 				});
+		});
+	}
+
+	async forEachCsvRowFromStreamSync_FastCSV<T extends TS_Object>(stream: Readable, callback: (instance: T, index: number, stream: Readable) => void, readOptions: ReadOptions = {}): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			let rowIndex = 0;
+
+			const csvStream = csv.parse({headers: true, trim: true});
+			csvStream
+				.on('data', (instance) => {
+
+					callback(instance, rowIndex++, csvStream);
+				})
+				.on('error', (err) => reject(err))
+				.on('end', () => {
+					this.logInfo('read ended');
+					resolve();
+				});
+
+			stream.pipe(csvStream);
 		});
 	}
 
@@ -153,7 +175,8 @@ class CSVModule_Class
 				return mapValues ?? args.value;
 			},
 			quote: readOptions.quote || '"',
-			headers: readOptions.headers
+			headers: readOptions.headers,
+
 		};
 	}
 }

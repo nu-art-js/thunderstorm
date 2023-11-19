@@ -16,225 +16,193 @@
  * limitations under the License.
  */
 
-import {
-	__stringify,
-	batchAction,
-	batchActionParallel,
-	compare,
-	currentTimeMillis,
-	Day,
-	filterDuplicates,
-	generateHex,
-	ImplementationMissingException,
-	Module
-} from '@nu-art/ts-common';
+import {arrayToMap, batchActionParallel, compare, currentTimeMillis, Day, filterDuplicates, filterKeys, KB, LogLevel, Module} from '@nu-art/ts-common';
 
-import {
-	FirebaseType_BatchResponse,
-	FirebaseType_Message,
-	FirestoreCollection,
-	FirestoreTransaction,
-	ModuleBE_Firebase,
-	PushMessagesWrapperBE
-} from '@nu-art/firebase/backend';
-// noinspection TypeScriptPreferShortImport
-import {
-	ApiDef_PushMessages,
-	DB_Notifications,
-	DB_PushKeys,
-	DB_PushSession,
-	IFP,
-	ISP,
-	ITP,
-	MessageType,
-	Request_PushRegister,
-	SubscribeProps
-} from '../../index';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {FirebaseType_BatchResponse, FirebaseType_Message, ModuleBE_Firebase, PushMessagesWrapperBE} from '@nu-art/firebase/backend';
+import {ApiDef_PushMessages, DB_PushSubscription, PushMessage, PushMessage_Payload, PushMessage_PayloadWrapper, Request_PushRegister} from '../../index';
 
 import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {firestore} from 'firebase-admin';
+import {UI_PushSession} from '../../shared/push-session';
+import {ModuleBE_PushSessionDB} from './ModuleBE_PushSessionDB';
+import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB';
+import {DBProto_PushMessagesHistory} from '../../shared/push-messages-history';
+import {ModuleBE_PushMessagesHistoryDB} from './ModuleBE_PushMessagesHistoryDB';
+import {HttpCodes} from '@nu-art/thunderstorm';
+import Transaction = firestore.Transaction;
+
 
 type Config = {
+	messageLengthLimit: number
 	notificationsCleanupTime?: number
 	sessionsCleanupTime?: number
-};
-
-type TempMessages = {
-	[token: string]: DB_Notifications[]
 };
 
 export class ModuleBE_PushPubSub_Class
 	extends Module<Config>
 	implements OnCleanupSchedulerAct {
 
-	private pushSessions!: FirestoreCollection<DB_PushSession>;
-	private pushKeys!: FirestoreCollection<DB_PushKeys>;
+	// private pushSessions!: FirestoreCollection<DB_PushSession>;
+	// private topics!: FirestoreCollection<DB_PushSubscription>;
 	private messaging!: PushMessagesWrapperBE;
 
 	constructor() {
 		super();
+		this.setMinLevel(LogLevel.Verbose);
+		this.setDefaultConfig({messageLengthLimit: 10 * KB});
 	}
 
 	protected init(): void {
 		super.init();
 		const session = ModuleBE_Firebase.createAdminSession();
-		const firestore = session.getFirestore();
 
-		this.pushSessions = firestore.getCollection<DB_PushSession>('push-sessions', ['pushSessionId']);
-		this.pushKeys = firestore.getCollection<DB_PushKeys>('push-keys');
 		this.messaging = session.getMessaging();
 
 		addRoutes([
+			createBodyServerApi(ApiDef_PushMessages.v1.test, (r) => this.pushToKey(r.message)),
 			createBodyServerApi(ApiDef_PushMessages.v1.register, this.register),
 			createBodyServerApi(ApiDef_PushMessages.v1.unregister, this.register),
 			createBodyServerApi(ApiDef_PushMessages.v1.registerAll, this.register)
 		]);
 	}
 
-	async register(body: Request_PushRegister) {
-		const userId = MemKey_AccountId.get();
-		if (!userId)
-			throw new ImplementationMissingException('Missing user from accounts Module');
-
-		const session: DB_PushSession = {
+	register = async (body: Request_PushRegister) => {
+		const accountId = MemKey_AccountId.get();
+		const session: UI_PushSession = {
 			firebaseToken: body.firebaseToken,
 			pushSessionId: body.pushSessionId,
 			timestamp: currentTimeMillis(),
-			userId
+			accountId
 		};
 
-		const dbSession = await this.pushSessions.queryUnique({where: {pushSessionId: session.pushSessionId}});
-		if (!dbSession)
-			await this.pushSessions.insert(session);
+		await ModuleBE_PushSessionDB.set.item(session);
 
-		const subscriptions: DB_PushKeys[] = body.subscriptions.map((s): DB_PushKeys => {
-			const sub: DB_PushKeys = {
+		const subscriptions: DB_PushSubscription[] = body.subscriptions.map((subscription): DB_PushSubscription => {
+			return filterKeys({
 				pushSessionId: body.pushSessionId,
-				pushKey: s.pushKey
-			};
-			if (s.props)
-				sub.props = s.props;
-
-			return sub;
+				...subscription
+			});
 		});
 
-		await this.pushKeys.runInTransaction(async transaction => {
-			const data = await transaction.query(this.pushKeys, {where: {pushSessionId: body.pushSessionId}});
-			const toInsert = subscriptions.filter(s => !data.find(d => d.pushKey === s.pushKey && compare(s.props, d.props)));
+		await ModuleBE_PushSubscriptionDB.runTransaction(async transaction => {
+			const data = await ModuleBE_PushSubscriptionDB.query.where({pushSessionId: body.pushSessionId}, transaction);
+			const toInsert = subscriptions.filter(s => !data.find(d => d.topic === s.topic && compare(s.filter, d.filter)));
 			if (toInsert.length === 0)
 				return;
 
 			this.logWarning(`Subscribe on: `, toInsert);
-			return transaction.insertAll(this.pushKeys, toInsert);
+			return ModuleBE_PushSubscriptionDB.create.all(toInsert, transaction);
 		});
-	}
-
-	async pushToKey<M extends MessageType<any, any, any> = never,
-		S extends string = IFP<M>,
-		P extends SubscribeProps = ISP<M>,
-		D = ITP<M>>(key: S, props?: P, data?: D, transaction?: FirestoreTransaction) {
-		const processor = async (_transaction: FirestoreTransaction) => {
-			let docs = await _transaction.query(this.pushKeys, {where: {pushKey: key}});
-			if (props)
-				docs = docs.filter(doc => !doc.props || compare(doc.props, props));
-
-			const notification = this.buildNotification(key, data, props);
-			if (docs.length === 0)
-				return;
-
-			const sessionsIds = docs.map(d => d.pushSessionId);
-			// I get the tokens relative to those sessions (query)
-			this.logDebug(
-				`Sending push to: \n Sessions: ${JSON.stringify(sessionsIds)}\n Key: ${key}\n Props: ${JSON.stringify(props)} \n Data: ${JSON.stringify(data)}`);
-			const sessions = await batchAction(sessionsIds, 10, async elements => _transaction.query(this.pushSessions, {where: {pushSessionId: {$in: elements}}}));
-			const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
-				const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
-				if (!session)
-					return carry;
-
-				carry[session.firebaseToken] = [notification];
-
-				return carry;
-			}, {} as TempMessages);
-			const resp = await this.sendMessage(_messages);
-			if (!resp)
-				return this.logInfo('No messages to send. Empty subscriptions');
-
-			const {response, messages} = resp;
-			this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`, 'messages', messages);
-			// return this.cleanUp(response, messages);
-		};
-		if (transaction)
-			return processor(transaction);
-
-		return this.pushKeys.runInTransaction(processor);
-	}
-
-	async pushToUser<M extends MessageType<any, any, any> = never,
-		S extends string = IFP<M>,
-		P extends SubscribeProps = ISP<M>,
-		D = ITP<M>>(user: string, key: string, props?: P, data?: D) {
-		this.logInfo('i am pushing to user...', user, props);
-
-		const notification = this.buildNotification(key, data, props, user);
-
-		const docs = await this.pushSessions.query({where: {userId: user}});
-		if (docs.length === 0)
-			return;
-
-		const sessionsIds = docs.map(d => d.pushSessionId);
-		const sessions = await batchAction(sessionsIds, 10, async elements => this.pushSessions.query({where: {pushSessionId: {$in: elements}}}));
-
-		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushSession) => {
-			const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
-			if (!session)
-				return carry;
-
-			carry[session.firebaseToken] = [notification];
-
-			return carry;
-		}, {} as TempMessages);
-
-		await this.sendMessage(_messages);
-	}
-
-	private buildNotification = (pushkey: string, data?: any, props?: any, user?: string) => {
-		const now = currentTimeMillis();
-		const notification: DB_Notifications = {
-			_id: generateHex(16),
-			__created: now,
-			__updated: now,
-			timestamp: now,
-			read: false,
-			pushKey: pushkey,
-		};
-
-		if (data)
-			notification.data = data;
-
-		if (props)
-			notification.props = props;
-
-		if (user)
-			notification.userId = user;
-
-		return notification;
 	};
 
-	sendMessage = async (_messages: TempMessages): Promise<{
-		response: FirebaseType_BatchResponse,
-		messages: FirebaseType_Message[]
-	} | undefined> => {
-		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({
-			token,
-			data: {messages: __stringify(_messages[token])}
-		}));
-		if (messages.length === 0)
-			return;
+// ---------------------------
 
-		this.logInfo('sending a message to \n' + Object.keys(_messages).join('\n'));
+	pushToKey = async <MessageType extends PushMessage<any, any, any>>(message: MessageType) => {
+		const originatingAccountId = MemKey_AccountId.get();
+		const messageLength = JSON.stringify(message).length;
+		if (messageLength > this.config.messageLengthLimit)
+			throw HttpCodes._4XX.BAD_REQUEST(`Message content too long, ${messageLength} > ${this.config.messageLengthLimit}`,);
+
+		const messageSubscription = {topic: message.topic, props: message.filter};
+		return ModuleBE_PushSubscriptionDB.runTransaction(async (transaction: Transaction) => {
+			let subscriptions = await ModuleBE_PushSubscriptionDB.query.where({topic: message.topic}, transaction);
+			this.logVerbose(`Found ${subscriptions.length} subscribers for message: `, messageSubscription);
+			if (message.filter)
+				subscriptions = subscriptions.filter(subscription => !subscription.filter || compare(subscription.filter, message.filter));
+
+			if (subscriptions.length === 0)
+				return this.logDebug('No subscribers match message: ', message);
+
+			const sessionsIds = subscriptions.map(d => d.pushSessionId);
+			// I get the tokens relative to those sessions (query)
+			this.logDebug(`Sending push to:`, ` -- Sessions:`, sessionsIds, ` -- Message: `, message);
+
+			const pushSessions = await batchActionParallel(sessionsIds, 10, async elements => ModuleBE_PushSessionDB.query.where({pushSessionId: {$in: elements}}, transaction));
+			const map_sessionIdToSession = arrayToMap(pushSessions, session => session.pushSessionId);
+
+			subscriptions = subscriptions.filter(subscription => map_sessionIdToSession[subscription.pushSessionId]);
+
+			const messagesToCreate: DBProto_PushMessagesHistory['preDbType'][] = subscriptions.map((subscription: DB_PushSubscription) => {
+				return {
+					pushSessionId: subscription.pushSessionId,
+					token: map_sessionIdToSession[subscription.pushSessionId].firebaseToken,
+					message: message,
+					read: false,
+					originatingAccountId
+				};
+			});
+
+			if (messagesToCreate.length === 0)
+				return this.logDebug('No subscribers match message: ', message);
+
+			const dbMessages = await ModuleBE_PushMessagesHistoryDB.create.all(messagesToCreate);
+			const messagesToSend: FirebaseType_Message[] = dbMessages.map(dbMessage => {
+				const messageBody: PushMessage_Payload = {
+					_id: dbMessage._id,
+					timestamp: dbMessage.__created,
+					message: dbMessage.message,
+					topic: message.topic,
+					filter: message.filter,
+				};
+
+				const data: PushMessage_PayloadWrapper = {
+					sessionId: dbMessage.pushSessionId,
+					payload: JSON.stringify(messageBody)
+				};
+
+				return {
+					token: dbMessage.token,
+					data: data
+				};
+			});
+
+			const {response, messages} = await this.sendMessage(messagesToSend);
+			this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`, 'messages', messages);
+			// return this.cleanUp(response, messages);
+		});
+	};
+
+	// async pushToUser<MessageType extends PushMessage<any, any, any>>(accountId: string, message: MessageType) {
+	// 	const notification = this.buildNotification(message);
+	// 	this.logInfo(`Account ${notification.originatingAccountId} is pushing to user ${accountId}`, message.filter);
+	//
+	// 	const docs = await ModuleBE_PushSessionDB.query.where({accountId});
+	// 	if (docs.length === 0)
+	// 		return;
+	//
+	// 	const sessionsIds = docs.map(d => d.pushSessionId);
+	// 	const sessions = await batchActionParallel(sessionsIds, 10, async elements =>
+	// 		ModuleBE_PushSessionDB.query.where({pushSessionId: {$in: elements}}));
+	//
+	// 	const _messages = docs.reduce((carry: TempMessages, db_topic) => {
+	// 		const session = sessions.find(s => s.pushSessionId === db_topic.pushSessionId);
+	// 		if (!session)
+	// 			return carry;
+	//
+	// 		carry[session.firebaseToken] = [notification];
+	//
+	// 		return carry;
+	// 	}, {} as TempMessages);
+	//
+	// 	await this.sendMessage(_messages);
+	// }
+
+	// private buildNotification<MessageType extends PushMessage<any, any, any>>(message: MessageType) {
+	// 	const originatingAccountId = MemKey_AccountId.get();
+	//
+	// 	return {
+	// 		message: JSON.stringify(message),
+	// 		read: false,
+	// 		originatingAccountId
+	// 	};
+	// }
+
+	sendMessage = async (messages: FirebaseType_Message[]): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] }> => {
+		this.logInfo('sending a message to \n' + Object.keys(messages).join('\n'));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
+
 		this.logInfo('and this is the response: ' + response.responses.map(_response => _response.success));
 		return {response, messages};
 	};
@@ -249,7 +217,7 @@ export class ModuleBE_PushPubSub_Class
 
 	scheduledCleanup = async () => {
 		const sessionsCleanupTime = this.config?.sessionsCleanupTime || Day;
-		const docs = await this.pushSessions.query({where: {timestamp: {$lt: currentTimeMillis() - sessionsCleanupTime}}});
+		const docs = await ModuleBE_PushSessionDB.query.where({timestamp: {$lt: currentTimeMillis() - sessionsCleanupTime}});
 
 		await Promise.all([
 			this.cleanUpImpl(docs.map(d => d.firebaseToken))
@@ -278,11 +246,11 @@ export class ModuleBE_PushPubSub_Class
 			return;
 
 		const toDelete = filterDuplicates(_toDelete);
-		const _sessions = await batchActionParallel(toDelete, 10, async elements => this.pushSessions.query({where: {firebaseToken: {$in: elements}}}));
+		const _sessions = await batchActionParallel(toDelete, 10, async elements => ModuleBE_PushSessionDB.query.where({firebaseToken: {$in: elements}}));
 		const sessions = filterDuplicates(_sessions.map(s => s.pushSessionId));
 		const async = [
-			batchActionParallel(toDelete, 10, async elements => this.pushSessions.delete({where: {firebaseToken: {$in: elements}}})),
-			batchActionParallel(sessions, 10, async elements => this.pushKeys.delete({where: {pushSessionId: {$in: elements}}}))
+			batchActionParallel(toDelete, 10, async elements => ModuleBE_PushSessionDB.query.where({firebaseToken: {$in: elements}})),
+			batchActionParallel(sessions, 10, async elements => ModuleBE_PushSubscriptionDB.delete.where({pushSessionId: {$in: elements}}))
 		];
 
 		await Promise.all(async);
