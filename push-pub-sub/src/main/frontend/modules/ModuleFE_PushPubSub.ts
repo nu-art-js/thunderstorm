@@ -82,7 +82,7 @@ export class ModuleFE_PushPubSub_Class
 				return register(this.composeRegisterRequest());
 			},
 			unregister: (subscription: BaseSubscriptionData) => {
-				removeFromArray(this.subscriptions, d => d.topic === subscription.topic && compare(subscription.props, d.props));
+				removeFromArray(this.subscriptions, d => d.topic === subscription.topic && compare(subscription.filter, d.filter));
 				return register(this.composeRegisterRequest());
 			},
 			registerAll: (subscriptions: BaseSubscriptionData[]) => {
@@ -99,7 +99,7 @@ export class ModuleFE_PushPubSub_Class
 		const body: Request_PushRegister = {
 			firebaseToken: this.firebaseToken,
 			pushSessionId: this.getPushSessionId(),
-			subscriptions: this.subscriptions.map(({topic, props}) => ({topic, props}))
+			subscriptions: this.subscriptions.map(({topic, filter}) => ({topic, filter}))
 		};
 		return body;
 	}
@@ -209,7 +209,7 @@ export class ModuleFE_PushPubSub_Class
 	};
 
 	private subscribeImpl(subscription: BaseSubscriptionData) {
-		if (this.subscriptions.find(d => d.topic === subscription.topic && compare(subscription.props, d.props)))
+		if (this.subscriptions.find(d => d.topic === subscription.topic && compare(subscription.filter, d.filter)))
 			return;
 
 		addItemToArray(this.subscriptions, subscription);

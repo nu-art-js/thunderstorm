@@ -28,8 +28,8 @@ export class PushKey_BE<MessageType extends PushMessage<any, any, any>> {
 		this.topic = topic;
 	}
 
-	async push(data: MessageType['data'], props?: MessageType['props']) {
-		return ModuleBE_PushPubSub.pushToKey({topic: this.topic, props, data});
+	async push(data: MessageType['data'], filter?: MessageType['filter']) {
+		return ModuleBE_PushPubSub.pushToKey({topic: this.topic, filter, data});
 	}
 }
 

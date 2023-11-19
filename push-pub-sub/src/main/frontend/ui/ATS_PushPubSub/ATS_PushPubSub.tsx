@@ -37,9 +37,9 @@ type Actions = 'delete'
 
 type State = {
 	registerKey: string,
-	registerProps: ObjProps[]
+	registerFilter: ObjProps[]
 	triggerKey: string,
-	triggerProps: ObjProps[]
+	triggerFilter: ObjProps[]
 
 	receivedPushPayloads: PushMessage_Payload[]
 }
@@ -54,9 +54,9 @@ const ConfigPreset_1 = {
 	label: 'Matching simple',
 	config: {
 		registerKey: 'test-key',
-		registerProps: [createNewInstance('prop-key', 'value1')],
+		registerFilter: [createNewInstance('prop-key', 'value1')],
 		triggerKey: 'test-key',
-		triggerProps: [createNewInstance('prop-key', 'value1')],
+		triggerFilter: [createNewInstance('prop-key', 'value1')],
 	}
 };
 
@@ -106,8 +106,8 @@ export class ATS_PushPubSub
 				<TS_BusyButton onClick={ModuleFE_PushPubSub.getToken}>Generate Token</TS_BusyButton>
 			</LL_H_C>
 			<LL_H_T className="panels-container h-gap__n match_width">
-				{this.renderPanel('Register', this.state.registerProps, 'registerKey', this.subscribe)}
-				{this.renderPanel('Trigger', this.state.triggerProps, 'triggerKey', this.trigger)}
+				{this.renderPanel('Register', this.state.registerFilter, 'registerKey', this.subscribe)}
+				{this.renderPanel('Trigger', this.state.triggerFilter, 'triggerKey', this.trigger)}
 			</LL_H_T>
 			<LL_H_T className="panels-container h-gap__n match_width">
 				<LL_V_L className="panel v-gap__l">
@@ -115,7 +115,7 @@ export class ATS_PushPubSub
 						.map((subscription, index) => <LL_H_C key={index}>
 							<LL_H_C style={{width: 100}}>{subscription.key}</LL_H_C>
 							<LL_V_L>{subscription.values.map((value, index) => <LL_H_C key={index}><TS_Icons.bin.component
-								onClick={() => ModuleFE_PushSubscription.v1.delete({_id: value._id}).executeSync()}/>{JSON.stringify(value.props)}</LL_H_C>)}</LL_V_L>
+								onClick={() => ModuleFE_PushSubscription.v1.delete({_id: value._id}).executeSync()}/>{JSON.stringify(value.filter)}</LL_H_C>)}</LL_V_L>
 						</LL_H_C>)}
 				</LL_V_L>
 				<LL_V_L className="panel">
@@ -128,7 +128,7 @@ export class ATS_PushPubSub
 		</LL_V_L>;
 	}
 
-	private composeProps(objProps: ObjProps[]) {
+	private composeFilter(objProps: ObjProps[]) {
 		return objProps.reduce((toRet, item) => {
 			if (!!item.key && item.key !== '')
 				toRet[item.key] = item.value;
@@ -140,10 +140,10 @@ export class ATS_PushPubSub
 		if (!ModuleFE_PushPubSub.hasToken())
 			return ModuleFE_Toaster.toastError('No push token generated');
 
-		const props = this.composeProps(this.state.triggerProps);
+		const filter = this.composeFilter(this.state.triggerFilter);
 		const data = {'a': 'aaa'};
 
-		const message = {topic: this.state.triggerKey, props, data};
+		const message = {topic: this.state.triggerKey, filter, data};
 		this.logInfo(`triggering push: ${__stringify(message, true)}`);
 		await ModuleFE_PushPubSub.v1.test({message}).executeSync();
 	};
@@ -154,7 +154,7 @@ export class ATS_PushPubSub
 
 		await ModuleFE_PushPubSub.v1.register({
 			topic: this.state.registerKey,
-			props: this.composeProps(this.state.registerProps)
+			filter: this.composeFilter(this.state.registerFilter)
 		}).executeSync();
 
 		await ModuleFE_PushSubscription.v1.sync().executeSync();

@@ -17,17 +17,9 @@
  * limitations under the License.
  */
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {
-	ApiDef_AssetUploader,
-	ApiStruct_AssetUploader,
-	FileStatus,
-	OnFileStatusChanged,
-	PushKey_FileUploaded,
-	TempSignedUrl,
-	UI_Asset
-} from '../../shared';
+import {ApiDef_AssetUploader, ApiStruct_AssetUploader, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '../../shared';
 import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader';
-import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
+import {BaseSubscriptionData, PushMessage_Payload} from '@nu-art/push-pub-sub';
 import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub/frontend/modules/ModuleFE_PushPubSub';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {generateHex} from '@nu-art/ts-common';
@@ -71,10 +63,10 @@ export class ModuleFE_AssetUploader_Class
 		await ModuleFE_PushPubSub.v1.registerAll(subscriptions).executeSync();
 	}
 
-	__onMessageReceived(notification: DB_Notifications<PushMessage_FileUploaded>): void {
+	__onMessageReceived(notification: PushMessage_Payload<PushMessage_FileUploaded>): void {
 		super.__onMessageReceived(notification);
-		if (notification.message.data?.status === FileStatus.Completed || notification.message.data?.status?.startsWith('Error'))
-			ModuleFE_PushPubSub.v1.unregister({topic: PushKey_FileUploaded, props: notification.message.props});
+		if (notification.message?.status === FileStatus.Completed || notification.message?.status?.startsWith('Error'))
+			ModuleFE_PushPubSub.v1.unregister({topic: PushKey_FileUploaded, filter: notification.filter});
 	}
 }
 
