@@ -20,13 +20,17 @@ export const defaultAccessLevels = [
 ];
 
 export const DuplicateDefaultAccessLevels = (seed: string): DefaultDef_AccessLevel[] => {
-	return [
+	return CreateDefaultAccessLevels(seed, [
 		{...DefaultAccessLevel_NoAccess},
 		{...DefaultAccessLevel_Read},
 		{...DefaultAccessLevel_Write},
 		{...DefaultAccessLevel_Delete},
 		{...DefaultAccessLevel_Admin},
-	].map(level => ({...level, _id: md5(`${seed}${level.name}`)}));
+	]);
+};
+
+export const CreateDefaultAccessLevels = (seed: string, accessLevels: { name: string, value: number }[]): DefaultDef_AccessLevel[] => {
+	return accessLevels.map(level => ({...level, _id: md5(`${seed}${level.name}`)}));
 };
 
 export const defaultLevelsRouteLookupWords: { [k: string]: string } = {

@@ -176,7 +176,7 @@ export class TS_TextAreaV2
 	};
 
 	render() {
-		const {onAccept, trim, forceAcceptKeys, focus, ...props} = this.props;
+		const {onAccept, trim, saveEvent, forceAcceptKeys, focus, ...props} = this.props;
 
 		return <textarea
 			{...props}

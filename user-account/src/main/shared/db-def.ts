@@ -1,17 +1,6 @@
 import {DBDef_V3} from '@nu-art/ts-common/db/types';
-import {
-	DB_Object_validator,
-	tsValidateEmail,
-	tsValidateUniqueId,
-	tsValidator_nonMandatoryString
-} from '@nu-art/ts-common/validator/validators';
-import {
-	tsValidateArray,
-	tsValidateBoolean,
-	tsValidateString,
-	tsValidateTimestamp,
-	tsValidateValue
-} from '@nu-art/ts-common/validator/type-validators';
+import {tsValidateEmail, tsValidateUniqueId, tsValidator_nonMandatoryString} from '@nu-art/ts-common/validator/validators';
+import {tsValidateArray, tsValidateBoolean, tsValidateString, tsValidateTimestamp, tsValidateValue} from '@nu-art/ts-common/validator/type-validators';
 import {DBProto_AccountType, DBProto_SessionType} from './types';
 import {_accountTypes} from './consts';
 
@@ -25,9 +14,7 @@ export const Validator_Modifiable: DBProto_SessionType['modifiablePropsValidator
 	needToRefresh: tsValidateBoolean(false)
 };
 
-export const Validator_Generated: DBProto_SessionType['generatedPropsValidator'] = {
-	...DB_Object_validator
-};
+export const Validator_Generated: DBProto_SessionType['generatedPropsValidator'] = {};
 
 export const DBDef_Session: DBDef_V3<DBProto_SessionType> = {
 	modifiablePropsValidator: Validator_Modifiable,
@@ -46,7 +33,6 @@ const modifiablePropsValidator: DBProto_AccountType['modifiablePropsValidator'] 
 };
 
 const generatedPropsValidator: DBProto_AccountType['generatedPropsValidator'] = {
-	...DB_Object_validator,
 	_auditorId: tsValidateString(),
 	_newPasswordRequired: tsValidateBoolean(false),
 	salt: tsValidator_nonMandatoryString,

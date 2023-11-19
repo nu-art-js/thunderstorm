@@ -39,4 +39,4 @@ class Pg_Component
 	}
 }
 
-export const PgDev_Tabs = {name: 'DevTool - Tabs', renderer: Pg_Component};
+export const PgDev_Tabs = {name: 'Tabs', renderer: Pg_Component};

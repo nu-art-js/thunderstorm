@@ -12,6 +12,7 @@ export type Request_FetchFromEnv = {
 export type Request_FetchFromEnvV2 = {
 	backupId: string,
 	env: string,
+	chunkSize: number,
 	selectedModules: string[]
 }
 

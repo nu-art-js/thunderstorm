@@ -1,4 +1,4 @@
-import {_keys, ApiException, BadImplementationException, Minute, Module, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, BadImplementationException, Dispatcher, Minute, Module, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {addRoutes} from '../ModuleBE_APIs';
@@ -19,6 +19,7 @@ import {ModuleBE_v2_Backup} from '../backup/ModuleBE_v2_Backup';
 import {MemKey_HttpRequest} from '../server/consts';
 import {Storm} from '../../core/Storm';
 import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
+import {Readable} from 'stream';
 
 
 type Config = {
@@ -27,6 +28,13 @@ type Config = {
 	sessionMap: TypedMap<TypedMap<string>>,
 	maxBatch: number
 }
+
+export interface OnSyncEnvCompleted {
+	__onSyncEnvCompleted: (env: string, baseUrl: string, requiredHeaders: TypedMap<string>) => void;
+}
+
+const dispatch_OnSyncEnvCompleted = new Dispatcher<OnSyncEnvCompleted, '__onSyncEnvCompleted'>(
+	'__onSyncEnvCompleted');
 
 class ModuleBE_v2_SyncEnv_Class
 	extends Module<Config> {
@@ -39,7 +47,6 @@ class ModuleBE_v2_SyncEnv_Class
 	init() {
 		super.init();
 		addRoutes([
-
 			createBodyServerApi(ApiDef_SyncEnvV2.vv1.syncToEnv, this.pushToEnv),
 			createBodyServerApi(ApiDef_SyncEnvV2.vv1.fetchFromEnv, this.fetchFromEnv),
 			createQueryServerApi(ApiDef_SyncEnvV2.vv1.createBackup, this.createBackup),
@@ -126,24 +133,38 @@ class ModuleBE_v2_SyncEnv_Class
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
 
+		this.logInfo(`----  Fetching Backup Info... ----`);
 		const backupInfo = await this.getBackupInfo(body);
-
 		this.logInfo(backupInfo);
 
 		if (!backupInfo.backupFilePath)
 			throw new ApiException(404, 'Backup file path not found');
 
+		this.logInfo(`----  Fetching Backup Stream... ----`);
+		const signedUrlDef: ApiDef<QueryApi<any>> = {
+			method: HttpMethod.GET,
+			path: '',
+			fullUrl: backupInfo.firestoreSignedUrl
+		};
+
+		const stream: Readable = await AxiosHttpModule
+			.createRequest(signedUrlDef)
+			.setResponseType('stream')
+			.executeSync();
+
+		this.logInfo(`----  Syncing Firestore... ----`);
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
-
 		const firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
+		const readBatchSize = body.chunkSize ?? this.config.maxBatch * 4;
 
-		let resultsArray: { ref: FirebaseFirestore.DocumentReference, data: any }[] = [];
-		const readBatchSize = this.config.maxBatch * 4;
-		let totalReadCount = 0;
+		let writeBatch = firestore.batch();
+		let totalItems = 0;
+		let batchItemsCounter = 0;
+		let totalItemsCollected = 0;
 
-		const dataCallback = (row: any, index: number) => {
-			if (index < totalReadCount || resultsArray.length === readBatchSize)
-				return;
+		await CSVModule.forEachCsvRowFromStreamSync(stream, (row: any, index: number, transform) => {
+			totalItems++;
+			this.logInfo(`index: ${index}`);
 
 			_keys(row).map(key => {
 				row[(key as string).trim()] = (row[key] as string).trim();
@@ -155,38 +176,39 @@ class ModuleBE_v2_SyncEnv_Class
 			const documentRef = firestore.doc(`${row.collectionName}/${row._id}`);
 			const data = JSON.parse(row.document);
 
-			resultsArray.push({ref: documentRef, data: data});
-		};
+			writeBatch.set(documentRef, data);
+			batchItemsCounter++;
+			if (batchItemsCounter < readBatchSize)
+				return;
 
-		do {
-			resultsArray = [];
+			this.logInfo(`calling pause`);
+			transform.pause();
 
-			const signedUrlDef: ApiDef<QueryApi<any>> = {
-				method: HttpMethod.GET,
-				path: '',
-				fullUrl: backupInfo.firestoreSignedUrl
-			};
-			const stream = await AxiosHttpModule
-				.createRequest(signedUrlDef)
-				.setResponseType('stream')
-				.executeSync();
+			const prevLimitCounter = batchItemsCounter;
+			const prevBatch = writeBatch;
+			batchItemsCounter = 0;
+			writeBatch = firestore.batch();
+			this.logInfo(`new batch created`);
 
-			await CSVModule.forEachCsvRowFromStreamSync(stream, dataCallback);
+			this.logInfo(`calling paused - committing`);
+			prevBatch.commit().then(() => {
+				this.logInfo(`committed ${prevLimitCounter} items`);
+				totalItemsCollected += prevLimitCounter;
 
-			for (let i = 0; i < resultsArray.length; i += this.config.maxBatch) {
-				const writeBatch = firestore.batch();
-				const batch = resultsArray.slice(i, i + this.config.maxBatch);
+				transform.resume();
+			}).catch(err => this.logError('error committing batch', err));
 
-				batch.map(item => writeBatch.set(item.ref, item.data));
+		});
 
-				await writeBatch.commit();
-			}
+		if (batchItemsCounter > 0) {
+			await writeBatch.commit();
+			totalItemsCollected += batchItemsCounter;
+		}
+		this.logInfo(`---- DONE Syncing Firestore: (${totalItemsCollected}/${totalItems})----`);
 
-			totalReadCount += resultsArray.length;
-			this.logInfo(`results Array: ${resultsArray.length}`);
-			this.logInfo(`readBatchSize: ${readBatchSize}`);
-			this.logInfo(`totalReadCount: ${totalReadCount}`);
-		} while (resultsArray.length > 0 && resultsArray.length % readBatchSize === 0);
+		this.logInfo(`----  Syncing Other Modules... ----`);
+		await dispatch_OnSyncEnvCompleted.dispatchModuleAsync(body.env, this.config.urlMap[body.env], this.config.sessionMap[body.env]!);
+		this.logInfo(`---- DONE Syncing Other Modules----`);
 	};
 
 	fetchFirebaseBackup = async (queryParams: Request_FetchFirebaseBackup) => {
