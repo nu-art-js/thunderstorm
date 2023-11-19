@@ -106,7 +106,9 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 				return;
 
 			this.logInfo('syncing...');
-			return this.cache.load();
+			await this.cache.load();
+			this.defaultDispatcher.dispatchAll('update', {} as DBType);
+			this.OnDataStatusChanged();
 		});
 		this.dbDef = dbDef;
 	}
