@@ -16,40 +16,25 @@
  * limitations under the License.
  */
 
-import {
-	addItemToArray,
-	compare,
-	generateHex,
-	ImplementationMissingException,
-	Module,
-	removeFromArray,
-	StringMap,
-	ThisShouldNotHappenException
-} from '@nu-art/ts-common';
+import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {apiWithBody, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {
 	ApiDef_PushMessages,
 	ApiStruct_PushMessages,
 	BaseSubscriptionData,
-	DB_Notifications,
-	IFP,
-	ISP,
-	ITP,
-	MessageType,
-	Request_PushRegister,
-	SubscribeProps
+	PushMessage,
+	PushMessage_Payload,
+	PushMessage_PayloadWrapper,
+	Request_PushRegister
 } from '../../index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {ModuleFE_Firebase, MessagingWrapperFE} from '@nu-art/firebase/frontend';
+import {MessagingWrapperFE, ModuleFE_Firebase} from '@nu-art/firebase/frontend';
 
 
 export const Command_SwToApp = 'SwToApp';
 
-export interface OnPushMessageReceived<M extends MessageType<any, any, any> = never,
-	S extends string = IFP<M>,
-	P extends SubscribeProps = ISP<M>,
-	D = ITP<M>> {
-	__onMessageReceived(notification: DB_Notifications<D>): void;
+export interface OnPushMessageReceived<MessageType extends PushMessage<any, any, any> = PushMessage<any, any, any>> {
+	__onMessageReceived(notification: PushMessage_Payload<MessageType>): void;
 }
 
 type FirebaseConfig = {
@@ -78,7 +63,7 @@ export class ModuleFE_PushPubSub_Class
 	private firebaseToken?: string;
 	private messaging!: MessagingWrapperFE;
 
-	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, '__onMessageReceived'>('__onMessageReceived');
+	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived, '__onMessageReceived'>('__onMessageReceived');
 
 	readonly v1: ApiDefCaller<ApiStruct_PushMessages>['v1'];
 
@@ -91,12 +76,13 @@ export class ModuleFE_PushPubSub_Class
 		this.pushSessionId = pushSessionId.set(window.name);
 		const register = apiWithBody(ApiDef_PushMessages.v1.register);
 		this.v1 = {
+			test: apiWithBody(ApiDef_PushMessages.v1.test),
 			register: (subscription: BaseSubscriptionData) => {
 				this.subscribeImpl(subscription);
 				return register(this.composeRegisterRequest());
 			},
 			unregister: (subscription: BaseSubscriptionData) => {
-				removeFromArray(this.subscriptions, d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props));
+				removeFromArray(this.subscriptions, d => d.topic === subscription.topic && compare(subscription.filter, d.filter));
 				return register(this.composeRegisterRequest());
 			},
 			registerAll: (subscriptions: BaseSubscriptionData[]) => {
@@ -113,7 +99,7 @@ export class ModuleFE_PushPubSub_Class
 		const body: Request_PushRegister = {
 			firebaseToken: this.firebaseToken,
 			pushSessionId: this.getPushSessionId(),
-			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
+			subscriptions: this.subscriptions.map(({topic, filter}) => ({topic, filter}))
 		};
 		return body;
 	}
@@ -141,7 +127,7 @@ export class ModuleFE_PushPubSub_Class
 		const registration = await navigator.serviceWorker.register(`/${this.config.swFileName || 'pubsub-sw.js'}`);
 		await registration.update();
 		navigator.serviceWorker.oncontrollerchange = () => {
-			this.logDebug('This page is now controlled by:', this.getControlingServiceWorker());
+			this.logDebug('This page is now controlled by:', this.getControllingServiceWorker());
 		};
 
 		navigator.serviceWorker.onmessage = (event: MessageEvent) => {
@@ -161,20 +147,20 @@ export class ModuleFE_PushPubSub_Class
 				if (!payload.data)
 					return this.logInfo('No data passed to the message handler, I got this', payload);
 
-				this.processMessage(payload.data);
+				this.processMessage(payload.data as PushMessage_PayloadWrapper);
 			});
 
 			this.logDebug('Getting new Token');
 			await this.getToken({vapidKey: this.config?.publicKeyBase64, serviceWorkerRegistration: registration});
 			this.logDebug('GOT new Token');
 
-			if (this.getControlingServiceWorker()) {
-				this.logDebug(`This page is currently controlled by: `, this.getControlingServiceWorker());
+			if (this.getControllingServiceWorker()) {
+				this.logDebug(`This page is currently controlled by: `, this.getControllingServiceWorker());
 			}
 		});
 	};
 
-	private getControlingServiceWorker() {
+	private getControllingServiceWorker() {
 		return navigator.serviceWorker.controller;
 	}
 
@@ -204,25 +190,26 @@ export class ModuleFE_PushPubSub_Class
 		this.firebaseToken = await this.messaging.getToken(options);
 		this.logVerbose('new token received: ' + this.firebaseToken);
 	};
-
+	hasToken = () => !!this.firebaseToken;
 	private processMessageFromSw = (data: any) => {
-		this.logInfo('Got data from SW: ', data);
+		this.logDebug('Got message from service worker: ', data);
 		if (!data.command || !data.message || data.command !== Command_SwToApp)
 			return;
 
 		this.processMessage(data.message);
 	};
 
-	private processMessage = (data: StringMap) => {
+	private processMessage = (data: PushMessage_PayloadWrapper) => {
+		if (data.sessionId !== this.pushSessionId)
+			return;
+
 		this.logInfo('process message', data);
-		const arr: DB_Notifications[] = JSON.parse(data.messages);
-		arr.forEach(s => {
-			this.dispatch_pushMessage.dispatchModule(s);
-		});
+		const payload: PushMessage_Payload = JSON.parse(data.payload);
+		this.dispatch_pushMessage.dispatchAll(payload);
 	};
 
 	private subscribeImpl(subscription: BaseSubscriptionData) {
-		if (this.subscriptions.find(d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props)))
+		if (this.subscriptions.find(d => d.topic === subscription.topic && compare(subscription.filter, d.filter)))
 			return;
 
 		addItemToArray(this.subscriptions, subscription);

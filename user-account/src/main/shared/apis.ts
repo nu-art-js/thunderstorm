@@ -59,6 +59,7 @@ export type RequestBody_CreateToken = { accountId: UniqueId, ttl: number };
 
 export type Response_CreateToken = { token: string };
 
+type TypedApi_RefreshSession = { refreshSession: QueryApi<void> };
 type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParams_LoginSAML> };
 type TypedApi_Login = { login: BodyApi<Response_Auth, Request_LoginAccount> };
 type TypedApi_Logout = { logout: QueryApi<void, {}> };
@@ -70,6 +71,7 @@ type TypedApi_ChangedPassword = {
 type TypedApi_CreateToken = { createToken: BodyApi<Response_CreateToken, RequestBody_CreateToken> };
 type TypedApi_SetPassword = { setPassword: BodyApi<Response_Auth, RequestBody_SetPassword> };
 
+const API_RefreshSession = {refreshSession: {method: HttpMethod.GET, path: 'v1/account/refresh-session'}} as const;
 const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'}} as const;
 const API_Login = {login: {method: HttpMethod.POST, path: 'v1/account/login', timeout: Minute}} as const;
 const API_Logout = {logout: {method: HttpMethod.GET, path: 'v1/account/logout'}} as const;
@@ -104,6 +106,7 @@ const API_ValidateSession = {
 
 export type ApiStructBE_Account = {
 	vv1: TypedAPI_RegisterAccount
+		& TypedApi_RefreshSession
 		& TypedApi_CreateAccount
 		& TypedApi_Login
 		& TypedApi_Logout
@@ -114,6 +117,7 @@ export type ApiStructBE_Account = {
 
 export const ApiDefBE_Account: ApiDefResolver<ApiStructBE_Account> = {
 	vv1: {
+		...API_RefreshSession,
 		...API_RegisterAccount,
 		...API_CreateAccount,
 		...API_ChangePassword,
@@ -127,6 +131,7 @@ export const ApiDefBE_Account: ApiDefResolver<ApiStructBE_Account> = {
 
 export type ApiStructFE_Account = {
 	vv1: TypedAPI_RegisterAccount
+		& TypedApi_RefreshSession
 		& TypedApi_CreateAccount
 		& TypedApi_Login
 		& TypedApi_Logout
@@ -138,6 +143,7 @@ export type ApiStructFE_Account = {
 
 export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
 	vv1: {
+		...API_RefreshSession,
 		...API_RegisterAccount,
 		...API_CreateAccount,
 		...API_ChangePassword,

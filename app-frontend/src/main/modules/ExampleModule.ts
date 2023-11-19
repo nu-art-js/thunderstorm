@@ -45,10 +45,10 @@ export const dispatchAll = () => {
 };
 
 // const mySubscriptions: BaseSubscriptionData[] = [{
-// 	pushKey: 'key',
+// 	topic: 'key',
 // 	props: {a: 'prop'}
 // }, {
-// 	pushKey: 'test',
+// 	topic: 'test',
 // 	props: {id: 'test1'}
 // }];
 
@@ -92,7 +92,7 @@ export class ExampleModule_Class
 	};
 
 	__onMessageReceived(notification: DB_Notifications) {
-		const message = `You got data! pushKey: ${notification.pushKey}, props: ${__stringify(notification.props)} with data: ${__stringify(notification.data)}`;
+		const message = `You got data! topic: ${notification.topic}, props: ${__stringify(notification.props)} with data: ${__stringify(notification.data)}`;
 		// ModuleFE_Toaster.toastSuccess(message);
 		this.logInfo('payload received in module', message, notification);
 	}
