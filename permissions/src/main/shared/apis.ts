@@ -89,7 +89,7 @@ export type _ApiStruct_PermissionsUser = {
 }
 export const _ApiDef_PermissionUser: ApiDefResolver<_ApiStruct_PermissionsUser> = {
 	pah: {
-		assignAppPermissions: {method: HttpMethod.POST, path: '/pah/permissions/assign/app-permissions'}
+		assignAppPermissions: {method: HttpMethod.POST, path: '/v1/permissions/assign/app-permissions'}
 	}
 };
 
@@ -113,6 +113,7 @@ export type ApiStruct_Permissions = {
 		// getUsersCFsByShareGroups: BodyApi<Response_UsersCFsByShareGroups, Request_UsersCFsByShareGroups>;
 		// registerExternalProject: BodyApi<void, Request_RegisterProject>;
 		// registerProject: QueryApi<void>;
+		toggleStrictMode: QueryApi<void>;
 		createProject: QueryApi<void>;
 		connectDomainToRoutes: BodyApi<void, Request_ConnectDomainToRoutes>
 	}
@@ -124,19 +125,8 @@ export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
 		// getUsersCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/users-cf-by-share-groups'},
 		// registerExternalProject: {method: HttpMethod.POST, path: 'v1/register/register-external-project'},
 		// registerProject: {method: HttpMethod.GET, path: 'v1/register/register-project'},
+		toggleStrictMode: {method: HttpMethod.GET, path: 'v1/permissions/toggle-strict-mode', timeout: Minute},
 		createProject: {method: HttpMethod.GET, path: 'v1/permissions/create-first-project', timeout: Minute},
 		connectDomainToRoutes: {method: HttpMethod.POST, path: 'v1/permissions/connect-domain-to-routes'},
-	}
-};
-
-//FIXME: I have no idea what i'm doing here
-export type _ApiStruct_TestPermissions = {
-	v1: {
-		test: QueryApi<void>
-	}
-}
-export const _ApiDef_TestPermissions: ApiDefResolver<_ApiStruct_TestPermissions> = {
-	v1: {
-		test: {method: HttpMethod.GET, path: 'v1/permissions-test/test'}
 	}
 };

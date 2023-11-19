@@ -1,69 +1,41 @@
-/*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import {BaseHttpRequest} from '@nu-art/thunderstorm';
-import {Auditable, DB_Object, TS_Object} from '@nu-art/ts-common';
-import {FileStatus} from '../types';
+import {DB_Object, DBProto, Proto_DB_Object, TS_Object, VersionsDeclaration} from '@nu-art/ts-common';
 
 
-export type Request_Uploader = {
-	name: string
-	mimeType: string
-	key?: string
-	public?: boolean
-	metadata?: TS_Object
+type Versions = VersionsDeclaration<DB_Asset, ['1.0.1', '1.0.0'], [DB_Asset]>;
+type Dependencies = {
+//
 }
 
-export type BaseUploaderFile = Request_Uploader & {
-	feId: string
-};
+type UniqueKeys = '_id';
+type GeneratedKeys =
+	'signedUrl' |
+	'timestamp' |
+	'md5Hash' |
+	'path' |
+	'bucketName' |
+	'public' |
+	'metadata'
 
-export type DB_Asset = DB_Object & BaseUploaderFile & Auditable & Required<Pick<BaseUploaderFile, 'key'>> & {
-	timestamp: number
+type Proto = Proto_DB_Object<DB_Asset, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+
+export type DBProto_Assets = DBProto<Proto>;
+
+export type UI_Asset = DBProto_Assets['uiType'];
+export type DB_Asset = DB_Object & {
+	key: string
+	name: string
+	feId: string
 	ext: string
+	mimeType: string
+
+	timestamp: number
 	md5Hash?: string
 	path: string
 	bucketName: string
+	public?: boolean
+	metadata?: TS_Object
 	signedUrl?: {
 		url: string,
 		validUntil: number
 	}
 }
-
-export type FileInfo = {
-	status: FileStatus
-	messageStatus?: string
-	progress?: number
-	name: string
-	request?: BaseHttpRequest<any>
-	file?: any
-	asset?: DB_Asset
-};
-
-export type SecureUrl = {
-	signedUrl: string
-}
-
-export type TempSecureUrl = SecureUrl & {
-	asset: DB_Asset
-}
-
-export type FileUploadResult = { status: FileStatus, asset: DB_Asset };
-
-export type Request_GetReadSignedUrl = { pathInBucket: string; bucketName?: string };

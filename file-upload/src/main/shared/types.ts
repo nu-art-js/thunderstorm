@@ -17,12 +17,7 @@
  * limitations under the License.
  */
 
-import {MessageType} from '@nu-art/push-pub-sub';
-import {FileUploadResult} from '.';
-
 export const PushKey_FileUploaded = 'file-uploaded';
-
-export type Push_FileUploaded = MessageType<'file-uploaded', { feId: string }, FileUploadResult>;
 
 export enum FileStatus {
 	Idle = 'Idle',

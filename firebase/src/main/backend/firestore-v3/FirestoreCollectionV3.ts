@@ -24,7 +24,7 @@ import {
 	batchActionParallel,
 	compare,
 	Const_UniqueKeys,
-	CustomException,
+	CustomException, DB_Object_validator,
 	DBDef_V3,
 	dbIdLength,
 	dbObjectToId,
@@ -95,7 +95,7 @@ export class FirestoreBulkException
 
 const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']] | Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'] => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
-		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator};
+		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
 	else if (typeof dbDef.modifiablePropsValidator === 'function' && typeof dbDef.generatedPropsValidator === 'function')
 		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator];
 	else {
@@ -204,11 +204,14 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		custom: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
 			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
 		},
+		where: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
+			return this.query.custom({where}, transaction);
+		},
 	});
 
-	uniqueGetOrCreate = async (where: Clause_Where<Proto['dbType']>, toCreate: (transaction?: Transaction) => Promise<Proto['dbType']>, transaction?: Transaction) => {
+	uniqueGetOrCreate = async (where: Clause_Where<Proto['dbType']>, toCreate: (transaction?: Transaction) => Promise<Proto['uiType']>, transaction?: Transaction) => {
 		try {
-			return await this.query.uniqueWhere(where);
+			return await this.query.uniqueWhere(where, transaction);
 		} catch (e: any) {
 			return toCreate(transaction);
 		}
@@ -360,6 +363,9 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			}
 
 			return await this._deleteQuery(query, transaction);
+		},
+		where: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
+			return this.delete.query({where}, transaction);
 		},
 
 		/**

@@ -18,23 +18,23 @@
  */
 
 import {ModuleBase_AssetUploader, UploaderConfig,} from '../../shared/modules/ModuleBase_AssetUploader';
-import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule, AxiosHttpModule_Class} from '@nu-art/thunderstorm/backend';
-import {ApiDef_AssetUploader, BaseUploaderFile, Request_Uploader, TempSecureUrl} from '../shared';
+import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule} from '@nu-art/thunderstorm/backend';
+import {ApiDef_AssetUploader, TempSignedUrl, UI_Asset} from '../shared';
 
 
-export type ServerFilesToUpload = Request_Uploader & {
+export type ServerFilesToUpload = UI_Asset & {
 	file: Buffer
 }
 
 type Config = UploaderConfig & { requestConfig: Axios_RequestConfig };
 
 export class ModuleBE_AssetUploader_Class
-	extends ModuleBase_AssetUploader<AxiosHttpModule_Class, Config> {
+	extends ModuleBase_AssetUploader<Config> {
 
 	constructor() {
 		super();
 		this.vv1 = {
-			uploadFile: apiWithBodyAxios(ApiDef_AssetUploader.vv1.uploadFile),
+			// uploadFile: apiWithBodyAxios(ApiDef_AssetUploader.vv1.uploadFile),
 			getUploadUrl: apiWithBodyAxios(ApiDef_AssetUploader.vv1.getUploadUrl),
 			processAssetManually: apiWithQueryAxios(ApiDef_AssetUploader.vv1.processAssetManually),
 		};
@@ -45,11 +45,11 @@ export class ModuleBE_AssetUploader_Class
 		AxiosHttpModule.setRequestOption(this.config.requestConfig);
 	}
 
-	upload(files: ServerFilesToUpload[]): BaseUploaderFile[] {
+	upload(files: ServerFilesToUpload[]): UI_Asset[] {
 		return this.uploadImpl(files);
 	}
 
-	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
+	protected async subscribeToPush(toSubscribe: TempSignedUrl[]): Promise<void> {
 		// Not sure now
 		// We said timeout
 	}

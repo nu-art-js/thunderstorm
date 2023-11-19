@@ -4,7 +4,7 @@ import {_keys, TypedMap} from '@nu-art/ts-common';
 import {Dialog_ActionProcessorConfirmation} from '../dialogs';
 import {ActionMetaData} from '../../../shared/action-processor';
 import {ComponentAsync} from '../../core/ComponentAsync';
-import {AppToolsScreen, TS_AppTools} from '../../components/TS_AppTools';
+import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools';
 import {ModuleFE_ActionProcessor} from '../../modules/action-processor/ModuleFE_ActionProcessor';
 import {genericNotificationAction} from '../../components/TS_Notifications';
 import {LL_H_C, LL_V_L} from '../../components/Layouts';
@@ -19,7 +19,7 @@ type State = {
 export class ATS_ActionProcessor
 	extends ComponentAsync<{}, State> {
 
-	static screen: AppToolsScreen = {name: 'Refactoring Actions', key: 'refactoring-actions', renderer: this, group: 'TS Dev Tools'};
+	static screen: AppToolsScreen = {name: 'Refactoring Actions', key: 'refactoring-actions', renderer: this, group: ATS_Backend};
 
 	// ######################### Life Cycle #########################
 
