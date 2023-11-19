@@ -1,0 +1,46 @@
+@use '@nu-art/ts-styles' as styles;
+
+.ats-PushPubSub {
+  .header {
+
+  }
+
+  .panels-container {
+    flex-grow: 1;
+
+    .panel {
+      width: 50%;
+      margin-inline: 4px;
+      border: 2px solid black;
+      border-radius: 6px;
+
+      .panel-header {
+        height: 40px;
+        background-color: #8A959B;
+      }
+
+      .panel-content {
+        padding: 8px;
+
+        .ts-table {
+          width: 100%
+        }
+      }
+    }
+  }
+
+  .notification-icon {
+    @include styles.color-svg(white);
+    width: 40px;
+    height: 40px;
+
+    &.notification-enabled {
+      @include styles.color-svg(green);
+    }
+
+    &.notification-disabled {
+      @include styles.color-svg(red);
+    }
+  }
+
+}

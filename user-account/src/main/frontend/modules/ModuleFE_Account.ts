@@ -5,6 +5,7 @@ import {
 	ModuleFE_BrowserHistory,
 	ModuleFE_v3_BaseApi,
 	ModuleFE_XHR,
+	OnStorageKeyChangedListener,
 	ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
@@ -57,7 +58,7 @@ export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdate
 
 class ModuleFE_Account_Class
 	extends ModuleFE_v3_BaseApi<DBProto_AccountType>
-	implements ApiDefCaller<ApiStructFE_Account>, OnAuthRequiredListener {
+	implements ApiDefCaller<ApiStructFE_Account>, OnAuthRequiredListener, OnStorageKeyChangedListener {
 	readonly vv1: ApiDefCaller<ApiStructFE_Account>['vv1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	accountId!: string;
@@ -69,6 +70,7 @@ class ModuleFE_Account_Class
 		super(DBDef_Accounts, dispatch_onAccountsUpdated);
 
 		this.vv1 = {
+			refreshSession: apiWithQuery(ApiDefFE_Account.vv1.refreshSession),
 			registerAccount: apiWithBody(ApiDefFE_Account.vv1.registerAccount, this.setLoginInfo),
 			createAccount: apiWithBody(ApiDefFE_Account.vv1.createAccount, this.onAccountCreated),
 			changePassword: apiWithBody(ApiDefFE_Account.vv1.changePassword, this.setLoginInfo),
@@ -93,6 +95,16 @@ class ModuleFE_Account_Class
 	getLoggedStatus = () => this.status;
 
 	isStatus = (status: LoggedStatus) => this.status === status;
+
+	__onStorageKeyEvent(event: StorageEvent) {
+		if (event.key === StorageKey_SessionId.key) {
+			const sessionData = StorageKey_SessionId.get();
+			if (sessionData)
+				this.sessionData = this.decode(sessionData);
+			else
+				this.sessionData = {};
+		}
+	}
 
 	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
 		await this.onEntriesUpdated([response as DB_Account]);

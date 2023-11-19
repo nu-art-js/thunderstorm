@@ -266,4 +266,4 @@ export type ManipulateInnerPropValue<ObjectType, PropertyPath extends DotNotatio
 			: never
 		: { [Prop in keyof ObjectType]: Prop extends PropertyPath ? NewValueType : ObjectType[Prop] };
 
-
+export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };

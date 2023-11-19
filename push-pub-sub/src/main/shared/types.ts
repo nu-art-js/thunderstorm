@@ -1,39 +1,31 @@
-import {DB_BaseObject, DB_Object} from "@nu-art/ts-common";
+import {DB_Object} from '@nu-art/ts-common';
 
-export type SubscribeProps = { [prop: string]: string | number };
+
+export type FilterProps = { [prop: string]: string | number };
 
 export type BaseSubscriptionData = {
-	props?: SubscribeProps
-	pushKey: string
-}
-
-export type SubscriptionData<D = any> = BaseSubscriptionData & {
-	data?: D
+	filter?: FilterProps
+	topic: string
 }
 
 export type Request_PushRegister = FirebaseToken & PushSessionId & {
 	subscriptions: BaseSubscriptionData[]
 }
 
-export type Request_ReadPush = DB_BaseObject & {
-	read: boolean
-}
-
-export type Response_PushRegister = DB_Notifications[]
-
 export type DB_PushSession = FirebaseToken & PushSessionId & {
 	timestamp: number
 	userId: string
 }
 
-export type DB_Notifications<D = any> = DB_Object & SubscriptionData<D> & {
+export type DB_Notifications<MessageType> = DB_Object & {
+	message: MessageType
 	userId?: string
 	timestamp: number
 	read: boolean
 	persistent?: boolean
 }
 
-export type DB_PushKeys = PushSessionId & BaseSubscriptionData
+export type DB_PushSubscription = PushSessionId & BaseSubscriptionData
 
 export type FirebaseToken = {
 	firebaseToken: string
@@ -43,7 +35,19 @@ export type PushSessionId = {
 	pushSessionId: string
 }
 
-export type MessageType<S extends string, P extends SubscribeProps, D> = {}
-export type IFP<Binder extends MessageType<any, any, any>> = Binder extends MessageType<infer S, any, any> ? S extends string ? S : never : never;
-export type ISP<Binder extends MessageType<any, any, any>> = Binder extends MessageType<any, infer P, any> ? P extends SubscribeProps ? P : never : never;
-export type ITP<Binder extends MessageType<any, any, any>> = Binder extends MessageType<any, any, infer D> ? D : never;
+export type PushMessage<Topic extends string, Filter extends FilterProps, Data = never> = {
+	topic: Topic,
+	filter: Filter,
+	data: Data
+}
+
+export type PushMessage_PayloadWrapper = {
+	sessionId: string,
+	payload: string // JSON.stringify(PushMessage_Payload
+}
+
+export type PushMessage_Payload<MessageType extends PushMessage<any, any, any> = PushMessage<any, any, any>> = BaseSubscriptionData & {
+	_id: string,
+	timestamp: number
+	message: MessageType['data']
+}

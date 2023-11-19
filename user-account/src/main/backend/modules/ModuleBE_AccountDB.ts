@@ -43,8 +43,8 @@ import {
 } from '../../shared';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../shared/assertion';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
+import {HttpCodes} from '@nu-art/thunderstorm';
 import Transaction = firestore.Transaction;
-import {ApiError_GeneralErrorMessage} from '@nu-art/ts-common/core/exceptions/types';
 
 
 type BaseAccount = {
@@ -96,10 +96,7 @@ export class ModuleBE_AccountDB_Class
 	}
 
 	canDeleteItems(dbItems: DB_Account[], transaction?: FirebaseFirestore.Transaction): Promise<void> {
-		throw new ApiException<ApiError_GeneralErrorMessage>(403, 'Cannot delete accounts yet').setErrorBody({
-			type: 'error-message',
-			data: {message: 'Account Deletion is not implemented yet'}
-		});
+		throw HttpCodes._5XX.NOT_IMPLEMENTED('Account Deletion is not implemented yet');
 	}
 
 	async __collectSessionData(data: SessionCollectionParam) {
@@ -117,6 +114,9 @@ export class ModuleBE_AccountDB_Class
 		super.init();
 
 		addRoutes([
+			createQueryServerApi(ApiDefBE_Account.vv1.refreshSession, async () => {
+				await ModuleBE_SessionDB.session.rotate();
+			}),
 			createBodyServerApi(ApiDefBE_Account.vv1.registerAccount, this.account.register),
 			createBodyServerApi(ApiDefBE_Account.vv1.changePassword, this.account.changePassword),
 			createBodyServerApi(ApiDefBE_Account.vv1.login, this.account.login),
@@ -320,10 +320,10 @@ export class ModuleBE_AccountDB_Class
 	password = {
 		assertPasswordExistence: (email: string, password?: string, passwordCheck?: string) => {
 			if (!password || !passwordCheck)
-				throw new ApiException(400, `Did not receive a password for email ${email}.`);
+				throw HttpCodes._4XX.BAD_REQUEST(`Did not receive a password`, `Did not receive a password for email ${email}.`);
 
 			if (password !== passwordCheck)
-				throw new ApiException(400, `Password does not match password check for email ${email}.`);
+				throw HttpCodes._4XX.BAD_REQUEST(`Password check does not match`, `Password does not match password check for email ${email}.`);
 		},
 		assertPasswordRules: (password: string) => {
 			const assertPassword = assertPasswordRules(password, this.config.passwordAssertion);
