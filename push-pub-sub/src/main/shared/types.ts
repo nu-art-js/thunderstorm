@@ -1,10 +1,10 @@
 import {DB_Object} from '@nu-art/ts-common';
 
 
-export type SubscribeProps = { [prop: string]: string | number };
+export type FilterProps = { [prop: string]: string | number };
 
 export type BaseSubscriptionData = {
-	props?: SubscribeProps
+	filter?: FilterProps
 	topic: string
 }
 
@@ -35,9 +35,9 @@ export type PushSessionId = {
 	pushSessionId: string
 }
 
-export type PushMessage<Topic extends string, Props extends SubscribeProps, Data = never> = {
+export type PushMessage<Topic extends string, Filter extends FilterProps, Data = never> = {
 	topic: Topic,
-	props: Props,
+	filter: Filter,
 	data: Data
 }
 
@@ -46,7 +46,7 @@ export type PushMessage_PayloadWrapper = {
 	payload: string // JSON.stringify(PushMessage_Payload
 }
 
-export type PushMessage_Payload<MessageType extends PushMessage<any, any, any> = PushMessage<any, any, any>> = {
+export type PushMessage_Payload<MessageType extends PushMessage<any, any, any> = PushMessage<any, any, any>> = BaseSubscriptionData & {
 	_id: string,
 	timestamp: number
 	message: MessageType['data']

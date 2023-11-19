@@ -21,7 +21,7 @@ import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 
 import {ApiStruct_AssetUploader, DB_Asset, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '../../shared';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
-import {DB_Notifications} from '@nu-art/push-pub-sub';
+import {PushMessage_Payload} from '@nu-art/push-pub-sub';
 import {PushMessage_FileUploaded} from '../assets/messages';
 
 
@@ -60,11 +60,11 @@ export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = U
 		this.setDefaultConfig({manualProcessTriggering: false} as Partial<Config>);
 	}
 
-	__onMessageReceived(notification: DB_Notifications<PushMessage_FileUploaded>): void {
-		if (notification.message.topic !== PushKey_FileUploaded)
+	__onMessageReceived(notification: PushMessage_Payload<PushMessage_FileUploaded>): void {
+		if (notification.topic !== PushKey_FileUploaded)
 			return;
 
-		const data = notification.message.data;
+		const data = notification.message;
 		if (!data)
 			return this.logError('file upload push without data');
 

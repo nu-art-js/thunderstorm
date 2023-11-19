@@ -13,7 +13,7 @@ import {DBProto_PushSubscription} from './types';
 
 const Validator_ModifiableProps: DBProto_PushSubscription['modifiablePropsValidator'] = {
 	pushSessionId: tsValidateString(),
-	props: tsValidateDynamicObject((value?: number | string) => {
+	filter: tsValidateDynamicObject((value?: number | string) => {
 			if (typeof value === 'string')
 				return tsValidateResult(value, tsValidateString());
 

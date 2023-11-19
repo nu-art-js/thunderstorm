@@ -88,7 +88,7 @@ export class ModuleBE_PushPubSub_Class
 
 		await ModuleBE_PushSubscriptionDB.runTransaction(async transaction => {
 			const data = await ModuleBE_PushSubscriptionDB.query.where({pushSessionId: body.pushSessionId}, transaction);
-			const toInsert = subscriptions.filter(s => !data.find(d => d.topic === s.topic && compare(s.props, d.props)));
+			const toInsert = subscriptions.filter(s => !data.find(d => d.topic === s.topic && compare(s.filter, d.filter)));
 			if (toInsert.length === 0)
 				return;
 
@@ -105,12 +105,12 @@ export class ModuleBE_PushPubSub_Class
 		if (messageLength > this.config.messageLengthLimit)
 			throw HttpCodes._4XX.BAD_REQUEST(`Message content too long, ${messageLength} > ${this.config.messageLengthLimit}`,);
 
-		const messageSubscription = {topic: message.topic, props: message.props};
+		const messageSubscription = {topic: message.topic, props: message.filter};
 		return ModuleBE_PushSubscriptionDB.runTransaction(async (transaction: Transaction) => {
 			let subscriptions = await ModuleBE_PushSubscriptionDB.query.where({topic: message.topic}, transaction);
 			this.logVerbose(`Found ${subscriptions.length} subscribers for message: `, messageSubscription);
-			if (message.props)
-				subscriptions = subscriptions.filter(subscription => !subscription.props || compare(subscription.props, message.props));
+			if (message.filter)
+				subscriptions = subscriptions.filter(subscription => !subscription.filter || compare(subscription.filter, message.filter));
 
 			if (subscriptions.length === 0)
 				return this.logDebug('No subscribers match message: ', message);
@@ -142,7 +142,9 @@ export class ModuleBE_PushPubSub_Class
 				const messageBody: PushMessage_Payload = {
 					_id: dbMessage._id,
 					timestamp: dbMessage.__created,
-					message: dbMessage.message
+					message: dbMessage.message,
+					topic: message.topic,
+					filter: message.filter,
 				};
 
 				const data: PushMessage_PayloadWrapper = {
@@ -164,7 +166,7 @@ export class ModuleBE_PushPubSub_Class
 
 	// async pushToUser<MessageType extends PushMessage<any, any, any>>(accountId: string, message: MessageType) {
 	// 	const notification = this.buildNotification(message);
-	// 	this.logInfo(`Account ${notification.originatingAccountId} is pushing to user ${accountId}`, message.props);
+	// 	this.logInfo(`Account ${notification.originatingAccountId} is pushing to user ${accountId}`, message.filter);
 	//
 	// 	const docs = await ModuleBE_PushSessionDB.query.where({accountId});
 	// 	if (docs.length === 0)
