@@ -33,9 +33,8 @@ export class ATS_AccountEditor
 		name: 'Accounts Editor',
 		key: 'user-account',
 		renderer: this,
-		group: 'TS Dev Tools'
+		group: 'Permissions'
 	};
-
 
 	// ######################### Life Cycle #########################
 
@@ -61,7 +60,6 @@ export class ATS_AccountEditor
 	}
 }
 
-
 type ListState = State_SmartComponent & {
 	list: DB_Account[],
 };
@@ -72,7 +70,8 @@ type ListProps = Props_SmartComponent & {
 }
 
 class Component_AccountList
-	extends SmartComponent<ListProps, ListState> implements OnAccountsUpdated {
+	extends SmartComponent<ListProps, ListState>
+	implements OnAccountsUpdated {
 
 	__onAccountsUpdated(...params: ApiCallerEventType<DB_Account>) {
 		this.reDeriveState();
@@ -101,8 +100,8 @@ class Component_AccountList
 					this.state.list.map(account => {
 							const className = _className('match_width', 'row', this.props.user?._id === account._id && 'selected');
 							return <TS_PropRenderer.Horizontal onClick={() => this.props.setSelectedAccount(account)}
-															   key={generateUUID()} className={className}
-															   label={account.email}/>;
+																								 key={generateUUID()} className={className}
+																								 label={account.email}/>;
 						}
 					)
 				}

@@ -90,7 +90,6 @@ export * from './modules/db-api-gen/ModuleFE_v3_BaseDB';
 export * from './modules/db-api-gen/ModuleFE_BaseApi';
 export * from './modules/db-api-gen/ModuleFE_v3_BaseApi';
 export * from './modules/sync-manager/ModuleFE_SyncManager';
-export * from './modules/sync-env/ModuleFE_SyncEnv';
 export * from './modules/app-config/ModuleFE_AppConfig';
 export * from './modules/archiving/ModuleFE_Archiving';
 

@@ -29,13 +29,12 @@ import {
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, exists, filterInstances, Module, PreDB, sortArray} from '@nu-art/ts-common';
+import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, filterInstances, Module, PreDB, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {defaultAccessLevels} from '../../../shared/consts';
-import {Permissions_DropDown} from '../ui-props';
 
 
 type State = State_EditorBase<DB_PermissionDomain> & {
@@ -47,7 +46,7 @@ type State = State_EditorBase<DB_PermissionDomain> & {
 const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB_PermissionAccessLevel>);
 
 export class PermissionDomainsEditor
-	extends EditorBase<DB_PermissionDomain, State, { projectId?: string }>
+	extends EditorBase<DB_PermissionDomain, State>
 	implements OnPermissionsDomainsUpdated, OnPermissionsLevelsUpdated {
 
 	//######################### Static #########################
@@ -55,7 +54,7 @@ export class PermissionDomainsEditor
 	readonly module = ModuleFE_PermissionsDomain;
 	readonly itemName = 'Permission Domain';
 	readonly itemNamePlural = 'Permission Domains';
-	readonly itemDisplay = (item: DB_PermissionDomain) => item.namespace;
+	readonly itemDisplay = (item: DB_PermissionDomain) => `${ModuleFE_PermissionsProject.cache.unique(item.projectId)!.name}/${item.namespace}`;
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsDomain]
 	};
@@ -79,7 +78,7 @@ export class PermissionDomainsEditor
 	}
 
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
-		state.items = ModuleFE_PermissionsDomain.cache.filter(domain => !exists(this.props.projectId) || domain.projectId === this.props.projectId);
+		state.items = ModuleFE_PermissionsDomain.cache.all();
 		state.projects = ModuleFE_PermissionsProject.cache.all();
 		state.newLevel ??= new EditableDBItem(emptyLevel, ModuleFE_PermissionsAccessLevel);
 
@@ -103,9 +102,9 @@ export class PermissionDomainsEditor
 			throw new BadImplementationException('Editing a level with no selected domain');
 
 		const level = new EditableDBItem(_level, ModuleFE_PermissionsAccessLevel);
-		level.update(key, value);
+		level.set(key, value);
 		if (!level.item.domainId)
-			level.update('domainId', domain.item._id);
+			level.set('domainId', domain.item._id);
 
 		await level.save();
 		this.forceUpdate();
@@ -120,7 +119,7 @@ export class PermissionDomainsEditor
 		if (!this.state.editedItem)
 			throw new BadImplementationException('Saving level with no selected domain');
 
-		this.state.newLevel.update('domainId', this.state.editedItem.item._id);
+		this.state.newLevel.set('domainId', this.state.editedItem.item._id);
 		return this.state.newLevel.save();
 	};
 
@@ -202,7 +201,7 @@ export class PermissionDomainsEditor
 			? {onBlur: async (value: string) => await this.updateLevel(level, 'name', value)}
 			: {
 				onChange: (value: string) => {
-					this.state.newLevel.update('name', value);
+					this.state.newLevel.set('name', value);
 					this.forceUpdate();
 				}
 			};
@@ -220,7 +219,7 @@ export class PermissionDomainsEditor
 			? {onBlur: async (value: string) => await this.updateLevel(level, 'value', Number(value))}
 			: {
 				onChange: (value: string) => {
-					this.state.newLevel.update('value', Number(value));
+					this.state.newLevel.set('value', Number(value));
 					this.forceUpdate();
 				}
 			};
@@ -248,19 +247,6 @@ export class PermissionDomainsEditor
 	};
 
 	//######################### Render #########################
-
-	private renderProjectsDropDown = () => {
-		const domain = this.state.editedItem;
-		if (!domain)
-			return '';
-
-		return <TS_PropRenderer.Vertical label={'Project'}>
-			<Permissions_DropDown.Project
-				selected={domain.item.projectId}
-				onSelected={project => this.setProperty('projectId', project._id)}
-			/>
-		</TS_PropRenderer.Vertical>;
-	};
 
 	private renderDBDefList = () => {
 		return <>
@@ -298,7 +284,6 @@ export class PermissionDomainsEditor
 	editorContent = () => {
 		const domain = this.state.editedItem!;
 		return <>
-			{this.renderProjectsDropDown()}
 			<TS_PropRenderer.Vertical label={'Namespace'}>
 				<LL_H_C className={'match_width'} style={{gap: '10px'}}>
 					<TS_Input type={'text'} value={domain.item.namespace}

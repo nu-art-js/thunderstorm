@@ -1,13 +1,15 @@
 import {
-	ApiException,
 	AssertionException,
-	BadImplementationException, DontCallThisException,
+	BadImplementationException,
+	DontCallThisException,
 	Exception,
-	ImplementationMissingException, isErrorOfType,
+	ImplementationMissingException,
+	isErrorOfType,
 	MUSTNeverHappenException,
-	NotImplementedYetException, ThisShouldNotHappenException, WhoCallThisException
+	NotImplementedYetException,
+	ThisShouldNotHappenException,
+	WhoCallThisException
 } from '../core/exceptions/exceptions';
-import {ApiError_GeneralErrorMessage} from '../core/exceptions/types';
 
 
 const allExceptions = [
@@ -24,11 +26,4 @@ const allExceptions = [
 
 export function isCustomException(e: Error) {
 	return allExceptions.some(exc => !!isErrorOfType(e, exc));
-}
-
-export function BadRequest(userMessage: string, debugMessage: string = userMessage, cause?: Error) {
-	return new ApiException<ApiError_GeneralErrorMessage>(400, debugMessage, cause).setErrorBody({
-		type: 'error-message',
-		data: {message: userMessage}
-	});
 }
