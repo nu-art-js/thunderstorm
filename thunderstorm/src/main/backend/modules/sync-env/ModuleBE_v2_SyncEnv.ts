@@ -164,7 +164,6 @@ class ModuleBE_v2_SyncEnv_Class
 
 		await CSVModule.forEachCsvRowFromStreamSync(stream, (row: any, index: number, transform) => {
 			totalItems++;
-			this.logInfo(`index: ${index}`);
 
 			_keys(row).map(key => {
 				row[(key as string).trim()] = (row[key] as string).trim();
