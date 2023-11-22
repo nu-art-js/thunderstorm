@@ -10,6 +10,8 @@ import {
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '../shared/types';
 import {DefaultAccessLevel_Admin, DefaultAccessLevel_NoAccess, DefaultAccessLevel_Read, DefaultAccessLevel_Write,} from '../shared/consts';
 import {ApiDefBE_Account, ApiDefFE_Account, DBDef_Accounts} from '@nu-art/user-account';
+import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE';
+import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
@@ -45,9 +47,18 @@ const _Domain_AccountManagement: DefaultDef_Domain = {
 	]
 };
 
+export const PermissionKeyBE_DeveloperViewer = new PermissionKey_BE(PermissionKey_DeveloperViewer, () => defaultValueResolverV2(Domain_Developer._id, DefaultAccessLevel_Read.name));
+export const PermissionKeyBE_DeveloperEditor = new PermissionKey_BE(PermissionKey_DeveloperWriter, () => defaultValueResolverV2(Domain_Developer._id, DefaultAccessLevel_Write.name));
+export const PermissionKeyBE_DeveloperAdmin = new PermissionKey_BE(PermissionKey_DeveloperAdmin, () => defaultValueResolverV2(Domain_Developer._id, DefaultAccessLevel_Admin.name));
+
 const _Domain_Developer: DefaultDef_Domain = {
 	_id: Domain_Developer_ID,
 	namespace: 'Developer',
+	permissionKeys: [
+		PermissionKeyBE_DeveloperViewer,
+		PermissionKeyBE_DeveloperEditor,
+		PermissionKeyBE_DeveloperAdmin,
+	]
 };
 
 export const Domain_PermissionsDefine = Object.freeze(_Domain_PermissionsDefine);

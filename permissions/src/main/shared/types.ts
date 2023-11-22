@@ -1,6 +1,7 @@
 import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionProject} from './management';
 import {DB_PermissionGroup, DB_PermissionUser} from './assign';
 import {TypedKeyValue, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {PermissionKey_BE} from '../backend/PermissionKey_BE';
 
 
 export type PermissionTypes = {
@@ -53,6 +54,7 @@ export type DefaultDef_Domain = {
 	levels?: DefaultDef_AccessLevel[]
 	customApis?: DefaultDef_Api[],
 	dbNames?: string[]
+	permissionKeys?: PermissionKey_BE<string>[]
 }
 
 export type DefaultDef_AccessLevel = {
