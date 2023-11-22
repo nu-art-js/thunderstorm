@@ -178,13 +178,13 @@ export class ModuleBE_PermissionsAssert_Class
 			return dbModules.filter((dbModule, index) => {
 				const path = paths[index];
 				if (!path) {
-					this.logWarningBold('no path');
+					// this.logWarningBold('no path');
 					return false;
 				}
 
 				const dbApi = mapPathToDBApi[path];
 				if (!dbApi) {
-					this.logWarningBold(`no dbApi ${path}`);
+					// this.logWarningBold(`no dbApi ${path}`);
 					return !ModuleBE_PermissionsAssert.isStrictMode();
 				}
 
