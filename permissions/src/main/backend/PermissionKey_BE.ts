@@ -4,6 +4,7 @@ import {ModuleBE_PermissionAccessLevel} from './modules/management/ModuleBE_Perm
 import {AppConfigKey_BE, ModuleBE_AppConfig} from '@nu-art/thunderstorm/backend/modules/app-config/ModuleBE_AppConfig';
 import {ModuleBE_PermissionDomain} from './modules/management/ModuleBE_PermissionDomain';
 
+
 type Resolver = () => Promise<DB_PermissionKeyData>;
 
 export class PermissionKey_BE<K extends string>
@@ -38,6 +39,15 @@ export class PermissionKey_BE<K extends string>
 		await super.set(dbValue);
 	}
 }
+
+export const defaultValueResolverV2 = async (domainId: string, accessLevelName: string): Promise<DB_PermissionKeyData> => {
+	const accessLevel = await ModuleBE_PermissionAccessLevel.query.uniqueCustom({where: {domainId, name: accessLevelName}});
+	return {
+		type: Const_PermissionKeyType,
+		accessLevelIds: [accessLevel._id],
+		_accessLevels: {[accessLevel._id]: accessLevel.value}
+	};
+};
 
 export const defaultValueResolver = async (domainNamespace: string, accessLevelValue: number): Promise<DB_PermissionKeyData> => {
 	const domain = await ModuleBE_PermissionDomain.query.uniqueCustom({where: {namespace: domainNamespace}});
