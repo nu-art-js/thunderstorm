@@ -95,7 +95,7 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
 }[Keys]
 
 export type Constructor<T> = new (...args: any) => T
-export type ArrayType<T extends any[]> = T extends (infer I)[] ? I : never;
+export type ArrayType<T extends any> = T extends (infer I)[] ? I : never;
 export type NestedArrayType<T extends any[]> =
 	T extends (infer I)[] ? I extends any[] ?
 		NestedArrayType<I> : I : never;
@@ -139,7 +139,7 @@ export type UniqueParam<Type extends DB_Object, Ks extends keyof PreDB<Type> = D
 	| IndexKeys<Type, Ks>;
 
 export type Draftable = { _isDraft: boolean };
-export type ResolvableContent<T, K = never> = T | ((param: K) => T);
+export type ResolvableContent<T, K extends any[] = never> = T | ((...param: K) => T);
 
 export type Auditable = {
 	_audit?: AuditBy;
