@@ -1,12 +1,17 @@
 import * as React from 'react';
-import {DB_Object, TypedMap} from '@nu-art/ts-common';
+import {DB_Object, ResolvableContent, TypedMap} from '@nu-art/ts-common';
 import {BaseAsyncState} from '@nu-art/thunderstorm/frontend';
 
 
-export type Props_ConfigChanged = { onConfigChanged: () => void };
-export type Props_WorkspacePanel<Config, Props = {}> = Props & Props_ConfigChanged & {
-	config: Config
+export type Props_BaseWorkspace = {
 	renderers: TypedMap<React.ElementType>
+	instances?: TypedMap<ResolvableContent<React.ReactNode, [any, Props_ConfigChanged['onConfigChanged']]>>
+}
+
+export type Props_ConfigChanged = { onConfigChanged: () => void };
+
+export type Props_WorkspacePanel<Config, Props = {}> = Props & Props_ConfigChanged & Props_BaseWorkspace & {
+	config: Config
 }
 
 export type State_WorkspacePanel<Config, State = {}> = BaseAsyncState & State & {

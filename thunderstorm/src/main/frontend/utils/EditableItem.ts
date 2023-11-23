@@ -16,7 +16,7 @@ export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, T
 export class EditableItem<T> {
 	static AUTO_SAVE = false;
 
-	item: Partial<T>;
+	readonly item: Partial<T>;
 	private _autoSave: boolean = EditableItem.AUTO_SAVE;
 
 	/**
@@ -124,8 +124,9 @@ export class EditableItem<T> {
 	 * @returns The new EditableItem.
 	 */
 	editProp<K extends keyof T>(key: K, defaultValue: Partial<NonNullable<T[K]>>) {
+		const itemToEdit = this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>);
 		return new EditableItem<NonNullable<T[K]>>(
-			this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>),
+			itemToEdit,
 			async (value: T[K]) => {
 				this.set(key, value);
 				return this.autoSave();
