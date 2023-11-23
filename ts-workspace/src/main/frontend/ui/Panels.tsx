@@ -7,7 +7,8 @@ import {
 	SmartComponent,
 	State_SmartComponent
 } from '@nu-art/thunderstorm/frontend';
-import {compare} from '@nu-art/ts-common';
+import {compare, resolveContent} from '@nu-art/ts-common';
+
 
 export abstract class PanelBaseSync<Config, State = {}, Props = {}>
 	extends ComponentSync<Props_WorkspacePanel<Config, Props> & Props, State_WorkspacePanel<Config, State>> {
@@ -37,6 +38,10 @@ export abstract class PanelParentSync<Config = {}, State = {}, Props = {}>
 	extends PanelBaseSync<Config_PanelParent<Config>, State, Props> {
 
 	renderPanel(panel: PanelConfig) {
+		const ComponentToRender = resolveContent(this.props.instances?.[panel.key], panel.data, this.props.onConfigChanged);
+		if (ComponentToRender)
+			return ComponentToRender;
+
 		const PanelRenderer = this.props.renderers[panel.key];
 		return <PanelRenderer
 			config={panel.data}

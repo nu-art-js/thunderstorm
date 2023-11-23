@@ -24,17 +24,16 @@
 import {ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import './TS_Workspace.scss';
-import {PanelConfig} from './types';
+import {PanelConfig, Props_BaseWorkspace} from './types';
 import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace';
-import {TypedMap} from '@nu-art/ts-common';
+
+
+type Props = Props_BaseWorkspace & {
+	workspaceKey: string;
+}
 
 type State = {
 	config: PanelConfig
-}
-
-type Props = {
-	workspaceKey: string;
-	renderers: TypedMap<React.ElementType>
 }
 
 export class TS_Workspace
