@@ -23,8 +23,9 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Overlay} from '../TS_Overlay';
 import {stopPropagation} from '../../utils/tools';
-import {Dialog_Model, DialogListener, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
+import {Dialog_Model, DialogId, DialogListener, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
 import './TS_DialogOverlay.scss';
+import {removeFromArray} from '@nu-art/ts-common';
 
 
 type Props = {}
@@ -39,12 +40,18 @@ export class TS_DialogOverlay
 		return {models: []};
 	}
 
-	__showDialog = (model?: Dialog_Model): void => {
-		if (!model) {
+	__showDialog = (model: Dialog_Model): void => {
+		this.state.models.push(model);
+		this.forceUpdate();
+	};
+
+	__closeDialog = (dialogModel?: DialogId): void => {
+		const dialogId = dialogModel?.dialogId;
+		if (!dialogId)
 			this.state.models.pop();
-		} else {
-			this.state.models.push(model);
-		}
+		else
+			removeFromArray(this.state.models, model => model.dialogId === dialogId);
+
 		this.forceUpdate();
 	};
 
@@ -67,7 +74,6 @@ export class TS_DialogOverlay
 		);
 	}
 
-
 	private onOverlayClicked = (e: React.MouseEvent) => {
 		stopPropagation(e);
 		//Exit if click should not close this current dialog
@@ -76,7 +82,7 @@ export class TS_DialogOverlay
 
 		//Close there is only one dialog
 		if (this.state.models.length === 1)
-			return ModuleFE_Dialog.close();
+			return ModuleFE_Dialog.close(this.state.models[0].dialogId);
 
 		//Close only this dialog if more than one
 		this.state.models.pop();

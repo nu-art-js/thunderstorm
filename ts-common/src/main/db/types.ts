@@ -24,7 +24,7 @@ export type VersionType = string
 //
 // export type DBDef_V2<Proto extends DBProto<any>> = DBDef<Proto['dbType'], Proto['uniqueKeys']>
 
-export type VersionsDeclaration<T extends DB_Object, Versions extends VersionType[] = ['1.0.0'], Types extends [T, ...DB_Object[]] = [T, ...DB_Object[]]> = {
+export type VersionsDeclaration<T extends DB_Object, Versions extends VersionType[] = ['1.0.0'], Types extends { [V in Versions[number]]: DB_Object } = { [V in Versions[number]]: DB_Object }> = {
 	versions: Versions
 	types: Types
 };
@@ -52,7 +52,7 @@ export type Proto_DB_Object<
 	dependencies: Dependencies
 }
 
-export type DBProto<P extends Proto_DB_Object<any, any, any, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+export type DBProto<P extends Proto_DB_Object<any, any, VersionsDeclaration<any, any, any>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: P['type'],
@@ -60,7 +60,7 @@ export type DBProto<P extends Proto_DB_Object<any, any, any, any, any>, Modifiab
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
 	generatedProps: P['generatedKeys'][]
-	versions: P['versions']['versions']
+	versions: P['versions']
 	indices: DBIndex<P['type']>[]
 	uniqueParam: UniqueId | { [K in P['uniqueKeys']]: P['type'][K] }
 	metadata?: Metadata<OmitDBObject<P['type']>>
@@ -76,7 +76,7 @@ export type DBDef_V3<P extends DBProto<any, any, any>> = {
 	generatedPropsValidator: P['generatedPropsValidator'];
 	modifiablePropsValidator: P['modifiablePropsValidator'];
 	uniqueKeys?: P['uniqueKeys'];
-	versions?: P['versions'];
+	versions?: P['versions']['versions'];
 	indices?: P['indices'];
 	lockKeys?: P['lockKeys'];
 	metadata?: P['metadata'];

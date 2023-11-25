@@ -2,7 +2,8 @@ import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/
 import {BaseSubscriptionData, PushSessionId} from '../types';
 
 
-type Versions = VersionsDeclaration<DB_PushSubscription, ['1.0.0'], [DB_PushSubscription]>;
+type VersionTypes_PushSubscription = { '1.0.0': DB_PushSubscription };
+type Versions = VersionsDeclaration<DB_PushSubscription, ['1.0.0'], VersionTypes_PushSubscription>;
 type Dependencies = {
 //
 }
