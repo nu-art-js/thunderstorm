@@ -8,10 +8,17 @@ import {
 	DBDef_PermissionUser
 } from '../shared';
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '../shared/types';
-import {DefaultAccessLevel_Admin, DefaultAccessLevel_NoAccess, DefaultAccessLevel_Read, DefaultAccessLevel_Write,} from '../shared/consts';
+import {
+	DefaultAccessLevel_Admin,
+	DefaultAccessLevel_Delete,
+	DefaultAccessLevel_NoAccess,
+	DefaultAccessLevel_Read,
+	DefaultAccessLevel_Write,
+} from '../shared/consts';
 import {ApiDefBE_Account, ApiDefFE_Account, DBDef_Accounts} from '@nu-art/user-account';
 import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE';
 import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys';
+import {ApiDef_UpgradeCollection} from '@nu-art/thunderstorm/shared/upgrade-collection';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
@@ -58,6 +65,9 @@ const _Domain_Developer: DefaultDef_Domain = {
 		PermissionKeyBE_DeveloperViewer,
 		PermissionKeyBE_DeveloperEditor,
 		PermissionKeyBE_DeveloperAdmin,
+	],
+	customApis: [
+		{path: ApiDef_UpgradeCollection.vv1.upgrade.path, accessLevel: DefaultAccessLevel_Delete.name}
 	]
 };
 
@@ -79,7 +89,7 @@ export const PermissionsPackage_Developer: DefaultDef_Package = {
 	name: 'Developer',
 	domains: [
 		Domain_Developer,
-	]
+	],
 };
 
 //Needed?

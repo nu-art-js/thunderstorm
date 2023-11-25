@@ -1,16 +1,11 @@
 import {DB_Object, OmitDBObject, SubsetObjectByKeys, TS_Object} from './types';
 import {deepClone} from './object-tools';
 import {exists} from './tools';
-import {DBProto} from '../db/types';
 
 
 export const KeysOfDB_Object: (keyof DB_Object)[] = ['_id', '_v', '__created', '__updated'];
 
 export function dbObjectToId(i: DB_Object) {
-	return i._id;
-}
-
-export function dbObjectToId_V3<Proto extends DBProto<any>>(i: Proto['dbType']) {
 	return i._id;
 }
 

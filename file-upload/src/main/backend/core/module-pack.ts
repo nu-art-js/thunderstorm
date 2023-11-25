@@ -24,12 +24,16 @@ import {ModulePackBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {ModuleBE_AssetUploader} from '../modules/ModuleBE_AssetUploader';
 import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI';
 import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_AssetsStorage} from '../modules/ModuleBE_AssetsStorage';
+import {ModuleBE_AssetsDeleted} from '../modules/ModuleBE_AssetsDeleted';
 
 
 export const ModulePackBE_FileUploader = [
 	...ModulePackBE_PushPubSub,
 	ModuleBE_AssetUploader,
 	ModuleBE_AssetsTemp, createApisForDBModuleV3(ModuleBE_AssetsTemp),
+	ModuleBE_AssetsDeleted,
+	ModuleBE_AssetsStorage,
 	ModuleBE_AssetsDB, ModuleBE_AssetsAPI,
 	ModuleBE_BucketListener
 ];

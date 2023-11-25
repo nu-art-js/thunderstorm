@@ -22,7 +22,7 @@
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB, Second} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
-import {Response_DBSync, UpgradeCollectionBody} from './apiV1';
+import {Response_DBSync} from './apiV1';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
@@ -47,7 +47,6 @@ export type ApiStruct_DBApiGenV2<DBType extends DB_Object> = {
 		delete: QueryApi<DBType, DB_BaseObject>,
 		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		deleteAll: QueryApi<void>
-		upgradeCollection: BodyApi<void, UpgradeCollectionBody>, //todo taken from original api file
 		metadata: QueryApi<Metadata<DBType>>,
 	},
 }
@@ -63,7 +62,6 @@ export type ApiStruct_DBApiGenIDBV2<DBType extends DB_Object, Ks extends keyof D
 		delete: QueryApi<DBType | undefined, DB_BaseObject>,
 		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		deleteAll: QueryApi<DBType[]>,
-		upgradeCollection: BodyApi<void, UpgradeCollectionBody>, //todo taken from original api file
 		metadata: QueryApi<Metadata<DBType>>,
 	},
 }
@@ -80,7 +78,6 @@ export const DBApiDefGeneratorV2 = <DBType extends DB_Object>(dbDef: DBDef<DBTyp
 			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
 			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			upgradeCollection: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upgrade-collection`},
 			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
 		}
 	};
@@ -98,7 +95,6 @@ export const DBApiDefGeneratorIDBV2 = <DBType extends DB_Object, Ks extends keyo
 			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
 			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			upgradeCollection: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upgrade-collection`},
 			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
 		}
 	};
