@@ -6,7 +6,7 @@ type VersionTypes_Asset = {
 	'1.0.1': DB_Asset
 	'1.0.2': DB_Asset
 };
-type Versions = VersionsDeclaration<DB_Asset, ['1.0.2', '1.0.1', '1.0.0'], VersionTypes_Asset>;
+type Versions = VersionsDeclaration< ['1.0.2', '1.0.1', '1.0.0'], VersionTypes_Asset>;
 type Dependencies = {
 //
 }

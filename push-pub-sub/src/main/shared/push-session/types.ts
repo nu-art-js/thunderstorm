@@ -3,7 +3,7 @@ import {FirebaseToken, PushSessionId} from '../types';
 
 
 type VersionTypes_PushSession = { '1.0.0': DB_PushSession };
-type Versions = VersionsDeclaration<DB_PushSession, ['1.0.0'], VersionTypes_PushSession>;
+type Versions = VersionsDeclaration< ['1.0.0'], VersionTypes_PushSession>;
 type Dependencies = {
 //
 }

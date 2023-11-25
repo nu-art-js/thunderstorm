@@ -46,12 +46,16 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		return this.data ?? (this.data = (await this.ref.get()).data() as (Proto['dbType'] | undefined));
 	};
 
-	prepareForCreate = async (preDBItem: Proto['uiType'], transaction?: Transaction): Promise<Proto['dbType']> => {
+	prepareForCreate = async (preDBItem: Proto['uiType'], transaction?: Transaction, upgrade = true): Promise<Proto['dbType']> => {
 		const now = currentTimeMillis();
 
 		this.assertId(preDBItem);
 		preDBItem.__updated = preDBItem.__created = now;
-		preDBItem._v = this.collection.getVersion();
+		if (upgrade) {
+			preDBItem._v = this.collection.getVersion();
+			await this.collection.hooks?.upgradeInstances([preDBItem]);
+		}
+
 		await this.collection.hooks?.preWriteProcessing?.(preDBItem, transaction);
 		this.collection.validateItem(preDBItem as Proto['dbType']);
 		return preDBItem as Proto['dbType'];
@@ -70,18 +74,24 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		return dbItem;
 	};
 
-	prepareForSet = async (updatedDBItem: Proto['dbType'], dbItem?: Proto['dbType'], transaction?: Transaction): Promise<Proto['dbType']> => {
+	prepareForSet = async (updatedDBItem: Proto['dbType'], dbItem?: Proto['dbType'], transaction?: Transaction, upgrade = true): Promise<Proto['dbType']> => {
 		if (!dbItem)
 			return this.prepareForCreate(updatedDBItem, transaction);
 
 		this.assertId(updatedDBItem);
-		updatedDBItem._v = dbItem._v;
 		updatedDBItem.__created = dbItem.__created;
+
 		this.collection.dbDef.lockKeys?.forEach(lockedKey => {
 			updatedDBItem[lockedKey] = dbItem[lockedKey];
 		});
 
 		updatedDBItem.__updated = currentTimeMillis();
+
+		if (upgrade) {
+			updatedDBItem._v = dbItem._v;
+			await this.collection.hooks?.upgradeInstances([updatedDBItem]);
+		}
+
 		await this.collection.hooks?.preWriteProcessing?.(updatedDBItem, transaction);
 		this.collection.validateItem(updatedDBItem);
 		return updatedDBItem;

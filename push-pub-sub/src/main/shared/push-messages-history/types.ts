@@ -2,7 +2,7 @@ import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/
 
 
 type VersionTypes_PushMessagesHistory = { '1.0.0': DB_PushMessagesHistory };
-type Versions = VersionsDeclaration<DB_PushMessagesHistory, ['1.0.0'], VersionTypes_PushMessagesHistory>;
+type Versions = VersionsDeclaration< ['1.0.0'], VersionTypes_PushMessagesHistory>;
 type Dependencies = {
 //
 }

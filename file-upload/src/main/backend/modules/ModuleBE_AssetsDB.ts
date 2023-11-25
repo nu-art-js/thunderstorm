@@ -118,9 +118,13 @@ export class ModuleBE_AssetsDB_Class
 
 	init() {
 		super.init();
-		this.registerVersion('2', async () => {
-
+		this.registerVersionUpgradeProcessor('1.0.1', async (assets) => {
+			assets.forEach(asset => {
+				// @ts-ignore
+				delete asset._audit;
+			});
 		});
+
 		const originalQuery = this.query;
 		this.query = {
 			...originalQuery,
@@ -139,13 +143,6 @@ export class ModuleBE_AssetsDB_Class
 			}
 		};
 	}
-
-	upgradeInstance = async (dbInstances: DB_Asset[]) => {
-		dbInstances.forEach(instance => {
-			// @ts-ignore
-			delete instance._audit;
-		});
-	};
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
 		const assetsToSync = filterInstances(await ModuleBE_AssetsDB.query.all(assetIds));
