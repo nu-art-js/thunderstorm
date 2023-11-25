@@ -20,19 +20,7 @@
  */
 
 import {_EmptyQuery, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
-import {
-	_keys,
-	ApiException,
-	asArray,
-	batchAction,
-	currentTimeMillis,
-	DB_Object,
-	DBDef_V3,
-	DBProto,
-	DefaultDBVersion,
-	filterInstances,
-	Module
-} from '@nu-art/ts-common';
+import {_keys, ApiException, asArray, currentTimeMillis, DB_Object, DBDef_V3, DBProto, filterInstances, Module} from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {firestore} from 'firebase-admin';
@@ -48,7 +36,7 @@ import Transaction = firestore.Transaction;
 
 export type BaseDBApiConfigV3 = {
 	projectId?: string,
-	maxChunkSize: number
+	chunksSize: number
 }
 
 export type DBApiConfigV3<Proto extends DBProto<any>> = BaseDBApiConfigV3 & DBApiBEConfigV3<Proto>
@@ -81,13 +69,14 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 
 		const config = getModuleBEConfigV3(dbDef);
 
-		const preConfig = {upgradeChunksSize: CONST_DefaultWriteChunkSize, ...config, ...appConfig};
+		const preConfig = {chunksSize: CONST_DefaultWriteChunkSize, ...config, ...appConfig};
 		// @ts-ignore
 		this.setDefaultConfig(preConfig);
 		this.dbDef = dbDef;
 		this.canDeleteItems.bind(this);
 		this._preWriteProcessing.bind(this);
 		this._postWriteProcessing.bind(this);
+		this.upgradeInstances.bind(this);
 		this.manipulateQuery.bind(this);
 		this.collectDependencies.bind(this);
 	}
@@ -102,6 +91,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 			canDeleteItems: this.canDeleteItems.bind(this),
 			preWriteProcessing: this._preWriteProcessing.bind(this),
 			postWriteProcessing: this._postWriteProcessing.bind(this),
+			upgradeInstances: this.upgradeInstances.bind(this),
 			manipulateQuery: this.manipulateQuery.bind(this)
 		});
 
@@ -173,8 +163,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 		return {toUpdate: items, toDelete: deletedItems};
 	};
 
-	private _preWriteProcessing = async (dbItem: Proto['uiType'], transaction?: Transaction) => {
-		await this.upgradeInstances([dbItem]);
+	private _preWriteProcessing = async (dbItem: Proto['uiType'], transaction?: Transaction, upgrade = true) => {
 		await this.preWriteProcessing(dbItem, transaction);
 	};
 
@@ -220,45 +209,6 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 
 	preUpsertProcessing!: never;
 
-	protected async upgradeItem(dbItem: Proto['uiType'], toVersion: string): Promise<void> {
-	}
-
-	async promoteCollection() {
-		// read chunks of ${maxChunkSize} documents that are not of the latest collection version..
-		// run them via upsert, which should convert/upgrade them to the latest version
-		// if timeout should kick in.. run the api again and this will continue the promotion on the rest of the documents
-		// TODO validate
-		this.logDebug(`Promoting '${this.config.collectionName}' to version: ${this.config.versions[0]}`);
-		let page = 0;
-		const itemsCount = this.config.maxChunkSize;
-		let iteration = 0;
-		while (iteration < 5) {
-
-			try {
-
-				const itemsToSyncQuery: FirestoreQuery<DB_Object> = {
-					where: {
-						_v: {$neq: this.config.versions[0]},
-					},
-					limit: {page, itemsCount}
-				};
-
-				const items = await this.collection.query.custom(itemsToSyncQuery as FirestoreQuery<Proto['dbType']>);
-				this.logInfo(`Page: ${page} Found: ${items.length} - first: ${items?.[0]?.__updated}   last: ${items?.[items.length - 1]?.__updated}`);
-				await this.collection.set.all(items);
-
-				if (items.length < itemsCount)
-					break;
-
-				page++;
-			} catch (e) {
-				break;
-			}
-
-			iteration++;
-		}
-	}
-
 	/**
 	 * Override this method to provide actions or assertions to be executed before the deletion happens.
 	 * @param transaction - The transaction object
@@ -281,72 +231,64 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 
 	private versionUpgrades: { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> } = {} as { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> };
 
-	registerVersion<K extends Proto['versions'][number]>(version: K, processor: (items: Proto['versions'][K][]) => Promise<void>) {
+	registerVersionUpgradeProcessor<K extends Proto['versions']['versions'][number]>(version: K, processor: (items: Proto['versions']['types'][K][]) => Promise<void>) {
 		this.versionUpgrades[version] = processor;
 	}
 
 	upgradeCollection = async () => {
 		let docs: DocWrapperV3<Proto>[];
-		let batchCount = 0;
-		do {
-			docs = await this.collection.doc.query(_EmptyQuery);
+		const itemsCount = this.config.chunksSize;
+
+		const query = {
+			limit: {page: 0, itemsCount},
+		};
+
+		while ((docs = await this.collection.doc.query(query)).length > 0) {
 
 			// this is old Backward compatible from before the assertion of unique ids where the doc ref is the _id of the doc
 			const toDelete = docs.filter(doc => {
 				return doc.ref.id !== doc.data!._id;
 			});
 
-			const items = docs.map(d => d.data!);
-			this.logWarning(`Upgrading batch(${batchCount}) found items(${items.length}) ${this.dbDef.entityName}s ....`);
-
-			for (let i = this.config.versions.length - 1; i >= 0; i--) {
-				const version = this.config.versions[i] as Proto['versions'][number];
-				const upgradeProcessor = this.versionUpgrades[version];
-				if (!upgradeProcessor) {
-					this.logWarning(`No upgrade processor from ${version} => ${this.config.versions[i - 1] ?? version}`);
-					continue;
-				}
-
-				const itemsToUpgrade = items.filter(item => item._v === version);
-				this.logWarning(`No items to upgrade to version(${version})`);
-				if (itemsToUpgrade.length === 0)
-					continue;
-
-				this.logWarning(`Upgrade items(${itemsToUpgrade.length}) from version(${version})`);
-				await upgradeProcessor?.(itemsToUpgrade);
-			}
-
-			await batchAction(items, this.config.maxChunkSize, async chunk => {
-
-				await this.upgradeInstances(chunk);
-
-				this.logWarning(`setting multi instances: ${chunk.length} ${this.dbDef.entityName}s ....`);
-				await this.set.multi(chunk);
-			});
+			const instances = docs.map(d => d.data!);
+			this.logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) ${this.dbDef.entityName}s ....`);
+			const instancesToSave: Proto['dbType'][] = [];
+			await this.upgradeInstances(instances, instancesToSave);
+			// @ts-ignore
+			await this.collection.upgradeInstances(instancesToSave);
 
 			if (toDelete.length > 0) {
 				this.logWarning(`Need to delete docs: ${toDelete.length} ${this.dbDef.entityName}s ....`);
 				await this.collection.delete.multi.allDocs(toDelete);
 			}
-			batchCount++;
-		} while (docs.length > 0);
 
+			query.limit.page++;
+		}
 	};
 
-	upgradeInstances = async (dbInstances: Proto['uiType'][]) => {
-		await Promise.all(dbInstances.map(async dbInstance => {
-			const instanceVersion = dbInstance._v ??= DefaultDBVersion;
-			const currentVersion = this.config.versions[0];
+	private async upgradeInstances(instances: Proto['dbType'][], instancesToSave: Proto['dbType'][] = []) {
+		for (let i = this.config.versions.length - 1; i >= 0; i--) {
+			const version = this.config.versions[i] as Proto['versions'][number];
 
-			if (instanceVersion !== undefined && instanceVersion !== currentVersion)
-				try {
-					await this.upgradeItem(dbInstance, currentVersion);
-				} catch (e: any) {
-					this.logError(e);
-					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`,
-						e);
-				}
-			dbInstance._v = currentVersion;
-		}));
-	};
+			const instancesToUpgrade = instances.filter(instance => instance._v === version);
+			const nextVersion = this.config.versions[i - 1] ?? version;
+			const versionTransition = `${version} => ${nextVersion}`;
+			if (instancesToUpgrade.length === 0) {
+				this.logWarning(`No instances to upgrade from ${versionTransition}`);
+				continue;
+			}
+
+			const upgradeProcessor = this.versionUpgrades[version];
+			if (!upgradeProcessor) {
+				this.logWarning(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
+				this.logWarning(`No upgrade processor for: ${versionTransition}`);
+			} else {
+				this.logWarning(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
+				await upgradeProcessor?.(instancesToUpgrade);
+				instancesToSave.push(...instancesToUpgrade);
+			}
+
+			instancesToUpgrade.forEach(instance => instance._v = nextVersion);
+		}
+	}
 }

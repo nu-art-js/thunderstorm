@@ -3,7 +3,7 @@ import {BaseSubscriptionData, PushSessionId} from '../types';
 
 
 type VersionTypes_PushSubscription = { '1.0.0': DB_PushSubscription };
-type Versions = VersionsDeclaration<DB_PushSubscription, ['1.0.0'], VersionTypes_PushSubscription>;
+type Versions = VersionsDeclaration< ['1.0.0'], VersionTypes_PushSubscription>;
 type Dependencies = {
 //
 }
