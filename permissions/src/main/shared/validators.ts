@@ -24,5 +24,5 @@ export const validateProjectId = tsValidateUniqueId;
 export const tsValidateStringWithDashesAndSlash = tsValidateRegexp(/^[0-9A-Za-z-/]+$/);
 export const validateProjectName = tsValidateRegexp(/^[A-Za-z- ]{3,20}$/);
 export const validateUserUuid = tsValidateRegexp(/^.{0,50}$/);
-export const validateGroupLabel = tsValidateRegexp(/^[A-Za-z-\._\/ ]+$/);
+export const validateGroupLabel = tsValidateRegexp(/^[A-Za-z-0-9\._\/ ]+$/);
 export const validateCustomFieldValues = tsValidateRegexp(/^.{0,500}$/);
