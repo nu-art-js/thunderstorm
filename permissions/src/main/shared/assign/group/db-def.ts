@@ -32,7 +32,7 @@ import {validateGroupLabel} from '../../validators';
 
 const Validator_PermissionGroup: ValidatorTypeResolver<OmitDBObject<DB_PermissionGroup>> = {
 	label: validateGroupLabel,
-	projectId:tsValidateOptionalId,
+	projectId: tsValidateOptionalId,
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
 	_levelsMap: tsValidateDynamicObject(tsValidateNumber(), tsValidateString(), false),
 	_auditorId: tsValidateString(),

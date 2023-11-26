@@ -31,6 +31,7 @@
     }
 
     .item-list__list {
+      @include styles.customScrollbar('vertical', true);
       height: 0;
       flex-grow: 1;
       width: 100%;
@@ -38,9 +39,10 @@
 
       .item-list__list-item {
         width: 100%;
-        height: 30px;
-        padding: 0 8px;
+        min-height: 30px;
+        padding: 8px;
         display: flex;
+        flex-shrink: 0;
         align-items: center;
         background: styles.gray(4);
         cursor: pointer;
@@ -48,6 +50,7 @@
           size: 14px;
           weight: bold;
         }
+        white-space: pre-wrap;
         color: white;
 
         &.selected {
