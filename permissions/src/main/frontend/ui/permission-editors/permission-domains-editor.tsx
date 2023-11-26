@@ -35,6 +35,7 @@ import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {defaultAccessLevels} from '../../../shared/consts';
+import {Permissions_DropDown} from '../ui-props';
 
 
 type State = State_EditorBase<DB_PermissionDomain> & {
@@ -288,6 +289,12 @@ export class PermissionDomainsEditor
 				<LL_H_C className={'match_width'} style={{gap: '10px'}}>
 					<TS_Input type={'text'} value={domain.item.namespace}
 										onChange={value => this.setProperty('namespace', value)}/>
+					<Permissions_DropDown.Project
+						onSelected={(item) => {
+							this.setProperty('projectId', item._id);
+						}}
+						selected={domain.item.projectId}
+					/>
 					{this.renderConnectDomainButton()}
 				</LL_H_C>
 			</TS_PropRenderer.Vertical>
