@@ -3,6 +3,10 @@
 .permissions-editor {
   gap: 16px;
 
+  .ts-dropdown {
+    width: 200px;
+  }
+
   .item-list {
     height: 100%;
     width: 300px;
@@ -158,10 +162,6 @@
     .group {
       padding: 8px;
       background: white;
-    }
-
-    .ts-dropdown {
-      width: 200px;
     }
   }
 }
