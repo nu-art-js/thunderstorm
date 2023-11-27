@@ -26,7 +26,8 @@ import {
 	DB_Object,
 	DBDef,
 	dbObjectToId,
-	Default_UniqueKey, exists,
+	Default_UniqueKey,
+	exists,
 	IndexKeys,
 	InvalidResult,
 	Logger,
@@ -178,7 +179,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		this.dispatchMulti(EventType_DeleteMulti, items);
 	};
 
-	protected onEntryDeleted = async (item: DBType): Promise<void> => {
+	public onEntryDeleted = async (item: DBType): Promise<void> => {
 		await this.IDB.syncIndexDb([], [item]);
 		// @ts-ignore
 		this.cache.onEntriesDeleted([item]);
