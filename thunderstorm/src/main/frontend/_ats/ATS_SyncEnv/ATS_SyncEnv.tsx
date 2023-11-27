@@ -11,6 +11,7 @@ import {LL_H_C, LL_V_L} from '../../components/Layouts';
 import {TS_Checkbox} from '../../components/TS_Checkbox';
 import {TS_Input} from '../../components/TS_Input';
 import {_className, SimpleListAdapter, TS_BusyButton, TS_DropDown, TS_Loader, TS_PropRenderer} from '../..';
+import {ApiModule} from '../../../shared';
 
 
 type Env = 'prod' | 'staging' | 'dev' | 'local';
@@ -128,8 +129,8 @@ export class ATS_SyncEnvironment
 	private getCollectionModuleList(): string[] {
 		return (Thunder.getInstance().filterModules((module) => {
 			//the moduleKey in ModuleBE_BaseDB's config is taken from collection's name.
-			return module instanceof ModuleFE_BaseDB && (module as ModuleFE_BaseDB<any>).getCollectionName() !== undefined;
-		}) as ModuleFE_BaseDB<any>[]).map(module => module.getCollectionName()).sort();
+			return !!(module as unknown as ApiModule['dbModule']).dbDef?.dbName;
+		}) as ModuleFE_BaseDB<any>[]).map(module => (module as unknown as ApiModule['dbModule']).dbDef?.dbName).sort();
 	}
 
 	private renderBackupModules = () => {
