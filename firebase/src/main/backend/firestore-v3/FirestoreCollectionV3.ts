@@ -68,6 +68,7 @@ export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
 	preWriteProcessing?: (dbInstance: Proto['dbType'], transaction?: Transaction) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Proto['dbType']>) => FirestoreQuery<Proto['dbType']>,
 	postWriteProcessing?: (data: PostWriteProcessingData<Proto>) => Promise<void>,
+	upgradeInstances: (instances: Proto['dbType'][]) => Promise<void>
 }
 
 export type MultiWriteItem<Op extends MultiWriteOperation, Proto extends DBProto<any>> =
@@ -76,7 +77,6 @@ export type MultiWriteItem<Op extends MultiWriteOperation, Proto extends DBProto
 			Proto;
 
 type MultiWriteType = 'bulk' | 'batch';
-
 const defaultMultiWriteType = 'batch';
 
 /**
@@ -242,12 +242,12 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	});
 
 	// ############################## Set ##############################
-	protected _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+	private _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType, performUpgrade = true) => {
 		const docs = this.doc.allItems(items);
 		const dbItems = await this.getAll(docs);
 
 		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
-			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction) : await docs[i].prepareForSet(items[i] as Proto['dbType'], _dbItem!, transaction);
+			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction, performUpgrade) : await docs[i].prepareForSet(items[i] as Proto['dbType'], _dbItem!, transaction, performUpgrade);
 		}));
 		this.assertNoDuplicatedIds(preparedItems, 'set.all');
 
@@ -276,6 +276,11 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			return this._setAll(items, undefined, multiWriteType);
 		},
 	});
+
+	// @ts-ignore
+	private upgradeInstances = (items: (Proto['uiType'] | Proto['dbType'])[]) => {
+		return this._setAll(items, undefined, defaultMultiWriteType, false);
+	};
 
 	// ############################## Update ##############################
 	protected _updateAll = async (updateData: UpdateObject<Proto['dbType']>[], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => {

@@ -20,20 +20,25 @@
  */
 
 import * as React from 'react';
-import {Module} from '@nu-art/ts-common';
+import {generateHex, Module} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 
-export type Dialog_Model = {
+export type Dialog_Model = DialogId & {
 	content: React.ReactNode,
 	closeOverlayOnClick: () => boolean,
 }
 
+export type DialogId = { dialogId: string };
+
 export interface DialogListener {
 	__showDialog(dialogModel?: Dialog_Model): void;
+
+	__closeDialog(dialogModel?: DialogId): void;
 }
 
 const dispatch_showDialog = new ThunderDispatcher<DialogListener, '__showDialog'>('__showDialog');
+const dispatch_closeDialog = new ThunderDispatcher<DialogListener, '__closeDialog'>('__closeDialog');
 
 const defaultCloseCallback = () => true;
 
@@ -47,12 +52,13 @@ export class ModuleFE_Dialog_Class
 	protected init(): void {
 	}
 
-	public close = () => {
-		dispatch_showDialog.dispatchUI();
+	public close = (dialogId?: string) => {
+		const p = dialogId ? {dialogId} : undefined;
+		dispatch_closeDialog.dispatchUI(p);
 	};
 
-	public show = (content: React.ReactNode, closeOverlayOnClick = defaultCloseCallback) => {
-		dispatch_showDialog.dispatchUI({content, closeOverlayOnClick});
+	public show = (content: React.ReactNode, closeOverlayOnClick = defaultCloseCallback, dialogId = generateHex(8)) => {
+		dispatch_showDialog.dispatchUI({dialogId, content, closeOverlayOnClick});
 	};
 }
 

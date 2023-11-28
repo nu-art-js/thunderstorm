@@ -9,7 +9,7 @@ export * from './ComponentBase';
 export * from './IndexedDB';
 export * from './SimpleScriptInjector';
 export * from './thunder-dispatcher';
-export * from './thunderstorm-modulepack';
+export * from './thunder-modulepack';
 export * from './Thunder';
 export * from './typed-api';
 export * from './IndexedDBV3';

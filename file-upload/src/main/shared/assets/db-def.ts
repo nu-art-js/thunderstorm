@@ -38,7 +38,7 @@ const Validator_GeneratedProps: DBProto_Assets['generatedPropsValidator'] = {
 export const DBDef_Assets: DBDef_V3<DBProto_Assets> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
-	versions: ['1.0.1', '1.0.0'],
+	versions: ['1.0.2', '1.0.1', '1.0.0'],
 	dbName: convertUpperCamelCase('Assets', '-').toLowerCase(),
 	entityName: convertUpperCamelCase('Assets', '-').toLowerCase(),
 };
@@ -47,4 +47,10 @@ export const DBDef_TempAssets: DBDef_V3<DBProto_Assets> = {
 	...DBDef_Assets,
 	dbName: 'assets-temp',
 	entityName: 'assets-temp',
+};
+
+export const DBDef_TempDeleted: DBDef_V3<DBProto_Assets> = {
+	...DBDef_Assets,
+	dbName: 'assets-deleted',
+	entityName: 'assets-deleted',
 };
