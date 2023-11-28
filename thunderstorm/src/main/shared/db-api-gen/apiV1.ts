@@ -25,8 +25,6 @@ import {ApiDefResolver, BodyApi, HttpMethod, QueryApi, QueryParams} from '../typ
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
-export type UpgradeCollectionBody = { forceUpdate?: boolean };
-
 /**
  * !! Workaround !!
  *
@@ -48,7 +46,6 @@ export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 		delete: QueryApi<DBType, DB_BaseObject>,
 		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		deleteAll: QueryApi<void>
-		upgradeCollection: BodyApi<void, UpgradeCollectionBody>,
 		metadata: QueryApi<Metadata<DBType>>,
 	},
 }
@@ -64,7 +61,6 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 		delete: QueryApi<DBType, DB_BaseObject>,
 		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		deleteAll: QueryApi<DBType[]>,
-		upgradeCollection: BodyApi<void, UpgradeCollectionBody>,
 		metadata: QueryApi<Metadata<DBType>>,
 	},
 }
@@ -81,7 +77,6 @@ export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType,
 			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
 			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			upgradeCollection: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upgrade-collection`},
 			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
 		}
 	};
@@ -99,7 +94,6 @@ export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof 
 			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
 			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			upgradeCollection: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upgrade-collection`},
 			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
 		}
 	};
