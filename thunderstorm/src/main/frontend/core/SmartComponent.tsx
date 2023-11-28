@@ -83,6 +83,8 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		state: State
 	};
 
+	private unpreparedModules?: ModuleFE_BaseDB<any>[];
+
 	/**
 	 * The constructor does 2 important things:
 	 *
@@ -108,7 +110,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				return <>
 					{_render()}
 					{this.state.componentPhase === ComponentStatus.Syncing &&
-                        <div className={'loader-transparent-container'}><TS_Loader/></div>}
+						<div className={'loader-transparent-container'}><TS_Loader/></div>}
 				</>;
 			};
 
@@ -144,11 +146,11 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 		const modules = resolveContent(this.props.modules);
 
-		const unpreparedModules = modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
+		this.unpreparedModules = modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
 
-		if (unpreparedModules.length > 0) {
+		if (this.unpreparedModules.length > 0) {
 			const state = this.createInitialState(nextProps);
-			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, state);
+			this.logVerbose(`Component not ready ${this.unpreparedModules.map(module => module.getName()).join(', ')}`, state);
 			return state;
 		}
 
@@ -215,9 +217,15 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	protected abstract deriveStateFromProps(nextProps: Props, state?: Partial<S> & State_SmartComponent): Promise<State>;
 
+
 	// ######################### Render #########################
 
 	protected renderLoader = () => {
-		return <div className={'loader-container'}><TS_Loader/></div>;
+		return <div className={'loader-container'}>
+			<TS_Loader
+				onClick={() => {
+					this.logWarning(`Waiting for modules: ${this.unpreparedModules?.map(module => module.getName())}`);
+				}}/>
+		</div>;
 	};
 }

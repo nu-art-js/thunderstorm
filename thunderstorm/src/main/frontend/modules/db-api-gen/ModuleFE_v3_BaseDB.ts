@@ -27,7 +27,6 @@ import {
 	DB_Object,
 	DBDef_V3,
 	dbObjectToId,
-	dbObjectToId_V3,
 	DBProto,
 	deleteKeysObject,
 	IndexKeys,
@@ -420,7 +419,7 @@ class MemCache<Proto extends DBProto<any>> {
 	}
 
 	private setCache(cacheArray: Readonly<Proto['dbType']>[]) {
-		this._map = Object.freeze({...arrayToMap(cacheArray, dbObjectToId_V3)});
+		this._map = Object.freeze({...arrayToMap(cacheArray as Readonly<DB_Object>[], dbObjectToId)});
 		this._array = Object.freeze(cacheArray);
 	}
 }

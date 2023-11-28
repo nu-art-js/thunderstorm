@@ -9,6 +9,7 @@ import {ModuleFE_LocalStorage} from '../modules/ModuleFE_LocalStorage';
 import {ModuleFE_Window} from '../modules/ModuleFE_Window';
 import {ModuleFE_Notifications} from '../component-modules/ModuleFE_Notifications';
 import {ModuleFE_ActionProcessor} from '../modules/action-processor/ModuleFE_ActionProcessor';
+import {ModuleFE_UpgradeCollection} from '../modules/upgrade-collection/ModuleFE_UpgradeCollection';
 
 
 export const ModulePack_ThunderstormFE: Module[] = [
@@ -25,5 +26,6 @@ export const ModulePack_ThunderstormFE: Module[] = [
 	ModuleFE_Window,
 	ModuleFE_Notifications,
 	ModuleFE_ActionProcessor,
+	ModuleFE_UpgradeCollection,
 ];
 
