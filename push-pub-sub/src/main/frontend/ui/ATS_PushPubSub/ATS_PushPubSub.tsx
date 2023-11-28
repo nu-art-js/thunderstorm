@@ -178,7 +178,6 @@ export class ATS_PushPubSub
 				placeholder={`Enter ${prop}`}
 				id={`${key}-${prop}-${index}`}
 				value={item[prop].toString()}/>;
-
 		};
 
 		const addNewRow = () => {

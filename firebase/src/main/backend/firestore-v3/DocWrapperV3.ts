@@ -2,7 +2,7 @@ import {_keys, currentTimeMillis, DBProto, exists, MUSTNeverHappenException, Uni
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
-import {assertUniqueId, FirestoreCollectionV3} from './FirestoreCollectionV3';
+import {assertUniqueId, FirestoreCollectionV3, PostWriteProcessingData} from './FirestoreCollectionV3';
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 
@@ -46,12 +46,16 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		return this.data ?? (this.data = (await this.ref.get()).data() as (Proto['dbType'] | undefined));
 	};
 
-	prepareForCreate = async (preDBItem: Proto['uiType'], transaction?: Transaction): Promise<Proto['dbType']> => {
+	prepareForCreate = async (preDBItem: Proto['uiType'], transaction?: Transaction, upgrade = true): Promise<Proto['dbType']> => {
 		const now = currentTimeMillis();
 
 		this.assertId(preDBItem);
 		preDBItem.__updated = preDBItem.__created = now;
-		preDBItem._v = this.collection.getVersion();
+		if (upgrade) {
+			preDBItem._v = this.collection.getVersion();
+			await this.collection.hooks?.upgradeInstances([preDBItem]);
+		}
+
 		await this.collection.hooks?.preWriteProcessing?.(preDBItem, transaction);
 		this.collection.validateItem(preDBItem as Proto['dbType']);
 		return preDBItem as Proto['dbType'];
@@ -66,23 +70,28 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		} else
 			await this.ref.create(dbItem);
 
-		await this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
-
+		this.postWriteProcessing({updated: dbItem}, transaction);
 		return dbItem;
 	};
 
-	prepareForSet = async (updatedDBItem: Proto['dbType'], dbItem?: Proto['dbType'], transaction?: Transaction): Promise<Proto['dbType']> => {
+	prepareForSet = async (updatedDBItem: Proto['dbType'], dbItem?: Proto['dbType'], transaction?: Transaction, upgrade = true): Promise<Proto['dbType']> => {
 		if (!dbItem)
 			return this.prepareForCreate(updatedDBItem, transaction);
 
 		this.assertId(updatedDBItem);
-		updatedDBItem._v = dbItem._v;
 		updatedDBItem.__created = dbItem.__created;
+
 		this.collection.dbDef.lockKeys?.forEach(lockedKey => {
 			updatedDBItem[lockedKey] = dbItem[lockedKey];
 		});
 
 		updatedDBItem.__updated = currentTimeMillis();
+
+		if (upgrade) {
+			updatedDBItem._v = dbItem._v;
+			await this.collection.hooks?.upgradeInstances([updatedDBItem]);
+		}
+
 		await this.collection.hooks?.preWriteProcessing?.(updatedDBItem, transaction);
 		this.collection.validateItem(updatedDBItem);
 		return updatedDBItem;
@@ -98,11 +107,19 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		// Will always get here with a transaction!
 		transaction!.set(this.ref, newDBItem);
 		this.data = currDBItem;
-
-		await this.collection.hooks?.postWriteProcessing?.({updated: newDBItem});
+		this.postWriteProcessing({updated: newDBItem}, transaction);
 
 		return newDBItem;
 	};
+
+	private postWriteProcessing(data: PostWriteProcessingData<Proto>, transaction?: Transaction) {
+		const toExecute = () => this.collection.hooks?.postWriteProcessing?.(data);
+		if (transaction)
+			// @ts-ignore
+			transaction.postTransaction(toExecute);
+		else
+			toExecute();
+	}
 
 	async prepareForUpdate(updateData: UpdateObject<Proto['dbType']>, transaction?: Transaction) {
 		delete updateData.__created;
@@ -140,7 +157,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		updateData = await this.prepareForUpdate(updateData);
 		await this.ref.update(updateData);
 		const dbItem = await this.get();
-		await this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
+		this.postWriteProcessing({updated: dbItem});
 		return dbItem;
 	};
 
@@ -158,7 +175,8 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		transaction!.delete(this.ref);
 
 		this.cleanCache();
-		await this.collection.hooks?.postWriteProcessing?.({deleted: dbItem});
+
+		this.postWriteProcessing({deleted: dbItem}, transaction);
 		return dbItem;
 	};
 }

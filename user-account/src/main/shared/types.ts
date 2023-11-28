@@ -1,7 +1,7 @@
 // export type DB_Testv1_0_0 = DB_Object & { a: string, k: string, _c: string, _d: number }
 // export type DB_Test = DB_Object & { a: string, b: string, _c: string, _d: number }
 
-// type Versions = VersionsDeclaration<DB_Test, ['1.0.1', '1.0.0'], [DB_Test, DB_Testv1_0_0]>
+// type Versions = VersionsDeclaration< ['1.0.1', '1.0.0'], [DB_Test, DB_Testv1_0_0]>
 // type Proto_Test = Proto_DB_Object<DB_Test, '_c' | '_d', Versions, 'a'>
 
 // export type DBProto_Test = DBProto<Proto_Test>
@@ -22,7 +22,8 @@ export type DB_Session = DB_Object & {
 	prevSession?: string[]
 }
 
-type VersionsSession = VersionsDeclaration<DB_Session, ['1.0.0'], [DB_Session]>
+type VersionTypes_Sessions = { '1.0.0': DB_Session };
+type VersionsSession = VersionsDeclaration< ['1.0.0'], VersionTypes_Sessions>
 type Proto_Session = Proto_DB_Object<DB_Session, keyof DB_Object, VersionsSession, 'accountId' | 'deviceId'>
 
 export type DBProto_SessionType = DBProto<Proto_Session>
@@ -46,7 +47,8 @@ export type SessionData_HasPassword = { hasPassword: boolean };
 export type UI_SessionAccount = UI_Account & DB_BaseObject & SessionData_HasPassword;
 export type _SessionKey_Account = TypedKeyValue<'account', UI_SessionAccount>
 
-type VersionsAccount = VersionsDeclaration<DB_Account, ['1.0.0'], [DB_Account]>;
+type VersionTypes_Account = { '1.0.0': DB_Account };
+type VersionsAccount = VersionsDeclaration< ['1.0.0'], VersionTypes_Account>;
 type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'saltedPassword';
 
 export type Proto_Account = Proto_DB_Object<DB_Account, GeneratedKeys, VersionsAccount>;

@@ -18,9 +18,11 @@
  */
 import {
 	ApiException,
+	asArray,
 	BadImplementationException,
 	currentTimeMillis,
 	Day,
+	exists,
 	filterInstances,
 	generateHex,
 	Hour,
@@ -40,6 +42,8 @@ import {OnAssetUploaded} from './ModuleBE_BucketListener';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage';
 import {DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '../../shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages';
+import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -106,8 +110,21 @@ export class ModuleBE_AssetsDB_Class
 	mimeTypeValidator: TypedMap<FileValidator> = {};
 	fileValidator: TypedMap<FileTypeValidation> = {};
 
+	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_Assets>): Promise<void> {
+		const deletedItems = data.deleted;
+		if (exists(deletedItems))
+			await ModuleBE_AssetsDeleted.create.all(asArray(deletedItems));
+	}
+
 	init() {
 		super.init();
+		this.registerVersionUpgradeProcessor('1.0.1', async (assets) => {
+			assets.forEach(asset => {
+				// @ts-ignore
+				delete asset._audit;
+			});
+		});
+
 		const originalQuery = this.query;
 		this.query = {
 			...originalQuery,
