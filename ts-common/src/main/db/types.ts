@@ -10,21 +10,7 @@ export type DBIndex<T extends DB_Object> = {
 
 export type Default_UniqueKey = '_id';
 export type VersionType = string
-//
-// export type DBProto<T extends DB_Object, Ks extends keyof T = Default_UniqueKey, Versions extends VersionType[] = ['1.0.0'], GeneratedKeys extends keyof T = keyof DB_Object> = {
-// 	generatedKeys: keyof DB_Object | GeneratedKeys
-// 	uiType: PartialProperties<T, keyof DB_Object | GeneratedKeys>,
-// 	dbType: T,
-// 	uniqueKeys: Ks,
-// 	versions: Versions
-// 	validatorBE: ValidatorTypeResolver<OmitDBObject<T>>
-// 	validatorFE: ValidatorTypeResolver<Omit<T, keyof GeneratedKeys>>
-// 	dbIndices: DBIndex<T>
-// }
-//
-// export type DBDef_V2<Proto extends DBProto<any>> = DBDef<Proto['dbType'], Proto['uniqueKeys']>
-
-export type VersionsDeclaration<T extends DB_Object, Versions extends VersionType[] = ['1.0.0'], Types extends [T, ...DB_Object[]] = [T, ...DB_Object[]]> = {
+export type VersionsDeclaration<Versions extends VersionType[] = ['1.0.0'], Types extends { [V in Versions[number]]: DB_Object } = { [V in Versions[number]]: DB_Object }> = {
 	versions: Versions
 	types: Types
 };
@@ -41,7 +27,7 @@ type Exact<T, Shape> = T & {
 export type Proto_DB_Object<
 	T extends DB_Object,
 	GeneratedKeys extends keyof T | never,
-	Versions extends VersionsDeclaration<T, any, any>,
+	Versions extends VersionsDeclaration<VersionType[]>,
 	UniqueKeys extends keyof T = Default_UniqueKey,
 	Dependencies extends Exact<{ [K in SubsetKeys<keyof T, T, string | string[]>]?: DBProto<any> }, Dependencies> = never> = {
 
@@ -52,7 +38,7 @@ export type Proto_DB_Object<
 	dependencies: Dependencies
 }
 
-export type DBProto<P extends Proto_DB_Object<any, any, any, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+export type DBProto<P extends Proto_DB_Object<any, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: P['type'],
@@ -60,7 +46,7 @@ export type DBProto<P extends Proto_DB_Object<any, any, any, any, any>, Modifiab
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
 	generatedProps: P['generatedKeys'][]
-	versions: P['versions']['versions']
+	versions: P['versions']
 	indices: DBIndex<P['type']>[]
 	uniqueParam: UniqueId | { [K in P['uniqueKeys']]: P['type'][K] }
 	metadata?: Metadata<OmitDBObject<P['type']>>
@@ -76,7 +62,7 @@ export type DBDef_V3<P extends DBProto<any, any, any>> = {
 	generatedPropsValidator: P['generatedPropsValidator'];
 	modifiablePropsValidator: P['modifiablePropsValidator'];
 	uniqueKeys?: P['uniqueKeys'];
-	versions?: P['versions'];
+	versions?: P['versions']['versions'];
 	indices?: P['indices'];
 	lockKeys?: P['lockKeys'];
 	metadata?: P['metadata'];
@@ -112,15 +98,12 @@ type TypeOf<ValueType> = ValueType extends any[] ? 'array' :
 
 export type MetadataProperty<ValueType> = {
 	valueType: TypeOf<ValueType>,
-	// optional: ValueType extends undefined ? true: false,
 	optional: boolean,
 	description: string
 
 }
 
-// export type MetadataRootObject<T extends any> = { [K in keyof T]-?: MetadataNested<T[K]> };
 export type MetadataObject<T extends any> = { [K in keyof T]-?: MetadataNested<T[K]> };
-// export type MetadataArray<T extends any> = MetadataNested<T>;
 
 export type MetadataNested<T extends any> =
 	T extends (infer I)[] ? MetadataProperty<T> & { metadata: Metadata<I> } :
@@ -131,52 +114,3 @@ export type Metadata<T extends any> =
 	T extends (infer I)[] ? MetadataProperty<T> & { metadata: Metadata<I> } :
 		T extends object ? MetadataObject<T> :
 			MetadataProperty<T>;
-
-type ZEVEL = {
-	ashpa: string
-}
-type PAH = {
-	a: string
-	b?: number
-	c: string[]
-	d: { k: string, l: number }
-	e: ZEVEL
-}
-
-export const DB_Object_Metadata = {
-	_id: {optional: false, valueType: 'string', description: 'unique key'},
-	_v: {optional: false, valueType: 'string', description: 'version'},
-	_originDocId: {optional: true, valueType: 'string', description: 'previous doc id'},
-	__hardDelete: {optional: true, valueType: 'boolean', description: 'is hard delete'},
-	__created: {optional: false, valueType: 'number', description: 'timestamp of creation'},
-	__updated: {optional: false, valueType: 'number', description: 'timestamp of last time modified'}
-};
-
-//@ts-ignore
-const pah: Metadata<PAH> = {
-	a: {optional: false, description: 'aaa', valueType: 'string'},
-	b: {optional: true, description: 'aaa', valueType: 'number'},
-	c: {
-		optional: true,
-		description: 'harti barti',
-		valueType: 'array',
-		metadata: {optional: false, description: 'aaa', valueType: 'string'}
-	},
-	d: {
-		optional: true,
-		description: 'harti barti',
-		valueType: 'object',
-		metadata: {
-			k: {optional: false, description: 'aaa', valueType: 'string'},
-			l: {optional: false, description: 'aaa', valueType: 'number'}
-		}
-	},
-	e: {
-		optional: true,
-		description: 'harti barti',
-		valueType: 'object',
-		metadata: {ashpa: {optional: false, description: 'aaa', valueType: 'string'}}
-	}
-};
-
-// console.log(pah);

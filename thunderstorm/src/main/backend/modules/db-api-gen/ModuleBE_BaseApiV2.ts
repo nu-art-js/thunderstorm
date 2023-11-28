@@ -25,7 +25,6 @@ import {
 	ApiException,
 	DB_BaseObject,
 	DB_Object,
-	DB_Object_Metadata,
 	Default_UniqueKey,
 	Metadata,
 	Module,
@@ -33,7 +32,7 @@ import {
 } from '@nu-art/ts-common';
 import {DBApiConfig, ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {DBApiDefGeneratorIDBV2, UpgradeCollectionBody} from '../../../shared';
+import {DBApiDefGeneratorIDBV2} from '../../../shared';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 
@@ -70,17 +69,12 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 			createQueryServerApi(this.apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
 			createBodyServerApi(this.apiDef.v1.deleteQuery, this._deleteQuery),
 			createQueryServerApi(this.apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
-			createBodyServerApi(this.apiDef.v1.upgradeCollection, this._upgradeCollection),
 			createQueryServerApi(this.apiDef.v1.metadata, this._metadata)
 		]);
 	}
 
 	private _metadata = async (): Promise<Metadata<Type>> => {
-		return {...this.dbModule.dbDef.metadata, ...DB_Object_Metadata} as Metadata<Type> || `not implemented yet for collection '${this.dbModule.dbDef.dbName}'`;
-	};
-
-	private _upgradeCollection = async (body: UpgradeCollectionBody) => {
-		return this.dbModule.upgradeCollection(body.forceUpdate || false);
+		return {...this.dbModule.dbDef.metadata} as Metadata<Type> || `not implemented yet for collection '${this.dbModule.dbDef.dbName}'`;
 	};
 
 	private _deleteQuery = async (query: FirestoreQuery<Type>): Promise<Type[]> => {

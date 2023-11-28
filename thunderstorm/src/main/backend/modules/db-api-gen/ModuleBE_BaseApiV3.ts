@@ -24,14 +24,13 @@ import {
 	_values,
 	ApiException,
 	DB_BaseObject,
-	DB_Object_Metadata,
 	DBProto,
 	Metadata,
 	Module
 } from '@nu-art/ts-common';
 import {ModuleBE_BaseDBV3} from './ModuleBE_BaseDBV3';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {DBApiDefGeneratorIDBV3, UpgradeCollectionBody} from '../../../shared';
+import {DBApiDefGeneratorIDBV3} from '../../../shared';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 
@@ -69,17 +68,12 @@ export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 			createQueryServerApi(this.apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
 			createBodyServerApi(this.apiDef.v1.deleteQuery, this._deleteQuery),
 			createQueryServerApi(this.apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
-			createBodyServerApi(this.apiDef.v1.upgradeCollection, this._upgradeCollection),
 			createQueryServerApi(this.apiDef.v1.metadata, this._metadata)
 		]);
 	}
 
 	private _metadata = async (): Promise<Metadata<Proto['dbType']>> => {
-		return {...this.dbModule.dbDef.metadata, ...DB_Object_Metadata} as unknown as Metadata<Proto['dbType']> || `not implemented yet for collection '${this.dbModule.dbDef.dbName}'`;
-	};
-
-	private _upgradeCollection = async (body: UpgradeCollectionBody) => {
-		return this.dbModule.upgradeCollection(body.forceUpdate || false);
+		return {...this.dbModule.dbDef.metadata} as unknown as Metadata<Proto['dbType']> || `not implemented yet for collection '${this.dbModule.dbDef.dbName}'`;
 	};
 
 	private _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {

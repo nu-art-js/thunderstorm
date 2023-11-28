@@ -1,7 +1,8 @@
-import {ModuleFE_v3_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, ModuleFE_v3_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {currentTimeMillis} from '@nu-art/ts-common';
-import {DB_Asset, DBDef_Assets, DBProto_Assets} from '../../shared';
+import {ApiDef_Assets, ApiStruct_Assets, DB_Asset, DBDef_Assets, DBProto_Assets} from '../../shared';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {ApiDefCaller} from '@nu-art/thunderstorm';
 
 
 export interface OnAssetsUpdated {
@@ -13,8 +14,13 @@ export const dispatch_onAssetsListChanged = new ThunderDispatcher<OnAssetsUpdate
 export class ModuleFE_Assets_Class
 	extends ModuleFE_v3_BaseApi<DBProto_Assets> {
 
+	readonly vv1: ApiDefCaller<ApiStruct_Assets>['vv1'];
+
 	constructor() {
 		super(DBDef_Assets, dispatch_onAssetsListChanged);
+		this.vv1 = {
+			getReadSignedUrl: apiWithBody(ApiDef_Assets.vv1.getReadSignedUrl),
+		};
 	}
 
 	async resolveValidSignedUrl(assetId: string) {
@@ -23,7 +29,9 @@ export class ModuleFE_Assets_Class
 		if (signedUrl)
 			return signedUrl.url;
 
-		return (await ModuleFE_Assets.v1.queryUnique(assetId).executeSync()).signedUrl!.url;
+		const request = this.vv1.getReadSignedUrl({_id: assetId});
+		const response = await request.executeSync();
+		return response.signedUrl;
 	}
 }
 
