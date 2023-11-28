@@ -1,4 +1,4 @@
-import {AssetValueType, cloneObj, compare, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {_keys, AssetValueType, cloneObj, compare, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 
 export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, Type> = {
@@ -17,6 +17,7 @@ export class EditableItem<T> {
 	static AUTO_SAVE = false;
 
 	readonly item: Partial<T>;
+	private originalItem: Partial<T>;
 	private _autoSave: boolean = EditableItem.AUTO_SAVE;
 
 	/**
@@ -28,12 +29,27 @@ export class EditableItem<T> {
 	 */
 	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>) {
 		this.item = Object.isFrozen(item) ? cloneObj(item) : item;
+		this.originalItem = item;
 		this.saveAction = saveAction;
 		this.deleteAction = deleteAction;
 	}
 
+	protected onChanged?: (item: Partial<T>) => Promise<void>;
 	protected readonly saveAction: (item: T) => Promise<T>;
 	protected readonly deleteAction: (item: T) => Promise<void>;
+
+	setOnChanged(onChanged?: (item: Partial<T>) => Promise<void>) {
+		this.onChanged = onChanged;
+		return this;
+	}
+
+	hasChanges() {
+		// console.group('compare', this.originalItem);
+		// console.log('item', this.item);
+		// console.log('originalItem', this.originalItem);
+		// console.groupEnd();
+		return !compare(this.item, this.originalItem);
+	}
 
 	/**
 	 * Set the auto-save mode.
@@ -69,6 +85,21 @@ export class EditableItem<T> {
 	}
 
 	/**
+	 * Updates the item with the given values and performs auto-save if enabled.
+	 * This method allows partial updates, only the properties provided in the values object will be updated.
+	 *
+	 * @param values An object with partial properties of T.
+	 * @returns A promise representing the auto-save operation if changes were made and auto-save is enabled.
+	 */
+	updateObj(values: Partial<{ [K in keyof T]: ((item?: T[K]) => T[K]) | T[K] | undefined }>) {
+		const hasChanges = _keys(values).reduce((hasChanges, prop) => {
+			return this.set(prop, values[prop]) || hasChanges;
+		}, false);
+
+		return this.autoSave(hasChanges);
+	}
+
+	/**
 	 * Update the value of a specific property in the item and perform auto-save if enabled.
 	 *
 	 * @template K The type of the key.
@@ -77,13 +108,17 @@ export class EditableItem<T> {
 	 * @returns A promise representing the auto-save operation if enabled, undefined otherwise.
 	 */
 	async update<K extends keyof T>(key: K, value: ((item?: T[K]) => T[K]) | T[K] | undefined) {
-		if (this.set(key, value))
-			return this.autoSave();
+		return this.autoSave(this.set(key, value));
 	}
 
-	private autoSave() {
+	private autoSave(hasChanges = true) {
+		if (!hasChanges)
+			return;
+
 		if (this._autoSave)
 			return this.save();
+
+		return this.onChanged?.(this.item);
 	}
 
 	/**
@@ -102,7 +137,9 @@ export class EditableItem<T> {
 	 * @returns The new instance.
 	 */
 	clone(item?: T): EditableItem<T> {
-		return new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction).setAutoSave(this._autoSave);
+		const editableItem = new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction).setOnChanged(this.onChanged).setAutoSave(this._autoSave);
+		editableItem.originalItem = this.originalItem;
+		return editableItem;
 	}
 
 	/**
