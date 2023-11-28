@@ -17,7 +17,7 @@
  */
 
 import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {Bucket, CreateWriteStreamOptions, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
+import {Bucket, CreateReadStreamOptions, CreateWriteStreamOptions, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
 import {Firebase_CopyResponse, FirebaseType_Metadata, FirebaseType_Storage, ReturnType_Metadata} from './types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
@@ -124,6 +124,7 @@ export class BucketWrapper {
 }
 
 export class FileWrapper {
+	static emulatorStorageProxy: string;
 	readonly file: File;
 	readonly path: string;
 	readonly bucket: BucketWrapper;
@@ -144,12 +145,11 @@ export class FileWrapper {
 		};
 
 		if (this.isEmulator) {
-			const signedUrl = `http://127.0.0.1:8108/emulatorUpload?path=${this.path}`;
+			const signedUrl = `${(FileWrapper.emulatorStorageProxy)}/emulatorUpload?path=${encodeURIComponent(this.path)}}`;
 
 			return {
 				fileName: this.path,
 				signedUrl: signedUrl,
-				publicUrl: signedUrl
 			};
 		}
 
@@ -164,8 +164,7 @@ export class FileWrapper {
 		};
 
 		if (this.isEmulator) {
-			await this.makePublic();
-			const signedUrl = decodeURIComponent(this.file.publicUrl());
+			const signedUrl = `${(FileWrapper.emulatorStorageProxy)}/emulatorDownload?path=${encodeURIComponent(this.path)}`;
 
 			return {
 				fileName: this.path,
@@ -291,6 +290,10 @@ export class FileWrapper {
 
 	public createWriteStream(options?: CreateWriteStreamOptions) {
 		return this.file.createWriteStream(options);
+	}
+
+	public createReadStream(options?: CreateReadStreamOptions) {
+		return this.file.createReadStream(options);
 	}
 
 	async makePublic(): Promise<MakeFilePublicResponse> {

@@ -22,7 +22,7 @@
 import {EntityDependencyError, FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DBDef_V3, DBProto, IndexKeys, Metadata, Second} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
-import {Response_DBSync, UpgradeCollectionBody} from './apiV1';
+import {Response_DBSync} from './apiV1';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
@@ -47,7 +47,6 @@ export type ApiStruct_DBApiGenV3<Proto extends DBProto<any>> = {
 		delete: QueryApi<Proto['dbType'], DB_BaseObject>,
 		deleteQuery: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>>,
 		deleteAll: QueryApi<void>
-		upgradeCollection: BodyApi<void, UpgradeCollectionBody>, //todo taken from original api file
 		metadata: QueryApi<Metadata<Proto['dbType']>>,
 	},
 }
@@ -63,7 +62,6 @@ export type ApiStruct_DBApiGenIDBV3<Proto extends DBProto<any>> = {
 		delete: QueryApi<Proto['dbType'] | undefined, DB_BaseObject, EntityDependencyError>,
 		deleteQuery: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>>,
 		deleteAll: QueryApi<Proto['dbType'][]>,
-		upgradeCollection: BodyApi<void, UpgradeCollectionBody>, //todo taken from original api file
 		metadata: QueryApi<Metadata<Proto['dbType']>>,
 	},
 }
@@ -80,7 +78,6 @@ export const DBApiDefGeneratorV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<
 			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
 			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			upgradeCollection: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upgrade-collection`},
 			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
 		}
 	};
@@ -98,7 +95,6 @@ export const DBApiDefGeneratorIDBV3 = <Proto extends DBProto<any>>(dbDef: DBDef_
 			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
 			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			upgradeCollection: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upgrade-collection`},
 			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
 		}
 	};
