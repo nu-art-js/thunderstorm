@@ -1,9 +1,12 @@
 import * as React from 'react';
 import {FirebaseAnalyticsModule} from '@nu-art/firebase/frontend';
+// import {TS_Icons} from '@nu-art/ts-styles';
 import {
-	AppToolsScreen, ATS_Fullstack, LL_H_C,
+	AppToolsScreen,
+	ATS_Fullstack,
+	LL_H_C,
 	LL_H_T,
-	LL_V_L, ModuleFE_Dialog,
+	LL_V_L,
 	openContent,
 	Props_SmartComponent,
 	SmartComponent,
@@ -12,9 +15,6 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
 import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
-import {TS_Icons} from '@nu-art/ts-styles';
-import {ModuleFE_Thunderstorm} from '@nu-art/thunderstorm/frontend';
-import {TS_SimpleDialog} from '@nu-art/thunderstorm/frontend/components/TS_Dialog/TS_SimpleDialog';
 
 
 type ATS_FileUploader_Props = {
@@ -53,7 +53,7 @@ export class ATS_FileUploader
 						return <LL_V_L>{asset.bucketName}/{asset.path}</LL_V_L>;
 					}, {offset: 10});
 					return <LL_H_C key={asset._id} className="clickable h-gap__n" {...tooltip}>
-						<TS_Icons.download.component style={{width: 18}} onClick={async () => {
+{/*						<TS_Icons.download.component style={{width: 18}} onClick={async () => {
 							const signedUrl = await ModuleFE_Assets.resolveValidSignedUrl(asset._id);
 							const toDownload = {
 								fileName: asset.name,
@@ -74,7 +74,8 @@ export class ATS_FileUploader
 									}
 								});
 							}
-						}}/>{asset.name}</LL_H_C>;
+						}}/>*/}
+						{asset.name}</LL_H_C>;
 
 				})}
 			</LL_V_L>
