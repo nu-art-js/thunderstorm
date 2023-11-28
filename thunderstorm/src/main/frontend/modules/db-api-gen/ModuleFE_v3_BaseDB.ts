@@ -175,7 +175,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		return this.onEntryUpdatedImpl(EventType_Patch, item);
 	};
 
-	public validateImpl(_instance: Proto['uiType']) {
+	public validateImpl(_instance: Partial<Proto['uiType']>) {
 		const instance = deleteKeysObject(_instance as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.dbDef.generatedPropsValidator)]);
 		const results = tsValidateResult(instance, this.validator);
 		if (results) {
