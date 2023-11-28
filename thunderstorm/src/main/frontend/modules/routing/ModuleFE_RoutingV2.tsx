@@ -37,6 +37,11 @@ class ModuleFE_RoutingV2_Class
 		}
 	}
 
+	redirect<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {
+		const url = composeUrl(this.getFullPath(route.key), params);
+		return <Navigate to={url}/>;
+	}
+
 	generateRoutes(rootRoute: TS_Route) {
 		const element = this.routeBuilder(rootRoute);
 		return <BrowserRouter>

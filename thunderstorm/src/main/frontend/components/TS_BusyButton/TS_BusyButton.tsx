@@ -25,7 +25,7 @@ import {_className} from '../../utils/tools';
 import {LinearLayoutProps, LL_H_C} from '../Layouts';
 import './TS_BusyButton.scss';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
-import {ComponentAsync} from '../../core/ComponentAsync';
+import {BaseAsyncState, ComponentAsync} from '../../core/ComponentAsync';
 
 
 type Props_Button = LinearLayoutProps & {
@@ -99,6 +99,10 @@ export class TS_BusyButton
 			}
 		});
 	};
+
+	shouldComponentUpdate(nextProps: Readonly<Props_Button>, nextState: Readonly<BaseAsyncState & State_Button>, nextContext: any): boolean {
+		return true;
+	}
 
 	render() {
 		const {onClick, disabled, loadingRenderer, onDisabledClick, keepLoaderOnSuccess, ...restOfProps} = this.props;
