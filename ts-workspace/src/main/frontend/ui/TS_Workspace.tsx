@@ -30,6 +30,7 @@ import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace';
 
 type Props = Props_BaseWorkspace & {
 	workspaceKey: string;
+	id?: string;
 }
 
 type State = {
@@ -77,7 +78,7 @@ export class TS_Workspace
 		if (!PanelRenderer)
 			return `COULD NOT GET THE WORKSPACE RENDERER FOR KEY ${this.state.config.key}`;
 
-		return <div className="ts-workspace">
+		return <div className="ts-workspace" id={this.props.id}>
 			<PanelRenderer
 				config={this.state.config.data}
 				renderers={this.props.renderers}
