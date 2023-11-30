@@ -103,7 +103,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof PreDB<T> = De
 		//Set selected item
 		state.selected = this.getSelected(nextProps.module, nextProps.selected);
 		state.filter = new Filter<T>(nextProps.mapper);
-		state.adapter = SimpleListAdapter(state.items, props => nextProps.renderer(props.item));
+		state.adapter = SimpleListAdapter(state.items, (props) => nextProps.renderer(props.item));
 		return state;
 	}
 
