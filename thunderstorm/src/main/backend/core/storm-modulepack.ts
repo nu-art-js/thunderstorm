@@ -6,9 +6,11 @@ import {ModuleBE_v2_Backup} from '../modules/backup/ModuleBE_v2_Backup';
 import {ModuleBE_v2_SyncEnv} from '../modules/sync-env/ModuleBE_v2_SyncEnv';
 import {ModuleBE_v2_BackupScheduler} from '../modules/backup/ModuleBE_v2_BackupScheduler';
 import {ModuleBE_ActionProcessor} from '../modules/action-processor/ModuleBE_ActionProcessor';
+import {ModuleBE_ServerInfo} from '../modules/ModuleBE_ServerInfo';
 
 
 export const ModulePack_ThunderstormBE: Module[] = [
+	ModuleBE_ServerInfo,
 	ModuleBE_v2_SyncManager,
 	ModuleBE_APIs,
 	ModuleBE_v2_Backup,
