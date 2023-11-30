@@ -180,14 +180,16 @@ class ModuleBE_Permissions_Class
 
 		// Create All Projects
 		const _auditorId = MemKey_AccountId.get();
+		this.logInfoBold('Creating Projects');
 		const preDBProjects = await ModuleBE_PermissionProject.set.all(projects.map(project => ({
 			_id: project._id,
 			name: project.name,
 			_auditorId
 		})));
-		this.logInfoBold('Created Project');
 		const projectsMap_nameToDBProject: TypedMap<DB_PermissionProject> = reduceToMap(preDBProjects, project => project.name, project => project);
+		this.logInfoBold(`Created ${preDBProjects.length} Projects`);
 
+		this.logInfoBold('Creating Domains');
 		const domainsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => ({
 			_id: domain._id,
 			namespace: domain.namespace,
@@ -195,9 +197,10 @@ class ModuleBE_Permissions_Class
 			_auditorId
 		})))));
 		const dbDomain = await ModuleBE_PermissionDomain.set.all(domainsToUpsert);
-		this.logInfoBold('Created Domains');
 		const domainsMap_nameToDbDomain = reduceToMap(dbDomain, domain => domain.namespace, domain => domain);
+		this.logInfoBold(`Created ${dbDomain.length} Domains`);
 
+		this.logInfoBold('Creating Access Levels');
 		const levelsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => {
 			let levels = domain.levels;
 			if (!levels)
@@ -215,7 +218,6 @@ class ModuleBE_Permissions_Class
 		}))));
 
 		const dbLevels = await ModuleBE_PermissionAccessLevel.set.all(levelsToUpsert);
-		this.logInfoBold('Created Levels');
 		const domainNameToLevelNameToDBAccessLevel: {
 			[domainName: string]: { [levelName: string]: DB_PermissionAccessLevel }
 		} =
@@ -224,7 +226,9 @@ class ModuleBE_Permissions_Class
 				domainLevels[level.name] = level;
 				return domainLevels;
 			});
+		this.logInfoBold(`Created ${dbLevels.length} Domains`);
 
+		this.logInfoBold('Created Groups');
 		const groupsToUpsert = flatArray(projects.map(project => {
 			const groupsDef = flatArray([...project.packages.map(p => p.groups || []), ...project.groups || []]);
 			return (groupsDef).map(group => {
@@ -244,6 +248,8 @@ class ModuleBE_Permissions_Class
 				};
 			});
 		}));
+		const dbGroups = await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
+		this.logInfoBold(`Created ${dbGroups.length} Groups`);
 
 		//get apis from each project -> project's packages -> packages' domains
 		const apisToUpsert = flatArray(projects.map(project => {
@@ -294,10 +300,9 @@ class ModuleBE_Permissions_Class
 			}));
 		}));
 
-		await ModuleBE_PermissionApi.set.all(apisToUpsert);
-		this.logInfoBold('Created APIs');
-		await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
-		this.logInfoBold('Created Groups');
+		const dbApis = await ModuleBE_PermissionApi.set.all(apisToUpsert);
+		this.logInfoBold(`Created ${dbApis.length} APIs`);
+
 		await this.assignSuperAdmin();
 	};
 

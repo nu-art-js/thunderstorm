@@ -1,4 +1,4 @@
-import {_keys, AssetValueType, cloneObj, compare, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {_keys, AssetValueType, cloneObj, compare, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 
 export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, Type> = {
@@ -34,11 +34,11 @@ export class EditableItem<T> {
 		this.deleteAction = deleteAction;
 	}
 
-	protected onChanged?: (item: Partial<T>) => Promise<void>;
+	protected onChanged?: (editable: EditableItem<T>) => Promise<void>;
 	protected readonly saveAction: (item: T) => Promise<T>;
 	protected readonly deleteAction: (item: T) => Promise<void>;
 
-	setOnChanged(onChanged?: (item: Partial<T>) => Promise<void>) {
+	setOnChanged(onChanged?: (editable: EditableItem<T>) => Promise<void>) {
 		this.onChanged = onChanged;
 		return this;
 	}
@@ -118,7 +118,10 @@ export class EditableItem<T> {
 		if (this._autoSave)
 			return this.save();
 
-		return this.onChanged?.(this.item);
+		const editable = this.clone(this.item as T);
+		editable.originalItem = this.originalItem;
+
+		return this.onChanged?.(editable);
 	}
 
 	/**
@@ -138,7 +141,7 @@ export class EditableItem<T> {
 	 */
 	clone(item?: T): EditableItem<T> {
 		const editableItem = new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction).setOnChanged(this.onChanged).setAutoSave(this._autoSave);
-		editableItem.originalItem = this.originalItem;
+		editableItem.originalItem = item ?? this.originalItem;
 		return editableItem;
 	}
 
@@ -161,7 +164,10 @@ export class EditableItem<T> {
 	 * @returns The new EditableItem.
 	 */
 	editProp<K extends keyof T>(key: K, defaultValue: Partial<NonNullable<T[K]>>) {
-		const itemToEdit = this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>);
+		let itemToEdit = this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>);
+		if (Array.isArray(itemToEdit) || typeof itemToEdit === 'object')
+			itemToEdit = deepClone(itemToEdit);
+
 		return new EditableItem<NonNullable<T[K]>>(
 			itemToEdit,
 			async (value: T[K]) => {

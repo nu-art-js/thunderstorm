@@ -36,6 +36,11 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		};
 	}
 
+	setOnChanged(onChanged?: (editable: EditableDBItemV3<Proto>) => Promise<void>) {
+		this.onChanged = onChanged;
+		return this;
+	}
+
 	async save(): Promise<Proto['dbType']> {
 		return super.save();
 	}
