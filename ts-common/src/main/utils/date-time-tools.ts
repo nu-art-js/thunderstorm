@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {utc} from 'moment';
 import * as moment from 'moment';
+import {utc} from 'moment';
 import {AuditBy, Timestamp} from './types';
 
 
@@ -133,6 +133,7 @@ export const DateTimeFormat = (format: string) => {
 	};
 };
 export const DateTimeFormat_yyyyMMDDTHHmmss = DateTimeFormat('YYYY-MM-DDTHH:mm:ss');
+export const DateTimeFormat_yyyyMMDD = DateTimeFormat('YYYY-MM-DD');
 
 export function isSameDay(date1: Date, date2: Date): boolean {
 	return moment(date1).isSame(date2, 'day');
