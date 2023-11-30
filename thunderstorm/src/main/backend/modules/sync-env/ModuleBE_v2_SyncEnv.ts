@@ -140,7 +140,7 @@ class ModuleBE_v2_SyncEnv_Class
 		if (!backupInfo.backupFilePath)
 			throw new ApiException(404, 'Backup file path not found');
 
-		this.logInfo(`----  Fetching Backup Stream... ----`);
+		this.logInfo(`----  Fetching Backup Stream from: ${backupInfo.firestoreSignedUrl} ----`);
 		const signedUrlDef: ApiDef<QueryApi<any>> = {
 			method: HttpMethod.GET,
 			path: '',

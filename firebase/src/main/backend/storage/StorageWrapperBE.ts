@@ -85,8 +85,8 @@ export class BucketWrapper {
 	}
 
 	async getFile(pathToRemoteFile: string): Promise<FileWrapper> {
-		// @ts-ignore
-		return new FileWrapper(pathToRemoteFile, await this.bucket.file(pathToRemoteFile), this, this.storage.isEmulator);
+		const emulator = this.storage.isEmulator();
+		return new FileWrapper(pathToRemoteFile, this.bucket.file(pathToRemoteFile), this, emulator);
 	}
 
 	async listFiles(folder: string = '', filter: (file: File) => boolean = () => true): Promise<File[]> {
@@ -124,13 +124,14 @@ export class BucketWrapper {
 }
 
 export class FileWrapper {
+
 	static emulatorStorageProxy: string;
 	readonly file: File;
 	readonly path: string;
 	readonly bucket: BucketWrapper;
 	private readonly isEmulator?: boolean;
 
-	private constructor(path: string, file: File, bucket: BucketWrapper, isEmulator?: boolean) {
+	constructor(path: string, file: File, bucket: BucketWrapper, isEmulator?: boolean) {
 		this.file = file;
 		this.bucket = bucket;
 		this.path = path;
