@@ -8,6 +8,7 @@ import './AwaitModules.scss';
 
 type Props = React.PropsWithChildren<{
 	modules: ResolvableContent<ModuleFE_BaseDB<any>[]>;
+	customLoader?: ResolvableContent<React.ReactNode>;
 }>;
 
 type State = {
@@ -43,7 +44,9 @@ export class AwaitModules
 
 	render() {
 		if (this.state.awaiting)
-			return <div className={'ts-await-modules-loader'}/>;
+			return this.props.customLoader
+				? resolveContent(this.props.customLoader)
+				: <div className={'ts-await-modules-loader'}/>;
 
 		return this.props.children;
 	}
