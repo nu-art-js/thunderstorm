@@ -71,17 +71,20 @@ class ModuleFE_RoutingV2_Class
 		if (route.fallback)
 			this.logDebug(`fallback: ${path}`);
 
-		const Component = this.resolveRouteComponent(route);
-
 		let _indexRoute;
-		if (indexRoute)
+		if (indexRoute) {
+			const Component = this.resolveRouteComponent(indexRoute);
 			if (indexRoute.path)
+				// force redirect to a different route
 				_indexRoute = <Route index element={<Navigate to={`${path}${indexRoute.path}`}/>}/>;
 			else {
+				// default index route renderer
 				_indexRoute = <Route index Component={Component} element={indexRoute.element}/>;
 				removeItemFromArray(routes, indexRoute);
 			}
+		}
 
+		const Component = this.resolveRouteComponent(route);
 		return <Route key={route.key} path={route.path} Component={Component} element={route.element}>
 			{_indexRoute}
 			{route.children?.filter(route => route.enabled?.() ?? true).map(route => this.routeBuilder(route, `${path}${route.path}`))}
