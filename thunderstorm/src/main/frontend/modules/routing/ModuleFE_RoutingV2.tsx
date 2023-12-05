@@ -5,6 +5,8 @@ import {BadImplementationException, composeUrl, Module, removeItemFromArray} fro
 import {LocationChangeListener} from './LocationChangeListener';
 import {QueryParams} from '../../../shared';
 import {mouseEventHandler} from '../../utils/tools';
+import {AwaitModules} from '../../components/AwaitModules/AwaitModules';
+import {ComponentClass, FunctionComponent} from 'react';
 
 
 class ModuleFE_RoutingV2_Class
@@ -69,20 +71,40 @@ class ModuleFE_RoutingV2_Class
 		if (route.fallback)
 			this.logDebug(`fallback: ${path}`);
 
+		const Component = this.resolveRouteComponent(route);
+
 		let _indexRoute;
 		if (indexRoute)
 			if (indexRoute.path)
 				_indexRoute = <Route index element={<Navigate to={`${path}${indexRoute.path}`}/>}/>;
 			else {
-				_indexRoute = <Route index Component={indexRoute.Component} element={indexRoute.element}/>;
+				_indexRoute = <Route index Component={Component} element={indexRoute.element}/>;
 				removeItemFromArray(routes, indexRoute);
 			}
 
-		return <Route key={route.key} path={route.path} Component={route.Component} element={route.element}>
+		return <Route key={route.key} path={route.path} Component={Component} element={route.element}>
 			{_indexRoute}
 			{route.children?.filter(route => route.enabled?.() ?? true).map(route => this.routeBuilder(route, `${path}${route.path}`))}
 			{route.fallback && <Route path="*" element={<Navigate to={path}/>}/>}
 		</Route>;
+	};
+
+	private resolveRouteComponent = (route: TS_Route) => {
+		if (!route.Component)
+			return undefined;
+
+		if (!route.modulesToAwait?.length)
+			return route.Component;
+
+		//route.Component is a class component
+		if (route.Component.prototype.render) {
+			const Component = route.Component as ComponentClass;
+			return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}><Component/></AwaitModules>;
+		}
+
+		//route.Component is a function component
+		const component = route.Component as FunctionComponent;
+		return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
 	};
 
 	getRouteByKey(routeKey: string): TS_Route | undefined {
