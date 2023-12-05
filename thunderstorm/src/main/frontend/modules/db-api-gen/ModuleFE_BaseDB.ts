@@ -201,6 +201,10 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		return this.onEntryUpdatedImpl(EventType_Patch, item);
 	};
 
+	public validateObject(instance: Partial<DBType>) {
+		return tsValidateResult(instance as DBType, this.validator);
+	}
+
 	public validateImpl(instance: PreDB<DBType>) {
 		const results = tsValidateResult(instance as DBType, this.validator);
 		if (results) {
