@@ -6,6 +6,7 @@ import {OnSyncStatusChangedListener} from '../../core/db-api-gen/types';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import './AwaitModules.scss';
 
+
 type Props = React.PropsWithChildren<{
 	modules: ResolvableContent<ModuleFE_BaseDB<any>[]>;
 	customLoader?: ResolvableContent<React.ReactNode>;
@@ -19,7 +20,7 @@ export class AwaitModules
 	extends ComponentSync<Props, State>
 	implements OnSyncStatusChangedListener<DB_Object> {
 
-	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+	shouldComponentUpdate(): boolean {
 		return true;
 	}
 
@@ -43,11 +44,12 @@ export class AwaitModules
 	}
 
 	render() {
-		if (this.state.awaiting)
-			return this.props.customLoader
-				? resolveContent(this.props.customLoader)
-				: <div className={'ts-await-modules-loader'}/>;
+		if (!this.state.awaiting)
+			return this.props.children;
 
-		return this.props.children;
+		if (this.props.customLoader)
+			return resolveContent(this.props.customLoader);
+
+		return <div className={'ts-await-modules-loader'}/>;
 	}
 }
