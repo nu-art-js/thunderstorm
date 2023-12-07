@@ -20,7 +20,7 @@
  */
 
 import {_EmptyQuery, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
-import {_keys, ApiException, asArray, currentTimeMillis, DB_Object, DBDef_V3, DBProto, filterInstances, Module} from '@nu-art/ts-common';
+import {_keys, ApiException, asArray, currentTimeMillis, DB_Object, DBDef_V3, DBProto, filterDuplicates, filterInstances, Module} from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {firestore} from 'firebase-admin';
@@ -288,6 +288,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 				instancesToSave.push(...instancesToUpgrade);
 			}
 
+			instancesToSave = filterDuplicates(instancesToSave);
 			instancesToUpgrade.forEach(instance => instance._v = nextVersion);
 		}
 	}
