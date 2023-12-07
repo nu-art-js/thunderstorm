@@ -21,7 +21,7 @@
 
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
-import {BaseAsyncState, ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
+import {_className, BaseAsyncState, ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import './TS_Workspace.scss';
 import {PanelConfig, Props_BaseWorkspace} from './types';
@@ -31,6 +31,7 @@ import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace';
 type Props = Props_BaseWorkspace & {
 	workspaceKey: string;
 	id?: string;
+	className?: string;
 }
 
 type State = {
@@ -78,7 +79,8 @@ export class TS_Workspace
 		if (!PanelRenderer)
 			return `COULD NOT GET THE WORKSPACE RENDERER FOR KEY ${this.state.config.key}`;
 
-		return <div className="ts-workspace" id={this.props.id}>
+		const className = _className('ts-workspace', this.props.className);
+		return <div className={className} id={this.props.id}>
 			<PanelRenderer
 				config={this.state.config.data}
 				renderers={this.props.renderers}
