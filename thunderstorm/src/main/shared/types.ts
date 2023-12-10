@@ -88,13 +88,13 @@ export type ApiDefRouter<API_Struct extends ApiStruct> = { [P in keyof API_Struc
 export type ApiDefCaller<API_Struct extends ApiStruct> = API_Struct extends TypedApi<any, any, any, any, any> ? ApiCaller<API_Struct> : API_Struct extends ApiStruct ? ApiCallerRouter<API_Struct> : never;
 export type ApiCallerRouter<API_Struct extends ApiStruct> = { [P in keyof API_Struct]: ApiDefCaller<API_Struct[P]> };
 
-export type ApiCaller_Query<API extends QueryApi<any, any, any>> = API['IP'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IP']) => BaseHttpRequest<API>;
-export type ApiCaller_Body<API extends BodyApi<any, any, any>> = API['IB'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IB']) => BaseHttpRequest<API>;
+export type ApiCaller_Query<API extends QueryApi<any, any, any, any, HttpMethod_Query>> = API['IP'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IP']) => BaseHttpRequest<API>;
+export type ApiCaller_Body<API extends BodyApi<any, any, any, any, HttpMethod_Body>> = API['IB'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IB']) => BaseHttpRequest<API>;
 export type ApiCaller_Any<API extends TypedApi<any, any, any, any, any>> = (body: API['IB'], query: API['IP']) => BaseHttpRequest<API>;
 
 export type ApiCaller<API> =
-	API extends QueryApi<any, any, any> ? ApiCaller_Query<API> :
-		API extends BodyApi<any, any, any> ? ApiCaller_Body<API> :
+	API extends QueryApi<any, any, any, any, HttpMethod_Query> ? ApiCaller_Query<API> :
+		API extends BodyApi<any, any, any, any, HttpMethod_Body> ? ApiCaller_Body<API> :
 			API extends TypedApi<any, any, any, any, any> ? ApiCaller_Any<API> : never;
 
 export type ApiModule = { dbModule: { dbDef: { dbName: string } }, apiDef: { [name: string]: { [name: string]: { path: string } } } }
