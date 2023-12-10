@@ -19,7 +19,10 @@
 .ts-multi-select__list {
   gap: 12px;
   width: 100%;
-  flex-wrap: wrap;
+
+  &.ll_h_c {
+    flex-wrap: wrap;
+  }
 
   .ts-multi-select__value {
     @include tag(var(--tags--inner-color), var(--tags--outer-color));
