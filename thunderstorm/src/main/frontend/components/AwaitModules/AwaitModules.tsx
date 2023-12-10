@@ -50,6 +50,8 @@ export class AwaitModules
 		if (this.props.customLoader)
 			return resolveContent(this.props.customLoader);
 
-		return <div className={'ts-await-modules-loader'}/>;
+		return <div className={'ts-await-modules-loader'} onClick={() => {
+			this.logWarning(`Waiting for modules: ${resolveContent(this.props.modules).filter(module => module.getDataStatus() !== DataStatus.ContainsData).map(module => module.getName())}`);
+		}}/>;
 	}
 }
