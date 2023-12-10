@@ -21,7 +21,14 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {AssetValueType, clamp, Filter, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {
+	AssetValueType,
+	BadImplementationException,
+	clamp,
+	Filter,
+	ResolvableContent,
+	resolveContent
+} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -93,7 +100,9 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 
 type Props_CanUnselect<ItemType> = { canUnselect: true; onSelected: (selected?: ItemType) => void };
 type Props_CanNotUnselect<ItemType> = { canUnselect?: false; onSelected: (selected: ItemType) => void };
-export type Props_DropDown<ItemType> = (Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>) & Dropdown_Props<ItemType>
+export type Props_DropDown<ItemType> =
+	(Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>)
+	& Dropdown_Props<ItemType>
 export type MandatoryProps_TS_DropDown<ItemType> = Dropdown_Props<ItemType>
 
 type BasePartialProps_DropDown<T> = {
@@ -308,10 +317,10 @@ export class TS_DropDown<ItemType>
 		);
 		return (
 			<div className={className}
-					 ref={this.state.dropDownRef}
-					 tabIndex={this.props.tabIndex}
-					 onFocus={this.addKeyboardListener}
-					 onBlur={this.removeKeyboardListener}
+				 ref={this.state.dropDownRef}
+				 tabIndex={this.props.tabIndex}
+				 onFocus={this.addKeyboardListener}
+				 onBlur={this.removeKeyboardListener}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
@@ -376,7 +385,8 @@ export class TS_DropDown<ItemType>
 			style.maxHeight = containerData.maxHeight;
 			style.width = containerData.width;
 		}
-
+		if (!this.state.adapter.data)
+			throw new BadImplementationException('No data provided to TS_DropDown!');
 		if ((!this.props.filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0) {
 			if (this.props.noOptionsRenderer)
 				return <div className="ts-dropdown__empty" style={style}>
@@ -386,7 +396,8 @@ export class TS_DropDown<ItemType>
 		}
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
-			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
+			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'}
+                                            onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
@@ -420,7 +431,8 @@ export class TS_DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <div className={'ts-dropdown__selected'} onContextMenu={this.props.onContextMenu}><Renderer item={selected} node={node}/></div>;
+		return <div className={'ts-dropdown__selected'} onContextMenu={this.props.onContextMenu}><Renderer
+			item={selected} node={node}/></div>;
 	};
 
 	private renderSelectedOrFilterInput = (): React.ReactNode => {
