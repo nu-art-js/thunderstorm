@@ -425,11 +425,12 @@ class ModuleBE_Permissions_Class
 			updatedConfig[serviceAccount.moduleName] = {serviceAccount: {token, accountId: account._id}};
 		}
 
-		MemKey_ServerApi.get().addPostCallAction(async () => {
-			const currentConfig = await envConfigRef.get({});
-			await envConfigRef.set(merge(currentConfig, updatedConfig));
-			this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
-		});
+		if (_keys(updatedConfig).length > 0)
+			MemKey_ServerApi.get().addPostCallAction(async () => {
+				const currentConfig = await envConfigRef.get({});
+				await envConfigRef.set(merge(currentConfig, updatedConfig));
+				this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
+			});
 	}
 
 }
