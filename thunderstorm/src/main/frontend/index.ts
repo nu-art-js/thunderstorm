@@ -21,7 +21,21 @@
 
 export * from './_ats';
 export * from './modules';
-export * from './core';
+export * from './core/types';
+export * from './core/ThunderstormDefaultApp';
+export * from './core/AppPage';
+export * from './core/AppPageV2';
+export * from './core/AppWrapper';
+export * from './core/ComponentSync';
+export * from './core/ComponentAsync';
+export * from './core/ComponentBase';
+export * from './core/IndexedDB';
+export * from './core/SimpleScriptInjector';
+export * from './core/thunder-dispatcher';
+export * from './core/thunder-modulepack';
+export * from './core/Thunder';
+export * from './core/typed-api';
+export * from './core/IndexedDBV3';
 
 export * from './component-modules/ModuleFE_Dialog';
 export * from './component-modules/ModuleFE_Toaster';
@@ -90,7 +104,6 @@ export * from './modules/db-api-gen/ModuleFE_BaseDB';
 export * from './modules/db-api-gen/ModuleFE_v3_BaseDB';
 export * from './modules/db-api-gen/ModuleFE_BaseApi';
 export * from './modules/db-api-gen/ModuleFE_v3_BaseApi';
-export * from './modules/sync-manager/ModuleFE_SyncManager';
 export * from './modules/app-config/ModuleFE_AppConfig';
 export * from './modules/archiving/ModuleFE_Archiving';
 

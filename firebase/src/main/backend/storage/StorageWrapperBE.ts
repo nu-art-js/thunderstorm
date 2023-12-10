@@ -146,7 +146,7 @@ export class FileWrapper {
 		};
 
 		if (this.isEmulator) {
-			const signedUrl = `${(FileWrapper.emulatorStorageProxy)}/emulatorUpload?path=${encodeURIComponent(this.path)}}`;
+			const signedUrl = `${(FileWrapper.emulatorStorageProxy)}/emulatorUpload?path=${encodeURIComponent(this.path)}`;
 
 			return {
 				fileName: this.path,

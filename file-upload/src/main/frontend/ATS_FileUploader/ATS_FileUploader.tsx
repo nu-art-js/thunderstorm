@@ -15,6 +15,7 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
 import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
+import {sortArray} from '@nu-art/ts-common';
 
 
 type ATS_FileUploader_Props = {
@@ -48,12 +49,12 @@ export class ATS_FileUploader
 
 		return <LL_H_T>
 			<LL_V_L>
-				{ModuleFE_Assets.cache.all().map(asset => {
+				{sortArray([...ModuleFE_Assets.cache.all()], asset => asset.__updated).map(asset => {
 					const tooltip = openContent.tooltip.bottom(`${asset._id}-tooltip`, () => {
 						return <LL_V_L>{asset.bucketName}/{asset.path}</LL_V_L>;
 					}, {offset: 10});
 					return <LL_H_C key={asset._id} className="clickable h-gap__n" {...tooltip}>
-{/*						<TS_Icons.download.component style={{width: 18}} onClick={async () => {
+						{/*						<TS_Icons.download.component style={{width: 18}} onClick={async () => {
 							const signedUrl = await ModuleFE_Assets.resolveValidSignedUrl(asset._id);
 							const toDownload = {
 								fileName: asset.name,
@@ -85,7 +86,7 @@ export class ATS_FileUploader
 						return files.map(file => ({file, accepted: true}));
 					}}
 					onChange={acceptedFiles => {
-						return ModuleFE_AssetUploader.upload(acceptedFiles, 'test');
+						return ModuleFE_AssetUploader.upload(acceptedFiles, 'test-upload');
 					}}/>
 			</div>
 		</LL_H_T>;

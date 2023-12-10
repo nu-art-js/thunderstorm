@@ -7,11 +7,13 @@ import {ModuleBE_v2_SyncEnv} from '../modules/sync-env/ModuleBE_v2_SyncEnv';
 import {ModuleBE_v2_BackupScheduler} from '../modules/backup/ModuleBE_v2_BackupScheduler';
 import {ModuleBE_ActionProcessor} from '../modules/action-processor/ModuleBE_ActionProcessor';
 import {ModuleBE_ServerInfo} from '../modules/ModuleBE_ServerInfo';
+import {ModuleBE_AppConfig} from '../modules/app-config/ModuleBE_AppConfig';
 
 
 export const ModulePack_ThunderstormBE: Module[] = [
 	ModuleBE_ServerInfo,
 	ModuleBE_v2_SyncManager,
+	ModuleBE_AppConfig,
 	ModuleBE_APIs,
 	ModuleBE_v2_Backup,
 	ModuleBE_v2_SyncEnv,
@@ -20,3 +22,4 @@ export const ModulePack_ThunderstormBE: Module[] = [
 	ModuleBE_UpgradeCollection,
 ];
 
+export const ModulePackBE_Thunderstorm = ModulePack_ThunderstormBE;

@@ -4,39 +4,25 @@ import {
 	Dispatcher,
 	filterInstances,
 	flatArray,
+	merge,
 	Module,
 	MUSTNeverHappenException,
 	PreDB,
 	reduceToMap,
-	TypedMap
+	TS_Object,
+	TypedMap,
+	Year,
 } from '@nu-art/ts-common';
-import {
-	addRoutes,
-	createBodyServerApi,
-	createQueryServerApi,
-	MemKey_ServerApi,
-	Storm
-} from '@nu-art/thunderstorm/backend';
-import {
-	ApiDef_Permissions,
-	DB_PermissionAccessLevel,
-	DB_PermissionApi,
-	DB_PermissionProject,
-	Request_ConnectDomainToRoutes
-} from '../../shared';
+import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfig, Storm} from '@nu-art/thunderstorm/backend';
+import {ApiDef_Permissions, DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionDomain, DB_PermissionProject} from '../../shared';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
-import {
-	CollectSessionData,
-	MemKey_AccountId,
-	ModuleBE_SessionDB,
-	SessionCollectionParam
-} from '@nu-art/user-account/backend';
+import {CollectSessionData, MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, SessionCollectionParam} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
-import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
+import {DefaultDef_Project, DefaultDef_ServiceAccount, SessionData_Permissions} from '../../shared/types';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -61,7 +47,13 @@ export interface CollectPermissionsProjects {
 	__collectPermissionsProjects(): DefaultDef_Project;
 }
 
+export interface RequiresServiceAccount {
+	__requiresServiceAccount(): DefaultDef_ServiceAccount | DefaultDef_ServiceAccount[];
+}
+
 const dispatcher_collectPermissionsProjects = new Dispatcher<CollectPermissionsProjects, '__collectPermissionsProjects'>('__collectPermissionsProjects');
+const dispatcher_collectServiceAccounts = new Dispatcher<RequiresServiceAccount, '__requiresServiceAccount'>('__requiresServiceAccount');
+
 const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
 
 export const PermissionGroups_Permissions = [
@@ -116,6 +108,7 @@ export const PermissionGroups_Permissions = [
 	// 	}
 	// },
 ];
+
 export const PermissionProject_Permissions: DefaultDef_Project = {
 	_id: 'f60db83936835e0be33e89caa365f0c3',
 	name: 'Permissions',
@@ -133,7 +126,7 @@ class ModuleBE_Permissions_Class
 		addRoutes([
 			createQueryServerApi(ApiDef_Permissions.v1.toggleStrictMode, this.toggleStrictMode),
 			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.createProject),
-			createBodyServerApi(ApiDef_Permissions.v1.connectDomainToRoutes, this.connectDomainToRoutes)
+			// createBodyServerApi(ApiDef_Permissions.v1.connectDomainToRoutes, this.connectDomainToRoutes)
 		]);
 	}
 
@@ -177,10 +170,27 @@ class ModuleBE_Permissions_Class
 
 	createProject = async () => {
 		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
+		const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
 
 		// Create All Projects
-		const _auditorId = MemKey_AccountId.get();
+		const map_nameToDBProject: TypedMap<DB_PermissionProject> = await this.createProjects(projects);
+		const map_nameToDbDomain: TypedMap<DB_PermissionDomain> = await this.createDomains(projects, map_nameToDBProject);
+		const domainNameToLevelNameToDBAccessLevel: TypedMap<TypedMap<DB_PermissionAccessLevel>> = await this.createAccessLevels(projects, map_nameToDbDomain);
+		await this.createGroups(projects, map_nameToDbDomain, domainNameToLevelNameToDBAccessLevel);
+		await this.createApis(projects, domainNameToLevelNameToDBAccessLevel);
+		await this.createPermissionsKeys(projects);
+		await this.assignSuperAdmin();
+		await this.createSystemServiceAccount(serviceAccounts);
+	};
+
+	/**
+	 * Creates All the DB_PermissionProject
+	 *
+	 * @param projects - predefined permissions projects
+	 */
+	private async createProjects(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating Projects');
+		const _auditorId = MemKey_AccountId.get();
 		const preDBProjects = await ModuleBE_PermissionProject.set.all(projects.map(project => ({
 			_id: project._id,
 			name: project.name,
@@ -188,19 +198,39 @@ class ModuleBE_Permissions_Class
 		})));
 		const projectsMap_nameToDBProject: TypedMap<DB_PermissionProject> = reduceToMap(preDBProjects, project => project.name, project => project);
 		this.logInfoBold(`Created ${preDBProjects.length} Projects`);
+		return projectsMap_nameToDBProject;
+	}
 
+	/**
+	 * Creates All the DB_PermissionDomains
+	 *
+	 * @param projects - predefined permissions projects
+	 * @param map_nameToDBProject
+	 */
+	private async createDomains(projects: DefaultDef_Project[], map_nameToDBProject: TypedMap<DB_PermissionProject>) {
 		this.logInfoBold('Creating Domains');
+		const _auditorId = MemKey_AccountId.get();
 		const domainsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => ({
 			_id: domain._id,
 			namespace: domain.namespace,
-			projectId: projectsMap_nameToDBProject[project.name]._id,
+			projectId: map_nameToDBProject[project.name]._id,
 			_auditorId
 		})))));
 		const dbDomain = await ModuleBE_PermissionDomain.set.all(domainsToUpsert);
 		const domainsMap_nameToDbDomain = reduceToMap(dbDomain, domain => domain.namespace, domain => domain);
 		this.logInfoBold(`Created ${dbDomain.length} Domains`);
+		return domainsMap_nameToDbDomain;
+	}
 
+	/**
+	 * Creates All the DB_PermissionAccessLevel
+	 *
+	 * @param projects - predefined permissions projects
+	 * @param map_nameToDbDomain
+	 */
+	private async createAccessLevels(projects: DefaultDef_Project[], map_nameToDbDomain: TypedMap<DB_PermissionDomain>) {
 		this.logInfoBold('Creating Access Levels');
+		const _auditorId = MemKey_AccountId.get();
 		const levelsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => {
 			let levels = domain.levels;
 			if (!levels)
@@ -209,7 +239,7 @@ class ModuleBE_Permissions_Class
 			return levels.map(level => {
 				return {
 					_id: level._id,
-					domainId: domainsMap_nameToDbDomain[domain.namespace]._id,
+					domainId: map_nameToDbDomain[domain.namespace]._id,
 					value: level.value,
 					name: level.name,
 					_auditorId
@@ -220,15 +250,25 @@ class ModuleBE_Permissions_Class
 		const dbLevels = await ModuleBE_PermissionAccessLevel.set.all(levelsToUpsert);
 		const domainNameToLevelNameToDBAccessLevel: {
 			[domainName: string]: { [levelName: string]: DB_PermissionAccessLevel }
-		} =
-			reduceToMap(dbLevels, level => level.domainId, (level, index, map) => {
-				const domainLevels = map[level.domainId] || (map[level.domainId] = {});
-				domainLevels[level.name] = level;
-				return domainLevels;
-			});
-		this.logInfoBold(`Created ${dbLevels.length} Domains`);
+		} = reduceToMap(dbLevels, level => level.domainId, (level, index, map) => {
+			const domainLevels = map[level.domainId] || (map[level.domainId] = {});
+			domainLevels[level.name] = level;
+			return domainLevels;
+		});
+		this.logInfoBold(`Created ${dbLevels.length} Access Levels`);
+		return domainNameToLevelNameToDBAccessLevel;
+	}
 
-		this.logInfoBold('Created Groups');
+	/**
+	 * Creates All the DB_PermissionGroup
+	 *
+	 * @param projects - predefined permissions projects
+	 * @param map_nameToDbDomain
+	 * @param domainNameToLevelNameToDBAccessLevel
+	 */
+	private async createGroups(projects: DefaultDef_Project[], map_nameToDbDomain: TypedMap<DB_PermissionDomain>, domainNameToLevelNameToDBAccessLevel: TypedMap<TypedMap<DB_PermissionAccessLevel>>) {
+		this.logInfoBold('Creating Groups');
+		const _auditorId = MemKey_AccountId.get();
 		const groupsToUpsert = flatArray(projects.map(project => {
 			const groupsDef = flatArray([...project.packages.map(p => p.groups || []), ...project.groups || []]);
 			return (groupsDef).map(group => {
@@ -239,7 +279,7 @@ class ModuleBE_Permissions_Class
 					label: group.name,
 					accessLevelIds: _keys(group.accessLevels)
 						.map(key => {
-							const domainsMapNameToDbDomainElement = domainsMap_nameToDbDomain[key];
+							const domainsMapNameToDbDomainElement = map_nameToDbDomain[key];
 							if (!domainsMapNameToDbDomainElement)
 								throw new MUSTNeverHappenException(`bah for key ${key}`);
 
@@ -250,8 +290,17 @@ class ModuleBE_Permissions_Class
 		}));
 		const dbGroups = await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
 		this.logInfoBold(`Created ${dbGroups.length} Groups`);
+	}
 
-		//get apis from each project -> project's packages -> packages' domains
+	/**
+	 * Creates All the DB_PermissionApi
+	 *
+	 * @param projects - predefined permissions projects
+	 * @param domainNameToLevelNameToDBAccessLevel
+	 */
+	private async createApis(projects: DefaultDef_Project[], domainNameToLevelNameToDBAccessLevel: TypedMap<TypedMap<DB_PermissionAccessLevel>>) {
+		this.logInfoBold('Creating APIs');
+		const _auditorId = MemKey_AccountId.get();
 		const apisToUpsert = flatArray(projects.map(project => {
 			return project.packages.map(_package => _package.domains.map(domain => {
 				const apis: PreDB<DB_PermissionApi>[] = [];
@@ -302,11 +351,28 @@ class ModuleBE_Permissions_Class
 
 		const dbApis = await ModuleBE_PermissionApi.set.all(apisToUpsert);
 		this.logInfoBold(`Created ${dbApis.length} APIs`);
+	}
 
-		await this.assignSuperAdmin();
-	};
+	/**
+	 * Creates permission keys associated with the given projects.
+	 *
+	 * @param projects - An array of projects.
+	 */
+	private async createPermissionsKeys(projects: DefaultDef_Project[]) {
+		this.logInfoBold('Creating App Config');
+		// const permissionKeysToCreate: PermissionKey_BE<any>[] = filterInstances(flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.permissionKeys)))));
+		await ModuleBE_AppConfig.createDefaults(this);
+		this.logInfoBold('Created App Config');
+	}
 
-	assignSuperAdmin = async () => {
+	/**
+	 * If no "Super Admin" user is defined in the system!
+	 * The first user to press the create project button will become the "Super Admin" of the system
+	 *
+	 * If a "Super Admin" already exists in the system, a 403 will be thrown
+	 */
+	private assignSuperAdmin = async () => {
+		this.logInfoBold('Assigning SuperAdmin permissions');
 		const existingSuperAdmin = (await ModuleBE_PermissionUserDB.query.custom({
 			where: {__groupIds: {$ac: GroupId_SuperAdmin}},
 			limit: 1
@@ -318,31 +384,54 @@ class ModuleBE_Permissions_Class
 		(currentUser.groups || (currentUser.groups = [])).push({groupId: GroupId_SuperAdmin});
 		await ModuleBE_PermissionUserDB.set.item(currentUser);
 		await ModuleBE_SessionDB.session.rotate();
+		this.logInfoBold('Assigned SuperAdmin permissions');
 	};
 
-	private connectDomainToRoutes = async (data: Request_ConnectDomainToRoutes) => {
-		// const accessLevels = await ModuleBE_PermissionAccessLevel.query.custom({where: {domainId: data.domainId}});
-		// const apis = (await ModuleBE_PermissionApi.query.custom(_EmptyQuery)).filter(i => i.path.includes(data.dbName));
-		//
-		// accessLevels.forEach(level => {
-		// 	const lookupWords = defaultLevelsRouteLookupWords[level.name];
-		// 	if (!lookupWords)
-		// 		return;
-		//
-		// 	apis.filter(i => lookupWords.some(word => i.path.includes(word)))
-		// 		.forEach(api => {
-		// 			if (api.accessLevelIds?.find(i => i === level._id))
-		// 				return;
-		//
-		// 			if (!api.accessLevelIds)
-		// 				api.accessLevelIds = [];
-		//
-		// 			api.accessLevelIds.push(level._id);
-		// 		});
-		// });
-		//
-		// await ModuleBE_PermissionApi.set.all(apis);
-	};
+	/**
+	 * The system requires to perform action, which in other cases can also be done by a human.
+	 * This requires system features to identify as a bot user, or "Service Account"
+	 *
+	 * @param serviceAccounts - List of Accounts to create
+	 * @private
+	 */
+	private async createSystemServiceAccount(serviceAccounts: DefaultDef_ServiceAccount[]) {
+		this.logInfoBold('Creating Service Accounts');
+
+		// @ts-ignore
+		const tokenCreator = ModuleBE_AccountDB.token.create;
+		// @ts-ignore
+		const invalidateAccount = ModuleBE_AccountDB.token.invalidateAll;
+
+		const envConfigRef = Storm.getInstance().getGlobalEnvConfigRef();
+		const updatedConfig: TS_Object = {};
+		for (const serviceAccount of serviceAccounts) {
+			// Create account if it doesn't already exist
+			const accountsToRequest = {type: 'service', email: serviceAccount.email};
+			let account;
+			try {
+				account = await ModuleBE_AccountDB.impl.querySafeAccount({email: serviceAccount.email});
+			} catch (e) {
+				account = await ModuleBE_AccountDB.account.create(accountsToRequest);
+			}
+
+			// Assign permissions groups to service account
+			const permissionsUser = await ModuleBE_PermissionUserDB.query.uniqueAssert({_id: account._id});
+			permissionsUser.groups = serviceAccount.groupIds?.map(groupId => ({groupId})) || [];
+			await ModuleBE_PermissionUserDB.set.item(permissionsUser);
+
+			// Invalidate previous sessions
+			await invalidateAccount({accountId: account._id});
+			const token = await tokenCreator({accountId: account._id, ttl: 100 * Year});
+			updatedConfig[serviceAccount.moduleName] = {serviceAccount: {token, accountId: account._id}};
+		}
+
+		MemKey_ServerApi.get().addPostCallAction(async () => {
+			const currentConfig = await envConfigRef.get({});
+			await envConfigRef.set(merge(currentConfig, updatedConfig));
+			this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
+		});
+	}
+
 }
 
 export const ModuleBE_Permissions = new ModuleBE_Permissions_Class();

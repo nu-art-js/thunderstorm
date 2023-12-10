@@ -32,7 +32,6 @@ import {
 import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, filterInstances, Module, PreDB, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
-import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {defaultAccessLevels} from '../../../shared/consts';
 import {Permissions_DropDown} from '../ui-props';
@@ -262,7 +261,7 @@ export class PermissionDomainsEditor
 								group: ''
 							},
 							async () => {
-								await ModuleFE_PermissionsAssert.v1.connectDomainToRoutes({domainId: this.state.editedItem!.item._id!, dbName: dbDef.dbName}).executeSync();
+								// await ModuleFE_PermissionsAssert.v1.connectDomainToRoutes({domainId: this.state.editedItem!.item._id!, dbName: dbDef.dbName}).executeSync();
 							}
 						);
 					}}

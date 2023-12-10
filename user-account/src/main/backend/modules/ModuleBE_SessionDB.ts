@@ -25,6 +25,14 @@ export class ModuleBE_SessionDB_Class
 	extends ModuleBE_BaseDBV3<DBProto_SessionType, Config>
 	implements CollectSessionData<_SessionKey_Session> {
 
+	readonly ServiceAccount_Middleware = async (sessionId: string) => {
+		const sessionData = this.sessionData.decode(sessionId);
+		if (!this.session.isValid(sessionData))
+			throw new ApiException(401, 'Session timed out');
+
+		MemKey_SessionData.set(sessionData);
+	};
+
 	readonly Middleware = async () => {
 		const sessionId = Header_SessionId.get();
 		if (typeof sessionId !== 'string')
