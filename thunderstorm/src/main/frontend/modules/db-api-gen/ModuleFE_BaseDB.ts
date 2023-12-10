@@ -56,9 +56,10 @@ import {
 	EventType_UpsertAll,
 	syncDispatcher
 } from '../../core/db-api-gen/consts';
-import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction, ThunderDispatcher} from '../../core';
 import {ApiCallerEventType, MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
 import {StorageKey} from '../ModuleFE_LocalStorage';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction} from '../../core/IndexedDB';
 
 // type Message_CacheCollection = {
 // 	key: 'cache-sync'

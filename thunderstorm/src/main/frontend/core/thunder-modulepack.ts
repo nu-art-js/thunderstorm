@@ -29,3 +29,5 @@ export const ModulePack_ThunderstormFE: Module[] = [
 	ModuleFE_UpgradeCollection,
 ];
 
+export const ModulePackFE_Thunderstorm = ModulePack_ThunderstormFE;
+

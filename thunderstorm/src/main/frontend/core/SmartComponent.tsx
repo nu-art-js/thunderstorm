@@ -21,12 +21,12 @@
 
 import * as React from 'react';
 import {DB_Object, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {BaseComponent} from '../core';
 import {OnSyncStatusChangedListener} from '../core/db-api-gen/types';
 import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB';
 import {TS_ErrorBoundary} from '../components/TS_ErrorBoundary';
 import {TS_Loader} from '../components/TS_Loader';
 import {DataStatus} from './db-api-gen/consts';
+import {BaseComponent} from './ComponentBase';
 
 
 export enum ComponentStatus {

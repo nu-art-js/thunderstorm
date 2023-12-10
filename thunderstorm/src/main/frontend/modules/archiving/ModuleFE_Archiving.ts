@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
 import {ApiDef_Archiving, ApiDefCaller, ApiStruct_Archiving} from '../../../shared';
-import {apiWithBody, apiWithQuery} from '../../core';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 
 class ModuleFE_Archiving_Class
 	extends Module {

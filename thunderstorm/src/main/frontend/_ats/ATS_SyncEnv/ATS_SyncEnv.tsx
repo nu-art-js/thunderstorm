@@ -1,7 +1,6 @@
 import * as React from 'react';
 import './ATS_SyncEnv.scss';
 import {filterKeys} from '@nu-art/ts-common';
-import {ComponentSync, Thunder} from '../../core';
 import {BackupMetaData} from '../../../backend/modules/backup/ModuleBE_v2_Backup';
 import {AppToolsScreen, ATS_Fullstack, TS_AppTools} from '../../components/TS_AppTools';
 import {genericNotificationAction} from '../../components/TS_Notifications';
@@ -10,8 +9,15 @@ import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {LL_H_C, LL_V_L} from '../../components/Layouts';
 import {TS_Checkbox} from '../../components/TS_Checkbox';
 import {TS_Input} from '../../components/TS_Input';
-import {_className, SimpleListAdapter, TS_BusyButton, TS_DropDown, TS_Loader, TS_PropRenderer} from '../..';
 import {ApiModule} from '../../../shared';
+import {ComponentSync} from '../../core/ComponentSync';
+import {Thunder} from '../../core/Thunder';
+import {TS_PropRenderer} from '../../components/TS_PropRenderer';
+import {SimpleListAdapter} from '../../components/adapter/Adapter';
+import {TS_BusyButton} from '../../components/TS_BusyButton';
+import {TS_DropDown} from '../../components/TS_Dropdown';
+import {_className} from '../../utils/tools';
+import {TS_Loader} from '../../components/TS_Loader';
 
 
 type Env = 'prod' | 'staging' | 'dev' | 'local';

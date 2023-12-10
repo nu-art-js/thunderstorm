@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core';
+import {ComponentSync} from '../../core/ComponentSync';
 import './TS_ReadMore.scss';
 import {_className} from '../../utils/tools';
 

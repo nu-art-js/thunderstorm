@@ -18,9 +18,8 @@
  */
 
 import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
+import {apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 import {ApiDef_Permissions} from '../..';
-import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts';
 
@@ -57,7 +56,7 @@ export class ModuleFE_PermissionsAssert_Class
 		this.v1 = {
 			toggleStrictMode: apiWithQuery(ApiDef_Permissions.v1.toggleStrictMode),
 			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject),
-			connectDomainToRoutes: apiWithBody(ApiDef_Permissions.v1.connectDomainToRoutes, async () => await ModuleFE_PermissionsApi.v1.sync().executeSync())
+			// connectDomainToRoutes: apiWithBody(ApiDef_Permissions.v1.connectDomainToRoutes, async () => await ModuleFE_PermissionsApi.v1.sync().executeSync())
 		};
 	}
 

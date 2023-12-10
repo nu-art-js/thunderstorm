@@ -24,9 +24,10 @@ import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, exists, In
 import {ModuleFE_v3_BaseDB} from './ModuleFE_v3_BaseDB';
 import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, DBSyncData, HttpException, QueryParams, TypedApi} from '../../shared';
 import {DBApiFEConfigV3} from '../../core/db-api-gen/v3-db-def';
-import {SyncIfNeeded} from '../sync-manager/ModuleFE_SyncManager';
-import {apiWithBody, apiWithQuery, ThunderDispatcher} from '../../core';
 import {DataStatus} from '../../core/db-api-gen/consts';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api';
+import {SyncIfNeeded} from '../sync-manager/ModuleFE_SyncManagerV2';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';

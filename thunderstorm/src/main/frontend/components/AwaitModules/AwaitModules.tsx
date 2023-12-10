@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core';
+import {ComponentSync} from '../../core/ComponentSync';
 import {DB_Object, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {OnSyncStatusChangedListener} from '../../core/db-api-gen/types';

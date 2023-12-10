@@ -122,7 +122,7 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDefBE_Account.vv1.login, this.account.login),
 			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, this.account.create),
 			createQueryServerApi(ApiDefBE_Account.vv1.logout, this.account.logout),
-			createBodyServerApi(ApiDefBE_Account.vv1.createToken, this.createToken),
+			createBodyServerApi(ApiDefBE_Account.vv1.createToken, this.token.create),
 			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.account.setPassword)
 		]);
 	}
@@ -339,21 +339,30 @@ export class ModuleBE_AccountDB_Class
 		}
 	};
 
-	private createToken = async ({accountId, ttl}: RequestBody_CreateToken) => {
-		const account = await this.query.unique(accountId);
+	// @ts-ignore
+	private token = {
+		create: async ({accountId, ttl}: RequestBody_CreateToken) => {
+			const account = await this.query.unique(accountId);
 
-		if (!account)
-			throw new BadImplementationException(`Account not found for id ${accountId}`);
+			if (!account)
+				throw new BadImplementationException(`Account not found for id ${accountId}`);
 
-		if (account.type !== 'service')
-			throw new BadImplementationException('Can not generate a token for a non service account');
+			if (account.type !== 'service')
+				throw new BadImplementationException('Can not generate a token for a non service account');
 
-		const {sessionId} = await ModuleBE_SessionDB.session.createCustom(accountId, accountId, (sessionData) => {
-			SessionKey_Session_BE.get(sessionData).expiration = currentTimeMillis() + ttl;
-			return sessionData;
-		});
+			const {sessionId} = await ModuleBE_SessionDB.session.createCustom(accountId, accountId, (sessionData) => {
+				SessionKey_Session_BE.get(sessionData).expiration = currentTimeMillis() + ttl;
+				return sessionData;
+			});
 
-		return {token: sessionId};
+			return {token: sessionId};
+		},
+		invalidate: async (token: string) => {
+			await ModuleBE_SessionDB.delete.where({sessionId: token});
+		},
+		invalidateAll: async (accountId: string) => {
+			await ModuleBE_SessionDB.delete.where({accountId});
+		}
 	};
 }
 

@@ -4,6 +4,7 @@ import {ApiDef_AppConfig, DB_AppConfig, DBDef_AppConfigs} from '../../../shared'
 import {addRoutes} from '../ModuleBE_APIs';
 import {createQueryServerApi} from '../../core/typed-api';
 
+
 type InferType<T> = T extends AppConfigKey_BE<infer ValueType> ? ValueType : never;
 
 class ModuleBE_AppConfig_Class
@@ -47,12 +48,11 @@ class ModuleBE_AppConfig_Class
 		const keys = _keys(this.keyMap);
 		for (const key of keys) {
 			const config = await this.getAppKey(this.keyMap[key]);
-			this.logInfo(`Set default data for key ${key}`);
-			this.logInfo(config);
+			this.logInfo(`Set App-Config default value for '${key}'`, config);
 		}
 	};
 
-	async getAppKey<K extends AppConfigKey_BE<any>>(appConfigKey: K): Promise<InferType<K>> {
+	getAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K): Promise<InferType<K>> => {
 		try {
 			const config = await this.query.uniqueCustom({where: {key: appConfigKey.key}});
 			return config?.data as InferType<K>;
@@ -61,9 +61,9 @@ class ModuleBE_AppConfig_Class
 			await this.setAppKey(appConfigKey, data);
 			return data;
 		}
-	}
+	};
 
-	async setAppKey<K extends AppConfigKey_BE<any>>(appConfigKey: K, data: InferType<K>) {
+	setAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K, data: InferType<K>) => {
 		let _config;
 		try {
 			_config = await this.query.uniqueCustom({where: {key: appConfigKey.key}});
@@ -72,11 +72,11 @@ class ModuleBE_AppConfig_Class
 		}
 		_config.data = data;
 		return this.set.item(_config);
-	}
+	};
 
-	async _deleteAppKey<K extends AppConfigKey_BE<any>>(appConfigKey: K) {
+	_deleteAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K) => {
 		await this.delete.query({where: {key: appConfigKey.key}});
-	}
+	};
 }
 
 export const ModuleBE_AppConfig = new ModuleBE_AppConfig_Class();
@@ -94,6 +94,7 @@ export class AppConfigKey_BE<Binder extends TypedKeyValue<string | number | obje
 			this.dataManipulator = dataManipulator;
 		ModuleBE_AppConfig.registerKey(this);
 	}
+
 
 	async get(): Promise<Binder['value']> {
 		return await ModuleBE_AppConfig.getAppKey(this);

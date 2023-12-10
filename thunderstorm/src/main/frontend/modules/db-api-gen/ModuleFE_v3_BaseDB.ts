@@ -54,9 +54,11 @@ import {
 	EventType_UpsertAll,
 	syncDispatcher
 } from '../../core/db-api-gen/consts';
-import {DBConfigV3, IndexDb_Query, IndexedDBV3, ReduceFunction, ThunderDispatcher} from '../../core';
 import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
 import {StorageKey} from '../ModuleFE_LocalStorage';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {DBConfigV3, IndexedDBV3} from '../../core/IndexedDBV3';
+import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
 
 
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>

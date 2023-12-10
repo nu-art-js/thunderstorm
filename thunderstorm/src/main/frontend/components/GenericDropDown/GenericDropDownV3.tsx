@@ -4,7 +4,7 @@ import {CSSProperties} from 'react';
 import {TS_DropDown} from '../TS_Dropdown';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {Adapter, SimpleListAdapter} from '../adapter/Adapter';
-import {ComponentSync} from '../../core';
+import {ComponentSync} from '../../core/ComponentSync';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
 
 
