@@ -19,40 +19,37 @@
  * limitations under the License.
  */
 
-import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, QueryApi} from '../shared';
+import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi} from '../shared';
 import {ModuleFE_XHR} from '../modules/http/ModuleFE_XHR';
 
 
-type ApiQueryReturnType<API extends QueryApi<any, any, any, any>> = API['P'] extends undefined ? () => BaseHttpRequest<API> : (params: API['P']) => BaseHttpRequest<API>
+type ApiQueryReturnType<API extends QueryApi<any, any, any, any, HttpMethod_Query>> = API['P'] extends undefined ? () => BaseHttpRequest<API> : (params: API['P']) => BaseHttpRequest<API>
 type ApiBodyReturnType<API extends BodyApi<any, any, any, any, any>> = API['B'] extends undefined ? () => BaseHttpRequest<API> : (params: API['B']) => BaseHttpRequest<API>
 
-export function apiWithQuery<API extends QueryApi<any, any, any>>(apiDef: ApiDef<API>,
-																																	onCompleted?: (response: API['R'], params: API['P'], request: BaseHttpRequest<API>) => Promise<any>,
-																																	onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>): ApiQueryReturnType<API> {
-	// @ts-ignore
-	return (params: API['P']): BaseHttpRequest<API> => {
+export function apiWithQuery<API extends QueryApi<any, any, any, any, HttpMethod_Query>>(apiDef: ApiDef<API>,
+																																												 onCompleted?: (response: API['R'], params: API['P'], request: BaseHttpRequest<API>) => Promise<any>,
+																																												 onError?: (errorResponse: any, input: API['P'], request: BaseHttpRequest<API>) => Promise<any>): ApiQueryReturnType<API> {
+	return ((params: API['P']): BaseHttpRequest<API> => {
 		return ModuleFE_XHR
 			.createRequest<API>(apiDef)
 			.setUrlParams(params)
 			.setTimeout(apiDef.timeout || 10000)
 			.setOnError(onError)
 			.setOnCompleted(onCompleted);
-	};
+	}) as ApiQueryReturnType<API>;
 }
 
-export function apiWithBody<API extends BodyApi<any, any, any,
-	any, HttpMethod_Body>>(apiDef: ApiDef<API>,
-												 onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>,
-												 onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>): ApiBodyReturnType<API> {
-	// @ts-ignore
-	return (body: API['B']): BaseHttpRequest<API> => {
+export function apiWithBody<API extends BodyApi<any, any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>,
+																																											onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>,
+																																											onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>): ApiBodyReturnType<API> {
+	return ((body: API['B']): BaseHttpRequest<API> => {
 		return ModuleFE_XHR
 			.createRequest<API>(apiDef)
 			.setBodyAsJson(body)
 			.setTimeout(apiDef.timeout || 10000)
 			.setOnError(onError)
 			.setOnCompleted(onCompleted);
-	};
+	}) as ApiBodyReturnType<API>;
 }
 
 

@@ -110,7 +110,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				return <>
 					{_render()}
 					{this.state.componentPhase === ComponentStatus.Syncing &&
-						<div className={'loader-transparent-container'}><TS_Loader/></div>}
+                        <div className={'loader-transparent-container'}><TS_Loader/></div>}
 				</>;
 			};
 
@@ -219,12 +219,15 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 
 	// ######################### Render #########################
+	protected logAwaitedModules() {
+		this.logWarning(`Waiting for modules: ${this.unpreparedModules?.map(module => module.getName())}`);
+	}
 
 	protected renderLoader = () => {
 		return <div className={'loader-container'}>
 			<TS_Loader
 				onClick={() => {
-					this.logWarning(`Waiting for modules: ${this.unpreparedModules?.map(module => module.getName())}`);
+					this.logAwaitedModules();
 				}}/>
 		</div>;
 	};
