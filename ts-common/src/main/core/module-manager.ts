@@ -37,7 +37,7 @@ export class ModuleManager
 	extends Logger {
 
 	protected config!: any;
-	protected modules = _modules;
+	readonly modules = _modules;
 	public static instance: ModuleManager;
 
 	// noinspection JSUnusedLocalSymbols

@@ -33,7 +33,7 @@ export async function lockedOperation<T>(key: string, timeout: number, action: (
 		return {status: FirebaseLockState_LOCKED, timeout: now + timeout};
 	});
 
-// Check if the transaction was committed and lock was acquired
+	// Check if the transaction was committed and lock was acquired
 	if (!transactionResult.committed || transactionResult.value.status !== FirebaseLockState_LOCKED)
 		throw exception; // Lock could not be acquired
 

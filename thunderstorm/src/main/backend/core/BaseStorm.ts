@@ -89,7 +89,11 @@ export abstract class BaseStorm
 	};
 
 	getEnvConfigRef<Config>(module: Module<Config>) {
-		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<Config>(`/_config/${this.envKey}/${module.getName()}`)
+		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<Config>(`/_config/${this.envKey}/${module.getName()}`);
+	}
+
+	getGlobalEnvConfigRef() {
+		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<TS_Object>(`/_config/${this.envKey}`);
 	}
 
 }

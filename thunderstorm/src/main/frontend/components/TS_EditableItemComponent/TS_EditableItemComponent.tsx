@@ -1,7 +1,7 @@
 import {ReactNode} from 'react';
 import * as React from 'react';
 import {EditableItem} from '../../utils/EditableItem';
-import {ComponentSync} from '../../core';
+import {ComponentSync} from '../../core/ComponentSync';
 import {TS_PropRenderer} from '../TS_PropRenderer';
 
 

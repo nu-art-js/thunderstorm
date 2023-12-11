@@ -24,7 +24,7 @@ import {ComponentType} from 'react';
 import {_keys} from '@nu-art/ts-common';
 import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem';
 import {State_ItemEditor} from '../Item_Editor';
-import {ComponentSync} from '../../core';
+import {ComponentSync} from '../../core/ComponentSync';
 import {TS_PropRenderer} from '../TS_PropRenderer';
 
 

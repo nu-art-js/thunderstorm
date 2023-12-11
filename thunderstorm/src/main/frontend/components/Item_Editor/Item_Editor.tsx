@@ -3,7 +3,7 @@ import {ReactNode} from 'react';
 import {asArray, AssetValueType, DB_Object, dbObjectToId, merge} from '@nu-art/ts-common';
 import {EditableDBItem} from '../../utils/EditableDBItem';
 import {EditableItem} from '../../utils/EditableItem';
-import {ComponentSync} from '../../core';
+import {ComponentSync} from '../../core/ComponentSync';
 import {Props_PropRenderer, Props_PropRendererHorizontal, TS_PropRenderer} from '../TS_PropRenderer';
 import {TS_Input} from '../TS_Input';
 import {TS_Checkbox} from '../TS_Checkbox';

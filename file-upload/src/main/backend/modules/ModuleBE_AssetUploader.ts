@@ -20,6 +20,7 @@
 import {ModuleBase_AssetUploader, UploaderConfig,} from '../../shared/modules/ModuleBase_AssetUploader';
 import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule} from '@nu-art/thunderstorm/backend';
 import {ApiDef_AssetUploader, TempSignedUrl, UI_Asset} from '../shared';
+import {ApiDef, BaseHttpRequest, TypedApi} from '@nu-art/thunderstorm';
 
 
 export type ServerFilesToUpload = UI_Asset & {
@@ -34,7 +35,6 @@ export class ModuleBE_AssetUploader_Class
 	constructor() {
 		super();
 		this.vv1 = {
-			// uploadFile: apiWithBodyAxios(ApiDef_AssetUploader.vv1.uploadFile),
 			getUploadUrl: apiWithBodyAxios(ApiDef_AssetUploader.vv1.getUploadUrl),
 			processAssetManually: apiWithQueryAxios(ApiDef_AssetUploader.vv1.processAssetManually),
 		};
@@ -43,6 +43,10 @@ export class ModuleBE_AssetUploader_Class
 	init() {
 		super.init();
 		AxiosHttpModule.setRequestOption(this.config.requestConfig);
+	}
+
+	createRequest<API extends TypedApi<any, any, any, any>>(uploadFile: ApiDef<API>): BaseHttpRequest<API> {
+		return AxiosHttpModule.createRequest(uploadFile);
 	}
 
 	upload(files: ServerFilesToUpload[]): UI_Asset[] {
