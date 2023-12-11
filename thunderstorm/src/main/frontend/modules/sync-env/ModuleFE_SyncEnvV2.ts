@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
 import {ApiDef_SyncEnvV2, ApiDefCaller, ApiStruct_SyncEnvV2} from '../../shared';
-import {apiWithBody, apiWithQuery} from '../../core';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 
 
 class ModuleFE_SyncEnvV2_Class

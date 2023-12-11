@@ -19,10 +19,20 @@
  * limitations under the License.
  */
 
-import {Module} from '@nu-art/ts-common';
-import {ApiDef_SyncManagerV2, ApiDefCaller, ApiStruct_SyncManager, Response_DBSyncData} from '../../shared';
-import {dispatch_onSyncCompleted, dispatch_syncIfNeeded} from './ModuleFE_SyncManager';
-import {apiWithQuery} from '../../core';
+import {Dispatcher, Module} from '@nu-art/ts-common';
+import {ApiDef_SyncManagerV2, ApiDefCaller, ApiStruct_SyncManager, DBSyncData, Response_DBSyncData} from '../../shared';
+import {apiWithQuery} from '../../core/typed-api';
+
+
+export type SyncIfNeeded = {
+	__syncIfNeeded: (syncData: DBSyncData[]) => Promise<void>
+}
+export type OnSyncCompleted = {
+	__onSyncCompleted: () => void
+}
+
+export const dispatch_syncIfNeeded = new Dispatcher<SyncIfNeeded, '__syncIfNeeded'>('__syncIfNeeded');
+export const dispatch_onSyncCompleted = new Dispatcher<OnSyncCompleted, '__onSyncCompleted'>('__onSyncCompleted');
 
 export class ModuleFE_SyncManagerV2_Class
 	extends Module

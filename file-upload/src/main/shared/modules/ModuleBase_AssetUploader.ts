@@ -16,10 +16,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, _keys, BadImplementationException, Dispatcher, Module, Queue} from '@nu-art/ts-common';
-import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
+import {__stringify, _keys, BadImplementationException, Dispatcher, Minute, Module, Queue} from '@nu-art/ts-common';
+import {ApiDef, ApiDefCaller, BaseHttpRequest, TS_Progress, TypedApi} from '@nu-art/thunderstorm';
 
-import {ApiStruct_AssetUploader, DB_Asset, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '../../shared';
+import {
+	ApiDef_UploadFile,
+	ApiStruct_AssetUploader,
+	DB_Asset,
+	FileStatus,
+	OnFileStatusChanged,
+	PushKey_FileUploaded,
+	TempSignedUrl,
+	UI_Asset
+} from '../../shared';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
 import {PushMessage_Payload} from '@nu-art/push-pub-sub';
 import {PushMessage_FileUploaded} from '../assets/messages';
@@ -167,21 +176,23 @@ export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = U
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${feId} and name: ${response.asset.name}`);
 
+		const request = this.createRequest(ApiDef_UploadFile)
+			.setUrl(response.signedUrl)
+			.setHeader('Content-Type', response.asset.mimeType)
+			.setTimeout(20 * Minute)
+			.setBody(fileInfo.file)
+			.setOnProgressListener((ev: TS_Progress) => {
+				this.setFileInfo(feId, {progress: ev.loaded / ev.total});
+			});
+		fileInfo.request = request;
+		await request.executeSync();
+
 		// const request = this.vv1.uploadFile(fileInfo.file, undefined as never)
 		// 	.setUrl(response.signedUrl);
 		// const request = this
 		// 	.httpModule
 		// 	.createRequest(HttpMethod.PUT, RequestKey_UploadFile, feId)
-		// 	.setUrl(response.secureUrl)
-		// 	.setHeader('Content-Type', response.asset.mimeType)
-		// 	.setTimeout(20 * Minute)
-		// 	.setBody(fileInfo.file)
-		// 	.setOnProgressListener((ev: TS_Progress) => {
-		// 		this.setFileInfo(feId, {progress: ev.loaded / ev.total});
-		// 	});
 
-		// fileInfo.request = request;
-		// await request.executeSync();
 	};
 
 	processAssetManually = (feId?: string) => {
@@ -197,6 +208,8 @@ export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = U
 
 		request.execute();
 	};
+
+	protected abstract createRequest<API extends TypedApi<any, any, any, any>>(uploadFile: ApiDef<API>): BaseHttpRequest<API> ;
 }
 
 

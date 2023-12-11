@@ -11,21 +11,22 @@ import {
 import {DBProto_PushSubscription} from './types';
 
 
+const Validator_FilterKey = (value?: number | string) => {
+	if (typeof value === 'string')
+		return tsValidateResult(value, tsValidateString());
+
+	if (typeof value === 'number')
+		return tsValidateResult(value, tsValidateNumber());
+
+	if (exists(value))
+		return `expected type number | string but received ${typeof value}`;
+
+	return tsValidateResult(value, tsValidateMustExist);
+};
+
 const Validator_ModifiableProps: DBProto_PushSubscription['modifiablePropsValidator'] = {
 	pushSessionId: tsValidateString(),
-	filter: tsValidateDynamicObject((value?: number | string) => {
-			if (typeof value === 'string')
-				return tsValidateResult(value, tsValidateString());
-
-			if (typeof value === 'number')
-				return tsValidateResult(value, tsValidateNumber());
-
-			if (exists(value))
-				return `expected type number | string but received ${typeof value}`;
-
-			return tsValidateResult(value, tsValidateMustExist);
-		}, tsValidateString()
-	),
+	filter: tsValidateDynamicObject(Validator_FilterKey, tsValidateString(), false),
 	topic: tsValidateString(200)
 };
 

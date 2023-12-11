@@ -45,10 +45,11 @@ import {
 
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
-import {SyncIfNeeded} from '../sync-manager/ModuleFE_SyncManager';
-import {apiWithBody, apiWithQuery, ThunderDispatcher} from '../../core';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {DataStatus} from '../../core/db-api-gen/consts';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {SyncIfNeeded} from '../sync-manager/ModuleFE_SyncManagerV2';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';

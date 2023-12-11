@@ -3,8 +3,8 @@ import * as React from 'react';
 import {PartialProps_GenericDropDown} from '../GenericDropDown';
 import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2} from '../TS_MultiSelect';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {ComponentSync} from '../../core';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
+import {ComponentSync} from '../../core/ComponentSync';
 
 
 type Props<DBType extends DB_Object> = {
@@ -31,7 +31,7 @@ export class DBItemDropDownMultiSelector<DBType extends DB_Object>
 																																										uiSelector={uiSelector}/>;
 	};
 
-	static props = <DBType extends DB_Object, Ks extends keyof PreDB<DBType>>(props: MultiSelectDropDownProps<DBType, Ks> ): StaticProps_TS_MultiSelect_V2<string> => {
+	static props = <DBType extends DB_Object, Ks extends keyof PreDB<DBType>>(props: MultiSelectDropDownProps<DBType, Ks>): StaticProps_TS_MultiSelect_V2<string> => {
 		return {
 			itemRenderer: (itemId, onDelete?: () => Promise<void>) => {
 				const dbItem = props.module.cache.unique(itemId);
@@ -40,7 +40,7 @@ export class DBItemDropDownMultiSelector<DBType extends DB_Object>
 			selectionRenderer: DBItemDropDownMultiSelector.selector(props.uiSelector)
 		};
 	};
-	static propsV3 = <Proto extends DBProto<any>>(props:  MultiSelectDropDownPropsV3<Proto>): StaticProps_TS_MultiSelect_V2<string> => {
+	static propsV3 = <Proto extends DBProto<any>>(props: MultiSelectDropDownPropsV3<Proto>): StaticProps_TS_MultiSelect_V2<string> => {
 		return {
 			itemRenderer: (itemId, onDelete?: () => Promise<void>) => {
 				const dbItem = props.module.cache.unique(itemId);

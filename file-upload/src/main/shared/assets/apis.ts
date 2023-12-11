@@ -1,7 +1,9 @@
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {DB_Asset} from './types1';
 import {DB_BaseObject} from '@nu-art/ts-common';
 import {UI_Asset} from './types';
+import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {FileStatus} from '../types';
 
 
 export type SignedUrl = {
@@ -24,9 +26,12 @@ export const ApiDef_Assets: ApiDefResolver<ApiStruct_Assets> = {
 	}
 };
 
+export type FileUploadResult = { status: FileStatus, asset: DB_Asset };
+export type Api_UploadFile = BodyApi<FileUploadResult, any, any, ResponseError, HttpMethod.PUT>;
+export const ApiDef_UploadFile: ApiDef<Api_UploadFile> = {method: HttpMethod.PUT, path: ''};
+
 export type ApiStruct_AssetUploader = {
 	vv1: {
-		// uploadFile: BodyApi<FileUploadResult, any, any, ResponseError, HttpMethod.PUT>,
 		getUploadUrl: BodyApi<TempSignedUrl[], UI_Asset[]>,
 		processAssetManually: QueryApi<void[], { feId?: string }>,
 
@@ -35,7 +40,6 @@ export type ApiStruct_AssetUploader = {
 
 export const ApiDef_AssetUploader: ApiDefResolver<ApiStruct_AssetUploader> = {
 	vv1: {
-		// uploadFile: {method: HttpMethod.PUT, path: ''},
 		getUploadUrl: {method: HttpMethod.POST, path: 'v1/upload/get-url'},
 		processAssetManually: {method: HttpMethod.GET, path: 'v1/upload/process-asset-manually'},
 	}

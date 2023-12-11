@@ -35,12 +35,12 @@ import {
 } from '@nu-art/ts-common';
 import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
-import {CleanupDetails, DBApiConfig, ModuleBE_BaseDBV3, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfig, ModuleBE_BaseDBV3, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './ModuleBE_BucketListener';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage';
-import {DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '../../shared';
+import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '../../shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted';
@@ -118,6 +118,10 @@ export class ModuleBE_AssetsDB_Class
 
 	init() {
 		super.init();
+		addRoutes([
+			createBodyServerApi(ApiDef_AssetUploader.vv1.getUploadUrl, this.getUrl)
+		]);
+
 		this.registerVersionUpgradeProcessor('1.0.1', async (assets) => {
 			assets.forEach(asset => {
 				// @ts-ignore
@@ -170,12 +174,12 @@ export class ModuleBE_AssetsDB_Class
 		return dbAsset;
 	}
 
-	register(key: string, validationConfig: FileTypeValidation) {
+	register = (key: string, validationConfig: FileTypeValidation) => {
 		if (this.fileValidator[key] && this.fileValidator[key] !== validationConfig)
 			throw new BadImplementationException(`File Validator already exists for key: ${key}`);
 
 		this.fileValidator[key] = validationConfig;
-	}
+	};
 
 	__onCleanupSchedulerAct(): CleanupDetails {
 		return {
@@ -198,7 +202,7 @@ export class ModuleBE_AssetsDB_Class
 		await module.delete.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 	};
 
-	async getUrl(files: UI_Asset[]): Promise<TempSignedUrl[]> {
+	getUrl = async (files: UI_Asset[]): Promise<TempSignedUrl[]> => {
 		const bucketName = this.config?.bucketName;
 		const bucket = await ModuleBE_AssetsStorage.storage.getOrCreateBucket(bucketName);
 		return Promise.all(files.map(async _file => {
@@ -233,7 +237,7 @@ export class ModuleBE_AssetsDB_Class
 				asset: dbTempMeta
 			};
 		}));
-	}
+	};
 
 	processAssetManually = async (feId?: string) => {
 		let query: FirestoreQuery<DB_Asset> = {limit: 1};

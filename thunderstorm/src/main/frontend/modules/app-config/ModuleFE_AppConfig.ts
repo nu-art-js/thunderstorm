@@ -26,8 +26,9 @@ import {
 	Response_DBSync
 } from '../../shared';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
-import {apiWithQuery, ThunderDispatcher} from '../../core';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {apiWithQuery} from '../../core/typed-api';
 
 
 type InferType<T> = T extends AppConfigKey_FE<infer ValueType> ? ValueType : never;

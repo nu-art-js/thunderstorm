@@ -22,7 +22,6 @@ const _PermissionsDomain_AssetsManager: DefaultDef_Domain = {
 		{path: ModuleBE_AssetsAPI.apiDef.v1.sync.path, accessLevel: DefaultAccessLevel_Read.name},
 		{path: ApiDef_Assets.vv1.getReadSignedUrl.path, accessLevel: DefaultAccessLevel_Read.name},
 		{path: ApiDef_AssetUploader.vv1.getUploadUrl.path, accessLevel: DefaultAccessLevel_Write.name},
-		// {path: ApiDef_AssetUploader.vv1.uploadFile.path, accessLevel: DefaultAccessLevel_Write.name},
 		{path: ApiDef_AssetUploader.vv1.processAssetManually.path, domainId: Domain_Developer._id, accessLevel: DefaultAccessLevel_Write.name},
 	]
 };

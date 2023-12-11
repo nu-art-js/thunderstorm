@@ -7,6 +7,8 @@ import {QueryParams} from '../../../shared';
 import {mouseEventHandler} from '../../utils/tools';
 import {AwaitModules} from '../../components/AwaitModules/AwaitModules';
 import {ComponentClass, FunctionComponent} from 'react';
+import {ModuleFE_AppConfig} from '../app-config/ModuleFE_AppConfig';
+import {ModuleFE_BaseDB} from '../db-api-gen/ModuleFE_BaseDB';
 
 
 class ModuleFE_RoutingV2_Class
@@ -45,13 +47,17 @@ class ModuleFE_RoutingV2_Class
 	}
 
 	generateRoutes(rootRoute: TS_Route) {
-		const element = this.routeBuilder(rootRoute);
-		return <BrowserRouter>
-			<LocationChangeListener/>
-			<Routes>
-				{element}
-			</Routes>
-		</BrowserRouter>;
+		// This needs to be a component in order to be build the routes on rendering after modules are awaited
+		const RoutesRenderer = () => <Routes>
+			{this.routeBuilder(rootRoute)}
+		</Routes>;
+
+		return <AwaitModules modules={[ModuleFE_AppConfig] as unknown as ModuleFE_BaseDB<any>[]}>
+			<BrowserRouter>
+				<LocationChangeListener/>
+				<RoutesRenderer/>
+			</BrowserRouter>
+		</AwaitModules>;
 	}
 
 	private routeBuilder = (route: TS_Route<any>, _path: string = '') => {

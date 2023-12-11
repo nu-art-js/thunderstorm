@@ -3,7 +3,7 @@ import * as React from 'react';
 import {TS_DropDown} from '../TS_Dropdown';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {Adapter, SimpleListAdapter} from '../adapter/Adapter';
-import {ComponentSync} from '../../core';
+import {ComponentSync} from '../../core/ComponentSync';
 
 
 type OptionalCanUnselect<T> = {

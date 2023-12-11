@@ -4,10 +4,11 @@ import {__stringify, dispatch_onApplicationNotification, ServerErrorSeverity} fr
 import {BucketConfigs} from '../functions/firebase-function';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
 
+
 const functions = require('firebase-functions');
 
-export abstract class ModuleBE_StorageListener<ConfigType extends BucketConfigs = BucketConfigs>
-	extends ModuleBE_BaseFunction<ConfigType> {
+export abstract class ModuleBE_StorageListener<ConfigType>
+	extends ModuleBE_BaseFunction<ConfigType & BucketConfigs> {
 
 	private function!: CloudFunction<ObjectMetadata>;
 	private runtimeOpts: RuntimeOptions = {};
@@ -15,7 +16,7 @@ export abstract class ModuleBE_StorageListener<ConfigType extends BucketConfigs 
 	protected constructor(path?: string, name?: string) {
 		super();
 		if (path)
-			this.setDefaultConfig({path: path} as Partial<ConfigType>);
+			this.setDefaultConfig({path: path} as Partial<ConfigType & BucketConfigs>);
 
 		name && this.setName(name);
 	}
