@@ -30,8 +30,8 @@ import {ModuleBE_PushSessionDB} from './ModuleBE_PushSessionDB';
 import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB';
 import {DBProto_PushMessagesHistory} from '../../shared/push-messages-history';
 import {ModuleBE_PushMessagesHistoryDB} from './ModuleBE_PushMessagesHistoryDB';
-import {HttpCodes} from '@nu-art/thunderstorm';
 import Transaction = firestore.Transaction;
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 type Config = {
