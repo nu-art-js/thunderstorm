@@ -13,6 +13,7 @@ import {firestore} from 'firebase-admin';
 import {FirestoreCollectionV2, assertUniqueId} from './FirestoreCollectionV2';
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 export type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
@@ -101,6 +102,9 @@ export class DocWrapperV2<T extends DB_Object> {
 			return this.collection.runTransaction(transaction => this.set(item, transaction));
 
 		const currDBItem = await this.get(transaction);
+		if ((currDBItem?.__updated || 0) > ((item as DB_Object).__updated || 0))
+			throw HttpCodes._4XX.ENTITY_IS_OUTDATED('Item is outdated', `${this.collection.name}/${currDBItem?._id} is outdated`);
+
 		const newDBItem = await this.prepareForSet(item as T, currDBItem!, transaction);
 		// Will always get here with a transaction!
 		transaction.set(this.ref, newDBItem);
