@@ -1,10 +1,11 @@
-import {_keys, currentTimeMillis, DBProto, exists, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DB_Object, DBProto, exists, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
 import {assertUniqueId, FirestoreCollectionV3, PostWriteProcessingData} from './FirestoreCollectionV3';
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 export type UpdateObject<Proto extends DBProto<any>> =
@@ -102,6 +103,9 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 			return this.collection.runTransaction((transaction: Transaction) => this.set(item, transaction));
 
 		const currDBItem = await this.get(transaction);
+		if (currDBItem?.__updated || 0 > (item as DB_Object).__updated || 0)
+			throw HttpCodes._4XX.ENTITY_IS_OUTDATED('Item is outdated', `${this.collection.name}/${currDBItem?._id} is outdated`);
+
 		const newDBItem = await this.prepareForSet(item as Proto['dbType'], currDBItem!, transaction);
 
 		// Will always get here with a transaction!

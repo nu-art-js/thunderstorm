@@ -43,8 +43,8 @@ import {
 } from '../../shared';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../shared/assertion';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {HttpCodes} from '@nu-art/thunderstorm';
 import Transaction = firestore.Transaction;
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 type BaseAccount = {
