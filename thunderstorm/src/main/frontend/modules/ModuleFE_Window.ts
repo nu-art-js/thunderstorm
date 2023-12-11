@@ -22,6 +22,7 @@
 import {Module,} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
+
 type Config = {}
 
 export interface OnWindowResized {
@@ -30,15 +31,38 @@ export interface OnWindowResized {
 
 const dispatch_WindowResized = new ThunderDispatcher<OnWindowResized, '__onWindowResized'>('__onWindowResized');
 
+export interface OnWindowReceivedFocus {
+	__onWindowReceivedFocus(): void;
+}
+
+const dispatch_WindowReceivedFocus = new ThunderDispatcher<OnWindowReceivedFocus, '__onWindowReceivedFocus'>('__onWindowReceivedFocus');
+
+export interface OnWindowLostFocus {
+	__onWindowLostFocus(): void;
+}
+
+const dispatch_WindowLostFocus = new ThunderDispatcher<OnWindowLostFocus, '__onWindowLostFocus'>('__onWindowLostFocus');
+
 export class ModuleFE_Window_Class
 	extends Module<Config> {
 
 	protected init(): void {
 		window.addEventListener('resize', this.onWindowResized);
+		window.addEventListener('focus', this.onWindowReceivedFocus);
+		window.addEventListener('blur', this.onWindowLostFocus);
+
 	}
 
 	private onWindowResized = () => {
 		dispatch_WindowResized.dispatchUI();
+	};
+
+	private onWindowReceivedFocus = () => {
+		dispatch_WindowReceivedFocus.dispatchUI();
+	};
+
+	private onWindowLostFocus = () => {
+		dispatch_WindowLostFocus.dispatchUI();
 	};
 }
 
