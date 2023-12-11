@@ -15,7 +15,7 @@ packages:
   - bug-report
   - github
   - file-upload
-  - ts-open-ai
+  - ts-openai
   - app-shared
   - app-frontend
   - app-backend
