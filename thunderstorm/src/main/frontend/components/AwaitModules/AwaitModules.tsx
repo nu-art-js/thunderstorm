@@ -28,7 +28,8 @@ export class AwaitModules
 	constructor(props: Props) {
 		super(props);
 		const missingModules = resolveContent(this.props.modules).filter(module => !Thunder.getInstance().modules.includes(module));
-		this.logWarning('Trying to await modules which are not in the module pack:', missingModules);
+		if (missingModules.length)
+			this.logWarning('Trying to await modules which are not in the module pack:', missingModules);
 	}
 
 	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>): void {

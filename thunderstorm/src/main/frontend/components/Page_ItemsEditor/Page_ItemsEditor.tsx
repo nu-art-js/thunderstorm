@@ -6,11 +6,12 @@ import {FrameLayout} from '../FrameLayout';
 import {Props_SmartComponent, State_SmartComponent} from '../../core/SmartComponent';
 import {Props_SmartPage, SmartPage} from '../../core/SmartPage';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {getQueryParameter, ModuleFE_RoutingV2, TS_Route} from '../../modules';
+import {ModuleFE_RoutingV2, TS_Route} from '../../modules/routing';
 import {LL_H_T, LL_V_L, LL_VH_C} from '../Layouts';
 import {TS_Space} from '../TS_Space';
 import {TS_Input} from '../TS_Input';
 import {_className} from '../../utils/tools';
+import { getQueryParameter } from '../../modules/ModuleFE_BrowserHistory';
 
 
 export type State_ItemsEditor<DBItem extends DB_Object> = State_SmartComponent & { editable: EditableDBItem<DBItem> };
