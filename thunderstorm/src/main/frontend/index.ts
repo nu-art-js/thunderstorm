@@ -20,7 +20,6 @@
  */
 
 export * from './_ats';
-export * from './modules';
 export * from './core/types';
 export * from './core/ThunderstormDefaultApp';
 export * from './core/AppPage';
@@ -106,6 +105,20 @@ export * from './modules/db-api-gen/ModuleFE_BaseApi';
 export * from './modules/db-api-gen/ModuleFE_v3_BaseApi';
 export * from './modules/app-config/ModuleFE_AppConfig';
 export * from './modules/archiving/ModuleFE_Archiving';
+export * from './modules/ModuleFE_BrowserHistory';
+export * from './modules/ModuleFE_ConnectivityModule';
+export * from './modules/ModuleFE_ForceUpgrade';
+export * from './modules/ModuleFE_Window';
+export * from './modules/ModuleFE_WindowMessenger';
+export * from './modules/ModuleFE_Locale';
+export * from './modules/ModuleFE_LocalStorage';
+export * from './modules/ModuleFE_Thunderstorm';
+export * from './modules/clearWebsiteDataDispatcher';
+export * from './modules/ModuleFE_BaseTheme';
+export * from './modules/routing';
+export * from './modules/http/ModuleFE_XHR';
+export * from './modules/action-processor/ModuleFE_ActionProcessor';
+export * from './modules/component-loader';
 
 export * from './utils/tools';
 export * from './utils/EditableItem';
@@ -113,3 +126,4 @@ export * from './utils/EditableDBItem';
 export * from './utils/perform-action';
 
 export * from './behavior-functions';
+
