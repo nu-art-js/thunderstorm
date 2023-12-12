@@ -42,7 +42,12 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 					<TS_Input type="text"
 										value={readProcessor?.(value as unknown as Item[K]) || value}
 										onBlur={value => {
-											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+											if (onBlur)
+												return onBlur(value);
+
+											// type is {[keyof Item]: ResolvableContent<Item[K] | undefined> }
+											const _value: {} = {[prop]: writeProcessor?.(value as Ex) || value as unknown as Item[K]};
+											return this.props.editable.updateObj(_value);
 										}}
 										{...restProps}/>
 				</TS_PropRenderer.Vertical>;
@@ -53,7 +58,12 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 					<TS_Input type="text"
 										value={readProcessor?.(value as unknown as Item[K]) || value}
 										onBlur={value => {
-											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+											if (onBlur)
+												return onBlur(value);
+
+											// type is {[keyof Item]: ResolvableContent<Item[K] | undefined> }
+											const _value: {} = {[prop]: writeProcessor?.(value as Ex) || value as unknown as Item[K]};
+											return this.props.editable.updateObj(_value);
 										}}
 										{...restProps}/>
 				</TS_PropRenderer.Horizontal>;
@@ -70,7 +80,12 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 					<TS_Input type="number"
 										value={String(readProcessor?.(value as unknown as Item[K]) || value)}
 										onBlur={value => {
-											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(+value as Ex) || value as unknown as Item[K]);
+											if (onBlur)
+												return onBlur(value);
+
+											// type is {[keyof Item]: ResolvableContent<Item[K] | undefined> }
+											const _value: {} = {[prop]: writeProcessor?.(+value as Ex) || value as unknown as Item[K]};
+											return this.props.editable.updateObj(_value);
 										}}
 										{...restProps}/>
 				</TS_PropRenderer.Vertical>;
@@ -81,7 +96,12 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 					<TS_Input type="number"
 										value={String(readProcessor?.(value as unknown as Item[K]) || value)}
 										onBlur={value => {
-											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(+value as Ex) || value as unknown as Item[K]);
+											if (onBlur)
+												return onBlur(value);
+
+											// type is {[keyof Item]: ResolvableContent<Item[K] | undefined> }
+											const _value: {} = {[prop]: writeProcessor?.(+value as Ex) || value as unknown as Item[K]};
+											return this.props.editable.updateObj(_value);
 										}}
 										{...restProps}/>
 				</TS_PropRenderer.Horizontal>;
@@ -97,8 +117,13 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 				return <TS_PropRenderer.Vertical label={label} {...props}>
 					<TS_Checkbox
 						checked={readProcessor?.(value as unknown as Item[K]) || value}
-						onCheck={value => {
-							onCheck ? onCheck(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+						onCheck={async value => {
+							if (onCheck)
+								return onCheck(value);
+
+							// type is {[keyof Item]: ResolvableContent<Item[K] | undefined> }
+							const _value: {} = {[prop]: writeProcessor?.(value as Ex) || value as unknown as Item[K]};
+							await this.props.editable.updateObj(_value);
 							this.forceUpdate();
 						}}
 						{...restProps}
@@ -110,8 +135,13 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 				return <TS_PropRenderer.Horizontal label={label} {...props}>
 					<TS_Checkbox
 						checked={readProcessor?.(value as unknown as Item[K]) || value}
-						onCheck={value => {
-							onCheck ? onCheck(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+						onCheck={async value => {
+							if (onCheck)
+								return onCheck(value);
+
+							// type is {[keyof Item]: ResolvableContent<Item[K] | undefined> }
+							const _value: {} = {[prop]: writeProcessor?.(value as Ex) || value as unknown as Item[K]};
+							await this.props.editable.updateObj(_value);
 							this.forceUpdate();
 						}}
 						{...restProps}
@@ -159,7 +189,12 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 			type="text"
 			value={readProcessor?.(value as unknown as Item[K]) || value}
 			onBlur={value => {
-				onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+				if (onBlur)
+					return onBlur(value);
+
+				// type is {[keyof Item]: ResolvableContent<Item[K] | undefined> }
+				const _value: {} = {[prop]: writeProcessor?.(value as Ex) || value as unknown as Item[K]};
+				return this.props.editable.updateObj(_value);
 			}}
 			{...restProps}/>;
 	};

@@ -8,6 +8,7 @@ import {EditableItem} from '../../utils/EditableItem';
 import {LL_H_C} from '../Layouts';
 import {_className} from '../../utils/tools';
 
+
 export type TS_MultiSelect_Renderer<InnerItem extends DB_Object> = {
 	className?: string
 	module: ModuleFE_BaseApi<InnerItem>,
@@ -59,8 +60,9 @@ export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerI
 		let onNoMatchingSelectionForString: undefined | ((filterText: string, matchingItems: InnerItem[], e: React.KeyboardEvent) => Promise<void>) = undefined;
 
 		const addInnerItem = async (dbItem: InnerItem) => {
-			const ids = [...selectedIds, dbItem._id];
-			await editable.update(prop, ids as unknown as PropType);
+			const ids = [...selectedIds, dbItem._id] as PropType;
+			const values: {} = {[prop]: ids};
+			await editable.updateObj(values);
 			this.forceUpdate();
 		};
 
@@ -78,7 +80,8 @@ export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerI
 				return <LL_H_C className="ts-values-list__value" key={selectedId}>
 					{props.itemRenderer(itemToAdd, async () => {
 						removeItemFromArray(selectedIds, selectedId);
-						await editable.update(prop, selectedIdsAsPropType);
+						const values: {} = {[prop]: selectedIdsAsPropType};
+						await editable.updateObj(values);
 					})}
 				</LL_H_C>;
 			})}
