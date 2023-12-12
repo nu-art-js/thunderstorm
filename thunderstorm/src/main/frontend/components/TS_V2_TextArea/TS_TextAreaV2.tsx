@@ -44,7 +44,10 @@ type BaseInfraProps_TS_TextAreaV2 = {
 	spellCheck?: boolean
 }
 
-type BaseAppLevelProps_TS_TextAreaV2 = Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref'> & BaseInfraProps_TS_TextAreaV2 & {
+type BaseAppLevelProps_TS_TextAreaV2 =
+	Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref'>
+	& BaseInfraProps_TS_TextAreaV2
+	& {
 	id?: string
 	placeholder?: string
 	name?: string
@@ -87,13 +90,13 @@ export class TS_TextAreaV2
 			let onBlur;
 			let onAccept;
 			if (saveEvent!.includes('change'))
-				onChange = (value: string) => editable.update(prop, value);
+				onChange = (value: string) => editable.updateObj({[prop]: value});
 
 			if (saveEvent!.includes('blur'))
-				onBlur = (value: string) => editable.update(prop, value);
+				onBlur = (value: string) => editable.updateObj({[prop]: value});
 
 			if (saveEvent!.includes('accept'))
-				onAccept = (value: string) => editable.update(prop, value);
+				onAccept = (value: string) => editable.updateObj({[prop]: value});
 
 			return <TS_TextAreaV2
 				{...templateProps}
