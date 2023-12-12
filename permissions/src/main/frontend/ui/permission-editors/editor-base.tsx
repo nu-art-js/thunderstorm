@@ -68,11 +68,12 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 			`Deleting ${this.itemName}`, 3);
 	};
 
-	protected setProperty = <K extends keyof T>(key: K, value: T[K]) => {
+	protected setProperty = async <K extends keyof T>(key: K, value: T[K]) => {
 		if (!this.state.editedItem)
 			throw new ThisShouldNotHappenException('Got to setting property without an edited item in state');
 
-		this.state.editedItem.update(key, value);
+		const values: {} = {[key]: value};
+		await this.state.editedItem.updateObj(values);
 		this.forceUpdate();
 	};
 
