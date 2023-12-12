@@ -70,9 +70,13 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 	static readonly prepareEditable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
 		return (props: EditableItemProps_GenericDropDownV3<Proto['dbType']>) => {
 			const {editable, prop, ...restProps} = props;
-			return <GenericDropDownV3<Proto> {...resolveContent(mandatoryProps)} {...restProps}
-																			 onSelected={item => editable.update(prop, item._id)}
-																			 selected={editable.item[prop]}/>;
+			return <GenericDropDownV3<Proto>
+				{...resolveContent(mandatoryProps)}
+				{...restProps}
+				onSelected={item => {
+					editable.updateObj({[prop]: item._id});
+				}}
+				selected={editable.item[prop]}/>;
 		};
 	};
 	static readonly prepareSelectable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {

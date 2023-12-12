@@ -91,7 +91,7 @@ export class EditableItem<T> {
 	 * @param values An object with partial properties of T.
 	 * @returns A promise representing the auto-save operation if changes were made and auto-save is enabled.
 	 */
-	updateObj(values: Partial<{ [K in keyof T]: ((item?: T[K]) => T[K]) | T[K] | undefined }>) {
+	async updateObj(values: Partial<{ [K in keyof T]: ResolvableContent<T[K] | undefined> }>) {
 		const hasChanges = _keys(values).reduce((hasChanges, prop) => {
 			return this.set(prop, values[prop]) || hasChanges;
 		}, false);
