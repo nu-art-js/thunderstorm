@@ -54,7 +54,8 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 		const existingItems = (editable.item[prop] || (editable.item[prop] = [])) as Binder['InnerType'][];
 
 		const addInnerItem = async (item: Binder['InnerType']) => {
-			await editable.update(prop, [...existingItems, item]);
+			const values: {} = {[prop]: [...existingItems, item]};
+			await editable.updateObj(values);
 			this.forceUpdate();
 		};
 
@@ -68,7 +69,8 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 			{existingItems.map((item, i) => {
 				return <LL_H_C className="ts-multi-select__list-value" key={i}>
 					{props.itemRenderer(item, async () => {
-						await editable.update(prop, [...removeItemFromArray(existingItems, item)]);
+						const values: {} = {[prop]: [...removeItemFromArray(existingItems, item)]};
+						await editable.updateObj(values);
 						this.forceUpdate();
 					})}
 				</LL_H_C>;
