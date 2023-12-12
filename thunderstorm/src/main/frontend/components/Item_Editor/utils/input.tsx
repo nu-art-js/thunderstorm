@@ -20,7 +20,12 @@ export const Edit_Input = <Item extends {}, K extends keyof Item, Ex extends str
 		type="text"
 		value={readProcessor?.(value as unknown as Item[K]) || value}
 		onBlur={value => {
-			onBlur ? onBlur(value) : editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+			if (onBlur)
+				return onBlur(value);
+
+			// type is {[keyof Item]: ResolvableContent<Item[K] | undefined> }
+			const _value: {} = {[prop]: writeProcessor?.(value as Ex) || value as unknown as Item[K]};
+			return editable.updateObj(_value);
 		}}
 		{...restProps}/>;
 };

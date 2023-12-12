@@ -87,13 +87,13 @@ export class TS_TextAreaV2
 			let onBlur;
 			let onAccept;
 			if (saveEvent!.includes('change'))
-				onChange = (value: string) => editable.update(prop, value);
+				onChange = (value: string) => editable.updateObj({[prop]: value});
 
 			if (saveEvent!.includes('blur'))
-				onBlur = (value: string) => editable.update(prop, value);
+				onBlur = (value: string) => editable.updateObj({[prop]: value});
 
 			if (saveEvent!.includes('accept'))
-				onAccept = (value: string) => editable.update(prop, value);
+				onAccept = (value: string) => editable.updateObj({[prop]: value});
 
 			return <TS_TextAreaV2
 				{...templateProps}
