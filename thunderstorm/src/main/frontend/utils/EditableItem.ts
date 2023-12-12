@@ -107,6 +107,7 @@ export class EditableItem<T> {
 	 * @param value The new value of the property.
 	 * @returns A promise representing the auto-save operation if enabled, undefined otherwise.
 	 */
+	// @ts-ignore
 	async update<K extends keyof T>(key: K, value: ((item?: T[K]) => T[K]) | T[K] | undefined) {
 		return this.autoSave(this.set(key, value));
 	}

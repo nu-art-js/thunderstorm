@@ -290,7 +290,7 @@ export class PermissionDomainsEditor
 										onChange={value => this.setProperty('namespace', value)}/>
 					<Permissions_DropDown.Project
 						onSelected={(item) => {
-							this.setProperty('projectId', item._id);
+							return this.setProperty('projectId', item._id);
 						}}
 						selected={domain.item.projectId}
 					/>
