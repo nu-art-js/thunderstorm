@@ -24,6 +24,6 @@ import {Module} from '@nu-art/ts-common';
 export const ModulePack_Backend_TSWorkspace: Module[] = [
 	ModuleBE_Workspace, createApisForDBModuleV2(ModuleBE_Workspace),
 ];
-
+export const ModulePackBE_Workspace = ModulePack_Backend_TSWorkspace;
 export * from '../modules/ModuleBE_Workspace';
 
