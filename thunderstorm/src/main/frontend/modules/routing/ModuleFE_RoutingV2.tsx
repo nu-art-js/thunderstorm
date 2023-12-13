@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {ComponentClass, FunctionComponent} from 'react';
 import {BrowserRouter, Navigate, NavigateFunction, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
 import {TS_Route} from './types';
 import {BadImplementationException, composeUrl, Module, removeItemFromArray} from '@nu-art/ts-common';
@@ -6,9 +7,6 @@ import {LocationChangeListener} from './LocationChangeListener';
 import {QueryParams} from '../../../shared';
 import {mouseEventHandler} from '../../utils/tools';
 import {AwaitModules} from '../../components/AwaitModules/AwaitModules';
-import {ComponentClass, FunctionComponent} from 'react';
-import {ModuleFE_AppConfig} from '../app-config/ModuleFE_AppConfig';
-import {ModuleFE_BaseDB} from '../db-api-gen/ModuleFE_BaseDB';
 
 
 class ModuleFE_RoutingV2_Class
@@ -52,12 +50,10 @@ class ModuleFE_RoutingV2_Class
 			{this.routeBuilder(rootRoute)}
 		</Routes>;
 
-		return <AwaitModules modules={[ModuleFE_AppConfig] as unknown as ModuleFE_BaseDB<any>[]}>
-			<BrowserRouter>
-				<LocationChangeListener/>
-				<RoutesRenderer/>
-			</BrowserRouter>
-		</AwaitModules>;
+		return <BrowserRouter>
+			<LocationChangeListener/>
+			<RoutesRenderer/>
+		</BrowserRouter>;
 	}
 
 	private routeBuilder = (route: TS_Route<any>, _path: string = '') => {
