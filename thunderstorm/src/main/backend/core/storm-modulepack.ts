@@ -8,12 +8,15 @@ import {ModuleBE_v2_BackupScheduler} from '../modules/backup/ModuleBE_v2_BackupS
 import {ModuleBE_ActionProcessor} from '../modules/action-processor/ModuleBE_ActionProcessor';
 import {ModuleBE_ServerInfo} from '../modules/ModuleBE_ServerInfo';
 import {ModuleBE_AppConfig} from '../modules/app-config/ModuleBE_AppConfig';
+import {createApisForDBModuleV2} from '../modules/db-api-gen/ModuleBE_BaseApiV2';
 
+
+export const ModuleBE_AppConfigApi = createApisForDBModuleV2(ModuleBE_AppConfig);
 
 export const ModulePack_ThunderstormBE: Module[] = [
 	ModuleBE_ServerInfo,
 	ModuleBE_v2_SyncManager,
-	ModuleBE_AppConfig,
+	ModuleBE_AppConfig, ModuleBE_AppConfigApi,
 	ModuleBE_APIs,
 	ModuleBE_v2_Backup,
 	ModuleBE_v2_SyncEnv,
