@@ -6,9 +6,12 @@ import {
 	compare,
 	deepClone,
 	exists,
+	InvalidResult, InvalidResultObject,
+	isErrorOfType,
 	removeFromArrayByIndex,
 	ResolvableContent,
-	resolveContent
+	resolveContent,
+	ValidationException
 } from '@nu-art/ts-common';
 
 
@@ -30,6 +33,8 @@ export class EditableItem<T> {
 	static AUTO_SAVE = false;
 
 	readonly item: Partial<T>;
+	readonly validationResults?: InvalidResult<T>;
+
 	private originalItem: Partial<T>;
 	private _autoSave: boolean = EditableItem.AUTO_SAVE;
 
@@ -161,13 +166,27 @@ export class EditableItem<T> {
 		return this.onChanged?.(editable);
 	}
 
+	private setValidationResults(ValidationResults?: InvalidResult<T>) {
+		// @ts-ignore
+		this.validationResults = ValidationResults;
+		return this;
+	}
+
 	/**
 	 * Save the item by calling the saveAction function.
 	 *
 	 * @returns The promise returned by the saveAction function.
 	 */
 	async save() {
-		return this.saveAction(this.item as T);
+		try {
+			return await this.saveAction(this.item as T);
+		} catch (e: unknown) {
+			const validationException = isErrorOfType(e, ValidationException);
+			if (!validationException)
+				throw e;
+
+			this.setValidationResults(validationException.result as InvalidResult<T>);
+		}
 	}
 
 	/**
@@ -177,7 +196,9 @@ export class EditableItem<T> {
 	 * @returns The new instance.
 	 */
 	clone(item?: T): EditableItem<T> {
-		const editableItem = new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction).setOnChanged(this.onChanged).setAutoSave(this._autoSave);
+		const editableItem = new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction)
+			.setOnChanged(this.onChanged)
+			.setAutoSave(this._autoSave);
 		editableItem.originalItem = item ?? this.originalItem;
 		return editableItem;
 	}
@@ -211,6 +232,8 @@ export class EditableItem<T> {
 				this.set(key, value);
 				return this.autoSave();
 			},
-			() => this.delete()).setAutoSave(true);
+			() => this.delete())
+			.setValidationResults((this.validationResults as InvalidResultObject<T>)?.[key])
+			.setAutoSave(true);
 	}
 }
