@@ -1,10 +1,23 @@
-import {_keys, AssetValueType, cloneObj, compare, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {
+	_keys,
+	ArrayType,
+	AssetValueType,
+	cloneObj,
+	compare,
+	deepClone,
+	exists,
+	removeFromArrayByIndex,
+	ResolvableContent,
+	resolveContent
+} from '@nu-art/ts-common';
 
 
 export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, Type> = {
 	editable: EditableItem<EnclosingItem>,
 	prop: AssetValueType<EnclosingItem, K, Type | undefined>
 }
+
+// type Created<T> = T extends (infer A)[] ? A[] : never;
 
 /**
  * A utility class for editing any item of type T.
@@ -98,6 +111,29 @@ export class EditableItem<T> {
 
 		return this.autoSave(hasChanges);
 	}
+
+	updateArrayAt(value: ArrayType<T>, index?: number) {
+		const temp = [...this.item as unknown as (ArrayType<T>)[]];
+		if (exists(index))
+			temp[index] = value;
+		else
+			temp.push(value);
+		return this.updateObj(temp as T);
+	}
+
+	remvoeArrayItem(index: number) {
+		const temp = [...this.item as unknown as (ArrayType<T>)[]];
+		removeFromArrayByIndex(temp, index);
+		return this.updateObj(temp as T);
+	}
+
+	// async updateArr<P extends Created<T>>(values: Partial<{ [K in keyof P]: ResolvableContent<T[K] | undefined> }>) {
+	// 	const hasChanges = _keys(values).reduce((hasChanges, prop) => {
+	// 		return this.set(prop, values[prop]) || hasChanges;
+	// 	}, false);
+	//
+	// 	return this.autoSave(hasChanges);
+	// }
 
 	/**
 	 * Update the value of a specific property in the item and perform auto-save if enabled.
