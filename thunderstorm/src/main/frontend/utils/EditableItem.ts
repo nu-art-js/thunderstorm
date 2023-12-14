@@ -91,7 +91,11 @@ export class EditableItem<T> {
 	set<K extends keyof T>(key: K, value: ResolvableContent<T[K] | undefined>) {
 		const finalValue = resolveContent(value);
 		if (!exists(finalValue) && exists(this.item[key])) {
-			delete this.item[key];
+			if (Array.isArray(this.item))
+				removeFromArrayByIndex(this.item, key as number);
+			else
+				delete this.item[key];
+
 			return true;
 		}
 
@@ -117,19 +121,12 @@ export class EditableItem<T> {
 		return this.autoSave(hasChanges);
 	}
 
-	updateArrayAt(value: ArrayType<T>, index?: number) {
-		const temp = [...this.item as unknown as (ArrayType<T>)[]];
-		if (exists(index))
-			temp[index] = value;
-		else
-			temp.push(value);
-		return this.updateObj(temp as T);
+	updateArrayAt(value: ArrayType<T>, index: number = (this.item as unknown as any[]).length) {
+		return this.updateObj({[index]: value} as Partial<T>);
 	}
 
-	remvoeArrayItem(index: number) {
-		const temp = [...this.item as unknown as (ArrayType<T>)[]];
-		removeFromArrayByIndex(temp, index);
-		return this.updateObj(temp as T);
+	removeArrayItem(index: number) {
+		return this.updateObj({[index]: undefined} as Partial<T>);
 	}
 
 	// async updateArr<P extends Created<T>>(values: Partial<{ [K in keyof P]: ResolvableContent<T[K] | undefined> }>) {
