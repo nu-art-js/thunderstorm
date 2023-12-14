@@ -24,23 +24,23 @@ import {generateHex, Module} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 
-export type Dialog_Model = DialogId & {
+export type Dialog_Model = DialogKey & {
 	content: React.ReactNode,
 	closeOverlayOnClick: () => boolean,
 }
 
-export type DialogId = { dialogId: string };
+export type DialogKey = { dialogKey: string };
 
 export interface DialogListener {
 	__showDialog(dialogModel?: Dialog_Model): void;
 
-	__closeDialog(dialogModel?: DialogId): void;
+	__closeDialog(dialogModel?: DialogKey): void;
 }
 
 const dispatch_showDialog = new ThunderDispatcher<DialogListener, '__showDialog'>('__showDialog');
 const dispatch_closeDialog = new ThunderDispatcher<DialogListener, '__closeDialog'>('__closeDialog');
 
-const defaultCloseCallback = () => true;
+export const defaultCloseCallback = () => true;
 
 export class ModuleFE_Dialog_Class
 	extends Module<{}> {
@@ -52,13 +52,13 @@ export class ModuleFE_Dialog_Class
 	protected init(): void {
 	}
 
-	public close = (dialogId?: string) => {
-		const p = dialogId ? {dialogId} : undefined;
+	public close = (dialogKey?: string) => {
+		const p = dialogKey ? {dialogKey} : undefined;
 		dispatch_closeDialog.dispatchUI(p);
 	};
 
-	public show = (content: React.ReactNode, closeOverlayOnClick = defaultCloseCallback, dialogId = generateHex(8)) => {
-		dispatch_showDialog.dispatchUI({dialogId, content, closeOverlayOnClick});
+	public show = (content: React.ReactNode, closeOverlayOnClick = defaultCloseCallback, dialogKey = generateHex(8)) => {
+		dispatch_showDialog.dispatchUI({dialogKey, content, closeOverlayOnClick});
 	};
 }
 
