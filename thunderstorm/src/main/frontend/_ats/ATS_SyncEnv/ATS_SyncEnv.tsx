@@ -53,6 +53,7 @@ export class ATS_SyncEnvironment
 		if (!state.selectedModules)
 			state.selectedModules = new Set<string>();
 
+		state.selectedChunkSize = 1000;
 		state.moduleList = this.getCollectionModuleList();
 		state.selectAll ??= true;
 
