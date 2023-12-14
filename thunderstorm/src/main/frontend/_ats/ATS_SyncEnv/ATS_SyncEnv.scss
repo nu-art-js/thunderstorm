@@ -104,6 +104,14 @@
         .backup-info {
           gap: 3px;
 
+          .higher {
+            color: darkgreen;
+          }
+
+          .lower {
+            color: red;
+          }
+
           div {
             min-width: 50px;
             text-align: right;
