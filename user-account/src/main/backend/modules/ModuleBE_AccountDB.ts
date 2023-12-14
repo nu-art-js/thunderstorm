@@ -91,7 +91,7 @@ export class ModuleBE_AccountDB_Class
 	manipulateQuery(query: FirestoreQuery<DB_Account>): FirestoreQuery<DB_Account> {
 		return {
 			...query,
-			select: ['email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']
+			select: ['__updated', 'email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']
 		};
 	}
 
