@@ -224,9 +224,11 @@ export const tsValidateNonMandatoryObject = <T>(validator: ValidatorTypeResolver
 
 export const tsValidateOptionalObject = tsValidateNonMandatoryObject;
 
-export const tsValidator_valueByKey = <T extends any>(validatorObject: { [k: string]: ValidatorTypeResolver<any> }) => {
+export const tsValidator_valueByKey = <T extends any>(validatorObject: {
+	[k: string]: ValidatorTypeResolver<any>
+}, prop = 'type') => {
 	return tsValidateCustom((value?, parentObject?) => {
-		return tsValidateResult(value!, validatorObject[parentObject!.type]);
+		return tsValidateResult(value!, validatorObject[parentObject![prop]]);
 	}) as ValidatorTypeResolver<T>;
 };
 
