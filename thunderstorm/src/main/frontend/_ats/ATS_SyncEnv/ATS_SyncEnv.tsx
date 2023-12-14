@@ -18,6 +18,7 @@ import {TS_BusyButton} from '../../components/TS_BusyButton';
 import {TS_DropDown} from '../../components/TS_Dropdown';
 import {_className} from '../../utils/tools';
 import {TS_Loader} from '../../components/TS_Loader';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 
 
 type Env = 'prod' | 'staging' | 'dev' | 'local';
@@ -151,13 +152,22 @@ export class ATS_SyncEnvironment
 						Select All
 					</TS_Checkbox>
 					<TS_Input onChange={val => this.setState({searchFilter: val})} type={'text'}
-										placeholder={'search collection'}/>
+							  placeholder={'search collection'}/>
 				</LL_H_C>
 				{this.state.moduleList.map(name => {
 					const collectionMetadata = this.state.metadata?.collectionsData.find(collection => collection.collectionName === name);
 
 					if ((this.state.searchFilter && this.state.searchFilter.length) && !name.includes(this.state.searchFilter))
 						return;
+
+					const relevantLocalModules: ModuleFE_BaseDB<any>[] = Thunder.getInstance().filterModules(module => {
+						const _module = module as ModuleFE_BaseApi<any, any>;
+						return (!!_module.getCollectionName && _module.getCollectionName() == collectionMetadata?.collectionName);
+					});
+
+					const localCount = relevantLocalModules.length === 1 && relevantLocalModules[0] ? relevantLocalModules[0].cache._array.length : 0;
+					const diffCount = collectionMetadata?.numOfDocs !== undefined ? collectionMetadata.numOfDocs - localCount : undefined;
+					const diffShow = diffCount !== 0 ? diffCount : undefined;
 
 					return <TS_PropRenderer.Horizontal
 						label={<LL_H_C className={'header'}>
@@ -182,10 +192,11 @@ export class ATS_SyncEnvironment
 							<div>{name}</div>
 						</LL_H_C>}
 						key={name}>
-						<LL_H_C
-							className={'collection-row'}
-						>
+						<LL_H_C className={'collection-row'}>
 							<LL_H_C className={'backup-info'}>
+								{diffShow !== undefined &&
+                                    <div className={_className(diffShow > 0 ? 'higher' : 'lower')}>
+										{`${diffShow > 0 ? '+' : ''}${diffShow}`}</div>}
 								<div>{collectionMetadata?.numOfDocs !== undefined ? collectionMetadata?.numOfDocs : '--'}</div>
 								|
 								<div className={'left-row'}>{collectionMetadata?.version || '--'}</div>
@@ -234,13 +245,13 @@ export class ATS_SyncEnvironment
 
 				<TS_PropRenderer.Vertical label={'Backup ID'}>
 					<TS_Input type={'text'} value={this.state.backupId}
-										onBlur={val => {
-											if (!val.match(/^[0-9A-Fa-f]{32}$/))
-												return;
+							  onBlur={val => {
+								  if (!val.match(/^[0-9A-Fa-f]{32}$/))
+									  return;
 
-											this.setState({backupId: val});
-											return this.fetchMetadata();
-										}}/>
+								  this.setState({backupId: val});
+								  return this.fetchMetadata();
+							  }}/>
 				</TS_PropRenderer.Vertical>
 
 				<div className={_className(!this.state.fetchMetadataInProgress && 'hidden')}><TS_Loader/></div>
@@ -251,10 +262,10 @@ export class ATS_SyncEnvironment
 					>Sync Environment</TS_BusyButton>
 
 					{Thunder.getInstance().getConfig().name === this.state.selectedEnv && <TS_BusyButton
-						onClick={this.syncFirebase}
-						disabled={!this.canSync()}
-						className={'deter-users-from-this-button'}
-					>Restore Firebase To Older Backup</TS_BusyButton>}
+                        onClick={this.syncFirebase}
+                        disabled={!this.canSync()}
+                        className={'deter-users-from-this-button'}
+                    >Restore Firebase To Older Backup</TS_BusyButton>}
 				</LL_H_C>
 
 				{this.state.restoreTime && <div>{this.state.restoreTime}</div>}
