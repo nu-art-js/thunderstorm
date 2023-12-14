@@ -126,6 +126,7 @@ export type DB_Object = DB_BaseObject & {
 	__hardDelete?: boolean;
 	__created: number;
 	__updated: number;
+	__metadata?: any;
 }
 
 export type UniqueId = string;

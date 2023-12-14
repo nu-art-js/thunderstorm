@@ -57,5 +57,6 @@ export const DB_Object_validator = {
 	__hardDelete: tsValidateBoolean(false),
 	__created: tsValidateTimestamp(),
 	__updated: tsValidateTimestamp(),
+	__metadata: tsValidateOptional
 };
 
