@@ -150,6 +150,12 @@ export class EditableItem<T> {
 		return this.autoSave(this.set(key, value));
 	}
 
+	private setValidationResults(ValidationResults?: InvalidResult<T>) {
+		// @ts-ignore
+		this.validationResults = ValidationResults;
+		return this;
+	}
+
 	private autoSave(hasChanges = true) {
 		if (!hasChanges)
 			return;
@@ -161,12 +167,6 @@ export class EditableItem<T> {
 		editable.originalItem = this.originalItem;
 
 		return this.onChanged?.(editable);
-	}
-
-	private setValidationResults(ValidationResults?: InvalidResult<T>) {
-		// @ts-ignore
-		this.validationResults = ValidationResults;
-		return this;
 	}
 
 	/**
