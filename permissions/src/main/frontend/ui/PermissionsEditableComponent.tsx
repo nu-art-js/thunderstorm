@@ -1,10 +1,11 @@
 import * as React from 'react';
 import {PermissionsComponent, Props_PermissionComponent, State_PermissionComponent} from './PermissionsComponent';
 import {_className} from '@nu-art/thunderstorm/frontend';
+import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 type Props = Props_PermissionComponent & {
 	forceLock?: boolean;
-	value?: string | number
+	value?: ResolvableContent<React.ReactNode>;
 	className?: string;
 	style?: React.CSSProperties;
 };
@@ -27,7 +28,9 @@ export class PermissionsEditableComponent
 			return <></>;
 
 		const className = _className('permissions-editable__value', this.props.className);
-		return <div className={className} style={this.props.style}>{this.props.value}</div>;
+		return <div className={className} style={this.props.style}>
+			{resolveContent(this.props.value)}
+		</div>;
 	};
 
 	protected renderPermitted = () => {
