@@ -19,6 +19,7 @@ import {TS_DropDown} from '../../components/TS_Dropdown';
 import {_className} from '../../utils/tools';
 import {TS_Loader} from '../../components/TS_Loader';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
+import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 
 
 type Env = 'prod' | 'staging' | 'dev' | 'local';
@@ -37,6 +38,7 @@ type State = {
 	selectAll: boolean
 	selectedChunkSize: 2000 | 1000 | 500 | 200 | 100 | 50
 }
+const StorageKey_BackupId = new StorageKey<string>('sync-env--backup-id');
 
 export class ATS_SyncEnvironment
 	extends ComponentSync<{}, State> {
@@ -54,7 +56,9 @@ export class ATS_SyncEnvironment
 		if (!state.selectedModules)
 			state.selectedModules = new Set<string>();
 
-		state.selectedChunkSize = 1000;
+		state.selectedChunkSize = 100;
+		state.selectedEnv = 'prod';
+		state.backupId = StorageKey_BackupId.get();
 		state.moduleList = this.getCollectionModuleList();
 		state.selectAll ??= true;
 
@@ -96,7 +100,7 @@ export class ATS_SyncEnvironment
 
 		const start = performance.now();
 		await genericNotificationAction(async () => {
-			await ModuleFE_SyncEnvV2.vv1.fetchFromEnv(filterKeys({
+			await ModuleFE_SyncEnvV2.vv1.syncFromEnvBackup(filterKeys({
 				env: this.state.selectedEnv!,
 				backupId: this.state.backupId!,
 				chunkSize: this.state.selectedChunkSize!,
@@ -113,7 +117,7 @@ export class ATS_SyncEnvironment
 			return;
 
 		await genericNotificationAction(async () => {
-			await ModuleFE_SyncEnvV2.vv1.fetchFirebaseBackup({
+			await ModuleFE_SyncEnvV2.vv1.syncFirebaseFromBackup({
 				env: this.state.selectedEnv!,
 				backupId: this.state.backupId!
 			}).executeSync();
@@ -152,7 +156,7 @@ export class ATS_SyncEnvironment
 						Select All
 					</TS_Checkbox>
 					<TS_Input onChange={val => this.setState({searchFilter: val})} type={'text'}
-							  placeholder={'search collection'}/>
+										placeholder={'search collection'}/>
 				</LL_H_C>
 				{this.state.moduleList.map(name => {
 					const collectionMetadata = this.state.metadata?.collectionsData.find(collection => collection.collectionName === name);
@@ -195,7 +199,7 @@ export class ATS_SyncEnvironment
 						<LL_H_C className={'collection-row'}>
 							<LL_H_C className={'backup-info'}>
 								{diffShow !== undefined &&
-                                    <div className={_className(diffShow > 0 ? 'higher' : 'lower')}>
+									<div className={_className(diffShow > 0 ? 'higher' : 'lower')}>
 										{`${diffShow > 0 ? '+' : ''}${diffShow}`}</div>}
 								<div>{collectionMetadata?.numOfDocs !== undefined ? collectionMetadata?.numOfDocs : '--'}</div>
 								|
@@ -245,13 +249,13 @@ export class ATS_SyncEnvironment
 
 				<TS_PropRenderer.Vertical label={'Backup ID'}>
 					<TS_Input type={'text'} value={this.state.backupId}
-							  onBlur={val => {
-								  if (!val.match(/^[0-9A-Fa-f]{32}$/))
-									  return;
+										onBlur={val => {
+											if (!val.match(/^[0-9A-Fa-f]{32}$/))
+												return;
 
-								  this.setState({backupId: val});
-								  return this.fetchMetadata();
-							  }}/>
+											this.setState({backupId: val}, () => StorageKey_BackupId.set(this.state.backupId!));
+											return this.fetchMetadata();
+										}}/>
 				</TS_PropRenderer.Vertical>
 
 				<div className={_className(!this.state.fetchMetadataInProgress && 'hidden')}><TS_Loader/></div>
@@ -262,10 +266,10 @@ export class ATS_SyncEnvironment
 					>Sync Environment</TS_BusyButton>
 
 					{Thunder.getInstance().getConfig().name === this.state.selectedEnv && <TS_BusyButton
-                        onClick={this.syncFirebase}
-                        disabled={!this.canSync()}
-                        className={'deter-users-from-this-button'}
-                    >Restore Firebase To Older Backup</TS_BusyButton>}
+						onClick={this.syncFirebase}
+						disabled={!this.canSync()}
+						className={'deter-users-from-this-button'}
+					>Restore Firebase To Older Backup</TS_BusyButton>}
 				</LL_H_C>
 
 				{this.state.restoreTime && <div>{this.state.restoreTime}</div>}

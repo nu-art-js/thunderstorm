@@ -14,6 +14,7 @@ import {accountTypes} from './consts';
 export type AccountType = typeof accountTypes[number];
 
 export type DB_Session = DB_Object & {
+	label?: string
 	accountId: string
 	deviceId: string
 	sessionId: string
@@ -23,7 +24,7 @@ export type DB_Session = DB_Object & {
 }
 
 type VersionTypes_Sessions = { '1.0.0': DB_Session };
-type VersionsSession = VersionsDeclaration< ['1.0.0'], VersionTypes_Sessions>
+type VersionsSession = VersionsDeclaration<['1.0.0'], VersionTypes_Sessions>
 type Proto_Session = Proto_DB_Object<DB_Session, keyof DB_Object, VersionsSession, 'accountId' | 'deviceId'>
 
 export type DBProto_SessionType = DBProto<Proto_Session>
@@ -48,7 +49,7 @@ export type UI_SessionAccount = UI_Account & DB_BaseObject & SessionData_HasPass
 export type _SessionKey_Account = TypedKeyValue<'account', UI_SessionAccount>
 
 type VersionTypes_Account = { '1.0.0': DB_Account };
-type VersionsAccount = VersionsDeclaration< ['1.0.0'], VersionTypes_Account>;
+type VersionsAccount = VersionsDeclaration<['1.0.0'], VersionTypes_Account>;
 type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'saltedPassword';
 
 export type Proto_Account = Proto_DB_Object<DB_Account, GeneratedKeys, VersionsAccount>;
