@@ -1,10 +1,12 @@
 import * as React from 'react';
-import {AccountType, accountTypes, DB_Account, Request_CreateAccount} from '../../shared';
+import {AccountType, accountTypes, DB_Account, DB_Session, Request_CreateAccount} from '../../shared';
 import {
 	_className,
 	ComponentSync,
 	LL_H_C,
-	LL_V_L, ModuleFE_Thunderstorm, ModuleFE_Toaster,
+	LL_V_L,
+	ModuleFE_Thunderstorm,
+	ModuleFE_Toaster,
 	performAction,
 	SimpleListAdapter,
 	TS_BusyButton,
@@ -12,9 +14,10 @@ import {
 	TS_Input,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
-import {capitalizeFirstLetter, UniqueId, Year} from '@nu-art/ts-common';
+import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {ModuleFE_Account} from '../modules/ModuleFE_Account';
+import {SessionKeyFE_SessionData} from '../core/consts';
 
 
 type Props = {
@@ -25,7 +28,10 @@ type Props = {
 
 type State = Partial<Request_CreateAccount> & {
 	isPreview: boolean,
+	tokenTTL: number
+	tokenLabel: string
 	user?: DB_Account
+	sessions: DB_Session[]
 }
 
 export class Component_AccountEditor
@@ -33,9 +39,15 @@ export class Component_AccountEditor
 
 	protected deriveStateFromProps(nextProps: Props, state?: State): State {
 		state = this.state ? {...this.state} : {} as State;
-
+		state.sessions = [];
 		state.isPreview = !!nextProps.isPreview;
 		state.user = nextProps.user;
+
+		const accountId = nextProps.user?._id;
+		if (accountId)
+			ModuleFE_Account.vv1.getSessions({_id: accountId}).execute((response) => {
+				this.setState({sessions: response.sessions});
+			});
 
 		return state;
 	}
@@ -130,16 +142,31 @@ export class Component_AccountEditor
 		if (!this.state.isPreview || this.state.user?.type !== 'service')
 			return;
 
-		return <TS_BusyButton onClick={async () => {
-			try {
-				const token = await ModuleFE_Account.vv1.createToken({accountId: this.state.user?._id!, ttl: 2 * Year}).executeSync();
-				await ModuleFE_Thunderstorm.copyToClipboard(token.token);
-				ModuleFE_Toaster.toastSuccess('Token copied to clipboard');
-			} catch (e) {
-				ModuleFE_Toaster.toastError((e as Error).message);
-				this.logError(e as Error);
-			}
-		}}>Generate Token</TS_BusyButton>;
+		const options = [
+			{label: '1 Year', ttl: 1 * Year},
+			{label: '2 Year', ttl: 2 * Year},
+			{label: '3 Year', ttl: 3 * Year},
+			{label: '5 Year', ttl: 5 * Year},
+			{label: '10 Year', ttl: 10 * Year},
+		];
+		return <LL_H_C>
+			<TS_DropDown
+				selected={options.find(option => option.ttl === this.state.tokenTTL)}
+				adapter={SimpleListAdapter(options, item => <>{item.item.label}</>)}
+				onSelected={option => this.setState({tokenTTL: option.ttl})}/>
+			<TS_Input type="text" value={this.state.tokenLabel} onBlur={tokenLabel => this.setState({tokenLabel})}/>
+			<TS_BusyButton onClick={async () => {
+				try {
+					const token = await ModuleFE_Account.vv1.createToken({accountId: this.state.user?._id!, ttl: this.state.tokenTTL, label: this.state.tokenLabel})
+						.executeSync();
+					await ModuleFE_Thunderstorm.copyToClipboard(token.token);
+					ModuleFE_Toaster.toastSuccess('Token copied to clipboard');
+				} catch (e) {
+					ModuleFE_Toaster.toastError((e as Error).message);
+					this.logError(e as Error);
+				}
+			}}>Generate Token</TS_BusyButton>
+		</LL_H_C>;
 	};
 
 	render() {
@@ -148,6 +175,20 @@ export class Component_AccountEditor
 			{this.renderInputs()}
 			{this.renderGenToken()}
 			{this.renderSubmitButton()}
+			<TS_PropRenderer.Vertical label={'Sessions'}>
+				<LL_V_L>
+					{this.state.sessions.map(session => {
+						const createdAt = DateTimeFormat_yyyyMMDDTHHmmss.format(session.timestamp);
+						// @ts-ignore
+						const sessionData = ModuleFE_Account.decode(session.sessionId);
+						SessionKeyFE_SessionData.get(sessionData).expiration;
+						const validTill = DateTimeFormat_yyyyMMDDTHHmmss.format(SessionKeyFE_SessionData.get(sessionData).expiration);
+						return <LL_H_C key={session._id}>
+							{session.label ?? 'no Label'} - {createdAt} {' => '} {validTill} - {session.deviceId}
+						</LL_H_C>;
+					})}
+				</LL_V_L>
+			</TS_PropRenderer.Vertical>
 		</LL_V_L>;
 	}
 }

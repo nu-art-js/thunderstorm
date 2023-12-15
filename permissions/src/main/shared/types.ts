@@ -42,12 +42,6 @@ export type DefaultDef_Project = {
 	groups?: DefaultDef_Group[]
 }
 
-export type DefaultDef_ServiceAccount = {
-	moduleName: string
-	email: string,
-	groupIds?: UniqueId[]
-}
-
 export type DefaultDef_Package = {
 	name: string
 	domains: DefaultDef_Domain[]
@@ -74,10 +68,3 @@ export type DefaultDef_Group = {
 	name: string
 	accessLevels: { [domainName: string]: string } // access level name
 };
-
-export type ServiceAccountCredentials = {
-	serviceAccount: {
-		accountId: string
-		token: string
-	}
-}

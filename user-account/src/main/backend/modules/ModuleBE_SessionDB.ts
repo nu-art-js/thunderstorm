@@ -21,6 +21,8 @@ type Config = DBApiConfigV3<DBProto_SessionType> & {
 	rotationFactor: number
 }
 
+type PreDBSessionContent = { accountId: string, deviceId: string, prevSession?: string[], label: string };
+
 export class ModuleBE_SessionDB_Class
 	extends ModuleBE_BaseDBV3<DBProto_SessionType, Config>
 	implements CollectSessionData<_SessionKey_Session> {
@@ -84,8 +86,8 @@ export class ModuleBE_SessionDB_Class
 	private sessionData = {
 		encode: async (sessionData: TS_Object) => gzipSync(Buffer.from(__stringify(sessionData), 'utf8')).toString('base64'),
 		decode: (sessionId: string): TS_Object => JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8')),
-		collect: async (accountId: string, deviceId: string, manipulate?: (sessionData: TS_Object) => TS_Object, transaction?: Transaction) => {
-			const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync({accountId, deviceId}, transaction));
+		collect: async (content: PreDBSessionContent, manipulate?: (sessionData: TS_Object) => TS_Object, transaction?: Transaction) => {
+			const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(content, transaction));
 			let sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
 				sessionData[moduleSessionData.key] = moduleSessionData.value;
 				return sessionData;
@@ -99,18 +101,19 @@ export class ModuleBE_SessionDB_Class
 	};
 
 	session = {
-		create: async (accountId: string, deviceId: string, prevSession: string[] = [], transaction?: Transaction) => {
-			return this.session.createCustom(accountId, deviceId, d => d, prevSession, transaction);
+		create: async (content: PreDBSessionContent, transaction?: Transaction) => {
+			return this.session.createCustom(content, d => d, transaction);
 		},
-		createCustom: async (accountId: string, deviceId: string, manipulate: (sessionData: TS_Object) => TS_Object, prevSession?: string[], transaction?: Transaction) => {
-			const sessionData = await this.sessionData.collect(accountId, deviceId, manipulate, transaction);
+		createCustom: async (content: PreDBSessionContent, manipulate: (sessionData: TS_Object) => TS_Object, transaction?: Transaction) => {
+			const sessionData = await this.sessionData.collect(content, manipulate, transaction);
 			const session = filterKeys({
-				accountId,
-				deviceId,
-				prevSession,
+				accountId: content.accountId,
+				deviceId: content.deviceId,
+				prevSession: content.prevSession ?? [],
+				label: content.label,
 				sessionId: sessionData.encoded,
 				timestamp: currentTimeMillis()
-			}, 'prevSession');
+			}, ['prevSession', 'label'],);
 
 			await this.set.item(session, transaction);
 			return {sessionId: sessionData.encoded, sessionData: sessionData.raw};
@@ -149,8 +152,13 @@ export class ModuleBE_SessionDB_Class
 		},
 		rotate: async (dbSession: DB_Session = MemKey_SessionObject.get(), transaction?: Transaction) => {
 			this.logInfo(`Rotating sessionId for Account: ${dbSession.accountId}`);
-
-			const session = await this.session.create(dbSession.accountId, dbSession.deviceId, [dbSession.sessionId, ...(dbSession.prevSession || [])], transaction);
+			const content = {
+				accountId: dbSession.accountId,
+				deviceId: dbSession.deviceId,
+				prevSession: [dbSession.sessionId, ...(dbSession.prevSession || [])],
+				label: 'user-auth-session'
+			};
+			const session = await this.session.create(content, transaction);
 			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
 			return session.sessionData;
 		}

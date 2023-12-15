@@ -47,8 +47,9 @@ const CONST_DefaultWriteChunkSize = 200;
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType extends {} = {}>
-	extends Module<ConfigType & DBApiConfigV3<Proto>>
+export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType = any,
+	Config extends ConfigType & DBApiConfigV3<Proto> = ConfigType & DBApiConfigV3<Proto>>
+	extends Module<Config>
 	implements OnFirestoreBackupSchedulerActV2 {
 
 	// @ts-ignore

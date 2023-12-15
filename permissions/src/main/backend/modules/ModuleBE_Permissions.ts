@@ -20,9 +20,15 @@ import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain'
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
-import {CollectSessionData, MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, SessionCollectionParam} from '@nu-art/user-account/backend';
+import {
+	CollectSessionData,
+	MemKey_AccountId,
+	ModuleBE_AccountDB,
+	ModuleBE_SessionDB,
+	SessionCollectionParam
+} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
-import {DefaultDef_Project, DefaultDef_ServiceAccount, SessionData_Permissions} from '../../shared/types';
+import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -41,18 +47,15 @@ import {
 } from '../../shared/consts';
 import {ApiModule} from '@nu-art/thunderstorm';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
+import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
+import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
 
 
 export interface CollectPermissionsProjects {
 	__collectPermissionsProjects(): DefaultDef_Project;
 }
 
-export interface RequiresServiceAccount {
-	__requiresServiceAccount(): DefaultDef_ServiceAccount | DefaultDef_ServiceAccount[];
-}
-
 const dispatcher_collectPermissionsProjects = new Dispatcher<CollectPermissionsProjects, '__collectPermissionsProjects'>('__collectPermissionsProjects');
-const dispatcher_collectServiceAccounts = new Dispatcher<RequiresServiceAccount, '__requiresServiceAccount'>('__requiresServiceAccount');
 
 const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
 
@@ -118,14 +121,14 @@ export const PermissionProject_Permissions: DefaultDef_Project = {
 
 class ModuleBE_Permissions_Class
 	extends Module
-	implements CollectSessionData<SessionData_Permissions> {
+	implements CollectSessionData<SessionData_Permissions>, PerformProjectSetup {
 
 	protected init() {
 		super.init();
 
 		addRoutes([
 			createQueryServerApi(ApiDef_Permissions.v1.toggleStrictMode, this.toggleStrictMode),
-			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.createProject),
+			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.__performProjectSetup),
 			// createBodyServerApi(ApiDef_Permissions.v1.connectDomainToRoutes, this.connectDomainToRoutes)
 		]);
 	}
@@ -168,7 +171,7 @@ class ModuleBE_Permissions_Class
 		});
 	};
 
-	createProject = async () => {
+	__performProjectSetup = async (): Promise<void> => {
 		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
 		const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
 
@@ -395,7 +398,7 @@ class ModuleBE_Permissions_Class
 	 * @private
 	 */
 	private async createSystemServiceAccount(serviceAccounts: DefaultDef_ServiceAccount[]) {
-		this.logInfoBold('Creating Service Accounts');
+		this.logInfoBold('Creating Service Accounts: ', serviceAccounts);
 
 		// @ts-ignore
 		const tokenCreator = ModuleBE_AccountDB.token.create;

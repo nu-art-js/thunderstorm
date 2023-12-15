@@ -17,14 +17,13 @@
  */
 
 import {EventContext} from 'firebase-functions';
-import {Dispatcher} from '@nu-art/ts-common';
+import {BadImplementationException, Dispatcher} from '@nu-art/ts-common';
 import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_StorageListener} from '@nu-art/firebase/backend';
-import {RequiresServiceAccount} from '@nu-art/permissions/backend/modules/ModuleBE_Permissions';
-import {DefaultDef_ServiceAccount, ServiceAccountCredentials} from '@nu-art/permissions/shared/types';
 import {PermissionsGroup_PushMessanger} from '@nu-art/push-pub-sub/backend/core/permissions';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {DefaultDef_ServiceAccount, RequiresServiceAccount, ServiceAccountCredentials} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 
 
 export interface OnAssetUploaded {
@@ -46,8 +45,11 @@ export class ModuleBE_BucketListener_Class
 		// need to create a dispatch that collects a list of services that requires service account and
 		// service account details, the permissions  create project will create these account for the rest of the system ;
 		return new MemStorage().init(async () => {
+			const accountId = this.config.serviceAccount.accountId;
+			if (!accountId)
+				throw new BadImplementationException('Need to perform project setup to setup this feature');
 
-			MemKey_AccountId.set(this.config.serviceAccount.accountId);
+			MemKey_AccountId.set(accountId);
 			let filePath = object.name || '';
 			if (filePath.endsWith('}'))
 				filePath = filePath.substring(0, filePath.length - 1);

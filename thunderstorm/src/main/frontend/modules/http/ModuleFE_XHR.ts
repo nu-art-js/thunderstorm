@@ -137,8 +137,10 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 
 				reject(err);
 			};
+			const fullUrl = composeUrl(this.url, this.params);
 
 			this.xhr.ontimeout = (err) => {
+				console.log(`${this.url} - Request timeout`);
 				reject(err);
 			};
 
@@ -158,13 +160,14 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 				// HttpModule.logVerbose("onabort");
 			};
 
-			const fullUrl = composeUrl(this.url, this.params);
 
 			// TODO: investigate which one should work
 			this.xhr.onprogress = this.onProgressListener;
 			this.xhr.upload.onprogress = this.onProgressListener;
 
 			this.xhr.open(this.method, fullUrl);
+			console.log(`${this.url} - setting XHR timeout: ${this.timeout}`);
+
 			this.xhr.timeout = this.timeout;
 
 			Object.keys(this.headers).forEach((key) => {
