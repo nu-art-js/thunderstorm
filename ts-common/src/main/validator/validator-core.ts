@@ -139,7 +139,7 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 		// @ts-ignore
 		if (!validatorKeys.includes(key))
 			// @ts-ignore
-			result[key as keyof T] = `Unexpected key '${path}${key}'.\nIf you want to ignore the validation of this property,\n add the following to your validator:\n {\n  ...\n  ${key}: undefined\n  ...\n}\n`;
+			result[key as keyof T] = `Unexpected key '${path}${key}'.\nIf you want to ignore the validation of this property,\n add the following to your validator:\n {\n  ...\n  ${key}: tsValidateOptional\n  ...\n}\n`;
 	}
 
 	for (const key of validatorKeys) {

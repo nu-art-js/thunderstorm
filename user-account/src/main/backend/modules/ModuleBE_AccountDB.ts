@@ -4,17 +4,17 @@ import {
 	BadImplementationException,
 	cloneObj,
 	compare,
-	currentTimeMillis,
+	currentTimeMillis, DB_BaseObject,
 	dispatch_onApplicationException,
 	Dispatcher,
 	exists,
 	generateHex,
 	hashPasswordWithSalt,
-	MUSTNeverHappenException
+	MUSTNeverHappenException, Year
 } from '@nu-art/ts-common';
 import {CollectSessionData, ModuleBE_SessionDB, SessionCollectionParam} from './ModuleBE_SessionDB';
 import {firestore} from 'firebase-admin';
-import {addRoutes, createBodyServerApi, createQueryServerApi, DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
@@ -69,7 +69,7 @@ export const dispatch_onAccountLogin = new Dispatcher<OnUserLogin, '__onUserLogi
 
 const dispatch_onAccountRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
 
-type Config = DBApiConfigV3<DBProto_AccountType> & {
+type Config = {
 	canRegister: boolean
 	passwordAssertion?: PasswordAssertionConfig
 }
@@ -123,7 +123,8 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, this.account.create),
 			createQueryServerApi(ApiDefBE_Account.vv1.logout, this.account.logout),
 			createBodyServerApi(ApiDefBE_Account.vv1.createToken, this.token.create),
-			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.account.setPassword)
+			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.account.setPassword),
+			createQueryServerApi(ApiDefBE_Account.vv1.getSessions, this.account.getSessions),
 		]);
 	}
 
@@ -226,7 +227,12 @@ export class ModuleBE_AccountDB_Class
 				return safeAccount;
 			});
 
-			const session = await ModuleBE_SessionDB.session.create(safeAccount._id, credentials.deviceId, []);
+			const content = {
+				accountId: safeAccount._id,
+				deviceId: credentials.deviceId,
+				label: 'password-login'
+			};
+			const session = await ModuleBE_SessionDB.session.create(content);
 			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
 			return safeAccount;
 		},
@@ -260,13 +266,15 @@ export class ModuleBE_AccountDB_Class
 						throw e;
 
 					this.logInfo('SAML register account');
+
 					dbSafeAccount = await this.impl.create({email: oAuthAccount.email, type: 'user'}, transaction);
 					MemKey_AccountId.set(dbSafeAccount._id);
 					await this.impl.onAccountCreated(dbSafeAccount, transaction);
 				}
 				return dbSafeAccount;
 			});
-			return ModuleBE_SessionDB.session.create(dbSafeAccount._id, oAuthAccount.deviceId);
+			const content = {accountId: dbSafeAccount._id, deviceId: oAuthAccount.deviceId, label: 'saml-login'};
+			return ModuleBE_SessionDB.session.create(content);
 		},
 		changePassword: async (passwordToChange: RequestBody_ChangePassword): Promise<Response_Auth> => {
 			return this.runTransaction(async transaction => {
@@ -282,7 +290,13 @@ export class ModuleBE_AccountDB_Class
 				this.impl.assertPasswordCheck({email, password: passwordToChange.password, passwordCheck: passwordToChange.passwordCheck});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordToChange.password});
 				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
-				const newSession = await ModuleBE_SessionDB.session.create(updatedAccount._id, deviceId);
+
+				const content = {
+					accountId: updatedAccount._id,
+					deviceId,
+					label: 'password-change'
+				};
+				const newSession = await ModuleBE_SessionDB.session.create(content);
 				MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, newSession.sessionId);
 
 				return makeAccountSafe(updatedAccount);
@@ -302,7 +316,13 @@ export class ModuleBE_AccountDB_Class
 				this.impl.assertPasswordCheck({email, ...passwordBody});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordBody.password});
 				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
-				const newSession = await ModuleBE_SessionDB.session.create(updatedAccount._id, deviceId);
+
+				const content = {
+					accountId: updatedAccount._id,
+					deviceId,
+					label: 'password-set'
+				};
+				const newSession = await ModuleBE_SessionDB.session.create(content);
 				MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, newSession.sessionId);
 
 				return makeAccountSafe(updatedAccount);
@@ -314,6 +334,9 @@ export class ModuleBE_AccountDB_Class
 				throw new ApiException(404, 'Missing sessionId');
 
 			await ModuleBE_SessionDB.delete.query({where: {sessionId}});
+		},
+		getSessions: async (query: DB_BaseObject) => {
+			return {sessions: await ModuleBE_SessionDB.query.where({accountId: query._id})};
 		}
 	};
 
@@ -341,7 +364,10 @@ export class ModuleBE_AccountDB_Class
 
 	// @ts-ignore
 	private token = {
-		create: async ({accountId, ttl}: RequestBody_CreateToken) => {
+		create: async ({accountId, ttl, label}: RequestBody_CreateToken) => {
+			if (!exists(ttl) || ttl < Year)
+				throw HttpCodes._4XX.BAD_REQUEST('Invalid token TTL', `TTL value is invalid (${ttl})`);
+
 			const account = await this.query.unique(accountId);
 
 			if (!account)
@@ -350,7 +376,8 @@ export class ModuleBE_AccountDB_Class
 			if (account.type !== 'service')
 				throw new BadImplementationException('Can not generate a token for a non service account');
 
-			const {sessionId} = await ModuleBE_SessionDB.session.createCustom(accountId, accountId, (sessionData) => {
+			const content = {accountId, deviceId: accountId, label};
+			const {sessionId} = await ModuleBE_SessionDB.session.createCustom(content, (sessionData) => {
 				SessionKey_Session_BE.get(sessionData).expiration = currentTimeMillis() + ttl;
 				return sessionData;
 			});

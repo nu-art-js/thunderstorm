@@ -28,6 +28,7 @@ import {ModuleBE_PermissionUserDB} from '../modules/assignment/ModuleBE_Permissi
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
 import {createApisForDBModuleV2} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_v2_SyncEnv_ServiceAccount} from '../patch/ModuleBE_v2_SyncEnv_ServiceAccount';
 
 
 export const ModulePackBE_Permissions: Module[] = [
@@ -39,6 +40,7 @@ export const ModulePackBE_Permissions: Module[] = [
 	ModuleBE_PermissionGroup, createApisForDBModuleV2(ModuleBE_PermissionGroup),
 	ModuleBE_PermissionsAssert,
 	ModuleBE_Permissions,
+	ModuleBE_v2_SyncEnv_ServiceAccount,
 ];
 
 export * from '../modules/ModuleBE_PermissionsAssert';

@@ -19,6 +19,8 @@ import {ApiDefBE_Account, ApiDefFE_Account, DBDef_Accounts} from '@nu-art/user-a
 import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE';
 import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys';
 import {ApiDef_UpgradeCollection} from '@nu-art/thunderstorm/shared/upgrade-collection';
+import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor';
+import {ApiDef_SyncEnvV2} from '@nu-art/thunderstorm';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
@@ -51,6 +53,7 @@ const _Domain_AccountManagement: DefaultDef_Domain = {
 	customApis: [
 		{path: ApiDefBE_Account.vv1.createAccount.path, accessLevel: DefaultAccessLevel_Admin.name},
 		{path: ApiDefBE_Account.vv1.createToken.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDefBE_Account.vv1.getSessions.path, accessLevel: DefaultAccessLevel_Admin.name},
 	]
 };
 
@@ -67,7 +70,16 @@ const _Domain_Developer: DefaultDef_Domain = {
 		PermissionKeyBE_DeveloperAdmin,
 	],
 	customApis: [
-		{path: ApiDef_UpgradeCollection.vv1.upgrade.path, accessLevel: DefaultAccessLevel_Delete.name}
+		{path: ApiDef_UpgradeCollection.vv1.upgrade.path, accessLevel: DefaultAccessLevel_Delete.name},
+		{path: ApiDef_ActionProcessing.vv1.list.path, accessLevel: DefaultAccessLevel_Read.name},
+		{path: ApiDef_ActionProcessing.vv1.execute.path, accessLevel: DefaultAccessLevel_Admin.name},
+
+		{path: ApiDef_SyncEnvV2.vv1.fetchBackupMetadata.path, accessLevel: DefaultAccessLevel_Read.name},
+		{path: ApiDef_SyncEnvV2.vv1.createBackup.path, accessLevel: DefaultAccessLevel_Write.name},
+		{path: ApiDef_SyncEnvV2.vv1.syncFromEnvBackup.path, accessLevel: DefaultAccessLevel_Write.name},
+		{path: ApiDef_SyncEnvV2.vv1.syncFirebaseFromBackup.path, accessLevel: DefaultAccessLevel_Write.name},
+		{path: ApiDef_SyncEnvV2.vv1.syncToEnv.path, accessLevel: DefaultAccessLevel_Admin.name},
+
 	]
 };
 

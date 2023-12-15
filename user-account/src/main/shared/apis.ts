@@ -1,6 +1,6 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {DB_BaseObject, Minute, UniqueId} from '@nu-art/ts-common';
-import {AccountType, UI_Account} from './types';
+import {AccountType, DB_Session, UI_Account} from './types';
 
 
 export const HeaderKey_SessionId = 'x-session-id';
@@ -55,7 +55,7 @@ export type Response_LoginSAML = {
 };
 
 export type Request_LoginAccount = AccountEmailWithDevice & AccountPassword
-export type RequestBody_CreateToken = { accountId: UniqueId, ttl: number };
+export type RequestBody_CreateToken = { accountId: UniqueId, ttl: number, label: string };
 
 export type Response_CreateToken = { token: string };
 
@@ -70,6 +70,7 @@ type TypedApi_ChangedPassword = {
 };
 type TypedApi_CreateToken = { createToken: BodyApi<Response_CreateToken, RequestBody_CreateToken> };
 type TypedApi_SetPassword = { setPassword: BodyApi<Response_Auth, RequestBody_SetPassword> };
+type TypedApi_GetSessions = { getSessions: QueryApi<{ sessions: DB_Session[] }, DB_BaseObject> };
 
 const API_RefreshSession = {refreshSession: {method: HttpMethod.GET, path: 'v1/account/refresh-session'}} as const;
 const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'}} as const;
@@ -96,6 +97,7 @@ const API_CreateToken = {
 	}
 } as const;
 const API_SetPassword = {setPassword: {method: HttpMethod.POST, path: '/v1/account/set-password'}} as const;
+const API_GetSessions = {getSessions: {method: HttpMethod.GET, path: 'v1/account/get-sessions'}} as const;
 const API_ValidateSession = {
 	validateSession: {
 		method: HttpMethod.GET,
@@ -113,6 +115,7 @@ export type ApiStructBE_Account = {
 		& TypedApi_ChangedPassword
 		& TypedApi_CreateToken
 		& TypedApi_SetPassword
+		& TypedApi_GetSessions
 }
 
 export const ApiDefBE_Account: ApiDefResolver<ApiStructBE_Account> = {
@@ -126,6 +129,7 @@ export const ApiDefBE_Account: ApiDefResolver<ApiStructBE_Account> = {
 		...API_ValidateSession,
 		...API_CreateToken,
 		...API_SetPassword,
+		...API_GetSessions,
 	}
 };
 
@@ -139,6 +143,7 @@ export type ApiStructFE_Account = {
 		& TypedApi_CreateToken
 		& TypedApi_SetPassword
 		& TypedApi_LoginSaml
+		& TypedApi_GetSessions
 }
 
 export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
@@ -153,6 +158,7 @@ export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
 		...API_ValidateSession,
 		...API_CreateToken,
 		...API_SetPassword,
+		...API_GetSessions,
 	}
 };
 
