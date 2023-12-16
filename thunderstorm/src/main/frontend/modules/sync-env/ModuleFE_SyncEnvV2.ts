@@ -12,10 +12,10 @@ class ModuleFE_SyncEnvV2_Class
 		super();
 		this.vv1 = {
 			syncToEnv: apiWithBody(ApiDef_SyncEnvV2.vv1.syncToEnv),
-			fetchFromEnv: apiWithBody(ApiDef_SyncEnvV2.vv1.fetchFromEnv),
+			syncFromEnvBackup: apiWithBody(ApiDef_SyncEnvV2.vv1.syncFromEnvBackup),
 			createBackup: apiWithQuery(ApiDef_SyncEnvV2.vv1.createBackup),
 			fetchBackupMetadata: apiWithQuery(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata),
-			fetchFirebaseBackup: apiWithQuery(ApiDef_SyncEnvV2.vv1.fetchFirebaseBackup)
+			syncFirebaseFromBackup: apiWithQuery(ApiDef_SyncEnvV2.vv1.syncFirebaseFromBackup)
 		};
 	}
 }

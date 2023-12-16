@@ -23,7 +23,7 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Overlay} from '../TS_Overlay';
 import {stopPropagation} from '../../utils/tools';
-import {Dialog_Model, DialogId, DialogListener, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
+import {Dialog_Model, DialogKey, DialogListener, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
 import './TS_DialogOverlay.scss';
 import {removeFromArray} from '@nu-art/ts-common';
 
@@ -45,12 +45,12 @@ export class TS_DialogOverlay
 		this.forceUpdate();
 	};
 
-	__closeDialog = (dialogModel?: DialogId): void => {
-		const dialogId = dialogModel?.dialogId;
-		if (!dialogId)
+	__closeDialog = (dialogModel?: DialogKey): void => {
+		const dialogKey = dialogModel?.dialogKey;
+		if (!dialogKey)
 			this.state.models.pop();
 		else
-			removeFromArray(this.state.models, model => model.dialogId === dialogId);
+			removeFromArray(this.state.models, model => model.dialogKey === dialogKey);
 
 		this.forceUpdate();
 	};
@@ -82,7 +82,7 @@ export class TS_DialogOverlay
 
 		//Close there is only one dialog
 		if (this.state.models.length === 1)
-			return ModuleFE_Dialog.close(this.state.models[0].dialogId);
+			return ModuleFE_Dialog.close(this.state.models[0].dialogKey);
 
 		//Close only this dialog if more than one
 		this.state.models.pop();

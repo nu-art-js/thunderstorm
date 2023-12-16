@@ -79,6 +79,7 @@ class ModuleFE_Account_Class
 			logout: apiWithQuery(ApiDefFE_Account.vv1.logout),
 			createToken: apiWithBody(ApiDefFE_Account.vv1.createToken),
 			setPassword: apiWithBody(ApiDefFE_Account.vv1.setPassword, this.setLoginInfo),
+			getSessions: apiWithQuery(ApiDefFE_Account.vv1.getSessions),
 		};
 	}
 
@@ -228,12 +229,8 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 		this.key = key;
 	}
 
-	get(): Binder['value'] {
-		// @ts-ignore
-		const sessionData = ModuleFE_Account.sessionData;
-		// if (!sessionData)
-		// 	return undefined;
-
+	// @ts-ignore
+	get(sessionData = ModuleFE_Account.sessionData): Binder['value'] {
 		if (!(this.key in sessionData))
 			throw new BadImplementationException(`Couldn't find key "${this.key}" in session data`);
 

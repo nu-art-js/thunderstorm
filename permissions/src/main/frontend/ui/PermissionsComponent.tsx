@@ -13,7 +13,7 @@ export type Props_PermissionComponent = React.PropsWithChildren<{
 export type State_PermissionComponent = State_SmartComponent
 
 export class PermissionsComponent<P extends Props_PermissionComponent = Props_PermissionComponent, S extends State_PermissionComponent = State_PermissionComponent>
-	extends SmartComponent<P>
+	extends SmartComponent<P, S>
 	implements OnPermissionsChanged {
 
 	static defaultProps = {
@@ -24,7 +24,7 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 		return true;
 	}
 
-	protected async deriveStateFromProps(nextProps: Props_PermissionComponent, state: State_PermissionComponent) {
+	protected async deriveStateFromProps(nextProps: P, state: S) {
 		return state;
 	}
 

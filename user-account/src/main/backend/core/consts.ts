@@ -27,3 +27,4 @@ export class SessionKey_BE<Binder extends TypedKeyValue<string | number, any>> {
 
 export const SessionKey_Account_BE = new SessionKey_BE<_SessionKey_Account>('account');
 export const SessionKey_Session_BE = new SessionKey_BE<_SessionKey_Session>('session');
+

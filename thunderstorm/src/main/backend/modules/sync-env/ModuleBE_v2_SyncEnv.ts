@@ -48,10 +48,10 @@ class ModuleBE_v2_SyncEnv_Class
 		super.init();
 		addRoutes([
 			createBodyServerApi(ApiDef_SyncEnvV2.vv1.syncToEnv, this.pushToEnv),
-			createBodyServerApi(ApiDef_SyncEnvV2.vv1.fetchFromEnv, this.fetchFromEnv),
+			createBodyServerApi(ApiDef_SyncEnvV2.vv1.syncFromEnvBackup, this.syncFromEnvBackup),
 			createQueryServerApi(ApiDef_SyncEnvV2.vv1.createBackup, this.createBackup),
 			createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata, this.fetchBackupMetadata),
-			createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchFirebaseBackup, this.fetchFirebaseBackup),
+			createQueryServerApi(ApiDef_SyncEnvV2.vv1.syncFirebaseFromBackup, this.syncFirebaseFromBackup),
 		]);
 	}
 
@@ -129,7 +129,7 @@ class ModuleBE_v2_SyncEnv_Class
 		return ModuleBE_v2_Backup.initiateBackup(true);
 	};
 
-	fetchFromEnv = async (body: Request_FetchFromEnvV2) => {
+	syncFromEnvBackup = async (body: Request_FetchFromEnvV2) => {
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
 
@@ -210,7 +210,7 @@ class ModuleBE_v2_SyncEnv_Class
 		this.logInfo(`---- DONE Syncing Other Modules----`);
 	};
 
-	fetchFirebaseBackup = async (queryParams: Request_FetchFirebaseBackup) => {
+	syncFirebaseFromBackup = async (queryParams: Request_FetchFirebaseBackup) => {
 		try {
 			this.logDebug('Getting the firebase backup file');
 			const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
