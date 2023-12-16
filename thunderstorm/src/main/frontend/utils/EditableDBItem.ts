@@ -18,18 +18,18 @@ export class EditableDBItem<T extends DB_Object, Ks extends keyof PreDB<T> = Def
 	 *
 	 * @param item The item to be edited.
 	 * @param module The module for database operations.
-	 * @param onCompleted The function to be called when the operation is completed.
+	 * @param onSaved The function to be called when the operation is completed.
 	 * @param onError The function to be called when an error occurs.
 	 */
-	constructor(item: Partial<T>, module: ModuleFE_BaseApi<T, Ks>, onCompleted?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
-		super(item, EditableDBItem.save(module, onCompleted, onError), (_item) => module.v1.delete(_item).executeSync());
+	constructor(item: Partial<T>, module: ModuleFE_BaseApi<T, Ks>, onSaved?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+		super(item, EditableDBItem.save(module, onSaved, onError), (_item) => module.v1.delete(_item).executeSync());
 	}
 
-	private static save<T extends DB_Object, Ks extends keyof PreDB<T> = Default_UniqueKey>(module: ModuleFE_BaseApi<T, Ks>, onCompleted?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+	private static save<T extends DB_Object, Ks extends keyof PreDB<T> = Default_UniqueKey>(module: ModuleFE_BaseApi<T, Ks>, onSaved?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
 		return async (_item: PreDB<T>) => {
 			try {
 				const dbItem: T = await module.v1.upsert(_item).executeSync();
-				await onCompleted?.(dbItem);
+				await onSaved?.(dbItem);
 			} catch (e: any) {
 				await onError?.(e);
 				throw e;

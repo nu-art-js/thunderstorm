@@ -6,6 +6,7 @@ import {_accountTypes} from './consts';
 
 
 export const Validator_Modifiable: DBProto_SessionType['modifiablePropsValidator'] = {
+	label: tsValidateString(100,false),
 	accountId: tsValidateUniqueId,
 	deviceId: tsValidateUniqueId,
 	prevSession: tsValidateArray(tsValidateString(), false),

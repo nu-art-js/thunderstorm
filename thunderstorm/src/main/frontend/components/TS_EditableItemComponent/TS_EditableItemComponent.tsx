@@ -7,13 +7,15 @@ import {TS_PropRenderer} from '../TS_PropRenderer';
 
 export type EditableRef<Item> = { editable: EditableItem<Item> };
 
-export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {}>
-	extends ComponentSync<P & EditableRef<ItemType>, S & EditableRef<ItemType>> {
+export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
+	Props extends P & EditableRef<ItemType> = P & EditableRef<ItemType>,
+	State extends S & EditableRef<ItemType> = S & EditableRef<ItemType>>
+	extends ComponentSync<Props, State> {
 
-	protected deriveStateFromProps(nextProps: P & EditableRef<ItemType>): S & EditableRef<ItemType> {
-		return {
-			editable: nextProps.editable,
-		} as S & EditableRef<ItemType>;
+	protected deriveStateFromProps(nextProps: Props, state: State): State {
+		state ??= this.state ? {...this.state} : {} as State;
+		state.editable = nextProps.editable;
+		return state;
 	}
 
 	protected renderProp(label: string, render: ReactNode, className?: string) {

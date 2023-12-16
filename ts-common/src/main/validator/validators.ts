@@ -21,7 +21,6 @@ export const tsValidator_colorHex = tsValidateRegexp(/^#(?:[a-fA-F0-9]{8}|[a-fA-
 export const tsValidateMustExist = tsValidateExists();
 export const tsValidateOptional = tsValidateExists(false);
 
-
 export const dbIdLength = 32;
 
 export const tsValidateId = (length: number, mandatory: boolean = true) => tsValidateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
@@ -35,7 +34,6 @@ export const tsValidateVersion = tsValidateRegexp(/\d{1,3}\.\d{1,3}\.\d{1,3}/);
 export const tsValidateUniqueId = tsValidateId(dbIdLength);
 export const tsValidator_arrayOfUniqueIds = tsValidateArray(tsValidateUniqueId);
 export const tsValidate_optionalArrayOfUniqueIds = tsValidate_OptionalArray(tsValidateUniqueId);
-
 
 export const tsValidateOptionalId = tsValidateId(dbIdLength, false);
 export const tsValidateStringWithDashes = tsValidateRegexp(/^[A-Za-z-]+$/);
@@ -58,4 +56,3 @@ export const DB_Object_validator = {
 	__created: tsValidateTimestamp(),
 	__updated: tsValidateTimestamp(),
 };
-

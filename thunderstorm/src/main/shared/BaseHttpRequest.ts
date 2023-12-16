@@ -137,6 +137,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	setTimeout(timeout: number) {
+		console.log(`${this.url} - setting timeout: ${timeout}`);
 		this.timeout = timeout;
 		return this;
 	}
