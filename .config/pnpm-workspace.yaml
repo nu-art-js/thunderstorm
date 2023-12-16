@@ -9,6 +9,7 @@ packages:
   - live-docs
   - user-account
   - ts-workspace
+  - ts-pdf
   - permissions
   - push-pub-sub
   - jira
