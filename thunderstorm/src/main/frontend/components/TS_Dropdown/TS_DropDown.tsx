@@ -21,14 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {
-	AssetValueType,
-	BadImplementationException,
-	clamp,
-	Filter,
-	ResolvableContent,
-	resolveContent
-} from '@nu-art/ts-common';
+import {AssetValueType, BadImplementationException, clamp, Filter, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -39,7 +32,6 @@ import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
 import {EditableItem} from '../../utils/EditableItem';
 
-
 type State<ItemType> = {
 	open?: boolean
 	adapter: Adapter<ItemType>;
@@ -49,7 +41,8 @@ type State<ItemType> = {
 	dropDownRef: React.RefObject<HTMLDivElement>;
 	treeContainerRef: React.RefObject<HTMLDivElement>;
 	focusedItem?: ItemType;
-	className?: string
+	className?: string;
+	treeResizeObserver: ResizeObserver;
 }
 
 type StaticProps = {
@@ -125,6 +118,7 @@ export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
 
 	// ######################## Static ########################
+
 	static readonly prepareEditable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return (props: EditableDropDownProps<T>) => <TS_DropDown<T>
 			{...resolveContent(mandatoryProps)} {...props}
@@ -135,6 +129,7 @@ export class TS_DropDown<ItemType>
 	static readonly prepareSelectable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return (props: PartialProps_DropDown<T>) => <TS_DropDown<T> {...resolveContent(mandatoryProps)} {...props} />;
 	};
+
 	static readonly prepare = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return {
 			editable: this.prepareEditable(mandatoryProps),
@@ -143,6 +138,7 @@ export class TS_DropDown<ItemType>
 	};
 
 	private node?: HTMLDivElement;
+
 	static defaultRenderSearch = (dropDown: TS_DropDown<any>) =>
 		<TS_Input
 			type="text"
@@ -181,6 +177,7 @@ export class TS_DropDown<ItemType>
 		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
 		nextState.treeContainerRef = state?.treeContainerRef ?? React.createRef();
 		nextState.className = nextProps.className;
+		nextState.treeResizeObserver ??= new ResizeObserver(() => this.onTreeResize());
 
 		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
 			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
@@ -196,8 +193,49 @@ export class TS_DropDown<ItemType>
 			dropDownRef: nextState.dropDownRef,
 			focusedItem: nextState.focusedItem,
 			treeContainerRef: nextState.treeContainerRef,
-			className: nextState.className
+			className: nextState.className,
+			treeResizeObserver: nextState.treeResizeObserver,
 		};
+	}
+
+	onTreeResize = () => {
+		const treeContainer = this.state.treeContainerRef.current;
+		const ddContainer = this.state.dropDownRef.current;
+		if (!treeContainer || !ddContainer)
+			return;
+
+		const ddRect = ddContainer.getBoundingClientRect();
+		const treeRect = treeContainer.getBoundingClientRect();
+		const rightBoundary = window.innerWidth - 20;
+		const leftBoundary = 20;
+
+		//Not overflowing screen right - nothing to fix
+		if (!(treeRect.right > rightBoundary))
+			return;
+
+		//Align to DD right, if it won't overflow screen left
+		const newXPos = ddRect.x + ddRect.width;
+		if (newXPos - treeRect.width >= leftBoundary) {
+			//Set align on right
+			treeContainer.style.removeProperty('left');
+			treeContainer.style.right = `${window.innerWidth - newXPos}px`;
+			return;
+		}
+
+		//Align the tree to rightBoundary
+		treeContainer.style.removeProperty('left');
+		treeContainer.style.right = '20px';
+	};
+
+	componentDidUpdate() {
+		if (!this.state.open)
+			return;
+
+		const treeContainer = this.state.treeContainerRef.current;
+		if (!treeContainer)
+			return;
+
+		this.state.treeResizeObserver.observe(treeContainer);
 	}
 
 	// ######################## Logic ########################
@@ -317,10 +355,10 @@ export class TS_DropDown<ItemType>
 		);
 		return (
 			<div className={className}
-				 ref={this.state.dropDownRef}
-				 tabIndex={this.props.tabIndex}
-				 onFocus={this.addKeyboardListener}
-				 onBlur={this.removeKeyboardListener}
+					 ref={this.state.dropDownRef}
+					 tabIndex={this.props.tabIndex}
+					 onFocus={this.addKeyboardListener}
+					 onBlur={this.removeKeyboardListener}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
@@ -383,7 +421,11 @@ export class TS_DropDown<ItemType>
 			style.position = 'absolute';
 			style.left = containerData.posX;
 			style.maxHeight = containerData.maxHeight;
-			style.width = containerData.width;
+			// style.width = containerData.width;
+
+			//Contain the max and min width of the tree
+			style.minWidth = containerData.width;
+			style.maxWidth = window.innerWidth - 40;
 		}
 		if (!this.state.adapter.data)
 			throw new BadImplementationException('No data provided to TS_DropDown!');
@@ -397,7 +439,7 @@ export class TS_DropDown<ItemType>
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'}
-                                            onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
+																			onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
