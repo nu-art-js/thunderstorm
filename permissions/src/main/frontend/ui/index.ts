@@ -6,4 +6,3 @@ export * from './permission-editors/permission-groups-editor';
 export * from './permission-editors/permission-users-editor';
 export * from './PermissionsComponent';
 export * from './PermissionsEditableComponent';
-export * from './Component_ViewAndEdit';
