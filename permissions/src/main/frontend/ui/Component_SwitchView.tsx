@@ -20,7 +20,7 @@ type State = {
 	modes: Mode[];
 };
 
-export class Component_ViewAndEdit
+export class Component_SwitchView
 	extends ComponentSync<Props, State> {
 
 	// ######################## Lifecycle ########################
