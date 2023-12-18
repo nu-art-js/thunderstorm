@@ -124,7 +124,7 @@ export const PermissionGroup_PermissionsDefine_Editor: DefaultDef_Group = {
 	_id: '46fb6b35f1d4d11913ce231bd4a42b4b',
 	name: `${Domain_PermissionsDefine.namespace}/Editor`,
 	accessLevels: {
-		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Write.name,
+		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Delete.name,
 	},
 };
 
@@ -155,7 +155,7 @@ export const PermissionGroup_PermissionsAssign_Editor: DefaultDef_Group = {
 	_id: 'ac5050d644251fa0b95506280a2ebfb3',
 	name: `${Domain_PermissionsAssign.namespace}/Editor`,
 	accessLevels: {
-		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Write.name,
+		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Delete.name,
 	},
 };
 
