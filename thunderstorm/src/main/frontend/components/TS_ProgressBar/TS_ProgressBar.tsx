@@ -24,10 +24,9 @@ export class TS_ProgressBar
 	};
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
-		state ??= this.state ? {...this.state} : {} as State;
 		if (nextProps.ratio < 0 || nextProps.ratio > 1)
 			throw new BadImplementationException('Ratio passed must be normalized to 0 < ratio < 1');
-		
+
 		state.percentage = Math.floor(nextProps.ratio * 100);
 		return state;
 	}

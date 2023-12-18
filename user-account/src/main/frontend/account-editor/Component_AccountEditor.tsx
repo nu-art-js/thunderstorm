@@ -37,8 +37,7 @@ type State = Partial<Request_CreateAccount> & {
 export class Component_AccountEditor
 	extends ComponentSync<Props, State> {
 
-	protected deriveStateFromProps(nextProps: Props, state?: State): State {
-		state = this.state ? {...this.state} : {} as State;
+	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.sessions = [];
 		state.isPreview = !!nextProps.isPreview;
 		state.user = nextProps.user;
