@@ -26,7 +26,6 @@ export class Component_SwitchView
 	// ######################## Lifecycle ########################
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
-		state ??= this.state ? {...this.state} : {} as State;
 		state.mode = nextProps.mode;
 		state.modes = nextProps.modes;
 		return state;

@@ -59,7 +59,7 @@ export class TS_Checkbox
 		super(p);
 	}
 
-	protected deriveStateFromProps(nextProps: Props_Checkbox, state = {} as State_Checkbox): State_Checkbox | undefined {
+	protected deriveStateFromProps(nextProps: Props_Checkbox, state: State_Checkbox) {
 		state.checked = nextProps.checked ?? false;
 		state.disabled = nextProps.disabled;
 		return state;

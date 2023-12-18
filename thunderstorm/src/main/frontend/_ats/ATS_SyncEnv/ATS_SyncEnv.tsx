@@ -51,7 +51,6 @@ export class ATS_SyncEnvironment
 	};
 
 	protected deriveStateFromProps(nextProps: {}, state: State) {
-		state ??= this.state ? {...this.state} : {} as State;
 		state.envList ??= ['prod', 'staging', 'dev', 'local'];
 		if (!state.selectedModules)
 			state.selectedModules = new Set<string>();

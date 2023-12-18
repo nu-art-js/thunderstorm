@@ -103,8 +103,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		});
 	};
 
-	protected deriveStateFromProps(nextProps: P, state?: Partial<S>): S {
-		return {} as S;
+	protected deriveStateFromProps(nextProps: P, state: S) {
+		return state;
 	}
 
 	private dialogKeyEventHandler = (e: React.KeyboardEvent) => {
