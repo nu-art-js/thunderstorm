@@ -268,11 +268,11 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	};
 
 	private async upgradeInstances(instances: Proto['dbType'][], instancesToSave: Proto['dbType'][] = []) {
-		for (let i = this.config.versions.length - 1; i >= 0; i--) {
+		for (let i = 0; i < this.config.versions.length; i++) {
 			const version = this.config.versions[i] as Proto['versions'][number];
 
 			const instancesToUpgrade = instances.filter(instance => instance._v === version);
-			const nextVersion = this.config.versions[i - 1] ?? version;
+			const nextVersion = this.config.versions[i + 1] ?? version;
 			const versionTransition = `${version} => ${nextVersion}`;
 			if (instancesToUpgrade.length === 0) {
 				this.logWarning(`No instances to upgrade from ${versionTransition}`);
