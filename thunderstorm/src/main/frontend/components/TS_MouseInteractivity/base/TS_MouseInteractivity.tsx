@@ -16,8 +16,7 @@ export class TS_MouseInteractivity
 
 	private minimumMargin: number = 5;
 
-	protected deriveStateFromProps(nextProps: Prop, state?: State): State {
-		state ??= this.state ? {...this.state} : {} as State;
+	protected deriveStateFromProps(nextProps: Prop, state: State): State {
 		state.open ??= false;
 		return state;
 	}

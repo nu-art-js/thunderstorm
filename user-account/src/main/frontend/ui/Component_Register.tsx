@@ -64,7 +64,6 @@ export class Component_Register
 	extends ComponentSync<Props<Request_RegisterAccount>, State<Request_RegisterAccount>> {
 
 	protected deriveStateFromProps(nextProps: Props<Request_RegisterAccount>, state: State<Request_RegisterAccount>) {
-		state ??= this.state ? {...this.state} : {} as State<Request_RegisterAccount>;
 		state.data ??= {};
 		return state;
 	}

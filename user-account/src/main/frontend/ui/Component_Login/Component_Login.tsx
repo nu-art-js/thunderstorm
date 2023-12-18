@@ -64,7 +64,6 @@ export class Component_Login
 	extends ComponentSync<Props, State<Request_LoginAccount>> {
 
 	protected deriveStateFromProps(nextProps: Props, state: State<Request_LoginAccount>) {
-		state ??= this.state ? {...this.state} : {} as State<Request_LoginAccount>;
 		state.data ??= {};
 		return state;
 	}

@@ -13,7 +13,6 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
 	extends ComponentSync<Props, State> {
 
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
-		state ??= this.state ? {...this.state} : {} as State;
 		state.editable = nextProps.editable;
 		return state;
 	}
