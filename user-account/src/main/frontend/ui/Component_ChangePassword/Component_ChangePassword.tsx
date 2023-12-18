@@ -21,7 +21,6 @@ export class Component_ChangePassword
 
 	// ######################## Life Cycle ########################
 	protected deriveStateFromProps(nextProps: any, state: State): State {
-		state ??= this.state ? {...this.state} : {} as State;
 		if (!ModuleFE_Account.accountId)
 			throw new ThisShouldNotHappenException('Rendering a change password component without user logged in');
 		state.shouldGiveCurrentPassword = SessionKeyFE_Account.get().hasPassword;

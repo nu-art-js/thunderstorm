@@ -29,8 +29,7 @@ export class TS_ReadMore
 		readMoreText: (showingMore: boolean) => showingMore ? 'Read Less' : 'Read More',
 	};
 
-	protected deriveStateFromProps(nextProps: Props, state?: State): State {
-		state ??= this.state ? {...this.state} : {} as State;
+	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.text = nextProps.text;
 		state.showMore ??= false;
 		return state;

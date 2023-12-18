@@ -36,8 +36,6 @@ export class TS_ComponentTransition extends ComponentSync<Props, State> {
 	}
 
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
-		state ??= this.state ? {...this.state} : {} as State;
-
 		//First load
 		if (!state.transitionPhase)
 			state.transitionPhase = nextProps.trigger
