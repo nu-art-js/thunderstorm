@@ -267,8 +267,8 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 
 			const instances = docs.map(d => d.data!);
 			this.logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) ${this.dbDef.entityName}s ....`);
-			const instancesToSave: Proto['dbType'][] = [];
-			await this.upgradeInstances(instances, instancesToSave);
+			const instancesToSave: Proto['dbType'][] = await this.upgradeInstances(instances);
+
 			// @ts-ignore
 			await this.collection.upgradeInstances(instancesToSave);
 
@@ -281,7 +281,8 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		}
 	};
 
-	private async upgradeInstances(instances: Proto['dbType'][], instancesToSave: Proto['dbType'][] = []) {
+	private async upgradeInstances(instances: Proto['dbType'][]) {
+		let instancesToSave: Proto['dbType'][] = [];
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
 			const version = this.config.versions[i] as Proto['versions'][number];
 
@@ -306,5 +307,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 			instancesToSave = filterDuplicates(instancesToSave);
 			instancesToUpgrade.forEach(instance => instance._v = nextVersion);
 		}
+
+		return instancesToSave;
 	}
 }
