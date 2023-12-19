@@ -24,6 +24,7 @@ import {HttpException, TS_Progress} from './request-types';
 import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
 import {dispatcher_onAuthRequired} from './no-auth-listener';
 import {DefaultHttpServerConfig} from './consts';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> {
@@ -137,7 +138,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	setTimeout(timeout: number) {
-		console.log(`${this.url} - setting timeout: ${timeout}`);
+		// console.log(`${this.url} - setting timeout: ${timeout}`);
 		this.timeout = timeout;
 		return this;
 	}
@@ -232,7 +233,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		if (!this.isValidStatus(status)) {
 			const errorResponse = this.getErrorResponse();
 			const httpException = new HttpException<API['E']>(status, this.url, errorResponse);
-			if (status === 401)
+			if (status === HttpCodes._4XX.UNAUTHORIZED)
 				await dispatcher_onAuthRequired.dispatchModuleAsync(this);
 
 			await this.onError?.(httpException, requestData, this);

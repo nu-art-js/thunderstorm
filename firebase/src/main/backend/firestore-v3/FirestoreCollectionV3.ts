@@ -56,6 +56,7 @@ import {_EmptyQuery, maxBatch} from '../../shared/consts';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Proto extends DBProto<any>> = {
@@ -459,6 +460,14 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	getVersion = () => {
 		return this.dbDef.versions?.[0] || DefaultDBVersion;
+	};
+	needsUpgrade = (version: string) => {
+		const versions = this.dbDef.versions as string[] || [DefaultDBVersion];
+		const index = versions.indexOf(version);
+		if (index === -1)
+			throw HttpCodes._4XX.BAD_REQUEST('Invalid Object Version', `Provided item with version(${version}) which doesn't exist for collection '${this.dbDef.dbName} (${__stringify(this.dbDef.versions)})' `);
+
+		return index !== versions.length - 1;
 	};
 
 	validateItem(dbItem: Proto['dbType']) {

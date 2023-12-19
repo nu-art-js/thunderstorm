@@ -88,8 +88,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 
 		updatedDBItem.__updated = currentTimeMillis();
 
-		if (upgrade) {
-			updatedDBItem._v = dbItem._v;
+		if (updatedDBItem._v !== this.collection.getVersion()) {
 			await this.collection.hooks?.upgradeInstances([updatedDBItem]);
 		}
 
@@ -106,7 +105,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		if ((currDBItem?.__updated || 0) > ((item as DB_Object).__updated || currentTimeMillis()))
 			throw HttpCodes._4XX.ENTITY_IS_OUTDATED('Item is outdated', `${this.collection.name}/${currDBItem?._id} is outdated`);
 
-		const newDBItem = await this.prepareForSet(item as Proto['dbType'], currDBItem!, transaction);
+		const newDBItem = await this.prepareForSet(item as Proto['dbType'], currDBItem!, transaction, false);
 
 		// Will always get here with a transaction!
 		transaction!.set(this.ref, newDBItem);
