@@ -461,8 +461,12 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	getVersion = () => {
 		return this.dbDef.versions?.[0] || DefaultDBVersion;
 	};
-	needsUpgrade = (version: string) => {
+
+	needsUpgrade = (version?: string) => {
 		const versions = this.dbDef.versions as string[] || [DefaultDBVersion];
+		if (!version)
+			return false;
+
 		const index = versions.indexOf(version);
 		if (index === -1)
 			throw HttpCodes._4XX.BAD_REQUEST('Invalid Object Version', `Provided item with version(${version}) which doesn't exist for collection '${this.dbDef.dbName} (${__stringify(this.dbDef.versions)})' `);

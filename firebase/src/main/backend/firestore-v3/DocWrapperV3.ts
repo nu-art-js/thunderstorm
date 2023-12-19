@@ -88,10 +88,11 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 
 		updatedDBItem.__updated = currentTimeMillis();
 
-		if (updatedDBItem._v !== this.collection.getVersion()) {
+		if (this.collection.needsUpgrade(updatedDBItem._v)) {
 			await this.collection.hooks?.upgradeInstances([updatedDBItem]);
 		}
 
+		updatedDBItem._v = this.collection.getVersion();
 		await this.collection.hooks?.preWriteProcessing?.(updatedDBItem, transaction);
 		this.collection.validateItem(updatedDBItem);
 		return updatedDBItem;
