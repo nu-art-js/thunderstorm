@@ -20,9 +20,23 @@
  */
 
 import {_EmptyQuery, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
-import {_keys, ApiException, asArray, currentTimeMillis, DB_Object, DBDef_V3, DBProto, filterDuplicates, filterInstances, Module} from '@nu-art/ts-common';
+import {
+	_keys,
+	ApiException,
+	asArray,
+	currentTimeMillis,
+	DB_Object,
+	DBDef_V3,
+	DBProto,
+	filterDuplicates,
+	filterInstances,
+	Module
+} from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {
+	FirestoreCollectionV3,
+	PostWriteProcessingData
+} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {firestore} from 'firebase-admin';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {DBApiBEConfigV3, getModuleBEConfigV3} from '../../core/v3-db-def';
@@ -268,11 +282,11 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	};
 
 	private async upgradeInstances(instances: Proto['dbType'][], instancesToSave: Proto['dbType'][] = []) {
-		for (let i = 0; i < this.config.versions.length; i++) {
+		for (let i = this.config.versions.length - 1; i >= 0; i--) {
 			const version = this.config.versions[i] as Proto['versions'][number];
 
 			const instancesToUpgrade = instances.filter(instance => instance._v === version);
-			const nextVersion = this.config.versions[i + 1] ?? version;
+			const nextVersion = this.config.versions[i - 1] ?? version;
 			const versionTransition = `${version} => ${nextVersion}`;
 			if (instancesToUpgrade.length === 0) {
 				this.logWarning(`No instances to upgrade from ${versionTransition}`);
