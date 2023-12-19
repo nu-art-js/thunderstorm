@@ -69,7 +69,7 @@ export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
 	preWriteProcessing?: (dbInstance: Proto['dbType'], transaction?: Transaction) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Proto['dbType']>) => FirestoreQuery<Proto['dbType']>,
 	postWriteProcessing?: (data: PostWriteProcessingData<Proto>) => Promise<void>,
-	upgradeInstances: (instances: Proto['dbType'][]) => Promise<void>
+	upgradeInstances: (instances: Proto['dbType'][]) => Promise<any>
 }
 
 export type MultiWriteItem<Op extends MultiWriteOperation, Proto extends DBProto<any>> =
