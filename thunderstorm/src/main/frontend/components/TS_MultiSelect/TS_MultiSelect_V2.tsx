@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, ReactNode} from 'react';
-import {removeItemFromArray, SubsetKeys} from '@nu-art/ts-common';
+import {MUSTNeverHappenException, SubsetKeys} from '@nu-art/ts-common';
 import './TS_MultiSelect.scss';
 import {EditableItem} from '../../utils/EditableItem';
 import {LL_H_C, LL_V_L} from '../Layouts';
@@ -29,7 +29,8 @@ export type StaticProps_TS_MultiSelect_V2<ItemType> = {
 }
 
 export type Props_TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>> =
-	StaticProps_TS_MultiSelect_V2<Binder['InnerType']> & DynamicProps_TS_MultiSelect_V2<Binder['EnclosingItem'], Binder['Prop']>
+	StaticProps_TS_MultiSelect_V2<Binder['InnerType']>
+	& DynamicProps_TS_MultiSelect_V2<Binder['EnclosingItem'], Binder['Prop']>
 
 export type MultiSelect_Selector<ItemType> = {
 	className: string
@@ -52,10 +53,10 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 		const prop = this.props.prop;
 
 		const existingItems = (editable.item[prop] || (editable.item[prop] = [])) as Binder['InnerType'][];
+		const editableProp = editable.editProp(prop, []);
 
 		const addInnerItem = async (item: Binder['InnerType']) => {
-			const values: {} = {[prop]: [...existingItems, item]};
-			await editable.updateObj(values);
+			await editableProp.updateArrayAt(item);
 			this.forceUpdate();
 		};
 
@@ -69,9 +70,14 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 			{existingItems.map((item, i) => {
 				return <LL_H_C className="ts-multi-select__list-value" key={i}>
 					{props.itemRenderer(item, async () => {
-						const values: {} = {[prop]: [...removeItemFromArray(existingItems, item)]};
-						await editable.updateObj(values);
-						this.forceUpdate();
+						const indexToRemove = existingItems.indexOf(item);
+
+						if (indexToRemove !== -1) {
+							await editableProp.removeArrayItem(indexToRemove);
+							this.forceUpdate();
+						} else
+							throw new MUSTNeverHappenException(`item ${item} wasn't in existing items`);
+
 					})}
 				</LL_H_C>;
 			})}
