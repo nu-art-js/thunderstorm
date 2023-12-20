@@ -57,7 +57,6 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 
 		const addInnerItem = async (item: Binder['InnerType']) => {
 			await editableProp.updateArrayAt(item);
-			this.forceUpdate();
 		};
 
 		const props = this.props;
@@ -74,7 +73,6 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 
 						if (indexToRemove !== -1) {
 							await editableProp.removeArrayItem(indexToRemove);
-							this.forceUpdate();
 						} else
 							throw new MUSTNeverHappenException(`item ${item} wasn't in existing items`);
 
