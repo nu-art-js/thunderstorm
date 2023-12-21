@@ -18,7 +18,7 @@
 
 import {exists} from './tools';
 import {_keys} from './object-tools';
-import {NestedArrayType} from './types';
+import {NestedArrayType, TypedMap} from './types';
 
 
 export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { filteredIn: T[], filteredOut: T[] } {
@@ -135,16 +135,17 @@ export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, inde
 	return reduceToMap<T, T>(array, getKey, item => item, map);
 }
 
+type KeyResolver<Input, Output = Input> = (item: Input, index: number, map: {
+	[k: string]: Output
+}) => string | number;
+
+type Mapper<Input, Output = Input> = (item: Input, index: number, map: { [k: string]: Output }) => Output;
+
 /**
  * turns array into object that is similar to hashmap
- * */
-export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<Input[]>), keyResolver: (item: Input, index: number, map: {
-	[k: string]: Output
-}) => string | number, mapper: (item: Input, index: number, map: { [k: string]: Output }) => Output, map: {
-	[k: string]: Output
-} = {}): {
-	[k: string]: Output
-} {
+ *
+ */
+export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<Input[]>), keyResolver: KeyResolver<Input, Output>, mapper: Mapper<Input, Output>, map: TypedMap<Output> = {}): TypedMap<Output> {
 	return (array as (Input[])).reduce((toRet, element, index) => {
 		toRet[keyResolver(element, index, toRet)] = mapper(element, index, toRet);
 		return toRet;
