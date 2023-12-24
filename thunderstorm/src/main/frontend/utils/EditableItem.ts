@@ -218,8 +218,8 @@ export class EditableItem<T> {
 	 * @param defaultValue The default value of the property.
 	 * @returns The new EditableItem.
 	 */
-	editProp<K extends keyof T>(key: K, defaultValue: Partial<NonNullable<T[K]>>) {
-		let itemToEdit = this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>);
+	editProp<K extends keyof T>(key: K, defaultValue: ResolvableContent<Partial<NonNullable<T[K]>>>) {
+		let itemToEdit = this.item[key] || (this.item[key] = resolveContent(defaultValue) as NonNullable<T[K]>);
 		if (Array.isArray(itemToEdit) || typeof itemToEdit === 'object')
 			itemToEdit = deepClone(itemToEdit);
 
