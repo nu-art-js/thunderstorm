@@ -15,7 +15,7 @@ type MouseInteractivity_Model = {
 	originPos: Coordinates
 	offset?: Partial<Coordinates>
 	overlayClass?: string;
-	content: ResolvableContent<React.ReactNode>;
+	content: ResolvableContent<React.ReactNode, [VoidFunction]>;
 	xAxisAnchor?: 'left' | 'right';
 	yAxisAnchor?: 'top' | 'bottom';
 };
