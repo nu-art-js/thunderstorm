@@ -161,7 +161,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
-	protected onEntriesUpdated = async (items: Proto['dbType'][]): Promise<void> => {
+	public onEntriesUpdated = async (items: Proto['dbType'][]): Promise<void> => {
 		await this.IDB.syncIndexDb(items);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(items);
