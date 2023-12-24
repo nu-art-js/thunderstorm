@@ -5,7 +5,11 @@ import {OnWindowResized} from '../../../modules/ModuleFE_Window';
 import {_className, stopPropagation} from '../../../utils/tools';
 import {resolveContent} from '@nu-art/ts-common';
 import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity';
-import {Model_PopUp, mouseInteractivity_PopUp, PopUpListener} from '../../../component-modules/mouse-interactivity/types';
+import {
+	Model_PopUp,
+	mouseInteractivity_PopUp,
+	PopUpListener
+} from '../../../component-modules/mouse-interactivity/types';
 import {ModuleFE_MouseInteractivity} from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity';
 
 export class TS_PopUp
@@ -35,7 +39,7 @@ export class TS_PopUp
 				this.setState({open: false});
 			}}>
 			<div className="ts-popup__content" id={model.id} ref={this.ref}>
-				{resolveContent(model.content)}
+				{resolveContent(model.content, () => this.forceUpdate())}
 			</div>
 		</TS_Overlay>;
 	}
