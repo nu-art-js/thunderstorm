@@ -217,7 +217,7 @@ export const tsValidateAudit = (range?: RangeTimestamp) => {
 	};
 };
 
-export const tsValidateNonMandatoryObject = <T>(validator: ValidatorTypeResolver<T>) => {
+export const tsValidateNonMandatoryObject = <T extends object>(validator: ValidatorTypeResolver<T>) => {
 	return [tsValidateExists(false),
 		(input?: T) => tsValidateResult(input, validator)];
 };
