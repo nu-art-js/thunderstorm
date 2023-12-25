@@ -308,3 +308,12 @@ export function firstElement<T extends any>(array?: T[]) {
 export function arrayIncludesAny<T extends any>(arr1: T[], arr2: T[]): boolean {
 	return arr1.some(item => arr2.includes(item));
 }
+
+/**
+ * Returns true if arr1 returns the entirety of arr2
+ * @param arr1
+ * @param arr2
+ */
+export function arrayIncludesAll<T extends any>(arr1: T[], arr2: T[]): boolean {
+	return arr2.every(item => arr1.includes(item));
+}
