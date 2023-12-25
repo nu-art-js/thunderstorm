@@ -118,7 +118,7 @@ export class Replacer
 			try {
 				loopArray = this.resolveParamValue(iterableProp, runtime);
 			} catch (e: any) {
-				throw new ValidationException(`Error while looping on variable for parts: `, iterableProp, this.input, e);
+				throw new ValidationException<string>(`Error while looping on variable for parts: `, iterableProp, JSON.stringify(this.input), e);
 			}
 
 			if (!Array.isArray(loopArray))
@@ -156,13 +156,13 @@ export class Replacer
 				value = parts.reduce((value, key) => value[key], this.input);
 		} catch (e: any) {
 			this.logWarning('input', this.input);
-			throw new ValidationException(`Error while resolving runtime variable for parts ${param}`, param, this.input, e);
+			throw new ValidationException(`Error while resolving runtime variable for parts ${param}`, param, JSON.stringify(this.input), e);
 		}
 
 		if (value === undefined) {
 			this.logWarning('input', this.input);
 			if (this.strictMode)
-				throw new ValidationException(`Cannot resolve runtime variable for parts ${param}`, param, this.input);
+				throw new ValidationException(`Cannot resolve runtime variable for parts ${param}`, param, JSON.stringify(this.input));
 		}
 
 		return value;
