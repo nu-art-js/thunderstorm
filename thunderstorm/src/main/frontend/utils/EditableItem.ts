@@ -329,6 +329,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				await onCompleted?.(dbItem);
 			} catch (e: any) {
 				await onError?.(e);
+				throw e;
 			}
 		};
 	}
