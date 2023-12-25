@@ -49,12 +49,12 @@ export type InvalidResult<T extends any> =
 		T extends (infer I)[] ? (InvalidResultArray<I>[]) | string :
 			string;
 
-export class ValidationException
+export class ValidationException<T extends any>
 	extends CustomException {
-	public input?: string;
-	public result?: InvalidResult<any>;
+	public input?: T;
+	public result?: InvalidResult<T>;
 
-	constructor(debugMessage: string, input?: any, result?: InvalidResult<any>, e?: Error) {
+	constructor(debugMessage: string, input?: T, result?: InvalidResult<T>, e?: Error) {
 		super(ValidationException, debugMessage, e);
 		this.result = result;
 		this.input = input;
@@ -110,7 +110,7 @@ export const tsValidate = <T extends any>(instance: T | undefined, _validator: V
 
 export const tsValidateResult = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, parentInstance?: any) => {
 	if (!_validator)
-		return "No validator provided!";
+		return 'No validator provided!';
 
 	const validator: ValidatorImpl<T>[] | object = typeof _validator === 'function' ? [_validator] : _validator;
 	if (Array.isArray(validator)) {
