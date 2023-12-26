@@ -1,6 +1,8 @@
 import {Logger, Module, removeItemFromArray, TypedMap} from '@nu-art/ts-common';
 
 
+export const Key_UndefinedMessage = 'undefined-message';
+
 interface Messagable {
 	postMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void;
 
@@ -16,12 +18,12 @@ class ModuleFE_WindowMessenger_Class
 
 	//######################### Static #########################
 
-	readonly receivers: Receiver<any>[] = [];
+	readonly receivers: BaseReceiver<any>[] = [];
 	private listener?: (e: MessageEvent) => void;
 
 	//######################### Life Cycle #########################
 
-	addReceiver(receiver: Receiver<any>) {
+	addReceiver(receiver: BaseReceiver<any>) {
 		if (this.receivers.includes(receiver))
 			return;
 
@@ -33,7 +35,7 @@ class ModuleFE_WindowMessenger_Class
 			});
 	}
 
-	removeReceiver(receiver: Receiver<any>) {
+	removeReceiver(receiver: BaseReceiver<any>) {
 		removeItemFromArray(this.receivers, receiver);
 		if (this.receivers.length === 0) {
 			window.removeEventListener('message', this.listener!);
@@ -49,8 +51,12 @@ class ModuleFE_WindowMessenger_Class
 		return new Messenger<T>(target);
 	}
 
-	createReceiver<T extends Message>(origin?: string) {
-		return new Receiver(origin);
+	createReceiver<T extends Message>(origin?: string, transformer?: (data: any) => T[]) {
+		return new Receiver(origin, transformer);
+	}
+
+	createRawReceiver(execute: (message: any) => void, origin?: string) {
+		return new RawReceiver(execute, origin);
 	}
 }
 
@@ -72,18 +78,17 @@ export class Messenger<T extends Message> {
 
 //Message Receiver
 
-export class Receiver<T extends Message>
+export abstract class BaseReceiver<T extends any = any>
 	extends Logger {
 
-	private readonly origin: string;
+	readonly origin: string;
 	private readonly regex: RegExp;
-	private readonly messageProcessorMap: TypedMap<(message: any) => void> = {};
 
 	constructor(origin = '.*') {
 		super();
 		this.setTag(`Receiver (${origin})`);
 		this.origin = origin;
-		this.regex = new RegExp(this.origin);
+		this.regex = new RegExp(origin);
 	}
 
 	mount() {
@@ -93,6 +98,52 @@ export class Receiver<T extends Message>
 
 	unmount() {
 		ModuleFE_WindowMessenger.removeReceiver(this);
+		return this;
+	}
+
+	readonly execute = (origin: string, message: T) => {
+		if (!this.regex.test(origin))
+			return;
+
+		this.executeImpl(message);
+	};
+
+	abstract executeImpl(message: T): void
+}
+
+export class RawReceiver
+	extends BaseReceiver {
+	readonly execute: (message: any) => void;
+
+	constructor(execute: (message: any) => void, origin = '.*') {
+		super(origin);
+		this.execute = execute;
+	}
+
+	executeImpl(message: any): void {
+		this.execute(message);
+	}
+}
+
+/**
+ * Need to add a processor per each key prop's value that can be returned in the transformer output.
+ */
+export class Receiver<T extends Message>
+	extends BaseReceiver {
+
+	private readonly messageProcessorMap: TypedMap<(message: any) => void> = {};
+	private readonly transform: (data: any) => T[]; // Receives one window message, returns array with 1 or more transformed messages
+	private defaultProcessor?: (message: any) => void;
+
+	constructor(origin = '.*', transform: (data: any) => T[] = data => [data] as T[]) {
+		super();
+		this.setTag(`Receiver (${origin})`);
+		this.transform = transform;
+	}
+
+	setDefaultProcessor(processor: (message: any) => void) {
+		this.defaultProcessor = processor;
+		return this;
 	}
 
 	addProcessor<K extends T>(key: K['key'], processor: (message: K) => void) {
@@ -100,16 +151,19 @@ export class Receiver<T extends Message>
 		return this;
 	}
 
-	execute(origin: string, message: T) {
-		if (!this.regex.test(origin))
-			return;
+	executeImpl(message: any) {
+		const typedMessages = this.transform(message);
+		typedMessages.forEach(_message => {
+			const processor = this.messageProcessorMap[_message.key];
+			if (processor) {
+				processor(_message);
+				return;
+			}
 
-		const processor = this.messageProcessorMap[message.key];
-		if (!processor) {
-			this.logDebug('No message processor defined for key ${message.key}');
+			this.logDebug(`No message processor defined for key ${message.key}`);
+			this.defaultProcessor?.(_message);
 			return;
-		}
+		});
 
-		processor(message);
 	}
 }
