@@ -185,7 +185,7 @@ export class ModuleBE_AccountDB_Class
 					await dispatch_onApplicationException.dispatchModuleAsync(apiException, this);
 					throw apiException;
 				} else if (results.length > 1) {
-					throw new MUSTNeverHappenException('Too many users');
+					throw new MUSTNeverHappenException('Too many accounts using this email');
 				}
 
 			return results[0].data();
