@@ -36,7 +36,7 @@ import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload/backend';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
 import {PubsubExample} from '@modules/PubsubExample';
-import {ModuleBE_Slack, Slack_ServerApiError} from '@nu-art/slack';
+import {ModuleBE_Slack, Slack_ServerApiError} from '@nu-art/slack/backend';
 
 
 const packageJson = require('./package.json');
