@@ -21,8 +21,24 @@
  * Created by AlanBen on 29/08/2019.
  */
 
-import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module, PartialProperties} from '@nu-art/ts-common';
-import {ChatPostMessageArguments, FilesUploadArguments, WebAPICallResult, WebClient, WebClientOptions} from '@slack/web-api';
+import {
+	currentTimeMillis,
+	generateHex,
+	ImplementationMissingException,
+	md5,
+	Minute,
+	Module,
+	PartialProperties
+} from '@nu-art/ts-common';
+import {
+	ChatPostMessageArguments,
+	FilesUploadArguments,
+	WebAPICallResult,
+	WebClient,
+	WebClientOptions
+} from '@slack/web-api';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
+import {ApiDef_Slack} from '../shared';
 
 
 interface ChatPostMessageResult
@@ -76,6 +92,12 @@ export class ModuleBE_Slack_Class
 				rejectRateLimitedCalls: true,
 				...this.config.slackConfig
 			});
+
+		addRoutes([
+			createBodyServerApi(ApiDef_Slack.vv1.postMessage, async (request): Promise<void> => {
+				await this.postMessage(request.message, request.channel);
+			}),
+		]);
 	}
 
 	public async postMessage(text: string, channel?: string, thread?: ThreadPointer) {
