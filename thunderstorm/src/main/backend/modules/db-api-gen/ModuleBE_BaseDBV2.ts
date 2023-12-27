@@ -284,7 +284,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		return dependencies.length > 0 ? dependencies : undefined;
 	}
 
-	async upgradeCollection(forceUpgrade: boolean) {
+	upgradeCollection = async (forceUpgrade: boolean) => {
 		const docs = await this.collection.doc.query(_EmptyQuery);
 		const toDelete = docs.filter(doc => {
 			return doc.ref.id !== doc.data!._id;
@@ -293,8 +293,10 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		let items = filterDuplicates(docs.map(d => d.data!), dbObjectToId);
 
 		// this should be paginated
-		if (!forceUpgrade)
-			items = items.filter(item => item._v !== this.dbDef.versions![0]);
+		if (!forceUpgrade) {
+			const version = this.dbDef.versions?.[0] ?? DefaultDBVersion;
+			items = items.filter(item => item._v !== version);
+		}
 
 		this.logWarning(`Upgrading instances: ${items.length} ${this.dbDef.entityName}s ....`);
 		await batchAction(items, this.dbDef.upgradeChunksSize || 200, async chunk => {
@@ -310,7 +312,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 			this.logWarning(`Need to delete docs: ${toDelete.length} ${this.dbDef.entityName}s ....`);
 			await this.collection.delete.multi.allDocs(toDelete);
 		}
-	}
+	};
 
 	upgradeInstances = async (dbInstances: PreDB<Type>[]) => {
 		await Promise.all(dbInstances.map(async dbInstance => {
