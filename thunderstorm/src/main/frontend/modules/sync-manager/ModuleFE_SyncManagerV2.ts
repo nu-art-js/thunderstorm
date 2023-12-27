@@ -20,8 +20,8 @@
  */
 
 import {Dispatcher, Module} from '@nu-art/ts-common';
-import {ApiDef_SyncManagerV2, ApiDefCaller, ApiStruct_SyncManager, DBSyncData, Response_DBSyncData} from '../../shared';
-import {apiWithQuery} from '../../core/typed-api';
+import {ApiDef_SyncManagerV2, ApiDefCaller, ApiStruct_SyncManager, ApiStruct_SyncManagerV2, DBSyncData, Response_DBSyncData} from '../../shared';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 
 
 export type SyncIfNeeded = {
@@ -36,14 +36,15 @@ export const dispatch_onSyncCompleted = new Dispatcher<OnSyncCompleted, '__onSyn
 
 export class ModuleFE_SyncManagerV2_Class
 	extends Module
-	implements ApiDefCaller<ApiStruct_SyncManager> {
+	implements ApiDefCaller<ApiStruct_SyncManagerV2> {
 
 	readonly v1;
 
 	constructor() {
 		super();
 		this.v1 = {
-			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData)
+			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData),
+			syncDelta: apiWithBody(ApiDef_SyncManagerV2.v1.syncDelta, this.onReceivedSyncData)
 		};
 	}
 

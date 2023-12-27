@@ -107,6 +107,12 @@ export type ApiStruct_SyncManager = {
 		checkSync: QueryApi<Response_DBSyncData, undefined>
 	},
 }
+export type ApiStruct_SyncManagerV2 = {
+	v1: {
+		checkSync: QueryApi<Response_DBSyncData, undefined>
+		syncDelta: BodyApi<Response_DBSyncData, { name: string, lastUpdated: number }[]>
+	},
+}
 
 export const ApiDef_SyncManager: ApiDefResolver<ApiStruct_SyncManager> = {
 	v1: {
@@ -114,8 +120,9 @@ export const ApiDef_SyncManager: ApiDefResolver<ApiStruct_SyncManager> = {
 	}
 };
 
-export const ApiDef_SyncManagerV2: ApiDefResolver<ApiStruct_SyncManager> = {
+export const ApiDef_SyncManagerV2: ApiDefResolver<ApiStruct_SyncManagerV2> = {
 	v1: {
 		checkSync: {method: HttpMethod.GET, path: 'v2/db-api/sync-all-v2', timeout: 60 * Second},
+		syncDelta: {method: HttpMethod.POST, path: 'v2/db-api/sync-delta', timeout: 60 * Second},
 	}
 };
