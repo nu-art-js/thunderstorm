@@ -24,7 +24,7 @@ import {Example_ApiCustomError} from './examples/Example_ApiCustomError';
 import {Example_Dialogs} from './examples/modules/Example_Dialogs';
 import {Example_Toaster} from './examples/modules/Example_Toaster';
 import {TreeRefactorPage} from './examples/_to-be-removed/TreeRefactorPage';
-import {ICONS} from '@res/icons';
+import {ICONS} from '@app/common/frontend/icons';
 import {Example_Form} from './examples/Example_Form';
 import {Example_TriggerPush} from './examples/Example_TriggerPush';
 import {Example_AllDropDowns} from './examples/components/dropdown/Example_AllDropDowns';

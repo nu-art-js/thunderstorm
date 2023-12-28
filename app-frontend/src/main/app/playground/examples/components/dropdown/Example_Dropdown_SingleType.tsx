@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ICONS} from '@res/icons';
+import {ICONS} from '@app/common/frontend/icons';
 import {Adapter, BaseNodeRenderer, ComponentSync, LL_V_C, SimpleListAdapter, TS_Checkbox, TS_DropDown} from '@nu-art/thunderstorm/frontend';
 import {Plague, plagues} from './consts';
 import {Filter} from '@nu-art/ts-common';

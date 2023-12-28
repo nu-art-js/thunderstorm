@@ -12,9 +12,13 @@ export interface OnSyncStatusChangedListener<Proto extends DBProto<any>> {
 	__onSyncStatusChanged: (module: ModuleFE_BaseDB<Proto['dbType'], any>) => void;
 }
 
+export type DispatcherInterface<Def extends DispatcherDef<any, any>> = {
+	[K in Def['eventName']]: Def['method']
+}
+
 export type DispatcherDef<Proto extends DBProto<any>, MethodName extends `${'__'}${string}`> = {
 	eventName: MethodName
-	method: (...params: ApiCallerEventTypeV3<Proto['dbType']>) => void
+	method: (...params: ApiCallerEventTypeV3<Proto>) => void
 }
 
 export class ThunderDispatcherV3<T extends DispatcherDef<any, any>>
