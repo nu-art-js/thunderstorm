@@ -66,6 +66,7 @@ type DropDownChildrenContainerData = {
 type EditableProp<Item, K extends keyof Item, ItemType, Prop extends AssetValueType<Item, K, ItemType> = AssetValueType<Item, K, ItemType>> = {
 	editable: EditableItem<Item>
 	prop: Prop
+
 }
 
 type Dropdown_Props<ItemType> = Partial<StaticProps> & ComponentProps_Error & {
