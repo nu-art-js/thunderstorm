@@ -111,7 +111,7 @@ type BasePartialProps_DropDown<T> = {
 	disabled?: boolean
 	ifNoneShowAll?: boolean
 }
-export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & {
+export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & ComponentProps_Error & {
 	selected?: T;
 	onSelected: (selected: T) => void;
 }
