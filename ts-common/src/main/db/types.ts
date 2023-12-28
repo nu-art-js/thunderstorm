@@ -24,6 +24,15 @@ type Exact<T, Shape> = T & {
 	[K in Exclude<keyof Shape, keyof T>]?: never;
 };
 
+/**
+ * Defines the base structure and constraints for a database object.
+ *
+ * @template T The base type of the database object.
+ * @template GeneratedKeys Keys that are auto-generated and should not be manually modified.
+ * @template Versions Versioning information for the database object.
+ * @template UniqueKeys Keys that are unique to each instance of the database object.
+ * @template Dependencies (Future Use) Defines dependencies or relationships to other database objects.
+ */
 export type Proto_DB_Object<
 	T extends DB_Object,
 	GeneratedKeys extends keyof T | never,
@@ -38,6 +47,13 @@ export type Proto_DB_Object<
 	dependencies: Dependencies
 }
 
+/**
+ * Extends Proto_DB_Object with additional UI and validation details.
+ *
+ * @template P The Proto_DB_Object this DBProto is based on.
+ * @template ModifiableSubType The subset of P's type that is modifiable.
+ * @template GeneratedSubType The subset of P's type that is auto-generated.
+ */
 export type DBProto<P extends Proto_DB_Object<any, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
@@ -53,19 +69,24 @@ export type DBProto<P extends Proto_DB_Object<any, any, VersionsDeclaration<Vers
 	lockKeys?: (keyof P['type'])[]
 }
 
-export type DBDef_V3<P extends DBProto<any, any, any>> = {
+/**
+ * Represents the definition of a database entity with metadata and validation rules.
+ *
+ * @template Proto The DBProto type that this definition is based on.
+ */
+export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
 	dbName: string;
 	entityName: string;
 	TTL?: number;
 	lastUpdatedTTL?: number;
 	upgradeChunksSize?: number;
-	generatedPropsValidator: P['generatedPropsValidator'];
-	modifiablePropsValidator: P['modifiablePropsValidator'];
-	uniqueKeys?: P['uniqueKeys'];
-	versions?: P['versions']['versions'];
-	indices?: P['indices'];
-	lockKeys?: P['lockKeys'];
-	metadata?: P['metadata'];
+	generatedPropsValidator: Proto['generatedPropsValidator'];
+	modifiablePropsValidator: Proto['modifiablePropsValidator'];
+	uniqueKeys?: Proto['uniqueKeys'];
+	versions?: Proto['versions']['versions'];
+	indices?: Proto['indices'];
+	lockKeys?: Proto['lockKeys'];
+	metadata?: Proto['metadata'];
 }
 
 /**

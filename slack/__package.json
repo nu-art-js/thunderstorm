@@ -42,7 +42,7 @@
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
     "fs": "0.0.1-security",
     "google-auth-library": "^6.0.6",
-    "moment": "^2.24.0",
+    "moment": "$MOMENT_PKG_VERSION",
     "request": "^2.88.0"
   }
 }

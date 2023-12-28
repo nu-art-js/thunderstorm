@@ -3,15 +3,16 @@ import {DB_Object, Filter} from '@nu-art/ts-common';
 import {EditableDBItem} from '../../utils/EditableDBItem';
 import './Page_ItemsEditor.scss';
 import {FrameLayout} from '../FrameLayout';
-import {Props_SmartComponent, State_SmartComponent} from '../../core/SmartComponent';
-import {Props_SmartPage, SmartPage} from '../../core/SmartPage';
+import {State_SmartComponent} from '../../core/SmartComponent';
+import {Props_SmartPage} from '../../core/SmartPage';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ModuleFE_RoutingV2, TS_Route} from '../../modules/routing';
 import {LL_H_T, LL_V_L, LL_VH_C} from '../Layouts';
 import {TS_Space} from '../TS_Space';
 import {TS_Input} from '../TS_Input';
 import {_className} from '../../utils/tools';
-import { getQueryParameter } from '../../modules/ModuleFE_BrowserHistory';
+import {getQueryParameter} from '../../modules/ModuleFE_BrowserHistory';
+import {AppPage} from '../../core/AppPage';
 
 
 export type State_ItemsEditor<DBItem extends DB_Object> = State_SmartComponent & { editable: EditableDBItem<DBItem> };
@@ -26,13 +27,13 @@ export type Props_ItemsEditor<DBItem extends DB_Object> = Props_SmartPage<State_
 };
 
 export class Page_ItemsEditor<DBItem extends DB_Object>
-	extends SmartPage<Props_ItemsEditor<DBItem>, State_ItemsEditor<DBItem>> {
+	extends AppPage<Props_ItemsEditor<DBItem>, State_ItemsEditor<DBItem>> {
 
 	constructor(p: Props_ItemsEditor<DBItem>) {
 		super(p);
 	}
 
-	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: State_ItemsEditor<DBItem>): Promise<State_ItemsEditor<DBItem>> {
+	protected deriveStateFromProps(nextProps: Props_ItemsEditor<DBItem>, state: State_ItemsEditor<DBItem>) {
 		const selectedId = getQueryParameter('_id');
 		this.logError(selectedId);
 		if (selectedId === undefined)
@@ -99,11 +100,11 @@ export class DefaultListRenderer<DBItem extends DB_Object>
 
 		return <LL_V_L className="items-list match_height margin__inline">
 			<TS_Input className={'margin__bottom'} placeholder={'Type to Filter'} type={'text'}
-					  onChange={value => this.setState({filterText: value})}/>
+								onChange={value => this.setState({filterText: value})}/>
 			<LL_V_L className="flex__grow scrollable-y match_width">
 				{items.map(item => <div key={item._id}
-										className={_className('match_width', 'list-item', item._id === this.props.selected?._id && 'list-item__selected')}
-										onClick={() => this.props.onSelected(item)}>{this.props.itemRenderer(item)}</div>)}
+																className={_className('match_width', 'list-item', item._id === this.props.selected?._id && 'list-item__selected')}
+																onClick={() => this.props.onSelected(item)}>{this.props.itemRenderer(item)}</div>)}
 			</LL_V_L>
 		</LL_V_L>;
 	}

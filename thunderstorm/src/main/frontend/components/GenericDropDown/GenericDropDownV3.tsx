@@ -38,7 +38,9 @@ type AppLevelProps_TS_GenericDropDownV3<T> = Props_CanUnselect<T> & BaseAppLevel
 	selected?: T | string | (() => T | undefined);
 }
 
-type EditableItemProps_GenericDropDownV3<T> = BaseAppLevelProps_TS_GenericDropDownV3<T> & UIProps_EditableItem<any, any, string>
+type EditableItemProps_GenericDropDownV3<T> = BaseAppLevelProps_TS_GenericDropDownV3<T> & UIProps_EditableItem<any, any, string> & {
+	onSelected?: (selected: T | undefined, superOnSelected: (selected?: T) => Promise<void>) => void
+}
 
 export type TemplatingProps_TS_GenericDropDown<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
 	BaseInfraProps_TS_GenericDropDownV3<T> & {
@@ -70,11 +72,18 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 	static readonly prepareEditable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
 		return (props: EditableItemProps_GenericDropDownV3<Proto['dbType']>) => {
 			const {editable, prop, ...restProps} = props;
+			const onSelected = async (item: Proto['dbType']) => {
+				await editable.updateObj({[prop]: item._id});
+			};
+
 			return <GenericDropDownV3<Proto>
 				{...resolveContent(mandatoryProps)}
 				{...restProps}
-				onSelected={item => {
-					editable.updateObj({[prop]: item._id});
+				onSelected={async item => {
+					if (props.onSelected)
+						return props.onSelected(item, onSelected);
+
+					return onSelected(item);
 				}}
 				selected={editable.item[prop]}/>;
 		};

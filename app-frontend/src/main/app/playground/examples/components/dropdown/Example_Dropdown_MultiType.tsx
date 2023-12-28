@@ -19,7 +19,7 @@
 
 import {AdapterBuilder, LL_V_C, TreeItem, TS_DropDown} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
-import {ICONS} from '@res/icons';
+import {ICONS} from '@app/common/frontend/icons';
 import {flatPlaguesWithTitles, Plague, RendererMap_Plague} from './consts';
 import {Filter} from '@nu-art/ts-common';
 
