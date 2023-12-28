@@ -6,11 +6,12 @@ import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi'
 import {Adapter, SimpleListAdapter} from '../adapter/Adapter';
 import {ComponentSync} from '../../core/ComponentSync';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {ComponentProps_Error, resolveEditableError} from '../types';
 
 
 type Props_CanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
 
-type BaseInfraProps_TS_GenericDropDownV3<T> = {
+type BaseInfraProps_TS_GenericDropDownV3<T> = ComponentProps_Error & {
 	className?: string
 	style?: CSSProperties
 	placeholder?: string;
@@ -40,7 +41,7 @@ type AppLevelProps_TS_GenericDropDownV3<T> = Props_CanUnselect<T> & BaseAppLevel
 
 type EditableItemProps_GenericDropDownV3<T> = BaseAppLevelProps_TS_GenericDropDownV3<T> & UIProps_EditableItem<any, any, string> & {
 	onSelected?: (selected: T | undefined, superOnSelected: (selected?: T) => Promise<void>) => void
-}
+} & ComponentProps_Error
 
 export type TemplatingProps_TS_GenericDropDown<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
 	BaseInfraProps_TS_GenericDropDownV3<T> & {
@@ -58,7 +59,7 @@ type Props_TS_GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbT
 	selected?: Proto['dbType'] | string | (() => Proto['dbType'] | undefined);
 }
 
-type State<T extends DB_Object> = {
+type State<T extends DB_Object> = ComponentProps_Error & {
 	items: T[]
 	selected?: T
 	filter: Filter<T>;
@@ -72,11 +73,13 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 	static readonly prepareEditable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
 		return (props: EditableItemProps_GenericDropDownV3<Proto['dbType']>) => {
 			const {editable, prop, ...restProps} = props;
+
 			const onSelected = async (item: Proto['dbType']) => {
 				await editable.updateObj({[prop]: item._id});
 			};
 
 			return <GenericDropDownV3<Proto>
+				error={resolveEditableError(editable, prop, props.error)}
 				{...resolveContent(mandatoryProps)}
 				{...restProps}
 				onSelected={async item => {
@@ -115,6 +118,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 			return sortArray(state.items, typeof sortBy === 'function' ? sortBy : item => item[sortBy]);
 		}, state.items) || state.items;
 
+		state.error = nextProps.error;
 		//Set selected item
 		state.selected = this.getSelected(nextProps.module, nextProps.selected);
 		state.filter = new Filter<T>(nextProps.mapper);
@@ -137,6 +141,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 
 	render() {
 		return <TS_DropDown<T>
+			error={this.state.error}
 			className={this.props.className}
 			placeholder={this.props.placeholder || 'Choose one'}
 			inputValue={this.props.inputValue}
