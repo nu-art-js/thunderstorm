@@ -24,6 +24,7 @@ import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_InputV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
@@ -51,7 +52,8 @@ type BaseInfraProps_TS_InputV2 = {
 }
 
 type BaseAppLevelProps_TS_InputV2 =
-	Omit<HTMLProps<HTMLInputElement>, 'onChange' | 'onBlur' | 'ref'>
+	ComponentProps_Error
+	& Omit<HTMLProps<HTMLInputElement>, 'onChange' | 'onBlur' | 'ref'>
 	& BaseInfraProps_TS_InputV2
 	& {
 	id?: string
@@ -107,6 +109,7 @@ export class TS_InputV2
 				onAccept = (value: string) => editable.updateObj({[prop]: value});
 
 			return <TS_InputV2
+				error={resolveEditableError(editable, prop, props.error)}
 				{...restTemplatingProps} {...rest}
 				type={type}
 				onChange={onChange}
@@ -187,10 +190,11 @@ export class TS_InputV2
 	};
 
 	render() {
-		const {onAccept, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
+		const {onAccept, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
 
 		return <input
 			{...props}
+			{...convertToHTMLDataAttributes(this.props.error, 'error')}
 			autoFocus={focus}
 			ref={props.innerRef}
 			onBlur={(event) => {

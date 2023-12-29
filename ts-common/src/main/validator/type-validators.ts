@@ -1,13 +1,5 @@
 import {__stringify, exists} from '../utils/tools';
-import {
-	InvalidResult,
-	InvalidResultArray,
-	InvalidResultObject,
-	tsValidateExists,
-	tsValidateResult,
-	Validator,
-	ValidatorTypeResolver
-} from './validator-core';
+import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
 import {currentTimeMillis} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {filterInstances} from '../utils/array-tools';
@@ -86,7 +78,7 @@ export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayT
 		}];
 };
 
-export const tsValidateString = (length: number = -1, mandatory = true): Validator<string> => {
+export const tsValidateString = (length: number | [number, number] = -1, mandatory = true): Validator<string> => {
 	return [tsValidateExists(mandatory),
 		(input?: string) => {
 			// noinspection SuspiciousTypeOfGuard
@@ -96,10 +88,17 @@ export const tsValidateString = (length: number = -1, mandatory = true): Validat
 			if (length === -1)
 				return;
 
-			if (input.length <= length)
-				return;
+			if (Array.isArray(length)) {
+				if (length[0] > input.length)
+					return `input length is lesser than ${length}`;
 
-			return `input is longer than ${length}`;
+				if (input.length > length[1])
+					return `input length is longer than ${length}`;
+
+			} else if (input.length > length)
+				return `input length is longer than ${length}`;
+
+			return;
 		}];
 };
 

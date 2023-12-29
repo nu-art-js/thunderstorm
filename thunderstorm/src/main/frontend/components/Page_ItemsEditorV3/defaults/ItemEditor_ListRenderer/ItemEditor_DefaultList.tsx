@@ -1,10 +1,11 @@
 import * as React from 'react';
-import {DBProto} from '@nu-art/ts-common';
+import {__stringify, DBProto} from '@nu-art/ts-common';
 import {ModuleFE_v3_BaseApi} from '../../../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {LL_V_L} from '../../../Layouts';
 import {_className} from '../../../../utils/tools';
 import './ItemEditor_DefaultList.scss';
 import {ItemEditor_FilterType, ItemEditor_SortType} from '../../types';
+import {ComponentSync} from '../../../../core/ComponentSync';
 
 
 export type Props_ListRendererV3<Proto extends DBProto<any>> = {
@@ -17,7 +18,7 @@ export type Props_ListRendererV3<Proto extends DBProto<any>> = {
 };
 
 export class ItemEditor_DefaultList<Proto extends DBProto<any>>
-	extends React.Component<Props_ListRendererV3<Proto>> {
+	extends ComponentSync<Props_ListRendererV3<Proto>> {
 
 	render() {
 		const sortedItems = this.props.module.cache.sort(this.props.sort);
@@ -25,9 +26,22 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 
 		return <LL_V_L className="items-list match_height margin__inline">
 			<LL_V_L className="flex__grow scrollable-y match_width">
-				{items.map(item => <div key={item._id}
-																className={_className('match_width', 'list-item', item._id === this.props.selected?._id && 'list-item__selected')}
-																onClick={() => this.props.onSelected(item)}>{this.props.itemRenderer(item)}</div>)}
+				{items.map(item =>
+					<div key={item._id}
+							 className={_className('match_width', 'list-item', item._id === this.props.selected?._id && 'list-item__selected')}
+							 onClick={(e) => {
+								 if (e.metaKey) {
+									 if (e.shiftKey)
+										 this.logInfo(`item id: ${__stringify(item)}`);
+									 else
+										 this.logInfo(`item id: ${item.id}`);
+
+									 return;
+								 }
+
+								 this.props.onSelected(item);
+							 }}>
+						{this.props.itemRenderer(item)}</div>)}
 			</LL_V_L>
 		</LL_V_L>;
 	}

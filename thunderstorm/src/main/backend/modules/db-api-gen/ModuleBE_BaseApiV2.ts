@@ -48,10 +48,10 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	readonly dbModule: ModuleBE_BaseDBV2<Type, any, Ks>;
 	readonly apiDef;
 
-	constructor(dbModule: ModuleBE_BaseDBV2<Type, any, Ks>) {
+	constructor(dbModule: ModuleBE_BaseDBV2<Type, any, Ks>, version?: string) {
 		super(`Gen(${dbModule.getName()}, Api)`);
 		this.dbModule = dbModule;
-		this.apiDef = DBApiDefGeneratorIDBV2<Type, Ks>(this.dbModule.dbDef);
+		this.apiDef = DBApiDefGeneratorIDBV2<Type, Ks>(this.dbModule.dbDef, version);
 	}
 
 	init() {
@@ -92,6 +92,6 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	}
 }
 
-export const createApisForDBModuleV2 = <DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey>(dbModule: ModuleBE_BaseDBV2<DBType, any, Ks>) => {
-	return new ModuleBE_BaseApiV2_Class<DBType, any, Ks>(dbModule);
+export const createApisForDBModuleV2 = <DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey>(dbModule: ModuleBE_BaseDBV2<DBType, any, Ks>, version ?: string) => {
+	return new ModuleBE_BaseApiV2_Class<DBType, any, Ks>(dbModule, version);
 };

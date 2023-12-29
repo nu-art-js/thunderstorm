@@ -80,7 +80,7 @@ export class ModuleBE_AccountDB_Class
 
 	readonly Middleware = async () => {
 		const account = SessionKey_Account_BE.get();
-		MemKey_AccountEmail.set(account.email);
+		MemKey_AccountEmail.set(account.email!);
 		MemKey_AccountId.set(account._id);
 	};
 
@@ -163,7 +163,7 @@ export class ModuleBE_AccountDB_Class
 		},
 		setAccountMemKeys: async (account: SafeDB_Account) => {
 			MemKey_AccountId.set(account._id);
-			MemKey_AccountEmail.set(account.email);
+			MemKey_AccountEmail.set(account.email!);
 		},
 		onAccountCreated: async (account: SafeDB_Account, transaction: Transaction) => {
 			await dispatch_onAccountRegistered.dispatchModuleAsync(account, transaction);
