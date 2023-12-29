@@ -24,6 +24,7 @@ import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_TextAreaV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
@@ -45,7 +46,8 @@ type BaseInfraProps_TS_TextAreaV2 = {
 }
 
 type BaseAppLevelProps_TS_TextAreaV2 =
-	Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref'>
+	ComponentProps_Error
+	& Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref'>
 	& BaseInfraProps_TS_TextAreaV2
 	& {
 	id?: string
@@ -102,6 +104,7 @@ export class TS_TextAreaV2
 			return <TS_TextAreaV2
 				{...templateProps}
 				{...rest}
+				error={resolveEditableError(editable, prop, props.error)}
 				onChange={onChange}
 				onBlur={onBlur}
 				onAccept={onAccept}
@@ -180,10 +183,11 @@ export class TS_TextAreaV2
 	};
 
 	render() {
-		const {onAccept, trim, saveEvent, forceAcceptKeys, focus, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, focus, ...props} = this.props;
 
 		return <textarea
 			{...props}
+			{...convertToHTMLDataAttributes(this.props.error, 'error')}
 			autoFocus={focus}
 			ref={props.innerRef}
 			onBlur={(event) => {

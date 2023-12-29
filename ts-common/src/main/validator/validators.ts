@@ -1,11 +1,5 @@
 import {tsValidateExists, Validator, ValidatorTypeResolver} from './validator-core';
-import {
-	tsValidateArray,
-	tsValidateBoolean,
-	tsValidateRegexp,
-	tsValidateString,
-	tsValidateTimestamp
-} from './type-validators';
+import {tsValidateArray, tsValidateBoolean, tsValidateRegexp, tsValidateString, tsValidateTimestamp} from './type-validators';
 import {AuditableV2} from '../utils/types';
 
 
@@ -49,6 +43,8 @@ export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9
 export const tsValidator_AuditableV2: ValidatorTypeResolver<AuditableV2> = {_auditorId: tsValidateString()};
 
 export const DB_Object_validator = {
+	// this will be the way to handle app level context via proto.. need to rename this to __metadata once done
+	__metadata1: tsValidateOptional,
 	_id: tsValidateUniqueId,
 	_v: tsValidateVersion,
 	_originDocId: tsValidateOptionalId,

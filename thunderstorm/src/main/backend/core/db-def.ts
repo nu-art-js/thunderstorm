@@ -21,7 +21,6 @@
 
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {
-	Const_UniqueKey,
 	Const_UniqueKeys,
 	Day,
 	DB_Object,
@@ -31,15 +30,13 @@ import {
 	DefaultDBVersion,
 	Dispatcher,
 	Hour,
-	keepDBObjectKeys,
+	keepDBObjectKeys, KeysOfDB_Object,
 	TS_Object,
 	tsValidateResult,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {DB_EntityDependency} from '@nu-art/firebase';
 
-
-export const Const_LockKeys: (keyof DB_Object)[] = [Const_UniqueKey, '_v', '__created', '__updated'];
 
 export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = Default_UniqueKey> = {
 	collectionName: string;
@@ -65,7 +62,7 @@ export const getModuleBEConfig = <T extends DB_Object, Ks extends keyof T = Defa
 		collectionName: dbDef.dbName,
 		validator: dbDefValidator as ValidatorTypeResolver<T>,
 		uniqueKeys: dbDef.uniqueKeys || Const_UniqueKeys as Ks[],
-		lockKeys: dbDef.lockKeys || dbDef.uniqueKeys || [...Const_LockKeys],
+		lockKeys: dbDef.lockKeys || dbDef.uniqueKeys || [...KeysOfDB_Object],
 		itemName: dbDef.entityName,
 		versions: dbDef.versions || [DefaultDBVersion],
 		TTL: dbDef.TTL || Hour * 2,

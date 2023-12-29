@@ -36,7 +36,6 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>>
 
 	protected deriveStateFromProps(nextProps: Props_ItemsEditorV3<Proto>, state: State_ItemsEditorV3<Proto>) {
 		const selectedId = getQueryParameter('_id');
-		this.logError(selectedId);
 		if (selectedId === undefined)
 			return state;
 
