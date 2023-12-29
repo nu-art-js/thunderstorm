@@ -31,7 +31,7 @@ import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
 import {EditableItem} from '../../utils/EditableItem';
-import {ComponentProps_Error, convertToHTMLDataAttributes} from '../types';
+import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 
 
 type State<ItemType> = ComponentProps_Error & {
@@ -111,7 +111,7 @@ type BasePartialProps_DropDown<T> = {
 	disabled?: boolean
 	ifNoneShowAll?: boolean
 }
-export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & {
+export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & ComponentProps_Error & {
 	selected?: T;
 	onSelected: (selected: T) => void;
 }
@@ -128,6 +128,7 @@ export class TS_DropDown<ItemType>
 	static readonly prepareEditable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return (props: EditableDropDownProps<T>) => <TS_DropDown<T>
 			{...resolveContent(mandatoryProps)} {...props}
+			error={resolveEditableError(props.editable, props.prop, props.error)}
 			onSelected={item => props.editable.updateObj({[props.prop]: item})}
 			selected={props.editable.item[props.prop]}/>;
 	};
