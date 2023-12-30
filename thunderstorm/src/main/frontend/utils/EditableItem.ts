@@ -313,6 +313,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	extends EditableItem<Proto['uiType']> {
 
 	private readonly module: ModuleFE_v3_BaseApi<Proto>;
+	private readonly onError?: (err: Error) => any | Promise<any>;
 
 	/**
 	 * Constructs an EditableDBItemV3 instance.
@@ -325,6 +326,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['uiType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
 		super(item, EditableDBItemV3.save(module, onCompleted, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
 		this.module = module;
+		this.onError = onError;
 		this.save.bind(this);
 	}
 
@@ -377,6 +379,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @returns The new instance.
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.deleteAction)) as EditableDBItemV3<Proto>;
+		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError)) as EditableDBItemV3<Proto>;
 	}
 }
