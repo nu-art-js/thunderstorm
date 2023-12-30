@@ -6,6 +6,7 @@ import {_className} from '../../../../utils/tools';
 import './ItemEditor_DefaultList.scss';
 import {ItemEditor_FilterType, ItemEditor_SortType} from '../../types';
 import {ComponentSync} from '../../../../core/ComponentSync';
+import {ApiCallerEventTypeV3} from '../../../../core/db-api-gen/v3_types';
 
 
 export type Props_ListRendererV3<Proto extends DBProto<any>> = {
@@ -19,6 +20,25 @@ export type Props_ListRendererV3<Proto extends DBProto<any>> = {
 
 export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 	extends ComponentSync<Props_ListRendererV3<Proto>> {
+
+	protected deriveStateFromProps(nextProps: Props_ListRendererV3<Proto>, state: Partial<any>) {
+		if (nextProps === this.props || nextProps.module !== this.props.module) {
+			// @ts-ignore
+			delete this[this.props.module.defaultDispatcher.method];
+			// @ts-ignore
+			this[nextProps.module.defaultDispatcher.method] = (...args: any[]) => this.__onItemUpdated(...args);
+		}
+
+		return state;
+	}
+
+	shouldComponentUpdate(): boolean {
+		return true;
+	}
+
+	private __onItemUpdated = (...params: ApiCallerEventTypeV3<Proto>): void => {
+		return this.forceUpdate();
+	};
 
 	render() {
 		const sortedItems = this.props.module.cache.sort(this.props.sort);

@@ -56,7 +56,7 @@ export class TS_DragAndDrop
 	private inputRef = React.createRef<HTMLInputElement>();
 	private timers: (ReturnType<typeof setTimeout>)[] = [];
 
-	protected deriveStateFromProps(nextProps: Props_DragAndDrop): State | undefined {
+	protected deriveStateFromProps(nextProps: Props_DragAndDrop): State {
 		return {
 			dndState: 'Idle',
 			acceptedFiles: [],

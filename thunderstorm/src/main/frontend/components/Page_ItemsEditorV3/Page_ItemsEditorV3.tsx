@@ -1,17 +1,18 @@
 import * as React from 'react';
-import {DB_Object, DBProto} from '@nu-art/ts-common';
+import {asArray, DB_Object, dbObjectToId, DBProto} from '@nu-art/ts-common';
 import {FrameLayout} from '../FrameLayout';
 import {ModuleFE_RoutingV2, TS_Route} from '../../modules/routing';
 import {LL_H_T, LL_V_L, LL_VH_C} from '../Layouts';
 import {getQueryParameter} from '../../modules/ModuleFE_BrowserHistory';
 import './Page_ItemsEditorV3.scss';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
-import {AppPage} from '../../core/AppPage';
 import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem';
 import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
 import {ItemEditor_DefaultList, Props_ListRendererV3} from './defaults/ItemEditor_ListRenderer';
 import {ItemEditor_FilterType, ItemEditor_MapperType, ItemEditor_SortType} from './types';
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter';
+import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
+import {ComponentSync} from '../../core/ComponentSync';
 
 
 type State_ItemsEditorV3<Proto extends DBProto<any>> = { editable: EditableItem<Proto['uiType']>, filter: ItemEditor_FilterType<Proto> };
@@ -27,14 +28,20 @@ export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 };
 
 export class Page_ItemsEditorV3<Proto extends DBProto<any>>
-	extends AppPage<Props_ItemsEditorV3<Proto>, State_ItemsEditorV3<Proto>> {
+	extends ComponentSync<Props_ItemsEditorV3<Proto>, State_ItemsEditorV3<Proto>> {
 
 	constructor(p: Props_ItemsEditorV3<Proto>) {
 		super(p);
-		this.state = {filter: (item: Proto['uiType']) => true} as State_ItemsEditorV3<Proto>;
 	}
 
 	protected deriveStateFromProps(nextProps: Props_ItemsEditorV3<Proto>, state: State_ItemsEditorV3<Proto>) {
+		if (nextProps === this.props || nextProps.module !== this.props.module) {
+			// @ts-ignore
+			delete this[this.props.module.defaultDispatcher.method];
+			// @ts-ignore
+			this[nextProps.module.defaultDispatcher.method] = (...args: any[]) => this.__onItemUpdated(...args);
+		}
+
 		const selectedId = getQueryParameter('_id');
 		if (selectedId === undefined)
 			return state;
@@ -45,9 +52,17 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>>
 			const item = this.props.module.cache.unique(selectedId as string)!;
 			state.editable = this.createEditableItem(item);
 		}
-
+		state.filter ??= (item: Proto['uiType']) => true;
 		return state;
 	}
+
+	private __onItemUpdated = (...params: ApiCallerEventTypeV3<Proto>): void => {
+		const items = asArray(params[1]);
+		if (!items.map(dbObjectToId).includes(this.state.editable.get('_id') as string))
+			return;
+
+		return this.reDeriveState();
+	};
 
 	private createEditableItem(item: Partial<Proto>) {
 		return new EditableDBItemV3<Proto>({...item}, this.props.module, this.onSelected).setAutoSave(true);
