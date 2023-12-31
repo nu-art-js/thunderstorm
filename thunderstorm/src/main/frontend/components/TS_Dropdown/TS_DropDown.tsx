@@ -21,7 +21,14 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {AssetValueType, BadImplementationException, clamp, Filter, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {
+	AssetValueType,
+	BadImplementationException,
+	clamp,
+	Filter,
+	ResolvableContent,
+	resolveContent
+} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -65,7 +72,8 @@ type DropDownChildrenContainerData = {
 
 type EditableProp<Item, K extends keyof Item, ItemType, Prop extends AssetValueType<Item, K, ItemType> = AssetValueType<Item, K, ItemType>> = {
 	editable: EditableItem<Item>
-	prop: Prop
+	prop: Prop,
+	ignoreError?: boolean
 
 }
 
@@ -116,21 +124,25 @@ export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & ComponentP
 	onSelected: (selected: T) => void;
 }
 
-type EditableDropDownProps<ItemType> = BasePartialProps_DropDown<ItemType> & EditableProp<any, any, ItemType> & {
-	onSelected?: (selected: ItemType | undefined, superOnSelected: (selected?: ItemType) => Promise<void>) => void
-} & ComponentProps_Error
+type EditableDropDownProps<ItemType, EditableType extends {} = any, ValueType extends EditableType[keyof EditableType]= EditableType[keyof EditableType]> =
+	BasePartialProps_DropDown<ItemType>
+	& EditableProp<EditableType, keyof EditableType, ValueType>
+	& ComponentProps_Error
+	& {
+	onSelected?: (editable: EditableItem<EditableType>, prop: keyof EditableType, value: ItemType) => Promise<void> | void
+}
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
 
 	// ######################## Static ########################
 
-	static readonly prepareEditable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
-		return (props: EditableDropDownProps<T>) => <TS_DropDown<T>
+	static readonly prepareEditable = <T extends any, EditableType extends {} = any, ValueType extends EditableType[keyof EditableType]= EditableType[keyof EditableType]>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+		return (props: EditableDropDownProps<T, EditableType, ValueType>) => <TS_DropDown<T>
 			{...resolveContent(mandatoryProps)} {...props}
 			error={resolveEditableError(props.editable, props.prop, props.error)}
-			onSelected={item => props.editable.updateObj({[props.prop]: item})}
-			selected={props.editable.item[props.prop]}/>;
+			onSelected={item => props.onSelected ? props.onSelected(props.editable, props.prop, item) : props.editable.updateObj({[props.prop]: item} as EditableType)}
+			selected={props.editable.item[props.prop] as T | undefined}/>;
 	};
 
 	static readonly prepareSelectable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
@@ -364,11 +376,11 @@ export class TS_DropDown<ItemType>
 		);
 		return (
 			<div className={className}
-					 ref={this.state.dropDownRef}
-					 tabIndex={this.props.tabIndex}
-					 onFocus={this.addKeyboardListener}
-					 onBlur={this.removeKeyboardListener}
-					 {...convertToHTMLDataAttributes(this.state.error, 'error')}
+				 ref={this.state.dropDownRef}
+				 tabIndex={this.props.tabIndex}
+				 onFocus={this.addKeyboardListener}
+				 onBlur={this.removeKeyboardListener}
+				 {...convertToHTMLDataAttributes(this.state.error, 'error')}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
@@ -449,7 +461,7 @@ export class TS_DropDown<ItemType>
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'}
-																			onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
+                                            onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}

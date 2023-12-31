@@ -23,7 +23,7 @@ import * as React from 'react';
 import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_InputV2.scss';
-import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem';
 import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 
 
@@ -74,7 +74,9 @@ export type Props_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & TypeProps_TS_Input
 }
 
 export type NativeProps_TS_InputV2 = Props_TS_InputV2
-export type EditableItemProps_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & UIProps_EditableItem<any, any, string>
+export type EditableItemProps_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & UIProps_EditableItem<any, any, string> & {
+	onChange?: <T>(editable: EditableItem<T>, prop: keyof T, value: string) => void,
+}
 
 /**
  * A better way to capture user input
@@ -99,14 +101,16 @@ export class TS_InputV2
 			let onChange;
 			let onBlur;
 			let onAccept;
+
+			const saveEventHandler = (value: string) => props.onChange ? props.onChange(props.editable, props.prop, value) : editable.updateObj({[prop]: value});
 			if (_saveEvents!.includes('change'))
-				onChange = (value: string) => editable.updateObj({[prop]: value});
+				onChange = saveEventHandler;
 
 			if (_saveEvents!.includes('blur'))
-				onBlur = (value: string) => editable.updateObj({[prop]: value});
+				onBlur = saveEventHandler;
 
 			if (_saveEvents!.includes('accept'))
-				onAccept = (value: string) => editable.updateObj({[prop]: value});
+				onAccept = saveEventHandler;
 
 			return <TS_InputV2
 				error={resolveEditableError(editable, prop, props.error)}
