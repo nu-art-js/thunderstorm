@@ -349,7 +349,10 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 	async save(consumeError = false): Promise<Proto['dbType']> {
 		try {
-			return await super.save(consumeError);
+			const dbItem = await super.save(consumeError);
+			this.setValidationResults(undefined);
+
+			return dbItem;
 		} catch (e: unknown) {
 			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
 			if (!validationException)
