@@ -113,7 +113,7 @@ export class TS_InputV2
 				onAccept = saveEventHandler;
 
 			return <TS_InputV2
-				error={resolveEditableError(editable, prop, props.error)}
+				error={resolveEditableError(props)}
 				{...restTemplatingProps} {...rest}
 				type={type}
 				onChange={onChange}

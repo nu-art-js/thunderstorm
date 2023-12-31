@@ -20,9 +20,10 @@ import {
 import {ModuleFE_v3_BaseApi} from '../modules/db-api-gen/ModuleFE_v3_BaseApi';
 
 
-export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, Type> = {
-	editable: EditableItem<EnclosingItem>,
-	prop: AssetValueType<EnclosingItem, K, Type | undefined>
+export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, ItemType, Prop extends AssetValueType<EnclosingItem, K, ItemType> = AssetValueType<EnclosingItem, K, ItemType>> = {
+	editable: EditableItem<EnclosingItem>
+	prop: Prop,
+	ignoreError?: boolean
 }
 
 // type Created<T> = T extends (infer A)[] ? A[] : never;

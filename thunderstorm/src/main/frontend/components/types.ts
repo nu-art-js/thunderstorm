@@ -11,6 +11,14 @@ export type ComponentProps_Error = {
 	}
 }
 
+type ResolveEditableErrorParams<T extends any> = {
+	editable: EditableItem<T>,
+	prop: keyof T,
+
+	error?: ComponentProps_Error['error']
+	ignoreError?: boolean,
+};
+
 export const convertToHTMLDataAttributes = (attributes?: TypedMap<string>, prefix?: string) => {
 	if (!attributes)
 		return EmptyObject;
@@ -19,11 +27,14 @@ export const convertToHTMLDataAttributes = (attributes?: TypedMap<string>, prefi
 	return reduceToMap(_keys(attributes), key => `data-${finalImpl}${key}`, key => attributes[key]);
 };
 
-export const resolveEditableError = <T extends any>(editable: EditableItem<T>, prop: keyof T, error?: ComponentProps_Error["error"]) => {
-	const errorMessage = editable.hasError(prop);
-	if (error)
-		return error;
+export const resolveEditableError = <T extends any>(errorHandler: ResolveEditableErrorParams<T>) => {
+	if (errorHandler.ignoreError)
+		return;
 
-	if (!error && errorMessage)
+	if (errorHandler.error)
+		return errorHandler.error;
+
+	const errorMessage = errorHandler.editable.hasError(errorHandler.prop);
+	if (!errorHandler.error && errorMessage)
 		return {level: 'error', message: String(errorMessage)};
 };
