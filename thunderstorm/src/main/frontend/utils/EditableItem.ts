@@ -44,7 +44,7 @@ export class EditableItem<T> {
 	static AUTO_SAVE = false;
 
 	readonly item: Partial<T>;
-	readonly validationErrors?: ValidationErrors<T>;
+	protected validationResults?: ValidationErrors<T>;
 
 	protected originalItem: Partial<T>;
 	protected _autoSave: boolean = EditableItem.AUTO_SAVE;
@@ -129,7 +129,7 @@ export class EditableItem<T> {
 	 * @param values An object with partial properties of T.
 	 * @returns A promise representing the auto-save operation if changes were made and auto-save is enabled.
 	 */
-	async updateObj(values: Partial<{ [K in keyof T]: ResolvableContent<T[K] | undefined> }>) {
+	async updateObj(values: Partial<{ [K in keyof T]: ResolvableContent<T[K] | undefined, [T[K] | undefined]> }>) {
 		const hasChanges = _keys(values).reduce((hasChanges, prop) => {
 			return this.set(prop, values[prop]) || hasChanges;
 		}, false);
@@ -179,17 +179,16 @@ export class EditableItem<T> {
 	}
 
 	hasError<K extends keyof T>(key: K): Readonly<InvalidResult<T[K]>> | undefined {
-		const validationErrors = this.validationErrors;
-		const error = (validationErrors?.results as InvalidResultObject<T>)?.[key];
+		const validationResults = this.validationResults;
+		const error = (validationResults?.results as InvalidResultObject<T>)?.[key];
 		if (!error)
 			return;
 
-		if (validationErrors?.editing)
+		if (validationResults?.editing)
 			return error;
 	}
 
 	protected setValidationResults(ValidationResults?: ValidationErrors<T>) {
-		// @ts-ignore
 		this.validationResults = ValidationResults;
 		return this;
 	}
@@ -223,11 +222,14 @@ export class EditableItem<T> {
 	 * @returns The new instance.
 	 */
 	clone(item?: T): EditableItem<T> {
-		const editableItem = new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction)
-			.setOnChanged(this.onChanged)
-			.setAutoSave(this._autoSave);
-		editableItem.originalItem = item ?? this.originalItem;
-		return editableItem;
+		return this.cloneImpl(new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction));
+	}
+
+	protected cloneImpl(editable: EditableItem<T>, item?: T) {
+		editable.setOnChanged(this.onChanged).setAutoSave(this._autoSave);
+		editable.originalItem = item ?? this.originalItem;
+		editable.setValidationResults(this.validationResults);
+		return editable;
 	}
 
 	/**
@@ -253,12 +255,12 @@ export class EditableItem<T> {
 		if (Array.isArray(itemToEdit) || typeof itemToEdit === 'object')
 			itemToEdit = deepClone(itemToEdit);
 
-		let validationErrors: ValidationErrors<T[K]> | undefined;
-		const result = (this.validationErrors?.results as InvalidResultObject<T>)?.[key];
-		if (this.validationErrors && exists(result)) {
-			validationErrors = {
-				autoSave: this.validationErrors.autoSave,
-				editing: this.validationErrors.editing,
+		let validationResults: ValidationErrors<T[K]> | undefined;
+		const result = (this.validationResults?.results as InvalidResultObject<T>)?.[key];
+		if (this.validationResults && exists(result)) {
+			validationResults = {
+				autoSave: this.validationResults.autoSave,
+				editing: this.validationResults.editing,
 				results: result! // checked if exists in the above condition
 			};
 		}
@@ -270,7 +272,7 @@ export class EditableItem<T> {
 				return this.autoSave();
 			},
 			() => this.delete())
-			.setValidationResults(validationErrors)
+			.setValidationResults(validationResults)
 			.setAutoSave(true);
 	}
 
@@ -310,6 +312,9 @@ export class EditableItem<T> {
 export class EditableDBItemV3<Proto extends DBProto<any>>
 	extends EditableItem<Proto['uiType']> {
 
+	private readonly module: ModuleFE_v3_BaseApi<Proto>;
+	private readonly onError?: (err: Error) => any | Promise<any>;
+
 	/**
 	 * Constructs an EditableDBItemV3 instance.
 	 *
@@ -320,6 +325,9 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 */
 	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['uiType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
 		super(item, EditableDBItemV3.save(module, onCompleted, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
+		this.module = module;
+		this.onError = onError;
+		this.save.bind(this);
 	}
 
 	private static save<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
@@ -334,14 +342,14 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		};
 	}
 
-	setOnChanged(onChanged?: (editable: EditableDBItemV3<Proto>) => Promise<void>) {
+	setOnChanged(onChanged?: (editable: EditableItem<Proto['uiType']>) => Promise<void>) {
 		this.onChanged = onChanged;
 		return this;
 	}
 
 	async save(consumeError = false): Promise<Proto['dbType']> {
 		try {
-			return await this.saveAction(this.item);
+			return await super.save(consumeError);
 		} catch (e: unknown) {
 			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
 			if (!validationException)
@@ -349,10 +357,11 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 			this.setValidationResults({
 				autoSave: this._autoSave,
-				editing: !!this.item._id,
+				editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
 				results: validationException.result as InvalidResult<Proto['dbType']>
 			});
 
+			this._autoSave = true;
 			// while getting new errors (for now) we need to call on change in order to replace the editable item instance.. (this will change)
 			const editable = this.clone(this.item);
 			editable.originalItem = this.originalItem;
@@ -370,6 +379,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @returns The new instance.
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		return super.clone(item) as EditableDBItemV3<Proto>;
+		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError)) as EditableDBItemV3<Proto>;
 	}
 }

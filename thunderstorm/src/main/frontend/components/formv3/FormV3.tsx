@@ -52,7 +52,7 @@ export class Component_FormV3<T>
 		super(p);
 	}
 
-	protected deriveStateFromProps(nextProps: Props_FormV3<T>, state?: Partial<State_ItemEditor<T>>): (State_ItemEditor<T>) | undefined {
+	protected deriveStateFromProps(nextProps: Props_FormV3<T>, state?: Partial<State_ItemEditor<T>>): (State_ItemEditor<T>) {
 		const _state = (state || {}) as State_ItemEditor<T>;
 		_state.editable = nextProps.editable;
 		return _state;

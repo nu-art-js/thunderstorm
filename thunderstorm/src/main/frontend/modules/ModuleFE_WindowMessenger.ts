@@ -3,6 +3,9 @@ import {Logger, Module, removeItemFromArray, TypedMap} from '@nu-art/ts-common';
 
 export const Key_UndefinedMessage = 'undefined-message';
 
+/**
+ * Subset of interface Window, which contains postMessage functions
+ */
 interface Messagable {
 	postMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void;
 
@@ -83,6 +86,7 @@ export abstract class BaseReceiver<T extends any = any>
 
 	readonly origin: string;
 	private readonly regex: RegExp;
+	private filter: (message: any) => boolean = (message: any) => true;
 
 	constructor(origin = '.*') {
 		super();
@@ -105,10 +109,18 @@ export abstract class BaseReceiver<T extends any = any>
 		if (!this.regex.test(origin))
 			return;
 
+		if (!this.filter(message))
+			return;
+
 		this.executeImpl(message);
 	};
 
 	abstract executeImpl(message: T): void
+
+	setFilter(filter: (message: any) => boolean) {
+		this.filter = filter;
+		return this;
+	}
 }
 
 export class RawReceiver
@@ -132,16 +144,21 @@ export class Receiver<T extends Message>
 	extends BaseReceiver {
 
 	private readonly messageProcessorMap: TypedMap<(message: any) => void> = {};
-	private readonly transform: (data: any) => T[]; // Receives one window message, returns array with 1 or more transformed messages
-	private defaultProcessor?: (message: any) => void;
+	private readonly transform: (data: any) => T[]; // Receives one window message, returns array with 1 or more transformed messages., each message needs prop 'key' with a matching processor added.
+	private defaultProcessor?: (transformedMessage: T, message: any) => void;
 
+	/**
+	 *
+	 * @param origin window.origin
+	 * @param transform Receives the MessageEvent and needs to transform it into an array of objects, each having prop "key". To each potential "key", you need to add an appropriate processor.
+	 */
 	constructor(origin = '.*', transform: (data: any) => T[] = data => [data] as T[]) {
 		super();
 		this.setTag(`Receiver (${origin})`);
 		this.transform = transform;
 	}
 
-	setDefaultProcessor(processor: (message: any) => void) {
+	setDefaultProcessor(processor: (transformedMessage: T, message: any) => void) {
 		this.defaultProcessor = processor;
 		return this;
 	}
@@ -152,18 +169,17 @@ export class Receiver<T extends Message>
 	}
 
 	executeImpl(message: any) {
-		const typedMessages = this.transform(message);
-		typedMessages.forEach(_message => {
-			const processor = this.messageProcessorMap[_message.key];
+		const transformedMessages = this.transform(message);
+		transformedMessages.forEach(_transformedMessage => {
+			const processor = this.messageProcessorMap[_transformedMessage.key];
 			if (processor) {
-				processor(_message);
+				processor(_transformedMessage);
 				return;
 			}
 
 			this.logDebug(`No message processor defined for key ${message.key}`);
-			this.defaultProcessor?.(_message);
+			this.defaultProcessor?.(_transformedMessage, message);
 			return;
 		});
-
 	}
 }

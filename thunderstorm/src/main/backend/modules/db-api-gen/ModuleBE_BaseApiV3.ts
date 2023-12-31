@@ -46,10 +46,10 @@ export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 	readonly dbModule: ModuleBE_BaseDBV3<Proto>;
 	readonly apiDef;
 
-	constructor(dbModule: ModuleBE_BaseDBV3<Proto, any>) {
+	constructor(dbModule: ModuleBE_BaseDBV3<Proto, any>, version?: string) {
 		super(`Gen(${dbModule.getName()}, Api)`);
 		this.dbModule = dbModule;
-		this.apiDef = DBApiDefGeneratorIDBV3<Proto>(this.dbModule.dbDef);
+		this.apiDef = DBApiDefGeneratorIDBV3<Proto>(this.dbModule.dbDef, version);
 	}
 
 	init() {
@@ -87,6 +87,6 @@ export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 	};
 }
 
-export const createApisForDBModuleV3 = <Proto extends DBProto<any>>(dbModule: ModuleBE_BaseDBV3<Proto>) => {
-	return new ModuleBE_BaseApiV3_Class<Proto>(dbModule);
+export const createApisForDBModuleV3 = <Proto extends DBProto<any>>(dbModule: ModuleBE_BaseDBV3<Proto>, version?: string) => {
+	return new ModuleBE_BaseApiV3_Class<Proto>(dbModule, version);
 };

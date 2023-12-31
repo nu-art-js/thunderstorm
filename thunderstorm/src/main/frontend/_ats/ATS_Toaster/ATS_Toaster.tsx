@@ -24,8 +24,8 @@ export class ATS_Toaster
 		pageTitle: () => this.screen.name
 	};
 
-	protected deriveStateFromProps(nextProps: ATS_Toaster_Props, state = {} as ATS_Toaster_State): ATS_Toaster_State | undefined {
-		return undefined;
+	protected deriveStateFromProps(nextProps: ATS_Toaster_Props, state = {} as ATS_Toaster_State): ATS_Toaster_State {
+		return state;
 	}
 
 	constructor(p: ATS_Toaster_Props) {

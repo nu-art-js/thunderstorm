@@ -33,7 +33,7 @@
     "react": "$REACT_PKG_VERSION",
     "react-dom": "$REACT_DOM_PKG_VERSION",
     "react-router-dom": "$REACT_ROUTER_DOM_PKG_VERSION",
-    "moment": "^2.24.0",
+    "moment": "$MOMENT_PKG_VERSION",
     "express": "$EXPRESS_PKG_VERSION",
     "module-alias": "^2.2.0",
     "request": "^2.88.0"

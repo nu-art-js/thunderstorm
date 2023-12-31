@@ -31,8 +31,10 @@ import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
 import {EditableItem} from '../../utils/EditableItem';
+import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 
-type State<ItemType> = {
+
+type State<ItemType> = ComponentProps_Error & {
 	open?: boolean
 	adapter: Adapter<ItemType>;
 	selected?: ItemType
@@ -64,9 +66,10 @@ type DropDownChildrenContainerData = {
 type EditableProp<Item, K extends keyof Item, ItemType, Prop extends AssetValueType<Item, K, ItemType> = AssetValueType<Item, K, ItemType>> = {
 	editable: EditableItem<Item>
 	prop: Prop
+
 }
 
-type Dropdown_Props<ItemType> = Partial<StaticProps> & {
+type Dropdown_Props<ItemType> = Partial<StaticProps> & ComponentProps_Error & {
 	adapter: Adapter<ItemType> | ((filter?: string) => Adapter<ItemType>)
 	placeholder?: string,
 	inputValue?: string;
@@ -105,14 +108,17 @@ type BasePartialProps_DropDown<T> = {
 	mapper?: (item: T) => string[]
 	renderer?: (item: T) => React.ReactElement
 	queryFilter?: (item: T) => boolean
+	disabled?: boolean
 	ifNoneShowAll?: boolean
 }
-export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & {
+export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & ComponentProps_Error & {
 	selected?: T;
 	onSelected: (selected: T) => void;
 }
 
-type EditableDropDownProps<ItemType> = BasePartialProps_DropDown<ItemType> & EditableProp<any, any, ItemType>
+type EditableDropDownProps<ItemType> = BasePartialProps_DropDown<ItemType> & EditableProp<any, any, ItemType> & {
+	onSelected?: (selected: ItemType | undefined, superOnSelected: (selected?: ItemType) => Promise<void>) => void
+} & ComponentProps_Error
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
@@ -122,6 +128,7 @@ export class TS_DropDown<ItemType>
 	static readonly prepareEditable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return (props: EditableDropDownProps<T>) => <TS_DropDown<T>
 			{...resolveContent(mandatoryProps)} {...props}
+			error={resolveEditableError(props.editable, props.prop, props.error)}
 			onSelected={item => props.editable.updateObj({[props.prop]: item})}
 			selected={props.editable.item[props.prop]}/>;
 	};
@@ -168,10 +175,11 @@ export class TS_DropDown<ItemType>
 		super(props);
 	}
 
-	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>, state?: Partial<State<ItemType>>): State<ItemType> | undefined {
+	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>, state?: Partial<State<ItemType>>): State<ItemType> {
 		const nextState: State<ItemType> = this.state ? {...this.state} : {} as State<ItemType>;
 		const nextAdapter = typeof nextProps.adapter === 'function' ? nextProps.adapter(state?.filterText) : nextProps.adapter;
 		const prevAdapter = typeof this.props.adapter === 'function' ? this.props.adapter(state?.filterText) : this.props.adapter;
+		nextState.error = nextProps.error;
 		nextState.selected = nextProps.selected;
 		nextState.filterText ??= nextProps.inputValue;
 		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
@@ -186,6 +194,7 @@ export class TS_DropDown<ItemType>
 
 		return {
 			open: state?.open,
+			error: nextState.error,
 			adapter: nextState.adapter,
 			selected: nextState.selected,
 			hover: state?.hover,
@@ -359,6 +368,7 @@ export class TS_DropDown<ItemType>
 					 tabIndex={this.props.tabIndex}
 					 onFocus={this.addKeyboardListener}
 					 onBlur={this.removeKeyboardListener}
+					 {...convertToHTMLDataAttributes(this.state.error, 'error')}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>

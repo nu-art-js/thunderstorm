@@ -67,8 +67,8 @@ import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction} from '../../core/Ind
 // 	lastSync: number
 // }
 
-export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
-	extends Module<Config>
+export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends any = any, _Config extends DBApiFEConfig<DBType, Ks> & Config = DBApiFEConfig<DBType, Ks> & Config>
+	extends Module<_Config>
 	implements OnClearWebsiteData {
 	readonly validator: ValidatorTypeResolver<DBType>;
 	readonly cache: MemCache<DBType, Ks>;
@@ -97,7 +97,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 
 		const config = getModuleFEConfig(dbDef);
 		this.validator = config.validator;
-		this.setDefaultConfig(config as Config);
+		this.setDefaultConfig(config as _Config);
 		//Set Statuses
 		this.dataStatus = DataStatus.NoData;
 

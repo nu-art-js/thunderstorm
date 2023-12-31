@@ -51,7 +51,7 @@
     "fs": "0.0.1-security",
     "js-base64": "^2.5.1",
     "module-alias": "^2.2.0",
-    "moment": "^2.24.0"
+    "moment": "$MOMENT_PKG_VERSION"
   },
   "devDependencies": {
     "@types/body-parser": "^1.17.0",

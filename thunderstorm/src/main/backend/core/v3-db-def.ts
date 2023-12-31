@@ -1,7 +1,5 @@
-import {Const_UniqueKey, Const_UniqueKeys, Day, DB_Object, DBDef_V3, DBProto, Hour} from '@nu-art/ts-common';
+import {Const_UniqueKeys, Day, DBDef_V3, DBProto, Hour} from '@nu-art/ts-common';
 
-
-export const Const_LockKeys: (keyof DB_Object)[] = [Const_UniqueKey, '_v', '__created', '__updated'];
 
 export type DBApiBEConfigV3<Proto extends DBProto<any>> = {
 	collectionName: string;
