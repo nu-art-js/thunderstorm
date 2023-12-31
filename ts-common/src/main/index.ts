@@ -60,6 +60,7 @@ export * from './utils/tools';
 export * from './utils/hash-tools';
 export * from './utils/filter-tools';
 export * from './utils/ui-tools';
+export * from './utils/json-tools';
 
 export * from './validator/validator-core';
 export * from './validator/validators';
