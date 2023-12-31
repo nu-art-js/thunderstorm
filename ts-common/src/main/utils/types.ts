@@ -121,11 +121,12 @@ export type DB_BaseObject = {
 	_id: string;
 }
 export type DB_Object = DB_BaseObject & {
-	_v?: string
-	_originDocId?: UniqueId;
+	__metadata1?: any
 	__hardDelete?: boolean;
 	__created: number;
 	__updated: number;
+	_v?: string
+	_originDocId?: UniqueId;
 }
 
 export type UniqueId = string;
@@ -202,6 +203,12 @@ export type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : nev
 
 export type RecursiveOmit<T, OmitKey extends keyof any> = {
 	[K in Exclude<keyof T, OmitKey>]: T[K] extends object ? RecursiveOmit<T[K], OmitKey> : T[K];
+};
+
+export type RecursivePartial<T> = {
+	[P in keyof T]?: T[P] extends any[] ? T[P]
+		: T[P] extends object ? RecursivePartial<T[P]>
+			: T[P];
 };
 
 /**

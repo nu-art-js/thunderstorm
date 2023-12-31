@@ -66,36 +66,36 @@ export type ApiStruct_DBApiGenIDBV3<Proto extends DBProto<any>> = {
 	},
 }
 
-export const DBApiDefGeneratorV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): ApiDefResolver<ApiStruct_DBApiGenV3<Proto>> => {
+export const DBApiDefGeneratorV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenV3<Proto>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`, timeout: 60 * Second},
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
+			sync: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`, timeout: 60 * Second},
+			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/patch`},
+			delete: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/delete-all`},
+			metadata: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/metadata`},
 		}
 	};
 };
 
-export const DBApiDefGeneratorIDBV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): ApiDefResolver<ApiStruct_DBApiGenIDBV3<Proto>> => {
+export const DBApiDefGeneratorIDBV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenIDBV3<Proto>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/sync`, timeout: 60 * Second},
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
+			sync: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/sync`, timeout: 60 * Second},
+			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/patch`},
+			delete: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/delete-all`},
+			metadata: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/metadata`},
 		}
 	};
 };

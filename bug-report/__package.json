@@ -45,7 +45,7 @@
     "express": "$EXPRESS_PKG_VERSION",
     "jszip": "^3.3.0",
     "request": "^2.88.0",
-    "moment": "^2.24.0"
+    "moment": "$MOMENT_PKG_VERSION"
   },
   "devDependencies": {
     "@types/express": "$EXPRESS_TYPES_VERSION",

@@ -36,7 +36,7 @@ export class ATS_OpenAI
 		pageTitle: () => this.screen.name
 	};
 
-	protected deriveStateFromProps(nextProps: ATS_OpenAI_Props, state = {} as ATS_OpenAI_State): ATS_OpenAI_State | undefined {
+	protected deriveStateFromProps(nextProps: ATS_OpenAI_Props, state = {} as ATS_OpenAI_State): ATS_OpenAI_State {
 		return {output: undefined};
 	}
 

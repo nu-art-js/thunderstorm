@@ -52,7 +52,7 @@
     "compression": "^1.7.4",
     "csstype": "^3.0.0",
     "history": "^4.9.0",
-    "moment": "^2.24.0",
+    "moment": "$MOMENT_PKG_VERSION",
     "qs": "^6.6.0",
     "react-window": "^1.8.8",
     "react-virtualized-auto-sizer": "^1.0.12"

@@ -30,7 +30,7 @@
     "compression": "^1.7.4",
     "express": "$EXPRESS_PKG_VERSION",
     "module-alias": "^2.2.0",
-    "moment": "^2.24.0",
+    "moment": "$MOMENT_PKG_VERSION",
     "request": "^2.88.0"
   },
   "devDependencies": {

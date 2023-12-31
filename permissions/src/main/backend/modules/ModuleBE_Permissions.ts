@@ -435,7 +435,6 @@ class ModuleBE_Permissions_Class
 				this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
 			});
 	}
-
 }
 
 export const ModuleBE_Permissions = new ModuleBE_Permissions_Class();

@@ -3,6 +3,7 @@ import * as React from 'react';
 import {Item_Editor, Props_ItemEditor, State_ItemEditor} from './Item_Editor';
 import {ToastBuilder} from '../../component-modules/ModuleFE_Toaster';
 
+
 export type Props_EditorRenderer<Item> = Props_ItemEditor<Item> & {
 	creationMode?: boolean
 	isInEditMode?: boolean
@@ -24,7 +25,7 @@ export function throwValidationException(err: any): void {
 export class EditorRenderer_BaseImpl<Item, Props extends Props_EditorRenderer<Item> = Props_EditorRenderer<Item>, State extends State_EditorRenderer<Item> = State_EditorRenderer<Item>>
 	extends Item_Editor<Item, Props> {
 
-	protected deriveStateFromProps(nextProps: Props & Props_EditorRenderer<Item>, state: State & State_EditorRenderer<Item>): State_EditorRenderer<Item> | undefined {
+	protected deriveStateFromProps(nextProps: Props & Props_EditorRenderer<Item>, state: State & State_EditorRenderer<Item>): State_EditorRenderer<Item> {
 		state = {} as State & State_EditorRenderer<Item>;
 
 		state.isInEditMode = nextProps?.isInEditMode;

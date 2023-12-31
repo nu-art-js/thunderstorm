@@ -51,10 +51,11 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['v1'];
 	private operations: TypedMap<Operation> = {};
 
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>) {
+
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string) {
 		super(dbDef, defaultDispatcher);
 
-		const apiDef = DBApiDefGeneratorIDBV3<Proto>(dbDef);
+		const apiDef = DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
 		const sync = apiWithBody(apiDef.v1.sync, this.onSyncCompleted);

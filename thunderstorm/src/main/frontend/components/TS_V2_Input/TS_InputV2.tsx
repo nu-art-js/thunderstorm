@@ -24,6 +24,7 @@ import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_InputV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
@@ -51,7 +52,8 @@ type BaseInfraProps_TS_InputV2 = {
 }
 
 type BaseAppLevelProps_TS_InputV2 =
-	Omit<HTMLProps<HTMLInputElement>, 'onChange' | 'onBlur' | 'ref'>
+	ComponentProps_Error
+	& Omit<HTMLProps<HTMLInputElement>, 'onChange' | 'onBlur' | 'ref'>
 	& BaseInfraProps_TS_InputV2
 	& {
 	id?: string
@@ -85,27 +87,29 @@ export type EditableItemProps_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & UIProp
 export class TS_InputV2
 	extends React.Component<Props_TS_InputV2, InputState> {
 
-	static readonly editableString = (mandatoryProps: TemplatingProps_TS_InputV2) => {
-		return (props: NativeProps_TS_InputV2) => <TS_InputV2 {...mandatoryProps} {...props}/>;
+	static readonly editableString = (templateProps: TemplatingProps_TS_InputV2) => {
+		return (props: NativeProps_TS_InputV2) => <TS_InputV2 {...templateProps} {...props}/>;
 	};
 
-	static readonly editable = (mandatoryProps: TemplatingProps_TS_InputV2) => {
+	static readonly editable = (templateProps: TemplatingProps_TS_InputV2) => {
 		return (props: EditableItemProps_TS_InputV2) => {
-			const {type, ...restTemplatingProps} = mandatoryProps;
+			const {type, ...restTemplatingProps} = templateProps;
 			const {editable, prop, saveEvent, ...rest} = props;
+			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
 			let onAccept;
-			if (saveEvent!.includes('change'))
+			if (_saveEvents!.includes('change'))
 				onChange = (value: string) => editable.updateObj({[prop]: value});
 
-			if (saveEvent!.includes('blur'))
+			if (_saveEvents!.includes('blur'))
 				onBlur = (value: string) => editable.updateObj({[prop]: value});
 
-			if (saveEvent!.includes('accept'))
+			if (_saveEvents!.includes('accept'))
 				onAccept = (value: string) => editable.updateObj({[prop]: value});
 
 			return <TS_InputV2
+				error={resolveEditableError(editable, prop, props.error)}
 				{...restTemplatingProps} {...rest}
 				type={type}
 				onChange={onChange}
@@ -186,10 +190,11 @@ export class TS_InputV2
 	};
 
 	render() {
-		const {onAccept, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
+		const {onAccept, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
 
 		return <input
 			{...props}
+			{...convertToHTMLDataAttributes(this.props.error, 'error')}
 			autoFocus={focus}
 			ref={props.innerRef}
 			onBlur={(event) => {

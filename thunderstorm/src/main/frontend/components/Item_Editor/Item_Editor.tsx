@@ -27,7 +27,7 @@ export type State_ItemEditor<Item> = EditableRef<Item>;
 export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 	extends ComponentSync<Props & Props_ItemEditor<Item>, State & State_ItemEditor<Item>> {
 
-	protected deriveStateFromProps(nextProps: Props & Props_ItemEditor<Item>, state?: Partial<State & State_ItemEditor<Item>>): (State & State_ItemEditor<Item>) | undefined {
+	protected deriveStateFromProps(nextProps: Props & Props_ItemEditor<Item>, state?: Partial<State & State_ItemEditor<Item>>): (State & State_ItemEditor<Item>) {
 		const _state = (state || {}) as State & State_ItemEditor<Item>;
 		_state.editable = nextProps.editable;
 		return _state;
@@ -228,7 +228,7 @@ export class Item_EditorController<Item extends DB_Object, Props extends Props_I
 		return this.reDeriveState();
 	};
 
-	protected deriveStateFromProps(nextProps: Props & Props_ItemEditor<Item>, state?: Partial<State_ItemEditor<Item>>): (State_ItemEditor<Item>) | undefined {
+	protected deriveStateFromProps(nextProps: Props & Props_ItemEditor<Item>, state?: Partial<State_ItemEditor<Item>>): (State_ItemEditor<Item>) {
 		const _state = (state || {}) as State_ItemEditor<Item>;
 		const item = typeof nextProps.item === 'string' ? nextProps.module.cache.unique(nextProps.item) : nextProps.item;
 		_state.editable = new EditableDBItem(item!, nextProps.module, async (item) => {
