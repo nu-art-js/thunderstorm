@@ -201,6 +201,9 @@ export class EditableItem<T> {
 		if (this._autoSave)
 			return this.save(true);
 
+		if (this.validationResults)
+			this.validate();
+
 		const editable = this.clone(this.item as T);
 		editable.originalItem = this.originalItem;
 
@@ -301,6 +304,14 @@ export class EditableItem<T> {
 		return new EditableDBItemV3<Proto>(editingItem, module);
 	}
 
+	/**
+	 * Implement in children! validate the item using custom logic
+	 * @protected
+	 */
+	protected validate() {
+		return;
+	}
+
 }
 
 /**
@@ -350,10 +361,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 	async save(consumeError = false): Promise<Proto['dbType']> {
 		try {
-			const dbItem = await super.save(consumeError);
-			this.setValidationResults(undefined);
-
-			return dbItem;
+			return await super.save(consumeError);
 		} catch (e: unknown) {
 			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
 			if (!validationException)
@@ -365,7 +373,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				results: validationException.result as InvalidResult<Proto['dbType']>
 			});
 
-			this._autoSave = true;
 			// while getting new errors (for now) we need to call on change in order to replace the editable item instance.. (this will change)
 			const editable = this.clone(this.item);
 			editable.originalItem = this.originalItem;
@@ -384,5 +391,28 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
 		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError)) as EditableDBItemV3<Proto>;
+	}
+
+
+	/**
+	 * Use the db module provided to validate and update the validation results accordingly
+	 *
+	 * @protected
+	 */
+	protected validate() {
+		try {
+			this.module.validateImpl(this.item);
+			this.setValidationResults(undefined);
+		} catch (e) {
+			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
+			if (!validationException)
+				throw e;
+
+			this.setValidationResults({
+				autoSave: this._autoSave,
+				editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
+				results: validationException.result as InvalidResult<Proto['dbType']>
+			});
+		}
 	}
 }

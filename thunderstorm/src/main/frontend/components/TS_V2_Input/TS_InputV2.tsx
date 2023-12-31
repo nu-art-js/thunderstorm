@@ -23,7 +23,7 @@ import * as React from 'react';
 import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_InputV2.scss';
-import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem';
+import {UIProps_EditableItem} from '../../utils/EditableItem';
 import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 
 
@@ -75,7 +75,7 @@ export type Props_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & TypeProps_TS_Input
 
 export type NativeProps_TS_InputV2 = Props_TS_InputV2
 export type EditableItemProps_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & UIProps_EditableItem<any, any, string> & {
-	onChange?: <T>(editable: EditableItem<T>, prop: keyof T, value: string) => void,
+	onChange?: (value: string) => void,
 }
 
 /**
@@ -102,7 +102,7 @@ export class TS_InputV2
 			let onBlur;
 			let onAccept;
 
-			const saveEventHandler = (value: string) => props.onChange ? props.onChange(props.editable, props.prop, value) : editable.updateObj({[prop]: value});
+			const saveEventHandler = (value: string) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value});
 			if (_saveEvents!.includes('change'))
 				onChange = saveEventHandler;
 
@@ -119,7 +119,7 @@ export class TS_InputV2
 				onChange={onChange}
 				onBlur={onBlur}
 				onAccept={onAccept}
-				value={props.editable.item[props.prop]}/>;
+				value={props.value ?? props.editable.item[props.prop]}/>;
 		};
 
 	};
