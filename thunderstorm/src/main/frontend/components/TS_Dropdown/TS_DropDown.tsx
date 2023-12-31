@@ -30,7 +30,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
-import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem';
+import {UIProps_EditableItem} from '../../utils/EditableItem';
 import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 
 
@@ -115,7 +115,7 @@ type EditableDropDownProps<ItemType, EditableType extends {} = any, ValueType ex
 	& UIProps_EditableItem<EditableType, keyof EditableType, ValueType>
 	& ComponentProps_Error
 	& {
-	onSelected?: (editable: EditableItem<EditableType>, prop: keyof EditableType, value: ItemType) => Promise<void> | void
+	onSelected?: (value: ItemType) => Promise<void> | void
 }
 
 export class TS_DropDown<ItemType>
@@ -127,7 +127,7 @@ export class TS_DropDown<ItemType>
 		return (props: EditableDropDownProps<T, EditableType, ValueType>) => <TS_DropDown<T>
 			{...resolveContent(mandatoryProps)} {...props}
 			error={resolveEditableError(props)}
-			onSelected={item => props.onSelected ? props.onSelected(props.editable, props.prop, item) : props.editable.updateObj({[props.prop]: item} as EditableType)}
+			onSelected={item => props.onSelected ? props.onSelected(item) : props.editable.updateObj({[props.prop]: item} as EditableType)}
 			selected={props.editable.item[props.prop] as T | undefined}/>;
 	};
 
@@ -362,11 +362,11 @@ export class TS_DropDown<ItemType>
 		);
 		return (
 			<div className={className}
-					 ref={this.state.dropDownRef}
-					 tabIndex={this.props.tabIndex}
-					 onFocus={this.addKeyboardListener}
-					 onBlur={this.removeKeyboardListener}
-					 {...convertToHTMLDataAttributes(this.state.error, 'error')}
+				 ref={this.state.dropDownRef}
+				 tabIndex={this.props.tabIndex}
+				 onFocus={this.addKeyboardListener}
+				 onBlur={this.removeKeyboardListener}
+				 {...convertToHTMLDataAttributes(this.state.error, 'error')}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
@@ -447,7 +447,7 @@ export class TS_DropDown<ItemType>
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'}
-																			onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
+                                            onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
