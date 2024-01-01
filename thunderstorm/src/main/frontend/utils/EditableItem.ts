@@ -226,7 +226,7 @@ export class EditableItem<T> {
 	 * @returns The new instance.
 	 */
 	clone(item?: T): EditableItem<T> {
-		return this.cloneImpl(new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction));
+		return this.cloneImpl(new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction), item);
 	}
 
 	protected cloneImpl(editable: EditableItem<T>, item?: T) {
@@ -390,7 +390,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @returns The new instance.
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError)) as EditableDBItemV3<Proto>;
+		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError), item) as EditableDBItemV3<Proto>;
 	}
 
 
