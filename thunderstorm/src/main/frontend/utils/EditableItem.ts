@@ -393,7 +393,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError), item) as EditableDBItemV3<Proto>;
 	}
 
-
 	/**
 	 * Use the db module provided to validate and update the validation results accordingly
 	 *
@@ -403,6 +402,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		try {
 			this.module.validateImpl(this.item);
 			this.setValidationResults(undefined);
+			return this.item as Proto['preDbType'];
 		} catch (e) {
 			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
 			if (!validationException)
