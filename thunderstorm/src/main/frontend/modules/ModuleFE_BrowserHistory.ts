@@ -25,6 +25,13 @@
 import {_keys, composeQueryParams, exists, Module,} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {QueryParams} from '../../shared';
+import {ThunderDispatcher} from '../core/thunder-dispatcher';
+
+export type OnUrlParamsChangedListener = {
+	__onUrlParamsChanged: VoidFunction
+}
+
+export const dispatcher_urlParamsChanged = new ThunderDispatcher<OnUrlParamsChangedListener, '__onUrlParamsChanged'>('__onUrlParamsChanged');
 
 // move all the shit from here to the Routing module
 export class ModuleFE_BrowserHistory_Class
