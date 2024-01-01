@@ -31,11 +31,12 @@
     }
 
     .item-editor {
+      height: 100%;
+      flex-grow: 1;
+
       div[data-lastpass-icon-root] {
         display: none;
       }
-
-      flex-grow: 1;
 
       .editor-container {
         gap: 12px;

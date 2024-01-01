@@ -30,8 +30,8 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
 }
 
 export abstract class TS_EditableItemComponentV3<Proto extends DBProto<any>, P = {}, S = {},
-	Props extends P & EditableRef<Proto['dbType']> = P & EditableRef<Proto['dbType']>,
-	State extends S & EditableRef<Proto['dbType']> = S & EditableRef<Proto['dbType']>>
+	Props extends P & EditableRef<Proto['uiType']> = P & EditableRef<Proto['uiType']>,
+	State extends S & EditableRef<Proto['uiType']> = S & EditableRef<Proto['uiType']>>
 	extends ComponentSync<Props, State> {
 
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
@@ -47,5 +47,5 @@ export abstract class TS_EditableItemComponentV3<Proto extends DBProto<any>, P =
 		);
 	}
 
-	item = (): Partial<Proto['dbType']> => this.state.editable.item;
+	item = (): Partial<Proto['uiType']> => this.state.editable.item;
 }
