@@ -104,7 +104,7 @@ export class TS_TextAreaV2
 			return <TS_TextAreaV2
 				{...templateProps}
 				{...rest}
-				error={resolveEditableError(editable, prop, props.error)}
+				error={resolveEditableError(props)}
 				onChange={onChange}
 				onBlur={onBlur}
 				onAccept={onAccept}

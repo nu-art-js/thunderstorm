@@ -79,7 +79,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 			};
 
 			return <GenericDropDownV3<Proto>
-				error={resolveEditableError(editable, prop, props.error)}
+				error={resolveEditableError(props)}
 				{...resolveContent(mandatoryProps)}
 				{...restProps}
 				onSelected={async item => {

@@ -74,7 +74,9 @@ export type Props_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & TypeProps_TS_Input
 }
 
 export type NativeProps_TS_InputV2 = Props_TS_InputV2
-export type EditableItemProps_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & UIProps_EditableItem<any, any, string>
+export type EditableItemProps_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & UIProps_EditableItem<any, any, string> & {
+	onChange?: (value: string) => void,
+}
 
 /**
  * A better way to capture user input
@@ -99,23 +101,25 @@ export class TS_InputV2
 			let onChange;
 			let onBlur;
 			let onAccept;
+
+			const saveEventHandler = (value: string) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value});
 			if (_saveEvents!.includes('change'))
-				onChange = (value: string) => editable.updateObj({[prop]: value});
+				onChange = saveEventHandler;
 
 			if (_saveEvents!.includes('blur'))
-				onBlur = (value: string) => editable.updateObj({[prop]: value});
+				onBlur = saveEventHandler;
 
 			if (_saveEvents!.includes('accept'))
-				onAccept = (value: string) => editable.updateObj({[prop]: value});
+				onAccept = saveEventHandler;
 
 			return <TS_InputV2
-				error={resolveEditableError(editable, prop, props.error)}
+				error={resolveEditableError(props)}
 				{...restTemplatingProps} {...rest}
 				type={type}
 				onChange={onChange}
 				onBlur={onBlur}
 				onAccept={onAccept}
-				value={props.editable.item[props.prop]}/>;
+				value={props.value ?? props.editable.item[props.prop]}/>;
 		};
 
 	};

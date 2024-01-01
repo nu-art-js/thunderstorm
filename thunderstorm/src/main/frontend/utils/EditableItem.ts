@@ -20,9 +20,10 @@ import {
 import {ModuleFE_v3_BaseApi} from '../modules/db-api-gen/ModuleFE_v3_BaseApi';
 
 
-export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, Type> = {
-	editable: EditableItem<EnclosingItem>,
-	prop: AssetValueType<EnclosingItem, K, Type | undefined>
+export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, ItemType, Prop extends AssetValueType<EnclosingItem, K, ItemType> = AssetValueType<EnclosingItem, K, ItemType>> = {
+	editable: EditableItem<EnclosingItem>
+	prop: Prop,
+	ignoreError?: boolean
 }
 
 // type Created<T> = T extends (infer A)[] ? A[] : never;
@@ -200,6 +201,9 @@ export class EditableItem<T> {
 		if (this._autoSave)
 			return this.save(true);
 
+		if (this.validationResults)
+			this.validate();
+
 		const editable = this.clone(this.item as T);
 		editable.originalItem = this.originalItem;
 
@@ -222,7 +226,7 @@ export class EditableItem<T> {
 	 * @returns The new instance.
 	 */
 	clone(item?: T): EditableItem<T> {
-		return this.cloneImpl(new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction));
+		return this.cloneImpl(new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction), item);
 	}
 
 	protected cloneImpl(editable: EditableItem<T>, item?: T) {
@@ -300,6 +304,14 @@ export class EditableItem<T> {
 		return new EditableDBItemV3<Proto>(editingItem, module);
 	}
 
+	/**
+	 * Implement in children! validate the item using custom logic
+	 * @protected
+	 */
+	protected validate() {
+		return;
+	}
+
 }
 
 /**
@@ -361,7 +373,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				results: validationException.result as InvalidResult<Proto['dbType']>
 			});
 
-			this._autoSave = true;
 			// while getting new errors (for now) we need to call on change in order to replace the editable item instance.. (this will change)
 			const editable = this.clone(this.item);
 			editable.originalItem = this.originalItem;
@@ -379,6 +390,29 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @returns The new instance.
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError)) as EditableDBItemV3<Proto>;
+		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError), item) as EditableDBItemV3<Proto>;
+	}
+
+
+	/**
+	 * Use the db module provided to validate and update the validation results accordingly
+	 *
+	 * @protected
+	 */
+	protected validate() {
+		try {
+			this.module.validateImpl(this.item);
+			this.setValidationResults(undefined);
+		} catch (e) {
+			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
+			if (!validationException)
+				throw e;
+
+			this.setValidationResults({
+				autoSave: this._autoSave,
+				editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
+				results: validationException.result as InvalidResult<Proto['dbType']>
+			});
+		}
 	}
 }
