@@ -413,6 +413,10 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
 				results: validationException.result as InvalidResult<Proto['dbType']>
 			});
+
+			const editable = this.clone(this.item);
+			editable.originalItem = this.originalItem;
+			this.onChanged?.(editable);
 		}
 	}
 }
