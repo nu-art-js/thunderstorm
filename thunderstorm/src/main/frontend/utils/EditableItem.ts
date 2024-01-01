@@ -308,7 +308,7 @@ export class EditableItem<T> {
 	 * Implement in children! validate the item using custom logic
 	 * @protected
 	 */
-	protected validate() {
+	validate() {
 		return;
 	}
 
@@ -399,7 +399,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 *
 	 * @protected
 	 */
-	protected validate() {
+	validate() {
 		try {
 			this.module.validateImpl(this.item);
 			this.setValidationResults(undefined);
