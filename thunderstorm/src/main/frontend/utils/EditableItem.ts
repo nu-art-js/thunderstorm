@@ -35,6 +35,12 @@ type ValidationErrors<T> = {
 	results: InvalidResult<T>
 };
 
+export type Editable_SaveAction<T> = (item: T) => Promise<T>;
+
+export type Editable_DeleteAction<T> = (item: T) => Promise<void>;
+
+export type Editable_OnChange<T> = (editable: EditableItem<T>) => Promise<void>;
+
 /**
  * A utility class for editing any item of type T.
  * It encapsulates an item along with functions to save and delete the item.
@@ -65,17 +71,22 @@ export class EditableItem<T> {
 		this.deleteAction = deleteAction;
 	}
 
-	protected onChanged?: (editable: EditableItem<T>) => Promise<void>;
-	protected saveAction: (item: T) => Promise<T>;
-	protected readonly deleteAction: (item: T) => Promise<void>;
+	protected onChanged?: Editable_OnChange<T>;
+	protected saveAction: Editable_SaveAction<T>;
+	protected deleteAction: Editable_DeleteAction<T>;
 
-	setOnChanged(onChanged?: (editable: EditableItem<T>) => Promise<void>) {
+	setOnChanged(onChanged?: Editable_OnChange<T>) {
 		this.onChanged = onChanged;
 		return this;
 	}
 
-	setOnSave(onSave: (item: T) => Promise<T>) {
+	setOnSave(onSave: Editable_SaveAction<T>) {
 		this.saveAction = onSave;
+		return this;
+	}
+
+	setOnDelete(onDelete: (item: T) => Promise<any>) {
+		this.deleteAction = onDelete;
 		return this;
 	}
 
@@ -337,7 +348,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @param onCompleted The function to be called when the operation is completed.
 	 * @param onError The function to be called when an error occurs.
 	 */
-	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['uiType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
 		super(item, EditableDBItemV3.save(module, onCompleted, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
 		this.module = module;
 		this.onError = onError;
@@ -393,7 +404,8 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @returns The new instance.
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.onCompleted, this.onError), item) as EditableDBItemV3<Proto>;
+		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.onCompleted, this.onError), item)
+			.setOnSave(this.saveAction).setOnDelete(this.deleteAction) as EditableDBItemV3<Proto>;
 	}
 
 	/**
