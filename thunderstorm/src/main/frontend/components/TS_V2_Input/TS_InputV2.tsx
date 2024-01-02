@@ -35,7 +35,7 @@ type InputState = {
 	value?: string
 }
 
-export type InputType = 'text' | 'number' | 'password';
+export type InputType = 'text' | 'number' | 'password' | 'time';
 type TypeProps_TS_Input = {
 	type: InputType
 }
