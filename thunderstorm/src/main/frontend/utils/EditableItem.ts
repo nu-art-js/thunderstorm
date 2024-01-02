@@ -326,6 +326,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 	private readonly module: ModuleFE_v3_BaseApi<Proto>;
 	private readonly onError?: (err: Error) => any | Promise<any>;
+	private readonly onCompleted?: (item: Proto['uiType']) => any | Promise<any>;
 
 	/**
 	 * Constructs an EditableDBItemV3 instance.
@@ -339,6 +340,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		super(item, EditableDBItemV3.save(module, onCompleted, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
 		this.module = module;
 		this.onError = onError;
+		this.onCompleted = onCompleted;
 		this.save.bind(this);
 	}
 
@@ -390,13 +392,12 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @returns The new instance.
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError), item) as EditableDBItemV3<Proto>;
+		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.onCompleted, this.onError), item) as EditableDBItemV3<Proto>;
 	}
 
 	/**
 	 * Use the db module provided to validate and update the validation results accordingly
-	 *
-	 * @protected
+	 * @return preDB item if validation succeeded otherwise returns void
 	 */
 	validate() {
 		try {
