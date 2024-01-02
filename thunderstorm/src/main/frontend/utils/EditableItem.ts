@@ -11,6 +11,7 @@ import {
 	InvalidResultObject,
 	isErrorOfType,
 	MUSTNeverHappenException,
+	RecursiveReadonly,
 	removeFromArrayByIndex,
 	ResolvableContent,
 	resolveContent,
@@ -175,8 +176,8 @@ export class EditableItem<T> {
 	 * @returns Readonly type of the value in T[K].
 	 */
 	// @ts-ignore
-	get<K extends keyof T>(key: K): Readonly<T[K]> | undefined {
-		return this.item[key];
+	get<K extends keyof T>(key: K): RecursiveReadonly<T[K]> {
+		return this.item[key] as RecursiveReadonly<T[K]>;
 	}
 
 	hasError<K extends keyof T>(key: K): Readonly<InvalidResult<T[K]>> | undefined {
@@ -326,6 +327,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 	private readonly module: ModuleFE_v3_BaseApi<Proto>;
 	private readonly onError?: (err: Error) => any | Promise<any>;
+	private readonly onCompleted?: (item: Proto['uiType']) => any | Promise<any>;
 
 	/**
 	 * Constructs an EditableDBItemV3 instance.
@@ -339,6 +341,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		super(item, EditableDBItemV3.save(module, onCompleted, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
 		this.module = module;
 		this.onError = onError;
+		this.onCompleted = onCompleted;
 		this.save.bind(this);
 	}
 
@@ -390,19 +393,18 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @returns The new instance.
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.saveAction, this.onError), item) as EditableDBItemV3<Proto>;
+		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.onCompleted, this.onError), item) as EditableDBItemV3<Proto>;
 	}
-
 
 	/**
 	 * Use the db module provided to validate and update the validation results accordingly
-	 *
-	 * @protected
+	 * @return preDB item if validation succeeded otherwise returns void
 	 */
 	validate() {
 		try {
 			this.module.validateImpl(this.item);
 			this.setValidationResults(undefined);
+			return this.item as Proto['preDbType'];
 		} catch (e) {
 			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
 			if (!validationException)
@@ -413,6 +415,10 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
 				results: validationException.result as InvalidResult<Proto['dbType']>
 			});
+
+			const editable = this.clone(this.item);
+			editable.originalItem = this.originalItem;
+			this.onChanged?.(editable);
 		}
 	}
 }

@@ -14,8 +14,15 @@ class ModuleFE_RoutingV2_Class
 
 	// ######################## Inner Data ########################
 
-	private routesMapByKey: { [key: string]: { route: TS_Route, fullPath: string } } = {};
-	private routesMapByPath: { [fullPath: string]: TS_Route } = {};
+	private routesMapByKey: {
+		[key: string]: {
+			route: TS_Route,
+			fullPath: string
+		}
+	} = {};
+	private routesMapByPath: {
+		[fullPath: string]: TS_Route
+	} = {};
 	private navigate!: NavigateFunction;
 
 	// constructor() {
@@ -104,12 +111,14 @@ class ModuleFE_RoutingV2_Class
 		//route.Component is a class component
 		if (route.Component.prototype.render) {
 			const Component = route.Component as ComponentClass;
-			return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}><Component/></AwaitModules>;
+			return () => <AwaitModules modules={route.modulesToAwait!}
+									   customLoader={route.awaitLoader}><Component/></AwaitModules>;
 		}
 
 		//route.Component is a function component
 		const component = route.Component as FunctionComponent;
-		return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
+		return () => <AwaitModules modules={route.modulesToAwait!}
+								   customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
 	};
 
 	getRouteByKey(routeKey: string): TS_Route | undefined {
@@ -133,7 +142,9 @@ class ModuleFE_RoutingV2_Class
 	}
 }
 
-export const TS_NavLink = (props: { route: TS_Route } & Partial<NavLinkProps>) => {
+export const TS_NavLink = (props: {
+	route: TS_Route
+} & Partial<NavLinkProps>) => {
 	const {route, children, ..._props} = props;
 
 	const fullPath = ModuleFE_RoutingV2.getFullPath(route.key);

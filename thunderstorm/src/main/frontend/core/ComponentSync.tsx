@@ -38,5 +38,5 @@ export abstract class ComponentSync<P = any, State = any>
 
 	protected deriveStateFromProps(nextProps: P, state: Partial<State>): State {
 		return state as State;
-	};
+	}
 }
