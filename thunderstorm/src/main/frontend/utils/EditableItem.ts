@@ -11,6 +11,7 @@ import {
 	InvalidResultObject,
 	isErrorOfType,
 	MUSTNeverHappenException,
+	RecursiveReadonly,
 	removeFromArrayByIndex,
 	ResolvableContent,
 	resolveContent,
@@ -175,8 +176,8 @@ export class EditableItem<T> {
 	 * @returns Readonly type of the value in T[K].
 	 */
 	// @ts-ignore
-	get<K extends keyof T>(key: K): Readonly<T[K]> | undefined {
-		return this.item[key];
+	get<K extends keyof T>(key: K): RecursiveReadonly<T[K]> {
+		return this.item[key] as RecursiveReadonly<T[K]>;
 	}
 
 	hasError<K extends keyof T>(key: K): Readonly<InvalidResult<T[K]>> | undefined {
