@@ -200,7 +200,11 @@ export class EditableItem<T> {
 			return;
 
 		if (this._autoSave)
-			return this.save(true);
+			try {
+				return this.save(true);
+			} catch (err: any) {
+				return this.item;
+			}
 
 		if (this.validationResults)
 			this.validate();
