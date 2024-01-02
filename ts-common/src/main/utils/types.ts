@@ -211,6 +211,15 @@ export type RecursivePartial<T> = {
 			: T[P];
 };
 
+export type RecursiveReadonly<T> = T extends undefined ? undefined
+	: T extends (infer R)[] ? ReadonlyArray<RecursiveReadonly<R>>
+		: T extends object ? Readonly<{ [P in keyof T]: Readonly<T[P]> }>
+			: T
+
+export type RecursiveWritable<T> =
+	T extends ReadonlyArray<infer R> ? RecursiveWritable<R>[] :
+		T extends object ? { -readonly [P in keyof T]: RecursiveWritable<T[P]> } :
+			T;
 /**
  * Constructs a union of string paths representing the properties and nested properties of an object type.
  *
