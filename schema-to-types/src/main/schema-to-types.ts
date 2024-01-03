@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { compileFromFile } from 'json-schema-to-typescript';
+import {compileFromFile, Options} from 'json-schema-to-typescript';
 
 type SchemaConfig = {
 	input: string;
@@ -10,9 +10,22 @@ type SchemaConfig = {
 type BuildConfig = SchemaConfig[];
 
 const generateTypeScriptType = async (inputPath: string, outputPath: string): Promise<void> => {
-	const ts = await compileFromFile(inputPath);
+	const options: Partial<Options> = {
+		$refOptions: {
+			resolve: {
+				// Resolves local file references
+				file: {
+					read(file) {
+						const filePath = path.resolve(path.dirname(inputPath), file.url);
+						return fs.promises.readFile(filePath, 'utf8');
+					}
+				}
+			}
+		}
+	};
 
-	// Ensure the directory exists
+	const ts = await compileFromFile(inputPath, options);
+
 	const outputDir = path.dirname(outputPath);
 	if (!fs.existsSync(outputDir)) {
 		fs.mkdirSync(outputDir, { recursive: true });
