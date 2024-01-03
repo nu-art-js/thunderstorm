@@ -21,10 +21,10 @@
 
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
-import {_className, BaseAsyncState, ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
+import {_className, BaseAsyncState, ComponentSync} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import './TS_Workspace.scss';
-import {PanelConfig, Props_BaseWorkspace} from './types';
+import {Props_BaseWorkspace} from './types';
 import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace';
 
 
@@ -35,11 +35,11 @@ type Props = Props_BaseWorkspace & {
 }
 
 type State = {
-	config: PanelConfig
+	key: string
 }
 
 export class TS_Workspace
-	extends ComponentAsync<Props, State> {
+	extends ComponentSync<Props, State> {
 
 	private toRender = false;
 
@@ -47,9 +47,9 @@ export class TS_Workspace
 	// 	this.logger.setMinLevel(LogLevel.Verbose);
 	// }
 
-	protected async deriveStateFromProps(nextProps: Props) {
-		const config = await ModuleFE_Workspace.getWorkspaceConfigByKey(nextProps.workspaceKey);
-		return {config};
+	protected deriveStateFromProps(nextProps: Props, state: State) {
+		state.key = nextProps.workspaceKey;
+		return state;
 	}
 
 	protected _deriveStateFromProps(nextProps: Props): (BaseAsyncState & State) | undefined {
@@ -67,22 +67,21 @@ export class TS_Workspace
 	}
 
 	private onConfigChanged = async () => {
-		const config = this.state.config;
-		await ModuleFE_Workspace.setWorkspaceByKey(this.props.workspaceKey, config);
+		const config = ModuleFE_Workspace.getWorkspaceConfigByKey(this.state.key);
+		await ModuleFE_Workspace.setWorkspaceByKey(this.state.key, config);
 	};
 
 	render() {
-		if (!this.state.config)
-			return <div className={'loader-container'}><TS_Loader/></div>;
+		const config = ModuleFE_Workspace.getWorkspaceConfigByKey(this.state.key);
 
-		const PanelRenderer = this.props.renderers[this.state.config.key];
+		const PanelRenderer = this.props.renderers[config.key];
 		if (!PanelRenderer)
-			return `COULD NOT GET THE WORKSPACE RENDERER FOR KEY ${this.state.config.key}`;
+			return `COULD NOT GET THE WORKSPACE RENDERER FOR KEY ${config.key}`;
 
 		const className = _className('ts-workspace', this.props.className);
 		return <div className={className} id={this.props.id}>
 			<PanelRenderer
-				config={this.state.config.data}
+				config={config.data}
 				renderers={this.props.renderers}
 				instances={this.props.instances}
 				onConfigChanged={this.onConfigChanged}

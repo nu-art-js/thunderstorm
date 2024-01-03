@@ -61,9 +61,9 @@ export class ModuleFE_Workspace_Class
 		}
 	};
 
-	public getWorkspaceConfigByKey = async (key: string): Promise<PanelConfig<any>> => {
+	public getWorkspaceConfigByKey = (key: string): PanelConfig<any> => {
 		this.assertLoggedInUser();
-		const workspace = await this.getWorkspaceByKey(key);
+		const workspace = this.getWorkspaceByKey(key);
 		const config = workspace?.config || this.config.defaultConfigs[key];
 		if (!config)
 			throw new BadImplementationException(`Could not find config for key ${key}`);
@@ -71,9 +71,9 @@ export class ModuleFE_Workspace_Class
 		return config;
 	};
 
-	private getWorkspaceByKey = async (key: string): Promise<DB_Workspace | undefined> => {
+	private getWorkspaceByKey = (key: string): DB_Workspace | undefined => {
 		this.assertLoggedInUser();
-		return await this.IDB.find(workspace => workspace.key === key && workspace.accountId === this.getCurrentAccountId());
+		return this.cache.find(workspace => workspace.key === key && workspace.accountId === this.getCurrentAccountId());
 	};
 
 	public setWorkspaceByKey = async (key: string, config: PanelConfig<any>) => {
