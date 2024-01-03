@@ -1,4 +1,4 @@
-import {DB_Object, DBProto, PreDB} from '@nu-art/ts-common';
+import {DB_Object, DBProto, PreDB, UniqueId} from '@nu-art/ts-common';
 import * as React from 'react';
 import {PartialProps_GenericDropDown} from '../GenericDropDown';
 import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2} from '../TS_MultiSelect';
@@ -9,7 +9,8 @@ import {ComponentSync} from '../../core/ComponentSync';
 
 type Props<DBType extends DB_Object> = {
 	selector: MultiSelect_Selector<string>,
-	uiSelector: ((props: PartialProps_GenericDropDown<DBType>) => JSX.Element)
+	uiSelector: ((props: PartialProps_GenericDropDown<DBType>) => JSX.Element);
+	queryFilter?: (id: UniqueId) => boolean;
 };
 
 export type MultiSelectDropDownProps<DBType extends DB_Object, Ks extends keyof PreDB<DBType>> = {
@@ -27,8 +28,11 @@ export type MultiSelectDropDownPropsV3<Proto extends DBProto<any>> = {
 export class DBItemDropDownMultiSelector<DBType extends DB_Object>
 	extends ComponentSync<Props<DBType>> {
 	static selector = <DBType extends DB_Object>(uiSelector: (props: PartialProps_GenericDropDown<DBType>) => JSX.Element) => {
-		return (selector: MultiSelect_Selector<string>) => <DBItemDropDownMultiSelector selector={selector}
-																																										uiSelector={uiSelector}/>;
+		return (selector: MultiSelect_Selector<string>) => <DBItemDropDownMultiSelector
+			selector={selector}
+			uiSelector={uiSelector}
+			queryFilter={selector.queryFilter}
+		/>;
 	};
 
 	static props = <DBType extends DB_Object, Ks extends keyof PreDB<DBType>>(props: MultiSelectDropDownProps<DBType, Ks>): StaticProps_TS_MultiSelect_V2<string> => {
@@ -54,9 +58,14 @@ export class DBItemDropDownMultiSelector<DBType extends DB_Object>
 		const UISelector = this.props.uiSelector;
 		const selector = this.props.selector;
 
+		const filter = (item: DBType) => {
+			!selector.existingItems.includes(item._id)
+			&& (this.props.queryFilter ? this.props.queryFilter(item._id) : true);
+		};
+
 		return <UISelector
 			queryFilter={item => !selector.existingItems.includes(item._id)}
-			onSelected={item => selector.onSelected(item._id)}
+			onSelected={filter}
 		/>;
 	}
 
