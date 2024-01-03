@@ -19,6 +19,8 @@
 import {Default_UniqueKey} from '../db/types';
 
 
+export type Primitive = string | number | boolean;
+
 export type CustomOptional<T, K> = {
 	[P in keyof T]?: K
 };
