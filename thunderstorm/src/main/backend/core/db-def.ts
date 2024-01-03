@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {FirestoreTransaction} from '@nu-art/firebase/backend';
+import {Transaction} from 'firebase-admin/lib/firestore';
 import {
 	Const_UniqueKeys,
 	Day,
@@ -30,7 +30,8 @@ import {
 	DefaultDBVersion,
 	Dispatcher,
 	Hour,
-	keepDBObjectKeys, KeysOfDB_Object,
+	keepDBObjectKeys,
+	KeysOfDB_Object,
 	TS_Object,
 	tsValidateResult,
 	ValidatorTypeResolver
@@ -71,7 +72,7 @@ export const getModuleBEConfig = <T extends DB_Object, Ks extends keyof T = Defa
 };
 
 export type CanDeleteDBEntities<AllTypes extends TS_Object, DeleteType extends string = string, ValidateType extends string = string> = {
-	__canDeleteEntities: <T extends DeleteType>(type: T, items: (AllTypes[T])[], transaction?: FirestoreTransaction) => Promise<DB_EntityDependency<ValidateType>>
+	__canDeleteEntities: <T extends DeleteType>(type: T, items: (AllTypes[T])[], transaction?: Transaction) => Promise<DB_EntityDependency<ValidateType>>
 }
 
 export const canDeleteDispatcher = new Dispatcher<CanDeleteDBEntities<any, any>, '__canDeleteEntities'>('__canDeleteEntities');
