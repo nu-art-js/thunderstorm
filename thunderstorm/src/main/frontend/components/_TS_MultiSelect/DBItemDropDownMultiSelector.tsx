@@ -59,13 +59,13 @@ export class DBItemDropDownMultiSelector<DBType extends DB_Object>
 		const selector = this.props.selector;
 
 		const filter = (item: DBType) => {
-			!selector.existingItems.includes(item._id)
-			&& (this.props.queryFilter ? this.props.queryFilter(item._id) : true);
+			return !selector.existingItems.includes(item._id)
+				&& (this.props.queryFilter ? this.props.queryFilter(item._id) : true);
 		};
 
 		return <UISelector
-			queryFilter={item => !selector.existingItems.includes(item._id)}
-			onSelected={filter}
+			queryFilter={filter}
+			onSelected={item => selector.onSelected(item._id)}
 		/>;
 	}
 
