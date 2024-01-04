@@ -1,4 +1,13 @@
-import {_keys, ApiException, BadImplementationException, Dispatcher, Minute, Module, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {
+	_keys,
+	ApiException,
+	BadImplementationException,
+	Dispatcher,
+	Minute,
+	Module,
+	TypedMap,
+	UniqueId
+} from '@nu-art/ts-common';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {addRoutes} from '../ModuleBE_APIs';
@@ -67,7 +76,11 @@ class ModuleBE_v2_SyncEnv_Class
 		return backupInfo.metadata;
 	};
 
-	async pushToEnv(body: { env: 'dev' | 'prod', moduleName: string, items: any[] }) {
+	async pushToEnv(body: {
+		env: 'dev' | 'prod',
+		moduleName: string,
+		items: any[]
+	}) {
 		const remoteUrls = {
 			dev: 'https://us-central1-shopify-manager-tool-dev.cloudfunctions.net/api',
 			prod: 'https://mng.be.petitfawn.com'
@@ -89,7 +102,10 @@ class ModuleBE_v2_SyncEnv_Class
 		console.log(response);
 	}
 
-	private async getBackupInfo(queryParams: { env: string, backupId: UniqueId }) {
+	private async getBackupInfo(queryParams: {
+		env: string,
+		backupId: UniqueId
+	}) {
 		const {backupId, env} = queryParams;
 		if (!env)
 			throw new BadImplementationException(`Did not receive env in the fetch from env api call!`);
@@ -133,7 +149,14 @@ class ModuleBE_v2_SyncEnv_Class
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
 
+		this.logInfo(`----  Creating Backup... ----`);
+		const startBackup = performance.now();
+		await this.createBackup();
+		const endBackup = performance.now();
+		this.logInfo(`Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds`);
+
 		this.logInfo(`----  Fetching Backup Info... ----`);
+		const startSync = performance.now();
 		const backupInfo = await this.getBackupInfo(body);
 		this.logInfo(backupInfo);
 
@@ -208,6 +231,9 @@ class ModuleBE_v2_SyncEnv_Class
 		this.logInfo(`----  Syncing Other Modules... ----`);
 		await dispatch_OnSyncEnvCompleted.dispatchModuleAsync(body.env, this.config.urlMap[body.env], this.config.sessionMap[body.env]!);
 		this.logInfo(`---- DONE Syncing Other Modules----`);
+		const endSync = performance.now();
+		this.logInfo(`(Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds)`);
+		this.logInfo(`SyncingEnv took ${((endSync - startSync) / 1000).toFixed(3)} seconds`);
 	};
 
 	syncFirebaseFromBackup = async (queryParams: Request_FetchFirebaseBackup) => {
