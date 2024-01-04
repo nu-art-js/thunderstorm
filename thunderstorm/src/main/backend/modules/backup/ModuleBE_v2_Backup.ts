@@ -10,7 +10,8 @@ import {
 	flatArray,
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
-	LogLevel, Minute,
+	LogLevel,
+	Minute,
 	Module,
 	PreDB,
 	TS_Object,
@@ -58,7 +59,11 @@ const CSVConfig = {
 };
 
 export type BackupMetaData = {
-	collectionsData: { collectionName: string, numOfDocs: number, version: string }[],
+	collectionsData: {
+		collectionName: string,
+		numOfDocs: number,
+		version: string
+	}[],
 	timestamp: number
 }
 
