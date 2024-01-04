@@ -201,6 +201,8 @@ export class EditableItem<T> {
 			return error;
 	}
 
+	hasErrors = () => !!this.validationResults;
+
 	protected setValidationResults(ValidationResults?: ValidationErrors<T>) {
 		this.validationResults = ValidationResults;
 		return this;
