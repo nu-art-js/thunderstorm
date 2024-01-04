@@ -21,7 +21,6 @@ import {_values, BadImplementationException, MUSTNeverHappenException, TypedMap}
 import {PanelConfig} from '..';
 import {DBDef_Workspaces} from '../../shared/db-def';
 import {DB_Workspace} from '../../shared/types';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {DBApiFEConfig} from '@nu-art/thunderstorm/frontend/core/db-api-gen/db-def';
 import {DBApiDefGeneratorIDB} from '@nu-art/thunderstorm';
@@ -33,13 +32,17 @@ export interface OnWorkspaceUpdated {
 
 export const dispatch_onWorkspaceUpdated = new ThunderDispatcher<OnWorkspaceUpdated, '__onWorkspaceUpdated'>('__onWorkspaceUpdated', true);
 
-type Config = DBApiFEConfig<DB_Workspace, 'key' | 'accountId'> & { defaultConfigs: TypedMap<PanelConfig> };
+type Config = DBApiFEConfig<DB_Workspace, 'key' | 'accountId'> & {
+	defaultConfigs: TypedMap<PanelConfig>,
+	accountResolver: () => string,
+};
 
 export class ModuleFE_Workspace_Class
 	extends ModuleFE_BaseApi<DB_Workspace, 'key' | 'accountId', Config> {
 
 	private workspacesToUpsert: TypedMap<any> = {};
 	private upsertRunnable: any;
+	private accountResolver!: () => string;
 
 	constructor() {
 		super(DBDef_Workspaces, dispatch_onWorkspaceUpdated);
@@ -51,12 +54,16 @@ export class ModuleFE_Workspace_Class
 		};
 	}
 
+	setAccountResolver(resolver: () => string) {
+		this.accountResolver = resolver;
+	}
+
 	private getCurrentAccountId = (): string => {
-		return ModuleFE_Account.accountId;
+		return this.accountResolver();
 	};
 
 	private assertLoggedInUser = () => {
-		if (!this.getCurrentAccountId) {
+		if (!this.getCurrentAccountId()) {
 			throw new BadImplementationException('Trying to get workspace while not having user logged in, fix this');
 		}
 	};
