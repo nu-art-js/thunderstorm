@@ -26,7 +26,9 @@ import {Module, Primitive,} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 
 
-type RecursiveObjectArray = { [key: string]: Primitive | RecursiveObjectArray | RecursiveArray; };
+type RecursiveObjectArray = {
+	[key: string]: Primitive | RecursiveObjectArray | RecursiveArray;
+};
 
 type RecursiveArray = (Primitive | RecursiveObjectArray | RecursiveArray)[]
 
