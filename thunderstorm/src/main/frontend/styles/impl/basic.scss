@@ -87,3 +87,55 @@
 .scrollable-y {
   @extend %scrollable-y;
 }
+
+.gap__s {
+  @extend %gap__s
+}
+
+.gap__n {
+  @extend %gap__n
+}
+
+.gap__l {
+  @extend %gap__l
+}
+
+.v-gap__s {
+  @extend %v-gap__s
+}
+
+.v-gap__n {
+  @extend %v-gap__n
+}
+
+.v-gap__l {
+  @extend %v-gap__l
+}
+
+.v-gap__xl {
+  @extend %v-gap__xl
+}
+
+.v-gap__xxl {
+  @extend %v-gap__xxl
+}
+
+.h-gap__s {
+  @extend %h-gap__s
+}
+
+.h-gap__n {
+  @extend %h-gap__n
+}
+
+.h-gap__l {
+  @extend %h-gap__l
+}
+
+.h-gap__xl {
+  @extend %h-gap__xl
+}
+
+.h-gap__xxl {
+  @extend %h-gap__xxl
+}
