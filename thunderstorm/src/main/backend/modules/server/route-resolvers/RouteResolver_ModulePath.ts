@@ -71,9 +71,8 @@ export class RouteResolver_ModulePath
 		});
 
 		this.express.all('*', (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
-
 			this.logErrorBold(`Received unknown url with path: '${req.path}' - url: '${req.url}'`);
-
+			res.status(404).send(`The requested URL '${req.url}' was not found on this server.`);
 		});
 	}
 
