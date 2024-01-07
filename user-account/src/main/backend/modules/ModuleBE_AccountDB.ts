@@ -4,13 +4,15 @@ import {
 	BadImplementationException,
 	cloneObj,
 	compare,
-	currentTimeMillis, DB_BaseObject,
+	currentTimeMillis,
+	DB_BaseObject,
 	dispatch_onApplicationException,
 	Dispatcher,
 	exists,
 	generateHex,
 	hashPasswordWithSalt,
-	MUSTNeverHappenException, Year
+	MUSTNeverHappenException,
+	Year
 } from '@nu-art/ts-common';
 import {CollectSessionData, ModuleBE_SessionDB, SessionCollectionParam} from './ModuleBE_SessionDB';
 import {firestore} from 'firebase-admin';
@@ -18,7 +20,13 @@ import {addRoutes, createBodyServerApi, createQueryServerApi, ModuleBE_BaseDBV3}
 import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
-import {Header_SessionId, MemKey_AccountEmail, MemKey_AccountId, SessionKey_Account_BE, SessionKey_Session_BE} from '../core/consts';
+import {
+	Header_SessionId,
+	MemKey_AccountEmail,
+	MemKey_AccountId,
+	SessionKey_Account_BE,
+	SessionKey_Session_BE
+} from '../core/consts';
 import {
 	_SessionKey_Account,
 	AccountEmail,
@@ -43,8 +51,8 @@ import {
 } from '../../shared';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../shared/assertion';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import Transaction = firestore.Transaction;
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import Transaction = firestore.Transaction;
 
 
 type BaseAccount = {
@@ -185,6 +193,7 @@ export class ModuleBE_AccountDB_Class
 					await dispatch_onApplicationException.dispatchModuleAsync(apiException, this);
 					throw apiException;
 				} else if (results.length > 1) {
+					this.logWarningBold(`Too many accounts using this email! '${credentials.email}'`);
 					throw new MUSTNeverHappenException('Too many accounts using this email');
 				}
 
