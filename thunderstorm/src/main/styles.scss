@@ -21,6 +21,7 @@
 
 @forward "./frontend/components/Layouts/Layouts_";
 @forward "./frontend/styles/declaration/mixins";
+@forward "./frontend/styles/declaration/basic";
 
 .ts-languages__rtl {
   direction: rtl;
