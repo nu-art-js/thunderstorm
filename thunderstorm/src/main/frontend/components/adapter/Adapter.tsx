@@ -72,7 +72,7 @@ export type TreeType<TreeMap> = {
 	renderer: { [K in keyof TreeMap]: React.ComponentType<{ item: TreeMap[K] }> }
 
 	rendererV3: { [K in keyof TreeMap]: React.ComponentType<TreeMap[K]> }
-
+	nodeTypesMap: { [K in keyof TreeMap]: { type: K; item: TreeMap[K], _children?: TreeItem<TreeMap>[] } }
 	nodeType: TreeItem<TreeMap>
 }
 type AdapterData<D> = D | (() => D);
