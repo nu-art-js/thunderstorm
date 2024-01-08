@@ -42,7 +42,8 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 
 	render() {
 		const sortedItems = this.props.module.cache.sort(this.props.sort);
-		const items = sortedItems.filter(this.props.filter);
+		const predicate = this.props.filter ?? (() => true);
+		const items = sortedItems.filter(predicate);
 
 		return <LL_V_L className="items-list match_height margin__inline">
 			<LL_V_L className="flex__grow scrollable-y match_width">
