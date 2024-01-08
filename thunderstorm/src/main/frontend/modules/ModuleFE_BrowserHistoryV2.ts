@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {merge, Module, Primitive} from '@nu-art/ts-common';
+import {compare, merge, Module, Primitive} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {gzip, ungzip} from 'pako';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
@@ -103,6 +103,11 @@ export class ModuleFE_BrowserHistoryV2_Class
 	 */
 	replace(push: LocationDescriptorObject) {
 		this.history.replace(push);
+		const lastState = this.state;
+		this.state = this.decode();
+
+		if (!compare(this.state, lastState))
+			dispatcher_urlParamsChangedV2.dispatchUI();
 	}
 
 	update(queryParams: AdvancedQueryParam) {
@@ -112,6 +117,7 @@ export class ModuleFE_BrowserHistoryV2_Class
 
 	set(key: string, queryParams: AdvancedQueryParam) {
 		this.state[key] = queryParams;
+		this.encode();
 	}
 
 	get(key: string) {
@@ -120,6 +126,7 @@ export class ModuleFE_BrowserHistoryV2_Class
 
 	delete(key: string) {
 		delete this.state[key];
+		this.encode();
 	}
 }
 
