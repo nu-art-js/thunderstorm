@@ -98,3 +98,58 @@
 %scrollable-y {
   overflow-y: scroll;
 }
+
+%gap__s {
+  row-gap: 4px;
+  column-gap: 4px
+}
+
+%gap__n {
+  row-gap: 8px;
+  column-gap: 8px
+}
+
+%gap__l {
+  row-gap: 12px;
+  column-gap: 12px
+}
+
+%v-gap__s {
+  row-gap: 4px;
+}
+
+%v-gap__n {
+  row-gap: 8px;
+}
+
+%v-gap__l {
+  row-gap: 12px;
+}
+
+%v-gap__xl {
+  row-gap: 16px;
+}
+
+%v-gap__xxl {
+  row-gap: 20px;
+}
+
+%h-gap__s {
+  column-gap: 4px;
+}
+
+%h-gap__n {
+  column-gap: 8px;
+}
+
+%h-gap__l {
+  column-gap: 12px;
+}
+
+%h-gap__xl {
+  column-gap: 16px;
+}
+
+%h-gap__xxl {
+  column-gap: 20px;
+}

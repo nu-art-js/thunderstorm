@@ -134,6 +134,7 @@ export const DateTimeFormat = (format: string) => {
 };
 export const DateTimeFormat_yyyyMMDDTHHmmss = DateTimeFormat('YYYY-MM-DDTHH:mm:ss');
 export const DateTimeFormat_yyyyMMDD = DateTimeFormat('YYYY-MM-DD');
+export const DateTimeFormat_DDMMYYYY = DateTimeFormat('DD/MM/YYYY');
 
 export function isSameDay(date1: Date, date2: Date): boolean {
 	return moment(date1).isSame(date2, 'day');

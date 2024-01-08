@@ -85,7 +85,7 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {},
 		const Editor: Props_ItemsEditorV3<Proto>['EditorRenderer'] = this.props.EditorRenderer;
 		const sort = this.props.sort || ((item: DB_Object) => item.__created);
 		return <FrameLayout className="editor-page">
-			<LL_H_T className="editor-content match_parent margin__block">
+			<LL_H_T className="editor-content match_parent">
 				{this.renderHeader()}
 				<LL_V_L className="match_height">
 					<LL_H_C>
