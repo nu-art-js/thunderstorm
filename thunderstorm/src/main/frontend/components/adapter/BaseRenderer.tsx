@@ -20,6 +20,7 @@
  */
 
 import * as React from 'react';
+import {HTMLAttributes} from 'react';
 import {TreeNode} from './Adapter';
 
 
@@ -37,7 +38,7 @@ export abstract class BaseItemRenderer<ItemType, S extends {} = {}>
 }
 
 export type NodeRendererProps<Item extends any = any> = { item: Item, node: TreeNode }
-export type _BaseNodeRenderer<ItemType> = React.ComponentType<NodeRendererProps<ItemType>>
+export type _BaseNodeRenderer<ItemType> = React.ComponentType<NodeRendererProps<ItemType> & HTMLAttributes<HTMLDivElement>>
 
 export abstract class BaseNodeRenderer<ItemType, S extends {} = {}>
 	extends React.Component<NodeRendererProps<ItemType>, S> {
@@ -54,4 +55,5 @@ export type BaseRendererMap<R extends React.ComponentType<any>> = {
 }
 
 export type TreeRendererMap = BaseRendererMap<_BaseNodeRenderer<any>>;
+
 

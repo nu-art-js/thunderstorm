@@ -25,6 +25,7 @@ import {_className} from '../../utils/tools';
 import './TS_InputV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
 import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
+import {TS_Object} from '@nu-art/ts-common';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
@@ -74,9 +75,10 @@ export type Props_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & TypeProps_TS_Input
 }
 
 export type NativeProps_TS_InputV2 = Props_TS_InputV2
-export type EditableItemProps_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & UIProps_EditableItem<any, any, string> & {
-	onChange?: (value: string) => void,
-}
+export type EditableItemProps_TS_InputV2<ValueType, K extends keyof T, T extends TS_Object & { [k in K]: ValueType } | ValueType[]> =
+	Omit<BaseAppLevelProps_TS_InputV2, 'value'> & { value?: ValueType }
+	& UIProps_EditableItem<T, K, ValueType>
+	& { onChange?: (value: ValueType) => void, }
 
 /**
  * A better way to capture user input
@@ -93,8 +95,19 @@ export class TS_InputV2
 		return (props: NativeProps_TS_InputV2) => <TS_InputV2 {...templateProps} {...props}/>;
 	};
 
-	static readonly editable = (templateProps: TemplatingProps_TS_InputV2) => {
-		return (props: EditableItemProps_TS_InputV2) => {
+	static readonly editableNumberOptional = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & { [k in K]?: number }>(props: EditableItemProps_TS_InputV2<any, K, T>) => {
+			// @ts-ignore
+			return this._editableNumber(templateProps)(props);
+		};
+	};
+	static readonly editableNumber = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & { [k in K]: number }>(props: EditableItemProps_TS_InputV2<any, K, T>) => {
+			return this._editableNumber(templateProps)(props);
+		};
+	};
+	static readonly _editableNumber = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & { [k in K]: number }>(props: EditableItemProps_TS_InputV2<number, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
 			const {editable, prop, saveEvent, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
@@ -102,7 +115,7 @@ export class TS_InputV2
 			let onBlur;
 			let onAccept;
 
-			const saveEventHandler = (value: string) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value});
+			const saveEventHandler = (value: string) => props.onChange ? props.onChange(+value) : editable.updateObj({[prop]: +value} as T);
 			if (_saveEvents!.includes('change'))
 				onChange = saveEventHandler;
 
@@ -112,6 +125,7 @@ export class TS_InputV2
 			if (_saveEvents!.includes('accept'))
 				onAccept = saveEventHandler;
 
+			const value: string = props.editable.get(props.prop);
 			return <TS_InputV2
 				error={resolveEditableError(props)}
 				{...restTemplatingProps} {...rest}
@@ -119,9 +133,59 @@ export class TS_InputV2
 				onChange={onChange}
 				onBlur={onBlur}
 				onAccept={onAccept}
-				value={props.value ?? props.editable.item[props.prop]}/>;
+				value={String(props.value ?? value)}/>;
 		};
+	};
 
+	static readonly editableOptional = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & ({ [k in K]?: string })>(props: EditableItemProps_TS_InputV2<string | undefined, K, T>) => {
+			return this._editable(templateProps)(props);
+		};
+	};
+
+	static readonly editableArray = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends keyof T, T extends string[]>(props: EditableItemProps_TS_InputV2<string, K, T>) => {
+			// @ts-ignore
+			return this._editable(templateProps)(props);
+		};
+	};
+
+	static readonly editable = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & ({ [k in K]: string })>(props: EditableItemProps_TS_InputV2<string, K, T>) => {
+			// @ts-ignore
+			return this._editable(templateProps)(props);
+		};
+	};
+
+	static readonly _editable = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & ({ [k in K]?: string } | { [k in K]: string })>(props: EditableItemProps_TS_InputV2<string | undefined, K, T>) => {
+			const {type, ...restTemplatingProps} = templateProps;
+			const {editable, prop, saveEvent, ...rest} = props;
+			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
+			let onChange;
+			let onBlur;
+			let onAccept;
+
+			const saveEventHandler = (value: string) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value} as T);
+			if (_saveEvents!.includes('change'))
+				onChange = saveEventHandler;
+
+			if (_saveEvents!.includes('blur'))
+				onBlur = saveEventHandler;
+
+			if (_saveEvents!.includes('accept'))
+				onAccept = saveEventHandler;
+
+			const value: string = props.editable.get(props.prop);
+			return <TS_InputV2
+				error={resolveEditableError(props)}
+				{...restTemplatingProps} {...rest}
+				type={type}
+				onChange={onChange}
+				onBlur={onBlur}
+				onAccept={onAccept}
+				value={props.value ?? value}/>;
+		};
 	};
 
 	static defaultProps = {

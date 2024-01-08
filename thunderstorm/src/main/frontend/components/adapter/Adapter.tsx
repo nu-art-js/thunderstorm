@@ -23,7 +23,7 @@ import * as React from 'react';
 import {ComponentType} from 'react';
 import {_keys, BadImplementationException, TS_Object,} from '@nu-art/ts-common';
 import {SimpleTreeNodeRenderer} from '../TS_Tree/SimpleTreeNodeRenderer';
-import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from './BaseRenderer';
+import {_BaseNodeRenderer, NodeRendererProps,} from './BaseRenderer';
 import {_className} from '../../utils/tools';
 
 // export type TreeItem<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
@@ -63,25 +63,18 @@ export type NestedListData<I> = I | NestedListItem<I>;
 export type TreeData<I> = { [k: string]: I | TreeData<I> }
 
 // the moment we want to have a TREE of a single item of type T
-export type TreeItem<I> = ListItem<I> & {
-	type: string
-	_children?: TreeItem<I>[]
+type TreeItem<TreeMap> = { [K in keyof TreeMap]: { type: K; item: TreeMap[K], _children?: TreeItem<TreeMap>[] } }[keyof TreeMap];
+
+export type TreeType<TreeMap> = {
+	map: TreeMap
+	action: { [K in keyof TreeMap]: (item: TreeMap[K]) => Promise<any> | any }
+	nodeRenderer: { [K in keyof TreeMap]: React.ComponentType<NodeRendererProps<TreeMap[K]>> }
+	renderer: { [K in keyof TreeMap]: React.ComponentType<{ item: TreeMap[K] }> }
+
+	rendererV3: { [K in keyof TreeMap]: React.ComponentType<TreeMap[K]> }
+	nodeTypesMap: { [K in keyof TreeMap]: { type: K; item: TreeMap[K], _children?: TreeItem<TreeMap>[] } }
+	nodeType: TreeItem<TreeMap>
 }
-
-export type InferItemType<R> =
-	R extends React.ComponentType<{ item: infer Item, node: TreeNode }> ? Item :
-		'Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode';
-
-export type _GenericRenderer<Rm extends BaseRendererMap<any>, ItemType extends InferItemType<Rm[keyof Rm]> = InferItemType<Rm[keyof Rm]>> = {
-	rendererMap: Rm
-	items: ItemType[]
-}
-
-// the moment we want to have a TREE with multiple item types
-export type TreeData_MultiType<Rm extends BaseRendererMap<any>, I extends InferItemType<Rm[keyof Rm]> = InferItemType<Rm[keyof Rm]>> =
-	TreeItem<I>
-	| TreeData<TreeItem<I>>
-
 type AdapterData<D> = D | (() => D);
 
 export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> = React.ComponentType<T>> {
@@ -109,6 +102,13 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 			return Array.isArray(obj) || typeof obj === 'object';
 
 		return typeof obj === 'object' && obj['_isParent'] === true || Array.isArray(obj);
+	};
+
+	hadChildren = (obj: any) => {
+		if (!this.isParent(obj))
+			return false;
+
+		return obj['length'] > 0;
 	};
 
 	// this can be gone.. and builders must use the new filterChildren
@@ -141,7 +141,7 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 		if (!obj[this.childrenKey])
 			return {data: obj, deltaPath: ''};
 
-		const objElement: any = {...obj[this.childrenKey], type: obj.type, item: obj.item, _isParent: true};
+		const objElement: any = {...obj[this.childrenKey], type: obj.type, item: obj.item, _isParent: true, length: obj[this.childrenKey].length};
 		return {data: objElement, deltaPath: this.childrenKey || ''};
 	};
 
@@ -287,25 +287,25 @@ class ListSingleAdapterBuilder<ItemType extends any = any>
 	}
 }
 
-class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
-	extends BaseAdapterBuilder<DataType> {
+class MultiTypeAdapterBuilder<TreeMap extends TreeType<any>>
+	extends BaseAdapterBuilder<TreeMap['nodeType']> {
 
-	readonly rendererMap: Rm;
+	readonly rendererMap: TreeMap['nodeRenderer'];
 	private _hideRoot = true;
 
-	constructor(rendererMap: Rm) {
+	constructor(rendererMap: TreeMap['nodeRenderer']) {
 		super();
 		this.multiRenderer = true;
 		this.rendererMap = rendererMap;
 		this.childrenKey = '_children';
 
 		this.treeNodeRenderer = (props: NodeRendererProps<TreeItem<any>>) => {
-			const _Renderer: _BaseNodeRenderer<any> = this.resolveRenderer(props.item.type);
+			const _Renderer: _BaseNodeRenderer<any> = this.resolveRenderer(props.item.type as string);
 			return <_Renderer item={props.item.item} node={props.node}/>;
 		};
 	}
 
-	protected resolveRenderer(type?: string): _BaseNodeRenderer<any> {
+	protected resolveRenderer = (type?: string): _BaseNodeRenderer<any> => {
 		if (!type)
 			throw new BadImplementationException('multi renderer adapter items must have a type to resolve renderer');
 
@@ -314,12 +314,12 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 			throw new BadImplementationException(`renderer of type ${type} doesn't exists, in rendererMap found keys: ${JSON.stringify(_keys(this.rendererMap))}`);
 
 		return renderer;
-	}
+	};
 
 	tree() {
 		this.treeNodeRenderer = this.defaultTreeNodeRenderer;
 		this._hideRoot = false;
-		return this as unknown as MultiTypeAdapterBuilder<Rm, DataType>;
+		return this as unknown as MultiTypeAdapterBuilder<TreeMap>;
 	}
 
 	hideRoot() {
@@ -331,6 +331,7 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 		const adapter = new Adapter(this.data);
 		adapter.hideRoot = this._hideRoot;
 		adapter.treeNodeRenderer = this.treeNodeRenderer;
+		adapter.resolveRenderer = this.resolveRenderer;
 		adapter.childrenKey = this.childrenKey;
 		return adapter;
 
@@ -372,8 +373,12 @@ class ListAdapterBuilder {
 		return new ListSingleAdapterBuilder<Item>(renderer);
 	}
 
-	multiRender<Rm extends TreeRendererMap, ItemType extends TreeData_MultiType<Rm> = TreeData_MultiType<Rm>>(rendererMap: Rm) {
-		return new MultiTypeAdapterBuilder<Rm, ListData<ItemType>>(rendererMap);
+	multiRender<TreeMap extends TreeType<any>>(rendererMap: TreeMap['nodeRenderer']) {
+		return new MultiTypeAdapterBuilder<TreeMap>(rendererMap);
+	}
+
+	multiRenderV3<TreeMap extends TreeType<any>>(rendererMap: TreeMap['nodeRenderer']) {
+		return new MultiTypeAdapterBuilder<TreeMap>(rendererMap);
 	}
 }
 
@@ -383,8 +388,8 @@ class TreeAdapterBuilder {
 		return new TreeSingleAdapterBuilder<Item>(renderer);
 	}
 
-	multiRender<Rm extends TreeRendererMap, ItemType extends TreeData_MultiType<Rm> = TreeData_MultiType<Rm>>(rendererMap: Rm) {
-		return new MultiTypeAdapterBuilder<Rm, ItemType>(rendererMap).tree();
+	multiRender<TreeMap extends TreeType<any>>(rendererMap: TreeMap['nodeRenderer']) {
+		return new MultiTypeAdapterBuilder<TreeMap>(rendererMap).tree();
 	}
 }
 
