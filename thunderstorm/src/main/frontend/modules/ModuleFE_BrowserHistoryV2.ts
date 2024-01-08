@@ -22,19 +22,12 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {compare, merge, Module, Primitive} from '@nu-art/ts-common';
+import {compare, merge, Module, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {gzip, ungzip} from 'pako';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
-
-type RecursiveObjectArray = {
-	[key: string]: Primitive | RecursiveObjectArray | RecursiveArray;
-};
-
-type RecursiveArray = (Primitive | RecursiveObjectArray | RecursiveArray)[]
-
-type AdvancedQueryParam = RecursiveObjectArray
+type AdvancedQueryParam = RecursiveObjectOfPrimitives;
 
 export class QueryParamKey<T extends AdvancedQueryParam> {
 	private readonly key: string;
@@ -128,6 +121,12 @@ export class ModuleFE_BrowserHistoryV2_Class
 		delete this.state[key];
 		this.encode();
 	}
+
+	setState = (state: AdvancedQueryParam) => {
+		this.encode(state);
+	};
+
+	getState = () => ({...this.state});
 }
 
 export const ModuleFE_BrowserHistoryV2 = new ModuleFE_BrowserHistoryV2_Class();
