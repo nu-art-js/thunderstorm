@@ -95,8 +95,19 @@ export class TS_InputV2
 		return (props: NativeProps_TS_InputV2) => <TS_InputV2 {...templateProps} {...props}/>;
 	};
 
+	static readonly editableNumberOptional = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & { [k in K]?: number }>(props: EditableItemProps_TS_InputV2<any, K, T>) => {
+			// @ts-ignore
+			return this._editableNumber(templateProps)(props);
+		};
+	};
 	static readonly editableNumber = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & { [k in K]: number }>(props: EditableItemProps_TS_InputV2<any, K, T>) => {
+			return this._editableNumber(templateProps)(props);
+		};
+	};
+	static readonly _editableNumber = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & { [k in K]: number }>(props: EditableItemProps_TS_InputV2<number, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
 			const {editable, prop, saveEvent, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
