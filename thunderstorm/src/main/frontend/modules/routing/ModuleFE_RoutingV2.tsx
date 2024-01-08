@@ -5,7 +5,7 @@ import {TS_Route} from './types';
 import {BadImplementationException, composeUrl, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {LocationChangeListener} from './LocationChangeListener';
 import {QueryParams} from '../../../shared';
-import {mouseEventHandler} from '../../utils/tools';
+import {mouseEventHandler, stopPropagation} from '../../utils/tools';
 import {AwaitModules} from '../../components/AwaitModules/AwaitModules';
 
 
@@ -112,13 +112,13 @@ class ModuleFE_RoutingV2_Class
 		if (route.Component.prototype.render) {
 			const Component = route.Component as ComponentClass;
 			return () => <AwaitModules modules={route.modulesToAwait!}
-									   customLoader={route.awaitLoader}><Component/></AwaitModules>;
+																 customLoader={route.awaitLoader}><Component/></AwaitModules>;
 		}
 
 		//route.Component is a function component
 		const component = route.Component as FunctionComponent;
 		return () => <AwaitModules modules={route.modulesToAwait!}
-								   customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
+															 customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
 	};
 
 	getRouteByKey(routeKey: string): TS_Route | undefined {
@@ -143,7 +143,8 @@ class ModuleFE_RoutingV2_Class
 }
 
 export const TS_NavLink = (props: {
-	route: TS_Route
+	route: TS_Route;
+	ignoreClickOnSameRoute?: boolean;
 } & Partial<NavLinkProps>) => {
 	const {route, children, ..._props} = props;
 
@@ -155,6 +156,11 @@ export const TS_NavLink = (props: {
 		{..._props}
 		to={fullPath}
 		key={route.key}
+		onClick={e => {
+			const pathname = window.location.pathname;
+			if (props.ignoreClickOnSameRoute && pathname === fullPath)
+				stopPropagation(e);
+		}}
 		onMouseUp={e => mouseEventHandler(e, {
 			middle: () => window.open(fullPath, '_blank'),
 		})}
