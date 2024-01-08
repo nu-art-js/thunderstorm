@@ -1,10 +1,11 @@
 import {ComponentSync} from './ComponentSync';
-import {TS_Object, _keys} from '@nu-art/ts-common';
+import {TS_Object, ThisShouldNotHappenException, _keys, compare} from '@nu-art/ts-common';
+import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2, QueryParamKey} from '../modules/ModuleFE_BrowserHistoryV2';
 
 export type ProtoComponentDef_QueryKeys<T extends ProtoComponentDef> = (keyof T['queryParams'])[];
 
-export type ProtoComponent_State<T extends ProtoComponentDef['queryParams']> = {
-	queryParams: Partial<T>;
+export type ProtoComponent_State<Q> = {
+	queryParams: Partial<Q>;
 };
 
 export type ProtoComponentDef<Q extends TS_Object = TS_Object, P extends {} = {}, S extends ProtoComponent_State<Q> = ProtoComponent_State<Q>> = {
@@ -13,57 +14,152 @@ export type ProtoComponentDef<Q extends TS_Object = TS_Object, P extends {} = {}
 	state: S,
 }
 
-//FIXME: have this class listen to dispatch by BrowserV2 when the url changes
-
 export abstract class ProtoComponent<T extends ProtoComponentDef>
-	extends ComponentSync<T['props'], T['state']> {
+	extends ComponentSync<T['props'], T['state']>
+	implements OnUrlParamsChangedListenerV2 {
 
-	abstract readonly queryParams: ProtoComponentDef_QueryKeys<T>;
+	abstract readonly queryParamArray: ProtoComponentDef_QueryKeys<T>;
+	private readonly queryParamKeyMap: { [K in keyof T['queryParams']]: QueryParamKey<T['queryParams'][K]> } = {} as { [K in keyof T['queryParams']]: QueryParamKey<T['queryParams'][K]> };
 
-	__onQueryUpdated = () => {
-		// FIXME: use when BrowserV2 can return query
-		// const query = ModuleFE_BrowserHistoryV2.getQuery();
-		const query = {};
-		if (this.queryParams.some(param => {
-			// @ts-ignore
-			this.state.queryParams[param] !== query[param];
-		}))
-			this.reDeriveState();
+	// ######################## Life Cycle ########################
+
+	protected ComponentDidMount() {
+		this.queryParamArray.forEach(param => {
+			this.queryParamKeyMap[param] = new QueryParamKey(param as string);
+		});
+	}
+
+	__onUrlParamsChangedV2 = () => {
+		const queryParams = this.getQueryObject();
+		if (!compare(queryParams, this.state.queryParams))
+			this.reDeriveState({queryParams});
 	};
 
-	protected deriveStateFromProps(nextProps: T['props'], state: T['state']): T['state'] {
-		state = super.deriveStateFromProps(nextProps, state);
-		// FIXME: use when BrowserV2 can return query
-		// const query = ModuleFE_BrowserHistoryV2.getQuery();
-		const query = {};
+	protected _deriveStateFromProps(nextProps: T['props'], state?: Partial<T['state']>): T['state'] | undefined {
+		this.logVerbose('Deriving state from props');
+		state ??= this.state ? {...this.state} : {queryParams: this.getQueryObject()};
+		const _state = this.deriveStateFromProps(nextProps, state);
+		this.mounted && _state && this.setState(_state);
+		return _state;
+	}
 
-		this.queryParams.forEach(param => {
-			// @ts-ignore - no idea why this doesn't work?
-			state.queryParams[param] = query[param];
+	private getQueryObject(): Partial<T['queryParams']> {
+		const queryParams: Partial<T['queryParams']> = {};
+		this.queryParamArray.forEach(key => {
+			const queryKey = this.getQueryParamKeyForKey(key);
+			queryParams[key] = queryKey.get();
 		});
-
-		return state;
+		return queryParams;
 	}
 
 	// ######################## Class Methods ########################
 
-	setQueryParams = <K extends keyof T['queryParams'] = keyof T['queryParams']>(query: Partial<T['queryParams']>) => {
-		//Call BrowserV2 to set the queryParam.
+	private getQueryParamKeyForKey(key: keyof T['queryParams']) {
+		const queryKey = this.queryParamKeyMap[key];
+		if (!queryKey)
+			throw new ThisShouldNotHappenException(`Could not get QueryParamKey for param ${key as string}`);
+		return queryKey;
+	};
+
+	// ######################## Singulars
+
+	setQueryParam = <K extends keyof T['queryParams'] = keyof T['queryParams']>(key: K, value: T['queryParams'][K]) => {
+		const queryKey = this.getQueryParamKeyForKey(key);
+		queryKey.set(value);
+	};
+
+	getQueryParam = (key: keyof T['queryParams']) => {
+		const queryKey = this.getQueryParamKeyForKey(key);
+		return queryKey.get();
+	};
+
+	deleteQueryParam = (key: keyof T['queryParams']) => {
+		const queryKey = this.getQueryParamKeyForKey(key);
+		queryKey.delete();
+	};
+
+	// ######################## Multiples
+
+	setQueryParams = (query: Partial<T['queryParams']>) => {
+		ModuleFE_BrowserHistoryV2.replace(query);
 		//No need to setState or re-derive since the listener should catch the change and trigger a re-derive.
 	};
 }
 
-type TestDef = ProtoComponentDef<{ a: number, b: string }>;
-
-export class Test
-	extends ProtoComponent<TestDef> {
-
-	queryParams: ProtoComponentDef_QueryKeys<TestDef> = ['a', 'b'];
-
-	public test = () => {
-		this.setQueryParams({
-			a: 1,
-			b: '1',
-		});
-	};
-}
+// type SelectedState = {
+// 	selected: {
+// 		type: string;
+// 		id: string;
+// 	}[];
+// }
+//
+// // type HCS_State2 = {
+// // 	tag_filter: string,
+// // 	tag_selectedId: string,
+// // 	tag_selectedType: string;
+// // 	var_filter: string,
+// // 	var_selectedId: string,
+// // 	value_filter: string;
+// // 	value_tabKey: string;
+// // }
+//
+// type HCS_State = SelectedState & {
+// 	tagPanel: {
+// 		filter: string,
+// 	},
+// 	variablePanel: {
+// 		filter: string,
+// 	},
+// 	valuePanel: {
+// 		filter: string;
+// 		tabKey: string;
+// 	}
+// }
+//
+// type QPKDef_Tags = Pick<HCS_State, 'selected' | 'tagPanel'>;
+//
+// type QPKDef_Vars = Pick<HCS_State, 'selected' | 'variablePanel'>;
+//
+// type QPKDef_Values = Pick<HCS_State, 'selected' | 'valuePanel'>;
+//
+// const QPK_Tags = new QueryParamKey<QPKDef_Tags>('hcs');
+//
+// const QPK_Vars = new QueryParamKey<QPKDef_Vars>('hcs');
+//
+// const QPK_Values = new QueryParamKey<QPKDef_Values>('hcs');
+//
+//
+// //EXPRESSION ################
+//
+// type ExpressionBuilder = SelectedState & {
+// 	selectedTab: string;
+// }
+//
+// type Expression_State = SelectedState & {
+// 	selectedTab: string;
+// 	filter: string;
+// };
+//
+// type Pathway_State = SelectedState & {
+// 	filter: string;
+// }
+//
+// type QPKDef_ExpressionBuilder = ExpressionBuilder;
+//
+// const State = {
+// 	searchV2: {
+// 		filter: 'asd',
+// 		group: 'pathway',
+// 	},
+// 	selected: [
+// 		{type: 'pathway', id: '000'},
+// 		{type: 'pathwayTransition', id: '111'},
+// 		{type: 'expression', id: '123'},
+// 	],
+// 	expressionManager: {
+// 		selectedTab: 'tab',
+// 	},
+// 	pathwayManager: {
+// 		'...': '...',
+// 	}
+// };
