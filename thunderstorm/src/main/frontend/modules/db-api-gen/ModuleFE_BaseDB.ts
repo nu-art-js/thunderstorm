@@ -19,8 +19,6 @@
  * limitations under the License.
  */
 
-import {Response_DBSync,} from '../../shared';
-
 import {
 	arrayToMap,
 	DB_Object,
@@ -60,6 +58,7 @@ import {ApiCallerEventType, MultiApiEvent, SingleApiEvent} from '../../core/db-a
 import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction} from '../../core/IndexedDB';
+import {Response_DBSync} from '../../../shared/sync-manager/types';
 
 // type Message_CacheCollection = {
 // 	key: 'cache-sync'
@@ -187,7 +186,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
-	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
+	public onEntriesUpdated = async (items: DBType[]): Promise<void> => {
 		await this.IDB.syncIndexDb(items);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(items);

@@ -19,8 +19,6 @@
  * limitations under the License.
  */
 
-import {Response_DBSync,} from '../../shared';
-
 import {
 	_keys,
 	arrayToMap,
@@ -59,6 +57,7 @@ import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DBConfigV3, IndexedDBV3} from '../../core/IndexedDBV3';
 import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
+import {Response_DBSync} from '../../../shared/sync-manager/types';
 
 
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>

@@ -19,29 +19,10 @@
  * limitations under the License.
  */
 
-import {
-	ApiDefCaller,
-	ApiStruct_DBApiGenIDB,
-	BaseHttpRequest,
-	DBApiDefGeneratorIDB,
-	DBSyncData,
-	HttpException,
-	QueryParams,
-	TypedApi,
-} from '../../shared';
+import {ApiDefCaller, ApiStruct_DBApiGenIDB, BaseHttpRequest, DBApiDefGeneratorIDB, HttpException, QueryParams, TypedApi,} from '../../shared';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 
-import {
-	BadImplementationException,
-	DB_BaseObject,
-	DB_Object,
-	DBDef,
-	Default_UniqueKey, exists,
-	IndexKeys,
-	merge,
-	PreDB,
-	TypedMap
-} from '@nu-art/ts-common';
+import {BadImplementationException, DB_BaseObject, DB_Object, DBDef, Default_UniqueKey, exists, IndexKeys, merge, PreDB, TypedMap} from '@nu-art/ts-common';
 
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
@@ -50,6 +31,7 @@ import {DataStatus} from '../../core/db-api-gen/consts';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {SyncIfNeeded} from '../sync-manager/ModuleFE_SyncManagerV2';
+import {DBSyncData} from '../../../shared/sync-manager/types';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
