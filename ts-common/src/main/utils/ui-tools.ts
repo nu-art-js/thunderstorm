@@ -28,43 +28,47 @@ export const debounce = <Args extends any[]>(func: (...params: Args) => any | Pr
 	};
 };
 
-
 export type AwaitedDebounceInstance<Args extends any[], ReturnValue> = (...args: Args) => Promise<ReturnValue | undefined>
 
-export const awaitedDebounce = <Args extends any[], ReturnValue = any>(
-	func: (...params: Args) => ReturnValue | Promise<ReturnValue>,
-	timeout: number = 500,
-	defaultCallback: number = 1000
-): AwaitedDebounceInstance<Args, ReturnValue> => {
-	let timer: NodeJS.Timeout | undefined;
-	let defaultTimer: NodeJS.Timeout | undefined;
-	let pendingResult: ReturnValue | Promise<ReturnValue> | undefined;
+type DebounceParams<Args extends any[], ReturnValue = any> = {
+	func: (...params: Args) => Promise<ReturnValue>,
+	timeout?: number,
+	fallbackTimeout?: number
+}
+
+type Timers = {
+	timer?: NodeJS.Timeout,
+	fallbackTimer?: NodeJS.Timeout
+};
+export const awaitedDebounce = <Args extends any[], ReturnValue = any>(params: DebounceParams<Args, ReturnValue>): AwaitedDebounceInstance<Args, ReturnValue> => {
+	const timers: Timers = {};
+	const _clearTimeout = (timer: keyof Timers) => {
+		clearTimeout(timers[timer]);
+		delete timers[timer];
+	};
+
+	const _clearTimeouts = () => {
+		_clearTimeout('timer');
+		_clearTimeout('fallbackTimer');
+	};
 
 	return (...args: Args) => {
-		clearTimeout(timer);
-		clearTimeout(defaultTimer);
+		return new Promise<ReturnValue>((resolve) => {
+			const timeout = params.timeout ?? 500;
+			_clearTimeout('timer');
+			timers.timer = setTimeout(async () => {
+				_clearTimeouts();
+				resolve(await params.func(...args));
+			}, timeout);
 
-		if (!pendingResult) {
-			return new Promise<ReturnValue | undefined>((resolve) => {
-				timer = setTimeout(() => {
-					pendingResult = func(...args);
-					resolve(pendingResult);
-					clearTimeout(defaultTimer);
-					defaultTimer = undefined;
-				}, timeout);
-
-				if (!defaultTimer) {
-					defaultTimer = setTimeout(() => {
-						pendingResult = func(...args);
-						resolve(pendingResult);
-						defaultTimer = undefined;
-					}, defaultCallback);
-				}
-			});
-		} else {
-			const result = Promise.resolve(pendingResult);
-			pendingResult = undefined;
-			return result;
-		}
+			if (!timers.fallbackTimer) {
+				const fallbackTimeout = params.fallbackTimeout ?? 1000;
+				timers.fallbackTimer = setTimeout(async () => {
+					_clearTimeouts();
+					resolve(await params.func(...args));
+				}, fallbackTimeout);
+			}
+		});
 	};
 };
+
