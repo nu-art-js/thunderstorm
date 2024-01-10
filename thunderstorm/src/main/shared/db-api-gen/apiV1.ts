@@ -23,6 +23,7 @@ import {FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB, Second} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi, QueryParams} from '../types';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {Response_DBSync} from '../sync-manager/types';
 
 
 /**
@@ -99,23 +100,3 @@ export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof 
 	};
 };
 
-export type DBSyncData = { name: string, lastUpdated: number, oldestDeleted?: number };
-export type Response_DBSyncData = { syncData: DBSyncData[] };
-export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], toDelete: DB_Object[] };
-export type ApiStruct_SyncManager = {
-	v1: {
-		checkSync: QueryApi<Response_DBSyncData, undefined>
-	},
-}
-
-export const ApiDef_SyncManager: ApiDefResolver<ApiStruct_SyncManager> = {
-	v1: {
-		checkSync: {method: HttpMethod.GET, path: 'v1/db-api/sync-all'},
-	}
-};
-
-export const ApiDef_SyncManagerV2: ApiDefResolver<ApiStruct_SyncManager> = {
-	v1: {
-		checkSync: {method: HttpMethod.GET, path: 'v2/db-api/sync-all-v2', timeout: 60 * Second},
-	}
-};

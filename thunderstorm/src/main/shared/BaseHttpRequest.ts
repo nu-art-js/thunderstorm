@@ -233,7 +233,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		if (!this.isValidStatus(status)) {
 			const errorResponse = this.getErrorResponse();
 			const httpException = new HttpException<API['E']>(status, this.url, errorResponse);
-			if (status === HttpCodes._4XX.UNAUTHORIZED)
+			if (status === HttpCodes._4XX.UNAUTHORIZED.code)
 				await dispatcher_onAuthRequired.dispatchModuleAsync(this);
 
 			await this.onError?.(httpException, requestData, this);
