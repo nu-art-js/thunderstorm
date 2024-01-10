@@ -146,7 +146,7 @@ export const TS_NavLink = (props: {
 	route: TS_Route;
 	ignoreClickOnSameRoute?: boolean;
 } & Partial<NavLinkProps>) => {
-	const {route, children, ..._props} = props;
+	const {route, children,ignoreClickOnSameRoute, , ..._props} = props;
 
 	const fullPath = ModuleFE_RoutingV2.getFullPath(route.key);
 	if (!fullPath)
