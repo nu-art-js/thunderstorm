@@ -8,14 +8,15 @@ import {
 	compare,
 	DBProto,
 	deepClone,
+	deleteKeysObject,
 	exists,
 	InvalidResult,
 	InvalidResultObject,
 	isErrorOfType,
+	KeysOfDB_Object,
 	mergeObject,
 	MUSTNeverHappenException,
 	RecursiveReadonly,
-	removeDBObjectKeys,
 	removeFromArrayByIndex,
 	ResolvableContent,
 	resolveContent,
@@ -360,7 +361,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	private readonly module: ModuleFE_v3_BaseApi<Proto>;
 	private readonly onError?: (err: Error) => any | Promise<any>;
 	private readonly onCompleted?: (item: Proto['uiType']) => any | Promise<any>;
-	private debounceInstance: AwaitedDebounceInstance<[void], Proto['uiType']> = awaitedDebounce(() => super.preformAutoSave(), 2 * Second, 5 * Second);
+	private debounceInstance!: AwaitedDebounceInstance<[void], Proto['uiType']>;
 
 	/**
 	 * Constructs an EditableDBItemV3 instance.
@@ -376,7 +377,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		this.module = module;
 		this.onError = onError;
 		this.onCompleted = onCompleted;
-		this.debounceInstance = debounceInstance ?? this.debounceInstance;
 
 		//binds
 		this.save.bind(this);
@@ -397,6 +397,11 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 	setOnChanged(onChanged?: (editable: EditableItem<Proto['uiType']>) => Promise<void>) {
 		this.onChanged = onChanged;
+		return this;
+	}
+
+	setDebounce(debounceInstance: AwaitedDebounceInstance<[void], Proto['uiType']>) {
+		this.debounceInstance = debounceInstance;
 		return this;
 	}
 
@@ -432,11 +437,18 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		this.validate();
 
 		return new Promise((resolve, reject) => {
+			if (!this.debounceInstance)
+				this.debounceInstance = awaitedDebounce({
+					func: () => super.preformAutoSave(),
+					timeout: 2 * Second,
+					fallbackTimeout: 5 * Second
+				});
+
 			this.debounceInstance().then(item => {
-				const currentNoDBKeys = removeDBObjectKeys(this.item as Proto['dbType']);
+				const currentNoDBKeys = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
 				item = mergeObject(item, currentNoDBKeys);
 				resolve(item);
-			});
+			}).catch(reject);
 
 			this.onChanged?.(this.clone(this.item));
 		});
@@ -449,8 +461,8 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @returns The new instance.
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.onCompleted, this.onError, this.debounceInstance), item)
-			.setOnSave(this.saveAction).setOnDelete(this.deleteAction) as EditableDBItemV3<Proto>;
+		const debounce = new EditableDBItemV3<Proto>(item || this.item, this.module, this.onCompleted, this.onError).setDebounce(this.debounceInstance);
+		return this.cloneImpl(debounce, item).setOnSave(this.saveAction).setOnDelete(this.deleteAction) as EditableDBItemV3<Proto>;
 	}
 
 	/**
