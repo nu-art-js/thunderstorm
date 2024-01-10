@@ -38,11 +38,12 @@ import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/Fires
 import {firestore} from 'firebase-admin';
 import {OnModuleCleanupV2} from '../backup/ModuleBE_v2_BackupScheduler';
 import {createQueryServerApi} from '../../core/typed-api';
-import {ApiDef_SyncManagerV2, DBSyncData} from '../../../shared';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
 import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
 import Transaction = firestore.Transaction;
+import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
+import {DBSyncData} from '../../../shared/sync-manager/types';
 
 
 type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
