@@ -2,6 +2,8 @@ import {
 	_keys,
 	ArrayType,
 	AssetValueType,
+	awaitedDebounce,
+	AwaitedDebounceInstance,
 	cloneObj,
 	compare,
 	DBProto,
@@ -10,11 +12,14 @@ import {
 	InvalidResult,
 	InvalidResultObject,
 	isErrorOfType,
+	mergeObject,
 	MUSTNeverHappenException,
 	RecursiveReadonly,
+	removeDBObjectKeys,
 	removeFromArrayByIndex,
 	ResolvableContent,
 	resolveContent,
+	Second,
 	SubsetKeys,
 	ValidationException
 } from '@nu-art/ts-common';
@@ -69,6 +74,7 @@ export class EditableItem<T> {
 		this.originalItem = item;
 		this.saveAction = saveAction;
 		this.deleteAction = deleteAction;
+		this.preformAutoSave.bind(this);
 	}
 
 	protected onChanged?: Editable_OnChange<T>;
@@ -208,13 +214,22 @@ export class EditableItem<T> {
 		return this;
 	}
 
+	/**
+	 * If auto save in the editable item is true, preform the save action
+	 * Can be overridden in deriving classes
+	 * @protected
+	 */
+	protected async preformAutoSave(): Promise<T | undefined> {
+		return this.save(true);
+	}
+
 	private autoSave(hasChanges = true) {
 		if (!hasChanges)
 			return;
 
 		if (this._autoSave)
 			try {
-				return this.save(true);
+				return this.preformAutoSave();
 			} catch (err: any) {
 				return this.item;
 			}
@@ -345,6 +360,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	private readonly module: ModuleFE_v3_BaseApi<Proto>;
 	private readonly onError?: (err: Error) => any | Promise<any>;
 	private readonly onCompleted?: (item: Proto['uiType']) => any | Promise<any>;
+	private debounceInstance: AwaitedDebounceInstance<[void], Proto['uiType']> = awaitedDebounce(() => super.preformAutoSave(), 2 * Second, 5 * Second);
 
 	/**
 	 * Constructs an EditableDBItemV3 instance.
@@ -353,13 +369,18 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @param module The module for database operations.
 	 * @param onCompleted The function to be called when the operation is completed.
 	 * @param onError The function to be called when an error occurs.
+	 * @param debounceInstance Debounce instance from previous editable item
 	 */
-	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>, debounceInstance?: AwaitedDebounceInstance<any, any>) {
 		super(item, EditableDBItemV3.save(module, onCompleted, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
 		this.module = module;
 		this.onError = onError;
 		this.onCompleted = onCompleted;
+		this.debounceInstance = debounceInstance ?? this.debounceInstance;
+
+		//binds
 		this.save.bind(this);
+		this.preformAutoSave.bind(this);
 	}
 
 	private static save<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
@@ -404,13 +425,31 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	}
 
 	/**
+	 * Preform auto save in editable db item will be in debounce
+	 * @protected
+	 */
+	protected async preformAutoSave(): Promise<Proto['uiType'] | undefined> {
+		this.validate();
+
+		return new Promise((resolve, reject) => {
+			this.debounceInstance().then(item => {
+				const currentNoDBKeys = removeDBObjectKeys(this.item as Proto['dbType']);
+				item = mergeObject(item, currentNoDBKeys);
+				resolve(item);
+			});
+
+			this.onChanged?.(this.clone(this.item));
+		});
+	}
+
+	/**
 	 * Create a new instance of EditableDBItemV3 with the same properties and behaviors as the current instance.
 	 *
 	 * @param item The item of the new instance.
 	 * @returns The new instance.
 	 */
 	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.onCompleted, this.onError), item)
+		return this.cloneImpl(new EditableDBItemV3<Proto>(item || this.item, this.module, this.onCompleted, this.onError, this.debounceInstance), item)
 			.setOnSave(this.saveAction).setOnDelete(this.deleteAction) as EditableDBItemV3<Proto>;
 	}
 
