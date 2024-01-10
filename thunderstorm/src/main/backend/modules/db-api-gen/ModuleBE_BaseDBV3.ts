@@ -42,10 +42,10 @@ import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/const
 import {DBApiBEConfigV3, getModuleBEConfigV3} from '../../core/v3-db-def';
 import {OnFirestoreBackupSchedulerActV2} from '../backup/ModuleBE_v2_BackupScheduler';
 import {FirestoreBackupDetailsV2} from '../backup/ModuleBE_v2_Backup';
-import {Response_DBSync} from '../../../shared';
 import {ModuleBE_v2_SyncManager} from '../sync-manager/ModuleBE_v2_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
 import Transaction = firestore.Transaction;
+import {Response_DBSync} from '../../../shared/sync-manager/types';
 
 
 export type BaseDBApiConfigV3 = {

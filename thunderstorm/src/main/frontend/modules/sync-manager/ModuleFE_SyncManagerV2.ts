@@ -19,9 +19,20 @@
  * limitations under the License.
  */
 
-import {Dispatcher, Module} from '@nu-art/ts-common';
-import {ApiDef_SyncManagerV2, ApiDefCaller, ApiStruct_SyncManager, DBSyncData, Response_DBSyncData} from '../../shared';
-import {apiWithQuery} from '../../core/typed-api';
+import {Dispatcher, Module, Queue} from '@nu-art/ts-common';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api';
+import {
+	ApiStruct_SyncManager,
+	DBSyncData,
+	Response_DBSyncData,
+	Response_SmartSync,
+	SmartSync_DeltaSync,
+	SmartSync_FullSync
+} from '../../../shared/sync-manager/types';
+import {ApiDefCaller, ApiModule} from '../../../shared';
+import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
+import {Thunder} from '../../core/Thunder';
+import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 
 
 export type SyncIfNeeded = {
@@ -39,11 +50,15 @@ export class ModuleFE_SyncManagerV2_Class
 	implements ApiDefCaller<ApiStruct_SyncManager> {
 
 	readonly v1;
+	private syncQueue;
 
 	constructor() {
 		super();
+
+		this.syncQueue = new Queue('Sync Queue');
 		this.v1 = {
-			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData)
+			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData),
+			smartSync: apiWithBody(ApiDef_SyncManagerV2.v1.smartSync, this.onSmartSyncCompleted)
 		};
 	}
 
@@ -51,8 +66,31 @@ export class ModuleFE_SyncManagerV2_Class
 		await dispatch_syncIfNeeded.dispatchModuleAsync(response.syncData);
 		dispatch_onSyncCompleted.dispatchModule();
 	};
+
+	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
+		const modulesToSync = response.modules.filter(module => module.sync === SmartSync_FullSync);
+		modulesToSync.forEach(moduleToSync => {
+			const module = Thunder.getInstance().modules.find(module => (module as unknown as ApiModule['dbModule']).dbDef?.dbName === moduleToSync.name);
+			if (!module)
+				return this.logError(`Couldn't find module with dbName: '${moduleToSync.name}'`);
+
+			this.syncQueue.addItem(async () => {
+				this.logInfo(`Full sync for: '${moduleToSync.name}'`);
+				await (module as ModuleFE_BaseApi<any>).v1.sync().executeSync();
+			});
+		});
+
+		const modulesToUpdate = response.modules.filter(module => module.sync === SmartSync_DeltaSync);
+		for (const moduleToUpdate of modulesToUpdate) {
+			const module = Thunder.getInstance().modules
+				.find(module => (module as unknown as ApiModule['dbModule']).dbDef?.dbName === moduleToUpdate.name) as ModuleFE_BaseApi<any>;
+
+			await module.onEntriesUpdated(moduleToUpdate.items?.toUpdate ?? []);
+			await module.onEntriesDeleted(moduleToUpdate.items?.toDelete ?? []);
+		}
+
+		dispatch_onSyncCompleted.dispatchModule();
+	};
 }
 
 export const ModuleFE_SyncManagerV2 = new ModuleFE_SyncManagerV2_Class();
-
-

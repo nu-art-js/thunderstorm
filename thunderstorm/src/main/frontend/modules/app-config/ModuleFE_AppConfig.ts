@@ -23,12 +23,12 @@ import {
 	ApiStruct_AppConfig,
 	DB_AppConfig,
 	DBDef_AppConfigs,
-	Response_DBSync
 } from '../../shared';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {apiWithQuery} from '../../core/typed-api';
+import {Response_DBSync} from '../../../shared/sync-manager/types';
 
 
 type InferType<T> = T extends AppConfigKey_FE<infer ValueType> ? ValueType : never;
