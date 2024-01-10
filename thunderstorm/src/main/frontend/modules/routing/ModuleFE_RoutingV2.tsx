@@ -146,8 +146,7 @@ export const TS_NavLink = (props: {
 	route: TS_Route;
 	ignoreClickOnSameRoute?: boolean;
 } & Partial<NavLinkProps>) => {
-	const {route, children,ignoreClickOnSameRoute, , ..._props} = props;
-
+	const {route, children,ignoreClickOnSameRoute , ..._props} = props;
 	const fullPath = ModuleFE_RoutingV2.getFullPath(route.key);
 	if (!fullPath)
 		throw new BadImplementationException(`Route with key ${route.key} is not defined in routing module`);
