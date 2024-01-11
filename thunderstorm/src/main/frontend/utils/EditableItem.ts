@@ -75,7 +75,7 @@ export class EditableItem<T> {
 		this.originalItem = item;
 		this.saveAction = saveAction;
 		this.deleteAction = deleteAction;
-		this.preformAutoSave.bind(this);
+		this.performAutoSave.bind(this);
 	}
 
 	protected onChanged?: Editable_OnChange<T>;
@@ -220,7 +220,7 @@ export class EditableItem<T> {
 	 * Can be overridden in deriving classes
 	 * @protected
 	 */
-	protected async preformAutoSave(): Promise<T | undefined> {
+	protected async performAutoSave(): Promise<T | undefined> {
 		return this.save(true);
 	}
 
@@ -230,7 +230,7 @@ export class EditableItem<T> {
 
 		if (this._autoSave)
 			try {
-				return this.preformAutoSave();
+				return this.performAutoSave();
 			} catch (err: any) {
 				return this.item;
 			}
@@ -361,7 +361,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	private readonly module: ModuleFE_v3_BaseApi<Proto>;
 	private readonly onError?: (err: Error) => any | Promise<any>;
 	private readonly onCompleted?: (item: Proto['uiType']) => any | Promise<any>;
-	private debounceInstance!: AwaitedDebounceInstance<[void], Proto['uiType']>;
+	private debounceInstance?: AwaitedDebounceInstance<[void], Proto['uiType']>;
 
 	/**
 	 * Constructs an EditableDBItemV3 instance.
@@ -380,7 +380,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 		//binds
 		this.save.bind(this);
-		this.preformAutoSave.bind(this);
+		this.performAutoSave.bind(this);
 	}
 
 	private static save<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
@@ -400,7 +400,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		return this;
 	}
 
-	setDebounce(debounceInstance: AwaitedDebounceInstance<[void], Proto['uiType']>) {
+	setDebounce(debounceInstance?: AwaitedDebounceInstance<[void], Proto['uiType']>) {
 		this.debounceInstance = debounceInstance;
 		return this;
 	}
@@ -433,24 +433,25 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * Preform auto save in editable db item will be in debounce
 	 * @protected
 	 */
-	protected async preformAutoSave(): Promise<Proto['uiType'] | undefined> {
+	protected async performAutoSave(): Promise<Proto['uiType'] | undefined> {
 		this.validate();
-
 		return new Promise((resolve, reject) => {
 			if (!this.debounceInstance)
 				this.debounceInstance = awaitedDebounce({
-					func: () => super.preformAutoSave(),
+					func: () => super.performAutoSave(),
 					timeout: 2 * Second,
 					fallbackTimeout: 5 * Second
 				});
 
-			this.debounceInstance().then(item => {
-				const currentNoDBKeys = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
-				item = mergeObject(item, currentNoDBKeys);
-				resolve(item);
+			this.debounceInstance().then(dbItem => {
+				const currentUIItem = deleteKeysObject({...editableDBItemV3.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
+				const mergeObject1 = mergeObject(dbItem, currentUIItem);
+				delete this.debounceInstance;
+				resolve(mergeObject1);
 			}).catch(reject);
 
-			this.onChanged?.(this.clone(this.item));
+			const editableDBItemV3 = this.clone(this.item);
+			this.onChanged?.(editableDBItemV3);
 		});
 	}
 

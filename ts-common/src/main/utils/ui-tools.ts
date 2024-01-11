@@ -40,6 +40,7 @@ type Timers = {
 	timer?: NodeJS.Timeout,
 	fallbackTimer?: NodeJS.Timeout
 };
+
 export const awaitedDebounce = <Args extends any[], ReturnValue = any>(params: DebounceParams<Args, ReturnValue>): AwaitedDebounceInstance<Args, ReturnValue> => {
 	const timers: Timers = {};
 	const _clearTimeout = (timer: keyof Timers) => {
