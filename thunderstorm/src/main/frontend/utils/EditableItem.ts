@@ -448,7 +448,10 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				const mergeObject1 = mergeObject(dbItem, currentUIItem);
 				delete this.debounceInstance;
 				resolve(mergeObject1);
-			}).catch(reject);
+			}).catch((err) => {
+				delete this.debounceInstance;
+				reject(err);
+			});
 
 			const editableDBItemV3 = this.clone(this.item);
 			this.onChanged?.(editableDBItemV3);
