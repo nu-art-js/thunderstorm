@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, clamp, Filter, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {BadImplementationException, clamp, debounce, Filter, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -183,7 +183,7 @@ export class TS_DropDown<ItemType>
 		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
 		nextState.treeContainerRef = state?.treeContainerRef ?? React.createRef();
 		nextState.className = nextProps.className;
-		nextState.treeResizeObserver ??= new ResizeObserver(() => this.onTreeResize());
+		nextState.treeResizeObserver ??= new ResizeObserver(() => debounce(() => this.onTreeResize(), 5));
 
 		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
 			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
@@ -362,11 +362,11 @@ export class TS_DropDown<ItemType>
 		);
 		return (
 			<div className={className}
-				 ref={this.state.dropDownRef}
-				 tabIndex={this.props.tabIndex}
-				 onFocus={this.addKeyboardListener}
-				 onBlur={this.removeKeyboardListener}
-				 {...convertToHTMLDataAttributes(this.state.error, 'error')}
+					 ref={this.state.dropDownRef}
+					 tabIndex={this.props.tabIndex}
+					 onFocus={this.addKeyboardListener}
+					 onBlur={this.removeKeyboardListener}
+					 {...convertToHTMLDataAttributes(this.state.error, 'error')}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
@@ -447,7 +447,7 @@ export class TS_DropDown<ItemType>
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'}
-                                            onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
+																			onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
