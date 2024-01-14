@@ -95,12 +95,56 @@ export class TS_InputV2
 		return (props: NativeProps_TS_InputV2) => <TS_InputV2 {...templateProps} {...props}/>;
 	};
 
+	static readonly editableTimeOptional = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & { [k in K]?: number | string }>(props: EditableItemProps_TS_InputV2<any, K, T>) => {
+			return this._editableTime(templateProps)(props);
+		};
+	};
+
+	static readonly editableTime = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & { [k in K]: number | string }>(props: EditableItemProps_TS_InputV2<any, K, T>) => {
+			return this._editableTime(templateProps)(props);
+		};
+	};
+
+	static readonly _editableTime = (templateProps: TemplatingProps_TS_InputV2) => {
+		return <K extends string, T extends TS_Object & { [k in K]: number | string }>(props: EditableItemProps_TS_InputV2<number | string, K, T>) => {
+			const {type, ...restTemplatingProps} = templateProps;
+			const {editable, prop, saveEvent, ...rest} = props;
+			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
+			let onChange;
+			let onBlur;
+			let onAccept;
+
+			const saveEventHandler = (value: string | number) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value} as T);
+			if (_saveEvents!.includes('change'))
+				onChange = saveEventHandler;
+
+			if (_saveEvents!.includes('blur'))
+				onBlur = saveEventHandler;
+
+			if (_saveEvents!.includes('accept'))
+				onAccept = saveEventHandler;
+
+			const value: string = props.editable.get(props.prop);
+			return <TS_InputV2
+				error={resolveEditableError(props)}
+				{...restTemplatingProps} {...rest}
+				type={type}
+				onChange={onChange}
+				onBlur={onBlur}
+				onAccept={onAccept}
+				value={String(props.value ?? value)}/>;
+		};
+	};
+
 	static readonly editableNumberOptional = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & { [k in K]?: number }>(props: EditableItemProps_TS_InputV2<any, K, T>) => {
 			// @ts-ignore
 			return this._editableNumber(templateProps)(props);
 		};
 	};
+
 	static readonly editableNumber = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & { [k in K]: number }>(props: EditableItemProps_TS_InputV2<any, K, T>) => {
 			return this._editableNumber(templateProps)(props);
