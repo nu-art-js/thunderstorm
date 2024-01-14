@@ -33,6 +33,7 @@ import {ApiDefCaller, ApiModule} from '../../../shared';
 import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
 import {Thunder} from '../../core/Thunder';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 
 
 export type SyncIfNeeded = {
@@ -42,8 +43,13 @@ export type OnSyncCompleted = {
 	__onSyncCompleted: () => void
 }
 
+export interface PermissibleModulesUpdated {
+	__onPermissibleModulesUpdated: () => void;
+}
+
 export const dispatch_syncIfNeeded = new Dispatcher<SyncIfNeeded, '__syncIfNeeded'>('__syncIfNeeded');
 export const dispatch_onSyncCompleted = new Dispatcher<OnSyncCompleted, '__onSyncCompleted'>('__onSyncCompleted');
+export const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleModulesUpdated, '__onPermissibleModulesUpdated'>('__onPermissibleModulesUpdated');
 
 export class ModuleFE_SyncManagerV2_Class
 	extends Module
@@ -51,6 +57,7 @@ export class ModuleFE_SyncManagerV2_Class
 
 	readonly v1;
 	private syncQueue;
+	private permissibleModuleNames: string[] | undefined = [];
 
 	constructor() {
 		super();
@@ -63,9 +70,13 @@ export class ModuleFE_SyncManagerV2_Class
 	}
 
 	public onReceivedSyncData = async (response: Response_DBSyncData) => {
+		this.permissibleModuleNames = response.syncData.map(item => item.name);
+		dispatch_OnPermissibleModulesUpdated.dispatchUI();
 		await dispatch_syncIfNeeded.dispatchModuleAsync(response.syncData);
 		dispatch_onSyncCompleted.dispatchModule();
 	};
+
+	public getPermissibleModuleNames = () => this.permissibleModuleNames ? [...this.permissibleModuleNames] : undefined;
 
 	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
 		const modulesToSync = response.modules.filter(module => module.sync === SmartSync_FullSync);

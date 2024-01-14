@@ -43,7 +43,7 @@ export class AwaitModules
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.awaiting ??= true;
 		//Check if all modules have data
-		const modules = resolveContent(this.props.modules).filter(module => Thunder.getInstance().modules.includes(module) && exists(module.dbDef));
+		const modules = resolveContent(nextProps.modules).filter(module => Thunder.getInstance().modules.includes(module) && exists(module.dbDef));
 		if (modules.every(module => module.getDataStatus() === DataStatus.ContainsData))
 			state.awaiting = false;
 
