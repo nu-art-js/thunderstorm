@@ -25,6 +25,15 @@
   "scripts": {
     "build": "tsc"
   },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
   "publishConfig": {
     "directory": "dist",
     "linkDirectory": true
