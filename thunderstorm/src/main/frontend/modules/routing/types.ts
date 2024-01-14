@@ -15,6 +15,7 @@ export type TS_Route<T extends QueryParams = QueryParams> = {
 	fallback?: boolean;
 	index?: boolean;
 	children?: TS_Route<any>[]
-	modulesToAwait?: (ModuleFE_BaseDB<any, any> | ModuleFE_v3_BaseDB<any, any>)[];
+	modulesToAwait?: ResolvableContent<(ModuleFE_BaseDB<any, any> | ModuleFE_v3_BaseDB<any, any>)[]>;
 	awaitLoader?: ResolvableContent<React.ReactNode>;
+	awaitSync?: boolean;
 }
