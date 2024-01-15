@@ -1,7 +1,8 @@
-import {DB_Object} from '@nu-art/ts-common';
+import {DB_Object, TypedMap} from '@nu-art/ts-common';
 import {BodyApi, QueryApi} from '../types';
 
-
+export type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
+export type Type_SyncData = TypedMap<LastUpdated>
 export type DBSyncData = { name: string, lastUpdated: number, oldestDeleted?: number };
 export type Response_DBSyncData = { syncData: DBSyncData[] };
 export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], toDelete: DB_Object[] };
