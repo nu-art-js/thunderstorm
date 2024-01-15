@@ -153,6 +153,9 @@ export class StorageKey<ValueType = string | number | object> {
 		ModuleFE_LocalStorage.registerKey(this);
 	}
 
+	/**
+	 * Will not delete this storage key if the delete operation is performed from __onClearWebsiteData
+	 */
 	withstandDeletion() {
 		// @ts-ignore
 		ModuleFE_LocalStorage.withstandDeletion(this);

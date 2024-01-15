@@ -23,31 +23,44 @@ import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {
 	_keys,
+	arrayToMap,
 	currentTimeMillis,
 	DB_Object,
 	DBDef,
+	exists,
 	filterDuplicates,
 	LogLevel,
 	Module,
 	PreDB,
 	tsValidateMustExist,
-	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import {OnModuleCleanupV2} from '../backup/ModuleBE_v2_BackupScheduler';
-import {createQueryServerApi} from '../../core/typed-api';
+import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
 import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
-import Transaction = firestore.Transaction;
 import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
-import {DBSyncData} from '../../../shared/sync-manager/types';
+import {
+	DBSyncData,
+	DeltaSyncModule,
+	FullSyncModule,
+	LastUpdated,
+	NoNeedToSyncModule,
+	Request_SmartSync,
+	Response_SmartSync,
+	SmartSync_DeltaSync,
+	SmartSync_FullSync,
+	SmartSync_UpToDateSync,
+	Type_SyncData
+} from '../../../shared/sync-manager/types';
+import {getCollectionModules} from '../../../shared/collection-module-utils';
+import {Storm} from '../../core/Storm';
+import Transaction = firestore.Transaction;
 
 
-type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
-type Type_SyncData = TypedMap<LastUpdated>
 type DeletedDBItem = DB_Object & { __collectionName: string, __docId: UniqueId }
 type Config = {
 	retainDeletedCount: number
@@ -78,11 +91,13 @@ export class ModuleBE_v2_SyncManager_Class
 	private syncData!: FirebaseRef<Type_SyncData>;
 	private deletedCount!: FirebaseRef<number>;
 	public checkSyncApi;
+	public smartSyncApi;
 
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
 		this.checkSyncApi = createQueryServerApi(ApiDef_SyncManagerV2.v1.checkSync, this.fetchDBSyncData);
+		this.smartSyncApi = createBodyServerApi(ApiDef_SyncManagerV2.v1.smartSync, this.calculateSmartSync);
 
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
@@ -97,6 +112,57 @@ export class ModuleBE_v2_SyncManager_Class
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
 		addRoutes([this.checkSyncApi]);
 	}
+
+	private calculateSmartSync = async (body: Request_SmartSync): Promise<Response_SmartSync> => {
+		const wantedCollectionNames = body.modules.map(item => item.dbName);
+		const modulesArray = getCollectionModules(Storm.getInstance().modules, wantedCollectionNames);
+		const modulesMap = arrayToMap(modulesArray, (item: any) => item.dbName);
+		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
+		const upToDateSyncData = await this.syncData.get();
+
+		await Promise.all(body.modules.map(async syncRequest => {
+			const moduleToCheck = modulesMap[syncRequest.dbName] as ModuleBE_BaseDBV2<any>;
+			const remoteSyncData = upToDateSyncData[syncRequest.dbName];
+
+			if (syncRequest.lastUpdated === 0 || exists(remoteSyncData.oldestDeleted) && remoteSyncData.oldestDeleted > syncRequest.lastUpdated) {
+				// full sync
+				syncDataResponse.push({
+					dbName: syncRequest.dbName,
+					sync: SmartSync_FullSync,
+					lastUpdated: remoteSyncData.lastUpdated,
+				});
+				return;
+			}
+			if (syncRequest.lastUpdated === remoteSyncData.lastUpdated) {
+				// no sync
+				syncDataResponse.push({
+					dbName: syncRequest.dbName,
+					sync: SmartSync_UpToDateSync,
+					lastUpdated: remoteSyncData.lastUpdated
+				});
+				return;
+			}
+			if (syncRequest.lastUpdated !== remoteSyncData.lastUpdated) {
+				// delta sync
+				const itemsToReturn = {
+					toUpdate: await moduleToCheck.query.where({__updated: {$gte: syncRequest.lastUpdated}}),
+					toDelete: await this.queryDeleted(syncRequest.dbName, {where: {__updated: {$gte: syncRequest.lastUpdated}}})
+				};
+
+				syncDataResponse.push({
+					dbName: syncRequest.dbName,
+					sync: SmartSync_DeltaSync,
+					lastUpdated: remoteSyncData.lastUpdated,
+					items: itemsToReturn
+				});
+				return;
+			}
+		}));
+
+		return {
+			modules: syncDataResponse
+		};
+	};
 
 	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DeletedDBItem> => {
 		const {_id, __updated, __created, _v} = item;
