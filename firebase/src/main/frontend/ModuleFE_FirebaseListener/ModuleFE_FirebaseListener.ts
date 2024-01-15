@@ -1,14 +1,7 @@
-import {Database, DataSnapshot, getDatabase, onValue, ref} from 'firebase/database';
-import {initializeApp} from 'firebase/app';
-import {Unsubscribe} from 'firebase/messaging';
-import {
-	__stringify,
-	_keys,
-	BadImplementationException,
-	filterInstances,
-	ImplementationMissingException,
-	Module
-} from '@nu-art/ts-common';
+import {FirebaseApp, initializeApp} from 'firebase/app';
+import {DataSnapshot, get, getDatabase, onValue, query, ref, Unsubscribe} from 'firebase/database';
+import {__stringify, _keys, filterInstances, ImplementationMissingException, Logger, Module} from '@nu-art/ts-common';
+import 'firebase/database';
 
 type FirebaseListenerConfig = {
 	firebaseConfig: {
@@ -16,10 +9,10 @@ type FirebaseListenerConfig = {
 		authDomain: string;
 		databaseURL: string;
 		projectId: string;
-		storageBucket: string;
-		messagingSenderId: string;
+		storageBucket?: string;
+		messagingSenderId?: string;
 		appId: string;
-		measurementId: string;
+		measurementId?: string;
 	}
 }
 type FirebaseConfigKey =
@@ -27,15 +20,12 @@ type FirebaseConfigKey =
 	| 'authDomain'
 	| 'databaseURL'
 	| 'projectId'
-	| 'storageBucket'
-	| 'messagingSenderId'
 	| 'appId'
-	| 'measurementId'
-const ConfigKeys: FirebaseConfigKey[] = ['apiKey', 'authDomain', 'databaseURL', 'projectId', 'storageBucket', 'messagingSenderId', 'appId', 'measurementId'];
+const MandatoryFirebaseConfigKeys: FirebaseConfigKey[] = ['apiKey', 'authDomain', 'databaseURL', 'projectId', 'appId'];
 
 export class ModuleFE_FirebaseListener_Class
 	extends Module<FirebaseListenerConfig> {
-	public database!: Database;
+	public app!: FirebaseApp;
 
 	private getFirebaseConfig = () => {
 		if (!this.config.firebaseConfig) {
@@ -44,8 +34,8 @@ export class ModuleFE_FirebaseListener_Class
 		}
 
 		const configObjectKeys: FirebaseConfigKey[] = _keys(this.config.firebaseConfig);
-		if (configObjectKeys.length < ConfigKeys.length) {
-			const missingKeys = filterInstances(ConfigKeys.map(key => configObjectKeys.includes(key) ? undefined : key));
+		const missingKeys = filterInstances(MandatoryFirebaseConfigKeys.map(key => configObjectKeys.includes(key) ? undefined : key));
+		if (missingKeys.length > 0) {
 			this.logWarning(`FE firebase config is missing props: ${__stringify(missingKeys)}`);
 			throw new ImplementationMissingException(`FE firebase config is missing props: ${__stringify(missingKeys)}`);
 		}
@@ -54,44 +44,75 @@ export class ModuleFE_FirebaseListener_Class
 	};
 
 	initializeFirebase() {
-		let app;
 		try {
-			app = initializeApp(this.getFirebaseConfig());
+			this.app = initializeApp(this.getFirebaseConfig());
 		} catch (e: any) {
-			throw new BadImplementationException(`Could not initialize firebase for FirebaseListener, couldn't get config. ${e.message}`);
+			throw new Error(`Could not initialize firebase for FirebaseListener, couldn't get config. ${e.message}`);
 		}
-		return getDatabase(app);
 	}
 
 	protected init() {
-		this.database = this.initializeFirebase();
+		this.initializeFirebase();
 	}
 
 	createListener(nodePath: string): RefListenerFE {
-		return new RefListenerFE(this.database, nodePath);
+		return new RefListenerFE(nodePath);
 	}
 }
 
-export class RefListenerFE {
-	private readonly database: Database;
+/**
+ * Firebase Realtime Database rules need to allow reading the nodes that are being queried.
+ * <p>"<b>Permission Denied</b>" errors in dev console imply permission is not allowed in the db's rules.
+ */
+export class RefListenerFE<Value extends any = any>
+	extends Logger {
 	private readonly nodePath: string;
 	private toUnsubscribeFunction?: Unsubscribe;
 
-	constructor(database: Database, nodePath: string) {
-		this.database = database;
+	constructor(nodePath: string) {
+		super(`RefListenerFE('${nodePath}')`);
 		this.nodePath = nodePath;
 	}
 
+	/**
+	 * Receives initial value and listens henceforth.
+	 */
 	startListening(onValueChangedListener: (snapshot: DataSnapshot) => void) {
-		const nodeRef = ref(this.database, this.nodePath);
-		this.toUnsubscribeFunction = onValue(nodeRef, onValueChangedListener);
+		if (this.toUnsubscribeFunction) {
+			this.logWarning('RefListener asked to listen mid-listening. Stopping to listen prior to re-listening');
+			this.stopListening();
+		}
+
+		const db = getDatabase(ModuleFE_FirebaseListener.app);
+		const dbRef = ref(db, this.nodePath);
+		const refQuery = query(dbRef);
+		this.logInfo(`RefListener asked to start listening`);
+		this.toUnsubscribeFunction = onValue(refQuery, (snapshot) => {
+			onValueChangedListener(snapshot);
+		});
+
 		return this;
 	}
 
-	stopListening() {
-		if (!this.toUnsubscribeFunction)
-			return;
+	private getQuery() {
+		const db = getDatabase(ModuleFE_FirebaseListener.app);
+		return query(ref(db, this.nodePath));
+	}
 
+	/**
+	 * One time get the value.
+	 */
+	async get(): Promise<Value> {
+		const dataSnapshot = await get(this.getQuery());
+		return dataSnapshot.val();
+	}
+
+	stopListening() {
+		if (!this.toUnsubscribeFunction) {
+			this.logWarning('RefListener asked to stop listening but unsubscribeFunction does not exist.');
+			return;
+		}
+		this.logInfo('RefListener asked to stop listening');
 		this.toUnsubscribeFunction();
 		this.toUnsubscribeFunction = undefined;
 	}

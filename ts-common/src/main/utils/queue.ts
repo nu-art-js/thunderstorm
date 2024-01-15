@@ -16,14 +16,15 @@
  * limitations under the License.
  */
 
-import {Logger} from "../core/logger/Logger";
+import {Logger} from '../core/logger/Logger';
 import {addItemToArray, removeItemFromArray} from './array-tools';
+
 
 export class Queue
 	extends Logger {
 
-	private parallelCount = 1;
-	private running = 0;
+	private allowedParallelOperationsCount = 1;
+	private runningOperationsCount = 0;
 	private queue: (() => Promise<void>)[] = [];
 	private onQueueEmpty?: () => void;
 	private finalResolve?: (value?: unknown) => void;
@@ -33,7 +34,7 @@ export class Queue
 	}
 
 	setParallelCount(parallelCount: number) {
-		this.parallelCount = parallelCount;
+		this.allowedParallelOperationsCount = parallelCount;
 		return this;
 	}
 
@@ -50,7 +51,7 @@ export class Queue
 
 	addItemImpl<T>(toExecute: () => Promise<T>, onCompleted?: (output: T) => void, onError?: (error: Error) => void) {
 		addItemToArray(this.queue, async (resolve: () => void) => {
-			this.running++;
+			this.runningOperationsCount++;
 			try {
 				const output: T = await toExecute();
 				onCompleted && onCompleted(output);
@@ -58,12 +59,12 @@ export class Queue
 				try {
 					onError && onError(e);
 				} catch (e1: any) {
-					this.logError("Error while calling onError");
-					this.logError("--- Original: ", e);
-					this.logError("-- Secondary: ", e1);
+					this.logError('Error while calling onError');
+					this.logError('--- Original: ', e);
+					this.logError('-- Secondary: ', e1);
 				}
 			}
-			this.running--;
+			this.runningOperationsCount--;
 			resolve();
 			this.execute();
 		});
@@ -73,12 +74,12 @@ export class Queue
 	};
 
 	execute() {
-		if (this.queue.length === 0 && this.running === 0) {
+		if (this.queue.length === 0 && this.runningOperationsCount === 0) {
 			this.onQueueEmpty && this.onQueueEmpty();
 			return this.finalResolve?.();
 		}
 
-		for (let i = 0; this.running < this.parallelCount && i < this.queue.length; i++) {
+		for (let i = 0; this.runningOperationsCount < this.allowedParallelOperationsCount && i < this.queue.length; i++) {
 			const toExecute = this.queue[0];
 			removeItemFromArray(this.queue, toExecute);
 			new Promise(toExecute.bind(this))
