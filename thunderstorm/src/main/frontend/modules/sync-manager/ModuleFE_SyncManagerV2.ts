@@ -38,6 +38,7 @@ import {Thunder} from '../../core/Thunder';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
+import {StorageKey} from '../../../../../dist/frontend';
 
 
 export type SyncIfNeeded = {
@@ -50,6 +51,8 @@ export type OnSyncCompleted = {
 export interface PermissibleModulesUpdated {
 	__onPermissibleModulesUpdated: () => void;
 }
+
+const StorageKey_SyncMode = new StorageKey<'old' | 'smart'>('storage-key--sync-mode').withstandDeletion();
 
 export const dispatch_syncIfNeeded = new Dispatcher<SyncIfNeeded, '__syncIfNeeded'>('__syncIfNeeded');
 export const dispatch_onSyncCompleted = new Dispatcher<OnSyncCompleted, '__onSyncCompleted'>('__onSyncCompleted');
@@ -73,7 +76,23 @@ export class ModuleFE_SyncManagerV2_Class
 			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData),
 			smartSync: apiWithBody(ApiDef_SyncManagerV2.v1.smartSync, this.onSmartSyncCompleted)
 		};
+		// @ts-ignore
+		window.toggleSyncMode = this.toggleSyncMode;
 	}
+
+	sync = async () => {
+		if (StorageKey_SyncMode.get('old') === 'old')
+			return this.v1.checkSync();
+
+		const newVar = {modules: []};
+		return this.v1.smartSync(newVar);
+	};
+
+	getSyncMode = () => StorageKey_SyncMode.get('old');
+
+	toggleSyncMode = (syncMode: 'old' | 'smart' = this.getSyncMode()) => {
+		StorageKey_SyncMode.set(syncMode === 'old' ? 'smart' : 'old');
+	};
 
 	public onReceivedSyncData = async (response: Response_DBSyncData) => {
 		this.syncedModules = response.syncData.map(item => ({dbName: item.name, lastUpdated: item.lastUpdated}));
