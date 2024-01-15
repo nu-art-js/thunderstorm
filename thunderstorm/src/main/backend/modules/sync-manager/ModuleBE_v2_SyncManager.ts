@@ -37,13 +37,13 @@ import {
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import {OnModuleCleanupV2} from '../backup/ModuleBE_v2_BackupScheduler';
-import {createQueryServerApi} from '../../core/typed-api';
+import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
 import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
 import Transaction = firestore.Transaction;
 import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
-import {DBSyncData} from '../../../shared/sync-manager/types';
+import {DBSyncData, Request_SmartSync, Response_SmartSync} from '../../../shared/sync-manager/types';
 
 
 type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
@@ -78,11 +78,13 @@ export class ModuleBE_v2_SyncManager_Class
 	private syncData!: FirebaseRef<Type_SyncData>;
 	private deletedCount!: FirebaseRef<number>;
 	public checkSyncApi;
+	public smartSyncApi;
 
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
 		this.checkSyncApi = createQueryServerApi(ApiDef_SyncManagerV2.v1.checkSync, this.fetchDBSyncData);
+		this.smartSyncApi = createBodyServerApi(ApiDef_SyncManagerV2.v1.smartSync, this.calculateSmartSync);
 
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
@@ -97,6 +99,10 @@ export class ModuleBE_v2_SyncManager_Class
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
 		addRoutes([this.checkSyncApi]);
 	}
+
+	private calculateSmartSync = async (body: Request_SmartSync): Promise<Response_SmartSync> => {
+		return {} as Response_SmartSync;
+	};
 
 	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DeletedDBItem> => {
 		const {_id, __updated, __created, _v} = item;
