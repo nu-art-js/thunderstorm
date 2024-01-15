@@ -114,7 +114,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		this.dbDef = dbDef;
 	}
 
-	protected setDataStatus(status: DataStatus) {
+	setDataStatus(status: DataStatus) {
 		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
 		if (this.dataStatus === status)
 			return;
@@ -149,7 +149,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		this.defaultDispatcher?.dispatchUI(event, item);
 	};
 
-	private dispatchMulti = (event: MultiApiEvent, items: DBType[]) => {
+	dispatchMulti = (event: MultiApiEvent, items: DBType[]) => {
 		this.defaultDispatcher?.dispatchModule(event, items);
 		this.defaultDispatcher?.dispatchUI(event, items);
 	};

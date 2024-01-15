@@ -8,21 +8,33 @@ export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], to
 
 export type Request_SmartSync = {
 	modules: {
-		name: string,
+		dbName: string,
 		lastUpdated: number
 	}[]
 }
 
+export const SmartSync_UpToDateSync = 'up-to-date' as const;
 export const SmartSync_FullSync = 'full' as const;
 export const SmartSync_DeltaSync = 'delta-sync' as const;
 
-export type SmartSync_Type = typeof SmartSync_FullSync | typeof SmartSync_DeltaSync
+export type NoNeedToSyncModule = {
+	dbName: string,
+	sync: typeof SmartSync_UpToDateSync
+	lastUpdated: number
+};
+export type DeltaSyncModule = {
+	dbName: string,
+	sync: typeof SmartSync_DeltaSync
+	items: Response_DBSync<any>
+	lastUpdated: number
+};
+export type FullSyncModule = {
+	dbName: string,
+	sync: typeof SmartSync_FullSync
+	lastUpdated: number
+};
 export type Response_SmartSync = {
-	modules: {
-		name: string,
-		sync: SmartSync_Type
-		items?: Response_DBSync<any>
-	}[]
+	modules: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[]
 }
 
 export type ApiStruct_SyncManager = {

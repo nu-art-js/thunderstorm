@@ -92,7 +92,6 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 
 				return syncRequest;
 			},
-
 			query: (query?: FirestoreQuery<DBType>) => _query(query || _EmptyQuery),
 			// @ts-ignore
 			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
