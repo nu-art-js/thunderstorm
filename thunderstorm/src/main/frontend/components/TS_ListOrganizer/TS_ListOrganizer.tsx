@@ -21,7 +21,6 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_ListOrganizer.scss';
-import {_className} from '../../utils/tools';
 import {LL_V_L} from '../Layouts';
 import {ComponentSync} from '../../core/ComponentSync';
 import {exists, swapInArrayByIndex} from '@nu-art/ts-common';
@@ -34,6 +33,7 @@ type State<T> = {
 export type TS_ListOrganizer_RendererProps<T> = {
 	item: T;
 	index: number;
+	dragged: boolean;
 	onDragStart: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
 	onDragOver: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
 	onDragEnd: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void;
@@ -83,9 +83,11 @@ export class TS_ListOrganizer<T>
 	render() {
 		return <LL_V_L className={'ts-list-organizer__list'}>
 			{this.state.items.map((item, itemIndex) => {
+				const dragged = itemIndex === this.draggedItemIndex;
 				return <React.Fragment key={itemIndex}>
 					{this.props.renderer({
 						item,
+						dragged,
 						index: itemIndex,
 						onDragEnd: this.onDragEnd,
 						onDragOver: this.onDragOver,

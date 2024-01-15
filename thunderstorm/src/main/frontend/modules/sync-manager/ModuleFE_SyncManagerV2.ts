@@ -38,7 +38,7 @@ import {Thunder} from '../../core/Thunder';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {StorageKey} from '../../../../../dist/frontend';
+import {StorageKey} from '../ModuleFE_LocalStorage';
 
 
 export type SyncIfNeeded = {
