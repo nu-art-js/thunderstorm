@@ -21,10 +21,17 @@
 
 .ts-list-organizer__list {
   .ts-list-organizer__item {
+    -webkit-user-drag: element;
 
+    &.ts-list-organizer__dragged {
+      
+    }
   }
 
-  .ts-list-organizer__dragged {
-
+  .ts-list-organizer__placeholder {
+    width: 100%;
+    height: 40px;
+    border: 2px solid blue;
+    background: transparent;
   }
 }
