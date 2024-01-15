@@ -19,6 +19,7 @@
 import {exists} from './tools';
 import {_keys} from './object-tools';
 import {NestedArrayType, TypedMap} from './types';
+import {BadImplementationException} from '../core/exceptions/exceptions';
 
 
 export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { filteredIn: T[], filteredOut: T[] } {
@@ -54,6 +55,22 @@ export function removeFromArrayByIndex<T>(array: T[], index: number) {
 	if (index > -1)
 		array.splice(index, 1);
 
+	return array;
+}
+
+export function swapInArrayByIndex<T>(array: T[], i1: number, i2: number) {
+	if (i1 < 0 || i1 >= array.length)
+		throw new BadImplementationException(`index i1 out of bounds: ${i1}`);
+
+	if (i2 < 0 || i2 >= array.length)
+		throw new BadImplementationException(`index i2 out of bounds: ${i2}`);
+
+	if (i1 === i2)
+		return array;
+
+	const temp = array[i1];
+	array[i1] = array[i2];
+	array[i2] = temp;
 	return array;
 }
 
