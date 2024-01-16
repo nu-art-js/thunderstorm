@@ -332,7 +332,7 @@ class ModuleBE_Permissions_Class
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
 
-				const apiModules = arrayToMap(RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule.dbDef.dbName);
+				const apiModules = arrayToMap(RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule!.dbDef!.dbName);
 
 				this.logDebug(_keys(apiModules));
 
@@ -342,7 +342,7 @@ class ModuleBE_Permissions_Class
 					if (!apiModule)
 						throw new MUSTNeverHappenException(`Could not find api module with dbName: ${dbName}`);
 
-					const _apiDefs = apiModule.apiDef;
+					const _apiDefs = apiModule.apiDef!;
 					return _keys(_apiDefs).map(_apiDefKey => {
 						const apiDefs = _apiDefs[_apiDefKey];
 						return filterInstances(_keys(apiDefs).map(apiDefKey => {

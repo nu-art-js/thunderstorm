@@ -158,7 +158,7 @@ export class ModuleBE_PermissionsAssert_Class
 			//Filter out any module we don't have permission to sync
 			const userPermissions = MemKey_UserPermissions.get();
 
-			const mapDbNameToApiModules = arrayToMap(RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule.dbDef.dbName);
+			const mapDbNameToApiModules = arrayToMap(RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule!.dbDef?.dbName!);
 
 			const paths = dbModules.map(module => {
 				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbName];
@@ -167,7 +167,7 @@ export class ModuleBE_PermissionsAssert_Class
 					return undefined;
 				}
 
-				return mapDbNameToApiModule.apiDef['v1']['sync'].path;
+				return mapDbNameToApiModule.apiDef?.['v1']?.['sync'].path;
 			});
 			// this.logWarning(`Paths(${paths.length}):`, paths);
 			const _allApis = await ModuleBE_PermissionApi.query.where({});
