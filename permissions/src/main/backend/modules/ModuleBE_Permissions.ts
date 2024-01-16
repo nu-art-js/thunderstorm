@@ -9,12 +9,26 @@ import {
 	MUSTNeverHappenException,
 	PreDB,
 	reduceToMap,
+	RuntimeModules,
 	TS_Object,
 	TypedMap,
 	Year,
 } from '@nu-art/ts-common';
-import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfig, Storm} from '@nu-art/thunderstorm/backend';
-import {ApiDef_Permissions, DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionDomain, DB_PermissionProject} from '../../shared';
+import {
+	addRoutes,
+	createQueryServerApi,
+	MemKey_ServerApi,
+	ModuleBE_AppConfig,
+	ModuleBE_BaseApiV3_Class,
+	Storm
+} from '@nu-art/thunderstorm/backend';
+import {
+	ApiDef_Permissions,
+	DB_PermissionAccessLevel,
+	DB_PermissionApi,
+	DB_PermissionDomain,
+	DB_PermissionProject
+} from '../../shared';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
@@ -47,7 +61,10 @@ import {
 } from '../../shared/consts';
 import {ApiModule} from '@nu-art/thunderstorm';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
+import {
+	DefaultDef_ServiceAccount,
+	dispatcher_collectServiceAccounts
+} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
 
 
@@ -315,8 +332,7 @@ class ModuleBE_Permissions_Class
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
 
-				const apiModules = arrayToMap(Storm.getInstance()
-					.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule!.dbDef!.dbName);
+				const apiModules = arrayToMap(RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule!.dbDef!.dbName);
 
 				this.logDebug(_keys(apiModules));
 

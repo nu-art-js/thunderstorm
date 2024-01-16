@@ -19,24 +19,32 @@
  * limitations under the License.
  */
 
-import {DB_Object, Dispatcher, Module, Queue, RuntimeModules} from '@nu-art/ts-common';
+import {_keys, DB_Object, Dispatcher, Module, Queue, RuntimeModules} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
 	DBSyncData,
 	DeltaSyncModule,
 	FullSyncModule,
+	Request_SmartSync,
 	Response_DBSync,
 	Response_DBSyncData,
 	Response_SmartSync,
 	SmartSync_DeltaSync,
-	SmartSync_FullSync
+	SmartSync_FullSync,
+	SyncDbData,
+	Type_SyncData
 } from '../../../shared/sync-manager/types';
 import {ApiDefCaller, DBModuleType} from '../../../shared';
 import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
+import {
+	ModuleFE_FirebaseListener,
+	RefListenerFE
+} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {DataSnapshot} from 'firebase/database';
 import {StorageKey} from '../ModuleFE_LocalStorage';
 
 
@@ -65,7 +73,8 @@ export class ModuleFE_SyncManagerV2_Class
 	private syncQueue;
 
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
-	private syncedModules: { dbName: string, lastUpdated: number }[] = [];
+	private syncedModules: SyncDbData[] = [];
+	private syncFirebaseListener!: RefListenerFE<Type_SyncData>;
 
 	constructor() {
 		super();
@@ -83,14 +92,29 @@ export class ModuleFE_SyncManagerV2_Class
 		if (StorageKey_SyncMode.get('old') === 'old')
 			return this.v1.checkSync();
 
-		const newVar = {modules: []};
-		return this.v1.smartSync(newVar);
+		const existingDBModules = RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbName);
+		const request: Request_SmartSync = {
+			modules: existingDBModules.map(module => ({dbName: module.dbDef.dbName, lastUpdated: module.IDB.getLastSync()}))
+		};
+		return this.v1.smartSync(request);
 	};
 
 	getSyncMode = () => StorageKey_SyncMode.get('old');
 
 	toggleSyncMode = (syncMode: 'old' | 'smart' = this.getSyncMode()) => {
 		StorageKey_SyncMode.set(syncMode === 'old' ? 'smart' : 'old');
+	};
+
+	protected init() {
+		this.syncFirebaseListener = ModuleFE_FirebaseListener.createListener('/state/ModuleBE_v2_SyncManager'); // Hardcoded path for now per Adam's request, should be const somewhere.
+		this.syncFirebaseListener.startListening(this.onSyncDataChanged);
+	}
+
+	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
+		const syncData = snapshot.val() as Type_SyncData;
+		_keys(syncData).forEach(dbName => {
+
+		});
 	};
 
 	public onReceivedSyncData = async (response: Response_DBSyncData) => {
