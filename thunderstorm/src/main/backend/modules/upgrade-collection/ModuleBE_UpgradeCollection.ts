@@ -1,11 +1,10 @@
-import {LogLevel, Module, Promise_all_sequentially} from '@nu-art/ts-common';
+import {LogLevel, Module, Promise_all_sequentially, RuntimeModules} from '@nu-art/ts-common';
 // import {ApiDefServer} from '../../utils/api-caller-types';
 import {createBodyServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ApiDef_UpgradeCollection} from '../../../shared/upgrade-collection';
-import {Storm} from '../../core/Storm';
 import {ApiModule} from '../../../shared';
-import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
+import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
 
 
 export class ModuleBE_UpgradeCollection_Class
@@ -25,9 +24,9 @@ export class ModuleBE_UpgradeCollection_Class
 
 	upgrade = async (body: { collectionsToUpgrade: string[] }) => {
 		const toUpgrade = body.collectionsToUpgrade;
-		const moduleToUpgrade = Storm.getInstance()
-			.filterModules(module => toUpgrade.includes((module as unknown as ApiModule['dbModule']).dbDef?.dbName));
-		await Promise_all_sequentially(moduleToUpgrade.map(module => (module as ModuleBE_BaseDBV3<any>).upgradeCollection));
+		const moduleToUpgrade = RuntimeModules()
+			.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbName && toUpgrade.includes(module.dbModule?.dbDef?.dbName));
+		await Promise_all_sequentially(moduleToUpgrade.map(module => module.dbModule.upgradeCollection));
 	};
 }
 
