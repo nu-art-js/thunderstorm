@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DB_Object, Minute, sortArray} from '@nu-art/ts-common';
+import {DB_Object, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_CollectionUpgrades.scss';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ComponentStatus, Props_SmartComponent, SmartComponent, State_SmartComponent} from '../../core/SmartComponent';
@@ -9,7 +9,6 @@ import {LL_H_C} from '../../components/Layouts';
 import {TS_BusyButton} from '../../components/TS_BusyButton';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {ModuleFE_UpgradeCollection} from '../../modules/upgrade-collection/ModuleFE_UpgradeCollection';
-import {Thunder} from '../../core/Thunder';
 
 
 type State = {
@@ -29,10 +28,9 @@ export class ATS_CollectionUpgrades
 	};
 
 	protected async deriveStateFromProps(nextProps: {}, state: State & State_SmartComponent) {
-		state.upgradableModules ??= sortArray(Thunder.getInstance().filterModules(module => {
-			const _module = module as ModuleFE_BaseApi<any, any>;
-			return (!!_module.getCollectionName);
-		}), i => i.getCollectionName());
+		state.upgradableModules ??= sortArray(RuntimeModules().filter((module: ModuleFE_BaseApi<any>) => {
+			return !!module.getCollectionName;
+		}), item => item.getCollectionName());
 
 		state.componentPhase = ComponentStatus.Synced;
 		return state;

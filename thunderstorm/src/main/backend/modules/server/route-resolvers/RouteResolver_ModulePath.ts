@@ -25,8 +25,6 @@ import {ServerApi} from '../server-api';
 import {asArray, Logger, LogLevel, Module, MUSTNeverHappenException, RuntimeModules} from '@nu-art/ts-common';
 import {ModuleBE_APIs_Class} from '../../ModuleBE_APIs';
 import {ApiDef} from '../../../../shared';
-import {ModuleBE_BaseApiV3_Class} from '../../../../../../dist/backend';
-import {ApiModule} from '../../../../../../dist';
 
 
 export type HttpRoute = {
