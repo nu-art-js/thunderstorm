@@ -5,7 +5,6 @@ import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {OnSyncStatusChangedListener} from '../../core/db-api-gen/types';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import './AwaitModules.scss';
-import {Thunder} from '../../core/Thunder';
 import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
 
 

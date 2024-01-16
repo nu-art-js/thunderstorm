@@ -158,7 +158,7 @@ export class ModuleBE_PermissionsAssert_Class
 			const userPermissions = MemKey_UserPermissions.get();
 
 			const mapDbNameToApiModules = arrayToMap(Storm.getInstance()
-				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule!.dbDef?.dbName!);
 
 			const paths = dbModules.map(module => {
 				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbName];
@@ -167,7 +167,7 @@ export class ModuleBE_PermissionsAssert_Class
 					return undefined;
 				}
 
-				return mapDbNameToApiModule.apiDef['v1']['sync'].path;
+				return mapDbNameToApiModule.apiDef?.['v1']?.['sync'].path;
 			});
 			// this.logWarning(`Paths(${paths.length}):`, paths);
 			const _allApis = await ModuleBE_PermissionApi.query.where({});
