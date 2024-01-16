@@ -32,6 +32,7 @@ import {
 	LogLevel,
 	Module,
 	PreDB,
+	RuntimeModules,
 	tsValidateMustExist,
 	UniqueId
 } from '@nu-art/ts-common';
@@ -56,8 +57,7 @@ import {
 	SmartSync_UpToDateSync,
 	Type_SyncData
 } from '../../../shared/sync-manager/types';
-import {getCollectionModules} from '../../../shared/collection-module-utils';
-import {Storm} from '../../core/Storm';
+import {DBModuleType} from '../../../shared';
 import Transaction = firestore.Transaction;
 
 
@@ -115,7 +115,7 @@ export class ModuleBE_v2_SyncManager_Class
 
 	private calculateSmartSync = async (body: Request_SmartSync): Promise<Response_SmartSync> => {
 		const wantedCollectionNames = body.modules.map(item => item.dbName);
-		const modulesArray = getCollectionModules(Storm.getInstance().modules, wantedCollectionNames);
+		const modulesArray = RuntimeModules().filter<ModuleBE_BaseDBV2<any>>((module: DBModuleType) => wantedCollectionNames.includes(module.dbDef?.dbName || ''));
 		const modulesMap = arrayToMap(modulesArray, (item: any) => item.dbName);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
 		const upToDateSyncData = await this.syncData.get();

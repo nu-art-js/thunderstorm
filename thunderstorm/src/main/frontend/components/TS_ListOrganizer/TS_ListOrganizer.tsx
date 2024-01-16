@@ -36,6 +36,7 @@ export type TS_ListOrganizer_RendererProps<T> = {
 	dragged: boolean;
 	onDragStart: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
 	onDragOver: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
+	onDragLeave: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
 	onDragEnd: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
@@ -49,6 +50,7 @@ export class TS_ListOrganizer<T>
 	extends ComponentSync<Props<T>, State<T>> {
 
 	private draggedItemIndex: number | undefined = undefined;
+	private lockRowIndex: number | undefined = undefined;
 
 	//######################### Lifecycle #########################
 
@@ -65,17 +67,27 @@ export class TS_ListOrganizer<T>
 	};
 
 	onDragOver = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
+		if (rowIndex === this.lockRowIndex)
+			return;
+
 		if (!exists(this.draggedItemIndex) || this.draggedItemIndex === rowIndex)
 			return;
 
 		swapInArrayByIndex(this.state.items, rowIndex, this.draggedItemIndex);
+		this.lockRowIndex = this.draggedItemIndex;
 		this.draggedItemIndex = rowIndex;
 		this.forceUpdate();
 	};
 
 	onDragEnd = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
 		this.draggedItemIndex = undefined;
+		this.lockRowIndex = undefined;
 		this.forceUpdate();
+	};
+
+	onDragLeave = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
+		if (rowIndex === this.lockRowIndex)
+			this.lockRowIndex = undefined;
 	};
 
 	//######################### Render #########################
@@ -91,6 +103,7 @@ export class TS_ListOrganizer<T>
 						index: itemIndex,
 						onDragEnd: this.onDragEnd,
 						onDragOver: this.onDragOver,
+						onDragLeave: this.onDragLeave,
 						onDragStart: this.onDragStart,
 					})}
 				</React.Fragment>;
