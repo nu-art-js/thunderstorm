@@ -161,9 +161,8 @@ export class ATS_SyncEnvironment
 					if ((this.state.searchFilter && this.state.searchFilter.length) && !name.includes(this.state.searchFilter))
 						return;
 
-					const relevantLocalModules: ModuleFE_BaseDB<any>[] = Thunder.getInstance().filterModules(module => {
-						const _module = module as ModuleFE_BaseApi<any, any>;
-						return (!!_module.getCollectionName && _module.getCollectionName() == collectionMetadata?.collectionName);
+					const relevantLocalModules: ModuleFE_BaseDB<any>[] = RuntimeModules().filter((module: ModuleFE_BaseApi<any>) => {
+						return (!!module.getCollectionName && module.getCollectionName() == collectionMetadata?.collectionName);
 					});
 
 					const localCount = relevantLocalModules.length === 1 && relevantLocalModules[0] ? relevantLocalModules[0].cache._array.length : 0;
