@@ -7,32 +7,27 @@ export type DBSyncData = { name: string, lastUpdated: number, oldestDeleted?: nu
 export type Response_DBSyncData = { syncData: DBSyncData[] };
 export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], toDelete: DB_Object[] };
 
+export type SyncDbData = {
+	dbName: string,
+	lastUpdated: number
+};
 export type Request_SmartSync = {
-	modules: {
-		dbName: string,
-		lastUpdated: number
-	}[]
+	modules: SyncDbData[]
 }
 
 export const SmartSync_UpToDateSync = 'up-to-date' as const;
 export const SmartSync_FullSync = 'full' as const;
 export const SmartSync_DeltaSync = 'delta-sync' as const;
 
-export type NoNeedToSyncModule = {
-	dbName: string,
+export type NoNeedToSyncModule = SyncDbData & {
 	sync: typeof SmartSync_UpToDateSync
-	lastUpdated: number
 };
-export type DeltaSyncModule = {
-	dbName: string,
+export type DeltaSyncModule = SyncDbData & {
 	sync: typeof SmartSync_DeltaSync
 	items: Response_DBSync<any>
-	lastUpdated: number
 };
-export type FullSyncModule = {
-	dbName: string,
+export type FullSyncModule = SyncDbData & {
 	sync: typeof SmartSync_FullSync
-	lastUpdated: number
 };
 export type Response_SmartSync = {
 	modules: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[]
