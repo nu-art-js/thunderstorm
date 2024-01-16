@@ -316,7 +316,7 @@ class ModuleBE_Permissions_Class
 				})));
 
 				const apiModules = arrayToMap(Storm.getInstance()
-					.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+					.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule!.dbDef!.dbName);
 
 				this.logDebug(_keys(apiModules));
 
@@ -326,7 +326,7 @@ class ModuleBE_Permissions_Class
 					if (!apiModule)
 						throw new MUSTNeverHappenException(`Could not find api module with dbName: ${dbName}`);
 
-					const _apiDefs = apiModule.apiDef;
+					const _apiDefs = apiModule.apiDef!;
 					return _keys(_apiDefs).map(_apiDefKey => {
 						const apiDefs = _apiDefs[_apiDefKey];
 						return filterInstances(_keys(apiDefs).map(apiDefKey => {

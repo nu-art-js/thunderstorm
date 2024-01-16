@@ -26,7 +26,10 @@ export class ModuleBE_UpgradeCollection_Class
 	upgrade = async (body: { collectionsToUpgrade: string[] }) => {
 		const toUpgrade = body.collectionsToUpgrade;
 		const moduleToUpgrade = Storm.getInstance()
-			.filterModules(module => toUpgrade.includes((module as unknown as ApiModule['dbModule']).dbDef?.dbName));
+			.filterModules(module => {
+				const dbName = (module as unknown as ApiModule['dbModule'])?.dbDef?.dbName;
+				return !!dbName && toUpgrade.includes(dbName);
+			});
 		await Promise_all_sequentially(moduleToUpgrade.map(module => (module as ModuleBE_BaseDBV3<any>).upgradeCollection));
 	};
 }

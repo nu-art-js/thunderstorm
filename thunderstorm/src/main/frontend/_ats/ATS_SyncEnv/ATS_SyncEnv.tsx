@@ -138,10 +138,8 @@ export class ATS_SyncEnvironment
 	};
 
 	private getCollectionModuleList(): string[] {
-		return (Thunder.getInstance().filterModules((module) => {
-			//the moduleKey in ModuleBE_BaseDB's config is taken from collection's name.
-			return !!(module as unknown as ApiModule['dbModule']).dbDef?.dbName;
-		}) as ModuleFE_BaseDB<any>[]).map(module => (module as unknown as ApiModule['dbModule']).dbDef?.dbName).sort();
+		const modules: ApiModule['dbModule'][] = Thunder.getInstance().filterModules(module => !!(module as unknown as ApiModule['dbModule'])?.dbDef?.dbName);
+		return modules.map(module => module?.dbDef?.dbName).sort() as string[];
 	}
 
 	private renderBackupModules = () => {
