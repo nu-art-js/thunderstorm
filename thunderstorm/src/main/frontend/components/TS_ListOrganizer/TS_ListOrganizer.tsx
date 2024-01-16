@@ -36,7 +36,7 @@ export type TS_ListOrganizer_RendererProps<T> = {
 	dragged: boolean;
 	onDragStart: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
 	onDragOver: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
-	onDragExit: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
+	onDragLeave: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
 	onDragEnd: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
@@ -85,7 +85,7 @@ export class TS_ListOrganizer<T>
 		this.forceUpdate();
 	};
 
-	onDragExit = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
+	onDragLeave = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
 		if (rowIndex === this.lockRowIndex)
 			this.lockRowIndex = undefined;
 	};
@@ -103,7 +103,7 @@ export class TS_ListOrganizer<T>
 						index: itemIndex,
 						onDragEnd: this.onDragEnd,
 						onDragOver: this.onDragOver,
-						onDragExit: this.onDragExit,
+						onDragLeave: this.onDragLeave,
 						onDragStart: this.onDragStart,
 					})}
 				</React.Fragment>;
