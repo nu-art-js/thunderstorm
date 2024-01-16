@@ -21,11 +21,12 @@
 
 import {Express, NextFunction} from 'express';
 import {ExpressRequest, ExpressResponse, ServerApi_Middleware} from '../../../utils/types';
-import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
-import {asArray, Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {asArray, Logger, LogLevel, Module, MUSTNeverHappenException, RuntimeModules} from '@nu-art/ts-common';
 import {ModuleBE_APIs_Class} from '../../ModuleBE_APIs';
 import {ApiDef} from '../../../../shared';
+import {ModuleBE_BaseApiV3_Class} from '../../../../../../dist/backend';
+import {ApiModule} from '../../../../../../dist';
 
 
 export type HttpRoute = {
@@ -51,7 +52,7 @@ export class RouteResolver_ModulePath
 	}
 
 	public resolveApi() {
-		const modules: (Module | ModuleBE_APIs_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ModuleBE_APIs_Class).useRoutes);
+		const modules: (Module | ModuleBE_APIs_Class)[] = RuntimeModules().filter((module: ModuleBE_APIs_Class) => !!module.useRoutes);
 
 		//Filter Api modules
 		const routes: ServerApi<any>[] = [];
