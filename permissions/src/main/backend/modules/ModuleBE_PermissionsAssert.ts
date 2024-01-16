@@ -28,6 +28,7 @@ import {
 	filterInstances,
 	ImplementationMissingException,
 	Module,
+	RuntimeModules,
 	StringMap,
 	TypedKeyValue,
 	TypedMap
@@ -35,11 +36,11 @@ import {
 import {
 	addRoutes,
 	createBodyServerApi,
+	ModuleBE_BaseApiV3_Class,
 	ModuleBE_BaseDBV2,
 	ModuleBE_BaseDBV3,
 	ModuleBE_v2_SyncManager,
-	ServerApi_Middleware,
-	Storm
+	ServerApi_Middleware
 } from '@nu-art/thunderstorm/backend';
 import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
@@ -157,8 +158,7 @@ export class ModuleBE_PermissionsAssert_Class
 			//Filter out any module we don't have permission to sync
 			const userPermissions = MemKey_UserPermissions.get();
 
-			const mapDbNameToApiModules = arrayToMap(Storm.getInstance()
-				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+			const mapDbNameToApiModules = arrayToMap(RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule.dbDef.dbName);
 
 			const paths = dbModules.map(module => {
 				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbName];

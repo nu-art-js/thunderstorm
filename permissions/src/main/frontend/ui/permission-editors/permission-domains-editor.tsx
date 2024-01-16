@@ -15,7 +15,7 @@ import {
 	EventType_Update,
 	genericNotificationAction, getElementCenterPos,
 	LL_H_C,
-	Model_PopUp,
+	Model_PopUp, ModuleFE_BaseApi,
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
 	openContent,
@@ -28,12 +28,23 @@ import {
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, filterInstances, Module, PreDB, sortArray} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	capitalizeFirstLetter,
+	cloneObj,
+	DBDef,
+	filterInstances,
+	Module,
+	PreDB,
+	RuntimeModules,
+	sortArray
+} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {defaultAccessLevels} from '../../../shared/consts';
 import {Permissions_DropDown} from '../ui-props';
+import {DBModuleType} from '@nu-art/thunderstorm';
 
 
 type State = State_EditorBase<DB_PermissionDomain> & {
@@ -85,7 +96,9 @@ export class PermissionDomainsEditor
 			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsDomain);
 			state.selectedItemId = state.items[0]._id;
 		}
-
+		state.dbDefs ??= filterInstances(RuntimeModules()
+			.filter<ModuleFE_BaseApi<any>>((module:DBModuleType) => 'dbDef' in module)
+			.map(module => 'dbDef' in module ? module.dbDef as DBDef<any> : undefined));
 		state.dbDefs ??= filterInstances(Thunder.getInstance()
 			.filterModules<Module>(module => 'dbDef' in module)
 			.map(module => 'dbDef' in module ? module.dbDef as DBDef<any> : undefined));
@@ -286,7 +299,7 @@ export class PermissionDomainsEditor
 			<TS_PropRenderer.Vertical label={'Namespace'}>
 				<LL_H_C className={'match_width'} style={{gap: '10px'}}>
 					<TS_Input type={'text'} value={domain.item.namespace}
-										onChange={value => this.setProperty('namespace', value)}/>
+							  onChange={value => this.setProperty('namespace', value)}/>
 					<Permissions_DropDown.Project
 						onSelected={(item) => {
 							return this.setProperty('projectId', item._id);
