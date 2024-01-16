@@ -5,6 +5,7 @@ import {
 	Dispatcher,
 	Minute,
 	Module,
+	RuntimeModules,
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
@@ -15,6 +16,7 @@ import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {
 	ApiDef,
 	ApiDef_SyncEnvV2,
+	ApiModule,
 	HttpMethod,
 	QueryApi,
 	Request_BackupId,
@@ -26,7 +28,6 @@ import {
 import {AxiosHttpModule} from '../http/AxiosHttpModule';
 import {ModuleBE_v2_Backup} from '../backup/ModuleBE_v2_Backup';
 import {MemKey_HttpRequest} from '../server/consts';
-import {Storm} from '../../core/Storm';
 import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
 import {Readable} from 'stream';
 
@@ -88,8 +89,8 @@ class ModuleBE_v2_SyncEnv_Class
 
 		const url = remoteUrls[body.env];
 		const sessionId = MemKey_HttpRequest.get().headers['x-session-id'];
-		const module = Storm.getInstance()
-			.filterModules(module => (module as ModuleBE_BaseApiV3_Class<any>).dbModule?.dbDef?.dbName === body.moduleName)[0] as ModuleBE_BaseApiV3_Class<any>;
+
+		const module = RuntimeModules().find<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbName === body.moduleName);
 
 		const upsertAll = module.apiDef.v1.upsertAll;
 		const response: Response_BackupDocsV2 = await AxiosHttpModule

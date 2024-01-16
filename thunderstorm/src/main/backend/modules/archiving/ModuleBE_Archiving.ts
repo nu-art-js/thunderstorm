@@ -8,15 +8,16 @@ import {
 	deepClone,
 	generateHex,
 	Hour,
-	removeDBObjectKeys
+	removeDBObjectKeys,
+	RuntimeModules
 } from '@nu-art/ts-common';
 import {ModuleBE_FirestoreListener} from '@nu-art/firebase/backend';
 import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
-import {Storm} from '../../core/Storm';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {
 	ApiDef_Archiving,
+	DBModuleType,
 	RequestBody_HardDeleteUnique,
 	RequestQuery_DeleteAll,
 	RequestQuery_GetHistory
@@ -56,15 +57,12 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 */
 	protected init() {
 		super.init();
-		const modules = Storm.getInstance().filterModules(module => !!module);
 
-		modules.map(module => {
-			const dbModule = module as ModuleBE_BaseDBV2<DBType>;
+		// Add all DB modules to the mapper
+		RuntimeModules()
+			.filter<ModuleBE_BaseDBV2<any>>((module: DBModuleType) => !!module.dbDef?.dbName)
+			.forEach(_module => this.moduleMapper[_module.dbDef.dbName] = _module);
 
-			if (dbModule && dbModule.dbDef && dbModule.dbDef.dbName)
-				// If this module is a Firestore DB module, add it to the mapper
-				this.moduleMapper[dbModule.dbDef.dbName] = dbModule;
-		});
 		addRoutes([
 			createBodyServerApi(ApiDef_Archiving.vv1.hardDeleteUnique, this.hardDeleteUnique),
 			createQueryServerApi(ApiDef_Archiving.vv1.hardDeleteAll, this.hardDeleteAll),
