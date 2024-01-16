@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, Dispatcher, Module, Queue} from '@nu-art/ts-common';
+import {DB_Object, Dispatcher, Module, Queue, RuntimeModules} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
@@ -32,9 +32,8 @@ import {
 	SmartSync_DeltaSync,
 	SmartSync_FullSync
 } from '../../../shared/sync-manager/types';
-import {ApiDefCaller, ApiModule} from '../../../shared';
+import {ApiDefCaller, DBModuleType} from '../../../shared';
 import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
-import {Thunder} from '../../core/Thunder';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
@@ -107,8 +106,7 @@ export class ModuleFE_SyncManagerV2_Class
 	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
 		const modulesToFullySync = response.modules.filter(module => module.sync === SmartSync_FullSync) as FullSyncModule[];
 		modulesToFullySync.forEach(moduleToSync => {
-			const module = Thunder.getInstance().modules
-				.find(module => (module as unknown as ApiModule['dbModule']).dbDef?.dbName === moduleToSync.dbName) as ModuleFE_BaseApi<any>;
+			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbName === moduleToSync.dbName);
 
 			if (!module)
 				return this.logError(`Couldn't find module with dbName: '${moduleToSync.dbName}'`);
@@ -125,9 +123,7 @@ export class ModuleFE_SyncManagerV2_Class
 
 		const modulesToUpdate = response.modules.filter(module => module.sync === SmartSync_DeltaSync) as DeltaSyncModule[];
 		for (const moduleToUpdate of modulesToUpdate) {
-			const module = Thunder.getInstance().modules
-				.find(module => (module as unknown as ApiModule['dbModule']).dbDef?.dbName === moduleToUpdate.dbName) as ModuleFE_BaseApi<any>;
-
+			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbName === moduleToUpdate.dbName);
 			await this.performDeltaSync(module, moduleToUpdate.items);
 		}
 
