@@ -28,7 +28,7 @@ import {DataStatus} from '../../core/db-api-gen/consts';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {SyncIfNeeded} from '../sync-manager/ModuleFE_SyncManagerV2';
-import {DBSyncData} from '../../../shared/sync-manager/types';
+import {DBSyncData_OLD} from '../../../shared/sync-manager/types';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -186,7 +186,7 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 		return request;
 	}
 
-	__syncIfNeeded = async (syncData: DBSyncData[]) => {
+	__syncIfNeeded = async (syncData: DBSyncData_OLD[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
 		if (!exists(mySyncData))
 			return;
