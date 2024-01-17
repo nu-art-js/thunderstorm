@@ -105,7 +105,7 @@ export class PermissionProjectsEditor
 			className={'item-list__add-button'}
 			onClick={async () => {
 				await ModuleFE_PermissionsAssert.v1.createProject({}).executeSync();
-				await ModuleFE_SyncManagerV2.v1.checkSync().executeSync();
+				await ModuleFE_SyncManagerV2.sync();
 			}}>Create Project</TS_Button>;
 	};
 
