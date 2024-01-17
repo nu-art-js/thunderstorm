@@ -1,5 +1,15 @@
 import {FirebaseApp, initializeApp} from 'firebase/app';
-import {DataSnapshot, get, getDatabase, onValue, query, ref, Unsubscribe} from 'firebase/database';
+import {
+	connectDatabaseEmulator,
+	Database,
+	DataSnapshot,
+	get,
+	getDatabase,
+	onValue,
+	query,
+	ref,
+	Unsubscribe
+} from 'firebase/database';
 import {__stringify, _keys, filterInstances, ImplementationMissingException, Logger, Module} from '@nu-art/ts-common';
 import 'firebase/database';
 
@@ -26,6 +36,8 @@ const MandatoryFirebaseConfigKeys: FirebaseConfigKey[] = ['apiKey', 'authDomain'
 export class ModuleFE_FirebaseListener_Class
 	extends Module<FirebaseListenerConfig> {
 	public app!: FirebaseApp;
+	public database!: Database;
+	private _runInEmulator: boolean = false;
 
 	private getFirebaseConfig = () => {
 		if (!this.config.firebaseConfig) {
@@ -53,6 +65,22 @@ export class ModuleFE_FirebaseListener_Class
 
 	protected init() {
 		this.initializeFirebase();
+	}
+
+	public runInEmulator() {
+		this._runInEmulator = true;
+	}
+
+	public getDatabase() {
+		if (this.database)
+			return this.database;
+
+		const _database = getDatabase(this.app);
+
+		if (this._runInEmulator) // Make the _database instance connect to local emulator rtdb.
+			connectDatabaseEmulator(_database, 'localhost', 9000);
+
+		return this.database = _database;
 	}
 
 	createListener(nodePath: string): RefListenerFE {
@@ -83,7 +111,7 @@ export class RefListenerFE<Value extends any = any>
 			this.stopListening();
 		}
 
-		const db = getDatabase(ModuleFE_FirebaseListener.app);
+		const db = ModuleFE_FirebaseListener.getDatabase();
 		const dbRef = ref(db, this.nodePath);
 		const refQuery = query(dbRef);
 		this.logInfo(`RefListener asked to start listening`);
@@ -95,7 +123,7 @@ export class RefListenerFE<Value extends any = any>
 	}
 
 	private getQuery() {
-		const db = getDatabase(ModuleFE_FirebaseListener.app);
+		const db = ModuleFE_FirebaseListener.getDatabase();
 		return query(ref(db, this.nodePath));
 	}
 
