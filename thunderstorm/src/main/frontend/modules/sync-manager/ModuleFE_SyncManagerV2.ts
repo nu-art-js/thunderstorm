@@ -92,12 +92,12 @@ export class ModuleFE_SyncManagerV2_Class
 
 	sync = async () => {
 		if (StorageKey_SyncMode.get('old') === 'old')
-			return this.v1.checkSync();
+			return this.v1.checkSync().executeSync();
 
 		const request: Request_SmartSync = {
 			modules: this.getLocalSyncData()
 		};
-		return this.v1.smartSync(request);
+		return this.v1.smartSync(request).executeSync();
 	};
 
 	getLocalSyncData = (): SyncDbData[] => {
