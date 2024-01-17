@@ -19,21 +19,22 @@
  * limitations under the License.
  */
 
-import {_keys, DB_Object, Dispatcher, Module, Queue, RuntimeModules} from '@nu-art/ts-common';
+import {_keys, DB_Object, Dispatcher, Module, Queue, reduceToMap, RuntimeModules} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
-	DBSyncData,
+	DBSyncData_OLD,
 	DeltaSyncModule,
 	FullSyncModule,
+	LastUpdated,
 	Request_SmartSync,
 	Response_DBSync,
 	Response_DBSyncData,
 	Response_SmartSync,
 	SmartSync_DeltaSync,
 	SmartSync_FullSync,
-	SyncDbData,
-	Type_SyncData
+	SyncDataFirebaseState,
+	SyncDbData
 } from '../../../shared/sync-manager/types';
 import {ApiDefCaller, DBModuleType} from '../../../shared';
 import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
@@ -49,7 +50,7 @@ import {StorageKey} from '../ModuleFE_LocalStorage';
 
 
 export type SyncIfNeeded = {
-	__syncIfNeeded: (syncData: DBSyncData[]) => Promise<void>
+	__syncIfNeeded: (syncData: DBSyncData_OLD[]) => Promise<void>
 }
 export type OnSyncCompleted = {
 	__onSyncCompleted: () => void
@@ -59,6 +60,7 @@ export interface PermissibleModulesUpdated {
 	__onPermissibleModulesUpdated: () => void;
 }
 
+const Default_SyncManagerNodePath = '/state/ModuleBE_v2_SyncManager/syncData'; // Hardcoded path for now per Adam's request, should be const somewhere.
 const StorageKey_SyncMode = new StorageKey<'old' | 'smart'>('storage-key--sync-mode').withstandDeletion();
 
 export const dispatch_syncIfNeeded = new Dispatcher<SyncIfNeeded, '__syncIfNeeded'>('__syncIfNeeded');
@@ -74,7 +76,7 @@ export class ModuleFE_SyncManagerV2_Class
 
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
 	private syncedModules: SyncDbData[] = [];
-	private syncFirebaseListener!: RefListenerFE<Type_SyncData>;
+	private syncFirebaseListener!: RefListenerFE<SyncDataFirebaseState>;
 
 	constructor() {
 		super();
@@ -90,13 +92,17 @@ export class ModuleFE_SyncManagerV2_Class
 
 	sync = async () => {
 		if (StorageKey_SyncMode.get('old') === 'old')
-			return this.v1.checkSync();
+			return this.v1.checkSync().executeSync();
 
-		const existingDBModules = RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbName);
 		const request: Request_SmartSync = {
-			modules: existingDBModules.map(module => ({dbName: module.dbDef.dbName, lastUpdated: module.IDB.getLastSync()}))
+			modules: this.getLocalSyncData()
 		};
-		return this.v1.smartSync(request);
+		return this.v1.smartSync(request).executeSync();
+	};
+
+	getLocalSyncData = (): SyncDbData[] => {
+		const existingDBModules = RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbName);
+		return existingDBModules.map(module => ({dbName: module.dbDef.dbName, lastUpdated: module.IDB.getLastSync()}));
 	};
 
 	getSyncMode = () => StorageKey_SyncMode.get('old');
@@ -106,15 +112,33 @@ export class ModuleFE_SyncManagerV2_Class
 	};
 
 	protected init() {
-		this.syncFirebaseListener = ModuleFE_FirebaseListener.createListener('/state/ModuleBE_v2_SyncManager'); // Hardcoded path for now per Adam's request, should be const somewhere.
+		this.syncFirebaseListener = ModuleFE_FirebaseListener.createListener(Default_SyncManagerNodePath); // Hardcoded path for now per Adam's request, should be const somewhere.
 		this.syncFirebaseListener.startListening(this.onSyncDataChanged);
 	}
 
 	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
-		const syncData = snapshot.val() as Type_SyncData;
-		_keys(syncData).forEach(dbName => {
+		this.logInfo('Received firebase state data');
+		// remoteSyncData is the data we received from the firebase listener, that just detected a change.
+		const remoteSyncData = snapshot.val() as SyncDataFirebaseState;
+		// localSyncData is the data we just collected from the IDB regarding all existing modules.
+		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbName, data => ({lastUpdated: data.lastUpdated}));
+		const permissibleCollections = this.syncedModules.map(module => module.dbName);
+		const shouldSync: boolean = (_keys(remoteSyncData) as string[]).reduce((_shouldSync, dbName) => {
+			if (_shouldSync)
+				return _shouldSync;
 
-		});
+			if (!permissibleCollections.includes(dbName))
+				return false;
+
+			if (remoteSyncData[dbName].lastUpdated <= localSyncData[dbName].lastUpdated)
+				return false;
+
+			return true;
+		}, false);
+
+		//if there are changes, call sync
+		if (shouldSync)
+			await this.sync();
 	};
 
 	public onReceivedSyncData = async (response: Response_DBSyncData) => {

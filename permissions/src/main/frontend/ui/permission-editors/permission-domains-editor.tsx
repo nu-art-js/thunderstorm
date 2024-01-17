@@ -13,15 +13,16 @@ import {
 	EventType_Create,
 	EventType_Delete,
 	EventType_Update,
-	genericNotificationAction, getElementCenterPos,
+	genericNotificationAction,
+	getElementCenterPos,
 	LL_H_C,
-	Model_PopUp, ModuleFE_BaseApi,
+	Model_PopUp,
+	ModuleFE_BaseApi,
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
 	openContent,
 	Props_SmartComponent,
 	State_SmartComponent,
-	Thunder,
 	TS_BusyButton,
 	TS_Button,
 	TS_Input,
@@ -33,8 +34,6 @@ import {
 	capitalizeFirstLetter,
 	cloneObj,
 	DBDef,
-	filterInstances,
-	Module,
 	PreDB,
 	RuntimeModules,
 	sortArray
@@ -96,12 +95,9 @@ export class PermissionDomainsEditor
 			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsDomain);
 			state.selectedItemId = state.items[0]._id;
 		}
-		state.dbDefs ??= filterInstances(RuntimeModules()
-			.filter<ModuleFE_BaseApi<any>>((module:DBModuleType) => 'dbDef' in module)
-			.map(module => 'dbDef' in module ? module.dbDef as DBDef<any> : undefined));
-		state.dbDefs ??= filterInstances(Thunder.getInstance()
-			.filterModules<Module>(module => 'dbDef' in module)
-			.map(module => 'dbDef' in module ? module.dbDef as DBDef<any> : undefined));
+		state.dbDefs ??= RuntimeModules()
+			.filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef)
+			.map(module => module.dbDef);
 
 		return state;
 	}

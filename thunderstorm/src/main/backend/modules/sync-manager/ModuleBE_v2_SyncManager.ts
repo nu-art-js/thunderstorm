@@ -45,7 +45,7 @@ import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
 import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
 import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
 import {
-	DBSyncData,
+	DBSyncData_OLD,
 	DeltaSyncModule,
 	FullSyncModule,
 	LastUpdated,
@@ -55,7 +55,7 @@ import {
 	SmartSync_DeltaSync,
 	SmartSync_FullSync,
 	SmartSync_UpToDateSync,
-	Type_SyncData
+	SyncDataFirebaseState
 } from '../../../shared/sync-manager/types';
 import {DBModuleType} from '../../../shared';
 import Transaction = firestore.Transaction;
@@ -88,7 +88,7 @@ export class ModuleBE_v2_SyncManager_Class
 
 	private database!: DatabaseWrapperBE;
 	private dbModules!: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[];
-	private syncData!: FirebaseRef<Type_SyncData>;
+	private syncData!: FirebaseRef<SyncDataFirebaseState>;
 	private deletedCount!: FirebaseRef<number>;
 	public checkSyncApi;
 	public smartSyncApi;
@@ -106,9 +106,9 @@ export class ModuleBE_v2_SyncManager_Class
 		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
 		this.collection = firestore.getCollection<DeletedDBItem>(DBDef_DeletedItems);
 
-		this.dbModules = this.manager.filterModules(module => ((module as unknown as { ModuleBE_BaseDBV2: boolean }).ModuleBE_BaseDBV2));
+		this.dbModules = RuntimeModules().filter(module => ((module as unknown as { ModuleBE_BaseDBV2: boolean }).ModuleBE_BaseDBV2));
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
-		this.syncData = this.database.ref<Type_SyncData>(`/state/${this.getName()}/syncData`);
+		this.syncData = this.database.ref<SyncDataFirebaseState>(`/state/${this.getName()}/syncData`);
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
 		addRoutes([this.checkSyncApi]);
 	}
@@ -263,7 +263,7 @@ export class ModuleBE_v2_SyncManager_Class
 			await this.syncData.set(fbSyncData);
 		}
 
-		const syncData = _keys(fbSyncData).reduce<DBSyncData[]>((response, dbName) => {
+		const syncData = _keys(fbSyncData).reduce<DBSyncData_OLD[]>((response, dbName) => {
 			if (!modulesToIterate.find(module => module.dbDef.dbName === dbName))
 				return response;
 
