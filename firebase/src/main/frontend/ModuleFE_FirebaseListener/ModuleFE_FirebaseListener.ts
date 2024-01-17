@@ -1,19 +1,48 @@
 import {FirebaseApp, initializeApp} from 'firebase/app';
-import {DataSnapshot, get, getDatabase, onValue, query, ref, Unsubscribe} from 'firebase/database';
-import {__stringify, _keys, filterInstances, ImplementationMissingException, Logger, Module} from '@nu-art/ts-common';
+import {
+	connectDatabaseEmulator,
+	Database,
+	DataSnapshot,
+	get,
+	getDatabase,
+	onValue,
+	query,
+	ref,
+	Unsubscribe
+} from 'firebase/database';
+import {
+	__stringify,
+	_keys,
+	exists,
+	filterInstances,
+	ImplementationMissingException,
+	Logger,
+	Module
+} from '@nu-art/ts-common';
 import 'firebase/database';
 
+type FirebaseConfig = {
+	apiKey: string;
+	authDomain: string;
+	databaseURL: string;
+	projectId: string;
+	appId: string;
+	storageBucket?: string;
+	messagingSenderId?: string;
+	measurementId?: string;
+}
+type EmulatorConfig = {
+	hostname: string;
+	port: number;
+	databaseURL: string; //??
+	projectId: string; //??
+	appId: string; //??
+}
+
 type FirebaseListenerConfig = {
-	firebaseConfig: {
-		apiKey: string;
-		authDomain: string;
-		databaseURL: string;
-		projectId: string;
-		storageBucket?: string;
-		messagingSenderId?: string;
-		appId: string;
-		measurementId?: string;
-	}
+	runInEmulator?: boolean;
+	emulatorConfig?: EmulatorConfig;
+	firebaseConfig: FirebaseConfig;
 }
 type FirebaseConfigKey =
 	'apiKey'
@@ -26,6 +55,7 @@ const MandatoryFirebaseConfigKeys: FirebaseConfigKey[] = ['apiKey', 'authDomain'
 export class ModuleFE_FirebaseListener_Class
 	extends Module<FirebaseListenerConfig> {
 	public app!: FirebaseApp;
+	public database!: Database;
 
 	private getFirebaseConfig = () => {
 		if (!this.config.firebaseConfig) {
@@ -45,8 +75,10 @@ export class ModuleFE_FirebaseListener_Class
 
 	initializeFirebase() {
 		try {
-			this.app = initializeApp(this.getFirebaseConfig());
+			const _app = initializeApp(this.getFirebaseConfig());
+			this.app = _app;
 		} catch (e: any) {
+			this.logWarning(`Could not initialize firebase for FirebaseListener, couldn't get config. ${e.message}`);
 			throw new Error(`Could not initialize firebase for FirebaseListener, couldn't get config. ${e.message}`);
 		}
 	}
@@ -55,7 +87,32 @@ export class ModuleFE_FirebaseListener_Class
 		this.initializeFirebase();
 	}
 
+	public getDatabase() {
+		if (this.database)
+			return this.database;
+		this.logWarning('1 getDatabase');
+		const _database = getDatabase(this.app);
+		this.logWarning('2 getDatabase');
+
+		if (this.config.runInEmulator) { // Make the _database instance connect to local emulator rtdb.
+			this.logWarning('3 getDatabase');
+
+			if (!exists(this.config.emulatorConfig)) {
+				this.logWarning('Did not provide emulatorConfig in ModuleFE_FirebaseListener\'s FE config, but config.runInEmulator === true.');
+				throw new ImplementationMissingException('Did not provide emulatorConfig in ModuleFE_FirebaseListener\'s FE config, but config.runInEmulator === true.');
+			}
+			this.logWarning('4 getDatabase');
+
+			const emulatorConfig = this.config.emulatorConfig;
+			connectDatabaseEmulator(_database, emulatorConfig.hostname, emulatorConfig.port);
+		}
+		this.logWarning('5 getDatabase');
+
+		return this.database = _database;
+	}
+
 	createListener(nodePath: string): RefListenerFE {
+		this.logInfo(`Creating listener for firebase rtdb node ${nodePath}`);
 		return new RefListenerFE(nodePath);
 	}
 }
@@ -82,20 +139,26 @@ export class RefListenerFE<Value extends any = any>
 			this.logWarning('RefListener asked to listen mid-listening. Stopping to listen prior to re-listening');
 			this.stopListening();
 		}
+		this.logInfo('Starting to listen...');
+		const db = ModuleFE_FirebaseListener.getDatabase();
+		this.logInfo(`db!`);
 
-		const db = getDatabase(ModuleFE_FirebaseListener.app);
 		const dbRef = ref(db, this.nodePath);
+		this.logInfo(`dbRef!`);
+
 		const refQuery = query(dbRef);
-		this.logInfo(`RefListener asked to start listening`);
+		this.logInfo(`Created listening refQuery...`);
+
 		this.toUnsubscribeFunction = onValue(refQuery, (snapshot) => {
 			onValueChangedListener(snapshot);
 		});
+		this.logInfo(`Listening on '${this.nodePath}'`);
 
 		return this;
 	}
 
 	private getQuery() {
-		const db = getDatabase(ModuleFE_FirebaseListener.app);
+		const db = ModuleFE_FirebaseListener.getDatabase();
 		return query(ref(db, this.nodePath));
 	}
 

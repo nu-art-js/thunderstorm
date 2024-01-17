@@ -80,10 +80,6 @@ export class ModuleManager
 		delete ModuleManager.instance;
 	}
 
-	filterModules<T>(filter: (module: Module) => boolean) {
-		return this.modules.filter(filter) as unknown as T[];
-	}
-
 	public setConfig(config: object) {
 		this.config = config || {};
 		return this;
