@@ -76,7 +76,7 @@ export class ATS_Permissions
 			await ModuleFE_PermissionsAssert.v1.toggleStrictMode({}).executeSync();
 			await timeout(3000);
 			await ModuleFE_Account.vv1.refreshSession({}).executeSync();
-			await ModuleFE_SyncManagerV2.v1.checkSync().executeSync();
+			await ModuleFE_SyncManagerV2.sync();
 		}, 'Toggling Strict Mode');
 
 		this.setState({creatingPermissions: false});
@@ -88,7 +88,7 @@ export class ATS_Permissions
 			await ModuleFE_PermissionsAssert.v1.createProject({}).executeSync();
 			await ModuleFE_Account.vv1.refreshSession({}).executeSync();
 			notification.content('Syncing dbs').show();
-			await ModuleFE_SyncManagerV2.v1.checkSync().executeSync();
+			await ModuleFE_SyncManagerV2.sync();
 		}, 'Creating Permissions');
 
 		this.setState({creatingPermissions: false});

@@ -55,7 +55,7 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 		await genericNotificationAction(
 			async () => {
 				await this.state.editedItem!.save();
-				return ModuleFE_SyncManagerV2.v1.checkSync().executeSync();
+				return ModuleFE_SyncManagerV2.sync();
 			}, `Saving ${this.itemName}`, 3);
 	};
 
