@@ -48,12 +48,15 @@
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
     "google-auth-library": "^6.0.6",
     "fs": "0.0.1-security",
-    "ws": "^8.13.0"
+    "ws": "^8.13.0",
+    "http-proxy": "1.18.1",
+    "url": "0.11.3"
   },
   "devDependencies": {
     "@types/compression": "^1.0.1",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
+    "@types/http-proxy": "1.17.14",
     "teeny-request": "~7.2.0",
     "@firebase/auth": "$FIREBASE_AUTH_PKG_VERSION",
     "@firebase/app": "0.9.5",
