@@ -85,17 +85,14 @@ export const tsValidateString = (length: number | [number, number] = -1, mandato
 			if (typeof input !== 'string')
 				return `input is not a string`;
 
-			if (length === -1)
-				return;
-
 			if (Array.isArray(length)) {
-				if (length[0] > input.length)
-					return `input length is lesser than ${length}`;
+				if (length[0] !== -1 && length[0] > input.length)
+					return `input length is lesser than ${length[0]}`;
 
-				if (input.length > length[1])
-					return `input length is longer than ${length}`;
+				if (length[1] !== -1 && input.length > length[1])
+					return `input length is longer than ${length[1]}`;
 
-			} else if (input.length > length)
+			} else if (length !== -1 && input.length > length)
 				return `input length is longer than ${length}`;
 
 			return;
