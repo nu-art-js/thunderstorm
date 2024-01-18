@@ -5,6 +5,7 @@ import {
 	Dispatcher,
 	Minute,
 	Module,
+	MUSTNeverHappenException,
 	RuntimeModules,
 	TypedMap,
 	UniqueId
@@ -38,6 +39,7 @@ type Config = {
 	fetchBackupDocsSecretsMap: TypedMap<string>,
 	sessionMap: TypedMap<TypedMap<string>>,
 	maxBatch: number
+	shouldBackupBeforeSync?: boolean;
 }
 
 export interface OnSyncEnvCompleted {
@@ -148,19 +150,24 @@ class ModuleBE_v2_SyncEnv_Class
 	};
 
 	syncFromEnvBackup = async (body: Request_FetchFromEnvV2) => {
+		if (Storm.getInstance().getEnvironment().toLowerCase() === 'prod' && body.env.toLowerCase() !== 'prod') {
+			throw new MUSTNeverHappenException('wtf you doin');
+		}
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
+		let startBackup = undefined; // required for log
+		let endBackup = undefined; // required for log
 
-		if (Storm.getInstance().getEnvironment().toLowerCase() === body.env.toLowerCase()) {
+		if (this.config.shouldBackupBeforeSync) {
 			this.logInfo(`----  Creating Backup... ----`);
-			const startBackup = performance.now();
+			startBackup = performance.now(); // required for log
 			await this.createBackup();
-			const endBackup = performance.now();
+			endBackup = performance.now(); // required for log
 			this.logInfo(`Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds`);
 		}
 
 		this.logInfo(`----  Fetching Backup Info... ----`);
-		const startSync = performance.now();
+		const startSync = performance.now(); // required for log
 		const backupInfo = await this.getBackupInfo(body);
 		this.logInfo(backupInfo);
 
@@ -235,8 +242,9 @@ class ModuleBE_v2_SyncEnv_Class
 		this.logInfo(`----  Syncing Other Modules... ----`);
 		await dispatch_OnSyncEnvCompleted.dispatchModuleAsync(body.env, this.config.urlMap[body.env], this.config.sessionMap[body.env]!);
 		this.logInfo(`---- DONE Syncing Other Modules----`);
-		const endSync = performance.now();
-		this.logInfo(`(Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds)`);
+		const endSync = performance.now(); // required for log
+		if (this.config.shouldBackupBeforeSync && endBackup !== undefined && startBackup !== undefined)
+			this.logInfo(`(Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds)`);
 		this.logInfo(`SyncingEnv took ${((endSync - startSync) / 1000).toFixed(3)} seconds`);
 	};
 
