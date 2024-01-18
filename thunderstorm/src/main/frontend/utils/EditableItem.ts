@@ -75,7 +75,7 @@ export class EditableItem<T> {
 		this.originalItem = item;
 		this.saveAction = saveAction;
 		this.deleteAction = deleteAction;
-		this.performAutoSave.bind(this);
+		this.preformAutoSave.bind(this);
 	}
 
 	protected onChanged?: Editable_OnChange<T>;
@@ -220,7 +220,7 @@ export class EditableItem<T> {
 	 * Can be overridden in deriving classes
 	 * @protected
 	 */
-	protected async performAutoSave(): Promise<T | undefined> {
+	protected async preformAutoSave(): Promise<T | undefined> {
 		return this.save(true);
 	}
 
@@ -230,7 +230,7 @@ export class EditableItem<T> {
 
 		if (this._autoSave)
 			try {
-				return this.performAutoSave();
+				return this.preformAutoSave();
 			} catch (err: any) {
 				return this.item;
 			}
@@ -345,7 +345,6 @@ export class EditableItem<T> {
 	validate() {
 		return;
 	}
-
 }
 
 /**
@@ -380,7 +379,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 		//binds
 		this.save.bind(this);
-		this.performAutoSave.bind(this);
+		this.preformAutoSave.bind(this);
 	}
 
 	private static save<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
@@ -433,27 +432,30 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * Preform auto save in editable db item will be in debounce
 	 * @protected
 	 */
-	protected async performAutoSave(): Promise<Proto['uiType'] | undefined> {
+	protected async preformAutoSave(): Promise<Proto['uiType'] | undefined> {
 		this.validate();
 		return new Promise((resolve, reject) => {
 			if (!this.debounceInstance)
 				this.debounceInstance = awaitedDebounce({
-					func: () => super.performAutoSave(),
+					func: async () => {
+						return await super.preformAutoSave();
+					},
 					timeout: 2 * Second,
 					fallbackTimeout: 5 * Second
 				});
 
 			this.debounceInstance().then(dbItem => {
 				const currentUIItem = deleteKeysObject({...editableDBItemV3.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
-				const mergeObject1 = mergeObject(dbItem, currentUIItem);
+				const _mergeObject = mergeObject(dbItem, currentUIItem);
 				delete this.debounceInstance;
-				resolve(mergeObject1);
+				resolve(_mergeObject);
 			}).catch((err) => {
 				delete this.debounceInstance;
 				reject(err);
 			});
 
 			const editableDBItemV3 = this.clone(this.item);
+			editableDBItemV3.originalItem = this.originalItem;
 			this.onChanged?.(editableDBItemV3);
 		});
 	}
