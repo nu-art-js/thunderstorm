@@ -30,6 +30,7 @@ import {ModuleBE_v2_Backup} from '../backup/ModuleBE_v2_Backup';
 import {MemKey_HttpRequest} from '../server/consts';
 import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
 import {Readable} from 'stream';
+import {Storm} from '../../core/Storm';
 
 
 type Config = {
@@ -150,11 +151,13 @@ class ModuleBE_v2_SyncEnv_Class
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
 
-		this.logInfo(`----  Creating Backup... ----`);
-		const startBackup = performance.now();
-		await this.createBackup();
-		const endBackup = performance.now();
-		this.logInfo(`Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds`);
+		if (Storm.getInstance().getEnvironment().toLowerCase() === body.env.toLowerCase()) {
+			this.logInfo(`----  Creating Backup... ----`);
+			const startBackup = performance.now();
+			await this.createBackup();
+			const endBackup = performance.now();
+			this.logInfo(`Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds`);
+		}
 
 		this.logInfo(`----  Fetching Backup Info... ----`);
 		const startSync = performance.now();
