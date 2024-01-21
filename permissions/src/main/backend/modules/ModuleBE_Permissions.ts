@@ -24,14 +24,12 @@ import {
 } from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
-	DB_PermissionAccessLevel,
 	DB_PermissionApi,
 	DB_PermissionDomain,
 	DB_PermissionProject
 } from '../../shared';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
-import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {
@@ -66,6 +64,7 @@ import {
 	dispatcher_collectServiceAccounts
 } from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
+import {DB_PermissionAccessLevel, ModuleBE_PermissionAccessLevelDB} from '../_entity';
 
 
 export interface CollectPermissionsProjects {
@@ -267,7 +266,7 @@ class ModuleBE_Permissions_Class
 			});
 		}))));
 
-		const dbLevels = await ModuleBE_PermissionAccessLevel.set.all(levelsToUpsert);
+		const dbLevels = await ModuleBE_PermissionAccessLevelDB.set.all(levelsToUpsert);
 		const domainNameToLevelNameToDBAccessLevel: {
 			[domainName: string]: { [levelName: string]: DB_PermissionAccessLevel }
 		} = reduceToMap(dbLevels, level => level.domainId, (level, index, map) => {

@@ -19,5 +19,4 @@
 
 export * from './domain';
 export * from './project';
-export * from './access-level';
 export * from './api';
