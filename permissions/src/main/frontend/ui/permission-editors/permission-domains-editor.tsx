@@ -1,15 +1,13 @@
 import * as React from 'react';
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionProject} from '../../shared';
+import {DB_PermissionDomain, DB_PermissionProject} from '../../shared';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {
-	ModuleFE_PermissionsAccessLevel,
 	ModuleFE_PermissionsDomain,
 	ModuleFE_PermissionsProject,
 	OnPermissionsDomainsUpdated,
-	OnPermissionsLevelsUpdated
 } from '../../core/module-pack';
 import {
-	EditableDBItem,
+	EditableDBItem, EditableDBItemV3,
 	EventType_Create,
 	EventType_Delete,
 	EventType_Update,
@@ -44,11 +42,13 @@ import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/
 import {defaultAccessLevels} from '../../../shared/consts';
 import {Permissions_DropDown} from '../ui-props';
 import {DBModuleType} from '@nu-art/thunderstorm';
+import {DBProto_PermissionAccessLevel, DB_PermissionAccessLevel, DispatcherType_PermissionAccessLevel, ModuleFE_PermissionAccessLevel} from '../../_entity';
+import {DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
 
 
 type State = State_EditorBase<DB_PermissionDomain> & {
 	projects: Readonly<DB_PermissionProject[]>
-	newLevel: EditableDBItem<DB_PermissionAccessLevel>;
+	newLevel: EditableDBItemV3<DBProto_PermissionAccessLevel>;
 	dbDefs: DBDef<any>[];
 };
 
@@ -56,7 +56,7 @@ const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB
 
 export class PermissionDomainsEditor
 	extends EditorBase<DB_PermissionDomain, State>
-	implements OnPermissionsDomainsUpdated, OnPermissionsLevelsUpdated {
+	implements OnPermissionsDomainsUpdated, DispatcherInterface<DispatcherType_PermissionAccessLevel> {
 
 	//######################### Static #########################
 
@@ -82,14 +82,14 @@ export class PermissionDomainsEditor
 			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
 	}
 
-	__onPermissionsLevelsUpdated(...params: ApiCallerEventType<DB_PermissionAccessLevel>) {
+	__onPermissionAccessLevelUpdated(...params: ApiCallerEventType<DB_PermissionAccessLevel>) {
 		this.forceUpdate();
 	}
 
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
 		state.items = ModuleFE_PermissionsDomain.cache.all();
 		state.projects = ModuleFE_PermissionsProject.cache.all();
-		state.newLevel ??= new EditableDBItem(emptyLevel, ModuleFE_PermissionsAccessLevel);
+		state.newLevel ??= new EditableDBItemV3(emptyLevel, ModuleFE_PermissionAccessLevel);
 
 		if (!state.editedItem && state.items.length) {
 			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsDomain);
@@ -109,7 +109,7 @@ export class PermissionDomainsEditor
 		if (!domain)
 			throw new BadImplementationException('Editing a level with no selected domain');
 
-		const level = new EditableDBItem(_level, ModuleFE_PermissionsAccessLevel);
+		const level = new EditableDBItemV3(_level, ModuleFE_PermissionAccessLevel);
 		level.set(key, value);
 		if (!level.item.domainId)
 			level.set('domainId', domain.item._id);
@@ -119,7 +119,7 @@ export class PermissionDomainsEditor
 	};
 
 	private deleteLevel = async (_level: DB_PermissionAccessLevel) => {
-		const level = new EditableDBItem(_level, ModuleFE_PermissionsAccessLevel);
+		const level = new EditableDBItemV3(_level, ModuleFE_PermissionAccessLevel);
 		return level.delete();
 	};
 
@@ -139,7 +139,7 @@ export class PermissionDomainsEditor
 					if (!createLevels)
 						return;
 
-					await ModuleFE_PermissionsAccessLevel.v1.upsertAll(defaultAccessLevels.map(i => ({
+					await ModuleFE_PermissionAccessLevel.v1.upsertAll(defaultAccessLevels.map(i => ({
 						...i,
 						domainId: domain._id
 					} as PreDB<DB_PermissionAccessLevel>))).executeSync();
@@ -178,7 +178,7 @@ export class PermissionDomainsEditor
 		if (!domain)
 			return '';
 
-		let levels = ModuleFE_PermissionsAccessLevel.cache.filter(level => level.domainId === domain.item._id);
+		let levels = ModuleFE_PermissionAccessLevel.cache.filter(level => level.domainId === domain.item._id);
 		levels = sortArray(levels, i => i.value);
 		levels.push(cloneObj(emptyLevel) as DB_PermissionAccessLevel);
 		return <TS_Table<DB_PermissionAccessLevel, 'action'>
@@ -295,7 +295,7 @@ export class PermissionDomainsEditor
 			<TS_PropRenderer.Vertical label={'Namespace'}>
 				<LL_H_C className={'match_width'} style={{gap: '10px'}}>
 					<TS_Input type={'text'} value={domain.item.namespace}
-							  onChange={value => this.setProperty('namespace', value)}/>
+										onChange={value => this.setProperty('namespace', value)}/>
 					<Permissions_DropDown.Project
 						onSelected={(item) => {
 							return this.setProperty('projectId', item._id);

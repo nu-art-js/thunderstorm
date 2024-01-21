@@ -4,8 +4,8 @@ import * as React from 'react';
 import '../permission-keys-editor.scss';
 import {Component_AccessLevelsEditor} from './Component_AccessLevelsEditor';
 import {PermissionKey_FE} from '../../../PermissionKey_FE';
-import {ModuleFE_PermissionsAccessLevel} from '../../../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {ModuleFE_PermissionsAssert} from '../../../modules/ModuleFE_PermissionsAssert';
+import {ModuleFE_PermissionAccessLevel} from '../../../_entity';
 
 type Props = Props_SmartComponent & {};
 
@@ -17,7 +17,7 @@ export class PermissionKeysEditor
 	extends SmartComponent<Props, State> {
 
 	static defaultProps = {
-		modules: [ModuleFE_PermissionsAccessLevel]
+		modules: [ModuleFE_PermissionAccessLevel]
 	};
 
 	protected async deriveStateFromProps(nextProps: Props, state: State): Promise<State> {

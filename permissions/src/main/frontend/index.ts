@@ -20,3 +20,4 @@
 export * from './core/module-pack';
 export * from './ui';
 export * from './consts';
+export * from './_entity';
