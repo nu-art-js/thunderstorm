@@ -15,7 +15,6 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
 import {
-	ModuleFE_PermissionsAccessLevel,
 	ModuleFE_PermissionsDomain,
 	ModuleFE_PermissionsGroup,
 	ModuleFE_PermissionsProject,
@@ -29,6 +28,7 @@ import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAsse
 import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {timeout} from '@nu-art/ts-common';
+import {ModuleFE_PermissionAccessLevel} from '../../_entity';
 
 
 type _Props = {}
@@ -103,7 +103,7 @@ export class ComponentEditor_Permissions
 	extends SmartComponent<Props, State> {
 
 	static defaultProps = {
-		modules: [ModuleFE_PermissionsProject, ModuleFE_PermissionsDomain, ModuleFE_PermissionsAccessLevel, ModuleFE_PermissionsGroup, ModuleFE_PermissionsUser]
+		modules: [ModuleFE_PermissionsProject, ModuleFE_PermissionsDomain, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionsGroup, ModuleFE_PermissionsUser]
 	};
 
 	//######################### Life Cycle #########################

@@ -1,9 +1,5 @@
 import * as React from 'react';
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject} from '../../shared';
-import {
-	ModuleFE_PermissionsAccessLevel,
-	ModuleFE_PermissionsAccessLevel_
-} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
+import {DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject} from '../../shared';
 import {ModuleFE_PermissionsDomain, ModuleFE_PermissionsDomain_} from '../modules/manage/ModuleFE_PermissionsDomain';
 import {
 	ComponentSync,
@@ -19,6 +15,8 @@ import {
 	TS_MultiSelect_V2
 } from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect';
 import {ModuleFE_PermissionsProject, ModuleFE_PermissionsProject_} from '../modules/manage/ModuleFE_PermissionsProject';
+import {DB_PermissionAccessLevel, ModuleFE_PermissionAccessLevel} from '../_entity';
+import {DropDown_PermissionAccessLevel} from '../../_entity/permission-access-level/frontend/ui-components';
 
 
 type PP_GDD<T> = PartialProps_GenericDropDown<T>
@@ -37,28 +35,6 @@ const Props_Project: MandatoryProps_GenericDropDown<DB_PermissionProject> = {
 	placeholder: 'Choose a Project',
 	renderer: item => <div key={item._id}>{item.name}</div>,
 	sortBy: [item => item.name]
-};
-
-const Props_AccessLevel: MandatoryProps_GenericDropDown<DB_PermissionAccessLevel> = {
-	module: ModuleFE_PermissionsAccessLevel,
-	modules: [ModuleFE_PermissionsAccessLevel_],
-	mapper: level => {
-		const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
-		return [domain.namespace, level.name, String(level.value)];
-	},
-	placeholder: 'Choose an Access Level',
-	renderer: item => {
-		const levelId = item!._id;
-		const level = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
-		const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
-		return <div key={levelId}>
-			{`${domain.namespace}: ${level.name} (${level.value})`}
-		</div>;
-	},
-	sortBy: [
-		item => item.value,
-		item => ModuleFE_PermissionsDomain.cache.unique(item.domainId)!.namespace
-	]
 };
 
 const Props_Domain: MandatoryProps_GenericDropDown<DB_PermissionDomain> = {
@@ -98,8 +74,7 @@ const Props_Group: MandatoryProps_GenericDropDown<DB_PermissionGroup> = {
 export const Permissions_DropDown: { [K in keyof PermissionsDBTypes]: ((props: PP_GDD<PermissionsDBTypes[K]>) => JSX.Element) } = {
 	Project: (props: PP_GDD<DB_PermissionProject>) =>
 		<GenericDropDown<DB_PermissionProject> {...Props_Project} {...props} />,
-	AccessLevel: (props: PP_GDD<DB_PermissionAccessLevel>) =>
-		<GenericDropDown<DB_PermissionAccessLevel> {...Props_AccessLevel} {...props} />,
+	AccessLevel: DropDown_PermissionAccessLevel.selectable,
 	Domain: (props: PP_GDD<DB_PermissionDomain>) =>
 		<GenericDropDown<DB_PermissionDomain> {...Props_Domain} {...props} />,
 	Group: (props: PP_GDD<DB_PermissionGroup>) => <GenericDropDown<DB_PermissionGroup> {...Props_Group} {...props} />,
@@ -109,7 +84,7 @@ class DomainLevelRenderer
 	extends ComponentSync<MultiSelect_Selector<string>, { domainId?: string }> {
 
 	render() {
-		const selectedLevels = ModuleFE_PermissionsAccessLevel.cache.filter(item => this.props.existingItems.includes(item._id));
+		const selectedLevels = ModuleFE_PermissionAccessLevel.cache.filter(item => this.props.existingItems.includes(item._id));
 		const availableDomainsIds = ModuleFE_PermissionsDomain.cache.filter(item => !selectedLevels.find(level => level.domainId === item._id)).map(dbObjectToId);
 		return <div>
 			<Permissions_DropDown.Domain
@@ -154,17 +129,17 @@ class GroupRenderer
 const MultiSelect_PermissionsAccessLevel: StaticProps_TS_MultiSelect_V2<string> = {
 	itemRenderer: (accessLevelId, onDelete?: () => Promise<void>) => <>
 		<div className="ts-icon__small" onClick={onDelete}>X</div>
-		<span>{ModuleFE_PermissionsAccessLevel.cache.unique(accessLevelId)?.name || 'not found'}</span></>,
+		<span>{ModuleFE_PermissionAccessLevel.cache.unique(accessLevelId)?.name || 'not found'}</span></>,
 	selectionRenderer: DomainLevelRenderer
 };
 
 const MultiSelect_PermissionsAccessLevelStam: StaticProps_TS_MultiSelect_V2<string> = {
 	itemRenderer: (accessLevelId, onDelete?: () => Promise<void>) => <>
 		<div className="ts-icon__small" onClick={onDelete}>X</div>
-		<span>{ModuleFE_PermissionsAccessLevel.cache.unique(accessLevelId)?.name || 'not found'}</span></>,
+		<span>{ModuleFE_PermissionAccessLevel.cache.unique(accessLevelId)?.name || 'not found'}</span></>,
 	selectionRenderer: (selector) => <Permissions_DropDown.AccessLevel
 		queryFilter={item => {
-			const selectedLevels = ModuleFE_PermissionsAccessLevel.cache.filter(item => selector.existingItems.includes(item._id));
+			const selectedLevels = ModuleFE_PermissionAccessLevel.cache.filter(item => selector.existingItems.includes(item._id));
 			const availableDomainsIds = ModuleFE_PermissionsDomain.cache.filter(item => !selectedLevels.find(level => level.domainId === item._id)).map(dbObjectToId);
 			return availableDomainsIds.includes(item.domainId);
 		}}

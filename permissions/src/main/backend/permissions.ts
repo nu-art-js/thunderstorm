@@ -1,6 +1,5 @@
 import {
 	ApiDef_Permissions,
-	DBDef_PermissionAccessLevel,
 	DBDef_PermissionApi,
 	DBDef_PermissionDomain,
 	DBDef_PermissionGroup,
@@ -21,6 +20,7 @@ import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionK
 import {ApiDef_UpgradeCollection} from '@nu-art/thunderstorm/shared/upgrade-collection';
 import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor';
 import {ApiDef_SyncEnvV2} from '@nu-art/thunderstorm';
+import {DBDef_PermissionAccessLevel} from './_entity';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 

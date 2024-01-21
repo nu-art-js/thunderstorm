@@ -1,12 +1,11 @@
 import * as React from 'react';
 import {ComponentSync, LL_V_L, TS_Button} from '@nu-art/thunderstorm/frontend';
 import {dbObjectToId} from '@nu-art/ts-common';
-import {DB_PermissionAccessLevel} from '../../../../shared';
 import {Permissions_DropDown} from '../../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_PermissionsDomain} from '../../../modules/manage/ModuleFE_PermissionsDomain';
 import {PermissionKey_FE} from '../../../PermissionKey_FE';
-import {ModuleFE_PermissionsAccessLevel} from '../../../modules/manage/ModuleFE_PermissionsAccessLevel';
+import {DB_PermissionAccessLevel, ModuleFE_PermissionAccessLevel} from '../../../_entity';
 
 type Props = {
 	permissionKey: PermissionKey_FE;
@@ -20,7 +19,7 @@ export class Component_AccessLevelsEditor
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		const levelIds = nextProps.permissionKey.get().accessLevelIds ?? [];
-		state.levels = ModuleFE_PermissionsAccessLevel.cache.filter(i => levelIds.includes(i._id));
+		state.levels = ModuleFE_PermissionAccessLevel.cache.filter(i => levelIds.includes(i._id));
 		return state;
 	}
 
