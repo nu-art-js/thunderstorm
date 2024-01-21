@@ -21,9 +21,7 @@ import {Firebase_DB} from './types';
 import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-art/ts-common';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {getDatabase} from 'firebase-admin/database';
-import firebase from 'firebase/compat';
-import TransactionResult = firebase.database.TransactionResult;
+import {getDatabase, Reference} from 'firebase-admin/database';
 
 
 /**
@@ -123,7 +121,7 @@ export class DatabaseWrapperBE
 		}
 	}
 
-	public async transaction<T>(path: string, func: (currentValue: T) => T): Promise<TransactionResult> {
+	public async transaction<T>(path: string, func: (currentValue: T) => T): ReturnType<Reference['transaction']> {
 		return this.database.ref(path).transaction(func);
 	}
 
