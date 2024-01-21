@@ -5,13 +5,13 @@ import {
 } from '../../shared/consts';
 import {DefaultDef_Package} from '../../shared/types';
 import {
-	DBDef_PermissionAccessLevel,
 	DBDef_PermissionApi,
 	DBDef_PermissionDomain,
 	DBDef_PermissionGroup,
 	DBDef_PermissionProjects,
 	DBDef_PermissionUser
 } from '../../shared';
+import {DBDef_PermissionAccessLevel} from '../_entity';
 
 export const Domain_PermissionAssignment = Object.freeze({
 	_id: '1f41541c4514b50140ae62c1f7097029',

@@ -17,21 +17,21 @@
  * limitations under the License.
  */
 
-import {MemKey_AccountId, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {
 	_keys,
 	ApiException,
 	asOptionalArray,
 	batchActionParallel,
 	DB_BaseObject,
-	dbObjectToId,
+	dbObjectToId, exists,
 	filterDuplicates,
 	filterInstances,
 	flatArray,
 	TypedMap
 } from '@nu-art/ts-common';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {ApiDef_PermissionUser, DB_PermissionUser, DBDef_PermissionUser, Request_AssignPermissions} from '../../shared';
+import {ApiDef_PermissionUser, DB_PermissionUser, DBDef_PermissionUser, Request_AssignPermissions, User_Group} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
@@ -41,11 +41,12 @@ import {MemKey_UserPermissions} from '../ModuleBE_PermissionsAssert';
 import {addRoutes, createBodyServerApi, ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import Transaction = firestore.Transaction;
+import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
 
 
 class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDBV2<DB_PermissionUser>
-	implements OnNewUserRegistered, OnUserLogin, CanDeletePermissionEntities<'Group', 'User'> {
+	implements OnNewUserRegistered, OnUserLogin, CanDeletePermissionEntities<'Group', 'User'>, PerformProjectSetup {
 
 	constructor() {
 		super(DBDef_PermissionUser);
@@ -54,6 +55,29 @@ class ModuleBE_PermissionUserDB_Class
 	init() {
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionUser.vv1.assignPermissions, this.assignPermissions)]);
+	}
+
+	async __performProjectSetup() {
+		const accounts = await ModuleBE_AccountDB.query.where({});
+		const permissionsUser = await this.query.all(accounts.map(dbObjectToId));
+
+		const usersToUpsert: DB_PermissionUser[] = [];
+		const usersToDelete: DB_PermissionUser[] = [];
+		permissionsUser.forEach((user, index) => {
+			if (exists(user)) {
+				if (!exists(accounts.find(account => account._id === user._id)))
+					usersToDelete.push(user);
+				return;
+			}
+
+			usersToUpsert.push({
+				_id: accounts[index]._id,
+				groups: [] as User_Group[],
+			} as DB_PermissionUser);
+		});
+
+		await this.set.all(usersToUpsert);
+		await this.delete.all(usersToDelete);
 	}
 
 	__canDeleteEntities = async <T extends 'Group'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'User'>> => {

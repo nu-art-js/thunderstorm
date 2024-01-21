@@ -46,13 +46,10 @@ import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {
 	ApiDef_PermissionsAssert,
-	Base_AccessLevel,
-	DB_PermissionAccessLevel,
 	DB_PermissionApi,
 	Request_AssertApiForUser
 } from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
-import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {
 	MemKey_HttpRequestBody,
 	MemKey_HttpRequestMethod,
@@ -62,6 +59,7 @@ import {
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {SessionKey_Permissions_BE} from '../consts';
 import {PermissionKey_BE} from '../PermissionKey_BE';
+import {Base_AccessLevel, DB_PermissionAccessLevel, ModuleBE_PermissionAccessLevelDB} from '../_entity';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -294,7 +292,7 @@ export class ModuleBE_PermissionsAssert_Class
 
 	private async getAccessLevels(_accessLevelIds?: string[]): Promise<DB_PermissionAccessLevel[]> {
 		const accessLevelIds = filterDuplicates(_accessLevelIds || []);
-		const requestPermissions = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(accessLevelIds));
+		const requestPermissions = filterInstances(await ModuleBE_PermissionAccessLevelDB.query.all(accessLevelIds));
 		const idNotFound = accessLevelIds.find(lId => !requestPermissions.find(r => r._id === lId));
 		if (idNotFound)
 			throw new ApiException(404, `Could not find api level with _id: ${idNotFound}`);
