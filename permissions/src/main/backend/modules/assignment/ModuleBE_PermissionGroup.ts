@@ -30,7 +30,6 @@ import {
 } from '@nu-art/ts-common';
 import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../shared';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {firestore} from 'firebase-admin';
@@ -40,6 +39,7 @@ import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
 import {ModuleBE_SessionDB} from '@nu-art/user-account/backend';
 import {ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
+import {ModuleBE_PermissionAccessLevelDB} from '../../_entity';
 
 
 export class ModuleBE_PermissionGroup_Class
@@ -63,7 +63,7 @@ export class ModuleBE_PermissionGroup_Class
 
 	protected async preWriteProcessing(instance: DB_PermissionGroup, t?: Transaction) {
 		instance._auditorId = MemKey_AccountId.get();
-		const dbLevels = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(instance.accessLevelIds, t));
+		const dbLevels = filterInstances(await ModuleBE_PermissionAccessLevelDB.query.all(instance.accessLevelIds, t));
 
 		if (dbLevels.length < instance.accessLevelIds.length) {
 			const dbAccessLevelIds = dbLevels.map(dbObjectToId);
