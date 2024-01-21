@@ -177,6 +177,7 @@ export class TS_Tabs
 						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.selectedTabId === tab.uid ? 'ts-tabs__focused' : undefined, tab.disabled ? 'disabled' : undefined);
 						return <div key={tab.uid} id={tab.uid} className={tabClasses} onClick={(e) => this.selectOnClick(e, tab)}>{getTitle(tab)}</div>;
 					})}
+					<span className={'ts-tabs__empty-tab'}/>
 				</div>
 				<div className={contentClass}>
 					{getContent(tabs.find(tab => tab.uid === this.state.selectedTabId))}
@@ -184,5 +185,4 @@ export class TS_Tabs
 			</div>
 		);
 	}
-
 }
