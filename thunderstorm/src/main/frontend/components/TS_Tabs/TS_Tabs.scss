@@ -80,6 +80,13 @@
         background-color: #bbb;
       }
     }
+
+    .ts-tabs__empty-tab {
+      height: 100%;
+      width: 0;
+      flex-grow: 1;
+      flex-shrink: 1;
+    }
   }
 
   .ts-tabs__content {
