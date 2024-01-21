@@ -22,10 +22,9 @@ import {_keys, ApiException, dbObjectToId, filterInstances, PreDB, TypedMap} fro
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
-import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
-
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
+import {ModuleBE_PermissionAccessLevelDB} from '../../_entity';
 
 
 export class ModuleBE_PermissionApi_Class
@@ -59,7 +58,7 @@ export class ModuleBE_PermissionApi_Class
 			throw new ApiException(400, `Trying to create API with duplicate access levels: ${duplicateAccessLevelIds}`);
 
 		// Verify all AccessLevels actually exist
-		const dbAccessLevels = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(instance.accessLevelIds));
+		const dbAccessLevels = filterInstances(await ModuleBE_PermissionAccessLevelDB.query.all(instance.accessLevelIds));
 		if (dbAccessLevels.length !== instance.accessLevelIds.length) {
 			const dbAccessLevelIds = dbAccessLevels.map(dbObjectToId);
 			throw new ApiException(404, `Asked to assign an api non existing accessLevels: ${instance.accessLevelIds.filter(id => !dbAccessLevelIds.includes(id))}`);

@@ -20,13 +20,13 @@
 import {ApiException, batchActionParallel, dbObjectToId, flatArray} from '@nu-art/ts-common';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionDomain, DB_PermissionProject, DBDef_PermissionDomain} from '../../shared';
-import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {DB_EntityDependency} from '@nu-art/firebase';
 import {firestore} from 'firebase-admin';
 import {ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
+import {ModuleBE_PermissionAccessLevelDB} from '../../_entity';
 
 
 export class ModuleBE_PermissionDomain_Class
@@ -49,7 +49,7 @@ export class ModuleBE_PermissionDomain_Class
 	};
 
 	protected async assertDeletion(transaction: Transaction, dbInstance: DB_PermissionDomain) {
-		const accessLevels = await ModuleBE_PermissionAccessLevel.query.custom({where: {domainId: dbInstance._id}});
+		const accessLevels = await ModuleBE_PermissionAccessLevelDB.query.custom({where: {domainId: dbInstance._id}});
 		if (accessLevels.length) {
 			throw new ApiException(403, 'You trying delete domain that associated with accessLevels, you need delete the accessLevels first');
 		}

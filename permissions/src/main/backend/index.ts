@@ -19,3 +19,4 @@
 
 export * from './core/module-pack';
 export * from './modules';
+export * from './_entity';

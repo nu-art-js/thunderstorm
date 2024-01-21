@@ -13,7 +13,6 @@ import {UniqueId} from '@nu-art/ts-common';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionGroup} from '../../shared';
 import {
-	ModuleFE_PermissionsAccessLevel,
 	ModuleFE_PermissionsDomain,
 	ModuleFE_PermissionsGroup,
 	ModuleFE_PermissionsProject,
@@ -22,6 +21,7 @@ import {
 import {MultiSelect} from '../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {ModuleFE_PermissionAccessLevel} from '../../_entity';
 
 
 type State = State_EditorBase<DB_PermissionGroup> & {
@@ -78,7 +78,7 @@ export class PermissionGroupsEditor
 			prop={'accessLevelIds'}
 			className={'api-editor__editor__level-list'}
 			itemRenderer={(levelId, onDelete) => {
-				const level = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
+				const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId)!;
 				const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
 				return <div key={levelId} className={'api-editor__editor__level-list__item'}>
 					<TS_Icons.x.component onClick={onDelete}/>
