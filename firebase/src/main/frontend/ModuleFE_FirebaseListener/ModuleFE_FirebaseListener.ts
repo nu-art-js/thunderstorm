@@ -76,11 +76,9 @@ export class ModuleFE_FirebaseListener_Class
 		const emulatorConfig = this.config.emulatorConfig;
 		if (exists(emulatorConfig)) {
 			connectDatabaseEmulator(_database, emulatorConfig.hostname, emulatorConfig.port);
-			if (emulatorConfig.ssl)
-				// this.setupHttpsRTDB(_database);
-				//Hack to allow using ssl in rtdb, for https proxy. By default is false in firebase 9.x.x~.
-				// @ts-ignore
-				db['_settings']['ssl'] = true;
+			//Hack to allow using ssl in rtdb, for https proxy. By default is false in firebase 9.x.x~.
+			// @ts-ignore
+			_database._repoInternal.repoInfo_.secure = true;
 		}
 
 		return this.database = _database;
