@@ -79,16 +79,18 @@ export class TS_Tabs
 
 	//######################### Life Cycle #########################
 
-	protected deriveStateFromProps(nextProps: Props_Tabs): State {
-		const selectedTabId = (nextProps.tabs.find(t => t.uid === nextProps.selectedTabId)?.uid)
+	protected deriveStateFromProps(nextProps: Props_Tabs, state: State) {
+		state.tabs = nextProps.tabs;
+		state.selectedTabId = (nextProps.tabs.find(t => t.uid === nextProps.selectedTabId)?.uid)
 			|| this.getStorageKey()?.get('')
 			|| this.state?.selectedTabId
 			|| nextProps.tabs[0]?.uid;
 
-		return {
-			tabs: nextProps.tabs,
-			selectedTabId
-		};
+		//Default to first tab if provided selectedTabId is not in the tabs list
+		if (!state.tabs.find(tab => tab.uid === state.selectedTabId))
+			state.selectedTabId = state.tabs[0].uid;
+
+		return state;
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props_Tabs>, prevState: Readonly<State>, snapshot?: any) {
