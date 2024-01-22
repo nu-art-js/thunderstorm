@@ -361,6 +361,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	private readonly onError?: (err: Error) => any | Promise<any>;
 	private readonly onCompleted?: (item: Proto['uiType']) => any | Promise<any>;
 	private debounceInstance?: AwaitedDebounceInstance<[void], Proto['uiType']>;
+	private debounceTimeout: number = 2 * Second;
 
 	/**
 	 * Constructs an EditableDBItemV3 instance.
@@ -440,7 +441,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 					func: async () => {
 						return await super.preformAutoSave();
 					},
-					timeout: 2 * Second,
+					timeout: this.debounceTimeout,
 					fallbackTimeout: 5 * Second
 				});
 
@@ -459,6 +460,11 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 			this.onChanged?.(editableDBItemV3);
 		});
 	}
+
+	setDebounceTimeout = (timeout: number): EditableDBItemV3<Proto> => {
+		this.debounceTimeout = timeout;
+		return this;
+	};
 
 	/**
 	 * Create a new instance of EditableDBItemV3 with the same properties and behaviors as the current instance.

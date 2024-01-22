@@ -17,12 +17,12 @@ import {
 } from '@nu-art/ts-common';
 import {PermissionTypes} from '../../../shared/types';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
-import {MemKey_UserPermissions} from '../../../backend/modules/ModuleBE_PermissionsAssert';
+import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
 import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account';
+import {MemKey_UserPermissions} from '../../../backend/consts';
 
 type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
 

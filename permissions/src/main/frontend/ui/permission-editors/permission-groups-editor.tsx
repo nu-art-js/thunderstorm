@@ -25,10 +25,12 @@ export class PermissionGroupsEditor
 
 	//######################### Static #########################
 
-	readonly module = ModuleFE_PermissionGroup;
-	readonly itemName = 'Permission Group';
-	readonly itemNamePlural = 'Permission Groups';
-	readonly itemDisplay = (item: DB_PermissionGroup) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)?.name || 'Global'}/${item.label}`;
+	static defaultProps = {
+		module: ModuleFE_PermissionGroup,
+		itemName: 'Permission Group',
+		itemNamePlural: 'Permission Groups',
+		itemDisplay: (item: DB_PermissionGroup) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)?.name || 'Global'}/${item.label}`,
+	};
 
 	//######################### Life Cycle #########################
 
@@ -44,16 +46,6 @@ export class PermissionGroupsEditor
 			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
 	};
 
-	protected deriveStateFromProps(nextProps: {}, state: State) {
-		state.items = ModuleFE_PermissionGroup.cache.all();
-
-		if (!state.editedItem && state.items.length > 0) {
-			state.editedItem = new EditableDBItemV3(state.items[0], ModuleFE_PermissionGroup);
-			state.selectedItemId = state.items[0]._id;
-		}
-		return state;
-	}
-
 	//######################### Render #########################
 
 	private renderLevels = () => {
@@ -64,11 +56,11 @@ export class PermissionGroupsEditor
 		return <MultiSelect.AccessLevel
 			editable={group}
 			prop={'accessLevelIds'}
-			className={'api-editor__editor__level-list'}
+			className={'domain-level-list'}
 			itemRenderer={(levelId, onDelete) => {
 				const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId)!;
 				const domain = ModuleFE_PermissionDomain.cache.unique(level.domainId)!;
-				return <div key={levelId} className={'api-editor__editor__level-list__item'}>
+				return <div key={levelId} className={'domain-level-list__item'}>
 					<TS_Icons.x.component onClick={onDelete}/>
 					{`${domain.namespace}: ${level.name} (${level.value})`}
 				</div>;

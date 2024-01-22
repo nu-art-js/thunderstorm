@@ -1,15 +1,14 @@
 import {DBApiConfigV3, ModuleBE_BaseDBV3,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionGroup, DBDef_PermissionGroup, DBProto_PermissionGroup} from '../shared';
+import {DB_PermissionGroup, DBDef_PermissionGroup, DBProto_PermissionGroup} from './shared';
 import {CanDeletePermissionEntities} from '../../../backend/core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {DB_EntityDependency} from '@nu-art/firebase';
 import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, flatArray, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend';
+import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend/ModuleBE_PermissionAccessLevelDB';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account/backend';
-import {ModuleBE_PermissionUserDB} from '../../permission-user/backend';
-
+import {ModuleBE_PermissionUserDB} from '../../permission-user/backend/ModuleBE_PermissionUserDB';
 
 type Config = DBApiConfigV3<DBProto_PermissionGroup> & {}
 

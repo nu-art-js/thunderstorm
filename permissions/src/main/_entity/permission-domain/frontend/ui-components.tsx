@@ -11,7 +11,7 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_PermissionDomai
 	modules: [ModuleFE_PermissionDomain],
 	mapper: item => [item.namespace],
 	placeholder: 'Choose a PermissionDomain',
-	renderer: item => <div className="ll_h_c"> {item.namespace} </div>
+	renderer: item => <>{item.namespace}</>
 };
 
 export const DropDown_PermissionDomain = GenericDropDownV3.prepare(Props_DropDown);

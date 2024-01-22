@@ -1,10 +1,10 @@
 import {DBApiConfigV3, ModuleBE_BaseDBV3, ServerApi,} from '@nu-art/thunderstorm/backend';
 import {DBDef_PermissionAPI, DBProto_PermissionAPI, DB_PermissionAPI} from '../shared';
 import {_keys, ApiException, dbObjectToId, filterInstances, PreDB, TypedMap} from '@nu-art/ts-common';
-import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend';
+import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend/ModuleBE_PermissionAccessLevelDB';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
-import {ModuleBE_PermissionProjectDB} from '../../permission-project/backend';
+import {ModuleBE_PermissionProjectDB} from '../../permission-project/backend/ModuleBE_PermissionProjectDB';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionAPI> & {}
