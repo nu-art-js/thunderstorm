@@ -1,13 +1,6 @@
 import * as React from 'react';
-import {DB_PermissionDomain, DB_PermissionProject} from '../../shared';
-import {EditorBase, State_EditorBase} from './editor-base';
 import {
-	ModuleFE_PermissionsDomain,
-	ModuleFE_PermissionsProject,
-	OnPermissionsDomainsUpdated,
-} from '../../core/module-pack';
-import {
-	EditableDBItem, EditableDBItemV3,
+	EditableDBItemV3,
 	EventType_Create,
 	EventType_Delete,
 	EventType_Update,
@@ -19,34 +12,35 @@ import {
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
 	openContent,
-	Props_SmartComponent,
-	State_SmartComponent,
 	TS_BusyButton,
 	TS_Button,
 	TS_Input,
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {
-	BadImplementationException,
-	capitalizeFirstLetter,
-	cloneObj,
-	DBDef,
-	PreDB,
-	RuntimeModules,
-	sortArray
-} from '@nu-art/ts-common';
+import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, PreDB, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {defaultAccessLevels} from '../../../shared/consts';
 import {Permissions_DropDown} from '../ui-props';
 import {DBModuleType} from '@nu-art/thunderstorm';
-import {DBProto_PermissionAccessLevel, DB_PermissionAccessLevel, DispatcherType_PermissionAccessLevel, ModuleFE_PermissionAccessLevel} from '../../_entity';
+import {
+	DB_PermissionAccessLevel,
+	DB_PermissionDomain,
+	DB_PermissionProject,
+	DBProto_PermissionAccessLevel,
+	DBProto_PermissionDomain,
+	DispatcherType_PermissionAccessLevel,
+	DispatcherType_PermissionDomain,
+	ModuleFE_PermissionAccessLevel,
+	ModuleFE_PermissionDomain,
+	ModuleFE_PermissionProject
+} from '../../_entity';
 import {DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {EditorBaseV3, State_EditorBaseV3} from './editor-base-v3';
 
-
-type State = State_EditorBase<DB_PermissionDomain> & {
+type State = State_EditorBaseV3<DBProto_PermissionDomain> & {
 	projects: Readonly<DB_PermissionProject[]>
 	newLevel: EditableDBItemV3<DBProto_PermissionAccessLevel>;
 	dbDefs: DBDef<any>[];
@@ -55,27 +49,24 @@ type State = State_EditorBase<DB_PermissionDomain> & {
 const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB_PermissionAccessLevel>);
 
 export class PermissionDomainsEditor
-	extends EditorBase<DB_PermissionDomain, State>
-	implements OnPermissionsDomainsUpdated, DispatcherInterface<DispatcherType_PermissionAccessLevel> {
+	extends EditorBaseV3<DBProto_PermissionDomain, State>
+	implements DispatcherInterface<DispatcherType_PermissionDomain>, DispatcherInterface<DispatcherType_PermissionAccessLevel> {
 
 	//######################### Static #########################
 
-	readonly module = ModuleFE_PermissionsDomain;
+	readonly module = ModuleFE_PermissionDomain;
 	readonly itemName = 'Permission Domain';
 	readonly itemNamePlural = 'Permission Domains';
-	readonly itemDisplay = (item: DB_PermissionDomain) => `${ModuleFE_PermissionsProject.cache.unique(item.projectId)!.name}/${item.namespace}`;
-	static defaultProps = {
-		modules: [ModuleFE_PermissionsDomain]
-	};
+	readonly itemDisplay = (item: DB_PermissionDomain) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)!.name}/${item.namespace}`;
 
 	//######################### Life Cycle #########################
 
-	__onPermissionsDomainsUpdated(...params: ApiCallerEventType<DB_PermissionDomain>) {
+	__onPermissionDomainUpdated(...params: ApiCallerEventType<DB_PermissionDomain>) {
 		if ([EventType_Update, EventType_Create].includes(params[0])) {
 			const domain = params[1] as DB_PermissionDomain;
 			this.reDeriveState({
 				selectedItemId: domain._id,
-				editedItem: new EditableDBItem<DB_PermissionDomain>(domain, ModuleFE_PermissionsDomain)
+				editedItem: new EditableDBItemV3(domain, ModuleFE_PermissionDomain)
 			});
 		}
 		if (params[0] === EventType_Delete)
@@ -86,13 +77,13 @@ export class PermissionDomainsEditor
 		this.forceUpdate();
 	}
 
-	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
-		state.items = ModuleFE_PermissionsDomain.cache.all();
-		state.projects = ModuleFE_PermissionsProject.cache.all();
+	protected deriveStateFromProps(nextProps: {}, state: State) {
+		state.items = ModuleFE_PermissionDomain.cache.all();
+		state.projects = ModuleFE_PermissionProject.cache.all();
 		state.newLevel ??= new EditableDBItemV3(emptyLevel, ModuleFE_PermissionAccessLevel);
 
 		if (!state.editedItem && state.items.length) {
-			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsDomain);
+			state.editedItem = new EditableDBItemV3(state.items[0], ModuleFE_PermissionDomain);
 			state.selectedItemId = state.items[0]._id;
 		}
 		state.dbDefs ??= RuntimeModules()
@@ -135,7 +126,7 @@ export class PermissionDomainsEditor
 		ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
 		await genericNotificationAction(
 			async () => {
-				await new EditableDBItem(this.state.editedItem!.item, ModuleFE_PermissionsDomain, async (domain) => {
+				await new EditableDBItemV3(this.state.editedItem!.item, ModuleFE_PermissionDomain, async (domain) => {
 					if (!createLevels)
 						return;
 
