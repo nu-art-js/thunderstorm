@@ -96,6 +96,7 @@ export class ModuleFE_Workspace_Class
 
 		this.upsertRunnable = setTimeout(async () => {
 			const values = _values(this.workspacesToUpsert);
+			this.logError('WORKSPACE UPSERT', this.workspacesToUpsert);
 			await this.v1.upsertAll(values).executeSync();
 			this.workspacesToUpsert = {};
 		}, 500);

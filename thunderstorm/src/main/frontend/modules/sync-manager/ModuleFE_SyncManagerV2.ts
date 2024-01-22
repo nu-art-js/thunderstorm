@@ -118,11 +118,13 @@ export class ModuleFE_SyncManagerV2_Class
 
 	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
 		this.logInfo('Received firebase state data');
+
 		// remoteSyncData is the data we received from the firebase listener, that just detected a change.
 		const remoteSyncData = snapshot.val() as SyncDataFirebaseState;
 		// localSyncData is the data we just collected from the IDB regarding all existing modules.
 		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbName, data => ({lastUpdated: data.lastUpdated}));
 		const permissibleCollections = this.syncedModules.map(module => module.dbName);
+		const outOfDateCollections:string[] = [];
 		const shouldSync: boolean = (_keys(remoteSyncData) as string[]).reduce((_shouldSync, dbName) => {
 			if (_shouldSync)
 				return _shouldSync;

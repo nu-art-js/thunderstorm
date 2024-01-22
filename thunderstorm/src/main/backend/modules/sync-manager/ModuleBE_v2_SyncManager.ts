@@ -22,6 +22,7 @@
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {
+	__stringify,
 	_keys,
 	arrayToMap,
 	BadImplementationException,
@@ -58,8 +59,6 @@ import {
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState
 } from '../../../shared/sync-manager/types';
-import {ApiModule} from '../../../shared';
-import {ModuleBE_BaseApiV2_Class} from '../db-api-gen/ModuleBE_BaseApiV2';
 import Transaction = firestore.Transaction;
 
 
@@ -120,24 +119,25 @@ export class ModuleBE_v2_SyncManager_Class
 	private calculateSmartSync = async (body: Request_SmartSync): Promise<Response_SmartSync> => {
 		this.logError('Smart Sync!!!');
 		const wantedCollectionNames = body.modules.map(item => item.dbName);
-		// this.logInfo(`Modules wanted: ${__stringify(wantedCollectionNames)}`);
+		this.logInfo(`Modules wanted: ${__stringify(wantedCollectionNames)}`);
 		// const modulesArray = RuntimeModules().filter<ModuleBE_BaseDBV2<any>>((module: DBModuleType) => exists(module.dbDef?.dbName) && wantedCollectionNames.includes(module.dbDef?.dbName!));
-		const modulesArray = RuntimeModules().filter<ModuleBE_BaseApiV2_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbName && exists(module.apiDef) && wantedCollectionNames.includes(module.dbModule.dbDef.dbName));
-		//todo Convert to working with api module, not db module. BE db module may not have FE counterparts, e.g advisor-sessions. API modules always have FE counterparts.
+		// const modulesArray = RuntimeModules().filter<ModuleBE_BaseApiV2_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbName && exists(module.apiDef) && wantedCollectionNames.includes(module.dbModule.dbDef.dbName));
+		const modulesArray: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => wantedCollectionNames.includes(dbModule.dbDef.dbName)));
 
-		// this.logInfo(`Modules found: ${__stringify(modulesArray.map(_module => _module.dbDef.dbName))}`);
-		const modulesMap = arrayToMap(modulesArray, (item: ModuleBE_BaseApiV2_Class<any>) => item.dbModule.dbDef.dbName);
+		this.logInfo(`Modules found: ${__stringify(modulesArray.map(_module => _module.dbDef.dbName))}`);
+		const modulesMap = arrayToMap(modulesArray, (item: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)) => item.dbDef.dbName);
 		// this.logWarningBold(`Modules map: ${(_keys(modulesMap) as string[]).map(key => `\nkey: ${modulesMap[key].dbDef.dbName}, module: ${modulesMap[key].getName()}`)}`);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
 		const upToDateSyncData = await this.syncData.get();
 
+		// For each module, create the response, which says what type of sync it needs: none, delta or full.
 		await Promise.all(body.modules.map(async syncRequest => {
-			const moduleToCheck = modulesMap[syncRequest.dbName] as ModuleBE_BaseApiV2_Class<any>;
+			const moduleToCheck = modulesMap[syncRequest.dbName] as (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>);
 			if (!moduleToCheck)
 				throw new BadImplementationException(`Calculating collections to sync, failing to find dbName: ${syncRequest.dbName}`);
 
 			const remoteSyncData = upToDateSyncData[syncRequest.dbName];
-
+			// Local has no sync data, or it's too old - tell local to send a full sync request for this module
 			if (syncRequest.lastUpdated === 0 || exists(remoteSyncData.oldestDeleted) && remoteSyncData.oldestDeleted > syncRequest.lastUpdated) {
 				// full sync
 				syncDataResponse.push({
@@ -147,6 +147,7 @@ export class ModuleBE_v2_SyncManager_Class
 				});
 				return;
 			}
+			// Same lastUpdated timestamp in local and remote, no need to sync
 			if (syncRequest.lastUpdated === remoteSyncData.lastUpdated) {
 				// no sync
 				syncDataResponse.push({
@@ -156,13 +157,14 @@ export class ModuleBE_v2_SyncManager_Class
 				});
 				return;
 			}
+			// Different lastUpdated timestamp in local and remote - tell local to send a delta sync request for this module
 			if (syncRequest.lastUpdated !== remoteSyncData.lastUpdated) {
 				// delta sync
 				let toUpdate = [];
 				try {
-					toUpdate = await moduleToCheck.dbModule.query.where({__updated: {$gte: syncRequest.lastUpdated}});
+					toUpdate = await moduleToCheck.query.where({__updated: {$gte: syncRequest.lastUpdated}});
 				} catch (e: any) {
-					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbModule.dbDef.dbName}`);
+					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbName}`);
 					throw e;
 				}
 				const itemsToReturn = {
