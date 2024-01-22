@@ -24,6 +24,7 @@ import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebas
 import {
 	_keys,
 	arrayToMap,
+	BadImplementationException,
 	currentTimeMillis,
 	DB_Object,
 	DBDef,
@@ -106,22 +107,31 @@ export class ModuleBE_v2_SyncManager_Class
 		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
 		this.collection = firestore.getCollection<DeletedDBItem>(DBDef_DeletedItems);
 
-		this.dbModules = RuntimeModules().filter(module => ((module as unknown as { ModuleBE_BaseDBV2: boolean }).ModuleBE_BaseDBV2));
+		this.dbModules = RuntimeModules().filter(module => ((module as unknown as {
+			ModuleBE_BaseDBV2: boolean
+		}).ModuleBE_BaseDBV2));
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 		this.syncData = this.database.ref<SyncDataFirebaseState>(`/state/${this.getName()}/syncData`);
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
-		addRoutes([this.checkSyncApi]);
+		addRoutes([this.checkSyncApi, this.smartSyncApi]);
 	}
 
 	private calculateSmartSync = async (body: Request_SmartSync): Promise<Response_SmartSync> => {
+		this.logError('Smart Sync!!!');
 		const wantedCollectionNames = body.modules.map(item => item.dbName);
-		const modulesArray = RuntimeModules().filter<ModuleBE_BaseDBV2<any>>((module: DBModuleType) => wantedCollectionNames.includes(module.dbDef?.dbName || ''));
-		const modulesMap = arrayToMap(modulesArray, (item: any) => item.dbName);
+		// this.logInfo(`Modules wanted: ${__stringify(wantedCollectionNames)}`);
+		const modulesArray = RuntimeModules().filter<ModuleBE_BaseDBV2<any>>((module: DBModuleType) => exists(module.dbDef?.dbName) && wantedCollectionNames.includes(module.dbDef?.dbName!));
+		// this.logInfo(`Modules found: ${__stringify(modulesArray.map(_module => _module.dbDef.dbName))}`);
+		const modulesMap = arrayToMap(modulesArray, (item: ModuleBE_BaseDBV2<any>) => item.dbDef.dbName);
+		// this.logWarningBold(`Modules map: ${(_keys(modulesMap) as string[]).map(key => `\nkey: ${modulesMap[key].dbDef.dbName}, module: ${modulesMap[key].getName()}`)}`);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
 		const upToDateSyncData = await this.syncData.get();
 
 		await Promise.all(body.modules.map(async syncRequest => {
 			const moduleToCheck = modulesMap[syncRequest.dbName] as ModuleBE_BaseDBV2<any>;
+			if (!moduleToCheck)
+				throw new BadImplementationException(`Calculating collections to sync, failing to find dbName: ${syncRequest.dbName}`);
+
 			const remoteSyncData = upToDateSyncData[syncRequest.dbName];
 
 			if (syncRequest.lastUpdated === 0 || exists(remoteSyncData.oldestDeleted) && remoteSyncData.oldestDeleted > syncRequest.lastUpdated) {
@@ -144,8 +154,15 @@ export class ModuleBE_v2_SyncManager_Class
 			}
 			if (syncRequest.lastUpdated !== remoteSyncData.lastUpdated) {
 				// delta sync
+				let toUpdate = [];
+				try {
+					toUpdate = await moduleToCheck.query.where({__updated: {$gte: syncRequest.lastUpdated}});
+				} catch (e: any) {
+					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbName}`);
+					throw e;
+				}
 				const itemsToReturn = {
-					toUpdate: await moduleToCheck.query.where({__updated: {$gte: syncRequest.lastUpdated}}),
+					toUpdate: toUpdate,
 					toDelete: await this.queryDeleted(syncRequest.dbName, {where: {__updated: {$gte: syncRequest.lastUpdated}}})
 				};
 
@@ -166,7 +183,13 @@ export class ModuleBE_v2_SyncManager_Class
 
 	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DeletedDBItem> => {
 		const {_id, __updated, __created, _v} = item;
-		const deletedItem: PreDB<DeletedDBItem> = {__docId: _id, __updated, __created, _v, __collectionName: collectionName};
+		const deletedItem: PreDB<DeletedDBItem> = {
+			__docId: _id,
+			__updated,
+			__created,
+			_v,
+			__collectionName: collectionName
+		};
 		uniqueKeys.forEach(key => {
 			// @ts-ignore
 			deletedItem[key] = item[key] || '';

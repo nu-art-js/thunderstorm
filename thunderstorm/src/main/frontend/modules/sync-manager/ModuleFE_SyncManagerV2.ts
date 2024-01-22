@@ -137,8 +137,10 @@ export class ModuleFE_SyncManagerV2_Class
 		}, false);
 
 		//if there are changes, call sync
-		if (shouldSync)
+		if (shouldSync) {
+			this.logInfo('Syncing due to updated RTDB sync-state.');
 			await this.sync();
+		}
 	};
 
 	public onReceivedSyncData = async (response: Response_DBSyncData) => {
