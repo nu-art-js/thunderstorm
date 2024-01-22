@@ -1,70 +1,65 @@
 import * as React from 'react';
 import {
 	_className,
-	EditableDBItem,
+	EditableDBItemV3,
 	EventType_Create,
 	EventType_Delete,
 	EventType_Update,
 	LL_H_C,
 	LL_V_L,
-	ModuleFE_BaseApi,
-	Props_SmartComponent,
-	State_SmartComponent,
 	TS_Button,
 	TS_Input,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
-import {EditorBase, State_EditorBase} from './editor-base';
-import {DB_PermissionApi, DB_PermissionProject} from '../../shared';
-import {
-	ModuleFE_PermissionsApi,
-	ModuleFE_PermissionsDomain,
-	ModuleFE_PermissionsProject,
-	OnPermissionsApisLoaded,
-	OnPermissionsProjectsUpdated
-} from '../../core/module-pack';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
 import {Filter, sortArray, UniqueId} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {MultiSelect} from '../ui-props';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
-import {ModuleFE_PermissionAccessLevel} from '../../_entity';
+import {
+	DB_PermissionAPI,
+	DB_PermissionProject,
+	DBProto_PermissionProject,
+	DispatcherType_PermissionProject,
+	ModuleFE_PermissionAccessLevel,
+	ModuleFE_PermissionAPI,
+	ModuleFE_PermissionDomain,
+	ModuleFE_PermissionProject
+} from '../../_entity';
+import {DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {EditorBaseV3, State_EditorBaseV3} from './editor-base-v3';
 
 
-type State = State_EditorBase<DB_PermissionProject> & {
-	apis?: DB_PermissionApi[];
+type State = State_EditorBaseV3<DBProto_PermissionProject> & {
+	apis?: DB_PermissionAPI[];
 	selectedApiId?: UniqueId;
 	searchValue?: string;
 };
 
 export class PermissionProjectsEditor
-	extends EditorBase<DB_PermissionProject, State>
-	implements OnPermissionsProjectsUpdated, OnPermissionsApisLoaded {
+	extends EditorBaseV3<DBProto_PermissionProject, State>
+	implements DispatcherInterface<DispatcherType_PermissionProject> {
 
 	//######################### Static #########################
 
 	static defaultProps = {
-		modules: [ModuleFE_PermissionsProject]
+		modules: [ModuleFE_PermissionProject]
 	};
 
-	readonly module = ModuleFE_PermissionsProject as ModuleFE_BaseApi<DB_PermissionProject, any>;
+	readonly module = ModuleFE_PermissionProject;
 	readonly itemName = 'Permission Project';
 	readonly itemNamePlural = 'Permission Projects';
 	readonly itemDisplay = (item: DB_PermissionProject) => item.name;
 
 	//######################### Life Cycle #########################
 
-	__onPermissionsApisLoaded() {
-		this.reDeriveState();
-	}
-
-	__OnPermissionsProjectsUpdated(...params: ApiCallerEventType<DB_PermissionProject>) {
+	__onPermissionProjectUpdated(...params: ApiCallerEventType<DB_PermissionProject>) {
 		if ([EventType_Update, EventType_Create].includes(params[0])) {
 			const project = params[1] as DB_PermissionProject;
 			this.reDeriveState({
 				selectedItemId: project._id,
-				editedItem: new EditableDBItem(project, ModuleFE_PermissionsProject),
+				editedItem: new EditableDBItemV3(project, ModuleFE_PermissionProject),
 				searchValue: undefined
 			});
 		}
@@ -72,13 +67,13 @@ export class PermissionProjectsEditor
 			this.reDeriveState({selectedItemId: undefined, editedItem: undefined, searchValue: undefined});
 	}
 
-	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
-		state.items = ModuleFE_PermissionsProject.cache.all();
+	protected deriveStateFromProps(nextProps: {}, state: State) {
+		state.items = ModuleFE_PermissionProject.cache.all();
 		if (!state.editedItem && state.items.length) {
-			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsProject);
+			state.editedItem = new EditableDBItemV3(state.items[0], ModuleFE_PermissionProject);
 			state.selectedItemId = state.items[0]._id;
 		}
-		state.apis = state.editedItem ? ModuleFE_PermissionsApi.cache.filter(i => i.projectId === state.editedItem?.item._id) : undefined;
+		state.apis = state.editedItem ? ModuleFE_PermissionAPI.cache.filter(i => i.projectId === state.editedItem?.item._id) : undefined;
 		return state;
 	}
 
@@ -125,7 +120,7 @@ export class PermissionProjectsEditor
 		if (!this.state.apis)
 			return '';
 
-		const filter = new Filter<DB_PermissionApi>(i => [i.path]);
+		const filter = new Filter<DB_PermissionAPI>(i => [i.path]);
 		const apis = sortArray(filter.filter(this.state.apis, this.state.searchValue ?? ''), i => i.path);
 
 		return <LL_V_L className={'api-editor__list-wrapper'}>
@@ -154,7 +149,7 @@ export class PermissionProjectsEditor
 		if (!_api)
 			return '';
 
-		const api = new EditableDBItem(_api, ModuleFE_PermissionsApi).setAutoSave(true);
+		const api = new EditableDBItemV3(_api, ModuleFE_PermissionAPI).setAutoSave(true);
 
 		return <LL_V_L className={'api-editor__editor'}>
 			<TS_PropRenderer.Vertical label={'Path'}>
@@ -166,7 +161,7 @@ export class PermissionProjectsEditor
 				className={'api-editor__editor__level-list'}
 				itemRenderer={(levelId, onDelete) => {
 					const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId)!;
-					const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
+					const domain = ModuleFE_PermissionDomain.cache.unique(level.domainId)!;
 					return <div key={levelId} className={'api-editor__editor__level-list__item'}>
 						<TS_Icons.x.component onClick={onDelete}/>
 						{`${domain.namespace}: ${level.name} (${level.value})`}

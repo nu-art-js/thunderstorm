@@ -1,12 +1,12 @@
 import * as React from 'react';
 import {
 	_className,
+	ComponentSync,
 	EditableDBItem,
 	genericNotificationAction,
 	LL_H_C,
 	LL_V_L,
 	ModuleFE_BaseApi,
-	SmartComponent,
 	TS_BusyButton,
 	TS_Button
 } from '@nu-art/thunderstorm/frontend';
@@ -25,7 +25,7 @@ export type State_EditorBase<T extends DB_Object> = {
 };
 
 export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase<T>, P extends {} = {}>
-	extends SmartComponent<P, S> {
+	extends ComponentSync<P, S> {
 
 	abstract readonly module: ModuleFE_BaseApi<T>;
 	abstract readonly itemName: string;
