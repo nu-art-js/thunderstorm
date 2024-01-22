@@ -155,7 +155,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 		if (unpreparedModules.length > 0) {
 			const state = this.createInitialState(nextProps);
-			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, state);
+			this.logWarning(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, state);
 			return state;
 		}
 

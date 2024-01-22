@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_keys, DB_Object, Dispatcher, Module, Queue, reduceToMap, RuntimeModules} from '@nu-art/ts-common';
+import {_keys, DB_Object, Dispatcher, LogLevel, Module, Queue, reduceToMap, RuntimeModules} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
@@ -80,7 +80,7 @@ export class ModuleFE_SyncManagerV2_Class
 
 	constructor() {
 		super();
-
+		this.setMinLevel(LogLevel.Verbose);
 		this.syncQueue = new Queue('Sync Queue').setParallelCount(4);
 		this.v1 = {
 			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData),
@@ -129,6 +129,11 @@ export class ModuleFE_SyncManagerV2_Class
 
 			if (!permissibleCollections.includes(dbName))
 				return false;
+
+			if (!remoteSyncData[dbName])
+				this.logError(`onSyncDataChanged - couldn't find remote syncData for collection ${dbName}`);
+			if (!localSyncData[dbName])
+				this.logError(`onSyncDataChanged - couldn't find local syncData for collection ${dbName}`);
 
 			if (remoteSyncData[dbName].lastUpdated <= localSyncData[dbName].lastUpdated)
 				return false;
@@ -184,12 +189,12 @@ export class ModuleFE_SyncManagerV2_Class
 
 	performFullSync = async (module: ModuleFE_BaseApi<any>) => {
 		module.logInfo(`Full sync for: '${module.dbDef.dbName}'`);
-		module.logVerbose(`Firing event (DataStatus.NoData): ${module.dbDef.dbName}`);
-		module.setDataStatus(DataStatus.NoData);
+		// module.logVerbose(`Firing event (DataStatus.NoData): ${module.dbDef.dbName}`);
+		// module.setDataStatus(DataStatus.NoData); // module.IDB.clear() already sets the module's data status to NoData.
 
 		// if the backend have decided module collection needs a full sync, we need to clean local idb and cache
 		module.logVerbose(`Cleaning IDB: ${module.dbDef.dbName}`);
-		await module.IDB.clear();
+		await module.IDB.clear(); // Also sets the module's data status to NoData.
 		module.logVerbose(`Cleaning Cache: ${module.dbDef.dbName}`);
 		module.cache.clear();
 
