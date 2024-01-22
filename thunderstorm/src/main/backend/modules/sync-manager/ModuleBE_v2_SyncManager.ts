@@ -58,7 +58,8 @@ import {
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState
 } from '../../../shared/sync-manager/types';
-import {DBModuleType} from '../../../shared';
+import {ApiModule} from '../../../shared';
+import {ModuleBE_BaseApiV2_Class} from '../db-api-gen/ModuleBE_BaseApiV2';
 import Transaction = firestore.Transaction;
 
 
@@ -120,15 +121,18 @@ export class ModuleBE_v2_SyncManager_Class
 		this.logError('Smart Sync!!!');
 		const wantedCollectionNames = body.modules.map(item => item.dbName);
 		// this.logInfo(`Modules wanted: ${__stringify(wantedCollectionNames)}`);
-		const modulesArray = RuntimeModules().filter<ModuleBE_BaseDBV2<any>>((module: DBModuleType) => exists(module.dbDef?.dbName) && wantedCollectionNames.includes(module.dbDef?.dbName!));
+		// const modulesArray = RuntimeModules().filter<ModuleBE_BaseDBV2<any>>((module: DBModuleType) => exists(module.dbDef?.dbName) && wantedCollectionNames.includes(module.dbDef?.dbName!));
+		const modulesArray = RuntimeModules().filter<ModuleBE_BaseApiV2_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbName && exists(module.apiDef) && wantedCollectionNames.includes(module.dbModule.dbDef.dbName));
+		//todo Convert to working with api module, not db module. BE db module may not have FE counterparts, e.g advisor-sessions. API modules always have FE counterparts.
+
 		// this.logInfo(`Modules found: ${__stringify(modulesArray.map(_module => _module.dbDef.dbName))}`);
-		const modulesMap = arrayToMap(modulesArray, (item: ModuleBE_BaseDBV2<any>) => item.dbDef.dbName);
+		const modulesMap = arrayToMap(modulesArray, (item: ModuleBE_BaseApiV2_Class<any>) => item.dbModule.dbDef.dbName);
 		// this.logWarningBold(`Modules map: ${(_keys(modulesMap) as string[]).map(key => `\nkey: ${modulesMap[key].dbDef.dbName}, module: ${modulesMap[key].getName()}`)}`);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
 		const upToDateSyncData = await this.syncData.get();
 
 		await Promise.all(body.modules.map(async syncRequest => {
-			const moduleToCheck = modulesMap[syncRequest.dbName] as ModuleBE_BaseDBV2<any>;
+			const moduleToCheck = modulesMap[syncRequest.dbName] as ModuleBE_BaseApiV2_Class<any>;
 			if (!moduleToCheck)
 				throw new BadImplementationException(`Calculating collections to sync, failing to find dbName: ${syncRequest.dbName}`);
 
@@ -156,9 +160,9 @@ export class ModuleBE_v2_SyncManager_Class
 				// delta sync
 				let toUpdate = [];
 				try {
-					toUpdate = await moduleToCheck.query.where({__updated: {$gte: syncRequest.lastUpdated}});
+					toUpdate = await moduleToCheck.dbModule.query.where({__updated: {$gte: syncRequest.lastUpdated}});
 				} catch (e: any) {
-					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbName}`);
+					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbModule.dbDef.dbName}`);
 					throw e;
 				}
 				const itemsToReturn = {

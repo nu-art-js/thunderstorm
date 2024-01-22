@@ -135,8 +135,8 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	protected init() {
 	}
 
-	async __onClearWebsiteData(resync: boolean) {
-		await this.IDB.clear(resync);
+	async __onClearWebsiteData() {
+		await this.IDB.clear();
 		this.setDataStatus(DataStatus.NoData);
 	}
 
@@ -259,7 +259,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 			return;
 
 		this.logInfo(`Cleaning up & Sync...`);
-		this.clear(true)
+		this.clear()
 			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
 			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 
@@ -275,12 +275,12 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		return allItems;
 	};
 
-	clear = async (resync = false) => {
+	clear = async () => {
 		this.lastSync.delete();
 		return this.db.clearDB();
 	};
 
-	delete = async (resync = false) => {
+	delete = async () => {
 		this.lastSync.delete();
 		return this.db.deleteDB();
 	};

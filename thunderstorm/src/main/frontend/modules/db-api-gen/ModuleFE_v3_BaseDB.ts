@@ -109,8 +109,8 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 	protected init() {
 	}
 
-	async __onClearWebsiteData(resync: boolean) {
-		await this.IDB.clear(resync);
+	async __onClearWebsiteData() {
+		await this.IDB.clear();
 		this.setDataStatus(DataStatus.NoData);
 	}
 
