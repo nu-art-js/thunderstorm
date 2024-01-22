@@ -38,9 +38,9 @@ import {
 	ModuleFE_PermissionProject
 } from '../../_entity';
 import {DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
-import {EditorBaseV3, State_EditorBaseV3} from './editor-base-v3';
+import {EditorBase, State_EditorBase} from './editor-base';
 
-type State = State_EditorBaseV3<DBProto_PermissionDomain> & {
+type State = State_EditorBase<DBProto_PermissionDomain> & {
 	projects: Readonly<DB_PermissionProject[]>
 	newLevel: EditableDBItemV3<DBProto_PermissionAccessLevel>;
 	dbDefs: DBDef<any>[];
@@ -49,7 +49,7 @@ type State = State_EditorBaseV3<DBProto_PermissionDomain> & {
 const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB_PermissionAccessLevel>);
 
 export class PermissionDomainsEditor
-	extends EditorBaseV3<DBProto_PermissionDomain, State>
+	extends EditorBase<DBProto_PermissionDomain, State>
 	implements DispatcherInterface<DispatcherType_PermissionDomain>, DispatcherInterface<DispatcherType_PermissionAccessLevel> {
 
 	//######################### Static #########################

@@ -16,13 +16,13 @@ import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync
 
 const newItemIdentifier = '##new-item##';
 
-export type State_EditorBaseV3<T extends DBProto<any>> = {
+export type State_EditorBase<T extends DBProto<any>> = {
 	items: Readonly<T['dbType'][]>;
 	selectedItemId?: UniqueId | typeof newItemIdentifier;
 	editedItem?: EditableDBItemV3<T>;
 };
 
-export abstract class EditorBaseV3<T extends DBProto<any>, S extends State_EditorBaseV3<T> = State_EditorBaseV3<T>, P extends {} = {}>
+export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorBase<T> = State_EditorBase<T>, P extends {} = {}>
 	extends ComponentSync<P, S> {
 
 	abstract readonly module: ModuleFE_v3_BaseApi<T>;
