@@ -12,15 +12,15 @@ import {
 	ModuleFE_PermissionGroup,
 	ModuleFE_PermissionProject
 } from '../../_entity';
-import {EditorBaseV3, State_EditorBaseV3} from './editor-base-v3';
+import {EditorBase, State_EditorBase} from './editor-base';
 import {ApiCallerEventTypeV3, DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
 
-type State = State_EditorBaseV3<DBProto_PermissionGroup> & {
+type State = State_EditorBase<DBProto_PermissionGroup> & {
 	newLevelDomainId?: UniqueId;
 };
 
 export class PermissionGroupsEditor
-	extends EditorBaseV3<DBProto_PermissionGroup, State>
+	extends EditorBase<DBProto_PermissionGroup, State>
 	implements DispatcherInterface<DispatcherType_PermissionGroup> {
 
 	//######################### Static #########################

@@ -3,17 +3,17 @@ import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, 
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {MultiSelect} from '../ui-props';
 import {DB_PermissionUser, DBProto_PermissionUser, DispatcherType_PermissionUser, ModuleFE_PermissionUser} from '../../_entity';
-import {EditorBaseV3, State_EditorBaseV3} from './editor-base-v3';
+import {EditorBase, State_EditorBase} from './editor-base';
 import {ApiCallerEventTypeV3, DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
 
-type State = State_EditorBaseV3<DBProto_PermissionUser>;
+type State = State_EditorBase<DBProto_PermissionUser>;
 
 type Props = {
 	renderAccount: (accountId: string) => string
 }
 
 export class PermissionUsersEditor
-	extends EditorBaseV3<DBProto_PermissionUser, State, Props>
+	extends EditorBase<DBProto_PermissionUser, State, Props>
 	implements DispatcherInterface<DispatcherType_PermissionUser> {
 
 	//######################### Static #########################

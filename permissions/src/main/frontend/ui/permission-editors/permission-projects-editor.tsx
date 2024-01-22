@@ -28,17 +28,17 @@ import {
 	ModuleFE_PermissionProject
 } from '../../_entity';
 import {DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
-import {EditorBaseV3, State_EditorBaseV3} from './editor-base-v3';
+import {EditorBase, State_EditorBase} from './editor-base';
 
 
-type State = State_EditorBaseV3<DBProto_PermissionProject> & {
+type State = State_EditorBase<DBProto_PermissionProject> & {
 	apis?: DB_PermissionAPI[];
 	selectedApiId?: UniqueId;
 	searchValue?: string;
 };
 
 export class PermissionProjectsEditor
-	extends EditorBaseV3<DBProto_PermissionProject, State>
+	extends EditorBase<DBProto_PermissionProject, State>
 	implements DispatcherInterface<DispatcherType_PermissionProject> {
 
 	//######################### Static #########################
