@@ -278,7 +278,7 @@ export function filterFlatInstances<T extends any[], K = NestedArrayType<T>>(arr
 	return filterInstances(flatArray(arr, result)) as Exclude<K, undefined>[];
 }
 
-export function groupArrayBy<T extends object, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): {
+export function groupArrayBy<T extends any, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): {
 	key: K,
 	values: T[]
 }[] {
