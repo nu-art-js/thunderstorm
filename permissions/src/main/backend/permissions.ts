@@ -1,10 +1,5 @@
 import {
 	ApiDef_Permissions,
-	DBDef_PermissionApi,
-	DBDef_PermissionDomain,
-	DBDef_PermissionGroup,
-	DBDef_PermissionProjects,
-	DBDef_PermissionUser
 } from '../shared';
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '../shared/types';
 import {
@@ -20,7 +15,14 @@ import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionK
 import {ApiDef_UpgradeCollection} from '@nu-art/thunderstorm/shared/upgrade-collection';
 import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor';
 import {ApiDef_SyncEnvV2} from '@nu-art/thunderstorm';
-import {DBDef_PermissionAccessLevel} from './_entity';
+import {
+	DBDef_PermissionAPI,
+	DBDef_PermissionAccessLevel,
+	DBDef_PermissionDomain,
+	DBDef_PermissionGroup,
+	DBDef_PermissionProject,
+	DBDef_PermissionUser
+} from './_entity';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
@@ -32,7 +34,7 @@ const Domain_Developer_ID = '1f62a6e2fc4e2cfaa8aa1aa1a45b8c1b';
 const _Domain_PermissionsDefine: DefaultDef_Domain = {
 	_id: Domain_PermissionsDefine_ID,
 	namespace: 'Permissions Define',
-	dbNames: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbName),
+	dbNames: [DBDef_PermissionProject, DBDef_PermissionDomain, DBDef_PermissionAPI, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbName),
 	customApis: [
 		{path: ApiDefFE_Account.vv1.refreshSession.path, accessLevel: DefaultAccessLevel_NoAccess.name},
 		{path: ApiDef_Permissions.v1.createProject.path, accessLevel: DefaultAccessLevel_Admin.name},
