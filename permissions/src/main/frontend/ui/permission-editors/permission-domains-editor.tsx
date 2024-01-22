@@ -38,7 +38,7 @@ import {
 	ModuleFE_PermissionProject
 } from '../../_entity';
 import {DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
-import {EditorBase, State_EditorBase} from './editor-base';
+import {EditorBase, Props_EditorBase, State_EditorBase} from './editor-base';
 
 type State = State_EditorBase<DBProto_PermissionDomain> & {
 	projects: Readonly<DB_PermissionProject[]>
@@ -54,10 +54,12 @@ export class PermissionDomainsEditor
 
 	//######################### Static #########################
 
-	readonly module = ModuleFE_PermissionDomain;
-	readonly itemName = 'Permission Domain';
-	readonly itemNamePlural = 'Permission Domains';
-	readonly itemDisplay = (item: DB_PermissionDomain) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)!.name}/${item.namespace}`;
+	static defaultProps = {
+		module: ModuleFE_PermissionDomain,
+		itemName: 'Permission Domain',
+		itemNamePlural: 'Permission Domains',
+		itemDisplay: (item: DB_PermissionDomain) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)!.name}/${item.namespace}`,
+	};
 
 	//######################### Life Cycle #########################
 
@@ -77,19 +79,13 @@ export class PermissionDomainsEditor
 		this.forceUpdate();
 	}
 
-	protected deriveStateFromProps(nextProps: {}, state: State) {
-		state.items = ModuleFE_PermissionDomain.cache.all();
+	protected deriveStateFromProps(nextProps: Props_EditorBase<DBProto_PermissionDomain>, state: State) {
+		state = super.deriveStateFromProps(nextProps, state);
 		state.projects = ModuleFE_PermissionProject.cache.all();
 		state.newLevel ??= new EditableDBItemV3(emptyLevel, ModuleFE_PermissionAccessLevel);
-
-		if (!state.editedItem && state.items.length) {
-			state.editedItem = new EditableDBItemV3(state.items[0], ModuleFE_PermissionDomain);
-			state.selectedItemId = state.items[0]._id;
-		}
 		state.dbDefs ??= RuntimeModules()
 			.filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef)
 			.map(module => module.dbDef);
-
 		return state;
 	}
 
@@ -137,7 +133,7 @@ export class PermissionDomainsEditor
 
 				}).save();
 			},
-			`Saving ${this.itemName}`, 3);
+			`Saving ${this.props.itemName}`, 3);
 	};
 
 	protected saveItem = async (e: React.MouseEvent) => {

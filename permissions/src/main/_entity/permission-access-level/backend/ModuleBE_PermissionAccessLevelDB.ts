@@ -1,5 +1,5 @@
 import {DBApiConfigV3, ModuleBE_BaseDBV3,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from '../shared';
+import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from './shared';
 import {CanDeletePermissionEntities} from '../../../backend/core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
@@ -8,9 +8,9 @@ import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/Fir
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
-import {ModuleBE_PermissionAPIDB} from '../../permission-api/backend';
-import {ModuleBE_PermissionDomainDB} from '../../permission-domain/backend';
-import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend';
+import {ModuleBE_PermissionAPIDB} from '../../permission-api/backend/ModuleBE_PermissionAPIDB';
+import {ModuleBE_PermissionDomainDB} from '../../permission-domain/backend/ModuleBE_PermissionDomainDB';
+import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionAccessLevel> & {}

@@ -44,18 +44,14 @@ import {
 } from '@nu-art/thunderstorm/backend';
 import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {
-	ApiDef_PermissionsAssert,
-	Request_AssertApiForUser
-} from '../../shared';
+import {ApiDef_PermissionsAssert, Request_AssertApiForUser} from '../../shared';
 import {
 	MemKey_HttpRequestBody,
 	MemKey_HttpRequestMethod,
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl
 } from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {SessionKey_Permissions_BE} from '../consts';
+import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts';
 import {PermissionKey_BE} from '../PermissionKey_BE';
 import {Base_AccessLevel, DB_PermissionAccessLevel, DB_PermissionAPI, ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity';
 
@@ -70,7 +66,7 @@ type Config = {
 /**
  * [DomainId uniqueString]: accessLevel's numerical value
  */
-export const MemKey_UserPermissions = new MemKey<TypedMap<number>>('user-permissions');
+
 export type SessionData_StrictMode = TypedKeyValue<'strictMode', boolean>
 
 export class ModuleBE_PermissionsAssert_Class

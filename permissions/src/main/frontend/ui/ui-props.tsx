@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync, PartialProps_GenericDropDown} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_V_L, PartialProps_GenericDropDown} from '@nu-art/thunderstorm/frontend';
 import {dbObjectToId} from '@nu-art/ts-common';
 import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect';
 import {
@@ -39,19 +39,21 @@ class DomainLevelRenderer
 	render() {
 		const selectedLevels = ModuleFE_PermissionAccessLevel.cache.filter(item => this.props.existingItems.includes(item._id));
 		const availableDomainsIds = ModuleFE_PermissionDomain.cache.filter(item => !selectedLevels.find(level => level.domainId === item._id)).map(dbObjectToId);
-		return <div>
+		return <LL_V_L className={'domain-level-renderer'}>
 			<Permissions_DropDown.Domain
 				selected={this.state.domainId}
 				queryFilter={domain => availableDomainsIds.includes(domain._id)}
 				onSelected={domain => this.setState({domainId: domain._id})}
+				placeholder={'Domain'}
 			/>
 			<Permissions_DropDown.AccessLevel
 				disabled={!this.state.domainId}
 				queryFilter={level => this.state.domainId === level.domainId}
 				selected={undefined}
 				onSelected={(accessLevel) => this.props.onSelected(accessLevel._id)}
+				placeholder={'Level'}
 			/>
-		</div>;
+		</LL_V_L>;
 	}
 
 	protected deriveStateFromProps(nextProps: MultiSelect_Selector<string>, state: Partial<{

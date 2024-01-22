@@ -10,7 +10,7 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_PermissionGroup
 	modules: [ModuleFE_PermissionGroup],
 	mapper: item => [item.label],
 	placeholder: 'Choose a PermissionGroup',
-	renderer: item => <div className="ll_h_c"> {item.label} </div>
+	renderer: item => <>{item.label}</>
 };
 
 export const DropDown_PermissionGroup = GenericDropDownV3.prepare(Props_DropDown);

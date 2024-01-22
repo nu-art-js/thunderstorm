@@ -12,18 +12,16 @@ import {
 	TS_Tabs
 } from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
-import {
-	ModulePackFE_Permissions,
-	PermissionDomainsEditor,
-	PermissionGroupsEditor,
-	PermissionProjectsEditor,
-	PermissionUsersEditor,
-	SessionKey_StrictMode_FE
-} from '../..';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
 import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {timeout} from '@nu-art/ts-common';
+import {ModulePackFE_Permissions} from '../../core/module-pack';
+import {SessionKey_StrictMode_FE} from '../../consts';
+import {PermissionProjectsEditor} from '../permission-editors/permission-projects-editor';
+import {PermissionDomainsEditor} from '../permission-editors/permission-domains-editor';
+import {PermissionGroupsEditor} from '../permission-editors/permission-groups-editor';
+import {PermissionUsersEditor} from '../permission-editors/permission-users-editor';
 
 
 type _Props = {}
