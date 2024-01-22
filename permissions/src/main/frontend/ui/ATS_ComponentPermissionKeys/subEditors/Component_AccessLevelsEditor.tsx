@@ -3,9 +3,8 @@ import {ComponentSync, LL_V_L, TS_Button} from '@nu-art/thunderstorm/frontend';
 import {dbObjectToId} from '@nu-art/ts-common';
 import {Permissions_DropDown} from '../../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ModuleFE_PermissionsDomain} from '../../../modules/manage/ModuleFE_PermissionsDomain';
 import {PermissionKey_FE} from '../../../PermissionKey_FE';
-import {DB_PermissionAccessLevel, ModuleFE_PermissionAccessLevel} from '../../../_entity';
+import {DB_PermissionAccessLevel, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain} from '../../../_entity';
 
 type Props = {
 	permissionKey: PermissionKey_FE;
@@ -40,7 +39,7 @@ export class Component_AccessLevelsEditor
 				return !this.state.levels.map(i => i._id).includes(item._id);
 			}}
 			mapper={level => {
-				const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
+				const domain = ModuleFE_PermissionDomain.cache.unique(level.domainId)!;
 				return [domain.namespace, level.name, String(level.value)];
 			}}
 			className={'access-levels-dropdown'}

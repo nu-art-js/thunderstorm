@@ -1,25 +1,25 @@
 import {DBApiConfigV3, ModuleBE_BaseDBV3,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from '../shared';
+import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from './shared';
 import {CanDeletePermissionEntities} from '../../../backend/core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates, flatArray} from '@nu-art/ts-common';
-import {ModuleBE_PermissionDomain} from '../../../backend/modules/management/ModuleBE_PermissionDomain';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
-import {ModuleBE_PermissionApi} from '../../../backend/modules/management/ModuleBE_PermissionApi';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ModuleBE_PermissionGroup} from '../../../backend/modules/assignment/ModuleBE_PermissionGroup';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {ModuleBE_PermissionAPIDB} from '../../permission-api/backend/ModuleBE_PermissionAPIDB';
+import {ModuleBE_PermissionDomainDB} from '../../permission-domain/backend/ModuleBE_PermissionDomainDB';
+import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionAccessLevel> & {}
 
 export class ModuleBE_PermissionAccessLevelDB_Class
 	extends ModuleBE_BaseDBV3<DBProto_PermissionAccessLevel, Config>
-	implements CanDeletePermissionEntities<'Domain', 'Level'> {
+	implements CanDeletePermissionEntities<'PermissionDomain', 'PermissionAccessLevel'> {
 
-	__canDeleteEntities = async <T extends 'Domain'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'Level'>> => {
+	__canDeleteEntities = async <T extends 'PermissionDomain'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'PermissionAccessLevel'>> => {
 		let conflicts: DB_PermissionAccessLevel[] = [];
 		const dependencies: Promise<DB_PermissionAccessLevel[]>[] = [];
 
@@ -27,7 +27,7 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
-		return {collectionKey: 'Level', conflictingIds: conflicts.map(dbObjectToId)};
+		return {collectionKey: 'PermissionAccessLevel', conflictingIds: conflicts.map(dbObjectToId)};
 	};
 
 	constructor() {
@@ -40,7 +40,7 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: DB_PermissionAccessLevel, t?: Transaction) {
-		await ModuleBE_PermissionDomain.query.uniqueAssert(dbInstance.domainId);
+		await ModuleBE_PermissionDomainDB.query.uniqueAssert(dbInstance.domainId);
 
 		dbInstance._auditorId = MemKey_AccountId.get();
 	}
@@ -52,7 +52,7 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 		//Collect all apis that hold an access level id in the levels that have changed
 		const deletedIds = deleted.map(dbObjectToId);
 		const levelIds = [...deletedIds, ...updated.map(dbObjectToId)];
-		const _connectedApis = await batchActionParallel(levelIds, 10, async ids => await ModuleBE_PermissionApi.query.custom({where: {accessLevelIds: {$aca: ids}}}));
+		const _connectedApis = await batchActionParallel(levelIds, 10, async ids => await ModuleBE_PermissionAPIDB.query.custom({where: {accessLevelIds: {$aca: ids}}}));
 
 		const connectedApis = filterDuplicates(_connectedApis, api => api._id);
 		deletedIds.forEach(id => {
@@ -63,13 +63,13 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 		});
 
 		//Send all apis to upsert so their _accessLevels update
-		await ModuleBE_PermissionApi.set.all(connectedApis);
+		await ModuleBE_PermissionAPIDB.set.all(connectedApis);
 		return super.postWriteProcessing(data);
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
-		const groups = await ModuleBE_PermissionGroup.query.custom({where: {accessLevelIds: {$ac: dbInstance._id}}});
-		const apis = await ModuleBE_PermissionApi.query.custom({where: {accessLevelIds: {$ac: dbInstance._id}}});
+		const groups = await ModuleBE_PermissionGroupDB.query.custom({where: {accessLevelIds: {$ac: dbInstance._id}}});
+		const apis = await ModuleBE_PermissionAPIDB.query.custom({where: {accessLevelIds: {$ac: dbInstance._id}}});
 
 		if (groups.length || apis.length)
 			throw new ApiException(403, 'You trying delete access level that associated with users/groups/apis, you need delete the associations first');
