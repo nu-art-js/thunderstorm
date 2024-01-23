@@ -22,8 +22,10 @@
 import {
 	__stringify,
 	_keys,
-	DB_Object, debounce,
+	DB_Object,
+	debounce,
 	Dispatcher,
+	exists,
 	LogLevel,
 	Module,
 	Queue,
@@ -137,7 +139,7 @@ export class ModuleFE_SyncManagerV2_Class
 			// 	return outOfDateCollectionNames;
 
 			if (!localSyncData[dbName])
-				return this.logVerbose(`onSyncDataChanged - couldn't find local syncData for collection ${dbName}`);
+				return; // this.logVerbose(`onSyncDataChanged - couldn't find local syncData for collection ${dbName}`);
 
 			if (remoteSyncData[dbName].lastUpdated <= localSyncData[dbName].lastUpdated)
 				return;
@@ -149,13 +151,12 @@ export class ModuleFE_SyncManagerV2_Class
 		if (this.outOfSyncCollections.length === 0)
 			return;
 
-		if (this.debounceSync)
+		if (exists(this.debounceSync))
 			return this.debounceSync();
 
 		// Since RTDB event arrives upon start listening we would like to perform a first sync immediately,
 		// therefor we call sync directly for the first event and create the debounce function right after for all the consecutive events
 		this.logInfo('Performing Immediate Sync');
-		await this.sync();
 		this.debounceSync = debounce(async () => {
 			if (!this.syncFirebaseListener)
 				return this.logWarning('Ignoring sync data state, listener is undefined');
@@ -165,6 +166,7 @@ export class ModuleFE_SyncManagerV2_Class
 			this.outOfSyncCollections = [];
 			await this.sync();
 		}, 1000, 5000);
+		await this.sync();
 	};
 
 	public onReceivedSyncData = async (response: Response_DBSyncData) => {
