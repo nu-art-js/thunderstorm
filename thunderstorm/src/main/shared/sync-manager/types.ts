@@ -1,5 +1,6 @@
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
-import {BodyApi, QueryApi} from '../types';
+import {QueryApi} from '../types';
+
 
 export type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
 export type SyncDataFirebaseState = TypedMap<LastUpdated>
@@ -36,7 +37,6 @@ export type Response_SmartSync = {
 export type ApiStruct_SyncManager = {
 	v1: {
 		checkSync: QueryApi<Response_DBSyncData, undefined>
-		smartSync: BodyApi<Response_SmartSync, Request_SmartSync>
 	},
 }
 

@@ -19,19 +19,7 @@
  * limitations under the License.
  */
 
-import {
-	__stringify,
-	_keys,
-	DB_Object,
-	debounce,
-	Dispatcher,
-	exists,
-	LogLevel,
-	Module,
-	Queue,
-	reduceToMap,
-	RuntimeModules
-} from '@nu-art/ts-common';
+import {__stringify, _keys, DB_Object, debounce, Dispatcher, exists, LogLevel, Module, Queue, reduceToMap, RuntimeModules, Second} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
@@ -48,15 +36,12 @@ import {
 	SyncDataFirebaseState,
 	SyncDbData
 } from '../../../shared/sync-manager/types';
-import {ApiDefCaller, DBModuleType} from '../../../shared';
+import {ApiDefCaller, BodyApi, DBModuleType, HttpMethod} from '../../../shared';
 import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {
-	ModuleFE_FirebaseListener,
-	RefListenerFE
-} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {StorageKey} from '../ModuleFE_LocalStorage';
 
@@ -100,7 +85,6 @@ export class ModuleFE_SyncManagerV2_Class
 		this.syncQueue = new Queue('Sync Queue').setParallelCount(4);
 		this.v1 = {
 			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData),
-			smartSync: apiWithBody(ApiDef_SyncManagerV2.v1.smartSync, this.onSmartSyncCompleted)
 		};
 		// @ts-ignore
 		window.toggleSyncMode = this.toggleSyncMode;
@@ -109,7 +93,9 @@ export class ModuleFE_SyncManagerV2_Class
 	sync = async () => {
 		if (StorageKey_SyncMode.get('old') === 'old')
 			return this.v1.checkSync().executeSync();
+	};
 
+	private smartSync = async () => {
 		const request: Request_SmartSync = {
 			modules: this.getLocalSyncData()
 		};
@@ -117,20 +103,28 @@ export class ModuleFE_SyncManagerV2_Class
 		if (this.syncing)
 			this.pendingSync = true;
 		this.syncing = true;
-		await this.v1.smartSync(request).executeSync();
+
+		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
+		await apiWithBody<BodyApi<Response_SmartSync, Request_SmartSync>>({
+			method: HttpMethod.POST,
+			path: 'v3/db-api/smart-sync',
+			timeout: 60 * Second
+		}, this.onSmartSyncCompleted)(request).executeSync();
+
 		this.syncing = false;
 		if (this.pendingSync) {
 			delete this.pendingSync;
 			await this.sync();
 		}
-	};
 
+	};
 	getLocalSyncData = (): SyncDbData[] => {
 		const existingDBModules = RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbName);
 		return existingDBModules.map(module => ({dbName: module.dbDef.dbName, lastUpdated: module.IDB.getLastSync()}));
 	};
 
 	getSyncMode = () => StorageKey_SyncMode.get('old');
+	isSmartSync = () => this.getSyncMode() === 'smart';
 
 	toggleSyncMode = (syncMode: 'old' | 'smart' = this.getSyncMode()) => {
 		StorageKey_SyncMode.set(syncMode === 'old' ? 'smart' : 'old');
@@ -182,9 +176,9 @@ export class ModuleFE_SyncManagerV2_Class
 			this.logDebug('Remote RDTB sync data updated, syncing db..');
 			this.logVerbose(`Collections out of sync: ${__stringify(this.outOfSyncCollections)}`);
 			this.outOfSyncCollections = [];
-			await this.sync();
+			await this.smartSync();
 		}, 1000, 5000);
-		await this.sync();
+		await this.smartSync();
 	}
 
 	public onReceivedSyncData = async (response: Response_DBSyncData) => {
