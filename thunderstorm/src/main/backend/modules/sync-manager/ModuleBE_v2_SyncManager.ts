@@ -118,6 +118,7 @@ export class ModuleBE_v2_SyncManager_Class
 
 	private calculateSmartSync = async (body: Request_SmartSync): Promise<Response_SmartSync> => {
 		const frontendCollectionNames = body.modules.map(item => item.dbName);
+		this.logInfo(body);
 		this.logInfo(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 
 		const permissibleModules: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbName)));
