@@ -24,11 +24,8 @@ import {PermissionGroupsEditor} from '../permission-editors/permission-groups-ed
 import {PermissionUsersEditor} from '../permission-editors/permission-users-editor';
 
 
-type _Props = {}
-type _State = { creatingPermissions?: boolean }
-
 export class ATS_Permissions
-	extends ComponentSync<_Props, _State> {
+	extends ComponentSync {
 
 	static screen: AppToolsScreen = {
 		key: 'permissions-dev-page',
@@ -38,25 +35,7 @@ export class ATS_Permissions
 		modulesToAwait: ModulePackFE_Permissions as ModuleFE_BaseApi<any>[],
 	};
 
-	//######################### Render #########################
-
-	render() {
-		return <LL_V_L id={'dev-page__permissions'}>
-			<LL_H_C className="match_width flex__space-between">{TS_AppTools.renderPageHeader('Permissions Editor')}
-				<LL_H_C>
-					<TS_Button
-						disabled={this.state.creatingPermissions}
-						className={'item-list__add-button'}
-						onClick={this.toggleStrictMode}>{SessionKey_StrictMode_FE.get() ? 'Disable' : 'Enable'} Strict Mode</TS_Button>
-					<TS_Button
-						disabled={this.state.creatingPermissions}
-						className={'item-list__add-button'}
-						onClick={this.createPermissions}>Create Project</TS_Button>
-				</LL_H_C>
-			</LL_H_C>
-			<ComponentEditor_Permissions/>
-		</LL_V_L>;
-	}
+	//######################### Logic #########################
 
 	private toggleStrictMode = async () => {
 		await genericNotificationAction(async (notification) => {
@@ -70,23 +49,21 @@ export class ATS_Permissions
 		this.setState({creatingPermissions: false});
 	};
 
-	private createPermissions = async () => {
-		await genericNotificationAction(async (notification) => {
-			this.setState({creatingPermissions: true});
-			await ModuleFE_PermissionsAssert.v1.createProject({}).executeSync();
-			await ModuleFE_Account.vv1.refreshSession({}).executeSync();
-			notification.content('Syncing dbs').show();
-			await ModuleFE_SyncManagerV2.sync();
-		}, 'Creating Permissions');
-
-		this.setState({creatingPermissions: false});
-	};
-}
-
-export class ComponentEditor_Permissions
-	extends ComponentSync {
-
 	//######################### Render #########################
+
+	render() {
+		return <LL_V_L id={'dev-page__permissions'}>
+			<LL_H_C className="match_width flex__space-between">{TS_AppTools.renderPageHeader('Permissions Editor')}
+				<LL_H_C>
+					<TS_Button
+						disabled={this.state.creatingPermissions}
+						className={'item-list__add-button'}
+						onClick={this.toggleStrictMode}>{SessionKey_StrictMode_FE.get() ? 'Disable' : 'Enable'} Strict Mode</TS_Button>
+				</LL_H_C>
+			</LL_H_C>
+			{this.renderTabs()}
+		</LL_V_L>;
+	}
 
 	private renderTabs = () => {
 		const tabs: Tab[] = [
@@ -105,10 +82,4 @@ export class ComponentEditor_Permissions
 		];
 		return <TS_Tabs tabs={tabs}/>;
 	};
-
-	render() {
-		return <LL_V_L id={'dev-page__permissions'}>
-			{this.renderTabs()}
-		</LL_V_L>;
-	}
 }
