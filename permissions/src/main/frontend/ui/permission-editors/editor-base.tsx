@@ -41,7 +41,8 @@ export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorB
 			this.setState({editedItem: this.getEditable(dbItem), selectedItemId: dbItem._id});
 		})
 			.setAutoSave(!!instance._id)
-			.setDebounceTimeout(0);
+			.setDebounceTimeout(100)
+			.setOnChanged(async editable => this.setState({editedItem: editable as EditableDBItemV3<T>, selectedItemId: editable.item._id}));
 	};
 
 	protected getNewInstance(): Partial<T['dbType']> {
@@ -63,7 +64,7 @@ export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorB
 			selectedItemId: item._id
 		} as S);
 	};
-	
+
 	//######################### Render #########################
 
 	render() {

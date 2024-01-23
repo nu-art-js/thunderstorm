@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {UniqueId} from '@nu-art/ts-common';
 import {MultiSelect} from '../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
@@ -14,6 +14,7 @@ import {
 } from '../../_entity';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {ApiCallerEventTypeV3, DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {Input_Text_Blur} from './components';
 
 type State = State_EditorBase<DBProto_PermissionGroup> & {
 	newLevelDomainId?: UniqueId;
@@ -71,7 +72,10 @@ export class PermissionGroupsEditor
 		const group = this.state.editedItem!;
 		return <>
 			<TS_PropRenderer.Vertical label={'Label'}>
-				<TS_Input type={'text'} value={group.item.label} onChange={value => this.setProperty('label', value)}/>
+				<Input_Text_Blur
+					editable={group}
+					prop={'label'}
+				/>
 			</TS_PropRenderer.Vertical>
 			{this.renderLevels()}
 		</>;

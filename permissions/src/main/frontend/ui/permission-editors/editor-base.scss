@@ -49,6 +49,14 @@
       padding-top: 18px;
       transform: translateY(-18px);
     }
+
+    &.disabled {
+      opacity: 0.5;
+
+      .ts-dropdown__header {
+        background: styles.gray(6);
+      }
+    }
   }
 
   .ts-table {
