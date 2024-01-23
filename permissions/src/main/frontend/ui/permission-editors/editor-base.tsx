@@ -1,18 +1,7 @@
 import * as React from 'react';
-import {
-	_className,
-	ComponentSync,
-	EditableDBItemV3,
-	genericNotificationAction,
-	LL_H_C,
-	LL_V_L,
-	ModuleFE_v3_BaseApi,
-	TS_Button,
-	TS_Input
-} from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, DBProto, Filter, sortArray, ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
+import {_className, ComponentSync, EditableDBItemV3, LL_H_C, LL_V_L, ModuleFE_v3_BaseApi, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
+import {BadImplementationException, DBProto, Filter, sortArray, UniqueId} from '@nu-art/ts-common';
 import './editor-base.scss';
-import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 import {TS_Icons} from '@nu-art/ts-styles';
 
 const newItemIdentifier = '##new-item##';
@@ -74,28 +63,7 @@ export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorB
 			selectedItemId: item._id
 		} as S);
 	};
-
-	protected saveItem = async (e: React.MouseEvent) => {
-		if (!this.state.editedItem)
-			return;
-
-		this.logDebug('Saving Item', this.state.editedItem.item);
-		await genericNotificationAction(
-			async () => {
-				await this.state.editedItem!.save();
-				return ModuleFE_SyncManagerV2.sync();
-			}, `Saving ${this.props.itemName}`, 3);
-	};
-
-	protected setProperty = async <K extends keyof T['dbType']>(key: K, value: T[K]) => {
-		if (!this.state.editedItem)
-			throw new ThisShouldNotHappenException('Got to setting property without an edited item in state');
-
-		const values: {} = {[key]: value};
-		await this.state.editedItem.updateObj(values);
-		this.forceUpdate();
-	};
-
+	
 	//######################### Render #########################
 
 	render() {
