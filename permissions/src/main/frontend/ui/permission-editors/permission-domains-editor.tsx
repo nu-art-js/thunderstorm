@@ -103,6 +103,7 @@ export class PermissionDomainsEditor
 					editable={editable}
 					prop={'projectId'}
 					caret={DropDownCaret}
+					disabled={!!editable.item._id}
 				/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical label={'Namespace'}>
