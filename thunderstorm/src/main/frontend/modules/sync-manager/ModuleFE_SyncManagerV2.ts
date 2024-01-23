@@ -91,6 +91,8 @@ export class ModuleFE_SyncManagerV2_Class
 	private syncFirebaseListener?: RefListenerFE<SyncDataFirebaseState>;
 	private debounceSync?: () => void;
 	private outOfSyncCollections: string[] = [];
+	private syncing?: boolean;
+	private pendingSync?: boolean;
 
 	constructor() {
 		super();
@@ -111,7 +113,16 @@ export class ModuleFE_SyncManagerV2_Class
 		const request: Request_SmartSync = {
 			modules: this.getLocalSyncData()
 		};
-		return this.v1.smartSync(request).executeSync();
+
+		if (this.syncing)
+			this.pendingSync = true;
+		this.syncing = true;
+		await this.v1.smartSync(request).executeSync();
+		this.syncing = false;
+		if (this.pendingSync) {
+			delete this.pendingSync;
+			await this.sync();
+		}
 	};
 
 	getLocalSyncData = (): SyncDbData[] => {
