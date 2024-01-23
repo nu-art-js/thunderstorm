@@ -45,6 +45,7 @@ class DomainLevelRenderer
 				selected={this.state.domainId}
 				queryFilter={domain => availableDomainsIds.includes(domain._id)}
 				onSelected={domain => this.setState({domainId: domain._id})}
+				sortBy={['namespace']}
 				placeholder={'Domain'}
 			/>
 			<Permissions_DropDown.AccessLevel
@@ -52,6 +53,7 @@ class DomainLevelRenderer
 				queryFilter={level => this.state.domainId === level.domainId}
 				selected={undefined}
 				onSelected={(accessLevel) => this.props.onSelected(accessLevel._id)}
+				sortBy={['value']}
 				placeholder={'Level'}
 			/>
 		</LL_V_L>;
@@ -68,17 +70,12 @@ class GroupRenderer
 	extends ComponentSync<MultiSelect_Selector<{ groupId: string }>> {
 
 	render() {
-		return <div>
-			<Permissions_DropDown.Group
-				queryFilter={group => !this.props.existingItems.find(g => g.groupId === group._id)}
-				selected={undefined}
-				onSelected={group => this.props.onSelected({groupId: group._id})}
-			/>
-		</div>;
-	}
-
-	protected deriveStateFromProps(nextProps: PP_GDD<{ groupId: string }>, state?: {}) {
-		return {onSelected: nextProps.onSelected};
+		return <Permissions_DropDown.Group
+			onSelected={group => this.props.onSelected({groupId: group._id})}
+			queryFilter={group => !this.props.existingItems.find(g => g.groupId === group._id)}
+			sortBy={['label']}
+			selected={undefined}
+		/>;
 	}
 }
 

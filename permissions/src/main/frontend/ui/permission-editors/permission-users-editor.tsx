@@ -51,4 +51,6 @@ export class PermissionUsersEditor
 			/>
 		</TS_PropRenderer.Vertical>;
 	};
+
+	protected renderListButton = () => <></>;
 }
