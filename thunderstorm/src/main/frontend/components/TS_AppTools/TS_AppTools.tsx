@@ -67,7 +67,7 @@ export class TS_AppTools
 			children: [
 				TS_AppTools_Default.Route,
 				...TS_AppTools.screens.map(screen => {
-					return ({key: screen.key || (screen.key = screen.name), path: md5(screen.name), Component: screen.renderer});
+					return ({key: screen.key || (screen.key = screen.name), path: md5(screen.name), Component: screen.renderer, modulesToAwait: screen.modulesToAwait});
 				}),
 			]
 		};
@@ -134,6 +134,18 @@ export class TS_AppTools
 
 	// ######################### Render #########################
 
+	render() {
+		return <LL_V_L className={'ts-app-tools'}>
+			{this.renderHeader()}
+			<LL_H_C className={'ts-app-tools__main'}>
+				{this.renderNavbar()}
+				<TS_ErrorBoundary>
+					{this.renderPage()}
+				</TS_ErrorBoundary>
+			</LL_H_C>
+		</LL_V_L>;
+	}
+
 	private renderHeader = () => {
 		return <LL_H_C className={'ts-app-tools__header'}>
 			<TS_Icons.menu.component
@@ -142,22 +154,6 @@ export class TS_AppTools
 			/>
 			<span className={'ts-app-tools__header__title'}>App-Tools</span>
 		</LL_H_C>;
-	};
-
-	private renderNavbarItem = (screen: AppToolsScreen) => {
-		const route = TS_AppTools.Route.children!.find(i => i.key === screen.key);
-		if (!route)
-			throw new ThisShouldNotHappenException(`Couldn't find route for screen with key ${screen.name}`);
-
-		const Icon = screen.icon ?? TS_Icons.gear.component;
-		return <TS_NavLink
-			key={screen.key}
-			route={route}
-			className={({isActive}) => _className('ts-app-tools__nav-bar__item', isActive ? 'selected' : undefined)}
-		>
-			<Icon/>
-			<div className={'ts-app-tools__nav-bar__item__title'}>{screen.name}</div>
-		</TS_NavLink>;
 	};
 
 	private renderNavbar = () => {
@@ -186,15 +182,23 @@ export class TS_AppTools
 		</LL_V_L>;
 	};
 
-	render() {
-		return <LL_V_L className={'ts-app-tools'}>
-			{this.renderHeader()}
-			<LL_H_C className={'ts-app-tools__main'}>
-				{this.renderNavbar()}
-				<TS_ErrorBoundary>
-					<div className="ts-app-tools__page"><Outlet/></div>
-				</TS_ErrorBoundary>
-			</LL_H_C>
-		</LL_V_L>;
-	}
+	private renderNavbarItem = (screen: AppToolsScreen) => {
+		const route = TS_AppTools.Route.children!.find(i => i.key === screen.key);
+		if (!route)
+			throw new ThisShouldNotHappenException(`Couldn't find route for screen with key ${screen.name}`);
+
+		const Icon = screen.icon ?? TS_Icons.gear.component;
+		return <TS_NavLink
+			key={screen.key}
+			route={route}
+			className={({isActive}) => _className('ts-app-tools__nav-bar__item', isActive ? 'selected' : undefined)}
+		>
+			<Icon/>
+			<div className={'ts-app-tools__nav-bar__item__title'}>{screen.name}</div>
+		</TS_NavLink>;
+	};
+
+	private renderPage = () => {
+		return <div className="ts-app-tools__page"><Outlet/></div>;
+	};
 }

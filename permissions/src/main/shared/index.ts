@@ -18,5 +18,3 @@
  */
 
 export * from './apis';
-export * from './management';
-export * from './assign';
