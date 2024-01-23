@@ -33,7 +33,7 @@ import {
 	LogLevel,
 	Module,
 	PreDB,
-	RuntimeModules,
+	RuntimeModules, Second,
 	tsValidateMustExist,
 	UniqueId
 } from '@nu-art/ts-common';
@@ -59,6 +59,7 @@ import {
 	SyncDataFirebaseState
 } from '../../../shared/sync-manager/types';
 import Transaction = firestore.Transaction;
+import {HttpMethod} from '../../../shared';
 
 
 type DeletedDBItem = DB_Object & { __collectionName: string, __docId: UniqueId }
@@ -97,7 +98,7 @@ export class ModuleBE_v2_SyncManager_Class
 		super();
 		this.setMinLevel(LogLevel.Debug);
 		this.checkSyncApi = createQueryServerApi(ApiDef_SyncManagerV2.v1.checkSync, this.fetchDBSyncData);
-		this.smartSyncApi = createBodyServerApi(ApiDef_SyncManagerV2.v1.smartSync, this.calculateSmartSync);
+		this.smartSyncApi = createBodyServerApi({method: HttpMethod.POST, path: 'v3/db-api/smart-sync', timeout: 60 * Second}, this.calculateSmartSync);
 
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
