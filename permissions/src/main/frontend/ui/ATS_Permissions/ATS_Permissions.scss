@@ -52,6 +52,18 @@
       width: 100%;
       height: 50%;
 
+      .ts-dropdown__header {
+        border: none;
+        border-radius: 0;
+        border-bottom: 1px solid black;
+      }
+
+      .ts-dropdown__items-container {
+        border: 1px solid black;
+        padding-top: 0;
+        transform: none
+      }
+
       .ts-tree__node {
         font: {
           size: 12px;
