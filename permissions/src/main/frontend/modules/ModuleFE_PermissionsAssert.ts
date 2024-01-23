@@ -56,7 +56,6 @@ export class ModuleFE_PermissionsAssert_Class
 		this.v1 = {
 			toggleStrictMode: apiWithQuery(ApiDef_Permissions.v1.toggleStrictMode),
 			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject),
-			// connectDomainToRoutes: apiWithBody(ApiDef_Permissions.v1.connectDomainToRoutes, async () => await ModuleFE_PermissionsApi.v1.sync().executeSync())
 		};
 	}
 
