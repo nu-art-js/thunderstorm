@@ -1,4 +1,4 @@
-import {GenericDropDownV3, LL_H_C, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend';
+import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import {DBProto_PermissionAccessLevel} from '../shared';
 import {ModuleFE_PermissionAccessLevel} from './ModuleFE_PermissionAccessLevel';
@@ -11,7 +11,7 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_PermissionAcces
 	modules: [ModuleFE_PermissionAccessLevel],
 	mapper: item => [item.name],
 	placeholder: 'Choose a PermissionAccessLevel',
-	renderer: item => <LL_H_C> {item.name} </LL_H_C>
+	renderer: item => <>{item.name}</>
 };
 
 export const DropDown_PermissionAccessLevel = GenericDropDownV3.prepare(Props_DropDown);

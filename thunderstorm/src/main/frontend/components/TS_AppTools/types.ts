@@ -1,4 +1,7 @@
+import {ResolvableContent} from '@nu-art/ts-common';
 import * as React from 'react';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
+import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
 
 
 export type AppToolsScreen = {
@@ -7,6 +10,7 @@ export type AppToolsScreen = {
 	renderer: React.ComponentType;
 	icon?: React.ComponentType; //Icon for rendering in the navigator
 	group?: string; //For grouping in the navigator
+	modulesToAwait?: ResolvableContent<(ModuleFE_BaseDB<any, any> | ModuleFE_v3_BaseDB<any, any>)[]>;
 }
 
 export const ATS_3rd_Party = '3rd Party';

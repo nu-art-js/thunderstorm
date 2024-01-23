@@ -1,65 +1,44 @@
 import * as React from 'react';
-import {
-	EditableDBItem,
-	EventType_Create,
-	EventType_Delete,
-	EventType_Update,
-	LL_H_C,
-	Props_SmartComponent,
-	State_SmartComponent,
-	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
-import {EditorBase, State_EditorBase} from './editor-base';
-import {DB_PermissionUser} from '../../shared';
-import {ModuleFE_PermissionsUser, OnPermissionsUsersUpdated} from '../../core/module-pack';
+import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, LL_H_C, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {MultiSelect} from '../ui-props';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {DB_PermissionUser, DBProto_PermissionUser, DispatcherType_PermissionUser, ModuleFE_PermissionUser} from '../../_entity';
+import {EditorBase, Props_EditorBase, State_EditorBase} from './editor-base';
+import {ApiCallerEventTypeV3, DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
 
+type State = State_EditorBase<DBProto_PermissionUser>;
 
-type State = State_EditorBase<DB_PermissionUser>;
-
-type Props = Props_SmartComponent & {
+type Props = Props_EditorBase<DBProto_PermissionUser> & {
 	renderAccount: (accountId: string) => string
 }
 
 export class PermissionUsersEditor
-	extends EditorBase<DB_PermissionUser, State, Props>
-	implements OnPermissionsUsersUpdated {
+	extends EditorBase<DBProto_PermissionUser, State, Props>
+	implements DispatcherInterface<DispatcherType_PermissionUser> {
 
 	//######################### Static #########################
 
-	readonly module = ModuleFE_PermissionsUser;
-	readonly itemName = 'Permission User';
-	readonly itemNamePlural = 'Permission Users';
-	readonly itemDisplay = (user: DB_PermissionUser) => this.props.renderAccount(user._id);
 	static defaultProps = {
-		modules: [ModuleFE_PermissionsUser],
-		renderAccount: (accountId: string) => ModuleFE_Account.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'
+		renderAccount: (accountId: string) => ModuleFE_Account.getAccounts().find(account => account._id === accountId)?.email || 'Not Found',
+		module: ModuleFE_PermissionUser,
+		itemName: 'Permission User',
+		itemNamePlural: 'Permission Users',
+		itemDisplay: (user: DB_PermissionUser) => this.defaultProps.renderAccount(user._id),
 	};
 
 	//######################### Life Cycle #########################
 
-	__onPermissionsUsersUpdated(...params: ApiCallerEventType<DB_PermissionUser>) {
+	__onPermissionUserUpdated(...params: ApiCallerEventTypeV3<DBProto_PermissionUser>) {
 		if ([EventType_Update, EventType_Create].includes(params[0])) {
 			const level = params[1] as DB_PermissionUser;
 			this.reDeriveState({
 				selectedItemId: level._id,
-				editedItem: new EditableDBItem<DB_PermissionUser>(level, ModuleFE_PermissionsUser).setAutoSave(true)
+				editedItem: new EditableDBItemV3(level, ModuleFE_PermissionUser).setAutoSave(true)
 			});
 		}
 		if (params[0] === EventType_Delete)
 			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
-	}
-
-	protected async deriveStateFromProps(nextProps: Props, state: (State & State_SmartComponent)) {
-		state.items = ModuleFE_PermissionsUser.cache.all();
-		if (!state.editedItem && state.items.length) {
-			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsUser);
-			state.selectedItemId = state.items[0]._id;
-		}
-		return state;
-	}
+	};
 
 	//######################### Render #########################
 
