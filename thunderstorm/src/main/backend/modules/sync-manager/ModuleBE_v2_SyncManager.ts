@@ -25,7 +25,6 @@ import {
 	__stringify,
 	_keys,
 	arrayToMap,
-	BadImplementationException,
 	currentTimeMillis,
 	DB_Object,
 	DBDef,
@@ -134,7 +133,7 @@ export class ModuleBE_v2_SyncManager_Class
 		await Promise.all(body.modules.map(async syncRequest => {
 			const moduleToCheck = modulesMap[syncRequest.dbName] as (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>);
 			if (!moduleToCheck)
-				throw new BadImplementationException(`Calculating collections to sync, failing to find dbName: ${syncRequest.dbName}`);
+				return this.logError(`Calculating collections to sync, failing to find dbName: ${syncRequest.dbName}`);
 
 			const remoteSyncData = upToDateSyncData[syncRequest.dbName];
 			// Local has no sync data, or it's too old - tell local to send a full sync request for this module
@@ -147,6 +146,7 @@ export class ModuleBE_v2_SyncManager_Class
 				});
 				return;
 			}
+
 			// Same lastUpdated timestamp in local and remote, no need to sync
 			if (syncRequest.lastUpdated === remoteSyncData.lastUpdated) {
 				// no sync
@@ -178,7 +178,6 @@ export class ModuleBE_v2_SyncManager_Class
 					lastUpdated: remoteSyncData.lastUpdated,
 					items: itemsToReturn
 				});
-				return;
 			}
 		}));
 
