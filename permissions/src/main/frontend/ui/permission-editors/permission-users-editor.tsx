@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, LL_H_C, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {MultiSelect} from '../ui-props';
 import {DB_PermissionUser, DBProto_PermissionUser, DispatcherType_PermissionUser, ModuleFE_PermissionUser} from '../../_entity';
@@ -44,11 +44,11 @@ export class PermissionUsersEditor
 
 	editorContent = () => {
 		return <TS_PropRenderer.Vertical label={'Groups'}>
-			<LL_H_C className={'groups'}>
-				<MultiSelect.Group
-					editable={this.state.editedItem!}
-					prop={'groups'}/>
-			</LL_H_C>
+			<MultiSelect.Group
+				className={'user-permission-groups'}
+				editable={this.state.editedItem!}
+				prop={'groups'}
+			/>
 		</TS_PropRenderer.Vertical>;
 	};
 }
