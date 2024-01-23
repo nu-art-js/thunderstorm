@@ -22,7 +22,7 @@
 import {
 	__stringify,
 	_keys,
-	DB_Object,
+	DB_Object, debounce,
 	Dispatcher,
 	LogLevel,
 	Module,
@@ -86,7 +86,9 @@ export class ModuleFE_SyncManagerV2_Class
 
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
 	private syncedModules: SyncDbData[] = [];
-	private syncFirebaseListener!: RefListenerFE<SyncDataFirebaseState>;
+	private syncFirebaseListener?: RefListenerFE<SyncDataFirebaseState>;
+	private debounceSync?: () => void;
+	private outOfSyncCollections: string[] = [];
 
 	constructor() {
 		super();
@@ -121,43 +123,48 @@ export class ModuleFE_SyncManagerV2_Class
 		StorageKey_SyncMode.set(syncMode === 'old' ? 'smart' : 'old');
 	};
 
-	protected init() {
-		this.syncFirebaseListener = ModuleFE_FirebaseListener.createListener(Default_SyncManagerNodePath); // Hardcoded path for now per Adam's request, should be const somewhere.
-		this.syncFirebaseListener.startListening(this.onSyncDataChanged);
-	}
-
 	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
-		this.logInfo('Received firebase state data');
+		this.logVerbose('Received firebase state data');
 
 		// remoteSyncData is the data we received from the firebase listener, that just detected a change.
 		const remoteSyncData = snapshot.val() as SyncDataFirebaseState;
 		// localSyncData is the data we just collected from the IDB regarding all existing modules.
 		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbName, data => ({lastUpdated: data.lastUpdated}));
 		// const permissibleCollections = this.syncedModules.map(module => module.dbName);
-		const outOfDateCollectionNames = (_keys(remoteSyncData) as string[]).reduce<string[]>((outOfDateCollectionNames, dbName) => {
+		(_keys(remoteSyncData) as string[]).forEach((dbName) => {
 			// this Should be taken care of by the below condition because both local and remote will return last updated 0
 			// if (!permissibleCollections.includes(dbName))
 			// 	return outOfDateCollectionNames;
 
-			if (!localSyncData[dbName]) {
-				this.logDebug(`onSyncDataChanged - couldn't find local syncData for collection ${dbName}`);
-				return outOfDateCollectionNames;
-			}
+			if (!localSyncData[dbName])
+				return this.logVerbose(`onSyncDataChanged - couldn't find local syncData for collection ${dbName}`);
 
 			if (remoteSyncData[dbName].lastUpdated <= localSyncData[dbName].lastUpdated)
-				return outOfDateCollectionNames;
+				return;
 
-			outOfDateCollectionNames.push(dbName);
-
-			return outOfDateCollectionNames;
-		}, []);
+			this.outOfSyncCollections.push(dbName);
+		});
 
 		//if there are changes, call sync
-		if (outOfDateCollectionNames.length > 0) {
-			this.logInfo('Syncing due to updated RTDB sync-state.');
-			this.logInfo(`Out of date collections: ${__stringify(outOfDateCollectionNames)}`);
+		if (this.outOfSyncCollections.length === 0)
+			return;
+
+		if (this.debounceSync)
+			return this.debounceSync();
+
+		// Since RTDB event arrives upon start listening we would like to perform a first sync immediately,
+		// therefor we call sync directly for the first event and create the debounce function right after for all the consecutive events
+		this.logInfo('Performing Immediate Sync');
+		await this.sync();
+		this.debounceSync = debounce(async () => {
+			if (!this.syncFirebaseListener)
+				return this.logWarning('Ignoring sync data state, listener is undefined');
+
+			this.logDebug('Remote RDTB sync data updated, syncing db..');
+			this.logVerbose(`Collections out of sync: ${__stringify(this.outOfSyncCollections)}`);
+			this.outOfSyncCollections = [];
 			await this.sync();
-		}
+		}, 1000, 5000);
 	};
 
 	public onReceivedSyncData = async (response: Response_DBSyncData) => {
@@ -200,7 +207,7 @@ export class ModuleFE_SyncManagerV2_Class
 	};
 
 	performFullSync = async (module: ModuleFE_BaseApi<any>) => {
-		module.logInfo(`Full sync for: '${module.dbDef.dbName}'`);
+		module.logDebug(`Full sync for: '${module.dbDef.dbName}'`);
 		// module.logVerbose(`Firing event (DataStatus.NoData): ${module.dbDef.dbName}`);
 		// module.setDataStatus(DataStatus.NoData); // module.IDB.clear() already sets the module's data status to NoData.
 
@@ -246,6 +253,18 @@ export class ModuleFE_SyncManagerV2_Class
 		module.logDebug(`Delta Sync Completed: ${module.dbDef.dbName}`);
 	};
 
+	startListening() {
+		// Hardcoded path for now per Adam's request, should be const somewhere.
+		this.syncFirebaseListener = ModuleFE_FirebaseListener
+			.createListener(Default_SyncManagerNodePath)
+			.startListening(this.onSyncDataChanged);
+	}
+
+	stopListening() {
+		this.syncFirebaseListener?.stopListening();
+		this.syncFirebaseListener = undefined;
+		this.debounceSync = undefined;
+	}
 }
 
 export const ModuleFE_SyncManagerV2 = new ModuleFE_SyncManagerV2_Class();
