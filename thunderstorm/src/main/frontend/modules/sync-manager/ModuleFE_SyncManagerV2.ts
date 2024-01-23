@@ -19,7 +19,17 @@
  * limitations under the License.
  */
 
-import {_keys, DB_Object, Dispatcher, LogLevel, Module, Queue, reduceToMap, RuntimeModules} from '@nu-art/ts-common';
+import {
+	__stringify,
+	_keys,
+	DB_Object,
+	Dispatcher,
+	LogLevel,
+	Module,
+	Queue,
+	reduceToMap,
+	RuntimeModules
+} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
@@ -124,11 +134,8 @@ export class ModuleFE_SyncManagerV2_Class
 		// localSyncData is the data we just collected from the IDB regarding all existing modules.
 		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbName, data => ({lastUpdated: data.lastUpdated}));
 		const permissibleCollections = this.syncedModules.map(module => module.dbName);
-		const outOfDateCollections:string[] = [];
+		const outOfDateCollectionNames: string[] = [];
 		const shouldSync: boolean = (_keys(remoteSyncData) as string[]).reduce((_shouldSync, dbName) => {
-			if (_shouldSync)
-				return _shouldSync;
-
 			if (!permissibleCollections.includes(dbName))
 				return false;
 
@@ -139,13 +146,14 @@ export class ModuleFE_SyncManagerV2_Class
 
 			if (remoteSyncData[dbName].lastUpdated <= localSyncData[dbName].lastUpdated)
 				return false;
-
+			outOfDateCollectionNames.push(dbName);
 			return true;
 		}, false);
 
 		//if there are changes, call sync
 		if (shouldSync) {
 			this.logInfo('Syncing due to updated RTDB sync-state.');
+			this.logInfo(`Out of date collections: ${__stringify(outOfDateCollectionNames)}`);
 			await this.sync();
 		}
 	};
