@@ -19,7 +19,20 @@
  * limitations under the License.
  */
 
-import {__stringify, _keys, DB_Object, debounce, Dispatcher, exists, LogLevel, Module, Queue, reduceToMap, RuntimeModules, Second} from '@nu-art/ts-common';
+import {
+	__stringify,
+	_keys,
+	DB_Object,
+	debounce,
+	Dispatcher,
+	exists,
+	LogLevel,
+	Module,
+	Queue,
+	reduceToMap,
+	RuntimeModules,
+	Second
+} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
@@ -27,12 +40,14 @@ import {
 	DeltaSyncModule,
 	FullSyncModule,
 	LastUpdated,
+	NoNeedToSyncModule,
 	Request_SmartSync,
 	Response_DBSync,
 	Response_DBSyncData,
 	Response_SmartSync,
 	SmartSync_DeltaSync,
 	SmartSync_FullSync,
+	SmartSync_UpToDateSync,
 	SyncDataFirebaseState,
 	SyncDbData
 } from '../../../shared/sync-manager/types';
@@ -41,7 +56,10 @@ import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {
+	ModuleFE_FirebaseListener,
+	RefListenerFE
+} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {StorageKey} from '../ModuleFE_LocalStorage';
 
@@ -81,6 +99,7 @@ export class ModuleFE_SyncManagerV2_Class
 
 	constructor() {
 		super();
+		this.setSyncMode('smart');
 		this.setMinLevel(LogLevel.Verbose);
 		this.syncQueue = new Queue('Sync Queue').setParallelCount(4);
 		this.v1 = {
@@ -118,16 +137,27 @@ export class ModuleFE_SyncManagerV2_Class
 		}
 
 	};
+	private getAllDBModules = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbName);
 	getLocalSyncData = (): SyncDbData[] => {
-		const existingDBModules = RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbName);
-		return existingDBModules.map(module => ({dbName: module.dbDef.dbName, lastUpdated: module.IDB.getLastSync()}));
+
+		const existingDBModules = this.getAllDBModules();
+		const localSyncData = existingDBModules.map(module => ({
+			dbName: module.dbDef.dbName,
+			lastUpdated: module.IDB.getLastSync()
+		}));
+		this.logInfo('localSyncData:', __stringify(localSyncData));
+		return localSyncData;
 	};
 
 	getSyncMode = () => StorageKey_SyncMode.get('old');
 	isSmartSync = () => this.getSyncMode() === 'smart';
 
+	setSyncMode = (syncMode: 'old' | 'smart') => {
+		StorageKey_SyncMode.set(syncMode);
+	};
+
 	toggleSyncMode = (syncMode: 'old' | 'smart' = this.getSyncMode()) => {
-		StorageKey_SyncMode.set(syncMode === 'old' ? 'smart' : 'old');
+		this.setSyncMode(syncMode === 'old' ? 'smart' : 'old');
 	};
 
 	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
@@ -155,10 +185,19 @@ export class ModuleFE_SyncManagerV2_Class
 			this.outOfSyncCollections.push(dbName);
 		});
 
-		//if there are changes, call sync
-		if (this.outOfSyncCollections.length === 0)
-			return;
-
+		// If there are no changes, just set all modules' data status to ContainsData
+		if (this.outOfSyncCollections.length === 0) {
+			// on sync completed
+			const allModulesAreUpToDate: NoNeedToSyncModule[] = (_keys(localSyncData) as string[]).map(dbName =>
+				({
+					dbName: dbName,
+					lastUpdated: localSyncData[dbName]?.lastUpdated ?? 0,
+					sync: SmartSync_UpToDateSync
+				}));
+			const setAllModulesAsContainData: Response_SmartSync = {modules: allModulesAreUpToDate};
+			await this.onSmartSyncCompleted(setAllModulesAsContainData);
+		}
+		// If there are changes, call sync
 		return await this.debounceSyncImpl();
 	};
 
@@ -191,7 +230,30 @@ export class ModuleFE_SyncManagerV2_Class
 
 	public getPermissibleModuleNames = () => this.syncedModules ? this.syncedModules.map(moduleSyncData => moduleSyncData.dbName) : undefined;
 
+	/**
+	 * Perform no sync, delta sync and full sync on modules. Intention is to get all modules to DataStatus "ContainsData".
+	 */
 	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
+		this.logInfo('onSmartSyncCompleted', response);
+		// We want to make the modules available as soon as possible, so we finish off with the lighter load first, and do full syncs at the end.
+		// Set DataStatus of modules that are already up-to-date, to be ContainsData.
+		const modulesAlreadyUpToDate = response.modules.filter(module => module.sync === SmartSync_UpToDateSync) as NoNeedToSyncModule[];
+		await Promise.all(modulesAlreadyUpToDate.map(async (upToDateModule) => {
+			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((_module: DBModuleType) => _module.dbDef?.dbName === upToDateModule.dbName);
+			if (!module)
+				return this.logError(`Couldn't find module with dbName: '${upToDateModule.dbName}'`);
+
+			await this.performNoSync(module);
+		}));
+
+		// Perform delta sync on all relevant modules
+		const modulesToUpdate = response.modules.filter(module => module.sync === SmartSync_DeltaSync) as DeltaSyncModule[];
+		for (const moduleToUpdate of modulesToUpdate) {
+			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbName === moduleToUpdate.dbName);
+			await this.performDeltaSync(module, moduleToUpdate.items);
+		}
+
+		// Perform full sync on all relevant modules
 		const modulesToFullySync = response.modules.filter(module => module.sync === SmartSync_FullSync) as FullSyncModule[];
 		modulesToFullySync.forEach(moduleToSync => {
 			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbName === moduleToSync.dbName);
@@ -209,15 +271,17 @@ export class ModuleFE_SyncManagerV2_Class
 			});
 		});
 
-		const modulesToUpdate = response.modules.filter(module => module.sync === SmartSync_DeltaSync) as DeltaSyncModule[];
-		for (const moduleToUpdate of modulesToUpdate) {
-			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbName === moduleToUpdate.dbName);
-			await this.performDeltaSync(module, moduleToUpdate.items);
-		}
-
 		this.syncedModules = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
 		dispatch_OnPermissibleModulesUpdated.dispatchUI();
 		dispatch_onSyncCompleted.dispatchModule();
+	};
+
+	performNoSync = async (module: ModuleFE_BaseApi<any>) => {
+		module.logVerbose(`No sync for: ${module.dbDef.dbName}, Already UpToDate.`);
+		module.logVerbose(`Updating Cache: ${module.dbDef.dbName}`);
+		await module.cache.load();
+		module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
+		module.setDataStatus(DataStatus.ContainsData);
 	};
 
 	performFullSync = async (module: ModuleFE_BaseApi<any>) => {
