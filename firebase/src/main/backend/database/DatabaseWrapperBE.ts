@@ -134,6 +134,8 @@ export class DatabaseWrapperBE
 	}
 }
 
+type Something<Type, DefaultValueType> = DefaultValueType extends undefined ? Type | undefined : NonNullable<Type>
+
 /**
  * simplified interface for interacting with  Firebase
  */
@@ -147,8 +149,8 @@ export class FirebaseRef<T> {
 		this.path = path;
 	}
 
-	public get(defaultValue?: T) {
-		return this.db.get(this.path, defaultValue);
+	public get<V extends T>(defaultValue?: V): Promise<Something<T, V>> {
+		return this.db.get(this.path, defaultValue) as Promise<Something<T, V>>;
 	}
 
 	public set(value: T) {

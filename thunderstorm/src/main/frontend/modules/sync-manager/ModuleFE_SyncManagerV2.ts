@@ -129,7 +129,10 @@ export class ModuleFE_SyncManagerV2_Class
 		this.logVerbose('Received firebase state data');
 
 		// remoteSyncData is the data we received from the firebase listener, that just detected a change.
-		const remoteSyncData = snapshot.val() as SyncDataFirebaseState;
+		const remoteSyncData = snapshot.val() as SyncDataFirebaseState | undefined;
+		if (!remoteSyncData)
+			return await this.debounceSyncImpl();
+
 		// localSyncData is the data we just collected from the IDB regarding all existing modules.
 		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbName, data => ({lastUpdated: data.lastUpdated}));
 		// const permissibleCollections = this.syncedModules.map(module => module.dbName);
@@ -151,6 +154,10 @@ export class ModuleFE_SyncManagerV2_Class
 		if (this.outOfSyncCollections.length === 0)
 			return;
 
+		return await this.debounceSyncImpl();
+	};
+
+	private async debounceSyncImpl() {
 		if (exists(this.debounceSync))
 			return this.debounceSync();
 
@@ -167,7 +174,7 @@ export class ModuleFE_SyncManagerV2_Class
 			await this.sync();
 		}, 1000, 5000);
 		await this.sync();
-	};
+	}
 
 	public onReceivedSyncData = async (response: Response_DBSyncData) => {
 		this.syncedModules = response.syncData.map(item => ({dbName: item.name, lastUpdated: item.lastUpdated}));
