@@ -133,25 +133,27 @@ export class ModuleFE_SyncManagerV2_Class
 		const remoteSyncData = snapshot.val() as SyncDataFirebaseState;
 		// localSyncData is the data we just collected from the IDB regarding all existing modules.
 		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbName, data => ({lastUpdated: data.lastUpdated}));
-		const permissibleCollections = this.syncedModules.map(module => module.dbName);
-		const outOfDateCollectionNames: string[] = [];
-		const shouldSync: boolean = (_keys(remoteSyncData) as string[]).reduce((_shouldSync, dbName) => {
-			if (!permissibleCollections.includes(dbName))
-				return false;
+		// const permissibleCollections = this.syncedModules.map(module => module.dbName);
+		const outOfDateCollectionNames = (_keys(remoteSyncData) as string[]).reduce<string[]>((outOfDateCollectionNames, dbName) => {
+			// this Should be taken care of by the below condition because both local and remote will return last updated 0
+			// if (!permissibleCollections.includes(dbName))
+			// 	return outOfDateCollectionNames;
 
-			if (!remoteSyncData[dbName])
-				this.logError(`onSyncDataChanged - couldn't find remote syncData for collection ${dbName}`);
-			if (!localSyncData[dbName])
-				this.logError(`onSyncDataChanged - couldn't find local syncData for collection ${dbName}`);
+			if (!localSyncData[dbName]) {
+				this.logDebug(`onSyncDataChanged - couldn't find local syncData for collection ${dbName}`);
+				return outOfDateCollectionNames;
+			}
 
 			if (remoteSyncData[dbName].lastUpdated <= localSyncData[dbName].lastUpdated)
-				return false;
+				return outOfDateCollectionNames;
+
 			outOfDateCollectionNames.push(dbName);
-			return true;
-		}, false);
+
+			return outOfDateCollectionNames;
+		}, []);
 
 		//if there are changes, call sync
-		if (shouldSync) {
+		if (outOfDateCollectionNames.length > 0) {
 			this.logInfo('Syncing due to updated RTDB sync-state.');
 			this.logInfo(`Out of date collections: ${__stringify(outOfDateCollectionNames)}`);
 			await this.sync();
