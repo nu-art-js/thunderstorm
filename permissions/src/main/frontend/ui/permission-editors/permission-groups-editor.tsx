@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {UniqueId} from '@nu-art/ts-common';
+import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_ErrorBoundary, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
 import {MultiSelect} from '../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {
@@ -54,18 +54,25 @@ export class PermissionGroupsEditor
 		if (!group)
 			return '';
 
-		return <MultiSelect.AccessLevel
-			editable={group}
-			prop={'accessLevelIds'}
-			className={'domain-level-list'}
-			itemRenderer={(levelId, onDelete) => {
-				const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId)!;
-				const domain = ModuleFE_PermissionDomain.cache.unique(level.domainId)!;
-				return <div key={levelId} className={'domain-level-list__item'}>
-					<TS_Icons.x.component onClick={onDelete}/>
-					{`${domain.namespace}: ${level.name} (${level.value})`}
-				</div>;
-			}}/>;
+		return <TS_ErrorBoundary>
+			<MultiSelect.AccessLevel
+				editable={group}
+				prop={'accessLevelIds'}
+				className={'domain-level-list'}
+				itemRenderer={(levelId, onDelete) => {
+					const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId);
+					if (!level)
+						throw new MUSTNeverHappenException(`Could not find access level with id ${levelId}`);
+					const domain = ModuleFE_PermissionDomain.cache.unique(level.domainId);
+					if (!domain)
+						throw new MUSTNeverHappenException(`Could not find domain with id ${level.domainId}`);
+
+					return <div key={levelId} className={'domain-level-list__item'}>
+						<TS_Icons.x.component onClick={onDelete}/>
+						{`${domain.namespace}: ${level.name} (${level.value})`}
+					</div>;
+				}}/>
+		</TS_ErrorBoundary>;
 	};
 
 	editorContent = () => {

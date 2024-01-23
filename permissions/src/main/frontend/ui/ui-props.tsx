@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ComponentSync, LL_V_L, PartialProps_GenericDropDown} from '@nu-art/thunderstorm/frontend';
-import {dbObjectToId} from '@nu-art/ts-common';
+import {dbObjectToId, sortArray, UniqueId} from '@nu-art/ts-common';
 import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect';
 import {
 	DB_PermissionAccessLevel,
@@ -15,6 +15,7 @@ import {DropDown_PermissionAccessLevel} from '../../_entity/permission-access-le
 import {DropDown_PermissionProject} from '../../_entity/permission-project/frontend/ui-components';
 import {DropDown_PermissionDomain} from '../../_entity/permission-domain/frontend/ui-components';
 import {DropDown_PermissionGroup} from '../../_entity/permission-group/frontend/ui-components';
+import {TS_Icons} from '@nu-art/ts-styles';
 
 
 type PP_GDD<T> = PartialProps_GenericDropDown<T>
@@ -81,11 +82,19 @@ class GroupRenderer
 	}
 }
 
+const AccessLevelItemRenderer = (levelId?: UniqueId) => {
+	const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId);
+	const domain = ModuleFE_PermissionDomain.cache.unique(level?.domainId);
+	return `${domain?.namespace ?? 'Not Found'}: ${level?.name ?? 'Not Found'} (${level?.value ?? '#'})`;
+};
+
 const MultiSelect_PermissionsAccessLevel: StaticProps_TS_MultiSelect_V2<string> = {
 	itemRenderer: (accessLevelId, onDelete?: () => Promise<void>) => <>
-		<div className="ts-icon__small" onClick={onDelete}>X</div>
-		<span>{ModuleFE_PermissionAccessLevel.cache.unique(accessLevelId)?.name || 'not found'}</span></>,
-	selectionRenderer: DomainLevelRenderer
+		{AccessLevelItemRenderer(accessLevelId)}
+		<TS_Icons.x.component onClick={onDelete}/>
+	</>,
+	selectionRenderer: DomainLevelRenderer,
+	sort: items => sortArray(items, AccessLevelItemRenderer)
 };
 
 const MultiSelect_PermissionsAccessLevelStam: StaticProps_TS_MultiSelect_V2<string> = {
@@ -103,9 +112,11 @@ const MultiSelect_PermissionsAccessLevelStam: StaticProps_TS_MultiSelect_V2<stri
 
 const MultiSelect_PermissionsGroup: StaticProps_TS_MultiSelect_V2<{ groupId: string }> = {
 	itemRenderer: (group, onDelete?: () => Promise<void>) => <>
-		<div className="ts-icon__small" onClick={onDelete}>X</div>
-		<span>{ModuleFE_PermissionGroup.cache.unique(group?.groupId)?.label || 'not found'}</span></>,
-	selectionRenderer: GroupRenderer
+		{ModuleFE_PermissionGroup.cache.unique(group?.groupId)?.label || 'not found'}
+		<TS_Icons.x.component className="ts-icon__small" onClick={onDelete}/>
+	</>,
+	selectionRenderer: GroupRenderer,
+	sort: items => sortArray(items, item => ModuleFE_PermissionGroup.cache.unique(item?.groupId)?.label || 'not found')
 };
 
 export const MultiSelect = {

@@ -6,6 +6,7 @@ import {EditableItem} from '../../utils/EditableItem';
 import {LL_H_C, LL_V_L} from '../Layouts';
 import {_className} from '../../utils/tools';
 
+
 type Binder_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, ExpectedType> = EnclosingItem[K] extends ExpectedType[]
 	? {
 		EnclosingItem: EnclosingItem,
@@ -23,6 +24,7 @@ export type StaticProps_TS_MultiSelect_V2<ItemType> = {
 	className?: string
 	itemsDirection?: 'vertical' | 'horizontal';
 	itemFilter?: (item: ItemType) => boolean;
+	sort?: (items: ItemType[]) => ItemType[];
 	// mandatory
 	itemRenderer: (item?: ItemType, onDelete?: () => Promise<void>) => ReactNode
 	selectionRenderer: React.ComponentType<MultiSelect_Selector<ItemType>>,
@@ -55,8 +57,10 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 
 		const editableProp = editable.editProp(prop, []);
 		const existingItems = (editable.item[prop] || (editable.item[prop] = [])) as Binder['InnerType'][];
-		const itemsToRender = this.props.itemFilter ? existingItems.filter(this.props.itemFilter) : existingItems;
-		
+		let itemsToRender = this.props.itemFilter ? existingItems.filter(this.props.itemFilter) : existingItems;
+		if (this.props.sort)
+			itemsToRender = this.props.sort(itemsToRender);
+
 		const addInnerItem = async (item: Binder['InnerType']) => {
 			await editableProp.updateArrayAt(item);
 			this.forceUpdate();
