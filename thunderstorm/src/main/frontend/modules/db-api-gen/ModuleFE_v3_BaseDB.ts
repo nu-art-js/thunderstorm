@@ -26,7 +26,7 @@ import {
 	DBDef_V3,
 	dbObjectToId,
 	DBProto,
-	deleteKeysObject,
+	deleteKeysObject, exists,
 	IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
@@ -63,6 +63,7 @@ import {Response_DBSync} from '../../../shared/sync-manager/types';
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
 	extends Module<Config>
 	implements OnClearWebsiteData {
+
 	readonly validator: Proto['modifiablePropsValidator'];
 	readonly cache: MemCache<Proto>;
 	readonly IDB: IDBCache<Proto>;
@@ -85,10 +86,19 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 
 		this.cache = new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
 		this.IDB = new IDBCache<Proto>(config.dbConfig, config.versions[0]);
+		this.IDB.onLastUpdateListener(async (after, before) => {
+			if (!exists(after) || after === before)
+				return;
+
+			this.logInfo('syncing...');
+			await this.cache.load();
+			this.defaultDispatcher.dispatchAll('update', {} as Proto['dbType']);
+			this.OnDataStatusChanged();
+		});
 		this.dbDef = dbDef;
 	}
 
-	protected setDataStatus(status: DataStatus) {
+	setDataStatus(status: DataStatus) {
 		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
 		if (this.dataStatus === status)
 			return;
@@ -225,14 +235,26 @@ class IDBCache<Proto extends DBProto<any>>
 		const previousVersion = this.lastVersion.get();
 		this.lastVersion.set(currentVersion);
 
+		this.db.exists().then(dbInfo => {
+			if (exists(dbInfo))
+				return;
+
+			this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
+			this.lastSync.delete();
+		});
+
 		if (!previousVersion || previousVersion === currentVersion)
 			return;
 
+		this.lastSync.delete();
 		this.logInfo(`Cleaning up & Sync...`);
-		this.clear(true)
+		this.clear()
 			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
 			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
+	}
 
+	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
+		this.lastSync.onChange(onChangeListener);
 	}
 
 	forEach = async (processor: (item: Proto['dbType']) => void) => {
@@ -316,6 +338,9 @@ class IDBCache<Proto extends DBProto<any>>
 		let latest = -1;
 		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
 		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
+
+		// FIXME: this breaks when deleting __deletedDocs from the db manually.
+		//  Maybe the latest timestamp should be the actual time the sync happens instead of aligning with the latest changed item?
 
 		if (latest !== -1)
 			this.lastSync.set(latest);

@@ -60,11 +60,6 @@ import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction} from '../../core/IndexedDB';
 import {Response_DBSync} from '../../../shared/sync-manager/types';
 
-// type Message_CacheCollection = {
-// 	key: 'cache-sync'
-// 	dbName: string
-// 	lastSync: number
-// }
 
 export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends any = any, _Config extends DBApiFEConfig<DBType, Ks> & Config = DBApiFEConfig<DBType, Ks> & Config>
 	extends Module<_Config>
@@ -75,17 +70,6 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	readonly dbDef: DBDef<DBType, Ks>;
 	private dataStatus: DataStatus;
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>;
-
-	// static dbChannel = new TS_BroadcastChannel<Message_CacheCollection>('need-to-cache')
-	// 	.mount()
-	// 	.addProcessor('cache-sync', async (message) => {
-	// 		const module = Thunder.getInstance().filterModules(module => {
-	// 			const apiModule = (module as unknown as ApiModule['dbModule']);
-	// 			return apiModule?.dbDef?.dbName === message.dbName;
-	// 		})[0];
-	//
-	// 		await (module as ModuleFE_BaseDB<any>).cache.load();
-	// 	});
 
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
@@ -255,14 +239,22 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		const previousVersion = this.lastVersion.get();
 		this.lastVersion.set(currentVersion);
 
+		this.db.exists().then(dbInfo => {
+			if (exists(dbInfo))
+				return;
+
+			this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
+			this.lastSync.delete();
+		});
+
 		if (!previousVersion || previousVersion === currentVersion)
 			return;
 
+		this.lastSync.delete();
 		this.logInfo(`Cleaning up & Sync...`);
 		this.clear()
 			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
 			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
-
 	}
 
 	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
@@ -443,7 +435,6 @@ class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Defaul
 	private onEntriesDeleted(itemsDeleted: DBType[]) {
 		const ids = new Set<string>(itemsDeleted.map(dbObjectToId));
 		this.setCache(this.filter(i => !ids.has(i._id)));
-		// ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 	}
 
 	// @ts-ignore
@@ -453,7 +444,6 @@ class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Defaul
 		const toCache = this.filter(i => !ids.has(i._id));
 		toCache.push(...frozenItems);
 		this.setCache(toCache);
-		// ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 	}
 
 	private setCache(cacheArray: Readonly<DBType>[]) {
