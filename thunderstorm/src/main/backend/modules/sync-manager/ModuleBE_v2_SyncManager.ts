@@ -126,7 +126,7 @@ export class ModuleBE_v2_SyncManager_Class
 
 		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)) => item.dbDef.dbName);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
-		const upToDateSyncData = await this.getOrCreateSyncData();
+		const upToDateSyncData = await this.getOrCreateSyncData(body);
 
 		// For each module, create the response, which says what type of sync it needs: none, delta or full.
 		await Promise.all(body.modules.map(async syncRequest => {
@@ -136,7 +136,7 @@ export class ModuleBE_v2_SyncManager_Class
 
 			const remoteSyncData = upToDateSyncData[syncRequest.dbName];
 			// Local has no sync data, or it's too old - tell local to send a full sync request for this module
-			if (syncRequest.lastUpdated === 0 || exists(remoteSyncData.oldestDeleted) && remoteSyncData.oldestDeleted > syncRequest.lastUpdated) {
+			if (syncRequest.lastUpdated === 0 && remoteSyncData.lastUpdated > 0 || exists(remoteSyncData.oldestDeleted) && remoteSyncData.oldestDeleted > syncRequest.lastUpdated) {
 				// full sync
 				syncDataResponse.push({
 					dbName: syncRequest.dbName,
@@ -185,13 +185,24 @@ export class ModuleBE_v2_SyncManager_Class
 		};
 	};
 
-	public getOrCreateSyncData = async () => {
+	public getOrCreateSyncData = async (body: Request_SmartSync) => {
 		const rtdbSyncData = await this.syncData.get({});
 
-		const missingModules = this.dbModules.filter(dbModule => !rtdbSyncData[dbModule.getCollectionName()]);
+		const missingModules = this.dbModules.filter(dbModule => {
+			const dbBE_SyncData = rtdbSyncData[dbModule.getCollectionName()];
+			if (!dbBE_SyncData)
+				return true;
+
+			// const dbFE_SyncData = body.modules.find(module => module.dbName === dbModule.getCollectionName());
+			// if (!dbFE_SyncData)
+			return false;
+
+			// return dbFE_SyncData.lastUpdated > dbBE_SyncData.lastUpdated;
+		});
+
 		if (missingModules.length) {
 			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.getCollectionName()));
-			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'asc'}]};
+			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'desc'}]};
 			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
 				try {
 					return await missingModule.query.custom(query);

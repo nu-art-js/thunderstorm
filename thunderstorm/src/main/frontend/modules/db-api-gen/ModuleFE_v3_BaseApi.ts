@@ -112,14 +112,6 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll, () => this.v1.sync().executeSync()),
 		};
-
-		const superClear = this.IDB.clear;
-		this.IDB.clear = async (reSync = false) => {
-			await superClear();
-			this.setDataStatus(DataStatus.NoData);
-			if (reSync)
-				this.v1.sync().execute();
-		};
 	}
 
 	protected cleanUp = (toUpsert: Proto['uiType']) => {
