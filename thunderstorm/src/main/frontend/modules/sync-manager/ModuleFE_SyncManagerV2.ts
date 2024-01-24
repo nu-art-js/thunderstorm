@@ -19,7 +19,20 @@
  * limitations under the License.
  */
 
-import {_keys, DB_Object, debounce, Dispatcher, exists, LogLevel, Module, Queue, reduceToMap, RuntimeModules, Second, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	DB_Object,
+	debounce,
+	Dispatcher,
+	exists,
+	LogLevel,
+	Module,
+	Queue,
+	reduceToMap,
+	RuntimeModules,
+	Second,
+	TypedMap
+} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
@@ -43,7 +56,10 @@ import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {
+	ModuleFE_FirebaseListener,
+	RefListenerFE
+} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {StorageKey} from '../ModuleFE_LocalStorage';
 
@@ -91,7 +107,7 @@ export class ModuleFE_SyncManagerV2_Class
 			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData),
 		};
 		// @ts-ignore
-		window.toggleSyncMode = this.toggleSyncMode;
+		window.toggleSyncMode = this.syncMode.toggle();
 	}
 
 	sync = async () => {
@@ -132,16 +148,15 @@ export class ModuleFE_SyncManagerV2_Class
 		}));
 	};
 
-	getSyncMode = () => StorageKey_SyncMode.get('old');
-	isSmartSync = () => this.getSyncMode() === 'smart';
-
-	setSyncMode = (syncMode: 'old' | 'smart') => {
-		StorageKey_SyncMode.set(syncMode);
+	public syncMode = {
+		get: () => this.getSyncMode(),
+		isSmartSync: () => this.getSyncMode() === 'smart',
+		set: (syncMode: 'old' | 'smart') => StorageKey_SyncMode.set(syncMode),
+		toggle: (syncMode: 'old' | 'smart' = this.getSyncMode()) => this.setSyncMode(syncMode === 'old' ? 'smart' : 'old')
 	};
 
-	toggleSyncMode = (syncMode: 'old' | 'smart' = this.getSyncMode()) => {
-		this.setSyncMode(syncMode === 'old' ? 'smart' : 'old');
-	};
+	private getSyncMode = () => StorageKey_SyncMode.get('old');
+	private setSyncMode = (syncMode: 'old' | 'smart') => StorageKey_SyncMode.set(syncMode);
 
 	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
 		this.logDebug('Received firebase state data');
