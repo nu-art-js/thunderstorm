@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {UniqueId} from '@nu-art/ts-common';
+import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_ErrorBoundary, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
 import {MultiSelect} from '../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {
@@ -14,6 +14,7 @@ import {
 } from '../../_entity';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {ApiCallerEventTypeV3, DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {Input_Text_Blur} from './components';
 
 type State = State_EditorBase<DBProto_PermissionGroup> & {
 	newLevelDomainId?: UniqueId;
@@ -53,25 +54,35 @@ export class PermissionGroupsEditor
 		if (!group)
 			return '';
 
-		return <MultiSelect.AccessLevel
-			editable={group}
-			prop={'accessLevelIds'}
-			className={'domain-level-list'}
-			itemRenderer={(levelId, onDelete) => {
-				const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId)!;
-				const domain = ModuleFE_PermissionDomain.cache.unique(level.domainId)!;
-				return <div key={levelId} className={'domain-level-list__item'}>
-					<TS_Icons.x.component onClick={onDelete}/>
-					{`${domain.namespace}: ${level.name} (${level.value})`}
-				</div>;
-			}}/>;
+		return <TS_ErrorBoundary>
+			<MultiSelect.AccessLevel
+				editable={group}
+				prop={'accessLevelIds'}
+				className={'domain-level-list'}
+				itemRenderer={(levelId, onDelete) => {
+					const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId);
+					if (!level)
+						throw new MUSTNeverHappenException(`Could not find access level with id ${levelId}`);
+					const domain = ModuleFE_PermissionDomain.cache.unique(level.domainId);
+					if (!domain)
+						throw new MUSTNeverHappenException(`Could not find domain with id ${level.domainId}`);
+
+					return <div key={levelId} className={'domain-level-list__item'}>
+						<TS_Icons.x.component onClick={onDelete}/>
+						{`${domain.namespace}: ${level.name} (${level.value})`}
+					</div>;
+				}}/>
+		</TS_ErrorBoundary>;
 	};
 
 	editorContent = () => {
 		const group = this.state.editedItem!;
 		return <>
 			<TS_PropRenderer.Vertical label={'Label'}>
-				<TS_Input type={'text'} value={group.item.label} onChange={value => this.setProperty('label', value)}/>
+				<Input_Text_Blur
+					editable={group}
+					prop={'label'}
+				/>
 			</TS_PropRenderer.Vertical>
 			{this.renderLevels()}
 		</>;
