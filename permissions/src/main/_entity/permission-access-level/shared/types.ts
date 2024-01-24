@@ -9,7 +9,7 @@ type Dependencies = {
 }
 
 type UniqueKeys = '_id';
-type GeneratedProps = never
+type GeneratedProps = '_auditorId'
 type Proto = Proto_DB_Object<DB_PermissionAccessLevel, GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_PermissionAccessLevel = DBProto<Proto>;

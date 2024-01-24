@@ -67,8 +67,7 @@ export class PermissionProjectsEditor
 				<Input_Text_Blur
 					editable={project}
 					prop={'name'}
-					value={project.item.name}
-					onChange={value => this.setProperty('name', value)}/>
+				/>
 			</TS_PropRenderer.Vertical>
 			{project.item._id && <PermissionAPIEditor projectId={project.item._id}/>}
 		</>;

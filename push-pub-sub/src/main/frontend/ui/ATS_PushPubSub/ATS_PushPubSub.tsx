@@ -26,6 +26,7 @@ import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 import {ModuleFE_PushSubscription} from '../../modules/ModuleFE_PushSubscription';
 import {ApiCallerEventTypeV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
 import {DBProto_PushSubscription} from '../../../shared/push-subscription';
+import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 
 
 type ObjProps = {
@@ -157,7 +158,7 @@ export class ATS_PushPubSub
 			filter: this.composeFilter(this.state.registerFilter)
 		}).executeSync();
 
-		await ModuleFE_PushSubscription.v1.sync().executeSync();
+		await ModuleFE_SyncManagerV2.sync();
 	};
 
 	private renderPanel(title: string, rows: ObjProps[], key: 'registerKey' | 'triggerKey', action: () => Promise<void>) {
