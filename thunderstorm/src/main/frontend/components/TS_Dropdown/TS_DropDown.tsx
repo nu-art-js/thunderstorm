@@ -90,6 +90,10 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & ComponentProps_Error & {
 
 type Props_CanUnselect<ItemType> = { canUnselect: true; onSelected: (selected?: ItemType) => void };
 type Props_CanNotUnselect<ItemType> = { canUnselect?: false; onSelected: (selected: ItemType) => void };
+
+type Props_CanUnselect_NonMandatory<ItemType> = { canUnselect: true; onSelected?: (selected?: ItemType) => void };
+type Props_CanNotUnselect_NonMandatory<ItemType> = { canUnselect?: false; onSelected?: (selected: ItemType) => void };
+
 export type Props_DropDown<ItemType> =
 	(Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>)
 	& Dropdown_Props<ItemType>
@@ -105,18 +109,15 @@ type BasePartialProps_DropDown<T> = {
 	disabled?: boolean
 	ifNoneShowAll?: boolean
 }
-export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & ComponentProps_Error & {
+export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & ComponentProps_Error & (Props_CanUnselect<T> | Props_CanNotUnselect<T>) & {
 	selected?: T;
-	onSelected: (selected: T) => void;
 }
 
 type EditableDropDownProps<ItemType, EditableType extends {} = any, ValueType extends EditableType[keyof EditableType] = EditableType[keyof EditableType]> =
 	BasePartialProps_DropDown<ItemType>
 	& UIProps_EditableItem<EditableType, keyof EditableType, ValueType>
 	& ComponentProps_Error
-	& {
-	onSelected?: (value: ItemType) => Promise<void> | void
-}
+	& (Props_CanUnselect_NonMandatory<ItemType> | Props_CanNotUnselect_NonMandatory<ItemType>)
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
@@ -127,7 +128,7 @@ export class TS_DropDown<ItemType>
 		return (props: EditableDropDownProps<T, EditableType, ValueType>) => <TS_DropDown<T>
 			{...resolveContent(mandatoryProps)} {...props}
 			error={resolveEditableError(props)}
-			onSelected={item => props.onSelected ? props.onSelected(item) : props.editable.updateObj({[props.prop]: item} as EditableType)}
+			onSelected={(item?: T) => props.onSelected ? props.onSelected(item!) : props.editable.updateObj({[props.prop]: item} as EditableType)}
 			selected={props.editable.item[props.prop] as T | undefined}/>;
 	};
 
