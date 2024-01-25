@@ -47,7 +47,7 @@ class ModuleFE_WindowMessenger_Class
 	}
 
 	sendMessage<T extends Message>(message: T, target: Messagable) {
-		target.postMessage(message);
+		target.postMessage(message, '*');
 	}
 
 	createMessenger<T extends Message>(target: Messagable) {
