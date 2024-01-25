@@ -19,7 +19,20 @@
  * limitations under the License.
  */
 
-import {_keys, DB_Object, debounce, exists, filterDuplicates, LogLevel, Module, reduceToMap, RuntimeModules, Second, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	DB_Object,
+	debounce,
+	exists,
+	filterDuplicates,
+	flatArray,
+	LogLevel,
+	Module,
+	reduceToMap,
+	RuntimeModules,
+	Second,
+	TypedMap
+} from '@nu-art/ts-common';
 import {apiWithBody} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
@@ -43,6 +56,7 @@ import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
+import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
 
 
 export interface PermissibleModulesUpdated {
@@ -68,15 +82,15 @@ export class ModuleFE_SyncManager_Class
 	private syncing?: boolean;
 	private pendingSync?: boolean;
 
-	// Modules that are currently in focus and requires to be prioritized
-	private priorityModule: ModuleFE_BaseApi<any>[] = [];
-
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
 		this.syncQueue = new QueueV2<ModuleFE_BaseApi<any>>('Sync Queue', this.performFullSync)
 			.setParallelCount(6)
-			.setSorter((module) => this.priorityModule.includes(module) ? 0 : 1)
+			.setSorter((module) => {
+				const priorityModule = filterDuplicates(flatArray(dispatch_QueryAwaitedModules.dispatchUI()));
+				return priorityModule.includes(module) ? 0 : 1;
+			})
 			.setFilter(queueItems => filterDuplicates(queueItems, item => item.item));
 	}
 

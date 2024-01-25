@@ -6,6 +6,7 @@ import {OnSyncStatusChangedListener} from '../../core/db-api-gen/types';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import './AwaitModules.scss';
 import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 
 
 type Props = React.PropsWithChildren<{
@@ -17,12 +18,22 @@ type State = {
 	awaiting: boolean;
 };
 
+interface QueryAwaitedModules {
+	__queryAwaitedModule(): (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[];
+}
+
+export const dispatch_QueryAwaitedModules = new ThunderDispatcher<QueryAwaitedModules, '__queryAwaitedModule'>('__queryAwaitedModule');
+
 export class AwaitModules
 	extends ComponentSync<Props, State>
-	implements OnSyncStatusChangedListener<DB_Object> {
+	implements OnSyncStatusChangedListener<DB_Object>, QueryAwaitedModules {
 
 	shouldComponentUpdate(): boolean {
 		return true;
+	}
+
+	__queryAwaitedModule() {
+		return resolveContent(this.props.modules);
 	}
 
 	constructor(props: Props) {
