@@ -34,6 +34,7 @@ export * from './core/logger/BeLogged';
 export * from './core/logger/Logger';
 export * from './core/logger/types';
 export * from './core/logger/LogClient';
+export * from './core/logger/LogClient_BrowserGroups';
 
 export * from './db/consts';
 export * from './db/types';
