@@ -23,7 +23,6 @@ import {
 	_keys,
 	DB_Object,
 	debounce,
-	Dispatcher,
 	exists,
 	LogLevel,
 	Module,
@@ -33,17 +32,15 @@ import {
 	Second,
 	TypedMap
 } from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery} from '../../core/typed-api';
+import {apiWithBody} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
-	DBSyncData_OLD,
 	DeltaSyncModule,
 	FullSyncModule,
 	LastUpdated,
 	NoNeedToSyncModule,
 	Request_SmartSync,
 	Response_DBSync,
-	Response_DBSyncData,
 	Response_SmartSync,
 	SmartSync_DeltaSync,
 	SmartSync_FullSync,
@@ -52,7 +49,6 @@ import {
 	SyncDbData
 } from '../../../shared/sync-manager/types';
 import {ApiDefCaller, BodyApi, DBModuleType, HttpMethod} from '../../../shared';
-import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
@@ -61,36 +57,24 @@ import {
 	RefListenerFE
 } from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
-import {StorageKey} from '../ModuleFE_LocalStorage';
 
-
-export type SyncIfNeeded = {
-	__syncIfNeeded: (syncData: DBSyncData_OLD[]) => Promise<void>
-}
-export type OnSyncCompleted = {
-	__onSyncCompleted: () => void
-}
 
 export interface PermissibleModulesUpdated {
 	__onPermissibleModulesUpdated: () => void;
 }
 
-const Default_SyncManagerNodePath = '/state/ModuleBE_v2_SyncManager/syncData'; // Hardcoded path for now per Adam's request, should be const somewhere.
-const StorageKey_SyncMode = new StorageKey<'old' | 'smart'>('storage-key--sync-mode').withstandDeletion();
+const Default_SyncManagerNodePath = '/state/ModuleBE_SyncManager/syncData'; // Hardcoded path for now per Adam's request, should be const somewhere.
 
-export const dispatch_syncIfNeeded = new Dispatcher<SyncIfNeeded, '__syncIfNeeded'>('__syncIfNeeded');
-export const dispatch_onSyncCompleted = new Dispatcher<OnSyncCompleted, '__onSyncCompleted'>('__onSyncCompleted');
-export const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleModulesUpdated, '__onPermissibleModulesUpdated'>('__onPermissibleModulesUpdated');
+const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleModulesUpdated, '__onPermissibleModulesUpdated'>('__onPermissibleModulesUpdated');
 
-export class ModuleFE_SyncManagerV2_Class
+export class ModuleFE_SyncManager_Class
 	extends Module
 	implements ApiDefCaller<ApiStruct_SyncManager> {
 
-	readonly v1;
 	private syncQueue;
 
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
-	private syncedModules_OLD: SyncDbData[] = [];
+	private syncedModules: SyncDbData[] = [];
 	private remoteSyncData: TypedMap<number> = {};
 	private syncFirebaseListener?: RefListenerFE<SyncDataFirebaseState>;
 	private debounceSync?: () => void;
@@ -100,20 +84,9 @@ export class ModuleFE_SyncManagerV2_Class
 
 	constructor() {
 		super();
-		this.setSyncMode('smart');
 		this.setMinLevel(LogLevel.Debug);
 		this.syncQueue = new Queue('Sync Queue').setParallelCount(4);
-		this.v1 = {
-			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData),
-		};
-		// @ts-ignore
-		window.toggleSyncMode = this.syncMode.toggle();
 	}
-
-	sync = async () => {
-		if (StorageKey_SyncMode.get('old') === 'old')
-			return this.v1.checkSync().executeSync();
-	};
 
 	private smartSync = async () => {
 		const request: Request_SmartSync = {
@@ -134,7 +107,7 @@ export class ModuleFE_SyncManagerV2_Class
 		this.syncing = false;
 		if (this.pendingSync) {
 			delete this.pendingSync;
-			await this.sync();
+			await this.debounceSyncImpl();
 		}
 	};
 
@@ -148,16 +121,6 @@ export class ModuleFE_SyncManagerV2_Class
 		}));
 	};
 
-	public syncMode = {
-		get: () => this.getSyncMode(),
-		isSmartSync: () => this.getSyncMode() === 'smart',
-		set: (syncMode: 'old' | 'smart') => StorageKey_SyncMode.set(syncMode),
-		toggle: (syncMode: 'old' | 'smart' = this.getSyncMode()) => this.setSyncMode(syncMode === 'old' ? 'smart' : 'old')
-	};
-
-	private getSyncMode = () => StorageKey_SyncMode.get('old');
-	private setSyncMode = (syncMode: 'old' | 'smart') => StorageKey_SyncMode.set(syncMode);
-
 	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
 		this.logDebug('Received firebase state data');
 
@@ -168,14 +131,13 @@ export class ModuleFE_SyncManagerV2_Class
 
 		// localSyncData is the data we just collected from the IDB regarding all existing modules.
 		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbName, data => ({lastUpdated: data.lastUpdated}));
-		// const permissibleCollections = this.syncedModules.map(module => module.dbName);
 		(_keys(rtdbSyncData) as string[]).forEach((dbName) => {
 			// this Should be taken care of by the below condition because both local and remote will return last updated 0
 			if (!exists(this.remoteSyncData[dbName]))
 				return;
 
 			if (!localSyncData[dbName])
-				return; // this.logVerbose(`onSyncDataChanged - couldn't find local syncData for collection ${dbName}`);
+				return;
 
 			if (rtdbSyncData[dbName].lastUpdated <= localSyncData[dbName].lastUpdated)
 				return;
@@ -183,6 +145,7 @@ export class ModuleFE_SyncManagerV2_Class
 			this.outOfSyncCollections.add(dbName);
 		});
 
+		//todo This fixed the issue when we received delta sync and not up-to-date, see if this code can go
 		// // If there are no changes, just set all modules' data status to ContainsData
 		// if (this.outOfSyncCollections.size === 0) {
 		// 	// on sync completed
@@ -204,7 +167,7 @@ export class ModuleFE_SyncManagerV2_Class
 			return this.debounceSync();
 
 		// Since RTDB event arrives upon start listening we would like to perform a first sync immediately,
-		// therefor we call sync directly for the first event and create the debounce function right after for all the consecutive events
+		// therefore we call sync directly for the first event and create the debounce function right after for all the consecutive events
 		this.debounceSync = debounce(async () => {
 			if (!this.syncFirebaseListener)
 				return this.logWarning('Ignoring sync data state, listener is undefined');
@@ -218,22 +181,14 @@ export class ModuleFE_SyncManagerV2_Class
 		await this.smartSync();
 	}
 
-	public onReceivedSyncData = async (response: Response_DBSyncData) => {
-		this.syncedModules_OLD = response.syncData.map(item => ({dbName: item.name, lastUpdated: item.lastUpdated}));
-
-		dispatch_OnPermissibleModulesUpdated.dispatchUI();
-		await dispatch_syncIfNeeded.dispatchModuleAsync(response.syncData);
-		dispatch_onSyncCompleted.dispatchModule();
-	};
-
-	public getPermissibleModuleNames = () => this.syncedModules_OLD ? this.syncedModules_OLD.map(moduleSyncData => moduleSyncData.dbName) : undefined;
+	public getPermissibleModuleNames = () => this.syncedModules.map(moduleSyncData => moduleSyncData.dbName);
 
 	/**
 	 * Perform no sync, delta sync and full sync on modules. Intention is to get all modules to DataStatus "ContainsData".
 	 */
 	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
 		this.logInfo('onSmartSyncCompleted', response);
-		this.syncedModules_OLD = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
+		this.syncedModules = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
 
 		// We want to make the modules available as soon as possible, so we finish off with the lighter load first, and do full syncs at the end.
 		// Set DataStatus of modules that are already up-to-date, to be ContainsData.
@@ -250,6 +205,14 @@ export class ModuleFE_SyncManagerV2_Class
 		const modulesToUpdate = response.modules.filter(module => module.sync === SmartSync_DeltaSync) as DeltaSyncModule[];
 		for (const moduleToUpdate of modulesToUpdate) {
 			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbName === moduleToUpdate.dbName);
+
+			if (!module)
+				return this.logError(`Couldn't find module to full sync with dbName: '${moduleToUpdate.dbName}'`);
+
+			// Avoid unnecessary delta sync
+			if (module.IDB.getLastSync() === moduleToUpdate.lastUpdated)
+				return this.logWarning(`Avoiding unnecessary delta sync on ${module.dbDef.dbName}`);
+
 			await this.performDeltaSync(module, moduleToUpdate.items);
 		}
 
@@ -259,7 +222,11 @@ export class ModuleFE_SyncManagerV2_Class
 			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbName === moduleToSync.dbName);
 
 			if (!module)
-				return this.logError(`Couldn't find module with dbName: '${moduleToSync.dbName}'`);
+				return this.logError(`Couldn't find module to delta sync with dbName: '${moduleToSync.dbName}'`);
+
+			// Avoid unnecessary full sync
+			if (module.IDB.getLastSync() === moduleToSync.lastUpdated)
+				return this.logWarning(`Avoiding unnecessary full sync on ${module.dbDef.dbName}`);
 
 			this.syncQueue.addItem(async () => {
 				try {
@@ -271,9 +238,9 @@ export class ModuleFE_SyncManagerV2_Class
 			});
 		});
 
-		this.syncedModules_OLD = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
-		dispatch_OnPermissibleModulesUpdated.dispatchUI();
-		dispatch_onSyncCompleted.dispatchModule();
+		this.syncedModules = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
+		if (this.syncedModules.length !== response.modules.length)
+			dispatch_OnPermissibleModulesUpdated.dispatchUI();
 	};
 
 	performNoSync = async (module: ModuleFE_BaseApi<any>) => {
@@ -345,4 +312,4 @@ export class ModuleFE_SyncManagerV2_Class
 	}
 }
 
-export const ModuleFE_SyncManagerV2 = new ModuleFE_SyncManagerV2_Class();
+export const ModuleFE_SyncManager = new ModuleFE_SyncManager_Class();

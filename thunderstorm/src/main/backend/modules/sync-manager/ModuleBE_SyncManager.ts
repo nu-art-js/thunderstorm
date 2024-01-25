@@ -23,7 +23,6 @@ import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {
 	__stringify,
-	_keys,
 	arrayToMap,
 	currentTimeMillis,
 	DB_Object,
@@ -33,20 +32,19 @@ import {
 	LogLevel,
 	Module,
 	PreDB,
-	RuntimeModules, Second,
+	RuntimeModules,
+	Second,
 	tsValidateMustExist,
 	UniqueId
 } from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import {OnModuleCleanupV2} from '../backup/ModuleBE_v2_BackupScheduler';
-import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
+import {createBodyServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
 import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
-import {ApiDef_SyncManagerV2} from '../../../shared/sync-manager/apis';
 import {
-	DBSyncData_OLD,
 	DeltaSyncModule,
 	FullSyncModule,
 	LastUpdated,
@@ -58,8 +56,8 @@ import {
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState
 } from '../../../shared/sync-manager/types';
-import Transaction = firestore.Transaction;
 import {HttpMethod} from '../../../shared';
+import Transaction = firestore.Transaction;
 
 
 type DeletedDBItem = DB_Object & { __collectionName: string, __docId: UniqueId }
@@ -81,7 +79,7 @@ type Config = {
  * }
  * ```
  */
-export class ModuleBE_v2_SyncManager_Class
+export class ModuleBE_SyncManager_Class
 	extends Module<Config>
 	implements OnModuleCleanupV2 {
 
@@ -91,14 +89,16 @@ export class ModuleBE_v2_SyncManager_Class
 	private dbModules!: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[];
 	private syncData!: FirebaseRef<SyncDataFirebaseState>;
 	private deletedCount!: FirebaseRef<number>;
-	public checkSyncApi;
 	public smartSyncApi;
 
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
-		this.checkSyncApi = createQueryServerApi(ApiDef_SyncManagerV2.v1.checkSync, this.fetchDBSyncData);
-		this.smartSyncApi = createBodyServerApi({method: HttpMethod.POST, path: 'v3/db-api/smart-sync', timeout: 60 * Second}, this.calculateSmartSync);
+		this.smartSyncApi = createBodyServerApi({
+			method: HttpMethod.POST,
+			path: 'v3/db-api/smart-sync',
+			timeout: 60 * Second
+		}, this.calculateSmartSync);
 
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
@@ -113,16 +113,15 @@ export class ModuleBE_v2_SyncManager_Class
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 		this.syncData = this.database.ref<SyncDataFirebaseState>(`/state/${this.getName()}/syncData`);
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
-		addRoutes([this.checkSyncApi, this.smartSyncApi]);
+		addRoutes([this.smartSyncApi]);
 	}
 
 	private calculateSmartSync = async (body: Request_SmartSync): Promise<Response_SmartSync> => {
 		const frontendCollectionNames = body.modules.map(item => item.dbName);
-		this.logInfo(body);
-		this.logInfo(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
+		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 
 		const permissibleModules: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbName)));
-		this.logInfo(`Modules found: ${__stringify(permissibleModules.map(_module => _module.dbDef.dbName))}`);
+		this.logVerbose(`Modules found: ${__stringify(permissibleModules.map(_module => _module.dbDef.dbName))}`);
 
 		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)) => item.dbDef.dbName);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
@@ -297,41 +296,6 @@ export class ModuleBE_v2_SyncManager_Class
 		return (await this.syncData.get({}));
 	};
 
-	public fetchDBSyncData = async (_: undefined) => {
-		const fbSyncData = await this.getFullSyncData();
-
-		const modulesToIterate = await this.filterModules(this.dbModules);
-		// this.logWarning(`Filtered Modules to sync on(${modulesToIterate.length}):`, modulesToIterate.map(mod => mod.dbDef.dbName));
-		const missingModules = modulesToIterate.filter(dbModule => !fbSyncData[dbModule.getCollectionName()]);
-
-		if (missingModules.length) {
-			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.getCollectionName()));
-			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'asc'}]};
-			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
-				try {
-					return await missingModule.query.custom(query);
-				} catch (e) {
-					return [];
-				}
-			})));
-
-			newestItems.forEach((item, index) => fbSyncData[missingModules[index].getCollectionName()] = {lastUpdated: item[0]?.__updated || 0});
-			await this.syncData.set(fbSyncData);
-		}
-
-		const syncData = _keys(fbSyncData).reduce<DBSyncData_OLD[]>((response, dbName) => {
-			if (!modulesToIterate.find(module => module.dbDef.dbName === dbName))
-				return response;
-
-			response.push({name: String(dbName), ...fbSyncData[dbName]});
-			return response;
-		}, []);
-
-		return {
-			syncData
-		};
-	};
-
 	async setLastUpdated(collectionName: string, lastUpdated: number) {
 		return this.database.patch<LastUpdated>(`/state/${this.getName()}/syncData/${collectionName}`, {lastUpdated});
 	}
@@ -357,5 +321,5 @@ export const DBDef_DeletedItems: DBDef<DeletedDBItem> = {
 	versions: ['1.0.0'],
 };
 
-export const ModuleBE_v2_SyncManager = new ModuleBE_v2_SyncManager_Class();
+export const ModuleBE_SyncManager = new ModuleBE_SyncManager_Class();
 

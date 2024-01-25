@@ -17,18 +17,11 @@
  */
 
 import {BadImplementationException, cloneObj, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
-import {
-	ApiDef_AppConfig,
-	ApiDefCaller,
-	ApiStruct_AppConfig,
-	DB_AppConfig,
-	DBDef_AppConfigs,
-} from '../../shared';
+import {ApiDef_AppConfig, ApiDefCaller, ApiStruct_AppConfig, DB_AppConfig, DBDef_AppConfigs,} from '../../shared';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {apiWithQuery} from '../../core/typed-api';
-import {Response_DBSync} from '../../../shared/sync-manager/types';
 
 
 type InferType<T> = T extends AppConfigKey_FE<infer ValueType> ? ValueType : never;
@@ -49,13 +42,6 @@ class ModuleFE_AppConfig_Class
 		super(DBDef_AppConfigs, dispatch_onAppConfigUpdated);
 		this.vv1 = {
 			getConfigByKey: apiWithQuery(ApiDef_AppConfig.vv1.getConfigByKey),
-		};
-
-		const _onSyncCompleted = this.onSyncCompleted;
-		this.onSyncCompleted = async (syncData: Response_DBSync<DB_AppConfig>) => {
-			await _onSyncCompleted(syncData);
-			const dbConfigs = this.cache.all();
-			dbConfigs.forEach(dbConfig => this.appConfig[dbConfig.key] = dbConfig);
 		};
 	}
 

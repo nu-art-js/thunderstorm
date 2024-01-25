@@ -26,7 +26,8 @@ import {
 	DBDef_V3,
 	dbObjectToId,
 	DBProto,
-	deleteKeysObject, exists,
+	deleteKeysObject,
+	exists,
 	IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
@@ -57,7 +58,6 @@ import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DBConfigV3, IndexedDBV3} from '../../core/IndexedDBV3';
 import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
-import {Response_DBSync} from '../../../shared/sync-manager/types';
 
 
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
@@ -90,7 +90,6 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 			if (!exists(after) || after === before)
 				return;
 
-			this.logInfo('syncing...');
 			await this.cache.load();
 			this.defaultDispatcher.dispatchAll('update', {} as Proto['dbType']);
 			this.OnDataStatusChanged();
@@ -136,24 +135,6 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 	private dispatchMulti = (event: MultiApiEvent, items: Proto['dbType'][]) => {
 		this.defaultDispatcher?.dispatchModule(event, items);
 		this.defaultDispatcher?.dispatchUI(event, items);
-	};
-
-	onSyncCompleted = async (syncData: Response_DBSync<Proto['dbType']>) => {
-		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		try {
-			await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
-		} catch (e: any) {
-			this.logError('Error while syncing', e);
-			throw e;
-		}
-		await this.cache.load();
-		this.setDataStatus(DataStatus.ContainsData);
-
-		if (syncData.toDelete)
-			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as Proto['dbType'][]);
-
-		if (syncData.toUpdate)
-			this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
 
 	public onEntriesDeleted = async (items: Proto['dbType'][]): Promise<void> => {

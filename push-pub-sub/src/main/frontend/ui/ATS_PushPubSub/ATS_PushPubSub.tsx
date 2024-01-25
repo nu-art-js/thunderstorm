@@ -17,7 +17,13 @@ import {
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {__stringify, DateTimeFormat_yyyyMMDDTHHmmss, groupArrayBy, removeFromArrayByIndex, TS_Object,} from '@nu-art/ts-common';
+import {
+	__stringify,
+	DateTimeFormat_yyyyMMDDTHHmmss,
+	groupArrayBy,
+	removeFromArrayByIndex,
+	TS_Object,
+} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_PushPubSub, OnPushMessageReceived} from '../../modules/ModuleFE_PushPubSub';
 import {PushMessage_Payload} from '../../../shared';
@@ -26,7 +32,6 @@ import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 import {ModuleFE_PushSubscription} from '../../modules/ModuleFE_PushSubscription';
 import {ApiCallerEventTypeV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
 import {DBProto_PushSubscription} from '../../../shared/push-subscription';
-import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 
 
 type ObjProps = {
@@ -115,8 +120,10 @@ export class ATS_PushPubSub
 					{groupArrayBy(mySubscription, (subscription) => subscription.topic)
 						.map((subscription, index) => <LL_H_C key={index}>
 							<LL_H_C style={{width: 100}}>{subscription.key}</LL_H_C>
-							<LL_V_L>{subscription.values.map((value, index) => <LL_H_C key={index}><TS_Icons.bin.component
-								onClick={() => ModuleFE_PushSubscription.v1.delete({_id: value._id}).executeSync()}/>{JSON.stringify(value.filter)}</LL_H_C>)}</LL_V_L>
+							<LL_V_L>{subscription.values.map((value, index) => <LL_H_C
+								key={index}><TS_Icons.bin.component
+								onClick={() => ModuleFE_PushSubscription.v1.delete({_id: value._id}).executeSync()}/>{JSON.stringify(value.filter)}
+							</LL_H_C>)}</LL_V_L>
 						</LL_H_C>)}
 				</LL_V_L>
 				<LL_V_L className="panel">
@@ -157,8 +164,6 @@ export class ATS_PushPubSub
 			topic: this.state.registerKey,
 			filter: this.composeFilter(this.state.registerFilter)
 		}).executeSync();
-
-		await ModuleFE_SyncManagerV2.sync();
 	};
 
 	private renderPanel(title: string, rows: ObjProps[], key: 'registerKey' | 'triggerKey', action: () => Promise<void>) {

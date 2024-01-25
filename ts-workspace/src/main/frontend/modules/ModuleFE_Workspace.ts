@@ -16,14 +16,13 @@
  * limitations under the License.
  */
 
-import {apiWithBody, ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {_values, BadImplementationException, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
 import {PanelConfig} from '..';
 import {DBDef_Workspaces} from '../../shared/db-def';
 import {DB_Workspace} from '../../shared/types';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {DBApiFEConfig} from '@nu-art/thunderstorm/frontend/core/db-api-gen/db-def';
-import {DBApiDefGeneratorIDB} from '@nu-art/thunderstorm';
 
 
 export interface OnWorkspaceUpdated {
@@ -46,12 +45,6 @@ export class ModuleFE_Workspace_Class
 
 	constructor() {
 		super(DBDef_Workspaces, dispatch_onWorkspaceUpdated);
-
-		const sync = apiWithBody(DBApiDefGeneratorIDB<DB_Workspace, 'key' | 'accountId'>(DBDef_Workspaces).v1.sync);
-
-		this.v1.sync = () => {
-			return sync({where: {accountId: this.getCurrentAccountId()}});
-		};
 	}
 
 	setAccountResolver(resolver: () => string) {
@@ -102,7 +95,7 @@ export class ModuleFE_Workspace_Class
 	};
 
 	public deleteWorkspaceByKey = async (key: string) => {
-		const toDelete = await this.getWorkspaceByKey(key);
+		const toDelete = this.getWorkspaceByKey(key);
 		if (toDelete)
 			return await this.v1.delete(toDelete).executeSync();
 	};

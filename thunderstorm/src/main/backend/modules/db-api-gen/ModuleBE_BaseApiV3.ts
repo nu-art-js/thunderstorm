@@ -19,15 +19,7 @@
  * limitations under the License.
  */
 
-import {
-	__stringify,
-	_values,
-	ApiException,
-	DB_BaseObject,
-	DBProto,
-	Metadata,
-	Module
-} from '@nu-art/ts-common';
+import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
 import {ModuleBE_BaseDBV3} from './ModuleBE_BaseDBV3';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {DBApiDefGeneratorIDBV3} from '../../../shared';
@@ -47,16 +39,15 @@ export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 	readonly apiDef;
 
 	constructor(dbModule: ModuleBE_BaseDBV3<Proto, any>, version?: string) {
-		super(`Gen(${dbModule.getName()}, Api)`);
+		super(`GenApiV3(${dbModule.getName()})`);
 		this.dbModule = dbModule;
 		this.apiDef = DBApiDefGeneratorIDBV3<Proto>(this.dbModule.dbDef, version);
 	}
 
 	init() {
-		this.logWarning(`Adding routes : ${this.apiDef.v1.query.path}`);
+		this.logDebug(`Adding routes : ${this.apiDef.v1.query.path}`);
 		addRoutes([
 			createBodyServerApi(this.apiDef.v1.query, this.dbModule.query.custom),
-			createBodyServerApi(this.apiDef.v1.sync, this.dbModule.querySync),
 			createQueryServerApi(this.apiDef.v1.queryUnique, async (queryObject: DB_BaseObject) => {
 				const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 				if (!toReturnItem)
