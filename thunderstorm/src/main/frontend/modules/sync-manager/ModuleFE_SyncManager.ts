@@ -23,7 +23,7 @@ import {
 	_keys,
 	DB_Object,
 	debounce,
-	exists,
+	exists, filterDuplicates,
 	LogLevel,
 	Module,
 	Queue,
@@ -57,6 +57,7 @@ import {
 	RefListenerFE
 } from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
+import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 
 
 export interface PermissibleModulesUpdated {
@@ -82,10 +83,16 @@ export class ModuleFE_SyncManager_Class
 	private syncing?: boolean;
 	private pendingSync?: boolean;
 
+	// Modules that are currently in focus and requires to be prioritized
+	private priorityModule: ModuleFE_BaseApi<any>[] = [];
+
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
-		this.syncQueue = new Queue('Sync Queue').setParallelCount(4);
+		this.syncQueue = new QueueV2<ModuleFE_BaseApi<any>>('Sync Queue', this.performFullSync)
+			.setParallelCount(6)
+			.setSorter((module) => this.priorityModule.includes(module) ? 0 : 1)
+			.setFilter(queueItems => filterDuplicates(queueItems, item => item.item));
 	}
 
 	private smartSync = async () => {
@@ -228,14 +235,7 @@ export class ModuleFE_SyncManager_Class
 			if (module.IDB.getLastSync() === moduleToSync.lastUpdated)
 				return this.logWarning(`Avoiding unnecessary full sync on ${module.dbDef.dbName}`);
 
-			this.syncQueue.addItem(async () => {
-				try {
-					await this.performFullSync(module);
-				} catch (e: any) {
-					this.logError(`Error while syncing ${module.dbDef.dbName}`, e);
-					throw e;
-				}
-			});
+			this.syncQueue.addItem(module);
 		});
 
 		this.syncedModules = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
@@ -252,35 +252,40 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	performFullSync = async (module: ModuleFE_BaseApi<any>) => {
-		this.logDebug(`Full sync for: '${module.dbDef.dbName}'`);
-		// module.logVerbose(`Firing event (DataStatus.NoData): ${module.dbDef.dbName}`);
-		// module.setDataStatus(DataStatus.NoData); // module.IDB.clear() already sets the module's data status to NoData.
+		try {
+			this.logDebug(`Full sync for: '${module.dbDef.dbName}'`);
+			// module.logVerbose(`Firing event (DataStatus.NoData): ${module.dbDef.dbName}`);
+			// module.setDataStatus(DataStatus.NoData); // module.IDB.clear() already sets the module's data status to NoData.
 
-		// if the backend have decided module collection needs a full sync, we need to clean local idb and cache
-		module.logVerbose(`Cleaning IDB: ${module.dbDef.dbName}`);
-		await module.IDB.clear(); // Also sets the module's data status to NoData.
-		module.logVerbose(`Cleaning Cache: ${module.dbDef.dbName}`);
-		module.cache.clear();
+			// if the backend have decided module collection needs a full sync, we need to clean local idb and cache
+			module.logVerbose(`Cleaning IDB: ${module.dbDef.dbName}`);
+			await module.IDB.clear(); // Also sets the module's data status to NoData.
+			module.logVerbose(`Cleaning Cache: ${module.dbDef.dbName}`);
+			module.cache.clear();
 
-		module.logVerbose(`Firing event (DataStatus.UpdatingData): ${module.dbDef.dbName}`);
-		module.setDataStatus(DataStatus.UpdatingData);
+			module.logVerbose(`Firing event (DataStatus.UpdatingData): ${module.dbDef.dbName}`);
+			module.setDataStatus(DataStatus.UpdatingData);
 
-		// for full sync go fetch all db items
-		module.logVerbose(`Syncing: ${module.dbDef.dbName}`);
-		const allItems = await module.v1.query({where: {}}).executeSync();
+			// for full sync go fetch all db items
+			module.logVerbose(`Syncing: ${module.dbDef.dbName}`);
+			const allItems = await module.v1.query({where: {}}).executeSync();
 
-		module.logVerbose(`Updating IDB: ${module.dbDef.dbName}`);
-		await module.IDB.syncIndexDb(allItems);
-		module.logVerbose(`Updating Cache: ${module.dbDef.dbName}`);
-		await module.cache.load();
+			module.logVerbose(`Updating IDB: ${module.dbDef.dbName}`);
+			await module.IDB.syncIndexDb(allItems);
+			module.logVerbose(`Updating Cache: ${module.dbDef.dbName}`);
+			await module.cache.load();
 
-		module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
-		module.setDataStatus(DataStatus.ContainsData);
+			module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
+			module.setDataStatus(DataStatus.ContainsData);
 
-		module.logVerbose(`Firing event (EventType_Query): ${module.dbDef.dbName}`);
-		module.dispatchMulti(EventType_Query, allItems);
+			module.logVerbose(`Firing event (EventType_Query): ${module.dbDef.dbName}`);
+			module.dispatchMulti(EventType_Query, allItems);
 
-		this.logDebug(`Full Sync Completed: ${module.dbDef.dbName}`);
+			this.logDebug(`Full Sync Completed: ${module.dbDef.dbName}`);
+		} catch (e: any) {
+			this.logError(`Error while syncing ${module.dbDef.dbName}`, e);
+			throw e;
+		}
 	};
 
 	performDeltaSync = async <T extends DB_Object>(module: ModuleFE_BaseApi<T>, syncData: Response_DBSync<T>) => {
