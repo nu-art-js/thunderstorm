@@ -43,7 +43,7 @@ import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/const
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
 import {OnFirestoreBackupSchedulerActV2} from '../backup/ModuleBE_v2_BackupScheduler';
 import {FirestoreBackupDetailsV2} from '../backup/ModuleBE_v2_Backup';
-import {ModuleBE_v2_SyncManager} from '../sync-manager/ModuleBE_v2_SyncManager';
+import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import Transaction = firestore.Transaction;
 import {Response_DBSync} from '../../../shared/sync-manager/types';
 
@@ -169,7 +169,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 
 	querySync = async (syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> => {
 		const items = await this.collection.query.custom(syncQuery);
-		const deletedItems = await ModuleBE_v2_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
+		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
 
 		await this.upgradeInstances(items);
 		return {toUpdate: items, toDelete: deletedItems};
@@ -197,15 +197,15 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 			const latestUpdated = Array.isArray(data.updated) ?
 				data.updated.reduce((toRet, current) => Math.max(toRet, current.__updated), data.updated[0].__updated) :
 				data.updated.__updated;
-			await ModuleBE_v2_SyncManager.setLastUpdated(this.config.collectionName, latestUpdated);
+			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, latestUpdated);
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await ModuleBE_v2_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys);
-			await ModuleBE_v2_SyncManager.setLastUpdated(this.config.collectionName, now);
+			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys);
+			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
-			await ModuleBE_v2_SyncManager.setOldestDeleted(this.config.collectionName, now);
+			await ModuleBE_SyncManager.setOldestDeleted(this.config.collectionName, now);
 
 		await this.postWriteProcessing(data);
 	};

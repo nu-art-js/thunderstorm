@@ -1,9 +1,15 @@
 import * as React from 'react';
-import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_Button, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {
+	EditableDBItemV3,
+	EventType_Create,
+	EventType_Delete,
+	EventType_Update,
+	TS_Button,
+	TS_PropRenderer
+} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
 import {UniqueId} from '@nu-art/ts-common';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 import {
 	DB_PermissionAPI,
 	DB_PermissionProject,
@@ -81,7 +87,6 @@ export class PermissionProjectsEditor
 			className={'item-list__add-button'}
 			onClick={async () => {
 				await ModuleFE_PermissionsAssert.v1.createProject({}).executeSync();
-				await ModuleFE_SyncManagerV2.sync();
 			}}>Create Project</TS_Button>;
 	};
 }

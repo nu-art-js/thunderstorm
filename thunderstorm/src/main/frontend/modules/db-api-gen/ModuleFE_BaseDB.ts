@@ -58,7 +58,6 @@ import {ApiCallerEventType, MultiApiEvent, SingleApiEvent} from '../../core/db-a
 import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction} from '../../core/IndexedDB';
-import {Response_DBSync} from '../../../shared/sync-manager/types';
 
 
 export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends any = any, _Config extends DBApiFEConfig<DBType, Ks> & Config = DBApiFEConfig<DBType, Ks> & Config>
@@ -90,7 +89,6 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 			if (!exists(after) || after === before)
 				return;
 
-			this.logInfo('syncing...');
 			await this.cache.load();
 			this.defaultDispatcher.dispatchAll('update', {} as DBType);
 			this.OnDataStatusChanged();
@@ -136,24 +134,6 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	dispatchMulti = (event: MultiApiEvent, items: DBType[]) => {
 		this.defaultDispatcher?.dispatchModule(event, items);
 		this.defaultDispatcher?.dispatchUI(event, items);
-	};
-
-	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
-		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		try {
-			await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
-		} catch (e: any) {
-			this.logError('Error while syncing', e);
-			throw e;
-		}
-		await this.cache.load();
-		this.setDataStatus(DataStatus.ContainsData);
-
-		if (syncData.toDelete)
-			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
-
-		if (syncData.toUpdate)
-			this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
 
 	public onEntriesDeleted = async (items: DBType[]): Promise<void> => {

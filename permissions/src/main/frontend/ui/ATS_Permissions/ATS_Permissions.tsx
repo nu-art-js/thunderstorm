@@ -1,8 +1,17 @@
 import * as React from 'react';
-import {AppToolsScreen, ComponentSync, genericNotificationAction, LL_H_C, LL_V_L, Tab, TS_AppTools, TS_Button, TS_Tabs} from '@nu-art/thunderstorm/frontend';
+import {
+	AppToolsScreen,
+	ComponentSync,
+	genericNotificationAction,
+	LL_H_C,
+	LL_V_L,
+	Tab,
+	TS_AppTools,
+	TS_Button,
+	TS_Tabs
+} from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
-import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {timeout} from '@nu-art/ts-common';
 import {SessionKey_StrictMode_FE} from '../../consts';
@@ -44,7 +53,6 @@ export class ATS_Permissions
 			await ModuleFE_PermissionsAssert.v1.toggleStrictMode({}).executeSync();
 			await timeout(3000);
 			await ModuleFE_Account.vv1.refreshSession({}).executeSync();
-			await ModuleFE_SyncManagerV2.sync();
 		}, 'Toggling Strict Mode');
 
 		this.setState({creatingPermissions: false});
@@ -59,7 +67,8 @@ export class ATS_Permissions
 					<TS_Button
 						disabled={this.state.creatingPermissions}
 						className={'item-list__add-button'}
-						onClick={this.toggleStrictMode}>{SessionKey_StrictMode_FE.get() ? 'Disable' : 'Enable'} Strict Mode</TS_Button>
+						onClick={this.toggleStrictMode}>{SessionKey_StrictMode_FE.get() ? 'Disable' : 'Enable'} Strict
+						Mode</TS_Button>
 				</LL_H_C>
 			</LL_H_C>
 			{this.renderTabs()}
