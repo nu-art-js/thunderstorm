@@ -146,7 +146,7 @@ export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 		}];
 };
 
-export const tsValidateValue = <T>(values: T[], mandatory = true): Validator<any> => {
+export const tsValidateValue = <T>(values: T[] | ReadonlyArray<T>, mandatory = true): Validator<any> => {
 	return [tsValidateExists(mandatory),
 		(input?: T) => {
 			if (values.includes(input!))
