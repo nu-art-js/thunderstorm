@@ -28,7 +28,7 @@ type State_ItemsEditorV3<Proto extends DBProto<any>> = {
 export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 	ListRenderer?: React.ComponentType<Props_ListRendererV3<Proto>>
 	EditorRenderer: React.ComponentType<EditableRef<Proto['uiType']>>
-	Filter: React.ComponentType<Props_Filter<Proto>>
+	Filter?: React.ComponentType<Props_Filter<Proto>>
 	module: ModuleFE_v3_BaseApi<Proto>,
 	route: TS_Route<{ _id: string }>,
 	sort: ItemEditor_SortType<Proto>,

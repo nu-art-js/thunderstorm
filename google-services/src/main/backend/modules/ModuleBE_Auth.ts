@@ -14,7 +14,7 @@ type AuthModuleConfig = {
 		[k: string]: JWT_Input | string
 	}
 }
-type Version = 'v1' | 'v2'
+type Version = 'v1' | 'v2' | 'v3' | 'v4'
 export type JWT_Input = JWTInput
 
 export class ModuleBE_Auth_Class

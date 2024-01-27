@@ -29,9 +29,12 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
 	item = (): Partial<ItemType> => this.state.editable.item;
 }
 
+
 export abstract class TS_EditableItemComponentV3<Proto extends DBProto<any>, P = {}, S = {},
-	Props extends P & EditableRef<Proto['uiType']> = P & EditableRef<Proto['uiType']>,
-	State extends S & EditableRef<Proto['uiType']> = S & EditableRef<Proto['uiType']>>
+	UI_Type extends Proto['uiType'] = Proto['uiType'],
+	Props extends P & EditableRef<UI_Type> = P & EditableRef<UI_Type>,
+	State extends S & EditableRef<UI_Type> = S & EditableRef<UI_Type>,
+>
 	extends ComponentSync<Props, State> {
 
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
@@ -47,5 +50,5 @@ export abstract class TS_EditableItemComponentV3<Proto extends DBProto<any>, P =
 		);
 	}
 
-	item = (): Partial<Proto['uiType']> => this.state.editable.item;
+	item = (): Partial<UI_Type> => this.state.editable.item;
 }
