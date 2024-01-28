@@ -45,7 +45,7 @@ export class PermissionGroupsEditor
 		}
 		if (params[0] === EventType_Delete)
 			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
-	};
+	}
 
 	//######################### Render #########################
 
