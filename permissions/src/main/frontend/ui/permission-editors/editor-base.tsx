@@ -43,11 +43,11 @@ export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorB
 			.setAutoSave(!!instance._id)
 			.setDebounceTimeout(100)
 			.setOnChanged(async editable => this.setState({editedItem: editable as EditableDBItemV3<T>, selectedItemId: editable.item._id}));
-	};
+	}
 
 	protected getNewInstance(): Partial<T['dbType']> {
 		return {};
-	};
+	}
 
 	private selectItem = (itemId?: string) => {
 		if (!itemId)
