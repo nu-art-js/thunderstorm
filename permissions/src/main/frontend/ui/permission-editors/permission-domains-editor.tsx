@@ -91,7 +91,7 @@ export class PermissionDomainsEditor
 		return {
 			domainId: this.state.editedItem?.item._id,
 		} as PreDB<DB_PermissionAccessLevel>;
-	};
+	}
 
 	//######################### Render #########################
 

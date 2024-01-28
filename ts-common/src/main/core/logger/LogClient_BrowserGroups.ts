@@ -55,7 +55,9 @@ class LogClient_BrowserGroups_Class
 	};
 
 	private logGroup = (logLevel: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]) => {
-		console.group(
+		// group & groupCollapsed print the same thing, only groupCollapsed is collapsed by default.
+		// console.group(
+		console.groupCollapsed(
 			prefix,
 			this.getLogLevelStyling(logLevel, bold),
 			this.getTimestampStyling(bold, logLevel),
