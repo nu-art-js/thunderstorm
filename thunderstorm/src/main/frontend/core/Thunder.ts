@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {BeLogged, ImplementationMissingException, LogClient_Browser, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
+import {BeLogged, ImplementationMissingException, LogClient_BrowserGroups, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
 import {ThunderDispatcher} from './thunder-dispatcher';
 
 import '../styles/impl/basic.scss';
@@ -49,7 +49,7 @@ export class Thunder
 	}
 
 	init() {
-		BeLogged.addClient(LogClient_Browser);
+		BeLogged.addClient(LogClient_BrowserGroups);
 
 		super.init();
 
