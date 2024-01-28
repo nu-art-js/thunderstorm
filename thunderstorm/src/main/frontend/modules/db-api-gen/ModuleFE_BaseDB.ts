@@ -315,19 +315,13 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		return this.lastSync.get(0);
 	}
 
+	setLastUpdated(lastUpdated: number) {
+		this.lastSync.set(lastUpdated);
+	}
+
 	async syncIndexDb(toUpdate: DBType[], toDelete: DB_Object[] = []) {
 		await this.db.upsertAll(toUpdate);
 		await this.db.deleteAll(toDelete as DBType[]);
-
-		let latest = -1;
-		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-
-		// FIXME: this breaks when deleting __deletedDocs from the db manually.
-		//  Maybe the latest timestamp should be the actual time the sync happens instead of aligning with the latest changed item?
-
-		if (latest !== -1)
-			this.lastSync.set(latest);
 	}
 }
 

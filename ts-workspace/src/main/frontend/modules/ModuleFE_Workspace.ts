@@ -83,6 +83,8 @@ export class ModuleFE_Workspace_Class
 		if (accountId.length < 1)
 			throw new MUSTNeverHappenException('Trying to upsert a workspace, with no account id!');
 
+		this.logInfo('SET WORKSPACE KEY', `KEY: ${key}`);
+
 		this.workspacesToUpsert[key] = {key: key, accountId: accountId, config: config};
 
 		clearTimeout(this.upsertRunnable);
