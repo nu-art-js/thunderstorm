@@ -30,8 +30,7 @@ import {
 	Module,
 	reduceToMap,
 	RuntimeModules,
-	Second,
-	TypedMap
+	Second
 } from '@nu-art/ts-common';
 import {apiWithBody} from '../../core/typed-api';
 import {
@@ -53,7 +52,10 @@ import {ApiDefCaller, BodyApi, DBModuleType, HttpMethod} from '../../../shared';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {
+	ModuleFE_FirebaseListener,
+	RefListenerFE
+} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
@@ -67,6 +69,11 @@ const Default_SyncManagerNodePath = '/state/ModuleBE_SyncManager/syncData'; // H
 
 const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleModulesUpdated, '__onPermissibleModulesUpdated'>('__onPermissibleModulesUpdated');
 
+type QueuedModuleData = {
+	module: ModuleFE_BaseApi<any>
+	lastUpdated: number
+}
+
 export class ModuleFE_SyncManager_Class
 	extends Module
 	implements ApiDefCaller<ApiStruct_SyncManager> {
@@ -75,7 +82,6 @@ export class ModuleFE_SyncManager_Class
 
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
 	private syncedModules: SyncDbData[] = [];
-	private remoteSyncData: TypedMap<number> = {};
 	private syncFirebaseListener?: RefListenerFE<SyncDataFirebaseState>;
 	private debounceSync?: () => void;
 	private outOfSyncCollections: Set<string> = new Set<string>();
@@ -85,11 +91,11 @@ export class ModuleFE_SyncManager_Class
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
-		this.syncQueue = new QueueV2<ModuleFE_BaseApi<any>>('Sync Queue', this.performFullSync)
+		this.syncQueue = new QueueV2<QueuedModuleData>('Sync Queue', this.performFullSync)
 			.setParallelCount(6)
-			.setSorter((module) => {
+			.setSorter((data) => {
 				const priorityModule = filterDuplicates(flatArray(dispatch_QueryAwaitedModules.dispatchUI()));
-				return priorityModule.includes(module) ? 0 : 1;
+				return priorityModule.includes(data.module) ? 0 : 1;
 			})
 			.setFilter(queueItems => filterDuplicates(queueItems, item => item.item));
 	}
@@ -132,6 +138,7 @@ export class ModuleFE_SyncManager_Class
 
 		// remoteSyncData is the data we received from the firebase listener, that just detected a change.
 		const rtdbSyncData = snapshot.val() as SyncDataFirebaseState | undefined;
+
 		if (!rtdbSyncData)
 			return await this.debounceSyncImpl();
 
@@ -139,8 +146,8 @@ export class ModuleFE_SyncManager_Class
 		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbName, data => ({lastUpdated: data.lastUpdated}));
 		(_keys(rtdbSyncData) as string[]).forEach((dbName) => {
 			// this Should be taken care of by the below condition because both local and remote will return last updated 0
-			if (!exists(this.remoteSyncData[dbName]))
-				return;
+			// if (!exists(this.remoteSyncData[dbName]))
+			// 	return;
 
 			if (!localSyncData[dbName])
 				return;
@@ -219,7 +226,7 @@ export class ModuleFE_SyncManager_Class
 			if (module.IDB.getLastSync() === moduleToUpdate.lastUpdated)
 				return this.logWarning(`Avoiding unnecessary delta sync on ${module.dbDef.dbName}`);
 
-			await this.performDeltaSync(module, moduleToUpdate.items);
+			await this.performDeltaSync(module, moduleToUpdate.items, moduleToUpdate.lastUpdated);
 		}
 
 		// Perform full sync on all relevant modules
@@ -234,10 +241,9 @@ export class ModuleFE_SyncManager_Class
 			if (module.IDB.getLastSync() === moduleToSync.lastUpdated)
 				return this.logWarning(`Avoiding unnecessary full sync on ${module.dbDef.dbName}`);
 
-			this.syncQueue.addItem(module);
+			this.syncQueue.addItem({module, lastUpdated: moduleToSync.lastUpdated});
 		});
 
-		this.syncedModules = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
 		if (this.syncedModules.length !== response.modules.length)
 			dispatch_OnPermissibleModulesUpdated.dispatchUI();
 	};
@@ -250,7 +256,8 @@ export class ModuleFE_SyncManager_Class
 		module.setDataStatus(DataStatus.ContainsData);
 	};
 
-	performFullSync = async (module: ModuleFE_BaseApi<any>) => {
+	performFullSync = async (data: QueuedModuleData) => {
+		const module = data.module;
 		try {
 			this.logDebug(`Full sync for: '${module.dbDef.dbName}'`);
 			// module.logVerbose(`Firing event (DataStatus.NoData): ${module.dbDef.dbName}`);
@@ -271,6 +278,7 @@ export class ModuleFE_SyncManager_Class
 
 			module.logVerbose(`Updating IDB: ${module.dbDef.dbName}`);
 			await module.IDB.syncIndexDb(allItems);
+			module.IDB.setLastUpdated(data.lastUpdated);
 			module.logVerbose(`Updating Cache: ${module.dbDef.dbName}`);
 			await module.cache.load();
 
@@ -278,7 +286,8 @@ export class ModuleFE_SyncManager_Class
 			module.setDataStatus(DataStatus.ContainsData);
 
 			module.logVerbose(`Firing event (EventType_Query): ${module.dbDef.dbName}`);
-			module.dispatchMulti(EventType_Query, allItems);
+			if (allItems.length)
+				module.dispatchMulti(EventType_Query, allItems);
 
 			this.logDebug(`Full Sync Completed: ${module.dbDef.dbName}`);
 		} catch (e: any) {
@@ -287,14 +296,18 @@ export class ModuleFE_SyncManager_Class
 		}
 	};
 
-	performDeltaSync = async <T extends DB_Object>(module: ModuleFE_BaseApi<T>, syncData: Response_DBSync<T>) => {
+	performDeltaSync = async <T extends DB_Object>(module: ModuleFE_BaseApi<T>, syncData: Response_DBSync<T>, lastUpdated: number) => {
 		this.logInfo(`Delta sync for: '${module.dbDef.dbName}'`);
 
 		module.logVerbose(`Firing event (DataStatus.UpdatingData): ${module.dbDef.dbName}`);
 		module.setDataStatus(DataStatus.UpdatingData);
+		if (syncData.toUpdate.length)
+			await module.onEntriesUpdated(syncData.toUpdate);
 
-		await module.onEntriesUpdated(syncData.toUpdate ?? []);
-		await module.onEntriesDeleted((syncData.toDelete ?? []) as T[]);
+		if (syncData.toDelete.length)
+			await module.onEntriesDeleted((syncData.toDelete) as T[]);
+
+		module.IDB.setLastUpdated(lastUpdated);
 
 		module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
 		module.setDataStatus(DataStatus.ContainsData);
