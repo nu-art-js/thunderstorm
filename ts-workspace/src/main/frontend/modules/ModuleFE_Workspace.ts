@@ -16,36 +16,23 @@
  * limitations under the License.
  */
 
-import {ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {_values, BadImplementationException, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
+import {StorageKey} from '@nu-art/thunderstorm/frontend';
+import {_values, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
 import {PanelConfig} from '..';
-import {DBDef_Workspaces} from '../../shared/db-def';
-import {DB_Workspace} from '../../shared/types';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {DBApiFEConfig} from '@nu-art/thunderstorm/frontend/core/db-api-gen/db-def';
+import {Workspace} from '../../shared/types';
 
 
-export interface OnWorkspaceUpdated {
-	__onWorkspaceUpdated: (...params: ApiCallerEventType<DB_Workspace>) => void;
-}
-
-export const dispatch_onWorkspaceUpdated = new ThunderDispatcher<OnWorkspaceUpdated, '__onWorkspaceUpdated'>('__onWorkspaceUpdated', true);
-
-type Config = DBApiFEConfig<DB_Workspace, 'key' | 'accountId'> & {
+type Config = {
 	defaultConfigs: TypedMap<PanelConfig>,
 	accountResolver: () => string,
 };
 
 export class ModuleFE_Workspace_Class
-	extends ModuleFE_BaseApi<DB_Workspace, 'key' | 'accountId', Config> {
+	extends Module<Config> {
 
 	private workspacesToUpsert: TypedMap<any> = {};
 	private upsertRunnable: any;
 	private accountResolver!: () => string;
-
-	constructor() {
-		super(DBDef_Workspaces, dispatch_onWorkspaceUpdated);
-	}
 
 	setAccountResolver(resolver: () => string) {
 		this.accountResolver = resolver;
@@ -55,9 +42,9 @@ export class ModuleFE_Workspace_Class
 		return this.accountResolver();
 	};
 
-	private assertLoggedInUser = () => {
+	private assertLoggedInUser = (logActionString: 'get' | 'set' = 'get') => {
 		if (!this.getCurrentAccountId()) {
-			throw new BadImplementationException('Trying to get workspace while not having user logged in, fix this');
+			throw new BadImplementationException(`Trying to ${logActionString} workspace while not having user logged in, fix this`);
 		}
 	};
 
@@ -71,35 +58,34 @@ export class ModuleFE_Workspace_Class
 		return config;
 	};
 
-	private getWorkspaceByKey = (key: string): DB_Workspace | undefined => {
+	private getWorkspaceByKey = (key: string): Workspace | undefined => {
 		this.assertLoggedInUser();
-		return this.cache.find(workspace => workspace.key === key && workspace.accountId === this.getCurrentAccountId());
+
+		return this.getStorageKeyForWorkspace(key).get(undefined);
 	};
 
+	private getStorageKeyForWorkspace = (key: string): StorageKey<Workspace> => new StorageKey<Workspace>(`workspace_key__${key}`);
+
 	public setWorkspaceByKey = async (key: string, config: PanelConfig<any>) => {
-		let accountId = this.getCurrentAccountId();
-		if (!accountId)
-			accountId = (this.getCurrentAccountId());
-		if (accountId.length < 1)
-			throw new MUSTNeverHappenException('Trying to upsert a workspace, with no account id!');
+		this.assertLoggedInUser('set');
 
-		this.logInfo('SET WORKSPACE KEY', `KEY: ${key}`);
 
-		this.workspacesToUpsert[key] = {key: key, accountId: accountId, config: config};
+		this.workspacesToUpsert[key] = {key: key, config: config};
 
 		clearTimeout(this.upsertRunnable);
 
 		this.upsertRunnable = setTimeout(async () => {
 			const values = _values(this.workspacesToUpsert);
-			await this.v1.upsertAll(values).executeSync();
+			values.forEach(workspace => {
+				this.logInfo('SET WORKSPACE KEY', `KEY: ${workspace.key}`);
+				this.getStorageKeyForWorkspace(workspace.key).set(workspace);
+			});
 			this.workspacesToUpsert = {};
 		}, 500);
 	};
 
 	public deleteWorkspaceByKey = async (key: string) => {
-		const toDelete = this.getWorkspaceByKey(key);
-		if (toDelete)
-			return await this.v1.delete(toDelete).executeSync();
+		this.getStorageKeyForWorkspace(key).delete();
 	};
 }
 
