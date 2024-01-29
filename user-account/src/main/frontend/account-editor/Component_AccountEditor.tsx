@@ -156,7 +156,7 @@ export class Component_AccountEditor
 			<TS_Input type="text" value={this.state.tokenLabel} onBlur={tokenLabel => this.setState({tokenLabel})}/>
 			<TS_BusyButton onClick={async () => {
 				try {
-					const token = await ModuleFE_Account.vv1.createToken({accountId: this.state.user?._id!, ttl: this.state.tokenTTL, label: this.state.tokenLabel})
+					const token = await ModuleFE_Account.vv1.createToken({accountId: this.state.user!._id, ttl: this.state.tokenTTL, label: this.state.tokenLabel})
 						.executeSync();
 					await ModuleFE_Thunderstorm.copyToClipboard(token.token);
 					ModuleFE_Toaster.toastSuccess('Token copied to clipboard');

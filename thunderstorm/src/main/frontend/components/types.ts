@@ -11,7 +11,7 @@ export type ComponentProps_Error = {
 	}
 }
 
-type ResolveEditableErrorParams<T extends any> = {
+type ResolveEditableErrorParams<T> = {
 	editable: EditableItem<T>,
 	prop: keyof T,
 
@@ -27,7 +27,7 @@ export const convertToHTMLDataAttributes = (attributes?: TypedMap<string>, prefi
 	return reduceToMap(_keys(attributes), key => `data-${finalImpl}${key}`, key => attributes[key]);
 };
 
-export const resolveEditableError = <T extends any>(errorHandler: ResolveEditableErrorParams<T>) => {
+export const resolveEditableError = <T>(errorHandler: ResolveEditableErrorParams<T>) => {
 	if (errorHandler.ignoreError)
 		return;
 

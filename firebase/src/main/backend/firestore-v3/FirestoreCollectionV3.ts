@@ -454,7 +454,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		return this.wrapper.runTransaction<ReturnType>(processor, transaction);
 	};
 
-	runTransactionInChunks = async <T extends any = any, R extends any = any>(items: T[], processor: (chunk: typeof items, transaction: Transaction) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
+	runTransactionInChunks = async <T = any, R = any>(items: T[], processor: (chunk: typeof items, transaction: Transaction) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
 		return batchActionParallel(items, chunkSize, (chunk) => this.runTransaction(t => processor(chunk, t)));
 	};
 

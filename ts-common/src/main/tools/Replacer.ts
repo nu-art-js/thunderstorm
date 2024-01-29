@@ -77,7 +77,7 @@ export class Replacer
 		return matches?.reduce((toRet, match) => {
 			let param = match;
 			while (Replacer.Regexp_param.test(param))
-				param = param.match(Replacer.Regexp_param)?.[1]!;
+				param = param.match(Replacer.Regexp_param)![1];
 
 			if (param === undefined)
 				return toRet;

@@ -65,14 +65,14 @@ export const voidFunction = Object.freeze(async () => {
 export const functionThatReturnsFalse = Object.freeze(() => false);
 export const functionThatReturnsTrue = Object.freeze(() => true);
 
-export const resolveContent = <T extends any = any, P extends any[] = any[]>(content: ResolvableContent<T, P>, ...param: P) => typeof content === 'function' ? (content as (param: P) => T)(param) : content as T;
+export const resolveContent = <T = any, P extends any[] = any[]>(content: ResolvableContent<T, P>, ...param: P) => typeof content === 'function' ? (content as (param: P) => T)(param) : content as T;
 export const resolveFunctionOrValue = resolveContent;
 
-export function exists<T extends any = any>(item: T | undefined | null): item is T {
+export function exists<T = any>(item: T | undefined | null): item is T {
 	return item !== undefined && item !== null;
 }
 
-export function freeze<T extends any = any>(item: T): Readonly<T> {
+export function freeze<T = any>(item: T): Readonly<T> {
 	return Object.freeze(item);
 }
 
