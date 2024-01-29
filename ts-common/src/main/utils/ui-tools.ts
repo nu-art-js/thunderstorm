@@ -1,15 +1,33 @@
 /**
+ * Creates a debounced function that delays invoking the provided function until after a specified
+ * timeout has elapsed since the last time the debounced function was called. It also ensures that
+ * the function is called at least once after a maximum timeout, even if the debounced function
+ * keeps being called.
  *
- * Creates a debounce function with a debounce and default timers
+ * @param func - The function to debounce. It can be a regular function or an asynchronous function.
+ * @param timeout - The number of milliseconds to delay (default 500ms).
+ * @param maxTimeout - The maximum time to wait before invoking the function, regardless of
+ *                     continuous calls to the debounced function (default 1000ms).
  *
- * @remarks
- * This method is a part of ui-utils in ts-common
+ * @returns A new function that, when called, will delay the invocation of the original function
+ *          until the specified timeout has elapsed since the last call. If the returned function
+ *          is continually called, it will still invoke the original function after the maxTimeout
+ *          has elapsed.
  *
- * @param func The callback function to be called when the debounce fired.
- * @param timeout The debounce timer
- * @param defaultCallback The default timer for the default event to be fired.
+ * @template Args - The type of the arguments that the provided function accepts.
+ *
+ * @example
+ * const debouncedFunc = debounce((arg1, arg2) => {
+ *   console.log(arg1, arg2);
+ * }, 500, 1000);
+ *
+ * // Call the function repeatedly
+ * debouncedFunc("hello", "world");
+ * debouncedFunc("foo", "bar");
+ * // The original function will be invoked after 500ms since the last call,
+ * // or at least once after 1000ms, regardless of continuous calls.
  */
-export const debounce = <Args extends any[]>(func: (...params: Args) => any | Promise<any>, timeout: number = 500, defaultCallback: number = 1000) => {
+export const debounce = <Args extends any[]>(func: (...params: Args) => any | Promise<any>, timeout: number = 500, maxTimeout: number = 1000) => {
 	let timer: NodeJS.Timeout;
 	let defaultTimer: NodeJS.Timeout | undefined;
 	return (...args: Args) => {
@@ -23,7 +41,7 @@ export const debounce = <Args extends any[]>(func: (...params: Args) => any | Pr
 			defaultTimer = setTimeout(() => {
 				func(...args);
 				defaultTimer = undefined;
-			}, defaultCallback);
+			}, maxTimeout);
 		}
 	};
 };

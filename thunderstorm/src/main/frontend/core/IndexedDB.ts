@@ -78,6 +78,10 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		};
 	}
 
+	async exists() {
+		return (await window.indexedDB.databases()).find(db => db.name === this.config.name);
+	}
+
 	async open(): Promise<IDBDatabase> {
 		return new Promise((resolve, reject) => {
 			if (!IDBAPI)

@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_UpgradeCollection} from '../modules/upgrade-collection/ModuleBE_UpgradeCollection';
-import {ModuleBE_v2_SyncManager} from '../modules/sync-manager/ModuleBE_v2_SyncManager';
+import {ModuleBE_SyncManager} from '../modules/sync-manager/ModuleBE_SyncManager';
 import {ModuleBE_APIs} from '../modules/ModuleBE_APIs';
 import {ModuleBE_v2_Backup} from '../modules/backup/ModuleBE_v2_Backup';
 import {ModuleBE_v2_SyncEnv} from '../modules/sync-env/ModuleBE_v2_SyncEnv';
@@ -15,7 +15,7 @@ export const ModuleBE_AppConfigApi = createApisForDBModuleV2(ModuleBE_AppConfig)
 
 export const ModulePack_ThunderstormBE: Module[] = [
 	ModuleBE_ServerInfo,
-	ModuleBE_v2_SyncManager,
+	ModuleBE_SyncManager,
 	ModuleBE_AppConfig, ModuleBE_AppConfigApi,
 	ModuleBE_APIs,
 	ModuleBE_v2_Backup,
