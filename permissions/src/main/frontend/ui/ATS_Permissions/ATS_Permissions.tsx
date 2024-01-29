@@ -5,7 +5,6 @@ import {
 	genericNotificationAction,
 	LL_H_C,
 	LL_V_L,
-	ModuleFE_BaseApi,
 	Tab,
 	TS_AppTools,
 	TS_Button,
@@ -13,15 +12,19 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
-import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {timeout} from '@nu-art/ts-common';
-import {ModulePackFE_Permissions} from '../../core/module-pack';
 import {SessionKey_StrictMode_FE} from '../../consts';
 import {PermissionProjectsEditor} from '../permission-editors/permission-projects-editor';
 import {PermissionDomainsEditor} from '../permission-editors/permission-domains-editor';
 import {PermissionGroupsEditor} from '../permission-editors/permission-groups-editor';
 import {PermissionUsersEditor} from '../permission-editors/permission-users-editor';
+import {ModuleFE_PermissionAccessLevel} from '../../../_entity/permission-access-level/frontend';
+import {ModuleFE_PermissionAPI} from '../../../_entity/permission-api/frontend';
+import {ModuleFE_PermissionProject} from '../../../_entity/permission-project/frontend';
+import {ModuleFE_PermissionDomain} from '../../../_entity/permission-domain/frontend';
+import {ModuleFE_PermissionGroup} from '../../../_entity/permission-group/frontend';
+import {ModuleFE_PermissionUser} from '../../../_entity/permission-user/frontend';
 
 
 export class ATS_Permissions
@@ -32,7 +35,14 @@ export class ATS_Permissions
 		name: 'Permissions',
 		renderer: this,
 		group: 'Permissions',
-		modulesToAwait: ModulePackFE_Permissions as ModuleFE_BaseApi<any>[],
+		modulesToAwait: [
+			ModuleFE_PermissionAccessLevel,
+			ModuleFE_PermissionAPI,
+			ModuleFE_PermissionProject,
+			ModuleFE_PermissionDomain,
+			ModuleFE_PermissionGroup,
+			ModuleFE_PermissionUser,
+		],
 	};
 
 	//######################### Logic #########################
@@ -43,7 +53,6 @@ export class ATS_Permissions
 			await ModuleFE_PermissionsAssert.v1.toggleStrictMode({}).executeSync();
 			await timeout(3000);
 			await ModuleFE_Account.vv1.refreshSession({}).executeSync();
-			await ModuleFE_SyncManagerV2.sync();
 		}, 'Toggling Strict Mode');
 
 		this.setState({creatingPermissions: false});
@@ -58,7 +67,8 @@ export class ATS_Permissions
 					<TS_Button
 						disabled={this.state.creatingPermissions}
 						className={'item-list__add-button'}
-						onClick={this.toggleStrictMode}>{SessionKey_StrictMode_FE.get() ? 'Disable' : 'Enable'} Strict Mode</TS_Button>
+						onClick={this.toggleStrictMode}>{SessionKey_StrictMode_FE.get() ? 'Disable' : 'Enable'} Strict
+						Mode</TS_Button>
 				</LL_H_C>
 			</LL_H_C>
 			{this.renderTabs()}

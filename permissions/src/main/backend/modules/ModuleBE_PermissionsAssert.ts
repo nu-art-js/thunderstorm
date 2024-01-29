@@ -39,7 +39,7 @@ import {
 	ModuleBE_BaseApiV3_Class,
 	ModuleBE_BaseDBV2,
 	ModuleBE_BaseDBV3,
-	ModuleBE_v2_SyncManager,
+	ModuleBE_SyncManager,
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm/backend';
 import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
@@ -132,11 +132,6 @@ export class ModuleBE_PermissionsAssert_Class
 		await action(projectId, customFields);
 	};
 
-	// constructor() {
-	// 	super();
-	// 	this.setMinLevel(LogLevel.Debug);
-	// }
-
 	async __collectSessionData(): Promise<SessionData_StrictMode> {
 		return {key: 'strictMode', value: this.isStrictMode()};
 	}
@@ -145,7 +140,7 @@ export class ModuleBE_PermissionsAssert_Class
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
-		ModuleBE_v2_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
+		ModuleBE_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
 			// return dbModules;
 			//Filter out any module we don't have permission to sync
 			const userPermissions = MemKey_UserPermissions.get();
@@ -160,7 +155,7 @@ export class ModuleBE_PermissionsAssert_Class
 					return undefined;
 				}
 
-				return mapDbNameToApiModule.apiDef?.['v1']?.['sync'].path;
+				return mapDbNameToApiModule.apiDef?.['v1']?.['query'].path;
 			});
 			// this.logWarning(`Paths(${paths.length}):`, paths);
 			const _allApis = await ModuleBE_PermissionAPIDB.query.where({});

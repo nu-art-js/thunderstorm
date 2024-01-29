@@ -1,6 +1,24 @@
 import {FirebaseApp, initializeApp} from 'firebase/app';
-import {connectDatabaseEmulator, Database, DataSnapshot, get, getDatabase, onValue, query, ref, Unsubscribe} from 'firebase/database';
-import {__stringify, _keys, exists, filterInstances, ImplementationMissingException, Logger, Module} from '@nu-art/ts-common';
+import {
+	connectDatabaseEmulator,
+	Database,
+	DataSnapshot,
+	get,
+	getDatabase,
+	onValue,
+	query,
+	ref,
+	Unsubscribe
+} from 'firebase/database';
+import {
+	__stringify,
+	_keys,
+	exists,
+	filterInstances,
+	ImplementationMissingException,
+	Logger,
+	Module
+} from '@nu-art/ts-common';
 import 'firebase/database';
 
 
@@ -16,7 +34,9 @@ type FirebaseConfig = {
 }
 type EmulatorConfig = {
 	hostname: string;
-	port: number;
+	port: number; //http, normal/default port.
+	ssl?: boolean;
+	httpsPort?: number; //this is required only for ssl, this is the port in which the db will be available on proxy https.
 }
 
 type FirebaseListenerConfig = {
@@ -38,7 +58,7 @@ export class ModuleFE_FirebaseListener_Class
 
 	protected init() {
 		if (!this.config.firebaseConfig)
-			throw new ImplementationMissingException('Could not initialize firebase listener, Did not provide FE firebase config!');
+			throw new ImplementationMissingException('Could not initialize firebase listener, did not provide FE firebase config!');
 
 		const configObjectKeys: FirebaseConfigKey[] = _keys(this.config.firebaseConfig);
 		const missingKeys = filterInstances(MandatoryFirebaseConfigKeys.map(key => configObjectKeys.includes(key) ? undefined : key));
@@ -54,15 +74,17 @@ export class ModuleFE_FirebaseListener_Class
 
 		const _database = getDatabase(this.app);
 		const emulatorConfig = this.config.emulatorConfig;
-		if (exists(emulatorConfig))
+		if (exists(emulatorConfig)) {
 			connectDatabaseEmulator(_database, emulatorConfig.hostname, emulatorConfig.port);
+		}
 
 		return this.database = _database;
 	}
 
 	createListener(nodePath: string): RefListenerFE {
 		this.logInfo(`Creating listener for firebase rtdb node ${nodePath}`);
-		return new RefListenerFE(nodePath);
+		const refListenerFE = new RefListenerFE(nodePath);
+		return refListenerFE;
 	}
 }
 
@@ -80,6 +102,11 @@ export class RefListenerFE<Value = any>
 		this.nodePath = nodePath;
 	}
 
+	private getQuery() {
+		const db = ModuleFE_FirebaseListener.getDatabase();
+		return query(ref(db, this.nodePath));
+	}
+
 	/**
 	 * Receives initial value and listens henceforth.
 	 */
@@ -89,34 +116,31 @@ export class RefListenerFE<Value = any>
 			this.stopListening();
 		}
 		this.logInfo('Starting to listen...');
-		const db = ModuleFE_FirebaseListener.getDatabase();
-		this.logInfo(`db!`);
-
-		const dbRef = ref(db, this.nodePath);
-		this.logInfo(`dbRef!`);
-
-		const refQuery = query(dbRef);
-		this.logInfo(`Created listening refQuery...`);
-
-		this.toUnsubscribeFunction = onValue(refQuery, (snapshot) => {
-			onValueChangedListener(snapshot);
-		});
+		const refQuery = this.getQuery();
+		try {
+			this.toUnsubscribeFunction = onValue(refQuery, (snapshot) => {
+				onValueChangedListener(snapshot);
+			});
+		} catch (e: any) {
+			this.logWarning(`Failed listening on node data, check if your rtdb rules permit reading this node '${this.nodePath}'`);
+			throw e;
+		}
 		this.logInfo(`Listening on '${this.nodePath}'`);
 
 		return this;
-	}
-
-	private getQuery() {
-		const db = ModuleFE_FirebaseListener.getDatabase();
-		return query(ref(db, this.nodePath));
 	}
 
 	/**
 	 * One time get the value.
 	 */
 	async get(): Promise<Value> {
-		const dataSnapshot = await get(this.getQuery());
-		return dataSnapshot.val();
+		try {
+			const dataSnapshot = await get(this.getQuery());
+			return dataSnapshot.val();
+		} catch (e: any) {
+			this.logWarning(`Failed getting node data, check if your rtdb rules permit reading this node '${this.nodePath}'`);
+			throw e;
+		}
 	}
 
 	stopListening() {
