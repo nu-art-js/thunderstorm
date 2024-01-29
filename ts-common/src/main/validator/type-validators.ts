@@ -31,7 +31,7 @@ export const tsValidateDynamicObject = <T extends object>(valuesValidator: Valid
 		}];
 };
 
-export const tsValidateUnion = <T extends any>(validators: ValidatorTypeResolver<T>[], mandatory = true) => {
+export const tsValidateUnion = <T>(validators: ValidatorTypeResolver<T>[], mandatory = true) => {
 	return [tsValidateExists(mandatory),
 		(input?: any) => {
 			const results: InvalidResultArray<T>[] = [];
@@ -47,14 +47,14 @@ export const tsValidateUnion = <T extends any>(validators: ValidatorTypeResolver
 		}];
 };
 
-export const tsValidateCustom = <T extends any>(processor: (input?: T, parentInput?: any) => InvalidResult<T>, mandatory = true): Validator<T>[] => {
+export const tsValidateCustom = <T>(processor: (input?: T, parentInput?: any) => InvalidResult<T>, mandatory = true): Validator<T>[] => {
 	return [tsValidateExists(mandatory), processor];
 };
 
 const typeFunc = (type: any) => typeof type;
 type types = ReturnType<typeof typeFunc>;
 type validatorObject<T> = { [k in types]?: ValidatorTypeResolver<T> }
-export const tsValidateUnionV3 = <T extends any>(validatorObject: validatorObject<T>, mandatory = true) => {
+export const tsValidateUnionV3 = <T>(validatorObject: validatorObject<T>, mandatory = true) => {
 	return [tsValidateExists(mandatory),
 		(input?: T) => {
 			const _type = typeof input;
@@ -220,7 +220,7 @@ export const tsValidateNonMandatoryObject = <T extends object>(validator: Valida
 
 export const tsValidateOptionalObject = tsValidateNonMandatoryObject;
 
-export const tsValidator_valueByKey = <T extends any>(validatorObject: {
+export const tsValidator_valueByKey = <T>(validatorObject: {
 	[k: string]: ValidatorTypeResolver<any>
 }, prop = 'type') => {
 	return tsValidateCustom((value?, parentObject?) => {

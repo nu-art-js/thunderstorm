@@ -66,7 +66,7 @@ export type State_SmartComponent = {
  * Any "on{Item}Updated" function should NOT be an arrow function, as it can't be re-binded in the constructor,
  * thus obstructing the SmartComponent ability to listen to sync events, causing it to load forever.
  */
-export abstract class SmartComponent<P extends any = {}, S extends any = {},
+export abstract class SmartComponent<P = {}, S = {},
 	Props extends Props_SmartComponent & P = Props_SmartComponent & P,
 	State extends State_SmartComponent & S = State_SmartComponent & S>
 	extends BaseComponent<Props, State>

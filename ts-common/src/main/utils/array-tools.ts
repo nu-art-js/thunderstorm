@@ -114,7 +114,7 @@ export function findDuplicates<T>(array1: T[], array2: T[]): T[] {
 	return array1.filter(val => array2.indexOf(val) !== -1);
 }
 
-const defaultMapper: <T extends any>(item: T) => any = (item) => item;
+const defaultMapper: <T>(item: T) => any = (item) => item;
 
 /**
  remove all duplicates in array
@@ -198,7 +198,7 @@ export function sortArray<T>(array: T[], map: keyof T | (keyof T)[] | ((item: T)
 /**
  * "splits" array into given size of chunks and then does "action" on chunk and return to array of actions on chunks +-
  * */
-export async function batchAction<T extends any = any, R extends any = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
+export async function batchAction<T = any, R = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
 	const result: R[] = [];
 	for (let i = 0, j = arr.length; i < j; i += chunk) {
 		const items: R[] | R = await action(arr.slice(i, i + chunk));
@@ -237,7 +237,7 @@ export async function Promise_all_sequentially<T>(promises: Array<() => Promise<
 	return results;
 }
 
-export async function batchActionParallel<T extends any = any, R extends any = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
+export async function batchActionParallel<T = any, R = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
 	const promises: Promise<R>[] = [];
 	for (let i = 0, j = arr.length; i < j; i += chunk) {
 		addItemToArray(promises, action(arr.slice(i, i + chunk)));
@@ -278,7 +278,7 @@ export function filterFlatInstances<T extends any[], K = NestedArrayType<T>>(arr
 	return filterInstances(flatArray(arr, result)) as Exclude<K, undefined>[];
 }
 
-export function groupArrayBy<T extends any, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): {
+export function groupArrayBy<T, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): {
 	key: K,
 	values: T[]
 }[] {
@@ -291,7 +291,7 @@ export function groupArrayBy<T extends any, K extends string | number>(arr: T[],
 	return _keys(map).map(key => ({key, values: map[key]}));
 }
 
-export function toggleInArray<T extends any = string, K extends any = (T extends object ? keyof T : T)>(arr: T[], item: T, mapper: (item: T) => K = item => item as unknown as K) {
+export function toggleInArray<T = string, K = (T extends object ? keyof T : T)>(arr: T[], item: T, mapper: (item: T) => K = item => item as unknown as K) {
 	const index = arr.findIndex(_item => mapper(_item) === mapper(item));
 	if (index !== -1)
 		removeFromArrayByIndex(arr, index);
@@ -299,30 +299,30 @@ export function toggleInArray<T extends any = string, K extends any = (T extends
 		arr.push(item);
 }
 
-export function generateArray<T extends any = number>(length: number, mapper: (index: number) => T = i => i as T) {
+export function generateArray<T = number>(length: number, mapper: (index: number) => T = i => i as T) {
 	return Array.from({length}).map((e, i) => mapper(i));
 }
 
-export function asArray<T extends any>(toBeArray: T | T[]): T[] {
+export function asArray<T>(toBeArray: T | T[]): T[] {
 	return Array.isArray(toBeArray) ? toBeArray : [toBeArray];
 }
 
-export function asOptionalArray<T extends any>(toBeArray?: T | T[]): T[] | undefined {
+export function asOptionalArray<T>(toBeArray?: T | T[]): T[] | undefined {
 	if (!exists(toBeArray))
 		return undefined;
 
 	return asArray(toBeArray);
 }
 
-export function lastElement<T extends any>(array: T[] | undefined) {
+export function lastElement<T>(array: T[] | undefined) {
 	return array?.[array?.length - 1];
 }
 
-export function firstElement<T extends any>(array?: T[]) {
+export function firstElement<T>(array?: T[]) {
 	return array?.[1];
 }
 
-export function arrayIncludesAny<T extends any>(arr1: T[], arr2: T[]): boolean {
+export function arrayIncludesAny<T>(arr1: T[], arr2: T[]): boolean {
 	return arr1.some(item => arr2.includes(item));
 }
 
@@ -331,6 +331,6 @@ export function arrayIncludesAny<T extends any>(arr1: T[], arr2: T[]): boolean {
  * @param arr1
  * @param arr2
  */
-export function arrayIncludesAll<T extends any>(arr1: T[], arr2: T[]): boolean {
+export function arrayIncludesAll<T>(arr1: T[], arr2: T[]): boolean {
 	return arr2.every(item => arr1.includes(item));
 }

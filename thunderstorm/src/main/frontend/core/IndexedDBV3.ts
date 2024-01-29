@@ -89,13 +89,13 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 				this.config.upgradeProcessor?.(db);
 			};
 
-			request.onsuccess = (event) => {
+			request.onsuccess = () => {
 				// console.log(`${this.config.name} - IDB result`, request.result);
 				this.db = request.result;
 				resolve(this.db);
 			};
 
-			request.onerror = (event) => {
+			request.onerror = () => {
 				reject(new Error(`Error opening IDB - ${this.config.name}`));
 			};
 		});

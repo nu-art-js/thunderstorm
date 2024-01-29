@@ -30,10 +30,10 @@ import {CustomException} from '../core/exceptions/exceptions';
  * 				K extends [infer E1, infer E2, infer E3, infer E4] ? [Validator<E1>,Validator<E2>,Validator<E2>,Validator<E4>] :
  */
 export type ValidatorTypeResolver<K> =
-	K extends [infer E1] ? Validator<K> :
-		K extends [infer E1, infer E2] ? Validator<K> :
-			K extends [infer E1, infer E2, infer E3] ? Validator<K> :
-				K extends [infer E1, infer E2, infer E3, infer E4] ? Validator<K> :
+	K extends [any] ? Validator<K> :
+		K extends [any, any] ? Validator<K> :
+			K extends [any, any, any] ? Validator<K> :
+				K extends [any, any, any, any] ? Validator<K> :
 					K extends any[] ? Validator<K> :
 						K extends TS_Object ? TypeValidator<K> | Validator<K> :
 							Validator<K>;
@@ -42,14 +42,14 @@ export type ValidatorImpl<P> = (p?: P) => (InvalidResult<P> | undefined);
 export type Validator<P> = ValidatorImpl<P> | ValidatorImpl<P>[];
 export type TypeValidator<T extends TS_Object> = { [P in keyof T]-?: ValidatorTypeResolver<T[P]> };
 
-export type InvalidResultObject<T extends any> = { [K in keyof T]?: InvalidResult<T[K]> };
-export type InvalidResultArray<T extends any> = InvalidResult<T> | undefined;
-export type InvalidResult<T extends any> =
+export type InvalidResultObject<T> = { [K in keyof T]?: InvalidResult<T[K]> };
+export type InvalidResultArray<T> = InvalidResult<T> | undefined;
+export type InvalidResult<T> =
 	T extends object ? InvalidResultObject<T> | string :
 		T extends (infer I)[] ? (InvalidResultArray<I>[]) | string :
 			string;
 
-export class ValidationException<T extends any>
+export class ValidationException<T>
 	extends CustomException {
 	public input?: T;
 	public result?: InvalidResult<T>;
@@ -62,9 +62,6 @@ export class ValidationException<T extends any>
 }
 
 const CONST_NO_ERROR = '###';
-
-export const assertValidateMandatoryProperty = (mandatory: boolean, input?: any) => {
-};
 
 export const tsValidateExists = (mandatory = true): ValidatorImpl<any> => {
 	return (input?: any) => {
@@ -97,7 +94,7 @@ export const tsValidateExists = (mandatory = true): ValidatorImpl<any> => {
 // 		}
 // 	}];
 
-export const tsValidate = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, strict = true) => {
+export const tsValidate = <T>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, strict = true) => {
 	const results = tsValidateResult(instance, _validator);
 
 	if (results && strict) {
@@ -108,7 +105,7 @@ export const tsValidate = <T extends any>(instance: T | undefined, _validator: V
 	return results;
 };
 
-export const tsValidateResult = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, parentInstance?: any) => {
+export const tsValidateResult = <T>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, parentInstance?: any) => {
 	if (!_validator)
 		return 'No validator provided!';
 
