@@ -39,7 +39,7 @@ export const tsValidateUnion = <T>(validators: ValidatorTypeResolver<T>[], manda
 				const _res = tsValidateResult(input, validator);
 				if (!_res)
 					return;
-				results.push(_res);
+				results.push(_res as InvalidResultArray<T>);
 			}
 
 			return filterInstances(results).length !== 0 ? ['Input does not match any of the possible types',
@@ -71,7 +71,7 @@ export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayT
 			if (_input.length < minimumLength)
 				return 'Array length smaller than minimum defined length';
 			for (let i = 0; i < _input.length; i++) {
-				results[i] = tsValidateResult(_input[i], validator);
+				results[i] = tsValidateResult(_input[i], validator) as InvalidResultArray<I>;
 			}
 
 			return filterInstances(results).length !== 0 ? results : undefined;
@@ -224,7 +224,7 @@ export const tsValidator_valueByKey = <T>(validatorObject: {
 	[k: string]: ValidatorTypeResolver<any>
 }, prop = 'type') => {
 	return tsValidateCustom((value?, parentObject?) => {
-		return tsValidateResult(value!, validatorObject[parentObject![prop]]);
+		return tsValidateResult(value!, validatorObject[parentObject![prop]]) as InvalidResult<T>;
 	}) as ValidatorTypeResolver<T>;
 };
 

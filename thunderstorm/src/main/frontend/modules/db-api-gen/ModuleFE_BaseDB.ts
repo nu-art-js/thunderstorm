@@ -172,7 +172,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	public validateImpl(instance: PreDB<DBType>) {
 		const results = tsValidateResult(instance as DBType, this.validator);
 		if (results) {
-			this.onValidationError(instance, results);
+			this.onValidationError(instance, results as InvalidResult<DBType>);
 		}
 	}
 

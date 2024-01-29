@@ -170,7 +170,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		const instance = deleteKeysObject(_instance as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.dbDef.generatedPropsValidator)]);
 		const results = tsValidateResult(instance, this.validator);
 		if (results) {
-			this.onValidationError(instance, results);
+			this.onValidationError(instance, results as InvalidResult<Proto['uiType']>);
 		}
 	}
 

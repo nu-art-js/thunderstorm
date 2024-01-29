@@ -170,7 +170,7 @@ export class FirebaseRef<T> {
 	 * @param assertionRegexp
 	 */
 	public delete(assertionRegexp: string = '^/.*?/.*') {
-		return this.db.delete<T>(this.path, assertionRegexp);
+		return this.db.delete(this.path, assertionRegexp);
 	}
 
 	/**
@@ -186,7 +186,7 @@ export class FirebaseRef<T> {
 	 * @param listener
 	 */
 	public stopListening(listener: any): void {
-		return this.db.stopListening<T>(this.path, listener);
+		return this.db.stopListening(this.path, listener);
 	}
 
 	/**

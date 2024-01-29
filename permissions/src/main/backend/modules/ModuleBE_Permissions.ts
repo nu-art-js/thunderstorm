@@ -197,7 +197,7 @@ class ModuleBE_Permissions_Class
 		projects.reduce((issues, project) => {
 			return project.packages.reduce((issues, _package) => {
 				return issues;
-			});
+			}, issues);
 		}, [] as string[]);
 		// Create All Projects
 		const map_nameToDBProject: TypedMap<DB_PermissionProject> = await this.createProjects(projects);
