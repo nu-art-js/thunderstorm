@@ -38,16 +38,16 @@ export type ValidatorTypeResolver<K> =
 						K extends TS_Object ? TypeValidator<K> | Validator<K> :
 							Validator<K>;
 
-export type ValidatorImpl<P> = (p?: P) => (InvalidResult<P> | undefined);
+export type ValidatorImpl<P> = (p?: P, parentObj?: any) => (InvalidResult<P> | undefined);
 export type Validator<P> = ValidatorImpl<P> | ValidatorImpl<P>[];
 export type TypeValidator<T extends TS_Object> = { [P in keyof T]-?: ValidatorTypeResolver<T[P]> };
 
 export type InvalidResultObject<T> = { [K in keyof T]?: InvalidResult<T[K]> };
 export type InvalidResultArray<T> = InvalidResult<T> | undefined;
 export type InvalidResult<T> =
-	T extends object ? InvalidResultObject<T> | string :
-		T extends (infer I)[] ? (InvalidResultArray<I>[]) | string :
-			string;
+	T extends object ? InvalidResultObject<T> | string | undefined :
+		T extends (infer I)[] ? (InvalidResultArray<I>[]) | string | undefined :
+			string | undefined;
 
 export class ValidationException<T>
 	extends CustomException {
@@ -99,7 +99,7 @@ export const tsValidate = <T>(instance: T | undefined, _validator: ValidatorType
 
 	if (results && strict) {
 		console.error(results);
-		throw new ValidationException(`Error validating object: `, instance, results);
+		throw new ValidationException(`Error validating object: `, instance, results as InvalidResult<T>);
 	}
 
 	return results;
@@ -111,7 +111,9 @@ export const tsValidateResult = <T>(instance: T | undefined, _validator: Validat
 
 	const validator: ValidatorImpl<T>[] | object = typeof _validator === 'function' ? [_validator] : _validator;
 	if (Array.isArray(validator)) {
-		const result = validator.reduce((result, __validator) => result === CONST_NO_ERROR ? result : result || __validator(instance, parentInstance),
+		const result = (validator as ValidatorImpl<T>[]).reduce((result, __validator) => {
+				return result === CONST_NO_ERROR ? result : result || __validator(instance, parentInstance);
+			},
 			undefined as InvalidResult<T> | undefined);
 		return result !== CONST_NO_ERROR ? result : undefined;
 	}
@@ -127,7 +129,7 @@ export const tsValidateResult = <T>(instance: T | undefined, _validator: Validat
 	}
 };
 
-export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance: T, path = '') => {
+export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance: T, path = ''): InvalidResultObject<T> | undefined => {
 	const validatorKeys = _keys(__validator);
 	const instanceKeys = Object.keys(instance as unknown as object);
 
@@ -144,7 +146,7 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 		const validator = __validator[key];
 		const propsResult = tsValidateResult(value, validator, key, instance);
 		if (propsResult && propsResult !== CONST_NO_ERROR)
-			result[key as keyof T] = propsResult;
+			result[key as keyof T] = propsResult as InvalidResult<T[keyof T]>;
 	}
 
 	if (_keys(result).length === 0)

@@ -21,7 +21,7 @@ const Validator_FilterKey = (value?: number | string) => {
 	if (exists(value))
 		return `expected type number | string but received ${typeof value}`;
 
-	return tsValidateResult(value, tsValidateMustExist);
+	return tsValidateResult<string>(value, tsValidateMustExist);
 };
 
 const Validator_ModifiableProps: DBProto_PushSubscription['modifiablePropsValidator'] = {

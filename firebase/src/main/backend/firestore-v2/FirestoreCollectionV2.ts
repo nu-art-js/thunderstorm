@@ -469,7 +469,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	validateItem(dbItem: Type) {
 		const results = tsValidateResult(dbItem, this.validator);
 		if (results) {
-			this.onValidationError(dbItem, results);
+			this.onValidationError(dbItem, results as InvalidResult<Type>);
 		}
 	}
 

@@ -477,7 +477,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	validateItem(dbItem: Proto['dbType']) {
 		const results = tsValidateResult(dbItem, this.validator as ValidatorTypeResolver<Proto['dbType']>);
 		if (results) {
-			this.onValidationError(dbItem, results);
+			this.onValidationError(dbItem, results as InvalidResult<Proto['dbType']>);
 		}
 	}
 
