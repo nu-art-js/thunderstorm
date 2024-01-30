@@ -16,14 +16,17 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, currentTimeMillis, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {Bucket, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
+import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {Bucket, CreateReadStreamOptions, CreateWriteStreamOptions, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
 import {Firebase_CopyResponse, FirebaseType_Metadata, FirebaseType_Storage, ReturnType_Metadata} from './types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getStorage} from 'firebase-admin/storage';
 import {Response} from 'teeny-request';
+import {Writable} from 'stream';
 
+
+export const END_OF_STREAM = {END_OF_STREAM: 'END_OF_STREAM'};
 
 export class StorageWrapperBE
 	extends FirebaseBaseWrapper {
@@ -38,7 +41,7 @@ export class StorageWrapperBE
 
 	async getMainBucket(): Promise<BucketWrapper> {
 		// @ts-ignore
-		return new BucketWrapper('admin', await this.storage.bucket(), this);
+		return new BucketWrapper('admin', await this.storage.bucket(`gs://${this.firebaseSession.getProjectId()}.appspot.com`), this);
 	}
 
 	async getOrCreateBucket(bucketName?: string): Promise<BucketWrapper> {
@@ -49,7 +52,9 @@ export class StorageWrapperBE
 		if (!_bucketName.startsWith('gs://'))
 			throw new BadImplementationException('Bucket name MUST start with \'gs://\'');
 
-		const bucket = (await this.storage.bucket(_bucketName).get({autoCreate: true}))[0];
+		let bucket = this.storage.bucket(_bucketName);
+		if (!this.isEmulator())
+			bucket = (await bucket.get({autoCreate: true}))[0];
 		// @ts-ignore
 		return new BucketWrapper(_bucketName, bucket, this);
 	}
@@ -61,6 +66,10 @@ export class StorageWrapperBE
 		else
 			bucket = await this.getOrCreateBucket(bucketName);
 		return bucket.getFile(pathToRemoteFile);
+	}
+
+	isEmulator() {
+		return !!(process.env.FIREBASE_STORAGE_EMULATOR_HOST || process.env.FUNCTIONS_EMULATOR) || false;
 	}
 }
 
@@ -76,8 +85,8 @@ export class BucketWrapper {
 	}
 
 	async getFile(pathToRemoteFile: string): Promise<FileWrapper> {
-		// @ts-ignore
-		return new FileWrapper(pathToRemoteFile, await this.bucket.file(pathToRemoteFile), this);
+		const emulator = this.storage.isEmulator();
+		return new FileWrapper(pathToRemoteFile, this.bucket.file(pathToRemoteFile), this, emulator);
 	}
 
 	async listFiles(folder: string = '', filter: (file: File) => boolean = () => true): Promise<File[]> {
@@ -115,30 +124,56 @@ export class BucketWrapper {
 }
 
 export class FileWrapper {
+
+	static emulatorStorageProxy: string;
 	readonly file: File;
 	readonly path: string;
 	readonly bucket: BucketWrapper;
+	private readonly isEmulator?: boolean;
 
-	private constructor(path: string, file: File, bucket: BucketWrapper) {
+	constructor(path: string, file: File, bucket: BucketWrapper, isEmulator?: boolean) {
 		this.file = file;
 		this.bucket = bucket;
 		this.path = path;
+		this.isEmulator = isEmulator;
 	}
 
-	async getWriteSecuredUrl(contentType: string, expiresInMs: number) {
+	async getWriteSignedUrl(contentType: string, expiresInMs: number) {
 		const options: GetSignedUrlConfig = {
 			action: 'write',
 			contentType: contentType,
 			expires: currentTimeMillis() + expiresInMs,
 		};
+
+		if (this.isEmulator) {
+			const signedUrl = `${(FileWrapper.emulatorStorageProxy)}/emulatorUpload?path=${encodeURIComponent(this.path)}`;
+
+			return {
+				fileName: this.path,
+				signedUrl: signedUrl,
+			};
+		}
+
 		return this.getSignedUrl(options);
 	}
 
-	async getReadSecuredUrl(contentType: string, expiresInMs: number) {
+	async getReadSignedUrl(expiresInMs: number = 5 * Minute, contentType?: string) {
 		const options: GetSignedUrlConfig = {
 			action: 'read',
+			contentType,
 			expires: currentTimeMillis() + expiresInMs,
 		};
+
+		if (this.isEmulator) {
+			const signedUrl = `${(FileWrapper.emulatorStorageProxy)}/emulatorDownload?path=${encodeURIComponent(this.path)}`;
+
+			return {
+				fileName: this.path,
+				signedUrl: signedUrl,
+				publicUrl: signedUrl
+			};
+		}
+
 		return this.getSignedUrl(options);
 	}
 
@@ -233,9 +268,33 @@ export class FileWrapper {
 
 		return {
 			fileName: this.path,
-			securedUrl: url,
+			signedUrl: url,
 			publicUrl: encodeURI(`https://storage.googleapis.com/${this.bucket.bucketName.replace(`gs://`, '')}${this.path}`)
 		};
+	}
+
+	async writeToStream(feeder: (writable: Writable) => Promise<void | typeof END_OF_STREAM>): Promise<void> {
+		const writeable = this.createWriteStream({gzip: true});
+		const promise: Promise<void> = new Promise((resolve, reject) => {
+			writeable.on('close', () => resolve());
+			writeable.on('error', (e) => reject(e));
+		});
+
+		let data;
+		do {
+			data = await feeder(writeable);
+		} while (data !== END_OF_STREAM);
+
+		writeable.end();
+		return promise;
+	}
+
+	public createWriteStream(options?: CreateWriteStreamOptions) {
+		return this.file.createWriteStream(options);
+	}
+
+	public createReadStream(options?: CreateReadStreamOptions) {
+		return this.file.createReadStream(options);
 	}
 
 	async makePublic(): Promise<MakeFilePublicResponse> {

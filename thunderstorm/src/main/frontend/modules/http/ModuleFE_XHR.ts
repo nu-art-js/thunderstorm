@@ -19,13 +19,14 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {ApiDef, ErrorResponse, TypedApi} from '../../../shared/types';
+import {ApiDef, TypedApi} from '../../../shared/types';
 
 import {BadImplementationException, composeUrl} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {BaseHttpModule_Class, BaseHttpRequest, ErrorType, HttpException} from '../../../shared';
+import {BaseHttpModule_Class, BaseHttpRequest, HttpException} from '../../../shared';
 // noinspection TypeScriptPreferShortImport
 import {gzipSync} from 'zlib';
+import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export class ModuleFE_XHR_Class
@@ -35,7 +36,7 @@ export class ModuleFE_XHR_Class
 		super.init();
 		let origin = this.config.origin;
 		if (!origin)
-			throw new BadImplementationException('Did you forget to set the origin config key for the HttpModule?');
+			throw new BadImplementationException('Did yo\ forget to set the origin config key for the HttpModule?');
 
 		if (origin?.endsWith('/'))
 			origin = origin.substring(0, origin.length - 1);
@@ -48,6 +49,7 @@ export class ModuleFE_XHR_Class
 			.setLogger(this)
 			.setMethod(apiDef.method)
 			.setTimeout(this.timeout)
+			.setOnCompleted(this.defaultOnComplete)
 			.addHeaders(this.getDefaultHeaders());
 
 		if (apiDef.fullUrl)
@@ -93,12 +95,12 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 		this.xhr?.abort();
 	}
 
-	getErrorResponse(): ErrorResponse<ErrorType> {
+	getErrorResponse(): ApiErrorResponse<ResponseError | ApiError_GeneralErrorMessage> {
 		const rawResponse = this.getResponse();
-		let response = undefined as unknown as ErrorResponse<ErrorType>;
+		let response = undefined as unknown as ApiErrorResponse<ResponseError | ApiError_GeneralErrorMessage>;
 		if (rawResponse) {
 			try {
-				response = rawResponse && JSON.parse(rawResponse as unknown as string) as ErrorResponse<ErrorType>;
+				response = rawResponse && JSON.parse(rawResponse as unknown as string) as ApiErrorResponse<ResponseError | ApiError_GeneralErrorMessage>;
 			} catch (e: any) {
 				response = {debugMessage: rawResponse};
 			}
@@ -135,8 +137,10 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 
 				reject(err);
 			};
+			const fullUrl = composeUrl(this.url, this.params);
 
 			this.xhr.ontimeout = (err) => {
+				// console.log(`${this.url} - Request timeout`);
 				reject(err);
 			};
 
@@ -156,13 +160,13 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 				// HttpModule.logVerbose("onabort");
 			};
 
-			const fullUrl = composeUrl(this.url, this.params);
-
 			// TODO: investigate which one should work
 			this.xhr.onprogress = this.onProgressListener;
 			this.xhr.upload.onprogress = this.onProgressListener;
 
 			this.xhr.open(this.method, fullUrl);
+			// console.log(`${this.url} - setting XHR timeout: ${this.timeout}`);
+
 			this.xhr.timeout = this.timeout;
 
 			Object.keys(this.headers).forEach((key) => {
@@ -181,23 +185,11 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 		});
 	}
 
-	getResponseHeader(headerKey: string): string | string[] | undefined {
+	_getResponseHeader(headerKey: string): string | string[] | undefined {
 		if (!this.xhr)
 			throw new BadImplementationException('No xhr object!');
 
-		if (!this.xhr.response)
-			throw new BadImplementationException(`xhr didn't return yet`);
-
-		// Chrome bug, if the response header is not present then it throws an error (not really problematic but just annoying)
-		// https://trackjs.com/blog/refused-unsafe-header/
-		if (this.xhr.getAllResponseHeaders().indexOf(headerKey) < 0)
-			return undefined;
-
-		const header = this.xhr.getResponseHeader(headerKey);
-		if (!header)
-			return undefined;
-
-		return header;
+		return this.xhr.getResponseHeader(headerKey) || undefined;
 	}
 }
 

@@ -1,10 +1,18 @@
 import {__stringify, exists} from '../utils/tools';
-import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
+import {
+	InvalidResult,
+	InvalidResultArray,
+	InvalidResultObject,
+	tsValidateExists,
+	tsValidateResult,
+	Validator,
+	ValidatorTypeResolver
+} from './validator-core';
 import {currentTimeMillis} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {filterInstances} from '../utils/array-tools';
 import {_keys} from '../utils/object-tools';
-import {BadImplementationException} from '../core/exceptions';
+import {BadImplementationException} from '../core/exceptions/exceptions';
 
 
 export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<string>, mandatory = true) => {
@@ -95,6 +103,20 @@ export const tsValidateString = (length: number = -1, mandatory = true): Validat
 		}];
 };
 
+export const tsValidateStringMinLength = (length: number, mandatory = true): Validator<string> => {
+	return [tsValidateExists(mandatory),
+		(input?: string) => {
+			// noinspection SuspiciousTypeOfGuard
+			if (typeof input !== 'string')
+				return `input is not a string`;
+
+			if (input.length >= length)
+				return;
+
+			return `input has less than ${length} chars`;
+		}];
+};
+
 export const tsValidateNumber = (mandatory = true): Validator<number> => {
 	return [tsValidateExists(mandatory),
 		(input?: number) => {
@@ -128,13 +150,13 @@ export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 		}];
 };
 
-export const tsValidateValue = (values: string[], mandatory = true): Validator<string> => {
+export const tsValidateValue = <T>(values: T[], mandatory = true): Validator<any> => {
 	return [tsValidateExists(mandatory),
-		(input?: string) => {
+		(input?: T) => {
 			if (values.includes(input!))
 				return;
 
-			return `Input is not valid:\n  input: ${input}\n  options: ${__stringify(values)}\n`;
+			return `Input is not valid:\n  input: ${input && __stringify(input) || input}\n  options: ${__stringify(values)}\n`;
 		}];
 };
 
@@ -195,24 +217,30 @@ export const tsValidateAudit = (range?: RangeTimestamp) => {
 	};
 };
 
-export const tsValidateNonMandatoryObject = <T>(validator: ValidatorTypeResolver<T>) => {
+export const tsValidateNonMandatoryObject = <T extends object>(validator: ValidatorTypeResolver<T>) => {
 	return [tsValidateExists(false),
 		(input?: T) => tsValidateResult(input, validator)];
 };
 
-export const tsValidator_valueByKey = <T extends any>(validatorObject: { [k: string]: ValidatorTypeResolver<any> }) => {
+export const tsValidateOptionalObject = tsValidateNonMandatoryObject;
+
+export const tsValidator_valueByKey = <T extends any>(validatorObject: {
+	[k: string]: ValidatorTypeResolver<any>
+}, prop = 'type') => {
 	return tsValidateCustom((value?, parentObject?) => {
-		return tsValidateResult(value!, validatorObject[parentObject!.type]);
+		return tsValidateResult(value!, validatorObject[parentObject![prop]]);
 	}) as ValidatorTypeResolver<T>;
 };
 
-export const tsValidator_ArrayOfObjectsByKey = <T extends Object>(key: keyof T, validatorMap: { [k: string]: ValidatorTypeResolver<T> }) => {
+export const tsValidator_ArrayOfObjectsByKey = <T extends Object>(key: keyof T, validatorMap: {
+	[k: string]: ValidatorTypeResolver<T>
+}) => {
 	return tsValidateArray(tsValidateCustom((value) => {
 		const _value = value as T;
 		const validator = validatorMap[_value[key] as string];
 		if (!validator)
 			throw new BadImplementationException(`No validator defined for key ${key as string} with value ${_value[key]}`);
-		
+
 		return tsValidateResult(_value, validator);
 	}) as ValidatorTypeResolver<T>);
 };

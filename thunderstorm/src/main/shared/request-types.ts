@@ -19,19 +19,18 @@
  * limitations under the License.
  */
 
-import {ErrorResponse} from './types';
-import {BaseHttpRequest} from './BaseHttpRequest';
-import {TS_Object} from '@nu-art/ts-common';
+import {ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {CustomException} from '@nu-art/ts-common';
 
 
-export class HttpException
-	extends Error {
+export class HttpException<E extends ResponseError = ResponseError>
+	extends CustomException {
 
 	responseCode: number;
-	errorResponse: any;
+	errorResponse?: ApiErrorResponse<E>;
 
-	constructor(responseCode: number, url: string, errorResponse?: any) {
-		super(`${responseCode} - ${url}`);
+	constructor(responseCode: number, url: string, errorResponse?: ApiErrorResponse<E>) {
+		super(HttpException, `${responseCode} - ${url}`);
 
 		this.responseCode = responseCode;
 		this.errorResponse = errorResponse;
@@ -48,7 +47,3 @@ export type TS_Progress = {
 export interface OnRequestListener {
 	__onRequestCompleted: (key: string, success: boolean, requestData?: any) => void;
 }
-
-export type RequestErrorHandler<E extends TS_Object = TS_Object> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<E>) => void;
-export type RequestSuccessHandler = (request: BaseHttpRequest<any>) => void;
-export type ResponseHandler = (request: BaseHttpRequest<any>) => boolean;

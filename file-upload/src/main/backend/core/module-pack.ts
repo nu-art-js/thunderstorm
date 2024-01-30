@@ -18,17 +18,22 @@
  */
 
 import {ModuleBE_AssetsTemp} from '../modules/ModuleBE_AssetsTemp';
-import {ModuleBE_Assets} from '../modules/ModuleBE_Assets';
-import {AssetBucketListener} from '../modules/AssetBucketListener';
+import {ModuleBE_AssetsDB} from '../modules/ModuleBE_AssetsDB';
+import {ModuleBE_BucketListener} from '../modules/ModuleBE_BucketListener';
 import {ModulePackBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {ModuleBE_AssetUploader} from '../modules/ModuleBE_AssetUploader';
-import {createApisForDBModule} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI';
+import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_AssetsStorage} from '../modules/ModuleBE_AssetsStorage';
+import {ModuleBE_AssetsDeleted} from '../modules/ModuleBE_AssetsDeleted';
 
 
-export const ModulePack_Backend_Uploader = [
+export const ModulePackBE_FileUploader = [
 	...ModulePackBE_PushPubSub,
 	ModuleBE_AssetUploader,
-	ModuleBE_AssetsTemp, createApisForDBModule(ModuleBE_AssetsTemp),
-	ModuleBE_Assets, createApisForDBModule(ModuleBE_Assets),
-	AssetBucketListener
+	ModuleBE_AssetsTemp, createApisForDBModuleV3(ModuleBE_AssetsTemp),
+	ModuleBE_AssetsDeleted,
+	ModuleBE_AssetsStorage,
+	ModuleBE_AssetsDB, ModuleBE_AssetsAPI,
+	ModuleBE_BucketListener
 ];

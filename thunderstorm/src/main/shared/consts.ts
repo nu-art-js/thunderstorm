@@ -19,8 +19,29 @@
  * limitations under the License.
  */
 
+import {HttpCodes as _HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+
+
 export const HeaderKey_Env = 'x-env';
 export const HeaderKey_CurrentPage = 'x-current-page';
 
-
 export type Browser = 'chrome';//| "firefox" | "blink" | "edge" | "ie" | "safari" | "opera"
+
+export const DefaultHttpServerConfig = {
+	'bodyParserLimit': 200,
+	'cors': {
+		'headers': [
+			'x-session-id',
+			'x-browser-type',
+			'x-app-version'
+		],
+		'methods': [
+			'GET',
+			'POST'
+		],
+		'responseHeaders': [
+			'x-session-id'
+		]
+	},
+	'host': 'localhost'
+};

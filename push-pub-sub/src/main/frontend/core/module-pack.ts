@@ -18,11 +18,13 @@
 
 import {ModuleFE_PushPubSub} from '../modules/ModuleFE_PushPubSub';
 import {ModuleFE_Firebase} from '@nu-art/firebase/frontend';
+import {ModuleFE_PushSubscription} from '../modules/ModuleFE_PushSubscription';
 
 
-export const ModulePack_Frontend_PushPubSub = [
+export const ModulePackFE_PushPubSub = [
 	ModuleFE_Firebase,
 	ModuleFE_PushPubSub,
+	ModuleFE_PushSubscription
 ];
 
 export * from '../modules/ModuleFE_PushPubSub';

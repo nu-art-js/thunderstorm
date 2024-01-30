@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_DragAndDrop.scss';
-import {LL_VH_C} from '../Layouts';
+import {LL_V_L, LL_VH_C} from '../Layouts';
+import {asArray} from '@nu-art/ts-common';
 
 
 type DND_State =
@@ -28,22 +29,39 @@ export type Props_DragAndDrop = React.PropsWithChildren<{
 	id?: string,
 	validate: ((files: File[]) => DND_File[]);
 	onChange: (acceptedFiles: File[], rejectedFiles: File[]) => void
+	renderer: React.ComponentType<{ acceptedFiles: File[], rejectedFiles: File[] }>
 }>
 
 type State = {
 	dndState: DND_State;
+	acceptedFiles: File[];
+	rejectedFiles: File[];
 }
 
 const timeoutSeconds: number = 2000;
 
+const DefaultFilesRenderer = (props: { acceptedFiles: File[], rejectedFiles: File[] }) => {
+	return <LL_V_L>
+		{props.acceptedFiles.map(file => <div style={{color: 'green'}}>{file.name}</div>)}
+		{props.rejectedFiles.map(file => <div style={{color: 'red'}}>{file.name}</div>)}
+	</LL_V_L>;
+};
+
 export class TS_DragAndDrop
 	extends ComponentSync<Props_DragAndDrop, State> {
 
+	static defaultProps = {
+		renderer: DefaultFilesRenderer
+	};
 	private inputRef = React.createRef<HTMLInputElement>();
 	private timers: (ReturnType<typeof setTimeout>)[] = [];
 
 	protected deriveStateFromProps(nextProps: Props_DragAndDrop): State | undefined {
-		return {dndState: 'Idle'};
+		return {
+			dndState: 'Idle',
+			acceptedFiles: [],
+			rejectedFiles: [],
+		};
 	}
 
 	componentWillUnmount(): void {
@@ -72,7 +90,7 @@ export class TS_DragAndDrop
 
 	static validateFilesBySuffix = (fileExt: string | string[]) =>
 		(files: File[]): DND_File[] => {
-			const extensions = Array.isArray(fileExt) ? fileExt : [fileExt];
+			const extensions = asArray(fileExt);
 			return files.map((file) => {
 				const accepted = extensions.some(ext => RegExp(`.${ext}$`, 'i').test(file.name));
 				return {file, accepted};
@@ -100,8 +118,7 @@ export class TS_DragAndDrop
 		else if (rejectedFiles.length === 0)
 			resultState = 'Positive'; // all files accepted
 
-		this.props.onChange(acceptedFiles, rejectedFiles);
-		this.setState({dndState: resultState});
+		this.setState({dndState: resultState, acceptedFiles, rejectedFiles}, () => this.props.onChange(acceptedFiles, rejectedFiles));
 	};
 
 	onDragEnter = (ev: React.DragEvent<HTMLDivElement>): void => {
@@ -136,7 +153,7 @@ export class TS_DragAndDrop
 	};
 
 	render() {
-
+		const Renderer = this.props.renderer;
 		return (
 			<LL_VH_C className={'ts-drag-and-drop'} id={this.props?.id}>
 				<div
@@ -147,6 +164,9 @@ export class TS_DragAndDrop
 					onDragLeave={this.onDragLeave}
 					onClick={this.openFileChooser}>
 					<input className="ts-drag-and-drop__input" id="fileInput" type="file" ref={this.inputRef} hidden={true} multiple onChange={this.onSelect}/>
+					<Renderer
+						acceptedFiles={this.state.acceptedFiles}
+						rejectedFiles={this.state.rejectedFiles}/>
 				</div>
 			</LL_VH_C>
 		);

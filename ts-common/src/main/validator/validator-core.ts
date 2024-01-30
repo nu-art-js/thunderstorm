@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {CustomException} from '../core/exceptions';
 import {_keys} from '../utils/object-tools';
 import {TS_Object} from '../utils/types';
+import {CustomException} from '../core/exceptions/exceptions';
 
 
 /**
@@ -49,12 +49,12 @@ export type InvalidResult<T extends any> =
 		T extends (infer I)[] ? (InvalidResultArray<I>[]) | string :
 			string;
 
-export class ValidationException
+export class ValidationException<T extends any>
 	extends CustomException {
-	public input?: string;
-	public result?: InvalidResult<any>;
+	public input?: T;
+	public result?: InvalidResult<T>;
 
-	constructor(debugMessage: string, input?: any, result?: InvalidResult<any>, e?: Error) {
+	constructor(debugMessage: string, input?: T, result?: InvalidResult<T>, e?: Error) {
 		super(ValidationException, debugMessage, e);
 		this.result = result;
 		this.input = input;
@@ -110,7 +110,7 @@ export const tsValidate = <T extends any>(instance: T | undefined, _validator: V
 
 export const tsValidateResult = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, parentInstance?: any) => {
 	if (!_validator)
-		return;
+		return 'No validator provided!';
 
 	const validator: ValidatorImpl<T>[] | object = typeof _validator === 'function' ? [_validator] : _validator;
 	if (Array.isArray(validator)) {
@@ -121,7 +121,7 @@ export const tsValidateResult = <T extends any>(instance: T | undefined, _valida
 
 	if (typeof validator === 'object') {
 		if (!instance && validator)
-			return `Unexpected object:\n The key '${String(key)}' wasn't defined in the instance.`;
+			return `Missing Property:\n The key '${String(key)}' wasn't defined in the instance.`;
 		if (typeof instance !== 'object')
 			return `Unexpected instance '${instance}'.\nExpected to receive an object, but received something else.`;
 
@@ -139,7 +139,7 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 		// @ts-ignore
 		if (!validatorKeys.includes(key))
 			// @ts-ignore
-			result[key as keyof T] = `Unexpected key '${path}${key}'.\nIf you want to ignore the validation of this property,\n add the following to your validator:\n {\n  ...\n  ${key}: undefined\n  ...\n}\n`;
+			result[key as keyof T] = `Unexpected key '${path}${key}'.\nIf you want to ignore the validation of this property,\n add the following to your validator:\n {\n  ...\n  ${key}: tsValidateOptional\n  ...\n}\n`;
 	}
 
 	for (const key of validatorKeys) {

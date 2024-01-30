@@ -19,7 +19,7 @@
 import {__custom, __scenario} from '@nu-art/testelot';
 import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub';
 import {assert, compare, currentTimeMillis, generateHex, Hour} from '@nu-art/ts-common';
-import {DB_PushKeys, DB_PushSession, Request_PushRegister} from '../main';
+import {DB_PushSubscription, DB_PushSession, Request_PushRegister} from '../main';
 import {FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
 
 
@@ -37,25 +37,25 @@ const testRegister = async function (request: Request_PushRegister, timestamp: n
 	// @ts-ignore
 	await ModuleBE_PushPubSub.pushSessions.upsert(session);
 
-	const subscriptions = request.subscriptions.map((s): DB_PushKeys => ({
+	const subscriptions = request.subscriptions.map((s): DB_PushSubscription => ({
 		pushSessionId: request.pushSessionId,
-		pushKey: s.pushKey,
+		topic: s.topic,
 		props: s.props
 	}));
 
 	// @ts-ignore
-	const pushKeysCollection: FirestoreCollection<DB_PushKeys> = ModuleBE_PushPubSub.pushKeys;
+	const topicsCollection: FirestoreCollection<DB_PushSubscription> = ModuleBE_PushPubSub.topics;
 
-	return pushKeysCollection.runInTransaction(async (transaction: FirestoreTransaction) => {
-		const data = await transaction.query(pushKeysCollection, {where: {pushSessionId: request.pushSessionId}});
-		const toInsert = subscriptions.filter(s => !data.find((d: DB_PushKeys) => compare(d, s)));
-		return Promise.all(toInsert.map(instance => transaction.insert(pushKeysCollection, instance)));
+	return topicsCollection.runInTransaction(async (transaction: FirestoreTransaction) => {
+		const data = await transaction.query(topicsCollection, {where: {pushSessionId: request.pushSessionId}});
+		const toInsert = subscriptions.filter(s => !data.find((d: DB_PushSubscription) => compare(d, s)));
+		return Promise.all(toInsert.map(instance => transaction.insert(topicsCollection, instance)));
 	});
 };
 
 const processClean = __custom(async () => {
 	// @ts-ignore
-	const asyncs = [ModuleBE_PushPubSub.pushKeys.deleteAll(), ModuleBE_PushPubSub.pushSessions.deleteAll()];
+	const asyncs = [ModuleBE_PushPubSub.topics.deleteAll(), ModuleBE_PushPubSub.pushSessions.deleteAll()];
 	return Promise.all(asyncs);
 }).setLabel('Start Clean');
 
@@ -64,7 +64,7 @@ const populate = (timestamp: number) => __custom(async () => {
 		const instance = {
 			pushSessionId: generateHex(8),
 			firebaseToken: generateHex(8),
-			subscriptions: arrayOf2.map((_e, _i) => ({pushKey: generateHex(8), props: {a: _i}}))
+			subscriptions: arrayOf2.map((_e, _i) => ({topic: generateHex(8), props: {a: _i}}))
 		};
 		await testRegister(instance, timestamp);
 	}

@@ -17,21 +17,20 @@
  */
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
-import {__stringify, decode, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {__stringify, ApiException, decode, ImplementationMissingException, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {
 	ApiDef_SAML_BE,
-	ApiStruct_SAML_BE,
-	PostAssertBody,
 	QueryParam_Email,
 	QueryParam_RedirectUrl,
 	QueryParam_SessionId,
-	RequestBody_SamlAssertOptions,
+	RequestBody_AssertSAML,
 	RequestParams_LoginSAML,
-	Response_Auth,
 	Response_LoginSAML
 } from './_imports';
-import {addRoutes, ApiException, ApiResponse, createQueryServerApi, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_Account} from './ModuleBE_Account';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
+import {MemKey_AccountEmail} from '../core/consts';
+import {ModuleBE_AccountDB} from './ModuleBE_AccountDB';
 
 
 /**
@@ -78,19 +77,6 @@ type SamlAssertResponse = {
 	loginContext: RequestParams_LoginSAML
 }
 
-class AssertSamlToken
-	extends ServerApi<ApiStruct_SAML_BE['v1']['assertSAML']> {
-
-	constructor() {
-		super(ApiDef_SAML_BE.v1.assertSAML);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PostAssertBody) {
-		const redirectUrl = await ModuleBE_SAML.assertSaml(body);
-		return await response.redirect(302, redirectUrl);
-	}
-}
-
 export class ModuleBE_SAML_Class
 	extends Module<SamlConfig> {
 
@@ -98,78 +84,81 @@ export class ModuleBE_SAML_Class
 
 	constructor() {
 		super();
-		addRoutes([
-			createQueryServerApi(ApiDef_SAML_BE.v1.loginSaml, this.loginRequest),
-			new AssertSamlToken()
-		]);
+		this.setMinLevel(LogLevel.Debug);
 	}
 
 	protected init(): void {
+		super.init();
+
 		if (!this.config.idConfig)
 			throw new ImplementationMissingException('Config must contain idConfig');
 
 		if (!this.config.spConfig)
 			throw new ImplementationMissingException('Config must contain spConfig');
 
+		addRoutes([
+			createQueryServerApi(ApiDef_SAML_BE.vv1.loginSaml, this.loginRequest),
+			createBodyServerApi(ApiDef_SAML_BE.vv1.assertSAML, this.assertSaml),
+		]);
+
 		this.config.idConfig.certificates = this.config.idConfig.certificates.map(cert => decode(cert));
 		this.identityProvider = new IdentityProvider(this.config.idConfig);
 	}
 
-	async loginSAML(__email: string): Promise<Response_Auth> {
-		const _email = __email.toLowerCase();
-		const account = await this.createSAML(_email);
-
-		return await ModuleBE_Account.upsertSession(account);
-	}
-
-	async assertSaml(request_body: PostAssertBody) {
+	assertSaml = async (body: RequestBody_AssertSAML) => {
 		try {
-			const data = await this.assert({request_body});
+			const data = await this.assertImpl(body);
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
 
-			const session = await this.loginSAML(data.userId);
+			const accountWithoutPassword = {email: data.userId.toLowerCase(), deviceId: data.loginContext.deviceId, type: 'user'};
+			MemKey_AccountEmail.set(accountWithoutPassword.email);
+
+			const session = await ModuleBE_AccountDB.account.saml(accountWithoutPassword);
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 
 			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), 'g'), encodeURIComponent(session.sessionId));
-			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), encodeURIComponent(session.email));
+			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), encodeURIComponent(accountWithoutPassword.email));
 
-			return redirectUrl;
+			MemKey_HttpResponse.get().redirect(302, redirectUrl);
 		} catch (error: any) {
 			throw new ApiException(401, 'Error authenticating user', error);
 		}
-	}
+	};
 
-	private async createSAML(__email: string) {
-		const _email = __email.toLowerCase();
-		return ModuleBE_Account.getOrCreate({where: {email: _email}});
-	}
-
-	loginRequest = async (loginContext: RequestParams_LoginSAML, request?: ExpressRequest) => {
+	loginRequest = async (loginContext: RequestParams_LoginSAML) => {
 		return new Promise<Response_LoginSAML>((resolve, rejected) => {
+			console.log('SAML 1');
 			const sp = new ServiceProvider(this.config.spConfig);
 			const options = {
 				relay_state: __stringify(loginContext)
 			};
+
 			sp.create_login_request_url(this.identityProvider, options, (error, loginUrl, requestId) => {
+				console.log('SAML 2');
 				if (error)
 					return rejected(error);
 
 				resolve({loginUrl});
 			});
 		});
-
 	};
 
-	assert = async (options: RequestBody_SamlAssertOptions,): Promise<SamlAssertResponse> => new Promise<SamlAssertResponse>((resolve, rejected) => {
+	private assertImpl = async (request_body: RequestBody_AssertSAML): Promise<SamlAssertResponse> => new Promise<SamlAssertResponse>((resolve, rejected) => {
+		type RequestBody_SamlAssertOptions = {
+			request_body: RequestBody_AssertSAML,
+			allow_unencrypted_assertion?: boolean;
+		}
+
+		const assertBody: RequestBody_SamlAssertOptions = {request_body};
 		const sp = new ServiceProvider(this.config.spConfig);
-		sp.post_assert(this.identityProvider, options, async (error, response: _SamlAssertResponse) => {
+		sp.post_assert(this.identityProvider, assertBody, async (error, response: _SamlAssertResponse) => {
 			if (error)
 				return rejected(error);
 
-			const relay_state = options.request_body.RelayState;
+			const relay_state = assertBody.request_body.RelayState;
 			if (!relay_state)
-				return rejected('LoginContext lost along the way');
+				return rejected(new MUSTNeverHappenException('LoginContext lost along the way'));
 
 			resolve({
 				userId: response.user.name_id,

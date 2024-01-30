@@ -3,6 +3,7 @@ import {genericNotificationAction} from '../../components/TS_Notifications';
 import {ToastBuilder} from '../../component-modules/ModuleFE_Toaster';
 import {generateErrorToastContent} from './genereteToasts';
 
+
 export type FeedbackOptions = {
 	type: 'toast';
 	successContent?: React.ReactNode;
@@ -53,3 +54,33 @@ export async function performAction(action: () => Promise<any>, feedbackOptions:
 			}
 	}
 }
+
+export const asyncHandler = {
+	notification: async (title: string | { inProgress: string, failed?: string | ((e: any) => string), success?: string }, action: () => Promise<any>) => {
+		return genericNotificationAction(action, title);
+	},
+	toast: {
+		simple: async (action: () => Promise<any>, successMessage: React.ReactNode = Successful_Action_Default_Label, errorMessage: React.ReactNode = Failed_Action_Default_Label,) => {
+			try {
+				await action();
+				new ToastBuilder()
+					.setContent(successMessage)
+					.setDuration(Default_Toast_Duration)
+					.show();
+			} catch (err: any) {
+				new ToastBuilder()
+					.setContent(errorMessage)
+					.setDuration(Default_Toast_Duration).show();
+
+				throw err;
+			}
+		},
+		onSuccess: async (action: () => Promise<any>, successMessage: React.ReactNode = Successful_Action_Default_Label) => {
+			await action();
+			new ToastBuilder()
+				.setContent(successMessage)
+				.setDuration(Default_Toast_Duration)
+				.show();
+		}
+	}
+};

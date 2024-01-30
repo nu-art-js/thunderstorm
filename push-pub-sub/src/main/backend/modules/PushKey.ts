@@ -16,20 +16,20 @@
  * limitations under the License.
  */
 
-import {TS_Object} from '@nu-art/ts-common';
-import {SubscribeProps} from '../../shared';
+import {PushMessage} from '../../shared';
 import {ModuleBE_PushPubSub} from './ModuleBE_PushPubSub';
 
 
-export class PushKey<K extends string, P extends SubscribeProps, D extends TS_Object> {
+export class PushKey_BE<MessageType extends PushMessage<any, any, any>> {
 
-	private readonly key: K;
+	private readonly topic: MessageType['topic'];
 
-	constructor(key: K) {
-		this.key = key;
+	constructor(topic: MessageType['topic']) {
+		this.topic = topic;
 	}
 
-	async push(data: D, props?: P) {
-		return ModuleBE_PushPubSub.pushToKey(this.key, props, data);
+	async push(data: MessageType['data'], filter?: MessageType['filter']) {
+		return ModuleBE_PushPubSub.pushToKey({topic: this.topic, filter, data});
 	}
 }
+

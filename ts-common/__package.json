@@ -32,7 +32,8 @@
     "run-tests": "ts-mocha --timeout 5000 -p src/test/tsconfig.json src/test/run-all-tests.ts"
   },
   "dependencies": {
-    "export-to-csv": "^0.2.1",
+    "fast-csv": "^4.3.6",
+    "export-to-csv": "0.2.1",
     "moment": "^2.24.0",
     "node-forge": "^1.2.1",
     "uuid": "^9.0.0",
@@ -40,8 +41,7 @@
   },
   "devDependencies": {
     "@types/minimatch": "^5.1.2",
-    "@types/node-forge": "^1.0.0",
-    "@types/qs": "latest"
+    "@types/node-forge": "^1.0.0"
   },
   "_moduleAliases": {
     "@main": "dist/main/ts",

@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {clamp, Filter} from '@nu-art/ts-common';
+import {AssetValueType, BadImplementationException, clamp, Filter, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -30,7 +30,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
-
+import {EditableItem} from '../../utils/EditableItem';
 
 type State<ItemType> = {
 	open?: boolean
@@ -41,7 +41,8 @@ type State<ItemType> = {
 	dropDownRef: React.RefObject<HTMLDivElement>;
 	treeContainerRef: React.RefObject<HTMLDivElement>;
 	focusedItem?: ItemType;
-	className?: string
+	className?: string;
+	treeResizeObserver: ResizeObserver;
 }
 
 type StaticProps = {
@@ -60,12 +61,17 @@ type DropDownChildrenContainerData = {
 	width: number;
 }
 
+type EditableProp<Item, K extends keyof Item, ItemType, Prop extends AssetValueType<Item, K, ItemType> = AssetValueType<Item, K, ItemType>> = {
+	editable: EditableItem<Item>
+	prop: Prop
+}
+
 type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 	adapter: Adapter<ItemType> | ((filter?: string) => Adapter<ItemType>)
 	placeholder?: string,
 	inputValue?: string;
 
-	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
+	noOptionsRenderer?: React.ReactNode | ((filter?: string) => React.ReactNode);
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: ItemType[], e: React.KeyboardEvent) => any
 
 	selected?: ItemType
@@ -80,33 +86,59 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 	allowManualSelection?: boolean
 	className?: string;
 	boundingParentSelector?: string;
-	renderSearch: (dropDown: TS_DropDown<ItemType>) => React.ReactNode;
+	renderSearch?: (dropDown: TS_DropDown<ItemType>) => React.ReactNode;
 	limitItems?: number;
 	onContextMenu?: (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => void;
 }
 
 type Props_CanUnselect<ItemType> = { canUnselect: true; onSelected: (selected?: ItemType) => void };
 type Props_CanNotUnselect<ItemType> = { canUnselect?: false; onSelected: (selected: ItemType) => void };
-export type Props_DropDown<ItemType> = (Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>) & Dropdown_Props<ItemType>
+export type Props_DropDown<ItemType> =
+	(Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>)
+	& Dropdown_Props<ItemType>
+export type MandatoryProps_TS_DropDown<ItemType> = Dropdown_Props<ItemType>
 
-export type PartialProps_DropDown<T> = {
-	selected?: T;
+type BasePartialProps_DropDown<T> = {
 	inputValue?: string;
 	placeholder?: string;
-	onSelected: (selected: T) => void;
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
 	mapper?: (item: T) => string[]
 	renderer?: (item: T) => React.ReactElement
 	queryFilter?: (item: T) => boolean
 	ifNoneShowAll?: boolean
 }
+export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & {
+	selected?: T;
+	onSelected: (selected: T) => void;
+}
+
+type EditableDropDownProps<ItemType> = BasePartialProps_DropDown<ItemType> & EditableProp<any, any, ItemType>
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
 
 	// ######################## Static ########################
 
+	static readonly prepareEditable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+		return (props: EditableDropDownProps<T>) => <TS_DropDown<T>
+			{...resolveContent(mandatoryProps)} {...props}
+			onSelected={item => props.editable.updateObj({[props.prop]: item})}
+			selected={props.editable.item[props.prop]}/>;
+	};
+
+	static readonly prepareSelectable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+		return (props: PartialProps_DropDown<T>) => <TS_DropDown<T> {...resolveContent(mandatoryProps)} {...props} />;
+	};
+
+	static readonly prepare = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+		return {
+			editable: this.prepareEditable(mandatoryProps),
+			selectable: this.prepareSelectable(mandatoryProps)
+		};
+	};
+
 	private node?: HTMLDivElement;
+
 	static defaultRenderSearch = (dropDown: TS_DropDown<any>) =>
 		<TS_Input
 			type="text"
@@ -136,10 +168,6 @@ export class TS_DropDown<ItemType>
 		super(props);
 	}
 
-	// shouldComponentUpdate(nextProps: Readonly<Props_DropDown<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
-	// 	return true;
-	// }
-
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>, state?: Partial<State<ItemType>>): State<ItemType> | undefined {
 		const nextState: State<ItemType> = this.state ? {...this.state} : {} as State<ItemType>;
 		const nextAdapter = typeof nextProps.adapter === 'function' ? nextProps.adapter(state?.filterText) : nextProps.adapter;
@@ -149,6 +177,7 @@ export class TS_DropDown<ItemType>
 		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
 		nextState.treeContainerRef = state?.treeContainerRef ?? React.createRef();
 		nextState.className = nextProps.className;
+		nextState.treeResizeObserver ??= new ResizeObserver(() => this.onTreeResize());
 
 		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
 			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
@@ -164,8 +193,49 @@ export class TS_DropDown<ItemType>
 			dropDownRef: nextState.dropDownRef,
 			focusedItem: nextState.focusedItem,
 			treeContainerRef: nextState.treeContainerRef,
-			className: nextState.className
+			className: nextState.className,
+			treeResizeObserver: nextState.treeResizeObserver,
 		};
+	}
+
+	onTreeResize = () => {
+		const treeContainer = this.state.treeContainerRef.current;
+		const ddContainer = this.state.dropDownRef.current;
+		if (!treeContainer || !ddContainer)
+			return;
+
+		const ddRect = ddContainer.getBoundingClientRect();
+		const treeRect = treeContainer.getBoundingClientRect();
+		const rightBoundary = window.innerWidth - 20;
+		const leftBoundary = 20;
+
+		//Not overflowing screen right - nothing to fix
+		if (!(treeRect.right > rightBoundary))
+			return;
+
+		//Align to DD right, if it won't overflow screen left
+		const newXPos = ddRect.x + ddRect.width;
+		if (newXPos - treeRect.width >= leftBoundary) {
+			//Set align on right
+			treeContainer.style.removeProperty('left');
+			treeContainer.style.right = `${window.innerWidth - newXPos}px`;
+			return;
+		}
+
+		//Align the tree to rightBoundary
+		treeContainer.style.removeProperty('left');
+		treeContainer.style.right = '20px';
+	};
+
+	componentDidUpdate() {
+		if (!this.state.open)
+			return;
+
+		const treeContainer = this.state.treeContainerRef.current;
+		if (!treeContainer)
+			return;
+
+		this.state.treeResizeObserver.observe(treeContainer);
 	}
 
 	// ######################## Logic ########################
@@ -351,19 +421,25 @@ export class TS_DropDown<ItemType>
 			style.position = 'absolute';
 			style.left = containerData.posX;
 			style.maxHeight = containerData.maxHeight;
-			style.width = containerData.width;
-		}
+			// style.width = containerData.width;
 
+			//Contain the max and min width of the tree
+			style.minWidth = containerData.width;
+			style.maxWidth = window.innerWidth - 40;
+		}
+		if (!this.state.adapter.data)
+			throw new BadImplementationException('No data provided to TS_DropDown!');
 		if ((!this.props.filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0) {
 			if (this.props.noOptionsRenderer)
 				return <div className="ts-dropdown__empty" style={style}>
-					{(typeof this.props.noOptionsRenderer === 'function' ? this.props.noOptionsRenderer() : this.props.noOptionsRenderer)}
+					{(typeof this.props.noOptionsRenderer === 'function' ? this.props.noOptionsRenderer(this.state.filterText) : this.props.noOptionsRenderer)}
 				</div>;
 			return <div className="ts-dropdown__empty" style={style}>No options</div>;
 		}
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
-			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
+			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'}
+																			onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
@@ -397,7 +473,8 @@ export class TS_DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <div className={'ts-dropdown__selected'} onContextMenu={this.props.onContextMenu}><Renderer item={selected} node={node}/></div>;
+		return <div className={'ts-dropdown__selected'} onContextMenu={this.props.onContextMenu}><Renderer
+			item={selected} node={node}/></div>;
 	};
 
 	private renderSelectedOrFilterInput = (): React.ReactNode => {
@@ -405,7 +482,7 @@ export class TS_DropDown<ItemType>
 			return this.renderSelectedItem(this.state.selected);
 		}
 
-		return this.props.renderSearch(this);
+		return this.props.renderSearch!(this);
 	};
 
 	// ######################## To Remove ########################

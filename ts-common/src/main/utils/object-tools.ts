@@ -16,13 +16,12 @@
  * limitations under the License.
  */
 
-
-
 import {TS_Object} from './types';
-import {AssertionException, BadImplementationException} from '../core/exceptions';
+import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
+import {asArray} from './array-tools';
 
 
-export function deepClone<T>(obj: T): T {
+export function deepClone<T>(obj: T | Readonly<T>): T {
 	if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'undefined' || obj === null)
 		return obj;
 
@@ -133,15 +132,12 @@ export function assert<T>(message: string, expected: T, actual: T) {
 			`Assertion Failed:\n  -- ${message}\n  -- Expected: ${JSON.stringify(expected)}\n  --   Actual: ${JSON.stringify(actual)}\n\n`);
 }
 
-export function filterKeys<T extends TS_Object = TS_Object>(obj: T, keys: keyof T | (keyof T)[], filter: (k: keyof T, obj: T) => boolean = (k) => obj[k] === undefined || obj[k] === null) {
+export function filterKeys<T extends TS_Object = TS_Object>(obj: T, keys: keyof T | (keyof T)[] = _keys(obj), filter: (k: keyof T, obj: T) => boolean = (k) => obj[k] === undefined || obj[k] === null) {
 	if (typeof obj !== 'object' || obj === null) {
 		throw new BadImplementationException('Passed parameter for "obj" must be an object');
 	}
 
-	if (!Array.isArray(keys))
-		keys = [keys as keyof T];
-
-	(keys as (keyof T)[]).forEach(key => {
+	asArray(keys).forEach(key => {
 		if (filter(key, obj))
 			delete obj[key];
 	});

@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ModuleFE_MouseInteractivity} from './ModuleFE_MouseInteractivity';
 import {Adapter} from '../../components/adapter/Adapter';
 import {Coordinates, Model_Menu, Model_PopUp, Model_ToolTip, mouseInteractivity_ToolTip} from './types';
-import {generateHex} from '@nu-art/ts-common';
+import {generateHex, ResolvableContent} from '@nu-art/ts-common';
 
 // ######################### General Helpers #########################
 
@@ -73,7 +73,7 @@ export class MenuBuilder {
 
 // ######################### Pop Up Helpers #########################
 
-const OpenPopUpAtCenter = (id: string, content: () => JSX.Element,) => {
+const OpenPopUpAtCenter = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>,) => {
 	return {
 		onClick: (e: React.MouseEvent<HTMLElement>) => {
 			const model: Model_PopUp = {
@@ -87,7 +87,7 @@ const OpenPopUpAtCenter = (id: string, content: () => JSX.Element,) => {
 	};
 };
 
-const OpenPopUpAtLeft = (id: string, content: () => JSX.Element, offset?: number) => {
+const OpenPopUpAtLeft = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, offset?: number) => {
 	return {
 		onClick: (e: React.MouseEvent<HTMLElement>) => {
 			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
@@ -103,7 +103,7 @@ const OpenPopUpAtLeft = (id: string, content: () => JSX.Element, offset?: number
 	};
 };
 
-const OpenPopUpAtRight = (id: string, content: () => JSX.Element, offset?: number) => {
+const OpenPopUpAtRight = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, offset?: number) => {
 	return {
 		onClick: (e: React.MouseEvent<HTMLElement>) => {
 			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
@@ -119,7 +119,7 @@ const OpenPopUpAtRight = (id: string, content: () => JSX.Element, offset?: numbe
 	};
 };
 
-const OpenPopUpAtBottom = (id: string, content: () => JSX.Element, offset?: number) => {
+const OpenPopUpAtBottom = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, offset?: number) => {
 	return {
 		onClick: (e: React.MouseEvent<HTMLElement>) => {
 			const triggerRect = e.currentTarget.getBoundingClientRect();
@@ -139,7 +139,7 @@ const OpenPopUpAtBottom = (id: string, content: () => JSX.Element, offset?: numb
 	};
 };
 
-const OpenPopUpAtTop = (id: string, content: () => JSX.Element, offset?: number) => {
+const OpenPopUpAtTop = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, offset?: number) => {
 	return {
 		onClick: (e: React.MouseEvent<HTMLElement>) => {
 			const triggerRect = e.currentTarget.getBoundingClientRect();
@@ -169,7 +169,7 @@ type ToolTipConfig = {
 	yAxisAnchor?: 'top' | 'bottom';
 }
 
-const OpenToolTipAtCenter = (id: string, content: () => JSX.Element, config?: ToolTipConfig) => {
+const OpenToolTipAtCenter = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const model: Model_ToolTip = {
@@ -190,7 +190,7 @@ const OpenToolTipAtCenter = (id: string, content: () => JSX.Element, config?: To
 	};
 };
 
-const OpenToolTipAtLeft = (id: string, content: () => JSX.Element, contentHoverDelay?: number, config?: ToolTipConfig) => {
+const OpenToolTipAtLeft = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, contentHoverDelay?: number, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
@@ -213,7 +213,7 @@ const OpenToolTipAtLeft = (id: string, content: () => JSX.Element, contentHoverD
 	};
 };
 
-const OpenToolTipAtRight = (id: string, content: () => JSX.Element, config?: ToolTipConfig) => {
+const OpenToolTipAtRight = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
@@ -236,7 +236,7 @@ const OpenToolTipAtRight = (id: string, content: () => JSX.Element, config?: Too
 	};
 };
 
-const OpenToolTipAtBottom = (id: string, content: () => JSX.Element, config?: ToolTipConfig) => {
+const OpenToolTipAtBottom = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
@@ -259,7 +259,7 @@ const OpenToolTipAtBottom = (id: string, content: () => JSX.Element, config?: To
 	};
 };
 
-const OpenToolTipAtTop = (id: string, content: () => JSX.Element, config?: ToolTipConfig) => {
+const OpenToolTipAtTop = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const margin = (e.currentTarget.getBoundingClientRect().width / 2);

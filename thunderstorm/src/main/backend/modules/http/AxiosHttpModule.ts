@@ -21,9 +21,10 @@
 
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
-import {ApiDef, BaseHttpModule_Class, BaseHttpRequest, ErrorResponse, ErrorType, TypedApi} from '../../../shared';
+import {ApiDef, BaseHttpModule_Class, BaseHttpRequest, TypedApi} from '../../../shared';
 import {BadImplementationException, composeUrl, StaticLogger, StringMap,} from '@nu-art/ts-common';
 import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
+import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export class AxiosHttpModule_Class
@@ -111,7 +112,7 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 		this.cancelSignal.cancel(`Request with key: '${this.key}' aborted by the user.`);
 	}
 
-	getErrorResponse(): ErrorResponse<ErrorType> {
+	getErrorResponse(): ApiErrorResponse<ResponseError | ApiError_GeneralErrorMessage> {
 		return {debugMessage: this.getResponse()};
 	}
 
@@ -194,7 +195,7 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 		return new Promise<void>(executor);
 	}
 
-	getResponseHeader(headerKey: string): string | string[] | undefined {
+	_getResponseHeader(headerKey: string): string | string[] | undefined {
 		if (!this.response)
 			throw new BadImplementationException(`axios didn't return yet`);
 

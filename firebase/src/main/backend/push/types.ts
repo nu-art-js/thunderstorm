@@ -16,25 +16,38 @@
  * limitations under the License.
  */
 
-import * as messaging from 'firebase-admin/messaging';
+import {
+	Notification,
+	AndroidConfig,
+	WebpushConfig,
+	ApnsConfig,
+	FcmOptions,
+	Messaging,
+	BatchResponse,
+	MessagingTopicResponse,
+	MulticastMessage,
+	MessagingTopicManagementResponse,
+} from 'firebase-admin/messaging';
+import {TypedMap} from '@nu-art/ts-common';
+
 
 type BaseMessage = {
-	data?: { [key: string]: string };
-	notification?: messaging.Notification;
-	android?: messaging.AndroidConfig;
-	webpush?: messaging.WebpushConfig;
-	apns?: messaging.ApnsConfig;
-	fcmOptions?: messaging.FcmOptions;
+	data?: TypedMap<string>;
+	notification?: Notification;
+	android?: AndroidConfig;
+	webpush?: WebpushConfig;
+	apns?: ApnsConfig;
+	fcmOptions?: FcmOptions;
 };
 
 type TokenMessage = BaseMessage & {
 	token: string;
 }
 
-export type FirebaseType_PushMessages = messaging.Messaging;
-// export type FirebaseType_Message = messaging.Message;
+export type FirebaseType_PushMessages = Messaging;
+// export type FirebaseType_Message = Message;
 export type FirebaseType_Message = TokenMessage
-export type FirebaseType_BatchResponse = messaging.BatchResponse
-export type FirebaseType_TopicResponse = messaging.MessagingTopicResponse;
-export type FirebaseType_MulticastMessage = messaging.MulticastMessage;
-export type FirebaseType_SubscriptionResponse = messaging.MessagingTopicManagementResponse;
+export type FirebaseType_BatchResponse = BatchResponse
+export type FirebaseType_TopicResponse = MessagingTopicResponse;
+export type FirebaseType_MulticastMessage = MulticastMessage;
+export type FirebaseType_SubscriptionResponse = MessagingTopicManagementResponse;

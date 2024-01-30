@@ -30,11 +30,11 @@ export abstract class ComponentSync<P = any, State = any>
 
 	protected _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined {
 		this.logVerbose('Deriving state from props');
+		state ??= this.state ? {...this.state} : {} as State;
 		const _state = this.deriveStateFromProps(nextProps, state);
 		this.mounted && _state && this.setState(_state);
 		return _state;
 	}
 
-	protected abstract deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined;
+	protected abstract deriveStateFromProps(nextProps: P, state: Partial<State>): State | undefined;
 }
-

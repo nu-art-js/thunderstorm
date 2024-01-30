@@ -18,6 +18,7 @@ firestore-debug.log
 pubsub-debug.log
 package.json
 
+db-api-generator
 node_modules
 pnpm-lock.yaml
 pnpm-workspace.yaml

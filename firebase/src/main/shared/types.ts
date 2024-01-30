@@ -17,6 +17,7 @@
  */
 
 import {MandatoryKeys, RequireOptionals, TS_Object} from '@nu-art/ts-common';
+import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
 /**
@@ -41,6 +42,7 @@ export type FirebaseConfig = {
 	databaseURL?: string,
 	storageBucket?: string,
 	messagingSenderId: string
+	local?: boolean
 }
 
 type Comparator = 'in' | 'array-contains' | 'array-contains-any' | '>' | '>=' | '<' | '<=' | '==';
@@ -89,3 +91,8 @@ export type FirestoreQueryImpl<T extends TS_Object> = {
 }
 
 export type FirebaseProjectCollections = { projectId: string, collections: string[] };
+
+export type DB_EntityDependency<Type extends string = string> = { collectionKey: Type, conflictingIds: string[] };
+export type EntityDependencyError<Type extends string = string> = ResponseError<'has-dependencies', DB_EntityDependency<Type>[]>;
+
+export type MultiWriteOperation = 'create' | 'set' | 'update' | 'delete';

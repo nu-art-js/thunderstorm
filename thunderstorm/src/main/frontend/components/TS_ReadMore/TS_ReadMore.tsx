@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core';
+import {ComponentSync} from '../../core/ComponentSync';
 import './TS_ReadMore.scss';
 import {_className} from '../../utils/tools';
 
@@ -29,8 +29,7 @@ export class TS_ReadMore
 		readMoreText: (showingMore: boolean) => showingMore ? 'Read Less' : 'Read More',
 	};
 
-	protected deriveStateFromProps(nextProps: Props, state?: State): State {
-		state ??= this.state ? {...this.state} : {} as State;
+	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.text = nextProps.text;
 		state.showMore ??= false;
 		return state;

@@ -20,8 +20,21 @@
  */
 
 export * from './_ats';
-export * from './modules';
-export * from './core';
+export * from './core/types';
+export * from './core/ThunderstormDefaultApp';
+export * from './core/AppPage';
+export * from './core/AppPageV2';
+export * from './core/AppWrapper';
+export * from './core/ComponentSync';
+export * from './core/ComponentAsync';
+export * from './core/ComponentBase';
+export * from './core/IndexedDB';
+export * from './core/SimpleScriptInjector';
+export * from './core/thunder-dispatcher';
+export * from './core/thunder-modulepack';
+export * from './core/Thunder';
+export * from './core/typed-api';
+export * from './core/IndexedDBV3';
 
 export * from './component-modules/ModuleFE_Dialog';
 export * from './component-modules/ModuleFE_Toaster';
@@ -65,6 +78,7 @@ export * from './components/TS_Form';
 export * from './components/TS_VirtualizedList';
 export * from './components/TS_ProgressBar';
 export * from './components/TS_ReadMore';
+export * from './components/AwaitModules/AwaitModules';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
@@ -75,11 +89,41 @@ export * from './components/form/Form';
 export * from './components/adapter/Adapter';
 export * from './components/adapter/BaseRenderer';
 
+export * from './core/SmartComponent';
+export * from './core/SmartPage';
+export * from './components/Item_Editor';
+export * from './components/Page_ItemsEditor';
+export * from './components/GenericDropDown';
+export * from './components/TS_MultiSelect';
+
 export * from './modules/component-loader/ReactEntryComponentInjector';
 export * from './modules/component-loader/entry-component-loading-module';
+export * from './core/db-api-gen/consts';
+export * from './modules/db-api-gen/ModuleFE_BaseDB';
+export * from './modules/db-api-gen/ModuleFE_v3_BaseDB';
+export * from './modules/db-api-gen/ModuleFE_BaseApi';
+export * from './modules/db-api-gen/ModuleFE_v3_BaseApi';
+export * from './modules/app-config/ModuleFE_AppConfig';
+export * from './modules/archiving/ModuleFE_Archiving';
+export * from './modules/ModuleFE_BrowserHistory';
+export * from './modules/ModuleFE_ConnectivityModule';
+export * from './modules/ModuleFE_ForceUpgrade';
+export * from './modules/ModuleFE_Window';
+export * from './modules/ModuleFE_WindowMessenger';
+export * from './modules/ModuleFE_Locale';
+export * from './modules/ModuleFE_LocalStorage';
+export * from './modules/ModuleFE_Thunderstorm';
+export * from './modules/clearWebsiteDataDispatcher';
+export * from './modules/ModuleFE_BaseTheme';
+export * from './modules/routing';
+export * from './modules/http/ModuleFE_XHR';
+export * from './modules/action-processor/ModuleFE_ActionProcessor';
+export * from './modules/component-loader';
 
 export * from './utils/tools';
 export * from './utils/EditableItem';
+export * from './utils/EditableDBItem';
 export * from './utils/perform-action';
 
 export * from './behavior-functions';
+

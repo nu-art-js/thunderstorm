@@ -25,7 +25,8 @@ export type DB_Notification = DB_Object & {
 export interface UI_Notification {
 	postDelayed: (postDelayed: number) => UI_Notification;
 	content: (title: string, message?: string) => UI_Notification;
-	execute: <T>(action: () => Promise<T>) => Promise<T>;
+	execute: <T>(action: (notification: UI_Notification) => Promise<T>) => Promise<T>;
+	setStatus: (status: NotificationStatus) => UI_Notification;
 	show: (postDelay?: number) => void;
 	hide: () => void;
 	delete: () => void;
@@ -75,11 +76,15 @@ export class ModuleFE_Notifications_Class
 				notification.message = message || '';
 				return uiNotification;
 			},
-			execute: async <T>(action: () => Promise<T>) => {
+			setStatus: (status: NotificationStatus) => {
+				notification.status = status;
+				return uiNotification;
+			},
+			execute: async <T>(action: (notification: UI_Notification) => Promise<T>) => {
 				notification.status = NotificationStatus_InProgress;
 				uiNotification.show(-1);
 				try {
-					const t = await action();
+					const t = await action(uiNotification);
 					notification.status = NotificationStatus_Resolved;
 					uiNotification.show();
 					return t;

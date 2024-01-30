@@ -18,39 +18,15 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {ApiDef_AdminBugReport, ApiStruct_AdminBugReport, DB_BugReport, Paths} from '../../shared/api';
+import {ApiDef_AdminBugReport, DB_BugReport, Paths} from '../../shared/api';
 
 import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
-import {addRoutes, ApiResponse, ExpressRequest, ServerApi_Get, ServerApi_Post} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+
 
 type Config = {
 	projectId: string
 	bucket?: string,
-}
-
-class ServerApi_DownloadLogs
-	extends ServerApi_Post<ApiStruct_AdminBugReport['v1']['downloadLogs']> {
-
-	constructor() {
-		super(ApiDef_AdminBugReport.v1.downloadLogs);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Paths) {
-		// const email = await ModuleBE_Account.validateSession({},request);
-		return ModuleBE_AdminBR.downloadFiles(body);
-	}
-}
-
-class ServerApi_GetReport
-	extends ServerApi_Get<ApiStruct_AdminBugReport['v1']['retrieveLogs']> {
-
-	constructor() {
-		super(ApiDef_AdminBugReport.v1.retrieveLogs);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		return ModuleBE_AdminBR.getFilesFirebase();
-	}
 }
 
 export class ModuleBE_AdminBR_Class
@@ -61,17 +37,20 @@ export class ModuleBE_AdminBR_Class
 
 	constructor() {
 		super();
-		addRoutes([
-			new ServerApi_DownloadLogs(),
-			new ServerApi_GetReport()
-		]);
+
 	}
 
 	protected init(): void {
+		super.init();
 		const sessAdmin = ModuleBE_Firebase.createAdminSession();
 		const firestore = sessAdmin.getFirestore();
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
 		this.storage = sessAdmin.getStorage();
+		addRoutes([
+			createBodyServerApi(ApiDef_AdminBugReport.v1.downloadLogs, ModuleBE_AdminBR.downloadFiles),
+			createQueryServerApi(ApiDef_AdminBugReport.v1.retrieveLogs, ModuleBE_AdminBR.getFilesFirebase),
+
+		]);
 	}
 
 	getFilesFirebase = async () => this.bugReport.getAll();
@@ -79,7 +58,7 @@ export class ModuleBE_AdminBR_Class
 	downloadFiles = async (path: Paths) => {
 		const bucket = await this.storage.getOrCreateBucket(this.config?.bucket);
 		const file = await bucket.getFile(path.path);
-		return file.getReadSecuredUrl('application/zip', 600000);
+		return file.getReadSignedUrl(600000, 'application/zip');
 	};
 }
 

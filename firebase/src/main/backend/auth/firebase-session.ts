@@ -26,16 +26,19 @@ import {StorageWrapperBE} from '../storage/StorageWrapperBE';
 import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE';
 import {FirebaseConfig} from '../..';
 import {App} from 'firebase-admin/app';
+import {FirestoreWrapperBEV2} from '../firestore-v2/FirestoreWrapperBEV2';
+import {FirestoreWrapperBEV3} from '../firestore-v3/FirestoreWrapperBEV3';
+
 
 /**
  * Represents the credentials of a Firebase user.
  */
 export type Firebase_UserCredential = {
-    config: FirebaseConfig
-    credentials: {
-        user: string;
-        password: string;
-    }
+	config: FirebaseConfig
+	credentials: {
+		user: string;
+		password: string;
+	}
 };
 
 // export type FirebaseApp = admin.app.App | firebase.app.App
@@ -44,71 +47,85 @@ export type Firebase_UserCredential = {
  * An abstract class that serves as a base for Firebase session classes.
  */
 export abstract class FirebaseSession<Config>
-    extends Logger {
-    app!: App;
-    protected database?: DatabaseWrapperBE;
-    protected storage?: StorageWrapperBE;
-    protected firestore?: FirestoreWrapperBE;
-    protected messaging?: PushMessagesWrapperBE;
+	extends Logger {
+	app!: App;
+	protected database?: DatabaseWrapperBE;
+	protected storage?: StorageWrapperBE;
+	protected firestore?: FirestoreWrapperBE;
+	protected firestoreV2?: FirestoreWrapperBEV2;
+	protected firestoreV3?: FirestoreWrapperBEV3;
+	protected messaging?: PushMessagesWrapperBE;
 
-    protected config: Config;
-    protected sessionName: string;
-    private readonly admin: boolean;
+	protected config: Config;
+	protected sessionName: string;
+	private readonly admin: boolean;
 
-    /**
-     * Initializes a new instance of the FirebaseSession class.
-     * @param config The configuration settings for the Firebase session.
-     * @param sessionName The name of the Firebase session.
-     * @param _admin A value indicating whether the session is an admin session.
-     */
-    protected constructor(config: Config, sessionName: string, _admin = true) {
-        super(`firebase: ${sessionName}`);
-        this.sessionName = sessionName;
-        this.config = config;
-        this.admin = _admin;
-    }
+	/**
+	 * Initializes a new instance of the FirebaseSession class.
+	 * @param config The configuration settings for the Firebase session.
+	 * @param sessionName The name of the Firebase session.
+	 * @param _admin A value indicating whether the session is an admin session.
+	 */
+	protected constructor(config: Config, sessionName: string, _admin = true) {
+		super(`firebase: ${sessionName}`);
+		this.sessionName = sessionName;
+		this.config = config;
+		this.admin = _admin;
+	}
 
-    abstract getProjectId(): string;
+	abstract getProjectId(): string;
 
-    public isAdmin() {
-        return this.admin;
-    }
+	public isAdmin() {
+		return this.admin;
+	}
 
-    public abstract connect(): void ;
+	public abstract connect(): void ;
 
-    /**
-     * Returns an instance of the DatabaseWrapperBE object, which provides access to a database.
-     */
-    public getDatabase(): DatabaseWrapperBE {
-        if (this.database)
-            return this.database;
-        return this.database = new DatabaseWrapperBE(this);
-    }
+	/**
+	 * Returns an instance of the DatabaseWrapperBE object, which provides access to a database.
+	 */
+	public getDatabase(): DatabaseWrapperBE {
+		if (this.database)
+			return this.database;
+		return this.database = new DatabaseWrapperBE(this);
+	}
 
-    /**
-     * Returns an instance of the StorageWrapperBE object, which provides access to a cloud storage service.
-     */
-    public getStorage(): StorageWrapperBE {
-        if (this.storage)
-            return this.storage;
-        return this.storage = new StorageWrapperBE(this);
-    }
+	/**
+	 * Returns an instance of the StorageWrapperBE object, which provides access to a cloud storage service.
+	 */
+	public getStorage(): StorageWrapperBE {
+		if (this.storage)
+			return this.storage;
+		return this.storage = new StorageWrapperBE(this);
+	}
 
-    /**
-     * Returns an instance of the FirestoreWrapperBE object, which provides access to the Firestore database service.
-     */
-    public getFirestore(): FirestoreWrapperBE {
-        if (this.firestore)
-            return this.firestore;
-        return this.firestore = new FirestoreWrapperBE(this);
-    }
+	/**
+	 * Returns an instance of the FirestoreWrapperBE object, which provides access to the Firestore database service.
+	 */
+	public getFirestore(): FirestoreWrapperBE {
+		if (this.firestore)
+			return this.firestore;
+		return this.firestore = new FirestoreWrapperBE(this);
+	}
 
-    /**
-     * Returns an instance of the PushMessagesWrapperBE object, which provides access to push messaging services.
-     */
-    public getMessaging(): PushMessagesWrapperBE {
-        if (this.messaging)
-            return this.messaging;
-        return this.messaging = new PushMessagesWrapperBE(this);
-    }
+	public getFirestoreV2(): FirestoreWrapperBEV2 {
+		if (this.firestoreV2)
+			return this.firestoreV2;
+		return this.firestoreV2 = new FirestoreWrapperBEV2(this);
+	}
+
+	public getFirestoreV3(): FirestoreWrapperBEV3 {
+		if (this.firestoreV3)
+			return this.firestoreV3;
+		return this.firestoreV3 = new FirestoreWrapperBEV3(this);
+	}
+
+	/**
+	 * Returns an instance of the PushMessagesWrapperBE object, which provides access to push messaging services.
+	 */
+	public getMessaging(): PushMessagesWrapperBE {
+		if (this.messaging)
+			return this.messaging;
+		return this.messaging = new PushMessagesWrapperBE(this);
+	}
 }

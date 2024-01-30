@@ -19,11 +19,9 @@
  * limitations under the License.
  */
 
-import {DB_Object, TS_Object} from '@nu-art/ts-common';
 import {BaseHttpRequest} from './BaseHttpRequest';
+import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
-
-export type DBIndex<T extends DB_Object> = { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } };
 
 export enum HttpMethod {
 	ALL = 'all',
@@ -40,8 +38,6 @@ export type HttpMethod_Query = 'get' | 'delete'
 export type HttpMethod_Body = 'post' | 'put' | 'patch'
 export type HttpMethod_Empty = 'options' | 'head'
 
-export type IndexKeys<T extends DB_Object, Ks extends keyof T> = { [K in Ks]: T[K] };
-
 export type QueryParams = { [key: string]: string | number | undefined; };
 
 /**
@@ -52,52 +48,53 @@ export type QueryParams = { [key: string]: string | number | undefined; };
  * IP - Input Params
  * IB - Input Body
  */
-export type TypedApi<M extends string, R, B, P extends QueryParams | undefined, IB = B, IP = P> = {
+export type TypedApi<M extends string, R, B, P extends QueryParams | undefined, IB = B, IP = P, E extends ResponseError = ResponseError> = {
 	M: M,
 	R: R,
 	B: B,
 	P: P,
 	IP: IP,
 	IB: IB
+	E: E
 }
 
-export type BodyApi<R, B, IB = B, M extends HttpMethod_Body = HttpMethod.POST, P extends QueryParams = never> = TypedApi<M, R, B, P, IB, P>
-export type QueryApi<R, P extends QueryParams | undefined = QueryParams, IP = P, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P, B, IP>
-export type EmptyApi<R, M extends HttpMethod_Empty, P extends QueryParams = never, B = never> = TypedApi<M, R, B, P, B, P>
+export type BodyApi<R, B, IB = B,
+	E extends ResponseError = ResponseError,
+	M extends HttpMethod_Body = HttpMethod.POST,
+	P extends QueryParams = never> = TypedApi<M, R, B, P, IB, P, E>
 
-export type ApiDef<API extends TypedApi<any, any, any, any>> = {
+export type QueryApi<R, P extends QueryParams | undefined = QueryParams,
+	E extends ResponseError = ResponseError,
+	IP = P, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P, B, IP, E>
+
+export type EmptyApi<R, M extends HttpMethod_Empty,
+	E extends ResponseError = ResponseError,
+	P extends QueryParams = never, B = never> = TypedApi<M, R, B, P, B, P, E>
+
+export type ApiDef<API extends TypedApi<any, any, any, any, any>> = {
 	method: API['M'],
 	fullUrl?: string
 	baseUrl?: string
 	path: string
 	timeout?: number
+	errors?: API['E']['type']
 }
 
-export type ApiResolver<K> = K extends ApiDef<infer API> ? API : never
+export type ApiStruct = { [k: string]: (TypedApi<any, any, any, any, any> | ApiStruct) }
 
-export type ErrorBody<E extends TS_Object | void = void> = {
-	type: string
-	body: E
-};
-
-export type  ErrorResponse<E extends TS_Object | void = void> = {
-	debugMessage?: string
-	error?: ErrorBody<E>
-}
-
-export type ApiStruct = { [k: string]: (TypedApi<any, any, any, any> | ApiStruct) }
-
-export type ApiDefResolver<API_Struct extends ApiStruct> = API_Struct extends TypedApi<any, any, any, any> ? ApiDef<API_Struct> : API_Struct extends ApiStruct ? ApiDefRouter<API_Struct> : never;
+export type ApiDefResolver<API_Struct extends ApiStruct> = API_Struct extends TypedApi<any, any, any, any, any> ? ApiDef<API_Struct> : API_Struct extends ApiStruct ? ApiDefRouter<API_Struct> : never;
 export type ApiDefRouter<API_Struct extends ApiStruct> = { [P in keyof API_Struct]: ApiDefResolver<API_Struct[P]> };
 
-export type ApiDefCaller<API_Struct extends ApiStruct> = API_Struct extends TypedApi<any, any, any, any> ? ApiCaller<API_Struct> : API_Struct extends ApiStruct ? ApiCallerRouter<API_Struct> : never;
+export type ApiDefCaller<API_Struct extends ApiStruct> = API_Struct extends TypedApi<any, any, any, any, any> ? ApiCaller<API_Struct> : API_Struct extends ApiStruct ? ApiCallerRouter<API_Struct> : never;
 export type ApiCallerRouter<API_Struct extends ApiStruct> = { [P in keyof API_Struct]: ApiDefCaller<API_Struct[P]> };
 
-export type ApiCaller_Query<API extends QueryApi<any, any, any>> = API['IP'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IP']) => BaseHttpRequest<API>;
-export type ApiCaller_Body<API extends BodyApi<any, any, any>> = API['IB'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IB']) => BaseHttpRequest<API>;
-export type ApiCaller_Any<API extends TypedApi<any, any, any, any>> = (body: API['IB'], query: API['IP']) => BaseHttpRequest<API>;
+export type ApiCaller_Query<API extends QueryApi<any, any, any, any, HttpMethod_Query>> = API['IP'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IP']) => BaseHttpRequest<API>;
+export type ApiCaller_Body<API extends BodyApi<any, any, any, any, HttpMethod_Body>> = API['IB'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IB']) => BaseHttpRequest<API>;
+export type ApiCaller_Any<API extends TypedApi<any, any, any, any, any>> = (body: API['IB'], query: API['IP']) => BaseHttpRequest<API>;
 
 export type ApiCaller<API> =
-	API extends QueryApi<any, any, any> ? ApiCaller_Query<API> :
-		API extends BodyApi<any, any, any> ? ApiCaller_Body<API> :
-			API extends TypedApi<any, any, any, any> ? ApiCaller_Any<API> : never;
+	API extends QueryApi<any, any, any, any, HttpMethod_Query> ? ApiCaller_Query<API> :
+		API extends BodyApi<any, any, any, any, HttpMethod_Body> ? ApiCaller_Body<API> :
+			API extends TypedApi<any, any, any, any, any> ? ApiCaller_Any<API> : never;
+
+export type ApiModule = { dbModule: { dbDef: { dbName: string } }, apiDef: { [name: string]: { [name: string]: { path: string } } } }

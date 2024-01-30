@@ -17,19 +17,20 @@
  * limitations under the License.
  */
 
-import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
-import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {auditBy, batchActionParallel, dbObjectToId, flatArray} from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {ApiException, batchActionParallel, dbObjectToId, flatArray} from '@nu-art/ts-common';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionDomain, DB_PermissionProject, DBDef_PermissionDomain} from '../../shared';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
+import {DB_EntityDependency} from '@nu-art/firebase';
+import {firestore} from 'firebase-admin';
+import {ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
+import Transaction = firestore.Transaction;
 
 
 export class ModuleBE_PermissionDomain_Class
-	extends ModuleBE_BaseDB<DB_PermissionDomain>
+	extends ModuleBE_BaseDBV2<DB_PermissionDomain>
 	implements CanDeletePermissionEntities<'Project', 'Domain'> {
 
 	constructor() {
@@ -40,15 +41,15 @@ export class ModuleBE_PermissionDomain_Class
 		let conflicts: DB_PermissionDomain[] = [];
 		const dependencies: Promise<DB_PermissionDomain[]>[] = [];
 
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async projectIds => this.query({where: {projectId: {$in: projectIds}}})));
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async projectIds => this.query.custom({where: {projectId: {$in: projectIds}}})));
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
 		return {collectionKey: 'Domain', conflictingIds: conflicts.map(dbObjectToId)};
 	};
 
-	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
-		const accessLevels = await ModuleBE_PermissionAccessLevel.query({where: {domainId: dbInstance._id}});
+	protected async assertDeletion(transaction: Transaction, dbInstance: DB_PermissionDomain) {
+		const accessLevels = await ModuleBE_PermissionAccessLevel.query.custom({where: {domainId: dbInstance._id}});
 		if (accessLevels.length) {
 			throw new ApiException(403, 'You trying delete domain that associated with accessLevels, you need delete the accessLevels first');
 		}
@@ -58,13 +59,9 @@ export class ModuleBE_PermissionDomain_Class
 		return [{namespace: item.namespace, projectId: item.projectId}];
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionDomain, t?: FirestoreTransaction, request?: ExpressRequest) {
-		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId});
-
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
-		}
+	protected async preWriteProcessing(dbInstance: DB_PermissionDomain, t?: Transaction) {
+		await ModuleBE_PermissionProject.query.uniqueAssert(dbInstance.projectId, t);
+		dbInstance._auditorId = MemKey_AccountId.get();
 	}
 }
 

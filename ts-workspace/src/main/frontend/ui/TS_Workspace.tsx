@@ -21,24 +21,27 @@
 
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
-import {ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
+import {_className, BaseAsyncState, ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import './TS_Workspace.scss';
-import {PanelConfig} from './types';
+import {PanelConfig, Props_BaseWorkspace} from './types';
 import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace';
-import {TypedMap} from '@nu-art/ts-common';
+
+
+type Props = Props_BaseWorkspace & {
+	workspaceKey: string;
+	id?: string;
+	className?: string;
+}
 
 type State = {
 	config: PanelConfig
 }
 
-type Props = {
-	workspaceKey: string;
-	renderers: TypedMap<React.ElementType>
-}
-
 export class TS_Workspace
 	extends ComponentAsync<Props, State> {
+
+	private toRender = false;
 
 	// _constructor() {
 	// 	this.logger.setMinLevel(LogLevel.Verbose);
@@ -47,6 +50,20 @@ export class TS_Workspace
 	protected async deriveStateFromProps(nextProps: Props) {
 		const config = await ModuleFE_Workspace.getWorkspaceConfigByKey(nextProps.workspaceKey);
 		return {config};
+	}
+
+	protected _deriveStateFromProps(nextProps: Props): (BaseAsyncState & State) | undefined {
+		const state = super._deriveStateFromProps(nextProps);
+		this.toRender = true;
+		return state;
+	}
+
+	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<BaseAsyncState & State>, nextContext: any): boolean {
+		if (this.toRender) {
+			this.toRender = false;
+			return true;
+		}
+		return super.shouldComponentUpdate(nextProps, nextState, nextContext);
 	}
 
 	private onConfigChanged = async () => {
@@ -62,10 +79,12 @@ export class TS_Workspace
 		if (!PanelRenderer)
 			return `COULD NOT GET THE WORKSPACE RENDERER FOR KEY ${this.state.config.key}`;
 
-		return <div className="ts-workspace">
+		const className = _className('ts-workspace', this.props.className);
+		return <div className={className} id={this.props.id}>
 			<PanelRenderer
 				config={this.state.config.data}
 				renderers={this.props.renderers}
+				instances={this.props.instances}
 				onConfigChanged={this.onConfigChanged}
 			/>
 		</div>;

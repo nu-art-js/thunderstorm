@@ -17,9 +17,7 @@
  * limitations under the License.
  */
 
-import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
-import {createApisForDBModule} from '@nu-art/db-api-generator/backend';
 import {ModuleBE_PermissionProject} from '../modules/management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from '../modules/management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionAccessLevel} from '../modules/management/ModuleBE_PermissionAccessLevel';
@@ -27,17 +25,22 @@ import {ModuleBE_PermissionApi} from '../modules/management/ModuleBE_PermissionA
 import {ModuleBE_PermissionGroup} from '../modules/assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from '../modules/assignment/ModuleBE_PermissionUserDB';
 
+import {Module} from '@nu-art/ts-common';
+import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
+import {createApisForDBModuleV2} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_v2_SyncEnv_ServiceAccount} from '../patch/ModuleBE_v2_SyncEnv_ServiceAccount';
 
-export const ModulePackBE_Permissions = [
-	ModuleBE_PermissionProject, createApisForDBModule(ModuleBE_PermissionProject),
-	ModuleBE_PermissionDomain, createApisForDBModule(ModuleBE_PermissionDomain),
-	ModuleBE_PermissionAccessLevel, createApisForDBModule(ModuleBE_PermissionAccessLevel),
-	ModuleBE_PermissionApi, createApisForDBModule(ModuleBE_PermissionApi),
-	ModuleBE_PermissionUserDB, createApisForDBModule(ModuleBE_PermissionUserDB),
-	ModuleBE_PermissionGroup, createApisForDBModule(ModuleBE_PermissionGroup),
+
+export const ModulePackBE_Permissions: Module[] = [
+	ModuleBE_PermissionProject, createApisForDBModuleV2(ModuleBE_PermissionProject),
+	ModuleBE_PermissionDomain, createApisForDBModuleV2(ModuleBE_PermissionDomain),
+	ModuleBE_PermissionAccessLevel, createApisForDBModuleV2(ModuleBE_PermissionAccessLevel),
+	ModuleBE_PermissionApi, createApisForDBModuleV2(ModuleBE_PermissionApi),
+	ModuleBE_PermissionUserDB, createApisForDBModuleV2(ModuleBE_PermissionUserDB),
+	ModuleBE_PermissionGroup, createApisForDBModuleV2(ModuleBE_PermissionGroup),
 	ModuleBE_PermissionsAssert,
 	ModuleBE_Permissions,
+	ModuleBE_v2_SyncEnv_ServiceAccount,
 ];
 
 export * from '../modules/ModuleBE_PermissionsAssert';
-export * from '../modules/ModuleBE_Permissions';

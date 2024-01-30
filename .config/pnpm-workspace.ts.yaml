@@ -5,17 +5,19 @@ packages:
   - google-services
   - firebase
   - thunderstorm
-  - db-api-generator
   - slack
   - live-docs
   - user-account
   - ts-workspace
+  - ts-pdf
   - permissions
   - push-pub-sub
   - jira
   - bug-report
   - github
   - file-upload
+  - ts-openai
+  - schema-to-types
   - app-shared
   - app-frontend
   - app-backend

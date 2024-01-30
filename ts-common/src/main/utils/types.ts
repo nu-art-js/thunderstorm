@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 
+import {Default_UniqueKey} from '../db/types';
+
+
 export type CustomOptional<T, K> = {
 	[P in keyof T]?: K
 };
@@ -24,13 +27,57 @@ export type Subset<T> = {
 	[P in keyof T]: T[P];
 };
 
+/**
+ * Utility type for creating a subset of keys (`AllKeys`) based on whether the corresponding value types in a mapping object (`Mapper`) extend a certain type (`ExpectedType`).
+ *
+ * @typeParam AllKeys - Represents all possible keys. Must be a string, a number, or a union of string and/or number literals.
+ * @typeParam Mapper - Represents a mapping object. Must be an object type with keys that are a subset of AllKeys and values of any type.
+ * @typeParam ExpectedType - Represents the type that the values in the Mapper object should extend.
+ *
+ * @example
+ * type Keys = 'a' | 'b' | 'c' | 'd';
+ * type MyMapper = { a: number, b: string, c: boolean, d: number };
+ * type MySubsetKeys = SubsetKeys<Keys, MyMapper, number>; // 'a' | 'd'
+ */
+export type SubsetKeys<AllKeys extends string | number | symbol, Mapper extends { [K in AllKeys]: any }, ExpectedType> = { [K in AllKeys]: Mapper[K] extends ExpectedType ? K : never }[AllKeys];
+
+/**
+ * Utility type to generate a new type `T` where only the properties with keys listed in `Keys` are included.
+ * The resulting type will be a new object type with a subset of the properties from the original `T`.
+ *
+ * @typeParam T - The type from which the subset will be generated.
+ * @typeParam Keys - A set of keys from `T` which will be included in the new subset type.
+ *
+ * @example
+ * type MyType = { a: number, b: string, c: boolean, d: number };
+ * type MySubset = SubsetByKeys<MyType, 'a' | 'd'>; // { a: number, d: number }
+ */
+export type SubsetObjectByKeys<T, Keys extends keyof T> = {
+	[K in Keys]: T[K];
+};
+
+/**
+ * Utility type to generate a subset of keys from a type `T` where the corresponding value type extends `ExpectedType`.
+ * It uses the `SubsetKeys` to get the subset of keys and `SubsetByKeys` to create a new type with only the properties that have those keys.
+ *
+ * @typeParam T - The type from which the subset of keys will be generated.
+ * @typeParam ExpectedType - The type that the values in `T` should extend.
+ *
+ * @example
+ * type MyType = { a: number, b: string, c: boolean, d: number };
+ * type MySubset = SubsetByValueType<MyType, number> // { a: number, d: number }
+ */
+export type SubsetObjectByValue<T, ExpectedType> = SubsetObjectByKeys<T, SubsetKeys<keyof T, T, ExpectedType>>;
+
 export type OptionalKeys<T extends TS_Object> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
 export type MandatoryKeys<T extends TS_Object, V extends any = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
 
-export type RequireOptionals<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
+export type RequireOptionals<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> =
+	Pick<T, Exclude<keyof T, Keys>>
 	& { [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>> }[Keys]
 
-export type RequireOneOptional<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
+export type RequireOneOptional<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> =
+	Pick<T, Exclude<keyof T, Keys>>
 	& { [K in Keys]-?: Required<Pick<T, K>> & Partial<Record<Exclude<Keys, K>, undefined>> }[Keys]
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
@@ -48,7 +95,7 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
 }[Keys]
 
 export type Constructor<T> = new (...args: any) => T
-export type ArrayType<T extends any[]> = T extends (infer I)[] ? I : never;
+export type ArrayType<T extends any> = T extends (infer I)[] ? I : never;
 export type NestedArrayType<T extends any[]> =
 	T extends (infer I)[] ? I extends any[] ?
 		NestedArrayType<I> : I : never;
@@ -85,8 +132,14 @@ export type UniqueId = string;
 
 export type PreDB<T extends DB_Object, K extends keyof T = never> = PartialProperties<T, keyof DB_Object | K>;
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
+
+export type IndexKeys<T extends Object, Ks extends keyof T> = { [K in Ks]: T[K] };
+export type UniqueParam<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey> =
+	UniqueId
+	| IndexKeys<Type, Ks>;
+
 export type Draftable = { _isDraft: boolean };
-export type ResolvableContent<T> = T | (() => T);
+export type ResolvableContent<T, K extends any[] = never> = T | ((...param: K) => T);
 
 export type Auditable = {
 	_audit?: AuditBy;
@@ -146,3 +199,71 @@ export type UnionToIntersection<U> =
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : never
+
+export type RecursiveOmit<T, OmitKey extends keyof any> = {
+	[K in Exclude<keyof T, OmitKey>]: T[K] extends object ? RecursiveOmit<T[K], OmitKey> : T[K];
+};
+
+/**
+ * Constructs a union of string paths representing the properties and nested properties of an object type.
+ *
+ * @typeParam ObjectType - The object type to analyze.
+ *
+ * @example
+ * // Simple Example: Analyzing a flat object
+ * type Person = { name: string; age: number };
+ * type PersonPaths = DotNotation<Person>; // 'name' | 'age'
+ *
+ * @example
+ * // Nested Example: Analyzing an object with nested properties
+ * type User = { name: string; address: { city: string; zip: string } };
+ * type UserPaths = DotNotation<User>; // 'name' | 'address' | 'address.city' | 'address.zip'
+ *
+ * @example
+ * // Complex Example: Analyzing an object with multiple levels of nesting
+ * type Profile = { name: string; contacts: { email: { primary: string; secondary: string } } };
+ * type ProfilePaths = DotNotation<Profile>; // 'name' | 'contacts' | 'contacts.email' | 'contacts.email.primary' | 'contacts.email.secondary'
+ */
+export type DotNotation<T> = T extends object
+	? {
+		[K in keyof T]: K extends string
+			? T[K] extends object
+				? `${K & string}` | `${K & string}.${DotNotation<T[K]>}`
+				: `${K & string}`
+			: never;
+	}[keyof T]
+	: '';
+
+/**
+ * Replaces the type of nested property within an object, based on a specified path.
+ *
+ * @typeParam ObjectType - The original object type.
+ * @typeParam PropertyPath - The path to the property to replace, expressed as a dot-notation string.
+ * @typeParam NewValueType - The new type to replace the old type with.
+ *
+ * @example
+ * // Simple Example: Replace the 'age' property with a string
+ * type Person = { name: string; age: number };
+ * type NewPerson = ManipulateInnerPropValue<Person, 'age', string>;
+ * // Result: { name: string; age: string }
+ *
+ * @example
+ * // Nested Example: Replace the 'address.city' property with a number
+ * type User = { name: string; address: { city: string; zip: string } };
+ * type NewUser = ManipulateInnerPropValue<User, 'address.city', number>;
+ * // Result: { name: string; address: { city: number; zip: string } }
+ *
+ * @example
+ * // Complex Example: Replace the 'contacts.email.primary' property with a boolean
+ * type Profile = { name: string; contacts: { email: { primary: string; secondary: string } } };
+ * type NewProfile = ManipulateInnerPropValue<Profile, 'contacts.email.primary', boolean>;
+ * // Result: { name: string; contacts: { email: { primary: boolean; secondary: string } } }
+ */
+export type ManipulateInnerPropValue<ObjectType, PropertyPath extends DotNotation<ObjectType>, NewValueType> =
+	PropertyPath extends `${infer Key}.${infer Rest}`
+		? Key extends keyof ObjectType
+			? { [Prop in keyof ObjectType]: Prop extends Key ? Rest extends DotNotation<ObjectType[Key]> ? ManipulateInnerPropValue<ObjectType[Key], Rest, NewValueType> : never : ObjectType[Prop] }
+			: never
+		: { [Prop in keyof ObjectType]: Prop extends PropertyPath ? NewValueType : ObjectType[Prop] };
+
+export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };

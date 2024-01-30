@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-import {Auditable, DB_Object} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object, UniqueId} from '@nu-art/ts-common';
 
-
-export type DB_PermissionApi = DB_Object & Auditable & {
+export type DB_PermissionApi = DB_Object & AuditableV2 & {
 	projectId: string
 	path: string
 	accessLevelIds?: string[],
 	deprecated?: boolean,
 	onlyForApplication?: boolean
+	_accessLevels?: { [k: UniqueId]: number }
 }
 

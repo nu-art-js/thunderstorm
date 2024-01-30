@@ -4,13 +4,14 @@ import ResolveDependencyToast from './resolve-dependency-toast/ResolveDependency
 
 
 const isDependencyError = (e: any): boolean => {
-	return (e.errorResponse?.error.type === 'has-dependencies' || e.errorResponse?.error.type === 'has-dependencies-on-inner-value');
+	return (e.errorResponse?.error.type === 'has-dependencies');
 };
 
 export const generateErrorToastContent = (e: any, content: React.ReactNode, additionalData: any): React.ReactNode => {
 
-	if (isDependencyError(e))
-		return <ResolveDependencyToast dependencyConflicts={e.errorResponse.error.body} deletedEntity={additionalData}/>;
+	if (isDependencyError(e)) {
+		return <ResolveDependencyToast dependencyConflicts={e.errorResponse.error.data} deletedEntity={additionalData}/>;
+	}
 
 	if (isErrorOfType(e, ValidationException))
 		return <div>{`Invalid input for fields: ${filterInstances(_keys(e.result)).join(', ')}`}</div>;

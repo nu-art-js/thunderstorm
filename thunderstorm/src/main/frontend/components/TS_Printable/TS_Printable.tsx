@@ -3,17 +3,21 @@ import {HTMLProps} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_Printable.scss';
 
+type Props = HTMLProps<HTMLDivElement> & {
+	printable: (ref: HTMLDivElement) => void;
+	printOnly?: boolean;
+}
 
 export class TS_Printable
-	extends React.Component<HTMLProps<HTMLDivElement> & { printable: (ref: HTMLDivElement) => void }> {
+	extends React.Component<Props> {
 	private ref!: HTMLDivElement;
 
 
 	render() {
-		const {printable, ...props} = this.props;
+		const {printable, printOnly, ...props} = this.props;
 
 		return (
-			<div {...props} className={_className('ts-printable', props.className)} ref={((ref) => {
+			<div {...props} className={_className('ts-printable', props.className, printOnly ? 'print-only' : undefined)} ref={((ref) => {
 				if (this.ref)
 					return;
 

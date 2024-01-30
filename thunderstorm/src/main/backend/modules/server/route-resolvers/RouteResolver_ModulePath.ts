@@ -19,12 +19,12 @@
  * limitations under the License.
  */
 
-import {Express} from 'express';
-import {ServerApi_Middleware} from '../../../utils/types';
+import {Express, NextFunction} from 'express';
+import {ExpressRequest, ExpressResponse, ServerApi_Middleware} from '../../../utils/types';
 import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
-import {Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {ApiModule_Class} from '../../ApiModule';
+import {asArray, Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {ModuleBE_APIs_Class} from '../../ModuleBE_APIs';
 import {ApiDef} from '../../../../shared';
 
 
@@ -34,7 +34,7 @@ export type HttpRoute = {
 }
 export type MiddlewareConfig = {
 	filter: (apiDef: ApiDef<any>) => boolean
-	middleware: ServerApi_Middleware
+	middlewares: ServerApi_Middleware[]
 }
 
 export class RouteResolver_ModulePath
@@ -51,13 +51,13 @@ export class RouteResolver_ModulePath
 	}
 
 	public resolveApi() {
-		const modules: (Module | ApiModule_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule_Class).useRoutes);
+		const modules: (Module | ModuleBE_APIs_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ModuleBE_APIs_Class).useRoutes);
 
 		//Filter Api modules
 		const routes: ServerApi<any>[] = [];
 		for (const module of modules) {
 			this.logInfo(module.getName());
-			const _routes = (module as unknown as ApiModule_Class).useRoutes();
+			const _routes = (module as unknown as ModuleBE_APIs_Class).useRoutes();
 			routes.push(..._routes);
 		}
 
@@ -66,8 +66,14 @@ export class RouteResolver_ModulePath
 			if (!api.addMiddlewares)
 				throw new MUSTNeverHappenException(`Missing api.middleware for`);
 
-			this.middlewares.filter(config => config.filter(api.apiDef) && api.addMiddleware(config.middleware));
+			this.middlewares.filter(config => config.filter(api.apiDef) && api.addMiddlewares(...config.middlewares));
 			api.route(this.express, this.initialPath);
+		});
+
+		this.express.all('*', (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+
+			this.logErrorBold(`Received unknown url with path: '${req.path}' - url: '${req.url}'`);
+
 		});
 	}
 
@@ -79,8 +85,8 @@ export class RouteResolver_ModulePath
 		});
 	}
 
-	addMiddleware(middleware: ServerApi_Middleware, filter: (apiDef: ApiDef<any>) => boolean = () => true) {
-		this.middlewares.push({middleware, filter});
+	addMiddleware(filter: (apiDef: ApiDef<any>) => boolean = () => true, ...middlewares: ServerApi_Middleware[]) {
+		this.middlewares.push({middlewares, filter});
 	}
 
 	public resolveRoutes = () => {
@@ -101,7 +107,7 @@ export class RouteResolver_ModulePath
 
 		const routes: (HttpRoute | HttpRoute[])[] = resolveStack(this.express._router.stack);
 		return routes.reduce((toRet: HttpRoute[], route) => {
-			const toAdd: HttpRoute[] = Array.isArray(route) ? route : [route];
+			const toAdd: HttpRoute[] = asArray(route);
 			toRet.push(...toAdd);
 			//addAllItemToArray(toRet, toAdd);
 

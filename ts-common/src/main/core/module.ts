@@ -21,7 +21,7 @@
  */
 
 import {ModuleManager} from './module-manager';
-import {BadImplementationException} from './exceptions';
+import {BadImplementationException} from './exceptions/exceptions';
 import {merge} from '../utils/merge-tools';
 import {Logger} from './logger/Logger';
 import {LogLevel} from './logger/types';
@@ -29,16 +29,16 @@ import {ValidatorTypeResolver} from '../validator/validator-core';
 import {_clearTimeout, _setTimeout, TimerHandler} from '../utils/date-time-tools';
 
 
-type _FinalConfig<Config = any> = Config & { minLogLevel?: LogLevel };
-
-export abstract class Module<Config = any, FinalConfig extends _FinalConfig<Config> = _FinalConfig<Config>>
+export abstract class Module<Config = any,
+	ModuleConfig extends Config & { minLogLevel?: LogLevel } = Config & { minLogLevel?: LogLevel },
+	ConfigValidator extends ValidatorTypeResolver<ModuleConfig> = ValidatorTypeResolver<ModuleConfig>>
 	extends Logger {
 
 	private name: string;
+	public readonly config: ModuleConfig = {} as ModuleConfig;
 	protected readonly manager!: ModuleManager;
 	protected readonly initiated = false;
-	protected readonly config: FinalConfig = {} as FinalConfig;
-	protected readonly configValidator?: ValidatorTypeResolver<FinalConfig>;
+	protected readonly configValidator?: ConfigValidator;
 	protected timeoutMap: { [k: string]: number } = {};
 
 	// noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
@@ -81,12 +81,12 @@ export abstract class Module<Config = any, FinalConfig extends _FinalConfig<Conf
 		}, ms);
 	}
 
-	public setConfigValidator(validator: ValidatorTypeResolver<FinalConfig>) {
+	public setConfigValidator(validator: ConfigValidator) {
 		// @ts-ignore
 		this.configValidator = validator;
 	}
 
-	public setDefaultConfig(config: Partial<FinalConfig>) {
+	public setDefaultConfig(config: Partial<ModuleConfig>) {
 		// @ts-ignore
 		this.config = merge(this.config, config);
 	}
@@ -99,7 +99,7 @@ export abstract class Module<Config = any, FinalConfig extends _FinalConfig<Conf
 		this.name = name;
 	}
 
-	private setConfig(config: FinalConfig): void {
+	private setConfig(config: ModuleConfig): void {
 		// @ts-ignore
 		this.config = this.config ? merge(this.config, config || {}) : config;
 		this.config.minLogLevel && this.setMinLevel(this.config.minLogLevel);

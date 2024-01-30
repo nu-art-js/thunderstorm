@@ -16,13 +16,26 @@
  * limitations under the License.
  */
 
-import {addItemToArrayAtIndex, auditBy, BadImplementationException, Module, removeItemFromArray} from '@nu-art/ts-common';
+import {
+	addItemToArrayAtIndex,
+	ApiException,
+	auditBy,
+	BadImplementationException,
+	Module,
+	removeItemFromArray
+} from '@nu-art/ts-common';
 
-import {DB_Document, DB_DocumentHistory, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument,} from '../../shared/types';
+import {
+	DB_Document,
+	DB_DocumentHistory,
+	LiveDocHistoryReqParams,
+	LiveDocReqParams,
+	Request_UpdateDocument,
+} from '../../shared/types';
 
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 
-import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_LiveDoc} from '../../shared/api';
 
 
@@ -39,17 +52,18 @@ export class ModuleBE_LiveDocs_Class
 
 	constructor() {
 		super();
+	}
+
+	protected init(): void {
+		super.init();
+		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ''});
+		const firestore = ModuleBE_Firebase.createAdminSession(this.config.projectId).getFirestore();
+		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ['key']);
 		addRoutes([
 			createQueryServerApi(ApiDef_LiveDoc.v1.get, this.getLiveDoc),
 			createBodyServerApi(ApiDef_LiveDoc.v1.upsert, this.updateLiveDoc),
 			createQueryServerApi(ApiDef_LiveDoc.v1.history, this.changeHistory)
 		]);
-	}
-
-	protected init(): void {
-		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ''});
-		const firestore = ModuleBE_Firebase.createAdminSession(this.config.projectId).getFirestore();
-		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ['key']);
 	}
 
 	async changeHistory(params: LiveDocHistoryReqParams) {

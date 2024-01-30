@@ -1,10 +1,12 @@
 import * as React from 'react';
+import {ComponentClass, FunctionComponent} from 'react';
 import {BrowserRouter, Navigate, NavigateFunction, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
 import {TS_Route} from './types';
 import {BadImplementationException, composeUrl, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {LocationChangeListener} from './LocationChangeListener';
 import {QueryParams} from '../../../shared';
 import {mouseEventHandler} from '../../utils/tools';
+import {AwaitModules} from '../../components/AwaitModules/AwaitModules';
 
 
 class ModuleFE_RoutingV2_Class
@@ -15,6 +17,11 @@ class ModuleFE_RoutingV2_Class
 	private routesMapByKey: { [key: string]: { route: TS_Route, fullPath: string } } = {};
 	private routesMapByPath: { [fullPath: string]: TS_Route } = {};
 	private navigate!: NavigateFunction;
+
+	// constructor() {
+	// 	super();
+	// 	this.setMinLevel(LogLevel.Debug);
+	// }
 
 	// ######################## Public Functions ########################
 
@@ -32,13 +39,20 @@ class ModuleFE_RoutingV2_Class
 		}
 	}
 
+	redirect<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {
+		const url = composeUrl(this.getFullPath(route.key), params);
+		return <Navigate to={url}/>;
+	}
+
 	generateRoutes(rootRoute: TS_Route) {
-		const element = this.routeBuilder(rootRoute);
+		// This needs to be a component in order to be build the routes on rendering after modules are awaited
+		const RoutesRenderer = () => <Routes>
+			{this.routeBuilder(rootRoute)}
+		</Routes>;
+
 		return <BrowserRouter>
 			<LocationChangeListener/>
-			<Routes>
-				{element}
-			</Routes>
+			<RoutesRenderer/>
 		</BrowserRouter>;
 	}
 
@@ -60,19 +74,42 @@ class ModuleFE_RoutingV2_Class
 			this.logDebug(`fallback: ${path}`);
 
 		let _indexRoute;
-		if (indexRoute)
+		if (indexRoute) {
+			const Component = this.resolveRouteComponent(indexRoute);
 			if (indexRoute.path)
+				// force redirect to a different route
 				_indexRoute = <Route index element={<Navigate to={`${path}${indexRoute.path}`}/>}/>;
 			else {
-				_indexRoute = <Route index Component={indexRoute.Component} element={indexRoute.element}/>;
+				// default index route renderer
+				_indexRoute = <Route index Component={Component} element={indexRoute.element}/>;
 				removeItemFromArray(routes, indexRoute);
 			}
+		}
 
-		return <Route key={route.key} path={route.path} Component={route.Component} element={route.element}>
+		const Component = this.resolveRouteComponent(route);
+		return <Route key={route.key} path={route.path} Component={Component} element={route.element}>
 			{_indexRoute}
-			{route.children?.map(route => this.routeBuilder(route, `${path}${route.path}`))}
+			{route.children?.filter(route => route.enabled?.() ?? true).map(route => this.routeBuilder(route, `${path}${route.path}`))}
 			{route.fallback && <Route path="*" element={<Navigate to={path}/>}/>}
 		</Route>;
+	};
+
+	private resolveRouteComponent = (route: TS_Route) => {
+		if (!route.Component)
+			return undefined;
+
+		if (!route.modulesToAwait?.length)
+			return route.Component;
+
+		//route.Component is a class component
+		if (route.Component.prototype.render) {
+			const Component = route.Component as ComponentClass;
+			return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}><Component/></AwaitModules>;
+		}
+
+		//route.Component is a function component
+		const component = route.Component as FunctionComponent;
+		return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
 	};
 
 	getRouteByKey(routeKey: string): TS_Route | undefined {

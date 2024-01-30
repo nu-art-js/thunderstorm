@@ -18,7 +18,7 @@
 
 import {Module} from './module';
 import {Dispatcher} from './dispatcher';
-import {CustomException} from './exceptions';
+import {CustomException} from './exceptions/exceptions';
 
 export enum ServerErrorSeverity {
 	Debug = 'Debug',
@@ -48,7 +48,7 @@ export interface OnApplicationNotification {
 export const dispatch_onApplicationNotification = new Dispatcher<OnApplicationNotification, '__processApplicationNotification'>('__processApplicationNotification');
 
 export interface OnApplicationException {
-	__processApplicationException(e: CustomException, module: Module, data: any): Promise<void>;
+	__processApplicationException(e: CustomException, module: Module): Promise<void>;
 }
 
 export const dispatch_onApplicationException = new Dispatcher<OnApplicationException, '__processApplicationException'>('__processApplicationException');

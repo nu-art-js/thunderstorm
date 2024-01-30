@@ -20,9 +20,9 @@
  */
 
 import {currentTimeMillis, Dispatcher} from '@nu-art/ts-common';
-import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
-import { ActDetailsDoc } from '../../shared/backup-types';
+import {ActDetailsDoc} from '../../shared/backup/backup-types';
+import {ModuleBE_FirebaseScheduler} from '@nu-art/firebase/backend';
 
 
 export type CleanupDetails = {
@@ -38,7 +38,7 @@ export interface OnCleanupSchedulerAct {
 const dispatch_onCleanupSchedulerAct = new Dispatcher<OnCleanupSchedulerAct, '__onCleanupSchedulerAct'>('__onCleanupSchedulerAct');
 
 export class CleanupScheduler_Class
-	extends FirebaseScheduledFunction {
+	extends ModuleBE_FirebaseScheduler {
 
 	constructor() {
 		super();
@@ -55,7 +55,10 @@ export class CleanupScheduler_Class
 
 			try {
 				await cleanupItem.cleanup();
-				await cleanupStatusCollection.upsert({timestamp: currentTimeMillis(), moduleKey: cleanupItem.moduleKey});
+				await cleanupStatusCollection.upsert({
+					timestamp: currentTimeMillis(),
+					moduleKey: cleanupItem.moduleKey
+				});
 			} catch (e: any) {
 				this.logWarning(`cleanup of ${cleanupItem.moduleKey} has failed with error '${e}'`);
 			}
