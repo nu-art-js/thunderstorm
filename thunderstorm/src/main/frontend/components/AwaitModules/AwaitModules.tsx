@@ -81,7 +81,10 @@ export class AwaitModules
 			return resolveContent(this.props.customLoader);
 
 		return <div className={'ts-await-modules-loader'} onClick={() => {
-			this.logWarning(`Waiting for modules: ${this.getUnpreparedModules().map(module => module.getName())}`);
+			const awaitedModules = this.getUnpreparedModules().map(module => module.getName());
+			if (!awaitedModules.length)
+				this.logInfo('Not awaiting any modules');
+			this.logInfo('Waiting for modules:', ...awaitedModules);
 		}}/>;
 	}
 }
