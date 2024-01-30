@@ -42,7 +42,7 @@ export class StorageModule_Class
 		window.addEventListener('storage', this.handleStorageEvent);
 	}
 
-	async __onClearWebsiteData(resync: boolean) {
+	async __onClearWebsiteData() {
 		const items = this.withstandDeletionKeys.map(key => key.get());
 		localStorage.clear();
 		this.withstandDeletionKeys.forEach((key, index) => key.set(items[index]));

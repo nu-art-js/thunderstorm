@@ -19,10 +19,27 @@
  * limitations under the License.
  */
 
-import {ApiDefCaller, ApiStruct_DBApiGenIDB, BaseHttpRequest, DBApiDefGeneratorIDB, HttpException, QueryParams, TypedApi,} from '../../shared';
+import {
+	ApiDefCaller,
+	ApiStruct_DBApiGenIDB,
+	BaseHttpRequest,
+	DBApiDefGeneratorIDB,
+	HttpException,
+	QueryParams,
+	TypedApi,
+} from '../../shared';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 
-import {BadImplementationException, DB_BaseObject, DB_Object, DBDef, Default_UniqueKey, exists, IndexKeys, merge, PreDB, TypedMap} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	DB_BaseObject,
+	DB_Object,
+	DBDef,
+	Default_UniqueKey,
+	IndexKeys,
+	PreDB,
+	TypedMap
+} from '@nu-art/ts-common';
 
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
@@ -30,8 +47,6 @@ import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {SyncIfNeeded} from '../sync-manager/ModuleFE_SyncManagerV2';
-import {DBSyncData_OLD} from '../../../shared/sync-manager/types';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -49,7 +64,7 @@ type Operation = {
 
 export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends ModuleFE_BaseDB<DBType, Ks, Config>
-	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
+	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>> {
 
 	// @ts-ignore
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
@@ -61,37 +76,13 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
-		const sync = apiWithBody(apiDef.v1.sync, this.onSyncCompleted);
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
 		const upsert = apiWithBody(apiDef.v1.upsert, this.onEntryUpdated);
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
 
-		// this.dataStatus = this.IDB.getLastSync() !== 0 ? DataStatus.containsData : DataStatus.NoData;
-
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore
 		this.v1 = {
-			sync: (additionalQuery: FirestoreQuery<DBType> = _EmptyQuery) => {
-				const originalSyncQuery = {
-					where: {__updated: {$gt: this.IDB.getLastSync()}},
-					orderBy: [{key: '__updated', order: 'desc'}],
-				};
-				const query: FirestoreQuery<DBType> = merge(originalSyncQuery, additionalQuery);
-
-				const syncRequest = sync(query);
-				const _execute = syncRequest.execute.bind(syncRequest);
-				const _executeSync = syncRequest.executeSync.bind(syncRequest);
-
-				syncRequest.execute = (onSuccess, onError) => {
-					return _execute(onSuccess, onError);
-				};
-
-				syncRequest.executeSync = async () => {
-					return _executeSync();
-				};
-
-				return syncRequest;
-			},
 			query: (query?: FirestoreQuery<DBType>) => _query(query || _EmptyQuery),
 			// @ts-ignore
 			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
@@ -112,15 +103,13 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 				return this.updatePending(item, _delete(item), 'delete');
 			},
 			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
-			deleteAll: apiWithQuery(apiDef.v1.deleteAll, () => this.v1.sync().executeSync()),
+			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
 		};
 
 		const superClear = this.IDB.clear;
 		this.IDB.clear = async (reSync = false) => {
 			await superClear();
 			this.setDataStatus(DataStatus.NoData);
-			if (reSync)
-				this.v1.sync().execute();
 		};
 	}
 
@@ -178,36 +167,6 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 			return request;
 		};
 
-		// request.executeSync = async () => {
-		// 	const operation = this.operations[id];
-		// 	if (!operation) {
-		// 		this.operations[id] = {running: {request, requestType}};
-		// 		return request.executeSync();
-		// 	}
-		// };
 		return request;
 	}
-
-	__syncIfNeeded = async (syncData: DBSyncData_OLD[]) => {
-		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
-		if (!exists(mySyncData))
-			return;
-
-		if (mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.IDB.getLastSync()) {
-			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.IDB.getLastSync()}`);
-			await this.IDB.clear();
-			this.cache.clear();
-		}
-
-		if (mySyncData.lastUpdated <= this.IDB.getLastSync()) {
-			if (!this.cache.loaded)
-				await this.cache.load();
-
-			this.setDataStatus(DataStatus.ContainsData);
-			return;
-		}
-
-		this.setDataStatus(DataStatus.UpdatingData);
-		await this.v1.sync().executeSync();
-	};
 }

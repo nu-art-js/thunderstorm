@@ -27,6 +27,7 @@ import {
 	dbObjectToId,
 	DBProto,
 	deleteKeysObject,
+	exists,
 	IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
@@ -57,12 +58,12 @@ import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DBConfigV3, IndexedDBV3} from '../../core/IndexedDBV3';
 import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
-import {Response_DBSync} from '../../../shared/sync-manager/types';
 
 
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
 	extends Module<Config>
 	implements OnClearWebsiteData {
+
 	readonly validator: Proto['modifiablePropsValidator'];
 	readonly cache: MemCache<Proto>;
 	readonly IDB: IDBCache<Proto>;
@@ -85,10 +86,18 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 
 		this.cache = new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
 		this.IDB = new IDBCache<Proto>(config.dbConfig, config.versions[0]);
+		this.IDB.onLastUpdateListener(async (after, before) => {
+			if (!exists(after) || after === before)
+				return;
+
+			await this.cache.load();
+			this.defaultDispatcher.dispatchAll('update', {} as Proto['dbType']);
+			this.OnDataStatusChanged();
+		});
 		this.dbDef = dbDef;
 	}
 
-	protected setDataStatus(status: DataStatus) {
+	setDataStatus(status: DataStatus) {
 		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
 		if (this.dataStatus === status)
 			return;
@@ -109,8 +118,8 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 	protected init() {
 	}
 
-	async __onClearWebsiteData(resync: boolean) {
-		await this.IDB.clear(resync);
+	async __onClearWebsiteData() {
+		await this.IDB.clear();
 		this.setDataStatus(DataStatus.NoData);
 	}
 
@@ -126,24 +135,6 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 	private dispatchMulti = (event: MultiApiEvent, items: Proto['dbType'][]) => {
 		this.defaultDispatcher?.dispatchModule(event, items);
 		this.defaultDispatcher?.dispatchUI(event, items);
-	};
-
-	onSyncCompleted = async (syncData: Response_DBSync<Proto['dbType']>) => {
-		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		try {
-			await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
-		} catch (e: any) {
-			this.logError('Error while syncing', e);
-			throw e;
-		}
-		await this.cache.load();
-		this.setDataStatus(DataStatus.ContainsData);
-
-		if (syncData.toDelete)
-			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as Proto['dbType'][]);
-
-		if (syncData.toUpdate)
-			this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
 
 	public onEntriesDeleted = async (items: Proto['dbType'][]): Promise<void> => {
@@ -225,14 +216,26 @@ class IDBCache<Proto extends DBProto<any>>
 		const previousVersion = this.lastVersion.get();
 		this.lastVersion.set(currentVersion);
 
+		this.db.exists().then(dbInfo => {
+			if (exists(dbInfo))
+				return;
+
+			this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
+			this.lastSync.delete();
+		});
+
 		if (!previousVersion || previousVersion === currentVersion)
 			return;
 
+		this.lastSync.delete();
 		this.logInfo(`Cleaning up & Sync...`);
-		this.clear(true)
+		this.clear()
 			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
 			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
+	}
 
+	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
+		this.lastSync.onChange(onChangeListener);
 	}
 
 	forEach = async (processor: (item: Proto['dbType']) => void) => {
@@ -309,16 +312,13 @@ class IDBCache<Proto extends DBProto<any>>
 		return this.lastSync.get(0);
 	}
 
+	setLastUpdated(lastUpdated: number) {
+		this.lastSync.set(lastUpdated);
+	}
+
 	async syncIndexDb(toUpdate: Proto['dbType'][], toDelete: DB_Object[] = []) {
 		await this.db.upsertAll(toUpdate);
 		await this.db.deleteAll(toDelete as Proto['dbType'][]);
-
-		let latest = -1;
-		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-
-		if (latest !== -1)
-			this.lastSync.set(latest);
 	}
 }
 

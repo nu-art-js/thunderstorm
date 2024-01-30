@@ -108,7 +108,7 @@ class ModuleFE_RoutingV2_Class
 
 		const shouldAwaitModules = !!route.modulesToAwait;
 		const shouldAwaitSync = !!route.awaitSync;
-		
+
 		//No awaiting of any type
 		if (!shouldAwaitModules && !shouldAwaitSync)
 			return route.Component;
@@ -118,12 +118,14 @@ class ModuleFE_RoutingV2_Class
 			if (route.Component.prototype.render) {
 				const Component = route.Component as ComponentClass;
 				return () => <AwaitSync customLoader={route.awaitLoader}>
-					<AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}><Component/></AwaitModules>;
+					<AwaitModules modules={route.modulesToAwait!}
+								  customLoader={route.awaitLoader}><Component/></AwaitModules>;
 				</AwaitSync>;
 			}
 			const component = route.Component as FunctionComponent;
 			return () => <AwaitSync customLoader={route.awaitLoader}>
-				<AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}>{component({})}</AwaitModules>
+				<AwaitModules modules={route.modulesToAwait!}
+							  customLoader={route.awaitLoader}>{component({})}</AwaitModules>
 			</AwaitSync>;
 		}
 
@@ -137,7 +139,8 @@ class ModuleFE_RoutingV2_Class
 
 			//route.Component is a function component
 			const component = route.Component as FunctionComponent;
-			return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
+			return () => <AwaitModules modules={route.modulesToAwait!}
+									   customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
 		}
 
 		//Awaiting only sync

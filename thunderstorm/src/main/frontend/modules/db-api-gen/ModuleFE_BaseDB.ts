@@ -58,13 +58,7 @@ import {ApiCallerEventType, MultiApiEvent, SingleApiEvent} from '../../core/db-a
 import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction} from '../../core/IndexedDB';
-import {Response_DBSync} from '../../../shared/sync-manager/types';
 
-// type Message_CacheCollection = {
-// 	key: 'cache-sync'
-// 	dbName: string
-// 	lastSync: number
-// }
 
 export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends any = any, _Config extends DBApiFEConfig<DBType, Ks> & Config = DBApiFEConfig<DBType, Ks> & Config>
 	extends Module<_Config>
@@ -75,17 +69,6 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	readonly dbDef: DBDef<DBType, Ks>;
 	private dataStatus: DataStatus;
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>;
-
-	// static dbChannel = new TS_BroadcastChannel<Message_CacheCollection>('need-to-cache')
-	// 	.mount()
-	// 	.addProcessor('cache-sync', async (message) => {
-	// 		const module = Thunder.getInstance().filterModules(module => {
-	// 			const apiModule = (module as unknown as ApiModule['dbModule']);
-	// 			return apiModule?.dbDef?.dbName === message.dbName;
-	// 		})[0];
-	//
-	// 		await (module as ModuleFE_BaseDB<any>).cache.load();
-	// 	});
 
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
@@ -106,7 +89,6 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 			if (!exists(after) || after === before)
 				return;
 
-			this.logInfo('syncing...');
 			await this.cache.load();
 			this.defaultDispatcher.dispatchAll('update', {} as DBType);
 			this.OnDataStatusChanged();
@@ -135,8 +117,8 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	protected init() {
 	}
 
-	async __onClearWebsiteData(resync: boolean) {
-		await this.IDB.clear(resync);
+	async __onClearWebsiteData() {
+		await this.IDB.clear();
 		this.setDataStatus(DataStatus.NoData);
 	}
 
@@ -152,24 +134,6 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	dispatchMulti = (event: MultiApiEvent, items: DBType[]) => {
 		this.defaultDispatcher?.dispatchModule(event, items);
 		this.defaultDispatcher?.dispatchUI(event, items);
-	};
-
-	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
-		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		try {
-			await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
-		} catch (e: any) {
-			this.logError('Error while syncing', e);
-			throw e;
-		}
-		await this.cache.load();
-		this.setDataStatus(DataStatus.ContainsData);
-
-		if (syncData.toDelete)
-			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
-
-		if (syncData.toUpdate)
-			this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
 
 	public onEntriesDeleted = async (items: DBType[]): Promise<void> => {
@@ -190,6 +154,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		await this.IDB.syncIndexDb(items);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(items);
+		// todo set data status
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
@@ -255,14 +220,22 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		const previousVersion = this.lastVersion.get();
 		this.lastVersion.set(currentVersion);
 
+		this.db.exists().then(dbInfo => {
+			if (exists(dbInfo))
+				return;
+
+			this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
+			this.lastSync.delete();
+		});
+
 		if (!previousVersion || previousVersion === currentVersion)
 			return;
 
+		this.lastSync.delete();
 		this.logInfo(`Cleaning up & Sync...`);
-		this.clear(true)
+		this.clear()
 			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
 			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
-
 	}
 
 	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
@@ -275,12 +248,12 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		return allItems;
 	};
 
-	clear = async (resync = false) => {
+	clear = async () => {
 		this.lastSync.delete();
 		return this.db.clearDB();
 	};
 
-	delete = async (resync = false) => {
+	delete = async () => {
 		this.lastSync.delete();
 		return this.db.deleteDB();
 	};
@@ -343,19 +316,13 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		return this.lastSync.get(0);
 	}
 
+	setLastUpdated(lastUpdated: number) {
+		this.lastSync.set(lastUpdated);
+	}
+
 	async syncIndexDb(toUpdate: DBType[], toDelete: DB_Object[] = []) {
 		await this.db.upsertAll(toUpdate);
 		await this.db.deleteAll(toDelete as DBType[]);
-
-		let latest = -1;
-		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-
-		// FIXME: this breaks when deleting __deletedDocs from the db manually.
-		//  Maybe the latest timestamp should be the actual time the sync happens instead of aligning with the latest changed item?
-
-		if (latest !== -1)
-			this.lastSync.set(latest);
 	}
 }
 
@@ -443,7 +410,6 @@ class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Defaul
 	private onEntriesDeleted(itemsDeleted: DBType[]) {
 		const ids = new Set<string>(itemsDeleted.map(dbObjectToId));
 		this.setCache(this.filter(i => !ids.has(i._id)));
-		// ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 	}
 
 	// @ts-ignore
@@ -453,7 +419,6 @@ class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Defaul
 		const toCache = this.filter(i => !ids.has(i._id));
 		toCache.push(...frozenItems);
 		this.setCache(toCache);
-		// ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 	}
 
 	private setCache(cacheArray: Readonly<DBType>[]) {

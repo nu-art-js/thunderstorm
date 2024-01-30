@@ -123,8 +123,8 @@ class ModuleFE_Thunderstorm_Class
 		themeTag.setAttribute('content', themeColor);
 	}
 
-	async clearWebsiteData(resync: boolean = false) {
-		return dispatch_onClearWebsiteData.dispatchModuleAsync(resync);
+	async clearWebsiteData() {
+		return dispatch_onClearWebsiteData.dispatchModuleAsync();
 	}
 
 	async copyToClipboard(toCopy: string) {

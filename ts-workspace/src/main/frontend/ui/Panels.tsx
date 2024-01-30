@@ -1,6 +1,12 @@
 import * as React from 'react';
 import {Config_PanelParent, PanelConfig, Props_WorkspacePanel, State_WorkspacePanel} from './types';
-import {ComponentAsync, ComponentStatus, ComponentSync, SmartComponent, State_SmartComponent} from '@nu-art/thunderstorm/frontend';
+import {
+	ComponentAsync,
+	ComponentStatus,
+	ComponentSync,
+	SmartComponent,
+	State_SmartComponent
+} from '@nu-art/thunderstorm/frontend';
 import {compare, resolveContent} from '@nu-art/ts-common';
 
 
@@ -70,10 +76,16 @@ export abstract class SmartPanel<Config, State = {}, Props = {}>
 	extends SmartComponent<Props_WorkspacePanel<Config, Props>, State_WorkspacePanel<Config, State>> {
 
 	protected createInitialState(nextProps: Props_WorkspacePanel<Config, Props>) {
-		return {componentPhase: ComponentStatus.Loading, config: {...nextProps.config}} as State_WorkspacePanel<Config, State> & State_SmartComponent;
+		return {
+			componentPhase: ComponentStatus.Loading,
+			config: {...nextProps.config}
+		} as State_WorkspacePanel<Config, State> & State_SmartComponent;
 	}
 
 	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {
+		if (!super.shouldReDeriveState(nextProps))
+			return false;
+
 		const ans = !compare(this.state.config, nextProps.config as Config);
 		this.logDebug('Should ReDerive:', ans);
 		return ans;
