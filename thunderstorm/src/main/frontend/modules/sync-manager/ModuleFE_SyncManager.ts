@@ -127,10 +127,13 @@ export class ModuleFE_SyncManager_Class
 
 	getLocalSyncData = (): SyncDbData[] => {
 		const existingDBModules = this.getAllDBModules();
-		return existingDBModules.map(module => ({
-			dbName: module.dbDef.dbName,
-			lastUpdated: module.IDB.getLastSync()
-		}));
+		return existingDBModules.map(module => {
+			const lastSync = module.IDB.getLastSync();
+			return ({
+				dbName: module.dbDef.dbName,
+				lastUpdated: lastSync
+			});
+		});
 	};
 
 	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
@@ -176,6 +179,7 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private async debounceSyncImpl() {
+		// Everytime after the first, we'll have the debounceSync const ready, amd debounce the call.
 		if (exists(this.debounceSync))
 			return this.debounceSync();
 
@@ -269,9 +273,6 @@ export class ModuleFE_SyncManager_Class
 			module.logVerbose(`Cleaning Cache: ${module.dbDef.dbName}`);
 			module.cache.clear();
 
-			module.logVerbose(`Firing event (DataStatus.UpdatingData): ${module.dbDef.dbName}`);
-			module.setDataStatus(DataStatus.UpdatingData);
-
 			// for full sync go fetch all db items
 			module.logVerbose(`Syncing: ${module.dbDef.dbName}`);
 			const allItems = await module.v1.query({where: {}}).executeSync();
@@ -286,10 +287,13 @@ export class ModuleFE_SyncManager_Class
 			module.setDataStatus(DataStatus.ContainsData);
 
 			module.logVerbose(`Firing event (EventType_Query): ${module.dbDef.dbName}`);
-			if (allItems.length)
-				module.dispatchMulti(EventType_Query, allItems);
 
 			this.logDebug(`Full Sync Completed: ${module.dbDef.dbName}`);
+			if (allItems.length === 0)
+				return;
+
+			module.dispatchMulti(EventType_Query, allItems);
+
 		} catch (e: any) {
 			this.logError(`Error while syncing ${module.dbDef.dbName}`, e);
 			throw e;
@@ -309,10 +313,8 @@ export class ModuleFE_SyncManager_Class
 
 		module.IDB.setLastUpdated(lastUpdated);
 
-		module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
-		module.setDataStatus(DataStatus.ContainsData);
-
 		this.logDebug(`Delta Sync Completed: ${module.dbDef.dbName}`);
+		module.setDataStatus(DataStatus.ContainsData);
 	};
 
 	startListening() {
