@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {ModuleFE_SyncManagerV2, PermissibleModulesUpdated} from '../../modules/sync-manager/ModuleFE_SyncManagerV2';
+import {ModuleFE_SyncManager, PermissibleModulesUpdated} from '../../modules/sync-manager/ModuleFE_SyncManager';
 import './AwaitSync.scss';
 
 type Props = React.PropsWithChildren<{ customLoader?: ResolvableContent<React.ReactNode>; }>;
@@ -21,7 +21,8 @@ export class AwaitSync
 	}
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
-		state.awaiting = !ModuleFE_SyncManagerV2.getPermissibleModuleNames();
+		// Wait until we've received the list of modules the user has permission to see. Until we have them, we wait.
+		state.awaiting = ModuleFE_SyncManager.getPermissibleModuleNames().length > 0;
 		return state;
 	}
 

@@ -78,6 +78,10 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 		};
 	}
 
+	async exists() {
+		return (await window.indexedDB.databases()).find(db => db.name === this.config.name);
+	}
+
 	async open(): Promise<IDBDatabase> {
 		return new Promise((resolve, reject) => {
 			if (!IDBAPI)
@@ -127,7 +131,7 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 	};
 
 	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: Proto['dbType']) => void,
-							 endCallback: () => void, limiterCallback?: () => boolean) => {
+													 endCallback: () => void, limiterCallback?: () => boolean) => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 

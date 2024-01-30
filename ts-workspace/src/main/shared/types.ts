@@ -17,10 +17,7 @@
  * limitations under the License.
  */
 
-import {DB_Object} from '@nu-art/ts-common';
-
-export type DB_Workspace = DB_Object & {
+export type Workspace = {
 	key: string
-	accountId: string
 	config: any
 }
