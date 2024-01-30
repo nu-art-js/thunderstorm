@@ -154,6 +154,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		await this.IDB.syncIndexDb(items);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(items);
+		// todo set data status
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 

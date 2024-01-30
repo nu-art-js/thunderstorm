@@ -11,9 +11,11 @@ export enum SyncStatus {
 }
 
 export enum DataStatus {
-	NoData,
-	UpdatingData,
-	ContainsData,
+	NoData, //no render
+	UpdatingData, //no render
+	ContainsData, //render
+	// UpdatingDelta, //render
+	// UpToDate//render
 }
 
 export const syncDispatcher: ThunderDispatcher<OnSyncStatusChangedListener<DB_Object>, '__onSyncStatusChanged'> = new ThunderDispatcher<OnSyncStatusChangedListener<DB_Object>, '__onSyncStatusChanged'>('__onSyncStatusChanged');
