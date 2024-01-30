@@ -16,11 +16,13 @@ type Props = {
 	maxHeight?: number | string;
 	style?: TypedMap<string>;
 	className?: string;
+	id?: string;
 	customCaret?: ReactNode | (() => ReactNode)
 	flipHeaderOrder?: boolean
 	onMouseEnter?: (e: React.MouseEvent) => void;
 	onMouseLeave?: (e: React.MouseEvent) => void;
 	onMouseOver?: (e: React.MouseEvent) => void;
+	onHeaderRightClick?: (e: React.MouseEvent) => void;
 }
 
 type State = {
@@ -109,7 +111,7 @@ export class TS_CollapsableContainer
 
 	renderHeader() {
 		const className = _className('ts-collapsable-container__header', this.isCollapsed() ? 'collapsed' : undefined, this.props.flipHeaderOrder ? 'flip' : undefined);
-		return <div className={className} onClick={this.toggleCollapse}>
+		return <div className={className} onClick={this.toggleCollapse} onContextMenu={this.props.onHeaderRightClick}>
 			{this.renderCaret()}
 			{typeof this.props.headerRenderer === 'function' ? this.props.headerRenderer() : this.props.headerRenderer}
 		</div>;
@@ -126,8 +128,14 @@ export class TS_CollapsableContainer
 
 	render() {
 		const className = _className('ts-collapsable-container', this.props.className);
-		return <LL_V_L className={className} style={this.props.style} onMouseOver={this.props.onMouseOver} onMouseEnter={this.props.onMouseEnter}
-									 onMouseLeave={this.props.onMouseLeave}>
+		return <LL_V_L
+			className={className}
+			style={this.props.style}
+			id={this.props.id}
+			onMouseOver={this.props.onMouseOver}
+			onMouseEnter={this.props.onMouseEnter}
+			onMouseLeave={this.props.onMouseLeave}
+		>
 			{this.renderHeader()}
 			{this.renderContainer()}
 		</LL_V_L>;

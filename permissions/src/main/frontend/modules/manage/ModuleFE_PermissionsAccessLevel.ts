@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventTypeV2, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
-import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel} from '../../shared';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 export interface OnPermissionsLevelsUpdated {
-	__onPermissionsLevelsUpdated: (...params: ApiCallerEventTypeV2<DB_PermissionAccessLevel>) => void;
+	__onPermissionsLevelsUpdated: (...params: ApiCallerEventType<DB_PermissionAccessLevel>) => void;
 }
 
 const dispatch_OnPermissionsLevelsUpdated = new ThunderDispatcher<OnPermissionsLevelsUpdated, '__onPermissionsLevelsUpdated'>('__onPermissionsLevelsUpdated');
@@ -37,3 +37,4 @@ export class ModuleFE_PermissionsAccessLevel_Class
 }
 
 export const ModuleFE_PermissionsAccessLevel = new ModuleFE_PermissionsAccessLevel_Class();
+export const ModuleFE_PermissionsAccessLevel_ = ModuleFE_PermissionsAccessLevel as unknown as ModuleFE_BaseApi<any, any>;

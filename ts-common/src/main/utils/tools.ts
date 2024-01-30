@@ -65,13 +65,19 @@ export const voidFunction = Object.freeze(async () => {
 export const functionThatReturnsFalse = Object.freeze(() => false);
 export const functionThatReturnsTrue = Object.freeze(() => true);
 
-export const resolveContent = <T extends any = any>(content: ResolvableContent<T>) => typeof content === 'function' ? (content as () => T)() : content as T;
+export const resolveContent = <T extends any = any, P extends any[] = any[]>(content: ResolvableContent<T, P>, ...param: P) => typeof content === 'function' ? (content as (param: P) => T)(param) : content as T;
 export const resolveFunctionOrValue = resolveContent;
 
-export function exists(item: any) {
+export function exists<T extends any = any>(item: T | undefined | null): item is T {
 	return item !== undefined && item !== null;
+}
+
+export function freeze<T extends any = any>(item: T): Readonly<T> {
+	return Object.freeze(item);
 }
 
 export const logicalXOR = (a: boolean, b: boolean) => {
 	return (a && !b) || (!a && b);
 };
+
+export type KeyBinder<K extends string, Type> = { Key: K, Type: Type }

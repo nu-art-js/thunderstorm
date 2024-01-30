@@ -19,12 +19,9 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {ApiDef, ErrorResponse, TypedApi} from './types';
+import {ApiDef, TypedApi} from './types';
 
-import {addItemToArray, BadImplementationException, Module, removeItemFromArray,} from '@nu-art/ts-common';
-// noinspection TypeScriptPreferShortImport
-import {RequestErrorHandler, RequestSuccessHandler, ResponseHandler} from './request-types';
-// noinspection TypeScriptPreferShortImport
+import {BadImplementationException, Module,} from '@nu-art/ts-common';
 import {BaseHttpRequest} from './BaseHttpRequest';
 
 
@@ -33,18 +30,14 @@ type HttpConfig = {
 	timeout?: number
 	compress?: boolean
 }
-export type DeriveRealBinder<Binder> = Binder extends TypedApi<infer U, infer R, infer B, infer P> ? TypedApi<U, R, B, P> : void;
 
 export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfig>
 	extends Module<Config> {
 
-	private defaultErrorHandlers: RequestErrorHandler<any>[] = [];
-	private defaultSuccessHandlers: RequestSuccessHandler[] = [];
-
-	protected origin?: string;
+	protected origin!: string;
 	protected timeout: number = 10000;
-	private readonly defaultResponseHandler: ResponseHandler[] = [];
 	private readonly defaultHeaders: { [s: string]: (() => string | string[]) | string | string[] } = {};
+	protected defaultOnComplete?: (response: unknown, input: unknown, request: BaseHttpRequest<any>) => Promise<any>;
 
 	constructor() {
 		super();
@@ -55,9 +48,17 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		this.timeout = this.config.timeout || this.timeout;
 	}
 
+	getOrigin() {
+		return this.origin;
+	}
+
 	shouldCompress() {
 		return this.config.compress;
 	}
+
+	setDefaultOnComplete = (defaultOnComplete: (response: unknown, input: unknown, request: BaseHttpRequest<any>) => Promise<any>) => {
+		this.defaultOnComplete = defaultOnComplete;
+	};
 
 	addDefaultHeader(key: string, header: (() => string | string[]) | string | string[]) {
 		this.defaultHeaders[key] = header;
@@ -96,49 +97,4 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 
 	abstract createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: any): BaseHttpRequest<API>
 
-	processDefaultResponseHandlers = (httpRequest: BaseHttpRequest<any>) => {
-		let resolved = false;
-		for (const responseHandler of this.defaultResponseHandler) {
-			resolved = resolved || responseHandler(httpRequest);
-		}
-
-		return resolved;
-	};
-
-	addDefaultResponseHandler(defaultResponseHandler: ResponseHandler) {
-		addItemToArray(this.defaultResponseHandler, defaultResponseHandler);
-	}
-
-	removeDefaultResponseHandler(defaultResponseHandler: ResponseHandler) {
-		removeItemFromArray(this.defaultResponseHandler, defaultResponseHandler);
-	}
-
-	setErrorHandlers(defaultErrorHandlers: RequestErrorHandler<any>[]) {
-		this.defaultErrorHandlers = defaultErrorHandlers;
-	}
-
-	setSuccessHandlers(defaultErrorHandlers: RequestSuccessHandler[]) {
-		this.defaultSuccessHandlers = defaultErrorHandlers;
-	}
-
-	handleRequestFailure: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
-		const beError = resError?.debugMessage;
-
-		this.logError(`Http request for key '${request.key}' failed...`);
-
-		if (beError)
-			this.logError(` + BE error:  ${beError}`);
-
-		for (const errorHandler of this.defaultErrorHandlers) {
-			errorHandler(request, resError);
-		}
-	};
-
-	handleRequestSuccess: RequestSuccessHandler = (request: BaseHttpRequest<any>) => {
-		this.logDebug(`Http request for key '${request.key}' completed`);
-
-		for (const successHandler of this.defaultSuccessHandlers) {
-			successHandler(request);
-		}
-	};
 }

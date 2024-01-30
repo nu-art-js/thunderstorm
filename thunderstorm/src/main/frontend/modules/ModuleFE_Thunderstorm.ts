@@ -36,9 +36,9 @@ type Config = {
 export type UrlTarget = '_blank' | '_self' | '_parent' | '_top' | string;
 
 export type FileDownloadProps = {
-	url?: string,
-	content?: Blob | string
-	fileName: string
+	url?: string, //if want to download from url
+	content?: Blob | string //file to download
+	fileName: string //name to save file in
 	mimeType?: string
 	charset?: string
 }
@@ -73,6 +73,9 @@ class ModuleFE_Thunderstorm_Class
 		const body = document.getElementsByTagName('body')[0];
 		body?.appendChild(printingIFrame);
 		this._populatePrintFrame(printingIFrame, div, bodyAttributes);
+		printingIFrame.contentWindow?.addEventListener('afterprint', () => {
+			body.removeChild(printingIFrame);
+		});
 	}
 
 	private _populatePrintFrame(printingIFrame: HTMLIFrameElement, div: HTMLDivElement, bodyAttributes?: TypedKeyValue<string, string>[]) {

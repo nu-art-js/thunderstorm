@@ -17,15 +17,18 @@
  */
 
 
-import {deepClone} from './object-tools';
+import {deepClone, filterKeys} from './object-tools';
 import {exists} from './tools';
-import {BadImplementationException} from '../core/exceptions';
+import {BadImplementationException} from '../core/exceptions/exceptions';
 
 
 export function mergeObject(original: any, override: any) {
 	if (original === override) {
 		return override;
 	}
+
+	if (!exists(original))
+		return filterKeys(override);
 
 	const returnValue = deepClone(original);
 	return Object.keys(override).reduce((obj, key) => {
@@ -67,7 +70,7 @@ export function merge(original: any, override: any) {
 		return undefined;
 
 	if (!exists(original))
-		return override;
+		return typeof override === 'object' ? filterKeys(override) : override;
 
 	if (typeof original !== typeof override || (typeof original === 'object' && typeof override === 'object' && Array.isArray(original) !== Array.isArray(override)))
 		throw new BadImplementationException(`trying to merge object of different types!! \\n Original: ${JSON.stringify(original)}\\n Override: ${JSON.stringify(override)}`);

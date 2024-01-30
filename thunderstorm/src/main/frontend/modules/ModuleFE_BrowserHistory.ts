@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {_keys, composeQueryParams, Module,} from '@nu-art/ts-common';
+import {_keys, composeQueryParams, exists, Module,} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {QueryParams} from '../../shared';
 
@@ -36,10 +36,16 @@ export class ModuleFE_BrowserHistory_Class
 		this.history = createBrowserHistory();
 	}
 
+	/**
+	 * Update and navigate according to query params
+	 */
 	push(push: LocationDescriptorObject) {
 		this.history.push(push);
 	}
 
+	/**
+	 * Update query params
+	 */
 	replace(push: LocationDescriptorObject) {
 		this.history.replace(push);
 	}
@@ -80,11 +86,11 @@ export class ModuleFE_BrowserHistory_Class
 	getQueryParams() {
 		const params = this.getEncodedQueryParams();
 		_keys(params).forEach(key => {
-			const value = `${params[key]}`;
-			if (!value) {
+			const _param = params[key];
+			if (!exists(_param))
 				return;
-			}
 
+			const value = `${params[key]}`;
 			params[key] = decodeURIComponent(value);
 		});
 		return params;

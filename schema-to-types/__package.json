@@ -1,0 +1,38 @@
+{
+  "name": "@nu-art/schema-to-types",
+  "version": "",
+  "description": "schema-to-types - Express & Typescript based backend framework",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "schema-to-types"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "json-schema-to-typescript": "^13.1.1"
+  }
+}

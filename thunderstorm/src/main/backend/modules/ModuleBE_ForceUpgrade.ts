@@ -19,14 +19,27 @@
  * limitations under the License.
  */
 
-import {__stringify, BadImplementationException, compareVersions, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {
+	__stringify,
+	ApiException,
+	BadImplementationException,
+	compareVersions,
+	ImplementationMissingException,
+	Module
+} from '@nu-art/ts-common';
 
-import {ApiException} from '../exceptions';
-import {ApiDef_ForceUpgrade, Browser, HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent, UpgradeRequired} from '../../shared';
-import {ExpressRequest, ServerApi_Middleware} from '../utils/types';
+import {
+	ApiDef_ForceUpgrade,
+	Browser,
+	HeaderKey_AppVersion,
+	HeaderKey_BrowserType,
+	HeaderKey_UserAgent,
+	UpgradeRequired
+} from '../../shared';
+import {ServerApi_Middleware} from '../utils/types';
 import {createQueryServerApi} from '../core/typed-api';
 import {HeaderKey} from './server/HeaderKey';
-import {addRoutes} from './ApiModule';
+import {addRoutes} from './ModuleBE_APIs';
 
 
 type VersionConfig = {
@@ -49,22 +62,23 @@ const DefaultRegexps: { [k in Browser]: string } = {
 
 class ModuleBE_ForceUpgrade_Class
 	extends Module<VersionConfig> {
-	static readonly Middleware: ServerApi_Middleware = async (request: ExpressRequest) => ModuleBE_ForceUpgrade.assertVersion(request);
+	static readonly Middleware: ServerApi_Middleware = async () => ModuleBE_ForceUpgrade.assertVersion();
 
 	constructor() {
 		super();
-		addRoutes([createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params, request) => {
-			return this.compareVersion(request);
+	}
+
+	init() {
+		super.init();
+		addRoutes([createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params) => {
+			return this.compareVersion();
 		})]);
 	}
 
-	compareVersion(request?: ExpressRequest): UpgradeRequired {
-		if (!request)
-			throw new BadImplementationException(`Request is missing`);
-
-		const appVersion = Header_AppVersion.get(request);
-		const userAgentString = Header_UserAgent.get(request);
-		const browserType: Browser = Header_BrowserType.get(request) as Browser;
+	compareVersion(): UpgradeRequired {
+		const appVersion = Header_AppVersion.get();
+		const userAgentString = Header_UserAgent.get();
+		const browserType: Browser = Header_BrowserType.get() as Browser;
 		if (!browserType)
 			throw new ImplementationMissingException(`Browser type not specified`);
 
@@ -85,13 +99,13 @@ class ModuleBE_ForceUpgrade_Class
 		if (requiredBrowserVersion)
 			browser = compareVersions(version, requiredBrowserVersion) === 1;
 
-		return {app, browser};
+		return {type: 'upgrade-required', data: {app, browser}};
 	}
 
-	async assertVersion(request: ExpressRequest): Promise<void> {
-		const upgradeRequired = this.compareVersion(request);
-		if (upgradeRequired.app || upgradeRequired.browser)
-			throw new ApiException<UpgradeRequired>(426, 'require upgrade..').setErrorBody({type: 'upgrade-required', body: upgradeRequired});
+	async assertVersion(): Promise<void> {
+		const upgradeRequired = this.compareVersion();
+		if (upgradeRequired.data.app || upgradeRequired.data.browser)
+			throw new ApiException<UpgradeRequired>(426, 'require upgrade..').setErrorBody(upgradeRequired);
 	}
 }
 

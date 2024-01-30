@@ -21,9 +21,10 @@
  */
 import {Module} from './module';
 import {Dispatcher} from './dispatcher';
-import {BadImplementationException} from './exceptions';
+import {BadImplementationException} from './exceptions/exceptions';
 import {Logger} from './logger/Logger';
 import {addItemToArray} from '../utils/array-tools';
+import {exists} from '../utils/tools';
 
 
 const _modules: Module[] = [];
@@ -36,7 +37,7 @@ export class ModuleManager
 	extends Logger {
 
 	protected config!: any;
-	protected modules = _modules;
+	readonly modules = _modules;
 	public static instance: ModuleManager;
 
 	// noinspection JSUnusedLocalSymbols
@@ -47,6 +48,13 @@ export class ModuleManager
 
 		ModuleManager.instance = this;
 		Dispatcher.modulesResolver = moduleResolver;
+	}
+
+	// @ts-ignore
+	private static resetForTests() {
+		_modules.length = 0;
+		// @ts-ignore
+		delete ModuleManager.instance;
 	}
 
 	filterModules<T>(filter: (module: Module) => boolean) {
@@ -73,6 +81,16 @@ export class ModuleManager
 			this.setMinLevel(this.config.logLevel);
 
 		this.logInfo(`---------  initializing app  ---------`);
+		const undefinedModule: boolean = this.modules.some(module => !exists(module));
+		if (undefinedModule) {
+			const modulesList = JSON.stringify(this.modules.map(module => {
+				// @ts-ignore
+				return module?.tag
+					|| 'undefined';
+			}), null, 2);
+			throw new BadImplementationException(`Module was 'undefined' - probably cyclic import mess here are the list of modules: \n${modulesList}`);
+		}
+
 		this.modules.forEach((module: Module) => {
 			// @ts-ignore
 			module.setManager(this);
@@ -84,10 +102,13 @@ export class ModuleManager
 
 		this.modules.forEach(module => {
 			this.logDebug(`---------  ${module.getName()}  ---------`);
-			// @ts-ignore
-			module.init();
-			// @ts-ignore
-			module.initiated = true;
+			try { // @ts-ignore
+				module.init();
+				// @ts-ignore
+				module.initiated = true;
+			} catch (e: any) {
+				this.logError(`Failed to init module ${module.getName()}.\n`, e);
+			}
 		});
 
 		// @ts-ignore

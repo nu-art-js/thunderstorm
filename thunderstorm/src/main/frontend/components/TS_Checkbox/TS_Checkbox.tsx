@@ -59,7 +59,7 @@ export class TS_Checkbox
 		super(p);
 	}
 
-	protected deriveStateFromProps(nextProps: Props_Checkbox, state = {} as State_Checkbox): State_Checkbox | undefined {
+	protected deriveStateFromProps(nextProps: Props_Checkbox, state: State_Checkbox) {
 		state.checked = nextProps.checked ?? false;
 		state.disabled = nextProps.disabled;
 		return state;
@@ -79,7 +79,7 @@ export class TS_Checkbox
 		const className = _className('ts-checkbox__button', disabledClass, checkedClass, roundedClass);
 		const innerClassName = _className('ts-checkbox__button__inner', disabledClass, checkedClass, roundedClass);
 
-		return <div className={_className('ts-checkbox', this.props.className)} onClick={this.onCheckboxClick}>
+		return <div className={_className('ts-checkbox', this.props.className, this.state.disabled && 'ts-checkbox__disabled')} onClick={this.onCheckboxClick}>
 			<div
 				id={this.props.id}
 				className={className}>

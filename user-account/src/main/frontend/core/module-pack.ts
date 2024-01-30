@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
+
+import {Module} from '@nu-art/ts-common';
 import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 
-
-export const ModulePack_Frontend_Users = [
+export const ModulePackFE_Accounts: Module[] = [
 	ModuleFE_Account,
 ];
 
 export * from '../modules/ModuleFE_Account';
-

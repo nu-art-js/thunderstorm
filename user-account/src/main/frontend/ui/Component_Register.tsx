@@ -18,9 +18,10 @@
 
 import * as React from 'react';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
-import {ModuleFE_Account} from '../modules/ModuleFE_Account';
-import {Request_CreateAccount} from '../../shared/api';
+import {AccountEmail, PasswordWithCheck, Request_RegisterAccount, RequestBody_RegisterAccount} from '../../shared';
 import {ComponentSync, LL_V_C, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Account} from '../modules/ModuleFE_Account';
+import {StorageKey_DeviceId} from '../core/consts';
 
 
 type State<T> = {
@@ -40,7 +41,7 @@ type InputField = {
 
 type Form<T> = { [K in keyof T]: InputField }
 
-const form: Form<Request_CreateAccount> = {
+const form: Form<AccountEmail & PasswordWithCheck> = {
 	email: {
 		className: '',
 		type: 'text',
@@ -52,7 +53,7 @@ const form: Form<Request_CreateAccount> = {
 		hint: '****',
 		label: 'Password',
 	},
-	password_check: {
+	passwordCheck: {
 		type: 'password',
 		hint: '****',
 		label: 'Password Check',
@@ -60,10 +61,9 @@ const form: Form<Request_CreateAccount> = {
 };
 
 export class Component_Register
-	extends ComponentSync<Props<Request_CreateAccount>, State<Request_CreateAccount>> {
+	extends ComponentSync<Props<Request_RegisterAccount>, State<Request_RegisterAccount>> {
 
-	protected deriveStateFromProps(nextProps: Props<Request_CreateAccount>, state: State<Request_CreateAccount>) {
-		state ??= this.state ? {...this.state} : {} as State<Request_CreateAccount>;
+	protected deriveStateFromProps(nextProps: Props<Request_RegisterAccount>, state: State<Request_RegisterAccount>) {
 		state.data ??= {};
 		return state;
 	}
@@ -96,18 +96,19 @@ export class Component_Register
 				}
 			)}
 			{this.renderErrorMessages()}
-			<TS_BusyButton onClick={this.registerClicked} className={`clickable ts-account__action-button`}>Register</TS_BusyButton>
+			<TS_BusyButton onClick={this.registerClicked}
+										 className={`clickable ts-account__action-button`}>Register</TS_BusyButton>
 		</LL_V_C>;
 	}
 
-	private onValueChanged = (value: string, id: keyof Request_CreateAccount) => {
+	private onValueChanged = (value: string, id: keyof RequestBody_RegisterAccount) => {
 		const data = {...this.state.data};
 		data[id] = value;
 		this.setState({data, errorMessages: undefined});
 	};
 
 	private registerClicked = async () => {
-		const data: Partial<Request_CreateAccount> = this.state.data;
+		const data: Partial<Request_RegisterAccount> = this.state.data;
 		const errors = filterInstances(_keys(form).map(key => {
 			const field = form[key];
 			return data[key] ? undefined : `missing ${field.label}`;
@@ -121,7 +122,7 @@ export class Component_Register
 			return this.setState({errorMessages: errors});
 
 		try {
-			await ModuleFE_Account.v1.create(this.state.data as Request_CreateAccount).executeSync();
+			await ModuleFE_Account.vv1.registerAccount({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Request_RegisterAccount).executeSync();
 		} catch (_err: any) {
 			const err = _err as Error;
 			this.setState({errorMessages: [err.message]});

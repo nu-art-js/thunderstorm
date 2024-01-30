@@ -28,6 +28,7 @@ import {FirebaseSession} from '../auth/firebase-session';
 import {StringMap} from '@nu-art/ts-common';
 import {getMessaging} from 'firebase-admin/messaging';
 
+
 export class PushMessagesWrapperBE
 	extends FirebaseBaseWrapper {
 
@@ -43,11 +44,11 @@ export class PushMessagesWrapperBE
 	}
 
 	async sendAll(messages: FirebaseType_Message[]): Promise<FirebaseType_BatchResponse> {
-		return this.messaging.sendAll(messages);
+		return this.messaging.sendEach(messages);
 	}
 
 	async sendMultiCast(tokens: string[], data: StringMap): Promise<FirebaseType_BatchResponse> {
-		return this.messaging.sendMulticast({data, tokens});
+		return this.messaging.sendEachForMulticast({data, tokens});
 	}
 
 	async sendToTopic(topic: string, data: StringMap, dryRun?: boolean): Promise<FirebaseType_TopicResponse> {
@@ -60,5 +61,9 @@ export class PushMessagesWrapperBE
 
 	async unsubscribeFromTopic(tokens: string[], topic: string): Promise<FirebaseType_SubscriptionResponse> {
 		return this.messaging.unsubscribeFromTopic(tokens, topic);
+	}
+
+	isEmulator(): boolean {
+		return false;
 	}
 }

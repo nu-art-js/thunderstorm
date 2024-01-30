@@ -17,18 +17,16 @@
  * limitations under the License.
  */
 
-import {Auditable, DB_Object, StringMap} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object} from '@nu-art/ts-common';
 
 
 export type User_Group = {
 	groupId: string,
-	customField?: StringMap
 }
 
 export type Request_CreateUser = {
-	accountId: string,
 	groups: User_Group[],
 	__groupIds?: string[]
 };
 
-export type DB_PermissionUser = DB_Object & Request_CreateUser & Auditable
+export type DB_PermissionUser = DB_Object & Request_CreateUser & AuditableV2

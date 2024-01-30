@@ -29,6 +29,19 @@ class LinearLayout
 	}
 }
 
+export class Grid extends React.Component<LinearLayoutProps> {
+	render() {
+		const {innerRef, ...props} = this.props;
+		return <div
+			{...props}
+			ref={innerRef}
+			className={_className('ts-grid', props.className)}
+		>
+			{props.children}
+		</div>;
+	}
+}
+
 export class LL_V_L
 	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {

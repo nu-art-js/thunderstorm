@@ -20,11 +20,11 @@
  */
 
 import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
-import {Firebase_ExpressFunction, FirebaseFunction} from '@nu-art/firebase/backend-functions';
+import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {BaseStorm} from './BaseStorm';
 import {HttpRoute, RouteResolver} from '../modules/server/route-resolvers';
 import {HttpServer} from '../modules/server/HttpServer';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {ServerApi} from '../modules/server/server-api';
 
 
@@ -51,6 +51,7 @@ export class Storm
 
 		super.init();
 		this.routeResolver.resolveApi();
+
 		if (this.config.printRoutes === true)
 			this.routeResolver.printRoutes();
 
@@ -63,8 +64,8 @@ export class Storm
 	}
 
 	startServer(onStarted?: () => Promise<void>) {
-		const modulesAsFunction: FirebaseFunction[] = this.modules.filter((module: Module): module is FirebaseFunction => {
-			const b = module instanceof FirebaseFunction;
+		const modulesAsFunction: ModuleBE_BaseFunction[] = this.modules.filter((module: Module): module is ModuleBE_BaseFunction => {
+			const b = module instanceof ModuleBE_BaseFunction;
 			// console.log(`${module.getName()} function ${b}`)
 			return b;
 		});

@@ -37,7 +37,7 @@
 // 		super(HttpMethod.GET, "backup-project");
 // 	}
 //
-// 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
+// 	protected async process( response: ApiResponse, queryParams: {}, body: void) {
 // 		this.logInfo("backup started");
 // 		// try {
 // 		// 	await ProjectFirestoreBackup.backupProject("backend");

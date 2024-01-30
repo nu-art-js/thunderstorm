@@ -7,8 +7,15 @@
     print-color-adjust: exact;
   }
 
+  &.print-only {
+    display: none;
+  }
 
   @media print {
+    &.print-only {
+      display: unset;
+    }
+
     * {
       overflow: unset;
     }
@@ -27,6 +34,10 @@
 
     .ts-print__break-after {
       page-break-after: always !important;
+    }
+
+    .ts-print__break-after-two-pages {
+      page-break-after: right !important;
     }
 
     .ts-print__gone {

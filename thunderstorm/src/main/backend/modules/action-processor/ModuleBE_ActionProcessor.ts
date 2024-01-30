@@ -1,10 +1,19 @@
-import {_logger_logException, _values, BadImplementationException, isErrorOfType, Logger, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
+import {
+	_values,
+	ApiException,
+	BadImplementationException,
+	isErrorOfType,
+	Logger,
+	LogLevel,
+	Module,
+	TypedMap
+} from '@nu-art/ts-common';
 // import {ApiDefServer} from '../../utils/api-caller-types';
 import {ActionMetaData, ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
-import {addRoutes} from '../ApiModule';
+import {addRoutes} from '../ModuleBE_APIs';
 import {ActionDeclaration} from './types';
-import {ApiException} from '../../exceptions';
+import {RAD_SetupProject} from './Action_SetupProject';
 
 
 export class ModuleBE_ActionProcessor_Class
@@ -16,11 +25,20 @@ export class ModuleBE_ActionProcessor_Class
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Verbose);
+	}
 
-		addRoutes([createBodyServerApi(ApiDef_ActionProcessing.vv1.execute, this.refactor), createQueryServerApi(ApiDef_ActionProcessing.vv1.list, this.list)]);
+	protected init() {
+		super.init();
+		addRoutes([
+			createBodyServerApi(ApiDef_ActionProcessing.vv1.execute, this.refactor),
+			createQueryServerApi(ApiDef_ActionProcessing.vv1.list, this.list)
+		]);
+
+		this.registerAction(RAD_SetupProject, this);
 	}
 
 	readonly registerAction = (rad: ActionDeclaration, logger: Logger) => {
+		this.logInfo(`Registering action: ${rad.key}`);
 		if (this.actionMap[rad.key])
 			throw new BadImplementationException(`ActionProcessor with key ${rad.key} was registered twice!`);
 

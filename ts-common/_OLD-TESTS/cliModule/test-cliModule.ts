@@ -32,6 +32,7 @@ import {
 	CliParam_TestStringOptional,
 	CliTestParam
 } from "./consts";
+import {asArray} from '../../src/main';
 
 type CliTestInput = {
 	param: CliTestParam<any, any>;
@@ -61,7 +62,7 @@ export const testSuit_cliModule: TestSuit<CliModuleTest> = {
 			return "pass";
 
 		// convert to array.. lower common dominator
-		const output = Array.isArray(retrievedValue) ? retrievedValue : [retrievedValue]
+		const output = asArray(retrievedValue)
 		const expected = input.expected || input.param.value;
 
 		// compare

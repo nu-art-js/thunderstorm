@@ -16,25 +16,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {apiWithBody, apiWithQuery, ThunderDispatcher, ModuleFE_XHR_Class} from '@nu-art/thunderstorm/frontend';
-import {
-	ApiDef_AssetUploader,
-	ApiStruct_AssetUploader,
-	BaseUploaderFile,
-	FileStatus,
-	FileUploadResult,
-	OnFileStatusChanged,
-	PushKey_FileUploaded,
-	TempSecureUrl
-} from '../../shared';
+import {apiWithBody, apiWithQuery, ModuleFE_XHR, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {ApiDef_AssetUploader, ApiStruct_AssetUploader, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '../../shared';
 import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader';
-import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
+import {BaseSubscriptionData, PushMessage_Payload} from '@nu-art/push-pub-sub';
 import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub/frontend/modules/ModuleFE_PushPubSub';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {ApiDef, ApiDefCaller, BaseHttpRequest, TypedApi} from '@nu-art/thunderstorm';
+import {generateHex} from '@nu-art/ts-common';
+import {PushMessage_FileUploaded} from '../../shared/assets/messages';
 
 
 export class ModuleFE_AssetUploader_Class
-	extends ModuleBase_AssetUploader<ModuleFE_XHR_Class> {
+	extends ModuleBase_AssetUploader {
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 	readonly vv1: ApiDefCaller<ApiStruct_AssetUploader>['vv1'];
@@ -42,37 +35,41 @@ export class ModuleFE_AssetUploader_Class
 	constructor() {
 		super();
 		this.vv1 = {
-			uploadFile: apiWithBody(ApiDef_AssetUploader.vv1.uploadFile),
 			getUploadUrl: apiWithBody(ApiDef_AssetUploader.vv1.getUploadUrl),
 			processAssetManually: apiWithQuery(ApiDef_AssetUploader.vv1.processAssetManually),
 		};
 	}
 
-	upload(files: File[], key?: string, _public?: boolean): BaseUploaderFile[] {
+	upload(files: File[], key: string, _public: boolean = false): UI_Asset[] {
 		return this.uploadImpl(files.map((file => {
 			return {
+				feId: generateHex(32),
 				name: file.name,
 				mimeType: file.type,
 				key,
 				file,
-				public: _public
+				ext: ''
 			};
 		})));
+	}
+
+	createRequest<API extends TypedApi<any, any, any, any>>(uploadFile: ApiDef<API>): BaseHttpRequest<API> {
+		return ModuleFE_XHR.createRequest(uploadFile);
 	}
 
 	protected dispatchFileStatusChange(id: string) {
 		this.dispatch_fileStatusChange.dispatchUI(id);
 	}
 
-	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
-		const subscriptions: BaseSubscriptionData[] = toSubscribe.map<BaseSubscriptionData>(r => ({pushKey: PushKey_FileUploaded, props: {feId: r.asset.feId}}));
+	protected async subscribeToPush(toSubscribe: TempSignedUrl[]): Promise<void> {
+		const subscriptions: BaseSubscriptionData[] = toSubscribe.map<BaseSubscriptionData>(r => ({topic: PushKey_FileUploaded, props: {feId: r.asset.feId}}));
 		await ModuleFE_PushPubSub.v1.registerAll(subscriptions).executeSync();
 	}
 
-	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
+	__onMessageReceived(notification: PushMessage_Payload<PushMessage_FileUploaded>): void {
 		super.__onMessageReceived(notification);
-		if (notification.data?.status === FileStatus.Completed || notification.data?.status?.startsWith('Error'))
-			ModuleFE_PushPubSub.v1.unregister({pushKey: PushKey_FileUploaded, props: notification.props});
+		if (notification.message?.status === FileStatus.Completed || notification.message?.status?.startsWith('Error'))
+			ModuleFE_PushPubSub.v1.unregister({topic: PushKey_FileUploaded, filter: notification.filter});
 	}
 }
 

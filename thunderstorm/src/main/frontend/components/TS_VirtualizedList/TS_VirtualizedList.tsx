@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {FixedSizeList as List} from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
+import AutoSizer, {Size} from 'react-virtualized-auto-sizer';
 
 
 type Props = {
@@ -45,8 +45,11 @@ export const VirtualizedList = ({height, width, listToRender, itemHeight, select
 export const TS_VirtualizedList = (props: Props) => {
 	return (
 		<AutoSizer>
-			{({height, width}) => <VirtualizedList className={props.className} selectedItem={props.selectedItem} itemHeight={props.itemHeight}
-																						 listToRender={props.listToRender} height={height} width={width}/>}
+			{(size: Size) => <VirtualizedList className={props.className} selectedItem={props.selectedItem}
+																				itemHeight={props.itemHeight}
+																				listToRender={props.listToRender}
+																				height={size.height}
+																				width={size.width}/>}
 		</AutoSizer>
 	);
 };

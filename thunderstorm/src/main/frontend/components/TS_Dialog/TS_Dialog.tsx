@@ -43,6 +43,7 @@ export type State_TSDialog = {
  * Base Props for TS_Dialog
  */
 export type Props_TSDialog = {
+	dialogKey?: string;
 	dialogId: string;
 	className?: string;
 };
@@ -102,8 +103,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		});
 	};
 
-	protected deriveStateFromProps(nextProps: P, state?: Partial<S>): S {
-		return {} as S;
+	protected deriveStateFromProps(nextProps: P, state: S) {
+		return state;
 	}
 
 	private dialogKeyEventHandler = (e: React.KeyboardEvent) => {
@@ -130,7 +131,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	};
 
 	protected closeDialog = () => {
-		ModuleFE_Dialog.close();
+		ModuleFE_Dialog.close(this.props.dialogKey);
 	};
 
 	// ######################## Render - Header ########################
@@ -165,7 +166,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 
 		return <div className={'ts-dialog__buttons'}>
 			{buttons.left && <div className={'ts-dialog__buttons__left'}>{this._buttonsCreator(buttons.left)}</div>}
-			{buttons.center && <div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
+			{buttons.center &&
+				<div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
 			{buttons.right && <div className={'ts-dialog__buttons__right'}>{this._buttonsCreator(buttons.right)}</div>}
 		</div>;
 	};
@@ -203,7 +205,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		}
 
 		return <TS_ErrorBoundary buttonRenderer={this.errorButtonRenderer} error={this.state.error}>
-			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1} onKeyDown={this.dialogKeyEventHandler}>
+			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1}
+							onKeyDown={this.dialogKeyEventHandler}>
 				{this.dialogHeader(headerContent)}
 				{this.dialogBody(mainContent)}
 				{this.dialogButtons(buttons)}

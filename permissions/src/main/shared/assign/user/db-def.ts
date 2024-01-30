@@ -17,38 +17,20 @@
  * limitations under the License.
  */
 
-import {DBDef, tsValidateStringAndNumbersWithDashes} from '@nu-art/db-api-generator';
-import {
-	OmitDBObject,
-	tsValidateArray,
-	tsValidateDynamicObject,
-	tsValidateNumber,
-	tsValidateString,
-	ValidatorTypeResolver,
-	tsValidateNonMandatoryObject
-} from '@nu-art/ts-common';
-import {validateUserUuid} from '../../validators';
+import {DBDef, OmitDBObject, tsValidateArray, tsValidateString, tsValidateStringAndNumbersWithDashes, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {DB_PermissionUser} from './types';
 
 
 const Validator_PermissionUser: ValidatorTypeResolver<OmitDBObject<DB_PermissionUser>> = {
-	accountId: validateUserUuid,
 	groups: tsValidateArray({
 		groupId: tsValidateStringAndNumbersWithDashes,
-		// customField: tsValidateObjectValues<string>(validateCustomFieldValues, false)
-		customField: tsValidateDynamicObject(tsValidateString(), tsValidateString())
 	}, false),
 	__groupIds: tsValidateArray(tsValidateStringAndNumbersWithDashes, false),
-	_audit: tsValidateNonMandatoryObject({
-		comment: tsValidateString(-1, false),
-		auditBy: tsValidateString(),
-		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
-	})
+	_auditorId: tsValidateString()
 };
 
 export const DBDef_PermissionUser: DBDef<DB_PermissionUser> = {
 	validator: Validator_PermissionUser,
 	dbName: 'permissions--user',
 	entityName: 'permissions--user',
-	lockKeys: ['accountId']
 };

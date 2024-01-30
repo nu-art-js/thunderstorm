@@ -18,19 +18,25 @@
 
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register';
-import {AxiosHttpModule, HttpServer, ModuleBE_ForceUpgrade, RouteResolver_ModulePath, Storm} from '@nu-art/thunderstorm/backend';
+import {
+	AxiosHttpModule,
+	HttpServer,
+	ModuleBE_ForceUpgrade,
+	RouteResolver_ModulePath,
+	Storm
+} from '@nu-art/thunderstorm/backend';
 import {Environment} from './config';
 import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend';
 import {Module} from '@nu-art/ts-common';
-import {ModulePack_Backend_Permissions} from '@nu-art/permissions/backend';
+import {ModulePackBE_Permissions} from '@nu-art/permissions/backend';
 import {JiraBugReportIntegrator, ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {ModuleBE_Slack, Slack_ServerApiError} from '@nu-art/storm';
 import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload/backend';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
 import {PubsubExample} from '@modules/PubsubExample';
+import {ModuleBE_Slack, Slack_ServerApiError} from '@nu-art/slack';
 
 
 const packageJson = require('./package.json');
@@ -53,11 +59,11 @@ AxiosHttpModule.setDefaultConfig({origin: 'https://us-central1-thunderstorm-stag
 
 Firebase_ExpressFunction.setConfig({memory: '1GiB', timeoutSeconds: 540});
 const _exports = new Storm()
-	.addModules(...ModulePack_Backend_BugReport)
-	.addModules(...ModulePack_Backend_LiveDocs)
-	.addModules(...ModulePack_Backend_Permissions)
-	.addModules(...ModulePack_Backend_Uploader)
-	.addModules(...modules)
+	.addModulePack(ModulePack_Backend_BugReport)
+	.addModulePack(ModulePack_Backend_LiveDocs)
+	.addModulePack(ModulePackBE_Permissions)
+	.addModulePack(ModulePack_Backend_Uploader)
+	.addModulePack(modules)
 	.setInitialRouteResolver(new RouteResolver_ModulePath(HttpServer.express, __dirname))
 	.setEnvironment(Environment.name)
 	.setVersion(version.version)

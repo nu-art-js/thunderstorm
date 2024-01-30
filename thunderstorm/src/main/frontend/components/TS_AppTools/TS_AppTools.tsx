@@ -33,6 +33,7 @@ import {AppToolsScreen} from './types';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {TS_CollapsableContainer} from '../TS_CollapsableContainer';
 
+
 type CollapseState = {
 	navbarCollapse: boolean;
 	groups: TypedMap<boolean>;
@@ -56,7 +57,7 @@ export class TS_AppTools
 	static Route: TS_Route;
 	static screens: AppToolsScreen[];
 
-	static createRoute(screens: AppToolsScreen[]): TS_Route {
+	static createRoute(screens: AppToolsScreen[], path = 'app-tools'): TS_Route {
 		this.screens = screens;
 
 		return this.Route = {
@@ -65,7 +66,9 @@ export class TS_AppTools
 			Component: this,
 			children: [
 				TS_AppTools_Default.Route,
-				...TS_AppTools.screens.map(screen => ({key: screen.key || screen.name, path: md5(screen.name), Component: screen.renderer})),
+				...TS_AppTools.screens.map(screen => {
+					return ({key: screen.key || (screen.key = screen.name), path: md5(screen.name), Component: screen.renderer});
+				}),
 			]
 		};
 	}

@@ -18,7 +18,7 @@
 
 import {Module} from '../core/module';
 import {TS_Object, TypedMap} from '../utils/types';
-import {BadImplementationException, ImplementationMissingException} from '../core/exceptions';
+import {BadImplementationException, ImplementationMissingException} from '../core/exceptions/exceptions';
 import {filterInstances, flatArray} from '../utils/array-tools';
 
 

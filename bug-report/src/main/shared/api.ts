@@ -58,19 +58,19 @@ export type Paths = {
 	path: string
 }
 
-export type SecuredUrl = {
+export type SignedUrl = {
 	fileName: string
-	securedUrl: string
+	signedUrl: string
 	publicUrl: string
 }
 
 // export type ApiGetLog = QueryApi<DB_BugReport[]>
-// export type ApiPostPath = BodyApi<'v1/bug-reports/download-logs', Paths, SecuredUrl>
+// export type ApiPostPath = BodyApi<'v1/bug-reports/download-logs', Paths, SignedUrl>
 // export type ApiBugReport = BodyApi<'v1/bug-reports/report', Request_BugReport, TicketDetails[]>
 
 export type ApiStruct_AdminBugReport = {
 	v1: {
-		downloadLogs: BodyApi<SecuredUrl, Paths>;
+		downloadLogs: BodyApi<SignedUrl, Paths>;
 		retrieveLogs: QueryApi<DB_BugReport[]>;
 	}
 }

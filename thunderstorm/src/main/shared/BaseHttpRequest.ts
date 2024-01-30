@@ -18,12 +18,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {_keys, BadImplementationException, Logger} from '@nu-art/ts-common';
-import {ErrorResponse, HttpMethod, TypedApi} from './types';
+import {__stringify, _keys, asArray, BadImplementationException, exists, isErrorOfType, Logger, Minute, ModuleManager} from '@nu-art/ts-common';
+import {HttpMethod, TypedApi} from './types';
 import {HttpException, TS_Progress} from './request-types';
+import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
+import {dispatcher_onAuthRequired} from './no-auth-listener';
+import {DefaultHttpServerConfig} from './consts';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
-
-export type ErrorType = any
 
 export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> {
 
@@ -44,14 +46,23 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	protected aborted: boolean = false;
 	protected compress: boolean;
 	protected logger?: Logger;
+
 	private onCompleted?: ((response: API['R'], input: (API['P'] | API['B']), request: BaseHttpRequest<API>) => Promise<any>);
-	private onError?: (errorResponse: HttpException, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>;
+	private onError?: (errorResponse: HttpException<API['E']>, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>;
 
 	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;
 		this.requestData = requestData;
 		this.label = `http request: ${requestKey}${requestData ? ` ${requestData}` : ''}`;
 		this.compress = false;
+		// @ts-ignore
+		if (ModuleManager.instance.config.isDebug)
+			this.timeout = 5 * Minute;
+	}
+
+	resolveTypedException(exception: HttpException<any> | unknown): API['E'] | undefined {
+		if (isErrorOfType(exception, HttpException))
+			return (exception as HttpException<API['E']>).errorResponse?.error;
 	}
 
 	setLogger(logger?: Logger) {
@@ -111,6 +122,10 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
+	getUrl() {
+		return this.url;
+	}
+
 	public setRelativeUrl(relativeUrl: string) {
 		if (!this.origin)
 			throw new BadImplementationException('if you want to use relative urls, you need to set an origin');
@@ -123,6 +138,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	setTimeout(timeout: number) {
+		// console.log(`${this.url} - setting timeout: ${timeout}`);
 		this.timeout = timeout;
 		return this;
 	}
@@ -161,7 +177,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	protected _addHeaderImpl(key: string, value: string | string[]) {
-		const values: string[] = Array.isArray(value) ? value : [value];
+		const values: string[] = asArray(value);
 
 		if (!this.headers[key])
 			this.headers[key] = values;
@@ -194,7 +210,16 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return statusCode >= 200 && statusCode < 300;
 	}
 
-	async executeSync(): Promise<API['R']> {
+	protected print() {
+		this.logger?.logWarning(`Url: ${this.url}`);
+		this.logger?.logWarning(`Params:`, this.params);
+		this.logger?.logWarning(`Headers:`, this.headers);
+	}
+
+	async executeSync(print = false): Promise<API['R']> {
+		if (print)
+			this.print();
+
 		await this.executeImpl();
 		const status = this.getStatus();
 
@@ -207,13 +232,16 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 
 		if (!this.isValidStatus(status)) {
 			const errorResponse = this.getErrorResponse();
-			const httpException = new HttpException(status, this.url, errorResponse);
+			const httpException = new HttpException<API['E']>(status, this.url, errorResponse);
+			if (status === HttpCodes._4XX.UNAUTHORIZED)
+				await dispatcher_onAuthRequired.dispatchModuleAsync(this);
+
 			await this.onError?.(httpException, requestData, this);
 			throw httpException;
 		}
 
 		let response: API['R'] = this.getResponse();
-		if (!response) {
+		if (!exists(response)) {
 			await this.onCompleted?.(response, requestData, this);
 			return response;
 		}
@@ -228,7 +256,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	execute(onSuccess: (response: API['R'], data?: string) => Promise<void> | void = () => this.logger?.logVerbose(`Completed: ${this.label}`),
-					onError: (reason: HttpException) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
+					onError: (reason: HttpException<API['E']>) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
 
 		this.executeSync()
 			.then(onSuccess)
@@ -237,25 +265,50 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
-	setOnCompleted(onCompleted?: (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
-		this.onCompleted = onCompleted;
-		return this;
-	}
+	clearOnCompleted = () => {
+		delete this.onCompleted;
+	};
 
-	setOnError(onError?: (errorResponse: HttpException, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+	setOnCompleted = (onCompleted?: (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) => {
+		if (!onCompleted)
+			return this;
+
+		if (this.onCompleted && onCompleted) {
+			const _onCompleted = this.onCompleted;
+			this.onCompleted = async (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => {
+				await _onCompleted(response, input, request);
+				await onCompleted(response, input, request);
+			};
+		} else
+			this.onCompleted = async (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => {
+				await onCompleted?.(response, input, request);
+			};
+
+		return this;
+	};
+
+	setOnError(onError?: (errorResponse: HttpException<API['E']>, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
 		this.onError = onError;
 		return this;
 	}
 
 	protected abstract getResponse(): API['R']
 
-	abstract getErrorResponse(): ErrorResponse<ErrorType>
+	abstract getErrorResponse(): ApiErrorResponse<API['E']>
 
 	protected abstract abortImpl(): void
 
 	abstract getStatus(): number;
 
-	abstract getResponseHeader(headerKey: string): string | string[] | undefined;
+	getResponseHeader(headerKey: string): string | string[] | undefined {
+		try {
+			return this._getResponseHeader(headerKey);
+		} catch (e: any) {
+			this.logger?.logError(`Need to add responseHeaders to backend config: ${__stringify(DefaultHttpServerConfig, true)}`, e);
+		}
+	}
+
+	abstract _getResponseHeader(headerKey: string): string | string[] | undefined;
 
 	abort() {
 		this.aborted = true;

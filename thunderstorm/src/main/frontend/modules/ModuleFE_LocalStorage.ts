@@ -22,35 +22,49 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {exists, merge, Module, TS_Object} from '@nu-art/ts-common';
+import {exists, merge, Module, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 
 
-export interface StorageKeyEvent {
+export interface OnStorageKeyChangedListener {
 	__onStorageKeyEvent(event: StorageEvent): void;
 }
 
 export class StorageModule_Class
 	extends Module
 	implements OnClearWebsiteData {
-	private cache: { [s: string]: string | number | object } = {};
-	private keys: StorageKey[] = [];
+	private readonly cache: { [s: string]: string | number | object } = {};
+	private readonly withstandDeletionKeys: StorageKey[] = [];
+	private readonly allKeys: TypedMap<StorageKey> = {};
 
 	protected init(): void {
 		window.addEventListener('storage', this.handleStorageEvent);
 	}
 
 	async __onClearWebsiteData(resync: boolean) {
-		const items = this.keys.map(key => key.get());
+		const items = this.withstandDeletionKeys.map(key => key.get());
 		localStorage.clear();
-		this.keys.forEach((key, index) => key.set(items[index]));
+		this.withstandDeletionKeys.forEach((key, index) => key.set(items[index]));
 	}
 
-	private handleStorageEvent = (e: StorageEvent) => {
-		const dispatcher = new ThunderDispatcher<StorageKeyEvent, '__onStorageKeyEvent'>('__onStorageKeyEvent');
-		dispatcher.dispatchUI(e);
+	private handleStorageEvent = async (e: StorageEvent) => {
+		const key = e.key;
+		if (!key)
+			return this.logVerbose('storage event without any key');
+
+		const storageKey = this.allKeys[key];
+		if (!storageKey)
+			return this.logVerbose(`no StorageKey for '${key}'`);
+
+		this.logInfo(`Storage key '${key}' was updated:\nBefore: ${e.oldValue}\n After: ${e.newValue}`);
+
+		// @ts-ignore
+		await storageKey._onChange?.();
+
+		const dispatcher = new ThunderDispatcher<OnStorageKeyChangedListener, '__onStorageKeyEvent'>('__onStorageKeyEvent');
 		dispatcher.dispatchModule(e);
+		dispatcher.dispatchUI(e);
 	};
 
 	getStorage = (persist: boolean) => persist ? localStorage : sessionStorage;
@@ -80,8 +94,9 @@ export class StorageModule_Class
 		value = this.getStorage(persist).getItem(key);
 		// this.logDebug(`get: ${key} = ${value}`)
 		if (!exists(value) || value === 'null' || value === 'undefined')
-				return defaultValue;
+			return defaultValue;
 
+		// if (!this.isIncognito)
 		return this.cache[key] = JSON.parse(value!);
 	}
 
@@ -105,7 +120,7 @@ export class StorageModule_Class
 		return toRet;
 	}
 
-	public deleteAll<T>(query: RegExp) {
+	public deleteAll(query: RegExp) {
 		for (let i = 0; i < localStorage.length; i++) {
 			const key = localStorage.key(i);
 			if (key?.match(query)) {
@@ -114,8 +129,12 @@ export class StorageModule_Class
 		}
 	}
 
-	addKey(storageKey: StorageKey<any>) {
-		this.keys.push(storageKey);
+	private withstandDeletion(storageKey: StorageKey<any>) {
+		this.withstandDeletionKeys.push(storageKey);
+	}
+
+	private registerKey(storageKey: StorageKey<any>) {
+		this.allKeys[storageKey.key] = storageKey;
 	}
 }
 
@@ -123,16 +142,20 @@ export const ModuleFE_LocalStorage = new StorageModule_Class();
 
 //TODO Generic Keys like in the tests contexts
 export class StorageKey<ValueType = string | number | object> {
-	private readonly key: string;
+	readonly key: string;
 	private readonly persist: boolean;
+	private _onChange?: (after?: ValueType, before?: ValueType) => Promise<void>;
 
 	constructor(key: string, persist: boolean = true) {
 		this.key = key;
 		this.persist = persist;
+		// @ts-ignore
+		ModuleFE_LocalStorage.registerKey(this);
 	}
 
 	withstandDeletion() {
-		ModuleFE_LocalStorage.addKey(this);
+		// @ts-ignore
+		ModuleFE_LocalStorage.withstandDeletion(this);
 		return this;
 	}
 
@@ -162,5 +185,17 @@ export class StorageKey<ValueType = string | number | object> {
 	clearCache() {
 		ModuleFE_LocalStorage.clearCache(this.key);
 	}
+
+	onChange(onChangeListener: (after?: ValueType, before?: ValueType) => Promise<void>) {
+		this._onChange = () => {
+			const before = this.get();
+			this.clearCache();
+			const after = this.get();
+			return onChangeListener(after, before);
+		};
+
+		return this;
+	}
 }
+
 
