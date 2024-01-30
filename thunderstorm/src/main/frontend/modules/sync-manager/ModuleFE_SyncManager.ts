@@ -205,6 +205,7 @@ export class ModuleFE_SyncManager_Class
 	 */
 	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
 		this.logInfo('onSmartSyncCompleted', response);
+		const currentSyncedModulesLength = this.syncedModules.length;
 		this.syncedModules = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
 
 		// We want to make the modules available as soon as possible, so we finish off with the lighter load first, and do full syncs at the end.
@@ -248,7 +249,7 @@ export class ModuleFE_SyncManager_Class
 			this.syncQueue.addItem({module, lastUpdated: moduleToSync.lastUpdated});
 		});
 
-		if (this.syncedModules.length !== response.modules.length)
+		if (currentSyncedModulesLength !== response.modules.length)
 			dispatch_OnPermissibleModulesUpdated.dispatchUI();
 	};
 
