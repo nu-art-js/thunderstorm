@@ -7,16 +7,27 @@ import {DataStatus} from '../../core/db-api-gen/consts';
 import './AwaitModules.scss';
 import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {TS_ProgressBar} from '../TS_ProgressBar';
+import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 
 
 type Props = React.PropsWithChildren<{
 	modules: ResolvableContent<(ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[]>;
-	customLoader?: ResolvableContent<React.ReactNode>;
+	customLoader?: ResolvableContent<React.ReactNode, [AwaitModule_LoaderProps]>;
 }>;
 
 type State = {
+	validModules: (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[];
+	readyModules: (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[];
 	awaiting: boolean;
 };
+
+export type AwaitModule_LoaderProps = {
+	validModules: (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[];
+	readyModules: (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[];
+	awaitedModules: (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[];
+}
 
 interface QueryAwaitedModules {
 	__queryAwaitedModule(): (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[];
@@ -28,8 +39,26 @@ export class AwaitModules
 	extends ComponentSync<Props, State>
 	implements OnSyncStatusChangedListener<DB_Object>, QueryAwaitedModules {
 
-	shouldComponentUpdate(): boolean {
-		return true;
+	static ProgressLoader = (...params: [AwaitModule_LoaderProps]) => {
+		const data = params[0];
+		const relevantInProgressModules = ModuleFE_SyncManager.getCurrentlySyncingModules().filter(module => data.validModules.includes(module as ModuleFE_BaseApi<any>));
+		const readyAndInProgressModulesRatio = (relevantInProgressModules.length + data.readyModules.length) / data.validModules.length;
+		const readyModulesRatio = data.readyModules.length / data.validModules.length;
+		return <TS_ProgressBar
+			className={'ts-await-modules-progress-loader'}
+			ratios={[
+				readyAndInProgressModulesRatio,
+				readyModulesRatio
+			]}
+			type={'radial'}
+			radius={10}
+		/>;
+	};
+
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>): void {
+		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
+		if (this.state.validModules.includes(module))
+			this.reDeriveState();
 	}
 
 	__queryAwaitedModule() {
@@ -43,17 +72,14 @@ export class AwaitModules
 			this.logWarning('Trying to await modules which are not in the module pack:', missingModules);
 	}
 
-	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>): void {
-		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
-		const modules = resolveContent(this.props.modules);
-		if (modules.includes(module))
-			this.reDeriveState();
+	shouldComponentUpdate(): boolean {
+		return true;
 	}
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.awaiting ??= true;
-		//Check if all modules have data
-		const modules = resolveContent(nextProps.modules).filter(module => {
+		//Collect modules that are awaitable
+		state.validModules ??= resolveContent(nextProps.modules).filter(module => {
 			const validModule = RuntimeModules().includes(module) && exists(module.dbDef);
 			if (!validModule)
 				this.logWarning(`AwaitModules awaits for module ${module.getName()}, but it isn't a collection module!`);
@@ -61,30 +87,37 @@ export class AwaitModules
 			return validModule;
 		});
 
-		// if there aren't non-ready modules, this component is ready to be shown
-		if (!modules.some(module => module.getDataStatus() !== DataStatus.ContainsData))
-			state.awaiting = false;
+		//Collect ready modules
+		state.readyModules = state.validModules.filter(module => module.getDataStatus() === DataStatus.ContainsData);
 
+		// Set awaiting false if all valid modules are ready
+		if (state.validModules.length === state.readyModules.length)
+			state.awaiting = false;
 		return state;
 	}
 
 	protected getUnpreparedModules(): (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[] {
-		const modules = resolveContent(this.props.modules);
-		return modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
+		return this.state.validModules.filter(module => !this.state.readyModules.includes(module));
 	}
 
 	render() {
 		if (!this.state.awaiting)
 			return this.props.children;
 
-		if (this.props.customLoader)
-			return resolveContent(this.props.customLoader);
+		const awaitedModules = this.getUnpreparedModules();
+
+		if (this.props.customLoader) {
+			return resolveContent(this.props.customLoader, {
+				validModules: this.state.validModules,
+				readyModules: this.state.readyModules,
+				awaitedModules
+			});
+		}
 
 		return <div className={'ts-await-modules-loader'} onClick={() => {
-			const awaitedModules = this.getUnpreparedModules().map(module => module.getName());
 			if (!awaitedModules.length)
 				this.logInfo('Not awaiting any modules');
-			this.logInfo('Waiting for modules:', ...awaitedModules);
+			this.logInfo('Waiting for modules:', ...awaitedModules.map(module => module.getName()));
 		}}/>;
 	}
 }
