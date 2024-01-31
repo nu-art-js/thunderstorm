@@ -2,17 +2,19 @@ import {BadImplementationException} from '@nu-art/ts-common';
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_ProgressBar.scss';
+import {_className} from '../../utils/tools';
 
 export type TS_ProgressBar_Type = 'linear-bar' | 'radial';
 
 type Props = {
-	ratio: number;
+	ratios: number[];
 	type: TS_ProgressBar_Type;
 	radius: number;
+	className?: string;
 };
 
 type State = {
-	percentage: number;
+	percentages: number[];
 };
 
 export class TS_ProgressBar
@@ -24,10 +26,12 @@ export class TS_ProgressBar
 	};
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
-		if (nextProps.ratio < 0 || nextProps.ratio > 1)
-			throw new BadImplementationException('Ratio passed must be normalized to 0 < ratio < 1');
+		nextProps.ratios.forEach(ratio => {
+			if (ratio < 0 || ratio > 1)
+				throw new BadImplementationException('Ratio passed must be normalized to 0 < ratio < 1');
+		});
 
-		state.percentage = Math.floor(nextProps.ratio * 100);
+		state.percentages = nextProps.ratios.map(ratio => Math.floor(ratio * 100));
 		return state;
 	}
 
@@ -43,28 +47,38 @@ export class TS_ProgressBar
 
 	private renderLinearBar = () => {
 		return <div className={'ts-progress-bar__linear-bar'}>
-			<div className={'ts-progress-bar__linear-bar__text'}>{this.state.percentage}%</div>
-			<div className={'ts-progress-bar__linear-bar__bar'} style={{width: `${this.state.percentage}%`}}>
-				<div className={'ts-progress-bar__linear-bar__text'}>{this.state.percentage}%</div>
-			</div>
+			{this.state.percentages.map((percentage, i) => {
+				return <React.Fragment key={i}>
+					<div className={'ts-progress-bar__linear-bar__text'}>{percentage}%</div>
+					<div className={'ts-progress-bar__linear-bar__bar'} style={{width: `${percentage}%`}}>
+						<div className={'ts-progress-bar__linear-bar__text'}>{percentage}%</div>
+					</div>
+				</React.Fragment>;
+			})}
 		</div>;
 	};
 
 	private renderRadialBar = () => {
 		const radius = this.props.radius;
 		const strokeDashArray = 2 * Math.PI * radius;
-		const strokeDashOffset = strokeDashArray - (strokeDashArray * this.props.ratio);
+		const lastPercentage = this.state.percentages[this.state.percentages.length - 1];
 		return <div className={'ts-progress-bar__radial-bar'}>
-			<div className={'ts-progress-bar__radial-bar__text'}>{this.state.percentage}%</div>
+			<div className={'ts-progress-bar__radial-bar__text'}>{lastPercentage}%</div>
 			<svg className="ts-progress-bar__radial-bar__bar" viewBox={'0 0 100 100'}>
-				<circle cx="50" cy="50" r="30" strokeDasharray={strokeDashArray} strokeDashoffset={strokeDashOffset}/>
+				<circle cx="50" cy="50" r={radius} className={'ts-progress-bar__radial-bar__bar__background'}/>
+				{this.state.percentages.map((percentage, i) => {
+					const strokeDashOffset = strokeDashArray - (strokeDashArray * this.props.ratios[i]);
+					return <circle key={i} cx="50" cy="50" r={radius} className={`ts-progress-bar__radial-bar__bar-child-${i}`} strokeDasharray={strokeDashArray}
+												 strokeDashoffset={strokeDashOffset}/>;
+				})}
 			</svg>
 		</div>;
 	};
 
 	render() {
+		const className = _className('ts-progress-bar', this.props.className);
 		const Renderer = this.getRenderer();
-		return <div className={'ts-progress-bar'}>
+		return <div className={className}>
 			<Renderer/>
 		</div>;
 	}

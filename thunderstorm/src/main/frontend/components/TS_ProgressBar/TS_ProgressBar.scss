@@ -70,6 +70,10 @@ $color: rgb(29, 176, 255);
         stroke: $color;
         transition: stroke-dashoffset 200ms ease-out;
       }
+
+      .ts-progress-bar__radial-bar__bar__background {
+        stroke: transparent;
+      }
     }
   }
 }
