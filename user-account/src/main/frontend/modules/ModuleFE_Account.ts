@@ -112,6 +112,7 @@ class ModuleFE_Account_Class
 	};
 
 	protected init(): void {
+		super.init();
 		if (!exists(StorageKey_DeviceId.get())) {
 			const deviceId = generateHex(32);
 			console.log(`Defining new device Id: ${deviceId}`);
