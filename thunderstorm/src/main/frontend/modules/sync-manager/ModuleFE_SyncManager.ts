@@ -28,7 +28,7 @@ import {
 	flatArray,
 	LogLevel,
 	Module,
-	reduceToMap,
+	reduceToMap, removeItemFromArray,
 	RuntimeModules,
 	Second
 } from '@nu-art/ts-common';
@@ -82,6 +82,7 @@ export class ModuleFE_SyncManager_Class
 
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
 	private syncedModules: SyncDbData[] = [];
+	private readonly currentlySyncingModules: Module[] = [];
 	private syncFirebaseListener?: RefListenerFE<SyncDataFirebaseState>;
 	private debounceSync?: () => void;
 	private outOfSyncCollections: Set<string> = new Set<string>();
@@ -124,6 +125,8 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private getAllDBModules = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbName);
+
+	getCurrentlySyncingModules = () => [...this.currentlySyncingModules];
 
 	getLocalSyncData = (): SyncDbData[] => {
 		const existingDBModules = this.getAllDBModules();
@@ -263,6 +266,7 @@ export class ModuleFE_SyncManager_Class
 
 	performFullSync = async (data: QueuedModuleData) => {
 		const module = data.module;
+		this.currentlySyncingModules.push(module);
 		try {
 			this.logDebug(`Full sync for: '${module.dbDef.dbName}'`);
 			// module.logVerbose(`Firing event (DataStatus.NoData): ${module.dbDef.dbName}`);
@@ -298,6 +302,8 @@ export class ModuleFE_SyncManager_Class
 		} catch (e: any) {
 			this.logError(`Error while syncing ${module.dbDef.dbName}`, e);
 			throw e;
+		} finally {
+			removeItemFromArray(this.currentlySyncingModules, module);
 		}
 	};
 
