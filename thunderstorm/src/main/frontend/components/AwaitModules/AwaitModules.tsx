@@ -10,6 +10,7 @@ import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {TS_ProgressBar} from '../TS_ProgressBar';
 import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
+import {LL_H_C, LL_V_L} from '../Layouts';
 
 
 type Props = React.PropsWithChildren<{
@@ -39,21 +40,7 @@ export class AwaitModules
 	extends ComponentSync<Props, State>
 	implements OnSyncStatusChangedListener<DB_Object>, QueryAwaitedModules {
 
-	static ProgressLoader = (...params: [AwaitModule_LoaderProps]) => {
-		const data = params[0];
-		const relevantInProgressModules = ModuleFE_SyncManager.getCurrentlySyncingModules().filter(module => data.validModules.includes(module as ModuleFE_BaseApi<any>));
-		const readyAndInProgressModulesRatio = (relevantInProgressModules.length + data.readyModules.length) / data.validModules.length;
-		const readyModulesRatio = data.readyModules.length / data.validModules.length;
-		return <TS_ProgressBar
-			className={'ts-await-modules-progress-loader'}
-			ratios={[
-				readyAndInProgressModulesRatio,
-				readyModulesRatio
-			]}
-			type={'radial'}
-			radius={10}
-		/>;
-	};
+	// ######################### Life Cycle #########################
 
 	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>): void {
 		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
@@ -96,16 +83,36 @@ export class AwaitModules
 		return state;
 	}
 
+	// ######################### Logic #########################
+
 	protected getUnpreparedModules(): (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[] {
 		return this.state.validModules.filter(module => !this.state.readyModules.includes(module));
 	}
 
-	render() {
-		if (!this.state.awaiting)
-			return this.props.children;
+	private getMissingPermissionModules = () => {
+		const permissibleModules = ModuleFE_SyncManager.getPermissibleModuleNames();
+		if (!permissibleModules.length)
+			return [];
 
+		return this.state.validModules.filter(module => !permissibleModules.includes(module.dbDef.dbName));
+	};
+
+	// ######################### Render #########################
+
+	protected renderMissingPermissions = () => {
+		const missingPermissionModules = this.getMissingPermissionModules();
+		return <div className={'ts-await-modules'}>
+			<LL_V_L className={'missing-permission-modules'}>
+				<h1>Missing Permissions For The Following Databases</h1>
+				<LL_H_C>
+					{missingPermissionModules.map(module => <span>{module.dbDef.entityName}</span>)}
+				</LL_H_C>
+			</LL_V_L>
+		</div>;
+	};
+
+	private renderLoader = () => {
 		const awaitedModules = this.getUnpreparedModules();
-
 		if (this.props.customLoader) {
 			return resolveContent(this.props.customLoader, {
 				validModules: this.state.validModules,
@@ -114,10 +121,35 @@ export class AwaitModules
 			});
 		}
 
-		return <div className={'ts-await-modules-loader'} onClick={() => {
-			if (!awaitedModules.length)
-				this.logInfo('Not awaiting any modules');
-			this.logInfo('Waiting for modules:', ...awaitedModules.map(module => module.getName()));
-		}}/>;
+		//Calculate Ratios
+		const relevantInProgressModules = ModuleFE_SyncManager.getCurrentlySyncingModules()
+			.filter(module => this.state.validModules.includes(module as ModuleFE_BaseApi<any>));
+		const readyAndInProgressModulesRatio = (relevantInProgressModules.length + this.state.readyModules.length) / this.state.validModules.length;
+		const readyModulesRatio = this.state.readyModules.length / this.state.validModules.length;
+
+		return <TS_ProgressBar
+			className={'ts-await-modules'}
+			type={'radial'}
+			radius={10}
+			ratios={[
+				readyAndInProgressModulesRatio,
+				readyModulesRatio
+			]}
+			onClick={() => {
+				if (!awaitedModules.length)
+					this.logInfo('Not awaiting any modules');
+				this.logInfo('Waiting for modules:', ...awaitedModules.map(module => module.getName()));
+			}}
+		/>;
+	};
+
+	render() {
+		if (!this.state.awaiting)
+			return this.props.children;
+
+		if (this.getMissingPermissionModules().length)
+			return this.renderMissingPermissions();
+
+		return this.renderLoader();
 	}
 }

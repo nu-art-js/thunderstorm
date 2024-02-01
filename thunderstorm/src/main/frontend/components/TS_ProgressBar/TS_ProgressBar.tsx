@@ -11,6 +11,7 @@ type Props = {
 	type: TS_ProgressBar_Type;
 	radius: number;
 	className?: string;
+	onClick?: VoidFunction;
 };
 
 type State = {
