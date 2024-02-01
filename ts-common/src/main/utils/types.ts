@@ -288,3 +288,11 @@ export type ManipulateInnerPropValue<ObjectType, PropertyPath extends DotNotatio
 		: { [Prop in keyof ObjectType]: Prop extends PropertyPath ? NewValueType : ObjectType[Prop] };
 
 export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };
+
+/**
+ * Makes an optional property of another type mandatory.
+ *
+ * @typeParam T - The original type.
+ * @typeParam K - The key that should be mandatory.
+ * */
+export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
