@@ -28,7 +28,7 @@ import {
 	flatArray,
 	LogLevel,
 	Module,
-	reduceToMap,
+	reduceToMap, removeItemFromArray,
 	RuntimeModules,
 	Second
 } from '@nu-art/ts-common';
@@ -82,6 +82,7 @@ export class ModuleFE_SyncManager_Class
 
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
 	private syncedModules: SyncDbData[] = [];
+	private readonly currentlySyncingModules: Module[] = [];
 	private syncFirebaseListener?: RefListenerFE<SyncDataFirebaseState>;
 	private debounceSync?: () => void;
 	private outOfSyncCollections: Set<string> = new Set<string>();
@@ -125,12 +126,17 @@ export class ModuleFE_SyncManager_Class
 
 	private getAllDBModules = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbName);
 
+	getCurrentlySyncingModules = () => [...this.currentlySyncingModules];
+
 	getLocalSyncData = (): SyncDbData[] => {
 		const existingDBModules = this.getAllDBModules();
-		return existingDBModules.map(module => ({
-			dbName: module.dbDef.dbName,
-			lastUpdated: module.IDB.getLastSync()
-		}));
+		return existingDBModules.map(module => {
+			const lastSync = module.IDB.getLastSync();
+			return ({
+				dbName: module.dbDef.dbName,
+				lastUpdated: lastSync
+			});
+		});
 	};
 
 	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
@@ -176,6 +182,7 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private async debounceSyncImpl() {
+		// Everytime after the first, we'll have the debounceSync const ready, amd debounce the call.
 		if (exists(this.debounceSync))
 			return this.debounceSync();
 
@@ -201,6 +208,7 @@ export class ModuleFE_SyncManager_Class
 	 */
 	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
 		this.logInfo('onSmartSyncCompleted', response);
+		const currentSyncedModulesLength = this.syncedModules.length;
 		this.syncedModules = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
 
 		// We want to make the modules available as soon as possible, so we finish off with the lighter load first, and do full syncs at the end.
@@ -244,7 +252,7 @@ export class ModuleFE_SyncManager_Class
 			this.syncQueue.addItem({module, lastUpdated: moduleToSync.lastUpdated});
 		});
 
-		if (this.syncedModules.length !== response.modules.length)
+		if (currentSyncedModulesLength !== response.modules.length)
 			dispatch_OnPermissibleModulesUpdated.dispatchUI();
 	};
 
@@ -258,6 +266,7 @@ export class ModuleFE_SyncManager_Class
 
 	performFullSync = async (data: QueuedModuleData) => {
 		const module = data.module;
+		this.currentlySyncingModules.push(module);
 		try {
 			this.logDebug(`Full sync for: '${module.dbDef.dbName}'`);
 			// module.logVerbose(`Firing event (DataStatus.NoData): ${module.dbDef.dbName}`);
@@ -268,9 +277,6 @@ export class ModuleFE_SyncManager_Class
 			await module.IDB.clear(); // Also sets the module's data status to NoData.
 			module.logVerbose(`Cleaning Cache: ${module.dbDef.dbName}`);
 			module.cache.clear();
-
-			module.logVerbose(`Firing event (DataStatus.UpdatingData): ${module.dbDef.dbName}`);
-			module.setDataStatus(DataStatus.UpdatingData);
 
 			// for full sync go fetch all db items
 			module.logVerbose(`Syncing: ${module.dbDef.dbName}`);
@@ -286,13 +292,18 @@ export class ModuleFE_SyncManager_Class
 			module.setDataStatus(DataStatus.ContainsData);
 
 			module.logVerbose(`Firing event (EventType_Query): ${module.dbDef.dbName}`);
-			if (allItems.length)
-				module.dispatchMulti(EventType_Query, allItems);
 
 			this.logDebug(`Full Sync Completed: ${module.dbDef.dbName}`);
+			if (allItems.length === 0)
+				return;
+
+			module.dispatchMulti(EventType_Query, allItems);
+
 		} catch (e: any) {
 			this.logError(`Error while syncing ${module.dbDef.dbName}`, e);
 			throw e;
+		} finally {
+			removeItemFromArray(this.currentlySyncingModules, module);
 		}
 	};
 
@@ -309,10 +320,8 @@ export class ModuleFE_SyncManager_Class
 
 		module.IDB.setLastUpdated(lastUpdated);
 
-		module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
-		module.setDataStatus(DataStatus.ContainsData);
-
 		this.logDebug(`Delta Sync Completed: ${module.dbDef.dbName}`);
+		module.setDataStatus(DataStatus.ContainsData);
 	};
 
 	startListening() {

@@ -135,7 +135,7 @@ export abstract class SmartComponent<P = {}, S = {},
 
 	protected getUnpreparedModules(): ModuleFE_BaseDB<any>[] {
 		const modules = resolveContent(this.props.modules);
-		return modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
+		return modules?.filter(module => module.getDataStatus() === DataStatus.NoData) || [];
 	}
 
 	/**
@@ -154,11 +154,10 @@ export abstract class SmartComponent<P = {}, S = {},
 		const unpreparedModules = this.getUnpreparedModules();
 
 		if (unpreparedModules.length > 0) {
-			const state = this.createInitialState(nextProps);
-			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, state);
-			return state;
+			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, currentState);
+			return currentState;
 		}
-
+		this.logDebug('Module Statuses', resolveContent(this.props.modules)?.map(_module => `${_module.getName()}=${_module.getDataStatus()},\n`));
 		if (this.derivingState) {
 			this.logVerbose('Scheduling new props', nextProps as {});
 			this.pending = {props: nextProps, state: partialState};

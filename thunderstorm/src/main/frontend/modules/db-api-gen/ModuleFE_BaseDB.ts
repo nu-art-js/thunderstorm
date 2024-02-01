@@ -65,7 +65,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	implements OnClearWebsiteData {
 	readonly validator: ValidatorTypeResolver<DBType>;
 	readonly cache: MemCache<DBType, Ks>;
-	readonly IDB: IDBCache<DBType, Ks>;
+	readonly IDB!: IDBCache<DBType, Ks>;
 	readonly dbDef: DBDef<DBType, Ks>;
 	private dataStatus: DataStatus;
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>;
@@ -84,7 +84,12 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		this.dataStatus = DataStatus.NoData;
 
 		this.cache = new MemCache<DBType, Ks>(this, config.dbConfig.uniqueKeys);
-		this.IDB = new IDBCache<DBType, Ks>(config.dbConfig, config.versions[0]);
+		this.dbDef = dbDef;
+	}
+
+	protected init() {
+		// @ts-ignore
+		this.IDB = new IDBCache<DBType, Ks>(this.config.dbConfig, this.config.versions[0]);
 		this.IDB.onLastUpdateListener(async (after, before) => {
 			if (!exists(after) || after === before)
 				return;
@@ -93,7 +98,6 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 			this.defaultDispatcher.dispatchAll('update', {} as DBType);
 			this.OnDataStatusChanged();
 		});
-		this.dbDef = dbDef;
 	}
 
 	setDataStatus(status: DataStatus) {
@@ -112,9 +116,6 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 
 	getDataStatus() {
 		return this.dataStatus;
-	}
-
-	protected init() {
 	}
 
 	async __onClearWebsiteData() {
@@ -154,6 +155,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		await this.IDB.syncIndexDb(items);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(items);
+		// todo set data status
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 

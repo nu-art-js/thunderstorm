@@ -142,6 +142,9 @@ export type UniqueParam<Type extends DB_Object, Ks extends keyof PreDB<Type> = D
 	| IndexKeys<Type, Ks>;
 
 export type Draftable = { _isDraft: boolean };
+/**
+ * call function 'resolveContent(resolvableContentObject)' to receive the content which is T.
+ */
 export type ResolvableContent<T, K extends any[] = never> = T | ((...param: K) => T);
 
 export type Auditable = {

@@ -96,17 +96,16 @@ export class TS_ListOrganizer<T>
 		return <LL_V_L className={'ts-list-organizer__list'}>
 			{this.state.items.map((item, itemIndex) => {
 				const dragged = itemIndex === this.draggedItemIndex;
-				return <React.Fragment key={itemIndex}>
-					{this.props.renderer({
-						item,
-						dragged,
-						index: itemIndex,
-						onDragEnd: this.onDragEnd,
-						onDragOver: this.onDragOver,
-						onDragLeave: this.onDragLeave,
-						onDragStart: this.onDragStart,
-					})}
-				</React.Fragment>;
+				return this.props.renderer({
+					item,
+					dragged,
+					index: itemIndex,
+					onDragEnd: this.onDragEnd,
+					onDragOver: this.onDragOver,
+					onDragLeave: this.onDragLeave,
+					onDragStart: this.onDragStart,
+				});
+
 			})}
 		</LL_V_L>;
 	}

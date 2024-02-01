@@ -117,15 +117,15 @@ class ModuleFE_RoutingV2_Class
 		if (shouldAwaitModules && shouldAwaitSync) {
 			if (route.Component.prototype.render) {
 				const Component = route.Component as ComponentClass;
-				return () => <AwaitSync customLoader={route.awaitLoader}>
+				return () => <AwaitSync customLoader={route.awaitSyncLoader}>
 					<AwaitModules modules={route.modulesToAwait!}
-								  customLoader={route.awaitLoader}><Component/></AwaitModules>;
+												customLoader={route.awaitModulesLoader}><Component/></AwaitModules>
 				</AwaitSync>;
 			}
 			const component = route.Component as FunctionComponent;
-			return () => <AwaitSync customLoader={route.awaitLoader}>
+			return () => <AwaitSync customLoader={route.awaitSyncLoader}>
 				<AwaitModules modules={route.modulesToAwait!}
-							  customLoader={route.awaitLoader}>{component({})}</AwaitModules>
+											customLoader={route.awaitModulesLoader}>{component({})}</AwaitModules>
 			</AwaitSync>;
 		}
 
@@ -134,25 +134,25 @@ class ModuleFE_RoutingV2_Class
 			//route.Component is a class component
 			if (route.Component.prototype.render) {
 				const Component = route.Component as ComponentClass;
-				return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}><Component/></AwaitModules>;
+				return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitModulesLoader}><Component/></AwaitModules>;
 			}
 
 			//route.Component is a function component
 			const component = route.Component as FunctionComponent;
 			return () => <AwaitModules modules={route.modulesToAwait!}
-									   customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
+																 customLoader={route.awaitModulesLoader}>{component({})}</AwaitModules>;
 		}
 
 		//Awaiting only sync
 		if (shouldAwaitModules && !shouldAwaitSync) {
 			if (route.Component.prototype.render) {
 				const Component = route.Component as ComponentClass;
-				return () => <AwaitSync customLoader={route.awaitLoader}><Component/></AwaitSync>;
+				return () => <AwaitSync customLoader={route.awaitSyncLoader}><Component/></AwaitSync>;
 			}
 
 			//route.Component is a function component
 			const component = route.Component as FunctionComponent;
-			return () => <AwaitSync customLoader={route.awaitLoader}>{component({})}</AwaitSync>;
+			return () => <AwaitSync customLoader={route.awaitSyncLoader}>{component({})}</AwaitSync>;
 		}
 	};
 

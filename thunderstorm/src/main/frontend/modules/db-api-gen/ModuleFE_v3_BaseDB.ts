@@ -66,7 +66,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 
 	readonly validator: Proto['modifiablePropsValidator'];
 	readonly cache: MemCache<Proto>;
-	readonly IDB: IDBCache<Proto>;
+	readonly IDB!: IDBCache<Proto>;
 	readonly dbDef: DBDef_V3<Proto>;
 	private dataStatus: DataStatus;
 	readonly defaultDispatcher: ThunderDispatcher<any, string>;
@@ -83,9 +83,13 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		this.setDefaultConfig(config as Config);
 		//Set Statuses
 		this.dataStatus = DataStatus.NoData;
-
 		this.cache = new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
-		this.IDB = new IDBCache<Proto>(config.dbConfig, config.versions[0]);
+		this.dbDef = dbDef;
+	}
+
+	protected init() {
+		// @ts-ignore
+		this.IDB = new IDBCache<Proto>(this.config.dbConfig, this.config.versions[0]);
 		this.IDB.onLastUpdateListener(async (after, before) => {
 			if (!exists(after) || after === before)
 				return;
@@ -94,7 +98,6 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 			this.defaultDispatcher.dispatchAll('update', {} as Proto['dbType']);
 			this.OnDataStatusChanged();
 		});
-		this.dbDef = dbDef;
 	}
 
 	setDataStatus(status: DataStatus) {
@@ -113,9 +116,6 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 
 	getDataStatus() {
 		return this.dataStatus;
-	}
-
-	protected init() {
 	}
 
 	async __onClearWebsiteData() {
