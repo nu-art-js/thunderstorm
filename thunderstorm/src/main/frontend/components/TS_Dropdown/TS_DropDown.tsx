@@ -21,7 +21,14 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, clamp, debounce, Filter, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	clamp,
+	debounce,
+	Filter,
+	ResolvableContent,
+	resolveContent
+} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -73,6 +80,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & ComponentProps_Error & {
 
 	selected?: ItemType
 	filter?: Filter<ItemType>
+	queryFilter?: (item: ItemType) => boolean
 	tabIndex?: number;
 	innerRef?: React.RefObject<any>;
 
@@ -109,7 +117,11 @@ type BasePartialProps_DropDown<T> = {
 	disabled?: boolean
 	ifNoneShowAll?: boolean
 }
-export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & ComponentProps_Error & (Props_CanUnselect<T> | Props_CanNotUnselect<T>) & {
+export type PartialProps_DropDown<T> =
+	BasePartialProps_DropDown<T>
+	& ComponentProps_Error
+	& (Props_CanUnselect<T> | Props_CanNotUnselect<T>)
+	& {
 	selected?: T;
 }
 
@@ -186,8 +198,8 @@ export class TS_DropDown<ItemType>
 		nextState.className = nextProps.className;
 		nextState.treeResizeObserver ??= new ResizeObserver(() => debounce(() => this.onTreeResize(), 5));
 
-		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
-			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
+		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText) || nextProps.queryFilter) {
+			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText, nextProps.queryFilter);
 			nextState.focusedItem = undefined;
 		}
 
@@ -304,12 +316,17 @@ export class TS_DropDown<ItemType>
 		}
 	};
 
-	private createAdapter(adapterToClone: Adapter<ItemType>, limit?: number, filterText?: string): Adapter<ItemType> {
+	private createAdapter(adapterToClone: Adapter<ItemType>, limit?: number, filterText?: string, queryFilter?: (item: ItemType) => boolean): Adapter<ItemType> {
 		//If no change to data
-		if (!(filterText && this.props.filter) && !limit)
+		if (!(filterText && this.props.filter) && !limit && !queryFilter)
 			return adapterToClone;
 
 		let data = adapterToClone.data;
+
+		//If queryFilter
+		if (queryFilter) {
+			data = data.filter((item: any) => queryFilter(item));
+		}
 
 		//If filtering
 		if (filterText && this.props.filter)
