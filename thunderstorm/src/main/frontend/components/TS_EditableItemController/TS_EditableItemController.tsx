@@ -60,7 +60,7 @@ export class TS_EditableItemController<Proto extends DBProto<any>,
 		if (!exists(item))
 			item = this.props.createInitialInstance();
 
-		_state.editable = new EditableDBItemV3(item!, nextProps.module, async (item) => {
+		_state.editable = new EditableDBItemV3(item, nextProps.module, async (item) => {
 			this.setState(state => ({editable: state.editable.clone(item)}));
 			await nextProps.onCompleted?.(item);
 		}, nextProps.onError).setAutoSave(resolveContent(nextProps.autoSave, item) || false);
