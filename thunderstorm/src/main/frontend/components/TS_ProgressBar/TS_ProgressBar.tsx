@@ -79,7 +79,7 @@ export class TS_ProgressBar
 	render() {
 		const className = _className('ts-progress-bar', this.props.className);
 		const Renderer = this.getRenderer();
-		return <div className={className}>
+		return <div className={className} onClick={this.props.onClick}>
 			<Renderer/>
 		</div>;
 	}
