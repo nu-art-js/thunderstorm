@@ -1,0 +1,1 @@
+export * from './modules/ModuleBE_FocusedObject';

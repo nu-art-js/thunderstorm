@@ -1,3 +1,4 @@
+/// <reference types="react" />
 import { ComponentSync } from '@nu-art/thunderstorm/frontend';
 import { DB_Notifications } from '@nu-art/push-pub-sub/shared/types';
 export type State = {

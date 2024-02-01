@@ -83,8 +83,7 @@ export class ModuleFE_FirebaseListener_Class
 
 	createListener(nodePath: string): RefListenerFE {
 		this.logInfo(`Creating listener for firebase rtdb node ${nodePath}`);
-		const refListenerFE = new RefListenerFE(nodePath);
-		return refListenerFE;
+		return new RefListenerFE(nodePath);
 	}
 }
 
