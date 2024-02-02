@@ -66,7 +66,7 @@ export type ApiStruct_DBApiGenIDBV3<Proto extends DBProto<any>> = {
 export const DBApiDefGeneratorV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenV3<Proto>> => {
 	return {
 		v1: {
-			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`},
+			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`, timeout: 60000},
 			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/query-unique`},
 			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert`},
 			upsertAll: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert-all`},
@@ -82,7 +82,7 @@ export const DBApiDefGeneratorV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<
 export const DBApiDefGeneratorIDBV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenIDBV3<Proto>> => {
 	return {
 		v1: {
-			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`},
+			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`, timeout: 60000},
 			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/query-unique`},
 			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert`},
 			upsertAll: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert-all`},
