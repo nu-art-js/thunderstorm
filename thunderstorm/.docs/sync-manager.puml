@@ -1,0 +1,32 @@
+@startuml
+participant SyncFE as "Sync Manager FE"
+participant FB as "Firebase"
+participant FE as "Module FE"
+participant Queue as Queue
+participant SyncBE as "Sync Manager BE"
+
+
+-> SyncFE: on login: Start Sync
+SyncFE -> FB: Listen on "/sync-data"
+== Received Firebase change event ==
+FB -> SyncFE: Current sync-data snapshot
+SyncFE -> SyncFE: Debounce the sync-event for 1000ms or max 5000ms
+SyncFE -> SyncFE: Collect idb-sync-data\n(last update timestamps from IDBs)
+SyncFE -> SyncBE: perform smart sync (with idb-sync-data)
+SyncBE -> SyncBE: calculate sync status + check\nwhich modules you have permissions to read
+
+== sync response (happens in parallel) ==
+SyncBE -> SyncFE: which modules not to sync
+SyncFE -> FE: Update data status to "Ready"
+
+SyncBE -> SyncFE: which modules has delta sync + the delta\n(updated and deleted items[])
+SyncFE -> FE: Update IDB and Cache\n& Update data status to "Ready"
+
+SyncBE -> SyncFE: which modules need full sync
+SyncFE -> Queue: Add module to sync into Queue
+
+Queue -> Queue: before any call to query: \n* sort by priority\n* filter duplicates
+Queue -> Queue: Call BE query with empty where clause\n& Update IDB and Cache\n& Update data status to "Ready"
+
+
+@enduml
