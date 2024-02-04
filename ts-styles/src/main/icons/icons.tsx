@@ -78,8 +78,7 @@ export const TS_Icons = {
 	menu: {component: genIcon(Menu), url: MenuUrl},
 	google: {component: genIcon(Google), url: GoogleUrl},
 	download: {component: genIcon(Download), url: DownloadUrl},
-	copy: {component: genIcon(Copy), url: CopyUrl}
-	download: {component: genIcon(Download), url: DownloadUrl},
+	copy: {component: genIcon(Copy), url: CopyUrl},
 	addImage: {component: genIcon(AddImage), url: AddImageUrl},
 };
 
