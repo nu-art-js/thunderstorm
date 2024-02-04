@@ -35,6 +35,7 @@ import {
 	RuntimeModules,
 	Second,
 	tsValidateMustExist,
+	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
@@ -58,6 +59,7 @@ import {
 } from '../../../shared/sync-manager/types';
 import {HttpMethod} from '../../../shared';
 import Transaction = firestore.Transaction;
+import {OnSyncEnvCompleted} from '../sync-env/ModuleBE_v2_SyncEnv';
 
 
 type DeletedDBItem = DB_Object & { __collectionName: string, __docId: UniqueId }
@@ -81,7 +83,7 @@ type Config = {
  */
 export class ModuleBE_SyncManager_Class
 	extends Module<Config>
-	implements OnModuleCleanupV2 {
+	implements OnModuleCleanupV2, OnSyncEnvCompleted {
 
 	public collection!: FirestoreCollectionV2<DeletedDBItem>;
 
@@ -101,6 +103,10 @@ export class ModuleBE_SyncManager_Class
 		}, this.calculateSmartSync);
 
 		this.setDefaultConfig({retainDeletedCount: 1000});
+	}
+
+	async __onSyncEnvCompleted(env: string, baseUrl: string, requiredHeaders: TypedMap<string>) {
+		await this.database.delete(`/state/${this.getName()}/syncData`);
 	}
 
 	init() {
