@@ -246,6 +246,11 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 
 	private versionUpgrades: { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> } = {} as { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> };
 
+	/**
+	 * Upgrades the entity from the given version to the next one (to the same version if the given version is the latest)
+	 * @param version - The version we start from
+	 * @param processor
+	 */
 	registerVersionUpgradeProcessor<K extends Proto['versions']['versions'][number]>(version: K, processor: (items: Proto['versions']['types'][K][]) => Promise<void>) {
 		this.versionUpgrades[version] = processor;
 	}
