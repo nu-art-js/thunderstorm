@@ -56,6 +56,17 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 	return new File([u8arr], fileName, {type: mimeType});
 }
 
+export function readFileContent(file: File): Promise<ArrayBuffer> {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.readAsArrayBuffer(file);
+		reader.onload = () => {
+			resolve(reader.result as ArrayBuffer);
+		};
+		reader.onerror = reject;
+	});
+}
+
 export function _className(...classes: (string | boolean | undefined)[]) {
 	return filterInstances(classes.filter(c => !!c)).join(' ');
 }

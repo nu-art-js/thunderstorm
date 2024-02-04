@@ -1,6 +1,6 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {DB_BaseObject, Minute, UniqueId} from '@nu-art/ts-common';
-import {AccountType, DB_Session, UI_Account} from './types';
+import {AccountType, DB_Account, DB_Session, UI_Account} from './types';
 
 
 export const HeaderKey_SessionId = 'x-session-id';
@@ -41,7 +41,7 @@ export type Request_CreateAccount = DBAccountType & AccountEmail & Partial<Passw
 export type ResponseBody_ChangePassword = Response_Auth
 export type RequestBody_SetPassword = PasswordWithCheck
 export type RequestBody_Login = AccountEmailWithDevice & AccountPassword
-
+export type Request_ChangeThumbnail = { accountId: string; hash: string };
 export type RequestBody_ChangePassword = PasswordWithCheck & {
 	oldPassword: string
 }
@@ -56,9 +56,8 @@ export type Response_LoginSAML = {
 
 export type Request_LoginAccount = AccountEmailWithDevice & AccountPassword
 export type RequestBody_CreateToken = { accountId: UniqueId, ttl: number, label: string };
-
 export type Response_CreateToken = { token: string };
-
+export type Response_ChangeThumbnail = { account: DB_Account };
 type TypedApi_RefreshSession = { refreshSession: QueryApi<void> };
 type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParams_LoginSAML> };
 type TypedApi_Login = { login: BodyApi<Response_Auth, Request_LoginAccount> };
@@ -71,6 +70,7 @@ type TypedApi_ChangedPassword = {
 type TypedApi_CreateToken = { createToken: BodyApi<Response_CreateToken, RequestBody_CreateToken> };
 type TypedApi_SetPassword = { setPassword: BodyApi<Response_Auth, RequestBody_SetPassword> };
 type TypedApi_GetSessions = { getSessions: QueryApi<{ sessions: DB_Session[] }, DB_BaseObject> };
+type TypedApi_ChangeThumbnail = { changeThumbnail: BodyApi<Response_ChangeThumbnail, Request_ChangeThumbnail> }
 
 const API_RefreshSession = {refreshSession: {method: HttpMethod.GET, path: 'v1/account/refresh-session'}} as const;
 const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'}} as const;
@@ -105,6 +105,7 @@ const API_ValidateSession = {
 		timeout: Minute
 	}
 } as const;
+const API_ChangeThumbnail = {changeThumbnail: {method: HttpMethod.POST, path: '/v1/account/change-thumbnail'}} as const;
 
 export type ApiStructBE_Account = {
 	vv1: TypedAPI_RegisterAccount
@@ -116,6 +117,7 @@ export type ApiStructBE_Account = {
 		& TypedApi_CreateToken
 		& TypedApi_SetPassword
 		& TypedApi_GetSessions
+		& TypedApi_ChangeThumbnail
 }
 
 export const ApiDefBE_Account: ApiDefResolver<ApiStructBE_Account> = {
@@ -130,6 +132,7 @@ export const ApiDefBE_Account: ApiDefResolver<ApiStructBE_Account> = {
 		...API_CreateToken,
 		...API_SetPassword,
 		...API_GetSessions,
+		...API_ChangeThumbnail,
 	}
 };
 
@@ -144,6 +147,7 @@ export type ApiStructFE_Account = {
 		& TypedApi_SetPassword
 		& TypedApi_LoginSaml
 		& TypedApi_GetSessions
+		& TypedApi_ChangeThumbnail
 }
 
 export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
@@ -159,6 +163,7 @@ export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
 		...API_CreateToken,
 		...API_SetPassword,
 		...API_GetSessions,
+		...API_ChangeThumbnail
 	}
 };
 
