@@ -19,6 +19,7 @@ import SaveUrl, {ReactComponent as Save} from './svgs/icon__save.svg';
 import MenuUrl, {ReactComponent as Menu} from './svgs/icon__menu.svg';
 import GoogleUrl, {ReactComponent as Google} from './svgs/icon__google.svg';
 import DownloadUrl, {ReactComponent as Download} from './svgs/icon__download.svg';
+import AddImageUrl, {ReactComponent as AddImage} from './svgs/icon__add-image.svg';
 
 export type IconStyle = {
 	color: string;
@@ -75,7 +76,8 @@ export const TS_Icons = {
 	save: {component: genIcon(Save), url: SaveUrl},
 	menu: {component: genIcon(Menu), url: MenuUrl},
 	google: {component: genIcon(Google), url: GoogleUrl},
-	download: {component: genIcon(Download), url: DownloadUrl}
+	download: {component: genIcon(Download), url: DownloadUrl},
+	addImage: {component: genIcon(AddImage), url: AddImageUrl},
 };
 
 export const tsIconKeys = (): TSIcons[] => {
