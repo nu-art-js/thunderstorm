@@ -2,20 +2,39 @@
 
 .account-editor {
   padding: 14px;
-  width: 650px;
+  min-width: 70%;
+  min-height: 40%;
   background: white;
   border-radius: 4px;
-  gap: 15px;
+  gap: 30px;
 
+  .editor-section {
+    gap: 15px;
+  }
+
+  .gen-token-row {
+    align-items: flex-end;
+    width: 100%;
+    gap: 5%;
+
+    .ts-dropdown {
+      max-width: 100%;
+    }
+
+    .ts-prop-renderer {
+      max-width: 33%;
+    }
+  }
 
   .inputs-row {
-    justify-content: space-between;
+    gap: 10px;
     width: 100%;
   }
 
   .ts-input {
     padding: 2px 10px 2px 10px;
     border-radius: 4px;
+    max-width: 100%;
     background: none;
     border: 1px solid #e3e9f2;
 
@@ -65,10 +84,34 @@
     }
   }
 
+  .ts-prop-renderer {
+    .ts-grid {
+      grid-template-columns: repeat(5, max-content);
+      column-gap: 15px;
+      row-gap: 10px;
+
+      .grid-title {
+        font-size: 15px;
+        color: #004a72;
+      }
+
+      .grid-cell {
+        font-size: 14px;
+        color: #333333;
+        justify-content: center;
+      }
+
+      .icon--wrapper {
+        cursor: pointer;
+      }
+    }
+  }
+
   .ts-busy-button {
     background: white;
     font-size: 12px;
     border-radius: 5px;
+    min-width: 20%;
     color: inherit;
     padding: 2px 10px 2px 10px;
     height: 40px;
