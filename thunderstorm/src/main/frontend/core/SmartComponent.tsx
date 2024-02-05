@@ -135,7 +135,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	protected getUnpreparedModules(): ModuleFE_BaseDB<any>[] {
 		const modules = resolveContent(this.props.modules);
-		return modules?.filter(module => module.getDataStatus() === DataStatus.NoData) || [];
+		return modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
 	}
 
 	/**
