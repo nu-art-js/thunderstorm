@@ -18,12 +18,9 @@ type State = {
 };
 
 export const Component_AccountThumbnail = (props: Props & { modulesToAwait?: ModuleFE_v3_BaseApi<any>[] }) => {
-	let {modulesToAwait, ...rest} = props;
-	if (!modulesToAwait)
-		modulesToAwait = [];
-	modulesToAwait.push(ModuleFE_Account as unknown as ModuleFE_v3_BaseApi<any>);
-
-	return <AwaitModules modules={filterDuplicates(modulesToAwait)} customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
+	const {modulesToAwait, ...rest} = props;
+	const modules = [...(modulesToAwait ?? []), ModuleFE_Account] as unknown as ModuleFE_v3_BaseApi<any>[];
+	return <AwaitModules modules={filterDuplicates(modules)} customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
 		<Component_AccountThumbnail_Impl {...rest}/>
 	</AwaitModules>;
 };
@@ -58,7 +55,6 @@ class Component_AccountThumbnail_Impl
 	};
 
 	private onClick = (e: React.MouseEvent) => {
-		this.logInfo('Click', this.state.account, this.props.onClick);
 		if (!this.props.onClick || !this.state.account)
 			return;
 
