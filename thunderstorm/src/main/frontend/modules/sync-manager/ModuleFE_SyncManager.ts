@@ -286,7 +286,10 @@ export class ModuleFE_SyncManager_Class
 			await module.IDB.syncIndexDb(allItems);
 			module.IDB.setLastUpdated(data.lastUpdated);
 			module.logVerbose(`Updating Cache: ${module.dbDef.dbName}`);
+			module.logWarning(`allItems length ${allItems.length}`);
 			await module.cache.load();
+			module.logWarning(`IDB items length ${(await module.IDB.query()).length}`);
+			module.logWarning(`cache items length ${module.cache.all().length}`);
 
 			module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
 			module.setDataStatus(DataStatus.ContainsData);

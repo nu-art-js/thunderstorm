@@ -31,7 +31,7 @@ import {
 	IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
-	Logger,
+	Logger, LogLevel,
 	Module,
 	sortArray,
 	tsValidateResult,
@@ -77,6 +77,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>) {
 		super();
 		this.defaultDispatcher = defaultDispatcher;
+		this.setMinLevel(LogLevel.Verbose);
 
 		const config = getModuleFEConfigV3(dbDef);
 		this.validator = config.validator;
