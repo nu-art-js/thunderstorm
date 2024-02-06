@@ -43,6 +43,8 @@ export class QueueV2<ItemType, OutputType = any>
 		this.runner = runner;
 	}
 
+	getLength = () => this.queue.length;
+
 	setParallelCount(parallelCount: number) {
 		this.allowedParallelOperationsCount = parallelCount;
 		return this;

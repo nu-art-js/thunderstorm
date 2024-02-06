@@ -108,7 +108,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				return <>
 					{_render()}
 					{this.state.componentPhase === ComponentStatus.Syncing &&
-                        <div className={'loader-transparent-container'}><TS_Loader/></div>}
+						<div className={'loader-transparent-container'}><TS_Loader/></div>}
 				</>;
 			};
 
@@ -152,6 +152,8 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		const currentState = partialState;
 
 		const unpreparedModules = this.getUnpreparedModules();
+
+		this.logInfo('_deriveStateFromProps', `Component Phase: ${ComponentStatus[currentState.componentPhase]}`, unpreparedModules.map(module => module.getName()));
 
 		if (unpreparedModules.length > 0) {
 			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, currentState);
