@@ -152,9 +152,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		const currentState = partialState;
 
 		const unpreparedModules = this.getUnpreparedModules();
-
-		this.logInfo('_deriveStateFromProps', `Component Phase: ${ComponentStatus[currentState.componentPhase]}`, unpreparedModules.map(module => module.getName()));
-
+		
 		if (unpreparedModules.length > 0) {
 			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, currentState);
 			return currentState;
