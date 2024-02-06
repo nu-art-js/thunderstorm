@@ -42,11 +42,7 @@ export class TS_Workspace
 	extends ComponentSync<Props, State> {
 
 	private toRender = false;
-
-	// _constructor() {
-	// 	this.logger.setMinLevel(LogLevel.Verbose);
-	// }
-
+	
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.key = nextProps.workspaceKey;
 		return state;

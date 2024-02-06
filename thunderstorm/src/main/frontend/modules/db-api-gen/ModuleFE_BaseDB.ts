@@ -28,7 +28,7 @@ import {
 	exists,
 	IndexKeys,
 	InvalidResult,
-	Logger, LogLevel,
+	Logger,
 	Module,
 	PreDB,
 	sortArray,
@@ -76,8 +76,6 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>) {
 		super();
 		this.defaultDispatcher = defaultDispatcher;
-		this.setMinLevel(LogLevel.Debug);
-
 		const config = getModuleFEConfig(dbDef);
 		this.validator = config.validator;
 		this.setDefaultConfig(config as _Config);

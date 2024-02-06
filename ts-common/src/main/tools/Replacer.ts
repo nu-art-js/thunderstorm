@@ -39,7 +39,6 @@ export class Replacer
 
 	constructor() {
 		super();
-		// this.setMinLevel(LogLevel.Error);
 	}
 
 	setFallbackReplacer(fallbackReplacer?: Replacer) {
