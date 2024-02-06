@@ -15,6 +15,7 @@ type Props = {
 
 type State = {
 	account: DB_Account;
+	acronym: string;
 };
 
 export const Component_AccountThumbnail = (props: Props & { modulesToAwait?: ModuleFE_v3_BaseApi<any>[] }) => {
@@ -31,6 +32,10 @@ class Component_AccountThumbnail_Impl
 
 	// ######################### Lifecycle #########################
 
+	shouldReDeriveState() {
+		return true;
+	}
+
 	__onAccountsUpdated = (...params: ApiCallerEventType<DB_Account>) => {
 		this.reDeriveState();
 	};
@@ -40,13 +45,13 @@ class Component_AccountThumbnail_Impl
 		if (!state.account)
 			throw new MUSTNeverHappenException(`Could not find account for id ${nextProps.accountId}`);
 
+		state.acronym = this.generateThumbnailAcronym(state.account);
 		return state;
 	}
 
 	// ######################### Logic #########################
 
-	private generateThumbnailAcronym = () => {
-		const account = this.state.account;
+	private generateThumbnailAcronym(account: DB_Account) {
 		const accountAcronym = account.displayName ? account.displayName.substring(0, 2).toUpperCase() : account.email.substring(0, 2).toUpperCase();
 		if (!this.props.acronymComposer)
 			return accountAcronym;
@@ -77,8 +82,7 @@ class Component_AccountThumbnail_Impl
 		if (this.state.account?.thumbnail)
 			return this.renderUserImage();
 
-		const acronym = this.generateThumbnailAcronym();
-		return <div className={'user-thumbnail__acronym'}>{acronym}</div>;
+		return <div className={'user-thumbnail__acronym'}>{this.state.acronym}</div>;
 	};
 
 	private renderUserImage = () => {
