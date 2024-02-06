@@ -19,6 +19,8 @@ import SaveUrl, {ReactComponent as Save} from './svgs/icon__save.svg';
 import MenuUrl, {ReactComponent as Menu} from './svgs/icon__menu.svg';
 import GoogleUrl, {ReactComponent as Google} from './svgs/icon__google.svg';
 import DownloadUrl, {ReactComponent as Download} from './svgs/icon__download.svg';
+import CopyUrl, {ReactComponent as Copy} from './svgs/icon__copy.svg';
+import AddImageUrl, {ReactComponent as AddImage} from './svgs/icon__add-image.svg';
 
 export type IconStyle = {
 	color: string;
@@ -36,7 +38,7 @@ class RenderIcon
 	render() {
 		const className = 'icon--wrapper ' + (this.props.className ?? '');
 		return <div {...this.props} className={className}
-								style={{WebkitMaskImage: `url(${this.props.icon})`, maskImage: `url(${this.props.icon})`}}/>;
+					style={{WebkitMaskImage: `url(${this.props.icon})`, maskImage: `url(${this.props.icon})`}}/>;
 	}
 }
 
@@ -75,7 +77,9 @@ export const TS_Icons = {
 	save: {component: genIcon(Save), url: SaveUrl},
 	menu: {component: genIcon(Menu), url: MenuUrl},
 	google: {component: genIcon(Google), url: GoogleUrl},
-	download: {component: genIcon(Download), url: DownloadUrl}
+	download: {component: genIcon(Download), url: DownloadUrl},
+	copy: {component: genIcon(Copy), url: CopyUrl},
+	addImage: {component: genIcon(AddImage), url: AddImageUrl},
 };
 
 export const tsIconKeys = (): TSIcons[] => {

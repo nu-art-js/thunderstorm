@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
 	apiWithBody,
 	apiWithQuery,
@@ -6,6 +7,7 @@ import {
 	ModuleFE_v3_BaseApi,
 	ModuleFE_XHR,
 	OnStorageKeyChangedListener,
+	readFileContent,
 	ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
@@ -15,9 +17,10 @@ import {
 	cloneObj,
 	composeUrl,
 	currentTimeMillis,
-	DB_BaseObject,
+	DB_BaseObject, Exception,
 	exists,
 	generateHex,
+	KB,
 	TS_Object,
 	TypedKeyValue
 } from '@nu-art/ts-common';
@@ -30,7 +33,7 @@ import {
 	DBProto_AccountType,
 	HeaderKey_SessionId,
 	QueryParam_SessionId,
-	Response_Auth,
+	Response_Auth, Response_ChangeThumbnail,
 	Response_LoginSAML,
 	UI_Account
 } from '../../shared';
@@ -80,6 +83,7 @@ class ModuleFE_Account_Class
 			createToken: apiWithBody(ApiDefFE_Account.vv1.createToken),
 			setPassword: apiWithBody(ApiDefFE_Account.vv1.setPassword, this.setLoginInfo),
 			getSessions: apiWithQuery(ApiDefFE_Account.vv1.getSessions),
+			changeThumbnail: apiWithBody(ApiDefFE_Account.vv1.changeThumbnail, this.onThumbnailChanged)
 		};
 	}
 
@@ -220,6 +224,39 @@ class ModuleFE_Account_Class
 			return window.location.href = url;
 
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+	};
+
+	uploadAccountThumbnail = (e: React.MouseEvent, account: DB_Account) => {
+		const input = document.createElement('input');
+		input.type = 'file';
+		// input.accept = '.jpg,.jpeg,.png';
+		input.style.display = 'none';
+		input.addEventListener('change', async e => {
+			const file = input.files![0];
+			if (!file)
+				return;
+
+			try {
+				const hash = await this.encodeFile(file);
+				await this.vv1.changeThumbnail({accountId: account._id, hash}).executeSync();
+			} catch (err: any) {
+				this.logError(err.message, err);
+			}
+		});
+		input.click();
+	};
+
+	private encodeFile = async (file: File) => {
+		const arrayBuffer: ArrayBuffer = await readFileContent(file);
+		if (arrayBuffer.byteLength > 200 * KB)
+			throw new Exception('File size exceeds 200KB');
+
+		const buffer = new Uint8Array(arrayBuffer);
+		return window.btoa(buffer.reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
+	};
+
+	private onThumbnailChanged = async (response: Response_ChangeThumbnail) => {
+		await this.onEntryUpdated(response.account, response.account);
 	};
 }
 

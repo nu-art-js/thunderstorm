@@ -77,7 +77,11 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
-		const upsert = apiWithBody(apiDef.v1.upsert, this.onEntryUpdated);
+		const upsert = apiWithBody(apiDef.v1.upsert, async (item, orginal) => {
+			const toRet = await this.onEntryUpdated(item, orginal);
+			this.IDB.setLastUpdated(item.__updated);
+			return toRet;
+		});
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
@@ -94,7 +98,12 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 				this.validateImpl(toUpsert);
 				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
-			upsertAll: apiWithBody(apiDef.v1.upsertAll, this.onEntriesUpdated),
+			upsertAll: apiWithBody(apiDef.v1.upsertAll, async (items) => {
+				const toRet = await this.onEntriesUpdated(items);
+				const lastUpdated = items.reduce((toRet, current) => Math.max(toRet, current.__updated), -1);
+				this.IDB.setLastUpdated(lastUpdated);
+				return toRet;
+			}),
 			// @ts-ignore
 			patch: (toPatch: Partial<DBType>) => {
 				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch as IndexKeys<DBType, Ks> & Partial<DBType>), 'patch');

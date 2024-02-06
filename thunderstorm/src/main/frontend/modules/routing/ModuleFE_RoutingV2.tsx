@@ -25,12 +25,7 @@ class ModuleFE_RoutingV2_Class
 		[fullPath: string]: TS_Route
 	} = {};
 	private navigate!: NavigateFunction;
-
-	// constructor() {
-	// 	super();
-	// 	this.setMinLevel(LogLevel.Debug);
-	// }
-
+	
 	// ######################## Public Functions ########################
 
 	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {

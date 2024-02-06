@@ -1,0 +1,143 @@
+@use '@nu-art/ts-styles' as styles;
+
+%main-button-design {
+  @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));
+  width: 95%;
+  height: 30px;
+  margin: 0 auto;
+}
+
+#pop-up__account-menu {
+  width: 280px;
+  height: 400px;
+  overflow: hidden;
+  background: white;
+  border-radius: 10px;
+  border: 2px solid styles.dark-blue(1);
+  position: relative;
+
+  .account-menu__not-found {
+    width: 100%;
+    height: 100%;
+    font-size: 18px;
+    color: styles.dark-blue(1);
+  }
+
+  .account-menu {
+    width: 100%;
+    height: 100%;
+
+    .account-menu__separator {
+      background: styles.dark-blue(1);
+      width: 95%;
+      flex-shrink: 0;
+      margin: 0 auto;
+      height: 2px;
+      border-radius: 1px;
+    }
+
+    .account-menu__header {
+      width: 100%;
+      height: 65px;
+      flex-shrink: 0;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px;
+
+      .user-thumbnail {
+        width: 50px;
+        height: 50px;
+
+        .user-thumbnail__acronym {
+          font-size: 26px;
+        }
+      }
+
+      .account-menu__header__display-name {
+        font: {
+          size: 18px;
+          weight: 600;
+        }
+        color: styles.dark-blue(1);
+      }
+    }
+
+    .account-menu__body {
+      width: 100%;
+      padding: 10px;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+
+      .ts-button, .ts-busy-button {
+        @include styles.mouse-interactive-text(styles.dark-blue(2), white);
+        @include styles.mouse-interactive-background(white, styles.dark-blue(2));
+        margin: 0;
+        height: 30px;
+        background: transparent;
+        border: 2px solid styles.dark-blue(2);
+      }
+    }
+
+    .account-menu__footer {
+      width: 100%;
+      height: 50px;
+      align-items: center;
+      flex-shrink: 0;
+
+      .ts-button {
+        @extend %main-button-design;
+      }
+    }
+  }
+
+  .account-menu__custom-page {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    transition: translate 200ms linear;
+    background: white;
+    padding: 10px 0;
+
+    .account-menu__custom-page__back-button {
+      @include styles.mouse-interactive-background(white, styles.dark-blue(2));
+      @include styles.mouse-interactive-text(styles.dark-blue(2), white);
+      transition: background 100ms, color 100ms;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-left: 10px;
+      font: {
+        size: 14px;
+      }
+    }
+
+    &:not(.show) {
+      translate: 100% 0;
+    }
+
+    //Custom look for the change password page
+    .ts-account__change-password {
+      width: 100%;
+      padding: 10px 20px;
+      gap: 20px;
+      flex-grow: 1;
+      height: 0;
+
+      .ts-prop-renderer {
+        .ts-input {
+          border: 1px solid styles.dark-blue(2);
+          border-radius: 6px;
+          min-height: 35px;
+        }
+      }
+
+      .ts-busy-button {
+        @extend %main-button-design;
+        margin-top: auto;
+        width: 100%;
+      }
+    }
+  }
+}
