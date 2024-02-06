@@ -96,7 +96,10 @@ export class ModuleFE_SyncManager_Class
 				const priorityModule = filterDuplicates(flatArray(dispatch_QueryAwaitedModules.dispatchUI()));
 				return priorityModule.includes(data.module) ? 0 : 1;
 			})
-			.setFilter(queueItems => filterDuplicates(queueItems, item => item.item));
+			.setFilter(queueItems => filterDuplicates(queueItems, item => item.item))
+			.setOnQueueEmpty(async () => {
+				await this.clearSyncingStatus();
+			});
 	}
 
 	// ######################### Public Methods #########################
@@ -121,13 +124,16 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private smartSync = async () => {
+		//If syncing currently, flag pending sync and return
+		if (this.syncing) {
+			this.pendingSync = true;
+			return;
+		}
+
+		this.syncing = true;
 		const request: Request_SmartSync = {
 			modules: this.getLocalSyncData()
 		};
-
-		if (this.syncing)
-			this.pendingSync = true;
-		this.syncing = true;
 
 		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
 		await apiWithBody<BodyApi<Response_SmartSync, Request_SmartSync>>({
@@ -136,7 +142,15 @@ export class ModuleFE_SyncManager_Class
 			timeout: 60 * Second
 		}, this.onSmartSyncCompleted)(request).executeSync();
 
+		//If queue is empty
+		if (!this.syncQueue.getLength())
+			await this.clearSyncingStatus();
+	};
+
+	private clearSyncingStatus = async () => {
+		//Un-flag currently syncing
 		this.syncing = false;
+		//If a sync is pending
 		if (this.pendingSync) {
 			delete this.pendingSync;
 			await this.debounceSyncImpl();
@@ -211,11 +225,11 @@ export class ModuleFE_SyncManager_Class
 				return this.logError(`Couldn't find module to full sync with dbName: '${syncModule.dbName}'`);
 
 			if (this.currentlySyncingModules.includes(module))
-				return this.logWarning(`Avoid syncing on a currently syncing module ${module.dbDef.dbName}`);
-			
+				return this.logDebug(`Avoid syncing on a currently syncing module ${module.dbDef.dbName}`);
+
 			// Avoid unnecessary full sync
 			if (module.IDB.getLastSync() === syncModule.lastUpdated)
-				return this.logWarning(`Avoiding unnecessary full sync on ${module.dbDef.dbName}`);
+				return this.logDebug(`Avoiding unnecessary full sync on ${module.dbDef.dbName}`);
 
 			return () => this.syncQueue.addItem({module, lastUpdated: syncModule.lastUpdated});
 		}));
@@ -231,7 +245,7 @@ export class ModuleFE_SyncManager_Class
 	 * Perform no sync, delta sync and full sync on modules. Intention is to get all modules to DataStatus "ContainsData".
 	 */
 	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
-		this.logInfo('onSmartSyncCompleted', response);
+		this.logInfo(`onSmartSyncCompleted (${response.modules.length})`, response);
 		const currentSyncedModulesLength = this.syncedModules.length;
 		this.syncedModules = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
 
@@ -285,7 +299,7 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private performFullSync = async (data: QueuedModuleData) => {
-		this.logDebug(`Performing DeltaSyncOperation for module ${data.module.getName()}`);
+		this.logInfo(`Performing DeltaSyncOperation for module ${data.module.getName()}`);
 		const module = data.module;
 		this.currentlySyncingModules.push(module);
 		try {
@@ -303,10 +317,10 @@ export class ModuleFE_SyncManager_Class
 			await module.IDB.syncIndexDb(allItems);
 			module.IDB.setLastUpdated(data.lastUpdated);
 			module.logVerbose(`Updating Cache: ${module.dbDef.dbName}`);
-			module.logWarning(`allItems length ${allItems.length}`);
+			module.logVerbose(`allItems length ${allItems.length}`);
 			await module.cache.load();
-			module.logWarning(`IDB items length ${(await module.IDB.query()).length}`);
-			module.logWarning(`cache items length ${module.cache.all().length}`);
+			module.logVerbose(`IDB items length ${(await module.IDB.query()).length}`);
+			module.logVerbose(`cache items length ${module.cache.all().length}`);
 
 			module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
 			module.setDataStatus(DataStatus.ContainsData);
