@@ -39,13 +39,13 @@ import {
 	DBDef_Accounts,
 	DBProto_AccountType,
 	HeaderKey_SessionId,
-	PasswordWithCheck,
+	PasswordWithCheck, Request_ChangeThumbnail,
 	Request_CreateAccount,
 	Request_LoginAccount,
 	RequestBody_ChangePassword,
 	RequestBody_CreateToken,
 	RequestBody_RegisterAccount,
-	Response_Auth,
+	Response_Auth, Response_ChangeThumbnail,
 	SafeDB_Account,
 	UI_Account
 } from '../../shared';
@@ -133,6 +133,7 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDefBE_Account.vv1.createToken, this.token.create),
 			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.account.setPassword),
 			createQueryServerApi(ApiDefBE_Account.vv1.getSessions, this.account.getSessions),
+			createBodyServerApi(ApiDefBE_Account.vv1.changeThumbnail, this.account.changeThumbnail)
 		]);
 	}
 
@@ -346,6 +347,16 @@ export class ModuleBE_AccountDB_Class
 		},
 		getSessions: async (query: DB_BaseObject) => {
 			return {sessions: await ModuleBE_SessionDB.query.where({accountId: query._id})};
+		},
+		changeThumbnail: async (request: Request_ChangeThumbnail): Promise<Response_ChangeThumbnail> => {
+			const account = await this.doc.unique(request.accountId);
+			if (!account)
+				throw HttpCodes._4XX.NOT_FOUND('Could not change account thumbnail', `Could not find account with id ${request.accountId}`);
+
+			await account.ref.update({thumbnail: request.hash});
+			return {
+				account: (await account.get())!,
+			};
 		}
 	};
 

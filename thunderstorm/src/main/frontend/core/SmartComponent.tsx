@@ -108,7 +108,7 @@ export abstract class SmartComponent<P = {}, S = {},
 				return <>
 					{_render()}
 					{this.state.componentPhase === ComponentStatus.Syncing &&
-                        <div className={'loader-transparent-container'}><TS_Loader/></div>}
+						<div className={'loader-transparent-container'}><TS_Loader/></div>}
 				</>;
 			};
 
@@ -135,7 +135,7 @@ export abstract class SmartComponent<P = {}, S = {},
 
 	protected getUnpreparedModules(): ModuleFE_BaseDB<any>[] {
 		const modules = resolveContent(this.props.modules);
-		return modules?.filter(module => module.getDataStatus() === DataStatus.NoData) || [];
+		return modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
 	}
 
 	/**
@@ -152,7 +152,7 @@ export abstract class SmartComponent<P = {}, S = {},
 		const currentState = partialState;
 
 		const unpreparedModules = this.getUnpreparedModules();
-
+		
 		if (unpreparedModules.length > 0) {
 			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, currentState);
 			return currentState;
