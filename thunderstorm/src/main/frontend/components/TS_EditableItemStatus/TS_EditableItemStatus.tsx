@@ -19,7 +19,7 @@ export class TS_EditableItemStatus
 	private getStatusLabel(state: State & EditableRef<any>) {
 		const editable = state.editable;
 
-		if (editable.hasErrors() && !editable.hasChanges())
+		if (editable.hasErrors() && !editable.hasChanges() && editable.get('_id'))
 			return state.status = 'Saved With Errors';
 
 		if (editable.hasErrors())
