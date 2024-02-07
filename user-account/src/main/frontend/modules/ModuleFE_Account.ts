@@ -37,7 +37,12 @@ import {
 	Response_LoginSAML,
 	UI_Account
 } from '../../shared';
-import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp} from '../core/consts';
+import {
+	StorageKey_DeviceId,
+	StorageKey_SessionId,
+	StorageKey_SessionTimeoutTimestamp,
+	StorageKey_TabId
+} from '../core/consts';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
@@ -121,6 +126,11 @@ class ModuleFE_Account_Class
 			const deviceId = generateHex(32);
 			console.log(`Defining new device Id: ${deviceId}`);
 			StorageKey_DeviceId.set(deviceId);
+		}
+		if (!exists(StorageKey_TabId.get())) {
+			const tabId = generateHex(32);
+			console.log(`Defining new tab Id: ${tabId}`);
+			StorageKey_TabId.set(tabId);
 		}
 
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
