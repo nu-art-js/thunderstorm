@@ -19,6 +19,9 @@ export class TS_EditableItemStatus
 	private getStatusLabel(state: State & EditableRef<any>) {
 		const editable = state.editable;
 
+		if (editable.hasErrors() && !editable.hasChanges())
+			return state.status = 'Saved With Errors';
+
 		if (editable.hasErrors())
 			return state.status = 'Validation Error';
 
