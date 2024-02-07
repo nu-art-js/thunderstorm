@@ -6,7 +6,7 @@ import {
 	RefListenerFE
 } from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, Focused} from '../../shared';
-import {StorageKey_TabId} from '@nu-art/user-account/frontend';
+import {LoggedStatus, ModuleFE_Account, StorageKey_TabId} from '@nu-art/user-account/frontend';
 import {getRelationalPath} from '../../shared/consts';
 
 
@@ -90,6 +90,9 @@ export class ModuleFE_FocusedObject_Class
 		if (!_keys(this.focusDataMap))
 			return this.logWarning('sendFocusDataToRTDB was called despite not having any data to write to rtdb!');
 
+		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
+			return;
+
 		await this._v1.updateFocusObject({
 			focusData: this.getFocusDataMapAsArray(),
 			tabId: StorageKey_TabId.get()
@@ -97,6 +100,9 @@ export class ModuleFE_FocusedObject_Class
 	}
 
 	public async unfocusWindow() {
+		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
+			return;
+
 		await this._v1.unfocusByTabId({tabId: StorageKey_TabId.get()}).executeSync();
 	}
 
@@ -112,6 +118,9 @@ export class ModuleFE_FocusedObject_Class
 
 			return toRelease;
 		}, []);
+
+		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
+			return;
 
 		// dataWeCanRelease is data we verified is not focused currently by other components in this app.
 		await this._v1.releaseObject({objectsToRelease: dataWeCanRelease, tabId: StorageKey_TabId.get()}).executeSync();
