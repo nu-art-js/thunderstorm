@@ -1,5 +1,12 @@
 import * as React from 'react';
-import {_className, AwaitModules, ComponentSync, ModuleFE_v3_BaseApi, TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
+import {
+	_className,
+	AwaitModules,
+	ComponentSync,
+	ModuleFE_v3_BaseApi,
+	TS_ErrorBoundary,
+	TS_Loader
+} from '@nu-art/thunderstorm/frontend';
 import {cloneObj, filterDuplicates, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../modules/ModuleFE_Account';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
@@ -21,8 +28,9 @@ type State = {
 export const Component_AccountThumbnail = (props: Props & { modulesToAwait?: ModuleFE_v3_BaseApi<any>[] }) => {
 	const {modulesToAwait, ...rest} = props;
 	const modules = [...(modulesToAwait ?? []), ModuleFE_Account] as unknown as ModuleFE_v3_BaseApi<any>[];
-	return <AwaitModules modules={filterDuplicates(modules)} customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
-		<Component_AccountThumbnail_Impl {...rest}/>
+	return <AwaitModules modules={filterDuplicates(modules)}
+						 customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
+		<Component_AccountThumbnail_Impl {...rest} />
 	</AwaitModules>;
 };
 
@@ -57,7 +65,7 @@ class Component_AccountThumbnail_Impl
 			return accountAcronym;
 
 		return this.props.acronymComposer(account._id) ?? accountAcronym;
-	};
+	}
 
 	private onClick = (e: React.MouseEvent) => {
 		if (!this.props.onClick || !this.state.account)

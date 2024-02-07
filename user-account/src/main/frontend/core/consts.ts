@@ -8,3 +8,4 @@ export const SessionKeyFE_Account = new SessionKey_FE<_SessionKey_Account>('acco
 export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
 export const StorageKey_DeviceId = new StorageKey<string>(`storage--device-id`).withstandDeletion();
 export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
+export const StorageKey_TabId = new StorageKey<string>(`storage--tab-id`, false);
