@@ -1,12 +1,23 @@
-import {_keys, debounce, exists, Module, TypedMap} from '@nu-art/ts-common';
+import {
+	__stringify,
+	_keys,
+	_values,
+	debounce,
+	exists,
+	filterDuplicates,
+	flatArray,
+	Module,
+	TypedMap
+} from '@nu-art/ts-common';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {
 	ModuleFE_FirebaseListener,
 	RefListenerFE
 } from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
-import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map} from '../../shared';
+import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, Focused} from '../../shared';
+import {StorageKey_TabId} from '@nu-art/user-account/frontend';
+import {getRelationalPath} from '../../shared/consts';
 
 
 export interface OnFocusedDataReceived {
@@ -15,47 +26,54 @@ export interface OnFocusedDataReceived {
 
 export const dispatch_onFocusedDataReceived = new ThunderDispatcher<OnFocusedDataReceived, '__onFocusedDataReceived'>('__onFocusedDataReceived');
 
-const Default_FocusedObjectNodePath = '/state/ModuleBE_FocusedObject/focusedData'; // Hardcoded path for now per Adam's request, should be const somewhere.
-
 export class ModuleFE_FocusedObject_Class
 	extends Module {
 	private debounceSync?: () => void;
 	readonly _v1: ApiDefCaller<ApiStruct_FocusedObject>['_v1'];
 	private focusFirebaseListener!: RefListenerFE<FocusData_Map>;
-	private focusDataToWriteMap?: FocusData_Map;
+	private focusDataMap: TypedMap<Focused[]> = {};
 
 	constructor() {
 		super();
 		this._v1 = {
-			updateFocusObject: apiWithBody(ApiDef_FocusedObject._v1.updateFocusObject, async response => {
-				//on completed?
-			})
+			updateFocusObject: apiWithBody(ApiDef_FocusedObject._v1.updateFocusObject),
+			releaseObject: apiWithBody(ApiDef_FocusedObject._v1.releaseObject),
+			unfocusByTabId: apiWithBody(ApiDef_FocusedObject._v1.unfocusByTabId),
 		};
 		this.debounceSync = debounce(async () => {
 			if (!this.focusFirebaseListener)
 				return this.logWarning('Ignoring entity focus data state, listener is undefined');
 
-			this.logDebug(`Focus data to update:`, this.focusDataToWriteMap);
-			await this.focusEntity();
+			await this.sendFocusDataToRTDB();
 		}, 1000, 5000);
 	}
 
-	public async updateFocusData(focusData: TypedMap<string[]>) {
-		const accountId = ModuleFE_Account.accountId;
-		// fill focusDataToWriteMap
-		const resultMap: FocusData_Map = {};
-		const focusDBNames: string[] = _keys(focusData);
-		focusDBNames.forEach(_dbName => {
-			const itemIds = focusData[_dbName];
-			itemIds.forEach(_itemId => {
-				resultMap[_dbName][_itemId][accountId] = {timestamp: -1, event: 'focus'};// timestamp is set ONLY in BE
-
-			});
+	init() {
+		this.focusFirebaseListener = ModuleFE_FirebaseListener.createListener(getRelationalPath());
+		this.focusFirebaseListener.startListening((snapshot) => {
+			this.logDebug('Received firebase focus data');
+			const value: FocusData_Map = snapshot.val();
+			// Update all the FocusedEntityRef components
+			dispatch_onFocusedDataReceived.dispatchAll(value);
 		});
 
-		this.focusDataToWriteMap = resultMap;
+		this.listenToFocusEvents();
+	}
 
-		await this.debounceFocusEntityImpl();
+	async focusData(focusId: string, focusData: Focused[]) {
+		// We want to check if the focusDataMap already has this new focusData. If it doesn't, then we want to update the RTDB.
+		delete this.focusDataMap[focusId];
+
+		const focusDataComponentValues: Focused[] = this.getFocusDataMapAsArray();
+		// If focusData is not already included in the focusDataMap, update RTDB.
+		if (!focusData.every(newFocus => !!focusDataComponentValues.find(existingFocus => existingFocus.dbName === newFocus.dbName && existingFocus.itemId === newFocus.itemId)))
+			await this.debounceFocusEntityImpl();
+
+		this.focusDataMap[focusId] = focusData;
+	}
+
+	private getFocusDataMapAsArray() {
+		return filterDuplicates(flatArray(_values(this.focusDataMap)), item => `${item.dbName}${item.itemId}`);
 	}
 
 	private async debounceFocusEntityImpl() {
@@ -69,32 +87,67 @@ export class ModuleFE_FocusedObject_Class
 			if (!this.focusFirebaseListener)
 				return this.logWarning('Ignoring writing FocusedObjects, listener is undefined');
 
-			await this.focusEntity();
+			await this.sendFocusDataToRTDB();
 		}, 1000, 5000);
 
 		this.logInfo('Reading focused entities first time without debounce delay');
-		await this.focusEntity();
+		await this.sendFocusDataToRTDB();
 	}
 
-	private async focusEntity() {
-		if (!this.focusDataToWriteMap) {
-			this.logWarning('focusEntity was called despite not having any data to write to rtdb!');
+	private async sendFocusDataToRTDB() {
+		if (!_keys(this.focusDataMap)) {
+			this.logWarning('sendFocusDataToRTDB was called despite not having any data to write to rtdb!');
 			return;
 		}
 
-		await this._v1.updateFocusObject({currentFocusMap: this.focusDataToWriteMap}).setOnCompleted(async response => {
-			this.focusDataToWriteMap = undefined;
+		await this._v1.updateFocusObject({
+			focusData: this.getFocusDataMapAsArray(),
+			tabId: StorageKey_TabId.get()
 		}).executeSync();
 	}
 
+	public async unfocusWindow() {
+		await this._v1.unfocusByTabId({tabId: StorageKey_TabId.get()}).executeSync();
+	}
 
-	init() {
-		this.focusFirebaseListener = ModuleFE_FirebaseListener.createListener(Default_FocusedObjectNodePath);
-		this.focusFirebaseListener.startListening((snapshot) => {
-			const value: FocusData_Map = snapshot.val();
-			// Update all the FocusedEntityRef components
-			dispatch_onFocusedDataReceived.dispatchAll(value);
+	public async releaseFocusData(focusId: string, focusDataToRelease: Focused[]) {
+		delete this.focusDataMap[focusId];
+
+		const mappedFocusData = this.getFocusDataMapAsArray();
+
+		// focusDataToRelease is data the component sent to release. Verify it isn't focused currently by other components.
+		const dataWeCanRelease = focusDataToRelease.reduce<Focused[]>((toRelease, current) => {
+			if (!mappedFocusData.find(item => this.compareFocusData(current, item)))
+				toRelease.push(current);
+
+			return toRelease;
+		}, []);
+		this.logWarning(`??? ${__stringify(focusDataToRelease)}`);
+		this.logWarning(`??? ${__stringify(dataWeCanRelease)}`);
+
+		// dataWeCanRelease is data we verified is not focused currently by other components in this app.
+		await this._v1.releaseObject({objectsToRelease: dataWeCanRelease, tabId: StorageKey_TabId.get()}).executeSync();
+	}
+
+	getWindowFocusState() {
+		return document.hasFocus();
+	}
+
+	private listenToFocusEvents() {
+		window.addEventListener('blur', async () => {
+			// this.logInfoBold(`Focus: ${this.getWindowFocusState()}`);
+			// this.logInfo('Unfocusing tab');
+			await this.unfocusWindow();
 		});
+		window.addEventListener('focus', async () => {
+			// this.logInfoBold(`Focus: ${this.getWindowFocusState()}`);
+			// this.logInfo('User is back on the tab');
+			await this.sendFocusDataToRTDB();
+		});
+	}
+
+	private compareFocusData(a: Focused, b: Focused): boolean {
+		return a.dbName === b.dbName && a.itemId === b.itemId;
 	}
 }
 
