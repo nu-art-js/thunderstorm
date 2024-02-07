@@ -1,6 +1,5 @@
 import {ComponentSync, LL_H_C} from '@nu-art/thunderstorm/frontend';
 import {
-	__stringify,
 	_keys,
 	_values,
 	BadImplementationException,
@@ -46,10 +45,9 @@ export class Component_FocusedEntityRef
 			if (!itemId)
 				throw new BadImplementationException('Received undefined instead of item in props for Component_FocusedEntityRef.');
 
-			if (map[ownFocusData.dbName]?.[itemId] === undefined) {
-				this.logWarning('FYI- component didn\'t receive relevant data.');
-				return;
-			}
+			if (map[ownFocusData.dbName]?.[itemId] === undefined)
+				return this.logWarning('FYI- component didn\'t receive relevant data.');
+
 
 			//go over accountIds
 			_keys(map[ownFocusData.dbName][itemId]).forEach(_accountId => {
@@ -84,7 +82,6 @@ export class Component_FocusedEntityRef
 		if (this.areThereIssuesInProps())
 			return this.logWarning('Tried to release objects while some don\'t have _id');
 
-		this.logWarning(`??? ${__stringify(this.props.focusData)}`);
 		const toReleaseData = cloneArr(this.props.focusData);
 		await ModuleFE_FocusedObject.releaseFocusData(this.focusId, toReleaseData as Focused[]);
 	}
@@ -107,7 +104,6 @@ export class Component_FocusedEntityRef
 	}
 
 	async componentWillUnmount() {
-		this.logInfo('unmount');
 		await this.releaseObjects();
 	}
 

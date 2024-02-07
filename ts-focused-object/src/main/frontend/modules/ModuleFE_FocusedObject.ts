@@ -1,14 +1,4 @@
-import {
-	__stringify,
-	_keys,
-	_values,
-	debounce,
-	exists,
-	filterDuplicates,
-	flatArray,
-	Module,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_keys, _values, debounce, exists, filterDuplicates, flatArray, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {
@@ -39,6 +29,7 @@ export class ModuleFE_FocusedObject_Class
 			updateFocusObject: apiWithBody(ApiDef_FocusedObject._v1.updateFocusObject),
 			releaseObject: apiWithBody(ApiDef_FocusedObject._v1.releaseObject),
 			unfocusByTabId: apiWithBody(ApiDef_FocusedObject._v1.unfocusByTabId),
+			releaseByTabId: apiWithBody(ApiDef_FocusedObject._v1.releaseByTabId),
 		};
 		this.debounceSync = debounce(async () => {
 			if (!this.focusFirebaseListener)
@@ -58,6 +49,7 @@ export class ModuleFE_FocusedObject_Class
 		});
 
 		this.listenToFocusEvents();
+		this.listenToPageClosed();
 	}
 
 	async focusData(focusId: string, focusData: Focused[]) {
@@ -90,15 +82,13 @@ export class ModuleFE_FocusedObject_Class
 			await this.sendFocusDataToRTDB();
 		}, 1000, 5000);
 
-		this.logInfo('Reading focused entities first time without debounce delay');
+		this.logDebug('Reading focused entities first time without debounce delay');
 		await this.sendFocusDataToRTDB();
 	}
 
 	private async sendFocusDataToRTDB() {
-		if (!_keys(this.focusDataMap)) {
-			this.logWarning('sendFocusDataToRTDB was called despite not having any data to write to rtdb!');
-			return;
-		}
+		if (!_keys(this.focusDataMap))
+			return this.logWarning('sendFocusDataToRTDB was called despite not having any data to write to rtdb!');
 
 		await this._v1.updateFocusObject({
 			focusData: this.getFocusDataMapAsArray(),
@@ -122,8 +112,6 @@ export class ModuleFE_FocusedObject_Class
 
 			return toRelease;
 		}, []);
-		this.logWarning(`??? ${__stringify(focusDataToRelease)}`);
-		this.logWarning(`??? ${__stringify(dataWeCanRelease)}`);
 
 		// dataWeCanRelease is data we verified is not focused currently by other components in this app.
 		await this._v1.releaseObject({objectsToRelease: dataWeCanRelease, tabId: StorageKey_TabId.get()}).executeSync();
@@ -135,14 +123,16 @@ export class ModuleFE_FocusedObject_Class
 
 	private listenToFocusEvents() {
 		window.addEventListener('blur', async () => {
-			// this.logInfoBold(`Focus: ${this.getWindowFocusState()}`);
-			// this.logInfo('Unfocusing tab');
 			await this.unfocusWindow();
 		});
 		window.addEventListener('focus', async () => {
-			// this.logInfoBold(`Focus: ${this.getWindowFocusState()}`);
-			// this.logInfo('User is back on the tab');
 			await this.sendFocusDataToRTDB();
+		});
+	}
+
+	private listenToPageClosed() {
+		window.addEventListener('beforeunload', async (event) => {
+			await this._v1.releaseByTabId({tabId: StorageKey_TabId.get()}).executeSync();
 		});
 	}
 
