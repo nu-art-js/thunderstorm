@@ -82,7 +82,7 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 			// @ts-ignore
 			upsert: (toUpsert: Proto['uiType']) => {
 				toUpsert = this.cleanUp(toUpsert);
-				this.validateImpl(toUpsert);
+				this.validateInternal(toUpsert);
 				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
 			upsertAll: apiWithBody(apiDef.v1.upsertAll, async (items) => {
