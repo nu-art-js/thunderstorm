@@ -26,9 +26,9 @@ export class ModuleFE_FocusedObject_Class
 	constructor() {
 		super();
 		this._v1 = {
-			updateFocusObject: apiWithBody(ApiDef_FocusedObject._v1.updateFocusObject),
+			updateFocusData: apiWithBody(ApiDef_FocusedObject._v1.updateFocusData),
+			setFocusStatusByTabId: apiWithBody(ApiDef_FocusedObject._v1.setFocusStatusByTabId),
 			releaseObject: apiWithBody(ApiDef_FocusedObject._v1.releaseObject),
-			unfocusByTabId: apiWithBody(ApiDef_FocusedObject._v1.unfocusByTabId),
 			releaseByTabId: apiWithBody(ApiDef_FocusedObject._v1.releaseByTabId),
 		};
 		this.debounceSync = debounce(async () => {
@@ -93,20 +93,36 @@ export class ModuleFE_FocusedObject_Class
 		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
 			return;
 
-		await this._v1.updateFocusObject({
+		await this._v1.updateFocusData({
 			focusData: this.getFocusDataMapAsArray(),
-			tabId: StorageKey_TabId.get()
+			event: document.hasFocus() ? 'focus' : 'unfocused',
 		}).executeSync();
 	}
 
-	public async unfocusWindow() {
+	private async focusWindow() {
 		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
 			return;
 
-		await this._v1.unfocusByTabId({tabId: StorageKey_TabId.get()}).executeSync();
+		if (!_keys(this.focusDataMap))
+			return this.logDebug('Received window focus event, but no data to change in rtdb.');
+
+		await this._v1.setFocusStatusByTabId({event: 'focus'}).executeSync();
+	}
+
+	private async unfocusWindow() {
+		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
+			return;
+
+		if (!_keys(this.focusDataMap))
+			return this.logDebug('Received window unfocus(blur) event, but no data to change in rtdb.');
+
+		await this._v1.setFocusStatusByTabId({event: 'unfocused'}).executeSync();
 	}
 
 	public async releaseFocusData(focusId: string, focusDataToRelease: Focused[]) {
+		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
+			return;
+
 		delete this.focusDataMap[focusId];
 
 		const mappedFocusData = this.getFocusDataMapAsArray();
@@ -119,11 +135,9 @@ export class ModuleFE_FocusedObject_Class
 			return toRelease;
 		}, []);
 
-		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
-			return;
 
 		// dataWeCanRelease is data we verified is not focused currently by other components in this app.
-		await this._v1.releaseObject({objectsToRelease: dataWeCanRelease, tabId: StorageKey_TabId.get()}).executeSync();
+		await this._v1.releaseObject({objectsToRelease: dataWeCanRelease}).executeSync();
 	}
 
 	getWindowFocusState() {
@@ -135,7 +149,7 @@ export class ModuleFE_FocusedObject_Class
 			await this.unfocusWindow();
 		});
 		window.addEventListener('focus', async () => {
-			await this.sendFocusDataToRTDB();
+			await this.focusWindow();
 		});
 	}
 
