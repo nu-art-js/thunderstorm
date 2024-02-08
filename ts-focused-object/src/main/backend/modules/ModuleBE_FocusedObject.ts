@@ -1,14 +1,14 @@
 import {_keys, BadImplementationException, currentTimeMillis, exists, Module, UniqueId} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {Header_TabId, MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {
 	ApiDef_FocusedObject,
 	FocusData_Map,
 	FocusData_Object,
+	Focused,
 	Request_ReleaseObject,
-	Request_ReleaseTabId,
-	Request_UnfocusTabId,
+	Request_SetFocusStatus,
 	Request_UpdateFocusObject
 } from '../../shared';
 import {DefaultTTL_Focus, DefaultTTL_Unfocus, getRelationalPath} from '../../shared/consts';
@@ -27,42 +27,53 @@ export class ModuleBE_FocusedObject_Class
 		super.init();
 
 		addRoutes([
-			createBodyServerApi(ApiDef_FocusedObject._v1.updateFocusObject, this.focusObject),
+			createBodyServerApi(ApiDef_FocusedObject._v1.updateFocusData, this.focusData),
 			createBodyServerApi(ApiDef_FocusedObject._v1.releaseObject, this.releaseObject),
-			createBodyServerApi(ApiDef_FocusedObject._v1.unfocusByTabId, this.unfocusByTab),
+			createBodyServerApi(ApiDef_FocusedObject._v1.setFocusStatusByTabId, this.setFocusStatusByTab),
 			createBodyServerApi(ApiDef_FocusedObject._v1.releaseByTabId, this.releaseByTabId),
 		]);
 	}
 
-	private focusObject = async (request: Request_UpdateFocusObject) => {
-		const objectToWrite: FocusData_Object = {timestamp: currentTimeMillis(), event: 'focus'};
+	private focusData = async (request: Request_UpdateFocusObject) => {
+		const objectToWrite: FocusData_Object = {timestamp: currentTimeMillis(), event: request.event};
 
-		await Promise.all(request.focusData.map(async focusItem => {
-			return this.setNode(objectToWrite, focusItem.dbName, focusItem.itemId, MemKey_AccountId.get(), request.tabId);
-		}));
+		const rootRef = this.getRootRef();
+		const rootData = await rootRef.get({});
+
+		request.focusData.forEach(toFocus => {
+			this.createNodeIfNeeded(rootData, toFocus);
+			rootData[toFocus.dbName][toFocus.itemId][MemKey_AccountId.get()][Header_TabId.get()] = objectToWrite;
+		});
+		await rootRef.set(rootData);
 
 		// Clean expired
 		await this.cleanExpiredNodes();
 	};
 
+	private createNodeIfNeeded(rootData: FocusData_Map, toFocus: Focused) {
+		rootData[toFocus.dbName] = rootData[toFocus.dbName] ?? {};
+		rootData[toFocus.dbName][toFocus.itemId] = rootData[toFocus.dbName][toFocus.itemId] ?? {};
+		rootData[toFocus.dbName][toFocus.itemId][MemKey_AccountId.get()] = rootData[toFocus.dbName][toFocus.itemId][MemKey_AccountId.get()] ?? {};
+	}
+
 	releaseObject = async (request: Request_ReleaseObject) => {
 		await Promise.all(request.objectsToRelease.map(async focusItem => {
-			return this.setNode(undefined, focusItem.dbName, focusItem.itemId, MemKey_AccountId.get(), request.tabId);
+			return this.setNode(undefined, focusItem.dbName, focusItem.itemId, MemKey_AccountId.get(), Header_TabId.get());
 		}));
 	};
 
-	unfocusByTab = async (request: Request_UnfocusTabId) => {
+	setFocusStatusByTab = async (request: Request_SetFocusStatus) => {
 		await this.processAllNodes((rootData, _dbName, _itemId, _accountId, _tabId) => {
-			if (request.tabId !== _tabId)
+			if (Header_TabId.get() !== _tabId)
 				return false;
 
-			rootData[_dbName][_itemId][_accountId][_tabId].event = 'unfocused';
+			rootData[_dbName][_itemId][_accountId][_tabId].event = request.event;
 			return true;
 		});
 	};
 
-	releaseByTabId = async (request: Request_ReleaseTabId) => {
-		await this.cleanNodesByTabId(request.tabId);
+	releaseByTabId = async () => {
+		await this.cleanNodesByTabId(Header_TabId.get());
 	};
 	/**
 	 * Look for expired TTL nodes, clean them.
@@ -78,7 +89,8 @@ export class ModuleBE_FocusedObject_Class
 				default:
 					ttl = DefaultTTL_Unfocus;
 			}
-			if (rootData[_dbName][_itemId][_accountId][_tabId].timestamp < currentTimeMillis() + ttl)
+
+			if (currentTimeMillis() < rootData[_dbName][_itemId][_accountId][_tabId].timestamp + ttl)
 				return false;
 
 			delete rootData[_dbName][_itemId][_accountId][_tabId];
