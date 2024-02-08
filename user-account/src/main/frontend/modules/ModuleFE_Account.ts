@@ -17,7 +17,8 @@ import {
 	cloneObj,
 	composeUrl,
 	currentTimeMillis,
-	DB_BaseObject, Exception,
+	DB_BaseObject,
+	Exception,
 	exists,
 	generateHex,
 	KB,
@@ -32,8 +33,10 @@ import {
 	DBDef_Accounts,
 	DBProto_AccountType,
 	HeaderKey_SessionId,
+	HeaderKey_TabId,
 	QueryParam_SessionId,
-	Response_Auth, Response_ChangeThumbnail,
+	Response_Auth,
+	Response_ChangeThumbnail,
 	Response_LoginSAML,
 	UI_Account
 } from '../../shared';
@@ -134,6 +137,7 @@ class ModuleFE_Account_Class
 		}
 
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, () => StorageKey_TabId.get());
 		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
 			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
 				return;

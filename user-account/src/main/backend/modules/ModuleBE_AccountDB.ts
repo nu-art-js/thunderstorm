@@ -39,13 +39,15 @@ import {
 	DBDef_Accounts,
 	DBProto_AccountType,
 	HeaderKey_SessionId,
-	PasswordWithCheck, Request_ChangeThumbnail,
+	PasswordWithCheck,
+	Request_ChangeThumbnail,
 	Request_CreateAccount,
 	Request_LoginAccount,
 	RequestBody_ChangePassword,
 	RequestBody_CreateToken,
 	RequestBody_RegisterAccount,
-	Response_Auth, Response_ChangeThumbnail,
+	Response_Auth,
+	Response_ChangeThumbnail,
 	SafeDB_Account,
 	UI_Account
 } from '../../shared';
@@ -163,7 +165,10 @@ export class ModuleBE_AccountDB_Class
 			};
 		},
 		create: async (accountToCreate: AccountToCreate, transaction: Transaction) => {
-			let dbAccount = (await this.query.custom({where: {email: accountToCreate.email}, limit: 1}, transaction))[0];
+			let dbAccount = (await this.query.custom({
+				where: {email: accountToCreate.email},
+				limit: 1
+			}, transaction))[0];
 			if (dbAccount)
 				throw new ApiException(422, `User with email "${accountToCreate.email}" already exists`);
 
@@ -222,7 +227,11 @@ export class ModuleBE_AccountDB_Class
 				return dbSafeAccount;
 			});
 
-			await this.account.login({email: accountWithPassword.email, deviceId: accountWithPassword.deviceId, password: accountWithPassword.password});
+			await this.account.login({
+				email: accountWithPassword.email,
+				deviceId: accountWithPassword.deviceId,
+				password: accountWithPassword.password
+			});
 			return {...dbSafeAccount};
 		},
 		login: async (credentials: Request_LoginAccount): Promise<Response_Auth> => {
@@ -297,9 +306,17 @@ export class ModuleBE_AccountDB_Class
 
 				const safeAccount = await this.impl.querySafeAccount({email});
 
-				this.impl.assertPasswordCheck({email, password: passwordToChange.password, passwordCheck: passwordToChange.passwordCheck});
+				this.impl.assertPasswordCheck({
+					email,
+					password: passwordToChange.password,
+					passwordCheck: passwordToChange.passwordCheck
+				});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordToChange.password});
-				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
+				const updatedAccount = await this.set.item({
+					...safeAccount,
+					salt: spicedAccount.salt,
+					saltedPassword: spicedAccount.saltedPassword
+				}, transaction);
 
 				const content = {
 					accountId: updatedAccount._id,
@@ -325,7 +342,11 @@ export class ModuleBE_AccountDB_Class
 
 				this.impl.assertPasswordCheck({email, ...passwordBody});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordBody.password});
-				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
+				const updatedAccount = await this.set.item({
+					...safeAccount,
+					salt: spicedAccount.salt,
+					saltedPassword: spicedAccount.saltedPassword
+				}, transaction);
 
 				const content = {
 					accountId: updatedAccount._id,
