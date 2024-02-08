@@ -204,7 +204,7 @@ export class TS_InputV2
 	static readonly _editable = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & ({ [k in K]?: string } | { [k in K]: string })>(props: EditableItemProps_TS_InputV2<string | undefined, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
-			const {editable, prop, saveEvent, ignoreError, ...rest} = props;
+			const {editable, prop, saveEvent, ignoreError, shouldShowTooltip, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
