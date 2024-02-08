@@ -24,7 +24,7 @@ import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_InputV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
-import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
+import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types';
 import {TS_Object} from '@nu-art/ts-common';
 
 
@@ -307,6 +307,7 @@ export class TS_InputV2
 		return <input
 			{...props}
 			{...convertToHTMLDataAttributes(this.props.error, 'error')}
+			{...getErrorTooltip(this.props.error, this.props.shouldShowTooltip)}
 			autoFocus={focus}
 			ref={props.innerRef}
 			onBlur={(event) => {
