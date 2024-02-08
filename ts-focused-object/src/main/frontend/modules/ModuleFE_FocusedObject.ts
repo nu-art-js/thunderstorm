@@ -6,7 +6,7 @@ import {
 	RefListenerFE
 } from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, Focused} from '../../shared';
-import {LoggedStatus, ModuleFE_Account, StorageKey_TabId} from '@nu-art/user-account/frontend';
+import {LoggedStatus, ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {getRelationalPath} from '../../shared/consts';
 
 
@@ -155,7 +155,8 @@ export class ModuleFE_FocusedObject_Class
 
 	private listenToPageClosed() {
 		window.addEventListener('beforeunload', async (event) => {
-			await this._v1.releaseByTabId({tabId: StorageKey_TabId.get()}).executeSync();
+			await this._v1.releaseByTabId({}).executeSync();
+			// navigator.sendBeacon('/log', JSON.stringify({ type:'application/json' }));
 		});
 	}
 
