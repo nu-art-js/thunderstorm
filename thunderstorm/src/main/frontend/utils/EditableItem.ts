@@ -79,6 +79,7 @@ export class EditableItem<T> {
 	}
 
 	protected onChanged?: Editable_OnChange<T>;
+	protected onAutoSaveAction?: VoidFunction;
 	protected saveAction: Editable_SaveAction<T>;
 	protected deleteAction: Editable_DeleteAction<T>;
 
@@ -94,6 +95,11 @@ export class EditableItem<T> {
 
 	setOnDelete(onDelete: (item: T) => Promise<any>) {
 		this.deleteAction = onDelete;
+		return this;
+	}
+
+	setOnAutoSaveAction(onAutoSaveAction?: VoidFunction) {
+		this.onAutoSaveAction = onAutoSaveAction;
 		return this;
 	}
 
@@ -221,6 +227,7 @@ export class EditableItem<T> {
 	 * @protected
 	 */
 	protected async preformAutoSave(): Promise<T | undefined> {
+		this.onAutoSaveAction?.();
 		return this.save(true);
 	}
 
@@ -439,6 +446,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 			if (!this.debounceInstance)
 				this.debounceInstance = awaitedDebounce({
 					func: async () => {
+						this.onAutoSaveAction?.();
 						return await super.preformAutoSave();
 					},
 					timeout: this.debounceTimeout,
