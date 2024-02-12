@@ -1,0 +1,1 @@
+export const PackageName = 'ts-messaging';
