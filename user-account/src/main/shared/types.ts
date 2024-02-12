@@ -25,7 +25,7 @@ export type DB_Session = DB_Object & {
 
 type VersionTypes_Sessions = { '1.0.0': DB_Session };
 type VersionsSession = VersionsDeclaration<['1.0.0'], VersionTypes_Sessions>
-type Proto_Session = Proto_DB_Object<DB_Session, keyof DB_Object, VersionsSession, 'accountId' | 'deviceId'>
+type Proto_Session = Proto_DB_Object<DB_Session, 'user-account--sessions', keyof DB_Object, VersionsSession, 'accountId' | 'deviceId'>
 
 export type DBProto_SessionType = DBProto<Proto_Session>
 export type UI_Session = DBProto_SessionType['uiType']
@@ -52,7 +52,7 @@ type VersionTypes_Account = { '1.0.0': DB_Account };
 type VersionsAccount = VersionsDeclaration<['1.0.0'], VersionTypes_Account>;
 type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'saltedPassword';
 
-export type Proto_Account = Proto_DB_Object<DB_Account, GeneratedKeys, VersionsAccount>;
+export type Proto_Account = Proto_DB_Object<DB_Account, 'user-account--accounts', GeneratedKeys, VersionsAccount>;
 
 export type DBProto_AccountType = DBProto<Proto_Account>;
 export type UI_Account = DBProto_AccountType['uiType'];
