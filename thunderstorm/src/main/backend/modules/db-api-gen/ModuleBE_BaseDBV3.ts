@@ -44,8 +44,8 @@ import {OnFirestoreBackupSchedulerActV2} from '../backup/ModuleBE_v2_BackupSched
 import {FirestoreBackupDetailsV2} from '../backup/ModuleBE_v2_Backup';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
-import Transaction = firestore.Transaction;
 import {Response_DBSync} from '../../../shared/sync-manager/types';
+import Transaction = firestore.Transaction;
 
 
 export type BaseDBApiConfigV3 = {
@@ -286,7 +286,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		}
 	};
 
-	private async upgradeInstances(instances: Proto['dbType'][]) {
+	async upgradeInstances(instances: Proto['dbType'][]) {
 		let instancesToSave: Proto['dbType'][] = [];
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
 			const version = this.config.versions[i] as Proto['versions'][number];
