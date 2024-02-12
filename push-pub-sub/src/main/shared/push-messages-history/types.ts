@@ -15,7 +15,7 @@ type GeneratedKeys =
 	'read' |
 	'originatingAccountId';
 
-type Proto = Proto_DB_Object<DB_PushMessagesHistory, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_PushMessagesHistory,'push-messages-history', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_PushMessagesHistory = DBProto<Proto>;
 

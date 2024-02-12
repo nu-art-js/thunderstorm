@@ -6,7 +6,7 @@ type VersionTypes_Asset = {
 	'1.0.1': DB_Asset
 	'1.0.2': DB_Asset
 };
-type Versions = VersionsDeclaration< ['1.0.2', '1.0.1', '1.0.0'], VersionTypes_Asset>;
+type Versions = VersionsDeclaration<['1.0.2', '1.0.1', '1.0.0'], VersionTypes_Asset>;
 type Dependencies = {
 //
 }
@@ -21,7 +21,7 @@ type GeneratedKeys =
 	'public' |
 	'metadata'
 
-type Proto = Proto_DB_Object<DB_Asset, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_Asset, 'assets' | 'assets-temp' | 'assets-deleted', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_Assets = DBProto<Proto>;
 
