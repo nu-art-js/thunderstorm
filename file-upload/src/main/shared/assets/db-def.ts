@@ -39,7 +39,7 @@ export const DBDef_Assets: DBDef_V3<DBProto_Assets> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.2', '1.0.1', '1.0.0'],
-	dbName: convertUpperCamelCase('Assets', '-').toLowerCase(),
+	dbName: 'assets',
 	entityName: convertUpperCamelCase('Assets', '-').toLowerCase(),
 };
 

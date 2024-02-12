@@ -10,7 +10,7 @@ type Dependencies = {
 
 type UniqueKeys = '_id';
 type GeneratedProps = 'type' | 'refId'
-type Proto = Proto_DB_Object<DB_Topic, GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_Topic, 'topics', GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_Topic = DBProto<Proto>;
 
