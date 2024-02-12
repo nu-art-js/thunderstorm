@@ -78,7 +78,6 @@ const Validator_ModifiableProps_Message = (instance?: DB_Message): InvalidResult
 			return `Could not find message type('${instance.type}') when attempting to validate a message!`;
 	}
 };
-.............................................0
 
 
 export const DBDef_message: DBDef_V3<DBProto_Message> = {
