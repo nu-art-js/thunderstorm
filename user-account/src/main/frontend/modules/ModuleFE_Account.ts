@@ -231,8 +231,8 @@ class ModuleFE_Account_Class
 		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(sessionData), c => c.charCodeAt(0)))));
 	}
 
-	logout = (url?: string) => {
-		this.vv1.logout({}).execute();
+	logout = async (url?: string) => {
+		await this.vv1.logout({}).executeSync();
 		StorageKey_SessionId.delete();
 		if (url)
 			return window.location.href = url;

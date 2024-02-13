@@ -74,10 +74,14 @@ export interface OnNewUserRegistered {
 export interface OnUserLogin {
 	__onUserLogin(account: SafeDB_Account, transaction: Transaction): void;
 }
+export interface OnPreLogout {
+	__onPreLogout: () => Promise<void>;
+}
 
 export const dispatch_onAccountLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
 
 const dispatch_onAccountRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
+export const dispatch_onPreLogout = new Dispatcher<OnPreLogout, '__onPreLogout'>('__onPreLogout');
 
 type Config = {
 	canRegister: boolean
@@ -364,6 +368,7 @@ export class ModuleBE_AccountDB_Class
 			if (!sessionId)
 				throw new ApiException(404, 'Missing sessionId');
 
+			await dispatch_onPreLogout.dispatchModuleAsync();
 			await ModuleBE_SessionDB.delete.query({where: {sessionId}});
 		},
 		getSessions: async (query: DB_BaseObject) => {
