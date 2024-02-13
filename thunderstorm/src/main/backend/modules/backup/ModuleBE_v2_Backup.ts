@@ -185,6 +185,7 @@ class ModuleBE_v2_Backup_Class
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
 		const storage = firebaseSessionAdmin.getStorage();
 		const bucket = await storage.getMainBucket();
+		const fullPathToBackup = `${bucket.getBucketName()}/${backupPath}`;
 		CSVModule.updateExporterSettings(CSVConfig);
 		const metadata: BackupMetaData = {collectionsData: [], timestamp: nowMs};
 
@@ -267,8 +268,10 @@ class ModuleBE_v2_Backup_Class
 		this.logWarning(dbBackup);
 
 		const oldBackupsToDelete = await this.query({where: {timestamp: {$lt: nowMs - this.config.keepInterval}}});
-		if (oldBackupsToDelete.length === 0)
-			return this.logInfoBold('No older backups to delete');
+		if (oldBackupsToDelete.length === 0) {
+			this.logInfoBold('No older backups to delete');
+			return fullPathToBackup;
+		}
 
 		try {
 			this.logInfoBold('Received older backups to delete, count: ' + oldBackupsToDelete.length);
@@ -280,6 +283,8 @@ class ModuleBE_v2_Backup_Class
 			this.logWarning(`Error while cleaning up older backups`, err);
 			throw new ApiException(500, err);
 		}
+
+		return fullPathToBackup;
 	};
 
 	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
