@@ -1,6 +1,6 @@
 import {_keys, currentTimeMillis, Module, UniqueId} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {Header_TabId, MemKey_AccountId} from '@nu-art/user-account/backend';
+import {Header_TabId, MemKey_AccountId, OnPreLogout} from '@nu-art/user-account/backend';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {
 	ApiDef_FocusedObject,
@@ -21,7 +21,11 @@ type Config = {
 }
 
 export class ModuleBE_FocusedObject_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements OnPreLogout {
+	__onPreLogout = async () => {
+		await this.releaseByTabId();
+	};
 
 	protected init() {
 		addRoutes([
@@ -96,17 +100,17 @@ export class ModuleBE_FocusedObject_Class
 		});
 	};
 	cleanNodesByTabId = async (tabIdToClean: UniqueId) => {
-		await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
+		return await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
 			if (tabIdToClean !== _tabId)
 				return false;
 
-			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId})] as any) = null;
+			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId}, tabIdToClean)] as any) = null;
 			return true;
 		});
 	};
 
-	private getPathToObject(focused: Focused) {
-		return `${focused.dbName}/${focused.itemId}/${MemKey_AccountId.get()}/${Header_TabId.get()}`;
+	private getPathToObject(focused: Focused, tabId?: string) {
+		return `${focused.dbName}/${focused.itemId}/${MemKey_AccountId.get()}/${tabId ?? Header_TabId.get()}`;
 	}
 
 	getRootRef = () => ModuleBE_Firebase.createAdminSession().getDatabase().ref<FocusData_Map>(getRelationalPath());
@@ -122,16 +126,17 @@ export class ModuleBE_FocusedObject_Class
 		const rootData = await rootRef.get({});
 		const patchData: FocusData_Map = {};
 		//run over all nodes, pass the indexing data to a processor function
-		((_keys(rootData) as string[]).forEach(_dbName => {
-			((_keys(rootData[_dbName]) as string[]).forEach(_itemId => {
-				((_keys(rootData[_dbName][_itemId]) as string[]).forEach(_accountId => {
-					((_keys(rootData[_dbName][_itemId][_accountId]) as string[]).forEach(_tabId => {
+		await Promise.all(((_keys(rootData) as string[]).map(async _dbName => {
+			await Promise.all(((_keys(rootData[_dbName]) as string[]).map(async _itemId => {
+				await Promise.all(((_keys(rootData[_dbName][_itemId]) as string[]).map(async _accountId => {
+					await Promise.all(((_keys(rootData[_dbName][_itemId][_accountId]) as string[]).map(async _tabId => {
 						//pass rootData in-case existing data needs to be queried, pass patchData to be filled with updates.
 						somethingChanged ||= processor(rootData, patchData, _dbName, _itemId, _accountId, _tabId);
-					}));
-				}));
-			}));
-		}));
+					})));
+				})));
+			})));
+		})));
+
 		//set processed root node
 		if (somethingChanged)
 			await rootRef.patch(patchData);
