@@ -180,7 +180,6 @@ export class PopUp_AccountMenu
 			return;
 
 		const accountDisplay = this.props.accountDisplayModifier?.(account) ?? account.displayName ?? account.email;
-		this.logInfo('Rendering Header', this.props.accountDisplayModifier, accountDisplay);
 		return <>
 			<LL_H_C className={'account-menu__header'}>
 				<Component_AccountThumbnail accountId={account._id} acronymComposer={this.props.acronymComposer}/>
