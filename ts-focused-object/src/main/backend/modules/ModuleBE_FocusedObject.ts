@@ -1,4 +1,4 @@
-import {_keys, currentTimeMillis, Module, UniqueId} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, flatArray, Module, UniqueId} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {Header_TabId, MemKey_AccountId, OnPreLogout} from '@nu-art/user-account/backend';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
@@ -75,7 +75,6 @@ export class ModuleBE_FocusedObject_Class
 	releaseByTabId = async () => await this.cleanNodesByTabId(Header_TabId.get());
 
 	releaseByAccountId = async () => {
-		this.logWarning('releaseByAccountId');
 		await this.cleanNodesByAccountId(MemKey_AccountId.get());
 	};
 
@@ -127,8 +126,6 @@ export class ModuleBE_FocusedObject_Class
 
 	cleanNodesByAccountId = async (accountIdToClean: UniqueId) => {
 		//todo fail fast on account level
-		this.logWarning('cleanNodesByAccountId');
-
 		await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
 			if (accountIdToClean !== _accountId)
 				return false;
@@ -136,7 +133,6 @@ export class ModuleBE_FocusedObject_Class
 			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId}, accountIdToClean, _tabId)] as any) = null;
 			return true;
 		});
-		this.logWarning('cleanNodesByAccountId end');
 	};
 
 	/**
@@ -144,26 +140,19 @@ export class ModuleBE_FocusedObject_Class
 	 * @param processor Returns true if a change was made.
 	 */
 	processAllNodes = async (processor: (rootData: FocusData_Map, patchData: FocusData_Map, _dbName: string, _itemId: UniqueId, _accountId: UniqueId, _tabId: string) => boolean) => {
-		let somethingChanged: boolean = false;
 		//get root node
 		const rootRef = this.getRootRef();
 		const rootData = await rootRef.get({});
 		const patchData: FocusData_Map = {};
 		//run over all nodes, pass the indexing data to a processor function
 		// DB NAME ---/ ITEM ID ---/ ACCOUNT ID ---/ TAB ID
-		await Promise.all(((_keys(rootData) as string[]).map(async _dbName => { // go over all db names
-			await Promise.all(((_keys(rootData[_dbName]) as string[]).map(async _itemId => { // go over all currently focused items for each db
-				await Promise.all(((_keys(rootData[_dbName][_itemId]) as string[]).map(async _accountId => { // go over all accounts viewing an item
-					await Promise.all(((_keys(rootData[_dbName][_itemId][_accountId]) as string[]).map(async _tabId => { // go over all tabs of the specific account
-						//pass rootData in-case existing data needs to be queried, pass patchData to be filled with updates.
-						somethingChanged ||= processor(rootData, patchData, _dbName, _itemId, _accountId, _tabId);
-					})));
-				})));
-			})));
-		})));
-		this.logInfoBold(rootData);
-		this.logWarningBold('DELTA!?');
-		this.logInfoBold(patchData);
+		const somethingChanged = flatArray(
+			_keys(rootData).map(_dbName => // go over all db names
+				_keys(rootData[_dbName]).map(_itemId => // go over all currently focused items for each db
+					_keys(rootData[_dbName][_itemId]).map(_accountId => // go over all accounts viewing an item
+						_keys(rootData[_dbName][_itemId][_accountId]).map(__tabId => // go over all tabs of the specific account
+							processor(rootData, patchData, _dbName as string, _itemId as string, _accountId as string, __tabId as string)))))).some(i => i);
+
 		//set processed root node
 		if (somethingChanged)
 			await rootRef.patch(patchData);
