@@ -23,7 +23,7 @@ export type ApiStruct_Backup = {
 
 export type ApiStruct_BackupV2 = {
 	vv1: {
-		initiateBackup: QueryApi<string | undefined>,
+		initiateBackup: QueryApi<{ pathToBackup: string } | undefined>,
 		fetchBackupDocs: QueryApi<Response_BackupDocsV2, Request_BackupId>,
 	}
 }
