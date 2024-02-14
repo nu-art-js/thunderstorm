@@ -56,10 +56,11 @@ export class TS_AppTools
 
 	static Route: TS_Route;
 	static screens: AppToolsScreen[];
+	static headerTail?: () => React.ReactNode;
 
-	static createRoute(screens: AppToolsScreen[], path = 'app-tools'): TS_Route {
+	static createRoute(screens: AppToolsScreen[], path = 'app-tools', headerTail?: () => React.ReactNode): TS_Route {
 		this.screens = screens;
-
+		this.headerTail = headerTail;
 		return this.Route = {
 			path: 'app-tools',
 			key: 'app-tools',
@@ -153,6 +154,7 @@ export class TS_AppTools
 				onClick={this.toggleNavBarCollapse}
 			/>
 			<span className={'ts-app-tools__header__title'}>App-Tools</span>
+			{TS_AppTools.headerTail && TS_AppTools.headerTail()}
 		</LL_H_C>;
 	};
 
