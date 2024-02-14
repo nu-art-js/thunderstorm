@@ -21,7 +21,7 @@ export type ApiStruct_SyncEnvV2 = {
 	vv1: {
 		syncToEnv: BodyApi<any, { env: 'dev' | 'prod', moduleName: string, items: any[] }>
 		syncFromEnvBackup: BodyApi<any, Request_FetchFromEnvV2>
-		createBackup: QueryApi<string | undefined>,
+		createBackup: QueryApi<{ pathToBackup: string } | undefined>,
 		fetchBackupMetadata: QueryApi<Response_GetMetadata, Request_GetMetadata>,
 		syncFirebaseFromBackup: QueryApi<any, Request_FetchFirebaseBackup>
 	}

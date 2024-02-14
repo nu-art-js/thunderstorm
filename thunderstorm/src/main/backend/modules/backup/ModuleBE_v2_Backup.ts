@@ -270,7 +270,7 @@ class ModuleBE_v2_Backup_Class
 		const oldBackupsToDelete = await this.query({where: {timestamp: {$lt: nowMs - this.config.keepInterval}}});
 		if (oldBackupsToDelete.length === 0) {
 			this.logInfoBold('No older backups to delete');
-			return fullPathToBackup;
+			return {pathToBackup: fullPathToBackup};
 		}
 
 		try {
@@ -284,7 +284,7 @@ class ModuleBE_v2_Backup_Class
 			throw new ApiException(500, err);
 		}
 
-		return fullPathToBackup;
+		return {pathToBackup: fullPathToBackup};
 	};
 
 	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
