@@ -26,6 +26,6 @@ export const ApiDef_FocusedObject: ApiDefResolver<ApiStruct_FocusedObject> = {
 		setFocusStatusByTabId: {method: HttpMethod.POST, path: '/v1/focus-object/set-focus-status'},
 		updateFocusData: {method: HttpMethod.POST, path: '/v1/focus-object/focus'},
 		releaseObject: {method: HttpMethod.POST, path: '/v1/focus-object/release'},
-		releaseByTabId: {method: HttpMethod.POST, path: '/v1/focus-object/release-tab'},
+		releaseByTabId: {method: HttpMethod.POST, path: '/v1/focus-object/release-tab'}, // Tab Id is sent as header, so we know what tab to release.
 	}
 };

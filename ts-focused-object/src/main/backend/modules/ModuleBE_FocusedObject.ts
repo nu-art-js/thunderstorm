@@ -1,4 +1,4 @@
-import {_keys, currentTimeMillis, Module, UniqueId} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, flatArray, Module, UniqueId} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {Header_TabId, MemKey_AccountId, OnPreLogout} from '@nu-art/user-account/backend';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
@@ -24,7 +24,7 @@ export class ModuleBE_FocusedObject_Class
 	extends Module<Config>
 	implements OnPreLogout {
 	__onPreLogout = async () => {
-		await this.releaseByTabId();
+		await this.releaseByAccountId();
 	};
 
 	protected init() {
@@ -56,14 +56,13 @@ export class ModuleBE_FocusedObject_Class
 			return;
 
 		const patchData: FocusData_Map = {};
-		request.objectsToRelease.forEach(focusItem => {
-			(patchData[this.getPathToObject(focusItem)] as any) = null;
-		});
+		request.objectsToRelease.forEach(focusItem => (patchData[this.getPathToObject(focusItem)] as any) = null);
 		const rootRef = this.getRootRef();
 		await rootRef.patch(patchData);
 	};
 
 	setFocusStatusByTab = async (request: Request_SetFocusStatus) => {
+		//todo fail fast on account level
 		await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
 			if (Header_TabId.get() !== _tabId)
 				return false;
@@ -73,14 +72,17 @@ export class ModuleBE_FocusedObject_Class
 		});
 	};
 
-	releaseByTabId = async () => {
-		await this.cleanNodesByTabId(Header_TabId.get());
+	releaseByTabId = async () => await this.cleanNodesByTabId(Header_TabId.get());
+
+	releaseByAccountId = async () => {
+		await this.cleanNodesByAccountId(MemKey_AccountId.get());
 	};
 
 	/**
 	 * Look for expired TTL nodes, clean them.
 	 */
 	cleanExpiredNodes = async () => {
+		// Must run on all nodes.. maybe skip initiating tabId? Currently runs only after finishing to focus data
 		await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
 			let ttl;
 			switch (rootData[_dbName][_itemId][_accountId][_tabId].event) {
@@ -95,47 +97,61 @@ export class ModuleBE_FocusedObject_Class
 			if (currentTimeMillis() < rootData[_dbName][_itemId][_accountId][_tabId].timestamp + ttl)
 				return false;
 
-			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId})] as any) = null;
+			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId}, _accountId, _tabId)] as any) = null;
 			return true;
 		});
 	};
 	cleanNodesByTabId = async (tabIdToClean: UniqueId) => {
+		//todo fail fast on account level - this should probably not be used to handle tabs of other accounts.
 		return await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
 			if (tabIdToClean !== _tabId)
 				return false;
 
-			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId}, tabIdToClean)] as any) = null;
+			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId}, _accountId, tabIdToClean)] as any) = null;
 			return true;
 		});
 	};
 
-	private getPathToObject(focused: Focused, tabId?: string) {
-		return `${focused.dbName}/${focused.itemId}/${MemKey_AccountId.get()}/${tabId ?? Header_TabId.get()}`;
+	/**
+	 * Uses own accountId and tabId if not specified.
+	 * @param focused dbName and itemId
+	 * @param accountId receive accountId or use initiating session to get accountID
+	 * @param tabId receive tabId or use initiating session to get tabID
+	 */
+	private getPathToObject(focused: Focused, accountId?: string, tabId?: string) {
+		return `${focused.dbName}/${focused.itemId}/${accountId ?? MemKey_AccountId.get()}/${tabId ?? Header_TabId.get()}`;
 	}
 
 	getRootRef = () => ModuleBE_Firebase.createAdminSession().getDatabase().ref<FocusData_Map>(getRelationalPath());
+
+	cleanNodesByAccountId = async (accountIdToClean: UniqueId) => {
+		//todo fail fast on account level
+		await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
+			if (accountIdToClean !== _accountId)
+				return false;
+
+			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId}, accountIdToClean, _tabId)] as any) = null;
+			return true;
+		});
+	};
 
 	/**
 	 * Run over all focus data rtdb nodes
 	 * @param processor Returns true if a change was made.
 	 */
 	processAllNodes = async (processor: (rootData: FocusData_Map, patchData: FocusData_Map, _dbName: string, _itemId: UniqueId, _accountId: UniqueId, _tabId: string) => boolean) => {
-		let somethingChanged: boolean = false;
 		//get root node
 		const rootRef = this.getRootRef();
 		const rootData = await rootRef.get({});
 		const patchData: FocusData_Map = {};
 		//run over all nodes, pass the indexing data to a processor function
-		await Promise.all(((_keys(rootData) as string[]).map(async _dbName => {
-			await Promise.all(((_keys(rootData[_dbName]) as string[]).map(async _itemId => {
-				await Promise.all(((_keys(rootData[_dbName][_itemId]) as string[]).map(async _accountId => {
-					await Promise.all(((_keys(rootData[_dbName][_itemId][_accountId]) as string[]).map(async _tabId => {
-						//pass rootData in-case existing data needs to be queried, pass patchData to be filled with updates.
-						somethingChanged ||= processor(rootData, patchData, _dbName, _itemId, _accountId, _tabId);
-					})));
-				})));
-			})));
-		})));
+		// DB NAME ---/ ITEM ID ---/ ACCOUNT ID ---/ TAB ID
+		const somethingChanged = flatArray(
+			_keys(rootData).map(_dbName => // go over all db names
+				_keys(rootData[_dbName]).map(_itemId => // go over all currently focused items for each db
+					_keys(rootData[_dbName][_itemId]).map(_accountId => // go over all accounts viewing an item
+						_keys(rootData[_dbName][_itemId][_accountId]).map(__tabId => // go over all tabs of the specific account
+							processor(rootData, patchData, _dbName as string, _itemId as string, _accountId as string, __tabId as string)))))).some(i => i);
 
 		//set processed root node
 		if (somethingChanged)
