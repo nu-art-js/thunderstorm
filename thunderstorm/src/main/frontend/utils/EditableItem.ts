@@ -393,8 +393,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	private static save<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
 		return async (_item: Proto['uiType']) => {
 			try {
-				const dbItem = await module.v1.upsert(_item).executeSync();
-				await onCompleted?.(dbItem);
+				return await module.v1.upsert(_item).executeSync();
 			} catch (e: any) {
 				await onError?.(e);
 				throw e;
@@ -414,7 +413,12 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 	async save(consumeError = false): Promise<Proto['dbType']> {
 		try {
-			return await super.save(consumeError);
+			const dbItem = await super.save(consumeError);
+
+			if (!this._autoSave)
+				this.onCompleted?.(dbItem);
+
+			return dbItem;
 		} catch (e: unknown) {
 			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
 			if (!validationException)
@@ -446,7 +450,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 			if (!this.debounceInstance)
 				this.debounceInstance = awaitedDebounce({
 					func: async () => {
-						this.onAutoSaveAction?.();
 						return await super.preformAutoSave();
 					},
 					timeout: this.debounceTimeout,
@@ -457,6 +460,11 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				const currentUIItem = deleteKeysObject({...editableDBItemV3.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
 				const _mergeObject = mergeObject(dbItem, currentUIItem);
 				delete this.debounceInstance;
+
+				// @ts-ignore
+				this.item = _mergeObject
+				this.onChanged?.(this)
+
 				resolve(_mergeObject);
 			}).catch((err) => {
 				delete this.debounceInstance;
