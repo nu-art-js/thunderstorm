@@ -1,61 +1,74 @@
 import {ComponentSync} from './ComponentSync';
-import {TS_Object, ThisShouldNotHappenException, _keys, compare} from '@nu-art/ts-common';
+import {TS_Object, ThisShouldNotHappenException, _keys, compare, RecursiveObjectOfPrimitives, RecursiveArrayOfPrimitives, Primitive} from '@nu-art/ts-common';
 import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2, QueryParamKey} from '../modules/ModuleFE_BrowserHistoryV2';
 
-export type ProtoComponentDef_QueryKeys<T extends ProtoComponentDef> = (keyof T['queryParams'])[];
+type QueryParamMapDef<O extends TS_Object, E extends string = never> = { [K in (keyof O | E)]: Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives }
+type QueryParamMapImpl<T extends ProtoComponentDef> = { [K in keyof T['queryParams']]: QueryParamKey<T['queryParams'][K]> }
 
-export type ProtoComponent_State<Q> = {
-	queryParams: Partial<Q>;
+type ProtoComponent_Props<O extends TS_Object, E extends string = never> = {
+	queryParamsKeys?: (keyof O | E)[];
+}
+
+type ProtoComponent_State<O extends TS_Object, E extends string = never, Q extends QueryParamMapDef<O, E> = QueryParamMapDef<O, E>> = {
+	queryParams: QueryParamMapImpl<any>
 };
 
-export type ProtoComponentDef<Q extends TS_Object = TS_Object, P extends {} = {}, S extends ProtoComponent_State<Q> = ProtoComponent_State<Q>> = {
-	queryParams: Q
-	props: P,
-	state: S,
+export type ProtoComponentDef<
+	O extends TS_Object = TS_Object, //The object we are looking at
+	P extends {} = {}, //Extra props given from above
+	S extends {} = {}, //Extra state given from above
+	E extends string = string, //Extra keys other than the keys of the object
+	Q extends QueryParamMapDef<O, E> = QueryParamMapDef<O, E>, //A query map defining the data for each key
+	Props = ProtoComponent_Props<O, E> & P,
+	State = ProtoComponent_State<O, E, Q> & S,
+> = {
+	queryParams: Q;
+	props: Props,
+	state: State,
 }
 
 export abstract class ProtoComponent<T extends ProtoComponentDef>
 	extends ComponentSync<T['props'], T['state']>
 	implements OnUrlParamsChangedListenerV2 {
 
-	abstract readonly queryParamArray: ProtoComponentDef_QueryKeys<T>;
-	private readonly queryParamKeyMap: { [K in keyof T['queryParams']]: QueryParamKey<T['queryParams'][K]> } = {} as { [K in keyof T['queryParams']]: QueryParamKey<T['queryParams'][K]> };
-
 	// ######################## Life Cycle ########################
 
-	protected ComponentDidMount() {
-		this.queryParamArray.forEach(param => {
-			this.queryParamKeyMap[param] = new QueryParamKey(param as string);
-		});
-	}
-
 	__onUrlParamsChangedV2 = () => {
-		const queryParams = this.getQueryObject();
+		const queryParams = this.getQueryParamObject();
 		if (!compare(queryParams, this.state.queryParams))
 			this.reDeriveState({queryParams});
 	};
 
 	protected _deriveStateFromProps(nextProps: T['props'], state?: Partial<T['state']>): T['state'] | undefined {
 		this.logVerbose('Deriving state from props');
-		state ??= this.state ? {...this.state} : {queryParams: this.getQueryObject()};
+		state ??= this.state ? {...this.state} : {queryParams: this.getInitialQueryObject()};
 		const _state = this.deriveStateFromProps(nextProps, state);
 		this.mounted && _state && this.setState(_state);
 		return _state;
 	}
 
-	private getQueryObject(): Partial<T['queryParams']> {
-		const queryParams: Partial<T['queryParams']> = {};
-		this.queryParamArray.forEach(key => {
-			const queryKey = this.getQueryParamKeyForKey(key);
-			queryParams[key] = queryKey.get();
+	private getInitialQueryObject(): QueryParamMapImpl<T> {
+		const queryParams = {} as QueryParamMapImpl<T>;
+		this.props.queryParamsKeys?.forEach(key => {
+			// @ts-ignore
+			queryParams[key] = new QueryParamKey(key);
 		});
 		return queryParams;
 	}
 
 	// ######################## Class Methods ########################
 
+	private getQueryParamObject(): QueryParamMapImpl<T> {
+		const queryParams = {} as QueryParamMapImpl<T>;
+		this.props.queryParamsKeys?.forEach(key => {
+			// @ts-ignore
+			queryParams[key] = this.getQueryParamKeyForKey(key);
+		});
+		return queryParams;
+	}
+
 	private getQueryParamKeyForKey(key: keyof T['queryParams']) {
-		const queryKey = this.queryParamKeyMap[key];
+		const queryKey = this.state.queryParams[key];
 		if (!queryKey)
 			throw new ThisShouldNotHappenException(`Could not get QueryParamKey for param ${key as string}`);
 		return queryKey;
