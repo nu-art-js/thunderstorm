@@ -59,6 +59,7 @@ import {
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
+import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
 
 
 export interface PermissibleModulesUpdated {
@@ -76,7 +77,15 @@ type QueuedModuleData = {
 
 export class ModuleFE_SyncManager_Class
 	extends Module
-	implements ApiDefCaller<ApiStruct_SyncManager> {
+	implements ApiDefCaller<ApiStruct_SyncManager>, OnConnectivityChange {
+	async __onConnectivityChange() {
+		if (ModuleFE_ConnectivityModule.isConnected()) {
+			this.logInfo(`Browser gained network connectivity- initiating smartSync.`);
+			await this.debounceSyncImpl();
+		} else {
+			this.logWarningBold(`Browser lost network connectivity!`);
+		}
+	}
 
 	// ######################### Class Properties #########################
 
