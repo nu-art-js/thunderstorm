@@ -1,0 +1,65 @@
+@use '@nu-art/ts-styles' as tsStyles;
+
+.user-thumbnail {
+  width: 26px;
+  height: 26px;
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #1d496f;
+  background: white;
+
+  .user-thumbnail__acronym {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font: {
+      size: 14px;
+      weight: bold;
+    }
+    text-transform: uppercase;
+    color: #1d496f;
+  }
+
+  .user-thumbnail__image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .user-thumbnail__upload-image-overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #0008;
+    opacity: 0;
+    transition: opacity 200ms linear;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .icon--wrapper {
+      @include tsStyles.color-svg(white);
+      width: 50%;
+      height: 50%;
+    }
+  }
+
+  &.clickable {
+    cursor: pointer;
+  }
+
+  &:hover {
+    .user-thumbnail__upload-image-overlay {
+      opacity: 1;
+    }
+  }
+}
+
+.user-thumbnail__loader {
+  width: 26px;
+  height: 26px;
+}

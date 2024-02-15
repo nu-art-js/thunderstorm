@@ -9,17 +9,22 @@ import {
 	MUSTNeverHappenException,
 	PreDB,
 	reduceToMap,
+	RuntimeModules,
 	TS_Object,
 	TypedMap,
 	Year,
 } from '@nu-art/ts-common';
-import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfig, Storm} from '@nu-art/thunderstorm/backend';
-import {ApiDef_Permissions, DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionDomain, DB_PermissionProject} from '../../shared';
-import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
-import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
-import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
-import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
-import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+import {
+	addRoutes,
+	createQueryServerApi,
+	MemKey_ServerApi,
+	ModuleBE_AppConfig,
+	ModuleBE_BaseApiV3_Class,
+	Storm
+} from '@nu-art/thunderstorm/backend';
+import {
+	ApiDef_Permissions,
+} from '../../shared';
 import {
 	CollectSessionData,
 	MemKey_AccountId,
@@ -27,7 +32,6 @@ import {
 	ModuleBE_SessionDB,
 	SessionCollectionParam
 } from '@nu-art/user-account/backend';
-import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {
 	Domain_AccountManagement,
@@ -47,8 +51,23 @@ import {
 } from '../../shared/consts';
 import {ApiModule} from '@nu-art/thunderstorm';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
+import {
+	DefaultDef_ServiceAccount,
+	dispatcher_collectServiceAccounts
+} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
+import {
+	DB_PermissionAccessLevel,
+	DB_PermissionAPI,
+	DB_PermissionDomain,
+	DB_PermissionProject,
+	ModuleBE_PermissionAccessLevelDB,
+	ModuleBE_PermissionAPIDB,
+	ModuleBE_PermissionDomainDB,
+	ModuleBE_PermissionGroupDB,
+	ModuleBE_PermissionProjectDB,
+	ModuleBE_PermissionUserDB
+} from '../_entity';
 
 
 export interface CollectPermissionsProjects {
@@ -141,7 +160,7 @@ class ModuleBE_Permissions_Class
 		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({_id: data.accountId});
 		const permissionMap: TypedMap<number> = {};
 		const groupIds = user.groups.map(g => g.groupId);
-		const groups = filterInstances(await ModuleBE_PermissionGroup.query.all(groupIds));
+		const groups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(groupIds));
 		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
 		levelMaps.forEach(levelMap => {
 			_keys(levelMap).forEach(domainId => {
@@ -154,7 +173,7 @@ class ModuleBE_Permissions_Class
 		});
 
 		//All domains that are not defined for the user, are NoAccess by default.
-		const allDomains = await ModuleBE_PermissionDomain.query.where({});
+		const allDomains = await ModuleBE_PermissionDomainDB.query.where({});
 		allDomains.forEach(domain => {
 			if (!permissionMap[domain._id])
 				permissionMap[domain._id] = DefaultAccessLevel_NoAccess.value; //"fill in the gaps" - All domains that are not defined for the user, are NoAccess by default.
@@ -194,7 +213,7 @@ class ModuleBE_Permissions_Class
 	private async createProjects(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating Projects');
 		const _auditorId = MemKey_AccountId.get();
-		const preDBProjects = await ModuleBE_PermissionProject.set.all(projects.map(project => ({
+		const preDBProjects = await ModuleBE_PermissionProjectDB.set.all(projects.map(project => ({
 			_id: project._id,
 			name: project.name,
 			_auditorId
@@ -219,7 +238,7 @@ class ModuleBE_Permissions_Class
 			projectId: map_nameToDBProject[project.name]._id,
 			_auditorId
 		})))));
-		const dbDomain = await ModuleBE_PermissionDomain.set.all(domainsToUpsert);
+		const dbDomain = await ModuleBE_PermissionDomainDB.set.all(domainsToUpsert);
 		const domainsMap_nameToDbDomain = reduceToMap(dbDomain, domain => domain.namespace, domain => domain);
 		this.logInfoBold(`Created ${dbDomain.length} Domains`);
 		return domainsMap_nameToDbDomain;
@@ -250,7 +269,7 @@ class ModuleBE_Permissions_Class
 			});
 		}))));
 
-		const dbLevels = await ModuleBE_PermissionAccessLevel.set.all(levelsToUpsert);
+		const dbLevels = await ModuleBE_PermissionAccessLevelDB.set.all(levelsToUpsert);
 		const domainNameToLevelNameToDBAccessLevel: {
 			[domainName: string]: { [levelName: string]: DB_PermissionAccessLevel }
 		} = reduceToMap(dbLevels, level => level.domainId, (level, index, map) => {
@@ -291,7 +310,7 @@ class ModuleBE_Permissions_Class
 				};
 			});
 		}));
-		const dbGroups = await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
+		const dbGroups = await ModuleBE_PermissionGroupDB.set.all(groupsToUpsert);
 		this.logInfoBold(`Created ${dbGroups.length} Groups`);
 	}
 
@@ -306,7 +325,7 @@ class ModuleBE_Permissions_Class
 		const _auditorId = MemKey_AccountId.get();
 		const apisToUpsert = flatArray(projects.map(project => {
 			return project.packages.map(_package => _package.domains.map(domain => {
-				const apis: PreDB<DB_PermissionApi>[] = [];
+				const apis: PreDB<DB_PermissionAPI>[] = [];
 
 				apis.push(...(domain.customApis || []).map(api => ({
 					projectId: project._id,
@@ -315,8 +334,7 @@ class ModuleBE_Permissions_Class
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
 
-				const apiModules = arrayToMap(Storm.getInstance()
-					.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+				const apiModules = arrayToMap(RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule!.dbDef!.dbName);
 
 				this.logDebug(_keys(apiModules));
 
@@ -326,7 +344,7 @@ class ModuleBE_Permissions_Class
 					if (!apiModule)
 						throw new MUSTNeverHappenException(`Could not find api module with dbName: ${dbName}`);
 
-					const _apiDefs = apiModule.apiDef;
+					const _apiDefs = apiModule.apiDef!;
 					return _keys(_apiDefs).map(_apiDefKey => {
 						const apiDefs = _apiDefs[_apiDefKey];
 						return filterInstances(_keys(apiDefs).map(apiDefKey => {
@@ -352,7 +370,7 @@ class ModuleBE_Permissions_Class
 			}));
 		}));
 
-		const dbApis = await ModuleBE_PermissionApi.set.all(apisToUpsert);
+		const dbApis = await ModuleBE_PermissionAPIDB.set.all(apisToUpsert);
 		this.logInfoBold(`Created ${dbApis.length} APIs`);
 	}
 

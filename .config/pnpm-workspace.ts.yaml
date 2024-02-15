@@ -8,6 +8,8 @@ packages:
   - slack
   - live-docs
   - user-account
+  - ts-focused-object
+  - ts-messaging
   - ts-workspace
   - ts-pdf
   - permissions

@@ -14,7 +14,7 @@
   }
 }
 
-@mixin mouse-interactive-text($c,$c-h,$c-a) {
+@mixin mouse-interactive-text($c,$c-h: $c,$c-a:$c-h) {
   color: $c;
   &:hover {
     color: $c-h;

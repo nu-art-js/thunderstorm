@@ -66,6 +66,9 @@ export function partialCompare<T extends any>(one?: T, two?: T, keysToFilterOut?
 	return compare(one, two);
 }
 
+/**
+ * Returns true for equal.
+ */
 export function compare<T extends any>(one?: T, two?: T, keys?: (keyof T)[]): boolean {
 	const typeofOne = typeof one;
 	const typeofTwo = typeof two;

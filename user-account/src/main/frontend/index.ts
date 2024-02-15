@@ -23,3 +23,5 @@ export * from './ui/Component_Login/Component_Login';
 export * from './ui/Component_Register';
 export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin';
 export * from './ui/Component_ChangePassword/Component_ChangePassword';
+export * from './ui/Component_AccountThumbnail/Component_AccountThumbnail';
+export * from './ui/PopUp_AccountMenu/PopUp_AccountMenu';

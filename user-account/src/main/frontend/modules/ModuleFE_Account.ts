@@ -1,3 +1,4 @@
+import * as React from 'react';
 import {
 	apiWithBody,
 	apiWithQuery,
@@ -6,6 +7,7 @@ import {
 	ModuleFE_v3_BaseApi,
 	ModuleFE_XHR,
 	OnStorageKeyChangedListener,
+	readFileContent,
 	ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
@@ -16,8 +18,10 @@ import {
 	composeUrl,
 	currentTimeMillis,
 	DB_BaseObject,
+	Exception,
 	exists,
 	generateHex,
+	KB,
 	TS_Object,
 	TypedKeyValue
 } from '@nu-art/ts-common';
@@ -29,12 +33,19 @@ import {
 	DBDef_Accounts,
 	DBProto_AccountType,
 	HeaderKey_SessionId,
+	HeaderKey_TabId,
 	QueryParam_SessionId,
 	Response_Auth,
+	Response_ChangeThumbnail,
 	Response_LoginSAML,
 	UI_Account
 } from '../../shared';
-import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp} from '../core/consts';
+import {
+	StorageKey_DeviceId,
+	StorageKey_SessionId,
+	StorageKey_SessionTimeoutTimestamp,
+	StorageKey_TabId
+} from '../core/consts';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
@@ -80,6 +91,7 @@ class ModuleFE_Account_Class
 			createToken: apiWithBody(ApiDefFE_Account.vv1.createToken),
 			setPassword: apiWithBody(ApiDefFE_Account.vv1.setPassword, this.setLoginInfo),
 			getSessions: apiWithQuery(ApiDefFE_Account.vv1.getSessions),
+			changeThumbnail: apiWithBody(ApiDefFE_Account.vv1.changeThumbnail, this.onThumbnailChanged)
 		};
 	}
 
@@ -112,13 +124,20 @@ class ModuleFE_Account_Class
 	};
 
 	protected init(): void {
+		super.init();
 		if (!exists(StorageKey_DeviceId.get())) {
 			const deviceId = generateHex(32);
 			console.log(`Defining new device Id: ${deviceId}`);
 			StorageKey_DeviceId.set(deviceId);
 		}
+		if (!exists(StorageKey_TabId.get())) {
+			const tabId = generateHex(32);
+			console.log(`Defining new tab Id: ${tabId}`);
+			StorageKey_TabId.set(tabId);
+		}
 
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, () => StorageKey_TabId.get());
 		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
 			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
 				return;
@@ -212,13 +231,46 @@ class ModuleFE_Account_Class
 		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(sessionData), c => c.charCodeAt(0)))));
 	}
 
-	logout = (url?: string) => {
-		this.vv1.logout({}).execute();
+	logout = async (url?: string) => {
+		await this.vv1.logout({}).executeSync();
 		StorageKey_SessionId.delete();
 		if (url)
 			return window.location.href = url;
 
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+	};
+
+	uploadAccountThumbnail = (e: React.MouseEvent, account: DB_Account) => {
+		const input = document.createElement('input');
+		input.type = 'file';
+		// input.accept = '.jpg,.jpeg,.png';
+		input.style.display = 'none';
+		input.addEventListener('change', async e => {
+			const file = input.files![0];
+			if (!file)
+				return;
+
+			try {
+				const hash = await this.encodeFile(file);
+				await this.vv1.changeThumbnail({accountId: account._id, hash}).executeSync();
+			} catch (err: any) {
+				this.logError(err.message, err);
+			}
+		});
+		input.click();
+	};
+
+	private encodeFile = async (file: File) => {
+		const arrayBuffer: ArrayBuffer = await readFileContent(file);
+		if (arrayBuffer.byteLength > 200 * KB)
+			throw new Exception('File size exceeds 200KB');
+
+		const buffer = new Uint8Array(arrayBuffer);
+		return window.btoa(buffer.reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
+	};
+
+	private onThumbnailChanged = async (response: Response_ChangeThumbnail) => {
+		await this.onEntryUpdated(response.account, response.account);
 	};
 }
 

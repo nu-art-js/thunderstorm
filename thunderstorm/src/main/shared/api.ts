@@ -1,8 +1,10 @@
 import {ApiDefResolver, HttpMethod, QueryApi} from './types';
 
+
 export type Response_ServerInfo = {
-	version: string
-	environment: string
+	version?: string
+	environment?: string,
+	bucketName?: string
 }
 
 export type ApiStruct_ServerInfo = {

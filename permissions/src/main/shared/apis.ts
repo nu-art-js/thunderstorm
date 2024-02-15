@@ -19,8 +19,7 @@
 
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {Minute, PreDB, StringMap} from '@nu-art/ts-common';
-import {DB_PermissionProject} from './management';
-
+import {DB_PermissionProject} from './_entity';
 
 export type UserUrlsPermissions = {
 	[url: string]: boolean

@@ -1,0 +1,43 @@
+@startuml
+rectangle App {
+(App level Trigger) as ALE
+note bottom of ALE: Automated or User Event\non specific db entity
+(Discussion) as Con
+  note bottom of Con
+    topicId: _id(topic)
+    appProp1(type): "user" | "Other types"
+    appProp2(status): "ongoing" | "resolved"
+    appProp3: any
+    appProp4: any
+  end note
+}
+
+rectangle Thunderstorm {
+(Topic/Reference) as Topic
+note right of Topic: _id: uid\nentityId: _id(dbEntity)\nentityType: string
+
+  rectangle Messages {
+    (Message1) as msg1
+    (Message2) as msg2
+    (Message3) as msg3
+    (Message4) as msg4
+  }
+
+  note left of msg1
+    _id: UID
+    topicId: _id(topic)
+    type: "text" | "image" | "video"
+    otherProps: any
+  end note
+}
+ALE ..> Topic: **Create a topic per (dbEntity)**
+ALE <- Con: **OPTIONAL**
+Topic <-- Con
+msg1 -> Topic
+msg2 -> Topic
+msg3 -> Topic
+msg4 -> Topic
+msg1--msg2
+msg2--msg3
+msg3--msg4
+@enduml

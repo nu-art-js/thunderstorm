@@ -42,7 +42,7 @@ export class StorageModule_Class
 		window.addEventListener('storage', this.handleStorageEvent);
 	}
 
-	async __onClearWebsiteData(resync: boolean) {
+	async __onClearWebsiteData() {
 		const items = this.withstandDeletionKeys.map(key => key.get());
 		localStorage.clear();
 		this.withstandDeletionKeys.forEach((key, index) => key.set(items[index]));
@@ -57,7 +57,7 @@ export class StorageModule_Class
 		if (!storageKey)
 			return this.logVerbose(`no StorageKey for '${key}'`);
 
-		this.logInfo(`Storage key '${key}' was updated:\nBefore: ${e.oldValue}\n After: ${e.newValue}`);
+		this.logInfo(`Storage key '${key}' was updated`, e.oldValue, e.newValue);
 
 		// @ts-ignore
 		await storageKey._onChange?.();
@@ -153,6 +153,9 @@ export class StorageKey<ValueType = string | number | object> {
 		ModuleFE_LocalStorage.registerKey(this);
 	}
 
+	/**
+	 * Will not delete this storage key if the delete operation is performed from __onClearWebsiteData
+	 */
 	withstandDeletion() {
 		// @ts-ignore
 		ModuleFE_LocalStorage.withstandDeletion(this);

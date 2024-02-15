@@ -21,7 +21,14 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, clamp, Filter, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	clamp,
+	debounce,
+	Filter,
+	ResolvableContent,
+	resolveContent
+} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -31,7 +38,7 @@ import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
-import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
+import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types';
 
 
 type State<ItemType> = ComponentProps_Error & {
@@ -73,6 +80,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & ComponentProps_Error & {
 
 	selected?: ItemType
 	filter?: Filter<ItemType>
+	queryFilter?: (item: ItemType) => boolean
 	tabIndex?: number;
 	innerRef?: React.RefObject<any>;
 
@@ -90,6 +98,10 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & ComponentProps_Error & {
 
 type Props_CanUnselect<ItemType> = { canUnselect: true; onSelected: (selected?: ItemType) => void };
 type Props_CanNotUnselect<ItemType> = { canUnselect?: false; onSelected: (selected: ItemType) => void };
+
+type Props_CanUnselect_NonMandatory<ItemType> = { canUnselect: true; onSelected?: (selected?: ItemType) => void };
+type Props_CanNotUnselect_NonMandatory<ItemType> = { canUnselect?: false; onSelected?: (selected: ItemType) => void };
+
 export type Props_DropDown<ItemType> =
 	(Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>)
 	& Dropdown_Props<ItemType>
@@ -105,18 +117,19 @@ type BasePartialProps_DropDown<T> = {
 	disabled?: boolean
 	ifNoneShowAll?: boolean
 }
-export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & ComponentProps_Error & {
+export type PartialProps_DropDown<T> =
+	BasePartialProps_DropDown<T>
+	& ComponentProps_Error
+	& (Props_CanUnselect<T> | Props_CanNotUnselect<T>)
+	& {
 	selected?: T;
-	onSelected: (selected: T) => void;
 }
 
 type EditableDropDownProps<ItemType, EditableType extends {} = any, ValueType extends EditableType[keyof EditableType] = EditableType[keyof EditableType]> =
 	BasePartialProps_DropDown<ItemType>
 	& UIProps_EditableItem<EditableType, keyof EditableType, ValueType>
 	& ComponentProps_Error
-	& {
-	onSelected?: (value: ItemType) => Promise<void> | void
-}
+	& (Props_CanUnselect_NonMandatory<ItemType> | Props_CanNotUnselect_NonMandatory<ItemType>)
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
@@ -127,7 +140,7 @@ export class TS_DropDown<ItemType>
 		return (props: EditableDropDownProps<T, EditableType, ValueType>) => <TS_DropDown<T>
 			{...resolveContent(mandatoryProps)} {...props}
 			error={resolveEditableError(props)}
-			onSelected={item => props.onSelected ? props.onSelected(item) : props.editable.updateObj({[props.prop]: item} as EditableType)}
+			onSelected={(item?: T) => props.onSelected ? props.onSelected(item!) : props.editable.updateObj({[props.prop]: item} as EditableType)}
 			selected={props.editable.item[props.prop] as T | undefined}/>;
 	};
 
@@ -183,10 +196,10 @@ export class TS_DropDown<ItemType>
 		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
 		nextState.treeContainerRef = state?.treeContainerRef ?? React.createRef();
 		nextState.className = nextProps.className;
-		nextState.treeResizeObserver ??= new ResizeObserver(() => this.onTreeResize());
+		nextState.treeResizeObserver ??= new ResizeObserver(() => debounce(() => this.onTreeResize(), 5));
 
-		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
-			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
+		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText) || nextProps.queryFilter) {
+			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText, nextProps.queryFilter);
 			nextState.focusedItem = undefined;
 		}
 
@@ -303,12 +316,17 @@ export class TS_DropDown<ItemType>
 		}
 	};
 
-	private createAdapter(adapterToClone: Adapter<ItemType>, limit?: number, filterText?: string): Adapter<ItemType> {
+	private createAdapter(adapterToClone: Adapter<ItemType>, limit?: number, filterText?: string, queryFilter?: (item: ItemType) => boolean): Adapter<ItemType> {
 		//If no change to data
-		if (!(filterText && this.props.filter) && !limit)
+		if (!(filterText && this.props.filter) && !limit && !queryFilter)
 			return adapterToClone;
 
 		let data = adapterToClone.data;
+
+		//If queryFilter
+		if (queryFilter) {
+			data = data.filter((item: any) => queryFilter(item));
+		}
 
 		//If filtering
 		if (filterText && this.props.filter)
@@ -366,6 +384,7 @@ export class TS_DropDown<ItemType>
 				 tabIndex={this.props.tabIndex}
 				 onFocus={this.addKeyboardListener}
 				 onBlur={this.removeKeyboardListener}
+				 {...getErrorTooltip(this.props.error, this.props.shouldShowTooltip)}
 				 {...convertToHTMLDataAttributes(this.state.error, 'error')}
 			>
 				{this.renderHeader()}

@@ -40,12 +40,14 @@ import {
 	DBProto_AccountType,
 	HeaderKey_SessionId,
 	PasswordWithCheck,
+	Request_ChangeThumbnail,
 	Request_CreateAccount,
 	Request_LoginAccount,
 	RequestBody_ChangePassword,
 	RequestBody_CreateToken,
 	RequestBody_RegisterAccount,
 	Response_Auth,
+	Response_ChangeThumbnail,
 	SafeDB_Account,
 	UI_Account
 } from '../../shared';
@@ -72,10 +74,14 @@ export interface OnNewUserRegistered {
 export interface OnUserLogin {
 	__onUserLogin(account: SafeDB_Account, transaction: Transaction): void;
 }
+export interface OnPreLogout {
+	__onPreLogout: () => Promise<void>;
+}
 
 export const dispatch_onAccountLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
 
 const dispatch_onAccountRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
+export const dispatch_onPreLogout = new Dispatcher<OnPreLogout, '__onPreLogout'>('__onPreLogout');
 
 type Config = {
 	canRegister: boolean
@@ -99,7 +105,7 @@ export class ModuleBE_AccountDB_Class
 	manipulateQuery(query: FirestoreQuery<DB_Account>): FirestoreQuery<DB_Account> {
 		return {
 			...query,
-			select: ['__updated', 'email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']
+			select: ['__created', '__updated', 'email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']
 		};
 	}
 
@@ -133,6 +139,7 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDefBE_Account.vv1.createToken, this.token.create),
 			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.account.setPassword),
 			createQueryServerApi(ApiDefBE_Account.vv1.getSessions, this.account.getSessions),
+			createBodyServerApi(ApiDefBE_Account.vv1.changeThumbnail, this.account.changeThumbnail)
 		]);
 	}
 
@@ -162,7 +169,10 @@ export class ModuleBE_AccountDB_Class
 			};
 		},
 		create: async (accountToCreate: AccountToCreate, transaction: Transaction) => {
-			let dbAccount = (await this.query.custom({where: {email: accountToCreate.email}, limit: 1}, transaction))[0];
+			let dbAccount = (await this.query.custom({
+				where: {email: accountToCreate.email},
+				limit: 1
+			}, transaction))[0];
 			if (dbAccount)
 				throw new ApiException(422, `User with email "${accountToCreate.email}" already exists`);
 
@@ -221,7 +231,11 @@ export class ModuleBE_AccountDB_Class
 				return dbSafeAccount;
 			});
 
-			await this.account.login({email: accountWithPassword.email, deviceId: accountWithPassword.deviceId, password: accountWithPassword.password});
+			await this.account.login({
+				email: accountWithPassword.email,
+				deviceId: accountWithPassword.deviceId,
+				password: accountWithPassword.password
+			});
 			return {...dbSafeAccount};
 		},
 		login: async (credentials: Request_LoginAccount): Promise<Response_Auth> => {
@@ -296,9 +310,17 @@ export class ModuleBE_AccountDB_Class
 
 				const safeAccount = await this.impl.querySafeAccount({email});
 
-				this.impl.assertPasswordCheck({email, password: passwordToChange.password, passwordCheck: passwordToChange.passwordCheck});
+				this.impl.assertPasswordCheck({
+					email,
+					password: passwordToChange.password,
+					passwordCheck: passwordToChange.passwordCheck
+				});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordToChange.password});
-				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
+				const updatedAccount = await this.set.item({
+					...safeAccount,
+					salt: spicedAccount.salt,
+					saltedPassword: spicedAccount.saltedPassword
+				}, transaction);
 
 				const content = {
 					accountId: updatedAccount._id,
@@ -324,7 +346,11 @@ export class ModuleBE_AccountDB_Class
 
 				this.impl.assertPasswordCheck({email, ...passwordBody});
 				const spicedAccount = this.impl.spiceAccount({email, password: passwordBody.password});
-				const updatedAccount = await this.set.item({...safeAccount, salt: spicedAccount.salt, saltedPassword: spicedAccount.saltedPassword}, transaction);
+				const updatedAccount = await this.set.item({
+					...safeAccount,
+					salt: spicedAccount.salt,
+					saltedPassword: spicedAccount.saltedPassword
+				}, transaction);
 
 				const content = {
 					accountId: updatedAccount._id,
@@ -342,10 +368,21 @@ export class ModuleBE_AccountDB_Class
 			if (!sessionId)
 				throw new ApiException(404, 'Missing sessionId');
 
+			await dispatch_onPreLogout.dispatchModuleAsync();
 			await ModuleBE_SessionDB.delete.query({where: {sessionId}});
 		},
 		getSessions: async (query: DB_BaseObject) => {
 			return {sessions: await ModuleBE_SessionDB.query.where({accountId: query._id})};
+		},
+		changeThumbnail: async (request: Request_ChangeThumbnail): Promise<Response_ChangeThumbnail> => {
+			const account = await this.doc.unique(request.accountId);
+			if (!account)
+				throw HttpCodes._4XX.NOT_FOUND('Could not change account thumbnail', `Could not find account with id ${request.accountId}`);
+
+			await account.ref.update({thumbnail: request.hash});
+			return {
+				account: (await account.get())!,
+			};
 		}
 	};
 
