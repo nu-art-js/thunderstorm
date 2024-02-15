@@ -112,7 +112,8 @@ export class Component_FocusedEntityRef
 	 */
 	private areThereIssuesInProps = () => this.props.focusData.some(item => !item.itemId);
 
-	// private getTooltipLogic = () => {
+
+	// private getTooltipLogic = () => { //todo add tooltip
 	// 	if (!this.shouldHaveTooltip())
 	// 		return {};
 	//

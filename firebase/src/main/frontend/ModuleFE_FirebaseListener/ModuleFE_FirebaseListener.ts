@@ -124,7 +124,7 @@ export class RefListenerFE<Value extends any = any>
 			this.logWarning(`Failed listening on node data, check if your rtdb rules permit reading this node '${this.nodePath}'`);
 			throw e;
 		}
-		this.logInfo(`Listening on '${this.nodePath}'`);
+		this.logInfo(`Listening.`);
 
 		return this;
 	}
