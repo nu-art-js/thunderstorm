@@ -22,12 +22,12 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {compare, merge, Module, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
+import {compare, merge, Module, Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {gzip, ungzip} from 'pako';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
-type AdvancedQueryParam = RecursiveObjectOfPrimitives;
+type AdvancedQueryParam = Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives;
 
 export class QueryParamKey<T extends AdvancedQueryParam> {
 	private readonly key: string;
@@ -63,7 +63,7 @@ export const dispatcher_urlParamsChangedV2 = new ThunderDispatcher<OnUrlParamsCh
 export class ModuleFE_BrowserHistoryV2_Class
 	extends Module {
 	private readonly history: History<any>;
-	private state: AdvancedQueryParam;
+	private state: RecursiveObjectOfPrimitives;
 
 	constructor() {
 		super();
@@ -75,6 +75,8 @@ export class ModuleFE_BrowserHistoryV2_Class
 		if (!hash || hash.length === 0)
 			return {};
 
+		if (hash.startsWith('#'))
+			hash = hash.substring(1);
 		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(window.atob(hash || window.location.hash), c => c.charCodeAt(0)))));
 	}
 
@@ -122,7 +124,7 @@ export class ModuleFE_BrowserHistoryV2_Class
 		this.encode();
 	}
 
-	setState = (state: AdvancedQueryParam) => {
+	setState = (state: RecursiveObjectOfPrimitives) => {
 		this.encode(state);
 	};
 
