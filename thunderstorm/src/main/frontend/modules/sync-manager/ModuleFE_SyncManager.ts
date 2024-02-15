@@ -94,7 +94,7 @@ export class ModuleFE_SyncManager_Class
 		super();
 		this.setMinLevel(LogLevel.Debug);
 		this.syncQueue = new QueueV2<QueuedModuleData>('Sync Queue', this.performFullSync)
-			.setParallelCount(6)
+			.setParallelCount(4)
 			.setSorter((data) => {
 				const priorityModule = filterDuplicates(flatArray(dispatch_QueryAwaitedModules.dispatchUI()));
 				return priorityModule.includes(data.module) ? 0 : 1;
