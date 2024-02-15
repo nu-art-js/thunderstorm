@@ -35,6 +35,7 @@ export * from './core/thunder-modulepack';
 export * from './core/Thunder';
 export * from './core/typed-api';
 export * from './core/IndexedDBV3';
+export * from './core/proto-component';
 
 export * from './component-modules/ModuleFE_Dialog';
 export * from './component-modules/ModuleFE_Toaster';
