@@ -1,4 +1,4 @@
-import {DB_Object, OmitDBObject, SubsetKeys, SubsetObjectByKeys, UniqueId} from '../utils/types';
+import {DB_Object, DotNotation, DotNotationValueType, OmitDBObject, SubsetObjectByKeys, UniqueId} from '../utils/types';
 import {ValidatorTypeResolver} from '../validator/validator-core';
 
 
@@ -15,10 +15,7 @@ export type VersionsDeclaration<Versions extends VersionType[] = ['1.0.0'], Type
 	types: Types
 };
 
-export type InnerDependencies<T extends DB_Object, K extends SubsetKeys<keyof T, T, string | string[]>, Proto extends DBProto<any>> = {
-	key: K
-	proto: Proto
-};
+type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DBProto<any> }
 
 type Exact<T, Shape> = T & {
 	[K in Exclude<keyof Shape, keyof T>]?: never;
@@ -39,7 +36,7 @@ export type Proto_DB_Object<
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<VersionType[]>,
 	UniqueKeys extends keyof T = Default_UniqueKey,
-	Dependencies extends Exact<{ [K in SubsetKeys<keyof T, T, string | string[]>]?: DBProto<any> }, Dependencies> = never> = {
+	Dependencies extends Exact<{ [K in DotNotation<T>]?: DBProto<any> }, Dependencies> = never> = {
 
 	type: T,
 	dbName: DatabaseName
@@ -47,6 +44,15 @@ export type Proto_DB_Object<
 	versions: Versions,
 	uniqueKeys: UniqueKeys
 	dependencies: Dependencies
+}
+
+type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
+	[K in keyof D]: D[K] extends DBProto<any>
+		? {
+			dbName: D[K]['dbName'],
+			fieldType: TypeOf<DotNotationValueType<T, K & string>>
+		}
+		: never
 }
 
 /**
@@ -57,6 +63,7 @@ export type Proto_DB_Object<
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
 export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+	proto: P
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: P['type'],
@@ -70,6 +77,7 @@ export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclarat
 	uniqueParam: UniqueId | { [K in P['uniqueKeys']]: P['type'][K] }
 	metadata?: Metadata<OmitDBObject<P['type']>>
 	lockKeys?: (keyof P['type'])[]
+	dependencies: DependenciesImpl<P['type'], P['dependencies']>
 }
 
 /**
@@ -90,6 +98,7 @@ export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
 	indices?: Proto['indices'];
 	lockKeys?: Proto['lockKeys'];
 	metadata?: Proto['metadata'];
+	dependencies?: Proto['dependencies']
 }
 
 /**
