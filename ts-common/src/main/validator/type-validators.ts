@@ -1,8 +1,16 @@
 import {__stringify, exists} from '../utils/tools';
-import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
+import {
+	InvalidResult,
+	InvalidResultArray,
+	InvalidResultObject,
+	tsValidateExists,
+	tsValidateResult,
+	Validator,
+	ValidatorTypeResolver
+} from './validator-core';
 import {currentTimeMillis} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
-import {filterInstances} from '../utils/array-tools';
+import {asArray, filterInstances} from '../utils/array-tools';
 import {_keys} from '../utils/object-tools';
 import {BadImplementationException} from '../core/exceptions/exceptions';
 
@@ -63,19 +71,21 @@ export const tsValidateUnionV3 = <T extends any>(validatorObject: validatorObjec
 		}];
 };
 
-export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true, minimumLength: number = 0): Validator<I[]> => {
+export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayType<T>>(validator: ValidatorTypeResolver<I> | ValidatorTypeResolver<I>[], mandatory = true, minimumLength: number = 0): Validator<I[]> => {
 	return [tsValidateExists(mandatory),
-		(input?: I[]) => {
-			const results: InvalidResultArray<I>[] = [];
-			const _input = input as unknown as I[];
-			if (_input.length < minimumLength)
-				return 'Array length smaller than minimum defined length';
-			for (let i = 0; i < _input.length; i++) {
-				results[i] = tsValidateResult(_input[i], validator);
-			}
+		...asArray(validator).map(validator => {
+			return (input?: I[]) => {
+				const results: InvalidResultArray<I>[] = [];
+				const _input = input as unknown as I[];
+				if (_input.length < minimumLength)
+					return 'Array length smaller than minimum defined length';
+				for (let i = 0; i < _input.length; i++) {
+					results[i] = tsValidateResult(_input[i], validator, undefined, input);
+				}
 
-			return filterInstances(results).length !== 0 ? results : undefined;
-		}];
+				return filterInstances(results).length !== 0 ? results : undefined;
+			};
+		})];
 };
 
 export const tsValidateString = (length: number | [number, number] = -1, mandatory = true): Validator<string> => {
@@ -85,17 +95,14 @@ export const tsValidateString = (length: number | [number, number] = -1, mandato
 			if (typeof input !== 'string')
 				return `input is not a string`;
 
-			if (length === -1)
-				return;
-
 			if (Array.isArray(length)) {
-				if (length[0] > input.length)
-					return `input length is lesser than ${length}`;
+				if (length[0] !== -1 && length[0] > input.length)
+					return `input length is lesser than ${length[0]}`;
 
-				if (input.length > length[1])
-					return `input length is longer than ${length}`;
+				if (length[1] !== -1 && input.length > length[1])
+					return `input length is longer than ${length[1]}`;
 
-			} else if (input.length > length)
+			} else if (length !== -1 && input.length > length)
 				return `input length is longer than ${length}`;
 
 			return;

@@ -1,103 +1,123 @@
 import * as React from 'react';
-import {
-	_className,
-	EditableDBItem,
-	genericNotificationAction,
-	LL_H_C,
-	LL_V_L,
-	ModuleFE_BaseApi,
-	SmartComponent,
-	TS_BusyButton,
-	TS_Button
-} from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, cloneArr, DB_Object, sortArray, ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
-
+import {_className, ComponentSync, EditableDBItemV3, LL_H_C, LL_V_L, ModuleFE_v3_BaseApi, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
+import {BadImplementationException, DBProto, Filter, sortArray, UniqueId} from '@nu-art/ts-common';
 import './editor-base.scss';
-import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
-
+import {TS_Icons} from '@nu-art/ts-styles';
 
 const newItemIdentifier = '##new-item##';
 
-export type State_EditorBase<T extends DB_Object> = {
-	items: Readonly<T[]>;
+export type State_EditorBase<T extends DBProto<any>> = {
+	items: Readonly<T['dbType'][]>;
 	selectedItemId?: UniqueId | typeof newItemIdentifier;
-	editedItem?: EditableDBItem<T>;
+	editedItem?: EditableDBItemV3<T>;
+	listFilter?: string;
 };
 
-export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase<T>, P extends {} = {}>
-	extends SmartComponent<P, S> {
+export type Props_EditorBase<T extends DBProto<any>> = {
+	module: ModuleFE_v3_BaseApi<T>;
+	itemName: string;
+	itemNamePlural: string;
+	itemDisplay: (item: T['dbType']) => string;
+}
 
-	abstract readonly module: ModuleFE_BaseApi<T>;
-	abstract readonly itemName: string;
-	abstract readonly itemNamePlural: string;
-	abstract readonly itemDisplay: (item: T) => string;
+export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorBase<T> = State_EditorBase<T>, P extends Props_EditorBase<T> = Props_EditorBase<T>>
+	extends ComponentSync<P, S> {
+
+	//######################### Lifecycle #########################
+
+	protected deriveStateFromProps(nextProps: P, state: S): S {
+		state.items = sortArray([...this.props.module.cache.all()], this.props.itemDisplay);
+		if (!state.editedItem && state.items.length) {
+			state.editedItem = this.getEditable(state.items[0]);
+			state.selectedItemId = state.items[0]._id;
+		}
+		return state;
+	}
 
 	//######################### Logic #########################
+
+	protected getEditable(instance: Partial<T['dbType']>): EditableDBItemV3<T> {
+		return new EditableDBItemV3<T>(instance, this.props.module, dbItem => {
+			this.setState({editedItem: this.getEditable(dbItem), selectedItemId: dbItem._id});
+		})
+			.setAutoSave(!!instance._id)
+			.setDebounceTimeout(100)
+			.setOnChanged(async editable => this.setState({editedItem: editable as EditableDBItemV3<T>, selectedItemId: editable.item._id}));
+	}
+
+	protected getNewInstance(): Partial<T['dbType']> {
+		return {};
+	}
 
 	private selectItem = (itemId?: string) => {
 		if (!itemId)
 			return this.setState({selectedItemId: undefined, editedItem: undefined});
 
-		const item = itemId === newItemIdentifier ? {} : this.state.items.find(item => item._id === itemId);
+		const item = itemId === newItemIdentifier ? this.getNewInstance() : this.state.items.find(item => item._id === itemId);
 
 		if (!item)
 			throw new BadImplementationException(`Could not find item with id ${itemId}`);
 
-		const newVar: any = {editedItem: new EditableDBItem<T>(item, this.module)};
-		return this.reDeriveState({...newVar, selectedItemId: newVar.editedItem.item._id});
-	};
-
-	protected saveItem = async (e: React.MouseEvent) => {
-		if (!this.state.editedItem)
-			return;
-
-		this.logDebug('Saving Item', this.state.editedItem.item);
-		await genericNotificationAction(
-			async () => {
-				await this.state.editedItem!.save();
-				return ModuleFE_SyncManagerV2.v1.checkSync().executeSync();
-			}, `Saving ${this.itemName}`, 3);
-	};
-
-	private deleteItem = async () => {
-		if (!this.state.editedItem)
-			return;
-
-		await genericNotificationAction(
-			() => this.state.editedItem!.delete(),
-			`Deleting ${this.itemName}`, 3);
-	};
-
-	protected setProperty = async <K extends keyof T>(key: K, value: T[K]) => {
-		if (!this.state.editedItem)
-			throw new ThisShouldNotHappenException('Got to setting property without an edited item in state');
-
-		const values: {} = {[key]: value};
-		await this.state.editedItem.updateObj(values);
-		this.forceUpdate();
+		const editable = this.getEditable(item);
+		return this.reDeriveState({
+			editedItem: editable,
+			selectedItemId: item._id
+		} as S);
 	};
 
 	//######################### Render #########################
 
+	render() {
+		return <LL_H_C className={'permissions-editor match_parent'}>
+			{this.renderList()}
+			{this.renderEditor()}
+		</LL_H_C>;
+	}
+
+	//######################### Render - List #########################
+
 	private renderList = () => {
-		const items = sortArray(cloneArr(this.state.items as T[]), i => this.itemDisplay(i));
 		return <LL_V_L className={'item-list'}>
-			<div className={'item-list__header'}>{this.itemNamePlural}</div>
-			<LL_V_L className={'item-list__list'}>
-				{items.map(item => {
-					const className = _className('item-list__list-item', item._id === this.state.selectedItemId ? 'selected' : undefined);
-					return <div className={className} onClick={() => this.selectItem(item._id)}
-											key={item._id}>{this.itemDisplay(item)}</div>;
-				})}
-			</LL_V_L>
+			<div className={'item-list__header'}>{this.props.itemNamePlural}</div>
+			{this.renderListFilter()}
+			{this.renderListItems()}
 			{this.renderListButton()}
 		</LL_V_L>;
 	};
 
-	protected renderListButton = () => {
-		return <TS_Button className={'item-list__add-button'} onClick={() => this.selectItem(newItemIdentifier)}>Add
-			New {this.itemName}</TS_Button>;
+	protected renderListFilter = () => {
+		return <LL_H_C className={'item-list__filter'}>
+			<TS_Input
+				type={'text'}
+				value={this.state.listFilter}
+				onChange={listFilter => this.setState({listFilter})}
+			/>
+			<TS_Icons.Search.component/>
+		</LL_H_C>;
 	};
+
+	protected renderListItems = () => {
+		let items = [...this.state.items] as T['dbType'][];
+		if (this.state.listFilter) {
+			const filter = new Filter<T['dbType']>(i => [this.props.itemDisplay(i)]);
+			items = filter.filter(items, this.state.listFilter);
+		}
+		return <LL_V_L className={'item-list__list'}>
+			{items.map(item => {
+				const className = _className('item-list__list-item', item._id === this.state.selectedItemId ? 'selected' : undefined);
+				return <div className={className} onClick={() => this.selectItem(item._id)}
+										key={item._id}>{this.props.itemDisplay(item)}</div>;
+			})}
+		</LL_V_L>;
+	};
+
+	protected renderListButton = () => {
+		return <TS_Button className={'item-list__add-button'} onClick={() => this.selectItem(newItemIdentifier)}>
+			Add New {this.props.itemName}
+		</TS_Button>;
+	};
+
+	//######################### Render - Editor #########################
 
 	abstract editorContent: () => React.ReactNode;
 
@@ -109,23 +129,10 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 
 		return <LL_V_L className={'item-editor'}>
 			<div
-				className={'item-editor__header'}>{item.item._id ? this.itemDisplay(item.item as T) : `New ${this.itemName}`}</div>
+				className={'item-editor__header'}>{item.item._id ? this.props.itemDisplay(item.item as T) : `New ${this.props.itemName}`}</div>
 			<LL_V_L className={'item-editor__main'}>
 				{this.editorContent()}
 			</LL_V_L>
-			<LL_H_C className={'item-editor__buttons'}>
-				{item.item._id &&
-					<TS_BusyButton onClick={this.deleteItem} className={'delete-button'}>Delete</TS_BusyButton>}
-				<TS_Button onClick={() => this.selectItem()}>Cancel</TS_Button>
-				<TS_BusyButton onClick={this.saveItem}>Save</TS_BusyButton>
-			</LL_H_C>
 		</LL_V_L>;
 	};
-
-	render() {
-		return <LL_H_C className={'permissions-editor match_parent'}>
-			{this.renderList()}
-			{this.renderEditor()}
-		</LL_H_C>;
-	}
 }

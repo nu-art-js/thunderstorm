@@ -5,6 +5,8 @@ import {
 	Dispatcher,
 	Minute,
 	Module,
+	MUSTNeverHappenException,
+	RuntimeModules,
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
@@ -15,6 +17,7 @@ import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {
 	ApiDef,
 	ApiDef_SyncEnvV2,
+	ApiModule,
 	HttpMethod,
 	QueryApi,
 	Request_BackupId,
@@ -26,9 +29,9 @@ import {
 import {AxiosHttpModule} from '../http/AxiosHttpModule';
 import {ModuleBE_v2_Backup} from '../backup/ModuleBE_v2_Backup';
 import {MemKey_HttpRequest} from '../server/consts';
-import {Storm} from '../../core/Storm';
 import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
 import {Readable} from 'stream';
+import {Storm} from '../../core/Storm';
 
 
 type Config = {
@@ -36,6 +39,7 @@ type Config = {
 	fetchBackupDocsSecretsMap: TypedMap<string>,
 	sessionMap: TypedMap<TypedMap<string>>,
 	maxBatch: number
+	shouldBackupBeforeSync?: boolean;
 }
 
 export interface OnSyncEnvCompleted {
@@ -88,8 +92,8 @@ class ModuleBE_v2_SyncEnv_Class
 
 		const url = remoteUrls[body.env];
 		const sessionId = MemKey_HttpRequest.get().headers['x-session-id'];
-		const module = Storm.getInstance()
-			.filterModules(module => (module as ModuleBE_BaseApiV3_Class<any>).dbModule?.dbDef?.dbName === body.moduleName)[0] as ModuleBE_BaseApiV3_Class<any>;
+
+		const module = RuntimeModules().find<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbName === body.moduleName);
 
 		const upsertAll = module.apiDef.v1.upsertAll;
 		const response: Response_BackupDocsV2 = await AxiosHttpModule
@@ -146,17 +150,24 @@ class ModuleBE_v2_SyncEnv_Class
 	};
 
 	syncFromEnvBackup = async (body: Request_FetchFromEnvV2) => {
+		if (Storm.getInstance().getEnvironment().toLowerCase() === 'prod' && body.env.toLowerCase() !== 'prod') {
+			throw new MUSTNeverHappenException('wtf you doin');
+		}
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
+		let startBackup = undefined; // required for log
+		let endBackup = undefined; // required for log
 
-		this.logInfo(`----  Creating Backup... ----`);
-		const startBackup = performance.now();
-		await this.createBackup();
-		const endBackup = performance.now();
-		this.logInfo(`Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds`);
+		if (this.config.shouldBackupBeforeSync) {
+			this.logInfo(`----  Creating Backup... ----`);
+			startBackup = performance.now(); // required for log
+			await this.createBackup();
+			endBackup = performance.now(); // required for log
+			this.logInfo(`Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds`);
+		}
 
 		this.logInfo(`----  Fetching Backup Info... ----`);
-		const startSync = performance.now();
+		const startSync = performance.now(); // required for log
 		const backupInfo = await this.getBackupInfo(body);
 		this.logInfo(backupInfo);
 
@@ -231,8 +242,9 @@ class ModuleBE_v2_SyncEnv_Class
 		this.logInfo(`----  Syncing Other Modules... ----`);
 		await dispatch_OnSyncEnvCompleted.dispatchModuleAsync(body.env, this.config.urlMap[body.env], this.config.sessionMap[body.env]!);
 		this.logInfo(`---- DONE Syncing Other Modules----`);
-		const endSync = performance.now();
-		this.logInfo(`(Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds)`);
+		const endSync = performance.now(); // required for log
+		if (this.config.shouldBackupBeforeSync && endBackup !== undefined && startBackup !== undefined)
+			this.logInfo(`(Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds)`);
 		this.logInfo(`SyncingEnv took ${((endSync - startSync) / 1000).toFixed(3)} seconds`);
 	};
 

@@ -26,7 +26,7 @@ export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input
 		(testcases.length > 0 ? testcases : testSuit.testcases).forEach(testCase => {
 			new MemStorage().init(async () => testSuite_RunTest(testSuit, testCase));
 		});
-	});
+	}).timeout(testSuit.timeout || 5000);
 };
 
 export const expectFailAsync = async (action: () => Promise<void>) => {

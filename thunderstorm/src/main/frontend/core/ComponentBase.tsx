@@ -103,7 +103,7 @@ export abstract class BaseComponent<P = any, State = any>
 			this.setState(state);
 	}
 
-	protected abstract _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined ;
+	protected abstract _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined;
 
 	protected reDeriveState = (state?: Partial<State>) => {
 		this.logVerbose('reDeriveState called..');

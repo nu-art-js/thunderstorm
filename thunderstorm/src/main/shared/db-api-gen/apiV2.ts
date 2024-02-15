@@ -20,9 +20,8 @@
  */
 
 import {FirestoreQuery} from '@nu-art/firebase';
-import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB, Second} from '@nu-art/ts-common';
+import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
-import {Response_DBSync} from './apiV1';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
@@ -38,7 +37,6 @@ import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
  */
 export type ApiStruct_DBApiGenV2<DBType extends DB_Object> = {
 	v1: {
-		sync: BodyApi<DBType[], FirestoreQuery<DBType>, undefined>,
 		query: BodyApi<DBType[], FirestoreQuery<DBType>, FirestoreQuery<DBType> | undefined | {}>,
 		queryUnique: QueryApi<DBType, DB_BaseObject, ResponseError<string, any>, string>,
 		upsert: BodyApi<DBType, PreDB<DBType>>,
@@ -53,7 +51,6 @@ export type ApiStruct_DBApiGenV2<DBType extends DB_Object> = {
 
 export type ApiStruct_DBApiGenIDBV2<DBType extends DB_Object, Ks extends keyof DBType> = {
 	v1: {
-		sync: BodyApi<Response_DBSync<DBType>, FirestoreQuery<DBType>, undefined>, //todo taken from original api file
 		query: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		queryUnique: QueryApi<DBType, DB_BaseObject, ResponseError<string, any>, string | IndexKeys<DBType, Ks>>,
 		upsert: BodyApi<DBType, PreDB<DBType>>,
@@ -69,7 +66,6 @@ export type ApiStruct_DBApiGenIDBV2<DBType extends DB_Object, Ks extends keyof D
 export const DBApiDefGeneratorV2 = <DBType extends DB_Object>(dbDef: DBDef<DBType, '_id'>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenV2<DBType>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`, timeout: 60 * Second},
 			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`},
 			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/query-unique`},
 			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert`},
@@ -86,7 +82,6 @@ export const DBApiDefGeneratorV2 = <DBType extends DB_Object>(dbDef: DBDef<DBTyp
 export const DBApiDefGeneratorIDBV2 = <DBType extends DB_Object, Ks extends keyof DBType>(dbDef: DBDef<DBType, Ks>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenIDBV2<DBType, Ks>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/sync`, timeout: 60 * Second},
 			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`},
 			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/query-unique`},
 			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert`},

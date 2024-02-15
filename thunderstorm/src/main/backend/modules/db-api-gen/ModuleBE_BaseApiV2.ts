@@ -57,7 +57,6 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	init() {
 		addRoutes([
 			createBodyServerApi(this.apiDef.v1.query, this.dbModule.query.custom),
-			createBodyServerApi(this.apiDef.v1.sync, this.dbModule.querySync),
 			createQueryServerApi(this.apiDef.v1.queryUnique, async (queryObject: DB_BaseObject) => {
 				const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 				if (!toReturnItem)

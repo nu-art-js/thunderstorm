@@ -41,68 +41,85 @@
     }
   }
 
-  .api-editor {
-    width: 100%;
-    height: 100%;
-    border: 2px solid black;
-    border-radius: 10px;
+  .domain-level-renderer {
+    border: 1px solid black;
+    border-radius: 4px;
+    height: 50px;
+    width: 150px;
     overflow: hidden;
-    background: white;
 
-    .api-editor__list-wrapper {
-      border-right: 2px solid black;
-      height: 100%;
-      width: 300px;
-      min-width: 300px;
+    .ts-dropdown {
+      width: 100%;
+      height: 50%;
 
-      .api-editor__search {
-        width: 100%;
-        height: 30px;
-        border-bottom: 2px solid black;
-        flex: 0;
-
-        .ts-input {
-          height: 100%;
-          min-height: unset;
-          flex: 1;
-          outline: none !important;
-          border: none;
-        }
-
-        .icon--wrapper {
-          height: 100%;
-          width: 30px;
-          padding: 4px;
-        }
+      .ts-dropdown__header {
+        border: none;
+        border-radius: 0;
+        border-bottom: 1px solid black;
       }
 
-      .api-editor__list {
-        @include styles.customScrollbar('vertical');
-        height: 0;
-        flex: 1;
-        width: 100%;
+      .ts-dropdown__items-container {
+        border: 1px solid black;
+        padding-top: 0;
+        transform: none
+      }
 
-        .api-editor__list__item {
-          width: 100%;
-          padding: 4px 8px;
-          font: {
-            size: 14px;
-            weight: bold;
-          }
-          white-space: pre-wrap;
+      .ts-tree__node {
+        font: {
+          size: 12px;
+        }
+        white-space: break-spaces;
+      }
 
-          &.selected {
-            background: styles.gray(2);
-            color: white;
-          }
+      &:last-child {
+        .ts-dropdown__header {
+          border: none;
         }
       }
     }
+  }
 
-    .api-editor__editor {
-      height: 100%;
+  .domain-level-list {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .domain-level-list__item {
+      position: relative;
+      border: 1px solid black;
+      border-radius: 4px;
+      height: 50px;
+      max-width: 150px;
       padding: 8px;
-      gap: 8px;
+      white-space: break-spaces;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      font: {
+        size: 11px;
+        weight: bold;
+      }
+      overflow: hidden;
+
+      .icon--wrapper {
+        @include styles.mouse-interactive-icon(white);
+        background: styles.red(4);
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 50px;
+        width: 30px;
+        padding: 8px;
+        transform: translateX(100%);
+        transition: transform 200ms ease-out;
+        cursor: pointer;
+      }
+
+      &:hover {
+        .icon--wrapper {
+          transform: translateX(0);
+        }
+      }
     }
   }
 
@@ -111,64 +128,7 @@
     padding: 4px 8px;
   }
 }
-.api-editor__editor__level-list {
-  width: 100%;
-  flex-wrap: wrap;
-  gap: 8px;
 
-  .ts-dropdown {
-    width: 200px;
-
-    .ts-dropdown__header {
-      border: 1px solid black;
-    }
-
-    .ts-tree__node {
-      font: {
-        size: 11px;
-        weight: bold;
-      }
-      white-space: break-spaces;
-    }
-  }
-
-  .api-editor__editor__level-list__item {
-    position: relative;
-    border: 1px solid black;
-    border-radius: 4px;
-    height: 40px;
-    max-width: 150px;
-    white-space: break-spaces;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    font: {
-      size: 11px;
-      weight: bold;
-    }
-    overflow: hidden;
-
-    .icon--wrapper {
-      @include styles.mouse-interactive-icon(white);
-      background: styles.red(4);
-      position: absolute;
-      top: 0;
-      right: 0;
-      height: 40px;
-      width: 30px;
-      padding: 8px;
-      transform: translateX(100%);
-      transition: transform 200ms ease-out;
-      cursor: pointer;
-    }
-
-    &:hover {
-      .icon--wrapper {
-        transform: translateX(0);
-      }
-    }
-  }
-}
 #db-def-list {
   @include styles.customScrollbar('vertical');
   display: flex;

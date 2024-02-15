@@ -83,8 +83,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		state: State
 	};
 
-	private unpreparedModules?: ModuleFE_BaseDB<any>[];
-
 	/**
 	 * The constructor does 2 important things:
 	 *
@@ -110,7 +108,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				return <>
 					{_render()}
 					{this.state.componentPhase === ComponentStatus.Syncing &&
-                        <div className={'loader-transparent-container'}><TS_Loader/></div>}
+						<div className={'loader-transparent-container'}><TS_Loader/></div>}
 				</>;
 			};
 
@@ -131,6 +129,15 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 			this.reDeriveState();
 	}
 
+	shouldReDeriveState(nextProps: Readonly<Props>): boolean {
+		return this.getUnpreparedModules().length === 0 && super.shouldReDeriveState(nextProps);
+	}
+
+	protected getUnpreparedModules(): ModuleFE_BaseDB<any>[] {
+		const modules = resolveContent(this.props.modules);
+		return modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
+	}
+
 	/**
 	 * This function gates the actual deriveStateFromProps from being called when the shared-components
 	 * is waiting for the modules in the "modules" prop to finish syncing.
@@ -144,16 +151,13 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	protected _deriveStateFromProps(nextProps: Props, partialState: State = this.createInitialState(nextProps)): State | undefined {
 		const currentState = partialState;
 
-		const modules = resolveContent(this.props.modules);
-
-		this.unpreparedModules = modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
-
-		if (this.unpreparedModules.length > 0) {
-			const state = this.createInitialState(nextProps);
-			this.logVerbose(`Component not ready ${this.unpreparedModules.map(module => module.getName()).join(', ')}`, state);
-			return state;
+		const unpreparedModules = this.getUnpreparedModules();
+		
+		if (unpreparedModules.length > 0) {
+			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, currentState);
+			return currentState;
 		}
-
+		this.logDebug('Module Statuses', resolveContent(this.props.modules)?.map(_module => `${_module.getName()}=${_module.getDataStatus()},\n`));
 		if (this.derivingState) {
 			this.logVerbose('Scheduling new props', nextProps as {});
 			this.pending = {props: nextProps, state: partialState};
@@ -220,7 +224,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Render #########################
 	protected logAwaitedModules() {
-		this.logWarning(`Waiting for modules: ${this.unpreparedModules?.map(module => module.getName())}`);
+		this.logWarning(`Waiting for modules: ${this.getUnpreparedModules()?.map(module => module.getName())}`);
 	}
 
 	protected renderLoader = () => {

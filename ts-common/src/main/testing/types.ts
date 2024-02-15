@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-
 export type Types<Input, Result> = {
 	expected?: Result;
 	input: Input;
@@ -35,4 +34,5 @@ export type TestSuite<Input, ExpectedResult> = {
 	processor: TestProcessor<Input, ExpectedResult>;
 	testcases: TestModel<Input, ExpectedResult>[];
 	label: string,
+	timeout?: number,
 }

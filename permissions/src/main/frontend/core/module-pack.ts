@@ -17,29 +17,23 @@
  * limitations under the License.
  */
 
-import {ModuleFE_PermissionsUser} from '../modules/assign/ModuleFE_PermissionsUser';
-import {ModuleFE_PermissionsGroup} from '../modules/assign/ModuleFE_PermissionsGroup';
-import {ModuleFE_PermissionsProject} from '../modules/manage/ModuleFE_PermissionsProject';
-import {ModuleFE_PermissionsDomain} from '../modules/manage/ModuleFE_PermissionsDomain';
-import {ModuleFE_PermissionsAccessLevel} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
-import {ModuleFE_PermissionsApi} from '../modules/manage/ModuleFE_PermissionsApi';
 import {Module} from '@nu-art/ts-common';
 import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert';
-
+import {
+	ModulePackFE_PermissionAccessLevel,
+	ModulePackFE_PermissionAPI,
+	ModulePackFE_PermissionDomain,
+	ModulePackFE_PermissionGroup,
+	ModulePackFE_PermissionProject,
+	ModulePackFE_PermissionUser
+} from '../_entity';
 
 export const ModulePackFE_Permissions: Module[] = [
-	ModuleFE_PermissionsUser,
-	ModuleFE_PermissionsGroup,
-	ModuleFE_PermissionsProject,
-	ModuleFE_PermissionsDomain,
-	ModuleFE_PermissionsAccessLevel,
-	ModuleFE_PermissionsApi,
 	ModuleFE_PermissionsAssert,
+	...ModulePackFE_PermissionAccessLevel,
+	...ModulePackFE_PermissionAPI,
+	...ModulePackFE_PermissionProject,
+	...ModulePackFE_PermissionDomain,
+	...ModulePackFE_PermissionGroup,
+	...ModulePackFE_PermissionUser,
 ];
-
-export * from '../modules/assign/ModuleFE_PermissionsUser';
-export * from '../modules/assign/ModuleFE_PermissionsGroup';
-export * from '../modules/manage/ModuleFE_PermissionsProject';
-export * from '../modules/manage/ModuleFE_PermissionsDomain';
-export * from '../modules/manage/ModuleFE_PermissionsAccessLevel';
-export * from '../modules/manage/ModuleFE_PermissionsApi';

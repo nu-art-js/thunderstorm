@@ -244,7 +244,7 @@ const OpenToolTipAtCenter = (id: string, content: ResolvableContent<React.ReactN
 	};
 };
 
-const OpenToolTipAtLeft = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, contentHoverDelay?: number, config?: ToolTipConfig) => {
+const OpenToolTipAtLeft = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
@@ -253,7 +253,7 @@ const OpenToolTipAtLeft = (id: string, content: ResolvableContent<React.ReactNod
 				content,
 				originPos: calculateCenterPosition(e.currentTarget),
 				modalPos: {x: -1, y: 0},
-				offset: {x: -margin + (config?.offset ?? 0), y: 0},
+				offset: {x: -margin + (-(config?.offset ?? 0)), y: 0},
 				contentHoverDelay: config?.contentHoverDelay,
 				overlayClass: config?.overlayClass,
 				xAxisAnchor: config?.xAxisAnchor,
@@ -293,7 +293,7 @@ const OpenToolTipAtRight = (id: string, content: ResolvableContent<React.ReactNo
 const OpenToolTipAtBottom = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
-			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
+			const margin = (e.currentTarget.getBoundingClientRect().height / 2);
 			const model: Model_ToolTip = {
 				id,
 				content,
@@ -316,13 +316,13 @@ const OpenToolTipAtBottom = (id: string, content: ResolvableContent<React.ReactN
 const OpenToolTipAtTop = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
-			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
+			const margin = (e.currentTarget.getBoundingClientRect().height / 2);
 			const model: Model_ToolTip = {
 				id,
 				content,
 				originPos: calculateCenterPosition(e.currentTarget),
 				modalPos: {x: 0, y: -1},
-				offset: {x: 0, y: -margin + (config?.offset ?? 0)},
+				offset: {x: 0, y: -margin + (-(config?.offset ?? 0))},
 				contentHoverDelay: config?.contentHoverDelay,
 				overlayClass: config?.overlayClass,
 				xAxisAnchor: config?.xAxisAnchor,
