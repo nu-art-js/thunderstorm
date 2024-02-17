@@ -10,7 +10,7 @@ import {Props_ItemsEditorV3} from '../Page_ItemsEditorV3';
 import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
 
 
-export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps extends {}> = {
+export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps extends {} = {}> = {
 	item: Readonly<Partial<Proto['uiType']>> | string,
 	module: ModuleFE_v3_BaseApi<Proto>,
 	onCompleted?: (item: Proto['dbType']) => any | Promise<any>,
