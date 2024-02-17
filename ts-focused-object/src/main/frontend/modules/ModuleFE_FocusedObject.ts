@@ -5,7 +5,14 @@ import {
 	ModuleFE_FirebaseListener,
 	RefListenerFE
 } from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, Focused} from '../../shared';
+import {
+	ApiDef_FocusedObject,
+	ApiStruct_FocusedObject,
+	FocusData_Map,
+	Focused,
+	FocusEvent_Focused,
+	FocusEvent_Unfocused
+} from '../../shared';
 import {LoggedStatus, ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {getRelationalPath} from '../../shared/consts';
 
@@ -106,7 +113,7 @@ export class ModuleFE_FocusedObject_Class
 		if (!_keys(this.focusDataMap))
 			return this.logDebug('Received window focus event, but no data to change in rtdb.');
 
-		await this._v1.setFocusStatusByTabId({event: 'focus'}).executeSync();
+		await this._v1.setFocusStatusByTabId({event: FocusEvent_Focused}).executeSync();
 	}
 
 	private async unfocusWindow() {
@@ -116,7 +123,7 @@ export class ModuleFE_FocusedObject_Class
 		if (!_keys(this.focusDataMap))
 			return this.logDebug('Received window unfocus(blur) event, but no data to change in rtdb.');
 
-		await this._v1.setFocusStatusByTabId({event: 'unfocused'}).executeSync();
+		await this._v1.setFocusStatusByTabId({event: FocusEvent_Unfocused}).executeSync();
 	}
 
 	public async releaseFocusData(focusId: string, focusDataToRelease: Focused[]) {

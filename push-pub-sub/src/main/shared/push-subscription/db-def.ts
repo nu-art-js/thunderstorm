@@ -38,6 +38,6 @@ export const DBDef_PushSubscription: DBDef_V3<DBProto_PushSubscription> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: convertUpperCamelCase('PushSubscription', '-').toLowerCase(),
+	dbName: 'push-subscription',
 	entityName: convertUpperCamelCase('PushSubscription', '-').toLowerCase(),
 };

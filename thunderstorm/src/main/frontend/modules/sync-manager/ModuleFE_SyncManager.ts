@@ -52,10 +52,14 @@ import {ApiDefCaller, BodyApi, DBModuleType, HttpMethod} from '../../../shared';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {
+	ModuleFE_FirebaseListener,
+	RefListenerFE
+} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
+import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
 
 
 export interface PermissibleModulesUpdated {
@@ -73,7 +77,15 @@ type QueuedModuleData = {
 
 export class ModuleFE_SyncManager_Class
 	extends Module
-	implements ApiDefCaller<ApiStruct_SyncManager> {
+	implements ApiDefCaller<ApiStruct_SyncManager>, OnConnectivityChange {
+	async __onConnectivityChange() {
+		if (ModuleFE_ConnectivityModule.isConnected()) {
+			this.logInfo(`Browser gained network connectivity- initiating smartSync.`);
+			await this.debounceSyncImpl();
+		} else {
+			this.logWarningBold(`Browser lost network connectivity!`);
+		}
+	}
 
 	// ######################### Class Properties #########################
 
@@ -91,7 +103,7 @@ export class ModuleFE_SyncManager_Class
 		super();
 		this.setMinLevel(LogLevel.Debug);
 		this.syncQueue = new QueueV2<QueuedModuleData>('Sync Queue', this.performFullSync)
-			.setParallelCount(6)
+			.setParallelCount(4)
 			.setSorter((data) => {
 				const priorityModule = filterDuplicates(flatArray(dispatch_QueryAwaitedModules.dispatchUI()));
 				return priorityModule.includes(data.module) ? 0 : 1;
@@ -299,7 +311,7 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private performFullSync = async (data: QueuedModuleData) => {
-		this.logInfo(`Performing DeltaSyncOperation for module ${data.module.getName()}`);
+		this.logDebug(`Performing FullSyncOperation for module ${data.module.getName()}`);
 		const module = data.module;
 		this.currentlySyncingModules.push(module);
 		try {

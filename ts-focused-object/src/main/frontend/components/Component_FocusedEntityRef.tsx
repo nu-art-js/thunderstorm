@@ -112,7 +112,8 @@ export class Component_FocusedEntityRef
 	 */
 	private areThereIssuesInProps = () => this.props.focusData.some(item => !item.itemId);
 
-	// private getTooltipLogic = () => {
+
+	// private getTooltipLogic = () => { //todo add tooltip
 	// 	if (!this.shouldHaveTooltip())
 	// 		return {};
 	//
@@ -163,7 +164,7 @@ export class Component_FocusedEntityRef
 			if (!account) {
 				this.logError(`Failed to find account with _id ${_accountId}`);
 				this.logError(`Must Fix Must Fix Must Fix Must Fix Must Fix Must Fix Must Fix Must Fix`);
-				return <div id={_accountId}>Bug</div>;
+				return <div key={_accountId}>Bug</div>;
 			}
 
 			return this.renderUser(account);
