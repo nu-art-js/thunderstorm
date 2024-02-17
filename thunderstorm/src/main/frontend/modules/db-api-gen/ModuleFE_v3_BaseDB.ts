@@ -173,6 +173,10 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		}
 	}
 
+	protected validateInternal(_instance: Partial<Proto['uiType']>) {
+		this.validateImpl(_instance);
+	}
+
 	protected onValidationError(instance: Proto['uiType'], results: InvalidResult<Proto['dbType']>) {
 		this.logError(`Error validating object:`, instance, 'With Error: ', results);
 		throw new ValidationException('Error validating object', instance, results);

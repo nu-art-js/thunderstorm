@@ -1,5 +1,6 @@
-import {_keys, EmptyObject, reduceToMap, TypedMap} from '@nu-art/ts-common';
+import {_keys, EmptyObject, exists, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {EditableItem} from '../utils/EditableItem';
+import {openContent} from '../component-modules/mouse-interactivity';
 
 
 type CustomErrorLevel = string
@@ -8,7 +9,8 @@ export type ComponentProps_Error = {
 	error?: {
 		message?: string,
 		level: 'error' | 'warning' | CustomErrorLevel
-	}
+	};
+	shouldShowTooltip?: boolean
 }
 
 type ResolveEditableErrorParams<T> = {
@@ -25,6 +27,13 @@ export const convertToHTMLDataAttributes = (attributes?: TypedMap<string>, prefi
 
 	const finalImpl = prefix ? `${prefix}-` : '';
 	return reduceToMap(_keys(attributes), key => `data-${finalImpl}${key}`, key => attributes[key]);
+};
+
+export const getErrorTooltip = (errors?: TypedMap<string>, shouldReturn: boolean = false) => {
+	if (!exists(errors) || !shouldReturn)
+		return {};
+
+	return openContent.tooltip.top('input-error-tooltip', () => errors.message, {offset: 6});
 };
 
 export const resolveEditableError = <T>(errorHandler: ResolveEditableErrorParams<T>) => {
