@@ -9,7 +9,10 @@ import {UIProps_EditableItem} from '../../utils/EditableItem';
 import {ComponentProps_Error, resolveEditableError} from '../types';
 
 
-type Props_CanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
+type Props_CanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | {
+	canUnselect?: false;
+	onSelected: (selected: T) => void
+})
 
 type BaseInfraProps_TS_GenericDropDownV3<T> = ComponentProps_Error & {
 	className?: string
@@ -39,9 +42,13 @@ type AppLevelProps_TS_GenericDropDownV3<T> = Props_CanUnselect<T> & BaseAppLevel
 	selected?: T | string | (() => T | undefined);
 }
 
-type EditableItemProps_GenericDropDownV3<T> = BaseAppLevelProps_TS_GenericDropDownV3<T> & UIProps_EditableItem<any, any, string> & {
+type EditableItemProps_GenericDropDownV3<T> =
+	BaseAppLevelProps_TS_GenericDropDownV3<T>
+	& UIProps_EditableItem<any, any, string>
+	& {
 	onSelected?: (selected: T | undefined, superOnSelected: (selected?: T) => Promise<void>) => void
-} & ComponentProps_Error
+}
+	& ComponentProps_Error
 
 export type TemplatingProps_TS_GenericDropDown<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
 	BaseInfraProps_TS_GenericDropDownV3<T> & {
@@ -50,6 +57,7 @@ export type TemplatingProps_TS_GenericDropDown<Proto extends DBProto<any>, T ext
 	modules: ModuleFE_v3_BaseApi<Proto>[];
 	mapper: (item: T) => string[]
 	renderer: (item: T) => React.ReactElement
+	selectedItemRenderer?: (selected: T) => React.ReactNode
 }
 
 type Props_TS_GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
@@ -92,7 +100,8 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 		};
 	};
 	static readonly prepareSelectable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
-		return (props: AppLevelProps_TS_GenericDropDownV3<Proto['dbType']>) => <GenericDropDownV3<Proto> {...resolveContent(mandatoryProps)} {...props}/>;
+		return (props: AppLevelProps_TS_GenericDropDownV3<Proto['dbType']>) =>
+			<GenericDropDownV3<Proto> {...resolveContent(mandatoryProps)} {...props}/>;
 	};
 	static readonly prepare = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
 		return {
@@ -151,6 +160,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 			onNoMatchingSelectionForString={this.props.onNoMatchingSelectionForString}
 			onSelected={this.props.onSelected}
 			caret={this.props.caret}
+			selectedItemRenderer={this.props.selectedItemRenderer}
 			boundingParentSelector={this.props.boundingParentSelector}
 			renderSearch={this.props.renderSearch}
 			limitItems={this.props.limitItems}

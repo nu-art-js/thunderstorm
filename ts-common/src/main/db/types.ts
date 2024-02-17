@@ -35,12 +35,14 @@ type Exact<T, Shape> = T & {
  */
 export type Proto_DB_Object<
 	T extends DB_Object,
+	DatabaseName extends string,
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<VersionType[]>,
 	UniqueKeys extends keyof T = Default_UniqueKey,
 	Dependencies extends Exact<{ [K in SubsetKeys<keyof T, T, string | string[]>]?: DBProto<any> }, Dependencies> = never> = {
 
 	type: T,
+	dbName: DatabaseName
 	generatedKeys: GeneratedKeys | keyof DB_Object
 	versions: Versions,
 	uniqueKeys: UniqueKeys
@@ -54,10 +56,11 @@ export type Proto_DB_Object<
  * @template ModifiableSubType The subset of P's type that is modifiable.
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
-export type DBProto<P extends Proto_DB_Object<any, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: P['type'],
+	dbName: P['dbName'],
 	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
@@ -75,7 +78,7 @@ export type DBProto<P extends Proto_DB_Object<any, any, VersionsDeclaration<Vers
  * @template Proto The DBProto type that this definition is based on.
  */
 export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
-	dbName: string;
+	dbName: Proto['dbName'];
 	entityName: string;
 	TTL?: number;
 	lastUpdatedTTL?: number;

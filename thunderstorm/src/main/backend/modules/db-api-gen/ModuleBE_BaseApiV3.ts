@@ -47,7 +47,11 @@ export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 	init() {
 		this.logDebug(`Adding routes : ${this.apiDef.v1.query.path}`);
 		addRoutes([
-			createBodyServerApi(this.apiDef.v1.query, this.dbModule.query.custom),
+			createBodyServerApi(this.apiDef.v1.query, async queryBody => {
+				const items = await this.dbModule.query.where(queryBody);
+				await this.dbModule.upgradeInstances(items);
+				return items;
+			}),
 			createQueryServerApi(this.apiDef.v1.queryUnique, async (queryObject: DB_BaseObject) => {
 				const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 				if (!toReturnItem)

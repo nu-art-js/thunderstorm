@@ -8,7 +8,7 @@ type Dependencies = {}
 
 type UniqueKeys = '_id';
 type GeneratedProps = '_auditorId';
-type Proto = Proto_DB_Object<DB_PermissionProject, GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_PermissionProject, 'permissions--project', GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_PermissionProject = DBProto<Proto>;
 
