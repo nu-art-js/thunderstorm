@@ -293,7 +293,7 @@ const OpenToolTipAtRight = (id: string, content: ResolvableContent<React.ReactNo
 const OpenToolTipAtBottom = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
-			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
+			const margin = (e.currentTarget.getBoundingClientRect().height / 2);
 			const model: Model_ToolTip = {
 				id,
 				content,
@@ -316,7 +316,7 @@ const OpenToolTipAtBottom = (id: string, content: ResolvableContent<React.ReactN
 const OpenToolTipAtTop = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config?: ToolTipConfig) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
-			const margin = (e.currentTarget.getBoundingClientRect().width / 2);
+			const margin = (e.currentTarget.getBoundingClientRect().height / 2);
 			const model: Model_ToolTip = {
 				id,
 				content,
