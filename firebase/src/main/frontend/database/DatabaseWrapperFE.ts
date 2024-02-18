@@ -75,12 +75,12 @@ export class DatabaseWrapperFE
 	}
 
 	/** @deprecated */
-	public async remove<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+	public async remove(path: string, assertionRegexp: string = '^/.*?/.*') {
 		this.logWarning('remove will be deprecated!! please use delete');
 		return this.delete(path, assertionRegexp);
 	}
 
-	public async delete<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+	public async delete(path: string, assertionRegexp: string = '^/.*?/.*') {
 		if (!path)
 			throw new BadImplementationException(`Falsy value, path: '${path}'`);
 

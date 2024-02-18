@@ -13,7 +13,7 @@ export type ComponentProps_Error = {
 	showErrorTooltip?: boolean
 }
 
-type ResolveEditableErrorParams<T extends any> = {
+type ResolveEditableErrorParams<T> = {
 	editable: EditableItem<T>,
 	prop: keyof T,
 
@@ -36,7 +36,7 @@ export const getErrorTooltip = (errors?: TypedMap<string>, shouldReturn: boolean
 	return openContent.tooltip.top('input-error-tooltip', () => errors.message, {offset: 6});
 };
 
-export const resolveEditableError = <T extends any>(errorHandler: ResolveEditableErrorParams<T>) => {
+export const resolveEditableError = <T>(errorHandler: ResolveEditableErrorParams<T>) => {
 	if (errorHandler.ignoreError)
 		return;
 

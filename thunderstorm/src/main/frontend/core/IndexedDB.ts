@@ -224,7 +224,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		const cursorRequest = await this.getCursor(query);
 		const matches: T[] = [];
 
-		return new Promise<T[]>((resolve, reject) => {
+		return new Promise<T[]>((resolve) => {
 			this.cursorHandler(cursorRequest,
 				(value) => {
 					if (filter(value))
@@ -258,7 +258,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		const cursorRequest = await this.getCursor(query);
 		const matches: Type[] = [];
 
-		return new Promise<Type[]>((resolve, reject) => {
+		return new Promise<Type[]>((resolve) => {
 			this.cursorHandler(cursorRequest,
 				(item) => {
 					if (filter ? filter(item) : true)
@@ -274,7 +274,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		let match: T | undefined = undefined;
 		const cursorRequest = await this.getCursor();
 
-		return new Promise<T | undefined>((resolve, reject) => {
+		return new Promise<T | undefined>((resolve) => {
 			this.cursorHandler(cursorRequest,
 				(value) => {
 					if (filter(value))
@@ -292,7 +292,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		const _filter = filter || alwaysTrue;
 		const matches: T[] = await this.queryFilter(_filter, query);
 
-		return new Promise<ReturnType>((resolve, reject) => {
+		return new Promise<ReturnType>((resolve) => {
 			matches.forEach((item, index) => acc = reducer(acc, item, index, matches));
 			resolve(acc);
 		});

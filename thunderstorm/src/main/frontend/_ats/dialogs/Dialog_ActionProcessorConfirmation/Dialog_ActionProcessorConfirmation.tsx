@@ -8,12 +8,14 @@ import {ModuleFE_Dialog} from '../../../component-modules/ModuleFE_Dialog';
 import {LL_H_C, LL_V_L} from '../../../components/Layouts';
 import {TS_Button} from '../../../components/TS_Button';
 
+
 type Props = {
 	action: ActionMetaData
 	onExecute: () => (void | Promise<void>);
 }
 
-export class Dialog_ActionProcessorConfirmation extends ComponentSync<Props> {
+export class Dialog_ActionProcessorConfirmation
+	extends ComponentSync<Props> {
 
 	// ######################### Static #########################
 
@@ -29,7 +31,7 @@ export class Dialog_ActionProcessorConfirmation extends ComponentSync<Props> {
 	// ######################### Logic #########################
 
 	private closeDialog = () => {
-		ModuleFE_Dialog.close();
+		ModuleFE_Dialog.close(true);
 	};
 
 	private executeAction = () => {
