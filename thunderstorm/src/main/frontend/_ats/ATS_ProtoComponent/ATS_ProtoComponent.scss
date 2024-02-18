@@ -5,7 +5,15 @@
   padding: 20px;
   gap: 20px;
 
+  .ts-button {
+    margin: 0;
+  }
+
   .ts-dropdown {
     width: 300px;
+  }
+
+  .ts-prop-renderer {
+    row-gap: 10px;
   }
 }

@@ -1,33 +1,60 @@
 import * as React from 'react';
 import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';
-import {LL_V_L} from '../../components/Layouts';
+import {LL_H_C, LL_V_L} from '../../components/Layouts';
 import './ATS_ProtoComponent.scss';
-import {generateArray} from '@nu-art/ts-common';
+import {generateArray, UniqueId} from '@nu-art/ts-common';
 import {TS_PropRenderer} from '../../components/TS_PropRenderer';
 import {TS_DropDown} from '../../components/TS_Dropdown';
 import {SimpleListAdapter} from '../../components/adapter/Adapter';
 import {ProtoComponent, ProtoComponent_Props, ProtoComponent_State, ProtoComponentDef} from '../../core/proto-component';
+import {TS_Button} from '../../components/TS_Button';
+import {ComponentSync} from '../../core/ComponentSync';
 
-type Keys = 'selectedNumber';
+type Keys = 'selectedNumber' | 'selectedExampleId';
+type Example = {
+	id: UniqueId;
+	str: string;
+	num?: number;
+}
+
+const examples: Example[] = [
+	{
+		id: '111',
+		str: 'example 1',
+		num: 10
+	},
+	{
+		id: '222',
+		str: 'example 2'
+	},
+	{
+		id: '333',
+		str: 'example 3',
+		num: 30
+	}
+];
 
 type ComponentDef = ProtoComponentDef<Keys, {
 	selectedNumber: number;
+	selectedExampleId: UniqueId;
 }>
 
 type State = {
-	selectedNumber: number;
+	selectedNumber?: number;
+	selectedExampleId?: UniqueId;
 }
 
 export class ATS_ProtoComponent
 	extends ProtoComponent<ComponentDef, {}, State> {
 
 	static defaultProps: Partial<ProtoComponent_Props<ComponentDef>> = {
-		queryParamsKeys: ['selectedNumber'],
+		queryParamsKeys: ['selectedNumber', 'selectedExampleId'],
 	};
 
 	protected deriveStateFromProps(nextProps: ProtoComponent_Props<ComponentDef>, state: ProtoComponent_State<ComponentDef> & State) {
 		state = super.deriveStateFromProps(nextProps, state);
 		state.selectedNumber = state.queryParams.selectedNumber.get();
+		state.selectedExampleId = state.queryParams.selectedExampleId.get();
 		return state;
 	}
 
@@ -36,6 +63,15 @@ export class ATS_ProtoComponent
 		key: 'proto-component',
 		renderer: this,
 		group: ATS_Frontend,
+	};
+
+	private selectRandomData = () => {
+		const selectedNumber = Math.floor(Math.random() * 9);
+		const selectedExample = examples[Math.floor(Math.random() * (examples.length - 1))];
+		this.setQueryParams({
+			selectedNumber,
+			selectedExampleId: selectedExample.id
+		});
 	};
 
 	private renderNumberDropDown = () => {
@@ -49,12 +85,55 @@ export class ATS_ProtoComponent
 					this.setQueryParam('selectedNumber', number);
 				}}
 			/>
+			<TS_Button onClick={() => this.deleteQueryParam('selectedNumber')}>Clear Selected Number</TS_Button>
 		</TS_PropRenderer.Vertical>;
+	};
+
+	private renderExampleDropDown = () => {
+		const adapter = SimpleListAdapter(examples, i => <>{i.item.str}</>);
+		const selected = examples.find(i => i.id === this.state.selectedExampleId);
+		return <>
+			<TS_PropRenderer.Vertical label={'Example Dropdown'}>
+				<TS_DropDown<Example>
+					adapter={adapter}
+					selected={selected}
+					onSelected={selected => {
+						this.setQueryParam('selectedExampleId', selected.id);
+					}}/>
+				<TS_Button onClick={() => this.deleteQueryParam('selectedExampleId')}>Clear Selected Example</TS_Button>
+			</TS_PropRenderer.Vertical>
+			<TS_PropRenderer.Vertical label={'Selected Example Data'}>
+				<div>id: {selected?.id ?? '-'}</div>
+				<div>str: {selected?.str ?? '-'}</div>
+				<div>num: {selected?.num ?? '-'}</div>
+			</TS_PropRenderer.Vertical>
+		</>;
 	};
 
 	render() {
 		return <LL_V_L id={'ats-proto-component'}>
+			<TS_Button onClick={this.selectRandomData}>Select Random Data</TS_Button>
 			{this.renderNumberDropDown()}
+			{this.renderExampleDropDown()}
 		</LL_V_L>;
+	}
+}
+
+
+export class ATS_ProtoComponentDouble
+	extends ComponentSync {
+
+	static screen: AppToolsScreen = {
+		name: 'ProtoComponent Double',
+		key: 'proto-component-double',
+		renderer: this,
+		group: ATS_Frontend,
+	};
+
+	render() {
+		return <LL_H_C>
+			<ATS_ProtoComponent/>
+			<ATS_ProtoComponent/>
+		</LL_H_C>;
 	}
 }
