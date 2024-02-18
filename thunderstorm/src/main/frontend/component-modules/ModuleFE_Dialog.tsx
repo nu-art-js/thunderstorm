@@ -57,7 +57,7 @@ export class ModuleFE_Dialog_Class
 	protected init(): void {
 	}
 
-	public close = (force: boolean, _dialogKey?: string) => {
+	public close = (force: boolean = true, _dialogKey?: string) => {
 		const dialogKey = _dialogKey ? {dialogKey: _dialogKey} : undefined;
 		if (!force && dispatch_canClose.dispatchUI(dialogKey)[0])
 			return;

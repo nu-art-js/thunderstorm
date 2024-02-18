@@ -94,7 +94,7 @@ export const tsValidateExists = (mandatory = true): ValidatorImpl<any> => {
 // 		}
 // 	}];
 
-export const tsValidate = <T>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, strict = true) => {
+export const tsValidate = <T>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, strict = true): InvalidResult<T> | undefined => {
 	const results = tsValidateResult(instance, _validator);
 
 	if (results && strict) {
