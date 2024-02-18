@@ -75,7 +75,7 @@ export class AnalyticsWrapperFE
         setUserProperties(this.analytics, properties);
     }
 
-    logEvent<T extends string>(
+    logEvent(
         eventName: FirebaseType_EventNameString | string,
         eventParams?: { [key: string]: any },
         options?: FirebaseType_CallOptions

@@ -50,8 +50,8 @@ type Comparator = 'in' | 'array-contains' | 'array-contains-any' | '>' | '>=' | 
 export type QueryComparator<T> =
 	{ $ac: T extends (infer I)[] ? I : never } |
 	{ $aca: T extends (infer I)[] ? I[] : never } |
-	{ $nin: T extends (infer I)[] ? never : T[] } |
-	{ $in: T extends (infer I)[] ? never : T[] } |
+	{ $nin: T extends (any)[] ? never : T[] } |
+	{ $in: T extends (any)[] ? never : T[] } |
 	{ $gt: number } |
 	{ $gte: number } |
 	{ $lt: number } |

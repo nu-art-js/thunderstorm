@@ -169,7 +169,7 @@ export class Component_AccountEditor
 				<TS_BusyButton onClick={async () => {
 					try {
 						const token = await ModuleFE_Account.vv1.createToken({
-							accountId: this.state.user?._id!,
+							accountId: this.state.user!._id,
 							ttl: this.state.tokenTTL,
 							label: this.state.tokenLabel
 						})

@@ -135,14 +135,14 @@ export type MetadataProperty<ValueType> = {
 
 }
 
-export type MetadataObject<T extends any> = { [K in keyof T]-?: MetadataNested<T[K]> };
+export type MetadataObject<T> = { [K in keyof T]-?: MetadataNested<T[K]> };
 
-export type MetadataNested<T extends any> =
+export type MetadataNested<T> =
 	T extends (infer I)[] ? MetadataProperty<T> & { metadata: Metadata<I> } :
 		T extends object ? MetadataProperty<T> & { metadata: MetadataObject<T> } :
 			MetadataProperty<T>;
 
-export type Metadata<T extends any> =
+export type Metadata<T> =
 	T extends (infer I)[] ? MetadataProperty<T> & { metadata: Metadata<I> } :
 		T extends object ? MetadataObject<T> :
 			MetadataProperty<T>;

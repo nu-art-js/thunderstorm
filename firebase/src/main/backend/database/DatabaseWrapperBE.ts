@@ -62,7 +62,7 @@ export class DatabaseWrapperBE
 		}
 	}
 
-	public stopListening<T>(path: string, listener: any): void {
+	public stopListening(path: string, listener: any): void {
 		try {
 			this.database.ref(path).off('value', listener);
 		} catch (e: any) {
@@ -102,12 +102,12 @@ export class DatabaseWrapperBE
 		}
 	}
 
-	public async remove<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+	public async remove(path: string, assertionRegexp: string = '^/.*?/.*') {
 		this.logWarning('remove will be deprecated!! please use delete');
 		return this.delete(path, assertionRegexp);
 	}
 
-	public async delete<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+	public async delete(path: string, assertionRegexp: string = '^/.*?/.*') {
 		if (!path)
 			throw new BadImplementationException(`Falsy value, path: '${path}'`);
 
@@ -170,7 +170,7 @@ export class FirebaseRef<T> {
 	 * @param assertionRegexp
 	 */
 	public delete(assertionRegexp: string = '^/.*?/.*') {
-		return this.db.delete<T>(this.path, assertionRegexp);
+		return this.db.delete(this.path, assertionRegexp);
 	}
 
 	/**
@@ -186,7 +186,7 @@ export class FirebaseRef<T> {
 	 * @param listener
 	 */
 	public stopListening(listener: any): void {
-		return this.db.stopListening<T>(this.path, listener);
+		return this.db.stopListening(this.path, listener);
 	}
 
 	/**

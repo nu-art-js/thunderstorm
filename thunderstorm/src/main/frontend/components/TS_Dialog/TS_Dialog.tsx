@@ -4,7 +4,7 @@ import {_values, BadImplementationException, filterInstances, flatArray, TS_Obje
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_Button} from '../TS_Button';
-import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
+import {DialogKey, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
 import {LL_V_L} from '../Layouts';
 import {_className} from '../../utils/tools';
@@ -17,7 +17,7 @@ import {_className} from '../../utils/tools';
  */
 export type DialogButton = {
 	content: React.ReactNode;
-	onClick?: () => void | Promise<void>;
+	onClick?: (e: React.KeyboardEvent | React.MouseEvent) => void | Promise<void>;
 	onDisabledClick?: (e: React.MouseEvent) => any;
 	className?: string;
 	associatedKeys?: string[];
@@ -58,6 +58,9 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	extends ComponentSync<P & Props_TSDialog, S & State_TSDialog> {
 
 	// ######################## Life Cycle ########################
+	__consumeDialogCloseEvent(dialogKey: DialogKey) {
+		return false;
+	}
 
 	componentDidMount() {
 		this._keyActionMapCreator();
@@ -113,7 +116,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		if (e.key === 'Escape' && !this.state.dialogIsBusy)
 			this.closeDialog();
 
-		this.keyActionMap[e.key]?.current?.click();
+		this.keyActionMap[e.key]?.current?.click(e);
 	};
 
 	// ######################## Utils ########################
@@ -130,8 +133,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		</>;
 	};
 
-	protected closeDialog = () => {
-		ModuleFE_Dialog.close(this.props.dialogKey);
+	protected closeDialog = (force = false) => {
+		ModuleFE_Dialog.close(force, this.props.dialogKey);
 	};
 
 	// ######################## Render - Header ########################
@@ -173,7 +176,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	};
 
 	private errorButtonRenderer = () => {
-		return <TS_Button className={'ts-error-boundary__button'} onClick={this.closeDialog}>Close Dialog</TS_Button>;
+		return <TS_Button className={'ts-error-boundary__button'} onClick={() => this.closeDialog(true)}>Close Dialog</TS_Button>;
 	};
 
 	protected buttons = (): DialogButtons => {
@@ -218,7 +221,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		return <TS_BusyButton
 			className={button.className}
 			innerRef={ref}
-			onClick={async () => await button.onClick?.()}
+			onClick={async (e) => await button.onClick?.(e)}
 			disabled={button.disabled}
 			onDisabledClick={button.onDisabledClick}
 			key={`button-${index}`}
@@ -238,7 +241,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 
 	static Button_Cancel = {
 		content: 'Cancel',
-		onClick: () => ModuleFE_Dialog.close(),
+		onClick: () => ModuleFE_Dialog.close(true),
 		associatedKeys: ['Escape']
 	};
 }

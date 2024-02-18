@@ -34,22 +34,22 @@ export function moduleResolver() {
 }
 
 const modulesInterface = {
-	filter: <T extends any>(filter: (item: T, index: number, array: T[]) => boolean) => {
+	filter: <T>(filter: (item: T, index: number, array: T[]) => boolean) => {
 		return _modules.filter(filter as (item: Module, index: number, array: Module[]) => boolean) as T[];
 	},
-	find: <T extends any>(filter: (item: T, index: number, array: T[]) => boolean) => {
+	find: <T>(filter: (item: T, index: number, array: T[]) => boolean) => {
 		return _modules.find(filter as (item: Module, index: number, array: Module[]) => boolean) as T;
 	},
-	some: <T extends any>(filter: (item: T, index: number, array: T[]) => boolean) => {
+	some: <T>(filter: (item: T, index: number, array: T[]) => boolean) => {
 		return _modules.some(filter as (item: Module, index: number, array: Module[]) => boolean) as T;
 	},
-	map: <T extends any, S extends any>(processor: (item: T, index: number, array: T[]) => S) => {
+	map: <T, S>(processor: (item: T, index: number, array: T[]) => S) => {
 		return _modules.map(processor as (item: Module, index: number, array: Module[]) => S) as S[];
 	},
-	forEach: <T extends any>(processor: (item: T, index: number, array: T[]) => void) => {
+	forEach: <T>(processor: (item: T, index: number, array: T[]) => void) => {
 		return _modules.forEach(processor as (item: Module, index: number, array: Module[]) => void);
 	},
-	includes: <T extends any>(module: T) => {
+	includes: <T>(module: T) => {
 		return _modules.includes(module as Module);
 	},
 	all: _modules

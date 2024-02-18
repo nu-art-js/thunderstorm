@@ -77,7 +77,7 @@ export type TreeType<TreeMap> = {
 }
 type AdapterData<D> = D | (() => D);
 
-export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> = React.ComponentType<T>> {
+export class BaseAdapter<T = any> {
 
 	data: any;
 	childrenKey?: string;
@@ -91,7 +91,7 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 		return this;
 	}
 
-	filter = <K extends any>(obj: K, key: keyof K) => true;
+	filter = <K = any>(obj: K, key: keyof K) => true;
 
 	// by default all objects and arrays are parents
 	isParent = (obj: any) => {
@@ -153,7 +153,7 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 	}
 }
 
-export class Adapter<T extends any = any, I extends NodeRendererProps<T> = NodeRendererProps<T>>
+export class Adapter<T = any, I extends NodeRendererProps<T> = NodeRendererProps<T>>
 	extends BaseAdapter<I> {
 
 	hideRoot: boolean = false;
@@ -175,7 +175,7 @@ abstract class BaseAdapterBuilder<Data> {
 	multiRenderer = false;
 	expandCollapseRenderer: ComponentType<NodeRendererProps>;
 
-	protected filter = <K extends any>(obj: K, key: keyof K) => true;
+	protected filter = <K = any>(obj: K, key: keyof K) => true;
 	childrenKey?: string;
 
 	constructor() {
@@ -203,7 +203,7 @@ abstract class BaseAdapterBuilder<Data> {
 		return this;
 	};
 
-	setFilter(filter: <K extends any>(obj: K, key: keyof K) => boolean) {
+	setFilter(filter: <K = any>(obj: K, key: keyof K) => boolean) {
 		this.filter = filter;
 	}
 
@@ -246,7 +246,7 @@ abstract class BaseAdapterBuilder<Data> {
 
 }
 
-class ListSingleAdapterBuilder<ItemType extends any = any>
+class ListSingleAdapterBuilder<ItemType = any>
 	extends BaseAdapterBuilder<AdapterData<ListData<ItemType>>> {
 
 	readonly renderer: _BaseNodeRenderer<ItemType>;
@@ -338,7 +338,7 @@ class MultiTypeAdapterBuilder<TreeMap extends TreeType<any>>
 	}
 }
 
-class TreeSingleAdapterBuilder<RenderItemType extends any = any>
+class TreeSingleAdapterBuilder<RenderItemType = any>
 	extends BaseAdapterBuilder<AdapterData<TreeData<RenderItemType>>> {
 
 	readonly renderer: _BaseNodeRenderer<RenderItemType>;
