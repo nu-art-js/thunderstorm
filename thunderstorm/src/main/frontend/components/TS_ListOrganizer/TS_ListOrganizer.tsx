@@ -82,7 +82,7 @@ export class TS_ListOrganizer<T>
 	onDragEnd = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
 		this.draggedItemIndex = undefined;
 		this.lockRowIndex = undefined;
-		this.forceUpdate();
+		this.forceUpdate(()=> this.props.onOrderChanged(this.state.items));
 	};
 
 	onDragLeave = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {

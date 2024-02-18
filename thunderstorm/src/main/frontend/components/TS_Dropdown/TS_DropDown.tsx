@@ -384,7 +384,7 @@ export class TS_DropDown<ItemType>
 				 tabIndex={this.props.tabIndex}
 				 onFocus={this.addKeyboardListener}
 				 onBlur={this.removeKeyboardListener}
-				 {...getErrorTooltip(this.props.error, this.props.shouldShowTooltip)}
+				 {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
 				 {...convertToHTMLDataAttributes(this.state.error, 'error')}
 			>
 				{this.renderHeader()}
