@@ -311,7 +311,7 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private performFullSync = async (data: QueuedModuleData) => {
-		this.logInfo(`Performing DeltaSyncOperation for module ${data.module.getName()}`);
+		this.logDebug(`Performing FullSyncOperation for module ${data.module.getName()}`);
 		const module = data.module;
 		this.currentlySyncingModules.push(module);
 		try {

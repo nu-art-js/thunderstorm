@@ -110,7 +110,7 @@ export class TS_InputV2
 	static readonly _editableTime = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & { [k in K]: number | string }>(props: EditableItemProps_TS_InputV2<number | string, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
-			const {editable, prop,shouldShowTooltip, saveEvent, ...rest} = props;
+			const {editable, prop,showErrorTooltip, saveEvent, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
@@ -132,7 +132,7 @@ export class TS_InputV2
 				{...restTemplatingProps} {...rest}
 				type={type}
 				onChange={onChange}
-				shouldShowTooltip={shouldShowTooltip}
+				showErrorTooltip={showErrorTooltip}
 				onBlur={onBlur}
 				onAccept={onAccept}
 				value={String(props.value ?? value)}/>;
@@ -154,7 +154,7 @@ export class TS_InputV2
 	static readonly _editableNumber = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & { [k in K]: number }>(props: EditableItemProps_TS_InputV2<number, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
-			const {editable, prop, saveEvent,shouldShowTooltip, ...rest} = props;
+			const {editable, prop, saveEvent,showErrorTooltip, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
@@ -175,7 +175,7 @@ export class TS_InputV2
 				error={resolveEditableError(props)}
 				{...restTemplatingProps} {...rest}
 				type={type}
-				shouldShowTooltip={shouldShowTooltip}
+				showErrorTooltip={showErrorTooltip}
 				onChange={onChange}
 				onBlur={onBlur}
 				onAccept={onAccept}
@@ -206,7 +206,7 @@ export class TS_InputV2
 	static readonly _editable = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & ({ [k in K]?: string } | { [k in K]: string })>(props: EditableItemProps_TS_InputV2<string | undefined, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
-			const {editable, prop, saveEvent, ignoreError, shouldShowTooltip, ...rest} = props;
+			const {editable, prop, saveEvent, ignoreError, showErrorTooltip, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
@@ -230,7 +230,7 @@ export class TS_InputV2
 				onChange={onChange}
 				onBlur={onBlur}
 				onAccept={onAccept}
-				shouldShowTooltip={shouldShowTooltip}
+				showErrorTooltip={showErrorTooltip}
 				value={props.value ?? value}/>;
 		};
 	};
@@ -305,12 +305,12 @@ export class TS_InputV2
 	};
 
 	render() {
-		const {onAccept,shouldShowTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
+		const {onAccept,showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
 
 		return <input
 			{...props}
 			{...convertToHTMLDataAttributes(this.props.error, 'error')}
-			{...getErrorTooltip(this.props.error, this.props.shouldShowTooltip)}
+			{...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
 			autoFocus={focus}
 			ref={props.innerRef}
 			onBlur={(event) => {
