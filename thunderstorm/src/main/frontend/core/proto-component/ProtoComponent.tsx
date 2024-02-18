@@ -8,8 +8,19 @@ import {
 import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2, QueryParamKey} from '../../modules/ModuleFE_BrowserHistoryV2';
 import {ProtoComponent_Props, ProtoComponent_QueryParamMapImpl, ProtoComponent_QueryParamResultsMap, ProtoComponent_State, ProtoComponentDef} from './types';
 
-export abstract class ProtoComponent<T extends ProtoComponentDef<any, any>, P extends {} = {}, S extends {} = {},
-	Props extends ProtoComponent_Props<T> & P = ProtoComponent_Props<T> & P, State extends ProtoComponent_State<T> & S = ProtoComponent_State<T> & S>
+/**
+ * @abstract
+ * @class
+ * Expansion on ComponentSync, this component takes a [ProtoComponentDef]{@link ProtoComponentDef} type that
+ * defines its interaction with the URL hash. </br>
+ * Constrained by the [ProtoComponentDef]{@link ProtoComponentDef}, the component will take an array of query param keys (string[]), and generate, provide functionality
+ * and listen on changes in the URL hash. </br>
+ * @augments ComponentSync
+ * @implements OnUrlParamsChangedListenerV2
+ * @copyright nu-art
+ */
+export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P extends {} = {}, S extends {} = {},
+	Props extends ProtoComponent_Props<Def> & P = ProtoComponent_Props<Def> & P, State extends ProtoComponent_State<Def> & S = ProtoComponent_State<Def> & S>
 	extends ComponentSync<Props, State>
 	implements OnUrlParamsChangedListenerV2 {
 
@@ -42,8 +53,8 @@ export abstract class ProtoComponent<T extends ProtoComponentDef<any, any>, P ex
 	 * Generates an object connecting each query param key given in the props to a QueryParamKey class instance.
 	 * @private
 	 */
-	private getQueryParamObject(): ProtoComponent_QueryParamMapImpl<T> {
-		const queryParams = {} as ProtoComponent_QueryParamMapImpl<T>;
+	private getQueryParamObject(): ProtoComponent_QueryParamMapImpl<Def> {
+		const queryParams = {} as ProtoComponent_QueryParamMapImpl<Def>;
 		this.props.queryParamsKeys?.forEach(key => {
 			queryParams[key] = this.getQueryParamKeyForKey(key);
 		});
@@ -52,14 +63,13 @@ export abstract class ProtoComponent<T extends ProtoComponentDef<any, any>, P ex
 
 	/**
 	 * Generates an object connection each query param key given in the props to its current value as read from the URL
-	 * @private
 	 */
 	private getQueryParamResultsObject() {
 		const queryParamObject = this.getQueryParamObject();
 		return _keys(queryParamObject).reduce((map, key) => {
 			map[key] = queryParamObject[key].get();
 			return map;
-		}, {} as ProtoComponent_QueryParamResultsMap<T>);
+		}, {} as ProtoComponent_QueryParamResultsMap<Def>);
 	}
 
 	/**
@@ -70,7 +80,7 @@ export abstract class ProtoComponent<T extends ProtoComponentDef<any, any>, P ex
 	 * @param key
 	 * @private
 	 */
-	private getQueryParamKeyForKey(key: T['queryParamKeys']) {
+	private getQueryParamKeyForKey(key: Def['queryParamKeys']) {
 		if (!this.props.queryParamsKeys?.includes(key))
 			throw new BadImplementationException(`key ${key} is not defined in Props.queryParamsKeys, did you forget to add it?`);
 
@@ -93,7 +103,7 @@ export abstract class ProtoComponent<T extends ProtoComponentDef<any, any>, P ex
 	 * @param key
 	 * @param value
 	 */
-	setQueryParam<K extends T['queryParamKeys'] = T['queryParamKeys']>(key: K, value: T['queryParamDef'][K]) {
+	setQueryParam<K extends Def['queryParamKeys'] = Def['queryParamKeys']>(key: K, value: Def['queryParamDef'][K]) {
 		const queryKey = this.getQueryParamKeyForKey(key);
 		queryKey.set(value);
 	}
@@ -102,7 +112,7 @@ export abstract class ProtoComponent<T extends ProtoComponentDef<any, any>, P ex
 	 * Returns the value of a query param by given key
 	 * @param key
 	 */
-	getQueryParam(key: T['queryParamKeys']) {
+	getQueryParam(key: Def['queryParamKeys']) {
 		const queryKey = this.getQueryParamKeyForKey(key);
 		return queryKey.get();
 	}
@@ -111,7 +121,7 @@ export abstract class ProtoComponent<T extends ProtoComponentDef<any, any>, P ex
 	 * Clears the value of a query param by a given key
 	 * @param key
 	 */
-	deleteQueryParam(key: T['queryParamKeys']) {
+	deleteQueryParam(key: Def['queryParamKeys']) {
 		const queryKey = this.getQueryParamKeyForKey(key);
 		queryKey.delete();
 	}
@@ -122,7 +132,7 @@ export abstract class ProtoComponent<T extends ProtoComponentDef<any, any>, P ex
 	 * Will merge the given query object into the URL.
 	 * @param query
 	 */
-	setQueryParams(query: Partial<T['queryParamDef']>) {
+	setQueryParams(query: Partial<Def['queryParamDef']>) {
 		const currentState = ModuleFE_BrowserHistoryV2.getState();
 		const merged = {...currentState, ...query};
 		ModuleFE_BrowserHistoryV2.setState(merged as RecursiveObjectOfPrimitives);
