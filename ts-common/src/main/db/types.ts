@@ -43,8 +43,7 @@ export type Proto_DB_Object<
 	generatedKeys: GeneratedKeys | keyof DB_Object
 	versions: Versions,
 	uniqueKeys: UniqueKeys
-	dependencies: Dependencies
-}
+	dependencies: keyof Dependencies extends never ? never : Dependencies}
 
 type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
 	[K in keyof D]: D[K] extends DBProto<any>

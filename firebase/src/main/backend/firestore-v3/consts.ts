@@ -1,4 +1,4 @@
-import {Dispatcher} from "@nu-art/ts-common";
-import {CanDeleteDBEntitiesV2} from "./types";
+import {Dispatcher} from '@nu-art/ts-common';
+import {CanDeleteDBEntitiesProto} from './types';
 
-export const canDeleteDispatcherV2 = new Dispatcher<CanDeleteDBEntitiesV2<any, any>, '__canDeleteEntities'>('__canDeleteEntities');
+export const canDeleteDispatcherV3 = new Dispatcher<CanDeleteDBEntitiesProto, '__canDeleteEntitiesProto'>('__canDeleteEntitiesProto');
