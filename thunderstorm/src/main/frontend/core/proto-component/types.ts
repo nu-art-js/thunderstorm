@@ -26,6 +26,11 @@ export type ProtoComponent_State<T extends ProtoComponentDef<any, any>> = {
 	previousResultsObject?: ProtoComponent_QueryParamResultsMap<T>;
 };
 
+/**
+ * A Definition type for the [ProtoComponent]{@link ProtoComponent}, this type takes 2 arguments:</br>
+ * QPK - a list of URL param keys this def will deal with</br>
+ * QPD - an object describing the value types for the keys in QPK, no different from a React state definition.
+ */
 export type ProtoComponentDef<QPK extends string, QPD extends ProtoComponent_QueryParamMapDef<QPK>> = {
 	queryParamKeys: QPK;
 	queryParamDef: QPD
