@@ -51,7 +51,7 @@ export const tsValidateUnion = <T>(validators: ValidatorTypeResolver<T>[], manda
 			}
 
 			return filterInstances(results).length !== 0 ? ['Input does not match any of the possible types',
-				results] as InvalidResultArray<T>[] : undefined;
+				results] as InvalidResultArray<T> : undefined;
 		}];
 };
 
@@ -223,7 +223,7 @@ export const tsValidateAudit = (range?: RangeTimestamp) => {
 	};
 };
 
-export const tsValidateNonMandatoryObject = <T extends object>(validator: ValidatorTypeResolver<T>) => {
+export const tsValidateNonMandatoryObject = <T extends object|undefined>(validator: ValidatorTypeResolver<T>) => {
 	return [tsValidateExists(false),
 		(input?: T) => tsValidateResult(input, validator)];
 };
