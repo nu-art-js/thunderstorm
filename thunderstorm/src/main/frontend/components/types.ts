@@ -10,7 +10,7 @@ export type ComponentProps_Error = {
 		message?: string,
 		level: 'error' | 'warning' | CustomErrorLevel
 	};
-	shouldShowTooltip?: boolean
+	showErrorTooltip?: boolean
 }
 
 type ResolveEditableErrorParams<T> = {
