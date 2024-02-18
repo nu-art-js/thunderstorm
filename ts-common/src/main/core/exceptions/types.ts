@@ -1,5 +1,5 @@
 
-export type ResponseError<K extends string = string, Data extends any = any> = {
+export type ResponseError<K extends string = string, Data = any> = {
 	type: K
 	data: Data
 }

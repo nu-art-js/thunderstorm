@@ -40,7 +40,7 @@ export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorB
 		return new EditableDBItemV3<T>(instance, this.props.module, dbItem => {
 			this.setState({editedItem: this.getEditable(dbItem), selectedItemId: dbItem._id});
 		})
-			.setAutoSave(!!instance._id)
+			.setAutoSave(true)
 			.setDebounceTimeout(100)
 			.setOnChanged(async editable => this.setState({editedItem: editable as EditableDBItemV3<T>, selectedItemId: editable.item._id}));
 	}

@@ -68,7 +68,9 @@ export type Props_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & {
 }
 
 export type NativeProps_TS_TextAreaV2 = Props_TS_TextAreaV2
-export type EditableItemProps_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & UIProps_EditableItem<any, any, string>
+export type EditableItemProps_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2
+	& UIProps_EditableItem<any, any, string>
+	& { onChange?: (value: string) => void, }
 
 /**
  * A better way to capture user input
@@ -92,14 +94,16 @@ export class TS_TextAreaV2
 			let onChange;
 			let onBlur;
 			let onAccept;
+
+			const saveEventHandler = (value: string) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value});
 			if (_saveEvents!.includes('change'))
-				onChange = (value: string) => editable.updateObj({[prop]: value});
+				onChange = saveEventHandler;
 
 			if (_saveEvents!.includes('blur'))
-				onBlur = (value: string) => editable.updateObj({[prop]: value});
+				onBlur = saveEventHandler;
 
 			if (_saveEvents!.includes('accept'))
-				onAccept = (value: string) => editable.updateObj({[prop]: value});
+				onAccept = saveEventHandler;
 
 			return <TS_TextAreaV2
 				{...templateProps}

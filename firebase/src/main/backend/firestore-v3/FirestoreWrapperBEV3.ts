@@ -88,7 +88,7 @@ export class FirestoreWrapperBEV3
 	}
 
 	public listen<Proto extends DBProto<any>>(collection: FirestoreCollectionV3<Proto>, doc: string) {
-		collection.wrapper.firestore.doc(`${collection.name}/${doc}`).onSnapshot(_snapshot => {
+		collection.wrapper.firestore.doc(`${collection.name}/${doc}`).onSnapshot(() => {
 			this.logInfo('received snapshot!');
 		});
 	}
