@@ -295,16 +295,16 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 			const nextVersion = this.config.versions[i - 1] ?? version;
 			const versionTransition = `${version} => ${nextVersion}`;
 			if (instancesToUpgrade.length === 0) {
-				this.logWarning(`No instances to upgrade from ${versionTransition}`);
+				this.logVerbose(`No instances to upgrade from ${versionTransition}`);
 				continue;
 			}
 
 			const upgradeProcessor = this.versionUpgrades[version];
 			if (!upgradeProcessor) {
-				this.logWarning(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
-				this.logWarning(`No upgrade processor for: ${versionTransition}`);
+				this.logVerbose(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
+				this.logVerbose(`No upgrade processor for: ${versionTransition}`);
 			} else {
-				this.logWarning(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
+				this.logInfo(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
 				await upgradeProcessor?.(instancesToUpgrade);
 				instancesToSave.push(...instancesToUpgrade);
 			}

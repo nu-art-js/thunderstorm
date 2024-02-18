@@ -194,6 +194,11 @@ class ModuleBE_Permissions_Class
 		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
 		const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
 
+		projects.reduce((issues, project) => {
+			return project.packages.reduce((issues, _package) => {
+				return issues;
+			}, issues);
+		}, [] as string[]);
 		// Create All Projects
 		const map_nameToDBProject: TypedMap<DB_PermissionProject> = await this.createProjects(projects);
 		const map_nameToDbDomain: TypedMap<DB_PermissionDomain> = await this.createDomains(projects, map_nameToDBProject);
@@ -334,7 +339,8 @@ class ModuleBE_Permissions_Class
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
 
-				const apiModules = arrayToMap(RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule!.dbDef!.dbName);
+				const apiModules = arrayToMap(RuntimeModules()
+					.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule!.dbDef!.dbName);
 
 				this.logDebug(_keys(apiModules));
 
