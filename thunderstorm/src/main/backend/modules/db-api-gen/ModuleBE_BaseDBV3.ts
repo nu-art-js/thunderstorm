@@ -108,7 +108,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	 */
 	async __canDeleteEntitiesProto<T extends DBProto<any>>(toDeleteDbName: T['dbName'], itemIdsToDelete: string[], transaction?: Transaction) {
 		const result: DB_EntityDependency = {
-			collectionKey: this.dbDef.dbName,
+			collectionKey: this.dbDef.entityName,
 			conflictingIds: []
 		};
 
