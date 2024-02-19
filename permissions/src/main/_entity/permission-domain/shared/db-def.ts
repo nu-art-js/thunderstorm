@@ -18,4 +18,10 @@ export const DBDef_PermissionDomain: DBDef_V3<DBProto_PermissionDomain> = {
 	dbName: 'permissions--domain',
 	entityName: 'PermissionDomain',
 	lockKeys: ['projectId'],
+	dependencies: {
+		projectId: {
+			fieldType: 'string',
+			dbName: 'permissions--project',
+		}
+	}
 };
