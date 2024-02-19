@@ -315,7 +315,8 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	protected _deleteAll = async (docs: DocWrapperV3<Proto>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		const dbItems = filterInstances(await this.getAll(docs, transaction));
-		await this.hooks?.canDeleteItems(dbItems, transaction);
+		const itemsToCheck = dbItems.filter((item, index) => docs[index].ref.id == item._id);
+		await this.hooks?.canDeleteItems(itemsToCheck, transaction);
 		if (transaction)
 			// here we do not call doc.delete because we have performed all the delete preparation as a group of items before this call
 			docs.map(async doc => transaction.delete(doc.ref));

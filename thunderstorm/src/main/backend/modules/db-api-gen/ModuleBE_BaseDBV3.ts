@@ -127,7 +127,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 					if (dependencies[key].fieldType === 'string')
 						query = {[key]: {$in: ids}};
 
-					if (dependencies[key].fieldType === 'array')
+					if (dependencies[key].fieldType === 'string[]')
 						query = {[key]: {$aca: ids}};
 
 					if (query === undefined)

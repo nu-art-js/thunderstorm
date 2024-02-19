@@ -301,12 +301,12 @@ export type ManipulateInnerPropValue<ObjectType extends object, PropertyPath ext
 
 export type DotNotationValueType<ObjectType extends object, Path extends string> = Path extends `${infer First}.${infer Rest}`
 	? First extends keyof ObjectType
-		? ObjectType[First] extends object
-			? DotNotationValueType<ObjectType[First], Rest>
+		? NonNullable<ObjectType[First]> extends object
+			? DotNotationValueType<NonNullable<ObjectType[First]>, Rest>
 			: never
 		: never
 	: Path extends keyof ObjectType
-		? ObjectType[Path]
+		? NonNullable<ObjectType[Path]>
 		: never;
 
 export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };
