@@ -6,6 +6,7 @@ import {assertUniqueId, FirestoreCollectionV3, PostWriteProcessingData} from './
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {addDeletedToTransaction} from './consts';
 
 
 export type UpdateObject<Proto extends DBProto<any>> =
@@ -173,6 +174,10 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		if (!dbItem)
 			return;
 
+		addDeletedToTransaction(transaction, {
+			collectionKey: this.collection.dbDef.entityName,
+			conflictingIds: [dbItem._id]
+		});
 		await this.collection.hooks?.canDeleteItems([dbItem], transaction);
 
 		// Will always get here with a transaction!
