@@ -279,3 +279,27 @@
     }
   }
 }
+
+#permission-editor-item-menu {
+  border: 1px solid styles.gray(1);
+  border-radius: 6px;
+
+  .ts-busy-button {
+    margin: 0;
+    background: transparent;
+    color: styles.gray(1);
+    font: {
+      size: 14px;
+      weight: normal;
+    }
+    padding-inline: 10px;
+
+    .ts-button-loader div {
+      background: styles.gray(1);
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid styles.gray(2);
+    }
+  }
+}
