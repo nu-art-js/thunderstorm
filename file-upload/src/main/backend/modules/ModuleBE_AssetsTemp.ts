@@ -16,12 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DBDef_TempAssets, DBProto_Assets} from '../..';
+import {DBDef_TempAssets, DBProto_AssetsTemp} from '../..';
 import {ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 
 
 export class ModuleBE_AssetsTemp_Class
-	extends ModuleBE_BaseDBV3<DBProto_Assets> {
+	extends ModuleBE_BaseDBV3<DBProto_AssetsTemp> {
 
 	constructor() {
 		super(DBDef_TempAssets);
