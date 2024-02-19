@@ -34,7 +34,7 @@ import {
 	filterDuplicates,
 	filterInstances,
 	flatArray,
-	Module
+	Module, UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {
@@ -50,7 +50,7 @@ import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
 import {Response_DBSync} from '../../../shared/sync-manager/types';
 import {CanDeleteDBEntitiesProto} from '@nu-art/firebase/backend/firestore-v3/types';
 import {Transaction} from 'firebase-admin/firestore';
-import {canDeleteDispatcherV3} from '@nu-art/firebase/backend/firestore-v3/consts';
+import {canDeleteDispatcherV3, MemKey_DeletedDocs} from '@nu-art/firebase/backend/firestore-v3/consts';
 
 
 export type BaseDBApiConfigV3 = {
@@ -131,15 +131,26 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 						query = {[key]: {$aca: ids}};
 
 					if (query === undefined)
-						throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'array'. Cannot check for EntityDependency for collection '${this.dbDef.dbName}'.`);
+						throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbName}'.`);
 
 					return this.query.where(query as Clause_Where<Proto['dbType']>, transaction);
 				}));
 		});
 
-		if (promises.length)
-			result.conflictingIds = flatArray(await Promise.all(promises)).map(dbObjectToId);
+		if (!promises.length)
+			return result;
 
+		//All gathered conflicting ids
+		let conflictingIds = filterDuplicates(flatArray(await Promise.all(promises)).map(dbObjectToId));
+		//The MemKey_DeletedDocs object associated with this transaction
+		const ignoredInThisTransaction = MemKey_DeletedDocs.get().find(item => item.transaction === transaction);
+		if (ignoredInThisTransaction) {
+			//The key associated with this collection
+			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.entityName];
+			//Filter out all ids of items which were already deleted in this transaction
+			conflictingIds = conflictingIds.filter(id => !ignoredForThisCollection?.has(id));
+		}
+		result.conflictingIds = conflictingIds;
 		return result;
 	}
 
@@ -238,7 +249,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	protected async preWriteProcessing(dbInstance: Proto['uiType'], transaction?: Transaction) {
 	}
 
-	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>) => {
+	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>, transaction?: Transaction) => {
 		const now = currentTimeMillis();
 
 		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
@@ -249,7 +260,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys);
+			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys, transaction);
 			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
