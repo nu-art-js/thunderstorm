@@ -15,7 +15,7 @@ export type VersionsDeclaration<Versions extends VersionType[] = ['1.0.0'], Type
 	types: Types
 };
 
-type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DBProto<any> }
+export type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DBProto<any> }
 
 type Exact<T, Shape> = T & {
 	[K in Exclude<keyof Shape, keyof T>]?: never;
@@ -43,13 +43,14 @@ export type Proto_DB_Object<
 	generatedKeys: GeneratedKeys | keyof DB_Object
 	versions: Versions,
 	uniqueKeys: UniqueKeys
-	dependencies: keyof Dependencies extends never ? never : Dependencies}
+	dependencies: keyof Dependencies extends never ? never : Dependencies
+}
 
 type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
 	[K in keyof D]: D[K] extends DBProto<any>
 		? {
 			dbName: D[K]['dbName'],
-			fieldType: TypeOf<DotNotationValueType<T, K & string>>
+			fieldType: TypeOfTypeAsString<DotNotationValueType<T, K & string>>
 		}
 		: never
 }
@@ -121,15 +122,23 @@ export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> =
 	TTL?: number;
 	lastUpdatedTTL?: number;
 }
+export type test = TypeOfTypeAsString<DotNotationValueType<{ a?: { b?: string } }, 'a.b'>>
 
-type TypeOf<ValueType> = ValueType extends any[] ? 'array' :
-	ValueType extends object ? 'object' :
+export type TypeOfTypeAsString<ValueType> =
+	ValueType extends any[] ?
+		ValueType extends string[] ? 'string[]' :
+			ValueType extends number[] ? 'number[]' :
+				ValueType extends boolean[] ? 'boolean[]' :
+					ValueType extends object[] ? 'object[]' : 'array'
+		:
 		ValueType extends string ? 'string' :
 			ValueType extends number ? 'number' :
-				ValueType extends boolean ? 'boolean' : never;
+				ValueType extends boolean ? 'boolean' :
+					ValueType extends object ? 'object' :
+						never;
 
 export type MetadataProperty<ValueType> = {
-	valueType: TypeOf<ValueType>,
+	valueType: TypeOfTypeAsString<ValueType>,
 	optional: boolean,
 	description: string
 
