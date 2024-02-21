@@ -7,14 +7,14 @@ import {
 	cloneObj,
 	compare,
 	DBProto,
-	deepClone,
-	deleteKeysObject,
+	deepClone, deleteKeysObject,
 	exists,
+	generateHex,
 	InvalidResult,
 	InvalidResultObject,
-	isErrorOfType,
-	KeysOfDB_Object,
-	mergeObject,
+	isErrorOfType, KeysOfDB_Object,
+	Logger,
+	LogLevel, mergeObject,
 	MUSTNeverHappenException,
 	RecursiveReadonly,
 	removeFromArrayByIndex,
@@ -22,7 +22,8 @@ import {
 	resolveContent,
 	Second,
 	SubsetKeys,
-	ValidationException
+	ValidationException,
+	WhoCallThisException
 } from '@nu-art/ts-common';
 import {ModuleFE_v3_BaseApi} from '../modules/db-api-gen/ModuleFE_v3_BaseApi';
 
@@ -54,7 +55,8 @@ export type Editable_OnChange<T> = (editable: EditableItem<T>) => Promise<void>;
  *
  * @template T The type of the item.
  */
-export class EditableItem<T> {
+export class EditableItem<T>
+	extends Logger {
 	static AUTO_SAVE = false;
 
 	readonly item: Partial<T>;
@@ -71,6 +73,16 @@ export class EditableItem<T> {
 	 * @param deleteAction The function to be called when deleting the item.
 	 */
 	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>) {
+		super();
+		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
+
+		this.setMinLevel(LogLevel.Verbose);
+
+		// @ts-ignore
+		if (!!item.__updated) {
+			// @ts-ignore
+			this.logVerbose(`constructor - ${item.__updated}`, new WhoCallThisException());
+		}
 		this.item = Object.isFrozen(item) ? cloneObj(item) : item;
 		this.originalItem = item;
 		this.saveAction = saveAction;
@@ -132,6 +144,7 @@ export class EditableItem<T> {
 	 */
 	set<K extends keyof T>(key: K, value: ResolvableContent<T[K] | undefined>) {
 		const finalValue = resolveContent(value);
+		this.logVerbose(`set: ${String(key)}:`, finalValue as any);
 		if (!exists(finalValue) && exists(this.item[key])) {
 			if (Array.isArray(this.item))
 				removeFromArrayByIndex(this.item, key as number);
@@ -156,6 +169,8 @@ export class EditableItem<T> {
 	 * @returns A promise representing the auto-save operation if changes were made and auto-save is enabled.
 	 */
 	async updateObj(values: Partial<{ [K in keyof T]: ResolvableContent<T[K] | undefined, [T[K] | undefined]> }>) {
+		this.logVerbose(`updateObj:`, values);
+
 		const hasChanges = _keys(values).reduce((hasChanges, prop) => {
 			return this.set(prop, values[prop]) || hasChanges;
 		}, false);
@@ -164,10 +179,13 @@ export class EditableItem<T> {
 	}
 
 	updateArrayAt(value: ArrayType<T>, index: number = (this.item as unknown as any[]).length) {
+		this.logVerbose(`updateArrayAt(${index}):`, value as any);
+
 		return this.updateObj({[index]: value} as Partial<T>);
 	}
 
 	removeArrayItem(index: number) {
+		this.logVerbose(`removeArrayItem(${index}):`);
 		return this.updateObj({[index]: undefined} as Partial<T>);
 	}
 
@@ -189,6 +207,7 @@ export class EditableItem<T> {
 	 */
 	// @ts-ignore
 	async update<K extends keyof T>(key: K, value: ((item?: T[K]) => T[K]) | T[K] | undefined) {
+		this.logVerbose(`updating ${String(key)}`);
 		return this.autoSave(this.set(key, value));
 	}
 
@@ -227,28 +246,30 @@ export class EditableItem<T> {
 	 * @protected
 	 */
 	protected async preformAutoSave(): Promise<T | undefined> {
+		this.logDebug(`performing autosave`);
 		this.onAutoSaveAction?.();
 		return this.save(true);
 	}
 
 	private autoSave(hasChanges = true) {
 		if (!hasChanges)
-			return;
+			return this.logVerbose(`will not perform autosave.. no changes`);
 
 		if (this._autoSave)
 			try {
 				return this.preformAutoSave();
 			} catch (err: any) {
+				this.logError(`Error while autosave:`, err);
 				return this.item;
 			}
 
 		if (this.validationResults)
 			this.validate();
 
-		const editable = this.clone(this.item as T);
-		editable.originalItem = this.originalItem;
+		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
 
-		return this.onChanged?.(editable);
+		this.logVerbose(`calling onChange - autoSave`);
+		return this.onChanged?.(this);
 	}
 
 	/**
@@ -257,24 +278,10 @@ export class EditableItem<T> {
 	 * @returns The promise returned by the saveAction function.
 	 */
 	async save(consumeError = false) {
-		return await this.saveAction(this.item as T);
-	}
-
-	/**
-	 * Create a new instance of EditableItem with the same properties and behaviors as the current instance.
-	 *
-	 * @param item The item of the new instance.
-	 * @returns The new instance.
-	 */
-	clone(item?: T): EditableItem<T> {
-		return this.cloneImpl(new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction), item);
-	}
-
-	protected cloneImpl(editable: EditableItem<T>, item?: T) {
-		editable.setOnChanged(this.onChanged).setAutoSave(this._autoSave);
-		editable.originalItem = item ?? this.originalItem;
-		editable.setValidationResults(this.validationResults);
-		return editable;
+		this.logInfo(`Saving`);
+		const toRet = await this.saveAction(this.item as T);
+		this.logInfo(`Saved`);
+		return toRet;
 	}
 
 	/**
@@ -296,6 +303,7 @@ export class EditableItem<T> {
 	 * @returns The new EditableItem.
 	 */
 	editProp<K extends keyof T>(key: K, defaultValue: ResolvableContent<Partial<NonNullable<T[K]>>>) {
+
 		let itemToEdit = this.item[key] || (this.item[key] = resolveContent(defaultValue) as NonNullable<T[K]>);
 		if (Array.isArray(itemToEdit) || typeof itemToEdit === 'object')
 			itemToEdit = deepClone(itemToEdit);
@@ -310,7 +318,7 @@ export class EditableItem<T> {
 			};
 		}
 
-		return new EditableItem<NonNullable<T[K]>>(
+		const editableProp = new EditableItem<NonNullable<T[K]>>(
 			itemToEdit,
 			async (value: T[K]) => {
 				this.set(key, value);
@@ -319,6 +327,9 @@ export class EditableItem<T> {
 			() => this.delete())
 			.setValidationResults(validationResults)
 			.setAutoSave(true);
+
+		this.logVerbose(`editing prop => ${editableProp.tag} - ${String(key)}`);
+		return editableProp;
 	}
 
 	/**
@@ -365,7 +376,9 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	extends EditableItem<Proto['uiType']> {
 
 	private readonly module: ModuleFE_v3_BaseApi<Proto>;
+	// @ts-ignore
 	private readonly onError?: (err: Error) => any | Promise<any>;
+	// @ts-ignore
 	private readonly onCompleted?: (item: Proto['uiType']) => any | Promise<any>;
 	private debounceInstance?: AwaitedDebounceInstance<[void], Proto['uiType']>;
 	private debounceTimeout: number = 2 * Second;
@@ -381,6 +394,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 */
 	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>, debounceInstance?: AwaitedDebounceInstance<any, any>) {
 		super(item, EditableDBItemV3.save(module, onCompleted, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
+
 		this.module = module;
 		this.onError = onError;
 		this.onCompleted = onCompleted;
@@ -413,28 +427,9 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 	async save(consumeError = false): Promise<Proto['dbType']> {
 		try {
-			const dbItem = await super.save(consumeError);
-
-			if (!this._autoSave)
-				this.onCompleted?.(dbItem);
-
-			return dbItem;
-		} catch (e: unknown) {
-			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
-			if (!validationException)
-				throw e;
-
-			this.setValidationResults({
-				autoSave: this._autoSave,
-				editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
-				results: validationException.result as InvalidResult<Proto['dbType']>
-			});
-
-			// while getting new errors (for now) we need to call on change in order to replace the editable item instance.. (this will change)
-			const editable = this.clone(this.item);
-			editable.originalItem = this.originalItem;
-			this.onChanged?.(editable);
-
+			return await super.save(consumeError);
+		} catch (e: any) {
+			this.handleValidationError(e);
 			if (!consumeError)
 				throw e;
 		}
@@ -450,6 +445,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 			if (!this.debounceInstance)
 				this.debounceInstance = awaitedDebounce({
 					func: async () => {
+						this.logDebug('Debounce triggered');
 						return await super.preformAutoSave();
 					},
 					timeout: this.debounceTimeout,
@@ -457,23 +453,23 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				});
 
 			this.debounceInstance().then(dbItem => {
-				const currentUIItem = deleteKeysObject({...editableDBItemV3.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
+				this.logDebug(`Debounce Completed - ${dbItem?.__updated}`);
+				const currentUIItem = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
 				const _mergeObject = mergeObject(dbItem, currentUIItem);
 				delete this.debounceInstance;
 
 				// @ts-ignore
-				this.item = _mergeObject
-				this.onChanged?.(this)
-
-				resolve(_mergeObject);
+				this.item = _mergeObject;
+				resolve(dbItem);
 			}).catch((err) => {
+				this.logError('Debounce Error', err);
 				delete this.debounceInstance;
 				reject(err);
 			});
 
-			const editableDBItemV3 = this.clone(this.item);
-			editableDBItemV3.originalItem = this.originalItem;
-			this.onChanged?.(editableDBItemV3);
+			this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
+			this.logVerbose(`calling onChange - preformAutoSave`);
+			this.onChanged?.(this);
 		});
 	}
 
@@ -481,17 +477,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		this.debounceTimeout = timeout;
 		return this;
 	};
-
-	/**
-	 * Create a new instance of EditableDBItemV3 with the same properties and behaviors as the current instance.
-	 *
-	 * @param item The item of the new instance.
-	 * @returns The new instance.
-	 */
-	clone(item?: Proto['dbType']): EditableDBItemV3<Proto> {
-		const debounce = new EditableDBItemV3<Proto>(item || this.item, this.module, this.onCompleted, this.onError).setDebounce(this.debounceInstance);
-		return this.cloneImpl(debounce, item).setOnSave(this.saveAction).setOnDelete(this.deleteAction) as EditableDBItemV3<Proto>;
-	}
 
 	/**
 	 * Use the db module provided to validate and update the validation results accordingly
@@ -502,20 +487,26 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 			this.module.validateImpl(this.item);
 			this.setValidationResults(undefined);
 			return this.item as Proto['preDbType'];
-		} catch (e) {
-			const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
-			if (!validationException)
-				throw e;
-
-			this.setValidationResults({
-				autoSave: this._autoSave,
-				editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
-				results: validationException.result as InvalidResult<Proto['dbType']>
-			});
-
-			const editable = this.clone(this.item);
-			editable.originalItem = this.originalItem;
-			this.onChanged?.(editable);
+		} catch (e: any) {
+			this.handleValidationError(e);
 		}
+	}
+
+	private handleValidationError(e: Error) {
+		const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
+		if (!validationException)
+			throw e;
+
+		this.logInfo('Validation error while saving');
+		this.setValidationResults({
+			autoSave: this._autoSave,
+			editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
+			results: validationException.result as InvalidResult<Proto['dbType']>
+		});
+
+		// while getting new errors (for now) we need to call on change in order to replace the editable item instance.. (this will change)
+		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
+		this.onChanged?.(this);
+
 	}
 }

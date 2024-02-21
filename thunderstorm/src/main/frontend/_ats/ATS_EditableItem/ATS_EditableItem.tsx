@@ -38,7 +38,7 @@ export class ATS_EditableItemTesting
 
 	private getEditableItem() {
 		return new EditableDBItemV3(this.getInitialItem(), ModuleFE_EditableTest, (dbItem) => {
-			this.setState({editableItem: this.state.editableItem.clone(dbItem)});
+			this.setState({editableItem: this.state.editableItem});
 		}).setOnChanged(async editable => this.setState({editableItem: editable})).setAutoSave(true);
 	}
 
@@ -48,7 +48,6 @@ export class ATS_EditableItemTesting
 		</div>;
 	}
 }
-
 
 // const EditableInput = TS_InputV2.editable({type: 'text', saveEvent: ['accept', 'blur']});
 const Dropdown_Zevel = TS_DropDown.prepareEditable({

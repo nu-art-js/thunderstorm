@@ -13,6 +13,13 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
 	State extends S & EditableRef<ItemType> = S & EditableRef<ItemType>>
 	extends ComponentSync<Props, State> {
 
+	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+		if (this.state.editable.tag !== nextState.editable.tag)
+			return true;
+
+		return super.shouldComponentUpdate(nextProps, nextState, nextContext);
+	}
+
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
 		state.editable = nextProps.editable;
 		return state;
@@ -35,6 +42,13 @@ export abstract class TS_EditableItemComponentV3<Proto extends DBProto<any>, P =
 	State extends S & EditableRef<UI_Type> = S & EditableRef<UI_Type>,
 >
 	extends ComponentSync<Props, State> {
+
+	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+		if (this.state.editable.tag !== nextState.editable.tag)
+			return true;
+
+		return super.shouldComponentUpdate(nextProps, nextState, nextContext);
+	}
 
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
 		state.editable = nextProps.editable;
