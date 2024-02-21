@@ -10,7 +10,7 @@ import {
 	tsValidateRegexp,
 	tsValidateString
 } from '@nu-art/ts-common';
-import {DBProto_Assets} from './types';
+import {DBProto_Assets, DBProto_AssetsDeleted, DBProto_AssetsTemp} from './types';
 
 
 const Validator_ModifiableProps: DBProto_Assets['modifiablePropsValidator'] = {
@@ -43,13 +43,13 @@ export const DBDef_Assets: DBDef_V3<DBProto_Assets> = {
 	entityName: convertUpperCamelCase('Assets', '-').toLowerCase(),
 };
 
-export const DBDef_TempAssets: DBDef_V3<DBProto_Assets> = {
+export const DBDef_TempAssets: DBDef_V3<DBProto_AssetsTemp> = {
 	...DBDef_Assets,
 	dbName: 'assets-temp',
 	entityName: 'assets-temp',
 };
 
-export const DBDef_TempDeleted: DBDef_V3<DBProto_Assets> = {
+export const DBDef_TempDeleted: DBDef_V3<DBProto_AssetsDeleted> = {
 	...DBDef_Assets,
 	dbName: 'assets-deleted',
 	entityName: 'assets-deleted',

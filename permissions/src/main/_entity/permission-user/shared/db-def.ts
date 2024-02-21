@@ -19,4 +19,10 @@ export const DBDef_PermissionUser: DBDef_V3<DBProto_PermissionUser> = {
 	versions: ['1.0.0'],
 	dbName: 'permissions--user',
 	entityName: 'PermissionUser',
+	dependencies: {
+		'__groupIds': {
+			fieldType: 'string[]',
+			dbName: 'permissions--group',
+		}
+	}
 };

@@ -1,10 +1,15 @@
 import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
+import {DBProto_PermissionProject} from '../../permission-project/shared';
+import {DBProto_PermissionAccessLevel} from '../../permission-access-level/shared';
 
 type VersionTypes_PermissionAPI = {
 	'1.0.0': DB_PermissionAPI
 }
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PermissionAPI>;
-type Dependencies = {}
+type Dependencies = {
+	projectId: DBProto_PermissionProject;
+	accessLevelIds: DBProto_PermissionAccessLevel;
+}
 
 type UniqueKeys = 'projectId' | 'path'
 type GeneratedProps = '_auditorId' | '_accessLevels'

@@ -31,7 +31,7 @@ import {
 	ApiStructFE_Account,
 	DB_Account,
 	DBDef_Accounts,
-	DBProto_AccountType,
+	DBProto_Account,
 	HeaderKey_SessionId,
 	HeaderKey_TabId,
 	QueryParam_SessionId,
@@ -68,7 +68,7 @@ export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatus
 export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
 
 class ModuleFE_Account_Class
-	extends ModuleFE_v3_BaseApi<DBProto_AccountType>
+	extends ModuleFE_v3_BaseApi<DBProto_Account>
 	implements ApiDefCaller<ApiStructFE_Account>, OnAuthRequiredListener, OnStorageKeyChangedListener {
 	readonly vv1: ApiDefCaller<ApiStructFE_Account>['vv1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
