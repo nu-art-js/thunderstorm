@@ -459,6 +459,10 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 				// @ts-ignore
 				this.item = _mergeObject;
+				this.originalItem = dbItem;
+				this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
+				this.onChanged?.(this)
+
 				resolve(dbItem);
 			}).catch((err) => {
 				this.logError('Debounce Error', err);
