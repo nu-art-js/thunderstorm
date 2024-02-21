@@ -1,7 +1,9 @@
 import {CSSProperties} from "react";
 import {Module} from '@nu-art/ts-common';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfjsworker = require('pdfjs-dist/build/pdf.worker.entry');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfjsLib = require("pdfjs-dist/build/pdf.js");
 
 interface PDF_TextContent {

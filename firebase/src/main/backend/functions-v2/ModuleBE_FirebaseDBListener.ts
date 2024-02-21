@@ -3,6 +3,7 @@ import {DataSnapshot} from 'firebase/database';
 import {deepClone} from '@nu-art/ts-common';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const functions = require('firebase-functions');
 
 export abstract class ModuleBE_FirebaseDBListener<DataType = any, ConfigType = any>

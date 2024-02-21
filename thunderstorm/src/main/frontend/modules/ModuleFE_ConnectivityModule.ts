@@ -19,6 +19,16 @@ class ModuleFE_ConnectivityModule_Class
 	protected init(): void {
 		window.addEventListener('online', this.handleConnectionChange);
 		window.addEventListener('offline', this.handleConnectionChange);
+
+		// ModuleFE_FirebaseListener.createListener('.info').startListening(snapshot => {
+		// 	if (snapshot.val() === true) {
+		// 		this.logWarningBold(`Connected to Firebase ${__stringify(snapshot.val())}`);
+		// 		// Perform actions when connected
+		// 	} else {
+		// 		this.logWarningBold(`Disconnected from Firebase ${__stringify(snapshot.val())}`);
+		// 		// Handle disconnection
+		// 	}
+		// });
 	}
 
 	isConnected = () => this.connected;

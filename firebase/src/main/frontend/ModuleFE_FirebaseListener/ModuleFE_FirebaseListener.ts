@@ -91,7 +91,7 @@ export class ModuleFE_FirebaseListener_Class
  * Firebase Realtime Database rules need to allow reading the nodes that are being queried.
  * <p>"<b>Permission Denied</b>" errors in dev console imply permission is not allowed in the db's rules.
  */
-export class RefListenerFE<Value extends any = any>
+export class RefListenerFE<Value = any>
 	extends Logger {
 	private readonly nodePath: string;
 	private toUnsubscribeFunction?: Unsubscribe;
@@ -124,7 +124,7 @@ export class RefListenerFE<Value extends any = any>
 			this.logWarning(`Failed listening on node data, check if your rtdb rules permit reading this node '${this.nodePath}'`);
 			throw e;
 		}
-		this.logInfo(`Listening on '${this.nodePath}'`);
+		this.logInfo(`Listening.`);
 
 		return this;
 	}

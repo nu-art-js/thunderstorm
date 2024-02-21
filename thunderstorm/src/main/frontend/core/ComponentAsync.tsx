@@ -30,7 +30,7 @@ export type BaseAsyncState = {
 	error?: Error
 }
 
-export abstract class ComponentAsync<P extends any = {}, S extends any = {}, State extends BaseAsyncState & S = BaseAsyncState & S>
+export abstract class ComponentAsync<P = {}, S = {}, State extends BaseAsyncState & S = BaseAsyncState & S>
 	extends BaseComponent<P, State> {
 	private derivingState = false;
 	private pendingProps?: P;

@@ -19,6 +19,7 @@ type BaseInfraProps_TS_GenericDropDownV3<T> = ComponentProps_Error & {
 	style?: CSSProperties
 	placeholder?: string;
 	mapper?: (item: T) => string[]
+	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
 	renderer?: (item: T) => React.ReactElement
 	ifNoneShowAll?: boolean
 	caret?: { open: React.ReactNode, close: React.ReactNode }
@@ -34,7 +35,6 @@ type BaseAppLevelProps_TS_GenericDropDownV3<T> = BaseInfraProps_TS_GenericDropDo
 	boundingParentSelector?: string;
 	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
 	limitItems?: number;
-	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
 	disabled?: boolean
 }
 

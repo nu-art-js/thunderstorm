@@ -5,7 +5,9 @@ type AccountId_Map<T> = TypedMap<T>
 type ItemId_Map<T> = TypedMap<T>
 type DbName_Map<T> = TypedMap<T>
 
-export type FocusEvent = 'focus' | 'unfocused';
+export const FocusEvent_Unfocused = 'unfocused' as const;
+export const FocusEvent_Focused = 'focus' as const;
+export type FocusEvent = typeof FocusEvent_Focused | typeof FocusEvent_Unfocused;
 export type FocusData_Object = {
 	timestamp: number
 	event: FocusEvent
