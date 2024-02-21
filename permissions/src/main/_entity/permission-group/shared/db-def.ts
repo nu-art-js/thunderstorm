@@ -27,4 +27,14 @@ export const DBDef_PermissionGroup: DBDef_V3<DBProto_PermissionGroup> = {
 	versions: ['1.0.0'],
 	dbName: 'permissions--group',
 	entityName: 'PermissionGroup',
+	dependencies: {
+		projectId: {
+			dbName: 'permissions--project',
+			fieldType: 'string',
+		},
+		accessLevelIds: {
+			dbName: 'permissions--level',
+			fieldType: 'string[]',
+		}
+	}
 };

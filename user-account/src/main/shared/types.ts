@@ -27,8 +27,8 @@ type VersionTypes_Sessions = { '1.0.0': DB_Session };
 type VersionsSession = VersionsDeclaration<['1.0.0'], VersionTypes_Sessions>
 type Proto_Session = Proto_DB_Object<DB_Session, 'user-account--sessions', keyof DB_Object, VersionsSession, 'accountId' | 'deviceId'>
 
-export type DBProto_SessionType = DBProto<Proto_Session>
-export type UI_Session = DBProto_SessionType['uiType']
+export type DBProto_Session = DBProto<Proto_Session>
+export type UI_Session = DBProto_Session['uiType']
 
 export type _SessionKey_SessionId = TypedKeyValue<'_id', UniqueId>
 type SessionData_TTL = { timestamp: number, expiration: number, deviceId: string };
@@ -54,6 +54,6 @@ type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'salt
 
 export type Proto_Account = Proto_DB_Object<DB_Account, 'user-account--accounts', GeneratedKeys, VersionsAccount>;
 
-export type DBProto_AccountType = DBProto<Proto_Account>;
-export type UI_Account = DBProto_AccountType['uiType'];
+export type DBProto_Account = DBProto<Proto_Account>;
+export type UI_Account = DBProto_Account['uiType'];
 export type SafeDB_Account = UI_Account & DB_BaseObject;

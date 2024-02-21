@@ -1,7 +1,7 @@
 import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, filterKeys, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
-import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_SessionType, HeaderKey_SessionId} from '../../shared';
+import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_Session, HeaderKey_SessionId} from '../../shared';
 import {Header_SessionId, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Session_BE} from '../core/consts';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
@@ -16,7 +16,7 @@ export interface CollectSessionData<R extends TypedKeyValue<any, any>> {
 
 export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<TypedKeyValue<any, any>>, '__collectSessionData'>('__collectSessionData');
 
-type Config = DBApiConfigV3<DBProto_SessionType> & {
+type Config = DBApiConfigV3<DBProto_Session> & {
 	sessionTTLms: number
 	rotationFactor: number
 }
@@ -24,7 +24,7 @@ type Config = DBApiConfigV3<DBProto_SessionType> & {
 type PreDBSessionContent = { accountId: string, deviceId: string, prevSession?: string[], label: string };
 
 export class ModuleBE_SessionDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_SessionType, Config>
+	extends ModuleBE_BaseDBV3<DBProto_Session, Config>
 	implements CollectSessionData<_SessionKey_Session> {
 
 	readonly ServiceAccount_Middleware = async (sessionId: string) => {

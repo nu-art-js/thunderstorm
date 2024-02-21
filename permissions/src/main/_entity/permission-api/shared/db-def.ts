@@ -22,5 +22,15 @@ export const DBDef_PermissionAPI: DBDef_V3<DBProto_PermissionAPI> = {
 	versions: ['1.0.0'],
 	dbName: 'permissions--api',
 	entityName: 'PermissionsAPI',
-	uniqueKeys: ['projectId', 'path']
+	uniqueKeys: ['projectId', 'path'],
+	dependencies: {
+		projectId: {
+			dbName: 'permissions--project',
+			fieldType: 'string'
+		},
+		accessLevelIds: {
+			dbName: 'permissions--level',
+			fieldType: 'string[]'
+		}
+	}
 };
