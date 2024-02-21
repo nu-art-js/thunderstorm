@@ -456,14 +456,12 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				this.logDebug(`Debounce Completed - ${dbItem?.__updated}`);
 				const currentUIItem = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
 				const _mergeObject = mergeObject(dbItem, currentUIItem);
-				delete this.debounceInstance;
 
 				// @ts-ignore
 				this.item = _mergeObject;
 				resolve(dbItem);
 			}).catch((err) => {
 				this.logError('Debounce Error', err);
-				delete this.debounceInstance;
 				reject(err);
 			});
 
