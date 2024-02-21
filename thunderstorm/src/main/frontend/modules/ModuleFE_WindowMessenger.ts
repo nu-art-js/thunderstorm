@@ -81,7 +81,7 @@ export class Messenger<T extends Message> {
 
 //Message Receiver
 
-export abstract class BaseReceiver<T extends any = any>
+export abstract class BaseReceiver<T = any>
 	extends Logger {
 
 	readonly origin: string;

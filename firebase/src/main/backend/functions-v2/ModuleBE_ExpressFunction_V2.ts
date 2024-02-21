@@ -43,6 +43,7 @@ export class ModuleBE_SocketFunction
 
 
 	protected createFunction(_express: Express) {
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const server = require('http').createServer(_express);
 		const wss = new WebSocket.Server({server});
 

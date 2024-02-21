@@ -72,7 +72,7 @@ export type SubsetObjectByKeys<T, Keys extends keyof T> = {
 export type SubsetObjectByValue<T, ExpectedType> = SubsetObjectByKeys<T, SubsetKeys<keyof T, T, ExpectedType>>;
 
 export type OptionalKeys<T extends TS_Object> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
-export type MandatoryKeys<T extends TS_Object, V extends any = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
+export type MandatoryKeys<T extends TS_Object, V = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
 
 export type RequireOptionals<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> =
 	Pick<T, Exclude<keyof T, Keys>>
@@ -97,7 +97,7 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
 }[Keys]
 
 export type Constructor<T> = new (...args: any) => T
-export type ArrayType<T extends any> = T extends (infer I)[] ? I : never;
+export type ArrayType<T> = T extends (infer I)[] ? I : never;
 export type NestedArrayType<T extends any[]> =
 	T extends (infer I)[] ? I extends any[] ?
 		NestedArrayType<I> : I : never;
