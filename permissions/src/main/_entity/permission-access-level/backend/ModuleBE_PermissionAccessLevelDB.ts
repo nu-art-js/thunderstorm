@@ -39,13 +39,13 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 		return [{domainId, name}, {domainId, value}];
 	}
 
-	protected async preWriteProcessing(dbInstance: DB_PermissionAccessLevel, t?: Transaction) {
+	protected async preWriteProcessing(dbInstance: DB_PermissionAccessLevel, transaction?: Transaction) {
 		await ModuleBE_PermissionDomainDB.query.uniqueAssert(dbInstance.domainId);
 
 		dbInstance._auditorId = MemKey_AccountId.get();
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionAccessLevel>): Promise<void> {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionAccessLevel>, transaction?: Transaction): Promise<void> {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 
@@ -64,7 +64,7 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 
 		//Send all apis to upsert so their _accessLevels update
 		await ModuleBE_PermissionAPIDB.set.all(connectedApis);
-		return super.postWriteProcessing(data);
+		return super.postWriteProcessing(data, transaction);
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {

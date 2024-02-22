@@ -143,7 +143,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		//All gathered conflicting ids
 		let conflictingIds = filterDuplicates(flatArray(await Promise.all(promises)).map(dbObjectToId));
 		//The MemKey_DeletedDocs object associated with this transaction
-		const ignoredInThisTransaction = MemKey_DeletedDocs.get().find(item => item.transaction === transaction);
+		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
 		if (ignoredInThisTransaction) {
 			//The key associated with this collection
 			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.entityName];
@@ -266,14 +266,14 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
 			await ModuleBE_SyncManager.setOldestDeleted(this.config.collectionName, now);
 
-		await this.postWriteProcessing(data);
+		await this.postWriteProcessing(data, transaction);
 	};
 
 	/**
 	 * Override this method to customize processing that should be done after create, set, update or delete.
 	 * @param data
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>,transaction?: Transaction) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<Proto['dbType']>): FirestoreQuery<Proto['dbType']> {
