@@ -24,7 +24,8 @@ import {
 	batchActionParallel,
 	compare,
 	Const_UniqueKeys,
-	CustomException, DB_Object_validator,
+	CustomException,
+	DB_Object_validator,
 	DBDef_V3,
 	dbIdLength,
 	dbObjectToId,
@@ -35,7 +36,8 @@ import {
 	filterDuplicates,
 	filterInstances,
 	generateHex,
-	InvalidResult, keepPartialObject,
+	InvalidResult,
+	keepPartialObject,
 	Logger,
 	MUSTNeverHappenException,
 	StaticLogger,
@@ -44,7 +46,11 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
 import {Transaction} from 'firebase-admin/firestore';
@@ -53,11 +59,11 @@ import {firestore} from 'firebase-admin';
 import {DocWrapperV3, UpdateObject} from './DocWrapperV3';
 import {composeDbObjectUniqueId} from '../../shared/utils';
 import {_EmptyQuery, maxBatch} from '../../shared/consts';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {addDeletedToTransaction} from './consts';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {addDeletedToTransaction} from './consts';
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Proto extends DBProto<any>> = {
@@ -269,13 +275,13 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			if (transaction)
 				return this._setAll(items, transaction);
 
-			return this.runTransactionInChunks(items, (chunk, t) => this._setAll(chunk, t));
+			return this.runTransactionInChunks(items, (chunk, transaction) => this._setAll(chunk, transaction));
 		},
 		/**
 		 * Multi is a non atomic operation
 		 */
-		multi: (items: (Proto['uiType'] | Proto['dbType'])[], multiWriteType: MultiWriteType = defaultMultiWriteType) => {
-			return this._setAll(items, undefined, multiWriteType);
+		multi: (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+			return this._setAll(items, transaction, multiWriteType);
 		},
 	});
 
@@ -381,7 +387,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		},
 
 		/**
-		 * Multi is a non atomic operation
+		 * Multi is a non atomic operation - doesn't use transactions. Use 'all' variants for transaction.
 		 */
 		multi: {
 			all: async (ids: UniqueId[], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(ids.map(id => this.doc.unique(id)), undefined, multiWriteType),
