@@ -13,6 +13,7 @@ import {ModuleFE_UpgradeCollection} from '../modules/upgrade-collection/ModuleFE
 import {ModuleFE_SyncManager} from '../modules/sync-manager/ModuleFE_SyncManager';
 import {ModuleFE_AppConfig} from '../modules/app-config/ModuleFE_AppConfig';
 import {ModuleFE_WindowMessenger} from '../modules/ModuleFE_WindowMessenger';
+import {ModuleFE_EditableTest} from '../../_entity/editable-test/frontend';
 
 
 export const ModulePack_ThunderstormFE: Module[] = [
@@ -33,6 +34,7 @@ export const ModulePack_ThunderstormFE: Module[] = [
 	ModuleFE_ActionProcessor,
 	ModuleFE_UpgradeCollection,
 	ModuleFE_AppConfig,
+	ModuleFE_EditableTest
 ];
 
 export const ModulePackFE_Thunderstorm = ModulePack_ThunderstormFE;

@@ -183,7 +183,7 @@ export class ModuleFE_SyncManager_Class
 			this.logDebug(`Collections out of sync:`, this.outOfSyncCollections);
 			this.outOfSyncCollections.clear();
 			await this.smartSync();
-		}, 1000, 5000);
+		}, 2000, 10000);
 
 		this.logInfo('Performing Immediate Sync');
 		await this.smartSync();
@@ -270,13 +270,13 @@ export class ModuleFE_SyncManager_Class
 		//Fire operations
 		// We want to make the modules available as soon as possible, so we finish off with the lighter load first, and do full syncs at the end.
 		// Set DataStatus of modules that are already up-to-date, to be ContainsData.
-		this.logDebugBold(`Firing ${operations[SmartSync_UpToDateSync].length} NoSyncOperations`);
+		this.logVerbose(`Firing ${operations[SmartSync_UpToDateSync].length} NoSyncOperations`);
 		await Promise.all(operations[SmartSync_UpToDateSync].map(op => op()));
 		// Perform delta sync on all relevant modules
-		this.logDebugBold(`Firing ${operations[SmartSync_DeltaSync].length} DeltaSyncOperations`);
+		this.logVerbose(`Firing ${operations[SmartSync_DeltaSync].length} DeltaSyncOperations`);
 		await Promise.all(operations[SmartSync_DeltaSync].map(op => op()));
 		// Perform full sync on all relevant modules
-		this.logDebugBold(`Firing ${operations[SmartSync_FullSync].length} FullSyncOperations`);
+		this.logVerbose(`Firing ${operations[SmartSync_FullSync].length} FullSyncOperations`);
 		operations[SmartSync_FullSync].forEach(op => op());
 
 		if (currentSyncedModulesLength !== response.modules.length)
@@ -286,7 +286,7 @@ export class ModuleFE_SyncManager_Class
 	// ######################### Sync operations #########################
 
 	private performNoSync = async (module: ModuleFE_BaseApi<any>) => {
-		this.logDebug(`Performing NoSyncOperation for module ${module.getName()}`);
+		this.logVerbose(`Performing NoSyncOperation for module ${module.getName()}`);
 		this.logVerbose(`No sync for: ${module.dbDef.dbName}, Already UpToDate.`);
 		module.logVerbose(`Updating Cache: ${module.dbDef.dbName}`);
 		await module.cache.load();
