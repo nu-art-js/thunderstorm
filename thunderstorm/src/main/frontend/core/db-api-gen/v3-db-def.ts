@@ -1,5 +1,5 @@
 import {Const_UniqueKey, DBDef_V3, DBProto, DefaultDBVersion} from '@nu-art/ts-common';
-import {DBConfigV3} from '../IndexedDBV3';
+import {DBConfigV3} from '../IndexedDBV4/types';
 
 export type DBApiFEConfigV3<Proto extends DBProto<any>> = {
 	key: string
