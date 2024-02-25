@@ -34,7 +34,8 @@ export * from './core/thunder-dispatcher';
 export * from './core/thunder-modulepack';
 export * from './core/Thunder';
 export * from './core/typed-api';
-export * from './core/IndexedDBV3';
+// export * from './core/IndexedDBV3';
+export * from './core/IndexedDBV4/IndexedDB_Store';
 
 export * from './component-modules/ModuleFE_Dialog';
 export * from './component-modules/ModuleFE_Toaster';
