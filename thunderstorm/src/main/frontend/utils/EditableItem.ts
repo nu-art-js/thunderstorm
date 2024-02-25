@@ -7,14 +7,17 @@ import {
 	cloneObj,
 	compare,
 	DBProto,
-	deepClone, deleteKeysObject,
+	deepClone,
+	deleteKeysObject,
 	exists,
 	generateHex,
 	InvalidResult,
 	InvalidResultObject,
-	isErrorOfType, KeysOfDB_Object,
+	isErrorOfType,
+	KeysOfDB_Object,
 	Logger,
-	LogLevel, mergeObject,
+	LogLevel,
+	mergeObject,
 	MUSTNeverHappenException,
 	RecursiveReadonly,
 	removeFromArrayByIndex,
@@ -280,6 +283,7 @@ export class EditableItem<T>
 	async save(consumeError = false) {
 		this.logInfo(`Saving`);
 		const toRet = await this.saveAction(this.item as T);
+		this.callOnChange(toRet);
 		this.logInfo(`Saved`);
 		return toRet;
 	}
@@ -362,6 +366,25 @@ export class EditableItem<T>
 	 */
 	validate() {
 		return;
+	}
+
+	/**
+	 * Trigger on change with all necessary actions for the editable instance
+	 * @param newItem New item to set as this.item
+	 * @param newOriginal New item to set as this.originalItem (optional)
+	 * @protected
+	 */
+	protected callOnChange(newItem: T, newOriginal?: T) {
+		// If the new item is a result of a save action it might be frozen, so it must be cloned to be editable
+		newItem = Object.isFrozen(newItem) ? deepClone(newItem) : newItem;
+
+		// @ts-ignore
+		this.item = newItem;
+		this.originalItem = newOriginal ?? this.item;
+
+		// Make sure UI re-renders
+		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
+		this.onChanged?.(this);
 	}
 }
 
@@ -453,16 +476,13 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				});
 
 			this.debounceInstance().then(dbItem => {
+
+				if (!dbItem)
+					throw new MUSTNeverHappenException('debounce action must return an item');
+
 				this.logDebug(`Debounce Completed - ${dbItem?.__updated}`);
 				const currentUIItem = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
-				const _mergeObject = mergeObject(dbItem, currentUIItem);
-
-				// @ts-ignore
-				this.item = _mergeObject;
-				this.originalItem = dbItem;
-				this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
-				this.onChanged?.(this)
-
+				this.callOnChange(mergeObject(dbItem, currentUIItem), dbItem);
 				resolve(dbItem);
 			}).catch((err) => {
 				this.logError('Debounce Error', err);
