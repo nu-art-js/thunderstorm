@@ -36,14 +36,4 @@ export class EditableDBItem<T extends DB_Object, Ks extends keyof PreDB<T> = Def
 			}
 		};
 	}
-
-	/**
-	 * Create a new instance of EditableDBItem with the same properties and behaviors as the current instance.
-	 *
-	 * @param item The item of the new instance.
-	 * @returns The new instance.
-	 */
-	clone(item?: T): EditableDBItem<T> {
-		return super.clone(item) as EditableDBItem<T, Ks>;
-	}
 }
