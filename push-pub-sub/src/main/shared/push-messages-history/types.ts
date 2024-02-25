@@ -1,8 +1,9 @@
 import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {PushPubSubDBGroupType} from '../shared';
 
 
 type VersionTypes_PushMessagesHistory = { '1.0.0': DB_PushMessagesHistory };
-type Versions = VersionsDeclaration< ['1.0.0'], VersionTypes_PushMessagesHistory>;
+type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PushMessagesHistory>;
 type Dependencies = {
 //
 }
@@ -15,7 +16,7 @@ type GeneratedKeys =
 	'read' |
 	'originatingAccountId';
 
-type Proto = Proto_DB_Object<DB_PushMessagesHistory,'push-messages-history', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_PushMessagesHistory, 'push-messages-history', PushPubSubDBGroupType, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_PushMessagesHistory = DBProto<Proto>;
 

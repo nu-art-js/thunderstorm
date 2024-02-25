@@ -325,6 +325,7 @@ export const DBDef_DeletedItems: DBDef<DeletedDBItem> = {
 	dbName: '__deleted__docs',
 	entityName: 'DeletedDoc',
 	versions: ['1.0.0'],
+	dbGroup: 'app'
 };
 
 export const ModuleBE_SyncManager = new ModuleBE_SyncManager_Class();

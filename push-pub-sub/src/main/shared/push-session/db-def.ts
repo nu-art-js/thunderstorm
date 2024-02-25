@@ -1,11 +1,6 @@
-import {
-	convertUpperCamelCase,
-	DBDef_V3,
-	tsValidateString,
-	tsValidateTimestamp,
-	tsValidateUniqueId
-} from '@nu-art/ts-common';
+import {convertUpperCamelCase, DBDef_V3, tsValidateString, tsValidateTimestamp, tsValidateUniqueId} from '@nu-art/ts-common';
 import {DBProto_PushSession} from './types';
+import {PushPubSubDBGroup} from '../shared';
 
 
 const Validator_ModifiableProps: DBProto_PushSession['modifiablePropsValidator'] = {
@@ -25,5 +20,6 @@ export const DBDef_PushSession: DBDef_V3<DBProto_PushSession> = {
 	versions: ['1.0.0'],
 	uniqueKeys: ['pushSessionId'],
 	dbName: 'push-session',
+	dbGroup: PushPubSubDBGroup,
 	entityName: convertUpperCamelCase('PushSession', '-').toLowerCase(),
 };

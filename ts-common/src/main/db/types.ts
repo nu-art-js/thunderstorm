@@ -33,13 +33,15 @@ type Exact<T, Shape> = T & {
 export type Proto_DB_Object<
 	T extends DB_Object,
 	DatabaseName extends string,
+	DatabaseGroup extends string,
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<VersionType[]>,
 	UniqueKeys extends keyof T = Default_UniqueKey,
 	Dependencies extends Exact<{ [K in DotNotation<T>]?: DBProto<any> }, Dependencies> = never> = {
 
 	type: T,
-	dbName: DatabaseName
+	dbName: DatabaseName;
+	dbGroup: DatabaseGroup,
 	generatedKeys: GeneratedKeys | keyof DB_Object
 	versions: Versions,
 	uniqueKeys: UniqueKeys
@@ -62,12 +64,13 @@ type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
  * @template ModifiableSubType The subset of P's type that is modifiable.
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
-export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+export type DBProto<P extends Proto_DB_Object<any, string, string, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	proto: P
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: P['type'],
 	dbName: P['dbName'],
+	dbGroup: P['dbGroup'];
 	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
@@ -87,6 +90,7 @@ export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclarat
  */
 export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
 	dbName: Proto['dbName'];
+	dbGroup: Proto['dbGroup'];
 	entityName: string;
 	TTL?: number;
 	lastUpdatedTTL?: number;
@@ -107,6 +111,7 @@ export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
 export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> = {
 	validator: ValidatorTypeResolver<OmitDBObject<T>>;
 	dbName: string;
+	dbGroup: string;
 	entityName: string;
 	lockKeys?: (keyof T)[] // fallback to uniqueKeys, default ["_id"]
 	uniqueKeys?: Ks[] // default ["_id"]

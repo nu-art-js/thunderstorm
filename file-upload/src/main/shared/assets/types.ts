@@ -1,5 +1,7 @@
 import {DB_Object, DBProto, Proto_DB_Object, TS_Object, VersionsDeclaration} from '@nu-art/ts-common';
 
+export const AssetDBGroup = 'asset';
+type AssetDBGroupType = typeof AssetDBGroup
 
 type VersionTypes_Asset = {
 	'1.0.0': DB_Asset
@@ -21,11 +23,11 @@ type GeneratedKeys =
 	'public' |
 	'metadata'
 
-type ProtoAssets = Proto_DB_Object<DB_Asset, 'assets', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+type ProtoAssets = Proto_DB_Object<DB_Asset, 'assets', AssetDBGroupType, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
 export type DBProto_Assets = DBProto<ProtoAssets>;
-type ProtoAssetsTemp = Proto_DB_Object<DB_Asset, 'assets-temp', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+type ProtoAssetsTemp = Proto_DB_Object<DB_Asset, 'assets-temp', AssetDBGroupType, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
 export type DBProto_AssetsTemp = DBProto<ProtoAssetsTemp>;
-type ProtoAssetsDeleted = Proto_DB_Object<DB_Asset, 'assets-deleted', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+type ProtoAssetsDeleted = Proto_DB_Object<DB_Asset, 'assets-deleted', AssetDBGroupType, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
 export type DBProto_AssetsDeleted = DBProto<ProtoAssetsDeleted>;
 
 export type UI_Asset = DBProto_Assets['uiType'];

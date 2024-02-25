@@ -9,6 +9,7 @@ import {
 	tsValidateString
 } from '@nu-art/ts-common';
 import {DBProto_PushSubscription} from './types';
+import {PushPubSubDBGroup} from '../shared';
 
 
 const Validator_FilterKey = (value?: number | string) => {
@@ -39,5 +40,6 @@ export const DBDef_PushSubscription: DBDef_V3<DBProto_PushSubscription> = {
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
 	dbName: 'push-subscription',
+	dbGroup: PushPubSubDBGroup,
 	entityName: convertUpperCamelCase('PushSubscription', '-').toLowerCase(),
 };
