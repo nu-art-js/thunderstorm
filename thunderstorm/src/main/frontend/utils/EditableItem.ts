@@ -67,6 +67,7 @@ export class EditableItem<T>
 
 	protected originalItem: Partial<T>;
 	protected _autoSave: boolean = EditableItem.AUTO_SAVE;
+	protected _isSaving: boolean = false;
 
 	/**
 	 * Constructs an EditableItem instance.
@@ -94,7 +95,6 @@ export class EditableItem<T>
 	}
 
 	protected onChanged?: Editable_OnChange<T>;
-	protected onAutoSaveAction?: VoidFunction;
 	protected saveAction: Editable_SaveAction<T>;
 	protected deleteAction: Editable_DeleteAction<T>;
 
@@ -110,11 +110,6 @@ export class EditableItem<T>
 
 	setOnDelete(onDelete: (item: T) => Promise<any>) {
 		this.deleteAction = onDelete;
-		return this;
-	}
-
-	setOnAutoSaveAction(onAutoSaveAction?: VoidFunction) {
-		this.onAutoSaveAction = onAutoSaveAction;
 		return this;
 	}
 
@@ -135,6 +130,15 @@ export class EditableItem<T>
 	setAutoSave(mode: boolean) {
 		this._autoSave = mode;
 		return this;
+	}
+
+
+	/**
+	 * Get the saving status of the current editable instance
+	 * @returns The saving status as boolean
+	 */
+	isSaving() {
+		return this._isSaving;
 	}
 
 	/**
@@ -250,8 +254,13 @@ export class EditableItem<T>
 	 */
 	protected async preformAutoSave(): Promise<T | undefined> {
 		this.logDebug(`performing autosave`);
-		this.onAutoSaveAction?.();
-		return this.save(true);
+
+		// Setting the saving flag to true and triggering the callback
+		this._isSaving = true;
+		this.callOnChange();
+
+		// Return item cloned to make sure it's not frozen
+		return deepClone((await this.saveAction(this.item as T)));
 	}
 
 	private autoSave(hasChanges = true) {
@@ -282,8 +291,17 @@ export class EditableItem<T>
 	 */
 	async save(consumeError = false) {
 		this.logInfo(`Saving`);
+
+		// Update the ui with the saving status
+		this._isSaving = true;
+		this.callOnChange();
+
+		// Save the current item
 		const toRet = await this.saveAction(this.item as T);
-		this.callOnChange(toRet);
+		this._isSaving = false;
+
+		// Make sure to update the instance item and the saving status
+		this.callOnChange(deepClone(toRet));
 		this.logInfo(`Saved`);
 		return toRet;
 	}
@@ -374,17 +392,27 @@ export class EditableItem<T>
 	 * @param newOriginal New item to set as this.originalItem (optional)
 	 * @protected
 	 */
-	protected callOnChange(newItem: T, newOriginal?: T) {
-		// If the new item is a result of a save action it might be frozen, so it must be cloned to be editable
-		newItem = Object.isFrozen(newItem) ? deepClone(newItem) : newItem;
+	protected callOnChange(newItem?: T, newOriginal?: Partial<T>) {
 
-		// @ts-ignore
-		this.item = newItem;
-		this.originalItem = newOriginal ?? this.item;
+		// Update item if needed
+		if (newItem) {
+			// If the new item is a result of a save action it might be frozen, so it must be cloned to be editable
+			// @ts-ignore
+			this.item = newItem;
+			this.originalItem = newOriginal ?? this.item;
+		}
 
 		// Make sure UI re-renders
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
 		this.onChanged?.(this);
+	}
+
+	/**
+	 * handle item update from a different source out of the editable item
+	 * @param newItem The item passed to the instance from the third party
+	 */
+	updateItem(newItem: T) {
+		this.callOnChange(newItem);
 	}
 }
 
@@ -452,6 +480,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		try {
 			return await super.save(consumeError);
 		} catch (e: any) {
+			this._isSaving = false;
 			this.handleValidationError(e);
 			if (!consumeError)
 				throw e;
@@ -476,22 +505,26 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				});
 
 			this.debounceInstance().then(dbItem => {
-
 				if (!dbItem)
 					throw new MUSTNeverHappenException('debounce action must return an item');
 
 				this.logDebug(`Debounce Completed - ${dbItem?.__updated}`);
+
+				// Changing the saving flag back to false and call onChange
+				this._isSaving = false;
 				const currentUIItem = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
 				this.callOnChange(mergeObject(dbItem, currentUIItem), dbItem);
+
+				// Return the dbItem back as requested in the type
 				resolve(dbItem);
 			}).catch((err) => {
 				this.logError('Debounce Error', err);
+				this._isSaving = false;
 				reject(err);
 			});
 
-			this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
 			this.logVerbose(`calling onChange - preformAutoSave`);
-			this.onChanged?.(this);
+			this.callOnChange();
 		});
 	}
 
@@ -512,6 +545,15 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		} catch (e: any) {
 			this.handleValidationError(e);
 		}
+	}
+
+	/**
+	 * Update db item from a source out of the save action merged with the current UI item in the instance
+	 * @param newItem The item passed to the instance from the third party
+	 */
+	updateItem(newItem: Proto['uiType']) {
+		const currentUIItem = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
+		super.updateItem(mergeObject(currentUIItem, newItem));
 	}
 
 	private handleValidationError(e: Error) {
