@@ -57,6 +57,7 @@ import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {addDeletedToTransaction} from './consts';
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Proto extends DBProto<any>> = {
@@ -68,7 +69,7 @@ export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
 	canDeleteItems: (dbItems: Proto['dbType'][], transaction?: Transaction) => Promise<void>,
 	preWriteProcessing?: (dbInstance: Proto['dbType'], transaction?: Transaction) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Proto['dbType']>) => FirestoreQuery<Proto['dbType']>,
-	postWriteProcessing?: (data: PostWriteProcessingData<Proto>) => Promise<void>,
+	postWriteProcessing?: (data: PostWriteProcessingData<Proto>, transaction?: Transaction) => Promise<void>,
 	upgradeInstances: (instances: Proto['dbType'][]) => Promise<any>
 }
 
@@ -315,14 +316,19 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	protected _deleteAll = async (docs: DocWrapperV3<Proto>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		const dbItems = filterInstances(await this.getAll(docs, transaction));
-		await this.hooks?.canDeleteItems(dbItems, transaction);
+		const itemsToCheck = dbItems.filter((item, index) => docs[index].ref.id == item._id);
+		addDeletedToTransaction(transaction, {
+			collectionKey: this.dbDef.entityName,
+			conflictingIds: dbItems.map(dbObjectToId)
+		});
+		await this.hooks?.canDeleteItems(itemsToCheck, transaction);
 		if (transaction)
 			// here we do not call doc.delete because we have performed all the delete preparation as a group of items before this call
 			docs.map(async doc => transaction.delete(doc.ref));
 		else
 			await this.multiWrite(multiWriteType, docs, 'delete');
 
-		await this.hooks?.postWriteProcessing?.({deleted: dbItems});
+		await this.hooks?.postWriteProcessing?.({deleted: dbItems}, transaction);
 		return dbItems;
 	};
 

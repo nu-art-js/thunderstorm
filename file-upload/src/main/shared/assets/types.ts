@@ -21,9 +21,12 @@ type GeneratedKeys =
 	'public' |
 	'metadata'
 
-type Proto = Proto_DB_Object<DB_Asset, 'assets' | 'assets-temp' | 'assets-deleted', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
-
-export type DBProto_Assets = DBProto<Proto>;
+type ProtoAssets = Proto_DB_Object<DB_Asset, 'assets', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+export type DBProto_Assets = DBProto<ProtoAssets>;
+type ProtoAssetsTemp = Proto_DB_Object<DB_Asset, 'assets-temp', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+export type DBProto_AssetsTemp = DBProto<ProtoAssetsTemp>;
+type ProtoAssetsDeleted = Proto_DB_Object<DB_Asset, 'assets-deleted', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+export type DBProto_AssetsDeleted = DBProto<ProtoAssetsDeleted>;
 
 export type UI_Asset = DBProto_Assets['uiType'];
 export type DB_Asset = DB_Object & {
