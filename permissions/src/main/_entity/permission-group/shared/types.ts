@@ -1,6 +1,7 @@
 import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, TypedMap, VersionsDeclaration} from '@nu-art/ts-common';
 import {DBProto_PermissionProject} from '../../permission-project/shared';
 import {DBProto_PermissionAccessLevel} from '../../permission-access-level/shared';
+import {PermissionDBGroupType} from '../../shared';
 
 type VersionTypes_PermissionGroup = {
 	'1.0.0': DB_PermissionGroup
@@ -13,7 +14,7 @@ type Dependencies = {
 
 type UniqueKeys = '_id';
 type GeneratedProps = '_levelsMap' | '_auditorId';
-type Proto = Proto_DB_Object<DB_PermissionGroup, 'permissions--group', GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_PermissionGroup, 'permissions--group', PermissionDBGroupType, GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_PermissionGroup = DBProto<Proto>;
 

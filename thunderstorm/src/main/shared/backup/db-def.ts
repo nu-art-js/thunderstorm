@@ -29,4 +29,5 @@ export const DBDef_BackupDocs: DBDef<DB_BackupDoc, keyof DB_BackupDoc> = {
 	dbName: 'firestore-backup-status-v2',
 	entityName: 'firestoreBackupStatus',
 	versions: ['1.0.0'],
+	dbGroup: 'app',
 };
