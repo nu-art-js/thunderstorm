@@ -1,11 +1,12 @@
 import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {DBProto_PermissionDomain} from '../../permission-domain/shared/types';
 
 type VersionTypes_PermissionAccessLevel = {
 	'1.0.0': DB_PermissionAccessLevel
 }
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PermissionAccessLevel>;
 type Dependencies = {
-//
+	domainId: DBProto_PermissionDomain
 }
 
 type UniqueKeys = '_id';

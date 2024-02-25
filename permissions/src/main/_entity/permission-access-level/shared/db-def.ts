@@ -17,4 +17,10 @@ export const DBDef_PermissionAccessLevel: DBDef_V3<DBProto_PermissionAccessLevel
 	versions: ['1.0.0'],
 	dbName: 'permissions--level',
 	entityName: 'PermissionAccessLevel',
+	dependencies: {
+		domainId: {
+			dbName: 'permissions--domain',
+			fieldType: 'string',
+		}
+	}
 };
