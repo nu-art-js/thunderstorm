@@ -43,8 +43,6 @@ import {
 } from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {DBApiBEConfigV3, getModuleBEConfigV3} from '../../core/v3-db-def';
-import {OnFirestoreBackupSchedulerActV2} from '../backup/ModuleBE_v2_BackupScheduler';
-import {FirestoreBackupDetailsV2} from '../backup/ModuleBE_v2_Backup';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
 import {Response_DBSync} from '../../../shared/sync-manager/types';
@@ -69,7 +67,7 @@ const CONST_DefaultWriteChunkSize = 200;
 export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType = any,
 	Config extends ConfigType & DBApiConfigV3<Proto> = ConfigType & DBApiConfigV3<Proto>>
 	extends Module<Config>
-	implements OnFirestoreBackupSchedulerActV2, CanDeleteDBEntitiesProto {
+	implements CanDeleteDBEntitiesProto {
 
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
@@ -215,19 +213,6 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		return this.config.itemName;
 	}
 
-	__onFirestoreBackupSchedulerActV2(): FirestoreBackupDetailsV2<Proto['dbType']>[] {
-		return [{
-			query: this.resolveBackupQuery(),
-			queryFunction: this.collection.query.custom,
-			moduleKey: this.config.collectionName,
-			version: this.config.versions[0]
-		}];
-	}
-
-	protected resolveBackupQuery(): FirestoreQuery<Proto['dbType']> {
-		return _EmptyQuery;
-	}
-
 	querySync = async (syncQuery: FirestoreQuery<Proto['dbType']>): Promise<Response_DBSync<Proto['dbType']>> => {
 		const items = await this.collection.query.custom(syncQuery);
 		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
@@ -273,7 +258,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	 * Override this method to customize processing that should be done after create, set, update or delete.
 	 * @param data
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>,transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>, transaction?: Transaction) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<Proto['dbType']>): FirestoreQuery<Proto['dbType']> {
