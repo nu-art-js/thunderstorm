@@ -430,7 +430,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	// @ts-ignore
 	private readonly onError?: (err: Error) => any | Promise<any>;
 	// @ts-ignore
-	private readonly onCompleted?: (item: Proto['uiType']) => any | Promise<any>;
 	private debounceInstance?: AwaitedDebounceInstance<[void], Proto['uiType']>;
 	private debounceTimeout: number = 2 * Second;
 
@@ -443,19 +442,18 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @param onError The function to be called when an error occurs.
 	 * @param debounceInstance Debounce instance from previous editable item
 	 */
-	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>, debounceInstance?: AwaitedDebounceInstance<any, any>) {
-		super(item, EditableDBItemV3.save(module, onCompleted, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
+	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onError?: (err: Error) => any | Promise<any>, debounceInstance?: AwaitedDebounceInstance<any, any>) {
+		super(item, EditableDBItemV3.save(module, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
 
 		this.module = module;
 		this.onError = onError;
-		this.onCompleted = onCompleted;
 
 		//binds
 		this.save.bind(this);
 		this.preformAutoSave.bind(this);
 	}
 
-	private static save<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+	private static save<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, onError?: (err: Error) => any | Promise<any>) {
 		return async (_item: Proto['uiType']) => {
 			try {
 				return await module.v1.upsert(_item).executeSync();
@@ -554,6 +552,8 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	updateItem(newItem: Proto['uiType']) {
 		const currentUIItem = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
 		super.updateItem(mergeObject(currentUIItem, newItem));
+
+		this.validate();
 	}
 
 	private handleValidationError(e: Error) {
