@@ -42,6 +42,7 @@ import {
 	MUSTNeverHappenException,
 	StaticLogger,
 	tsValidateResult,
+	tsValidateUniqueId,
 	TypedMap,
 	UniqueId,
 	ValidatorTypeResolver
@@ -144,6 +145,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	// ############################## DocWrapper ##############################
 	doc = Object.freeze({
 		_: (ref: FirestoreType_DocumentReference<Proto['dbType']>, data?: Proto['dbType']): DocWrapperV3<Proto> => {
+			if (tsValidateResult(ref.id, tsValidateUniqueId)) throw new MUSTNeverHappenException(`Tackled a docRef with id that is an invalid UniqueId: '${ref.id}'`);
 			// @ts-ignore
 			return new DocWrapperV3(this, ref, data);
 		},
