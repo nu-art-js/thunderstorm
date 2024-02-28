@@ -30,7 +30,7 @@ export const TestSuite_FirestoreV2_QueryUnique: QueryTest = {
 	testcases: TestCases_FB_QueryUnique,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>(dbDef);
-		await collection.deleteCollection();
+		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		const toInsert = deepClone(testCase.input.value);
 		await collection.create.all(toInsert);
 		await testCase.input.check(collection, testCase.result);
@@ -42,7 +42,7 @@ export const TestSuite_FireStoreV2_QueryWithPagination: QueryTest = {
 	testcases: TestCases_FB_QueryPagination,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>(dbDef);
-		await collection.deleteCollection();
+		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		const toInsert = deepClone(testCase.input.value);
 		await collection.create.all(toInsert);
 		await testCase.input.check(collection, testCase.result);
