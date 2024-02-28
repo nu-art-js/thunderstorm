@@ -19,13 +19,9 @@
  * limitations under the License.
  */
 
-import {FirestoreBackupDetailsV2, ModuleBE_v2_Backup} from './ModuleBE_v2_Backup';
+import {ModuleBE_v2_Backup} from './ModuleBE_v2_Backup';
 import {ModuleBE_FirebaseScheduler} from '@nu-art/firebase/backend';
 
-
-export interface OnFirestoreBackupSchedulerActV2 {
-	__onFirestoreBackupSchedulerActV2: () => FirestoreBackupDetailsV2<any>[];
-}
 
 export interface OnModuleCleanupV2 {
 	__onCleanupInvokedV2: () => Promise<void>;
