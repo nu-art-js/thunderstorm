@@ -84,11 +84,10 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 
 		this.cache = new MemCache<DBType, Ks>(this, config.dbConfig.uniqueKeys);
 		this.dbDef = dbDef;
+		this.IDB = new IDBCache<DBType, Ks>(this.config.dbConfig, this.config.versions[0]);
 	}
 
 	protected init() {
-		// @ts-ignore
-		this.IDB = new IDBCache<DBType, Ks>(this.config.dbConfig, this.config.versions[0]);
 		this.IDB.onLastUpdateListener(async (after, before) => {
 			if (!exists(after) || after === before)
 				return;

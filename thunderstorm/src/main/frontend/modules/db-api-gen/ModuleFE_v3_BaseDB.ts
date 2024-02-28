@@ -27,7 +27,7 @@ import {
 	dbObjectToId,
 	DBProto,
 	deleteKeysObject,
-	exists, groupArrayBy,
+	exists,
 	IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
@@ -60,8 +60,7 @@ import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
 import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store';
 import {DBConfigV3} from '../../core/IndexedDBV4/types';
-import {IndexedDB_Database} from '../../core/IndexedDBV4/IndexedDB_Database';
-import {ModuleFE_IDBManager, ModuleFE_IDBManager_Class} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
+import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
 
 
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
@@ -83,12 +82,11 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		this.defaultDispatcher = defaultDispatcher;
 		const config = getModuleFEConfigV3(dbDef);
 		this.validator = config.validator;
-		this.setDefaultConfig(config as Config);
+		this.dbDef = dbDef;
 		//Set Statuses
 		this.dataStatus = DataStatus.NoData;
+		this.setDefaultConfig(config as Config);
 		this.cache = new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
-		this.dbDef = dbDef;
-		// @ts-ignore
 		this.IDB = new IDBCache<Proto>(this.config.dbConfig);
 	}
 
@@ -213,7 +211,6 @@ class IDBCache<Proto extends DBProto<any>>
 	protected readonly storeWrapper: IndexedDB_Store<Proto>;
 	protected readonly lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
-	private ready: boolean = false;
 
 	constructor(dbConfig: DBConfigV3<Proto>) {
 		super(`indexdb-${dbConfig.name}`);
@@ -222,7 +219,6 @@ class IDBCache<Proto extends DBProto<any>>
 		this.lastSync = new StorageKey<number>('last-sync--' + dbConfig.name);
 		this.lastVersion = new StorageKey<string>('last-version--' + dbConfig.name);
 		const onOpenedCallback = () => {
-			this.ready = true;
 			const previousVersion = this.lastVersion.get();
 			this.lastVersion.set(currentVersion);
 
@@ -244,8 +240,6 @@ class IDBCache<Proto extends DBProto<any>>
 		};
 		this.storeWrapper = ModuleFE_IDBManager.register(dbConfig, onOpenedCallback);
 	}
-
-	isReady = () => this.ready;
 
 	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
 		this.lastSync.onChange(onChangeListener);
