@@ -1,4 +1,4 @@
-import {_values, Logger, LogLevel, TypedMap} from '@nu-art/ts-common';
+import {_values, Logger, LogLevel, Queue, TypedMap} from '@nu-art/ts-common';
 import {DBConfigV3, IndexedDB_Database_Status} from './types';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
@@ -10,8 +10,8 @@ export class IndexedDB_Database
 	private db!: IDBDatabase;
 	private dbName: string;
 	private status: IndexedDB_Database_Status = IndexedDB_Database_Status.Closed;
-	private storeConfigs: TypedMap<DBConfigV3<any>> = {};
 	private openPromise!: Promise<IndexedDB_Database>;
+	private openStoreQueue: Queue;
 
 	// ######################## Static ########################
 
@@ -30,17 +30,18 @@ export class IndexedDB_Database
 		super(`IDB_Database-${config.group}`);
 		this.setMinLevel(LogLevel.Verbose);
 		this.dbName = config.group;
+		this.openStoreQueue = new Queue(config.group);
 		IndexedDB_Database.dbs[config.group] = this;
 	}
 
 	// ######################## Readiness ########################
 
 	private setStatus = (status: IndexedDB_Database_Status) => {
-		this.logDebug(`Setting status ${this.status} => ${status}`);
+		this.logVerbose(`Setting status ${this.status} => ${status}`);
 		this.status = status;
 	};
 
-	async open(): Promise<IndexedDB_Database> {
+	async open(onUpgradeCallback?: (db: IDBDatabase) => void): Promise<IndexedDB_Database> {
 		if (this.status === IndexedDB_Database_Status.Opening)
 			return this.openPromise;
 
@@ -51,14 +52,13 @@ export class IndexedDB_Database
 
 			const request = IDBAPI.open(this.dbName);
 			request.onupgradeneeded = () => {
-				this.createStores(request.result);
+				onUpgradeCallback?.(request.result);
 			};
 
 			request.onsuccess = () => {
 				this.logDebug(`Successfully opened IDB - ${this.dbName}`);
 				this.db = request.result;
 				this.setStatus(IndexedDB_Database_Status.Opened);
-				this.logInfo(`DB ${this.dbName} is opened`);
 				resolve(this);
 			};
 
@@ -72,10 +72,11 @@ export class IndexedDB_Database
 
 	// ######################## Store Interaction ########################
 
-	createStores = (db: IDBDatabase) => {
-		this.logWarningBold(`Creating Stores`);
-		_values(this.storeConfigs).forEach(config => {
-			if (!db.objectStoreNames.contains(config.name)) {
+	registerStore = (config: DBConfigV3<any>) => {
+		this.logDebug(`Registering store: ${config.name}`);
+		this.openStoreQueue.addItem(async () => {
+			this.logDebug(`Opening store: ${config.name}`);
+			await this.open(db => {
 				const store = db.createObjectStore(config.name, {
 					autoIncrement: config.autoIncrement,
 					keyPath: config.uniqueKeys as unknown as string[]
@@ -84,17 +85,9 @@ export class IndexedDB_Database
 					multiEntry: index.params?.multiEntry,
 					unique: index.params?.unique
 				}));
-			}
-			config.upgradeProcessor?.(db);
+				config.upgradeProcessor?.(db);
+			});
 		});
-	};
-
-	registerStore = (config: DBConfigV3<any>) => {
-		this.storeConfigs[config.name] = config;
-	};
-
-	removeStore = (config: DBConfigV3<any>) => {
-		delete this.storeConfigs[config.name];
 	};
 
 	async getStore(config: DBConfigV3<any>, write = false, _store?: IDBObjectStore) {

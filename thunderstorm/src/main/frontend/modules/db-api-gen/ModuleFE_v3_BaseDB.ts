@@ -91,7 +91,6 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 	}
 
 	protected init() {
-		this.IDB.init();
 		this.IDB.onLastUpdateListener(async (after, before) => {
 			if (!exists(after) || after === before)
 				return;
@@ -212,38 +211,37 @@ class IDBCache<Proto extends DBProto<any>>
 	protected readonly store: IndexedDB_Store<Proto>;
 	protected readonly lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
-	readonly initVersion: string;
+	private ready: boolean = false;
 
 	constructor(dbConfig: DBConfigV3<Proto>, currentVersion: string) {
 		super(`indexdb-${dbConfig.name}`);
 		this.setMinLevel(LogLevel.Verbose);
-		this.store = new IndexedDB_Store<Proto>(dbConfig);
 		this.lastSync = new StorageKey<number>('last-sync--' + dbConfig.name);
 		this.lastVersion = new StorageKey<string>('last-version--' + dbConfig.name);
-		this.initVersion = currentVersion;
-	}
+		this.store = new IndexedDB_Store<Proto>(dbConfig, () => {
+			this.ready = true;
+			const previousVersion = this.lastVersion.get();
+			this.lastVersion.set(currentVersion);
 
-	init() {
-		this.logDebug('Init');
-		const previousVersion = this.lastVersion.get();
-		this.lastVersion.set(this.initVersion);
+			this.store.exists().then(exists => {
+				if (!exists) {
+					this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
+					this.lastSync.delete();
+				}
+			});
 
-		this.store.exists().then(exists => {
-			if (!exists) {
-				this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
-				this.lastSync.delete();
-			}
+			if (!previousVersion || previousVersion === currentVersion)
+				return;
+
+			this.lastSync.delete();
+			this.logInfo(`Cleaning up & Sync...`);
+			this.clear()
+				.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
+				.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 		});
-
-		if (!previousVersion || previousVersion === this.initVersion)
-			return;
-
-		this.lastSync.delete();
-		this.logInfo(`Cleaning up & Sync...`);
-		this.clear()
-			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
-			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 	}
+
+	isReady = () => this.ready;
 
 	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
 		this.lastSync.onChange(onChangeListener);
