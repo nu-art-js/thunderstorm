@@ -204,7 +204,7 @@ class ModuleBE_v2_Backup_Class
 				//Get the next chunk of documents from the db module
 				data = await currentModule.query.custom({
 					..._EmptyQuery,
-					limit: {page, itemsCount: 10000}
+					limit: {page, itemsCount: 1000}
 				});
 
 				// If no data there's no need to process or write anything to csv
