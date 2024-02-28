@@ -94,7 +94,7 @@ export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
 	generatedPropsValidator: Proto['generatedPropsValidator'];
 	modifiablePropsValidator: Proto['modifiablePropsValidator'];
 	uniqueKeys?: Proto['uniqueKeys'];
-	versions?: Proto['versions']['versions'];
+	versions: Proto['versions']['versions'];
 	indices?: Proto['indices'];
 	lockKeys?: Proto['lockKeys'];
 	metadata?: Proto['metadata'];

@@ -173,6 +173,36 @@ export const queryComplexTestCases: CollectionTest['testcases'] = [
 
 export const queryWithPagination: QueryTest['testcases'] = [
 	{
+		description: 'all out of 10',
+		result: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+		input: {
+			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+			check: async (collection, expectedResult) => {
+				const itemsPage0 = await collection.query.custom({
+					where: {},
+					orderBy: [{key: 'stringValue', order: 'asc'}],
+					limit: {page: 0, itemsCount: 5}
+				});
+
+				expect(itemsPage0.length).to.eql(5);
+				const itemsPage1 = await collection.query.custom({
+					where: {},
+					orderBy: [{key: 'stringValue', order: 'asc'}],
+					limit: {page: 1, itemsCount: 5}
+				});
+
+				expect(itemsPage1.length).to.eql(5);
+				const itemsPage2 = await collection.query.custom({
+					where: {},
+					orderBy: [{key: 'stringValue', order: 'asc'}],
+					limit: {page: 2, itemsCount: 5}
+				});
+
+				expect(itemsPage2.length).to.eql(0);
+			}
+		}
+	},
+	{
 		description: 'limit 3 elements out of 5',
 		result: [testInstance1, testInstance2, testInstance3],
 		input: {

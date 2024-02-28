@@ -202,7 +202,7 @@ const dbDefInner: DBDef<DB_Type_Complex> = {
 export async function prepareCollectionTest(testCase: TestModel<CollectionTestInput, TestInputValue>) {
 	const outerCollection = firestore.getCollection<DB_Type_Complex>(dbDefOuter);
 	const innerCollection = firestore.getCollection<DB_Type_Complex>(dbDefInner);
-	await Promise.all([outerCollection, innerCollection].map(async (collection) => await collection.deleteCollection()));
+	await Promise.all([outerCollection, innerCollection].map(async (collection) => await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete()));
 	const outerToInsert = deepClone(testCase.input.outerCollection);
 	const innerToInsert = deepClone(testCase.input.innerCollection);
 	await outerCollection.set.all(outerToInsert);
