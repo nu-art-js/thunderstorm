@@ -34,7 +34,8 @@ import {
 	filterDuplicates,
 	filterInstances,
 	flatArray,
-	Module, UniqueId
+	Module,
+	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {
@@ -273,7 +274,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	 * Override this method to customize processing that should be done after create, set, update or delete.
 	 * @param data
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>,transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>, transaction?: Transaction) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<Proto['dbType']>): FirestoreQuery<Proto['dbType']> {
@@ -317,6 +318,13 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	registerVersionUpgradeProcessor<K extends Proto['versions']['versions'][number]>(version: K, processor: (items: Proto['versions']['types'][K][]) => Promise<void>) {
 		this.versionUpgrades[version] = processor;
 	}
+
+	/**
+	 * Check if the collection has at least one item without the latest version. Version[0] is the latest version.
+	 */
+	public isCollectionUpToDate = async () => {
+		return (await this.query.custom({limit: 1, where: {_v: {$neq: this.dbDef.versions[0]}}})).length === 0;
+	};
 
 	upgradeCollection = async () => {
 		let docs: DocWrapperV3<Proto>[];

@@ -181,6 +181,14 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	};
 
 	/**
+	 * Check if the collection has at least one item without the latest version. Version[0] is the latest version.
+	 */
+	public isCollectionUpToDate = async () => {
+		// @ts-ignore
+		return (await this.query.custom({limit: 1, where: {_v: {$neq: this.dbDef.versions?.[0]??'1.0.0'}}})).length === 0;
+	};
+
+	/**
 	 * Override this method to customize the processing that should be done before create, set or update.
 	 *
 	 * @param transaction - The transaction object.
