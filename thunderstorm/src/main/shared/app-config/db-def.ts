@@ -18,6 +18,7 @@ export const DBDef_AppConfigs: DBDef<DB_AppConfig, 'key'> = {
 	validator: Validator_AppConfig,
 	dbName: 'app-configs',
 	entityName: 'app-config',
+	versions: ['1.0.0'],
 	uniqueKeys: ['key'],
 	dbGroup: 'app',
 };

@@ -128,4 +128,4 @@ export * from './utils/EditableDBItem';
 export * from './utils/perform-action';
 
 export * from './behavior-functions';
-
+export * from './_entity'

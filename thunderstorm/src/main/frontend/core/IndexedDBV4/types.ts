@@ -11,7 +11,7 @@ export type ReduceFunction_V3<ItemType, ReturnType> = (
 export type DBConfigV3<Proto extends DBProto<any>> = {
 	name: string
 	group: string;
-	version?: number
+	version: string
 	autoIncrement?: boolean,
 	uniqueKeys: (keyof Proto['dbType'])[]
 	indices?: DBIndex<Proto['dbType']>[]

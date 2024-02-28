@@ -104,7 +104,7 @@ export class FirestoreInterfaceV3 {
 
 					// console.log(`limit: ${query.limit.itemsCount} * ${page}`);
 					if (page > 0)
-						myQuery = myQuery.offset(query.limit.itemsCount * page + 1);
+						myQuery = myQuery.offset(query.limit.itemsCount * page);
 
 					myQuery = myQuery.limit(query.limit.itemsCount);
 				}
