@@ -13,6 +13,7 @@ class ModuleFE_UpgradeCollection_Class
 		super();
 		this.vv1 = {
 			upgrade: apiWithBody(ApiDef_UpgradeCollection.vv1.upgrade),
+			upgradeAll: apiWithBody(ApiDef_UpgradeCollection.vv1.upgradeAll),
 		};
 	}
 }

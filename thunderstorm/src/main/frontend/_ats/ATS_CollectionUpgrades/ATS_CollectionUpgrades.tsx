@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DB_Object, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
+import {__stringify, DB_Object, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_CollectionUpgrades.scss';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ComponentStatus, Props_SmartComponent, SmartComponent, State_SmartComponent} from '../../core/SmartComponent';
@@ -52,8 +52,18 @@ export class ATS_CollectionUpgrades
 		}, `Upgrading ${collectionName}`);
 	};
 
+	private upgradeAll = async (collectionNames?: string[]) => {
+		await genericNotificationAction(async () => {
+			await ModuleFE_UpgradeCollection.vv1.upgradeAll({collectionsToUpgrade: collectionNames ?? []}).setTimeout(5 * Minute).executeSync();
+		}, `Upgrading ${collectionNames?.length ? __stringify(collectionNames) : 'all'}`);
+	};
+
 	render() {
 		return <div className={'collection-upgrades-page'}>
+			<TS_BusyButton
+				key={'upgrade-all-test'}
+				onClick={() => this.upgradeAll()}
+			>Upgrade All Test</TS_BusyButton>
 			{TS_AppTools.renderPageHeader('Collection Upgrades')}
 			<LL_H_C className={'buttons-container'}>
 				{(this.state.upgradableModules || []).map(module => {

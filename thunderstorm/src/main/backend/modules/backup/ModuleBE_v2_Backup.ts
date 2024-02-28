@@ -7,38 +7,31 @@ import {
 	DBDef,
 	Dispatcher,
 	filterInstances,
-	flatArray,
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
 	LogLevel,
 	Minute,
 	Module,
 	PreDB,
+	RuntimeModules,
 	TS_Object,
 	UniqueId
 } from '@nu-art/ts-common';
 import {createQueryServerApi} from '../../core/typed-api';
 import {END_OF_STREAM, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {FirestoreQuery} from '@nu-art/firebase';
+import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {addRoutes} from '../ModuleBE_APIs';
-import {OnFirestoreBackupSchedulerActV2, OnModuleCleanupV2} from './ModuleBE_v2_BackupScheduler';
-import {Transaction} from 'firebase-admin/firestore';
+import {OnModuleCleanupV2} from './ModuleBE_v2_BackupScheduler';
 import {Writable} from 'stream';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {DB_BackupDoc} from '../../../shared/backup/backup-types';
 import {DBDef_BackupDocs} from '../../../shared/backup/db-def';
 import {ApiDef_BackupV2, Request_BackupId, Response_BackupDocsV2} from '../../../shared/backup/apis';
+import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
+import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
 
 
-export type FirestoreBackupDetailsV2<T extends TS_Object> = {
-	moduleKey: string,
-	queryFunction: (query: FirestoreQuery<T>, transaction?: Transaction) => Promise<T[]>,
-	query: FirestoreQuery<T>,
-	version: string
-}
-
-const dispatch_onFirestoreBackupSchedulerActV2 = new Dispatcher<OnFirestoreBackupSchedulerActV2, '__onFirestoreBackupSchedulerActV2'>('__onFirestoreBackupSchedulerActV2');
 const dispatch_onModuleCleanupV2 = new Dispatcher<OnModuleCleanupV2, '__onCleanupInvokedV2'>('__onCleanupInvokedV2');
 
 type Config = {
@@ -66,6 +59,8 @@ export type BackupMetaData = {
 	}[],
 	timestamp: number
 }
+
+type DBModules = ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>;
 
 /**
  * This module is in charge of making a backup of the db in firebase storage,
@@ -125,26 +120,27 @@ class ModuleBE_v2_Backup_Class
 	/**
 	 * Get metadata objects per each collection module that needs to be backed up.
 	 */
-	public getBackupDetails = (): FirestoreBackupDetailsV2<any>[] => {
-		return flatArray(dispatch_onFirestoreBackupSchedulerActV2.dispatchModule())
-			.reduce<FirestoreBackupDetailsV2<any>[]>((resultBackupArray, currentBackup) => {
+	public getBackupDetails = (): DBModules[] => {
+		return RuntimeModules()
+			.filter((module) => {
+				if (!module || !module.dbDef)
+					return false;
 
-				if (!currentBackup)
-					return resultBackupArray;
-
-				if (this.config.excludedCollectionNames?.includes(currentBackup.moduleKey)) {
-					this.logWarningBold(`Skipping module ${currentBackup.moduleKey} since it's in the exclusion list.`);
-					return resultBackupArray;
+				if (this.config.excludedCollectionNames?.includes(module.config.collectionName)) {
+					this.logWarningBold(`Skipping module ${module.config.collectionName} since it's in the exclusion list.`);
+					return false;
 				}
 
-				resultBackupArray.push(currentBackup);
-
-				return resultBackupArray;
-			}, []);
+				return true;
+			});
 	};
 
 	private formatToCsv = (docArray: TS_Object[], moduleKey: string) => {
-		return docArray.map(doc => ({collectionName: moduleKey, _id: doc._id, document: __stringify(doc)}));
+		return docArray.map(doc => ({
+			collectionName: moduleKey,
+			_id: doc._id,
+			document: `"${__stringify(doc)}"`
+		}));
 	};
 
 	initiateBackup = async (force = false) => {
@@ -179,7 +175,7 @@ class ModuleBE_v2_Backup_Class
 			throw new ApiException(500, errorMessage, e);
 		}
 
-		const backups: FirestoreBackupDetailsV2<any>[] = filterInstances(this.getBackupDetails());
+		const modules: DBModules[] = filterInstances(this.getBackupDetails());
 		let backupsCounter = 0;
 
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
@@ -189,26 +185,37 @@ class ModuleBE_v2_Backup_Class
 		CSVModule.updateExporterSettings(CSVConfig);
 		const metadata: BackupMetaData = {collectionsData: [], timestamp: nowMs};
 
-		if (backups.length === 0)
+		if (modules.length === 0)
 			throw new ApiException(404, 'No modules to backup');
 
 		const backupFeeder = async (writable: Writable) => {
-			if (!backups[backupsCounter])
+			if (!modules[backupsCounter])
 				return END_OF_STREAM;
 
-			const currBackup = backups[backupsCounter];
+			const currentModule = modules[backupsCounter];
 
 			let page = 0;
 			let docCounter = 0;
 			let data;
 
+			const moduleKey = currentModule.config.collectionName;
 			do {
-				data = this.formatToCsv(await currBackup.queryFunction({
-					...currBackup.query,
-					limit: {page, itemsCount: 10000}
-				}), currBackup.moduleKey);
 
+				//Get the next chunk of documents from the db module
+				data = await currentModule.query.custom({
+					..._EmptyQuery,
+					limit: {page, itemsCount: 1000}
+				});
+
+				// If no data there's no need to process or write anything to csv
 				if (data.length) {
+
+					//Upgrade documents to latest version
+					await currentModule.upgradeInstances(data);
+
+					// Write the new data to the csv
+					data = this.formatToCsv(data, moduleKey);
+
 					const csv = CSVModule.export(data);
 
 					if (page === 0)
@@ -226,9 +233,9 @@ class ModuleBE_v2_Backup_Class
 			} while (data.length);
 
 			metadata.collectionsData.push({
-				collectionName: currBackup.moduleKey,
+				collectionName: moduleKey,
 				numOfDocs: docCounter,
-				version: currBackup.version
+				version: currentModule.dbDef.versions[0]
 			});
 
 			backupsCounter++;
@@ -253,8 +260,8 @@ class ModuleBE_v2_Backup_Class
 			await metadataFile.write(metadata);
 			this.logDebug('Metadata file created');
 		} catch (e: any) {
-			this.logWarning(`backup of ${backups[backupsCounter].moduleKey} has failed with error`, e);
-			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backups[backupsCounter], true)}\nError: ${_logger_logException(e)}`;
+			this.logWarning(`backup of ${modules[backupsCounter].config.collectionName} has failed with error`, e);
+			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(modules[backupsCounter].config, true)}\nError: ${_logger_logException(e)}`;
 			throw new ApiException(500, errorMessage, e);
 		}
 
