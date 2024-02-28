@@ -3,18 +3,21 @@ import {DBConfigV3, IndexDb_Query_V3, ReduceFunction_V3} from './types';
 
 
 type StoreResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>, write?: boolean, store?: IDBObjectStore) => Promise<IDBObjectStore>;
+type StoreExistsResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>) => Promise<boolean>;
 
 export class IndexedDB_Store<Proto extends DBProto<any>>
 	extends Logger {
 
 	private config: DBConfigV3<Proto>;
 	private storeResolver: StoreResolver<Proto>;
+	private storeExistsResolver: StoreExistsResolver<Proto>;
 
 	// ######################## Init ########################
 
-	constructor(config: DBConfigV3<Proto>, storeResolver: StoreResolver<Proto>) {
+	constructor(config: DBConfigV3<Proto>, storeResolver: StoreResolver<Proto>, storeExistsResolver: StoreExistsResolver<Proto>) {
 		super(`IDB_Store-${config.group}`);
 		this.storeResolver = storeResolver;
+		this.storeExistsResolver = storeExistsResolver;
 		this.config = {
 			...config,
 			autoIncrement: config.autoIncrement || false,
@@ -24,13 +27,9 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 
 	// ######################## DB Interaction ########################
 
-	getStore = async (write = false, store?: IDBObjectStore) => {
-		return this.storeResolver(this.config, write, store);
-	};
+	getStore = async (write = false, store?: IDBObjectStore) => this.storeResolver(this.config, write, store);
 
-	exists = async () => {
-		return this.db.storeExists(this.config.name);
-	};
+	exists = async () => this.storeExistsResolver(this.config);
 
 	// ######################## Cursor Interaction ########################
 

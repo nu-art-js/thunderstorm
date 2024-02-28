@@ -14,7 +14,7 @@ export const getModuleFEConfigV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<
 		versions: dbDef.versions || [DefaultDBVersion],
 		validator: dbDef.modifiablePropsValidator,
 		dbConfig: {
-			version: 1,
+			version: dbDef.versions[0],
 			name: dbDef.dbName,
 			group: dbDef.dbGroup,
 			indices: dbDef.indices,

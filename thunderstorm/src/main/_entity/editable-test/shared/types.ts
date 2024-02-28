@@ -10,7 +10,7 @@ type Dependencies = {
 
 type UniqueKeys = '_id';
 type GeneratedProps = never
-type Proto = Proto_DB_Object<DB_EditableTest, 'editable-test', GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_EditableTest, 'editable-test', 'test', GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_EditableTest = DBProto<Proto>;
 
