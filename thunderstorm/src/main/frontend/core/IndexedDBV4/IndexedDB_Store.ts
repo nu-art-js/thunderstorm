@@ -10,7 +10,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 
 	// ######################## Init ########################
 
-	constructor(config: DBConfigV3<Proto>) {
+	constructor(config: DBConfigV3<Proto>, onOpenedCallback: VoidFunction) {
 		super(`IDB_Store-${config.group}`);
 		this.config = {
 			...config,
@@ -22,13 +22,6 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 	}
 
 	// ######################## DB Interaction ########################
-
-	async openDB() {
-		if (this.db.isOpen())
-			return;
-
-		await this.db.open();
-	}
 
 	getStore = async (write = false, store?: IDBObjectStore) => {
 		return this.db.getStore(this.config, write, store);
