@@ -51,12 +51,13 @@ export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorB
 	//######################### Logic #########################
 
 	protected getEditable(instance: Partial<T['dbType']>): EditableDBItemV3<T> {
-		return new EditableDBItemV3<T>(instance, this.props.module, dbItem => {
-			this.setState({editedItem: this.getEditable(dbItem), selectedItemId: dbItem._id});
-		})
+		return new EditableDBItemV3<T>(instance, this.props.module)
 			.setAutoSave(true)
 			.setDebounceTimeout(100)
-			.setOnChanged(async editable => this.setState({editedItem: editable as EditableDBItemV3<T>, selectedItemId: editable.item._id}));
+			.setOnChanged(async editable => this.setState({
+				editedItem: editable as EditableDBItemV3<T>,
+				selectedItemId: editable.item._id
+			}));
 	}
 
 	protected getNewInstance(): Partial<T['dbType']> {

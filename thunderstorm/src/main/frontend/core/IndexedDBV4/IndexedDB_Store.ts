@@ -2,7 +2,7 @@ import {DBProto, IndexKeys, Logger, MUSTNeverHappenException} from '@nu-art/ts-c
 import {DBConfigV3, IndexDb_Query_V3, ReduceFunction_V3} from './types';
 
 
-type StoreResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>, write?: boolean, store?: IDBObjectStore) => IDBObjectStore;
+type StoreResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>, write?: boolean, store?: IDBObjectStore) => Promise<IDBObjectStore>;
 
 export class IndexedDB_Store<Proto extends DBProto<any>>
 	extends Logger {
@@ -18,7 +18,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		this.config = {
 			...config,
 			autoIncrement: config.autoIncrement || false,
-			version: config.version || 1
+			version: config.version
 		};
 	}
 

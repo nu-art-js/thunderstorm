@@ -27,7 +27,7 @@ export class IndexedDB_Database
 		(this.registeredStores || (this.registeredStores = [])).push(dbConfig);
 	};
 
-	async getStore(config: DBConfigV3<any>, write = false, _store?: IDBObjectStore) {
+	async getStore(config: DBConfigV3<any>, write = false, _store?: IDBObjectStore): Promise<IDBObjectStore> {
 		if (_store)
 			return _store;
 
