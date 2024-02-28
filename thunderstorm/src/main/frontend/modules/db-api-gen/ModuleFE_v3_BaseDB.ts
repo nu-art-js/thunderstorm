@@ -27,7 +27,7 @@ import {
 	dbObjectToId,
 	DBProto,
 	deleteKeysObject,
-	exists,
+	exists, groupArrayBy,
 	IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
@@ -60,6 +60,8 @@ import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
 import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store';
 import {DBConfigV3} from '../../core/IndexedDBV4/types';
+import {IndexedDB_Database} from '../../core/IndexedDBV4/IndexedDB_Database';
+import {ModuleFE_IDBManager, ModuleFE_IDBManager_Class} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
 
 
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
@@ -208,7 +210,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 class IDBCache<Proto extends DBProto<any>>
 	extends Logger {
 
-	protected readonly store: IndexedDB_Store<Proto>;
+	protected readonly storeWrapper: IndexedDB_Store<Proto>;
 	protected readonly lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
 	private ready: boolean = false;
@@ -218,12 +220,12 @@ class IDBCache<Proto extends DBProto<any>>
 		this.setMinLevel(LogLevel.Verbose);
 		this.lastSync = new StorageKey<number>('last-sync--' + dbConfig.name);
 		this.lastVersion = new StorageKey<string>('last-version--' + dbConfig.name);
-		this.store = new IndexedDB_Store<Proto>(dbConfig, () => {
+		const onOpenedCallback = () => {
 			this.ready = true;
 			const previousVersion = this.lastVersion.get();
 			this.lastVersion.set(currentVersion);
 
-			this.store.exists().then(exists => {
+			this.storeWrapper.exists().then(exists => {
 				if (!exists) {
 					this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
 					this.lastSync.delete();
@@ -238,7 +240,8 @@ class IDBCache<Proto extends DBProto<any>>
 			this.clear()
 				.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
 				.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
-		});
+		};
+		this.storeWrapper = ModuleFE_IDBManager.register(dbConfig, onOpenedCallback);
 	}
 
 	isReady = () => this.ready;
@@ -255,15 +258,15 @@ class IDBCache<Proto extends DBProto<any>>
 
 	clear = async (resync = false) => {
 		this.lastSync.delete();
-		return this.store.clearStore();
+		return this.storeWrapper.clearStore();
 	};
 
 	delete = async (resync = false) => {
 		this.lastSync.delete();
-		return this.store.clearStore();
+		return this.storeWrapper.clearStore();
 	};
 
-	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<Proto['dbType'][]> => (await this.store.query({
+	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<Proto['dbType'][]> => (await this.storeWrapper.query({
 		query,
 		indexKey
 	})) || [];
@@ -276,7 +279,7 @@ class IDBCache<Proto extends DBProto<any>>
 	 *
 	 * @return Array of items or empty array
 	 */
-	filter = async (filter: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<Proto['dbType'][]> => this.store.queryFilter(filter, query);
+	filter = async (filter: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<Proto['dbType'][]> => this.storeWrapper.queryFilter(filter, query);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns the first item that passes the filter
@@ -285,7 +288,7 @@ class IDBCache<Proto extends DBProto<any>>
 	 *
 	 * @return a single item or undefined
 	 */
-	find = async (filter: (item: Proto['dbType']) => boolean): Promise<Proto['dbType'] | undefined> => this.store.queryFind(filter);
+	find = async (filter: (item: Proto['dbType']) => boolean): Promise<Proto['dbType'] | undefined> => this.storeWrapper.queryFind(filter);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns an array of items based on the mapper.
@@ -296,7 +299,7 @@ class IDBCache<Proto extends DBProto<any>>
 	 *
 	 * @return An array of mapped items
 	 */
-	map = async <MapType>(mapper: (item: Proto['dbType']) => MapType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<MapType[]> => this.store.WIP_queryMap(mapper, filter, query);
+	map = async <MapType>(mapper: (item: Proto['dbType']) => MapType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<MapType[]> => this.storeWrapper.WIP_queryMap(mapper, filter, query);
 
 	/**
 	 * iterates over all DB objects in the related collection, and reduces them to a single value based on the reducer.
@@ -307,14 +310,14 @@ class IDBCache<Proto extends DBProto<any>>
 	 *
 	 * @return a single reduced value.
 	 */
-	reduce = async <ReturnType>(reducer: ReduceFunction<Proto['dbType'], ReturnType>, initialValue: ReturnType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<ReturnType> => this.store.queryReduce(reducer, initialValue, filter, query);
+	reduce = async <ReturnType>(reducer: ReduceFunction<Proto['dbType'], ReturnType>, initialValue: ReturnType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<ReturnType> => this.storeWrapper.queryReduce(reducer, initialValue, filter, query);
 
 	unique = async (_key?: string | IndexKeys<Proto['dbType'], keyof Proto['dbType']>): Promise<Proto['dbType'] | undefined> => {
 		if (_key === undefined)
 			return _key;
 
 		const key = typeof _key === 'string' ? {_id: _key} as unknown as IndexKeys<Proto['dbType'], keyof Proto['dbType']> : _key;
-		return this.store.get(key);
+		return this.storeWrapper.get(key);
 	};
 
 	getLastSync() {
@@ -326,8 +329,8 @@ class IDBCache<Proto extends DBProto<any>>
 	}
 
 	async syncIndexDb(toUpdate: Proto['dbType'][], toDelete: DB_Object[] = []) {
-		await this.store.upsertAll(toUpdate);
-		await this.store.deleteAll(toDelete as Proto['dbType'][]);
+		await this.storeWrapper.upsertAll(toUpdate);
+		await this.storeWrapper.deleteAll(toDelete as Proto['dbType'][]);
 	}
 }
 

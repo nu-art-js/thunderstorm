@@ -1,30 +1,31 @@
 import {DBProto, IndexKeys, Logger, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {IndexedDB_Database} from './IndexedDB_Database';
 import {DBConfigV3, IndexDb_Query_V3, ReduceFunction_V3} from './types';
+
+
+type StoreResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>, write?: boolean, store?: IDBObjectStore) => IDBObjectStore;
 
 export class IndexedDB_Store<Proto extends DBProto<any>>
 	extends Logger {
 
-	private db: IndexedDB_Database;
 	private config: DBConfigV3<Proto>;
+	private storeResolver: StoreResolver<Proto>;
 
 	// ######################## Init ########################
 
-	constructor(config: DBConfigV3<Proto>, onOpenedCallback: VoidFunction) {
+	constructor(config: DBConfigV3<Proto>, storeResolver: StoreResolver<Proto>) {
 		super(`IDB_Store-${config.group}`);
+		this.storeResolver = storeResolver;
 		this.config = {
 			...config,
 			autoIncrement: config.autoIncrement || false,
 			version: config.version || 1
 		};
-		this.db = IndexedDB_Database.getOrCreate(config);
-		this.db.registerStore(config);
 	}
 
 	// ######################## DB Interaction ########################
 
 	getStore = async (write = false, store?: IDBObjectStore) => {
-		return this.db.getStore(this.config, write, store);
+		return this.storeResolver(this.config, write, store);
 	};
 
 	exists = async () => {
@@ -64,7 +65,6 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 			cursor.continue();
 		};
 	};
-
 
 	// ######################### Data insertion functions #########################
 
@@ -221,7 +221,6 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 
 	public async clearStore(): Promise<void> {
 		console.groupCollapsed('Clearing Store');
-		console.log(this.db);
 		console.log(this.config);
 		console.groupEnd();
 
