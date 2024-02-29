@@ -8,7 +8,7 @@ import {
 	Validator,
 	ValidatorTypeResolver
 } from './validator-core';
-import {currentTimeMillis} from '../utils/date-time-tools';
+import {currentTimeMillis, TimeRange} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {asArray, filterInstances} from '../utils/array-tools';
 import {_keys} from '../utils/object-tools';
@@ -223,7 +223,29 @@ export const tsValidateAudit = (range?: RangeTimestamp) => {
 	};
 };
 
-export const tsValidateNonMandatoryObject = <T extends object|undefined>(validator: ValidatorTypeResolver<T>) => {
+export const tsValidateTimeRange = (mandatory: boolean = true): Validator<TimeRange> => {
+	return [tsValidateExists(mandatory), (instance?: TimeRange) => {
+		if (!instance)
+			return 'No instance was provided to validation';
+
+		if (!instance.length)
+			return 'Empty time range provided';
+
+		if (instance.length > 2)
+			return 'Time range provided has too many values';
+
+		if (!instance[0] && typeof instance[1] === 'number')
+			return;
+
+		if (!instance[1] && typeof instance[0] === 'number')
+			return;
+
+		return tsValidateResult(instance, tsValidateRange());
+	}];
+};
+
+
+export const tsValidateNonMandatoryObject = <T extends object | undefined>(validator: ValidatorTypeResolver<T>) => {
 	return [tsValidateExists(false),
 		(input?: T) => tsValidateResult(input, validator)];
 };
