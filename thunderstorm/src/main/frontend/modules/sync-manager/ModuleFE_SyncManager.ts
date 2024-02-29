@@ -122,14 +122,14 @@ export class ModuleFE_SyncManager_Class
 
 	// ######################### Smart Sync #########################
 
-	private getAllDBModules = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbName);
+	private getAllDBModules = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbKey);
 
 	private getLocalSyncData = (): SyncDbData[] => {
 		const existingDBModules = this.getAllDBModules();
 		return existingDBModules.map(module => {
 			const lastSync = module.IDB.getLastSync();
 			return ({
-				dbName: module.dbDef.dbName,
+				dbName: module.dbDef.dbKey,
 				lastUpdated: lastSync
 			});
 		});
@@ -213,7 +213,7 @@ export class ModuleFE_SyncManager_Class
 	private prepareSyncGroupOperations = (syncGroups: SmartSync_SyncGroups) => {
 		//Prepare operations for NoSyncModules
 		const noSyncOperations = filterInstances(syncGroups[SmartSync_UpToDateSync].map(syncModule => {
-			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbName === syncModule.dbName);
+			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === syncModule.dbName);
 			if (!module)
 				return this.logError(`Couldn't find module to no sync with dbName: '${syncModule.dbName}'`);
 
@@ -222,7 +222,7 @@ export class ModuleFE_SyncManager_Class
 
 		//Prepare operations for DeltaSyncModules
 		const deltaSyncOperations = filterInstances(syncGroups[SmartSync_DeltaSync].map(syncModule => {
-			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((_module: DBModuleType) => _module.dbDef?.dbName === syncModule.dbName);
+			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((_module: DBModuleType) => _module.dbDef?.dbKey === syncModule.dbName);
 			if (!module)
 				return this.logError(`Couldn't find module to delta sync with dbName: '${syncModule.dbName}'`);
 
@@ -231,17 +231,17 @@ export class ModuleFE_SyncManager_Class
 
 		//Prepare operations for FullSyncModules
 		const fullSyncOperations = filterInstances(syncGroups[SmartSync_FullSync].map(syncModule => {
-			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbName === syncModule.dbName);
+			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbKey === syncModule.dbName);
 
 			if (!module)
 				return this.logError(`Couldn't find module to full sync with dbName: '${syncModule.dbName}'`);
 
 			if (this.currentlySyncingModules.includes(module))
-				return this.logDebug(`Avoid syncing on a currently syncing module ${module.dbDef.dbName}`);
+				return this.logDebug(`Avoid syncing on a currently syncing module ${module.dbDef.dbKey}`);
 
 			// Avoid unnecessary full sync
 			if (module.IDB.getLastSync() === syncModule.lastUpdated)
-				return this.logDebug(`Avoiding unnecessary full sync on ${module.dbDef.dbName}`);
+				return this.logDebug(`Avoiding unnecessary full sync on ${module.dbDef.dbKey}`);
 
 			return () => this.syncQueue.addItem({module, lastUpdated: syncModule.lastUpdated});
 		}));
@@ -287,16 +287,16 @@ export class ModuleFE_SyncManager_Class
 
 	private performNoSync = async (module: ModuleFE_BaseApi<any>) => {
 		this.logVerbose(`Performing NoSyncOperation for module ${module.getName()}`);
-		this.logVerbose(`No sync for: ${module.dbDef.dbName}, Already UpToDate.`);
-		module.logVerbose(`Updating Cache: ${module.dbDef.dbName}`);
+		this.logVerbose(`No sync for: ${module.dbDef.dbKey}, Already UpToDate.`);
+		module.logVerbose(`Updating Cache: ${module.dbDef.dbKey}`);
 		await module.cache.load();
-		module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
+		module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbKey}`);
 		module.setDataStatus(DataStatus.ContainsData);
 	};
 
 	private performDeltaSync = async <T extends DB_Object>(module: ModuleFE_BaseApi<T>, syncData: Response_DBSync<T>, lastUpdated: number) => {
 		this.logDebug(`Performing DeltaSyncOperation for module ${module.getName()}`);
-		module.logVerbose(`Firing event (DataStatus.UpdatingData): ${module.dbDef.dbName}`);
+		module.logVerbose(`Firing event (DataStatus.UpdatingData): ${module.dbDef.dbKey}`);
 		module.setDataStatus(DataStatus.UpdatingData);
 		if (syncData.toUpdate.length)
 			await module.onEntriesUpdated(syncData.toUpdate);
@@ -306,7 +306,7 @@ export class ModuleFE_SyncManager_Class
 
 		module.IDB.setLastUpdated(lastUpdated);
 
-		this.logDebug(`Delta Sync Completed: ${module.dbDef.dbName}`);
+		this.logDebug(`Delta Sync Completed: ${module.dbDef.dbKey}`);
 		module.setDataStatus(DataStatus.ContainsData);
 	};
 
@@ -316,37 +316,37 @@ export class ModuleFE_SyncManager_Class
 		this.currentlySyncingModules.push(module);
 		try {
 			// if the backend have decided module collection needs a full sync, we need to clean local idb and cache
-			module.logVerbose(`Cleaning IDB: ${module.dbDef.dbName}`);
+			module.logVerbose(`Cleaning IDB: ${module.dbDef.dbKey}`);
 			await module.IDB.clear(); // Also sets the module's data status to NoData.
-			module.logVerbose(`Cleaning Cache: ${module.dbDef.dbName}`);
+			module.logVerbose(`Cleaning Cache: ${module.dbDef.dbKey}`);
 			module.cache.clear();
 
 			// for full sync go fetch all db items
-			module.logVerbose(`Syncing: ${module.dbDef.dbName}`);
+			module.logVerbose(`Syncing: ${module.dbDef.dbKey}`);
 			const allItems = await module.v1.query({where: {}}).executeSync();
 
-			module.logVerbose(`Updating IDB: ${module.dbDef.dbName}`);
+			module.logVerbose(`Updating IDB: ${module.dbDef.dbKey}`);
 			await module.IDB.syncIndexDb(allItems);
 			module.IDB.setLastUpdated(data.lastUpdated);
-			module.logVerbose(`Updating Cache: ${module.dbDef.dbName}`);
+			module.logVerbose(`Updating Cache: ${module.dbDef.dbKey}`);
 			module.logVerbose(`allItems length ${allItems.length}`);
 			await module.cache.load();
 			module.logVerbose(`IDB items length ${(await module.IDB.query()).length}`);
 			module.logVerbose(`cache items length ${module.cache.all().length}`);
 
-			module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbName}`);
+			module.logVerbose(`Firing event (DataStatus.ContainsData): ${module.dbDef.dbKey}`);
 			module.setDataStatus(DataStatus.ContainsData);
 
-			module.logVerbose(`Firing event (EventType_Query): ${module.dbDef.dbName}`);
+			module.logVerbose(`Firing event (EventType_Query): ${module.dbDef.dbKey}`);
 
-			this.logDebug(`Full Sync Completed: ${module.dbDef.dbName}`);
+			this.logDebug(`Full Sync Completed: ${module.dbDef.dbKey}`);
 			if (allItems.length === 0)
 				return;
 
 			module.dispatchMulti(EventType_Query, allItems);
 
 		} catch (e: any) {
-			this.logError(`Error while syncing ${module.dbDef.dbName}`, e);
+			this.logError(`Error while syncing ${module.dbDef.dbKey}`, e);
 			throw e;
 		} finally {
 			removeItemFromArray(this.currentlySyncingModules, module);

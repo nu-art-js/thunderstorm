@@ -18,6 +18,6 @@ export const DBDef_EditableTest: DBDef_V3<DBProto_EditableTest> = {
 	generatedPropsValidator: Validator_GeneratedProps,
 	dbGroup: 'test',
 	versions: ['1.0.0'],
-	dbName: 'editable-test',
+	dbKey: 'editable-test',
 	entityName: 'editable-test',
 };

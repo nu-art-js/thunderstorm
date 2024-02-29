@@ -18,13 +18,13 @@ export const DBDef_PermissionUser: DBDef_V3<DBProto_PermissionUser> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: 'permissions--user',
+	dbKey: 'permissions--user',
 	entityName: 'PermissionUser',
 	dbGroup: PermissionDBGroup,
 	dependencies: {
 		'__groupIds': {
 			fieldType: 'string[]',
-			dbName: 'permissions--group',
+			dbKey: 'permissions--group',
 		}
 	}
 };

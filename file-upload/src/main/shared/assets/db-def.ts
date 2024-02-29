@@ -39,19 +39,19 @@ export const DBDef_Assets: DBDef_V3<DBProto_Assets> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.2', '1.0.1', '1.0.0'],
-	dbName: 'assets',
+	dbKey: 'assets',
 	dbGroup: AssetDBGroup,
 	entityName: convertUpperCamelCase('Assets', '-').toLowerCase(),
 };
 
 export const DBDef_TempAssets: DBDef_V3<DBProto_AssetsTemp> = {
 	...DBDef_Assets,
-	dbName: 'assets-temp',
+	dbKey: 'assets-temp',
 	entityName: 'assets-temp',
 };
 
 export const DBDef_TempDeleted: DBDef_V3<DBProto_AssetsDeleted> = {
 	...DBDef_Assets,
-	dbName: 'assets-deleted',
+	dbKey: 'assets-deleted',
 	entityName: 'assets-deleted',
 };

@@ -40,7 +40,7 @@ export type Proto_DB_Object<
 	Dependencies extends Exact<{ [K in DotNotation<T>]?: DBProto<any> }, Dependencies> = never> = {
 
 	type: T,
-	dbName: DatabaseName;
+	dbKey: DatabaseName;
 	dbGroup: DatabaseGroup,
 	generatedKeys: GeneratedKeys | keyof DB_Object
 	versions: Versions,
@@ -51,7 +51,7 @@ export type Proto_DB_Object<
 type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
 	[K in keyof D]: D[K] extends DBProto<any>
 		? {
-			dbName: D[K]['dbName'],
+			dbKey: D[K]['dbKey'],
 			fieldType: TypeOfTypeAsString<DotNotationValueType<T, K & string>>
 		}
 		: never
@@ -69,7 +69,7 @@ export type DBProto<P extends Proto_DB_Object<any, string, string, any, Versions
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: P['type'],
-	dbName: P['dbName'],
+	dbKey: P['dbKey'],
 	dbGroup: P['dbGroup'];
 	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
@@ -89,7 +89,7 @@ export type DBProto<P extends Proto_DB_Object<any, string, string, any, Versions
  * @template Proto The DBProto type that this definition is based on.
  */
 export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
-	dbName: Proto['dbName'];
+	dbKey: Proto['dbKey'];
 	dbGroup: Proto['dbGroup'];
 	entityName: string;
 	TTL?: number;
@@ -110,7 +110,7 @@ export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
  */
 export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> = {
 	validator: ValidatorTypeResolver<OmitDBObject<T>>;
-	dbName: string;
+	dbKey: string;
 	dbGroup: string;
 	entityName: string;
 	lockKeys?: (keyof T)[] // fallback to uniqueKeys, default ["_id"]

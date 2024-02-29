@@ -21,17 +21,17 @@ export const DBDef_PermissionAPI: DBDef_V3<DBProto_PermissionAPI> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: 'permissions--api',
+	dbKey: 'permissions--api',
 	dbGroup: PermissionDBGroup,
 	entityName: 'PermissionsAPI',
 	uniqueKeys: ['projectId', 'path'],
 	dependencies: {
 		projectId: {
-			dbName: 'permissions--project',
+			dbKey: 'permissions--project',
 			fieldType: 'string'
 		},
 		accessLevelIds: {
-			dbName: 'permissions--level',
+			dbKey: 'permissions--level',
 			fieldType: 'string[]'
 		}
 	}

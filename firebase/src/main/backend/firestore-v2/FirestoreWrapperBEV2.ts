@@ -80,11 +80,11 @@ export class FirestoreWrapperBEV2
 	};
 
 	public getCollection<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey>(dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type, Ks> {
-		const collection = this.collections[dbDef.dbName];
+		const collection = this.collections[dbDef.dbKey];
 		if (collection)
 			return collection;
 
-		return this.collections[dbDef.dbName] = new FirestoreCollectionV2<Type, Ks>(this, dbDef, hooks);
+		return this.collections[dbDef.dbKey] = new FirestoreCollectionV2<Type, Ks>(this, dbDef, hooks);
 	}
 
 	public listen<Type extends DB_Object>(collection: FirestoreCollectionV2<Type>, doc: string) {

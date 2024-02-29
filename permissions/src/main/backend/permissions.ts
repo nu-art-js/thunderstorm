@@ -34,7 +34,7 @@ const Domain_Developer_ID = '1f62a6e2fc4e2cfaa8aa1aa1a45b8c1b';
 const _Domain_PermissionsDefine: DefaultDef_Domain = {
 	_id: Domain_PermissionsDefine_ID,
 	namespace: 'Permissions Define',
-	dbNames: [DBDef_PermissionProject, DBDef_PermissionDomain, DBDef_PermissionAPI, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbName),
+	dbNames: [DBDef_PermissionProject, DBDef_PermissionDomain, DBDef_PermissionAPI, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbKey),
 	customApis: [
 		{path: ApiDefFE_Account.vv1.refreshSession.path, accessLevel: DefaultAccessLevel_NoAccess.name},
 		{path: ApiDef_Permissions.v1.createProject.path, accessLevel: DefaultAccessLevel_Admin.name},
@@ -45,13 +45,13 @@ const _Domain_PermissionsDefine: DefaultDef_Domain = {
 const _Domain_PermissionsAssign: DefaultDef_Domain = {
 	_id: Domain_PermissionsAssign_ID,
 	namespace: 'Permissions Assign',
-	dbNames: [DBDef_PermissionGroup.dbName, DBDef_PermissionUser.dbName],
+	dbNames: [DBDef_PermissionGroup.dbKey, DBDef_PermissionUser.dbKey],
 };
 
 const _Domain_AccountManagement: DefaultDef_Domain = {
 	_id: Domain_AccountManagement_ID,
 	namespace: 'Account Management',
-	dbNames: [DBDef_Accounts.dbName],
+	dbNames: [DBDef_Accounts.dbKey],
 	customApis: [
 		{path: ApiDefBE_Account.vv1.createAccount.path, accessLevel: DefaultAccessLevel_Admin.name},
 		{path: ApiDefBE_Account.vv1.createToken.path, accessLevel: DefaultAccessLevel_Admin.name},

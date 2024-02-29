@@ -10,12 +10,12 @@ export type DBApiFEConfigV3<Proto extends DBProto<any>> = {
 
 export const getModuleFEConfigV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): DBApiFEConfigV3<Proto> => {
 	return {
-		key: dbDef.dbName,
+		key: dbDef.dbKey,
 		versions: dbDef.versions || [DefaultDBVersion],
 		validator: dbDef.modifiablePropsValidator,
 		dbConfig: {
 			version: dbDef.versions[0],
-			name: dbDef.dbName,
+			name: dbDef.dbKey,
 			group: dbDef.dbGroup,
 			indices: dbDef.indices,
 			autoIncrement: false,

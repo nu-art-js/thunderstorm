@@ -19,7 +19,7 @@ export type ApiStruct_PushMessagesHistory = {
 
 export const ApiDef_PushMessagesHistory: ApiDefResolver<ApiStruct_PushMessagesHistory> = {
 	_v1: {
-		'?': {method: HttpMethod.POST, path: `v1/${DBDef_PushMessagesHistory.dbName}/post`},
-		'??': {method: HttpMethod.GET, path: `v1/${DBDef_PushMessagesHistory.dbName}/get`},
+		'?': {method: HttpMethod.POST, path: `v1/${DBDef_PushMessagesHistory.dbKey}/post`},
+		'??': {method: HttpMethod.GET, path: `v1/${DBDef_PushMessagesHistory.dbKey}/get`},
 	}
 };

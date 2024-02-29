@@ -48,7 +48,7 @@ export class ATS_CollectionUpgrades
 
 	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<DB_Object, any>) => {
 		await genericNotificationAction(async () => {
-			await ModuleFE_UpgradeCollection.vv1.upgrade({collectionsToUpgrade: [module.dbDef.dbName]}).setTimeout(5 * Minute).executeSync();
+			await ModuleFE_UpgradeCollection.vv1.upgrade({collectionsToUpgrade: [module.dbDef.dbKey]}).setTimeout(5 * Minute).executeSync();
 		}, `Upgrading ${collectionName}`);
 	};
 

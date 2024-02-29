@@ -20,7 +20,7 @@ export const Validator_Generated: DBProto_Session['generatedPropsValidator'] = {
 export const DBDef_Session: DBDef_V3<DBProto_Session> = {
 	modifiablePropsValidator: Validator_Modifiable,
 	generatedPropsValidator: Validator_Generated,
-	dbName: 'user-account--sessions',
+	dbKey: 'user-account--sessions',
 	dbGroup: AccountDBGroup,
 	entityName: 'Session',
 	uniqueKeys: ['accountId', 'deviceId'],
@@ -42,7 +42,7 @@ const generatedPropsValidator: DBProto_Account['generatedPropsValidator'] = {
 };
 
 export const DBDef_Accounts: DBDef_V3<DBProto_Account> = {
-	dbName: 'user-account--accounts',
+	dbKey: 'user-account--accounts',
 	entityName: 'Account',
 	dbGroup: AccountDBGroup,
 	modifiablePropsValidator: modifiablePropsValidator,

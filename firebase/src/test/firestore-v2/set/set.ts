@@ -30,7 +30,7 @@ export const updatedStringValue1 = 'test update';
 export const updatedStringValue2 = 'test update 2';
 
 const dbDef: DBDef<DB_Type> = {
-	dbName: 'firestore-set-tests',
+	dbKey: 'firestore-set-tests',
 	entityName: 'set-test',
 	validator: tsValidateMustExist
 };

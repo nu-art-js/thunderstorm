@@ -105,7 +105,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	 * If it doesn't- return nothing.
 	 * If it does- return conflict ids.
 	 */
-	async __canDeleteEntitiesProto<T extends DBProto<any>>(toDeleteDbName: T['dbName'], itemIdsToDelete: string[], transaction?: Transaction) {
+	async __canDeleteEntitiesProto<T extends DBProto<any>>(toDeleteDbName: T['dbKey'], itemIdsToDelete: string[], transaction?: Transaction) {
 		const result: DB_EntityDependency = {
 			collectionKey: this.dbDef.entityName,
 			conflictingIds: []
@@ -117,7 +117,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 
 		const promises: Promise<Proto['dbType'][]>[] = [];
 		_keys(dependencies).map(key => {
-			if (dependencies[key].dbName !== toDeleteDbName)
+			if (dependencies[key].dbKey !== toDeleteDbName)
 				return;
 
 			promises.push(batchActionParallel(itemIdsToDelete,
@@ -130,7 +130,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 						query = {[key]: {$aca: ids}};
 
 					if (query === undefined)
-						throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbName}'.`);
+						throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
 
 					return this.query.where(query as Clause_Where<Proto['dbType']>, transaction);
 				}));
@@ -283,7 +283,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	}
 
 	async collectDependencies(dbInstances: Proto['dbType'][], transaction?: Transaction) {
-		const potentialProtoDependencyError = await canDeleteDispatcherV3.dispatchModuleAsync(this.dbDef.dbName, dbInstances.map(dbObjectToId), transaction);
+		const potentialProtoDependencyError = await canDeleteDispatcherV3.dispatchModuleAsync(this.dbDef.dbKey, dbInstances.map(dbObjectToId), transaction);
 		const protoDependencies = filterInstances(potentialProtoDependencyError.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 
 		const potentialErrors = await canDeleteDispatcherV2.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);

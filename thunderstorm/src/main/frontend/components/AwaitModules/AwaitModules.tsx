@@ -94,7 +94,7 @@ export class AwaitModules
 		if (!permissibleModules.length)
 			return [];
 
-		return this.state.validModules.filter(module => !permissibleModules.includes(module.dbDef.dbName));
+		return this.state.validModules.filter(module => !permissibleModules.includes(module.dbDef.dbKey));
 	};
 
 	// ######################### Render #########################

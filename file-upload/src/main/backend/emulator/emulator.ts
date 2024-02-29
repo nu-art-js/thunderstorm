@@ -23,7 +23,7 @@ export const firebaseStorageEmulatorProxy = {
 		const pathToFile = request.query['path'];
 		const file = await ModuleBE_Firebase.createAdminSession().getStorage().getFile(String(pathToFile));
 		const asset = (await ModuleBE_Firebase.createAdminSession().getFirestoreV3().firestore
-			.doc(`${DBDef_Assets.dbName}/${lastElement(String(pathToFile).split('/'))}`).get()).data() as DB_Asset;
+			.doc(`${DBDef_Assets.dbKey}/${lastElement(String(pathToFile).split('/'))}`).get()).data() as DB_Asset;
 
 		file.createReadStream()
 			.on('error', (err) => {

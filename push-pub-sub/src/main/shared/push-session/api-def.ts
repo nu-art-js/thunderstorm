@@ -19,7 +19,7 @@ export type ApiStruct_PushSession = {
 
 export const ApiDef_PushSession: ApiDefResolver<ApiStruct_PushSession> = {
 	_v1: {
-		'?': {method: HttpMethod.POST, path: `v1/${DBDef_PushSession.dbName}/post`},
-		'??': {method: HttpMethod.GET, path: `v1/${DBDef_PushSession.dbName}/get`},
+		'?': {method: HttpMethod.POST, path: `v1/${DBDef_PushSession.dbKey}/post`},
+		'??': {method: HttpMethod.GET, path: `v1/${DBDef_PushSession.dbKey}/get`},
 	}
 };

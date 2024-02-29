@@ -60,8 +60,8 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 
 		// Add all DB modules to the mapper
 		RuntimeModules()
-			.filter<ModuleBE_BaseDBV2<any>>((module: DBModuleType) => !!module.dbDef?.dbName)
-			.forEach(_module => this.moduleMapper[_module.dbDef.dbName] = _module);
+			.filter<ModuleBE_BaseDBV2<any>>((module: DBModuleType) => !!module.dbDef?.dbKey)
+			.forEach(_module => this.moduleMapper[_module.dbDef.dbKey] = _module);
 
 		addRoutes([
 			createBodyServerApi(ApiDef_Archiving.vv1.hardDeleteUnique, this.hardDeleteUnique),
