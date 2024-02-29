@@ -372,7 +372,7 @@ export class EditableItem<T>
 		else {
 			editingItem = module.cache.unique(itemId);
 			if (!exists(editingItem))
-				throw new MUSTNeverHappenException(`Could not find db item for id: ${itemId} in collection: ${module.dbDef.dbName}`);
+				throw new MUSTNeverHappenException(`Could not find db item for id: ${itemId} in collection: ${module.dbDef.dbKey}`);
 		}
 
 		return new EditableDBItemV3<Proto>(editingItem, module);

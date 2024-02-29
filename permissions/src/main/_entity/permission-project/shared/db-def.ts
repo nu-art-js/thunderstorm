@@ -15,7 +15,7 @@ export const DBDef_PermissionProject: DBDef_V3<DBProto_PermissionProject> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: 'permissions--project',
+	dbKey: 'permissions--project',
 	entityName: 'PermissionsProject',
 	dbGroup: PermissionDBGroup,
 };

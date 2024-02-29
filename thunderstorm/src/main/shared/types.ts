@@ -97,5 +97,5 @@ export type ApiCaller<API> =
 		API extends BodyApi<any, any, any, any, HttpMethod_Body> ? ApiCaller_Body<API> :
 			API extends TypedApi<any, any, any, any, any> ? ApiCaller_Any<API> : never;
 
-export type DBModuleType = { dbDef?: { dbName: string } };
+export type DBModuleType = { dbDef?: { dbKey: string } };
 export type ApiModule = { dbModule?: DBModuleType, apiDef?: { [name: string]: { [name: string]: { path: string } } } }

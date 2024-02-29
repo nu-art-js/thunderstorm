@@ -119,12 +119,12 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 
 	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>) {
 		super();
-		this.name = _dbDef.dbName;
+		this.name = _dbDef.dbKey;
 		this.wrapper = wrapper;
-		if (!/[a-z-]{3,}/.test(_dbDef.dbName))
+		if (!/[a-z-]{3,}/.test(_dbDef.dbKey))
 			StaticLogger.logWarning('Please follow name pattern for collections /[a-z-]{3,}/');
 
-		this.collection = wrapper.firestore.collection(_dbDef.dbName);
+		this.collection = wrapper.firestore.collection(_dbDef.dbKey);
 		this.dbDef = _dbDef;
 		this.uniqueKeys = this.dbDef.uniqueKeys || Const_UniqueKeys;
 		this.validator = this.getValidator(_dbDef);
@@ -203,7 +203,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
 
 			if (thisShouldBeOnlyOne.length > 1)
-				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbName}`);
+				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbKey}`);
 
 			return thisShouldBeOnlyOne[0];
 		},

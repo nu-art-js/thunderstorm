@@ -13,7 +13,7 @@ export type DBApiBEConfigV3<Proto extends DBProto<any>> = {
 
 export const getModuleBEConfigV3 = <Proto extends DBProto<any, any, any>>(dbDef: DBDef_V3<Proto>): DBApiBEConfigV3<Proto> => {
 	return {
-		collectionName: dbDef.dbName,
+		collectionName: dbDef.dbKey,
 		versions: dbDef.versions,
 		lockKeys: dbDef.lockKeys,
 		uniqueKeys: dbDef.uniqueKeys || Const_UniqueKeys as Proto['uniqueKeys'],

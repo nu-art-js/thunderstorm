@@ -10,7 +10,7 @@ const chai = require('chai');
 chai.use(chaiAsPromised);
 
 export const createTests_dbDef: DBDef<DB_Type> = {
-	dbName: 'firestore-create-tests',
+	dbKey: 'firestore-create-tests',
 	entityName: 'create-test',
 	validator: tsValidateMustExist
 };

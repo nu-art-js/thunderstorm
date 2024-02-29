@@ -340,7 +340,7 @@ class ModuleBE_Permissions_Class
 				})));
 
 				const apiModules = arrayToMap(RuntimeModules()
-					.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule!.dbDef!.dbName);
+					.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule!.dbDef!.dbKey);
 
 				this.logDebug(_keys(apiModules));
 

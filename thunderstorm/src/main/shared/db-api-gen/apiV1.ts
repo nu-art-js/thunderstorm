@@ -66,15 +66,15 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType, '_id'>): ApiDefResolver<ApiStruct_DBApiGen<DBType>> => {
 	return {
 		v1: {
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
+			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/patch`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-all`},
+			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/metadata`},
 		}
 	};
 };
@@ -82,15 +82,15 @@ export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType,
 export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof DBType>(dbDef: DBDef<DBType, Ks>): ApiDefResolver<ApiStruct_DBApiGenIDB<DBType, Ks>> => {
 	return {
 		v1: {
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
+			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/patch`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-all`},
+			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/metadata`},
 		}
 	};
 };

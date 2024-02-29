@@ -85,7 +85,7 @@ export const DBDef_message: DBDef_V3<DBProto_Message> = {
 	modifiablePropsValidator: Validator_ModifiableProps_Message as DBProto_Message['modifiablePropsValidator'],
 	generatedPropsValidator: Validator_GeneratedProps_Text,
 	versions: ['1.0.0'],
-	dbName: 'messages',
+	dbKey: 'messages',
 	dbGroup: MessagingDBGroup,
 	entityName: 'Message',
 };

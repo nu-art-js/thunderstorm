@@ -26,16 +26,16 @@ export const DBDef_PermissionGroup: DBDef_V3<DBProto_PermissionGroup> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: 'permissions--group',
+	dbKey: 'permissions--group',
 	dbGroup: PermissionDBGroup,
 	entityName: 'PermissionGroup',
 	dependencies: {
 		projectId: {
-			dbName: 'permissions--project',
+			dbKey: 'permissions--project',
 			fieldType: 'string',
 		},
 		accessLevelIds: {
-			dbName: 'permissions--level',
+			dbKey: 'permissions--level',
 			fieldType: 'string[]',
 		}
 	}

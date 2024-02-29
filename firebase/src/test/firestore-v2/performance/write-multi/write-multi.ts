@@ -5,7 +5,7 @@ import {DBDef, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {expect} from 'chai';
 
 const dbDef: DBDef<DB_Type> = {
-	dbName: 'firestore-create-performance-tests',
+	dbKey: 'firestore-create-performance-tests',
 	entityName: 'create-performance-test',
 	validator: tsValidateMustExist
 };
@@ -24,22 +24,22 @@ export const TestSuite_FirestoreV2_Performance_WriteMulti: TestSuite<{}, {}> = {
 		for (let i = 0; i < docNumber; i++)
 			toCreate.push(deepClone(testInstance1));
 
-		const docs = collection.doc.allItems(toCreate)
+		const docs = collection.doc.allItems(toCreate);
 
-		console.log('Starting bulk set')
+		console.log('Starting bulk set');
 		let t0 = performance.now();
-		await collection.bulkWrite(docs, 'create', toCreate as DB_Type[])
+		await collection.bulkWrite(docs, 'create', toCreate as DB_Type[]);
 		let t1 = performance.now();
 		let allDocs = await collection.collection.listDocuments();
 		console.log(`Created ${docNumber} items - time: ${(t1 - t0)} ms`);
 		expect(allDocs.length).to.eql(docNumber);
 
-		console.log('Deleting collection...')
+		console.log('Deleting collection...');
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
-		console.log('Starting batch set')
+		console.log('Starting batch set');
 		t0 = performance.now();
-		await collection.bulkWrite(docs, 'set', toCreate as DB_Type[])
+		await collection.bulkWrite(docs, 'set', toCreate as DB_Type[]);
 		t1 = performance.now();
 		allDocs = await collection.collection.listDocuments();
 		console.log(`Created ${docNumber} items - time: ${(t1 - t0)} ms`);

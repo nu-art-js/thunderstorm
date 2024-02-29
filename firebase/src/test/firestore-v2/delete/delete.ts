@@ -29,7 +29,7 @@ type Input = {
 type Test = TestSuite<Input, PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
 
 const dbDef: DBDef<DB_Type> = {
-	dbName: 'firestore-delete-tests',
+	dbKey: 'firestore-delete-tests',
 	entityName: 'delete-test',
 	validator: tsValidateMustExist
 };

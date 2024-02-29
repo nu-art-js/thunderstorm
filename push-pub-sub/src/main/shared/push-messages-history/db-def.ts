@@ -19,7 +19,7 @@ export const DBDef_PushMessagesHistory: DBDef_V3<DBProto_PushMessagesHistory> = 
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: 'push-messages-history',
+	dbKey: 'push-messages-history',
 	dbGroup: PushPubSubDBGroup,
 	entityName: convertUpperCamelCase('PushMessagesHistory', '-').toLowerCase(),
 };

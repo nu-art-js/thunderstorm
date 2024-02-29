@@ -4,7 +4,7 @@ import {DB_Type} from '../_core/types';
 import {DBDef, deepClone, tsValidateMustExist} from '@nu-art/ts-common';
 
 const dbDef: DBDef<DB_Type> = {
-	dbName: 'firestore-query-tests',
+	dbKey: 'firestore-query-tests',
 	entityName: 'query-test',
 	validator: tsValidateMustExist
 };

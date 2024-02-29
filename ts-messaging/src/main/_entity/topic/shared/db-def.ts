@@ -14,7 +14,7 @@ export const DBDef_Topic: DBDef_V3<DBProto_Topic> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps_Topic,
 	versions: ['1.0.0'],
-	dbName: 'topics',
+	dbKey: 'topics',
 	dbGroup: MessagingDBGroup,
 	entityName: 'Topic',
 };

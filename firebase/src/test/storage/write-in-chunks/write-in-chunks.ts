@@ -20,7 +20,7 @@ export const TestSuite_WriteInChunks: WriteInChunks = {
 	testcases: writeInChunksTestCases,
 	processor: async (testCase) => {
 		const collection1 = firestore.getCollection({
-			dbName: 'collection1',
+			dbKey: 'collection1',
 			entityName: 'collection1',
 			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
 				collectionName: string,
@@ -28,7 +28,7 @@ export const TestSuite_WriteInChunks: WriteInChunks = {
 			}>>
 		});
 		const collection2 = firestore.getCollection({
-			dbName: 'collection2',
+			dbKey: 'collection2',
 			entityName: 'collection2',
 			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
 				collectionName: string,
@@ -36,7 +36,7 @@ export const TestSuite_WriteInChunks: WriteInChunks = {
 			}>>
 		});
 		const collection3 = firestore.getCollection({
-			dbName: 'collection3',
+			dbKey: 'collection3',
 			entityName: 'collection3',
 			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
 				collectionName: string,
@@ -44,7 +44,7 @@ export const TestSuite_WriteInChunks: WriteInChunks = {
 			}>>
 		});
 		const collection4 = firestore.getCollection({
-			dbName: 'collection4',
+			dbKey: 'collection4',
 			entityName: 'collection4',
 			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
 				collectionName: string,
@@ -52,7 +52,7 @@ export const TestSuite_WriteInChunks: WriteInChunks = {
 			}>>
 		});
 		const collection5 = firestore.getCollection({
-			dbName: 'collection5',
+			dbKey: 'collection5',
 			entityName: 'collection5',
 			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
 				collectionName: string,
