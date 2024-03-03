@@ -126,10 +126,10 @@ export class ModuleBE_SyncManager_Class
 		const frontendCollectionNames = body.modules.map(item => item.dbName);
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 
-		const permissibleModules: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbName)));
-		this.logVerbose(`Modules found: ${__stringify(permissibleModules.map(_module => _module.dbDef.dbName))}`);
+		const permissibleModules: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbKey)));
+		this.logVerbose(`Modules found: ${__stringify(permissibleModules.map(_module => _module.dbDef.dbKey))}`);
 
-		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)) => item.dbDef.dbName);
+		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)) => item.dbDef.dbKey);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
 		const upToDateSyncData = await this.getOrCreateSyncData(body);
 
@@ -168,7 +168,7 @@ export class ModuleBE_SyncManager_Class
 				try {
 					toUpdate = await moduleToCheck.query.where({__updated: {$gte: syncRequest.lastUpdated}});
 				} catch (e: any) {
-					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbName}`);
+					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbKey}`);
 					throw e;
 				}
 				const itemsToReturn = {
@@ -322,9 +322,10 @@ export class ModuleBE_SyncManager_Class
 
 export const DBDef_DeletedItems: DBDef<DeletedDBItem> = {
 	validator: tsValidateMustExist,
-	dbName: '__deleted__docs',
+	dbKey: '__deleted__docs',
 	entityName: 'DeletedDoc',
 	versions: ['1.0.0'],
+	dbGroup: 'app'
 };
 
 export const ModuleBE_SyncManager = new ModuleBE_SyncManager_Class();

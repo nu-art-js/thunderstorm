@@ -130,12 +130,12 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	constructor(wrapper: FirestoreWrapperBEV3, _dbDef: DBDef_V3<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
 		super();
-		this.name = _dbDef.dbName;
+		this.name = _dbDef.dbKey;
 		this.wrapper = wrapper;
-		if (!/[a-z-]{3,}/.test(_dbDef.dbName))
+		if (!/[a-z-]{3,}/.test(_dbDef.dbKey))
 			StaticLogger.logWarning('Please follow name pattern for collections /[a-z-]{3,}/');
 
-		this.collection = wrapper.firestore.collection(_dbDef.dbName);
+		this.collection = wrapper.firestore.collection(_dbDef.dbKey);
 		this.dbDef = _dbDef;
 		this.uniqueKeys = this.dbDef.uniqueKeys || Const_UniqueKeys;
 		this.validator = getDbDefValidator(_dbDef);
@@ -206,7 +206,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
 
 			if (thisShouldBeOnlyOne.length > 1)
-				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbName}`);
+				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbKey}`);
 
 			return thisShouldBeOnlyOne[0];
 		},
@@ -483,7 +483,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 		const index = versions.indexOf(version);
 		if (index === -1)
-			throw HttpCodes._4XX.BAD_REQUEST('Invalid Object Version', `Provided item with version(${version}) which doesn't exist for collection '${this.dbDef.dbName} (${__stringify(this.dbDef.versions)})' `);
+			throw HttpCodes._4XX.BAD_REQUEST('Invalid Object Version', `Provided item with version(${version}) which doesn't exist for collection '${this.dbDef.dbKey} (${__stringify(this.dbDef.versions)})' `);
 
 		return index !== versions.length - 1;
 	};

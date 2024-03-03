@@ -16,7 +16,7 @@ type Input = (collection: FirestoreCollectionV2<DB_Type, 'aKey' | 'bKey'>) => Pr
 type Test = TestSuite<Input, PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
 
 const dbDef: DBDef<DB_Type, 'aKey' | 'bKey'> = {
-	dbName: 'firestore-multiKeys',
+	dbKey: 'firestore-multiKeys',
 	uniqueKeys: ['aKey', 'bKey'],
 	entityName: 'multikeys-test',
 	validator: tsValidateMustExist

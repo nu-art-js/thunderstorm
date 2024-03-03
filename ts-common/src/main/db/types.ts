@@ -32,14 +32,14 @@ type Exact<T, Shape> = T & {
  */
 export type Proto_DB_Object<
 	T extends DB_Object,
-	DatabaseName extends string,
+	DatabaseKey extends string,
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<VersionType[]>,
 	UniqueKeys extends keyof T = Default_UniqueKey,
 	Dependencies extends Exact<{ [K in DotNotation<T>]?: DBProto<any> }, Dependencies> = never> = {
 
 	type: T,
-	dbName: DatabaseName
+	dbKey: DatabaseKey;
 	generatedKeys: GeneratedKeys | keyof DB_Object
 	versions: Versions,
 	uniqueKeys: UniqueKeys
@@ -49,7 +49,7 @@ export type Proto_DB_Object<
 type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
 	[K in keyof D]: D[K] extends DBProto<any>
 		? {
-			dbName: D[K]['dbName'],
+			dbKey: D[K]['dbKey'],
 			fieldType: TypeOfTypeAsString<DotNotationValueType<T, K & string>>
 		}
 		: never
@@ -67,7 +67,7 @@ export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclarat
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: P['type'],
-	dbName: P['dbName'],
+	dbKey: P['dbKey'],
 	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
@@ -86,8 +86,15 @@ export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclarat
  * @template Proto The DBProto type that this definition is based on.
  */
 export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
-	dbName: Proto['dbName'];
+	dbKey: Proto['dbKey'];
 	entityName: string;
+	frontend: {
+		name: string;
+		group: string;
+	};
+	backend: {
+		name: string;
+	};
 	TTL?: number;
 	lastUpdatedTTL?: number;
 	upgradeChunksSize?: number;
@@ -106,7 +113,8 @@ export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
  */
 export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> = {
 	validator: ValidatorTypeResolver<OmitDBObject<T>>;
-	dbName: string;
+	dbKey: string;
+	dbGroup: string;
 	entityName: string;
 	lockKeys?: (keyof T)[] // fallback to uniqueKeys, default ["_id"]
 	uniqueKeys?: Ks[] // default ["_id"]

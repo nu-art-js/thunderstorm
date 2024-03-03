@@ -22,6 +22,7 @@ import {
 	MessageType_Video,
 	UI_Message
 } from './types';
+import {MessagingDBGroup} from '../../shared';
 
 export const MessageTools = {
 	isText: (instance: UI_Message): instance is DB_Message_Text => {
@@ -84,6 +85,13 @@ export const DBDef_message: DBDef_V3<DBProto_Message> = {
 	modifiablePropsValidator: Validator_ModifiableProps_Message as DBProto_Message['modifiablePropsValidator'],
 	generatedPropsValidator: Validator_GeneratedProps_Text,
 	versions: ['1.0.0'],
-	dbName: 'messages',
+	dbKey: 'messages',
+	frontend: {
+		group: MessagingDBGroup,
+		name: 'message',
+	},
+	backend: {
+		name: 'messages'
+	},
 	entityName: 'Message',
 };

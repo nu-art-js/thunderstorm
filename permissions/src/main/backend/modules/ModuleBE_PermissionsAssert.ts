@@ -146,12 +146,12 @@ export class ModuleBE_PermissionsAssert_Class
 			const userPermissions = MemKey_UserPermissions.get();
 
 			const mapDbNameToApiModules = arrayToMap(RuntimeModules()
-				.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule.dbDef.dbName);
+				.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule.dbDef.dbKey);
 
 			const paths = dbModules.map(module => {
-				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbName];
+				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbKey];
 				if (!mapDbNameToApiModule) {
-					// this.logWarning(`no module found for ${module.dbDef.dbName}`);
+					// this.logWarning(`no module found for ${module.dbDef.dbKey}`);
 					return undefined;
 				}
 

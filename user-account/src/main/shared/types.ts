@@ -10,7 +10,6 @@ import {AuditableV2, DB_BaseObject, DB_Object, TypedKeyValue, UniqueId} from '@n
 import {DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common/db/types';
 import {accountTypes} from './consts';
 
-
 export type AccountType = typeof accountTypes[number];
 
 export type DB_Session = DB_Object & {

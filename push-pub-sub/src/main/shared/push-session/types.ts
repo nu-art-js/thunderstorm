@@ -4,10 +4,7 @@ import {FirebaseToken, PushSessionId} from '../types';
 
 type VersionTypes_PushSession = { '1.0.0': DB_PushSession };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PushSession>;
-type Dependencies = {
-//
-}
-
+type Dependencies = {}
 type UniqueKeys = 'pushSessionId';
 type Proto = Proto_DB_Object<DB_PushSession, 'push-session', never, Versions, UniqueKeys, Dependencies>;
 

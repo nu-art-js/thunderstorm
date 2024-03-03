@@ -184,7 +184,7 @@ export const innerQueryCollection = [
 ];
 
 const dbDefOuter: DBDef<DB_Type_Complex> = {
-	dbName: 'firestore-tests-outer',
+	dbKey: 'firestore-tests-outer',
 	entityName: 'OuterItem',
 	validator: {
 		refs: tsValidateArray(tsValidateString()),
@@ -194,7 +194,7 @@ const dbDefOuter: DBDef<DB_Type_Complex> = {
 };
 
 const dbDefInner: DBDef<DB_Type_Complex> = {
-	dbName: 'firestore-tests-inner',
+	dbKey: 'firestore-tests-inner',
 	entityName: 'InnerItem',
 	validator: tsValidateMustExist
 };

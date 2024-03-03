@@ -17,6 +17,13 @@ export const DBDef_EditableTest: DBDef_V3<DBProto_EditableTest> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: 'editable-test',
+	dbKey: 'editable-test',
 	entityName: 'editable-test',
+	frontend: {
+		group: 'test',
+		name: 'editable-test',
+	},
+	backend: {
+		name: 'editable-test',
+	}
 };

@@ -1,5 +1,6 @@
 import {DB_Object, DBProto, Proto_DB_Object, TS_Object, VersionsDeclaration} from '@nu-art/ts-common';
 
+export const AssetDBGroup = 'asset';
 
 type VersionTypes_Asset = {
 	'1.0.0': DB_Asset

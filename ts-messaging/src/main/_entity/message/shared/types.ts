@@ -10,7 +10,7 @@ type Dependencies = {
 
 type UniqueKeys = '_id';
 type GeneratedProps = '_auditorId';
-type Proto = Proto_DB_Object<DB_Message,'messages', GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_Message, 'messages', GeneratedProps, Versions, UniqueKeys, Dependencies>;
 export const MessageType_Text = 'text' as const;
 export const MessageType_Image = 'image' as const;
 export const MessageType_Video = 'video' as const;
