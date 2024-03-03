@@ -105,7 +105,6 @@ export * from './modules/db-api-gen/ModuleFE_BaseDB';
 export * from './modules/db-api-gen/ModuleFE_v3_BaseDB';
 export * from './modules/db-api-gen/ModuleFE_BaseApi';
 export * from './modules/db-api-gen/ModuleFE_v3_BaseApi';
-export * from './modules/app-config/ModuleFE_AppConfig';
 export * from './modules/archiving/ModuleFE_Archiving';
 export * from './modules/ModuleFE_BrowserHistory';
 export * from './modules/ModuleFE_ConnectivityModule';
@@ -128,4 +127,4 @@ export * from './utils/EditableDBItem';
 export * from './utils/perform-action';
 
 export * from './behavior-functions';
-export * from './_entity'
+export * from './_entity';
