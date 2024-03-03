@@ -86,6 +86,12 @@ export const DBDef_message: DBDef_V3<DBProto_Message> = {
 	generatedPropsValidator: Validator_GeneratedProps_Text,
 	versions: ['1.0.0'],
 	dbKey: 'messages',
-	dbGroup: MessagingDBGroup,
+	frontend: {
+		group: MessagingDBGroup,
+		name: 'message',
+	},
+	backend: {
+		name: 'messages'
+	},
 	entityName: 'Message',
 };

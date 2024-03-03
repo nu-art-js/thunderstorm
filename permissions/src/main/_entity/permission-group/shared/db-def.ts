@@ -27,8 +27,14 @@ export const DBDef_PermissionGroup: DBDef_V3<DBProto_PermissionGroup> = {
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
 	dbKey: 'permissions--group',
-	dbGroup: PermissionDBGroup,
 	entityName: 'PermissionGroup',
+	frontend: {
+		group: PermissionDBGroup,
+		name: 'group',
+	},
+	backend: {
+		name: 'permissions--group'
+	},
 	dependencies: {
 		projectId: {
 			dbKey: 'permissions--project',

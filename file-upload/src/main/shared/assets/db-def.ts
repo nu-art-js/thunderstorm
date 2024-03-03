@@ -40,18 +40,38 @@ export const DBDef_Assets: DBDef_V3<DBProto_Assets> = {
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.2', '1.0.1', '1.0.0'],
 	dbKey: 'assets',
-	dbGroup: AssetDBGroup,
 	entityName: convertUpperCamelCase('Assets', '-').toLowerCase(),
+	frontend: {
+		group: AssetDBGroup,
+		name: 'asset'
+	},
+	backend: {
+		name: 'assets',
+	}
 };
 
 export const DBDef_TempAssets: DBDef_V3<DBProto_AssetsTemp> = {
 	...DBDef_Assets,
 	dbKey: 'assets-temp',
 	entityName: 'assets-temp',
+	frontend: {
+		group: AssetDBGroup,
+		name: 'temp'
+	},
+	backend: {
+		name: 'assets-temp',
+	}
 };
 
 export const DBDef_TempDeleted: DBDef_V3<DBProto_AssetsDeleted> = {
 	...DBDef_Assets,
 	dbKey: 'assets-deleted',
 	entityName: 'assets-deleted',
+	frontend: {
+		group: AssetDBGroup,
+		name: 'deleted'
+	},
+	backend: {
+		name: 'assets-deleted',
+	}
 };

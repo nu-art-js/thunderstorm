@@ -15,8 +15,8 @@ export const getModuleFEConfigV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<
 		validator: dbDef.modifiablePropsValidator,
 		dbConfig: {
 			version: dbDef.versions[0],
-			name: dbDef.dbKey,
-			group: dbDef.dbGroup,
+			name: dbDef.frontend.name,
+			group: dbDef.frontend.group,
 			indices: dbDef.indices,
 			autoIncrement: false,
 			uniqueKeys: dbDef.uniqueKeys || [Const_UniqueKey] as (keyof Proto['dbType'])[]

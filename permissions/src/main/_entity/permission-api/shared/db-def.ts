@@ -22,7 +22,13 @@ export const DBDef_PermissionAPI: DBDef_V3<DBProto_PermissionAPI> = {
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
 	dbKey: 'permissions--api',
-	dbGroup: PermissionDBGroup,
+	frontend: {
+		group: PermissionDBGroup,
+		name: 'api',
+	},
+	backend: {
+		name: 'permissions--api',
+	},
 	entityName: 'PermissionsAPI',
 	uniqueKeys: ['projectId', 'path'],
 	dependencies: {

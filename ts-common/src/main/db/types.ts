@@ -32,16 +32,14 @@ type Exact<T, Shape> = T & {
  */
 export type Proto_DB_Object<
 	T extends DB_Object,
-	DatabaseName extends string,
-	DatabaseGroup extends string,
+	DatabaseKey extends string,
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<VersionType[]>,
 	UniqueKeys extends keyof T = Default_UniqueKey,
 	Dependencies extends Exact<{ [K in DotNotation<T>]?: DBProto<any> }, Dependencies> = never> = {
 
 	type: T,
-	dbKey: DatabaseName;
-	dbGroup: DatabaseGroup,
+	dbKey: DatabaseKey;
 	generatedKeys: GeneratedKeys | keyof DB_Object
 	versions: Versions,
 	uniqueKeys: UniqueKeys
@@ -64,13 +62,12 @@ type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
  * @template ModifiableSubType The subset of P's type that is modifiable.
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
-export type DBProto<P extends Proto_DB_Object<any, string, string, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	proto: P
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: P['type'],
 	dbKey: P['dbKey'],
-	dbGroup: P['dbGroup'];
 	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
@@ -90,8 +87,14 @@ export type DBProto<P extends Proto_DB_Object<any, string, string, any, Versions
  */
 export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
 	dbKey: Proto['dbKey'];
-	dbGroup: Proto['dbGroup'];
 	entityName: string;
+	frontend: {
+		name: string;
+		group: string;
+	};
+	backend: {
+		name: string;
+	};
 	TTL?: number;
 	lastUpdatedTTL?: number;
 	upgradeChunksSize?: number;

@@ -1,5 +1,4 @@
 import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
-import {MessagingDBGroupType} from '../../shared';
 
 type VersionTypes_Topic = {
 	'1.0.0': DB_Topic
@@ -11,7 +10,7 @@ type Dependencies = {
 
 type UniqueKeys = '_id';
 type GeneratedProps = 'type' | 'refId'
-type Proto = Proto_DB_Object<DB_Topic, 'topics', MessagingDBGroupType, GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_Topic, 'topics', GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_Topic = DBProto<Proto>;
 
