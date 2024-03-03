@@ -219,10 +219,6 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 	// ######################### Data deletion functions #########################
 
 	public async clearStore(): Promise<void> {
-		console.groupCollapsed('Clearing Store');
-		console.log(this.config);
-		console.groupEnd();
-
 		const store = await this.getStore(true);
 		return new Promise((resolve, reject) => {
 			const request = store.clear();
