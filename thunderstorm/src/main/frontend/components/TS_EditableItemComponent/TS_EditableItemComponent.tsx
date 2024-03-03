@@ -1,5 +1,5 @@
-import {ReactNode} from 'react';
 import * as React from 'react';
+import {ReactNode} from 'react';
 import {EditableItem} from '../../utils/EditableItem';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_PropRenderer} from '../TS_PropRenderer';
@@ -17,6 +17,9 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
 	extends ComponentSync<Props, State> {
 
 	shouldReDeriveState(nextProps: Readonly<Props>): boolean {
+		// if (!this.state)
+		// 	throw new BadImplementationException(`Check if you have overridden 'deriveStateFromProps' without calling super.`);
+
 		if (this.state.tag !== nextProps.editable.tag)
 			return true;
 
