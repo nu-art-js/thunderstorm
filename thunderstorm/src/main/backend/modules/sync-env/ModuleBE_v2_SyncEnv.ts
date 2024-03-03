@@ -93,7 +93,7 @@ class ModuleBE_v2_SyncEnv_Class
 		const url = remoteUrls[body.env];
 		const sessionId = MemKey_HttpRequest.get().headers['x-session-id'];
 
-		const module = RuntimeModules().find<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbName === body.moduleName);
+		const module = RuntimeModules().find<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbKey === body.moduleName);
 
 		const upsertAll = module.apiDef.v1.upsertAll;
 		const response: Response_BackupDocsV2 = await AxiosHttpModule

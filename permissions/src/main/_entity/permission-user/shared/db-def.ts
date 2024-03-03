@@ -1,5 +1,6 @@
 import {DBDef_V3, tsValidateArray, tsValidateString, tsValidateStringAndNumbersWithDashes} from '@nu-art/ts-common';
 import {DBProto_PermissionUser} from './types';
+import {PermissionDBGroup} from '../../shared';
 
 
 const Validator_ModifiableProps: DBProto_PermissionUser['modifiablePropsValidator'] = {
@@ -17,12 +18,19 @@ export const DBDef_PermissionUser: DBDef_V3<DBProto_PermissionUser> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: 'permissions--user',
+	dbKey: 'permissions--user',
 	entityName: 'PermissionUser',
+	frontend: {
+		group: PermissionDBGroup,
+		name: 'user',
+	},
+	backend: {
+		name: 'permissions--user'
+	},
 	dependencies: {
 		'__groupIds': {
 			fieldType: 'string[]',
-			dbName: 'permissions--group',
+			dbKey: 'permissions--group',
 		}
 	}
 };

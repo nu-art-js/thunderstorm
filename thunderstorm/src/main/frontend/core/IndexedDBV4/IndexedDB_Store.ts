@@ -1,123 +1,40 @@
-/*
- * Thunderstorm is a full web app framework!
- *
- * Typescript & Express backend infrastructure that natively runs on firebase function
- * Typescript & React frontend infrastructure
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+import {DBProto, IndexKeys, Logger, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {DBConfigV3, IndexDb_Query_V3, ReduceFunction_V3} from './types';
 
-import {DBIndex, DBProto, IndexKeys, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 
-//@ts-ignore - set IDBAPI as indexedDB regardless of browser
-const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+type StoreResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>, write?: boolean, store?: IDBObjectStore) => Promise<IDBObjectStore>;
+type StoreExistsResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>) => Promise<boolean>;
 
-export type ReduceFunction_V3<ItemType, ReturnType> = (
-	accumulator: ReturnType,
-	arrayItem: ItemType,
-	index?: number,
-	array?: ItemType[]
-) => ReturnType
+export class IndexedDB_Store<Proto extends DBProto<any>>
+	extends Logger {
 
-export type DBConfigV3<Proto extends DBProto<any>> = {
-	name: string
-	group: string;
-	version?: number
-	autoIncrement?: boolean,
-	uniqueKeys: (keyof Proto['dbType'])[]
-	indices?: DBIndex<Proto['dbType']>[]
-	upgradeProcessor?: (db: IDBDatabase) => void
-};
-
-export type IndexDb_Query_V3 = {
-	query?: string | number | string[] | number[],
-	indexKey?: string,
-	limit?: number
-};
-
-export class IndexedDBV3<Proto extends DBProto<any>> {
-	private db!: IDBDatabase;
 	private config: DBConfigV3<Proto>;
+	private storeResolver: StoreResolver<Proto>;
+	private storeExistsResolver: StoreExistsResolver<Proto>;
 
-	private static dbs: { [collection: string]: IndexedDBV3<any> } = {};
+	// ######################## Init ########################
 
-	static getOrCreate<Proto extends DBProto<any>>(config: DBConfigV3<Proto>): IndexedDBV3<Proto> {
-		return this.dbs[config.name] || (this.dbs[config.name] = new IndexedDBV3<Proto>(config));
-	}
-
-	constructor(config: DBConfigV3<Proto>) {
+	constructor(config: DBConfigV3<Proto>, storeResolver: StoreResolver<Proto>, storeExistsResolver: StoreExistsResolver<Proto>) {
+		super(`IDB_Store-${config.group}`);
+		this.storeResolver = storeResolver;
+		this.storeExistsResolver = storeExistsResolver;
 		this.config = {
 			...config,
-			upgradeProcessor: (db: IDBDatabase) => {
-				if (!db.objectStoreNames.contains(this.config.name)) {
-					const store = db.createObjectStore(this.config.name, {
-						autoIncrement: config.autoIncrement,
-						keyPath: config.uniqueKeys as unknown as string[]
-					});
-					this.config.indices?.forEach(index => store.createIndex(index.id, index.keys as string | string[], {
-						multiEntry: index.params?.multiEntry,
-						unique: index.params?.unique
-					}));
-				}
-
-				config.upgradeProcessor?.(db);
-			},
 			autoIncrement: config.autoIncrement || false,
-			version: config.version || 1
+			version: config.version
 		};
 	}
 
-	async exists() {
-		return (await window.indexedDB.databases()).find(db => db.name === this.config.name);
-	}
+	// ######################## DB Interaction ########################
 
-	async open(): Promise<IDBDatabase> {
-		return new Promise((resolve, reject) => {
-			if (!IDBAPI)
-				reject(new Error('Error - current browser does not support IndexedDB'));
+	getStore = async (write = false, store?: IDBObjectStore) => this.storeResolver(this.config, write, store);
 
-			const request = IDBAPI.open(this.config.name);
-			request.onupgradeneeded = () => {
-				const db = request.result;
-				this.config.upgradeProcessor?.(db);
-			};
+	exists = async () => this.storeExistsResolver(this.config);
 
-			request.onsuccess = () => {
-				// console.log(`${this.config.name} - IDB result`, request.result);
-				this.db = request.result;
-				resolve(this.db);
-			};
-
-			request.onerror = () => {
-				reject(new Error(`Error opening IDB - ${this.config.name}`));
-			};
-		});
-	}
-
-	public readonly store = async (write = false, store?: IDBObjectStore) => {
-		if (store)
-			return store;
-
-		if (!this.db)
-			await this.open();
-
-		return this.db.transaction(this.config.name, write ? 'readwrite' : 'readonly').objectStore(this.config.name);
-	};
+	// ######################## Cursor Interaction ########################
 
 	private getCursor = async (query?: IndexDb_Query_V3): Promise<IDBRequest<IDBCursorWithValue | null>> => {
-		const store = await this.store();
+		const store = await this.getStore();
 
 		let cursorRequest: IDBRequest<IDBCursorWithValue | null>;
 
@@ -151,16 +68,16 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 	// ######################### Data insertion functions #########################
 
 	public async insert(value: Proto['dbType'], _store?: IDBObjectStore): Promise<Proto['dbType']> {
-		const store = await this.store(true, _store);
-		const request = store.add(value);
+		const store = await this.getStore(true, _store);
 		return new Promise((resolve, reject) => {
+			const request = store.add(value);
 			request.onerror = () => reject(new Error(`Error inserting item in DB - ${this.config.name}`));
 			request.onsuccess = () => resolve(request.result as unknown as Proto['dbType']);
 		});
 	}
 
 	public async insertAll(values: Proto['dbType'][], _store?: IDBObjectStore) {
-		const store = await this.store(true, _store);
+		const store = await this.getStore(true, _store);
 
 		for (const value of values) {
 			await this.insert(value, store);
@@ -168,7 +85,7 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 	}
 
 	public async upsert(value: Proto['dbType'], _store?: IDBObjectStore): Promise<Proto['dbType']> {
-		const store = await this.store(true, _store);
+		const store = await this.getStore(true, _store);
 		try {
 			const request = store.put(value);
 			return new Promise((resolve, reject) => {
@@ -176,13 +93,13 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 				request.onsuccess = () => resolve(request.result as unknown as Proto['dbType']);
 			});
 		} catch (e: any) {
-			StaticLogger.logError('trying to upsert: ', value);
+			this.logError('trying to upsert: ', value);
 			throw e;
 		}
 	}
 
 	public async upsertAll(values: Proto['dbType'][], _store?: IDBObjectStore) {
-		const store = (await this.store(true, _store));
+		const store = (await this.getStore(true, _store));
 		for (const value of values) {
 			await this.upsert(value, store);
 		}
@@ -192,7 +109,7 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 
 	public async get(key: IndexKeys<Proto['dbType'], keyof Proto['dbType']>): Promise<Proto['dbType'] | undefined> {
 		const map = this.config.uniqueKeys.map(k => key[k]);
-		const request = (await this.store()).get(map as IDBValidKey);
+		const request = (await this.getStore()).get(map as IDBValidKey);
 
 		return new Promise((resolve, reject) => {
 			request.onerror = () => reject(new Error(`Error getting item from DB - ${this.config.name}`));
@@ -201,7 +118,7 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 	}
 
 	public async query(query: IndexDb_Query_V3): Promise<Proto['dbType'][] | undefined> {
-		const store = await this.store();
+		const store = await this.getStore();
 
 		return new Promise((resolve, reject) => {
 			let request: IDBRequest;
@@ -301,26 +218,16 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 
 	// ######################### Data deletion functions #########################
 
-	public async clearDB(): Promise<void> {
-		const store = await this.store(true);
+	public async clearStore(): Promise<void> {
+		console.groupCollapsed('Clearing Store');
+		console.log(this.config);
+		console.groupEnd();
+
+		const store = await this.getStore(true);
 		return new Promise((resolve, reject) => {
 			const request = store.clear();
 			request.onsuccess = () => resolve();
 			request.onerror = reject;
-		});
-	}
-
-	public async deleteDB(): Promise<void> {
-		if (this.db)
-			this.db.close();
-
-		return new Promise((resolve, reject) => {
-			const request = IDBAPI.deleteDatabase(this.db.name);
-			request.onerror = (event) => {
-				StaticLogger.logError(`Error deleting database: ${this.db.name}`);
-				reject();
-			};
-			request.onsuccess = () => resolve();
 		});
 	}
 
@@ -330,7 +237,7 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 
 	public async delete(key: (IndexKeys<Proto['dbType'], keyof Proto['dbType']> | Proto['dbType'])): Promise<Proto['dbType']> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
-		const store = await this.store(true);
+		const store = await this.getStore(true);
 
 		return new Promise((resolve, reject) => {
 			const itemRequest = store.get(keys as IDBValidKey);
@@ -351,5 +258,5 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 			};
 		});
 	}
-}
 
+}

@@ -66,15 +66,15 @@ export type ApiStruct_DBApiGenIDBV3<Proto extends DBProto<any>> = {
 export const DBApiDefGeneratorV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenV3<Proto>> => {
 	return {
 		v1: {
-			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`, timeout: 60000},
-			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/metadata`},
+			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/query`, timeout: 60000},
+			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/patch`},
+			delete: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/delete-all`},
+			metadata: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/metadata`},
 		}
 	};
 };
@@ -82,15 +82,15 @@ export const DBApiDefGeneratorV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<
 export const DBApiDefGeneratorIDBV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenIDBV3<Proto>> => {
 	return {
 		v1: {
-			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/query`, timeout: 60000},
-			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbDef.dbName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `${version}/${dbDef.dbName}/metadata`},
+			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/query`, timeout: 60000},
+			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/patch`},
+			delete: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/delete-all`},
+			metadata: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/metadata`},
 		}
 	};
 };

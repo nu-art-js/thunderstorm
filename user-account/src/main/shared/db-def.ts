@@ -4,9 +4,10 @@ import {tsValidateArray, tsValidateBoolean, tsValidateString, tsValidateTimestam
 import {DBProto_Account, DBProto_Session} from './types';
 import {_accountTypes} from './consts';
 
+const accountGroupName = 'account';
 
 export const Validator_Modifiable: DBProto_Session['modifiablePropsValidator'] = {
-	label: tsValidateString(100,false),
+	label: tsValidateString(100, false),
 	accountId: tsValidateUniqueId,
 	deviceId: tsValidateUniqueId,
 	prevSession: tsValidateArray(tsValidateString(), false),
@@ -20,10 +21,17 @@ export const Validator_Generated: DBProto_Session['generatedPropsValidator'] = {
 export const DBDef_Session: DBDef_V3<DBProto_Session> = {
 	modifiablePropsValidator: Validator_Modifiable,
 	generatedPropsValidator: Validator_Generated,
-	dbName: 'user-account--sessions',
+	dbKey: 'user-account--sessions',
 	entityName: 'Session',
 	uniqueKeys: ['accountId', 'deviceId'],
 	versions: ['1.0.0'],
+	frontend: {
+		group: accountGroupName,
+		name: 'session',
+	},
+	backend: {
+		name: 'user-account--sessions'
+	}
 };
 
 const modifiablePropsValidator: DBProto_Account['modifiablePropsValidator'] = {
@@ -41,9 +49,16 @@ const generatedPropsValidator: DBProto_Account['generatedPropsValidator'] = {
 };
 
 export const DBDef_Accounts: DBDef_V3<DBProto_Account> = {
-	dbName: 'user-account--accounts',
+	dbKey: 'user-account--accounts',
 	entityName: 'Account',
 	modifiablePropsValidator: modifiablePropsValidator,
 	generatedPropsValidator: generatedPropsValidator,
-	versions: ['1.0.0']
+	versions: ['1.0.0'],
+	frontend: {
+		group: accountGroupName,
+		name: 'account'
+	},
+	backend: {
+		name: 'user-account--accounts',
+	}
 };

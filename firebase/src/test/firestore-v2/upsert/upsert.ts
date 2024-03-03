@@ -29,7 +29,7 @@ type Result = () => { created?: PreDB<DB_Type>[], updated?: PreDB<DB_Type>[], no
 type Test = TestSuite<Input, Result>; //result - the items left in the collection after deletion
 
 const dbDef: DBDef<DB_Type> = {
-	dbName: 'firestore-upsert-tests',
+	dbKey: 'firestore-upsert-tests',
 	entityName: 'upsert-test',
 	validator: tsValidateMustExist
 };

@@ -20,7 +20,7 @@
 // type DeepPartial<T> = Partial<{ [P in keyof T]: DeepPartial<T[P]> }>;
 //
 // const dbDef: DBDef<DB_Type> = {
-// 	dbName: 'firestore-update-tests',
+// 	dbKey: 'firestore-update-tests',
 // 	entityName: 'update-test',
 // 	validator: tsValidateMustExist
 // };

@@ -1,6 +1,7 @@
 import {DBDef_V3, tsValidateArray, tsValidateBoolean, tsValidateDynamicObject, tsValidateNumber, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
 import {DBProto_PermissionAPI} from './types';
 import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../../shared/validators';
+import {PermissionDBGroup} from '../../shared';
 
 
 const Validator_ModifiableProps: DBProto_PermissionAPI['modifiablePropsValidator'] = {
@@ -20,16 +21,23 @@ export const DBDef_PermissionAPI: DBDef_V3<DBProto_PermissionAPI> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: 'permissions--api',
+	dbKey: 'permissions--api',
+	frontend: {
+		group: PermissionDBGroup,
+		name: 'api',
+	},
+	backend: {
+		name: 'permissions--api',
+	},
 	entityName: 'PermissionsAPI',
 	uniqueKeys: ['projectId', 'path'],
 	dependencies: {
 		projectId: {
-			dbName: 'permissions--project',
+			dbKey: 'permissions--project',
 			fieldType: 'string'
 		},
 		accessLevelIds: {
-			dbName: 'permissions--level',
+			dbKey: 'permissions--level',
 			fieldType: 'string[]'
 		}
 	}

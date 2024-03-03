@@ -28,10 +28,10 @@ export class ModuleBE_UpgradeCollection_Class
 		const filterModules = (module: any) => body.collectionsToUpgrade.length > 0 ? body.collectionsToUpgrade.includes(module.dbModule?.dbDef?.dbName) : true;
 
 		const allCollectionModulesToCheck = RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) =>
-			!!module.dbModule?.dbDef?.dbName
+			!!module.dbModule?.dbDef?.dbKey
 			&& !(module.dbModule as { advisorCollectionModule: boolean }).advisorCollectionModule
-			&& filterModules(module))
-		this.logWarningBold(`Modules to check and upgrade: ${__stringify(allCollectionModulesToCheck.map(module => module.dbModule.dbDef.dbName))}`);
+			&& filterModules(module));
+		this.logWarningBold(`Modules to check and upgrade: ${__stringify(allCollectionModulesToCheck.map(module => module.dbModule.dbDef.dbKey))}`);
 		await Promise_all_sequentially(allCollectionModulesToCheck.map(module => () => this.upgradeModuleIfNecessary(module.dbModule)));
 	};
 
@@ -43,7 +43,7 @@ export class ModuleBE_UpgradeCollection_Class
 	upgrade = async (body: Request_UpgradeCollections) => {
 		const toUpgrade = body.collectionsToUpgrade;
 		const moduleToUpgrade = RuntimeModules()
-			.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbName && toUpgrade.includes(module.dbModule?.dbDef?.dbName));
+			.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbKey && toUpgrade.includes(module.dbModule?.dbDef?.dbKey));
 		await Promise_all_sequentially(moduleToUpgrade.map(module => module.dbModule.upgradeCollection));
 	};
 }

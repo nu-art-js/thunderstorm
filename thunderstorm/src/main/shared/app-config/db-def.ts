@@ -16,8 +16,9 @@ const Validator_AppConfig: ValidatorTypeResolver<OmitDBObject<DB_AppConfig>> = {
 
 export const DBDef_AppConfigs: DBDef<DB_AppConfig, 'key'> = {
 	validator: Validator_AppConfig,
-	dbName: 'app-configs',
+	dbKey: 'app-configs',
 	entityName: 'app-config',
 	versions: ['1.0.0'],
-	uniqueKeys: ['key']
+	uniqueKeys: ['key'],
+	dbGroup: 'app',
 };

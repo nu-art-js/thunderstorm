@@ -1,9 +1,9 @@
-import {TestSuite} from "@nu-art/ts-common/testing/types";
-import {DB_Type} from "../_core/types";
-import {DBDef, deepClone, PreDB, tsValidateMustExist} from "@nu-art/ts-common";
-import {FirestoreCollectionV2} from "../../../main/backend/firestore-v2/FirestoreCollectionV2";
-import {firestore, testInstance1} from "../_core/consts";
-import {expect} from "chai";
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {DB_Type} from '../_core/types';
+import {DBDef, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
+import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
+import {firestore, testInstance1} from '../_core/consts';
+import {expect} from 'chai';
 
 type Input = {
 	action: (collection: FirestoreCollectionV2<DB_Type>, items: PreDB<DB_Type>[]) => Promise<void>
@@ -11,7 +11,7 @@ type Input = {
 }
 
 const dbDef: DBDef<DB_Type> = {
-	dbName: 'firestore-transaction-multi-write-tests',
+	dbKey: 'firestore-transaction-multi-write-tests',
 	entityName: 'test',
 	validator: tsValidateMustExist
 };

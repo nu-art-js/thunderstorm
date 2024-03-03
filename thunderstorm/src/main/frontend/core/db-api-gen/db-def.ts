@@ -49,12 +49,12 @@ export const getModuleFEConfig = <T extends DB_Object, Ks extends keyof T = Defa
 	}, dbDef.validator as ValidatorTypeResolver<T>);
 
 	return {
-		key: dbDef.dbName,
+		key: dbDef.dbKey,
 		versions: dbDef.versions || [DefaultDBVersion],
 		validator: validator,
 		dbConfig: {
 			version: 1,
-			name: dbDef.dbName,
+			name: dbDef.dbKey,
 			indices: dbDef.indices,
 			autoIncrement: false,
 			uniqueKeys: dbDef.uniqueKeys || [Const_UniqueKey] as Ks[]
