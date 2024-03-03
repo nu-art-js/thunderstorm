@@ -72,10 +72,12 @@ export class IndexedDB_Database
 			request.onupgradeneeded = () => {
 				const db = request.result;
 
+				const duplicatedStores = new Set<string>();
+
 				this.registeredStores.forEach(registeredStore => {
 					//Don't create a store that already exists
 					if (db.objectStoreNames.contains(registeredStore.config.name))
-						return;
+						return duplicatedStores.add(registeredStore.config.name);
 
 					const options: IDBObjectStoreParameters = {
 						autoIncrement: registeredStore.config.autoIncrement,
@@ -90,6 +92,9 @@ export class IndexedDB_Database
 
 					registeredStore.config.upgradeProcessor?.(store);
 				});
+
+				if (duplicatedStores.size)
+					this.logWarningBold(`Stores were registered to IDB ${this.dbName} more than once`, ...Array.from(duplicatedStores));
 			};
 
 			request.onsuccess = () => {
