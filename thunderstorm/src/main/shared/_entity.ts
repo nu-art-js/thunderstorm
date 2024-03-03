@@ -1,0 +1,1 @@
+export * from '../_entity/app-config/shared';

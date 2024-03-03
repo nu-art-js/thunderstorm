@@ -1,26 +1,19 @@
+import {DBApiConfigV3, ModuleBE_BaseDBV3} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV3';
+import {DBDef_AppConfig, DBProto_AppConfig, DB_AppConfig} from './shared';
 import {_keys, ApiException, Logger, PreDB, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
-import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
-import {ApiDef_AppConfig, DB_AppConfig, DBDef_AppConfigs} from '../../../shared';
-import {addRoutes} from '../ModuleBE_APIs';
-import {createQueryServerApi} from '../../core/typed-api';
-
 
 type InferType<T> = T extends AppConfigKey_BE<infer ValueType> ? ValueType : never;
+type Config = DBApiConfigV3<DBProto_AppConfig> & {}
 
-class ModuleBE_AppConfig_Class
-	extends ModuleBE_BaseDBV2<DB_AppConfig> {
+export class ModuleBE_AppConfigDB_Class
+	extends ModuleBE_BaseDBV3<DBProto_AppConfig, Config> {
 
 	private keyMap: TypedMap<AppConfigKey_BE<any>> = {};
 
-	constructor() {
-		super(DBDef_AppConfigs);
-	}
+	// ######################## Lifecycle ########################
 
-	init() {
-		super.init();
-		addRoutes([createQueryServerApi(ApiDef_AppConfig.vv1.getConfigByKey, async (data) => {
-			return this.getResolverDataByKey(data.key);
-		})]);
+	constructor() {
+		super(DBDef_AppConfig);
 	}
 
 	protected async preWriteProcessing(dbInstance: PreDB<DB_AppConfig>, transaction?: FirebaseFirestore.Transaction): Promise<void> {
@@ -32,18 +25,6 @@ class ModuleBE_AppConfig_Class
 		this.logInfo(dbInstance);
 	}
 
-	registerKey<K extends AppConfigKey_BE<any>>(appConfigKey: K) {
-		this.keyMap[appConfigKey.key] = appConfigKey;
-	}
-
-	getResolverDataByKey(key: string) {
-		const appConfigKey = this.keyMap[key];
-		if (!appConfigKey)
-			throw new ApiException(404, `Could not find an app config with key ${key}`);
-
-		return this.getAppKey(appConfigKey);
-	}
-
 	public createDefaults = async (logger: Logger = this) => {
 		const keys = _keys(this.keyMap);
 		for (const key of keys) {
@@ -51,6 +32,22 @@ class ModuleBE_AppConfig_Class
 			this.logInfo(`Set App-Config default value for '${key}'`, config);
 		}
 	};
+
+	// ######################## API ########################
+
+	getResolverDataByKey = async (key: string) => {
+		const appConfigKey = this.keyMap[key];
+		if (!appConfigKey)
+			throw new ApiException(404, `Could not find an app config with key ${key}`);
+
+		return this.getAppKey(appConfigKey);
+	};
+
+	// ######################## Logic ########################
+
+	registerKey<K extends AppConfigKey_BE<any>>(appConfigKey: K) {
+		this.keyMap[appConfigKey.key] = appConfigKey;
+	}
 
 	getAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K): Promise<InferType<K>> => {
 		try {
@@ -79,7 +76,7 @@ class ModuleBE_AppConfig_Class
 	};
 }
 
-export const ModuleBE_AppConfig = new ModuleBE_AppConfig_Class();
+export const ModuleBE_AppConfigDB = new ModuleBE_AppConfigDB_Class();
 
 //TODO: Add validation by key
 export class AppConfigKey_BE<Binder extends TypedKeyValue<string | number | object, any>> {
@@ -92,12 +89,12 @@ export class AppConfigKey_BE<Binder extends TypedKeyValue<string | number | obje
 		this.resolver = resolver;
 		if (dataManipulator)
 			this.dataManipulator = dataManipulator;
-		ModuleBE_AppConfig.registerKey(this);
+		ModuleBE_AppConfigDB.registerKey(this);
 	}
 
 
 	async get(): Promise<Binder['value']> {
-		return await ModuleBE_AppConfig.getAppKey(this);
+		return await ModuleBE_AppConfigDB.getAppKey(this);
 	}
 
 	async set(value: Binder['value']) {
@@ -106,6 +103,6 @@ export class AppConfigKey_BE<Binder extends TypedKeyValue<string | number | obje
 	}
 
 	async delete() {
-		await ModuleBE_AppConfig._deleteAppKey(this);
+		await ModuleBE_AppConfigDB._deleteAppKey(this);
 	}
 }
