@@ -63,7 +63,7 @@ export class ATS_CollectionUpgrades
 			<TS_BusyButton
 				key={'upgrade-all-test'}
 				onClick={() => this.upgradeAll()}
-			>Upgrade All Test</TS_BusyButton>
+			>Upgrade All</TS_BusyButton>
 			{TS_AppTools.renderPageHeader('Collection Upgrades')}
 			<LL_H_C className={'buttons-container'}>
 				{(this.state.upgradableModules || []).map(module => {
