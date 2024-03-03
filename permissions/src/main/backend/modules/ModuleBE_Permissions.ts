@@ -18,7 +18,7 @@ import {
 	addRoutes,
 	createQueryServerApi,
 	MemKey_ServerApi,
-	ModuleBE_AppConfig,
+	ModuleBE_AppConfigDB,
 	ModuleBE_BaseApiV3_Class,
 	Storm
 } from '@nu-art/thunderstorm/backend';
@@ -388,7 +388,7 @@ class ModuleBE_Permissions_Class
 	private async createPermissionsKeys(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating App Config');
 		// const permissionKeysToCreate: PermissionKey_BE<any>[] = filterInstances(flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.permissionKeys)))));
-		await ModuleBE_AppConfig.createDefaults(this);
+		await ModuleBE_AppConfigDB.createDefaults(this);
 		this.logInfoBold('Created App Config');
 	}
 

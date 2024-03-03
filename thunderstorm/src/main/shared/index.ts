@@ -35,4 +35,4 @@ export * from './db-api-gen/apiV2';
 export * from './db-api-gen/apiV3';
 export * from './sync-env';
 export * from './archiving';
-export * from './app-config';
+export * from './_entity';
