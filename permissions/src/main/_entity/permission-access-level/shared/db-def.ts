@@ -17,8 +17,14 @@ export const DBDef_PermissionAccessLevel: DBDef_V3<DBProto_PermissionAccessLevel
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
 	dbKey: 'permissions--level',
-	dbGroup: PermissionDBGroup,
 	entityName: 'PermissionAccessLevel',
+	frontend: {
+		group: PermissionDBGroup,
+		name: 'level',
+	},
+	backend: {
+		name: 'permissions--level',
+	},
 	dependencies: {
 		domainId: {
 			dbKey: 'permissions--domain',

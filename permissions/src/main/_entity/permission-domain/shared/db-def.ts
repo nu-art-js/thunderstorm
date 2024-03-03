@@ -17,7 +17,13 @@ export const DBDef_PermissionDomain: DBDef_V3<DBProto_PermissionDomain> = {
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
 	dbKey: 'permissions--domain',
-	dbGroup: PermissionDBGroup,
+	frontend: {
+		group: PermissionDBGroup,
+		name: 'domain',
+	},
+	backend: {
+		name: 'permissions--domain',
+	},
 	entityName: 'PermissionDomain',
 	lockKeys: ['projectId'],
 	dependencies: {

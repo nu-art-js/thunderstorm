@@ -2,10 +2,7 @@ import {convertUpperCamelCase, DBDef_V3, tsValidateBoolean, tsValidateMustExist,
 import {DBProto_PushMessagesHistory} from './types';
 import {PushPubSubDBGroup} from '../shared';
 
-
-const Validator_ModifiableProps: DBProto_PushMessagesHistory['modifiablePropsValidator'] = {
-	//
-};
+const Validator_ModifiableProps: DBProto_PushMessagesHistory['modifiablePropsValidator'] = {};
 
 const Validator_GeneratedProps: DBProto_PushMessagesHistory['generatedPropsValidator'] = {
 	pushSessionId: tsValidateString(),
@@ -20,6 +17,12 @@ export const DBDef_PushMessagesHistory: DBDef_V3<DBProto_PushMessagesHistory> = 
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
 	dbKey: 'push-messages-history',
-	dbGroup: PushPubSubDBGroup,
 	entityName: convertUpperCamelCase('PushMessagesHistory', '-').toLowerCase(),
+	frontend: {
+		group: PushPubSubDBGroup,
+		name: 'message-history',
+	},
+	backend: {
+		name: 'push-messages-history'
+	}
 };

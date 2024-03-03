@@ -40,6 +40,12 @@ export const DBDef_PushSubscription: DBDef_V3<DBProto_PushSubscription> = {
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
 	dbKey: 'push-subscription',
-	dbGroup: PushPubSubDBGroup,
 	entityName: convertUpperCamelCase('PushSubscription', '-').toLowerCase(),
+	frontend: {
+		group: PushPubSubDBGroup,
+		name: 'subscription',
+	},
+	backend: {
+		name: 'push-subscription'
+	}
 };

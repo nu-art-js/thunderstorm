@@ -17,5 +17,11 @@ export const DBDef_PermissionProject: DBDef_V3<DBProto_PermissionProject> = {
 	versions: ['1.0.0'],
 	dbKey: 'permissions--project',
 	entityName: 'PermissionsProject',
-	dbGroup: PermissionDBGroup,
+	frontend: {
+		group: PermissionDBGroup,
+		name: 'project',
+	},
+	backend: {
+		name: 'permissions--project'
+	}
 };

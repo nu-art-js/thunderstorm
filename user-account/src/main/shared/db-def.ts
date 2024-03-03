@@ -1,9 +1,10 @@
 import {DBDef_V3} from '@nu-art/ts-common/db/types';
 import {tsValidateEmail, tsValidateUniqueId, tsValidator_nonMandatoryString} from '@nu-art/ts-common/validator/validators';
 import {tsValidateArray, tsValidateBoolean, tsValidateString, tsValidateTimestamp, tsValidateValue} from '@nu-art/ts-common/validator/type-validators';
-import {AccountDBGroup, DBProto_Account, DBProto_Session} from './types';
+import {DBProto_Account, DBProto_Session} from './types';
 import {_accountTypes} from './consts';
 
+const accountGroupName = 'account';
 
 export const Validator_Modifiable: DBProto_Session['modifiablePropsValidator'] = {
 	label: tsValidateString(100, false),
@@ -21,10 +22,16 @@ export const DBDef_Session: DBDef_V3<DBProto_Session> = {
 	modifiablePropsValidator: Validator_Modifiable,
 	generatedPropsValidator: Validator_Generated,
 	dbKey: 'user-account--sessions',
-	dbGroup: AccountDBGroup,
 	entityName: 'Session',
 	uniqueKeys: ['accountId', 'deviceId'],
 	versions: ['1.0.0'],
+	frontend: {
+		group: accountGroupName,
+		name: 'session',
+	},
+	backend: {
+		name: 'user-account--sessions'
+	}
 };
 
 const modifiablePropsValidator: DBProto_Account['modifiablePropsValidator'] = {
@@ -44,8 +51,14 @@ const generatedPropsValidator: DBProto_Account['generatedPropsValidator'] = {
 export const DBDef_Accounts: DBDef_V3<DBProto_Account> = {
 	dbKey: 'user-account--accounts',
 	entityName: 'Account',
-	dbGroup: AccountDBGroup,
 	modifiablePropsValidator: modifiablePropsValidator,
 	generatedPropsValidator: generatedPropsValidator,
-	versions: ['1.0.0']
+	versions: ['1.0.0'],
+	frontend: {
+		group: accountGroupName,
+		name: 'account'
+	},
+	backend: {
+		name: 'user-account--accounts',
+	}
 };

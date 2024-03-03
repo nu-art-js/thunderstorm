@@ -1,5 +1,4 @@
 import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
-import {MessagingDBGroupType} from '../../shared';
 
 type VersionTypes_Message = {
 	'1.0.0': DB_Message
@@ -11,7 +10,7 @@ type Dependencies = {
 
 type UniqueKeys = '_id';
 type GeneratedProps = '_auditorId';
-type Proto = Proto_DB_Object<DB_Message, 'messages', MessagingDBGroupType, GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_Message, 'messages', GeneratedProps, Versions, UniqueKeys, Dependencies>;
 export const MessageType_Text = 'text' as const;
 export const MessageType_Image = 'image' as const;
 export const MessageType_Video = 'video' as const;
