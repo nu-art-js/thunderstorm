@@ -228,7 +228,7 @@ export const tsValidateTimeRange = (mandatory: boolean = true): Validator<TimeRa
 		if (!instance)
 			return 'No instance was provided to validation';
 
-		if (!instance.length)
+		if (!instance.length || instance.every(value => value === undefined))
 			return 'Empty time range provided';
 
 		if (instance.length > 2)
