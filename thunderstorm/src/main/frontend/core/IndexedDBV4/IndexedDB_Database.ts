@@ -73,6 +73,10 @@ export class IndexedDB_Database
 				const db = request.result;
 
 				this.registeredStores.forEach(registeredStore => {
+					//Don't create a store that already exists
+					if (db.objectStoreNames.contains(registeredStore.config.name))
+						return;
+
 					const options: IDBObjectStoreParameters = {
 						autoIncrement: registeredStore.config.autoIncrement,
 						keyPath: registeredStore.config.uniqueKeys as unknown as string[]
