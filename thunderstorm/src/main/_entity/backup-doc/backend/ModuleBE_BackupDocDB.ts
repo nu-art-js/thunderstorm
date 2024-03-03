@@ -1,10 +1,10 @@
+import {ApiDef_BackupDoc, BackupMetaData, DB_BackupDoc, DBDef_BackupDoc, DBProto_BackupDoc, Request_BackupId, Response_BackupDocs} from './shared';
 import {
 	__stringify,
 	_logger_logException,
 	ApiException,
 	currentTimeMillis,
 	Day,
-	DBDef,
 	Dispatcher,
 	filterInstances,
 	Format_YYYYMMDD_HHmmss,
@@ -17,24 +17,22 @@ import {
 	TS_Object,
 	UniqueId
 } from '@nu-art/ts-common';
-import {createQueryServerApi} from '../../core/typed-api';
+import {DBApiConfigV3, ModuleBE_BaseDBV3} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV3';
+import {ModuleBE_BaseDBV2} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV2';
+import {addRoutes, createQueryServerApi} from '../../../backend';
 import {END_OF_STREAM, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {addRoutes} from '../ModuleBE_APIs';
-import {OnModuleCleanupV2} from './ModuleBE_v2_BackupScheduler';
-import {Writable} from 'stream';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
-import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
-import {DB_BackupDoc} from '../../../shared/backup/backup-types';
-import {DBDef_BackupDocs} from '../../../shared/backup/db-def';
-import {ApiDef_BackupV2, Request_BackupId, Response_BackupDocsV2} from '../../../shared/backup/apis';
-import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
-import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
+import {Writable} from 'stream';
+import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 
+export interface OnModuleCleanupV2 {
+	__onCleanupInvokedV2: () => Promise<void>;
+}
 
 const dispatch_onModuleCleanupV2 = new Dispatcher<OnModuleCleanupV2, '__onCleanupInvokedV2'>('__onCleanupInvokedV2');
 
-type Config = {
+type Config = DBApiConfigV3<DBProto_BackupDoc> & {
 	keepInterval: number,
 	minTimeThreshold: number,
 	excludedCollectionNames?: string[],
@@ -51,15 +49,6 @@ const CSVConfig = {
 	useKeysAsHeaders: true,
 };
 
-export type BackupMetaData = {
-	collectionsData: {
-		collectionName: string,
-		numOfDocs: number,
-		version: string
-	}[],
-	timestamp: number
-}
-
 type DBModules = ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>;
 
 /**
@@ -67,9 +56,10 @@ type DBModules = ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>;
  * in order to test this module locally run firebase functions:shell command in a terminal
  * when the firebase> shows up write the name of the function you want to run and call it "functionName()"
  * **/
-class ModuleBE_v2_Backup_Class
+export class ModuleBE_BackupDocDB_Class
 	extends Module<Config> {
-	public collection!: FirestoreCollectionV2<DB_BackupDoc>;
+
+	public collection!: FirestoreCollectionV3<DBProto_BackupDoc>;
 
 	constructor() {
 		super();
@@ -81,15 +71,15 @@ class ModuleBE_v2_Backup_Class
 		super.init();
 		this.collection = this.getBackupStatusCollection();
 		addRoutes([
-			createQueryServerApi(ApiDef_BackupV2.vv1.initiateBackup, () => this.initiateBackup()),
-			createQueryServerApi(ApiDef_BackupV2.vv1.fetchBackupDocs, this.fetchBackupDocs),
+			createQueryServerApi(ApiDef_BackupDoc._v1.initiateBackup, () => this.initiateBackup()),
+			createQueryServerApi(ApiDef_BackupDoc._v1.fetchBackupDocs, this.fetchBackupDocs),
 		]);
 	}
 
 	/**
 	 * @param body - needs to contain backupId with the key to fetch.
 	 */
-	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocsV2> => {
+	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
 		const backupDoc = await this.queryUnique(body.backupId);
 
 		if (!backupDoc)
@@ -112,9 +102,11 @@ class ModuleBE_v2_Backup_Class
 		};
 	};
 
-	public getBackupStatusCollection = (): FirestoreCollectionV2<DB_BackupDoc> => {
-		return ModuleBE_Firebase.createAdminSession().getFirestoreV2()
-			.getCollection(DBDef_BackupDocs as DBDef<DB_BackupDoc>);
+	public getBackupStatusCollection = (): FirestoreCollectionV3<DBProto_BackupDoc> => {
+		return ModuleBE_Firebase
+			.createAdminSession()
+			.getFirestoreV3()
+			.getCollection(DBDef_BackupDoc);
 	};
 
 	/**
@@ -311,4 +303,4 @@ class ModuleBE_v2_Backup_Class
 	};
 }
 
-export const ModuleBE_v2_Backup = new ModuleBE_v2_Backup_Class();
+export const ModuleBE_BackupDocDB = new ModuleBE_BackupDocDB_Class();

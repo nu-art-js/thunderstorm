@@ -40,7 +40,6 @@ import {
 } from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
-import {OnModuleCleanupV2} from '../backup/ModuleBE_v2_BackupScheduler';
 import {createBodyServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
@@ -60,6 +59,7 @@ import {
 import {HttpMethod} from '../../../shared';
 import Transaction = firestore.Transaction;
 import {OnSyncEnvCompleted} from '../sync-env/ModuleBE_v2_SyncEnv';
+import {OnModuleCleanupV2} from '../../_entity';
 
 
 type DeletedDBItem = DB_Object & { __collectionName: string, __docId: UniqueId }
