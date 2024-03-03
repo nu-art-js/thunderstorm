@@ -230,9 +230,9 @@ export class EditableItem<T>
 		return this.item[key] as RecursiveReadonly<T[K]>;
 	}
 
-	hasError<K extends keyof T>(key: K): Readonly<InvalidResult<T[K]>> | undefined {
+	hasError<K extends keyof T>(key?: K): (Readonly<InvalidResult<T[K]>> | Readonly<string>) | undefined {
 		const validationResults = this.validationResults;
-		const error = (validationResults?.results as InvalidResultObject<T>)?.[key];
+		const error = key ? (validationResults?.results as InvalidResultObject<T>)?.[key] : (validationResults?.results as string);
 		if (!error)
 			return;
 
