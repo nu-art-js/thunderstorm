@@ -78,6 +78,7 @@ export * from './components/TS_PropRenderer';
 export * from './components/TS_Form';
 export * from './components/TS_VirtualizedList';
 export * from './components/TS_ProgressBar';
+export * from './components/TS_Card';
 export * from './components/TS_ReadMore';
 export * from './components/AwaitModules/AwaitModules';
 export * from './components/AwaitSync/AwaitSync';
