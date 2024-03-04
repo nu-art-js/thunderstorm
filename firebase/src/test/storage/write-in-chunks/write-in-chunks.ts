@@ -1,5 +1,5 @@
 import {dataInChunksInput, getSpecificBucketInput, storage, WriteInChunks} from '../_core/consts';
-import {firestore} from '../../firestore-v2/_core/consts';
+import {firestore} from '../../firestore-v3/_core/consts';
 import {__stringify, DB_Object, OmitDBObject, tsValidateNumber, tsValidateString, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {_EmptyQuery} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import * as Stream from 'stream';

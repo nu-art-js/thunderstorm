@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
 import {EditableItem} from '../../utils/EditableItem';
-import {ComponentSync} from '../../core/ComponentSync';
 import {TS_PropRenderer} from '../TS_PropRenderer';
 import {DBProto} from '@nu-art/ts-common';
+import {Controller, Props_Controller} from '../../core/Controller';
 
 
 export type EditableRef<Item> = { editable: EditableItem<Item> };
@@ -12,9 +12,9 @@ type _State<Item> = EditableRef<Item> & {
 }
 
 export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
-	Props extends P & EditableRef<ItemType> = P & EditableRef<ItemType>,
+	Props extends P & EditableRef<ItemType> & Props_Controller = P & EditableRef<ItemType> & Props_Controller,
 	State extends S & _State<ItemType> = S & _State<ItemType>>
-	extends ComponentSync<Props, State> {
+	extends Controller<Props, State> {
 
 	shouldReDeriveState(nextProps: Readonly<Props>): boolean {
 		// if (!this.state)
@@ -52,10 +52,10 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
 
 export abstract class TS_EditableItemComponentV3<Proto extends DBProto<any>, P = {}, S = {},
 	UI_Type extends Proto['uiType'] = Proto['uiType'],
-	Props extends P & EditableRef<UI_Type> = P & EditableRef<UI_Type>,
+	Props extends P & EditableRef<UI_Type> & Props_Controller = P & EditableRef<UI_Type> & Props_Controller,
 	State extends S & _State<UI_Type> = S & _State<UI_Type>,
 >
-	extends ComponentSync<Props, State> {
+	extends Controller<Props, State> {
 
 	shouldReDeriveState(nextProps: Readonly<Props>): boolean {
 		if (this.state.tag !== nextProps.editable.tag)

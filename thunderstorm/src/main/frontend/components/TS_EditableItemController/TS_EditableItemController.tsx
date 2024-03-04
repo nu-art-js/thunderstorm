@@ -3,14 +3,14 @@ import './TS_EditableItemController.scss';
 import {asArray, DB_Object, dbObjectToId, DBProto, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {EditableDBItemV3} from '../../utils/EditableItem';
 import {State_ItemEditor} from '../Item_Editor';
-import {ComponentSync} from '../../core/ComponentSync';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
 import {Props_ItemsEditorV3} from '../Page_ItemsEditorV3';
 import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
+import {Controller, Props_Controller} from '../../core/Controller';
 
 
-export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps extends {} = {}> = {
+export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps extends {} = {}> = Props_Controller & {
 	item: Readonly<Partial<Proto['uiType']>> | string,
 	module: ModuleFE_v3_BaseApi<Proto>,
 	onCompleted?: (item: Proto['dbType']) => any | Promise<any>,
@@ -32,7 +32,7 @@ export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps
 export class TS_EditableItemController<Proto extends DBProto<any>,
 	EditorProps extends {} = {},
 	Props extends Props_EditableItemController<Proto, EditorProps> = Props_EditableItemController<Proto, EditorProps>>
-	extends ComponentSync<Props, State_ItemEditor<Proto['uiType']>> {
+	extends Controller<Props, State_ItemEditor<Proto['uiType']>> {
 
 	static DefaultAutoSave = (item?: Partial<DB_Object>) => {
 		return !!item?._id;
