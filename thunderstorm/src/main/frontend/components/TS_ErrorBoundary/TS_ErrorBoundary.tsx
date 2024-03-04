@@ -21,9 +21,6 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_ErrorBoundary.scss';
-import {TS_Button} from '../TS_Button';
-import {ComponentSync} from '../../core/ComponentSync';
-
 
 type State = {
 	error?: Error,
@@ -31,82 +28,69 @@ type State = {
 }
 
 type Props = React.PropsWithChildren<{
-	onError?: (e: any) => void,
+	onClick?: (e: any) => void,
 	renderer?: (e: any) => ReactNode
-	buttonRenderer?: () => ReactNode
 	error?: Error;
 }>;
 
 export class TS_ErrorBoundary
-	extends ComponentSync<Props, State> {
+	extends React.Component<Props, State> {
 
-	//######################### Static #########################
+	//######################### Life Cycle #########################
 
 	constructor(props: Props) {
 		super(props);
 		this.state = {};
 	}
 
-	//######################### Life Cycle #########################
+	/**
+	 * Called on changes in props.
+	 * @param props
+	 * @param state
+	 */
+	static getDerivedStateFromProps(props: Props, state: State) {
+		state.error = props.error ?? state.error;
+		return state;
+	}
 
+	/**
+	 * Called when a descendant component throws an error (and there isn't an error boundary in the way already)
+	 * used to return a state based on the error
+	 * @param error
+	 */
 	static getDerivedStateFromError(error: Error) {
 		return {error};
 	}
 
-	protected deriveStateFromProps(nextProps: Props) {
-		return {error: (nextProps.error ? nextProps.error : this.state?.error)};
-	}
-
+	/**
+	 * Called when a descendant component throws an error (and there isn't an error boundary in the way already)
+	 * Can be used to return a state based on the error, but will be deprecated at some point, so watch out.
+	 * @param error
+	 * @param errorInfo
+	 */
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		this.setState({error, errorInfo});
 	}
 
+	/**
+	 * Returns true.
+	 * This component's props will not change unless an error has occurred, but the children component might need to
+	 * because their props might have changed. therefore, inorder not to block their lifecycle, this component must always update.
+	 * @param nextProps
+	 * @param nextState
+	 * @param nextContext
+	 */
 	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
 		return true;
 	}
 
-	//######################### Logic #########################
-
-	private onButtonClick = () => {
-		if (this.props.onError)
-			return this.props.onError(this.state.error);
-
-		this.setState({error: undefined});
-	};
-
 	//######################### Render #########################
-
-	// private renderErrorDetails = () => {
-	// 	const env = Thunder.getInstance().getConfig().label;
-	// 	if (env !== 'LOCAL' && env !== 'DEV')
-	// 		return '';
-	//
-	// 	return <details style={{whiteSpace: 'pre-wrap'}}>
-	// 		{this.state.errorInfo?.componentStack}
-	// 	</details>;
-	// };
-
-	private renderButton = () => {
-		if (this.props.buttonRenderer)
-			return this.props.buttonRenderer();
-
-		return <TS_Button
-			className={'ts-error-boundary__button'}
-			onClick={this.onButtonClick}
-		>Reload!</TS_Button>;
-	};
 
 	private defaultRenderer = () => {
 		const titleMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)];
-		return <div className={'ts-error-boundary'}>
+		return <div className={'ts-error-boundary'} onClick={this.props.onClick}>
 			<div className={'ts-error-boundary__pic'}>(ノಠ益ಠノ)</div>
 			<div className={'ts-error-boundary__title'}>{titleMessage}</div>
-			{this.renderButton()}
-			{/*<LL_V_L className={'ts-error-boundary__error'}>*/}
-			{/*	<div className={'ts-error-boundary__error-title'}>Error Message</div>*/}
-			{/*	<div className={'ts-error-boundary__error-message'}>{this.state.error!.toString()}</div>*/}
-			{/*</LL_V_L>*/}
-			{/*{this.renderErrorDetails()}*/}
 		</div>;
 	};
 
