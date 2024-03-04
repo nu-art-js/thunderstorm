@@ -1,4 +1,12 @@
-import {ApiDef_BackupDoc, BackupMetaData, DB_BackupDoc, DBDef_BackupDoc, DBProto_BackupDoc, Request_BackupId, Response_BackupDocs} from './shared';
+import {
+	ApiDef_BackupDoc,
+	BackupMetaData,
+	DB_BackupDoc,
+	DBDef_BackupDoc,
+	DBProto_BackupDoc,
+	Request_BackupId,
+	Response_BackupDocs
+} from './shared';
 import {
 	__stringify,
 	_logger_logException,
@@ -131,7 +139,7 @@ export class ModuleBE_BackupDocDB_Class
 		return docArray.map(doc => ({
 			collectionName: moduleKey,
 			_id: doc._id,
-			document: `"${__stringify(doc)}"`
+			document: __stringify(doc)
 		}));
 	};
 
