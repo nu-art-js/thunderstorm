@@ -23,7 +23,6 @@ import * as React from 'react';
 import {DB_Object, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {OnSyncStatusChangedListener} from '../core/db-api-gen/types';
 import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB';
-import {TS_ErrorBoundary} from '../components/TS_ErrorBoundary';
 import {TS_Loader} from '../components/TS_Loader';
 import {DataStatus} from './db-api-gen/consts';
 import {BaseComponent} from './ComponentBase';
@@ -112,9 +111,7 @@ export abstract class SmartComponent<P = {}, S = {},
 				</>;
 			};
 
-			return <TS_ErrorBoundary onError={this.reDeriveState} error={this.state.error}>
-				{toRet()}
-			</TS_ErrorBoundary>;
+			return toRet();
 		};
 	}
 
@@ -152,7 +149,7 @@ export abstract class SmartComponent<P = {}, S = {},
 		const currentState = partialState;
 
 		const unpreparedModules = this.getUnpreparedModules();
-		
+
 		if (unpreparedModules.length > 0) {
 			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, currentState);
 			return currentState;
