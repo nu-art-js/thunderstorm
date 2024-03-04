@@ -175,10 +175,6 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		</div>;
 	};
 
-	private errorButtonRenderer = () => {
-		return <TS_Button className={'ts-error-boundary__button'} onClick={() => this.closeDialog(true)}>Close Dialog</TS_Button>;
-	};
-
 	protected buttons = (): DialogButtons => {
 		return {};
 	};
@@ -207,7 +203,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 				this.setState({error: err});
 		}
 
-		return <TS_ErrorBoundary buttonRenderer={this.errorButtonRenderer} error={this.state.error}>
+		return <TS_ErrorBoundary error={this.state.error} onClick={() => this.closeDialog(true)}>
 			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1}
 							onKeyDown={this.dialogKeyEventHandler}>
 				{this.dialogHeader(headerContent)}
