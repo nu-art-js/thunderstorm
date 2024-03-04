@@ -37,7 +37,6 @@ import {
 	TimerHandler
 } from '@nu-art/ts-common';
 import {Thunder} from './Thunder';
-import {TS_ErrorBoundary} from '../components/TS_ErrorBoundary';
 
 
 let instances = 0;
@@ -63,10 +62,7 @@ export abstract class BaseComponent<P = any, State = any>
 			throw new ImplementationMissingException('Every UI Component must have a render function. Did you forget to add a render function?');
 		this.render = () => {
 			this.logVerbose('Rendering', this.state);
-			return <TS_ErrorBoundary
-				onClick={this.onErrorBoundaryClick}>
-				{__render()}
-			</TS_ErrorBoundary>;
+			return __render()
 		};
 
 		const __componentDidMount = this.componentDidMount?.bind(this);
@@ -108,22 +104,6 @@ export abstract class BaseComponent<P = any, State = any>
 	}
 
 	protected abstract _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined;
-
-	/**
-	 * Default on click on error boundary event
-	 * @param e - Mouse click event
-	 */
-	protected onErrorBoundaryClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (e.metaKey)
-			return this.logInfo('Component props and state', this.props, this.state);
-
-		if (e.shiftKey) {
-			this.logInfo('Re-deriving state');
-			return this.reDeriveState();
-		}
-
-		this.forceUpdate();
-	};
 
 	protected reDeriveState = (state?: Partial<State>) => {
 		this.logVerbose('reDeriveState called..');
