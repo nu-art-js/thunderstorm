@@ -32,6 +32,7 @@ import {
 	InvalidResult,
 	KeysOfDB_Object,
 	Logger,
+	LogLevel,
 	Module,
 	sortArray,
 	tsValidateResult,
@@ -56,8 +57,10 @@ import {
 import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
 import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {DBConfigV3, IndexedDBV3} from '../../core/IndexedDBV3';
 import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
+import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store';
+import {DBConfigV3} from '../../core/IndexedDBV4/types';
+import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
 
 
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
@@ -79,16 +82,15 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		this.defaultDispatcher = defaultDispatcher;
 		const config = getModuleFEConfigV3(dbDef);
 		this.validator = config.validator;
-		this.setDefaultConfig(config as Config);
+		this.dbDef = dbDef;
 		//Set Statuses
 		this.dataStatus = DataStatus.NoData;
+		this.setDefaultConfig(config as Config);
 		this.cache = new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
-		this.dbDef = dbDef;
+		this.IDB = new IDBCache<Proto>(this.config.dbConfig);
 	}
 
 	protected init() {
-		// @ts-ignore
-		this.IDB = new IDBCache<Proto>(this.config.dbConfig, this.config.versions[0]);
 		this.IDB.onLastUpdateListener(async (after, before) => {
 			if (!exists(after) || after === before)
 				return;
@@ -169,7 +171,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		const instance = deleteKeysObject(_instance as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.dbDef.generatedPropsValidator)]);
 		const results = tsValidateResult(instance, this.validator);
 		if (results) {
-			this.onValidationError(instance, results);
+			this.onValidationError(instance, results as InvalidResult<Proto['uiType']>);
 		}
 	}
 
@@ -206,35 +208,37 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 class IDBCache<Proto extends DBProto<any>>
 	extends Logger {
 
-	protected readonly db: IndexedDBV3<Proto>;
+	protected readonly storeWrapper: IndexedDB_Store<Proto>;
 	protected readonly lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
 
-	constructor(dbConfig: DBConfigV3<Proto>, currentVersion: string) {
+	constructor(dbConfig: DBConfigV3<Proto>) {
 		super(`indexdb-${dbConfig.name}`);
-		this.db = IndexedDBV3.getOrCreate(dbConfig);
+		const currentVersion = dbConfig.version[0];
+		this.setMinLevel(LogLevel.Verbose);
 		this.lastSync = new StorageKey<number>('last-sync--' + dbConfig.name);
 		this.lastVersion = new StorageKey<string>('last-version--' + dbConfig.name);
+		const onOpenedCallback = () => {
+			const previousVersion = this.lastVersion.get();
+			this.lastVersion.set(currentVersion);
 
-		const previousVersion = this.lastVersion.get();
-		this.lastVersion.set(currentVersion);
+			this.storeWrapper.exists().then(exists => {
+				if (!exists) {
+					this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
+					this.lastSync.delete();
+				}
+			});
 
-		this.db.exists().then(dbInfo => {
-			if (exists(dbInfo))
+			if (!previousVersion || previousVersion === currentVersion)
 				return;
 
-			this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
 			this.lastSync.delete();
-		});
-
-		if (!previousVersion || previousVersion === currentVersion)
-			return;
-
-		this.lastSync.delete();
-		this.logInfo(`Cleaning up & Sync...`);
-		this.clear()
-			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
-			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
+			this.logInfo(`Cleaning up & Sync...`);
+			this.clear()
+				.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
+				.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
+		};
+		this.storeWrapper = ModuleFE_IDBManager.register(dbConfig, onOpenedCallback);
 	}
 
 	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
@@ -249,15 +253,15 @@ class IDBCache<Proto extends DBProto<any>>
 
 	clear = async (resync = false) => {
 		this.lastSync.delete();
-		return this.db.clearDB();
+		return this.storeWrapper.clearStore();
 	};
 
 	delete = async (resync = false) => {
 		this.lastSync.delete();
-		return this.db.deleteDB();
+		return this.storeWrapper.clearStore();
 	};
 
-	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<Proto['dbType'][]> => (await this.db.query({
+	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<Proto['dbType'][]> => (await this.storeWrapper.query({
 		query,
 		indexKey
 	})) || [];
@@ -270,7 +274,7 @@ class IDBCache<Proto extends DBProto<any>>
 	 *
 	 * @return Array of items or empty array
 	 */
-	filter = async (filter: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<Proto['dbType'][]> => this.db.queryFilter(filter, query);
+	filter = async (filter: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<Proto['dbType'][]> => this.storeWrapper.queryFilter(filter, query);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns the first item that passes the filter
@@ -279,7 +283,7 @@ class IDBCache<Proto extends DBProto<any>>
 	 *
 	 * @return a single item or undefined
 	 */
-	find = async (filter: (item: Proto['dbType']) => boolean): Promise<Proto['dbType'] | undefined> => this.db.queryFind(filter);
+	find = async (filter: (item: Proto['dbType']) => boolean): Promise<Proto['dbType'] | undefined> => this.storeWrapper.queryFind(filter);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns an array of items based on the mapper.
@@ -290,7 +294,7 @@ class IDBCache<Proto extends DBProto<any>>
 	 *
 	 * @return An array of mapped items
 	 */
-	map = async <MapType>(mapper: (item: Proto['dbType']) => MapType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<MapType[]> => this.db.WIP_queryMap(mapper, filter, query);
+	map = async <MapType>(mapper: (item: Proto['dbType']) => MapType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<MapType[]> => this.storeWrapper.WIP_queryMap(mapper, filter, query);
 
 	/**
 	 * iterates over all DB objects in the related collection, and reduces them to a single value based on the reducer.
@@ -301,14 +305,14 @@ class IDBCache<Proto extends DBProto<any>>
 	 *
 	 * @return a single reduced value.
 	 */
-	reduce = async <ReturnType>(reducer: ReduceFunction<Proto['dbType'], ReturnType>, initialValue: ReturnType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<ReturnType> => this.db.queryReduce(reducer, initialValue, filter, query);
+	reduce = async <ReturnType>(reducer: ReduceFunction<Proto['dbType'], ReturnType>, initialValue: ReturnType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<ReturnType> => this.storeWrapper.queryReduce(reducer, initialValue, filter, query);
 
 	unique = async (_key?: string | IndexKeys<Proto['dbType'], keyof Proto['dbType']>): Promise<Proto['dbType'] | undefined> => {
 		if (_key === undefined)
 			return _key;
 
 		const key = typeof _key === 'string' ? {_id: _key} as unknown as IndexKeys<Proto['dbType'], keyof Proto['dbType']> : _key;
-		return this.db.get(key);
+		return this.storeWrapper.get(key);
 	};
 
 	getLastSync() {
@@ -320,8 +324,8 @@ class IDBCache<Proto extends DBProto<any>>
 	}
 
 	async syncIndexDb(toUpdate: Proto['dbType'][], toDelete: DB_Object[] = []) {
-		await this.db.upsertAll(toUpdate);
-		await this.db.deleteAll(toDelete as Proto['dbType'][]);
+		await this.storeWrapper.upsertAll(toUpdate);
+		await this.storeWrapper.deleteAll(toDelete as Proto['dbType'][]);
 	}
 }
 

@@ -232,7 +232,7 @@ export class Item_EditorController<Item extends DB_Object, Props extends Props_I
 		const _state = (state || {}) as State_ItemEditor<Item>;
 		const item = typeof nextProps.item === 'string' ? nextProps.module.cache.unique(nextProps.item) : nextProps.item;
 		_state.editable = new EditableDBItem(item!, nextProps.module, async (item) => {
-			this.setState(state => ({editable: state.editable.clone(item)}));
+			this.setState(state => ({editable: state.editable}));
 			await nextProps.onCompleted?.(item);
 		}, nextProps.onError).setAutoSave(nextProps.autoSave || false);
 		return _state;

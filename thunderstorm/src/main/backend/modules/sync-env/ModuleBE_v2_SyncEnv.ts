@@ -24,14 +24,14 @@ import {
 	Request_FetchFirebaseBackup,
 	Request_FetchFromEnvV2,
 	Request_GetMetadata,
-	Response_BackupDocsV2
+	Response_BackupDocs
 } from '../../../shared';
 import {AxiosHttpModule} from '../http/AxiosHttpModule';
-import {ModuleBE_v2_Backup} from '../backup/ModuleBE_v2_Backup';
 import {MemKey_HttpRequest} from '../server/consts';
 import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
 import {Readable} from 'stream';
 import {Storm} from '../../core/Storm';
+import {ModuleBE_BackupDocDB} from '../../../_entity/backup-doc/backend';
 
 
 type Config = {
@@ -93,10 +93,10 @@ class ModuleBE_v2_SyncEnv_Class
 		const url = remoteUrls[body.env];
 		const sessionId = MemKey_HttpRequest.get().headers['x-session-id'];
 
-		const module = RuntimeModules().find<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbName === body.moduleName);
+		const module = RuntimeModules().find<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbKey === body.moduleName);
 
 		const upsertAll = module.apiDef.v1.upsertAll;
-		const response: Response_BackupDocsV2 = await AxiosHttpModule
+		const response: Response_BackupDocs = await AxiosHttpModule
 			.createRequest({...upsertAll, fullUrl: url + '/' + upsertAll.path, timeout: 5 * Minute})
 			.setBody(body.items)
 			.setUrlParams(body.items)
@@ -115,7 +115,7 @@ class ModuleBE_v2_SyncEnv_Class
 			throw new BadImplementationException(`Did not receive env in the fetch from env api call!`);
 
 		const url: string = `${this.config.urlMap[env]}/v1/fetch-backup-docs-v2`;
-		const outputDef: ApiDef<QueryApi<Response_BackupDocsV2, Request_BackupId>> = {method: HttpMethod.GET, path: '', fullUrl: url};
+		const outputDef: ApiDef<QueryApi<Response_BackupDocs, Request_BackupId>> = {method: HttpMethod.GET, path: '', fullUrl: url};
 		const requestBody = {backupId};
 
 		try {
@@ -131,7 +131,7 @@ class ModuleBE_v2_SyncEnv_Class
 					.addHeader('x-secret', this.config.fetchBackupDocsSecretsMap[env])
 					.addHeader('x-proxy', 'fetch-env');
 
-			const response: Response_BackupDocsV2 = await request.executeSync();
+			const response: Response_BackupDocs = await request.executeSync();
 			const backupInfo = response.backupInfo;
 
 			const wrongBackupIdDescriptor = backupInfo?._id !== backupId;
@@ -146,7 +146,7 @@ class ModuleBE_v2_SyncEnv_Class
 	}
 
 	createBackup = async () => {
-		return ModuleBE_v2_Backup.initiateBackup(true);
+		return ModuleBE_BackupDocDB.initiateBackup(true);
 	};
 
 	syncFromEnvBackup = async (body: Request_FetchFromEnvV2) => {

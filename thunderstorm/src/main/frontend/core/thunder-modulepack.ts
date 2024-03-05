@@ -11,9 +11,8 @@ import {ModuleFE_Notifications} from '../component-modules/ModuleFE_Notification
 import {ModuleFE_ActionProcessor} from '../modules/action-processor/ModuleFE_ActionProcessor';
 import {ModuleFE_UpgradeCollection} from '../modules/upgrade-collection/ModuleFE_UpgradeCollection';
 import {ModuleFE_SyncManager} from '../modules/sync-manager/ModuleFE_SyncManager';
-import {ModuleFE_AppConfig} from '../modules/app-config/ModuleFE_AppConfig';
 import {ModuleFE_WindowMessenger} from '../modules/ModuleFE_WindowMessenger';
-
+import {ModulePackFE_AppConfigDB} from '../_entity';
 
 export const ModulePack_ThunderstormFE: Module[] = [
 	ModuleFE_Thunderstorm,
@@ -32,7 +31,8 @@ export const ModulePack_ThunderstormFE: Module[] = [
 	ModuleFE_Notifications,
 	ModuleFE_ActionProcessor,
 	ModuleFE_UpgradeCollection,
-	ModuleFE_AppConfig,
+	// ModuleFE_EditableTest,
+	...ModulePackFE_AppConfigDB,
 ];
 
 export const ModulePackFE_Thunderstorm = ModulePack_ThunderstormFE;

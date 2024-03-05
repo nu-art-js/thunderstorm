@@ -26,7 +26,6 @@ import {
 	arrayToMap,
 	currentTimeMillis,
 	DB_Object,
-	DBDef,
 	exists,
 	filterDuplicates,
 	LogLevel,
@@ -34,13 +33,10 @@ import {
 	PreDB,
 	RuntimeModules,
 	Second,
-	tsValidateMustExist,
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
-import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
-import {OnModuleCleanupV2} from '../backup/ModuleBE_v2_BackupScheduler';
 import {createBodyServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
@@ -57,9 +53,11 @@ import {
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState
 } from '../../../shared/sync-manager/types';
-import {HttpMethod} from '../../../shared';
-import Transaction = firestore.Transaction;
+import {DBDef_DeletedDoc, DBProto_DeletedDoc, HttpMethod} from '../../../shared';
 import {OnSyncEnvCompleted} from '../sync-env/ModuleBE_v2_SyncEnv';
+import {OnModuleCleanupV2} from '../../_entity';
+import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import Transaction = firestore.Transaction;
 
 
 type DeletedDBItem = DB_Object & { __collectionName: string, __docId: UniqueId }
@@ -85,7 +83,7 @@ export class ModuleBE_SyncManager_Class
 	extends Module<Config>
 	implements OnModuleCleanupV2, OnSyncEnvCompleted {
 
-	public collection!: FirestoreCollectionV2<DeletedDBItem>;
+	public collection!: FirestoreCollectionV3<DBProto_DeletedDoc>;
 
 	private database!: DatabaseWrapperBE;
 	private dbModules!: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[];
@@ -110,8 +108,8 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	init() {
-		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
-		this.collection = firestore.getCollection<DeletedDBItem>(DBDef_DeletedItems);
+		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV3();
+		this.collection = firestore.getCollection(DBDef_DeletedDoc);
 
 		this.dbModules = RuntimeModules().filter(module => ((module as unknown as {
 			ModuleBE_BaseDBV2: boolean
@@ -126,10 +124,10 @@ export class ModuleBE_SyncManager_Class
 		const frontendCollectionNames = body.modules.map(item => item.dbName);
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 
-		const permissibleModules: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbName)));
-		this.logVerbose(`Modules found: ${__stringify(permissibleModules.map(_module => _module.dbDef.dbName))}`);
+		const permissibleModules: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbKey)));
+		this.logVerbose(`Modules found: ${__stringify(permissibleModules.map(_module => _module.dbDef.dbKey))}`);
 
-		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)) => item.dbDef.dbName);
+		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)) => item.dbDef.dbKey);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
 		const upToDateSyncData = await this.getOrCreateSyncData(body);
 
@@ -168,7 +166,7 @@ export class ModuleBE_SyncManager_Class
 				try {
 					toUpdate = await moduleToCheck.query.where({__updated: {$gte: syncRequest.lastUpdated}});
 				} catch (e: any) {
-					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbName}`);
+					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbKey}`);
 					throw e;
 				}
 				const itemsToReturn = {
@@ -319,13 +317,6 @@ export class ModuleBE_SyncManager_Class
 		return modules;
 	};
 }
-
-export const DBDef_DeletedItems: DBDef<DeletedDBItem> = {
-	validator: tsValidateMustExist,
-	dbName: '__deleted__docs',
-	entityName: 'DeletedDoc',
-	versions: ['1.0.0'],
-};
 
 export const ModuleBE_SyncManager = new ModuleBE_SyncManager_Class();
 

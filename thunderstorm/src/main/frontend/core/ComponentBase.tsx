@@ -62,7 +62,7 @@ export abstract class BaseComponent<P = any, State = any>
 			throw new ImplementationMissingException('Every UI Component must have a render function. Did you forget to add a render function?');
 		this.render = () => {
 			this.logVerbose('Rendering', this.state);
-			return __render();
+			return __render()
 		};
 
 		const __componentDidMount = this.componentDidMount?.bind(this);

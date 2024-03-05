@@ -4,14 +4,14 @@ import {addItemToArray, ImplementationMissingException, merge} from '@nu-art/ts-
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
 
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const functions = require('firebase-functions');
 
 /**
  An abstract class representing a scheduled Firebase Cloud Function.
  It extends the FirebaseFunction class and adds scheduling capabilities.
  */
-export abstract class ModuleBE_FirebaseScheduler<ConfigType extends any = any>//tttttttttttt
+export abstract class ModuleBE_FirebaseScheduler<ConfigType = any>
 	extends ModuleBE_BaseFunction<ConfigType> {
 
 	private function!: CloudFunction<Change<DataSnapshot>>;

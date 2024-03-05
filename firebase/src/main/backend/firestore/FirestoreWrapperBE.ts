@@ -45,7 +45,7 @@ export class FirestoreWrapperBE
 	}
 
 	public listen<Type extends DB_Object>(collection: FirestoreCollection<Type>, doc: string) {
-		collection.wrapper.firestore.doc(`${collection.name}/${doc}`).onSnapshot(_snapshot => {
+		collection.wrapper.firestore.doc(`${collection.name}/${doc}`).onSnapshot(() => {
 			this.logInfo('recieved snapshot!');
 		});
 	}

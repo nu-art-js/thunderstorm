@@ -1,7 +1,7 @@
 import {filterInstances, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 import {Const_PermissionKeyType, DB_PermissionKeyData} from '../shared/types';
-import {AppConfigKey_BE, ModuleBE_AppConfig} from '@nu-art/thunderstorm/backend/modules/app-config/ModuleBE_AppConfig';
 import {ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionDomainDB} from './_entity';
+import {AppConfigKey_BE, ModuleBE_AppConfigDB} from '@nu-art/thunderstorm/backend';
 
 type Resolver = () => Promise<DB_PermissionKeyData>;
 
@@ -13,7 +13,7 @@ export class PermissionKey_BE<K extends string>
 	};
 
 	static buildData = async (data: DB_PermissionKeyData): Promise<DB_PermissionKeyData> => {
-		ModuleBE_AppConfig.logInfo('**************** Building Data ****************');
+		ModuleBE_AppConfigDB.logInfo('**************** Building Data ****************');
 		const accessLevels = filterInstances(await ModuleBE_PermissionAccessLevelDB.query.all(data.accessLevelIds));
 		const _data: DB_PermissionKeyData = {
 			type: 'permission-key',
@@ -23,8 +23,8 @@ export class PermissionKey_BE<K extends string>
 				return acc;
 			}, {} as TypedMap<number>)
 		};
-		ModuleBE_AppConfig.logInfo('**************** Data ****************');
-		ModuleBE_AppConfig.logInfo(_data);
+		ModuleBE_AppConfigDB.logInfo('**************** Data ****************');
+		ModuleBE_AppConfigDB.logInfo(_data);
 		return _data;
 	};
 

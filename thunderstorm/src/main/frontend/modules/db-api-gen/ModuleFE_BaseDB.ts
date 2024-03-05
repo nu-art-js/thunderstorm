@@ -60,7 +60,7 @@ import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction} from '../../core/IndexedDB';
 
 
-export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends any = any, _Config extends DBApiFEConfig<DBType, Ks> & Config = DBApiFEConfig<DBType, Ks> & Config>
+export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config = any, _Config extends DBApiFEConfig<DBType, Ks> & Config = DBApiFEConfig<DBType, Ks> & Config>
 	extends Module<_Config>
 	implements OnClearWebsiteData {
 	readonly validator: ValidatorTypeResolver<DBType>;
@@ -84,11 +84,10 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 
 		this.cache = new MemCache<DBType, Ks>(this, config.dbConfig.uniqueKeys);
 		this.dbDef = dbDef;
+		this.IDB = new IDBCache<DBType, Ks>(this.config.dbConfig, this.config.versions[0]);
 	}
 
 	protected init() {
-		// @ts-ignore
-		this.IDB = new IDBCache<DBType, Ks>(this.config.dbConfig, this.config.versions[0]);
 		this.IDB.onLastUpdateListener(async (after, before) => {
 			if (!exists(after) || after === before)
 				return;
@@ -173,7 +172,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	public validateImpl(instance: PreDB<DBType>) {
 		const results = tsValidateResult(instance as DBType, this.validator);
 		if (results) {
-			this.onValidationError(instance, results);
+			this.onValidationError(instance, results as InvalidResult<DBType>);
 		}
 	}
 

@@ -1,0 +1,14 @@
+# Global
+**/.DS_Store
+
+# Node
+node_modules
+
+# Thunderstorm
+dist
+dist-test
+docs
+build
+package-lock.json
+config.ts
+imports-*.svg

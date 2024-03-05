@@ -24,7 +24,7 @@ export const Permissions_PermissionAssignment: DefaultDef_Package = {
 		{
 			...Domain_PermissionAssignment,
 			levels: [...DuplicateDefaultAccessLevels(Domain_PermissionAssignment._id)],
-			dbNames: [DBDef_PermissionUser.dbName, DBDef_PermissionGroup.dbName]
+			dbNames: [DBDef_PermissionUser.dbKey, DBDef_PermissionGroup.dbKey]
 		}
 	]
 };
@@ -40,7 +40,7 @@ export const Permissions_PermissionManagement: DefaultDef_Package = {
 		{
 			...Domain_PermissionManagement,
 			levels: [...DuplicateDefaultAccessLevels(Domain_PermissionManagement._id)],
-			dbNames: [DBDef_PermissionProject.dbName, DBDef_PermissionDomain.dbName, DBDef_PermissionAccessLevel.dbName, DBDef_PermissionAPI.dbName]
+			dbNames: [DBDef_PermissionProject.dbKey, DBDef_PermissionDomain.dbKey, DBDef_PermissionAccessLevel.dbKey, DBDef_PermissionAPI.dbKey]
 		}
 	]
 };

@@ -68,7 +68,7 @@ export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 	}
 
 	private _metadata = async (): Promise<Metadata<Proto['dbType']>> => {
-		return {...this.dbModule.dbDef.metadata} as unknown as Metadata<Proto['dbType']> || `not implemented yet for collection '${this.dbModule.dbDef.dbName}'`;
+		return {...this.dbModule.dbDef.metadata} as unknown as Metadata<Proto['dbType']> || `not implemented yet for collection '${this.dbModule.dbDef.dbKey}'`;
 	};
 
 	private _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {

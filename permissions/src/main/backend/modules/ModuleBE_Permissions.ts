@@ -18,7 +18,7 @@ import {
 	addRoutes,
 	createQueryServerApi,
 	MemKey_ServerApi,
-	ModuleBE_AppConfig,
+	ModuleBE_AppConfigDB,
 	ModuleBE_BaseApiV3_Class,
 	Storm
 } from '@nu-art/thunderstorm/backend';
@@ -194,6 +194,11 @@ class ModuleBE_Permissions_Class
 		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
 		const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
 
+		projects.reduce((issues, project) => {
+			return project.packages.reduce((issues, _package) => {
+				return issues;
+			}, issues);
+		}, [] as string[]);
 		// Create All Projects
 		const map_nameToDBProject: TypedMap<DB_PermissionProject> = await this.createProjects(projects);
 		const map_nameToDbDomain: TypedMap<DB_PermissionDomain> = await this.createDomains(projects, map_nameToDBProject);
@@ -334,7 +339,8 @@ class ModuleBE_Permissions_Class
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
 
-				const apiModules = arrayToMap(RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbName), item => item.dbModule!.dbDef!.dbName);
+				const apiModules = arrayToMap(RuntimeModules()
+					.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule!.dbDef!.dbKey);
 
 				this.logDebug(_keys(apiModules));
 
@@ -382,7 +388,7 @@ class ModuleBE_Permissions_Class
 	private async createPermissionsKeys(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating App Config');
 		// const permissionKeysToCreate: PermissionKey_BE<any>[] = filterInstances(flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.permissionKeys)))));
-		await ModuleBE_AppConfig.createDefaults(this);
+		await ModuleBE_AppConfigDB.createDefaults(this);
 		this.logInfoBold('Created App Config');
 	}
 

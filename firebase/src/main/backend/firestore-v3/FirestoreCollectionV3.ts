@@ -24,7 +24,8 @@ import {
 	batchActionParallel,
 	compare,
 	Const_UniqueKeys,
-	CustomException, DB_Object_validator,
+	CustomException,
+	DB_Object_validator,
 	DBDef_V3,
 	dbIdLength,
 	dbObjectToId,
@@ -35,16 +36,22 @@ import {
 	filterDuplicates,
 	filterInstances,
 	generateHex,
-	InvalidResult, keepPartialObject,
+	InvalidResult,
+	keepPartialObject,
 	Logger,
 	MUSTNeverHappenException,
 	StaticLogger,
 	tsValidateResult,
+	tsValidateUniqueId,
 	TypedMap,
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
 import {Transaction} from 'firebase-admin/firestore';
@@ -53,10 +60,11 @@ import {firestore} from 'firebase-admin';
 import {DocWrapperV3, UpdateObject} from './DocWrapperV3';
 import {composeDbObjectUniqueId} from '../../shared/utils';
 import {_EmptyQuery, maxBatch} from '../../shared/consts';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {addDeletedToTransaction} from './consts';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Proto extends DBProto<any>> = {
@@ -68,7 +76,7 @@ export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
 	canDeleteItems: (dbItems: Proto['dbType'][], transaction?: Transaction) => Promise<void>,
 	preWriteProcessing?: (dbInstance: Proto['dbType'], transaction?: Transaction) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Proto['dbType']>) => FirestoreQuery<Proto['dbType']>,
-	postWriteProcessing?: (data: PostWriteProcessingData<Proto>) => Promise<void>,
+	postWriteProcessing?: (data: PostWriteProcessingData<Proto>, transaction?: Transaction) => Promise<void>,
 	upgradeInstances: (instances: Proto['dbType'][]) => Promise<any>
 }
 
@@ -122,12 +130,12 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	constructor(wrapper: FirestoreWrapperBEV3, _dbDef: DBDef_V3<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
 		super();
-		this.name = _dbDef.dbName;
+		this.name = _dbDef.dbKey;
 		this.wrapper = wrapper;
-		if (!/[a-z-]{3,}/.test(_dbDef.dbName))
+		if (!/[a-z-]{3,}/.test(_dbDef.dbKey))
 			StaticLogger.logWarning('Please follow name pattern for collections /[a-z-]{3,}/');
 
-		this.collection = wrapper.firestore.collection(_dbDef.dbName);
+		this.collection = wrapper.firestore.collection(_dbDef.dbKey);
 		this.dbDef = _dbDef;
 		this.uniqueKeys = this.dbDef.uniqueKeys || Const_UniqueKeys;
 		this.validator = getDbDefValidator(_dbDef);
@@ -137,6 +145,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	// ############################## DocWrapper ##############################
 	doc = Object.freeze({
 		_: (ref: FirestoreType_DocumentReference<Proto['dbType']>, data?: Proto['dbType']): DocWrapperV3<Proto> => {
+			if (tsValidateResult(ref.id, tsValidateUniqueId)) throw new MUSTNeverHappenException(`Tackled a docRef with id that is an invalid UniqueId: '${ref.id}'`);
 			// @ts-ignore
 			return new DocWrapperV3(this, ref, data);
 		},
@@ -197,7 +206,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
 
 			if (thisShouldBeOnlyOne.length > 1)
-				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbName}`);
+				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbKey}`);
 
 			return thisShouldBeOnlyOne[0];
 		},
@@ -268,13 +277,13 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			if (transaction)
 				return this._setAll(items, transaction);
 
-			return this.runTransactionInChunks(items, (chunk, t) => this._setAll(chunk, t));
+			return this.runTransactionInChunks(items, (chunk, transaction) => this._setAll(chunk, transaction));
 		},
 		/**
 		 * Multi is a non atomic operation
 		 */
-		multi: (items: (Proto['uiType'] | Proto['dbType'])[], multiWriteType: MultiWriteType = defaultMultiWriteType) => {
-			return this._setAll(items, undefined, multiWriteType);
+		multi: (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+			return this._setAll(items, transaction, multiWriteType);
 		},
 	});
 
@@ -315,14 +324,19 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	protected _deleteAll = async (docs: DocWrapperV3<Proto>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		const dbItems = filterInstances(await this.getAll(docs, transaction));
-		await this.hooks?.canDeleteItems(dbItems, transaction);
+		const itemsToCheck = dbItems.filter((item, index) => docs[index].ref.id == item._id);
+		addDeletedToTransaction(transaction, {
+			collectionKey: this.dbDef.entityName,
+			conflictingIds: dbItems.map(dbObjectToId)
+		});
+		await this.hooks?.canDeleteItems(itemsToCheck, transaction);
 		if (transaction)
 			// here we do not call doc.delete because we have performed all the delete preparation as a group of items before this call
 			docs.map(async doc => transaction.delete(doc.ref));
 		else
 			await this.multiWrite(multiWriteType, docs, 'delete');
 
-		await this.hooks?.postWriteProcessing?.({deleted: dbItems});
+		await this.hooks?.postWriteProcessing?.({deleted: dbItems}, transaction);
 		return dbItems;
 	};
 
@@ -375,7 +389,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		},
 
 		/**
-		 * Multi is a non atomic operation
+		 * Multi is a non atomic operation - doesn't use transactions. Use 'all' variants for transaction.
 		 */
 		multi: {
 			all: async (ids: UniqueId[], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(ids.map(id => this.doc.unique(id)), undefined, multiWriteType),
@@ -454,7 +468,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		return this.wrapper.runTransaction<ReturnType>(processor, transaction);
 	};
 
-	runTransactionInChunks = async <T extends any = any, R extends any = any>(items: T[], processor: (chunk: typeof items, transaction: Transaction) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
+	runTransactionInChunks = async <T = any, R = any>(items: T[], processor: (chunk: typeof items, transaction: Transaction) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
 		return batchActionParallel(items, chunkSize, (chunk) => this.runTransaction(t => processor(chunk, t)));
 	};
 
@@ -469,7 +483,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 		const index = versions.indexOf(version);
 		if (index === -1)
-			throw HttpCodes._4XX.BAD_REQUEST('Invalid Object Version', `Provided item with version(${version}) which doesn't exist for collection '${this.dbDef.dbName} (${__stringify(this.dbDef.versions)})' `);
+			throw HttpCodes._4XX.BAD_REQUEST('Invalid Object Version', `Provided item with version(${version}) which doesn't exist for collection '${this.dbDef.dbKey} (${__stringify(this.dbDef.versions)})' `);
 
 		return index !== versions.length - 1;
 	};
@@ -477,7 +491,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	validateItem(dbItem: Proto['dbType']) {
 		const results = tsValidateResult(dbItem, this.validator as ValidatorTypeResolver<Proto['dbType']>);
 		if (results) {
-			this.onValidationError(dbItem, results);
+			this.onValidationError(dbItem, results as InvalidResult<Proto['dbType']>);
 		}
 	}
 

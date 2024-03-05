@@ -54,7 +54,7 @@ export function cloneObj<T extends TS_Object>(obj: T): T {
 	}, {} as T);
 }
 
-export function partialCompare<T extends any>(one?: T, two?: T, keysToFilterOut?: (keyof T)[]): boolean {
+export function partialCompare<T>(one?: T, two?: T, keysToFilterOut?: (keyof T)[]): boolean {
 	one = deepClone(one);
 	two = deepClone(two);
 
@@ -69,7 +69,7 @@ export function partialCompare<T extends any>(one?: T, two?: T, keysToFilterOut?
 /**
  * Returns true for equal.
  */
-export function compare<T extends any>(one?: T, two?: T, keys?: (keyof T)[]): boolean {
+export function compare<T>(one?: T, two?: T, keys?: (keyof T)[]): boolean {
 	const typeofOne = typeof one;
 	const typeofTwo = typeof two;
 

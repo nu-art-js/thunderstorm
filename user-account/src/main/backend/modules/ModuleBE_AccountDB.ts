@@ -37,7 +37,7 @@ import {
 	ApiDefBE_Account,
 	DB_Account,
 	DBDef_Accounts,
-	DBProto_AccountType,
+	DBProto_Account,
 	HeaderKey_SessionId,
 	PasswordWithCheck,
 	Request_ChangeThumbnail,
@@ -89,7 +89,7 @@ type Config = {
 }
 
 export class ModuleBE_AccountDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_AccountType, Config>
+	extends ModuleBE_BaseDBV3<DBProto_Account, Config>
 	implements CollectSessionData<_SessionKey_Account> {
 
 	readonly Middleware = async () => {
@@ -190,7 +190,7 @@ export class ModuleBE_AccountDB_Class
 			await dispatch_onAccountLogin.dispatchModuleAsync(account, transaction);
 		},
 		queryUnsafeAccount: async (credentials: AccountEmail, transaction?: Transaction) => {
-			const firestoreQuery = FirestoreInterfaceV3.buildQuery<DBProto_AccountType>(this.collection, {where: {email: credentials.email}});
+			const firestoreQuery = FirestoreInterfaceV3.buildQuery<DBProto_Account>(this.collection, {where: {email: credentials.email}});
 			let results;
 			if (transaction)
 				results = (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
