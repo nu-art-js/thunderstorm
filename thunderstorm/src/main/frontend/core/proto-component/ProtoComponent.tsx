@@ -1,12 +1,8 @@
 import {ComponentSync} from '../ComponentSync';
-import {
-	_keys,
-	BadImplementationException,
-	compare, RecursiveObjectOfPrimitives,
-	ThisShouldNotHappenException
-} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, compare, RecursiveObjectOfPrimitives, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2, QueryParamKey} from '../../modules/ModuleFE_BrowserHistoryV2';
-import {ProtoComponent_Props, ProtoComponent_QueryParamMapImpl, ProtoComponent_QueryParamResultsMap, ProtoComponent_State, ProtoComponentDef} from './types';
+import {ProtoComponentDef} from './types';
+
 
 /**
  * @abstract
@@ -20,7 +16,7 @@ import {ProtoComponent_Props, ProtoComponent_QueryParamMapImpl, ProtoComponent_Q
  * @copyright nu-art
  */
 export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P extends {} = {}, S extends {} = {},
-	Props extends ProtoComponent_Props<Def> & P = ProtoComponent_Props<Def> & P, State extends ProtoComponent_State<Def> & S = ProtoComponent_State<Def> & S>
+	Props extends Def['props'] & P = Def['props'] & P, State extends Def['state'] & S = Def['state'] & S>
 	extends ComponentSync<Props, State>
 	implements OnUrlParamsChangedListenerV2 {
 
@@ -53,23 +49,12 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * Generates an object connecting each query param key given in the props to a QueryParamKey class instance.
 	 * @private
 	 */
-	private getQueryParamObject(): ProtoComponent_QueryParamMapImpl<Def> {
-		const queryParams = {} as ProtoComponent_QueryParamMapImpl<Def>;
+	private getQueryParamObject() {
+		const queryParams = {} as Def['queryParamKeys'];
 		this.props.queryParamsKeys?.forEach(key => {
 			queryParams[key] = this.getQueryParamKeyForKey(key);
 		});
 		return queryParams;
-	}
-
-	/**
-	 * Generates an object connection each query param key given in the props to its current value as read from the URL
-	 */
-	private getQueryParamResultsObject() {
-		const queryParamObject = this.getQueryParamObject();
-		return _keys(queryParamObject).reduce((map, key) => {
-			map[key] = queryParamObject[key].get();
-			return map;
-		}, {} as ProtoComponent_QueryParamResultsMap<Def>);
 	}
 
 	/**
@@ -94,7 +79,18 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 			throw new ThisShouldNotHappenException(`QueryParamKey for key ${key as string} not in state`);
 
 		return queryKey;
-	};
+	}
+
+	/**
+	 * Generates an object connection each query param key given in the props to its current value as read from the URL
+	 */
+	private getQueryParamResultsObject() {
+		const queryParamObject = this.getQueryParamObject();
+		return _keys(queryParamObject).reduce((map, key) => {
+			map[key] = queryParamObject[key].get();
+			return map;
+		}, {} as NonNullable<Def['state']['previousResultsObject']>);
+	}
 
 	// ######################## Singulars
 
