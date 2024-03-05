@@ -6,7 +6,7 @@ import {
 	ApiDef_FocusedObject,
 	FocusData_Map,
 	FocusData_Object,
-	Focused,
+	Focused, FocusEvent_Focused, FocusEvent_Unfocused,
 	Request_ReleaseObject,
 	Request_SetFocusStatus,
 	Request_UpdateFocusObject
@@ -86,10 +86,10 @@ export class ModuleBE_FocusedObject_Class
 		await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
 			let ttl;
 			switch (rootData[_dbName][_itemId][_accountId][_tabId].event) {
-				case 'focus':
+				case FocusEvent_Focused:
 					ttl = DefaultTTL_Focus;
 					break;
-				case 'unfocused':
+				case FocusEvent_Unfocused:
 				default:
 					ttl = DefaultTTL_Unfocus;
 			}

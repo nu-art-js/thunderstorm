@@ -37,15 +37,16 @@ import {
 	PreDB
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {FirestoreCollectionV2, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import {
+	FirestoreCollectionV2,
+	PostWriteProcessingData
+} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
-import {OnFirestoreBackupSchedulerActV2} from '../backup/ModuleBE_v2_BackupScheduler';
-import {FirestoreBackupDetailsV2} from '../backup/ModuleBE_v2_Backup';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
-import Transaction = firestore.Transaction;
 import {Response_DBSync} from '../../../shared/sync-manager/types';
+import Transaction = firestore.Transaction;
 
 
 export type BaseDBApiConfig = {
@@ -61,8 +62,7 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
 export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends {} = {}, Ks extends keyof PreDB<Type> = Default_UniqueKey>
-	extends Module<ConfigType & DBApiConfig<Type>>
-	implements OnFirestoreBackupSchedulerActV2 {
+	extends Module<ConfigType & DBApiConfig<Type>> {
 
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
@@ -154,19 +154,6 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		return this.config.itemName;
 	}
 
-	__onFirestoreBackupSchedulerActV2(): FirestoreBackupDetailsV2<Type>[] {
-		return [{
-			query: this.resolveBackupQuery(),
-			queryFunction: this.collection.query.custom,
-			moduleKey: this.config.collectionName,
-			version: this.config.versions[0]
-		}];
-	}
-
-	protected resolveBackupQuery(): FirestoreQuery<Type> {
-		return _EmptyQuery;
-	}
-
 	querySync = async (syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> => {
 		const items = await this.collection.query.custom(syncQuery);
 		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
@@ -178,6 +165,14 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	private _preWriteProcessing = async (dbItem: PreDB<Type>, transaction?: Transaction) => {
 		await this.upgradeInstances([dbItem]);
 		await this.preWriteProcessing(dbItem, transaction);
+	};
+
+	/**
+	 * Check if the collection has at least one item without the latest version. Version[0] is the latest version.
+	 */
+	public isCollectionUpToDate = async () => {
+		// @ts-ignore
+		return (await this.query.custom({limit: 1, where: {_v: {$neq: this.dbDef.versions?.[0]??'1.0.0'}}})).length === 0;
 	};
 
 	/**

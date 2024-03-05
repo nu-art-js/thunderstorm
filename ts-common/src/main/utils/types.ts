@@ -78,7 +78,7 @@ export type SubsetObjectByKeys<T, Keys extends keyof T> = {
 export type SubsetObjectByValue<T, ExpectedType> = SubsetObjectByKeys<T, SubsetKeys<keyof T, T, ExpectedType>>;
 
 export type OptionalKeys<T extends TS_Object> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
-export type MandatoryKeys<T extends TS_Object, V extends any = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
+export type MandatoryKeys<T extends TS_Object, V = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
 
 export type RequireOptionals<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> =
 	Pick<T, Exclude<keyof T, Keys>>
@@ -103,7 +103,7 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
 }[Keys]
 
 export type Constructor<T> = new (...args: any) => T
-export type ArrayType<T extends any> = T extends (infer I)[] ? I : never;
+export type ArrayType<T> = T extends (infer I)[] ? I : never;
 export type NestedArrayType<T extends any[]> =
 	T extends (infer I)[] ? I extends any[] ?
 		NestedArrayType<I> : I : never;
@@ -251,15 +251,19 @@ export type RecursiveWritable<T> =
  * type Profile = { name: string; contacts: { email: { primary: string; secondary: string } } };
  * type ProfilePaths = DotNotation<Profile>; // 'name' | 'contacts' | 'contacts.email' | 'contacts.email.primary' | 'contacts.email.secondary'
  */
-export type DotNotation<T> = T extends object
-	? {
-		[K in keyof T]: K extends string
-			? T[K] extends object
-				? `${K & string}` | `${K & string}.${DotNotation<T[K]>}`
-				: `${K & string}`
-			: never;
-	}[keyof T]
-	: '';
+type NonEmptyObject<T> = T extends object ? (keyof T extends never ? never : T) : never;
+
+export type DotNotation<T extends object> =
+	NonNullable<T extends object ? {
+			[K in keyof T]: K extends string
+				? T[K] extends object
+					? NonEmptyObject<T[K]> extends never
+						? T[K] extends string | string[] ? `${K & string}` : never
+						: `${K & string}.${DotNotation<T[K]>}`
+					: `${K & string}`
+				: never;
+		}[keyof T]
+		: ''>;
 
 /**
  * Replaces the type of nested property within an object, based on a specified path.
@@ -286,12 +290,30 @@ export type DotNotation<T> = T extends object
  * type NewProfile = ManipulateInnerPropValue<Profile, 'contacts.email.primary', boolean>;
  * // Result: { name: string; contacts: { email: { primary: boolean; secondary: string } } }
  */
-export type ManipulateInnerPropValue<ObjectType, PropertyPath extends DotNotation<ObjectType>, NewValueType> =
+export type ManipulateInnerPropValue<ObjectType extends object, PropertyPath extends DotNotation<ObjectType>, NewValueType> =
 	PropertyPath extends `${infer Key}.${infer Rest}`
 		? Key extends keyof ObjectType
-			? { [Prop in keyof ObjectType]: Prop extends Key ? Rest extends DotNotation<ObjectType[Key]> ? ManipulateInnerPropValue<ObjectType[Key], Rest, NewValueType> : never : ObjectType[Prop] }
+			? {
+				[Prop in keyof ObjectType]: Prop extends Key
+					? ObjectType[Key] extends object
+						? Rest extends DotNotation<ObjectType[Key]>
+							? ManipulateInnerPropValue<ObjectType[Key], Rest, NewValueType>
+							: never
+						: ObjectType[Prop]
+					: never
+			}
 			: never
 		: { [Prop in keyof ObjectType]: Prop extends PropertyPath ? NewValueType : ObjectType[Prop] };
+
+export type DotNotationValueType<ObjectType extends object, Path extends string> = Path extends `${infer First}.${infer Rest}`
+	? First extends keyof ObjectType
+		? NonNullable<ObjectType[First]> extends object
+			? DotNotationValueType<NonNullable<ObjectType[First]>, Rest>
+			: never
+		: never
+	: Path extends keyof ObjectType
+		? NonNullable<ObjectType[Path]>
+		: never;
 
 export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };
 

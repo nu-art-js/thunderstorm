@@ -53,16 +53,16 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 							 onClick={(e) => {
 								 if (e.metaKey) {
 									 if (e.shiftKey)
-										 this.logInfo(`item id: ${__stringify(item)}`);
+										 this.logInfo(`item: ${item._id}`, item);
 									 else
-										 this.logInfo(`item id: ${item.id}`);
-
+										 this.logInfo(`item: ${item._id}`);
 									 return;
 								 }
 
 								 this.props.onSelected(item);
 							 }}>
-						{this.props.itemRenderer(item)}</div>)}
+						{this.props.itemRenderer(item)}
+					</div>)}
 			</LL_V_L>
 		</LL_V_L>;
 	}

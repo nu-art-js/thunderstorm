@@ -1,4 +1,4 @@
-import {DB_Object, OmitDBObject, SubsetKeys, SubsetObjectByKeys, UniqueId} from '../utils/types';
+import {DB_Object, DotNotation, DotNotationValueType, OmitDBObject, SubsetObjectByKeys, UniqueId} from '../utils/types';
 import {ValidatorTypeResolver} from '../validator/validator-core';
 
 
@@ -15,10 +15,7 @@ export type VersionsDeclaration<Versions extends VersionType[] = ['1.0.0'], Type
 	types: Types
 };
 
-export type InnerDependencies<T extends DB_Object, K extends SubsetKeys<keyof T, T, string | string[]>, Proto extends DBProto<any>> = {
-	key: K
-	proto: Proto
-};
+export type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DBProto<any> }
 
 type Exact<T, Shape> = T & {
 	[K in Exclude<keyof Shape, keyof T>]?: never;
@@ -35,18 +32,27 @@ type Exact<T, Shape> = T & {
  */
 export type Proto_DB_Object<
 	T extends DB_Object,
-	DatabaseName extends string,
+	DatabaseKey extends string,
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<VersionType[]>,
 	UniqueKeys extends keyof T = Default_UniqueKey,
-	Dependencies extends Exact<{ [K in SubsetKeys<keyof T, T, string | string[]>]?: DBProto<any> }, Dependencies> = never> = {
+	Dependencies extends Exact<{ [K in DotNotation<T>]?: DBProto<any> }, Dependencies> = never> = {
 
 	type: T,
-	dbName: DatabaseName
+	dbKey: DatabaseKey;
 	generatedKeys: GeneratedKeys | keyof DB_Object
 	versions: Versions,
 	uniqueKeys: UniqueKeys
-	dependencies: Dependencies
+	dependencies: keyof Dependencies extends never ? never : Dependencies
+}
+
+type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
+	[K in keyof D]: D[K] extends DBProto<any>
+		? {
+			dbKey: D[K]['dbKey'],
+			fieldType: TypeOfTypeAsString<DotNotationValueType<T, K & string>>
+		}
+		: never
 }
 
 /**
@@ -57,10 +63,11 @@ export type Proto_DB_Object<
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
 export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+	proto: P
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: P['type'],
-	dbName: P['dbName'],
+	dbKey: P['dbKey'],
 	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
@@ -70,6 +77,7 @@ export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclarat
 	uniqueParam: UniqueId | { [K in P['uniqueKeys']]: P['type'][K] }
 	metadata?: Metadata<OmitDBObject<P['type']>>
 	lockKeys?: (keyof P['type'])[]
+	dependencies: DependenciesImpl<P['type'], P['dependencies']>
 }
 
 /**
@@ -78,18 +86,26 @@ export type DBProto<P extends Proto_DB_Object<any, string, any, VersionsDeclarat
  * @template Proto The DBProto type that this definition is based on.
  */
 export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
-	dbName: Proto['dbName'];
+	dbKey: Proto['dbKey'];
 	entityName: string;
+	frontend: {
+		name: string;
+		group: string;
+	};
+	backend: {
+		name: string;
+	};
 	TTL?: number;
 	lastUpdatedTTL?: number;
 	upgradeChunksSize?: number;
 	generatedPropsValidator: Proto['generatedPropsValidator'];
 	modifiablePropsValidator: Proto['modifiablePropsValidator'];
 	uniqueKeys?: Proto['uniqueKeys'];
-	versions?: Proto['versions']['versions'];
+	versions: Proto['versions']['versions'];
 	indices?: Proto['indices'];
 	lockKeys?: Proto['lockKeys'];
 	metadata?: Proto['metadata'];
+	dependencies?: Proto['dependencies']
 }
 
 /**
@@ -97,7 +113,8 @@ export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
  */
 export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> = {
 	validator: ValidatorTypeResolver<OmitDBObject<T>>;
-	dbName: string;
+	dbKey: string;
+	dbGroup: string;
 	entityName: string;
 	lockKeys?: (keyof T)[] // fallback to uniqueKeys, default ["_id"]
 	uniqueKeys?: Ks[] // default ["_id"]
@@ -113,28 +130,36 @@ export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> =
 	TTL?: number;
 	lastUpdatedTTL?: number;
 }
+export type test = TypeOfTypeAsString<DotNotationValueType<{ a?: { b?: string } }, 'a.b'>>
 
-type TypeOf<ValueType> = ValueType extends any[] ? 'array' :
-	ValueType extends object ? 'object' :
+export type TypeOfTypeAsString<ValueType> =
+	ValueType extends any[] ?
+		ValueType extends string[] ? 'string[]' :
+			ValueType extends number[] ? 'number[]' :
+				ValueType extends boolean[] ? 'boolean[]' :
+					ValueType extends object[] ? 'object[]' : 'array'
+		:
 		ValueType extends string ? 'string' :
 			ValueType extends number ? 'number' :
-				ValueType extends boolean ? 'boolean' : never;
+				ValueType extends boolean ? 'boolean' :
+					ValueType extends object ? 'object' :
+						never;
 
 export type MetadataProperty<ValueType> = {
-	valueType: TypeOf<ValueType>,
+	valueType: TypeOfTypeAsString<ValueType>,
 	optional: boolean,
 	description: string
 
 }
 
-export type MetadataObject<T extends any> = { [K in keyof T]-?: MetadataNested<T[K]> };
+export type MetadataObject<T> = { [K in keyof T]-?: MetadataNested<T[K]> };
 
-export type MetadataNested<T extends any> =
+export type MetadataNested<T> =
 	T extends (infer I)[] ? MetadataProperty<T> & { metadata: Metadata<I> } :
 		T extends object ? MetadataProperty<T> & { metadata: MetadataObject<T> } :
 			MetadataProperty<T>;
 
-export type Metadata<T extends any> =
+export type Metadata<T> =
 	T extends (infer I)[] ? MetadataProperty<T> & { metadata: Metadata<I> } :
 		T extends object ? MetadataObject<T> :
 			MetadataProperty<T>;

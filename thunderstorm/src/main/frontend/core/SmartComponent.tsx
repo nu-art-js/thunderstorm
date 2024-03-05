@@ -23,7 +23,6 @@ import * as React from 'react';
 import {DB_Object, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {OnSyncStatusChangedListener} from '../core/db-api-gen/types';
 import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB';
-import {TS_ErrorBoundary} from '../components/TS_ErrorBoundary';
 import {TS_Loader} from '../components/TS_Loader';
 import {DataStatus} from './db-api-gen/consts';
 import {BaseComponent} from './ComponentBase';
@@ -66,7 +65,7 @@ export type State_SmartComponent = {
  * Any "on{Item}Updated" function should NOT be an arrow function, as it can't be re-binded in the constructor,
  * thus obstructing the SmartComponent ability to listen to sync events, causing it to load forever.
  */
-export abstract class SmartComponent<P extends any = {}, S extends any = {},
+export abstract class SmartComponent<P = {}, S = {},
 	Props extends Props_SmartComponent & P = Props_SmartComponent & P,
 	State extends State_SmartComponent & S = State_SmartComponent & S>
 	extends BaseComponent<Props, State>
@@ -112,9 +111,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				</>;
 			};
 
-			return <TS_ErrorBoundary onError={this.reDeriveState} error={this.state.error}>
-				{toRet()}
-			</TS_ErrorBoundary>;
+			return toRet();
 		};
 	}
 
@@ -152,7 +149,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		const currentState = partialState;
 
 		const unpreparedModules = this.getUnpreparedModules();
-		
+
 		if (unpreparedModules.length > 0) {
 			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, currentState);
 			return currentState;

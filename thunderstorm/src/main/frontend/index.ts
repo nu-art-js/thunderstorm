@@ -34,8 +34,9 @@ export * from './core/thunder-dispatcher';
 export * from './core/thunder-modulepack';
 export * from './core/Thunder';
 export * from './core/typed-api';
-export * from './core/IndexedDBV3';
 export * from './core/proto-component';
+// export * from './core/IndexedDBV3';
+export * from './core/IndexedDBV4/IndexedDB_Store';
 
 export * from './component-modules/ModuleFE_Dialog';
 export * from './component-modules/ModuleFE_Toaster';
@@ -78,6 +79,7 @@ export * from './components/TS_PropRenderer';
 export * from './components/TS_Form';
 export * from './components/TS_VirtualizedList';
 export * from './components/TS_ProgressBar';
+export * from './components/TS_Card';
 export * from './components/TS_ReadMore';
 export * from './components/AwaitModules/AwaitModules';
 export * from './components/AwaitSync/AwaitSync';
@@ -105,7 +107,6 @@ export * from './modules/db-api-gen/ModuleFE_BaseDB';
 export * from './modules/db-api-gen/ModuleFE_v3_BaseDB';
 export * from './modules/db-api-gen/ModuleFE_BaseApi';
 export * from './modules/db-api-gen/ModuleFE_v3_BaseApi';
-export * from './modules/app-config/ModuleFE_AppConfig';
 export * from './modules/archiving/ModuleFE_Archiving';
 export * from './modules/ModuleFE_BrowserHistory';
 export * from './modules/ModuleFE_ConnectivityModule';
@@ -128,4 +129,4 @@ export * from './utils/EditableDBItem';
 export * from './utils/perform-action';
 
 export * from './behavior-functions';
-
+export * from './_entity';

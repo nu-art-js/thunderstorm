@@ -5,6 +5,7 @@ import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
 import {Message} from 'firebase-admin/lib/messaging/messaging-api';
 import {FirebaseEventContext, TopicMessage} from '../functions/firebase-function';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const functions = require('firebase-functions');
 
 export abstract class ModuleBE_PubSubFunction<T extends TS_Object>

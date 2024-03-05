@@ -1,5 +1,14 @@
 import * as React from 'react';
-import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_BusyButton, TS_PropRenderer, TS_Table} from '@nu-art/thunderstorm/frontend';
+import {
+	EditableDBItemV3,
+	EventType_Create,
+	EventType_Delete,
+	EventType_Update,
+	ModuleFE_Toaster,
+	TS_BusyButton,
+	TS_PropRenderer,
+	TS_Table
+} from '@nu-art/thunderstorm/frontend';
 import {BadImplementationException, capitalizeFirstLetter, exists, PreDB, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
@@ -16,7 +25,7 @@ import {
 	ModuleFE_PermissionProject
 } from '../../_entity';
 import {DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
-import {EditorBase, Props_EditorBase, State_EditorBase} from './editor-base';
+import {EditorBase, Permissions_MenuAction, Props_EditorBase, State_EditorBase} from './editor-base';
 import {DropDownCaret, Input_Number_Blur, Input_Text_Blur} from './components';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
 
@@ -64,8 +73,13 @@ export class PermissionDomainsEditor
 	//######################### Logic #########################
 
 	private deleteLevel = async (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
-		await editable.delete();
-		this.forceUpdate();
+		try {
+			await editable.delete();
+			this.forceUpdate();
+		} catch (err: any) {
+			this.logError({...err});
+			ModuleFE_Toaster.toastError(err.errorResponse.debugMessage.split('\n')[0]);
+		}
 	};
 
 	private updateLevel = async <K extends keyof DBProto_PermissionAccessLevel['dbType']>(editable: EditableDBItemV3<DBProto_PermissionAccessLevel>, prop: K, value: DBProto_PermissionAccessLevel['dbType'][K]) => {
@@ -92,6 +106,23 @@ export class PermissionDomainsEditor
 			domainId: this.state.editedItem?.item._id,
 		} as PreDB<DB_PermissionAccessLevel>;
 	}
+
+	protected getItemMenuActions = (item: DB_PermissionDomain): Permissions_MenuAction[] => {
+		return [
+			{
+				label: 'Delete Domain',
+				action: async () => {
+					try {
+						await ModuleFE_PermissionDomain.v1.delete(item).executeSync();
+						return true;
+					} catch (err: any) {
+						this.logError({...err});
+						ModuleFE_Toaster.toastError(err.errorResponse.debugMessage.split('\n')[0]);
+					}
+				}
+			}
+		];
+	};
 
 	//######################### Render #########################
 

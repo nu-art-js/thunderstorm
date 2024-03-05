@@ -24,9 +24,9 @@ export const Permissions_Messaging: DefaultDef_Package = {
 			levels: [...DuplicateDefaultAccessLevels(Domain_Messaging._id)],
 			dbNames: [
 				...filterInstances(ModulePackBE_Messaging as ModuleBE_BaseDBV3<any>[])
-					.filter(module => module.dbDef && module.dbDef.dbName)
+					.filter(module => module.dbDef && module.dbDef.dbKey)
 					.map(module => module.dbDef),
-			].map(dbDef => dbDef.dbName)
+			].map(dbDef => dbDef.dbKey)
 		}
 	]
 };

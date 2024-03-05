@@ -45,7 +45,7 @@ export class TS_DialogOverlay
 		this.forceUpdate();
 	};
 
-	__closeDialog = (dialogModel?: DialogKey): void => {
+	__closeDialog = (dialogModel?: DialogKey,): void => {
 		const dialogKey = dialogModel?.dialogKey;
 		if (!dialogKey)
 			this.state.models.pop();
@@ -82,7 +82,7 @@ export class TS_DialogOverlay
 
 		//Close there is only one dialog
 		if (this.state.models.length === 1)
-			return ModuleFE_Dialog.close(this.state.models[0].dialogKey);
+			return ModuleFE_Dialog.close(false, this.state.models[0].dialogKey);
 
 		//Close only this dialog if more than one
 		this.state.models.pop();

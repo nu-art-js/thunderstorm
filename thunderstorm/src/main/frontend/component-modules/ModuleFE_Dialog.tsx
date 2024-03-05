@@ -34,11 +34,16 @@ export type DialogKey = { dialogKey: string };
 export interface DialogListener {
 	__showDialog(dialogModel?: Dialog_Model): void;
 
-	__closeDialog(dialogModel?: DialogKey): void;
+	__closeDialog(dialogModel?: DialogKey,): void;
+}
+
+export interface DialogCloseListener {
+	__consumeDialogCloseEvent(dialogModel?: DialogKey): boolean;
 }
 
 const dispatch_showDialog = new ThunderDispatcher<DialogListener, '__showDialog'>('__showDialog');
 const dispatch_closeDialog = new ThunderDispatcher<DialogListener, '__closeDialog'>('__closeDialog');
+export const dispatch_canClose = new ThunderDispatcher<DialogCloseListener, '__consumeDialogCloseEvent'>('__consumeDialogCloseEvent');
 
 export const defaultCloseCallback = () => true;
 
@@ -52,9 +57,12 @@ export class ModuleFE_Dialog_Class
 	protected init(): void {
 	}
 
-	public close = (dialogKey?: string) => {
-		const p = dialogKey ? {dialogKey} : undefined;
-		dispatch_closeDialog.dispatchUI(p);
+	public close = (force: boolean = true, _dialogKey?: string) => {
+		const dialogKey = _dialogKey ? {dialogKey: _dialogKey} : undefined;
+		if (!force && dispatch_canClose.dispatchUI(dialogKey)[0])
+			return;
+
+		dispatch_closeDialog.dispatchUI(dialogKey);
 	};
 
 	public show = (content: React.ReactNode, closeOverlayOnClick = defaultCloseCallback, dialogKey = generateHex(8)) => {

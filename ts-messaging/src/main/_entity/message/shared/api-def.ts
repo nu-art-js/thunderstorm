@@ -19,7 +19,7 @@ export type ApiStruct_message = {
 
 export const ApiDef_message: ApiDefResolver<ApiStruct_message> = {
 	_v1: {
-		'?': {method: HttpMethod.POST, path: `v1/${DBDef_message.dbName}/post`},
-		'??': {method: HttpMethod.GET, path: `v1/${DBDef_message.dbName}/get`},
+		'?': {method: HttpMethod.POST, path: `v1/${DBDef_message.dbKey}/post`},
+		'??': {method: HttpMethod.GET, path: `v1/${DBDef_message.dbKey}/get`},
 	}
 };

@@ -136,7 +136,7 @@ export class TS_DropDown<ItemType>
 
 	// ######################## Static ########################
 
-	static readonly prepareEditable = <T extends any, EditableType extends {} = any, ValueType extends EditableType[keyof EditableType] = EditableType[keyof EditableType]>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+	static readonly prepareEditable = <T, EditableType extends {} = any, ValueType extends EditableType[keyof EditableType] = EditableType[keyof EditableType]>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return (props: EditableDropDownProps<T, EditableType, ValueType>) => <TS_DropDown<T>
 			{...resolveContent(mandatoryProps)} {...props}
 			error={resolveEditableError(props)}
@@ -144,11 +144,11 @@ export class TS_DropDown<ItemType>
 			selected={props.editable.item[props.prop] as T | undefined}/>;
 	};
 
-	static readonly prepareSelectable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+	static readonly prepareSelectable = <T = any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return (props: PartialProps_DropDown<T>) => <TS_DropDown<T> {...resolveContent(mandatoryProps)} {...props} />;
 	};
 
-	static readonly prepare = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+	static readonly prepare = <T = any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return {
 			editable: this.prepareEditable(mandatoryProps),
 			selectable: this.prepareSelectable(mandatoryProps)
@@ -342,7 +342,12 @@ export class TS_DropDown<ItemType>
 	}
 
 	private getChildrenContainerMaxHeight = (dropdownRef: React.RefObject<HTMLDivElement>, dir: 'top' | 'bottom'): number => {
-		const rect = dropdownRef.current?.getBoundingClientRect()!;
+		const rect = dropdownRef.current?.getBoundingClientRect();
+		if (!rect) {
+			this.logWarning('getChildrenContainerMaxHeight - No Rect!!');
+			return 0;
+		}
+
 		const boundingParent = this.getBoundingParent();
 		if (boundingParent) {
 			const boundingRect = boundingParent.getBoundingClientRect();
@@ -384,7 +389,7 @@ export class TS_DropDown<ItemType>
 				 tabIndex={this.props.tabIndex}
 				 onFocus={this.addKeyboardListener}
 				 onBlur={this.removeKeyboardListener}
-				 {...getErrorTooltip(this.props.error, this.props.shouldShowTooltip)}
+				 {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
 				 {...convertToHTMLDataAttributes(this.state.error, 'error')}
 			>
 				{this.renderHeader()}

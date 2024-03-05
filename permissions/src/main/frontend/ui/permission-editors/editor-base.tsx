@@ -1,11 +1,25 @@
 import * as React from 'react';
-import {_className, ComponentSync, EditableDBItemV3, LL_H_C, LL_V_L, ModuleFE_v3_BaseApi, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
+import {
+	_className,
+	ComponentSync,
+	EditableDBItemV3,
+	LL_H_C,
+	LL_V_L,
+	Model_PopUp, ModuleFE_MouseInteractivity,
+	ModuleFE_v3_BaseApi, mouseInteractivity_PopUp, TS_BusyButton,
+	TS_Button,
+	TS_Input
+} from '@nu-art/thunderstorm/frontend';
 import {BadImplementationException, DBProto, Filter, sortArray, UniqueId} from '@nu-art/ts-common';
 import './editor-base.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 
 const newItemIdentifier = '##new-item##';
 
+export type Permissions_MenuAction = {
+	label: string;
+	action: () => (Promise<void | boolean> | void | boolean);
+}
 export type State_EditorBase<T extends DBProto<any>> = {
 	items: Readonly<T['dbType'][]>;
 	selectedItemId?: UniqueId | typeof newItemIdentifier;
@@ -37,12 +51,13 @@ export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorB
 	//######################### Logic #########################
 
 	protected getEditable(instance: Partial<T['dbType']>): EditableDBItemV3<T> {
-		return new EditableDBItemV3<T>(instance, this.props.module, dbItem => {
-			this.setState({editedItem: this.getEditable(dbItem), selectedItemId: dbItem._id});
-		})
-			.setAutoSave(!!instance._id)
+		return new EditableDBItemV3<T>(instance, this.props.module)
+			.setAutoSave(true)
 			.setDebounceTimeout(100)
-			.setOnChanged(async editable => this.setState({editedItem: editable as EditableDBItemV3<T>, selectedItemId: editable.item._id}));
+			.setOnChanged(async editable => this.setState({
+				editedItem: editable as EditableDBItemV3<T>,
+				selectedItemId: editable.item._id
+			}));
 	}
 
 	protected getNewInstance(): Partial<T['dbType']> {
@@ -63,6 +78,34 @@ export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorB
 			editedItem: editable,
 			selectedItemId: item._id
 		} as S);
+	};
+
+	private openItemMenu = (e: React.MouseEvent<HTMLDivElement>, item: T['dbType']) => {
+		const menuActions = this.getItemMenuActions(item);
+		if (!menuActions.length)
+			return;
+
+		const model: Model_PopUp = {
+			id: 'permission-editor-item-menu',
+			originPos: {x: e.clientX, y: e.clientY},
+			modalPos: {x: 1, y: 1},
+			content: () => <>
+				{menuActions.map((action, index) => {
+					return <TS_BusyButton
+						key={index}
+						onClick={async () => {
+							const shouldClose = await action.action() ?? false;
+							if (shouldClose)
+								ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
+						}}>{action.label}</TS_BusyButton>;
+				})}
+			</>
+		};
+		ModuleFE_MouseInteractivity.showContent(model);
+	};
+
+	protected getItemMenuActions = (item: T['dbType']): Permissions_MenuAction[] => {
+		return [];
 	};
 
 	//######################### Render #########################
@@ -105,8 +148,12 @@ export abstract class EditorBase<T extends DBProto<any>, S extends State_EditorB
 		return <LL_V_L className={'item-list__list'}>
 			{items.map(item => {
 				const className = _className('item-list__list-item', item._id === this.state.selectedItemId ? 'selected' : undefined);
-				return <div className={className} onClick={() => this.selectItem(item._id)}
-										key={item._id}>{this.props.itemDisplay(item)}</div>;
+				return <div
+					className={className}
+					onClick={() => this.selectItem(item._id)}
+					key={item._id}
+					onContextMenu={e => this.openItemMenu(e, item)}
+				>{this.props.itemDisplay(item)}</div>;
 			})}
 		</LL_V_L>;
 	};

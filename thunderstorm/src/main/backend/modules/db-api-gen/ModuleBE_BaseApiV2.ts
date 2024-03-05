@@ -73,7 +73,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	}
 
 	private _metadata = async (): Promise<Metadata<Type>> => {
-		return {...this.dbModule.dbDef.metadata} as Metadata<Type> || `not implemented yet for collection '${this.dbModule.dbDef.dbName}'`;
+		return {...this.dbModule.dbDef.metadata} as Metadata<Type> || `not implemented yet for collection '${this.dbModule.dbDef.dbKey}'`;
 	};
 
 	private _deleteQuery = async (query: FirestoreQuery<Type>): Promise<Type[]> => {

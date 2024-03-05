@@ -19,33 +19,37 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
+import {_EmptyQuery, Clause_Where, DB_EntityDependency, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	_keys,
 	ApiException,
 	asArray,
+	BadImplementationException,
+	batchActionParallel,
 	currentTimeMillis,
 	DB_Object,
 	DBDef_V3,
+	dbObjectToId,
 	DBProto,
 	filterDuplicates,
 	filterInstances,
-	Module
+	flatArray,
+	Module,
+	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {
 	FirestoreCollectionV3,
 	PostWriteProcessingData
 } from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {firestore} from 'firebase-admin';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {DBApiBEConfigV3, getModuleBEConfigV3} from '../../core/v3-db-def';
-import {OnFirestoreBackupSchedulerActV2} from '../backup/ModuleBE_v2_BackupScheduler';
-import {FirestoreBackupDetailsV2} from '../backup/ModuleBE_v2_Backup';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
 import {Response_DBSync} from '../../../shared/sync-manager/types';
-import Transaction = firestore.Transaction;
+import {CanDeleteDBEntitiesProto} from '@nu-art/firebase/backend/firestore-v3/types';
+import {Transaction} from 'firebase-admin/firestore';
+import {canDeleteDispatcherV3, MemKey_DeletedDocs} from '@nu-art/firebase/backend/firestore-v3/consts';
 
 
 export type BaseDBApiConfigV3 = {
@@ -64,7 +68,7 @@ const CONST_DefaultWriteChunkSize = 200;
 export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType = any,
 	Config extends ConfigType & DBApiConfigV3<Proto> = ConfigType & DBApiConfigV3<Proto>>
 	extends Module<Config>
-	implements OnFirestoreBackupSchedulerActV2 {
+	implements CanDeleteDBEntitiesProto {
 
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
@@ -94,6 +98,59 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		this.upgradeInstances.bind(this);
 		this.manipulateQuery.bind(this);
 		this.collectDependencies.bind(this);
+	}
+
+	/**
+	 * Check if the dbName in type exists in this proto's dependencies.
+	 * If it doesn't- return nothing.
+	 * If it does- return conflict ids.
+	 */
+	async __canDeleteEntitiesProto<T extends DBProto<any>>(toDeleteDbName: T['dbKey'], itemIdsToDelete: string[], transaction?: Transaction) {
+		const result: DB_EntityDependency = {
+			collectionKey: this.dbDef.entityName,
+			conflictingIds: []
+		};
+
+		const dependencies = this.dbDef.dependencies;
+		if (!dependencies)
+			return result;
+
+		const promises: Promise<Proto['dbType'][]>[] = [];
+		_keys(dependencies).map(key => {
+			if (dependencies[key].dbKey !== toDeleteDbName)
+				return;
+
+			promises.push(batchActionParallel(itemIdsToDelete,
+				10, async ids => {
+					let query = undefined;
+					if (dependencies[key].fieldType === 'string')
+						query = {[key]: {$in: ids}};
+
+					if (dependencies[key].fieldType === 'string[]')
+						query = {[key]: {$aca: ids}};
+
+					if (query === undefined)
+						throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
+
+					return this.query.where(query as Clause_Where<Proto['dbType']>, transaction);
+				}));
+		});
+
+		if (!promises.length)
+			return result;
+
+		//All gathered conflicting ids
+		let conflictingIds = filterDuplicates(flatArray(await Promise.all(promises)).map(dbObjectToId));
+		//The MemKey_DeletedDocs object associated with this transaction
+		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
+		if (ignoredInThisTransaction) {
+			//The key associated with this collection
+			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.entityName];
+			//Filter out all ids of items which were already deleted in this transaction
+			conflictingIds = conflictingIds.filter(id => !ignoredForThisCollection?.has(id));
+		}
+		result.conflictingIds = conflictingIds;
+		return result;
 	}
 
 	/**
@@ -157,19 +214,6 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		return this.config.itemName;
 	}
 
-	__onFirestoreBackupSchedulerActV2(): FirestoreBackupDetailsV2<Proto['dbType']>[] {
-		return [{
-			query: this.resolveBackupQuery(),
-			queryFunction: this.collection.query.custom,
-			moduleKey: this.config.collectionName,
-			version: this.config.versions[0]
-		}];
-	}
-
-	protected resolveBackupQuery(): FirestoreQuery<Proto['dbType']> {
-		return _EmptyQuery;
-	}
-
 	querySync = async (syncQuery: FirestoreQuery<Proto['dbType']>): Promise<Response_DBSync<Proto['dbType']>> => {
 		const items = await this.collection.query.custom(syncQuery);
 		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
@@ -191,7 +235,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	protected async preWriteProcessing(dbInstance: Proto['uiType'], transaction?: Transaction) {
 	}
 
-	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>) => {
+	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>, transaction?: Transaction) => {
 		const now = currentTimeMillis();
 
 		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
@@ -202,20 +246,20 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys);
+			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys, transaction);
 			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
 			await ModuleBE_SyncManager.setOldestDeleted(this.config.collectionName, now);
 
-		await this.postWriteProcessing(data);
+		await this.postWriteProcessing(data, transaction);
 	};
 
 	/**
 	 * Override this method to customize processing that should be done after create, set, update or delete.
 	 * @param data
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>, transaction?: Transaction) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<Proto['dbType']>): FirestoreQuery<Proto['dbType']> {
@@ -239,9 +283,14 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	}
 
 	async collectDependencies(dbInstances: Proto['dbType'][], transaction?: Transaction) {
+		const potentialProtoDependencyError = await canDeleteDispatcherV3.dispatchModuleAsync(this.dbDef.dbKey, dbInstances.map(dbObjectToId), transaction);
+		const protoDependencies = filterInstances(potentialProtoDependencyError.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
+
 		const potentialErrors = await canDeleteDispatcherV2.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
 		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
-		return dependencies.length > 0 ? dependencies : undefined;
+
+		const resultDependencies = [...protoDependencies, ...dependencies];
+		return resultDependencies.length > 0 ? resultDependencies : undefined;
 	}
 
 	private versionUpgrades: { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> } = {} as { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> };
@@ -254,6 +303,13 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	registerVersionUpgradeProcessor<K extends Proto['versions']['versions'][number]>(version: K, processor: (items: Proto['versions']['types'][K][]) => Promise<void>) {
 		this.versionUpgrades[version] = processor;
 	}
+
+	/**
+	 * Check if the collection has at least one item without the latest version. Version[0] is the latest version.
+	 */
+	public isCollectionUpToDate = async () => {
+		return (await this.query.custom({limit: 1, where: {_v: {$neq: this.dbDef.versions[0]}}})).length === 0;
+	};
 
 	upgradeCollection = async () => {
 		let docs: DocWrapperV3<Proto>[];
@@ -295,16 +351,16 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 			const nextVersion = this.config.versions[i - 1] ?? version;
 			const versionTransition = `${version} => ${nextVersion}`;
 			if (instancesToUpgrade.length === 0) {
-				this.logWarning(`No instances to upgrade from ${versionTransition}`);
+				this.logVerbose(`No instances to upgrade from ${versionTransition}`);
 				continue;
 			}
 
 			const upgradeProcessor = this.versionUpgrades[version];
 			if (!upgradeProcessor) {
-				this.logWarning(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
-				this.logWarning(`No upgrade processor for: ${versionTransition}`);
+				this.logVerbose(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
+				this.logVerbose(`No upgrade processor for: ${versionTransition}`);
 			} else {
-				this.logWarning(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
+				this.logInfo(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
 				await upgradeProcessor?.(instancesToUpgrade);
 				instancesToSave.push(...instancesToUpgrade);
 			}
