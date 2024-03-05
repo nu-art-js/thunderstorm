@@ -2,13 +2,14 @@ import * as React from 'react';
 import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';
 import {LL_H_C, LL_V_L} from '../../components/Layouts';
 import './ATS_ProtoComponent.scss';
-import {generateArray, UniqueId} from '@nu-art/ts-common';
+import {generateArray, SubsetObjectByKeys, UniqueId} from '@nu-art/ts-common';
 import {TS_PropRenderer} from '../../components/TS_PropRenderer';
 import {TS_DropDown} from '../../components/TS_Dropdown';
 import {SimpleListAdapter} from '../../components/adapter/Adapter';
-import {ProtoComponent, ProtoComponent_Props, ProtoComponent_State, ProtoComponentDef} from '../../core/proto-component';
+import {ProtoComponent, ProtoComponentDef} from '../../core/proto-component';
 import {TS_Button} from '../../components/TS_Button';
 import {ComponentSync} from '../../core/ComponentSync';
+
 
 type Keys = 'selectedNumber' | 'selectedExampleId';
 type Example = {
@@ -34,7 +35,7 @@ const examples: Example[] = [
 	}
 ];
 
-type ComponentDef = ProtoComponentDef<Keys, {
+type ComponentDef1 = ProtoComponentDef<Keys, {
 	selectedNumber: number;
 	selectedExampleId: UniqueId;
 }>
@@ -45,13 +46,13 @@ type State = {
 }
 
 export class ATS_ProtoComponent
-	extends ProtoComponent<ComponentDef, {}, State> {
+	extends ProtoComponent<ComponentDef1, {}, State> {
 
-	static defaultProps: Partial<ProtoComponent_Props<ComponentDef>> = {
+	static defaultProps: Partial<ComponentDef1['props']> = {
 		queryParamsKeys: ['selectedNumber', 'selectedExampleId'],
 	};
 
-	protected deriveStateFromProps(nextProps: ProtoComponent_Props<ComponentDef>, state: ProtoComponent_State<ComponentDef> & State) {
+	protected deriveStateFromProps(nextProps: ComponentDef1['props'], state: ComponentDef1['state'] & State) {
 		state = super.deriveStateFromProps(nextProps, state);
 		state.selectedNumber = state.queryParams.selectedNumber.get();
 		state.selectedExampleId = state.queryParams.selectedExampleId.get();
@@ -118,7 +119,6 @@ export class ATS_ProtoComponent
 		</LL_V_L>;
 	}
 }
-
 
 export class ATS_ProtoComponentDouble
 	extends ComponentSync {
