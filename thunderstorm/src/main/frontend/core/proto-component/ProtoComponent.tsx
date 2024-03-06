@@ -1,5 +1,5 @@
 import {ComponentSync} from '../ComponentSync';
-import {_keys, BadImplementationException, compare, RecursiveObjectOfPrimitives, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {_keys, compare, RecursiveObjectOfPrimitives, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2, QueryParamKey} from '../../modules/ModuleFE_BrowserHistoryV2';
 import {ProtoComponentDef} from './types';
 
@@ -66,9 +66,6 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * @private
 	 */
 	private getQueryParamKeyForKey(key: Def['queryParamKeys']) {
-		if (!this.props.queryParamsKeys?.includes(key))
-			throw new BadImplementationException(`key ${key} is not defined in Props.queryParamsKeys, did you forget to add it?`);
-
 		//State has not been established yet, pass a new QueryParamKey
 		if (!this.state)
 			return new QueryParamKey(key);
