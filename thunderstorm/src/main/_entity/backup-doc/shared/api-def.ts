@@ -1,4 +1,4 @@
-import {ApiDefResolver, HttpMethod, QueryApi} from '../../../shared';
+import {ApiDefResolver, HttpMethod, QueryApi} from '../../../shared/types';
 import {FetchBackupDoc} from './types';
 
 export type Request_BackupId = {
