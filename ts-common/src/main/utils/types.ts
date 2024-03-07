@@ -21,6 +21,12 @@ import {Default_UniqueKey} from '../db/types';
 
 export type Primitive = string | number | boolean;
 
+export type RecursiveObjectOfPrimitives = {
+	[key: string]: Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives;
+};
+
+export type RecursiveArrayOfPrimitives = (Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives)[]
+
 export type CustomOptional<T, K> = {
 	[P in keyof T]?: K
 };
