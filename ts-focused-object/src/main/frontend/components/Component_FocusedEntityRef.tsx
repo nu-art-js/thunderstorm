@@ -15,6 +15,7 @@ import {FocusData_Map, FocusData_Object, Focused} from '../../shared';
 import {UI_Account} from '@nu-art/user-account';
 import {Component_AccountThumbnail, ModuleFE_Account} from '@nu-art/user-account/frontend';
 import './Component_FocusedEntityRef.scss';
+import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
 
 
 type UserFocusItem = Focused & { event: FocusEvent, timestamp: number };
@@ -86,7 +87,7 @@ export class Component_FocusedEntityRef
 		await ModuleFE_FocusedObject.releaseFocusData(this.focusId, toReleaseData as Focused[]);
 	}
 
-	protected deriveStateFromProps(nextProps: Props, state: Partial<State>) {
+	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
 		state.userFocusMap ??= {};
 
 		if (!compare(this.props.focusData, nextProps.focusData)) {
