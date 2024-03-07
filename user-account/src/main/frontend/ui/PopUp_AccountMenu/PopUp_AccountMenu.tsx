@@ -4,7 +4,7 @@ import {
 	ComponentSync,
 	getElementCenterPos,
 	Grid,
-	LL_H_C,
+	LL_H_C, LL_V_C,
 	LL_V_L,
 	ModuleFE_MouseInteractivity,
 	ModuleFE_Thunderstorm,
@@ -13,12 +13,13 @@ import {
 	TS_ComponentTransition,
 	TS_ErrorBoundary
 } from '@nu-art/thunderstorm/frontend';
-import {ResolvableContent, resolveContent, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {ResolvableContent, resolveContent, RuntimeVersion, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {DB_Account} from '../../../shared';
 import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
 import {Component_AccountThumbnail} from '../Component_AccountThumbnail/Component_AccountThumbnail';
 import './PopUp_AccountMenu.scss';
 import {Component_ChangePassword} from '../Component_ChangePassword/Component_ChangePassword';
+
 
 type ModalProps = {
 	modalPos?: { x: number, y: number };
@@ -208,9 +209,10 @@ export class PopUp_AccountMenu
 
 		return <>
 			{this.renderSeparatorBar({marginTop: 'auto'})}
-			<LL_H_C className={'account-menu__footer'}>
+			<LL_V_C className={'account-menu__footer'}>
 				<TS_Button onClick={this.logOut}>Log Out</TS_Button>
-			</LL_H_C>
+				<div className="version">{RuntimeVersion()}</div>
+			</LL_V_C>
 		</>;
 	};
 
