@@ -1,10 +1,11 @@
 import * as React from 'react';
 import {_className} from '../../utils/tools';
 import './TS_Card.scss';
-import {Controller} from '../../core/Controller';
+import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
+
 
 export class TS_Card
-	extends Controller<React.HTMLAttributes<HTMLDivElement>> {
+	extends React.Component<React.HTMLAttributes<HTMLDivElement>> {
 
 	shouldComponentUpdate(): boolean {
 		return true;
@@ -13,7 +14,9 @@ export class TS_Card
 	render() {
 		const {children, className, ...rest} = this.props;
 		return <div {...rest} className={_className('ts-card', className)}>
-			{children}
+			<TS_ErrorBoundary>
+				{children}
+			</TS_ErrorBoundary>
 		</div>;
 	}
 }
