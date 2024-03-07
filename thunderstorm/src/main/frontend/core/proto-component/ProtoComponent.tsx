@@ -34,7 +34,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 		}
 	};
 
-	protected _deriveStateFromProps(nextProps: Props, state?: Partial<State>): State {
+	protected _deriveStateFromProps(nextProps: Props, state: State): State {
 		this.logVerbose('Deriving state from props');
 		//Initial state set to be the query param object generated from the query params keys given in props.
 		state ??= this.state ? {...this.state} : {queryParams: this.getQueryParamObject()} as State;

@@ -24,19 +24,18 @@
  */
 import {BaseComponent} from './ComponentBase';
 
+export abstract class ComponentSync<P = any, S = any>
+	extends BaseComponent<P, S> {
 
-export abstract class ComponentSync<P = any, State = any>
-	extends BaseComponent<P, State> {
-
-	protected _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined {
+	protected _deriveStateFromProps(nextProps: P, state?: S): S | undefined {
 		this.logVerbose('Deriving state from props');
-		state ??= this.state ? {...this.state} : {} as State;
+		state ??= this.state ? {...this.state} : {} as S;
 		const _state = this.deriveStateFromProps(nextProps, state);
 		this.mounted && _state && this.setState(_state);
 		return _state;
 	}
 
-	protected deriveStateFromProps(nextProps: P, state: Partial<State>): State {
-		return state as State;
+	protected deriveStateFromProps(nextProps: P, state: S): S {
+		return state as S;
 	}
 }
