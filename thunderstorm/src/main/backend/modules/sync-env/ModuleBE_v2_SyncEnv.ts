@@ -7,8 +7,7 @@ import {
 	Module,
 	MUSTNeverHappenException,
 	RuntimeModules,
-	TypedMap,
-	UniqueId
+	TypedMap
 } from '@nu-art/ts-common';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
@@ -18,13 +17,15 @@ import {
 	ApiDef,
 	ApiDef_SyncEnvV2,
 	ApiModule,
+	DBModuleType,
 	HttpMethod,
 	QueryApi,
 	Request_BackupId,
 	Request_FetchFirebaseBackup,
 	Request_FetchFromEnvV2,
 	Request_GetMetadata,
-	Response_BackupDocs
+	Response_BackupDocs,
+	Response_FetchBackupMetadata
 } from '../../../shared';
 import {AxiosHttpModule} from '../http/AxiosHttpModule';
 import {MemKey_HttpRequest} from '../server/consts';
@@ -32,6 +33,7 @@ import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
 import {Readable} from 'stream';
 import {Storm} from '../../core/Storm';
 import {ModuleBE_BackupDocDB} from '../../../_entity/backup-doc/backend';
+import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
 
 
 type Config = {
@@ -68,7 +70,7 @@ class ModuleBE_v2_SyncEnv_Class
 		]);
 	}
 
-	fetchBackupMetadata = async (queryParams: Request_GetMetadata) => {
+	fetchBackupMetadata = async (queryParams: Request_GetMetadata): Promise<Response_FetchBackupMetadata> => {
 		const backupInfo = await this.getBackupInfo(queryParams);
 
 		if (!backupInfo)
@@ -77,7 +79,10 @@ class ModuleBE_v2_SyncEnv_Class
 		if (!backupInfo.metadata)
 			throw new ApiException(404, 'No metadata found on this backup');
 
-		return backupInfo.metadata;
+		return {
+			...backupInfo.metadata,
+			remoteCollectionNames: (RuntimeModules().filter<ModuleBE_BaseDBV3<any>>((module: DBModuleType) => !!module.dbDef?.dbKey)).map(_module => _module.dbDef.dbKey)
+		};
 	};
 
 	async pushToEnv(body: {
@@ -106,10 +111,7 @@ class ModuleBE_v2_SyncEnv_Class
 		console.log(response);
 	}
 
-	private async getBackupInfo(queryParams: {
-		env: string,
-		backupId: UniqueId
-	}) {
+	private async getBackupInfo(queryParams: Request_GetMetadata) {
 		const {backupId, env} = queryParams;
 		if (!env)
 			throw new BadImplementationException(`Did not receive env in the fetch from env api call!`);
