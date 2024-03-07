@@ -44,7 +44,6 @@ import {Stream} from 'stream';
 import {parse} from 'url';
 import {HttpServer} from './HttpServer';
 // noinspection TypeScriptPreferShortImport
-import {ApiDef, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi, QueryParams, TypedApi} from '../../../shared';
 import {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from '../../utils/types';
 import {
 	MemKey_HttpRequest,
@@ -57,6 +56,15 @@ import {
 	MemKey_HttpResponse
 } from './consts';
 import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {
+	ApiDef,
+	BodyApi,
+	HttpMethod_Body,
+	HttpMethod_Query,
+	QueryApi,
+	QueryParams,
+	TypedApi
+} from '../../../shared/types';
 
 
 export const MemKey_ServerApi = new MemKey<ServerApi<any>>('server-api', true);

@@ -1,13 +1,4 @@
 import {
-	ApiDef_BackupDoc,
-	BackupMetaData,
-	DB_BackupDoc,
-	DBDef_BackupDoc,
-	DBProto_BackupDoc,
-	Request_BackupId,
-	Response_BackupDocs
-} from './shared';
-import {
 	__stringify,
 	_logger_logException,
 	ApiException,
@@ -27,12 +18,16 @@ import {
 } from '@nu-art/ts-common';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV3';
 import {ModuleBE_BaseDBV2} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV2';
-import {addRoutes, createQueryServerApi} from '../../../backend';
 import {END_OF_STREAM, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {Writable} from 'stream';
 import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {BackupMetaData, DB_BackupDoc, DBProto_BackupDoc} from '../shared/types';
+import {addRoutes} from '../../../backend/modules/ModuleBE_APIs';
+import {ApiDef_BackupDoc, Request_BackupId, Response_BackupDocs} from '../shared/api-def';
+import {createQueryServerApi} from '../../../backend/core/typed-api';
+import {DBDef_BackupDoc} from '../shared/db-def';
 
 export interface OnModuleCleanupV2 {
 	__onCleanupInvokedV2: () => Promise<void>;
