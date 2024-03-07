@@ -105,7 +105,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * Returns the value of a query param by given key
 	 * @param key
 	 */
-	getQueryParam(key: Def['queryParamKeys']) {
+	getQueryParam<K extends Def['queryParamKeys']>(key: Def['queryParamKeys']): Def['queryParamDef'][K] {
 		const queryKey = this.getQueryParamKeyForKey(key);
 		return queryKey.get();
 	}
