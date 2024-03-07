@@ -124,7 +124,7 @@ class ModuleFE_Thunderstorm_Class
 	}
 
 	async clearWebsiteData() {
-		return dispatch_onClearWebsiteData.dispatchModuleAsync();
+		return await dispatch_onClearWebsiteData.dispatchModuleAsync();
 	}
 
 	async copyToClipboard(toCopy: string) {
