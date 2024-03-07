@@ -55,6 +55,7 @@ const modulesInterface = {
 	all: _modules
 };
 export const RuntimeModules = () => ModuleManager.instance.modules;
+export const RuntimeVersion = () => ModuleManager.instance.version;
 
 export class ModuleManager
 	extends Logger {
@@ -62,8 +63,8 @@ export class ModuleManager
 	protected config!: any;
 	readonly modules = modulesInterface;
 	public static instance: ModuleManager;
+	readonly version?: string;
 
-	// noinspection JSUnusedLocalSymbols
 	protected constructor() {
 		super();
 		if (ModuleManager.instance)
@@ -82,6 +83,12 @@ export class ModuleManager
 
 	public setConfig(config: object) {
 		this.config = config || {};
+		return this;
+	}
+
+	public setVersion(version: string) {
+		// @ts-ignore
+		this.version = version;
 		return this;
 	}
 

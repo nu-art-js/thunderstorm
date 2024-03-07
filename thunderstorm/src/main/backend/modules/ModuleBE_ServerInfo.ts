@@ -1,4 +1,4 @@
-import {Module} from '@nu-art/ts-common';
+import {Module, RuntimeVersion} from '@nu-art/ts-common';
 import {createQueryServerApi} from '../core/typed-api';
 import {ApiDef_ServerInfo, Response_ServerInfo} from '../../shared';
 import {addRoutes} from './ModuleBE_APIs';
@@ -18,10 +18,10 @@ export class ModuleBE_ServerInfo_Class
 	init() {
 		super.init();
 
-		ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket().then(bucket=> {
+		ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket().then(bucket => {
 			this.setDefaultConfig({
 				environment: Storm.getInstance().getEnvironment(),
-				version: Storm.getInstance().getVersion(),
+				version: RuntimeVersion(),
 				bucketName: bucket.getBucketName()
 			});
 		});
