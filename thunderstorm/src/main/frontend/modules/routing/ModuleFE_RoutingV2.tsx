@@ -25,7 +25,7 @@ class ModuleFE_RoutingV2_Class
 		[fullPath: string]: TS_Route
 	} = {};
 	private navigate!: NavigateFunction;
-	
+
 	// ######################## Public Functions ########################
 
 	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {

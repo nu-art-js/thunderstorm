@@ -21,6 +21,9 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_ErrorBoundary.scss';
+import {Logger} from '@nu-art/ts-common';
+import {BaseComponent} from '../../core/ComponentBase';
+
 
 type State = {
 	error?: Error,
@@ -28,6 +31,8 @@ type State = {
 }
 
 type Props = React.PropsWithChildren<{
+	logger?: Logger
+	component?: BaseComponent,
 	onClick?: (e: any) => void,
 	renderer?: (e: any) => ReactNode
 	error?: Error;
@@ -88,7 +93,7 @@ export class TS_ErrorBoundary
 
 	private defaultRenderer = () => {
 		const titleMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)];
-		return <div className={'ts-error-boundary'} onClick={this.props.onClick}>
+		return <div className={'ts-error-boundary'} onClick={this.props.onClick ?? this.onErrorBoundaryClick}>
 			<div className={'ts-error-boundary__pic'}>(ノಠ益ಠノ)</div>
 			<div className={'ts-error-boundary__title'}>{titleMessage}</div>
 		</div>;
@@ -103,6 +108,27 @@ export class TS_ErrorBoundary
 
 		return this.defaultRenderer();
 	}
+
+	protected onErrorBoundaryClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		const component = this.props.component;
+		if (!component)
+			return;
+
+		// @ts-ignore
+		const logInfo = component.logInfo;
+		// @ts-ignore
+		const reDeriveState = component.reDeriveState;
+
+		if (e.metaKey)
+			return logInfo('Component props and state', component.props, component.state);
+
+		if (e.shiftKey) {
+			logInfo('Re-deriving state');
+			return reDeriveState();
+		}
+
+		component.forceUpdate();
+	};
 }
 
 const randomMessages = [
