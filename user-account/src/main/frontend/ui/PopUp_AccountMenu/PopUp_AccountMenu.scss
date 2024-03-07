@@ -80,12 +80,17 @@
 
     .account-menu__footer {
       width: 100%;
-      height: 50px;
+      margin-block: 4px;
+      gap: 4px;
       align-items: center;
       flex-shrink: 0;
 
       .ts-button {
         @extend %main-button-design;
+      }
+
+      .version {
+        color: #006fab;
       }
     }
   }
