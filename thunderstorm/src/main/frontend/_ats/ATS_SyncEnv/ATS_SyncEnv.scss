@@ -34,6 +34,16 @@
         font: {
           size: 14px;
         }
+
+        &.invalid-id {
+          background-color: rgba(255, 52, 52, 0.5);
+          background-blend-mode: multiply;
+        }
+
+        &.valid-id {
+          background-color: rgba(142, 255, 98, 0.5);
+          background-blend-mode: multiply;
+        }
       }
 
       .ts-prop-renderer__error {

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './ATS_SyncEnv.scss';
-import {filterKeys, RuntimeModules} from '@nu-art/ts-common';
+import {_keys, filterKeys, RuntimeModules, tsValidateResult, tsValidateUniqueId, TypedMap} from '@nu-art/ts-common';
 import {AppToolsScreen, ATS_Fullstack, TS_AppTools} from '../../components/TS_AppTools';
 import {genericNotificationAction} from '../../components/TS_Notifications';
 import {ModuleFE_SyncEnvV2} from '../../modules/sync-env/ModuleFE_SyncEnvV2';
@@ -8,7 +8,7 @@ import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {LL_H_C, LL_V_L} from '../../components/Layouts';
 import {TS_Checkbox} from '../../components/TS_Checkbox';
 import {TS_Input} from '../../components/TS_Input';
-import {BackupMetaData, DBModuleType} from '../../../shared';
+import {DBModuleType, Response_FetchBackupMetadata} from '../../../shared';
 import {ComponentSync} from '../../core/ComponentSync';
 import {Thunder} from '../../core/Thunder';
 import {TS_PropRenderer} from '../../components/TS_PropRenderer';
@@ -23,17 +23,23 @@ import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 
 type Env = 'prod' | 'staging' | 'dev' | 'local';
 
+type ModuleMetadata = {
+	local?: boolean
+	remote?: boolean // Need to return existing modules from remote to show this boolean
+	backup?: boolean
+}
+
 type State = {
 	envList: Env[];
 	selectedEnv?: Env;
 	backupId?: string;
 	selectedModules: Set<string>;
-	moduleList: string[]
+	moduleList: TypedMap<ModuleMetadata> //name, origin data like local-only, remote-only, from backup-only
 	searchFilter: string;
 	restoreTime?: string;
 	backingUpInProgress?: boolean;
 	fetchMetadataInProgress?: boolean;
-	metadata?: BackupMetaData;
+	metadata?: Response_FetchBackupMetadata;
 	selectAll: boolean
 	selectedChunkSize: 2000 | 1000 | 500 | 200 | 100 | 50
 }
@@ -57,13 +63,26 @@ export class ATS_SyncEnvironment
 		state.selectedChunkSize = 100;
 		state.selectedEnv = 'prod';
 		state.backupId = StorageKey_BackupId.get();
-		state.moduleList = this.getCollectionModuleList();
+		//Add local module data
+		state.moduleList = this.getCollectionModuleList().reduce<TypedMap<ModuleMetadata>>((toRet, name) => {
+			toRet[name] = {local: true};
+			return toRet;
+		}, {});
+		if (state.metadata) {
+			state.metadata.collectionsData.forEach(moduleData => {
+				state.moduleList[moduleData.collectionName] = {...state.moduleList[moduleData.collectionName], backup: true};
+			});
+			state.metadata.remoteCollectionNames.forEach(moduleName => {
+				state.moduleList[moduleName] = {...state.moduleList[moduleName], remote: true};
+			});
+		}
+
 		state.selectAll ??= true;
 
 		if (state.selectAll) {
-			state.moduleList.map(collection => state.selectedModules.add(collection));
+			(_keys(state.moduleList) as string[]).map(collectionName => state.selectedModules.add(collectionName));
 		} else {
-			state.moduleList.map(collection => state.selectedModules.delete(collection));
+			(_keys(state.moduleList) as string[]).map(collectionName => state.selectedModules.delete(collectionName));
 		}
 
 		return state;
@@ -84,7 +103,7 @@ export class ATS_SyncEnvironment
 					backupId: this.state.backupId!,
 				}).executeSync();
 
-				this.setState({metadata: metadata});
+				this.reDeriveState({metadata: metadata});
 			}, 'Fetching backup metadata');
 		} catch (err: any) {
 			this.logError(err);
@@ -152,9 +171,9 @@ export class ATS_SyncEnvironment
 						Select All
 					</TS_Checkbox>
 					<TS_Input onChange={val => this.setState({searchFilter: val})} type={'text'}
-										placeholder={'search collection'}/>
+							  placeholder={'search collection'}/>
 				</LL_H_C>
-				{this.state.moduleList.map(name => {
+				{(_keys(this.state.moduleList) as string[]).map(name => {
 					const collectionMetadata = this.state.metadata?.collectionsData.find(collection => collection.collectionName === name);
 
 					if ((this.state.searchFilter && this.state.searchFilter.length) && !name.includes(this.state.searchFilter))
@@ -169,6 +188,7 @@ export class ATS_SyncEnvironment
 					const diffShow = diffCount !== 0 ? diffCount : undefined;
 
 					return <TS_PropRenderer.Horizontal
+						key={name}
 						label={<LL_H_C className={'header'}>
 							<TS_Checkbox
 								checked={this.state.selectedModules.has(name)}
@@ -179,7 +199,7 @@ export class ATS_SyncEnvironment
 										this.state.selectedModules.add(name);
 
 									let isAllSelected = true;
-									if (this.state.selectedModules.size < this.state.moduleList.length)
+									if (this.state.selectedModules.size < _keys(this.state.moduleList).length)
 										isAllSelected = false;
 
 									this.setState({
@@ -189,17 +209,18 @@ export class ATS_SyncEnvironment
 								}}
 							/>
 							<div>{name}</div>
-						</LL_H_C>}
-						key={name}>
+						</LL_H_C>}>
 						<LL_H_C className={'collection-row'}>
 							<LL_H_C className={'backup-info'}>
 								{diffShow !== undefined &&
-									<div className={_className(diffShow > 0 ? 'higher' : 'lower')}>
+                                    <div className={_className(diffShow > 0 ? 'higher' : 'lower')}>
 										{`${diffShow > 0 ? '+' : ''}${diffShow}`}</div>}
 								<div>{collectionMetadata?.numOfDocs !== undefined ? collectionMetadata?.numOfDocs : '--'}</div>
 								|
 								<div className={'left-row'}>{collectionMetadata?.version || '--'}</div>
 							</LL_H_C>
+							<div
+								style={{fontFamily: 'monospace'}}>{`${this.state.moduleList[name].local ? 'L' : '-'}${this.state.moduleList[name].remote ? 'R' : '-'}${this.state.moduleList[name].backup ? 'B' : '-'}`}</div>
 						</LL_H_C>
 					</TS_PropRenderer.Horizontal>;
 				})}
@@ -241,16 +262,18 @@ export class ATS_SyncEnvironment
 						canUnselect={true}
 					/>
 				</TS_PropRenderer.Vertical>
-
 				<TS_PropRenderer.Vertical label={'Backup ID'}>
-					<TS_Input type={'text'} value={this.state.backupId}
-										onBlur={val => {
-											if (!val.match(/^[0-9A-Fa-f]{32}$/))
-												return;
+					<TS_Input
+						className={_className(!tsValidateResult(this.state.backupId, tsValidateUniqueId) ? 'valid-id' : 'invalid-id')}
+						type={'text'}
+						value={this.state.backupId}
+						onBlur={val => {
+							this.setState({backupId: val}, () => StorageKey_BackupId.set(val));
+							if (tsValidateResult(this.state.backupId, tsValidateUniqueId)) //Don't fetch metadata if id doesn't fit
+								return;
 
-											this.setState({backupId: val}, () => StorageKey_BackupId.set(this.state.backupId!));
-											return this.fetchMetadata();
-										}}/>
+							return this.fetchMetadata();
+						}}/>
 				</TS_PropRenderer.Vertical>
 
 				<div className={_className(!this.state.fetchMetadataInProgress && 'hidden')}><TS_Loader/></div>
@@ -261,10 +284,10 @@ export class ATS_SyncEnvironment
 					>Sync Environment</TS_BusyButton>
 
 					{Thunder.getInstance().getConfig().name === this.state.selectedEnv && <TS_BusyButton
-						onClick={this.syncFirebase}
-						disabled={!this.canSync()}
-						className={'deter-users-from-this-button'}
-					>Restore Firebase To Older Backup</TS_BusyButton>}
+                        onClick={this.syncFirebase}
+                        disabled={!this.canSync()}
+                        className={'deter-users-from-this-button'}
+                    >Restore Firebase To Older Backup</TS_BusyButton>}
 				</LL_H_C>
 
 				{this.state.restoreTime && <div>{this.state.restoreTime}</div>}

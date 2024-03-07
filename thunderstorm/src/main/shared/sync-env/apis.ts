@@ -1,5 +1,6 @@
 import {Minute, UniqueId} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
+import {BackupMetaData} from '../../_entity/backup-doc/shared';
 
 
 export type Request_FetchFromEnvV2 = {
@@ -12,17 +13,15 @@ export type Request_FetchFromEnvV2 = {
 export type Request_FetchFirebaseBackup = { backupId: UniqueId, env: string }
 
 export type Request_GetMetadata = { backupId: UniqueId, env: string }
-export type Response_GetMetadata = {
-	collectionsData: { collectionName: string, numOfDocs: number, version: string }[],
-	timestamp: number
+export type Response_FetchBackupMetadata = BackupMetaData & {
+	remoteCollectionNames: string[]
 }
-
 export type ApiStruct_SyncEnvV2 = {
 	vv1: {
 		syncToEnv: BodyApi<any, { env: 'dev' | 'prod', moduleName: string, items: any[] }>
 		syncFromEnvBackup: BodyApi<any, Request_FetchFromEnvV2>
 		createBackup: QueryApi<{ pathToBackup: string } | undefined>,
-		fetchBackupMetadata: QueryApi<Response_GetMetadata, Request_GetMetadata>,
+		fetchBackupMetadata: QueryApi<Response_FetchBackupMetadata, Request_GetMetadata>,
 		syncFirebaseFromBackup: QueryApi<any, Request_FetchFirebaseBackup>
 	}
 }
