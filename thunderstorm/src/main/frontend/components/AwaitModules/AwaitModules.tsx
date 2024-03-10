@@ -7,10 +7,10 @@ import {DataStatus} from '../../core/db-api-gen/consts';
 import './AwaitModules.scss';
 import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {TS_ProgressBar} from '../TS_ProgressBar';
 import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {LL_H_C, LL_V_L} from '../Layouts';
+import {LL_H_C, LL_V_L} from '../Layouts/Layouts';
+import {TS_ProgressBar} from '../TS_ProgressBar/TS_ProgressBar';
 
 
 type Props = React.PropsWithChildren<{
