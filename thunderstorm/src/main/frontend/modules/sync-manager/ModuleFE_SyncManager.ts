@@ -48,7 +48,6 @@ import {
 	SyncDataFirebaseState,
 	SyncDbData
 } from '../../../shared/sync-manager/types';
-import {ApiDefCaller, BodyApi, DBModuleType, HttpMethod} from '../../../shared';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
@@ -60,6 +59,7 @@ import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
+import {ApiDefCaller, BodyApi, DBModuleType, HttpMethod} from '../../../shared/types';
 
 
 export interface PermissibleModulesUpdated {
