@@ -324,3 +324,5 @@ export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };
  * @typeParam K - The key that should be mandatory.
  * */
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
+
+export type AsyncVoidFunction = () => Promise<void>;
