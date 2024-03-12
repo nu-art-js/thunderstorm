@@ -12,7 +12,7 @@ import {
 	Minute,
 	Module,
 	PreDB,
-	RuntimeModules,
+	RuntimeModules, sortArray,
 	TS_Object,
 	UniqueId
 } from '@nu-art/ts-common';
@@ -28,6 +28,8 @@ import {addRoutes} from '../../../backend/modules/ModuleBE_APIs';
 import {ApiDef_BackupDoc, Request_BackupId, Response_BackupDocs} from '../shared/api-def';
 import {createQueryServerApi} from '../../../backend/core/typed-api';
 import {DBDef_BackupDoc} from '../shared/db-def';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {MemKey_HttpRequestHeaders} from '../../../backend/modules/server/consts';
 
 export interface OnModuleCleanupV2 {
 	__onCleanupInvokedV2: () => Promise<void>;
@@ -88,19 +90,34 @@ export class ModuleBE_BackupDocDB_Class
 		if (!backupDoc)
 			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
 
+		return await this.fetchDocImpl(backupDoc);
+
+	};
+
+	fetchLatestBackupDoc = async (): Promise<Response_BackupDocs> => {
+		const docs = await this.query(_EmptyQuery);
+		if (!docs.length)
+			throw HttpCodes._4XX.NOT_FOUND('No backups to fetch', 'No backups in db to fetch');
+
+		const latest = sortArray(docs, doc => doc.__created, true)[0];
+		return await this.fetchDocImpl(latest);
+	};
+
+	private fetchDocImpl = async (doc: DB_BackupDoc) => {
 		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
-		const fireabseDescriptor = await (await bucket.getFile(backupDoc.firebasePath)).getReadSignedUrl(10 * Minute);
-		const firestoreDescriptor = await (await bucket.getFile(backupDoc.backupPath)).getReadSignedUrl(10 * Minute);
+		const contentType = MemKey_HttpRequestHeaders.get()['content-type'];
+		const firebaseDescriptor = await (await bucket.getFile(doc.firebasePath)).getReadSignedUrl(10 * Minute, contentType);
+		const firestoreDescriptor = await (await bucket.getFile(doc.backupPath)).getReadSignedUrl(10 * Minute, contentType);
 
 		return {
 			backupInfo: {
-				_id: backupDoc._id,
-				backupFilePath: backupDoc.backupPath,
-				metadataFilePath: backupDoc.metadataPath,
-				firebaseFilePath: backupDoc.firebasePath,
-				firebaseSignedUrl: fireabseDescriptor.signedUrl,
+				_id: doc._id,
+				backupFilePath: doc.backupPath,
+				metadataFilePath: doc.metadataPath,
+				firebaseFilePath: doc.firebasePath,
+				firebaseSignedUrl: firebaseDescriptor.signedUrl,
 				firestoreSignedUrl: firestoreDescriptor.signedUrl,
-				metadata: backupDoc.metadata
+				metadata: doc.metadata
 			}
 		};
 	};
@@ -134,7 +151,7 @@ export class ModuleBE_BackupDocDB_Class
 		return docArray.map(doc => ({
 			collectionName: moduleKey,
 			_id: doc._id,
-			document: __stringify(doc)
+			document: `"${__stringify(doc)}"`
 		}));
 	};
 
