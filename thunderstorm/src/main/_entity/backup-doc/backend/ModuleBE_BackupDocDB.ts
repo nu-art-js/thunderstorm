@@ -287,7 +287,7 @@ export class ModuleBE_BackupDocDB_Class
 		const oldBackupsToDelete = await this.query({where: {timestamp: {$lt: nowMs - this.config.keepInterval}}});
 		if (oldBackupsToDelete.length === 0) {
 			this.logInfoBold('No older backups to delete');
-			return {pathToBackup: fullPathToBackup};
+			return {pathToBackup: fullPathToBackup, backupId: dbBackup._id};
 		}
 
 		try {
@@ -301,13 +301,17 @@ export class ModuleBE_BackupDocDB_Class
 			throw new ApiException(500, err);
 		}
 
-		return {pathToBackup: fullPathToBackup};
+		return {pathToBackup: fullPathToBackup, backupId: dbBackup._id};
 	};
 
 	// private async getBackupInfo(queryParams: Request_GetMetadata) {
 	async getBackupInfo(backupId: string, baseUrl: string, headers: TypedMap<string | string[]>) {
 		const url: string = `${baseUrl}/v1/fetch-backup-docs-v2`;
-		const outputDef: ApiDef<QueryApi<Response_BackupDocs, Request_BackupId>> = {method: HttpMethod.GET, path: '', fullUrl: url};
+		const outputDef: ApiDef<QueryApi<Response_BackupDocs, Request_BackupId>> = {
+			method: HttpMethod.GET,
+			path: '',
+			fullUrl: url
+		};
 		const requestBody = {backupId};
 
 		try {
