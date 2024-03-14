@@ -8,7 +8,7 @@ export type MergeTypes<T extends Constructor<any>[]> =
 		: {};
 
 export function MergeClass<T extends Constructor<any>[]>(...plugins: T): Constructor<MergeTypes<T>> {
-	class Mixed {
+	class SuperClass {
 		constructor(...args: any[]) {
 			plugins.forEach(plugin => {
 				Object.getOwnPropertyNames(plugin.prototype).forEach(name => {
@@ -21,10 +21,10 @@ export function MergeClass<T extends Constructor<any>[]>(...plugins: T): Constru
 		}
 	}
 
-	return Mixed as Constructor<MergeTypes<T>>;
+	return SuperClass as Constructor<MergeTypes<T>>;
 }
 
 export function CreateMergedInstance<T extends Constructor<any>[]>(...plugins: T): MergeTypes<T> {
-	const MergedClass = MergeClass(...plugins);
-	return new MergedClass() as MergeTypes<T>;
+	const SuperClass = MergeClass(...plugins);
+	return new SuperClass() as MergeTypes<T>;
 }
