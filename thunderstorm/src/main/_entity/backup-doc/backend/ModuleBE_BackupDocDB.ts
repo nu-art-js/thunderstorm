@@ -1,7 +1,9 @@
 import {
 	__stringify,
+	_keys,
 	_logger_logException,
 	ApiException,
+	BadImplementationException,
 	currentTimeMillis,
 	Day,
 	Dispatcher,
@@ -14,6 +16,7 @@ import {
 	PreDB,
 	RuntimeModules,
 	TS_Object,
+	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV3';
@@ -21,13 +24,16 @@ import {ModuleBE_BaseDBV2} from '../../../backend/modules/db-api-gen/ModuleBE_Ba
 import {END_OF_STREAM, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
-import {Writable} from 'stream';
+import {Readable, Writable} from 'stream';
 import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {BackupMetaData, DB_BackupDoc, DBProto_BackupDoc} from '../shared/types';
+import {BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc} from '../shared/types';
 import {addRoutes} from '../../../backend/modules/ModuleBE_APIs';
 import {ApiDef_BackupDoc, Request_BackupId, Response_BackupDocs} from '../shared/api-def';
 import {createQueryServerApi} from '../../../backend/core/typed-api';
 import {DBDef_BackupDoc} from '../shared/db-def';
+import {ApiDef, HttpMethod, QueryApi} from '../../../shared';
+import {AxiosHttpModule} from '../../../backend';
+
 
 export interface OnModuleCleanupV2 {
 	__onCleanupInvokedV2: () => Promise<void>;
@@ -53,6 +59,15 @@ const CSVConfig = {
 };
 
 type DBModules = ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>;
+type BackRowCSV = { collectionName: string, _id: string, document: string };
+
+type IterateOnBackupParams = {
+	stream: Readable,
+	chunkSize: number,
+	filter: (collectionName: string) => boolean,
+	process: (row: BackRowCSV) => void,
+	paginate: () => Promise<any>
+}
 
 /**
  * This module is in charge of making a backup of the db in firebase storage,
@@ -289,6 +304,93 @@ export class ModuleBE_BackupDocDB_Class
 		return {pathToBackup: fullPathToBackup};
 	};
 
+	// private async getBackupInfo(queryParams: Request_GetMetadata) {
+	async getBackupInfo(backupId: string, baseUrl: string, headers: TypedMap<string | string[]>) {
+		const url: string = `${baseUrl}/v1/fetch-backup-docs-v2`;
+		const outputDef: ApiDef<QueryApi<Response_BackupDocs, Request_BackupId>> = {method: HttpMethod.GET, path: '', fullUrl: url};
+		const requestBody = {backupId};
+
+		try {
+			let request = AxiosHttpModule
+				.createRequest(outputDef)
+				.setUrlParams(requestBody);
+
+			request = request.addHeaders(headers);
+
+			const response: Response_BackupDocs = await request.executeSync();
+			const backupInfo = response.backupInfo;
+
+			const wrongBackupIdDescriptor = backupInfo?._id !== backupId;
+
+			if (wrongBackupIdDescriptor)
+				throw new BadImplementationException(`Received backup descriptors with wrong backupId! provided id: ${backupId} received id: ${backupInfo?._id}`);
+
+			return backupInfo;
+		} catch (err: any) {
+			throw new ApiException(500, err);
+		}
+	}
+
+	getBackupStreamFromId = async (backupInfo: FetchBackupDoc) => {
+		if (!backupInfo.backupFilePath)
+			throw new ApiException(404, 'Backup file path not found');
+
+		this.logInfo(`----  Fetching Backup Stream from: ${backupInfo.firestoreSignedUrl} ----`);
+		const signedUrlDef: ApiDef<QueryApi<any>> = {
+			method: HttpMethod.GET,
+			path: '',
+			fullUrl: backupInfo.firestoreSignedUrl
+		};
+
+		return (await AxiosHttpModule
+			.createRequest(signedUrlDef)
+			.setResponseType('stream')
+			.executeSync()) as Readable;
+	};
+
+	iterateOnBackup = async (params: IterateOnBackupParams) => {
+		const startSync = performance.now(); // required for log
+
+		this.logInfo(`----  Iterating on Backup... ----`);
+		let totalItems = 0;
+		let batchItemsCounter = 0;
+		let totalItemsCollected = 0;
+
+		await CSVModule.forEachCsvRowFromStreamSync(params.stream, (row: any, index: number, transform) => {
+			_keys(row).map(key => {
+				row[(key as string).trim()] = (row[key] as string).trim();
+			});
+
+			if (!params.filter(row.collectionName))
+				return;
+
+			totalItems++;
+			params.process(row);
+			batchItemsCounter++;
+			if (batchItemsCounter < params.chunkSize)
+				return;
+
+			this.logInfo(`calling pause`);
+			transform.pause();
+			const prevLimitCounter = batchItemsCounter;
+			batchItemsCounter = 0;
+
+			params.paginate().then(() => {
+				this.logInfo(`committed ${prevLimitCounter} items`);
+				totalItemsCollected += prevLimitCounter;
+
+				transform.resume();
+			}).catch(err => this.logError('error committing batch', err));
+		});
+
+		if (batchItemsCounter > 0) {
+			await params.paginate();
+			totalItemsCollected += batchItemsCounter;
+		}
+		this.logInfo(`---- DONE Syncing Firestore: (${totalItemsCollected}/${totalItems})----`);
+		const endSync = performance.now(); // required for log
+		this.logInfo(`SyncingEnv took ${((endSync - startSync) / 1000).toFixed(3)} seconds`);
+	};
 	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
 		return await this.collection.query.custom(ourQuery);
 	};
