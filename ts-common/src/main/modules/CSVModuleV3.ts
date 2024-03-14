@@ -20,30 +20,32 @@
  * Created by tacb0ss on 07/05/2018.
  */
 
-import {Readable} from 'stream';
+import {Readable, Writable} from 'stream';
 import {Module} from '../core/module';
 import * as csv from 'fast-csv';
 
-
-class CSVModuleV3_Class
+export class CSVModuleV3_Class
 	extends Module {
 
 	constructor() {
 		super();
-
 	}
 
 	protected init() {
 	}
 
-	readFromStream = async <T>(stream: Readable, processor: (item: T, rowNumber: number, stream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>) => void): Promise<void> => {
+	public readFromStream = async <T>(stream: Readable, processor: (item: T, rowNumber: number, stream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>) => void): Promise<void> => {
+		return this.readImpl<T>(stream, processor);
+	};
+
+	protected readImpl = async <T>(stream: Readable, processor: (item: T, rowNumber: number, stream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>) => void): Promise<void> => {
 		return new Promise<void>((resolve, reject) => {
 			let rowIndex = 0;
 
-			const csvStream = csv.parse({headers: true, trim: true});
-			csvStream
+			const csvParser = csv.parse({headers: true, trim: true});
+			csvParser
 				.on('data', (instance) => {
-					processor(instance, rowIndex++, csvStream);
+					processor(instance, rowIndex++, csvParser);
 				})
 				.on('error', (err) => reject(err))
 				.on('end', () => {
@@ -51,13 +53,21 @@ class CSVModuleV3_Class
 					resolve();
 				});
 
-			stream.pipe(csvStream).pipe({});
+			stream.pipe(csvParser);
 		});
 	};
 
-	writeToStream = () => {
+	public writeToStream = <I extends csv.FormatterRow = csv.FormatterRow, O extends csv.FormatterRow = csv.FormatterRow>(writable: Writable, items: I[], options?: csv.FormatterOptionsArgs<I, O>) => {
+		return this.writeImpl<I>(writable, items, options);
+	};
 
+	protected writeImpl = <I extends any>(writable: Writable, items: I[], options?: csv.FormatterOptionsArgs<any, any>) => {
+		return new Promise<void>((resolve, reject) => {
+			csv.writeToStream(writable, items as csv.FormatterRow[], options)
+				.on('finish', () => resolve())
+				.on('error', err => reject(err));
+		});
 	};
 }
 
-export const CSVModule = new CSVModuleV3_Class();
+export const CSVModuleV3 = new CSVModuleV3_Class();
