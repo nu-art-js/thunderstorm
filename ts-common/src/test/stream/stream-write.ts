@@ -14,7 +14,7 @@ const testcases: TestSuite_Stream['testcases'] = [
 ];
 
 export const testSuite_StreamWrite: TestSuite_Stream = {
-	label: 'Stream - Read CSV',
+	label: 'Stream - Write CSV',
 	testcases,
 	processor: async (testCase) => {
 		const inputFilePath = `${__dirname}/test-files/${testCase.input}.csv`;
