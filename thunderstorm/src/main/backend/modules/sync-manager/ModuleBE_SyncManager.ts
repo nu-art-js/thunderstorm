@@ -137,7 +137,7 @@ export class ModuleBE_SyncManager_Class
 			if (!moduleToCheck)
 				return this.logError(`Calculating collections to sync, failing to find dbName: ${syncRequest.dbName}`);
 
-			const remoteSyncData = upToDateSyncData[syncRequest.dbName];
+			const remoteSyncData = upToDateSyncData[syncRequest.dbName] ?? {lastUpdated: 0, oldestDeleted: 0};
 			// Local has no sync data, or it's too old - tell local to send a full sync request for this module
 			if (syncRequest.lastUpdated === 0 && remoteSyncData.lastUpdated > 0 || exists(remoteSyncData.oldestDeleted) && remoteSyncData.oldestDeleted > syncRequest.lastUpdated) {
 				// full sync

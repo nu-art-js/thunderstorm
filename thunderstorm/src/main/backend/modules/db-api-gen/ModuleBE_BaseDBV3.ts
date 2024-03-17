@@ -38,10 +38,7 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {
-	FirestoreCollectionV3,
-	PostWriteProcessingData
-} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {DBApiBEConfigV3, getModuleBEConfigV3} from '../../core/v3-db-def';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
