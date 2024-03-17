@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AppToolsScreen, ATS_3rd_Party, ComponentSync, LL_H_T, LL_V_L, TS_BusyButton} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ATS_3rd_Party, ComponentSync, LL_H_C, LL_H_T, LL_V_L, TS_BusyButton} from '@nu-art/thunderstorm/frontend';
 import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
 import {ModuleFE_OpenAI} from '../modules/ModuleFE_OpenAI';
 import {__stringify} from '@nu-art/ts-common';
@@ -9,6 +9,8 @@ type ATS_OpenAI_Props = {
 	//
 };
 type ATS_OpenAI_State = {
+	directive: string
+	input: string
 	output?: string
 };
 
@@ -37,7 +39,7 @@ export class ATS_OpenAI
 	};
 
 	protected deriveStateFromProps(nextProps: ATS_OpenAI_Props, state = {} as ATS_OpenAI_State): ATS_OpenAI_State {
-		return {output: undefined};
+		return {output: undefined, input: '', directive: ''};
 	}
 
 	constructor(p: ATS_OpenAI_Props) {
@@ -60,20 +62,24 @@ export class ATS_OpenAI
 				<TS_BusyButton onClick={this.sendRequest}>Test</TS_BusyButton>
 			</LL_V_L>
 			<LL_V_L>
-				<TS_TextAreaV2 className={'ts-textarea'} style={{width: 500, height: 500, fontFamily: 'monospace', fontSize: 15}} disabled value={value}/>
+				<TS_TextAreaV2 className={'ts-textarea'}
+											 style={{width: 1008, height: 200, marginBottom: 8, fontFamily: 'monospace', fontSize: 15}} value={this.state.directive}
+											 onChange={(value) => this.setState({directive: value})}/>
+				<LL_H_C>
+					<TS_TextAreaV2 className={'ts-textarea'}
+												 style={{width: 500, height: 500, marginRight: 8, fontFamily: 'monospace', fontSize: 15}} value={this.state.input}
+												 onChange={(value) => this.setState({input: value})}/>
+					<TS_TextAreaV2 className={'ts-textarea'} style={{width: 500, height: 500, fontFamily: 'monospace', fontSize: 15}} disabled value={value}/>
+				</LL_H_C>
 			</LL_V_L>
 		</LL_H_T>;
 	}
 
 	private sendRequest = async (e: React.MouseEvent) => {
+		this.setState({output: undefined});
 		const response = await ModuleFE_OpenAI.v1.test({
-			directive: 'address-resolver',
-			message: __stringify({
-				'address1': 'Haroe 103',
-				'address2': 'Apartment 4',
-				'city': 'Ramat gan',
-				'country': 'Israel'
-			})
+			directive: this.state.directive,
+			message: this.state.input
 		}).executeSync();
 		this.logWarning(response);
 		this.setState({output: response.response});

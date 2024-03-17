@@ -60,7 +60,7 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string) {
 		super(dbDef, defaultDispatcher);
 
-		const apiDef = DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
+		const apiDef = this.resolveApiDef(dbDef, version);
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
@@ -101,6 +101,10 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
 		};
+	}
+
+	protected resolveApiDef(dbDef: DBDef_V3<Proto>, version: string | undefined) {
+		return DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
 	}
 
 	protected cleanUp = (toUpsert: Proto['uiType']) => {

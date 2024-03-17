@@ -393,6 +393,10 @@ class MemCache<Proto extends DBProto<any>> {
 		return this.all().filter(filter);
 	};
 
+	byIds = (ids: Proto['uniqueParam'][]): Readonly<Proto['dbType'][]> => {
+		return ids.map(id => this.unique(id));
+	};
+
 	find = (filter: (item: Readonly<Proto['dbType']>, index: number, array: Readonly<Proto['dbType'][]>) => boolean): Readonly<Proto['dbType']> | undefined => {
 		return this.all().find(filter);
 	};

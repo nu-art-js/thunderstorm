@@ -215,7 +215,7 @@ export class ModuleFE_SyncManager_Class
 		const noSyncOperations = filterInstances(syncGroups[SmartSync_UpToDateSync].map(syncModule => {
 			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === syncModule.dbName);
 			if (!module)
-				return this.logError(`Couldn't find module to no sync with dbName: '${syncModule.dbName}'`);
+				return this.logError(`Couldn't find module to no sync with dbKey: '${syncModule.dbName}'`);
 
 			return async () => this.performNoSync(module);
 		}));
@@ -224,7 +224,7 @@ export class ModuleFE_SyncManager_Class
 		const deltaSyncOperations = filterInstances(syncGroups[SmartSync_DeltaSync].map(syncModule => {
 			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((_module: DBModuleType) => _module.dbDef?.dbKey === syncModule.dbName);
 			if (!module)
-				return this.logError(`Couldn't find module to delta sync with dbName: '${syncModule.dbName}'`);
+				return this.logError(`Couldn't find module to delta sync with dbKey: '${syncModule.dbName}'`);
 
 			return async () => this.performDeltaSync(module, syncModule.items, syncModule.lastUpdated);
 		}));
@@ -234,7 +234,7 @@ export class ModuleFE_SyncManager_Class
 			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbKey === syncModule.dbName);
 
 			if (!module)
-				return this.logError(`Couldn't find module to full sync with dbName: '${syncModule.dbName}'`);
+				return this.logError(`Couldn't find module to full sync with dbKey: '${syncModule.dbName}'`);
 
 			if (this.currentlySyncingModules.includes(module))
 				return this.logDebug(`Avoid syncing on a currently syncing module ${module.dbDef.dbKey}`);

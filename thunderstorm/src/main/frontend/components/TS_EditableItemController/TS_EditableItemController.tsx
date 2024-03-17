@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './TS_EditableItemController.scss';
-import {asArray, DB_Object, dbObjectToId, DBProto, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {asArray, DB_Object, DBProto, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {EditableDBItemV3} from '../../utils/EditableItem';
 import {State_ItemEditor} from '../Item_Editor';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
@@ -47,11 +47,14 @@ export class TS_EditableItemController<Proto extends DBProto<any>,
 	}
 
 	private __onItemUpdated = (...params: ApiCallerEventTypeV3<Proto>): void => {
-		const items = asArray(params[1]);
-		if (!items.map(dbObjectToId).includes(this.state.editable.item._id!))
+		if (!this.props.item)
 			return;
 
-		return this.reDeriveState();
+		const id = typeof this.props.item === 'string' ? this.props.item : this.props.item._id;
+		if (!(params[0] === 'update' && params[1]._id === id))
+			return;
+
+		this.state.editable?.updateItem(deepClone(asArray(params[1]))[0]);
 	};
 
 	protected deriveStateFromProps(nextProps: Props & Props_ItemsEditorV3<Proto>, state?: Partial<State_ItemEditor<Proto['uiType']>>): (State_ItemEditor<Proto['uiType']>) {
@@ -60,14 +63,11 @@ export class TS_EditableItemController<Proto extends DBProto<any>,
 		if (!exists(item))
 			item = this.props.createInitialInstance();
 
-		_state.editable = new EditableDBItemV3(item, nextProps.module, async (item) => {
-			this.setState(state => ({editable: state.editable}));
-			await nextProps.onCompleted?.(item);
-		}, nextProps.onError)
+		_state.editable = new EditableDBItemV3(item, nextProps.module, nextProps.onError)
 			.setOnChanged(async editable => {
 				this.setState({editable});
 			})
-			.setAutoSave(resolveContent(nextProps.autoSave, item) || false);
+			.setAutoSave(resolveContent(nextProps.autoSave || TS_EditableItemController.DefaultAutoSave, item) || false);
 		return _state;
 	}
 
