@@ -413,6 +413,7 @@ export class ModuleBE_BackupDocDB_Class
 		const endSync = performance.now(); // required for log
 		this.logInfo(`SyncingEnv took ${((endSync - startSync) / 1000).toFixed(3)} seconds`);
 	};
+
 	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
 		return await this.collection.query.custom(ourQuery);
 	};
@@ -431,3 +432,55 @@ export class ModuleBE_BackupDocDB_Class
 }
 
 export const ModuleBE_BackupDocDB = new ModuleBE_BackupDocDB_Class();
+
+// type OnModuleDone = (module: DBModules, docsAmount: number) => void
+//
+// class BackUpItemsReader extends Readable {
+//
+// 	private onModuleDone: OnModuleDone; //Callback for when a module finished giving all it's items
+// 	private modules: DBModules[];
+// 	private counter__Docs: number; //Counter for the accumulated docs per module
+// 	private counter__Pagination: number; //Counter for the pagination per module
+// 	private counter__Module: number; //Counter for the modules
+//
+// 	constructor(onModuleDone: OnModuleDone) {
+// 		super();
+// 		this.counter__Docs = 0;
+// 		this.counter__Pagination = 0;
+// 		this.counter__Module = 0;
+// 		this.onModuleDone = onModuleDone;
+// 		this.modules = filterInstances(RuntimeModules()
+// 			.filter((module) => {
+// 				if (!module || !module.dbDef)
+// 					return false;
+//
+// 				return !ModuleBE_BackupDocDB.config.excludedCollectionNames?.includes(module.config.collectionName);
+// 			}));
+// 	}
+//
+// 	private advanceModule = () => {
+// 		this.counter__Docs = 0;
+// 		this.counter__Pagination = 0;
+// 		this.counter__Module++;
+// 	};
+//
+// 	private getItems = async () => {
+// 		const module = this.modules[this.counter__Module];
+// 		if (!module)
+// 			return undefined;
+//
+// 		return await module.query.custom({
+// 			..._EmptyQuery,
+// 			limit: {page: this.counter__Pagination++, itemsCount: 1000}
+// 		});
+// 	};
+//
+// 	async _read() {
+// 		const items = await this.getItems();
+//
+// 		//Got no items
+// 		if (!items?.length) {
+//
+// 		}
+// 	}
+// }
