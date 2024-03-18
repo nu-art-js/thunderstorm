@@ -4,6 +4,7 @@ import {
 	_logger_logException,
 	ApiException,
 	BadImplementationException,
+	cloneObj,
 	currentTimeMillis,
 	Day,
 	Dispatcher,
@@ -16,16 +17,15 @@ import {
 	PreDB,
 	RuntimeModules,
 	sortArray,
-	TS_Object,
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV3';
 import {ModuleBE_BaseDBV2} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV2';
-import {END_OF_STREAM, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
-import {Readable, Writable} from 'stream';
+import {Readable} from 'stream';
 import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc} from '../shared/types';
 import {addRoutes} from '../../../backend/modules/ModuleBE_APIs';
@@ -36,6 +36,7 @@ import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {MemKey_HttpRequestHeaders} from '../../../backend/modules/server/consts';
 import {ApiDef, HttpMethod, QueryApi} from '../../../shared';
 import {AxiosHttpModule} from '../../../backend';
+import {CSVModuleV3} from '@nu-art/ts-common/modules/CSVModuleV3';
 
 
 export interface OnModuleCleanupV2 {
@@ -163,14 +164,6 @@ export class ModuleBE_BackupDocDB_Class
 			});
 	};
 
-	private formatToCsv = (docArray: TS_Object[], moduleKey: string) => {
-		return docArray.map(doc => ({
-			collectionName: moduleKey,
-			_id: doc._id,
-			document: `"${__stringify(doc)}"`
-		}));
-	};
-
 	initiateBackup = async (force = false) => {
 		const nowMs = currentTimeMillis();
 		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
@@ -211,71 +204,29 @@ export class ModuleBE_BackupDocDB_Class
 		const bucket = await storage.getMainBucket();
 		const fullPathToBackup = `${bucket.getBucketName()}/${backupPath}`;
 		CSVModule.updateExporterSettings(CSVConfig);
-		const metadata: BackupMetaData = {collectionsData: [], timestamp: nowMs};
+		let metadata: BackupMetaData;
 
 		if (modules.length === 0)
 			throw new ApiException(404, 'No modules to backup');
 
-		const backupFeeder = async (writable: Writable) => {
-			if (!modules[backupsCounter])
-				return END_OF_STREAM;
-
-			const currentModule = modules[backupsCounter];
-
-			let page = 0;
-			let docCounter = 0;
-			let data;
-
-			const moduleKey = currentModule.config.collectionName;
-			do {
-
-				//Get the next chunk of documents from the db module
-				data = await currentModule.query.custom({
-					..._EmptyQuery,
-					limit: {page, itemsCount: 1000}
-				});
-
-				// If no data there's no need to process or write anything to csv
-				if (data.length) {
-
-					//Upgrade documents to latest version
-					await currentModule.upgradeInstances(data);
-
-					// Write the new data to the csv
-					data = this.formatToCsv(data, moduleKey);
-
-					const csv = CSVModule.export(data);
-
-					if (page === 0)
-						CSVModule.updateExporterSettings({
-							...CSVConfig,
-							showLabels: false,
-							useKeysAsHeaders: false
-						});
-
-					writable.write(csv.toString());
-				}
-
-				docCounter += data.length;
-				page++;
-			} while (data.length);
-
-			metadata.collectionsData.push({
-				collectionName: moduleKey,
-				numOfDocs: docCounter,
-				version: currentModule.dbDef.versions[0]
-			});
-
-			backupsCounter++;
-
-		};
-
 		try {
 			this.logDebug('Creating backup file...');
 			const file = await bucket.getFile(backupPath);
-			await file.writeToStream(backupFeeder);
-			this.logDebug('Backup file created');
+			const reader = new DBModuleReader(modules);
+			const writer = file.createWriteStream({gzip: true});
+			const formatter = CSVModuleV3.provideFormatter();
+			await new Promise<void>((resolve, reject) => {
+				reader
+					.pipe(formatter)
+					.pipe(writer)
+					.on('finish', () => {
+						metadata = {...reader.getMetadata(), timestamp: nowMs};
+						resolve();
+					})
+					.on('error', err => reject(err));
+			});
 
+			this.logDebug('Backup file created');
 			this.logDebug('Backing up config db');
 			const database = firebaseSessionAdmin.getDatabase();
 			const configBackup = await database.ref('/').get();
@@ -285,7 +236,7 @@ export class ModuleBE_BackupDocDB_Class
 
 			this.logDebug('Creating metadata file...');
 			const metadataFile = await bucket.getFile(metadataPath);
-			await metadataFile.write(metadata);
+			await metadataFile.write(metadata!);
 			this.logDebug('Metadata file created');
 		} catch (e: any) {
 			this.logWarning(`backup of ${modules[backupsCounter].config.collectionName} has failed with error`, e);
@@ -298,7 +249,7 @@ export class ModuleBE_BackupDocDB_Class
 			backupPath,
 			metadataPath,
 			firebasePath: configPath,
-			metadata
+			metadata: metadata!,
 		});
 		this.logWarning(dbBackup);
 
@@ -433,54 +384,93 @@ export class ModuleBE_BackupDocDB_Class
 
 export const ModuleBE_BackupDocDB = new ModuleBE_BackupDocDB_Class();
 
-// type OnModuleDone = (module: DBModules, docsAmount: number) => void
-//
-// class BackUpItemsReader extends Readable {
-//
-// 	private onModuleDone: OnModuleDone; //Callback for when a module finished giving all it's items
-// 	private modules: DBModules[];
-// 	private counter__Docs: number; //Counter for the accumulated docs per module
-// 	private counter__Pagination: number; //Counter for the pagination per module
-// 	private counter__Module: number; //Counter for the modules
-//
-// 	constructor(onModuleDone: OnModuleDone) {
-// 		super();
-// 		this.counter__Docs = 0;
-// 		this.counter__Pagination = 0;
-// 		this.counter__Module = 0;
-// 		this.onModuleDone = onModuleDone;
-// 		this.modules = filterInstances(RuntimeModules()
-// 			.filter((module) => {
-// 				if (!module || !module.dbDef)
-// 					return false;
-//
-// 				return !ModuleBE_BackupDocDB.config.excludedCollectionNames?.includes(module.config.collectionName);
-// 			}));
-// 	}
-//
-// 	private advanceModule = () => {
-// 		this.counter__Docs = 0;
-// 		this.counter__Pagination = 0;
-// 		this.counter__Module++;
-// 	};
-//
-// 	private getItems = async () => {
-// 		const module = this.modules[this.counter__Module];
-// 		if (!module)
-// 			return undefined;
-//
-// 		return await module.query.custom({
-// 			..._EmptyQuery,
-// 			limit: {page: this.counter__Pagination++, itemsCount: 1000}
-// 		});
-// 	};
-//
-// 	async _read() {
-// 		const items = await this.getItems();
-//
-// 		//Got no items
-// 		if (!items?.length) {
-//
-// 		}
-// 	}
-// }
+class DBModuleReader
+	extends Readable {
+
+	readonly dbModules: DBModules[];
+	readonly pageSize: number;
+	private page: number = 0;
+	private moduleIndex: number = 0;
+	private done: boolean = false;
+	private metadata: BackupMetaData;
+
+	constructor(dbModules: DBModules[], pageSize: number = 1000) {
+		super({objectMode: true});
+		this.dbModules = dbModules;
+		this.pageSize = pageSize;
+		this.metadata = {collectionsData: [], timestamp: currentTimeMillis()};
+	}
+
+	// ##################### Metadata #####################
+
+	public getMetadata = () => cloneObj(this.metadata);
+
+	private updateMetadata = (module: DBModules, items: any[]) => {
+		const collectionName = module.config.collectionName;
+		const collectionData = this.metadata.collectionsData.find(data => data.collectionName === collectionName);
+		if (!collectionData)
+			return this.metadata.collectionsData.push({
+				collectionName: collectionName,
+				numOfDocs: items.length,
+				version: module.dbDef.versions[0],
+			});
+		collectionData.numOfDocs += items.length;
+	};
+
+	// ##################### Logic #####################
+
+	private getItems = async () => {
+		if (this.done)
+			return;
+
+		const module = this.dbModules[this.moduleIndex];
+		if (!module) {
+			this.done = true;
+			return;
+		}
+
+		const collectionName = module.config.collectionName;
+		try {
+			const items = await module.query.custom({
+				..._EmptyQuery,
+				limit: {page: this.page, itemsCount: this.pageSize},
+			});
+			this.updateMetadata(module, items);
+			return items.map(item => ({
+				collectionName: collectionName,
+				_id: item._id,
+				document: JSON.stringify(item),
+			}));
+		} catch (err: any) {
+			this.emit('error', err);
+		}
+	};
+
+	private advanceModule = () => {
+		this.page = 0;
+		this.moduleIndex++;
+	};
+
+	async _read() {
+		const items = await this.getItems();
+		if (!items) { //Only getting undefined if no more items to get, end stream
+			this.push(null);
+			return;
+		}
+
+		//If got an array but it was empty, move on to next module
+		if (!items.length) {
+			this.advanceModule();
+			await this._read();
+			return;
+		}
+
+		items.forEach(item => this.push(item));
+
+		//If the amount of items was under the pageSize, there will be no more items to get from the module, move to the next
+		if (items.length < this.pageSize)
+			this.advanceModule();
+		else
+			this.page++;
+	}
+}
