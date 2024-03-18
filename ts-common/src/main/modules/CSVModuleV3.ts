@@ -73,6 +73,11 @@ export class CSVModuleV3_Class
 		return csv.format({headers: true})
 			.transform(transformer);
 	};
+
+	public provideFormatterFromCsv = (transformer: (item: any) => any = item => item) => {
+		return csv.parse({headers: true, trim: true})
+			.transform(transformer);
+	};
 }
 
 export const CSVModuleV3 = new CSVModuleV3_Class();
