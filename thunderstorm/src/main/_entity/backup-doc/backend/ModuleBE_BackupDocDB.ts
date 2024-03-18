@@ -235,12 +235,17 @@ export class ModuleBE_BackupDocDB_Class
 
 	// ##################### Backup Actions #####################
 
-	initiateBackup = async (force = false) => {
+	private getDefaultPath = () => {
 		const nowMs = currentTimeMillis();
 		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
-		const backupPath = `backup/${timeFormat}/firestore-backup.csv`;
-		const metadataPath = `backup/${timeFormat}/metadata.json`;
-		const configPath = `backup/${timeFormat}/firebase-backup.json`;
+		return `/backup/${timeFormat}`;
+	};
+
+	initiateBackup = async (force = false, pathInBucket: string = this.getDefaultPath()) => {
+		const nowMs = currentTimeMillis();
+		const backupPath = `${pathInBucket}/firestore-backup.csv`;
+		const metadataPath = `${pathInBucket}/metadata.json`;
+		const configPath = `${pathInBucket}/firebase-backup.json`;
 
 		const query: FirestoreQuery<DB_BackupDoc> = {
 			where: {},

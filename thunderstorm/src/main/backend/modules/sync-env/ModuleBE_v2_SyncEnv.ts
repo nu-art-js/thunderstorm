@@ -123,8 +123,8 @@ class ModuleBE_v2_SyncEnv_Class
 			this.logInfo(`Backup took ${((endTime - startTime) / 1000).toFixed(3)} seconds`);
 		}
 
-		// const backupInfo = await this.getBackupInfo(body);
-		const stream = await ModuleBE_BackupDocDB.createBackupReadStreamFromBucket('backup/2024-03-18_12:10:29/firestore-backup.csv');
+		const backupInfo = await this.getBackupInfo(body);
+		const stream = await ModuleBE_BackupDocDB.createBackupReadStream(backupInfo);
 		const collectionFilter = new SyncCollectionFilter(body.selectedModules);
 		const collectionWriter = new CollectionBatchWriter(1000);
 
