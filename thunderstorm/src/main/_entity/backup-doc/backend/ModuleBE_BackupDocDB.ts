@@ -238,7 +238,7 @@ export class ModuleBE_BackupDocDB_Class
 	private getDefaultPath = () => {
 		const nowMs = currentTimeMillis();
 		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
-		return `/backup/${timeFormat}`;
+		return `backup/${timeFormat}`;
 	};
 
 	initiateBackup = async (force = false, pathInBucket: string = this.getDefaultPath()) => {
@@ -295,7 +295,7 @@ export class ModuleBE_BackupDocDB_Class
 				reader
 					.pipe(formatter)
 					.pipe(writer)
-					.on('finish', () => {
+					.on('close', () => {
 						metadata = {...reader.getMetadata(), timestamp: nowMs};
 						resolve();
 					})
