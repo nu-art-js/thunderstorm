@@ -98,47 +98,6 @@ export class ModuleBE_BackupDocDB_Class
 		]);
 	}
 
-	/**
-	 * @param body - needs to contain backupId with the key to fetch.
-	 */
-	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
-		const backupDoc = await this.queryUnique(body.backupId);
-
-		if (!backupDoc)
-			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
-
-		return await this.fetchDocImpl(backupDoc);
-
-	};
-
-	fetchLatestBackupDoc = async (): Promise<Response_BackupDocs> => {
-		const docs = await this.query(_EmptyQuery);
-		if (!docs.length)
-			throw HttpCodes._4XX.NOT_FOUND('No backups to fetch', 'No backups in db to fetch');
-
-		const latest = sortArray(docs, doc => doc.__created, true)[0];
-		return await this.fetchDocImpl(latest);
-	};
-
-	private fetchDocImpl = async (doc: DB_BackupDoc) => {
-		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
-		const contentType = MemKey_HttpRequestHeaders.get()['content-type'];
-		const firebaseDescriptor = await (await bucket.getFile(doc.firebasePath)).getReadSignedUrl(10 * Minute, contentType);
-		const firestoreDescriptor = await (await bucket.getFile(doc.backupPath)).getReadSignedUrl(10 * Minute, contentType);
-
-		return {
-			backupInfo: {
-				_id: doc._id,
-				backupFilePath: doc.backupPath,
-				metadataFilePath: doc.metadataPath,
-				firebaseFilePath: doc.firebasePath,
-				firebaseSignedUrl: firebaseDescriptor.signedUrl,
-				firestoreSignedUrl: firestoreDescriptor.signedUrl,
-				metadata: doc.metadata
-			}
-		};
-	};
-
 	public getBackupStatusCollection = (): FirestoreCollectionV3<DBProto_BackupDoc> => {
 		return ModuleBE_Firebase
 			.createAdminSession()
@@ -163,6 +122,118 @@ export class ModuleBE_BackupDocDB_Class
 				return true;
 			});
 	};
+
+	// private async getBackupInfo(queryParams: Request_GetMetadata) {
+	async getBackupInfo(backupId: string, baseUrl: string, headers: TypedMap<string | string[]>) {
+		const url: string = `${baseUrl}/v1/fetch-backup-docs-v2`;
+		const outputDef: ApiDef<QueryApi<Response_BackupDocs, Request_BackupId>> = {
+			method: HttpMethod.GET,
+			path: '',
+			fullUrl: url
+		};
+		const requestBody = {backupId};
+
+		try {
+			let request = AxiosHttpModule
+				.createRequest(outputDef)
+				.setUrlParams(requestBody);
+
+			request = request.addHeaders(headers);
+
+			const response: Response_BackupDocs = await request.executeSync();
+			const backupInfo = response.backupInfo;
+
+			const wrongBackupIdDescriptor = backupInfo?._id !== backupId;
+
+			if (wrongBackupIdDescriptor)
+				throw new BadImplementationException(`Received backup descriptors with wrong backupId! provided id: ${backupId} received id: ${backupInfo?._id}`);
+
+			return backupInfo;
+		} catch (err: any) {
+			throw new ApiException(500, err);
+		}
+	}
+
+	getBackupStreamFromId = async (backupInfo: FetchBackupDoc) => {
+		if (!backupInfo.backupFilePath)
+			throw new ApiException(404, 'Backup file path not found');
+
+		this.logInfo(`----  Fetching Backup Stream from: ${backupInfo.firestoreSignedUrl} ----`);
+		const signedUrlDef: ApiDef<QueryApi<any>> = {
+			method: HttpMethod.GET,
+			path: '',
+			fullUrl: backupInfo.firestoreSignedUrl
+		};
+
+		return (await AxiosHttpModule
+			.createRequest(signedUrlDef)
+			.setResponseType('stream')
+			.executeSync()) as Readable;
+	};
+
+	iterateOnBackup = async (params: IterateOnBackupParams) => {
+		const startSync = performance.now(); // required for log
+
+		this.logInfo(`----  Iterating on Backup... ----`);
+		let totalItems = 0;
+		let batchItemsCounter = 0;
+		let totalItemsCollected = 0;
+
+		await CSVModule.forEachCsvRowFromStreamSync(params.stream, (row: any, index: number, transform) => {
+			_keys(row).map(key => {
+				row[(key as string).trim()] = (row[key] as string).trim();
+			});
+
+			if (!params.filter(row.collectionName))
+				return;
+
+			totalItems++;
+			params.process(row);
+			batchItemsCounter++;
+			if (batchItemsCounter < params.chunkSize)
+				return;
+
+			this.logInfo(`calling pause`);
+			transform.pause();
+			const prevLimitCounter = batchItemsCounter;
+			batchItemsCounter = 0;
+
+			params.paginate().then(() => {
+				this.logInfo(`committed ${prevLimitCounter} items`);
+				totalItemsCollected += prevLimitCounter;
+
+				transform.resume();
+			}).catch(err => this.logError('error committing batch', err));
+		});
+
+		if (batchItemsCounter > 0) {
+			await params.paginate();
+			totalItemsCollected += batchItemsCounter;
+		}
+		this.logInfo(`---- DONE Syncing Firestore: (${totalItemsCollected}/${totalItems})----`);
+		const endSync = performance.now(); // required for log
+		this.logInfo(`SyncingEnv took ${((endSync - startSync) / 1000).toFixed(3)} seconds`);
+	};
+
+	// ##################### Collection Interaction #####################
+
+	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
+		return await this.collection.query.custom(ourQuery);
+	};
+
+	queryUnique = async (backupDocId: UniqueId) => {
+		return await this.collection.query.unique(backupDocId);
+	};
+
+	upsert = async (instance: PreDB<DB_BackupDoc>): Promise<DB_BackupDoc> => {
+		return await this.collection.create.item(instance);
+	};
+
+	deleteItem = async (instance: DB_BackupDoc): Promise<DB_BackupDoc | undefined> => {
+		return await this.collection.delete.unique(instance._id);
+	};
+
+	// ##################### Backup Actions #####################
 
 	initiateBackup = async (force = false) => {
 		const nowMs = currentTimeMillis();
@@ -273,112 +344,59 @@ export class ModuleBE_BackupDocDB_Class
 		return {pathToBackup: fullPathToBackup, backupId: dbBackup._id};
 	};
 
-	// private async getBackupInfo(queryParams: Request_GetMetadata) {
-	async getBackupInfo(backupId: string, baseUrl: string, headers: TypedMap<string | string[]>) {
-		const url: string = `${baseUrl}/v1/fetch-backup-docs-v2`;
-		const outputDef: ApiDef<QueryApi<Response_BackupDocs, Request_BackupId>> = {
-			method: HttpMethod.GET,
-			path: '',
-			fullUrl: url
+	createBackupReadStream = async (backupInfo: FetchBackupDoc): Promise<Readable> => {
+		const stream = await this.getBackupStreamFromId(backupInfo);
+		const transformer = CSVModuleV3.provideFormatterFromCsv();
+		return stream.pipe(transformer);
+	};
+
+	createBackupReadStreamFromBucket = async (pathInBucket: string): Promise<Readable> => {
+		const file = await ModuleBE_Firebase.createAdminSession().getStorage().getFile(pathInBucket);
+		const stream = file.createReadStream({decompress: true});
+		const transformer = CSVModuleV3.provideFormatterFromCsv();
+		return stream.pipe(transformer);
+	};
+
+	// ##################### BackupDoc Fetching #####################
+
+	/**
+	 * @param body - needs to contain backupId with the key to fetch.
+	 */
+	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
+		const backupDoc = await this.queryUnique(body.backupId);
+
+		if (!backupDoc)
+			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
+
+		return await this.fetchDocImpl(backupDoc);
+	};
+
+	fetchLatestBackupDoc = async (): Promise<Response_BackupDocs> => {
+		const docs = await this.query(_EmptyQuery);
+		if (!docs.length)
+			throw HttpCodes._4XX.NOT_FOUND('No backups to fetch', 'No backups in db to fetch');
+
+		const latest = sortArray(docs, doc => doc.__created, true)[0];
+		return await this.fetchDocImpl(latest);
+	};
+
+	private fetchDocImpl = async (doc: DB_BackupDoc) => {
+		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
+		const contentType = MemKey_HttpRequestHeaders.get()['content-type'];
+		const firebaseDescriptor = await (await bucket.getFile(doc.firebasePath)).getReadSignedUrl(10 * Minute, contentType);
+		const firestoreDescriptor = await (await bucket.getFile(doc.backupPath)).getReadSignedUrl(10 * Minute, contentType);
+
+		return {
+			backupInfo: {
+				_id: doc._id,
+				backupFilePath: doc.backupPath,
+				metadataFilePath: doc.metadataPath,
+				firebaseFilePath: doc.firebasePath,
+				firebaseSignedUrl: firebaseDescriptor.signedUrl,
+				firestoreSignedUrl: firestoreDescriptor.signedUrl,
+				metadata: doc.metadata
+			}
 		};
-		const requestBody = {backupId};
-
-		try {
-			let request = AxiosHttpModule
-				.createRequest(outputDef)
-				.setUrlParams(requestBody);
-
-			request = request.addHeaders(headers);
-
-			const response: Response_BackupDocs = await request.executeSync();
-			const backupInfo = response.backupInfo;
-
-			const wrongBackupIdDescriptor = backupInfo?._id !== backupId;
-
-			if (wrongBackupIdDescriptor)
-				throw new BadImplementationException(`Received backup descriptors with wrong backupId! provided id: ${backupId} received id: ${backupInfo?._id}`);
-
-			return backupInfo;
-		} catch (err: any) {
-			throw new ApiException(500, err);
-		}
-	}
-
-	getBackupStreamFromId = async (backupInfo: FetchBackupDoc) => {
-		if (!backupInfo.backupFilePath)
-			throw new ApiException(404, 'Backup file path not found');
-
-		this.logInfo(`----  Fetching Backup Stream from: ${backupInfo.firestoreSignedUrl} ----`);
-		const signedUrlDef: ApiDef<QueryApi<any>> = {
-			method: HttpMethod.GET,
-			path: '',
-			fullUrl: backupInfo.firestoreSignedUrl
-		};
-
-		return (await AxiosHttpModule
-			.createRequest(signedUrlDef)
-			.setResponseType('stream')
-			.executeSync()) as Readable;
-	};
-
-	iterateOnBackup = async (params: IterateOnBackupParams) => {
-		const startSync = performance.now(); // required for log
-
-		this.logInfo(`----  Iterating on Backup... ----`);
-		let totalItems = 0;
-		let batchItemsCounter = 0;
-		let totalItemsCollected = 0;
-
-		await CSVModule.forEachCsvRowFromStreamSync(params.stream, (row: any, index: number, transform) => {
-			_keys(row).map(key => {
-				row[(key as string).trim()] = (row[key] as string).trim();
-			});
-
-			if (!params.filter(row.collectionName))
-				return;
-
-			totalItems++;
-			params.process(row);
-			batchItemsCounter++;
-			if (batchItemsCounter < params.chunkSize)
-				return;
-
-			this.logInfo(`calling pause`);
-			transform.pause();
-			const prevLimitCounter = batchItemsCounter;
-			batchItemsCounter = 0;
-
-			params.paginate().then(() => {
-				this.logInfo(`committed ${prevLimitCounter} items`);
-				totalItemsCollected += prevLimitCounter;
-
-				transform.resume();
-			}).catch(err => this.logError('error committing batch', err));
-		});
-
-		if (batchItemsCounter > 0) {
-			await params.paginate();
-			totalItemsCollected += batchItemsCounter;
-		}
-		this.logInfo(`---- DONE Syncing Firestore: (${totalItemsCollected}/${totalItems})----`);
-		const endSync = performance.now(); // required for log
-		this.logInfo(`SyncingEnv took ${((endSync - startSync) / 1000).toFixed(3)} seconds`);
-	};
-
-	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
-		return await this.collection.query.custom(ourQuery);
-	};
-
-	queryUnique = async (backupDocId: UniqueId) => {
-		return await this.collection.query.unique(backupDocId);
-	};
-
-	upsert = async (instance: PreDB<DB_BackupDoc>): Promise<DB_BackupDoc> => {
-		return await this.collection.create.item(instance);
-	};
-
-	deleteItem = async (instance: DB_BackupDoc): Promise<DB_BackupDoc | undefined> => {
-		return await this.collection.delete.unique(instance._id);
 	};
 }
 
