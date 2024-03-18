@@ -68,6 +68,11 @@ export class CSVModuleV3_Class
 				.on('error', err => reject(err));
 		});
 	};
+
+	public provideFormatter = (transformer: (item: any) => any = item => item) => {
+		return csv.format({headers: true})
+			.transform(transformer);
+	};
 }
 
 export const CSVModuleV3 = new CSVModuleV3_Class();
