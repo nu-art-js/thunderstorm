@@ -4,6 +4,7 @@ import {
 	_logger_logException,
 	ApiException,
 	BadImplementationException,
+	cloneObj,
 	currentTimeMillis,
 	Day,
 	Dispatcher,
@@ -15,24 +16,28 @@ import {
 	Module,
 	PreDB,
 	RuntimeModules,
-	TS_Object,
+	sortArray,
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV3';
 import {ModuleBE_BaseDBV2} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV2';
-import {END_OF_STREAM, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
-import {Readable, Writable} from 'stream';
+import {Readable} from 'stream';
 import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc} from '../shared/types';
 import {addRoutes} from '../../../backend/modules/ModuleBE_APIs';
 import {ApiDef_BackupDoc, Request_BackupId, Response_BackupDocs} from '../shared/api-def';
 import {createQueryServerApi} from '../../../backend/core/typed-api';
 import {DBDef_BackupDoc} from '../shared/db-def';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {MemKey_HttpRequestHeaders} from '../../../backend/modules/server/consts';
 import {ApiDef, HttpMethod, QueryApi} from '../../../shared';
 import {AxiosHttpModule} from '../../../backend';
+import {CSVModuleV3} from '@nu-art/ts-common/modules/CSVModuleV3';
+import {ModuleBE_UpgradeCollection} from '../../../backend/modules/upgrade-collection/ModuleBE_UpgradeCollection';
 
 
 export interface OnModuleCleanupV2 {
@@ -94,32 +99,6 @@ export class ModuleBE_BackupDocDB_Class
 		]);
 	}
 
-	/**
-	 * @param body - needs to contain backupId with the key to fetch.
-	 */
-	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
-		const backupDoc = await this.queryUnique(body.backupId);
-
-		if (!backupDoc)
-			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
-
-		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
-		const fireabseDescriptor = await (await bucket.getFile(backupDoc.firebasePath)).getReadSignedUrl(10 * Minute);
-		const firestoreDescriptor = await (await bucket.getFile(backupDoc.backupPath)).getReadSignedUrl(10 * Minute);
-
-		return {
-			backupInfo: {
-				_id: backupDoc._id,
-				backupFilePath: backupDoc.backupPath,
-				metadataFilePath: backupDoc.metadataPath,
-				firebaseFilePath: backupDoc.firebasePath,
-				firebaseSignedUrl: fireabseDescriptor.signedUrl,
-				firestoreSignedUrl: firestoreDescriptor.signedUrl,
-				metadata: backupDoc.metadata
-			}
-		};
-	};
-
 	public getBackupStatusCollection = (): FirestoreCollectionV3<DBProto_BackupDoc> => {
 		return ModuleBE_Firebase
 			.createAdminSession()
@@ -143,165 +122,6 @@ export class ModuleBE_BackupDocDB_Class
 
 				return true;
 			});
-	};
-
-	private formatToCsv = (docArray: TS_Object[], moduleKey: string) => {
-		return docArray.map(doc => ({
-			collectionName: moduleKey,
-			_id: doc._id,
-			document: __stringify(doc)
-		}));
-	};
-
-	initiateBackup = async (force = false) => {
-		const nowMs = currentTimeMillis();
-		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
-		const backupPath = `backup/${timeFormat}/firestore-backup.csv`;
-		const metadataPath = `backup/${timeFormat}/metadata.json`;
-		const configPath = `backup/${timeFormat}/firebase-backup.json`;
-
-		const query: FirestoreQuery<DB_BackupDoc> = {
-			where: {},
-			orderBy: [{key: 'timestamp', order: 'asc'}],
-			limit: 1
-		};
-
-		const docs = await this.query(query);
-		const latestDoc = docs[0];
-
-		if (!force && latestDoc && latestDoc.timestamp + this.config.minTimeThreshold > nowMs)
-			return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
-
-		if (this.config.excludedCollectionNames)
-			this.logInfo(`Found excluded modules list: ${this.config.excludedCollectionNames}`);
-
-		try {
-			this.logInfo('Cleaning modules...');
-			await dispatch_onModuleCleanupV2.dispatchModuleAsync();
-			this.logInfo('Cleaned modules!');
-		} catch (e: any) {
-			this.logWarning(`modules cleanup has failed with error`, e);
-			const errorMessage = `modules cleanup has failed with error\nError: ${_logger_logException(e)}`;
-			throw new ApiException(500, errorMessage, e);
-		}
-
-		const modules: DBModules[] = filterInstances(this.getBackupDetails());
-		let backupsCounter = 0;
-
-		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
-		const storage = firebaseSessionAdmin.getStorage();
-		const bucket = await storage.getMainBucket();
-		const fullPathToBackup = `${bucket.getBucketName()}/${backupPath}`;
-		CSVModule.updateExporterSettings(CSVConfig);
-		const metadata: BackupMetaData = {collectionsData: [], timestamp: nowMs};
-
-		if (modules.length === 0)
-			throw new ApiException(404, 'No modules to backup');
-
-		const backupFeeder = async (writable: Writable) => {
-			if (!modules[backupsCounter])
-				return END_OF_STREAM;
-
-			const currentModule = modules[backupsCounter];
-
-			let page = 0;
-			let docCounter = 0;
-			let data;
-
-			const moduleKey = currentModule.config.collectionName;
-			do {
-
-				//Get the next chunk of documents from the db module
-				data = await currentModule.query.custom({
-					..._EmptyQuery,
-					limit: {page, itemsCount: 1000}
-				});
-
-				// If no data there's no need to process or write anything to csv
-				if (data.length) {
-
-					//Upgrade documents to latest version
-					await currentModule.upgradeInstances(data);
-
-					// Write the new data to the csv
-					data = this.formatToCsv(data, moduleKey);
-
-					const csv = CSVModule.export(data);
-
-					if (page === 0)
-						CSVModule.updateExporterSettings({
-							...CSVConfig,
-							showLabels: false,
-							useKeysAsHeaders: false
-						});
-
-					writable.write(csv.toString());
-				}
-
-				docCounter += data.length;
-				page++;
-			} while (data.length);
-
-			metadata.collectionsData.push({
-				collectionName: moduleKey,
-				numOfDocs: docCounter,
-				version: currentModule.dbDef.versions[0]
-			});
-
-			backupsCounter++;
-
-		};
-
-		try {
-			this.logDebug('Creating backup file...');
-			const file = await bucket.getFile(backupPath);
-			await file.writeToStream(backupFeeder);
-			this.logDebug('Backup file created');
-
-			this.logDebug('Backing up config db');
-			const database = firebaseSessionAdmin.getDatabase();
-			const configBackup = await database.ref('/').get();
-			const configFile = await bucket.getFile(configPath);
-			await configFile.write(configBackup as object);
-			this.logDebug('Config file created');
-
-			this.logDebug('Creating metadata file...');
-			const metadataFile = await bucket.getFile(metadataPath);
-			await metadataFile.write(metadata);
-			this.logDebug('Metadata file created');
-		} catch (e: any) {
-			this.logWarning(`backup of ${modules[backupsCounter].config.collectionName} has failed with error`, e);
-			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(modules[backupsCounter].config, true)}\nError: ${_logger_logException(e)}`;
-			throw new ApiException(500, errorMessage, e);
-		}
-
-		const dbBackup = await this.upsert({
-			timestamp: nowMs,
-			backupPath,
-			metadataPath,
-			firebasePath: configPath,
-			metadata
-		});
-		this.logWarning(dbBackup);
-
-		const oldBackupsToDelete = await this.query({where: {timestamp: {$lt: nowMs - this.config.keepInterval}}});
-		if (oldBackupsToDelete.length === 0) {
-			this.logInfoBold('No older backups to delete');
-			return {pathToBackup: fullPathToBackup, backupId: dbBackup._id};
-		}
-
-		try {
-			this.logInfoBold('Received older backups to delete, count: ' + oldBackupsToDelete.length);
-			await Promise.all(oldBackupsToDelete.map(async oldDoc => (filterInstances([oldDoc.metadataPath, oldDoc.backupPath, oldDoc.firebasePath])
-				.map(async path => (await bucket.getFile(path)).delete()))));
-			await this.collection.delete.all(oldBackupsToDelete);
-			this.logInfoBold('Successfully deleted old backups');
-		} catch (err: any) {
-			this.logWarning(`Error while cleaning up older backups`, err);
-			throw new ApiException(500, err);
-		}
-
-		return {pathToBackup: fullPathToBackup, backupId: dbBackup._id};
 	};
 
 	// private async getBackupInfo(queryParams: Request_GetMetadata) {
@@ -395,6 +215,9 @@ export class ModuleBE_BackupDocDB_Class
 		const endSync = performance.now(); // required for log
 		this.logInfo(`SyncingEnv took ${((endSync - startSync) / 1000).toFixed(3)} seconds`);
 	};
+
+	// ##################### Collection Interaction #####################
+
 	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
 		return await this.collection.query.custom(ourQuery);
 	};
@@ -410,6 +233,277 @@ export class ModuleBE_BackupDocDB_Class
 	deleteItem = async (instance: DB_BackupDoc): Promise<DB_BackupDoc | undefined> => {
 		return await this.collection.delete.unique(instance._id);
 	};
+
+	// ##################### Backup Actions #####################
+
+	private getDefaultPath = () => {
+		const nowMs = currentTimeMillis();
+		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
+		return `backup/${timeFormat}`;
+	};
+
+	initiateBackup = async (force = false, pathInBucket: string = this.getDefaultPath()) => {
+		const nowMs = currentTimeMillis();
+		const backupPath = `${pathInBucket}/firestore-backup.csv`;
+		const metadataPath = `${pathInBucket}/metadata.json`;
+		const configPath = `${pathInBucket}/firebase-backup.json`;
+
+		const query: FirestoreQuery<DB_BackupDoc> = {
+			where: {},
+			orderBy: [{key: 'timestamp', order: 'asc'}],
+			limit: 1
+		};
+
+		const docs = await this.query(query);
+		const latestDoc = docs[0];
+
+		if (!force && latestDoc && latestDoc.timestamp + this.config.minTimeThreshold > nowMs)
+			return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
+
+		if (this.config.excludedCollectionNames)
+			this.logInfo(`Found excluded modules list: ${this.config.excludedCollectionNames}`);
+
+		try {
+			this.logInfo('Cleaning modules...');
+			await dispatch_onModuleCleanupV2.dispatchModuleAsync();
+			this.logInfo('Cleaned modules!');
+		} catch (e: any) {
+			this.logWarning(`modules cleanup has failed with error`, e);
+			const errorMessage = `modules cleanup has failed with error\nError: ${_logger_logException(e)}`;
+			throw new ApiException(500, errorMessage, e);
+		}
+
+		const modules: DBModules[] = filterInstances(this.getBackupDetails());
+		let backupsCounter = 0;
+
+		try {
+			this.logInfo('Upgrading Collections');
+			const dbModuleNames = modules.map(module => module.dbDef.dbKey);
+			await ModuleBE_UpgradeCollection.upgradeAll({collectionsToUpgrade: dbModuleNames});
+			this.logInfo('Collections Upgraded');
+		} catch (e: any) {
+			this.logError(e);
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Could not upgrade collections', 'failed collection upgrade', e);
+		}
+
+		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
+		const storage = firebaseSessionAdmin.getStorage();
+		const bucket = await storage.getMainBucket();
+		CSVModule.updateExporterSettings(CSVConfig);
+		let metadata: BackupMetaData;
+
+		if (modules.length === 0)
+			throw new ApiException(404, 'No modules to backup');
+
+		try {
+			this.logDebug('Creating backup file...');
+			const file = await bucket.getFile(backupPath);
+			const reader = new DBModuleReader(modules);
+			const writer = file.createWriteStream({gzip: true});
+			const formatter = CSVModuleV3.provideFormatter();
+			await new Promise<void>((resolve, reject) => {
+				reader
+					.pipe(formatter)
+					.pipe(writer)
+					.on('close', () => {
+						metadata = {...reader.getMetadata(), timestamp: nowMs};
+						resolve();
+					})
+					.on('error', err => reject(err));
+			});
+
+			this.logDebug('Backup file created');
+			this.logDebug('Backing up config db');
+			const database = firebaseSessionAdmin.getDatabase();
+			const configBackup = await database.ref('/').get();
+			const configFile = await bucket.getFile(configPath);
+			await configFile.write(configBackup as object);
+			this.logDebug('Config file created');
+
+			this.logDebug('Creating metadata file...');
+			const metadataFile = await bucket.getFile(metadataPath);
+			await metadataFile.write(metadata!);
+			this.logDebug('Metadata file created');
+		} catch (e: any) {
+			this.logWarning(`backup of ${modules[backupsCounter].config.collectionName} has failed with error`, e);
+			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(modules[backupsCounter].config, true)}\nError: ${_logger_logException(e)}`;
+			throw new ApiException(500, errorMessage, e);
+		}
+
+		const dbBackup = await this.upsert({
+			timestamp: nowMs,
+			backupPath,
+			metadataPath,
+			firebasePath: configPath,
+			metadata: metadata!,
+		});
+		this.logWarning(dbBackup);
+
+		const oldBackupsToDelete = await this.query({where: {timestamp: {$lt: nowMs - this.config.keepInterval}}});
+		if (oldBackupsToDelete.length === 0) {
+			this.logInfoBold('No older backups to delete');
+			return {pathToBackup: backupPath, backupId: dbBackup._id};
+		}
+
+		try {
+			this.logInfoBold('Received older backups to delete, count: ' + oldBackupsToDelete.length);
+			await Promise.all(oldBackupsToDelete.map(async oldDoc => (filterInstances([oldDoc.metadataPath, oldDoc.backupPath, oldDoc.firebasePath])
+				.map(async path => (await bucket.getFile(path)).delete()))));
+			await this.collection.delete.all(oldBackupsToDelete);
+			this.logInfoBold('Successfully deleted old backups');
+		} catch (err: any) {
+			this.logWarning(`Error while cleaning up older backups`, err);
+			throw new ApiException(500, err);
+		}
+
+		return {pathToBackup: backupPath, backupId: dbBackup._id};
+	};
+
+	createBackupReadStream = async (backupInfo: FetchBackupDoc): Promise<Readable> => {
+		const stream = await this.getBackupStreamFromId(backupInfo);
+		const transformer = CSVModuleV3.provideFormatterFromCsv();
+		return stream.pipe(transformer);
+	};
+
+	createBackupReadStreamFromBucket = async (pathInBucket: string): Promise<Readable> => {
+		const file = await ModuleBE_Firebase.createAdminSession().getStorage().getFile(pathInBucket);
+		const stream = file.createReadStream({decompress: true});
+		const transformer = CSVModuleV3.provideFormatterFromCsv();
+		return stream.pipe(transformer);
+	};
+
+	// ##################### BackupDoc Fetching #####################
+
+	/**
+	 * @param body - needs to contain backupId with the key to fetch.
+	 */
+	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
+		const backupDoc = await this.queryUnique(body.backupId);
+
+		if (!backupDoc)
+			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
+
+		return await this.fetchDocImpl(backupDoc);
+	};
+
+	fetchLatestBackupDoc = async (): Promise<Response_BackupDocs> => {
+		const docs = await this.query(_EmptyQuery);
+		if (!docs.length)
+			throw HttpCodes._4XX.NOT_FOUND('No backups to fetch', 'No backups in db to fetch');
+
+		const latest = sortArray(docs, doc => doc.__created, true)[0];
+		return await this.fetchDocImpl(latest);
+	};
+
+	private fetchDocImpl = async (doc: DB_BackupDoc) => {
+		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
+		const contentType = MemKey_HttpRequestHeaders.get()['content-type'];
+		const firebaseDescriptor = await (await bucket.getFile(doc.firebasePath)).getReadSignedUrl(10 * Minute, contentType);
+		const firestoreDescriptor = await (await bucket.getFile(doc.backupPath)).getReadSignedUrl(10 * Minute, contentType);
+
+		return {
+			backupInfo: {
+				_id: doc._id,
+				backupFilePath: doc.backupPath,
+				metadataFilePath: doc.metadataPath,
+				firebaseFilePath: doc.firebasePath,
+				firebaseSignedUrl: firebaseDescriptor.signedUrl,
+				firestoreSignedUrl: firestoreDescriptor.signedUrl,
+				metadata: doc.metadata
+			}
+		};
+	};
 }
 
 export const ModuleBE_BackupDocDB = new ModuleBE_BackupDocDB_Class();
+
+class DBModuleReader
+	extends Readable {
+
+	readonly dbModules: DBModules[];
+	readonly pageSize: number;
+	private page: number = 0;
+	private moduleIndex: number = 0;
+	private done: boolean = false;
+	private metadata: BackupMetaData;
+
+	constructor(dbModules: DBModules[], pageSize: number = 1000) {
+		super({objectMode: true});
+		this.dbModules = dbModules;
+		this.pageSize = pageSize;
+		this.metadata = {collectionsData: [], timestamp: currentTimeMillis()};
+	}
+
+	// ##################### Metadata #####################
+
+	public getMetadata = () => cloneObj(this.metadata);
+
+	private updateMetadata = (module: DBModules, items: any[]) => {
+		const collectionName = module.config.collectionName;
+		const collectionData = this.metadata.collectionsData.find(data => data.collectionName === collectionName);
+		if (!collectionData)
+			return this.metadata.collectionsData.push({
+				collectionName: collectionName,
+				numOfDocs: items.length,
+				version: module.dbDef.versions[0],
+			});
+		collectionData.numOfDocs += items.length;
+	};
+
+	// ##################### Logic #####################
+
+	private getItems = async () => {
+		if (this.done)
+			return;
+
+		const module = this.dbModules[this.moduleIndex];
+		if (!module) {
+			this.done = true;
+			return;
+		}
+
+		const collectionName = module.config.collectionName;
+		try {
+			const items = await module.query.custom({
+				..._EmptyQuery,
+				limit: {page: this.page, itemsCount: this.pageSize},
+			});
+			this.updateMetadata(module, items);
+			return items.map(item => ({
+				collectionName: collectionName,
+				_id: item._id,
+				document: JSON.stringify(item),
+			}));
+		} catch (err: any) {
+			this.emit('error', err);
+		}
+	};
+
+	private advanceModule = () => {
+		this.page = 0;
+		this.moduleIndex++;
+	};
+
+	async _read() {
+		const items = await this.getItems();
+		if (!items) { //Only getting undefined if no more items to get, end stream
+			this.push(null);
+			return;
+		}
+
+		//If got an array but it was empty, move on to next module
+		if (!items.length) {
+			this.advanceModule();
+			await this._read();
+			return;
+		}
+
+		items.forEach(item => this.push(item));
+
+		//If the amount of items was under the pageSize, there will be no more items to get from the module, move to the next
+		if (items.length < this.pageSize)
+			this.advanceModule();
+		else
+			this.page++;
+	}
+}
