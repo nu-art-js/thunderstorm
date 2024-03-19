@@ -37,6 +37,7 @@ import {MemKey_HttpRequestHeaders} from '../../../backend/modules/server/consts'
 import {ApiDef, HttpMethod, QueryApi} from '../../../shared';
 import {AxiosHttpModule} from '../../../backend';
 import {CSVModuleV3} from '@nu-art/ts-common/modules/CSVModuleV3';
+import {ModuleBE_UpgradeCollection} from '../../../backend/modules/upgrade-collection/ModuleBE_UpgradeCollection';
 
 
 export interface OnModuleCleanupV2 {
@@ -275,10 +276,19 @@ export class ModuleBE_BackupDocDB_Class
 		const modules: DBModules[] = filterInstances(this.getBackupDetails());
 		let backupsCounter = 0;
 
+		try {
+			this.logInfo('Upgrading Collections');
+			const dbModuleNames = modules.map(module => module.dbDef.dbKey);
+			await ModuleBE_UpgradeCollection.upgradeAll({collectionsToUpgrade: dbModuleNames});
+			this.logInfo('Collections Upgraded');
+		} catch (e: any) {
+			this.logError(e);
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Could not upgrade collections', 'failed collection upgrade', e);
+		}
+
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
 		const storage = firebaseSessionAdmin.getStorage();
 		const bucket = await storage.getMainBucket();
-		const fullPathToBackup = `${bucket.getBucketName()}/${backupPath}`;
 		CSVModule.updateExporterSettings(CSVConfig);
 		let metadata: BackupMetaData;
 
@@ -332,7 +342,7 @@ export class ModuleBE_BackupDocDB_Class
 		const oldBackupsToDelete = await this.query({where: {timestamp: {$lt: nowMs - this.config.keepInterval}}});
 		if (oldBackupsToDelete.length === 0) {
 			this.logInfoBold('No older backups to delete');
-			return {pathToBackup: fullPathToBackup, backupId: dbBackup._id};
+			return {pathToBackup: backupPath, backupId: dbBackup._id};
 		}
 
 		try {
@@ -346,7 +356,7 @@ export class ModuleBE_BackupDocDB_Class
 			throw new ApiException(500, err);
 		}
 
-		return {pathToBackup: fullPathToBackup, backupId: dbBackup._id};
+		return {pathToBackup: backupPath, backupId: dbBackup._id};
 	};
 
 	createBackupReadStream = async (backupInfo: FetchBackupDoc): Promise<Readable> => {
