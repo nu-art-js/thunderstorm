@@ -2,10 +2,11 @@ import * as React from 'react';
 import {_className} from '../../utils/tools';
 import './TS_Card.scss';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
+import {LinearLayoutProps} from '../Layouts';
 
 
 export class TS_Card
-	extends React.Component<React.HTMLAttributes<HTMLDivElement>> {
+	extends React.Component<LinearLayoutProps> {
 
 	shouldComponentUpdate(): boolean {
 		return true;
