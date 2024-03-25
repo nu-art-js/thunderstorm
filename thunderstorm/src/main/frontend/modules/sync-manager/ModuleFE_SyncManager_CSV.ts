@@ -1,7 +1,10 @@
-import {_keys, DB_Object, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
+import {arrayToMap, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {Readable, Writable} from 'stream';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import {ModuleFE_v3_BaseDB, ModuleSyncType} from '../db-api-gen/ModuleFE_v3_BaseDB';
+import {ModuleFE_XHR} from '../http/ModuleFE_XHR';
+import {ApiDef, HttpMethod} from '../../../shared';
+import * as Papa from 'papaparse';
 
 export class ModuleFE_SyncManager_CSV_Class
 	extends Module {
@@ -11,6 +14,25 @@ export class ModuleFE_SyncManager_CSV_Class
 	}
 
 	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_v3_BaseDB<any>>((module) => module.syncType === ModuleSyncType.CSVSync);
+
+	syncFromCSVUrl = async (url: string) => {
+		const apiDef: ApiDef<any> = {
+			method: HttpMethod.GET,
+			path: '',
+			fullUrl: url
+		};
+		const request = ModuleFE_XHR.createRequest(apiDef)
+			.removeHeader('x-application')
+			.removeHeader('tab-id')
+			.removeHeader('x-session-id');
+
+		const data = await request.executeSync();
+		const parsed = Papa.parse(data, {
+			header: true,
+			transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
+		});
+		await this.syncModules(parsed.data);
+	};
 
 	syncFromBackupStream = async (stream: Readable) => {
 		const modules = this.getModulesToSync();
@@ -27,6 +49,16 @@ export class ModuleFE_SyncManager_CSV_Class
 				});
 		});
 	};
+
+	private syncModules = async (data: any[]) => {
+		const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.backend.name);
+		for (const item of data) {
+			const module = modules[item.collectionName];
+			if (!module)
+				continue;
+			await module.IDB.storeWrapper.upsert(item.document);
+		}
+	};
 }
 
 export const ModuleFE_SyncManager_CSV = new ModuleFE_SyncManager_CSV_Class();
@@ -36,9 +68,7 @@ class ModuleIDBWriter extends Writable {
 	readonly modules: ModuleFE_v3_BaseDB<any>[];
 	readonly moduleNameMap: TypedMap<ModuleFE_v3_BaseDB<any>>;
 	readonly paginationSize: number;
-
-	private itemsToUpsert: TypedMap<DB_Object[]> = {};
-	private itemCount: number = 0;
+	private itemsToUpsert: any[] = [];
 
 	constructor(modules: ModuleFE_v3_BaseDB<any>[], paginationSize: number = 1000) {
 		super();
@@ -51,13 +81,8 @@ class ModuleIDBWriter extends Writable {
 	}
 
 	async _write(chunk: any, encoding: BufferEncoding, callback: (error?: (Error | null)) => void) {
-		const collectionName = chunk.collectionName as string;
-		const document = JSON.parse(chunk.document);
-		if (!this.itemsToUpsert[collectionName])
-			this.itemsToUpsert[collectionName] = [];
-
-		this.itemsToUpsert[collectionName].push(document);
-		this.itemCount++;
+		console.log('WRITE');
+		this.itemsToUpsert.push(chunk);
 		await this.upsertItems();
 		callback();
 	}
@@ -68,20 +93,19 @@ class ModuleIDBWriter extends Writable {
 	}
 
 	private upsertItems = async (force: boolean = false) => {
-		if (this.itemCount < this.paginationSize && !force)
+		const itemCount = this.itemsToUpsert.length;
+		if ((itemCount < this.paginationSize) && !force)
 			return;
 
-		const collections = _keys(this.itemsToUpsert) as string[];
-		for (const collection of collections) {
-			const module = this.moduleNameMap[collection];
+		for (const item of this.itemsToUpsert) {
+			const module = this.moduleNameMap[item.collectionName];
 			if (!module)
-				return;
+				continue;
 
-			await module.IDB.syncIndexDb(this.itemsToUpsert[collection]);
+			const document = JSON.parse(item.document);
+			await module.IDB.storeWrapper.upsert(document);
 		}
 
-		this.itemsToUpsert = {};
-		this.itemCount = 0;
+		this.itemsToUpsert = [];
 	};
-
 }
