@@ -462,7 +462,7 @@ class DBModuleReader
 			return;
 		}
 
-		const collectionName = module.config.collectionName;
+		const dbKey = module.dbDef.dbKey;
 		try {
 			const items = await module.query.custom({
 				..._EmptyQuery,
@@ -470,7 +470,7 @@ class DBModuleReader
 			});
 			this.updateMetadata(module, items);
 			return items.map(item => ({
-				collectionName: collectionName,
+				dbKey,
 				_id: item._id,
 				document: JSON.stringify(item),
 			}));

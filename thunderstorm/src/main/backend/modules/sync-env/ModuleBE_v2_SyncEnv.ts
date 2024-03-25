@@ -219,7 +219,7 @@ class CollectionBatchWriter
 
 	async _write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
 		try {
-			const docRef = this.firestore.doc(`${chunk.collectionName}/${chunk._id}`);
+			const docRef = this.firestore.doc(`${chunk.dbKey}/${chunk._id}`);
 			const data = JSON.parse(chunk.document);
 			this.batchWriter.set(docRef, data);
 			this.itemCount++;
