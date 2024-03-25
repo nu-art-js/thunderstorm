@@ -1,0 +1,24 @@
+{
+  "name": "test-package-6",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "test package 6",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "test-package-4": "$THUNDERSTORM_SDK_VERSION",
+    "test-package-5": "$THUNDERSTORM_SDK_VERSION"
+  },
+  "_moduleAliases": {
+    "@main": "dist/main/ts",
+    "@test": "dist/test/ts"
+  }
+}
