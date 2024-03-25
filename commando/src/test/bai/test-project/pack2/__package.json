@@ -1,7 +1,7 @@
 {
-  "name": "test-package-6",
-  "version": "$THUNDERSTORM_SDK_VERSION",
-  "description": "test package 6",
+  "name": "test-package-2",
+  "version": "$APP_VERSION_DEPENDENCY",
+  "description": "test package 2",
   "publishConfig": {
     "directory": "dist",
     "linkDirectory": true
@@ -14,8 +14,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "test-package-4": "$THUNDERSTORM_SDK_VERSION",
-    "test-package-5": "$THUNDERSTORM_SDK_VERSION"
+    "test-package-1": "$THUNDERSTORM_SDK_VERSION_DEPENDENCY"
   },
   "_moduleAliases": {
     "@main": "dist/main/ts",

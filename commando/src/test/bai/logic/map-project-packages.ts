@@ -9,7 +9,9 @@ export function mapProjectPackages(pathToPackages: string): ProjectPackages {
 	const packages = loadedPackages.packages
 		.map(_package => {
 			const absolutePathToPackageRoot = convertToFullPath(_package.path);
-			const absolutePathToOutputFolder = convertToFullPath(_package.output, absolutePathToPackageRoot);
+			let absolutePathToOutputFolder: string;
+			if (_package.output)
+				absolutePathToOutputFolder = convertToFullPath(_package.output, absolutePathToPackageRoot);
 			const absolutePathToNodeModulesFolder = convertToFullPath(_package.nodeModulesFolder ?? 'node_modules', absolutePathToPackageRoot);
 			return ({
 				..._package,
