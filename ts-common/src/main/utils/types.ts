@@ -151,7 +151,7 @@ export type Draftable = { _isDraft: boolean };
 /**
  * call function 'resolveContent(resolvableContentObject)' to receive the content which is T.
  */
-export type ResolvableContent<T, K extends any[] = never> = T | ((...param: K) => T);
+export type ResolvableContent<T, K extends any[] = any[]> = T | ((...param: K) => T);
 
 export type Auditable = {
 	_audit?: AuditBy;

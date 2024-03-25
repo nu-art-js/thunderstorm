@@ -51,7 +51,7 @@ export const tsValidateUnion = <T>(validators: ValidatorTypeResolver<T>[], manda
 			}
 
 			return filterInstances(results).length !== 0 ? ['Input does not match any of the possible types',
-				results] as InvalidResultArray<T> : undefined;
+				results] as unknown as InvalidResultArray<T> : undefined;
 		}];
 };
 
@@ -243,7 +243,6 @@ export const tsValidateTimeRange = (mandatory: boolean = true): Validator<TimeRa
 		return tsValidateResult(instance, tsValidateRange());
 	}];
 };
-
 
 export const tsValidateNonMandatoryObject = <T extends object | undefined>(validator: ValidatorTypeResolver<T>) => {
 	return [tsValidateExists(false),
