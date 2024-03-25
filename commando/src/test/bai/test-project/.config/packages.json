@@ -1,34 +1,18 @@
 {
   "packages": [
     {
+      "path": ".",
+      "type": "sourceless"
+    },
+    {
       "path": "./pack1",
-      "type": "lib",
+      "type": "infra-lib",
       "output": "/dist"
     },
     {
       "path": "./pack2",
-      "type": "lib",
+      "type": "project-lib",
       "output": "pack2/../dist"
-    },
-    {
-      "path": "./pack3",
-      "type": "lib",
-      "output": "dist"
-    },
-    {
-      "path": "./pack4",
-      "type": "lib",
-      "output": "./dist"
-    },
-    {
-      "path": "./pack5",
-      "type": "lib",
-      "output": "../pack5/dist"
-    },
-    {
-      "path": "./pack6",
-      "type": "app",
-      "output": "dist"
     }
   ],
   "params": {

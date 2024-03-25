@@ -1,9 +1,8 @@
-import {MergeClass} from '../core/class-merger';
 import {Cli_Programming} from './programming';
 import {Cli_Basic} from './basic';
 import {Commando} from '../core/cli';
-import * as fs from 'fs';
-import * as path from 'path';
+import {promises as fs} from 'fs';
+import {convertToFullPath} from '../../test/bai/core/tools';
 
 
 export class Cli_PNPM {
@@ -64,7 +63,29 @@ export class Cli_PNPM {
 	uninstall = async () => {
 		console.log('Uninstalling PNPM');
 		const absolutePathToPNPM_Home = process.env[this._homeEnvVar];
-		fs.rmSync(absolutePathToPNPM_Home, {recursive: true, force: true});
+		return fs.rm(absolutePathToPNPM_Home, {recursive: true, force: true});
+	};
+
+	/**
+	 * Asynchronously creates a workspace file with a list of packages.
+	 * Each package is listed under the 'packages:' section in the file.
+	 *
+	 * @param listOfLibs An array of library names to include in the workspace.
+	 * @param pathToWorkspaceFile The filesystem path where the workspace file will be written.
+	 * @example
+	 * await createWorkspace(['pack1', 'pack2'], './path/to/workspace.yaml');
+	 */
+	createWorkspace = async (listOfLibs: string[], pathToWorkspaceFile: string = convertToFullPath('./pnpm-workspace.yaml')): Promise<void> => {
+		try {
+			let workspace = 'packages:\n';
+			listOfLibs.forEach(lib => {
+				workspace += `  - '${lib}'\n`;
+			});
+			await fs.writeFile(pathToWorkspaceFile, workspace, 'utf8');
+			console.log(`Workspace file created at ${pathToWorkspaceFile}`);
+		} catch (error) {
+			console.error('Failed to create workspace file:', error);
+		}
 	};
 }
 

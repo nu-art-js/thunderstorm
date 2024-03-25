@@ -27,7 +27,7 @@ export type PackageJson = JSONVersion & {
 
 export type BasePackageDetails = {
 	path: string;
-	type: 'lib' | 'app';
+	type: 'infra-lib' | 'project-lib' | 'app' | 'sourceless';
 	output: string,
 	nodeModulesFolder?: string,
 }

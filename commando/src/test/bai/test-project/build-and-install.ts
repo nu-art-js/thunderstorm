@@ -1,60 +1,39 @@
-import {mapProjectPackages} from './logic/map-project-packages';
-import {_keys, convertToFullPath} from './core/tools';
-import {ProjectManager} from './logic/ProjectManager';
-import {JSONVersion, PackageJson} from './core/types';
+import {mapProjectPackages} from '../logic/map-project-packages';
+import {_keys, convertToFullPath} from '../core/tools';
+import {ProjectManager} from '../logic/ProjectManager';
+import {JSONVersion, PackageJson} from '../core/types';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {Commando} from '../../main/core/cli';
-import {Cli_Basic} from '../../main/cli/basic';
-import {PNPM} from '../../main/cli/pnpm';
-import {NVM} from '../../main/cli/nvm';
+import {Commando} from '../../../main/core/cli';
+import {PNPM} from '../../../main/cli/pnpm';
+import {NVM} from '../../../main/cli/nvm';
+import {CONST_PackageJSON} from '../core/consts';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
+const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_SDK_VERSION_DEPENDENCY';
 const CONST_ProjectVersionKey = 'APP_VERSION';
+const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
 
 const projectPackages = mapProjectPackages(convertToFullPath('./.config/packages.json'));
 const projectManager = new ProjectManager(projectPackages);
 let interactiveCommando!: Commando;
-const runningWithThunderstormSources = true;
+const runningWithInfra = true;
 
-projectManager.registerPhqase({
+projectManager.registerPhase({
 	type: 'project',
 	name: 'setup-project',
 	action: async () => {
-		if (runningWithThunderstormSources)
-			await _fs.copyFile(convertToFullPath('./.config/pnpm-workspace.yaml'), convertToFullPath('./pnpm-workspace.yaml'));
-
 		const thunderstormVersionJson = require(convertToFullPath('./version-thunderstorm.json')) as JSONVersion;
 		projectPackages.params[CONST_ThunderstormVersionKey] = thunderstormVersionJson.version;
+		if (runningWithInfra)
+			projectPackages.params[CONST_ThunderstormDependencyKey] = `workspace:*`;
+		else
+			projectPackages.params[CONST_ThunderstormDependencyKey] = thunderstormVersionJson.version;
 
 		const projectVersionJson = require(convertToFullPath('./version-app.json')) as JSONVersion;
 		projectPackages.params[CONST_ProjectVersionKey] = projectVersionJson.version;
-	}
-});
-
-projectManager.registerPhase({
-	type: 'project',
-	name: 'setup-packages',
-	action: async () => {
-
-	}
-});
-
-projectManager.registerPhase({
-	type: 'project',
-	name: 'install-nvm',
-	action: async () => {
-		await NVM.installRequiredVersionIfNeeded();
-		interactiveCommando = NVM.createCommando().debug();
-	}
-});
-
-projectManager.registerPhase({
-	type: 'project',
-	name: 'install-pnpm',
-	action: async () => {
-		await PNPM.install(interactiveCommando);
+		projectPackages.params[CONST_ProjectDependencyKey] = `workspace:*`;
 	}
 });
 
@@ -85,6 +64,37 @@ projectManager.registerPhase({
 			}, packageJson.dependencies);
 
 		pkg.packageJson = packageJson;
+		return _fs.writeFile(`${pkg.path}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJson, null, 2), {encoding: 'utf-8'});
+	}
+});
+
+projectManager.registerPhase({
+	type: 'project',
+	name: 'setup-packages',
+	action: async () => {
+
+	}
+});
+
+projectManager.registerPhase({
+	type: 'project',
+	name: 'install-nvm',
+	action: async () => {
+		await NVM.installRequiredVersionIfNeeded();
+		interactiveCommando = NVM.createCommando().debug();
+	}
+});
+
+projectManager.registerPhase({
+	type: 'project',
+	name: 'install-pnpm',
+	action: async () => {
+		const listOfLibs = projectPackages.packages
+			.filter(pkg => runningWithInfra || ['project-lib', 'app', 'sourceless'].includes(pkg.type))
+			.map(pkg => pkg.path.replace(`${process.cwd()}/`, '').replace(process.cwd(), '.'));
+
+		await PNPM.createWorkspace(listOfLibs);
+		await PNPM.install(interactiveCommando);
 	}
 });
 
