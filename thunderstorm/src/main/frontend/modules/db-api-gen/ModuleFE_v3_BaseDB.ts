@@ -216,7 +216,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 class IDBCache<Proto extends DBProto<any>>
 	extends Logger {
 
-	protected readonly storeWrapper: IndexedDB_Store<Proto>;
+	readonly storeWrapper: IndexedDB_Store<Proto>;
 	protected readonly lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
 
