@@ -14,6 +14,7 @@ export class ModuleFE_SyncManager_CSV_Class
 
 	syncFromBackupStream = async (stream: Readable) => {
 		const modules = this.getModulesToSync();
+		this.logInfo('Modules', modules);
 		const writer = new ModuleIDBWriter(modules);
 		await new Promise<void>((resolve, reject) => {
 			stream.pipe(writer)
