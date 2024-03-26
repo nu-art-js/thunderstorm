@@ -1,7 +1,7 @@
-import {CliBlock, CliWrapper} from './core';
+import {CliBlock, CliWrapper} from '../core/cli';
 
 
-export class CliProgramming
+export class Cli_Programming
 	extends CliWrapper {
 
 	/**
