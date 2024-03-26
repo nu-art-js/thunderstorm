@@ -1,11 +1,20 @@
-import {CliBlock, CliWrapper} from './core';
+import {CliBlock, CliWrapper} from '../core/cli';
 
+
+type Cli_EchoOptions = {
+	escape?: boolean
+	toFile?: {
+		name: string,
+		append?: boolean
+	},
+};
 
 /**
  * Represents a Command Line Interface (CLI) to build and execute shell commands.
  */
-export class CliCore
+export class Cli_Basic
 	extends CliWrapper {
+
 
 	/**
 	 * Changes directory and optionally executes a block of commands in that directory.
@@ -25,13 +34,18 @@ export class CliCore
 		return this;
 	}
 
+	custom(command: string) {
+		this.cli.append(command);
+		return this;
+	}
+
 	/**
 	 * Changes directory back to the previous directory.
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	cd_(): this {
-		this.cli.append(`cd -`);
 		this.cli.indentOut();
+		this.cli.append(`cd -`);
 		return this;
 	}
 
@@ -42,6 +56,25 @@ export class CliCore
 	 */
 	public ls(params: string = ''): this {
 		this.cli.append(`ls ${params}`);
+		return this;
+	}
+
+	public mkdir(dirName: string): this {
+		this.cli.append(`mkdir -p ${dirName}`);
+		return this;
+	}
+
+	public cat(fileName: string) {
+		this.cli.append(`cat ${fileName}`);
+		return this;
+	}
+
+	public echo(log: string, options?: Cli_EchoOptions): this {
+		const _escape = options?.escape ? '-e' : '';
+		const _toFile = options?.toFile ? `>${options.toFile.append ? '>' : ''} ${options.toFile.name}` : '';
+		const escapedLog = log.replace(/\\/g, '\\\\').replace(/\n/g, '\\\\n').replace(/\t/g, '\\\t');
+
+		this.cli.append(`echo ${_escape} "${escapedLog}" ${_toFile}`);
 		return this;
 	}
 
