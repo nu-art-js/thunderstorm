@@ -14,11 +14,14 @@ const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_SDK_VERSION_DEPENDENCY';
 const CONST_ProjectVersionKey = 'APP_VERSION';
 const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
+const CONST_TS_Config = `tsconfig.json`;
 
+const pathToProjectTS_Config = convertToFullPath(`./.config/${CONST_TS_Config}`);
+const pathToProjectEslint = convertToFullPath('./.config/.eslintrc.js');
 const projectPackages = mapProjectPackages(convertToFullPath('./.config/packages.json'));
 const projectManager = new ProjectManager(projectPackages);
-let interactiveCommando!: Commando;
 const runningWithInfra = true;
+const installGlobal = true;
 
 projectManager.registerPhase({
 	type: 'project',
@@ -64,7 +67,18 @@ projectManager.registerPhase({
 			}, packageJson.dependencies);
 
 		pkg.packageJson = packageJson;
-		return _fs.writeFile(`${pkg.path}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJson, null, 2), {encoding: 'utf-8'});
+
+		// write final package.json to package root folder
+		await _fs.writeFile(`${pkg.path}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJson, null, 2), {encoding: 'utf-8'});
+
+		// write final package.json to package output folder
+		if (pkg.type === 'sourceless')
+			return;
+
+		if (!fs.existsSync(pkg.output))
+			await _fs.mkdir(pkg.output);
+
+		await _fs.writeFile(`${pkg.output}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJson, null, 2), {encoding: 'utf-8'});
 	}
 });
 
@@ -81,20 +95,6 @@ projectManager.registerPhase({
 	name: 'install-nvm',
 	action: async () => {
 		await NVM.installRequiredVersionIfNeeded();
-		interactiveCommando = NVM.createCommando().debug();
-	}
-});
-
-projectManager.registerPhase({
-	type: 'project',
-	name: 'install-pnpm',
-	action: async () => {
-		const listOfLibs = projectPackages.packages
-			.filter(pkg => runningWithInfra || ['project-lib', 'app', 'sourceless'].includes(pkg.type))
-			.map(pkg => pkg.path.replace(`${process.cwd()}/`, '').replace(process.cwd(), '.'));
-
-		await PNPM.createWorkspace(listOfLibs);
-		await PNPM.install(interactiveCommando);
 	}
 });
 
@@ -114,21 +114,72 @@ projectManager.registerPhase({
 	type: 'project',
 	name: 'install',
 	action: async () => {
-		await PNPM.installPackages(interactiveCommando);
+		const listOfLibs = projectPackages.packages
+			.filter(pkg => runningWithInfra || ['project-lib', 'app', 'sourceless'].includes(pkg.type))
+			.map(pkg => pkg.path.replace(`${process.cwd()}/`, '').replace(process.cwd(), '.'));
+
+		if (installGlobal) {
+			await NVM.createCommando().append('npm i -g typescript@latest eslint@latest').execute();
+		}
+
+		await PNPM.createWorkspace(listOfLibs);
+		await PNPM.install(NVM.createCommando());
 	}
 });
 
 projectManager.registerPhase({
-	type: 'project',
-	name: 'debug',
-	action: async () => {
-		console.log(JSON.stringify(projectPackages, null, 2));
+	type: 'package',
+	name: 'clean',
+	action: async (pkg) => {
+		if (fs.existsSync(pkg.output))
+			await _fs.rm(pkg.output, {recursive: true, force: true});
 	}
 });
 
+projectManager.registerPhase({
+	type: 'package',
+	name: 'lint',
+	action: async (pkg) => {
+		if (pkg.type === 'sourceless')
+			return;
+
+		const folder = 'main';
+		const sourceFolder = `${pkg.path}/src/${folder}`;
+		return NVM.createCommando().append(`eslint --config ${pathToProjectEslint} --ext .ts --ext .tsx "${sourceFolder}"`).execute();
+	}
+});
+
+projectManager.registerPhase({
+	type: 'package',
+	name: 'compile',
+	action: async (pkg) => {
+		if (pkg.type === 'sourceless')
+			return;
+
+		const folder = 'main';
+		const sourceFolder = `${pkg.path}/src/${folder}`;
+		const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
+		if (!pkg.customTsConfig)
+			await _fs.copyFile(pathToProjectTS_Config, pathToLocalTsConfig);
+
+		return NVM.createCommando()
+			.append(`tsc -p "${pathToLocalTsConfig}" --rootDir "${sourceFolder}" --outDir "${pkg.output}"`).execute();
+	}
+});
+
+// projectManager.registerPhase({
+// 	type: 'project',
+// 	name: 'debug',
+// 	action: async () => {
+// 		console.log(JSON.stringify(projectPackages, null, 2));
+// 	}
+// });
+
 (async () => {
 	return projectManager.execute();
-	// return projectManager.runPhaseByKey('install-pnpm');
+	// await projectManager.runPhaseByKey('install-nvm');
+	// await projectManager.runPhaseByKey('install');
+	// return projectManager.runPhaseByKey('lint');
 	// return projectManager.runPhaseByKey('install-nvm');
 })()
 	.then(() => console.log('completed'))
