@@ -1,7 +1,18 @@
 import {ChildProcessWithoutNullStreams, ExecOptions, exec, spawn} from 'child_process';
 import {CreateMergedInstance} from './class-merger';
 import {Constructor} from '../../../../ts-common/src/main';
+import {CliError} from './CliError';
 
+
+const colors = {
+	red: '\x1b[31m',
+	green: '\x1b[32m',
+	yellow: '\x1b[33m',
+	blue: '\x1b[34m',
+	magenta: '\x1b[35m',
+	cyan: '\x1b[36m',
+	reset: '\x1b[0m' // Resets the color
+};
 
 export type CliBlock<Cli extends CliWrapper> = (cli: Cli) => void;
 export type CliOptions = ExecOptions & {
@@ -29,7 +40,8 @@ export class Cli {
 	private commands: string[] = [];
 	private _debug: boolean = false;
 	private cliOptions: Partial<CliOptions> = {shell: '/bin/bash'};
-	private shell?: ChildProcessWithoutNullStreams;
+
+	// private shell?: ChildProcessWithoutNullStreams;
 
 	/**
 	 * Constructs a CLI instance with given options.
@@ -65,50 +77,63 @@ export class Cli {
 	 * Executes the accumulated commands in the command list.
 	 * @returns {Promise<string>} A promise that resolves with the standard output of the executed command.
 	 */
-	execute = async (): Promise<{ stdout: string, stderr: string }> => new Promise((resolve, reject) => {
+	execute = async (): Promise<{ stdout: string, stderr: string }> => {
 		const command = this.commands.join(this.option.newlineDelimiter);
 		if (this._debug)
 			console.log(`executing: `, `"""\n${command}\n"""`);
 
-		if (this.shell)
-			this.shell.stdin.write(command);
+		// if (this.shell) {
+		// 	this.shell.stdin.write(command, 'utf-8', (err?: Error) => {
+		// 		if (err)
+		// 			console.error(err);
+		// 	});
+		// 	this.commands = [];
+		// 	return;
+		// }
 
-		exec(command, this.cliOptions, (error, stdout, stderr) => {
-			this.commands = [];
+		return new Promise((resolve, reject) => {
+			exec(command, this.cliOptions, (error, stdout, stderr) => {
+				this.commands = [];
 
-			if (error)
-				reject(error.message);
+				if (error) {
+					reject(new CliError(`executing:\n${command}\n`, stdout, stderr, error));
+				}
 
-			if (stderr)
-				reject(stderr);
+				if (stderr)
+					reject(stderr);
 
-			resolve({stdout, stderr});
-		});
-	});
-
-	interactive = () => {
-		this.shell = spawn('bash');
-
-		// Handle shell output (stdout)
-		this.shell.stdout.on('data', (data) => {
-			console.log(`stdout: ${data}`);
-		});
-
-		// Handle shell errors (stderr)
-		this.shell.on('data', (data) => {
-			console.error(`stderr: ${data}`);
-		});
-
-		// Handle shell exit
-		this.shell.on('close', (code) => {
-			console.log(`child process exited with code ${code}`);
+				resolve({stdout, stderr});
+			});
 		});
 	};
 
-	endInteractive = () => {
-		this.shell?.stdin.end();
-		delete this.shell;
-	};
+	// interactive = () => {
+	// 	this.shell = spawn('bash');
+	//
+	// 	// Handle shell output (stdout)
+	// 	this.shell.stdout.on('data', (data) => {
+	// 		console.log(`${colors.blue}${data}${colors.reset}`);
+	// 	});
+	//
+	// 	this.shell.stderr.on('data', (data) => {
+	// 		console.log(`${colors.red}${data}${colors.reset}`);
+	// 	});
+	//
+	// 	// Handle shell errors (stderr)
+	// 	this.shell.on('data', (data) => {
+	// 		console.log(`${colors.green}${data}${colors.reset}`);
+	// 	});
+	//
+	// 	// Handle shell exit
+	// 	this.shell.on('close', (code) => {
+	// 		console.log(`child process exited with code ${code}`);
+	// 	});
+	// };
+
+	// endInteractive = () => {
+	// 	this.shell?.stdin.end();
+	// 	delete this.shell;
+	// };
 
 	/**
 	 * Appends an empty line to the script for readability.
@@ -174,10 +199,10 @@ export class Commando
 			cli.append(command);
 			return commando;
 		};
-		commando.interactive = () => {
-			cli.interactive();
-			return commando;
-		};
+		// commando.interactive = () => {
+		// 	cli.interactive();
+		// 	return commando;
+		// };
 
 		return commando;
 	}
@@ -187,7 +212,7 @@ export class Commando
 	public debug = (debug?: boolean) => this;
 	append = (command?: string) => this;
 
-	interactive = () => this;
+	// interactive = () => this;
 	execute = async (): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});// placeholder
 
 	/**

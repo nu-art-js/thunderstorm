@@ -30,6 +30,7 @@ export type BasePackageDetails = {
 	type: 'infra-lib' | 'project-lib' | 'app' | 'sourceless';
 	output: string,
 	nodeModulesFolder?: string,
+	customTsConfig?: boolean,
 }
 
 export type PackageDetails = Required<BasePackageDetails> & {
