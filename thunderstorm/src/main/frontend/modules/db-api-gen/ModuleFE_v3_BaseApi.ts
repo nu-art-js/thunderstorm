@@ -22,10 +22,11 @@
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_v3_BaseDB} from './ModuleFE_v3_BaseDB';
-import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException, TypedApi} from '../../shared';
+import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException,  TypedApi} from '../../shared';
 import {DBApiFEConfigV3} from '../../core/db-api-gen/v3-db-def';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
+import {ModuleSyncType} from './types';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -50,7 +51,7 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 	private operations: TypedMap<Operation> = {};
 
 	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string) {
-		super(dbDef, defaultDispatcher);
+		super(dbDef, defaultDispatcher, ModuleSyncType.APISync);
 
 		const apiDef = DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
 

@@ -58,6 +58,7 @@ import {ApiCallerEventType, MultiApiEvent, SingleApiEvent} from '../../core/db-a
 import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction} from '../../core/IndexedDB';
+import {ModuleSyncType} from './types';
 
 
 export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config = any, _Config extends DBApiFEConfig<DBType, Ks> & Config = DBApiFEConfig<DBType, Ks> & Config>
@@ -69,13 +70,15 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	readonly dbDef: DBDef<DBType, Ks>;
 	private dataStatus: DataStatus;
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>;
+	public readonly syncType: ModuleSyncType;
 
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
 
-	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>) {
+	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>, syncType: ModuleSyncType) {
 		super();
 		this.defaultDispatcher = defaultDispatcher;
+		this.syncType = syncType;
 		const config = getModuleFEConfig(dbDef);
 		this.validator = config.validator;
 		this.setDefaultConfig(config as _Config);

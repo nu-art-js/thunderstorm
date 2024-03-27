@@ -78,6 +78,26 @@ export class CSVModuleV3_Class
 		return csv.parse({headers: true, trim: true})
 			.transform(transformer);
 	};
+
+	public fromString = async (str: string) => {
+		return new Promise<any[]>((resolve, reject) => {
+			const data: any[] = [];
+			csv.parseString(str, {headers: true})
+				.on('data', row => {
+					console.log('HERE - data');
+					data.push(row);
+				})
+				.on('end', () => {
+					console.log('HERE - end');
+					resolve(data);
+				})
+				.on('error', err => {
+					console.log('HERE - err');
+					reject(err);
+				});
+		});
+
+	};
 }
 
 export const CSVModuleV3 = new CSVModuleV3_Class();
