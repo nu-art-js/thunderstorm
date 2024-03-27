@@ -61,7 +61,7 @@ import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
 import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store';
 import {DBConfigV3} from '../../core/IndexedDBV4/types';
 import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
-
+import {ModuleSyncType} from './types';
 
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
 	extends Module<Config>
@@ -73,12 +73,14 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 	readonly dbDef: DBDef_V3<Proto>;
 	private dataStatus: DataStatus;
 	readonly defaultDispatcher: ThunderDispatcher<any, string>;
+	public readonly syncType: ModuleSyncType;
 
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
 
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>) {
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType) {
 		super();
+		this.syncType = syncType;
 		this.defaultDispatcher = defaultDispatcher;
 		const config = getModuleFEConfigV3(dbDef);
 		this.validator = config.validator;
@@ -208,7 +210,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 class IDBCache<Proto extends DBProto<any>>
 	extends Logger {
 
-	protected readonly storeWrapper: IndexedDB_Store<Proto>;
+	readonly storeWrapper: IndexedDB_Store<Proto>;
 	protected readonly lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
 
