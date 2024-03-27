@@ -51,15 +51,14 @@ import {
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {
-	ModuleFE_FirebaseListener,
-	RefListenerFE
-} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
 import {ApiDefCaller, BodyApi, DBModuleType, HttpMethod} from '../../../shared/types';
+import {ModuleFE_v3_BaseApi} from '../db-api-gen/ModuleFE_v3_BaseApi';
+import {ModuleSyncType} from '../db-api-gen/types';
 
 
 export interface PermissibleModulesUpdated {
@@ -122,10 +121,10 @@ export class ModuleFE_SyncManager_Class
 
 	// ######################### Smart Sync #########################
 
-	private getAllDBModules = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbKey);
+	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_v3_BaseApi<any>>((module) => module.syncType === ModuleSyncType.APISync);
 
 	private getLocalSyncData = (): SyncDbData[] => {
-		const existingDBModules = this.getAllDBModules();
+		const existingDBModules = this.getModulesToSync();
 		return existingDBModules.map(module => {
 			const lastSync = module.IDB.getLastSync();
 			return ({
