@@ -161,7 +161,7 @@ export class ModuleBE_AssetsDB_Class
 	}
 
 	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: FirestoreTransaction): Promise<DB_Asset> {
-		const dbAsset = await super.query.uniqueCustom({where});
+		const dbAsset = await this.query.uniqueCustom({where});
 		const signedUrl = (dbAsset.signedUrl?.validUntil || 0) > currentTimeMillis() ? dbAsset.signedUrl : undefined;
 		if (!signedUrl) {
 			const url = await ModuleBE_AssetsStorage.getReadSignedUrl(dbAsset);
