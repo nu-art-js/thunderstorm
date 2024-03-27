@@ -6,13 +6,39 @@
     },
     {
       "path": "./pack1",
+      "sources": [
+        "main",
+        "sw",
+        "test"
+      ],
       "type": "infra-lib",
       "output": "/dist"
     },
     {
       "path": "./pack2",
       "type": "project-lib",
-      "output": "pack2/../dist"
+      "output": "pack2/../dist",
+      "customTsConfig": true
+    },
+    {
+      "path": "./pack3",
+      "type": "project-lib",
+      "output": "dist"
+    },
+    {
+      "path": "./pack4",
+      "type": "project-lib",
+      "output": "./dist"
+    },
+    {
+      "path": "./pack5",
+      "type": "project-lib",
+      "output": "../pack5/dist"
+    },
+    {
+      "path": "./pack6",
+      "type": "app",
+      "output": "dist"
     }
   ],
   "params": {
