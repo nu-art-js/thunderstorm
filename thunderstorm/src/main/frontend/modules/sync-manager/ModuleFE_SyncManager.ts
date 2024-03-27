@@ -58,7 +58,7 @@ import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitM
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
 import {ApiDefCaller, BodyApi, DBModuleType, HttpMethod} from '../../../shared/types';
 import {ModuleFE_v3_BaseApi} from '../db-api-gen/ModuleFE_v3_BaseApi';
-import {ModuleSyncType} from '../db-api-gen/ModuleFE_v3_BaseDB';
+import {ModuleSyncType} from '../db-api-gen/types';
 
 
 export interface PermissibleModulesUpdated {
