@@ -67,7 +67,7 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 		};
 
 		const props = this.props;
-		const SelectionRenderer = props.selectionRenderer;
+		const SelectionRenderer = props.selectionRenderer as React.FC<MultiSelect_Selector<Binder['InnerType']>>;
 		const direction = this.props.itemsDirection ?? 'horizontal';
 
 		const Wrapper = direction === 'horizontal' ? LL_H_C : LL_V_L;
@@ -88,12 +88,12 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 				</LL_H_C>;
 			})}
 
-			<SelectionRenderer
-				className={'ts-multi-select__selector'}
-				onSelected={addInnerItem}
-				existingItems={existingItems}
-				queryFilter={this.props.itemFilter}
-			/>
+			{SelectionRenderer({
+				className: 'ts-multi-select__selector',
+				onSelected: addInnerItem,
+				existingItems: existingItems,
+				queryFilter: this.props.itemFilter
+			})}
 		</Wrapper>;
 	}
 }
