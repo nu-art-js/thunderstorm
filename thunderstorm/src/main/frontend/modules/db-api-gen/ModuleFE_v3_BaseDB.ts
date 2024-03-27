@@ -61,13 +61,7 @@ import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
 import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store';
 import {DBConfigV3} from '../../core/IndexedDBV4/types';
 import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
-
-export enum ModuleSyncType {
-	NoSync,
-	CSVSync,
-	APISync
-}
-
+import {ModuleSyncType} from './types';
 
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
 	extends Module<Config>
