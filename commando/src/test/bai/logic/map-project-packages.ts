@@ -18,6 +18,7 @@ export function mapProjectPackages(pathToPackages: string): ProjectPackages {
 				path: absolutePathToPackageRoot,
 				output: absolutePathToOutputFolder,
 				nodeModulesFolder: absolutePathToNodeModulesFolder,
+				customTsConfig: _package.customTsConfig ?? false
 			});
 		})
 		.map(_package => {
