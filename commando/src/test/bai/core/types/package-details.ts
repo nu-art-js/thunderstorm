@@ -8,6 +8,7 @@ export const PackageType_FirebaseHostingApp = 'firebase-hosting-app' as const;
 export const PackageType_FirebaseFunctionsApp = 'firebase-functions-app' as const;
 export const PackageType_Sourceless = 'sourceless' as const;
 export const PackageTypes = [PackageType_InfraLib, PackageType_ProjectLib, PackageType_FirebaseHostingApp, PackageType_FirebaseFunctionsApp, PackageType_Sourceless] as const;
+export const PackageTypesWithOutput = [PackageType_InfraLib, PackageType_ProjectLib, PackageType_FirebaseHostingApp, PackageType_FirebaseFunctionsApp];
 export type PackageType = typeof PackageTypes[number];
 
 export type PackageJson = JSONVersion & {
@@ -86,5 +87,10 @@ export type BasePackage =
 
 export type RuntimePackage = Required<BasePackage> & {
 	packageJsonTemplate: PackageJson
-	packageJson: PackageJson
+	packageJson?: PackageJson
 };
+
+export type RuntimePackage_WithOutput = Required<Exclude<BasePackage, Package_Sourceless>> & {
+	packageJsonTemplate: PackageJson
+	packageJson?: PackageJson
+}
