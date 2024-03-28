@@ -44,7 +44,7 @@ export class ModuleBE_UpgradeCollection_Class
 		const toUpgrade = body.collectionsToUpgrade;
 		const moduleToUpgrade = RuntimeModules()
 			.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbKey && toUpgrade.includes(module.dbModule?.dbDef?.dbKey));
-		await Promise_all_sequentially(moduleToUpgrade.map(module => module.dbModule.upgradeCollection));
+		await Promise_all_sequentially(moduleToUpgrade.map(module => () => module.dbModule.upgradeCollection(body.force)));
 	};
 }
 
