@@ -1,5 +1,5 @@
-import {TypedMap} from './types';
 import * as path from 'path';
+import {TypedMap} from './types';
 
 
 const CONST_PrefixRelativeToPWD = './';

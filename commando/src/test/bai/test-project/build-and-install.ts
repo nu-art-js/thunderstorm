@@ -1,13 +1,12 @@
 import {mapProjectPackages} from '../logic/map-project-packages';
 import {_keys, convertToFullPath} from '../core/tools';
 import {ProjectManager} from '../logic/ProjectManager';
-import {JSONVersion, PackageJson} from '../core/types';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {Commando} from '../../../main/core/cli';
 import {PNPM} from '../../../main/cli/pnpm';
 import {NVM} from '../../../main/cli/nvm';
 import {CONST_PackageJSON} from '../core/consts';
+import {JSONVersion, PackageJson} from '../core/types';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
