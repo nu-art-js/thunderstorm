@@ -46,9 +46,12 @@ export class ATS_CollectionUpgrades
 		this.forceUpdate();
 	}
 
-	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<DB_Object, any>) => {
+	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<DB_Object, any>, e: React.MouseEvent) => {
 		await genericNotificationAction(async () => {
-			await ModuleFE_UpgradeCollection.vv1.upgrade({collectionsToUpgrade: [module.dbDef.dbKey]}).setTimeout(5 * Minute).executeSync();
+			await ModuleFE_UpgradeCollection.vv1.upgrade({
+				collectionsToUpgrade: [module.dbDef.dbKey],
+				force: e.metaKey
+			}).setTimeout(5 * Minute).executeSync();
 		}, `Upgrading ${collectionName}`);
 	};
 
@@ -64,13 +67,13 @@ export class ATS_CollectionUpgrades
 				key={'upgrade-all-test'}
 				onClick={() => this.upgradeAll()}
 			>Upgrade All</TS_BusyButton>
-			{TS_AppTools.renderPageHeader('Collection Upgrades')}
+			{TS_AppTools.renderPageHeader('Collection Upgrades - To force upgrade click + ⌘/ctrl')}
 			<LL_H_C className={'buttons-container'}>
 				{(this.state.upgradableModules || []).map(module => {
 					const name = module.getCollectionName().replace(/-/g, ' ');
 					return <TS_BusyButton
 						key={name + module.cache.all().length}
-						onClick={() => this.upgradeCollection(name, module)}
+						onClick={(e) => this.upgradeCollection(name, module, e)}
 					>{name} ({module.cache.all().length})</TS_BusyButton>;
 				})}
 			</LL_H_C>
