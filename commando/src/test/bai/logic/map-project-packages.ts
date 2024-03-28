@@ -44,7 +44,7 @@ function getRuntimePackageBaseDetails_Firebase(basePackage: Package_FirebaseFunc
 		output: convertToFullPath(basePackage.output, packageRoot),
 		customTsConfig: basePackage.customTsConfig ?? false,
 		sources: basePackage.sources ?? [],
-		config: basePackage.config,
+		config: basePackage.config!,
 	};
 }
 

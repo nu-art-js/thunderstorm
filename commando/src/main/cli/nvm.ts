@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import * as path from 'path';
 import {filterDuplicates, removeAnsiCodes} from '../../test/bai/core/tools';
-import {Constructor} from '../../test/bai/core/types/types';
+import {Constructor} from '../../test/bai/core/types';
 
 
 const CONST__FILE_NVMRC = '.nvmrc';
@@ -44,8 +44,8 @@ export class Cli_NVM {
 			.append(`  curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v${this._expectedVersion}/install.sh" | bash`)
 			.execute();
 
-		const rcFile = path.resolve(process.env['HOME'], '.bashrc');
-		let rcFileContent: string;
+		const rcFile = path.resolve(process.env['HOME']!, '.bashrc');
+		let rcFileContent: string = '';
 		if (fs.existsSync(rcFile)) {
 			rcFileContent = await _fs.readFile(rcFile, {encoding: 'utf8'});
 			return rcFileContent.includes('NVM_DIR');
@@ -62,7 +62,7 @@ export class Cli_NVM {
 		return this;
 	};
 
-	isInstalled = () => !!process.env[this._homeEnvVar] && fs.existsSync(process.env[this._homeEnvVar]);
+	isInstalled = () => !!process.env[this._homeEnvVar] && fs.existsSync(process.env[this._homeEnvVar]!);
 
 	getRequiredNode_Version = async () => {
 		const absolutePathToNvmrcFile = path.resolve(CONST__FILE_NVMRC);
@@ -108,6 +108,9 @@ export class Cli_NVM {
 	uninstall = async () => {
 		console.log('Uninstalling PNPM');
 		const absolutePathToNVM_Home = process.env[this._homeEnvVar];
+		if (!absolutePathToNVM_Home)
+			return;
+
 		fs.rmSync(absolutePathToNVM_Home, {recursive: true, force: true});
 	};
 
