@@ -1,10 +1,74 @@
-import {BAI_Packages, PackageDetails, PackageJson, ProjectPackages} from '../core/types';
 import {CONST_PackageJSONTemplate} from '../core/consts';
 import {existsSync} from 'fs';
 import {arrayToMap, convertToFullPath} from '../core/tools';
+import {
+	BAI_Packages,
+	BasePackage, Package_FirebaseFunctionsApp, Package_FirebaseHostingApp,
+	Package_InfraLib,
+	Package_ProjectLib,
+	Package_Sourceless,
+	PackageJson, PackageType_FirebaseFunctionsApp, PackageType_FirebaseHostingApp,
+	PackageType_InfraLib,
+	PackageType_ProjectLib,
+	PackageType_Sourceless,
+	ProjectConfig,
+	RuntimePackage
+} from '../core/types';
+
+function getRuntimePackageBaseDetails_Sourceless(basePackage: Package_Sourceless): Required<Package_Sourceless> {
+	return {
+		path: convertToFullPath(basePackage.path),
+		type: basePackage.type,
+	};
+}
+
+function getRuntimePackageBaseDetails_Lib(basePackage: Package_InfraLib | Package_ProjectLib): Required<Package_InfraLib | Package_ProjectLib> {
+	const packageRoot = convertToFullPath(basePackage.path);
+	return {
+		path: packageRoot,
+		type: basePackage.type,
+		output: convertToFullPath(basePackage.output, packageRoot),
+		customTsConfig: basePackage.customTsConfig ?? false,
+		sources: basePackage.sources ?? []
+	};
+}
+
+function getRuntimePackageBaseDetails_Firebase(basePackage: Package_FirebaseFunctionsApp | Package_FirebaseHostingApp): Required<Package_FirebaseFunctionsApp | Package_FirebaseHostingApp> {
+	const packageRoot = convertToFullPath(basePackage.path);
+	return {
+		path: packageRoot,
+		type: basePackage.type,
+		output: convertToFullPath(basePackage.output, packageRoot),
+		customTsConfig: basePackage.customTsConfig ?? false,
+		sources: basePackage.sources ?? []
+	};
+}
 
 
-export function mapProjectPackages(pathToPackages: string): ProjectPackages {
+function getRuntimePackageBaseDetails(basePackage: BasePackage): Required<BasePackage> {
+	switch (basePackage.type) {
+		case PackageType_Sourceless:
+			return getRuntimePackageBaseDetails_Sourceless(basePackage);
+		case PackageType_ProjectLib:
+		case PackageType_InfraLib:
+			return getRuntimePackageBaseDetails_Lib(basePackage);
+
+		case PackageType_FirebaseFunctionsApp:
+		case PackageType_FirebaseHostingApp:
+
+	}
+}
+
+export function convertToRuntimePackage(basePackage: BasePackage): RuntimePackage {
+	return {
+		...getRuntimePackageBaseDetails(basePackage),
+		packageJson: {},
+		packageJsonTemplate: {}
+	};
+}
+
+
+export function mapProjectPackages(pathToPackages: string): ProjectConfig {
 	const loadedPackages = require(pathToPackages) as BAI_Packages;
 	const packages = loadedPackages.packages
 		.map(_package => {

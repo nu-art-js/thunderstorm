@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import * as path from 'path';
 import {filterDuplicates, removeAnsiCodes} from '../../test/bai/core/tools';
-import {Constructor} from '../../test/bai/core/types';
+import {Constructor} from '../../test/bai/core/types/types';
 
 
 const CONST__FILE_NVMRC = '.nvmrc';

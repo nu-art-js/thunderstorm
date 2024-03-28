@@ -1,4 +1,4 @@
-import {PackageDetails, ProjectPackages} from '../core/types';
+import {PackageDetails, ProjectPackages} from '../core/types/types';
 import {filterInstances} from '../core/tools';
 import {CliError} from '../../../main/core/CliError';
 
