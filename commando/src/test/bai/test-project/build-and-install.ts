@@ -1,13 +1,13 @@
-import {mapProjectPackages} from '../logic/map-project-packages';
+import {convertPackageJSONTemplateToPackJSON, mapProjectPackages} from '../logic/map-project-packages';
 import {_keys, convertToFullPath} from '../core/tools';
-import {ProjectManager} from '../logic/ProjectManager';
+import {PackageBuildPhaseType_PackageWithOutput, ProjectManager} from '../logic/ProjectManager';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {PNPM} from '../../../main/cli/pnpm';
 import {NVM} from '../../../main/cli/nvm';
 import {CONST_PackageJSON} from '../core/consts';
 import {JSONVersion, PackageJson} from '../core/types';
-
+import {default as projectConfig} from './.config/project-config';
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_SDK_VERSION_DEPENDENCY';
@@ -17,7 +17,7 @@ const CONST_TS_Config = `tsconfig.json`;
 
 const pathToProjectTS_Config = convertToFullPath(`./.config/${CONST_TS_Config}`);
 const pathToProjectEslint = convertToFullPath('./.config/.eslintrc.js');
-const projectPackages = mapProjectPackages(convertToFullPath('./.config/packages.json'));
+const projectPackages = mapProjectPackages(projectConfig);
 const projectManager = new ProjectManager(projectPackages);
 const runningWithInfra = true;
 const installGlobal = true;
@@ -43,29 +43,8 @@ projectManager.registerPhase({
 	type: 'package',
 	name: 'resolve-template',
 	action: async (pkg) => {
-		let packageJsonTemplateAsString = JSON.stringify(pkg.packageJsonTemplate);
-		let match = null;
-		do {
-			match = packageJsonTemplateAsString.match(/\$([A-Z_]+)/);
-			if (match?.[0])
-				packageJsonTemplateAsString = packageJsonTemplateAsString.replace(new RegExp(`\\$${match[1]}`, 'g'), projectPackages.params[match[1]]);
-		} while (!!match);
 
-		const packageJson = JSON.parse(packageJsonTemplateAsString) as PackageJson;
-		if (packageJson.dependencies)
-			_keys(packageJson.dependencies).reduce((dependencies, dependencyKey) => {
-				if (dependencies[dependencyKey] === '$$') {
-					const packageDetails = projectPackages.packageMap[dependencies[dependencyKey]];
-					if (!packageDetails)
-						throw new Error('$$ can only be used with inner project dependency');
-
-					dependencies[dependencyKey] = packageDetails.packageJsonTemplate.version;
-				}
-
-				return dependencies;
-			}, packageJson.dependencies);
-
-		pkg.packageJson = packageJson;
+		pkg.packageJson = convertPackageJSONTemplateToPackJSON(pkg.packageJsonTemplate, projectConfig);
 
 		// write final package.json to package root folder
 		await _fs.writeFile(`${pkg.path}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJson, null, 2), {encoding: 'utf-8'});
@@ -98,14 +77,14 @@ projectManager.registerPhase({
 });
 
 projectManager.registerPhase({
-	type: 'package',
+	type: PackageBuildPhaseType_PackageWithOutput,
 	name: 'package-purge',
 	action: async (pkg) => {
 		if (fs.existsSync(pkg.output))
 			await _fs.rm(pkg.output, {recursive: true, force: true});
 
-		if (fs.existsSync(pkg.nodeModulesFolder))
-			await _fs.rm(pkg.nodeModulesFolder, {recursive: true, force: true});
+		// if (fs.existsSync(pkg.nodeModulesFolder))
+		// 	await _fs.rm(pkg.nodeModulesFolder, {recursive: true, force: true});
 	}
 });
 
@@ -127,7 +106,7 @@ projectManager.registerPhase({
 });
 
 projectManager.registerPhase({
-	type: 'package',
+	type: PackageBuildPhaseType_PackageWithOutput,
 	name: 'clean',
 	action: async (pkg) => {
 		if (fs.existsSync(pkg.output))
