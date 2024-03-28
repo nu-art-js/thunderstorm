@@ -48,12 +48,16 @@ export class ProjectManager {
 	}
 
 	async runPhaseByKey(phaseKey: string) {
-		return this.runPhase(this.phases.find(phase => phase.name === phaseKey));
+		const phase = this.phases.find(phase => phase.name === phaseKey);
+		if (!phase)
+			return;
+
+		return this.runPhase(phase);
 	}
 
 	private getPackagesForPhaseType = (phaseType: PackageBuildPhaseType) => {
 		const allRuntimePackages: RuntimePackage[] = [];
-		this.config.packagesDependency.forEach(dependency => dependency.forEach(_package => allRuntimePackages.push(_package)));
+		this.config.packagesDependency?.forEach(dependency => dependency.forEach(_package => allRuntimePackages.push(_package)));
 		switch (phaseType) {
 			case PackageBuildPhaseType_Project:
 				return [];
@@ -80,38 +84,36 @@ export class ProjectManager {
 
 		const relevantPackages = this.getPackagesForPhaseType(phase.type);
 
-		if (phase.type === 'package') {
-			for (const packages of this.config.packagesDependency) {
-				const packagesToCheck = packages.filter(pkg => relevantPackages.includes(pkg));
-				const errors = await Promise.all(packagesToCheck.map(async pkg => {
-					try {
-						await phase.action(pkg);
-					} catch (e: any) {
-						return e as CliError;
-					}
-				}));
-
-				if (filterInstances(errors).length > 0) {
-					errors.forEach((error, index) => {
-						if (!error)
-							return;
-
-						console.log(`\nError in package: ${packages[index].packageJson.name}`);
-
-						if (error.stdout?.length)
-							console.log(error.stdout);
-						if (error.stderr?.length)
-							console.error(error.stderr);
-						else if (error.message?.length)
-							console.error(error.message);
-					});
-					throw new Error(`${filterInstances(errors).length} Errors in phase "${phase.name}"`);
+		for (const packages of this.config.packagesDependency ?? []) {
+			const packagesToCheck = packages.filter(pkg => relevantPackages.includes(pkg)) as RuntimePackage_WithOutput[];
+			const errors = await Promise.all(packagesToCheck.map(async pkg => {
+				try {
+					await phase.action(pkg);
+				} catch (e: any) {
+					return e as CliError;
 				}
-			}
-			return;
-		}
+			}));
 
-		throw new Error(`Unknown phase type '${JSON.stringify(phase)}'`);
+			if (filterInstances(errors).length > 0) {
+				errors.forEach((error, index) => {
+					if (!error)
+						return;
+
+					console.log(`\nError in package: ${packages[index].packageJson?.name}`);
+
+					if (error.stdout?.length)
+						console.log(error.stdout);
+					if (error.stderr?.length)
+						console.error(error.stderr);
+					else if (error.message?.length)
+						console.error(error.message);
+				});
+				throw new Error(`${filterInstances(errors).length} Errors in phase "${phase.name}"`);
+			}
+		}
+		return;
+
+		// throw new Error(`Unknown phase type '${JSON.stringify(phase)}'`);
 
 	}
 }
