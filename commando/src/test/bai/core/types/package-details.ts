@@ -2,6 +2,7 @@ import {JSONVersion, StringMap} from './core';
 import {FirebaseRC} from './firebaserc';
 import {FirebaseJSON} from './firebasejson';
 
+
 export const PackageType_InfraLib = 'infra-lib' as const;
 export const PackageType_ProjectLib = 'project-lib' as const;
 export const PackageType_FirebaseHostingApp = 'firebase-hosting-app' as const;
@@ -39,10 +40,8 @@ export type Package_FirebaseHostingApp = {
 	customTsConfig?: boolean;
 	sources?: string[];
 	config?: {
-		rc?: {
-			[env: string]: FirebaseRC | string;
-		};
-		json?: FirebaseJSON;
+		rc?: { local: string } & { [env: string]: FirebaseRC };
+		json?: { [env: string]: FirebaseJSON };
 		projectId?: string;
 	};
 };
@@ -54,10 +53,8 @@ export type Package_FirebaseFunctionsApp = {
 	customTsConfig?: boolean;
 	sources?: string[];
 	config?: {
-		rc?: {
-			[env: string]: FirebaseRC | string;
-		};
-		json?: FirebaseJSON;
+		rc?: { [env: string]: FirebaseRC };
+		json?: { [env: string]: FirebaseJSON };
 		projectId?: string;
 	};
 };

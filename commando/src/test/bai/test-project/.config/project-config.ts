@@ -7,6 +7,70 @@ import {
 	ProjectConfig
 } from '../../core/types';
 
+
+const project1firebaseRCFile = {
+	dev: {
+		projects: {
+			default: 'quai-md-dev',
+		}
+	},
+	staging: {
+		projects: {
+			default: 'quai-md-staging',
+		}
+	},
+	prod: {
+		projects: {
+			default: 'quai-md',
+		}
+	},
+};
+const realEnvHosting = {
+	public: 'dist',
+	rewrites: [
+		{
+			'source': '**',
+			'destination': '/index.html'
+		}
+	]
+};
+const project1FirebaseHostingJSON = {
+	dev: {
+		hosting: realEnvHosting
+	},
+	staging: {
+		hosting: realEnvHosting
+	},
+	prod: {
+		hosting: realEnvHosting
+	}
+};
+const realEnvFunction = {
+	functions: {
+		source: 'app-backend/dist',
+		ignore: [
+			'src',
+			'.config',
+			'dist-test',
+			'deploy.js',
+			'node_modules',
+			'firebase-export-*',
+			'launch-server.sh',
+			'ports-release.sh',
+			'ui-debug.log',
+			'database-debug.log',
+			'firestore-debug.log',
+			'firebase-debug.log'
+		]
+	}
+};
+
+const project1FirebaseFunctionJSON = {
+	dev: realEnvFunction,
+	staging: realEnvFunction,
+	prod: realEnvFunction
+};
+
 const config: ProjectConfig = {
 	packages: [
 		{
@@ -40,48 +104,8 @@ const config: ProjectConfig = {
 			path: './pack5',
 			output: '../pack5/dist',
 			config: {
-				rc: {
-					dev: {
-						projects: {
-							default: 'quai-md-dev',
-						},
-						targets: {
-							'quai-md-dev': {
-								hosting: {
-									'advisor': ['quai-advisor-dev'],
-									'knowledge-manager': ['quai-md-dev'],
-								}
-							}
-						}
-					},
-					staging: 'quai-md-staging',
-					prod: 'quai-md'
-				},
-				json: {
-					hosting: [
-						{
-							public: 'app-frontend/dist',
-							target: 'knowledge-manager',
-							rewrites: [
-								{
-									source: '**',
-									destination: '/index.html',
-								}
-							]
-						},
-						{
-							public: 'app-advisor/dist',
-							target: 'advisor',
-							rewrites: [
-								{
-									source: '**',
-									destination: 'index.html',
-								}
-							],
-							headers: [],
-						}
-					]
-				}
+				rc: project1firebaseRCFile,
+				json: project1FirebaseHostingJSON
 			}
 		},
 		{
@@ -89,32 +113,9 @@ const config: ProjectConfig = {
 			path: './pack6',
 			output: 'dist',
 			config: {
-				rc: {
-					dev: {
-						projects: {
-							default: 'quai-md-dev',
-						}
-					},
-					staging: 'quai-md-staging',
-					prod: 'quai-md',
-				},
+				rc: project1firebaseRCFile,
 				projectId: '',
-				json: {
-					ignore: [
-						'src',
-						'.config',
-						'dist-test',
-						'deploy.js',
-						'node_modules',
-						'firebase-export-*',
-						'launch-server.sh',
-						'ports-release.sh',
-						'ui-debug.log',
-						'database-debug.log',
-						'firestore-debug.log',
-						'firebase-debug.log'
-					]
-				}
+				json: project1FirebaseFunctionJSON
 			}
 		}
 	],

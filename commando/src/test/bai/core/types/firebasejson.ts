@@ -3,14 +3,20 @@ type FirebaseJSON_Hosting_Rewrites = {
 	destination: string;
 }
 
-type FirebaseJSON_Hosting = {
+type FirebaseJSON_HostingSingle = {
 	public: string;
-	target: string;
 	headers?: string[];
 	rewrites: FirebaseJSON_Hosting_Rewrites[]
 };
 
+type FirebaseJSON_HostingMulti = FirebaseJSON_HostingSingle & {
+	target: string;
+};
+
 export type FirebaseJSON = {
-	hosting?: FirebaseJSON_Hosting[];
-	ignore?: string[];
+	hosting?: FirebaseJSON_HostingMulti[] | FirebaseJSON_HostingSingle;
+	functions?: {
+		source: string,
+		ignore?: string[]
+	};
 };

@@ -5,9 +5,10 @@ import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {PNPM} from '../../../main/cli/pnpm';
 import {NVM} from '../../../main/cli/nvm';
-import {CONST_PackageJSON} from '../core/consts';
-import {JSONVersion, PackageJson} from '../core/types';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../core/consts';
+import {JSONVersion, Package_FirebaseHostingApp, PackageJson} from '../core/types';
 import {default as projectConfig} from './.config/project-config';
+
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_SDK_VERSION_DEPENDENCY';
@@ -21,6 +22,7 @@ const projectPackages = mapProjectPackages(projectConfig);
 const projectManager = new ProjectManager(projectPackages);
 const runningWithInfra = true;
 const installGlobal = true;
+const buildForEnv = 'dev';
 
 projectManager.registerPhase({
 	type: 'project',
@@ -57,6 +59,19 @@ projectManager.registerPhase({
 			await _fs.mkdir(pkg.output);
 
 		await _fs.writeFile(`${pkg.output}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJson, null, 2), {encoding: 'utf-8'});
+	}
+});
+
+projectManager.registerPhase({
+	type: 'package',
+	name: 'resolve-env',
+	action: async (pkg) => {
+		if (!['firebase-functions-app', 'firebase-hosting-app'].includes(pkg.type))
+			return;
+
+		const firebasePkg = pkg as Package_FirebaseHostingApp;
+		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(firebasePkg.config.rc[buildForEnv], null, 2), {encoding: 'utf-8'});
+		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(firebasePkg.config.json[buildForEnv], null, 2), {encoding: 'utf-8'});
 	}
 });
 
