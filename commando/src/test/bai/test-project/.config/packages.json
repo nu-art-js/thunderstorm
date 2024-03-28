@@ -6,13 +6,115 @@
     },
     {
       "path": "./pack1",
+      "sources": [
+        "main",
+        "sw",
+        "test"
+      ],
       "type": "infra-lib",
       "output": "/dist"
     },
     {
       "path": "./pack2",
       "type": "project-lib",
-      "output": "pack2/../dist"
+      "output": "pack2/../dist",
+      "customTsConfig": true
+    },
+    {
+      "path": "./pack3",
+      "type": "project-lib",
+      "output": "dist"
+    },
+    {
+      "path": "./pack4",
+      "type": "project-lib",
+      "output": "./dist"
+    },
+    {
+      "path": "./pack5",
+      "type": "firebase-hosting-app",
+      "config": {
+        "rc": {
+          "dev": {
+            "projects": {
+              "default": "quai-md-dev"
+            },
+            "targets": {
+              "quai-md-dev": {
+                "hosting": {
+                  "advisor": [
+                    "quai-advisor-dev"
+                  ],
+                  "knowledge-manager": [
+                    "quai-md-dev"
+                  ]
+                }
+              }
+            }
+          },
+          "staging": "quai-md-staging",
+          "prod": "quai-md"
+        },
+        "json": {
+          "hosting": [
+            {
+              "public": "app-frontend/dist",
+              "target": "knowledge-manager",
+              "rewrites": [
+                {
+                  "source": "**",
+                  "destination": "/index.html"
+                }
+              ]
+            },
+            {
+              "public": "app-advisor/dist",
+              "target": "advisor",
+              "rewrites": [
+                {
+                  "source": "**",
+                  "destination": "/index.html"
+                }
+              ],
+              "headers": []
+            }
+          ]
+        }
+      },
+      "output": "../pack5/dist"
+    },
+    {
+      "path": "./pack6",
+      "type": "firebase-functions-app",
+      "config": {
+        "rc": {
+          "dev": {
+            "projects": {
+              "default": "quai-md-dev"
+            }
+          },
+          "staging": "quai-md-staging",
+          "prod": "quai-md"
+        },
+        "projectId": "",
+        "json": {
+          "ignore": [
+            "src",
+            ".config",
+            "dist-test",
+            "deploy.js",
+            "node_modules",
+            "firebase-export-*",
+            "launch-server.sh",
+            "ports-release.sh",
+            "ui-debug.log",
+            "database-debug.log",
+            "firestore-debug.log",
+            "firebase-debug.log"
+          ]
+        }
+      },
+      "output": "dist"
     }
   ],
   "params": {

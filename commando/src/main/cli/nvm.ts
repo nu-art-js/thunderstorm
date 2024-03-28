@@ -93,7 +93,7 @@ export class Cli_NVM {
 				.map(line => line.match(/v(\d+\.\d+\.\d+)/)?.[1]));
 		}
 
-		return extractInstalledVersions((await this.createInternalCommando()
+		return extractInstalledVersions((await this.createCommando()
 			.append('nvm ls')
 			.execute()).stdout);
 	};
@@ -112,19 +112,19 @@ export class Cli_NVM {
 	};
 
 	private installVersion = async () => {
-		return this.createInternalCommando().append(`nvm install ${await this.getRequiredNode_Version()}`).execute();
+		return this.createCommando().append(`nvm install ${await this.getRequiredNode_Version()}`).execute();
 	};
 
-	createCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
-		return this.createInternalCommando(...plugins)
-			.interactive()
-			.append('export NVM_DIR="$HOME/.nvm"')
-			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
-			.append('[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
-			.append('nvm use');
-	}
+	// createInteractiveCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
+	// 	return this.createCommando(...plugins)
+	// 		.interactive()
+	// 		.append('export NVM_DIR="$HOME/.nvm"')
+	// 		.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
+	// 		.append('[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
+	// 		.append('nvm use');
+	// }
 
-	private createInternalCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
+	createCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
 		return Commando.create(...plugins)
 			.append('export NVM_DIR="$HOME/.nvm"')
 			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
