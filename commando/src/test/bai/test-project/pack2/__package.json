@@ -1,6 +1,6 @@
 {
   "name": "test-package-2",
-  "version": "$APP_VERSION_DEPENDENCY",
+  "version": "$APP_VERSION",
   "description": "test package 2",
   "publishConfig": {
     "directory": "dist",

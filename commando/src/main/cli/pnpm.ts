@@ -63,6 +63,8 @@ export class Cli_PNPM {
 	uninstall = async () => {
 		console.log('Uninstalling PNPM');
 		const absolutePathToPNPM_Home = process.env[this._homeEnvVar];
+		if (!absolutePathToPNPM_Home)
+			return;
 		return fs.rm(absolutePathToPNPM_Home, {recursive: true, force: true});
 	};
 

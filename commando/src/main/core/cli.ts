@@ -210,7 +210,7 @@ export class Commando
 	setShell = (shell: string) => this;
 	setOptions = (options: ExecOptions) => this;
 	public debug = (debug?: boolean) => this;
-	append = (command?: string) => this;
+	append = (command: string) => this;
 
 	// interactive = () => this;
 	execute = async (): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});// placeholder
@@ -224,7 +224,7 @@ export class Commando
 	 * @returns {Cli} - The script execution output.
 	 */
 	executeFile = async (filePath: string, interpreter?: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
-	executeRemoteFile = async (pathToFile: string, interpreter?: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
+	executeRemoteFile = async (pathToFile: string, interpreter: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
 
 	private constructor() {
 		super();
