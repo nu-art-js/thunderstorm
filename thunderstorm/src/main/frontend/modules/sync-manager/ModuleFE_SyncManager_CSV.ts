@@ -40,7 +40,8 @@ export class ModuleFE_SyncManager_CSV_Class
 						const items = itemsToSync.filter(item => item.collectionName === moduleKey);
 						const module = modules[moduleKey];
 						this.logInfo(`Syncing ${items.length} items to ${moduleKey}`);
-						await module.IDB.syncIndexDb(items);
+						await module.IDB.syncIndexDb(items.map(item => item.document));
+						await module.cache.load();
 						module.setDataStatus(DataStatus.ContainsData);
 					}
 					const end = performance.now();
@@ -53,10 +54,13 @@ export class ModuleFE_SyncManager_CSV_Class
 		});
 	};
 
-	readyAllModules = () => {
+	readyAllModules = async () => {
 		const modules = this.getModulesToSync();
-		this.logInfo('Readying modules', modules);
-		modules.forEach(module => module.setDataStatus(DataStatus.ContainsData));
+		this.logDebug('Readying modules', modules);
+		for (const module of modules) {
+			await module.cache.load();
+			module.setDataStatus(DataStatus.ContainsData);
+		}
 	};
 
 	syncFromBackupStream = async (stream: Readable) => {
