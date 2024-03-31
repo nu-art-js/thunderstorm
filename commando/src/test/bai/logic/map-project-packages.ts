@@ -1,47 +1,120 @@
-import {BAI_Packages, PackageDetails, PackageJson, ProjectPackages} from '../core/types';
 import {CONST_PackageJSONTemplate} from '../core/consts';
-import {existsSync} from 'fs';
+import {existsSync, readFileSync} from 'fs';
 import {arrayToMap, convertToFullPath} from '../core/tools';
+import {
+	BasePackage,
+	Package_FirebaseFunctionsApp,
+	Package_FirebaseHostingApp,
+	Package_InfraLib,
+	Package_ProjectLib,
+	Package_Sourceless,
+	PackageJson,
+	PackageType_FirebaseFunctionsApp,
+	PackageType_FirebaseHostingApp,
+	PackageType_InfraLib,
+	PackageType_ProjectLib,
+	PackageType_Sourceless,
+	ProjectConfig,
+	RuntimePackage
+} from '../core/types';
 
+function getRuntimePackageBaseDetails_Sourceless(basePackage: Package_Sourceless): Required<Package_Sourceless> {
+	return {
+		path: convertToFullPath(basePackage.path),
+		type: basePackage.type,
+	};
+}
 
-export function mapProjectPackages(pathToPackages: string): ProjectPackages {
-	const loadedPackages = require(pathToPackages) as BAI_Packages;
-	const packages = loadedPackages.packages
-		.map(_package => {
-			const absolutePathToPackageRoot = convertToFullPath(_package.path);
-			let absolutePathToOutputFolder: string;
-			if (_package.output)
-				absolutePathToOutputFolder = convertToFullPath(_package.output, absolutePathToPackageRoot);
-			const absolutePathToNodeModulesFolder = convertToFullPath(_package.nodeModulesFolder ?? 'node_modules', absolutePathToPackageRoot);
-			return ({
-				..._package,
-				path: absolutePathToPackageRoot,
-				output: absolutePathToOutputFolder,
-				nodeModulesFolder: absolutePathToNodeModulesFolder,
-				customTsConfig: _package.customTsConfig ?? false
-			});
-		})
-		.map(_package => {
-			if (!existsSync(_package.path))
-				throw new Error(`package: ${_package.path} is missing the ${CONST_PackageJSONTemplate} files`);
+function getRuntimePackageBaseDetails_Lib(basePackage: Package_InfraLib | Package_ProjectLib): Required<Package_InfraLib | Package_ProjectLib> {
+	const packageRoot = convertToFullPath(basePackage.path);
+	return {
+		path: packageRoot,
+		type: basePackage.type,
+		output: convertToFullPath(basePackage.output, packageRoot),
+		customTsConfig: basePackage.customTsConfig ?? false,
+		sources: basePackage.sources ?? []
+	};
+}
 
-			const packageJson = require(`${_package.path}/${CONST_PackageJSONTemplate}`) as PackageJson;
-			return {
-				..._package,
-				packageJsonTemplate: packageJson,
-			};
-		});
+function getRuntimePackageBaseDetails_Firebase(basePackage: Package_FirebaseFunctionsApp | Package_FirebaseHostingApp): Required<Package_FirebaseFunctionsApp | Package_FirebaseHostingApp> {
+	const packageRoot = convertToFullPath(basePackage.path);
+	return {
+		path: packageRoot,
+		type: basePackage.type,
+		output: convertToFullPath(basePackage.output, packageRoot),
+		customTsConfig: basePackage.customTsConfig ?? false,
+		sources: basePackage.sources ?? [],
+		config: basePackage.config!,
+	};
+}
 
+function getRuntimePackageBaseDetails(basePackage: BasePackage): Required<BasePackage> {
+	switch (basePackage.type) {
+		case PackageType_Sourceless:
+			return getRuntimePackageBaseDetails_Sourceless(basePackage);
+		case PackageType_ProjectLib:
+		case PackageType_InfraLib:
+			return getRuntimePackageBaseDetails_Lib(basePackage);
+
+		case PackageType_FirebaseFunctionsApp:
+		case PackageType_FirebaseHostingApp:
+			return getRuntimePackageBaseDetails_Firebase(basePackage);
+	}
+}
+
+export function convertPackageJSONTemplateToPackJSON(template: PackageJson, project: ProjectConfig): PackageJson {
+	let packageJsonTemplateAsString = JSON.stringify(template);
+	let match = null;
+	do {
+		match = packageJsonTemplateAsString.match(/\$([A-Z_]+)/);
+		if (match?.[0])
+			packageJsonTemplateAsString = packageJsonTemplateAsString.replace(new RegExp(`\\$${match[1]}`, 'g'), project.params[match[1]]);
+	} while (!!match);
+
+	const packageJson = JSON.parse(packageJsonTemplateAsString) as PackageJson;
+
+	// if (packageJson.dependencies)
+	// 	_keys(packageJson.dependencies).reduce((dependencies, dependencyKey) => {
+	// 		if (dependencies[dependencyKey] === '$$') {
+	// 			const packageDetails = project.packageMap[dependencies[dependencyKey]];
+	// 			if (!packageDetails)
+	// 				throw new Error('$$ can only be used with inner project dependency');
+	//
+	// 			dependencies[dependencyKey] = packageDetails.packageJsonTemplate.version;
+	// 		}
+	//
+	// 		return dependencies;
+	// 	}, packageJson.dependencies);
+
+	return packageJson;
+}
+
+export function convertToRuntimePackage(basePackage: BasePackage, project: ProjectConfig): RuntimePackage {
+	const runtimePackage = getRuntimePackageBaseDetails(basePackage);
+
+	//Get template package json
+	if (!existsSync(runtimePackage.path))
+		throw new Error(`package: ${runtimePackage.path} is missing the ${CONST_PackageJSONTemplate} files`);
+	const pjTemplate = JSON.parse(readFileSync(`${runtimePackage.path}/${CONST_PackageJSONTemplate}`, 'utf-8')) as PackageJson;
+
+	return {
+		...runtimePackage,
+		packageJsonTemplate: pjTemplate,
+	};
+}
+
+export function mapProjectPackages(projectConfig: ProjectConfig): ProjectConfig {
+	const packages = projectConfig.packages.map(basePackage => convertToRuntimePackage(basePackage, projectConfig));
 	const packagesDependency = groupPackagesByDependencyLevel(packages);
 	return {
-		params: loadedPackages.params,
-		packagesDependency,
+		...projectConfig,
 		packages,
+		packagesDependency,
 		packageMap: arrayToMap(packages, p => p.packageJsonTemplate.name)
 	};
 }
 
-function groupPackagesByDependencyLevel(packages: PackageDetails[]): PackageDetails[][] {
+function groupPackagesByDependencyLevel(packages: RuntimePackage[]): RuntimePackage[][] {
 	const packageNames = packages.map(p => p.packageJsonTemplate.name);
 	const packagesConfigWithDependencies = packages
 		.map(_package => {
@@ -80,7 +153,7 @@ function groupPackagesByDependencyLevel(packages: PackageDetails[]): PackageDeta
 	});
 
 	// Group packages by their level
-	const groupedPackages = new Map<number, PackageDetails[]>();
+	const groupedPackages = new Map<number, RuntimePackage[]>();
 	levels.forEach((level, pkgName) => {
 		const pkg = packages.find(p => p.packageJsonTemplate.name === pkgName);
 		if (pkg) {
