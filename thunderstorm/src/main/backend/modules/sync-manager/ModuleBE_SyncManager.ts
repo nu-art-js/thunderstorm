@@ -53,7 +53,7 @@ import {
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState
 } from '../../../shared/sync-manager/types';
-import {DBDef_DeletedDoc, DBProto_DeletedDoc, HttpMethod} from '../../../shared';
+import {DBDef_DeletedDoc, DBModuleType, DBProto_DeletedDoc, HttpMethod} from '../../../shared';
 import {OnSyncEnvCompleted} from '../sync-env/ModuleBE_v2_SyncEnv';
 import {OnModuleCleanupV2} from '../../_entity';
 import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
@@ -291,7 +291,11 @@ export class ModuleBE_SyncManager_Class
 
 		await Promise.all(keys.map(key => {
 			const newestDeletedItem = deleted.find(deletedItem => deletedItem.__collectionName === key)!;
+			const dbModule = RuntimeModules().find((module: DBModuleType) => module.dbDef?.dbKey === key);
 			this.logDebug(`setting oldest deleted timestamp ${key} = ${newestDeletedItem.__updated}`);
+			if ((dbModule as ModuleBE_BaseDBV2<any>).config.syncPath)
+				return this.setOldestDeleted(key, newestDeletedItem.__updated, (dbModule as ModuleBE_BaseDBV2<any>).config.syncPath);
+
 			return this.setOldestDeleted(key, newestDeletedItem.__updated);
 		}));
 	};
@@ -300,12 +304,12 @@ export class ModuleBE_SyncManager_Class
 		return (await this.syncData.get({}));
 	};
 
-	async setLastUpdated(collectionName: string, lastUpdated: number) {
-		return this.database.patch<LastUpdated>(`/state/${this.getName()}/syncData/${collectionName}`, {lastUpdated});
+	async setLastUpdated(collectionName: string, lastUpdated: number, syncPath: string = '') {
+		return this.database.patch<LastUpdated>(`/state/${this.getName()}/syncData/${syncPath}${collectionName}`, {lastUpdated});
 	}
 
-	async setOldestDeleted(collectionName: string, oldestDeleted: number) {
-		return this.database.patch<LastUpdated>(`/state/${this.getName()}/syncData/${collectionName}`, {oldestDeleted});
+	async setOldestDeleted(collectionName: string, oldestDeleted: number, syncPath: string = '') {
+		return this.database.patch<LastUpdated>(`/state/${this.getName()}/syncData/${syncPath}${collectionName}`, {oldestDeleted});
 	}
 
 	setModuleFilter = (filter: (modules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => Promise<(ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]>) => {

@@ -52,6 +52,7 @@ import Transaction = firestore.Transaction;
 export type BaseDBApiConfig = {
 	projectId?: string,
 	maxChunkSize: number
+	syncPath?: string,
 }
 
 export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfig<Type>
@@ -172,7 +173,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	 */
 	public isCollectionUpToDate = async () => {
 		// @ts-ignore
-		return (await this.query.custom({limit: 1, where: {_v: {$neq: this.dbDef.versions?.[0]??'1.0.0'}}})).length === 0;
+		return (await this.query.custom({limit: 1, where: {_v: {$neq: this.dbDef.versions?.[0] ?? '1.0.0'}}})).length === 0;
 	};
 
 	/**
@@ -192,15 +193,15 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 			const latestUpdated = Array.isArray(data.updated) ?
 				data.updated.reduce((toRet, current) => Math.max(toRet, current.__updated), data.updated[0].__updated) :
 				data.updated.__updated;
-			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, latestUpdated);
+			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, latestUpdated, this.getSyncPath());
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys);
-			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
+			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now, this.getSyncPath());
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
-			await ModuleBE_SyncManager.setOldestDeleted(this.config.collectionName, now);
+			await ModuleBE_SyncManager.setOldestDeleted(this.config.collectionName, now, this.getSyncPath());
 
 		await this.postWriteProcessing(data);
 	};
@@ -324,5 +325,9 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 				}
 			dbInstance._v = currentVersion;
 		}));
+	};
+
+	public getSyncPath = () => {
+		return '';
 	};
 }

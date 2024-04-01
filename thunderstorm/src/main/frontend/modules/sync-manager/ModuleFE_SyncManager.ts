@@ -21,6 +21,7 @@
 
 import {
 	_keys,
+	BadImplementationException,
 	DB_Object,
 	debounce,
 	exists,
@@ -51,7 +52,10 @@ import {
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {
+	ModuleFE_FirebaseListener,
+	RefListenerFE
+} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
@@ -365,6 +369,15 @@ export class ModuleFE_SyncManager_Class
 		this.syncFirebaseListener?.stopListening();
 		this.syncFirebaseListener = undefined;
 		this.debounceSync = undefined;
+	}
+
+	public listenOnCustomSyncPath(syncPath: string) {
+		if (!syncPath || syncPath.length === 0)
+			throw new BadImplementationException(`Cannot listen on a custom sync path, for path '${syncPath}'- it's empty!`);
+
+		this.syncFirebaseListener = ModuleFE_FirebaseListener
+			.createListener(Default_SyncManagerNodePath + '/' + syncPath)
+			.startListening(this.onSyncDataChanged);
 	}
 
 	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
