@@ -70,8 +70,8 @@ projectManager.registerPhase({
 			return;
 
 		const firebasePkg = pkg as Package_FirebaseHostingApp;
-		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(firebasePkg.config.rc[buildForEnv], null, 2), {encoding: 'utf-8'});
-		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(firebasePkg.config.json[buildForEnv], null, 2), {encoding: 'utf-8'});
+		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(firebasePkg.config?.rc?.[buildForEnv], null, 2), {encoding: 'utf-8'});
+		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(firebasePkg.config?.json?.[buildForEnv], null, 2), {encoding: 'utf-8'});
 	}
 });
 

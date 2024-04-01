@@ -11,7 +11,7 @@ import {
 const project1firebaseRCFile = {
 	dev: {
 		projects: {
-			default: 'quai-md-dev',
+			default: 'test-project',
 		}
 	},
 	staging: {
@@ -104,6 +104,7 @@ const config: ProjectConfig = {
 			path: './pack5',
 			output: '../pack5/dist',
 			config: {
+				// @ts-ignore
 				rc: project1firebaseRCFile,
 				json: project1FirebaseHostingJSON
 			}
