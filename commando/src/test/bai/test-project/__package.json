@@ -17,6 +17,9 @@
   "scripts": {
     "build": "tsc"
   },
+  "devDependencies": {
+    "@types/mime": "^3.0.0"
+  },
   "_moduleAliases": {
     "@main": "dist/main/ts",
     "@test": "dist/test/ts"
