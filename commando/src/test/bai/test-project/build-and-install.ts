@@ -161,19 +161,18 @@ projectManager.registerPhase({
 	}
 });
 
-projectManager.registerPhase({
-	type: 'package',
-	name: 'firebase-function-test',
-	action: async (pkg) => {
-		if (pkg.type !== PackageType_FirebaseFunctionsApp)
-			return;
-
-		console.log(pkg);
-		return NVM.createCommando()
-			// .append('ls').execute();
-			.append(`cd ~/.. && cd ${pkg.path} && npm run serve`).execute();
-	}
-});
+// projectManager.registerPhase({
+// 	type: 'package',
+// 	name: 'firebase-function-test',
+// 	action: async (pkg) => {
+// 		if (pkg.type !== PackageType_FirebaseFunctionsApp)
+// 			return;
+//
+// 		return NVM.createCommando()
+// 			// .append('ls').execute();
+// 			.append(`cd ~/.. && cd ${pkg.path} && npm run serve`).execute();
+// 	}
+// });
 
 // projectManager.registerPhase({
 // 	type: 'project',
@@ -184,9 +183,9 @@ projectManager.registerPhase({
 // });
 
 (async () => {
-	// return projectManager.execute();
-	await projectManager.runPhaseByKey('resolve-template');
-	await projectManager.runPhaseByKey('firebase-function-test');
+	return projectManager.execute();
+	// await projectManager.runPhaseByKey('resolve-template');
+	// await projectManager.runPhaseByKey('firebase-function-test');
 	// await projectManager.runPhaseByKey('install');
 	// return projectManager.runPhaseByKey('lint');
 	// return projectManager.runPhaseByKey('install-nvm');
