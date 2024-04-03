@@ -18,7 +18,10 @@ type GPT_Model = 'gpt-4'
 	| 'gpt-3.5-turbo-16k-0613'
 
 type Config = {
-	directives: TypedMap<string>
+	directives: TypedMap<{
+		agent?: GPT_Model,
+		directive: string
+	}>
 	defaultModel: GPT_Model
 	apiKey: string
 	orgId?: string
@@ -67,7 +70,7 @@ export class ModuleBE_OpenAI_Class
 		if (!directive)
 			throw new BadImplementationException(`Missing instruction for directive: ${query.directiveKey}`);
 
-		return this.simpleQuery({model: query.model, message: query.message, directive});
+		return this.simpleQuery({model: directive.agent ?? query.model, message: query.message, directive: directive.directive});
 	};
 
 	simpleQuery = async (query: Request_ChatGPT) => {

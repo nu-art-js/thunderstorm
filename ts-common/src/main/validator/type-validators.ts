@@ -51,7 +51,7 @@ export const tsValidateUnion = <T>(validators: ValidatorTypeResolver<T>[], manda
 			}
 
 			return filterInstances(results).length !== 0 ? ['Input does not match any of the possible types',
-				results] as unknown as InvalidResultArray<T> : undefined;
+				results] as InvalidResultArray<T>[] : undefined;
 		}];
 };
 

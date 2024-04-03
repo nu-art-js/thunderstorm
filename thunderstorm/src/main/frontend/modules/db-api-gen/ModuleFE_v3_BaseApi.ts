@@ -42,7 +42,7 @@ type Operation = {
 	pending?: Pending
 }
 
-export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
+export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, _Config extends {} = {}, Config extends _Config & DBApiFEConfigV3<Proto> = _Config & DBApiFEConfigV3<Proto>>
 	extends ModuleFE_v3_BaseDB<Proto, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>> {
 

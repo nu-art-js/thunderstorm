@@ -110,7 +110,7 @@ const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): 
 		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 	else {
 		if (typeof dbDef.modifiablePropsValidator === 'function')
-			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
+			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)] as Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'];
 
 		return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator)] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 	}
