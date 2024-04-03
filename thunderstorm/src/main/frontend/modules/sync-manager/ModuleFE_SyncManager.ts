@@ -101,6 +101,7 @@ export class ModuleFE_SyncManager_Class
 	private outOfSyncCollections: Set<string> = new Set<string>();
 	private syncing?: boolean;
 	private pendingSync?: boolean;
+	private syncSubPaths: string[] = [];
 
 	constructor() {
 		super();
@@ -375,13 +376,20 @@ export class ModuleFE_SyncManager_Class
 		if (!syncPath || syncPath.length === 0)
 			throw new BadImplementationException(`Cannot listen on a custom sync path, for path '${syncPath}'- it's empty!`);
 
+		this.syncSubPaths = [];
+		if (this.syncSubPaths) {
+		}
+
 		this.syncFirebaseListener = ModuleFE_FirebaseListener
 			.createListener(Default_SyncManagerNodePath + '/' + syncPath)
 			.startListening(this.onSyncDataChanged);
 	}
 
-	private onSyncDataChanged = async (snapshot: DataSnapshot) => {
+	private onSyncDataChanged = async (snapshot: DataSnapshot, nodePath: string) => {
 		this.logDebug('Received firebase state data');
+		if (this.syncSubPaths.includes(nodePath))
+			return;
+
 
 		// remoteSyncData is the data we received from the firebase listener, that just detected a change.
 		const rtdbSyncData = snapshot.val() as SyncDataFirebaseState | undefined;

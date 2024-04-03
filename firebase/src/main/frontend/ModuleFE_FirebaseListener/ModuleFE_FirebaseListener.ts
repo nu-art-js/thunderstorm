@@ -109,16 +109,16 @@ export class RefListenerFE<Value = any>
 	/**
 	 * Receives initial value and listens henceforth.
 	 */
-	startListening(onValueChangedListener: (snapshot: DataSnapshot) => void) {
+	startListening(onValueChangedListener: (snapshot: DataSnapshot, nodePath: string) => void) {
 		if (this.toUnsubscribeFunction) {
 			this.logWarning('RefListener asked to listen mid-listening. Stopping to listen prior to re-listening');
 			this.stopListening();
 		}
-		this.logInfo('Starting to listen...');
+		this.logInfo('Starting to listen...', this.nodePath);
 		const refQuery = this.getQuery();
 		try {
 			this.toUnsubscribeFunction = onValue(refQuery, (snapshot) => {
-				onValueChangedListener(snapshot);
+				onValueChangedListener(snapshot, this.nodePath);
 			});
 		} catch (e: any) {
 			this.logWarning(`Failed listening on node data, check if your rtdb rules permit reading this node '${this.nodePath}'`);
