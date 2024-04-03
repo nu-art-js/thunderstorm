@@ -54,7 +54,6 @@ export class ModuleFE_FocusedObject_Class
 			// Update all the FocusedEntityRef components
 			dispatch_onFocusedDataReceived.dispatchAll(value);
 		});
-
 		this.listenToFocusEvents();
 		this.listenToPageClosed();
 	}
