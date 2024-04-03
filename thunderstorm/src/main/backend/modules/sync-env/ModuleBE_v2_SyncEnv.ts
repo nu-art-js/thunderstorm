@@ -21,6 +21,8 @@ import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
 import {Storm} from '../../core/Storm';
 import {ModuleBE_BackupDocDB} from '../../../_entity/backup-doc/backend';
 import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
+import {Transform, Writable} from 'stream';
+import {firestore} from 'firebase-admin';
 
 
 type Config = {
@@ -103,7 +105,6 @@ class ModuleBE_v2_SyncEnv_Class
 		return ModuleBE_BackupDocDB.initiateBackup(true);
 	};
 
-	// restoreFirestoreFromBackup = async (body: Request_FetchFromEnvV2) => {
 	syncFromEnvBackup = async (body: Request_FetchFromEnvV2) => {
 		if (Storm.getInstance().getEnvironment().toLowerCase() === 'prod' && body.env.toLowerCase() !== 'prod') {
 			throw new MUSTNeverHappenException('MUST NEVER SYNC ENV THAT IS NOT PROD TO PROD!!');
@@ -111,48 +112,40 @@ class ModuleBE_v2_SyncEnv_Class
 
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
-		let startBackup = undefined; // required for log
-		let endBackup = undefined; // required for log
+		let startTime = undefined; // required for log
+		let endTime = undefined; // required for log
 
 		if (this.config.shouldBackupBeforeSync) {
 			this.logInfo(`----  Creating Backup... ----`);
-			startBackup = performance.now(); // required for log
+			startTime = performance.now(); // required for log
 			await this.createBackup();
-			endBackup = performance.now(); // required for log
-			this.logInfo(`Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds`);
+			endTime = performance.now(); // required for log
+			this.logInfo(`Backup took ${((endTime - startTime) / 1000).toFixed(3)} seconds`);
 		}
 
-		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
-		const firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
-		let writeBatch = firestore.batch();
 		const backupInfo = await this.getBackupInfo(body);
+		const stream = await ModuleBE_BackupDocDB.createBackupReadStream(backupInfo);
+		const collectionFilter = new SyncCollectionFilter(body.selectedModules);
+		const collectionWriter = new CollectionBatchWriter(1000);
 
-		await ModuleBE_BackupDocDB.iterateOnBackup({
-			stream: await ModuleBE_BackupDocDB.getBackupStreamFromId(backupInfo),
-			chunkSize: body.chunkSize,
-			filter: (collectionName: string) => {
-				return body.selectedModules.includes(collectionName);
-			},
-			process: (row) => {
-				const documentRef = firestore.doc(`${row.collectionName}/${row._id}`);
-				const data = JSON.parse(row.document);
-
-				writeBatch.set(documentRef, data);
-			},
-			paginate: () => {
-				const prevBatch = writeBatch;
-				writeBatch = firestore.batch();
-				this.logInfo(`committing`);
-				return prevBatch.commit();
-			},
+		this.logInfo(`----  Syncing Collections From Backup... ----`);
+		startTime = performance.now();
+		await new Promise<void>((resolve, reject) => {
+			stream
+				.pipe(collectionFilter)
+				.pipe(collectionWriter)
+				.on('finish', () => resolve())
+				.on('error', err => reject(err));
 		});
+		endTime = performance.now();
+		this.logInfo(`Syncing Collections took ${((endTime - startTime) / 1000).toFixed(3)} seconds`);
 
 		this.logInfo(`----  Syncing Other Modules... ----`);
 		await dispatch_OnSyncEnvCompleted.dispatchModuleAsync(body.env, this.config.urlMap[body.env], this.config.sessionMap[body.env]!);
 		this.logInfo(`---- DONE Syncing Other Modules----`);
 
-		if (this.config.shouldBackupBeforeSync && endBackup !== undefined && startBackup !== undefined)
-			this.logInfo(`(Backup took ${((endBackup - startBackup) / 1000).toFixed(3)} seconds)`);
+		if (this.config.shouldBackupBeforeSync && endTime !== undefined && startTime !== undefined)
+			this.logInfo(`(Backup took ${((endTime - startTime) / 1000).toFixed(3)} seconds)`);
 	};
 
 	private async getBackupInfo(queryParams: Request_GetMetadata) {
@@ -189,3 +182,66 @@ class ModuleBE_v2_SyncEnv_Class
 }
 
 export const ModuleBE_v2_SyncEnv = new ModuleBE_v2_SyncEnv_Class();
+
+class SyncCollectionFilter
+	extends Transform {
+
+	readonly allowedCollections: string[];
+
+	constructor(allowedCollections: string[]) {
+		super({objectMode: true});
+		this.allowedCollections = allowedCollections;
+	}
+
+	_transform(chunk: any, encoding: string, callback: Function) {
+		if (this.allowedCollections.includes(chunk.collectionName)) {
+			this.push(chunk);
+		}
+		callback();
+	}
+}
+
+class CollectionBatchWriter
+	extends Writable {
+
+	private itemCount: number = 0;
+	private paginationSize: number;
+	private firestore: firestore.Firestore;
+	private batchWriter: firestore.WriteBatch;
+
+	constructor(paginationSize: number) {
+		super({objectMode: true});
+		this.paginationSize = paginationSize;
+		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
+		this.firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
+		this.batchWriter = this.firestore.batch();
+	}
+
+	async _write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
+		try {
+			const docRef = this.firestore.doc(`${chunk.collectionName}/${chunk._id}`);
+			const data = JSON.parse(chunk.document);
+			this.batchWriter.set(docRef, data);
+			this.itemCount++;
+
+			if (this.itemCount === this.paginationSize) {
+				const prevBatchWriter = this.batchWriter;
+				this.batchWriter = this.firestore.batch();
+				this.itemCount = 0;
+				prevBatchWriter.commit();
+			}
+			callback();
+		} catch (error) {
+			callback(error instanceof Error ? error : new Error(String(error)));
+		}
+	}
+
+	async _final(callback: (error?: Error | null) => void) {
+		try {
+			await this.batchWriter.commit();
+			callback();
+		} catch (err: any) {
+			callback(err as Error);
+		}
+	}
+}

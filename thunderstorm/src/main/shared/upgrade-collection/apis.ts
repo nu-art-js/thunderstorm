@@ -2,7 +2,7 @@ import {ApiDefResolver, BodyApi, HttpMethod} from '../types';
 import {Minute} from '@nu-art/ts-common';
 
 
-export type Request_UpgradeCollections = { collectionsToUpgrade: string[] };
+export type Request_UpgradeCollections = { collectionsToUpgrade: string[], force?: boolean };
 export type ApiStruct_UpgradeCollection = {
 	vv1: {
 		upgrade: BodyApi<void, Request_UpgradeCollections>

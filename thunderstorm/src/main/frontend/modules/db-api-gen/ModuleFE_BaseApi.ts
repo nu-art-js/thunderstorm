@@ -19,27 +19,10 @@
  * limitations under the License.
  */
 
-import {
-	ApiDefCaller,
-	ApiStruct_DBApiGenIDB,
-	BaseHttpRequest,
-	DBApiDefGeneratorIDB,
-	HttpException,
-	QueryParams,
-	TypedApi,
-} from '../../shared';
+import {ApiDefCaller, ApiStruct_DBApiGenIDB, BaseHttpRequest, DBApiDefGeneratorIDB, HttpException, QueryParams, TypedApi,} from '../../shared';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 
-import {
-	BadImplementationException,
-	DB_BaseObject,
-	DB_Object,
-	DBDef,
-	Default_UniqueKey,
-	IndexKeys,
-	PreDB,
-	TypedMap
-} from '@nu-art/ts-common';
+import {BadImplementationException, DB_BaseObject, DB_Object, DBDef, Default_UniqueKey, IndexKeys, PreDB, TypedMap} from '@nu-art/ts-common';
 
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
@@ -47,6 +30,7 @@ import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {ModuleSyncType} from './types';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -71,7 +55,7 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 	private operations: TypedMap<Operation> = {};
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>) {
-		super(dbDef, defaultDispatcher);
+		super(dbDef, defaultDispatcher, ModuleSyncType.APISync);
 
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 
