@@ -38,6 +38,7 @@ function getRuntimePackageBaseDetails_Lib(basePackage: Package_InfraLib | Packag
 
 function getRuntimePackageBaseDetails_Firebase(basePackage: Package_FirebaseFunctionsApp | Package_FirebaseHostingApp): Required<Package_FirebaseFunctionsApp | Package_FirebaseHostingApp> {
 	const packageRoot = convertToFullPath(basePackage.path);
+	// @ts-ignore
 	return {
 		path: packageRoot,
 		type: basePackage.type,

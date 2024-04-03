@@ -4,13 +4,13 @@ import {CanDeletePermissionEntities} from '../../../backend/core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates, flatArray} from '@nu-art/ts-common';
-import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionAPIDB} from '../../permission-api/backend/ModuleBE_PermissionAPIDB';
 import {ModuleBE_PermissionDomainDB} from '../../permission-domain/backend/ModuleBE_PermissionDomainDB';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
+import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionAccessLevel> & {}
@@ -45,7 +45,7 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 		dbInstance._auditorId = MemKey_AccountId.get();
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionAccessLevel>, transaction?: Transaction): Promise<void> {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_PermissionAccessLevel>, transaction?: Transaction): Promise<void> {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 

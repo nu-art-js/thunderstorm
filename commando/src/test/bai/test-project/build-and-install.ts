@@ -6,7 +6,7 @@ import {promises as _fs} from 'fs';
 import {PNPM} from '../../../main/cli/pnpm';
 import {NVM} from '../../../main/cli/nvm';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../core/consts';
-import {JSONVersion, Package_FirebaseHostingApp, PackageJson} from '../core/types';
+import {JSONVersion, Package_FirebaseHostingApp, PackageJson, PackageType_FirebaseFunctionsApp} from '../core/types';
 import {default as projectConfig} from './.config/project-config';
 
 
@@ -70,8 +70,8 @@ projectManager.registerPhase({
 			return;
 
 		const firebasePkg = pkg as Package_FirebaseHostingApp;
-		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(firebasePkg.config.rc[buildForEnv], null, 2), {encoding: 'utf-8'});
-		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(firebasePkg.config.json[buildForEnv], null, 2), {encoding: 'utf-8'});
+		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(firebasePkg.config?.rc?.[buildForEnv], null, 2), {encoding: 'utf-8'});
+		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(firebasePkg.config?.json?.[buildForEnv], null, 2), {encoding: 'utf-8'});
 	}
 });
 
@@ -117,6 +117,7 @@ projectManager.registerPhase({
 
 		await PNPM.createWorkspace(listOfLibs);
 		await PNPM.install(NVM.createCommando());
+		await PNPM.installPackages(NVM.createCommando());
 	}
 });
 
@@ -161,6 +162,19 @@ projectManager.registerPhase({
 });
 
 // projectManager.registerPhase({
+// 	type: 'package',
+// 	name: 'firebase-function-test',
+// 	action: async (pkg) => {
+// 		if (pkg.type !== PackageType_FirebaseFunctionsApp)
+// 			return;
+//
+// 		return NVM.createCommando()
+// 			// .append('ls').execute();
+// 			.append(`cd ~/.. && cd ${pkg.path} && npm run serve`).execute();
+// 	}
+// });
+
+// projectManager.registerPhase({
 // 	type: 'project',
 // 	name: 'debug',
 // 	action: async () => {
@@ -170,7 +184,8 @@ projectManager.registerPhase({
 
 (async () => {
 	return projectManager.execute();
-	// await projectManager.runPhaseByKey('install-nvm');
+	// await projectManager.runPhaseByKey('resolve-template');
+	// await projectManager.runPhaseByKey('firebase-function-test');
 	// await projectManager.runPhaseByKey('install');
 	// return projectManager.runPhaseByKey('lint');
 	// return projectManager.runPhaseByKey('install-nvm');
