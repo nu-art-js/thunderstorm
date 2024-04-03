@@ -90,7 +90,12 @@ const MultiSelect_PermissionsAccessLevel: StaticProps_TS_MultiSelect_V2<string> 
 		{AccessLevelItemRenderer(accessLevelId)}
 		<TS_Icons.x.component onClick={onDelete}/>
 	</>,
-	selectionRenderer: DomainLevelRenderer,
+	selectionRenderer: (props) => <DomainLevelRenderer
+		onSelected={props.onSelected}
+		className={props.className}
+		existingItems={props.existingItems}
+		queryFilter={props.queryFilter}
+	/>,
 	sort: items => sortArray(items, AccessLevelItemRenderer)
 };
 
@@ -112,7 +117,12 @@ const MultiSelect_PermissionsGroup: StaticProps_TS_MultiSelect_V2<{ groupId: str
 		{ModuleFE_PermissionGroup.cache.unique(group?.groupId)?.label || 'not found'}
 		<TS_Icons.x.component className="ts-icon__small" onClick={onDelete}/>
 	</>,
-	selectionRenderer: GroupRenderer,
+	selectionRenderer: (props) => <GroupRenderer
+		onSelected={props.onSelected}
+		className={props.className}
+		existingItems={props.existingItems}
+		queryFilter={props.queryFilter}
+	/>,
 	sort: items => sortArray(items, item => ModuleFE_PermissionGroup.cache.unique(item?.groupId)?.label || 'not found')
 };
 

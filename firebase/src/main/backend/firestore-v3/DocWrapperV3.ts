@@ -112,7 +112,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		// Will always get here with a transaction!
 		transaction!.set(this.ref, newDBItem);
 		this.data = currDBItem;
-		this.postWriteProcessing({updated: newDBItem}, transaction);
+		this.postWriteProcessing({updated: newDBItem, before: currDBItem}, transaction);
 
 		return newDBItem;
 	};

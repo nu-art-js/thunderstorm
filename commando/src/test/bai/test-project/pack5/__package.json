@@ -1,0 +1,35 @@
+{
+  "name": "test-package-5",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "test package 5",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "webpack --mode production",
+    "start": "webpack serve --open --mode development"
+  },
+  "dependencies": {
+    "test-package-2": "$APP_VERSION_DEPENDENCY",
+    "test-package-3": "$APP_VERSION_DEPENDENCY"
+  },
+  "devDependencies": {
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.0",
+    "style-loader": "^3.3.4",
+    "css-loader": "^6.10.0",
+    "html-webpack-plugin": "^5.6.0",
+    "typescript": "$TYPESCRIPT_PKG_VERSION",
+    "ts-loader": "^9.5.1"
+  },
+  "_moduleAliases": {
+    "@main": "dist/main/ts",
+    "@test": "dist/test/ts"
+  }
+}

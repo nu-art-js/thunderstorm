@@ -68,8 +68,9 @@ import BulkWriter = firestore.BulkWriter;
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Proto extends DBProto<any>> = {
-	updated?: Proto['dbType'] | Proto['dbType'][],
-	deleted?: Proto['dbType'] | Proto['dbType'][] | null
+	before?: Proto['dbType'] | Proto['dbType'][];
+	updated?: Proto['dbType'] | Proto['dbType'][];
+	deleted?: Proto['dbType'] | Proto['dbType'][] | null;
 };
 
 export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
@@ -106,12 +107,12 @@ const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): 
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
 		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
 	else if (typeof dbDef.modifiablePropsValidator === 'function' && typeof dbDef.generatedPropsValidator === 'function')
-		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator];
+		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 	else {
 		if (typeof dbDef.modifiablePropsValidator === 'function')
-			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)];
+			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 
-		return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator)];
+		return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator)] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 	}
 };
 
@@ -267,7 +268,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
 
-		await this.hooks?.postWriteProcessing?.({updated: preparedItems});
+		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems});
 		return preparedItems;
 	};
 

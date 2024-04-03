@@ -308,7 +308,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		return (await this.query.custom({limit: 1, where: {_v: {$neq: this.dbDef.versions[0]}}})).length === 0;
 	};
 
-	upgradeCollection = async () => {
+	upgradeCollection = async (force = false) => {
 		let docs: DocWrapperV3<Proto>[];
 		const itemsCount = this.config.chunksSize;
 
@@ -325,7 +325,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 
 			const instances = docs.map(d => d.data!);
 			this.logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) ${this.dbDef.entityName}s ....`);
-			const instancesToSave: Proto['dbType'][] = await this.upgradeInstances(instances);
+			const instancesToSave: Proto['dbType'][] = await this.upgradeInstances(instances, force);
 
 			// @ts-ignore
 			await this.collection.upgradeInstances(instancesToSave);
@@ -339,7 +339,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		}
 	};
 
-	async upgradeInstances(instances: Proto['dbType'][]) {
+	async upgradeInstances(instances: Proto['dbType'][], force = false) {
 		let instancesToSave: Proto['dbType'][] = [];
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
 			const version = this.config.versions[i] as Proto['versions'][number];
@@ -366,6 +366,6 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 			instancesToUpgrade.forEach(instance => instance._v = nextVersion);
 		}
 
-		return instancesToSave;
+		return force ? instances : instancesToSave;
 	}
 }

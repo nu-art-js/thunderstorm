@@ -25,7 +25,7 @@ export class ModuleBE_UpgradeCollection_Class
 
 	upgradeAll = async (body: Request_UpgradeCollections) => {
 		this.logInfo('upgrade-all');
-		const filterModules = (module: any) => body.collectionsToUpgrade.length > 0 ? body.collectionsToUpgrade.includes(module.dbModule?.dbDef?.dbName) : true;
+		const filterModules = (module: any) => body.collectionsToUpgrade.length > 0 ? body.collectionsToUpgrade.includes(module.dbModule?.dbDef?.dbKey) : true;
 
 		const allCollectionModulesToCheck = RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) =>
 			!!module.dbModule?.dbDef?.dbKey
@@ -44,7 +44,7 @@ export class ModuleBE_UpgradeCollection_Class
 		const toUpgrade = body.collectionsToUpgrade;
 		const moduleToUpgrade = RuntimeModules()
 			.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbKey && toUpgrade.includes(module.dbModule?.dbDef?.dbKey));
-		await Promise_all_sequentially(moduleToUpgrade.map(module => module.dbModule.upgradeCollection));
+		await Promise_all_sequentially(moduleToUpgrade.map(module => () => module.dbModule.upgradeCollection(body.force)));
 	};
 }
 
