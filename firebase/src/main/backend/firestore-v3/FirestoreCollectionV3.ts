@@ -68,8 +68,9 @@ import BulkWriter = firestore.BulkWriter;
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Proto extends DBProto<any>> = {
-	updated?: Proto['dbType'] | Proto['dbType'][],
-	deleted?: Proto['dbType'] | Proto['dbType'][] | null
+	before?: Proto['dbType'] | Proto['dbType'][];
+	updated?: Proto['dbType'] | Proto['dbType'][];
+	deleted?: Proto['dbType'] | Proto['dbType'][] | null;
 };
 
 export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
@@ -267,7 +268,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
 
-		await this.hooks?.postWriteProcessing?.({updated: preparedItems});
+		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems});
 		return preparedItems;
 	};
 
