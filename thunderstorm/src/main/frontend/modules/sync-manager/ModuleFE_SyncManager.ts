@@ -22,6 +22,7 @@
 import {
 	_keys,
 	DB_Object,
+	DBProto,
 	debounce,
 	exists,
 	filterDuplicates,
@@ -29,6 +30,7 @@ import {
 	flatArray,
 	LogLevel,
 	Module,
+	Proto_DB_Object,
 	reduceToMap,
 	removeItemFromArray,
 	RuntimeModules,
@@ -48,7 +50,6 @@ import {
 	SyncDataFirebaseState,
 	SyncDbData
 } from '../../../shared/sync-manager/types';
-import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
@@ -70,7 +71,7 @@ const Default_SyncManagerNodePath = '/state/ModuleBE_SyncManager/syncData'; // H
 const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleModulesUpdated, '__onPermissibleModulesUpdated'>('__onPermissibleModulesUpdated');
 
 type QueuedModuleData = {
-	module: ModuleFE_BaseApi<any>
+	module: ModuleFE_v3_BaseApi<any>
 	lastUpdated: number
 }
 
@@ -115,7 +116,7 @@ export class ModuleFE_SyncManager_Class
 
 	// ######################### Public Methods #########################
 
-	public getPermissibleModuleNames = () => this.syncedModules.map(moduleSyncData => moduleSyncData.dbName);
+	public getPermissibleModuleNames = () => this.syncedModules.map(moduleSyncData => moduleSyncData.dbKey);
 
 	public getCurrentlySyncingModules = () => [...this.currentlySyncingModules];
 
@@ -128,7 +129,7 @@ export class ModuleFE_SyncManager_Class
 		return existingDBModules.map(module => {
 			const lastSync = module.IDB.getLastSync();
 			return ({
-				dbName: module.dbDef.dbKey,
+				dbKey: module.dbDef.dbKey,
 				lastUpdated: lastSync
 			});
 		});
@@ -212,28 +213,28 @@ export class ModuleFE_SyncManager_Class
 	private prepareSyncGroupOperations = (syncGroups: SmartSync_SyncGroups) => {
 		//Prepare operations for NoSyncModules
 		const noSyncOperations = filterInstances(syncGroups[SmartSync_UpToDateSync].map(syncModule => {
-			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === syncModule.dbName);
+			const module = RuntimeModules().find<ModuleFE_v3_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === syncModule.dbKey);
 			if (!module)
-				return this.logError(`Couldn't find module to no sync with dbKey: '${syncModule.dbName}'`);
+				return this.logError(`Couldn't find module to no sync with dbKey: '${syncModule.dbKey}'`);
 
 			return async () => this.performNoSync(module);
 		}));
 
 		//Prepare operations for DeltaSyncModules
 		const deltaSyncOperations = filterInstances(syncGroups[SmartSync_DeltaSync].map(syncModule => {
-			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((_module: DBModuleType) => _module.dbDef?.dbKey === syncModule.dbName);
+			const module = RuntimeModules().find<ModuleFE_v3_BaseApi<any>>((_module: DBModuleType) => _module.dbDef?.dbKey === syncModule.dbKey);
 			if (!module)
-				return this.logError(`Couldn't find module to delta sync with dbKey: '${syncModule.dbName}'`);
+				return this.logError(`Couldn't find module to delta sync with dbKey: '${syncModule.dbKey}'`);
 
 			return async () => this.performDeltaSync(module, syncModule.items, syncModule.lastUpdated);
 		}));
 
 		//Prepare operations for FullSyncModules
 		const fullSyncOperations = filterInstances(syncGroups[SmartSync_FullSync].map(syncModule => {
-			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbKey === syncModule.dbName);
+			const module = RuntimeModules().find<ModuleFE_v3_BaseApi<any>>((module: DBModuleType) => module.dbDef?.dbKey === syncModule.dbKey);
 
 			if (!module)
-				return this.logError(`Couldn't find module to full sync with dbKey: '${syncModule.dbName}'`);
+				return this.logError(`Couldn't find module to full sync with dbKey: '${syncModule.dbKey}'`);
 
 			if (this.currentlySyncingModules.includes(module))
 				return this.logDebug(`Avoid syncing on a currently syncing module ${module.dbDef.dbKey}`);
@@ -258,7 +259,7 @@ export class ModuleFE_SyncManager_Class
 	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
 		this.logInfo(`onSmartSyncCompleted (${response.modules.length})`, response);
 		const currentSyncedModulesLength = this.syncedModules.length;
-		this.syncedModules = response.modules.map(item => ({dbName: item.dbName, lastUpdated: item.lastUpdated}));
+		this.syncedModules = response.modules.map(item => ({dbKey: item.dbKey, lastUpdated: item.lastUpdated}));
 
 		//Group modules by their sync status
 		const syncGroups: SmartSync_SyncGroups = this.groupSyncGroups(response.modules);
@@ -284,7 +285,7 @@ export class ModuleFE_SyncManager_Class
 
 	// ######################### Sync operations #########################
 
-	private performNoSync = async (module: ModuleFE_BaseApi<any>) => {
+	private performNoSync = async (module: ModuleFE_v3_BaseApi<any>) => {
 		this.logVerbose(`Performing NoSyncOperation for module ${module.getName()}`);
 		this.logVerbose(`No sync for: ${module.dbDef.dbKey}, Already UpToDate.`);
 		module.logVerbose(`Updating Cache: ${module.dbDef.dbKey}`);
@@ -293,7 +294,7 @@ export class ModuleFE_SyncManager_Class
 		module.setDataStatus(DataStatus.ContainsData);
 	};
 
-	private performDeltaSync = async <T extends DB_Object>(module: ModuleFE_BaseApi<T>, syncData: Response_DBSync<T>, lastUpdated: number) => {
+	private performDeltaSync = async <T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(module: ModuleFE_v3_BaseApi<Proto>, syncData: Response_DBSync<T>, lastUpdated: number) => {
 		this.logDebug(`Performing DeltaSyncOperation for module ${module.getName()}`);
 		module.logVerbose(`Firing event (DataStatus.UpdatingData): ${module.dbDef.dbKey}`);
 		module.setDataStatus(DataStatus.UpdatingData);
@@ -377,29 +378,29 @@ export class ModuleFE_SyncManager_Class
 			return await this.debounceSyncImpl();
 
 		// localSyncData is the data we just collected from the IDB regarding all existing modules.
-		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbName, data => ({lastUpdated: data.lastUpdated}));
-		(_keys(rtdbSyncData) as string[]).forEach((dbName) => {
+		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbKey, data => ({lastUpdated: data.lastUpdated}));
+		(_keys(rtdbSyncData) as string[]).forEach((dbKey) => {
 			// this Should be taken care of by the below condition because both local and remote will return last updated 0
-			// if (!exists(this.remoteSyncData[dbName]))
+			// if (!exists(this.remoteSyncData[dbKey]))
 			// 	return;
 
-			if (!localSyncData[dbName])
+			if (!localSyncData[dbKey])
 				return;
 
-			if (rtdbSyncData[dbName].lastUpdated <= localSyncData[dbName].lastUpdated)
+			if (rtdbSyncData[dbKey].lastUpdated <= localSyncData[dbKey].lastUpdated)
 				return;
 
-			this.outOfSyncCollections.add(dbName);
+			this.outOfSyncCollections.add(dbKey);
 		});
 
 		//todo This fixed the issue when we received delta sync and not up-to-date, see if this code can go
 		// // If there are no changes, just set all modules' data status to ContainsData
 		// if (this.outOfSyncCollections.size === 0) {
 		// 	// on sync completed
-		// 	const allModulesAreUpToDate: NoNeedToSyncModule[] = (_keys(localSyncData) as string[]).map(dbName =>
+		// 	const allModulesAreUpToDate: NoNeedToSyncModule[] = (_keys(localSyncData) as string[]).map(dbKey =>
 		// 		({
-		// 			dbName: dbName,
-		// 			lastUpdated: localSyncData[dbName]?.lastUpdated ?? 0,
+		// 			dbKey: dbKey,
+		// 			lastUpdated: localSyncData[dbKey]?.lastUpdated ?? 0,
 		// 			sync: SmartSync_UpToDateSync
 		// 		}));
 		// 	const setAllModulesAsContainData: Response_SmartSync = {modules: allModulesAreUpToDate};

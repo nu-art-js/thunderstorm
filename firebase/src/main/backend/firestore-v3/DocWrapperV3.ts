@@ -105,7 +105,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 
 		const currDBItem = await this.get(transaction);
 		if ((currDBItem?.__updated || 0) > ((item as DB_Object).__updated || currentTimeMillis()))
-			throw HttpCodes._4XX.ENTITY_IS_OUTDATED('Item is outdated', `${this.collection.name}/${currDBItem?._id} is outdated`);
+			throw HttpCodes._4XX.ENTITY_IS_OUTDATED('Item is outdated', `${this.collection.collection.path}/${currDBItem?._id} is outdated`);
 
 		const newDBItem = await this.prepareForSet(item as Proto['dbType'], currDBItem!, transaction, false);
 

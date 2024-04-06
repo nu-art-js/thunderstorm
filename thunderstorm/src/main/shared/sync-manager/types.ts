@@ -6,7 +6,7 @@ export type SyncDataFirebaseState = TypedMap<LastUpdated>
 export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], toDelete: DB_Object[] };
 export type ApiStruct_SyncManager = {}
 export type SyncDbData = {
-	dbName: string,
+	dbKey: string,
 	lastUpdated: number
 };
 
