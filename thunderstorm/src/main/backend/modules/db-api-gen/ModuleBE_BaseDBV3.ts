@@ -203,17 +203,9 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 	}
 
-	getCollectionName() {
-		return this.config.collectionName;
-	}
-
-	getItemName() {
-		return this.config.itemName;
-	}
-
 	querySync = async (syncQuery: FirestoreQuery<Proto['dbType']>): Promise<Response_DBSync<Proto['dbType']>> => {
 		const items = await this.collection.query.custom(syncQuery);
-		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
+		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.dbDef.dbKey, syncQuery as FirestoreQuery<DB_Object>);
 
 		await this.upgradeInstances(items);
 		return {toUpdate: items, toDelete: deletedItems};
@@ -239,15 +231,15 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 			const latestUpdated = Array.isArray(data.updated) ?
 				data.updated.reduce((toRet, current) => Math.max(toRet, current.__updated), data.updated[0].__updated) :
 				data.updated.__updated;
-			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, latestUpdated);
+			await ModuleBE_SyncManager.setLastUpdated(this.dbDef.dbKey, latestUpdated);
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys, transaction);
-			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
+			await ModuleBE_SyncManager.onItemsDeleted(this.dbDef.dbKey, asArray(data.deleted), this.config.uniqueKeys, transaction);
+			await ModuleBE_SyncManager.setLastUpdated(this.dbDef.dbKey, now);
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
-			await ModuleBE_SyncManager.setOldestDeleted(this.config.collectionName, now);
+			await ModuleBE_SyncManager.setOldestDeleted(this.dbDef.dbKey, now);
 
 		await this.postWriteProcessing(data, transaction);
 	};

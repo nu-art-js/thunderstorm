@@ -49,7 +49,7 @@ const dispatch_onModuleCleanupV2 = new Dispatcher<OnModuleCleanupV2, '__onCleanu
 type Config = DBApiConfigV3<DBProto_BackupDoc> & {
 	keepInterval: number,
 	minTimeThreshold: number,
-	excludedCollectionNames?: string[],
+	excludedDbKeys?: string[],
 }
 
 const CSVConfig = {
@@ -64,15 +64,6 @@ const CSVConfig = {
 };
 
 type DBModules = ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>;
-type BackRowCSV = { collectionName: string, _id: string, document: string };
-
-type IterateOnBackupParams = {
-	stream: Readable,
-	chunkSize: number,
-	filter: (collectionName: string) => boolean,
-	process: (row: BackRowCSV) => void,
-	paginate: () => Promise<any>
-}
 
 /**
  * This module is in charge of making a backup of the db in firebase storage,
@@ -115,8 +106,8 @@ export class ModuleBE_BackupDocDB_Class
 				if (!module || !module.dbDef)
 					return false;
 
-				if (this.config.excludedCollectionNames?.includes(module.config.collectionName)) {
-					this.logWarningBold(`Skipping module ${module.config.collectionName} since it's in the exclusion list.`);
+				if (this.config.excludedDbKeys?.includes(module.dbDef.dbKey)) {
+					this.logWarningBold(`Skipping module ${module.dbDef.dbKey} since it's in the exclusion list.`);
 					return false;
 				}
 
@@ -172,50 +163,6 @@ export class ModuleBE_BackupDocDB_Class
 			.executeSync()) as Readable;
 	};
 
-	iterateOnBackup = async (params: IterateOnBackupParams) => {
-		const startSync = performance.now(); // required for log
-
-		this.logInfo(`----  Iterating on Backup... ----`);
-		let totalItems = 0;
-		let batchItemsCounter = 0;
-		let totalItemsCollected = 0;
-
-		await CSVModule.forEachCsvRowFromStreamSync(params.stream, (row: any, index: number, transform) => {
-			_keys(row).map(key => {
-				row[(key as string).trim()] = (row[key] as string).trim();
-			});
-
-			if (!params.filter(row.collectionName))
-				return;
-
-			totalItems++;
-			params.process(row);
-			batchItemsCounter++;
-			if (batchItemsCounter < params.chunkSize)
-				return;
-
-			this.logInfo(`calling pause`);
-			transform.pause();
-			const prevLimitCounter = batchItemsCounter;
-			batchItemsCounter = 0;
-
-			params.paginate().then(() => {
-				this.logInfo(`committed ${prevLimitCounter} items`);
-				totalItemsCollected += prevLimitCounter;
-
-				transform.resume();
-			}).catch(err => this.logError('error committing batch', err));
-		});
-
-		if (batchItemsCounter > 0) {
-			await params.paginate();
-			totalItemsCollected += batchItemsCounter;
-		}
-		this.logInfo(`---- DONE Syncing Firestore: (${totalItemsCollected}/${totalItems})----`);
-		const endSync = performance.now(); // required for log
-		this.logInfo(`SyncingEnv took ${((endSync - startSync) / 1000).toFixed(3)} seconds`);
-	};
-
 	// ##################### Collection Interaction #####################
 
 	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
@@ -260,8 +207,8 @@ export class ModuleBE_BackupDocDB_Class
 		if (!force && latestDoc && latestDoc.timestamp + this.config.minTimeThreshold > nowMs)
 			return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
 
-		if (this.config.excludedCollectionNames)
-			this.logInfo(`Found excluded modules list: ${this.config.excludedCollectionNames}`);
+		if (this.config.excludedDbKeys)
+			this.logInfo(`Found excluded modules list: ${this.config.excludedDbKeys}`);
 
 		try {
 			this.logInfo('Cleaning modules...');
@@ -274,7 +221,7 @@ export class ModuleBE_BackupDocDB_Class
 		}
 
 		const modules: DBModules[] = filterInstances(this.getBackupDetails());
-		let backupsCounter = 0;
+		const backupsCounter = 0;
 
 		try {
 			this.logInfo('Upgrading Collections');
@@ -325,7 +272,7 @@ export class ModuleBE_BackupDocDB_Class
 			await metadataFile.write(metadata!);
 			this.logDebug('Metadata file created');
 		} catch (e: any) {
-			this.logWarning(`backup of ${modules[backupsCounter].config.collectionName} has failed with error`, e);
+			this.logWarning(`backup of ${modules[backupsCounter].dbDef.dbKey} has failed with error`, e);
 			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(modules[backupsCounter].config, true)}\nError: ${_logger_logException(e)}`;
 			throw new ApiException(500, errorMessage, e);
 		}
@@ -381,7 +328,7 @@ export class ModuleBE_BackupDocDB_Class
 		const backupDoc = await this.queryUnique(body.backupId);
 
 		if (!backupDoc)
-			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
+			throw new ApiException(500, `no backup doc found with this id ${body.backupId}`);
 
 		return await this.fetchDocImpl(backupDoc);
 	};
@@ -439,11 +386,11 @@ class DBModuleReader
 	public getMetadata = () => cloneObj(this.metadata);
 
 	private updateMetadata = (module: DBModules, items: any[]) => {
-		const collectionName = module.config.collectionName;
-		const collectionData = this.metadata.collectionsData.find(data => data.collectionName === collectionName);
+		const dbKey = module.dbDef.dbKey;
+		const collectionData = this.metadata.collectionsData.find(data => data.dbKey === dbKey);
 		if (!collectionData)
 			return this.metadata.collectionsData.push({
-				collectionName: collectionName,
+				dbKey: module.dbDef.dbKey,
 				numOfDocs: items.length,
 				version: module.dbDef.versions[0],
 			});
@@ -462,7 +409,7 @@ class DBModuleReader
 			return;
 		}
 
-		const collectionName = module.config.collectionName;
+		const dbKey = module.dbDef.dbKey;
 		try {
 			const items = await module.query.custom({
 				..._EmptyQuery,
@@ -470,7 +417,7 @@ class DBModuleReader
 			});
 			this.updateMetadata(module, items);
 			return items.map(item => ({
-				collectionName: collectionName,
+				dbKey: dbKey,
 				_id: item._id,
 				document: JSON.stringify(item),
 			}));

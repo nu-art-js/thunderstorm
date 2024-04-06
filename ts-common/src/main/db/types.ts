@@ -122,7 +122,7 @@ export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> =
 	/**
 	 * First item in the array is the latest version. Last item in the array is the oldest version.
 	 */
-	versions?: string[]; // default ["1.0.0"]
+	versions: string[]; // default ["1.0.0"]
 	generatedProps?: (keyof T)[]
 	indices?: DBIndex<T>[]
 	metadata?: Metadata<OmitDBObject<T>>
