@@ -23,7 +23,8 @@ export type DynamicProps_TS_MultiSelect_V2<EnclosingItem, Prop extends keyof Enc
 export type StaticProps_TS_MultiSelect_V2<ItemType> = {
 	className?: string
 	itemsDirection?: 'vertical' | 'horizontal';
-	itemFilter?: (item: ItemType) => boolean;
+	selectionFilter?: (item: ItemType) => boolean; // for the shown list
+	itemFilter?: (item: ItemType) => boolean; // for the selection dropdown
 	sort?: (items: ItemType[]) => ItemType[];
 	// mandatory
 	itemRenderer: (item?: ItemType, onDelete?: () => Promise<void>) => ReactNode
@@ -57,7 +58,8 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 
 		const editableProp = editable.editProp(prop, []);
 		const existingItems = (editable.item[prop] || (editable.item[prop] = [])) as Binder['InnerType'][];
-		let itemsToRender = this.props.itemFilter ? existingItems.filter(this.props.itemFilter) : existingItems;
+		let itemsToRender = this.props.selectionFilter ? existingItems.filter(this.props.selectionFilter) : existingItems;
+		// let itemsToRender = existingItems;
 		if (this.props.sort)
 			itemsToRender = this.props.sort(itemsToRender);
 
@@ -73,6 +75,7 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 		const Wrapper = direction === 'horizontal' ? LL_H_C : LL_V_L;
 
 		return <Wrapper className={_className('ts-multi-select__list', this.props.className)}>
+			{/*selected items list*/}
 			{itemsToRender.map((item, i) => {
 				return <LL_H_C className="ts-multi-select__list-value" key={i}>
 					{props.itemRenderer(item, async () => {
@@ -87,7 +90,7 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 					})}
 				</LL_H_C>;
 			})}
-
+			{/*dropdown*/}
 			{SelectionRenderer({
 				className: 'ts-multi-select__selector',
 				onSelected: addInnerItem,
