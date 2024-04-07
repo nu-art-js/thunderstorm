@@ -29,7 +29,7 @@ export class ModuleFE_SyncManager_CSV_Class
 						return errors.push(...results.errors);
 
 					const item = results.data;
-					const module = modules[item.collectionName];
+					const module = modules[item.dbKey];
 					if (!module)
 						return;
 
@@ -37,7 +37,7 @@ export class ModuleFE_SyncManager_CSV_Class
 				},
 				complete: async (results: ParseResult<any>) => {
 					for (const moduleKey of _keys(modules)) {
-						const items = itemsToSync.filter(item => item.collectionName === moduleKey);
+						const items = itemsToSync.filter(item => item.dbKey === moduleKey);
 						const module = modules[moduleKey];
 						this.logInfo(`Syncing ${items.length} items to ${moduleKey}`);
 						await module.IDB.syncIndexDb(items.map(item => item.document));
@@ -78,16 +78,6 @@ export class ModuleFE_SyncManager_CSV_Class
 				});
 		});
 	};
-
-	// private syncModules = async (data: any[]) => {
-	// 	const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.backend.name);
-	// 	for (const item of data) {
-	// 		const module = modules[item.collectionName];
-	// 		if (!module)
-	// 			continue;
-	// 		await module.IDB.storeWrapper.upsert(item.document);
-	// 	}
-	// };
 }
 
 export const ModuleFE_SyncManager_CSV = new ModuleFE_SyncManager_CSV_Class();
@@ -127,7 +117,7 @@ class ModuleIDBWriter extends Writable {
 			return;
 
 		for (const item of this.itemsToUpsert) {
-			const module = this.moduleNameMap[item.collectionName];
+			const module = this.moduleNameMap[item.dbKey];
 			if (!module)
 				continue;
 
