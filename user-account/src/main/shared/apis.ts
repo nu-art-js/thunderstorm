@@ -13,29 +13,6 @@ export const QueryParam_SessionId = HeaderKey_SessionId;
 export const QueryParam_RedirectUrl = 'redirectUrl';
 export const HeaderKey_CurrentPage = 'current-page';
 
-export type Response_Auth = UI_Account & DB_BaseObject
-
-type DBAccountType = {
-	type: AccountType
-}
-
-export type AccountEmail = {
-	email: string
-}
-export type AccountEmailWithDevice = AccountEmail & {
-	deviceId: string
-}
-
-export type AccountPassword = {
-	password: string
-}
-
-export type PasswordWithCheck = AccountPassword & {
-	passwordCheck: string
-}
-
-export type AccountToAssertPassword = AccountEmail & Partial<PasswordWithCheck>
-export type AccountToSpice = AccountEmail & AccountPassword
 export type Request_RegisterAccount = DBAccountType & AccountEmailWithDevice & PasswordWithCheck
 export type RequestBody_RegisterAccount = AccountEmailWithDevice & PasswordWithCheck
 export type Request_CreateAccount = DBAccountType & AccountEmail & Partial<PasswordWithCheck>
@@ -55,7 +32,7 @@ export type Response_LoginSAML = {
 	loginUrl: string
 };
 
-export type Request_LoginAccount = AccountEmailWithDevice & AccountPassword
+export type Request_LoginAccount =
 export type RequestBody_CreateToken = { accountId: UniqueId, ttl: number, label: string };
 export type Response_CreateToken = { token: string };
 export type Response_ChangeThumbnail = { account: DB_Account };
@@ -84,18 +61,9 @@ const API_RegisterAccount = {
 	}
 } as const;
 const API_CreateAccount = {createAccount: {method: HttpMethod.POST, path: '/v1/account/create-account'}} as const;
-const API_ChangePassword = {
-	changePassword: {
-		method: HttpMethod.POST,
-		path: '/v1/account/change-password'
-	}
-} as const;
+const API_ChangePassword = {changePassword: {method: HttpMethod.POST, path: '/v1/account/change-password'}} as const;
 const API_CreateToken = {
-	createToken: {
-		method: HttpMethod.POST,
-		path: 'v1/account/create-token',
-		timeout: Minute
-	}
+	createToken: {method: HttpMethod.POST, path: 'v1/account/create-token', timeout: Minute}
 } as const;
 const API_SetPassword = {setPassword: {method: HttpMethod.POST, path: '/v1/account/set-password'}} as const;
 const API_GetSessions = {getSessions: {method: HttpMethod.GET, path: 'v1/account/get-sessions'}} as const;

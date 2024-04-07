@@ -2,7 +2,7 @@ import * as React from 'react';
 import {TS_BusyButton} from '@nu-art/thunderstorm/frontend';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_GoogleSAMLLogin.scss';
-import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
+import {ModuleFE_Account} from '../../../_entity/account/frontend/ModuleFE_Account';
 import {StorageKey_DeviceId} from '../../core/consts';
 
 

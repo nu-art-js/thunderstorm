@@ -20,7 +20,7 @@ import * as React from 'react';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
 import {AccountEmail, PasswordWithCheck, Request_RegisterAccount, RequestBody_RegisterAccount} from '../../shared';
 import {ComponentSync, LL_V_C, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_Account} from '../modules/ModuleFE_Account';
+import {ModuleFE_Account} from '../../_entity/account/frontend/ModuleFE_Account';
 import {StorageKey_DeviceId} from '../core/consts';
 
 

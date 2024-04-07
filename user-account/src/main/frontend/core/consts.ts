@@ -1,4 +1,4 @@
-import {SessionKey_FE} from '../modules/ModuleFE_Account';
+import {SessionKey_FE} from '../../_entity/account/frontend/ModuleFE_Account';
 import {_SessionKey_Account, _SessionKey_Session, HeaderKey_SessionId, HeaderKey_TabId} from '../../shared';
 import {StorageKey} from '@nu-art/thunderstorm/frontend';
 
