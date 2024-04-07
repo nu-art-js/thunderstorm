@@ -40,7 +40,6 @@ import {DB_EntityDependency} from '@nu-art/firebase';
 
 
 export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = Default_UniqueKey> = {
-	collectionName: string;
 	validator: ValidatorTypeResolver<DBType>;
 	uniqueKeys: Ks[]
 	lockKeys: (keyof DBType)[]
@@ -60,7 +59,6 @@ function getDbDefValidator<T extends DB_Object, Ks extends keyof T>(dbDef: DBDef
 export const getModuleBEConfig = <T extends DB_Object, Ks extends keyof T = Default_UniqueKey>(dbDef: DBDef<T, Ks>): DBApiBEConfig<T, Ks> => {
 	const dbDefValidator = getDbDefValidator(dbDef);
 	return {
-		collectionName: dbDef.dbKey,
 		validator: dbDefValidator as ValidatorTypeResolver<T>,
 		uniqueKeys: dbDef.uniqueKeys || Const_UniqueKeys as Ks[],
 		lockKeys: dbDef.lockKeys || dbDef.uniqueKeys || [...KeysOfDB_Object],

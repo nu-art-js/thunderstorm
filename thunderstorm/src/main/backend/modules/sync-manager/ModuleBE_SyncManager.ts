@@ -121,7 +121,7 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	private calculateSmartSync = async (body: Request_SmartSync): Promise<Response_SmartSync> => {
-		const frontendCollectionNames = body.modules.map(item => item.dbName);
+		const frontendCollectionNames = body.modules.map(item => item.dbKey);
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 
 		const permissibleModules: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbKey)));
@@ -133,16 +133,16 @@ export class ModuleBE_SyncManager_Class
 
 		// For each module, create the response, which says what type of sync it needs: none, delta or full.
 		await Promise.all(body.modules.map(async syncRequest => {
-			const moduleToCheck = dbNameToModuleMap[syncRequest.dbName] as (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>);
+			const moduleToCheck = dbNameToModuleMap[syncRequest.dbKey] as (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>);
 			if (!moduleToCheck)
-				return this.logError(`Calculating collections to sync, failing to find dbName: ${syncRequest.dbName}`);
+				return this.logError(`Calculating collections to sync, failing to find dbKey: ${syncRequest.dbKey}`);
 
-			const remoteSyncData = upToDateSyncData[syncRequest.dbName];
+			const remoteSyncData = upToDateSyncData[syncRequest.dbKey] ?? {lastUpdated: 0, oldestDeleted: 0};
 			// Local has no sync data, or it's too old - tell local to send a full sync request for this module
 			if (syncRequest.lastUpdated === 0 && remoteSyncData.lastUpdated > 0 || exists(remoteSyncData.oldestDeleted) && remoteSyncData.oldestDeleted > syncRequest.lastUpdated) {
 				// full sync
 				syncDataResponse.push({
-					dbName: syncRequest.dbName,
+					dbKey: syncRequest.dbKey,
 					sync: SmartSync_FullSync,
 					lastUpdated: remoteSyncData.lastUpdated,
 				});
@@ -153,7 +153,7 @@ export class ModuleBE_SyncManager_Class
 			if (syncRequest.lastUpdated === remoteSyncData.lastUpdated) {
 				// no sync
 				syncDataResponse.push({
-					dbName: syncRequest.dbName,
+					dbKey: syncRequest.dbKey,
 					sync: SmartSync_UpToDateSync,
 					lastUpdated: remoteSyncData.lastUpdated
 				});
@@ -171,11 +171,11 @@ export class ModuleBE_SyncManager_Class
 				}
 				const itemsToReturn = {
 					toUpdate: toUpdate,
-					toDelete: await this.queryDeleted(syncRequest.dbName, {where: {__updated: {$gte: syncRequest.lastUpdated}}})
+					toDelete: await this.queryDeleted(syncRequest.dbKey, {where: {__updated: {$gte: syncRequest.lastUpdated}}})
 				};
 
 				syncDataResponse.push({
-					dbName: syncRequest.dbName,
+					dbKey: syncRequest.dbKey,
 					sync: SmartSync_DeltaSync,
 					lastUpdated: remoteSyncData.lastUpdated,
 					items: itemsToReturn
@@ -192,7 +192,7 @@ export class ModuleBE_SyncManager_Class
 		const rtdbSyncData = await this.syncData.get({});
 
 		const missingModules = this.dbModules.filter(dbModule => {
-			const dbBE_SyncData = rtdbSyncData[dbModule.getCollectionName()];
+			const dbBE_SyncData = rtdbSyncData[dbModule.dbDef.dbKey];
 			if (!dbBE_SyncData)
 				return true;
 
@@ -204,7 +204,7 @@ export class ModuleBE_SyncManager_Class
 		});
 
 		if (missingModules.length) {
-			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.getCollectionName()));
+			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.dbDef.dbKey));
 			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'desc'}]};
 			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
 				try {
@@ -214,7 +214,7 @@ export class ModuleBE_SyncManager_Class
 				}
 			})));
 
-			newestItems.forEach((item, index) => rtdbSyncData[missingModules[index].getCollectionName()] = {lastUpdated: item[0]?.__updated || 0});
+			newestItems.forEach((item, index) => rtdbSyncData[missingModules[index].dbDef.dbKey] = {lastUpdated: item[0]?.__updated || 0});
 			await this.syncData.set(rtdbSyncData);
 		}
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './TS_EditableItemController.scss';
-import {asArray, DB_Object, dbObjectToId, DBProto, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {asArray, BadImplementationException, DB_Object, DBProto, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {EditableDBItemV3} from '../../utils/EditableItem';
 import {State_ItemEditor} from '../Item_Editor';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
@@ -17,7 +17,7 @@ export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps
 	onError?: (err: Error) => any | Promise<any>
 	autoSave?: ResolvableContent<boolean, [Readonly<Proto['uiType']>]>
 	editor: React.ComponentType<EditableRef<Proto['uiType']> & EditorProps>
-	createInitialInstance: () => Readonly<Partial<Proto['uiType']>>
+	createInitialInstance?: () => Readonly<Partial<Proto['uiType']>>
 	editorProps?: EditorProps
 };
 
@@ -47,27 +47,30 @@ export class TS_EditableItemController<Proto extends DBProto<any>,
 	}
 
 	private __onItemUpdated = (...params: ApiCallerEventTypeV3<Proto>): void => {
-		const items = asArray(params[1]);
-		if (!items.map(dbObjectToId).includes(this.state.editable.item._id!))
+		if (!this.props.item)
 			return;
 
-		return this.reDeriveState();
+		const id = typeof this.props.item === 'string' ? this.props.item : this.props.item._id;
+		if (!(params[0] === 'update' && params[1]._id === id))
+			return;
+
+		this.state.editable?.updateItem(deepClone(asArray(params[1]))[0]);
 	};
 
 	protected deriveStateFromProps(nextProps: Props & Props_ItemsEditorV3<Proto>, state?: Partial<State_ItemEditor<Proto['uiType']>>): (State_ItemEditor<Proto['uiType']>) {
 		const _state = (state || {}) as State_ItemEditor<Proto['uiType']>;
 		let item = typeof nextProps.item === 'string' ? nextProps.module.cache.unique(nextProps.item) : nextProps.item;
 		if (!exists(item))
-			item = this.props.createInitialInstance();
+			item = this.props.createInitialInstance?.();
 
-		_state.editable = new EditableDBItemV3(item, nextProps.module, async (item) => {
-			this.setState(state => ({editable: state.editable}));
-			await nextProps.onCompleted?.(item);
-		}, nextProps.onError)
+		if (!item)
+			throw new BadImplementationException('in order to use this component to create an item you need to provide a createInitialInstance callback');
+
+		_state.editable = new EditableDBItemV3(item, nextProps.module, nextProps.onError)
 			.setOnChanged(async editable => {
 				this.setState({editable});
 			})
-			.setAutoSave(resolveContent(nextProps.autoSave, item) || false);
+			.setAutoSave(resolveContent(nextProps.autoSave || TS_EditableItemController.DefaultAutoSave, item) || false);
 		return _state;
 	}
 

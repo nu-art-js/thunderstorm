@@ -40,7 +40,7 @@ export type FetchBackupDoc = {
 
 export type BackupMetaData = {
 	collectionsData: {
-		collectionName: string,
+		dbKey: string,
 		numOfDocs: number,
 		version: string
 	}[],

@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
+import {filterInstances, sortArray} from './array-tools';
 
-import {sortArray} from './array-tools';
 
 const specialChars = ['(', ')', '?', '[', ']', '*', '\\', '/'];
 
@@ -50,10 +50,9 @@ const specialChars = ['(', ')', '?', '[', ']', '*', '\\', '/'];
  */
 export class Filter<T> {
 	private regexp = true;
-	private readonly mapper: (item: T) => string[];
+	private readonly mapper: (item: T) => (string | undefined)[];
 	private originFilterText?: string;
 	private _filter!: RegExp;
-
 
 	static translateStringToRegexFilter = (filter: string, regexp: boolean): RegExp => {
 		filter = (filter || '').trim();
@@ -83,7 +82,7 @@ export class Filter<T> {
 	 * const filter = new Filter<T>((item)=>[item.name]);
 	 * ```
 	 */
-	constructor(mapper: (item: T) => string[]) {
+	constructor(mapper: (item: T) => (string | undefined)[]) {
 		this.mapper = mapper;
 	}
 
@@ -164,7 +163,7 @@ export class Filter<T> {
 		const filteredItems = items.filter(this.filterImpl);
 
 		return sortArray(filteredItems, item => {
-			const values = this.mapper(item).map(value => value.toLowerCase());
+			const values = filterInstances(this.mapper(item)).map(value => value.toLowerCase());
 			//Exact Match
 			if (values.includes(text)) {
 				return 0;
@@ -198,7 +197,7 @@ export class Filter<T> {
 	 * ```
 	 */
 	filterImpl = (item: T) => {
-		const keysToFilter = this.mapper(item);
+		const keysToFilter = filterInstances(this.mapper(item));
 		for (const key of keysToFilter) {
 			if (key.toLowerCase().match(this._filter))
 				return true;

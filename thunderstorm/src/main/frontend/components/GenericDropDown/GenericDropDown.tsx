@@ -41,13 +41,13 @@ export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof
 	placeholder: string;
 	module: ModuleFE_BaseApi<T, Ks>;
 	modules: ModuleFE_BaseApi<DB_Object, any>[];
-	mapper: (item: T) => string[]
+	mapper: (item: T) => (string | undefined)[]
 	renderer: (item: T) => React.ReactElement
 }
 
 type GenericDropDownProps<T, Ks> = {
 	placeholder?: string;
-	mapper: (item: T) => string[]
+	mapper: (item: T) => (string | undefined)[]
 	renderer: (item: T) => React.ReactElement
 	queryFilter?: (item: T) => boolean
 	ifNoneShowAll?: boolean

@@ -17,6 +17,7 @@ import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_MouseInteractivity, mouseInteractivity_PopUp, openContent} from '../../component-modules/mouse-interactivity';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
 import {_className} from '../../utils/tools';
+import {InferProps, InferState} from '../../utils/types';
 
 
 export type MenuAction<Proto extends DBProto<any>> = { label: string, action: (state: State_ItemsEditorV3<Proto>) => Promise<any> }
@@ -37,15 +38,16 @@ export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 	actions: MenuAction<Proto>[]
 };
 
-export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {},
-	Props extends Props_ItemsEditorV3<Proto> & P = Props_ItemsEditorV3<Proto> & P>
-	extends ComponentSync<Props, State_ItemsEditorV3<Proto>> {
+export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
+	Props extends Props_ItemsEditorV3<Proto> & P = Props_ItemsEditorV3<Proto> & P,
+	State extends State_ItemsEditorV3<Proto> & S = State_ItemsEditorV3<Proto> & S>
+	extends ComponentSync<Props, State> {
 
 	constructor(p: Props) {
 		super(p);
 	}
 
-	protected deriveStateFromProps(nextProps: Props, state: State_ItemsEditorV3<Proto>) {
+	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
 		if (nextProps === this.props || nextProps.module !== this.props.module) {
 			// @ts-ignore
 			delete this[this.props.module.defaultDispatcher.method];

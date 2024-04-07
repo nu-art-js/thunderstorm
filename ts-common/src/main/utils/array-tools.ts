@@ -146,7 +146,7 @@ export function filterFalsy<T>(array?: (T | undefined | null | void)[]): T[] {
  * */
 export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: {
 	[k: string]: T
-}) => string | number, map: {
+}) => string | number | (string | number)[], map: {
 	[k: string]: T
 } = {}): { [k: string]: T } {
 	return reduceToMap<T, T>(array, getKey, item => item, map);
@@ -154,7 +154,7 @@ export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, inde
 
 type KeyResolver<Input, Output = Input> = (item: Input, index: number, map: {
 	[k: string]: Output
-}) => string | number;
+}) => string | number | (string | number)[];
 
 type Mapper<Input, Output = Input> = (item: Input, index: number, map: { [k: string]: Output }) => Output;
 
@@ -164,7 +164,13 @@ type Mapper<Input, Output = Input> = (item: Input, index: number, map: { [k: str
  */
 export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<Input[]>), keyResolver: KeyResolver<Input, Output>, mapper: Mapper<Input, Output>, map: TypedMap<Output> = {}): TypedMap<Output> {
 	return (array as (Input[])).reduce((toRet, element, index) => {
-		toRet[keyResolver(element, index, toRet)] = mapper(element, index, toRet);
+		const keys = keyResolver(element, index, toRet);
+		const output = mapper(element, index, toRet);
+		if (typeof keys === 'string' || typeof keys === 'number')
+			toRet[keys] = output;
+		else
+			keys.forEach(key => toRet[key] = output);
+
 		return toRet;
 	}, map);
 }

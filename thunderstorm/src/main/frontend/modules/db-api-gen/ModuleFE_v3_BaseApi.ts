@@ -42,7 +42,7 @@ type Operation = {
 	pending?: Pending
 }
 
-export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
+export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, _Config extends {} = {}, Config extends _Config & DBApiFEConfigV3<Proto> = _Config & DBApiFEConfigV3<Proto>>
 	extends ModuleFE_v3_BaseDB<Proto, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>> {
 
@@ -53,7 +53,7 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string) {
 		super(dbDef, defaultDispatcher, ModuleSyncType.APISync);
 
-		const apiDef = DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
+		const apiDef = this.resolveApiDef(dbDef, version);
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
@@ -94,6 +94,10 @@ export abstract class ModuleFE_v3_BaseApi<Proto extends DBProto<any>, Config ext
 			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
 		};
+	}
+
+	protected resolveApiDef(dbDef: DBDef_V3<Proto>, version: string | undefined) {
+		return DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
 	}
 
 	protected cleanUp = (toUpsert: Proto['uiType']) => {

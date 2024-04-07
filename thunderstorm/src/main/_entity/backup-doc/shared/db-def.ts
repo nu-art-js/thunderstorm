@@ -1,6 +1,7 @@
 import {DBDef_V3, tsValidateArray, tsValidateNumber, tsValidateString, tsValidateTimestamp} from '@nu-art/ts-common';
 import {DBProto_BackupDoc} from './types';
 
+
 const Validator_ModifiableProps: DBProto_BackupDoc['modifiablePropsValidator'] = {
 	timestamp: tsValidateTimestamp(),
 	backupPath: tsValidateString(),
@@ -9,7 +10,7 @@ const Validator_ModifiableProps: DBProto_BackupDoc['modifiablePropsValidator'] =
 	metadata: {
 		timestamp: tsValidateTimestamp(),
 		collectionsData: tsValidateArray({
-			collectionName: tsValidateString(),
+			dbKey: tsValidateString(),
 			numOfDocs: tsValidateNumber(),
 			version: tsValidateString()
 		})

@@ -1,0 +1,33 @@
+@mixin grid-borders($axisCount, $direction:'row') {
+  @if $direction == 'column' {
+    //Setting border right for every child not on the right most column
+    @for $i from 1 to $axisCount {
+      & > *:nth-child(#{$axisCount}n+#{$i}) {
+        border-right: 1px solid black;
+      }
+    }
+  } @else if $direction == 'row' {
+    //Setting border left for every child not on the left most column
+    @for $i from 1 through $axisCount {
+      & > *:nth-child(#{$axisCount}n+#{$i}):not(:nth-child(#{$i})) {
+        border-left: 1px solid black;
+      }
+    }
+  }
+
+
+  //Setting border top for every child not on the first row
+  @if $direction == 'column' {
+    @for $i from 1 through $axisCount {
+      & > *:nth-child(#{$axisCount}n+#{$i}):not(:nth-child(#{$i})) {
+        border-top: 1px solid black;
+      }
+    }
+  } @else if $direction == 'row' {
+    @for $i from 2 through $axisCount {
+      & > *:nth-child(#{$axisCount}n+#{$i}) {
+        border-top: 1px solid black;
+      }
+    }
+  }
+}
