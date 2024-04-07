@@ -232,7 +232,7 @@ class CollectionBatchWriter
 
 	async _write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
 		try {
-			const collectionName = this.modules[chunk.dbKey].dbDef!.backend.name;
+			const collectionName = this.modules[chunk.dbKey].dbDef!.dbKey;
 			const docRef = this.firestore.doc(`${collectionName}/${chunk._id}`);
 			const data = JSON.parse(chunk.document);
 			this.batchWriter.set(docRef, data);
