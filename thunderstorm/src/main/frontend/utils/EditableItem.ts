@@ -80,8 +80,6 @@ export class EditableItem<T>
 		super();
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
 
-		this.setMinLevel(LogLevel.Verbose);
-
 		// @ts-ignore
 		if (!!item.__updated) {
 			// @ts-ignore
