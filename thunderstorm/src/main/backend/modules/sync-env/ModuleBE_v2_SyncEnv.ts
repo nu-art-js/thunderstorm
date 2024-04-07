@@ -136,7 +136,7 @@ class ModuleBE_v2_SyncEnv_Class
 		const backupInfo = await this.getBackupInfo(body);
 		const stream = await ModuleBE_BackupDocDB.createBackupReadStream(backupInfo);
 		const collectionFilter = new SyncCollectionFilter(body.selectedModules);
-		const collectionWriter = new CollectionBatchWriter(1000);
+		const collectionWriter = new CollectionBatchWriter(body.chunkSize);
 
 		this.logInfo(`----  Syncing Collections From Backup... ----`);
 		startTime = performance.now();
