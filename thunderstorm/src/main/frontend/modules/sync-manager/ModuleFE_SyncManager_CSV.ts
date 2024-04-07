@@ -16,7 +16,7 @@ export class ModuleFE_SyncManager_CSV_Class
 	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_v3_BaseDB<any>>((module) => module.syncType === ModuleSyncType.CSVSync);
 
 	syncFromCSVUrl = async (url: string) => {
-		const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.backend.name);
+		const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.dbKey);
 		const start = performance.now();
 		const itemsToSync: any[] = [];
 		const errors: any[] = [];
