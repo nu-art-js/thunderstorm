@@ -51,10 +51,10 @@ import {
 	SafeDB_Account,
 	UI_Account
 } from '../../shared';
-import {assertPasswordRules, PasswordAssertionConfig} from '../../shared/assertion';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import Transaction = firestore.Transaction;
+import {assertPasswordRules, PasswordAssertionConfig} from '../_enum';
 
 
 type BaseAccount = {
@@ -74,6 +74,7 @@ export interface OnNewUserRegistered {
 export interface OnUserLogin {
 	__onUserLogin(account: SafeDB_Account, transaction: Transaction): void;
 }
+
 export interface OnPreLogout {
 	__onPreLogout: () => Promise<void>;
 }

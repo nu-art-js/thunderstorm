@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ComponentSync, LL_V_L, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
+import {ModuleFE_Account} from '../../../_entity/account/frontend/ModuleFE_Account';
 import {SessionKeyFE_Account} from '../../core/consts';
 
 

@@ -18,10 +18,10 @@
 
 
 import {Module} from '@nu-art/ts-common';
-import {ModuleFE_Account} from '../modules/ModuleFE_Account';
+import {ModuleFE_Account} from '../../_entity/account/frontend/ModuleFE_Account';
 
 export const ModulePackFE_Accounts: Module[] = [
 	ModuleFE_Account,
 ];
 
-export * from '../modules/ModuleFE_Account';
+export * from '../../_entity/account/frontend/ModuleFE_Account';

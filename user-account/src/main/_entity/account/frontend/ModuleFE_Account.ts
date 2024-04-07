@@ -29,24 +29,16 @@ import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listen
 import {
 	ApiDefFE_Account,
 	ApiStructFE_Account,
-	DB_Account,
-	DBDef_Accounts,
-	DBProto_Account,
 	HeaderKey_SessionId,
 	HeaderKey_TabId,
 	QueryParam_SessionId,
 	Response_Auth,
 	Response_ChangeThumbnail,
 	Response_LoginSAML,
-	UI_Account
-} from '../../shared';
-import {
-	StorageKey_DeviceId,
-	StorageKey_SessionId,
-	StorageKey_SessionTimeoutTimestamp,
-	StorageKey_TabId
-} from '../core/consts';
+} from '../../../shared';
+import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp, StorageKey_TabId} from '../../../frontend/core/consts';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {DB_Account, DBDef_Accounts, DBProto_Account, UI_Account} from '../shared';
 
 
 export interface OnLoginStatusUpdated {

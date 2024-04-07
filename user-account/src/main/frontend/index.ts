@@ -18,7 +18,7 @@
 
 export * from './core/consts';
 export * from './core/module-pack';
-export * from './modules/ModuleFE_Account';
+export * from '../_entity/account/frontend/ModuleFE_Account';
 export * from './ui/Component_Login/Component_Login';
 export * from './ui/Component_Register';
 export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin';

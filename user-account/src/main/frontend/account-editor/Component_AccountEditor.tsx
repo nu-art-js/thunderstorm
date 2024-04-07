@@ -17,7 +17,7 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
-import {ModuleFE_Account} from '../modules/ModuleFE_Account';
+import {ModuleFE_Account} from '../../_entity/account/frontend/ModuleFE_Account';
 import {SessionKeyFE_SessionData} from '../core/consts';
 import {TS_Icons} from '@nu-art/ts-styles';
 
@@ -108,23 +108,23 @@ export class Component_AccountEditor
 					<div>{this.state.user?.email}</div>
 				</TS_PropRenderer.Vertical>
 				{this.state.user?.type !== 'service' && <TS_PropRenderer.Vertical label={'Need To Set Password'}>
-                    <div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
-                </TS_PropRenderer.Vertical>}
+					<div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
+				</TS_PropRenderer.Vertical>}
 			</LL_H_C>;
 
 		return <LL_H_C className={'inputs-row'}>
 			<TS_PropRenderer.Vertical label={'Email'}>
 				<TS_Input type={'text'}
-						  placeholder={'Email'}
-						  value={this.state.email}
-						  onBlur={(email) => this.setState({email})}/>
+									placeholder={'Email'}
+									value={this.state.email}
+									onBlur={(email) => this.setState({email})}/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical disabled={!(this.state.type === 'user')} label={'Temporary Password'}>
 				<TS_Input disabled={!(this.state.type === 'user')}
-						  type={'password'}
-						  value={this.state.password}
-						  placeholder={'Temporary Password'}
-						  onBlur={(password) => this.setState({password})}/>
+									type={'password'}
+									value={this.state.password}
+									placeholder={'Temporary Password'}
+									onBlur={(password) => this.setState({password})}/>
 			</TS_PropRenderer.Vertical>
 		</LL_H_C>;
 	};

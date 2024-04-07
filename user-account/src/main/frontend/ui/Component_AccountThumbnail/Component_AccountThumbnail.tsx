@@ -8,7 +8,7 @@ import {
 	TS_Loader
 } from '@nu-art/thunderstorm/frontend';
 import {cloneObj, filterDuplicates, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
-import {ModuleFE_Account, OnAccountsUpdated} from '../../modules/ModuleFE_Account';
+import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {DB_Account} from '../../../shared';
 import {TS_Icons} from '@nu-art/ts-styles';
@@ -29,7 +29,7 @@ export const Component_AccountThumbnail = (props: Props & { modulesToAwait?: Mod
 	const {modulesToAwait, ...rest} = props;
 	const modules = [...(modulesToAwait ?? []), ModuleFE_Account] as unknown as ModuleFE_v3_BaseApi<any>[];
 	return <AwaitModules modules={filterDuplicates(modules)}
-						 customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
+											 customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
 		<Component_AccountThumbnail_Impl {...rest} />
 	</AwaitModules>;
 };
