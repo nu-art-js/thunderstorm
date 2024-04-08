@@ -1,5 +1,4 @@
 import {
-	__stringify,
 	ApiException,
 	BadImplementationException,
 	cloneObj,
@@ -25,7 +24,8 @@ import {
 	_SessionKey_Account,
 	Account_ChangePassword,
 	Account_ChangeThumbnail,
-	Account_CreateAccount, Account_CreateToken,
+	Account_CreateAccount,
+	Account_CreateToken,
 	Account_Login,
 	Account_RegisterAccount,
 	Account_SetPassword,
@@ -42,8 +42,7 @@ import {
 	SafeDB_Account,
 	UI_Account
 } from '../shared';
-import {assertPasswordRules, PasswordAssertionConfig} from '../../_enum';
-import Transaction = firestore.Transaction;
+import {assertPasswordRules, PasswordAssertionConfig, PasswordAssertionResponseError} from '../../_enum';
 import {
 	CollectSessionData,
 	Header_SessionId,
@@ -54,6 +53,7 @@ import {
 	SessionKey_Account_BE,
 	SessionKey_Session_BE
 } from '../../session/backend';
+import Transaction = firestore.Transaction;
 
 
 type BaseAccount = {
@@ -117,7 +117,8 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDef_Account._v1.createToken, this.token.create),
 			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
 			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
-			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail)
+			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail),
+			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({config: this.config.passwordAssertion}))
 		]);
 	}
 
@@ -397,7 +398,10 @@ export class ModuleBE_AccountDB_Class
 		assertPasswordRules: (password: string) => {
 			const assertPassword = assertPasswordRules(password, this.config.passwordAssertion);
 			if (assertPassword)
-				throw new ApiException(444, `Password assertion failed with: ${__stringify(assertPassword)}`);
+				throw new ApiException<PasswordAssertionResponseError>(444, `Password assertion failed`).setErrorBody({
+					type: 'password-assertion-error',
+					data: assertPassword,
+				});
 		},
 		assertPasswordMatch: async (safeAccount: SafeDB_Account, password: string) => {
 			if (!safeAccount.salt || !safeAccount.saltedPassword)

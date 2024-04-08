@@ -1,15 +1,4 @@
-import {
-	_keys,
-	generateArray,
-	ImplementationMissingException,
-	MUSTNeverHappenException,
-	tsValidateRegexp,
-	tsValidateResult,
-	tsValidateString,
-	tsValidateStringMinLength,
-	Validator,
-	ValidatorImpl
-} from '@nu-art/ts-common';
+import {_keys, generateArray, tsValidateRegexp, tsValidateResult, tsValidateString, tsValidateStringMinLength, Validator} from '@nu-art/ts-common';
 import {
 	PasswordAssertionConfig,
 	PasswordAssertionType,
@@ -19,7 +8,8 @@ import {
 	PasswordAssertionType_MinLength,
 	PasswordAssertionType_Numbers,
 	PasswordAssertionType_SpecialChars,
-	PasswordAssertionTypes
+	PasswordAssertionTypes,
+	PasswordFailureReport
 } from './types';
 
 type PasswordAssertionTypeValidator = (amount: number) => Validator<string>;
@@ -29,7 +19,7 @@ const numbers = '.*?[0-9]';
 const lowerCaseLetters = '.*?[a-z]';
 const capitalLetters = '.*?[A-Z]';
 
-export const Validator_PasswordAssertion: { [Type in PasswordAssertionType]: PasswordAssertionTypeValidator } = {
+const Validator_PasswordAssertion: { [Type in PasswordAssertionType]: PasswordAssertionTypeValidator } = {
 	[PasswordAssertionType_MinLength]: (amount: number) => tsValidateStringMinLength(amount),
 	[PasswordAssertionType_MaxLength]: (amount: number) => tsValidateString(amount),
 	[PasswordAssertionType_SpecialChars]: (amount: number) => tsValidateRegexp(new RegExp(generateArray(amount, _ => specialChars).join(''))),
@@ -38,21 +28,34 @@ export const Validator_PasswordAssertion: { [Type in PasswordAssertionType]: Pas
 	[PasswordAssertionType_CapitalLetters]: (amount: number) => tsValidateRegexp(new RegExp(generateArray(amount, _ => capitalLetters).join(''))),
 };
 
-export const assertPasswordRules = (password: string, assertionConfig?: PasswordAssertionConfig) => {
+const PasswordFailureMessages: { [Type in PasswordAssertionType]: (amount: number) => string } = {
+	[PasswordAssertionType_MinLength]: (amount: number) => `Password is shorter than ${amount} characters`,
+	[PasswordAssertionType_MaxLength]: (amount: number) => `Password is longer than ${amount} characters`,
+	[PasswordAssertionType_SpecialChars]: (amount: number) => `Password does not contain at least ${amount} special characters`,
+	[PasswordAssertionType_Numbers]: (amount: number) => `Password does not contain at least ${amount} numbers`,
+	[PasswordAssertionType_LowerCaseLetters]: (amount: number) => `Password does not contain at least ${amount} lower case characters`,
+	[PasswordAssertionType_CapitalLetters]: (amount: number) => `Password does not contain at least ${amount} capital letters`,
+};
+
+export const assertPasswordRules = (password: string, assertionConfig?: PasswordAssertionConfig): PasswordFailureReport | undefined => {
 	if (!assertionConfig)
 		return;
 
-	const passwordValidators: ValidatorImpl<string>[] = [];
-	for (const key of _keys(assertionConfig)) {
-		if (!PasswordAssertionTypes.includes(key))
-			throw new MUSTNeverHappenException(`Unknown password assertion type ${key}`);
+	const results: PasswordFailureReport = _keys(assertionConfig).reduce((results, assertionKey) => {
+		if (!PasswordAssertionTypes.includes(assertionKey)) {
+			results[assertionKey] = `Unknown assertion key ${assertionKey}`;
+			return results;
+		}
 
-		const amount = assertionConfig[key]!;
-		const validator = Validator_PasswordAssertion[key];
-		if (!validator)
-			throw new ImplementationMissingException(`No password assertion validator for type ${key} exists`);
-		passwordValidators.push(validator(amount) as ValidatorImpl<string>);
-	}
+		const amount = assertionConfig[assertionKey]!;
+		const validator = Validator_PasswordAssertion[assertionKey](amount);
+		const result = tsValidateResult(password, validator);
+		if (result)
+			results[assertionKey] = PasswordFailureMessages[assertionKey](amount);
 
-	return tsValidateResult(password, passwordValidators);
+		return results;
+	}, {} as PasswordFailureReport);
+
+
+	return _keys(results).length ? results : undefined;
 };
