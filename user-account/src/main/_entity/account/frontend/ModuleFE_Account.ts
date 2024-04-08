@@ -50,9 +50,24 @@ class ModuleFE_Account_Class
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	accountId!: string;
 
+	__onAuthRequiredListener(request: BaseHttpRequest<any>) {
+		StorageKey_SessionId.delete();
+		StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
+		return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
+	}
+
+	__onStorageKeyEvent(event: StorageEvent) {
+		if (event.key === StorageKey_SessionId.key) {
+			const sessionData = StorageKey_SessionId.get();
+			if (sessionData)
+				this.sessionData = this.decode(sessionData);
+			else
+				this.sessionData = {};
+		}
+	}
+
 	constructor() {
 		super(DBDef_Accounts, dispatch_onAccountsUpdated);
-
 		this._v1 = {
 			refreshSession: apiWithQuery(ApiDef_Account._v1.refreshSession),
 			registerAccount: apiWithBody(ApiDef_Account._v1.registerAccount, this.setLoginInfo),
@@ -68,34 +83,6 @@ class ModuleFE_Account_Class
 			assertSAML: apiWithBody(ApiDef_SAML._v1.assertSAML),
 		};
 	}
-
-	__onAuthRequiredListener(request: BaseHttpRequest<any>) {
-		StorageKey_SessionId.delete();
-		StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
-		return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
-	}
-
-	getAccounts() {
-		return this.cache.all().map(i => cloneObj(i)) as UI_Account[];
-	}
-
-	getLoggedStatus = () => this.status;
-
-	isStatus = (status: LoggedStatus) => this.status === status;
-
-	__onStorageKeyEvent(event: StorageEvent) {
-		if (event.key === StorageKey_SessionId.key) {
-			const sessionData = StorageKey_SessionId.get();
-			if (sessionData)
-				this.sessionData = this.decode(sessionData);
-			else
-				this.sessionData = {};
-		}
-	}
-
-	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
-		await this.onEntriesUpdated([response as DB_Account]);
-	};
 
 	protected init(): void {
 		super.init();
@@ -140,6 +127,16 @@ class ModuleFE_Account_Class
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	}
 
+	// ######################## Logic ########################
+
+	getAccounts() {
+		return this.cache.all().map(i => cloneObj(i)) as UI_Account[];
+	}
+
+	getLoggedStatus = () => this.status;
+
+	isStatus = (status: LoggedStatus) => this.status === status;
+
 	private processSessionStatus(sessionId: string) {
 		const now = currentTimeMillis();
 		try {
@@ -167,18 +164,6 @@ class ModuleFE_Account_Class
 		this.logInfo(`Login status changes: ${LoggedStatus[pervStatus]} => ${LoggedStatus[newStatus]}`);
 		dispatch_onLoginStatusChanged.dispatchUI();
 		dispatch_onLoginStatusChanged.dispatchModule();
-	};
-
-	private setLoginInfo = async (response: Response_Auth, body: any, request: BaseHttpRequest<any>) => {
-		this.accountId = response._id;
-		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
-	};
-
-	private onLoginCompletedSAML = async (response: SAML_Login['response']) => {
-		if (!response.loginUrl)
-			return;
-
-		window.location.href = response.loginUrl;
 	};
 
 	public composeSAMLUrl = () => {
@@ -243,10 +228,27 @@ class ModuleFE_Account_Class
 		return window.btoa(buffer.reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
 	};
 
+	// ######################## API Callbacks ########################
+
+	private setLoginInfo = async (response: Response_Auth, body: any, request: BaseHttpRequest<any>) => {
+		this.accountId = response._id;
+		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+	};
+
+	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
+		await this.onEntriesUpdated([response as DB_Account]);
+	};
+
 	private onThumbnailChanged = async (response: Account_ChangeThumbnail['response']) => {
 		await this.onEntryUpdated(response.account, response.account);
 	};
-}
 
+	private onLoginCompletedSAML = async (response: SAML_Login['response']) => {
+		if (!response.loginUrl)
+			return;
+
+		window.location.href = response.loginUrl;
+	};
+}
 
 export const ModuleFE_Account = new ModuleFE_Account_Class();

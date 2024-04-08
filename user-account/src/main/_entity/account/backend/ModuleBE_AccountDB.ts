@@ -102,6 +102,25 @@ export class ModuleBE_AccountDB_Class
 		super(DBDef_Accounts);
 	}
 
+	init() {
+		super.init();
+
+		addRoutes([
+			createQueryServerApi(ApiDef_Account._v1.refreshSession, async () => {
+				await ModuleBE_SessionDB.session.rotate();
+			}),
+			createBodyServerApi(ApiDef_Account._v1.registerAccount, this.account.register),
+			createBodyServerApi(ApiDef_Account._v1.changePassword, this.account.changePassword),
+			createBodyServerApi(ApiDef_Account._v1.login, this.account.login),
+			createBodyServerApi(ApiDef_Account._v1.createAccount, this.account.create),
+			createQueryServerApi(ApiDef_Account._v1.logout, this.account.logout),
+			createBodyServerApi(ApiDef_Account._v1.createToken, this.token.create),
+			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
+			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
+			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail)
+		]);
+	}
+
 	manipulateQuery(query: FirestoreQuery<DB_Account>): FirestoreQuery<DB_Account> {
 		return {
 			...query,
@@ -122,25 +141,6 @@ export class ModuleBE_AccountDB_Class
 				hasPassword: !!account.saltedPassword,
 			},
 		};
-	}
-
-	init() {
-		super.init();
-
-		addRoutes([
-			createQueryServerApi(ApiDef_Account._v1.refreshSession, async () => {
-				await ModuleBE_SessionDB.session.rotate();
-			}),
-			createBodyServerApi(ApiDef_Account._v1.registerAccount, this.account.register),
-			createBodyServerApi(ApiDef_Account._v1.changePassword, this.account.changePassword),
-			createBodyServerApi(ApiDef_Account._v1.login, this.account.login),
-			createBodyServerApi(ApiDef_Account._v1.createAccount, this.account.create),
-			createQueryServerApi(ApiDef_Account._v1.logout, this.account.logout),
-			createBodyServerApi(ApiDef_Account._v1.createToken, this.token.create),
-			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
-			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
-			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail)
-		]);
 	}
 
 	protected async preWriteProcessing(dbInstance: UI_Account, transaction?: Transaction): Promise<void> {

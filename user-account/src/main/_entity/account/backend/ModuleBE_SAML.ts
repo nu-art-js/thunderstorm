@@ -120,14 +120,13 @@ export class ModuleBE_SAML_Class
 
 	loginRequest = async (loginContext: SAML_Login['request']) => {
 		return new Promise<SAML_Login['response']>((resolve, rejected) => {
-			console.log('SAML 1');
 			const sp = new ServiceProvider(this.config.spConfig);
+			'';
 			const options = {
 				relay_state: __stringify(loginContext)
 			};
 
 			sp.create_login_request_url(this.identityProvider, options, (error, loginUrl, requestId) => {
-				console.log('SAML 2');
 				if (error)
 					return rejected(error);
 
