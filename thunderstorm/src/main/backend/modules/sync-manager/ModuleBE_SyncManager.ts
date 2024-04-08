@@ -291,10 +291,10 @@ export class ModuleBE_SyncManager_Class
 
 		await Promise.all(keys.map(key => {
 			const newestDeletedItem = deleted.find(deletedItem => deletedItem.__collectionName === key)!;
-			const dbModule = RuntimeModules().find((module: DBModuleType) => module.dbDef?.dbKey === key);
+			const dbModule = RuntimeModules().find<ModuleBE_BaseDBV3<any>>((module: DBModuleType) => module.dbDef?.dbKey === key);
 			this.logDebug(`setting oldest deleted timestamp ${key} = ${newestDeletedItem.__updated}`);
-			if ((dbModule as ModuleBE_BaseDBV2<any>).config.syncPath)
-				return this.setOldestDeleted(key, newestDeletedItem.__updated, (dbModule as ModuleBE_BaseDBV2<any>).config.syncPath);
+			if ((dbModule as ModuleBE_BaseDBV3<any>).config.syncPath)
+				return this.setOldestDeleted(key, newestDeletedItem.__updated, (dbModule as ModuleBE_BaseDBV3<any>).config.syncPath);
 
 			return this.setOldestDeleted(key, newestDeletedItem.__updated);
 		}));
