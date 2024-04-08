@@ -119,7 +119,6 @@ export class Component_Register
 			return this.setState({data, errorMessages: undefined});
 
 		const passwordFailureReport = assertPasswordRules(value, this.state.passwordAssertionConfig);
-		this.logInfo(value, passwordFailureReport);
 		this.setState({data, errorMessages: undefined, passwordFailureReport});
 	};
 
