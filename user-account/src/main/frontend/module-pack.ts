@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of 
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,6 +16,10 @@
  * limitations under the License.
  */
 
-export * from '../../index';
 
+import {Module} from '@nu-art/ts-common';
+import {ModulePackFE_AccountDB} from './_entity';
 
+export const ModulePackFE_Accounts: Module[] = [
+	...ModulePackFE_AccountDB,
+];

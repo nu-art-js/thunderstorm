@@ -9,7 +9,7 @@ import {
 	DefaultAccessLevel_Read,
 	DefaultAccessLevel_Write,
 } from '../shared/consts';
-import {ApiDefBE_Account, ApiDefFE_Account, DBDef_Accounts} from '@nu-art/user-account';
+import {ApiDef_Account, DBDef_Accounts} from '@nu-art/user-account';
 import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE';
 import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys';
 import {ApiDef_UpgradeCollection} from '@nu-art/thunderstorm/shared/upgrade-collection';
@@ -36,7 +36,7 @@ const _Domain_PermissionsDefine: DefaultDef_Domain = {
 	namespace: 'Permissions Define',
 	dbNames: [DBDef_PermissionProject, DBDef_PermissionDomain, DBDef_PermissionAPI, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbKey),
 	customApis: [
-		{path: ApiDefFE_Account.vv1.refreshSession.path, accessLevel: DefaultAccessLevel_NoAccess.name},
+		{path: ApiDef_Account._v1.refreshSession.path, accessLevel: DefaultAccessLevel_NoAccess.name},
 		{path: ApiDef_Permissions.v1.createProject.path, accessLevel: DefaultAccessLevel_Admin.name},
 		{path: ApiDef_Permissions.v1.toggleStrictMode.path, accessLevel: DefaultAccessLevel_Admin.name},
 	]
@@ -53,9 +53,9 @@ const _Domain_AccountManagement: DefaultDef_Domain = {
 	namespace: 'Account Management',
 	dbNames: [DBDef_Accounts.dbKey],
 	customApis: [
-		{path: ApiDefBE_Account.vv1.createAccount.path, accessLevel: DefaultAccessLevel_Admin.name},
-		{path: ApiDefBE_Account.vv1.createToken.path, accessLevel: DefaultAccessLevel_Admin.name},
-		{path: ApiDefBE_Account.vv1.getSessions.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDef_Account._v1.createAccount.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDef_Account._v1.createToken.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDef_Account._v1.getSessions.path, accessLevel: DefaultAccessLevel_Admin.name},
 	]
 };
 
