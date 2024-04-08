@@ -17,18 +17,10 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-
-import {ModuleBE_AccountDB} from '../modules/ModuleBE_AccountDB';
-import {ModuleBE_SessionDB} from '../modules/ModuleBE_SessionDB';
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend';
-
+import {ModulePackBE_AccountDB, ModulePackBE_SAML, ModulePackBE_SessionDB} from './_entity';
 
 export const ModulePackBE_Accounts: Module[] = [
-	ModuleBE_AccountDB, createApisForDBModuleV3(ModuleBE_AccountDB),
-	ModuleBE_SessionDB
+	...ModulePackBE_AccountDB,
+	...ModulePackBE_SAML,
+	...ModulePackBE_SessionDB,
 ];
-
-export * from '../modules/ModuleBE_AccountDB';
-export * from '../modules/ModuleBE_SessionDB';
-export * from '../modules/ModuleBE_SAML';
-
