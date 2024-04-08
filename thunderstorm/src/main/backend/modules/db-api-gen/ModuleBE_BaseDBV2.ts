@@ -147,17 +147,9 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 	}
 
-	getCollectionName() {
-		return this.config.collectionName;
-	}
-
-	getItemName() {
-		return this.config.itemName;
-	}
-
 	querySync = async (syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> => {
 		const items = await this.collection.query.custom(syncQuery);
-		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
+		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.dbDef.dbKey, syncQuery as FirestoreQuery<DB_Object>);
 
 		await this.upgradeInstances(items);
 		return {toUpdate: items, toDelete: deletedItems};
@@ -193,15 +185,15 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 			const latestUpdated = Array.isArray(data.updated) ?
 				data.updated.reduce((toRet, current) => Math.max(toRet, current.__updated), data.updated[0].__updated) :
 				data.updated.__updated;
-			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, latestUpdated, this.getSyncPath());
+			await ModuleBE_SyncManager.setLastUpdated(this.dbDef.dbKey, latestUpdated, this.getSyncPath());
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys);
-			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now, this.getSyncPath());
+			await ModuleBE_SyncManager.onItemsDeleted(this.dbDef.dbKey, asArray(data.deleted), this.config.uniqueKeys);
+			await ModuleBE_SyncManager.setLastUpdated(this.dbDef.dbKey, now, this.getSyncPath());
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
-			await ModuleBE_SyncManager.setOldestDeleted(this.config.collectionName, now, this.getSyncPath());
+			await ModuleBE_SyncManager.setOldestDeleted(this.dbDef.dbKey, now, this.getSyncPath());
 
 		await this.postWriteProcessing(data);
 	};
@@ -227,7 +219,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		// run them via upsert, which should convert/upgrade them to the latest version
 		// if timeout should kick in.. run the api again and this will continue the promotion on the rest of the documents
 		// TODO validate
-		this.logDebug(`Promoting '${this.config.collectionName}' to version: ${this.config.versions[0]}`);
+		this.logDebug(`Promoting '${this.dbDef.dbKey}' to version: ${this.config.versions[0]}`);
 		let page = 0;
 		const itemsCount = this.config.maxChunkSize || 100;
 		let iteration = 0;

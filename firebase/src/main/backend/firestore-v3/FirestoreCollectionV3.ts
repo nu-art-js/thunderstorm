@@ -68,8 +68,9 @@ import BulkWriter = firestore.BulkWriter;
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Proto extends DBProto<any>> = {
-	updated?: Proto['dbType'] | Proto['dbType'][],
-	deleted?: Proto['dbType'] | Proto['dbType'][] | null
+	before?: Proto['dbType'] | Proto['dbType'][];
+	updated?: Proto['dbType'] | Proto['dbType'][];
+	deleted?: Proto['dbType'] | Proto['dbType'][] | null;
 };
 
 export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
@@ -109,7 +110,7 @@ const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): 
 		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 	else {
 		if (typeof dbDef.modifiablePropsValidator === 'function')
-			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
+			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)] as Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'];
 
 		return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator)] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 	}
@@ -120,7 +121,6 @@ const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): 
  */
 export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	extends Logger {
-	readonly name: string;
 	readonly wrapper: FirestoreWrapperBEV3;
 	readonly collection: FirestoreType_Collection;
 	readonly dbDef: DBDef_V3<Proto>;
@@ -130,12 +130,11 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	constructor(wrapper: FirestoreWrapperBEV3, _dbDef: DBDef_V3<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
 		super();
-		this.name = _dbDef.dbKey;
 		this.wrapper = wrapper;
-		if (!/[a-z-]{3,}/.test(_dbDef.dbKey))
+		if (!/[a-z-]{3,}/.test(_dbDef.backend.name))
 			StaticLogger.logWarning('Please follow name pattern for collections /[a-z-]{3,}/');
 
-		this.collection = wrapper.firestore.collection(_dbDef.dbKey);
+		this.collection = wrapper.firestore.collection(_dbDef.backend.name);
 		this.dbDef = _dbDef;
 		this.uniqueKeys = this.dbDef.uniqueKeys || Const_UniqueKeys;
 		this.validator = getDbDefValidator(_dbDef);
@@ -156,7 +155,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			if (typeof id !== 'string')
 				id = assertUniqueId<Proto>(id, this.uniqueKeys);
 
-			const doc = this.wrapper.firestore.doc(`${this.name}/${id}`) as FirestoreType_DocumentReference<Proto['dbType']>;
+			const doc = this.wrapper.firestore.doc(`${this.collection.path}/${id}`) as FirestoreType_DocumentReference<Proto['dbType']>;
 			return this.doc._(doc);
 		},
 		item: (item: Proto['uiType']) => {
@@ -267,7 +266,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
 
-		await this.hooks?.postWriteProcessing?.({updated: preparedItems});
+		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems});
 		return preparedItems;
 	};
 

@@ -63,6 +63,7 @@ import {DBConfigV3} from '../../core/IndexedDBV4/types';
 import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
 import {ModuleSyncType} from './types';
 
+
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
 	extends Module<Config>
 	implements OnClearWebsiteData {
@@ -135,7 +136,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		this.defaultDispatcher?.dispatchUI(event, item);
 	};
 
-	private dispatchMulti = (event: MultiApiEvent, items: Proto['dbType'][]) => {
+	dispatchMulti = (event: MultiApiEvent, items: Proto['dbType'][]) => {
 		this.defaultDispatcher?.dispatchModule(event, items);
 		this.defaultDispatcher?.dispatchUI(event, items);
 	};
@@ -393,6 +394,10 @@ class MemCache<Proto extends DBProto<any>> {
 
 	filter = (filter: (item: Readonly<Proto['dbType']>, index: number, array: Readonly<Proto['dbType'][]>) => boolean): Readonly<Proto['dbType']>[] => {
 		return this.all().filter(filter);
+	};
+
+	byIds = (ids: Proto['uniqueParam'][]): Readonly<Proto['dbType'][]> => {
+		return ids.map(id => this.unique(id));
 	};
 
 	find = (filter: (item: Readonly<Proto['dbType']>, index: number, array: Readonly<Proto['dbType'][]>) => boolean): Readonly<Proto['dbType']> | undefined => {

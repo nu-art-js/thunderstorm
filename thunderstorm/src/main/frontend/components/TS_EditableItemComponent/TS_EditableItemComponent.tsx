@@ -4,6 +4,7 @@ import {EditableItem} from '../../utils/EditableItem';
 import {TS_PropRenderer} from '../TS_PropRenderer';
 import {DBProto} from '@nu-art/ts-common';
 import {Controller, Props_Controller} from '../../core/Controller';
+import {InferProps, InferState} from '../../utils/types';
 
 
 export type EditableRef<Item> = { editable: EditableItem<Item> };
@@ -71,7 +72,7 @@ export abstract class TS_EditableItemComponentV3<Proto extends DBProto<any>, P =
 		return super.shouldComponentUpdate(nextProps, nextState, nextContext);
 	}
 
-	protected deriveStateFromProps(nextProps: Props, state: State): State {
+	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
 		state.editable = nextProps.editable;
 		state.tag = nextProps.editable.tag;
 		return state;

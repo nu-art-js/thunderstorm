@@ -3,6 +3,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import './TS_DragAndDrop.scss';
 import {LL_V_L, LL_VH_C} from '../Layouts';
 import {asArray} from '@nu-art/ts-common';
+import {_className} from '../../utils/tools';
 
 
 type DND_State =
@@ -27,6 +28,7 @@ export type DND_File = {
 
 export type Props_DragAndDrop = React.PropsWithChildren<{
 	id?: string,
+	className?: string
 	validate: ((files: File[]) => DND_File[]);
 	onChange: (acceptedFiles: File[], rejectedFiles: File[]) => void
 	renderer: React.ComponentType<{ acceptedFiles: File[], rejectedFiles: File[] }>
@@ -155,7 +157,7 @@ export class TS_DragAndDrop
 	render() {
 		const Renderer = this.props.renderer;
 		return (
-			<LL_VH_C className={'ts-drag-and-drop'} id={this.props?.id}>
+			<LL_VH_C className={_className('ts-drag-and-drop', this.props.className)} id={this.props?.id}>
 				<div
 					className={`ts-drag-and-drop__content ts-drag-and-drop__${DND_Styles[this.state.dndState]}`}
 					onDrop={this.onDrop}

@@ -18,7 +18,7 @@ type BaseInfraProps_TS_GenericDropDownV3<T> = ComponentProps_Error & {
 	className?: string
 	style?: CSSProperties
 	placeholder?: string;
-	mapper?: (item: T) => string[]
+	mapper?: (item: T) => (string | undefined)[]
 	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
 	renderer?: (item: T) => React.ReactElement
 	ifNoneShowAll?: boolean
@@ -55,7 +55,7 @@ export type TemplatingProps_TS_GenericDropDown<Proto extends DBProto<any>, T ext
 	placeholder: string;
 	module: ModuleFE_v3_BaseApi<Proto>;
 	modules: ModuleFE_v3_BaseApi<Proto>[];
-	mapper: (item: T) => string[]
+	mapper: (item: T) => (string | undefined)[]
 	renderer: (item: T) => React.ReactElement
 	selectedItemRenderer?: (selected: T) => React.ReactNode
 }

@@ -1,12 +1,15 @@
 import {Response} from 'express';
-import {LocalRequest, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {DB_Asset, DBDef_Assets} from '../../shared';
-import {lastElement} from '@nu-art/ts-common';
 import {onRequest} from 'firebase-functions/v2/https';
+import {LocalRequest} from '../functions/firebase-function';
+import {ModuleBE_Firebase} from '../ModuleBE_Firebase';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 export const firebaseStorageEmulatorProxy = {
 	emulatorUpload: onRequest({maxInstances: 10, concurrency: 1,}, async (request: LocalRequest, response: Response) => {
+		if (request.method.toLowerCase() !== 'put')
+			response.send('method not supported').end(HttpCodes._4XX.METHOD_NOT_ALLOWED.code);
+
 		const pathToFile = request.query['path'];
 		const file = await ModuleBE_Firebase.createAdminSession().getStorage().getFile(String(pathToFile));
 		const writable = file.createWriteStream({gzip: true});
@@ -20,12 +23,14 @@ export const firebaseStorageEmulatorProxy = {
 			});
 	}),
 	emulatorDownload: onRequest({maxInstances: 10, concurrency: 1,}, async (request: LocalRequest, response: Response) => {
+		if (request.method.toLowerCase() !== 'get')
+			response.send('method not supported').end(HttpCodes._4XX.METHOD_NOT_ALLOWED.code);
 		const pathToFile = request.query['path'];
+		const contentType = request.query['content-type'];
+		const fileName = request.query['file-name'];
 		const file = await ModuleBE_Firebase.createAdminSession().getStorage().getFile(String(pathToFile));
-		const asset = (await ModuleBE_Firebase.createAdminSession().getFirestoreV3().firestore
-			.doc(`${DBDef_Assets.dbKey}/${lastElement(String(pathToFile).split('/'))}`).get()).data() as DB_Asset;
 
-		file.createReadStream()
+		file.createReadStream({decompress: false})
 			.on('error', (err) => {
 				console.error('Stream error:', err);
 				response.status(500).send('Error downloading file');
@@ -35,8 +40,8 @@ export const firebaseStorageEmulatorProxy = {
 				Object.keys(fileResponse.headers).forEach(key => {
 					response.set(key, fileResponse.headers[key]);
 				});
-				response.set('content-disposition', `attachment; filename=${asset.name}`);
-				response.set('content-type', asset.mimeType || fileResponse.headers['content-type']);
+				response.set('content-disposition', `attachment; filename=${fileName}`);
+				response.set('content-type', contentType || fileResponse.headers['content-type']);
 			})
 			.on('end', () => {
 				console.log('File download completed.');

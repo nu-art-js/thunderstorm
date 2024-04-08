@@ -1,4 +1,14 @@
-import {ApiException, BadImplementationException, Dispatcher, Minute, Module, MUSTNeverHappenException, RuntimeModules, TypedMap} from '@nu-art/ts-common';
+import {
+	ApiException,
+	arrayToMap,
+	BadImplementationException,
+	Dispatcher,
+	Minute,
+	Module,
+	MUSTNeverHappenException,
+	RuntimeModules,
+	TypedMap
+} from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
@@ -126,7 +136,7 @@ class ModuleBE_v2_SyncEnv_Class
 		const backupInfo = await this.getBackupInfo(body);
 		const stream = await ModuleBE_BackupDocDB.createBackupReadStream(backupInfo);
 		const collectionFilter = new SyncCollectionFilter(body.selectedModules);
-		const collectionWriter = new CollectionBatchWriter(1000);
+		const collectionWriter = new CollectionBatchWriter(body.chunkSize);
 
 		this.logInfo(`----  Syncing Collections From Backup... ----`);
 		startTime = performance.now();
@@ -186,15 +196,15 @@ export const ModuleBE_v2_SyncEnv = new ModuleBE_v2_SyncEnv_Class();
 class SyncCollectionFilter
 	extends Transform {
 
-	readonly allowedCollections: string[];
+	readonly allowedDbKeys: string[];
 
-	constructor(allowedCollections: string[]) {
+	constructor(allowedDbKeys: string[]) {
 		super({objectMode: true});
-		this.allowedCollections = allowedCollections;
+		this.allowedDbKeys = allowedDbKeys;
 	}
 
 	_transform(chunk: any, encoding: string, callback: Function) {
-		if (this.allowedCollections.includes(chunk.collectionName)) {
+		if (this.allowedDbKeys.includes(chunk.dbKey)) {
 			this.push(chunk);
 		}
 		callback();
@@ -208,6 +218,7 @@ class CollectionBatchWriter
 	private paginationSize: number;
 	private firestore: firestore.Firestore;
 	private batchWriter: firestore.WriteBatch;
+	private modules;
 
 	constructor(paginationSize: number) {
 		super({objectMode: true});
@@ -215,11 +226,14 @@ class CollectionBatchWriter
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
 		this.firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
 		this.batchWriter = this.firestore.batch();
+		this.modules = arrayToMap(RuntimeModules()
+			.filter((module: DBModuleType) => !(!module || !module.dbDef)), module => module.dbDef!.dbKey);
 	}
 
 	async _write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
 		try {
-			const docRef = this.firestore.doc(`${chunk.collectionName}/${chunk._id}`);
+			const collectionName = this.modules[chunk.dbKey].dbDef!.dbKey;
+			const docRef = this.firestore.doc(`${collectionName}/${chunk._id}`);
 			const data = JSON.parse(chunk.document);
 			this.batchWriter.set(docRef, data);
 			this.itemCount++;
@@ -228,7 +242,7 @@ class CollectionBatchWriter
 				const prevBatchWriter = this.batchWriter;
 				this.batchWriter = this.firestore.batch();
 				this.itemCount = 0;
-				prevBatchWriter.commit();
+				await prevBatchWriter.commit();
 			}
 			callback();
 		} catch (error) {
