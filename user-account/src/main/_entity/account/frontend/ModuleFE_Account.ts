@@ -8,16 +8,23 @@ import {
 	ModuleFE_XHR,
 	OnStorageKeyChangedListener,
 	readFileContent,
+	StorageKey,
 	ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
 import {cloneObj, composeUrl, currentTimeMillis, DB_BaseObject, Exception, exists, generateHex, KB, TS_Object} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
-import {Account_ChangeThumbnail, ApiDef_SAML, ApiStruct_SAML, HeaderKey_SessionId, HeaderKey_TabId, QueryParam_SessionId, SAML_Login,} from '../../../shared';
+
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {ApiDef_Account, ApiStruct_Account, DB_Account, DBDef_Accounts, DBProto_Account, Response_Auth, UI_Account} from '../shared';
+import {
+	Account_ChangeThumbnail,
+	Account_GetPasswordAssertionConfig,
+	ApiDef_Account, ApiDef_SAML, ApiStruct_Account, ApiStruct_SAML, DB_Account, DBDef_Accounts, DBProto_Account,
+	HeaderKey_SessionId, HeaderKey_TabId, QueryParam_SessionId, Response_Auth, SAML_Login, UI_Account
+} from '../shared';
 import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp, StorageKey_TabId} from './consts';
+import {PasswordAssertionConfig} from '../../_enum';
 
 
 export interface OnLoginStatusUpdated {
@@ -37,18 +44,25 @@ export enum LoggedStatus {
 
 export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
 export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
+const StorageKey_PasswordAssertionConfig = new StorageKey<PasswordAssertionConfig | undefined>('account__password-assertion-config', false);
 
 type ApiDefCaller_Account = ApiDefCaller<{ _v1: ApiStruct_Account['_v1'] & ApiStruct_SAML['_v1'] }>;
 
 class ModuleFE_Account_Class
 	extends ModuleFE_v3_BaseApi<DBProto_Account>
-	implements ApiDefCaller_Account, OnAuthRequiredListener, OnStorageKeyChangedListener {
+	implements ApiDefCaller_Account, OnAuthRequiredListener, OnStorageKeyChangedListener, OnLoginStatusUpdated {
 
 	// @ts-ignore
 	private sessionData!: TS_Object;
 	readonly _v1: ApiDefCaller_Account['_v1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	accountId!: string;
+
+	__onLoginStatusUpdated() {
+		//Get the password assertion config if needed
+		if ([LoggedStatus.LOGGED_OUT, LoggedStatus.SESSION_TIMEOUT].includes(this.status))
+			this._v1.getPasswordAssertionConfig({}).executeSync();
+	}
 
 	__onAuthRequiredListener(request: BaseHttpRequest<any>) {
 		StorageKey_SessionId.delete();
@@ -81,6 +95,7 @@ class ModuleFE_Account_Class
 			changeThumbnail: apiWithBody(ApiDef_Account._v1.changeThumbnail, this.onThumbnailChanged),
 			loginSaml: apiWithQuery(ApiDef_SAML._v1.loginSaml, this.onLoginCompletedSAML),
 			assertSAML: apiWithBody(ApiDef_SAML._v1.assertSAML),
+			getPasswordAssertionConfig: apiWithQuery(ApiDef_Account._v1.getPasswordAssertionConfig, this.onPasswordAssertionConfig)
 		};
 	}
 
@@ -228,6 +243,8 @@ class ModuleFE_Account_Class
 		return window.btoa(buffer.reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
 	};
 
+	public getPasswordAssertionConfig = () => StorageKey_PasswordAssertionConfig.get();
+
 	// ######################## API Callbacks ########################
 
 	private setLoginInfo = async (response: Response_Auth, body: any, request: BaseHttpRequest<any>) => {
@@ -248,6 +265,10 @@ class ModuleFE_Account_Class
 			return;
 
 		window.location.href = response.loginUrl;
+	};
+
+	private onPasswordAssertionConfig = async (response: Account_GetPasswordAssertionConfig['response']) => {
+		StorageKey_PasswordAssertionConfig.set(response.config);
 	};
 }
 

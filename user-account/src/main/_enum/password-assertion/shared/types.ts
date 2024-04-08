@@ -1,3 +1,5 @@
+import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+
 export const PasswordAssertionType_MinLength = 'min-length';
 export const PasswordAssertionType_MaxLength = 'max-length';
 export const PasswordAssertionType_SpecialChars = 'special-chars';
@@ -16,3 +18,5 @@ export const PasswordAssertionTypes = [
 
 export type PasswordAssertionType = typeof PasswordAssertionTypes[number];
 export type PasswordAssertionConfig = { [K in PasswordAssertionType]?: number };
+export type PasswordFailureReport = { [K in PasswordAssertionType]: string };
+export type PasswordAssertionResponseError = ResponseError<'password-assertion-error', PasswordFailureReport>;

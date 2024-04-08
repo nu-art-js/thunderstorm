@@ -1,5 +1,5 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {DB_Session} from '../../../shared';
+import {DB_Session, PasswordAssertionConfig} from '../../../shared';
 import {DB_BaseObject, Minute, UniqueId} from '@nu-art/ts-common';
 import {AccountType, DB_Account, UI_Account} from './types';
 import {QueryParam_RedirectUrl} from '../../session/shared/consts';
@@ -58,6 +58,11 @@ export type Account_ChangeThumbnail = {
 	response: { account: DB_Account };
 }
 
+export type Account_GetPasswordAssertionConfig = {
+	request: void;
+	response: { config: PasswordAssertionConfig | undefined };
+}
+
 //######################## API Struct and Def - Account ########################
 
 export type ApiStruct_Account = {
@@ -72,6 +77,7 @@ export type ApiStruct_Account = {
 		setPassword: BodyApi<Account_SetPassword['response'], Account_SetPassword['request']>;
 		getSessions: QueryApi<Account_GetSessions['response'], Account_GetSessions['request']>;
 		changeThumbnail: BodyApi<Account_ChangeThumbnail['response'], Account_ChangeThumbnail['request']>;
+		getPasswordAssertionConfig: QueryApi<Account_GetPasswordAssertionConfig['response']>
 	}
 }
 
@@ -87,6 +93,7 @@ export const ApiDef_Account: ApiDefResolver<ApiStruct_Account> = {
 		setPassword: {method: HttpMethod.POST, path: '/v1/account/set-password'},
 		getSessions: {method: HttpMethod.GET, path: 'v1/account/get-sessions'},
 		changeThumbnail: {method: HttpMethod.POST, path: '/v1/account/change-thumbnail'},
+		getPasswordAssertionConfig: {method: HttpMethod.GET, path: '/v1/account/get-password-assertion-config'}
 	}
 };
 
