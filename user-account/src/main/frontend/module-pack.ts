@@ -16,19 +16,10 @@
  * limitations under the License.
  */
 
+
 import {Module} from '@nu-art/ts-common';
+import {ModulePackFE_AccountDB} from './_entity';
 
-import {ModuleBE_AccountDB} from '../modules/ModuleBE_AccountDB';
-import {ModuleBE_SessionDB} from '../modules/ModuleBE_SessionDB';
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend';
-
-
-export const ModulePackBE_Accounts: Module[] = [
-	ModuleBE_AccountDB, createApisForDBModuleV3(ModuleBE_AccountDB),
-	ModuleBE_SessionDB
+export const ModulePackFE_Accounts: Module[] = [
+	...ModulePackFE_AccountDB,
 ];
-
-export * from '../modules/ModuleBE_AccountDB';
-export * from '../modules/ModuleBE_SessionDB';
-export * from '../modules/ModuleBE_SAML';
-

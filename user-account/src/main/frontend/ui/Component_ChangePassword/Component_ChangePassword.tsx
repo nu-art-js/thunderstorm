@@ -1,9 +1,7 @@
 import * as React from 'react';
 import {ComponentSync, LL_V_L, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {ModuleFE_Account} from '../../../_entity/account/frontend/ModuleFE_Account';
-import {SessionKeyFE_Account} from '../../core/consts';
-
+import {ModuleFE_Account, SessionKeyFE_Account} from '../../_entity';
 
 type Props = {
 	postSubmitAction?: () => void;
@@ -20,6 +18,7 @@ export class Component_ChangePassword
 	extends ComponentSync<Props, State> {
 
 	// ######################## Life Cycle ########################
+
 	protected deriveStateFromProps(nextProps: any, state: State): State {
 		if (!ModuleFE_Account.accountId)
 			throw new ThisShouldNotHappenException('Rendering a change password component without user logged in');
@@ -28,6 +27,7 @@ export class Component_ChangePassword
 	}
 
 	// ######################## Logic ########################
+
 	private submitNewPassword = async () => {
 		if (!this.state.newPassword || !this.state.newPasswordCheck) {
 			this.logError('No password or password check');
@@ -36,7 +36,7 @@ export class Component_ChangePassword
 
 		try {
 			if (!this.state.shouldGiveCurrentPassword)
-				await ModuleFE_Account.vv1.setPassword({
+				await ModuleFE_Account._v1.setPassword({
 					password: this.state.newPassword,
 					passwordCheck: this.state.newPasswordCheck,
 				}).executeSync();
@@ -45,7 +45,7 @@ export class Component_ChangePassword
 					this.logError('No current password given');
 					return;
 				}
-				await ModuleFE_Account.vv1.changePassword({
+				await ModuleFE_Account._v1.changePassword({
 					oldPassword: this.state.currentPassword,
 					password: this.state.newPassword,
 					passwordCheck: this.state.newPasswordCheck,

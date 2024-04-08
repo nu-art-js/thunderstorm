@@ -18,19 +18,11 @@
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
 import {__stringify, ApiException, decode, ImplementationMissingException, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {
-	ApiDef_SAML_BE,
-	QueryParam_Email,
-	QueryParam_RedirectUrl,
-	QueryParam_SessionId,
-	RequestBody_AssertSAML,
-	RequestParams_LoginSAML,
-	Response_LoginSAML
-} from './_imports';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {MemKey_AccountEmail} from '../core/consts';
 import {ModuleBE_AccountDB} from './ModuleBE_AccountDB';
+import {ApiDef_SAML, QueryParam_Email, QueryParam_RedirectUrl, QueryParam_SessionId, SAML_Assert, SAML_Login} from '../shared';
+import {MemKey_AccountEmail} from '../../session/backend';
 
 
 /**
@@ -74,7 +66,7 @@ type _SamlAssertResponse = {
 type SamlAssertResponse = {
 	fullResponse: _SamlAssertResponse
 	userId: string
-	loginContext: RequestParams_LoginSAML
+	loginContext: SAML_Login['request']
 }
 
 export class ModuleBE_SAML_Class
@@ -97,15 +89,15 @@ export class ModuleBE_SAML_Class
 			throw new ImplementationMissingException('Config must contain spConfig');
 
 		addRoutes([
-			createQueryServerApi(ApiDef_SAML_BE.vv1.loginSaml, this.loginRequest),
-			createBodyServerApi(ApiDef_SAML_BE.vv1.assertSAML, this.assertSaml),
+			createQueryServerApi(ApiDef_SAML._v1.loginSaml, this.loginRequest),
+			createBodyServerApi(ApiDef_SAML._v1.assertSAML, this.assertSaml),
 		]);
 
 		this.config.idConfig.certificates = this.config.idConfig.certificates.map(cert => decode(cert));
 		this.identityProvider = new IdentityProvider(this.config.idConfig);
 	}
 
-	assertSaml = async (body: RequestBody_AssertSAML) => {
+	assertSaml = async (body: SAML_Assert['request']): Promise<SAML_Assert['response']> => {
 		try {
 			const data = await this.assertImpl(body);
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
@@ -126,8 +118,8 @@ export class ModuleBE_SAML_Class
 		}
 	};
 
-	loginRequest = async (loginContext: RequestParams_LoginSAML) => {
-		return new Promise<Response_LoginSAML>((resolve, rejected) => {
+	loginRequest = async (loginContext: SAML_Login['request']) => {
+		return new Promise<SAML_Login['response']>((resolve, rejected) => {
 			console.log('SAML 1');
 			const sp = new ServiceProvider(this.config.spConfig);
 			const options = {
@@ -144,9 +136,9 @@ export class ModuleBE_SAML_Class
 		});
 	};
 
-	private assertImpl = async (request_body: RequestBody_AssertSAML): Promise<SamlAssertResponse> => new Promise<SamlAssertResponse>((resolve, rejected) => {
+	private assertImpl = async (request_body: SAML_Assert['request']): Promise<SamlAssertResponse> => new Promise<SamlAssertResponse>((resolve, rejected) => {
 		type RequestBody_SamlAssertOptions = {
-			request_body: RequestBody_AssertSAML,
+			request_body: SAML_Assert['request'],
 			allow_unencrypted_assertion?: boolean;
 		}
 

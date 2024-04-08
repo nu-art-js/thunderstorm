@@ -14,47 +14,46 @@ import {
 	MUSTNeverHappenException,
 	Year
 } from '@nu-art/ts-common';
-import {CollectSessionData, ModuleBE_SessionDB, SessionCollectionParam} from './ModuleBE_SessionDB';
 import {firestore} from 'firebase-admin';
 import {addRoutes, createBodyServerApi, createQueryServerApi, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
-import {
-	Header_SessionId,
-	MemKey_AccountEmail,
-	MemKey_AccountId,
-	SessionKey_Account_BE,
-	SessionKey_Session_BE
-} from '../core/consts';
+import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {
 	_SessionKey_Account,
+	Account_ChangePassword,
+	Account_ChangeThumbnail,
+	Account_CreateAccount, Account_CreateToken,
+	Account_Login,
+	Account_RegisterAccount,
+	Account_SetPassword,
 	AccountEmail,
 	AccountEmailWithDevice,
 	AccountToAssertPassword,
 	AccountToSpice,
 	AccountType,
-	ApiDefBE_Account,
+	ApiDef_Account,
 	DB_Account,
 	DBDef_Accounts,
 	DBProto_Account,
 	HeaderKey_SessionId,
-	PasswordWithCheck,
-	Request_ChangeThumbnail,
-	Request_CreateAccount,
-	Request_LoginAccount,
-	RequestBody_ChangePassword,
-	RequestBody_CreateToken,
-	RequestBody_RegisterAccount,
-	Response_Auth,
-	Response_ChangeThumbnail,
 	SafeDB_Account,
 	UI_Account
-} from '../../shared';
-import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+} from '../shared';
+import {assertPasswordRules, PasswordAssertionConfig} from '../../_enum';
 import Transaction = firestore.Transaction;
-import {assertPasswordRules, PasswordAssertionConfig} from '../_enum';
+import {
+	CollectSessionData,
+	Header_SessionId,
+	MemKey_AccountEmail,
+	MemKey_AccountId,
+	ModuleBE_SessionDB,
+	SessionCollectionParam,
+	SessionKey_Account_BE,
+	SessionKey_Session_BE
+} from '../../session/backend';
 
 
 type BaseAccount = {
@@ -129,18 +128,18 @@ export class ModuleBE_AccountDB_Class
 		super.init();
 
 		addRoutes([
-			createQueryServerApi(ApiDefBE_Account.vv1.refreshSession, async () => {
+			createQueryServerApi(ApiDef_Account._v1.refreshSession, async () => {
 				await ModuleBE_SessionDB.session.rotate();
 			}),
-			createBodyServerApi(ApiDefBE_Account.vv1.registerAccount, this.account.register),
-			createBodyServerApi(ApiDefBE_Account.vv1.changePassword, this.account.changePassword),
-			createBodyServerApi(ApiDefBE_Account.vv1.login, this.account.login),
-			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, this.account.create),
-			createQueryServerApi(ApiDefBE_Account.vv1.logout, this.account.logout),
-			createBodyServerApi(ApiDefBE_Account.vv1.createToken, this.token.create),
-			createBodyServerApi(ApiDefBE_Account.vv1.setPassword, this.account.setPassword),
-			createQueryServerApi(ApiDefBE_Account.vv1.getSessions, this.account.getSessions),
-			createBodyServerApi(ApiDefBE_Account.vv1.changeThumbnail, this.account.changeThumbnail)
+			createBodyServerApi(ApiDef_Account._v1.registerAccount, this.account.register),
+			createBodyServerApi(ApiDef_Account._v1.changePassword, this.account.changePassword),
+			createBodyServerApi(ApiDef_Account._v1.login, this.account.login),
+			createBodyServerApi(ApiDef_Account._v1.createAccount, this.account.create),
+			createQueryServerApi(ApiDef_Account._v1.logout, this.account.logout),
+			createBodyServerApi(ApiDef_Account._v1.createToken, this.token.create),
+			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
+			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
+			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail)
 		]);
 	}
 
@@ -218,7 +217,7 @@ export class ModuleBE_AccountDB_Class
 
 	account = {
 		// this flow is for creating real human users with email and password
-		register: async (accountWithPassword: RequestBody_RegisterAccount, transaction?: Transaction): Promise<Response_Auth> => {
+		register: async (accountWithPassword: Account_RegisterAccount['request'], transaction?: Transaction): Promise<Account_RegisterAccount['response']> => {
 			if (!this.config.canRegister)
 				throw new ApiException(418, 'Registration is disabled!!');
 
@@ -239,7 +238,7 @@ export class ModuleBE_AccountDB_Class
 			});
 			return {...dbSafeAccount};
 		},
-		login: async (credentials: Request_LoginAccount): Promise<Response_Auth> => {
+		login: async (credentials: Account_Login['request']): Promise<Account_Login['response']> => {
 			this.impl.fixEmail(credentials);
 
 			const safeAccount = await this.runTransaction(async transaction => {
@@ -260,7 +259,7 @@ export class ModuleBE_AccountDB_Class
 			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
 			return safeAccount;
 		},
-		create: async (createAccountRequest: Request_CreateAccount) => {
+		create: async (createAccountRequest: Account_CreateAccount['request']): Promise<Account_CreateAccount['response']> => {
 			const password = createAccountRequest.password;
 			let dbSafeAccount: SafeDB_Account;
 			this.impl.fixEmail(createAccountRequest);
@@ -300,7 +299,7 @@ export class ModuleBE_AccountDB_Class
 			const content = {accountId: dbSafeAccount._id, deviceId: oAuthAccount.deviceId, label: 'saml-login'};
 			return ModuleBE_SessionDB.session.create(content);
 		},
-		changePassword: async (passwordToChange: RequestBody_ChangePassword): Promise<Response_Auth> => {
+		changePassword: async (passwordToChange: Account_ChangePassword['request']): Promise<Account_ChangePassword['response']> => {
 			return this.runTransaction(async transaction => {
 				const email = MemKey_AccountEmail.get();
 				const deviceId = SessionKey_Session_BE.get().deviceId;
@@ -334,7 +333,7 @@ export class ModuleBE_AccountDB_Class
 				return makeAccountSafe(updatedAccount);
 			});
 		},
-		setPassword: async (passwordBody: PasswordWithCheck): Promise<Response_Auth> => {
+		setPassword: async (passwordBody: Account_SetPassword['request']): Promise<Account_SetPassword['response']> => {
 			return this.runTransaction(async transaction => {
 				const email = MemKey_AccountEmail.get();
 				const deviceId = SessionKey_Session_BE.get().deviceId;
@@ -375,7 +374,7 @@ export class ModuleBE_AccountDB_Class
 		getSessions: async (query: DB_BaseObject) => {
 			return {sessions: await ModuleBE_SessionDB.query.where({accountId: query._id})};
 		},
-		changeThumbnail: async (request: Request_ChangeThumbnail): Promise<Response_ChangeThumbnail> => {
+		changeThumbnail: async (request: Account_ChangeThumbnail['request']): Promise<Account_ChangeThumbnail['response']> => {
 			const account = await this.doc.unique(request.accountId);
 			if (!account)
 				throw HttpCodes._4XX.NOT_FOUND('Could not change account thumbnail', `Could not find account with id ${request.accountId}`);
@@ -411,7 +410,7 @@ export class ModuleBE_AccountDB_Class
 
 	// @ts-ignore
 	private token = {
-		create: async ({accountId, ttl, label}: RequestBody_CreateToken) => {
+		create: async ({accountId, ttl, label}: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
 			if (!exists(ttl) || ttl < Year)
 				throw HttpCodes._4XX.BAD_REQUEST('Invalid token TTL', `TTL value is invalid (${ttl})`);
 

@@ -17,12 +17,10 @@
  */
 
 import * as React from 'react';
-import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
-import {AccountEmail, PasswordWithCheck, Request_RegisterAccount, RequestBody_RegisterAccount} from '../../shared';
 import {ComponentSync, LL_V_C, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_Account} from '../../_entity/account/frontend/ModuleFE_Account';
-import {StorageKey_DeviceId} from '../core/consts';
-
+import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
+import {Account_RegisterAccount, AccountEmail, PasswordWithCheck, Request_RegisterAccount} from '../../shared';
+import {ModuleFE_Account, StorageKey_DeviceId} from '../_entity';
 
 type State<T> = {
 	data: Partial<T>
@@ -101,7 +99,7 @@ export class Component_Register
 		</LL_V_C>;
 	}
 
-	private onValueChanged = (value: string, id: keyof RequestBody_RegisterAccount) => {
+	private onValueChanged = (value: string, id: keyof Account_RegisterAccount['request']) => {
 		const data = {...this.state.data};
 		data[id] = value;
 		this.setState({data, errorMessages: undefined});
@@ -122,7 +120,7 @@ export class Component_Register
 			return this.setState({errorMessages: errors});
 
 		try {
-			await ModuleFE_Account.vv1.registerAccount({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Request_RegisterAccount).executeSync();
+			await ModuleFE_Account._v1.registerAccount({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Request_RegisterAccount).executeSync();
 		} catch (_err: any) {
 			const err = _err as Error;
 			this.setState({errorMessages: [err.message]});
