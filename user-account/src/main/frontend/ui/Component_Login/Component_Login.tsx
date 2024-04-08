@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {_keys} from '@nu-art/ts-common';
-import {AccountEmail, AccountPassword, Request_LoginAccount} from '../../../shared';
+import {Account_Login, AccountEmail, AccountPassword} from '../../../shared';
 import './Component_Login.scss';
 import {
 	ComponentSync,
@@ -28,9 +28,7 @@ import {
 	TS_Input,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_Account} from '../../../_entity/account/frontend/ModuleFE_Account';
-import {StorageKey_DeviceId} from '../../core/consts';
-
+import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity';
 
 type State<T> = {
 	data: Partial<T>
@@ -61,9 +59,9 @@ const form: Form<AccountEmail & AccountPassword> = {
 };
 
 export class Component_Login
-	extends ComponentSync<Props, State<Request_LoginAccount>> {
+	extends ComponentSync<Props, State<Account_Login['request']>> {
 
-	protected deriveStateFromProps(nextProps: Props, state: State<Request_LoginAccount>) {
+	protected deriveStateFromProps(nextProps: Props, state: State<Account_Login['request']>) {
 		state.data ??= {};
 		return state;
 	}
@@ -101,14 +99,14 @@ export class Component_Login
 		</LL_V_C>;
 	}
 
-	private onValueChanged = (value: string, id: keyof Request_LoginAccount) => {
+	private onValueChanged = (value: string, id: keyof Account_Login['request']) => {
 		const data = {...this.state.data};
 		data[id] = value;
 		this.setState({data, errorMessages: undefined});
 	};
 
 	private loginClicked = async () => {
-		const data: Partial<Request_LoginAccount> = this.state.data;
+		const data: Partial<Account_Login['request']> = this.state.data;
 		const errors = _keys(form).map(key => {
 			const field = form[key];
 			return data[key] ? undefined : `  * missing ${field.label}`;
@@ -122,7 +120,7 @@ export class Component_Login
 			return ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
 
 		try {
-			await ModuleFE_Account.vv1.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Request_LoginAccount).executeSync();
+			await ModuleFE_Account._v1.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Account_Login['request']).executeSync();
 		} catch (err) {
 			this.setState({errorMessages: ['Email or password incorrect']});
 		}
