@@ -275,7 +275,7 @@ export class FileWrapper {
 
 	private async getSignedUrl(options: GetSignedUrlConfig) {
 		const results = await this.file.getSignedUrl(options);
-		const url = results[0];
+		const url = results[0]; // An array with a single string is returned
 
 		return {
 			fileName: this.path,
