@@ -5,6 +5,7 @@ import {ModuleFE_v3_BaseDB} from '../db-api-gen/ModuleFE_v3_BaseDB';
 import {Parser, ParseResult, ParseStepResult} from 'papaparse';
 import {ModuleFE_CSVParser} from '../ModuleFE_CSVParser';
 import {ModuleSyncType} from '../db-api-gen/types';
+import {Thunder} from '../../core/Thunder';
 
 export class ModuleFE_SyncManager_CSV_Class
 	extends Module {
@@ -22,6 +23,9 @@ export class ModuleFE_SyncManager_CSV_Class
 		const errors: any[] = [];
 
 		await new Promise<void>(resolve => {
+			const isEmulator = Thunder.getInstance().getConfig().label.toLowerCase() === 'local';
+			const downloadRequestHeaders = isEmulator ? {'Content-Type': 'text/csv', 'Content-Encoding': 'gzip'} : {};
+
 			ModuleFE_CSVParser.fromURL(
 				url,
 				{
@@ -52,9 +56,7 @@ export class ModuleFE_SyncManager_CSV_Class
 							this.logError('Parsed with errors', ...errors);
 						resolve();
 					},
-					downloadRequestHeaders: {
-						'Content-Type': 'text/csv'
-					}
+					...downloadRequestHeaders
 				});
 		});
 	};
