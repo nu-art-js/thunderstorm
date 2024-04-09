@@ -46,6 +46,7 @@ class ModuleFE_CSVParser_Class
 				},
 				..._config,
 				download: true,
+				...{'Content-Type': 'text/csv', 'Content-Encoding': 'gzip'}
 			};
 			Papa.parse(url, config);
 		});
