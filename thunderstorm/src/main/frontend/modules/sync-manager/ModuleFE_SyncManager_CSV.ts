@@ -22,35 +22,40 @@ export class ModuleFE_SyncManager_CSV_Class
 		const errors: any[] = [];
 
 		await new Promise<void>(resolve => {
-			ModuleFE_CSVParser.fromURL(url, {
-				transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
-				step: async (results: ParseStepResult<any>, parser: Parser) => {
-					if (results.errors?.length)
-						return errors.push(...results.errors);
+			ModuleFE_CSVParser.fromURL(
+				url,
+				{
+					transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
+					step: async (results: ParseStepResult<any>, parser: Parser) => {
+						if (results.errors?.length)
+							return errors.push(...results.errors);
 
-					const item = results.data;
-					const module = modules[item.dbKey];
-					if (!module)
-						return;
+						const item = results.data;
+						const module = modules[item.dbKey];
+						if (!module)
+							return;
 
-					itemsToSync.push(item);
-				},
-				complete: async (results: ParseResult<any>) => {
-					for (const moduleKey of _keys(modules)) {
-						const items = itemsToSync.filter(item => item.dbKey === moduleKey);
-						const module = modules[moduleKey];
-						this.logInfo(`Syncing ${items.length} items to ${moduleKey}`);
-						await module.IDB.syncIndexDb(items.map(item => item.document));
-						await module.cache.load();
-						module.setDataStatus(DataStatus.ContainsData);
+						itemsToSync.push(item);
+					},
+					complete: async (results: ParseResult<any>) => {
+						for (const moduleKey of _keys(modules)) {
+							const items = itemsToSync.filter(item => item.dbKey === moduleKey);
+							const module = modules[moduleKey];
+							this.logInfo(`Syncing ${items.length} items to ${moduleKey}`);
+							await module.IDB.syncIndexDb(items.map(item => item.document));
+							await module.cache.load();
+							module.setDataStatus(DataStatus.ContainsData);
+						}
+						const end = performance.now();
+						this.logInfo(`sync took ${((end - start) / 1000).toFixed(3)} seconds`);
+						if (errors.length)
+							this.logError('Parsed with errors', ...errors);
+						resolve();
+					},
+					downloadRequestHeaders: {
+						'content-type': 'text/csv'
 					}
-					const end = performance.now();
-					this.logInfo(`sync took ${((end - start) / 1000).toFixed(3)} seconds`);
-					if (errors.length)
-						this.logError('Parsed with errors', ...errors);
-					resolve();
-				}
-			});
+				});
 		});
 	};
 
