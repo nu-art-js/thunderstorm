@@ -53,7 +53,7 @@ export class ModuleFE_SyncManager_CSV_Class
 						resolve();
 					},
 					downloadRequestHeaders: {
-						'content-type': 'text/csv'
+						'Content-Type': 'text/csv'
 					}
 				});
 		});
