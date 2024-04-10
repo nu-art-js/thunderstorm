@@ -30,3 +30,19 @@ export function generateUUID() {
 		return v.toString(16);
 	});
 }
+
+/**
+ * generate 8 characters long string that is value for short url usage
+ */
+export function generateShortURL(): string {
+	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+	let result = '';
+	const random = randomBytes(8); // Generate 8 random bytes
+
+	for (let i = 0; i < 8; i++) {
+		const byte = random[i];
+		result += chars.charAt(byte % chars.length);
+	}
+
+	return result;
+}

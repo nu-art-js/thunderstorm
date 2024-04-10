@@ -13,6 +13,7 @@ packages:
   - ts-workspace
   - ts-pdf
   - permissions
+  - ts-short-url
   - push-pub-sub
   - jira
   - bug-report

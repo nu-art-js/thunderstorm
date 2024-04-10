@@ -1,0 +1,1 @@
+export const PackageName_tsShortUrl = 'ts-short-url';

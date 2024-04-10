@@ -1,0 +1,27 @@
+@use "@nu-art/ts-styles" as styles;
+
+.short-url {
+  @include styles.customScrollbar('vertical', true);
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+
+  .page-title {
+    position: relative;
+
+    .app-tools-page__page__header {
+      width: 100%;
+    }
+
+    .ts-button {
+      position: absolute;
+      right: 10px;
+    }
+  }
+
+  .url-cards {
+    padding-top: 10px;
+    width: 100%;
+    gap: 15px;
+  }
+}
