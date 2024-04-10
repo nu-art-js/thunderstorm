@@ -7,6 +7,7 @@ import {ModuleFE_CSVParser} from '../ModuleFE_CSVParser';
 import {ModuleSyncType} from '../db-api-gen/types';
 import {Thunder} from '../../core/Thunder';
 
+export type LikePapaparseConfig = Omit<Papa.ParseRemoteConfig, 'download'>;
 
 export class ModuleFE_SyncManager_CSV_Class
 	extends Module {
@@ -17,16 +18,16 @@ export class ModuleFE_SyncManager_CSV_Class
 
 	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_v3_BaseDB<any>>((module) => module.syncType === ModuleSyncType.CSVSync);
 
-	syncFromCSVUrl = async (url: string, config: Omit<Papa.ParseRemoteConfig<T>, 'download'>) => {
+	syncFromCSVUrl = async (url: string, config?: Omit<Papa.ParseRemoteConfig, 'download'>) => {
 		const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.dbKey);
 		const start = performance.now();
 		const itemsToSync: any[] = [];
 		const errors: any[] = [];
 
 		await new Promise<void>(resolve => {
-			const isEmulator = Thunder.getInstance().getConfig().label.toLowerCase() === 'local';
+			const isEmulator = Thunder.getInstance().getConfig().label?.toLowerCase() === 'local';
 			const downloadRequestHeaders = isEmulator ? undefined : {'Content-Type': 'text/csv'};
-			const finalConfig = mergeObject({downloadRequestHeaders}, config);
+			const finalConfig = config ? mergeObject({downloadRequestHeaders}, config) : {downloadRequestHeaders};
 			ModuleFE_CSVParser.fromURL(
 				url,
 				{
