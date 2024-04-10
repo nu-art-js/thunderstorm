@@ -2,6 +2,8 @@ import {Module, tsValidate, tsValidateGeneralUrl} from '@nu-art/ts-common';
 import * as Papa from 'papaparse';
 import {LocalFile, ParseResult} from 'papaparse';
 
+export type PapaparseConfig = Omit<Papa.ParseRemoteConfig, 'download'>;
+
 class ModuleFE_CSVParser_Class
 	extends Module {
 
