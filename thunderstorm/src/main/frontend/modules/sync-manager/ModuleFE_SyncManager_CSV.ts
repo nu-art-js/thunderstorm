@@ -1,4 +1,4 @@
-import {_keys, arrayToMap, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
+import {_keys, arrayToMap, mergeObject, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {Readable, Writable} from 'stream';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import {ModuleFE_v3_BaseDB} from '../db-api-gen/ModuleFE_v3_BaseDB';
@@ -6,6 +6,8 @@ import {Parser, ParseResult, ParseStepResult} from 'papaparse';
 import {ModuleFE_CSVParser} from '../ModuleFE_CSVParser';
 import {ModuleSyncType} from '../db-api-gen/types';
 import {Thunder} from '../../core/Thunder';
+
+export type LikePapaparseConfig = Omit<Papa.ParseRemoteConfig, 'download'>;
 
 export class ModuleFE_SyncManager_CSV_Class
 	extends Module {
@@ -16,16 +18,16 @@ export class ModuleFE_SyncManager_CSV_Class
 
 	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_v3_BaseDB<any>>((module) => module.syncType === ModuleSyncType.CSVSync);
 
-	syncFromCSVUrl = async (url: string) => {
+	syncFromCSVUrl = async (url: string, config?: Omit<Papa.ParseRemoteConfig, 'download'>) => {
 		const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.dbKey);
 		const start = performance.now();
 		const itemsToSync: any[] = [];
 		const errors: any[] = [];
 
 		await new Promise<void>(resolve => {
-			const isEmulator = Thunder.getInstance().getConfig().label.toLowerCase() === 'local';
+			const isEmulator = Thunder.getInstance().getConfig().label?.toLowerCase() === 'local';
 			const downloadRequestHeaders = isEmulator ? undefined : {'Content-Type': 'text/csv'};
-
+			const finalConfig = config ? mergeObject({downloadRequestHeaders}, config) : {downloadRequestHeaders};
 			ModuleFE_CSVParser.fromURL(
 				url,
 				{
@@ -56,7 +58,7 @@ export class ModuleFE_SyncManager_CSV_Class
 							this.logError('Parsed with errors', ...errors);
 						resolve();
 					},
-					downloadRequestHeaders
+					...finalConfig
 				});
 		});
 	};
@@ -89,7 +91,8 @@ export class ModuleFE_SyncManager_CSV_Class
 
 export const ModuleFE_SyncManager_CSV = new ModuleFE_SyncManager_CSV_Class();
 
-class ModuleIDBWriter extends Writable {
+class ModuleIDBWriter
+	extends Writable {
 
 	readonly modules: ModuleFE_v3_BaseDB<any>[];
 	readonly moduleNameMap: TypedMap<ModuleFE_v3_BaseDB<any>>;
