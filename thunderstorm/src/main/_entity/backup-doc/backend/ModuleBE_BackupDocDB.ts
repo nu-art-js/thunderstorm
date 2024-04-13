@@ -51,16 +51,16 @@ type Config = DBApiConfigV3<DBProto_BackupDoc> & {
 	excludedDbKeys?: string[],
 }
 
-const CSVConfig = {
-	fieldSeparator: ',',
-	quoteStrings: '',
-	decimalSeparator: '.',
-	showLabels: true,
-	showTitle: false,
-	useTextFile: false,
-	useBom: true,
-	useKeysAsHeaders: true,
-};
+// const CSVConfig = {
+// 	fieldSeparator: ',',
+// 	quoteStrings: '',
+// 	decimalSeparator: '.',
+// 	showLabels: true,
+// 	showTitle: false,
+// 	useTextFile: false,
+// 	useBom: true,
+// 	useKeysAsHeaders: true,
+// };
 
 type DBModules = ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>;
 
