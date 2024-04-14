@@ -60,6 +60,14 @@ class ModuleFE_StorageCleaner_Class
 		});
 		this.logDebug('Cleaned all cookies');
 	};
+
+	public cleanAll = async () => {
+		this.cleanLocalStorage();
+		this.cleanSessionStorage();
+		this.cleanCookies();
+		await this.cleanCache();
+		await this.cleanIDBStorage();
+	};
 }
 
 export const ModuleFE_StorageCleaner = new ModuleFE_StorageCleaner_Class();
