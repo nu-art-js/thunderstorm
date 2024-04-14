@@ -1,13 +1,17 @@
-import {_values, Module} from '@nu-art/ts-common';
+import {Module} from '@nu-art/ts-common';
 import {StorageKey} from './ModuleFE_LocalStorage';
-import {ModuleFE_IDBManager} from '../core/IndexedDBV4/ModuleFE_IDBManager';
+
+//@ts-ignore - set IDBAPI as indexedDB regardless of browser
+const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
 class ModuleFE_StorageCleaner_Class
 	extends Module {
 
+	// ######################## Public Functions ########################
+
 	public cleanLocalStorage = (storageKeys?: StorageKey[]): void => {
 		if (!storageKeys?.length) {
-			this.logDebug('Clearing all local-storage');
+			this.logInfo('Clearing all local-storage');
 			return localStorage.clear();
 		}
 
@@ -22,7 +26,7 @@ class ModuleFE_StorageCleaner_Class
 
 	public cleanSessionStorage = (storageKeys?: StorageKey[]): void => {
 		if (!storageKeys?.length) {
-			this.logDebug('Clearing all session-storage');
+			this.logInfo('Clearing all session-storage');
 			return sessionStorage.clear();
 		}
 
@@ -37,17 +41,17 @@ class ModuleFE_StorageCleaner_Class
 	};
 
 	public cleanIDBStorage = async () => {
-		const databases = _values(ModuleFE_IDBManager.databases);
-		this.logDebug('Clearing all IDBs');
-		await Promise.all(databases.map(db => db.clearDB()));
-		this.logDebug('Cleared all IDBs');
+		this.logInfo('Clearing all IDBs');
+		const databases = await IDBAPI.databases();
+		await Promise.all(databases.map(this.cleanIDBImpl));
+		this.logInfo('Cleared all IDBs');
 	};
 
 	public cleanCache = async () => {
 		const cacheNames = await caches.keys();
-		this.logDebug('Clearing cache');
-		await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
-		this.logDebug('Cleared cache');
+		this.logInfo('Clearing cache');
+		await Promise.all(cacheNames.map(async cacheName => await caches.delete(cacheName)));
+		this.logInfo('Cleared cache');
 	};
 
 	public cleanCookies = () => {
@@ -58,15 +62,42 @@ class ModuleFE_StorageCleaner_Class
 			//path=/ sets the cookie to expire across the domain, not a specific path.
 			document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
 		});
-		this.logDebug('Cleaned all cookies');
+		this.logInfo('Cleaned all cookies');
 	};
 
-	public cleanAll = async () => {
+	/**
+	 *
+	 * @param callback - Any interaction with storage must be through this callback
+	 */
+	public cleanAll = async (callback?: VoidFunction) => {
 		this.cleanLocalStorage();
 		this.cleanSessionStorage();
 		this.cleanCookies();
 		await this.cleanCache();
 		await this.cleanIDBStorage();
+		if (callback)
+			setTimeout(() => callback());
+	};
+
+	// ######################## Internal Logic ########################
+
+	private cleanIDBImpl = async (info: IDBDatabaseInfo) => {
+		return new Promise<void>((resolve, reject) => {
+			if (!info.name) {
+				return resolve();
+			}
+
+			const request = IDBAPI.deleteDatabase(info.name);
+
+			request.onerror = e => {
+				return reject(request.error);
+			};
+
+			request.onsuccess = e => {
+				this.logVerbose(`IDB ${info.name} cleared`);
+				resolve();
+			};
+		});
 	};
 }
 
