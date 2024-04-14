@@ -122,6 +122,8 @@ export * from './modules/routing';
 export * from './modules/http/ModuleFE_XHR';
 export * from './modules/action-processor/ModuleFE_ActionProcessor';
 export * from './modules/component-loader';
+export * from './modules/ModuleFE_StorageCleaner';
+export * from './modules/ModuleFE_ServerInfo';
 
 export * from './utils/tools';
 export * from './utils/EditableItem';

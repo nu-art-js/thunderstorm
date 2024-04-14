@@ -94,7 +94,7 @@ class ModuleFE_StorageCleaner_Class
 			};
 
 			request.onsuccess = e => {
-				this.logVerbose(`IDB ${info.name} cleared`);
+				this.logInfo(`IDB ${info.name} cleared`);
 				resolve();
 			};
 		});
