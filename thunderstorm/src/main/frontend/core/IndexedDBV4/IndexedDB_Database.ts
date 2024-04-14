@@ -30,6 +30,26 @@ export class IndexedDB_Database
 		this.dbName = dbName;
 	}
 
+	// ######################## DB Interaction ########################
+
+	clearDB = async () => {
+		return new Promise<void>(async (resolve, reject) => {
+			//db is closed & not awaiting opening
+			if (!this.db && !this.openPromise)
+				return resolve();
+
+			if (this.openPromise)
+				await this.openPromise;
+
+			const storeNames = Array.from(this.db.objectStoreNames);
+			storeNames.forEach(storeName => {
+				this.db.deleteObjectStore(storeName);
+			});
+			this.db.close();
+			resolve();
+		});
+	};
+
 	// ######################## Store Interaction ########################
 
 	registerStore = (dbConfig: DBConfigV3<any>, onDBOpenCallback?: VoidFunction) => {

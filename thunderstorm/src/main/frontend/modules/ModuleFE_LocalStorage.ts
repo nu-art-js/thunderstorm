@@ -199,6 +199,8 @@ export class StorageKey<ValueType = string | number | object> {
 
 		return this;
 	}
+
+	getPersistence = () => this.persist;
 }
 
 
