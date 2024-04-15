@@ -1,0 +1,2 @@
+packageName=ts-dependency-viewer
+ModuleName=DependencyViewer
