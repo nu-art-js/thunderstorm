@@ -30,6 +30,8 @@ export class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDBV3<DBProto_PermissionUser, Config>
 	implements OnNewUserRegistered, OnUserLogin, CanDeletePermissionEntities<'PermissionGroup', 'PermissionUser'>, PerformProjectSetup {
 
+	private defaultPermissionGroups?: User_Group[];
+
 	constructor() {
 		super(DBDef_PermissionUser);
 	}
@@ -121,7 +123,11 @@ export class ModuleBE_PermissionUserDB_Class
 	}
 
 	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
-		const permissionsUserToCreate = {_id: uiAccount._id, groups: [], _auditorId: MemKey_AccountId.get()};
+		const permissionsUserToCreate = {
+			_id: uiAccount._id,
+			groups: this.defaultPermissionGroups ?? [],
+			_auditorId: MemKey_AccountId.get()
+		};
 
 		const create = async (transaction?: Transaction) => {
 			return this.create.item(permissionsUserToCreate, transaction);
@@ -181,6 +187,14 @@ export class ModuleBE_PermissionUserDB_Class
 
 		await this.set.multi(usersToUpdate);
 	}
+
+	public setDefaultPermissionGroups = (groups: User_Group[]) => {
+		this.defaultPermissionGroups = groups;
+	};
+
+	public clearDefaultPermissionGroups = () => {
+		delete this.defaultPermissionGroups;
+	};
 }
 
 export const ModuleBE_PermissionUserDB = new ModuleBE_PermissionUserDB_Class();
