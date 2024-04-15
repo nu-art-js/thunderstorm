@@ -23,11 +23,11 @@ const ShowElse: React.FC<Props_ShowElse> = (props) => {
 	return <>{props.children}</>;
 };
 
-type ShowType = ((props: Props_Show) => React.JSX.Element) & { If: typeof ShowIf; Else: typeof ShowElse }
+type ShowType = ((props: Props_Show) => JSX.Element) & { If: typeof ShowIf; Else: typeof ShowElse }
 
 export const Show: ShowType = (props) => {
-	const toRender: React.JSX.Element[] = [];
-	let elseRender: React.JSX.Element | undefined;
+	const toRender: JSX.Element[] = [];
+	let elseRender: JSX.Element | undefined;
 
 	React.Children.forEach(props.children, (child) => {
 		if (!React.isValidElement(child) || ![ShowIf, ShowElse].includes(child.type as any))
