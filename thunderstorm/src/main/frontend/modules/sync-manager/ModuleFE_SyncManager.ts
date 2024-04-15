@@ -197,7 +197,13 @@ export class ModuleFE_SyncManager_Class
 	 */
 	private groupSyncGroups = (syncModules: Response_SmartSync['modules']): SmartSync_SyncGroups => {
 		return syncModules.reduce((map, module) => {
-			map[module.sync].push(module as any);
+			const rtModule = RuntimeModules().find<ModuleFE_v3_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === module.dbKey);
+			// Avoid unnecessary full sync
+			if (rtModule.IDB.getLastSync() === module.lastUpdated) {
+				this.logDebug(`Avoiding unnecessary full sync on ${rtModule.dbDef.dbKey}`);
+				map[SmartSync_UpToDateSync].push(module as any);
+			} else
+				map[module.sync].push(module as any);
 			return map;
 		}, {
 			[SmartSync_UpToDateSync]: [],
@@ -238,10 +244,6 @@ export class ModuleFE_SyncManager_Class
 
 			if (this.currentlySyncingModules.includes(module))
 				return this.logDebug(`Avoid syncing on a currently syncing module ${module.dbDef.dbKey}`);
-
-			// Avoid unnecessary full sync
-			if (module.IDB.getLastSync() === syncModule.lastUpdated)
-				return this.logDebug(`Avoiding unnecessary full sync on ${module.dbDef.dbKey}`);
 
 			return () => this.syncQueue.addItem({module, lastUpdated: syncModule.lastUpdated});
 		}));
