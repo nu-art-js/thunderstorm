@@ -6,6 +6,8 @@ import {Parser, ParseResult, ParseStepResult} from 'papaparse';
 import {ModuleFE_CSVParser, PapaparseConfig} from '../ModuleFE_CSVParser';
 import {ModuleSyncType} from '../db-api-gen/types';
 import {Thunder} from '../../core/Thunder';
+import firebase from 'firebase/compat';
+import Error = firebase.auth.Error;
 
 
 export class ModuleFE_SyncManager_CSV_Class
@@ -57,7 +59,10 @@ export class ModuleFE_SyncManager_CSV_Class
 							this.logError('Parsed with errors', ...errors);
 						resolve();
 					},
-					...finalConfig
+					...finalConfig,
+					error: (error: Error) => {
+						this.logError(`CSV Parsing failed`, error);
+					}
 				});
 		});
 	};
