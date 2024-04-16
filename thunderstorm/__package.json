@@ -69,6 +69,7 @@
     "papaparse": "^5.4.1"
   },
   "devDependencies": {
+    "@types/papaparse": "^5.3.14",
     "@types/pako": "^2.0.0",
     "@types/react": "$REACT_TYPES_VERSION",
     "@types/react-dom": "$REACT_DOM_TYPES_VERSION",
@@ -80,7 +81,6 @@
     "@types/request": "^2.48.1",
     "@types/chrome": "^0.0.202",
     "@types/react-window": "^1.8.5",
-    "@types/react-virtualized-auto-sizer": "^1.0.1",
-    "@types/papaparse": "^5.3.14"
+    "@types/react-virtualized-auto-sizer": "^1.0.1"
   }
 }

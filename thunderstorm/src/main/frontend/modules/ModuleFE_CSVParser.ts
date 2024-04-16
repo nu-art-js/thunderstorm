@@ -1,6 +1,8 @@
-import {Module, tsValidate, tsValidateGeneralUrl} from '@nu-art/ts-common';
+import {Module} from '@nu-art/ts-common';
 import * as Papa from 'papaparse';
 import {LocalFile, ParseResult} from 'papaparse';
+
+export type PapaparseConfig = Omit<Papa.ParseRemoteConfig, 'download'>;
 
 class ModuleFE_CSVParser_Class
 	extends Module {
@@ -32,9 +34,9 @@ class ModuleFE_CSVParser_Class
 
 	fromURL = async <T>(url: string, _config: Omit<Papa.ParseRemoteConfig<T>, 'download'>): Promise<T[]> => {
 		return new Promise((resolve, reject) => {
-			const error = tsValidate(url, tsValidateGeneralUrl());
-			if (error)
-				reject(error);
+			// const error = tsValidate(url, tsValidateGeneralUrl());
+			// if (error)
+			// 	reject(error);
 
 			const config: Papa.ParseRemoteConfig<T> = {
 				header: true,

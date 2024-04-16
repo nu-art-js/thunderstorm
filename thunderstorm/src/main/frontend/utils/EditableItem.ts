@@ -16,7 +16,6 @@ import {
 	isErrorOfType,
 	KeysOfDB_Object,
 	Logger,
-	LogLevel,
 	mergeObject,
 	MUSTNeverHappenException,
 	RecursiveReadonly,
@@ -79,8 +78,6 @@ export class EditableItem<T>
 	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>) {
 		super();
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
-
-		this.setMinLevel(LogLevel.Verbose);
 
 		// @ts-ignore
 		if (!!item.__updated) {

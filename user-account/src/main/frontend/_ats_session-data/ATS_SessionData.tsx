@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {__stringify} from '@nu-art/ts-common';
-import {ModuleFE_Account} from '../modules/ModuleFE_Account';
+import {ModuleFE_Account} from '../../_entity/account/frontend/ModuleFE_Account';
 import {
 	AppToolsScreen,
 	ComponentSync,

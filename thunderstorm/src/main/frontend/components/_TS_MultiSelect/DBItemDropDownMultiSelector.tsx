@@ -41,7 +41,8 @@ export class DBItemDropDownMultiSelector<DBType extends DB_Object>
 				const dbItem = props.module.cache.unique(itemId);
 				return props.itemRenderer(dbItem, onDelete);
 			},
-			selectionRenderer: DBItemDropDownMultiSelector.selector(props.uiSelector)
+			selectionRenderer: DBItemDropDownMultiSelector.selector(props.uiSelector),
+			selectionFilter: (item) => true,
 		};
 	};
 	static propsV3 = <Proto extends DBProto<any>>(props: MultiSelectDropDownPropsV3<Proto>): StaticProps_TS_MultiSelect_V2<string> => {
@@ -50,7 +51,8 @@ export class DBItemDropDownMultiSelector<DBType extends DB_Object>
 				const dbItem = props.module.cache.unique(itemId);
 				return props.itemRenderer(dbItem, onDelete);
 			},
-			selectionRenderer: DBItemDropDownMultiSelector.selector(props.uiSelector)
+			selectionRenderer: DBItemDropDownMultiSelector.selector(props.uiSelector),
+			selectionFilter: (item) => true,
 		};
 	};
 

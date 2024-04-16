@@ -47,6 +47,7 @@ type EditableItemProps_GenericDropDownV3<T> =
 	& UIProps_EditableItem<any, any, string>
 	& {
 	onSelected?: (selected: T | undefined, superOnSelected: (selected?: T) => Promise<void>) => void
+	canUnselect?: boolean
 }
 	& ComponentProps_Error
 

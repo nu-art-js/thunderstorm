@@ -15,7 +15,7 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ResolvableContent, resolveContent, RuntimeVersion, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {DB_Account} from '../../../shared';
-import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
+import {ModuleFE_Account} from '../../../_entity/account/frontend/ModuleFE_Account';
 import {Component_AccountThumbnail} from '../Component_AccountThumbnail/Component_AccountThumbnail';
 import './PopUp_AccountMenu.scss';
 import {Component_ChangePassword} from '../Component_ChangePassword/Component_ChangePassword';
