@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {exists, merge, Module, TS_Object, TypedMap} from '@nu-art/ts-common';
+import {_keys, exists, merge, Module, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 
@@ -45,6 +45,8 @@ export class StorageModule_Class
 	async __onClearWebsiteData() {
 		const items = this.withstandDeletionKeys.map(key => key.get());
 		localStorage.clear();
+		sessionStorage.clear();
+		_keys(this.cache).forEach(key => delete this.cache[key]);
 		this.withstandDeletionKeys.forEach((key, index) => key.set(items[index]));
 	}
 
