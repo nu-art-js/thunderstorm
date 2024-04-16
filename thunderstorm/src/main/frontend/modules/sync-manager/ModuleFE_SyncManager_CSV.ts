@@ -1,10 +1,14 @@
-import {_keys, arrayToMap, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
+import {_keys, arrayToMap, mergeObject, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {Readable, Writable} from 'stream';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import {ModuleFE_v3_BaseDB} from '../db-api-gen/ModuleFE_v3_BaseDB';
 import {Parser, ParseResult, ParseStepResult} from 'papaparse';
-import {ModuleFE_CSVParser} from '../ModuleFE_CSVParser';
+import {ModuleFE_CSVParser, PapaparseConfig} from '../ModuleFE_CSVParser';
 import {ModuleSyncType} from '../db-api-gen/types';
+import {Thunder} from '../../core/Thunder';
+import firebase from 'firebase/compat';
+import Error = firebase.auth.Error;
+
 
 export class ModuleFE_SyncManager_CSV_Class
 	extends Module {
@@ -15,42 +19,51 @@ export class ModuleFE_SyncManager_CSV_Class
 
 	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_v3_BaseDB<any>>((module) => module.syncType === ModuleSyncType.CSVSync);
 
-	syncFromCSVUrl = async (url: string) => {
-		const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.backend.name);
+	syncFromCSVUrl = async (url: string, config?: PapaparseConfig) => {
+		const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.dbKey);
 		const start = performance.now();
 		const itemsToSync: any[] = [];
 		const errors: any[] = [];
 
 		await new Promise<void>(resolve => {
-			ModuleFE_CSVParser.fromURL(url, {
-				transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
-				step: async (results: ParseStepResult<any>, parser: Parser) => {
-					if (results.errors?.length)
-						return errors.push(...results.errors);
+			const isEmulator = Thunder.getInstance().getConfig().label?.toLowerCase() === 'local';
+			const downloadRequestHeaders = isEmulator ? undefined : {'Content-Type': 'text/csv'};
+			const finalConfig = config ? mergeObject({downloadRequestHeaders}, config) : {downloadRequestHeaders};
+			ModuleFE_CSVParser.fromURL(
+				url,
+				{
+					transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
+					step: async (results: ParseStepResult<any>, parser: Parser) => {
+						if (results.errors?.length)
+							return errors.push(...results.errors);
 
-					const item = results.data;
-					const module = modules[item.collectionName];
-					if (!module)
-						return;
+						const item = results.data;
+						const module = modules[item.dbKey];
+						if (!module)
+							return;
 
-					itemsToSync.push(item);
-				},
-				complete: async (results: ParseResult<any>) => {
-					for (const moduleKey of _keys(modules)) {
-						const items = itemsToSync.filter(item => item.collectionName === moduleKey);
-						const module = modules[moduleKey];
-						this.logInfo(`Syncing ${items.length} items to ${moduleKey}`);
-						await module.IDB.syncIndexDb(items.map(item => item.document));
-						await module.cache.load();
-						module.setDataStatus(DataStatus.ContainsData);
+						itemsToSync.push(item);
+					},
+					complete: async (results: ParseResult<any>) => {
+						for (const moduleKey of _keys(modules)) {
+							const items = itemsToSync.filter(item => item.dbKey === moduleKey);
+							const module = modules[moduleKey];
+							this.logInfo(`Syncing ${items.length} items to ${moduleKey}`);
+							await module.IDB.syncIndexDb(items.map(item => item.document));
+							await module.cache.load();
+							module.setDataStatus(DataStatus.ContainsData);
+						}
+						const end = performance.now();
+						this.logInfo(`sync took ${((end - start) / 1000).toFixed(3)} seconds`);
+						if (errors.length)
+							this.logError('Parsed with errors', ...errors);
+						resolve();
+					},
+					...finalConfig,
+					error: (error: Error) => {
+						this.logError(`CSV Parsing failed`, error);
 					}
-					const end = performance.now();
-					this.logInfo(`sync took ${((end - start) / 1000).toFixed(3)} seconds`);
-					if (errors.length)
-						this.logError('Parsed with errors', ...errors);
-					resolve();
-				}
-			});
+				});
 		});
 	};
 
@@ -78,21 +91,12 @@ export class ModuleFE_SyncManager_CSV_Class
 				});
 		});
 	};
-
-	// private syncModules = async (data: any[]) => {
-	// 	const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.backend.name);
-	// 	for (const item of data) {
-	// 		const module = modules[item.collectionName];
-	// 		if (!module)
-	// 			continue;
-	// 		await module.IDB.storeWrapper.upsert(item.document);
-	// 	}
-	// };
 }
 
 export const ModuleFE_SyncManager_CSV = new ModuleFE_SyncManager_CSV_Class();
 
-class ModuleIDBWriter extends Writable {
+class ModuleIDBWriter
+	extends Writable {
 
 	readonly modules: ModuleFE_v3_BaseDB<any>[];
 	readonly moduleNameMap: TypedMap<ModuleFE_v3_BaseDB<any>>;
@@ -127,7 +131,7 @@ class ModuleIDBWriter extends Writable {
 			return;
 
 		for (const item of this.itemsToUpsert) {
-			const module = this.moduleNameMap[item.collectionName];
+			const module = this.moduleNameMap[item.dbKey];
 			if (!module)
 				continue;
 

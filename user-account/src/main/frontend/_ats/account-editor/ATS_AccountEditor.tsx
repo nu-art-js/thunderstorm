@@ -15,7 +15,7 @@ import {
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
 import {DB_Account} from '../../../shared';
 import {generateUUID} from '@nu-art/ts-common';
-import {ModuleFE_Account, OnAccountsUpdated} from '../../modules/ModuleFE_Account';
+import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 

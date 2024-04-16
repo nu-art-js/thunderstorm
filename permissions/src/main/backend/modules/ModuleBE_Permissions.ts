@@ -32,7 +32,7 @@ import {
 	ModuleBE_SessionDB,
 	SessionCollectionParam
 } from '@nu-art/user-account/backend';
-import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
+import {DefaultDef_Group, DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -78,49 +78,68 @@ const dispatcher_collectPermissionsProjects = new Dispatcher<CollectPermissionsP
 
 const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
 
+export const PermissionGroup_Permissions_SuperAdmin: DefaultDef_Group = {
+	_id: GroupId_SuperAdmin,
+	name: 'Super Admin',
+	accessLevels: {
+		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Admin.name,
+		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Admin.name,
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
+		[Domain_Developer.namespace]: DefaultAccessLevel_Admin.name,
+	}
+};
+
+export const PermissionGroup_Permissions_Viewer: DefaultDef_Group = {
+	_id: '8c38d3bd2d76bbc37b5281f481c0bc1b',
+	name: 'Permissions Viewer',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
+		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
+		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Read.name,
+	}
+};
+
+export const PermissionGroup_Permissions_Editor: DefaultDef_Group = {
+	_id: '1524909cae174d0052b76a469b339218',
+	name: 'Permissions Editor',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
+		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
+		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Write.name,
+	}
+};
+
+export const PermissionGroup_Account_Manager: DefaultDef_Group = {
+	_id: '6bb5feb12d0712ecee77f7f44188ec79',
+	name: 'Accounts Manager',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Write.name,
+	}
+};
+
+export const PermissionGroup_Account_Admin: DefaultDef_Group = {
+	_id: '761a84bdde3f9be3fde9c50402a60401',
+	name: 'Accounts Admin',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
+	}
+};
+
+export const PermissionGroup_Account_Viewer: DefaultDef_Group = {
+	_id: '7343853a980149ec94f967ac7ff4ccc3',
+	name: 'Accounts Viewer',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
+	}
+};
+
 export const PermissionGroups_Permissions = [
-	{
-		_id: GroupId_SuperAdmin,
-		name: 'Super Admin',
-		accessLevels: {
-			[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Admin.name,
-			[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Admin.name,
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
-			[Domain_Developer.namespace]: DefaultAccessLevel_Admin.name,
-		}
-	},
-	{
-		_id: '8c38d3bd2d76bbc37b5281f481c0bc1b',
-		name: 'Permissions Viewer',
-		accessLevels: {
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
-			[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
-			[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Read.name,
-		}
-	},
-	{
-		_id: '1524909cae174d0052b76a469b339218',
-		name: 'Permissions Editor',
-		accessLevels: {
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
-			[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
-			[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Write.name,
-		}
-	},
-	{
-		_id: '6bb5feb12d0712ecee77f7f44188ec79',
-		name: 'Accounts Manager',
-		accessLevels: {
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Write.name,
-		}
-	},
-	{
-		_id: '761a84bdde3f9be3fde9c50402a60401',
-		name: 'Accounts Admin',
-		accessLevels: {
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
-		}
-	},
+	PermissionGroup_Permissions_SuperAdmin,
+	PermissionGroup_Permissions_Viewer,
+	PermissionGroup_Permissions_Editor,
+	PermissionGroup_Account_Manager,
+	PermissionGroup_Account_Admin,
+	PermissionGroup_Account_Viewer,
 	// {
 	// 	_id: '60a417683e4016f4d933fee88953f0d5',
 	// 	name: 'Permissions Read Self',

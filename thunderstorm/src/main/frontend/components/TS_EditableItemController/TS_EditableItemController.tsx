@@ -11,9 +11,8 @@ import {Controller, Props_Controller} from '../../core/Controller';
 
 
 export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps extends {} = {}> = Props_Controller & {
-	item: Readonly<Partial<Proto['uiType']>> | string,
+	item?: Readonly<Partial<Proto['uiType']>> | string,
 	module: ModuleFE_v3_BaseApi<Proto>,
-	onCompleted?: (item: Proto['dbType']) => any | Promise<any>,
 	onError?: (err: Error) => any | Promise<any>
 	autoSave?: ResolvableContent<boolean, [Readonly<Proto['uiType']>]>
 	editor: React.ComponentType<EditableRef<Proto['uiType']> & EditorProps>

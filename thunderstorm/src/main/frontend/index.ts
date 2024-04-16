@@ -83,6 +83,7 @@ export * from './components/TS_Card';
 export * from './components/TS_ReadMore';
 export * from './components/AwaitModules/AwaitModules';
 export * from './components/AwaitSync/AwaitSync';
+export * from './components/Show';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
@@ -122,6 +123,8 @@ export * from './modules/routing';
 export * from './modules/http/ModuleFE_XHR';
 export * from './modules/action-processor/ModuleFE_ActionProcessor';
 export * from './modules/component-loader';
+export * from './modules/ModuleFE_StorageCleaner';
+export * from './modules/ModuleFE_ServerInfo';
 
 export * from './utils/tools';
 export * from './utils/EditableItem';

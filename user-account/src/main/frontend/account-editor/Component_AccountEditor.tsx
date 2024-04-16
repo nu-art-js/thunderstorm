@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AccountType, accountTypes, DB_Account, DB_Session, Request_CreateAccount} from '../../shared';
+import {Account_CreateAccount, AccountType, accountTypes, DB_Account, DB_Session} from '../../shared';
 import {
 	_className,
 	ComponentSync,
@@ -17,9 +17,8 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
-import {ModuleFE_Account} from '../modules/ModuleFE_Account';
-import {SessionKeyFE_SessionData} from '../core/consts';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {ModuleFE_Account, SessionKeyFE_SessionData} from '../_entity';
 
 
 type Props = {
@@ -28,7 +27,7 @@ type Props = {
 	onComplete?: (_id: UniqueId) => void
 }
 
-type State = Partial<Request_CreateAccount> & {
+type State = Partial<Account_CreateAccount['request']> & {
 	isPreview: boolean,
 	tokenTTL: number
 	tokenLabel: string
@@ -46,7 +45,7 @@ export class Component_AccountEditor
 
 		const accountId = nextProps.user?._id;
 		if (accountId)
-			ModuleFE_Account.vv1.getSessions({_id: accountId}).execute((response) => {
+			ModuleFE_Account._v1.getSessions({_id: accountId}).execute((response) => {
 				this.setState({sessions: response.sessions});
 			});
 
@@ -55,7 +54,7 @@ export class Component_AccountEditor
 
 	private addAccount = async () => {
 		return performAction(async () => {
-			const account = await ModuleFE_Account.vv1.createAccount({
+			const account = await ModuleFE_Account._v1.createAccount({
 				password: this.state.password!,
 				type: this.state.type!,
 				email: this.state.email!,
@@ -108,23 +107,23 @@ export class Component_AccountEditor
 					<div>{this.state.user?.email}</div>
 				</TS_PropRenderer.Vertical>
 				{this.state.user?.type !== 'service' && <TS_PropRenderer.Vertical label={'Need To Set Password'}>
-                    <div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
-                </TS_PropRenderer.Vertical>}
+					<div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
+				</TS_PropRenderer.Vertical>}
 			</LL_H_C>;
 
 		return <LL_H_C className={'inputs-row'}>
 			<TS_PropRenderer.Vertical label={'Email'}>
 				<TS_Input type={'text'}
-						  placeholder={'Email'}
-						  value={this.state.email}
-						  onBlur={(email) => this.setState({email})}/>
+									placeholder={'Email'}
+									value={this.state.email}
+									onBlur={(email) => this.setState({email})}/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical disabled={!(this.state.type === 'user')} label={'Temporary Password'}>
 				<TS_Input disabled={!(this.state.type === 'user')}
-						  type={'password'}
-						  value={this.state.password}
-						  placeholder={'Temporary Password'}
-						  onBlur={(password) => this.setState({password})}/>
+									type={'password'}
+									value={this.state.password}
+									placeholder={'Temporary Password'}
+									onBlur={(password) => this.setState({password})}/>
 			</TS_PropRenderer.Vertical>
 		</LL_H_C>;
 	};
@@ -168,7 +167,7 @@ export class Component_AccountEditor
 				</TS_PropRenderer.Vertical>
 				<TS_BusyButton onClick={async () => {
 					try {
-						const token = await ModuleFE_Account.vv1.createToken({
+						const token = await ModuleFE_Account._v1.createToken({
 							accountId: this.state.user!._id,
 							ttl: this.state.tokenTTL,
 							label: this.state.tokenLabel
