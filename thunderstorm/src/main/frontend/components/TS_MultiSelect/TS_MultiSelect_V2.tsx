@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, ReactNode} from 'react';
-import {MUSTNeverHappenException, SubsetKeys} from '@nu-art/ts-common';
+import {SubsetKeys} from '@nu-art/ts-common';
 import './TS_MultiSelect.scss';
 import {EditableItem} from '../../utils/EditableItem';
 import {LL_H_C, LL_V_L} from '../Layouts';
@@ -57,9 +57,9 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 		const prop = this.props.prop;
 
 		const editableProp = editable.editProp(prop, []);
-		const existingItems = (editable.item[prop] || (editable.item[prop] = [])) as Binder['InnerType'][];
+		const existingItems = editableProp.item as Binder['InnerType'][];
 		let itemsToRender = this.props.selectionFilter ? existingItems.filter(this.props.selectionFilter) : existingItems;
-		// let itemsToRender = existingItems;
+
 		if (this.props.sort)
 			itemsToRender = this.props.sort(itemsToRender);
 
@@ -79,14 +79,10 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 			{itemsToRender.map((item, i) => {
 				return <LL_H_C className="ts-multi-select__list-value" key={i}>
 					{props.itemRenderer(item, async () => {
-						const indexToRemove = existingItems.indexOf(item);
+						const index = existingItems.indexOf(item);
 
-						if (indexToRemove !== -1) {
-							await editableProp.removeArrayItem(indexToRemove);
-							this.forceUpdate();
-						} else
-							throw new MUSTNeverHappenException(`item ${item} wasn't in existing items`);
-
+						await editableProp.removeArrayItem(index);
+						this.forceUpdate();
 					})}
 				</LL_H_C>;
 			})}
