@@ -1,9 +1,8 @@
 import * as React from 'react';
-import {asArray, DB_Object, dbObjectToId, DBProto, exists} from '@nu-art/ts-common';
+import {asArray, DB_Object, dbObjectToId, DBProto, exists, UniqueId} from '@nu-art/ts-common';
 import {FrameLayout} from '../FrameLayout';
-import {ModuleFE_RoutingV2, TS_Route} from '../../modules/routing';
+import {TS_Route} from '../../modules/routing';
 import {LL_H_C, LL_H_T, LL_V_L, LL_VH_C} from '../Layouts';
-import {getQueryParameter} from '../../modules/ModuleFE_BrowserHistory';
 import './Page_ItemsEditorV3.scss';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem';
@@ -12,12 +11,12 @@ import {ItemEditor_DefaultList, Props_ListRendererV3} from './defaults/ItemEdito
 import {ItemEditor_FilterType, ItemEditor_MapperType, ItemEditor_SortType} from './types';
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter';
 import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
-import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_MouseInteractivity, mouseInteractivity_PopUp, openContent} from '../../component-modules/mouse-interactivity';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
 import {_className} from '../../utils/tools';
 import {InferProps, InferState} from '../../utils/types';
+import {ProtoComponent, ProtoComponentDef, SuperProto} from '../../core/proto-component';
 
 
 export type MenuAction<Proto extends DBProto<any>> = { label: string, action: (state: State_ItemsEditorV3<Proto>) => Promise<any> }
@@ -38,12 +37,20 @@ export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 	actions: MenuAction<Proto>[]
 };
 
-export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
-	Props extends Props_ItemsEditorV3<Proto> & P = Props_ItemsEditorV3<Proto> & P,
-	State extends State_ItemsEditorV3<Proto> & S = State_ItemsEditorV3<Proto> & S>
-	extends ComponentSync<Props, State> {
+export type ComponentProtoDef = ProtoComponentDef<'selected', {
+	selected: { [dbKey: string]: UniqueId }
+}>
 
-	constructor(p: Props) {
+export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
+	CProto extends SuperProto<ComponentProtoDef, ProtoComponentDef<string, any>> = ComponentProtoDef,
+	P = {}, S = {}, >
+	extends ProtoComponent<CProto, Props_ItemsEditorV3<Proto> & P, State_ItemsEditorV3<Proto> & S> {
+
+	static _defaultProps: ComponentProtoDef['props'] = {
+		keys: ['selected']
+	};
+
+	constructor(p: InferProps<Page_ItemsEditorV3<Proto, CProto, P, S>>) {
 		super(p);
 	}
 
@@ -55,17 +62,23 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 			this[nextProps.module.defaultDispatcher.method] = (...args: any[]) => this.__onItemUpdated(...args);
 		}
 
-		const selectedId = getQueryParameter('_id');
-		if (selectedId === undefined)
+		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']) [this.props.module.dbDef.dbKey];
+		if (!exists(selectedId))
 			return state;
 
-		if (selectedId === null)
-			state.editable = this.createEditableItem({});
-		else if (selectedId) {
-			const item = this.props.module.cache.unique(selectedId as string)!;
-			state.editable = this.createEditableItem(item);
+		/*		if (selectedId === null)
+					state.editable = this.createEditableItem({});
+				else*/
+
+		const item = this.props.module.cache.unique(selectedId as string);
+		if (!exists(item)) {
+			this.logError(`Could not find item ${this.props.module.dbDef.dbKey} with id ${selectedId}`);
+			this.onSelected();
+			return state;
 		}
-		state.filter ??= (item: Proto['uiType']) => true;
+
+		state.editable = this.createEditableItem(item);
+		state.filter ??= () => true;
 		return state;
 	}
 
@@ -78,7 +91,7 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 	};
 
 	private createEditableItem(item: Partial<Proto>) {
-		return new EditableDBItemV3<Proto>({...item}, this.props.module, this.onSelected).setAutoSave(true);
+		return new EditableDBItemV3<Proto>({...item}, this.props.module, this.onSelected.bind(this)).setAutoSave(true);
 	}
 
 	render() {
@@ -92,7 +105,7 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 				<LL_V_L className="match_height">
 					<LL_H_C>
 						<Filter
-							onFilterChanged={filter => this.setState({filter})}
+							onFilterChanged={filter => this.setState({filter} as InferState<this>)}
 							mapper={this.props.mapper}
 						/>
 						{this.renderMenuIcon()}
@@ -103,7 +116,7 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 						selected={this.state.editable?.item}
 						sort={sort}
 						module={this.props.module}
-						onSelected={this.onSelected}/>
+						onSelected={this.onSelected.bind(this)}/>
 				</LL_V_L>
 				<div className="separator"/>
 				{this.state.editable && <div className="item-editor"><Editor editable={this.state.editable}/></div>}
@@ -120,10 +133,18 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 		return <Component_AddNewItem onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
 	}
 
-	private onSelected = (item: Partial<Proto['uiType']>) => {
-		ModuleFE_RoutingV2.goToRoute(this.props.route, {_id: item._id});
+	private onSelected(item?: Partial<Proto['uiType']>) {
+		const selected = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']);
+
+		const selectedId = item?._id;
+		if (!selectedId)
+			delete selected[this.props.module.dbDef.dbKey];
+		else
+			selected[this.props.module.dbDef.dbKey] = selectedId;
+
+		this.setQueryParam('selected', selected);
 		this.reDeriveState();
-	};
+	}
 
 	private renderMenuIcon = () => {
 		if (!this.props.actions)
@@ -152,7 +173,7 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 						if (exists(this.state.actionInProgress))
 							return;
 
-						this.setState({actionInProgress: index}, async () => {
+						this.setState({actionInProgress: index} as InferState<this>, async () => {
 							refreshPopup();
 
 							try {
@@ -163,8 +184,7 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 								this.setState({actionInProgress: undefined}, () => refreshPopup());
 							}
 						});
-					}}
-				>
+					}}>
 					{action.label}
 				</div>;
 			})}
