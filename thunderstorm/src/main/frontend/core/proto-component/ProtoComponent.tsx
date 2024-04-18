@@ -1,6 +1,6 @@
 import {ComponentSync} from '../ComponentSync';
-import {_keys, compare, RecursiveObjectOfPrimitives, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2, QueryParamKey} from '../../modules/ModuleFE_BrowserHistoryV2';
+import {compare, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
+import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2} from '../../modules/ModuleFE_BrowserHistoryV2';
 import {ProtoComponentDef} from './types';
 
 
@@ -16,7 +16,8 @@ import {ProtoComponentDef} from './types';
  * @copyright nu-art
  */
 export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P extends {} = {}, S extends {} = {},
-	Props extends Def['props'] & P = Def['props'] & P, State extends Def['state'] & S = Def['state'] & S>
+	Props extends Def['props'] & P = Def['props'] & P,
+	State extends Def['state'] & S = Def['state'] & S>
 	extends ComponentSync<Props, State>
 	implements OnUrlParamsChangedListenerV2 {
 
@@ -34,57 +35,14 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 		}
 	};
 
-	protected _deriveStateFromProps(nextProps: Props, state: State): State {
-		this.logVerbose('Deriving state from props');
-		//Initial state set to be the query param object generated from the query params keys given in props.
-		state ??= this.state ? {...this.state} : {queryParams: this.getQueryParamObject()} as State;
-		const _state = this.deriveStateFromProps(nextProps, state);
-		this.mounted && _state && this.setState(_state);
-		return _state;
-	}
-
 	// ######################## Class Methods ########################
-
-	/**
-	 * Generates an object connecting each query param key given in the props to a QueryParamKey class instance.
-	 * @private
-	 */
-	private getQueryParamObject() {
-		const queryParams = {} as Def['queryParamKeys'];
-		this.props.queryParamsKeys?.forEach(key => {
-			queryParams[key] = this.getQueryParamKeyForKey(key);
-		});
-		return queryParams;
-	}
-
-	/**
-	 * Returns a QueryParamKey class instance by a given key.</br>
-	 * Will throw an error if the given key was not given in props.queryParamsKeys.</br>
-	 * If state was not yet instantiated, will create a new QueryParamKey class instance and return it.
-	 * If state was instantiated, will return the QueryParamKey class instance from the this.state.queryParams.
-	 * @param key
-	 * @private
-	 */
-	private getQueryParamKeyForKey(key: Def['queryParamKeys']) {
-		//State has not been established yet, pass a new QueryParamKey
-		if (!this.state)
-			return new QueryParamKey(key);
-
-		//State has been established
-		const queryKey = this.state.queryParams[key];
-		if (!queryKey)
-			throw new ThisShouldNotHappenException(`QueryParamKey for key ${key as string} not in state`);
-
-		return queryKey;
-	}
 
 	/**
 	 * Generates an object connection each query param key given in the props to its current value as read from the URL
 	 */
 	private getQueryParamResultsObject() {
-		const queryParamObject = this.getQueryParamObject();
-		return _keys(queryParamObject).reduce((map, key) => {
-			map[key] = queryParamObject[key].get();
+		return this.props.keys.reduce((map, key) => {
+			map[key] = this.getQueryParam(key);
 			return map;
 		}, {} as NonNullable<Def['state']['previousResultsObject']>);
 	}
@@ -97,17 +55,28 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * @param value
 	 */
 	setQueryParam<K extends Def['queryParamKeys'] = Def['queryParamKeys']>(key: K, value: Def['queryParamDef'][K]) {
-		const queryKey = this.getQueryParamKeyForKey(key);
-		queryKey.set(value);
+		ModuleFE_BrowserHistoryV2.set(key, value);
 	}
 
 	/**
-	 * Returns the value of a query param by given key
-	 * @param key
+	 * Retrieves the value of the specified query parameter.
+	 *
+	 * @param {K} key - The query parameter key.
+	 * @return {Def['queryParamDef'][K] | undefined} - The value of the specified query parameter, or undefined if it doesn't exist.
 	 */
-	getQueryParam<K extends Def['queryParamKeys']>(key: Def['queryParamKeys']): Def['queryParamDef'][K] {
-		const queryKey = this.getQueryParamKeyForKey(key);
-		return queryKey.get();
+	getQueryParam<K extends Def['queryParamKeys']>(key: K): Def['queryParamDef'][K] | undefined;
+
+	/**
+	 * Retrieves the value of the specified query parameter from the URL.
+	 *
+	 * @param {K} key - The key of the query parameter to retrieve. Must be one of the defined query parameter keys.
+	 * @param {Def.queryParamDef[K]} defaultValue - The default value to return if the query parameter is not found in the URL.
+	 * @returns {Def.queryParamDef[K]} - The value of the specified query parameter, or the default value if not found.
+	 */
+	getQueryParam<K extends Def['queryParamKeys']>(key: K, defaultValue: Def['queryParamDef'][K]): Def['queryParamDef'][K];
+
+	getQueryParam<K extends Def['queryParamKeys']>(key: K, defaultValue?: Def['queryParamDef'][K]) {
+		return ModuleFE_BrowserHistoryV2.get(key) as Def['queryParamDef'][K] ?? defaultValue;
 	}
 
 	/**
@@ -115,8 +84,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * @param key
 	 */
 	deleteQueryParam(key: Def['queryParamKeys']) {
-		const queryKey = this.getQueryParamKeyForKey(key);
-		queryKey.delete();
+		ModuleFE_BrowserHistoryV2.delete(key);
 	}
 
 	// ######################## Multiples
