@@ -38,6 +38,9 @@ export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 	actions: MenuAction<Proto>[]
 };
 
+/**
+ * Manages a list of items on the left with a selected item, and an editor on the right
+ */
 export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 	Props extends Props_ItemsEditorV3<Proto> & P = Props_ItemsEditorV3<Proto> & P,
 	State extends State_ItemsEditorV3<Proto> & S = State_ItemsEditorV3<Proto> & S>
