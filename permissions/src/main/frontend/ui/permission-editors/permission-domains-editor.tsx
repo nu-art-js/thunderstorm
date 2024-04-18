@@ -6,7 +6,7 @@ import {
 	EventType_Update,
 	ModuleFE_Toaster,
 	TS_BusyButton,
-	TS_PropRenderer,
+	TS_PropRenderer, TS_Route,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
 import {BadImplementationException, capitalizeFirstLetter, exists, PreDB, sortArray} from '@nu-art/ts-common';
@@ -45,6 +45,13 @@ export class PermissionDomainsEditor
 		itemNamePlural: 'Permission Domains',
 		itemDisplay: (item: DB_PermissionDomain) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)!.name}/${item.namespace}`,
 	};
+
+	static Route: TS_Route = {
+		key: 'domain-permission-editor',
+		path: 'domain-permission-editor',
+		Component: this
+	};
+
 
 	//######################### Life Cycle #########################
 
