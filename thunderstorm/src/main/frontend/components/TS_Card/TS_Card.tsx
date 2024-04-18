@@ -13,7 +13,7 @@ export class TS_Card
 	}
 
 	render() {
-		const {children, className, ...rest} = this.props;
+		const {children, className, innerRef, ...rest} = this.props;
 		return <div {...rest} className={_className('ts-card', className)}>
 			<TS_ErrorBoundary>
 				{children}
