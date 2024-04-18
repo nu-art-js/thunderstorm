@@ -2,7 +2,7 @@ import * as React from 'react';
 import {DB_PermissionAPI, DBProto_PermissionAPI, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionAPI, ModuleFE_PermissionDomain} from '../../_entity';
 import {EditorBase, Props_EditorBase, State_EditorBase} from './editor-base';
 import {sortArray, UniqueId} from '@nu-art/ts-common';
-import {TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
 import {MultiSelect} from '../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
 
@@ -22,6 +22,12 @@ export class PermissionAPIEditor
 		itemName: 'Permission API',
 		itemNamePlural: 'Permission APIs',
 		itemDisplay: (api: DB_PermissionAPI) => api.path,
+	};
+
+	static Route: TS_Route = {
+		key: 'api-permission-editor',
+		path: 'api-permission-editor',
+		Component: this
 	};
 
 	//######################### Lifecycle #########################

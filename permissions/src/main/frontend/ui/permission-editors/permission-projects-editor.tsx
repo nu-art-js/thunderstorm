@@ -5,7 +5,7 @@ import {
 	EventType_Delete,
 	EventType_Update,
 	TS_Button,
-	TS_PropRenderer
+	TS_PropRenderer, TS_Route
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
 import {UniqueId} from '@nu-art/ts-common';
@@ -42,6 +42,13 @@ export class PermissionProjectsEditor
 		itemNamePlural: 'Permission Projects',
 		itemDisplay: (item: DB_PermissionProject) => item.name,
 	};
+
+	static Route: TS_Route = {
+		key: 'project-permission-editor',
+		path: 'project-permission-editor',
+		Component: this
+	};
+
 
 	//######################### Life Cycle #########################
 

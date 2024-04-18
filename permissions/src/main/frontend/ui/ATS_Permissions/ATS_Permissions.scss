@@ -12,32 +12,33 @@
     flex-shrink: 0;
   }
 
-  .ts-tabs {
+  .links-container {
     flex-grow: 1;
     gap: 8px;
+    padding-bottom: 10px;
 
-    .ts-tabs__tabs-header {
-      gap: 8px;
+    .link-button {
+      display: flex;
       background: transparent;
+      border: 2px solid black;
+      border-radius: 8px;
+      text-decoration: none;
+      padding-inline: 12px;
+      flex-shrink: 0;
+      min-width: 100px;
+      min-height: 50px;
+      justify-content: center;
+      align-items: center;
 
-      .ts-tabs__tab {
-        background: transparent;
-        border: 2px solid black;
-        border-radius: 8px;
-        font: {
-          size: 18px;
-          weight: bold;
-        }
-        color: black;
-
-        &.ts-tabs__focused {
-          background: white;
-        }
+      font: {
+        size: 18px;
+        weight: bold;
       }
-    }
+      color: black;
 
-    .ts-tabs__content {
-      background: transparent;
+      &.selected {
+        background: white;
+      }
     }
   }
 
