@@ -45,7 +45,7 @@ export class FieldEditorWithButtons
 	};
 
 	handleSave = () => {
-		this.props.onAccept(this.state.storageKey.get());
+		this.props.onAccept(this.state.storageKey.get() ?? '');
 		this.handleCancel();
 	};
 
