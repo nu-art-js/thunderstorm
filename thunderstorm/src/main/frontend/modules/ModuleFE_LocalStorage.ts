@@ -31,6 +31,8 @@ export interface OnStorageKeyChangedListener {
 	__onStorageKeyEvent(event: StorageEvent): void;
 }
 
+type GetType = string | number | object
+
 export class StorageModule_Class
 	extends Module
 	implements OnClearWebsiteData {
@@ -45,7 +47,10 @@ export class StorageModule_Class
 	async __onClearWebsiteData() {
 		const items = this.withstandDeletionKeys.map(key => key.get());
 		localStorage.clear();
-		this.withstandDeletionKeys.forEach((key, index) => key.set(items[index]));
+		this.withstandDeletionKeys.forEach((key, index) => {
+			if (items[index])
+				key.set(items[index]!);
+		});
 	}
 
 	private handleStorageEvent = async (e: StorageEvent) => {
@@ -86,7 +91,7 @@ export class StorageModule_Class
 		delete this.cache[key];
 	}
 
-	public get(key: string, defaultValue?: string | number | object, persist: boolean = true): string | number | object | undefined {
+	public get(key: string, defaultValue?: GetType, persist: boolean = true): string | number | object | undefined {
 		let value: string | number | object | null = this.cache[key];
 		if (value)
 			return value;
@@ -162,6 +167,8 @@ export class StorageKey<ValueType = string | number | object> {
 		return this;
 	}
 
+	get(): ValueType | undefined;
+	get(defaultValue: ValueType): ValueType;
 	get(defaultValue?: ValueType): ValueType {
 		// @ts-ignore
 		return ModuleFE_LocalStorage.get(this.key, defaultValue, this.persist) as unknown as ValueType;

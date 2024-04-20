@@ -61,7 +61,7 @@ export class ModuleFE_Workspace_Class
 	private getWorkspaceByKey = (key: string): Workspace | undefined => {
 		this.assertLoggedInUser();
 
-		return this.getStorageKeyForWorkspace(key).get(undefined);
+		return this.getStorageKeyForWorkspace(key).get();
 	};
 
 	private getStorageKeyForWorkspace = (key: string): StorageKey<Workspace> => new StorageKey<Workspace>(`workspace_key__${key}`);
