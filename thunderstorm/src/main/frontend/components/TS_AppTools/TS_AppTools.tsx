@@ -68,7 +68,13 @@ export class TS_AppTools
 			children: [
 				TS_AppTools_Default.Route,
 				...TS_AppTools.screens.map(screen => {
-					return ({key: screen.key || (screen.key = screen.name), path: md5(screen.name), Component: screen.renderer, modulesToAwait: screen.modulesToAwait});
+					return ({
+						key: screen.key || (screen.key = screen.name),
+						path: md5(screen.name),
+						Component: screen.renderer,
+						modulesToAwait: screen.modulesToAwait,
+						children: screen.children
+					});
 				}),
 			]
 		};

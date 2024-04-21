@@ -1,6 +1,6 @@
 @use '@nu-art/ts-styles' as styles;
 
-.permissions-editor {
+#dev-page__permissions .permissions-editor, .editor-content {
   gap: 16px;
 
   //TS Components Design
