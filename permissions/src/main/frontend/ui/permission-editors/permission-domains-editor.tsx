@@ -1,83 +1,47 @@
 import * as React from 'react';
 import {
 	EditableDBItemV3,
-	EventType_Create,
-	EventType_Delete,
-	EventType_Update,
+	EditableRef,
 	ModuleFE_Toaster,
 	TS_BusyButton,
-	TS_PropRenderer, TS_Route,
+	TS_PropRenderer,
+	TS_Route,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, capitalizeFirstLetter, exists, PreDB, sortArray} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	capitalizeFirstLetter,
+	exists,
+	PreDB,
+	sortArray,
+	StaticLogger
+} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {
 	DB_PermissionAccessLevel,
 	DB_PermissionDomain,
-	DB_PermissionProject,
 	DBProto_PermissionAccessLevel,
 	DBProto_PermissionDomain,
-	DispatcherType_PermissionAccessLevel,
-	DispatcherType_PermissionDomain,
 	ModuleFE_PermissionAccessLevel,
 	ModuleFE_PermissionDomain,
 	ModuleFE_PermissionProject
 } from '../../_entity';
-import {DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
-import {EditorBase, Permissions_MenuAction, Props_EditorBase, State_EditorBase} from './editor-base';
+import {Component_BasePermissionItemEditor} from './editor-base';
 import {DropDownCaret, Input_Number_Blur, Input_Text_Blur} from './components';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
+import {Page_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
+import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
 
-type State = State_EditorBase<DBProto_PermissionDomain> & {
-	projects: Readonly<DB_PermissionProject[]>
-};
 
-export class PermissionDomainsEditor
-	extends EditorBase<DBProto_PermissionDomain, State>
-	implements DispatcherInterface<DispatcherType_PermissionDomain>, DispatcherInterface<DispatcherType_PermissionAccessLevel> {
-
-	//######################### Static #########################
-
+class Component_EditDomain
+	extends Component_BasePermissionItemEditor<DBProto_PermissionDomain> {
 	static defaultProps = {
 		module: ModuleFE_PermissionDomain,
-		itemName: 'Permission Domain',
-		itemNamePlural: 'Permission Domains',
-		itemDisplay: (item: DB_PermissionDomain) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)!.name}/${item.namespace}`,
-	};
-
-	static Route: TS_Route = {
-		key: 'domain-permission-editor',
-		path: 'domain-permission-editor',
-		Component: this
+		displayResolver: (item: DB_PermissionDomain) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)!.name}/${item.namespace}`
 	};
 
 
-	//######################### Life Cycle #########################
-
-	__onPermissionDomainUpdated(...params: ApiCallerEventType<DB_PermissionDomain>) {
-		if ([EventType_Update, EventType_Create].includes(params[0])) {
-			const domain = params[1] as DB_PermissionDomain;
-			this.reDeriveState({
-				selectedItemId: domain._id,
-				editedItem: new EditableDBItemV3(domain, ModuleFE_PermissionDomain)
-			});
-		}
-		if (params[0] === EventType_Delete)
-			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
-	}
-
-	__onPermissionAccessLevelUpdated(...params: ApiCallerEventType<DB_PermissionAccessLevel>) {
-		this.forceUpdate();
-	}
-
-	protected deriveStateFromProps(nextProps: Props_EditorBase<DBProto_PermissionDomain>, state: State) {
-		state = super.deriveStateFromProps(nextProps, state);
-		state.projects = ModuleFE_PermissionProject.cache.all();
-		return state;
-	}
-
-	//######################### Logic #########################
+	//######################### logic #########################
 
 	private deleteLevel = async (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
 		try {
@@ -110,31 +74,14 @@ export class PermissionDomainsEditor
 
 	private getEmptyLevel(): PreDB<DB_PermissionAccessLevel> {
 		return {
-			domainId: this.state.editedItem?.item._id,
+			domainId: this.state.editable?.item._id,
 		} as PreDB<DB_PermissionAccessLevel>;
 	}
-
-	protected getItemMenuActions = (item: DB_PermissionDomain): Permissions_MenuAction[] => {
-		return [
-			{
-				label: 'Delete Domain',
-				action: async () => {
-					try {
-						await ModuleFE_PermissionDomain.v1.delete(item).executeSync();
-						return true;
-					} catch (err: any) {
-						this.logError({...err});
-						ModuleFE_Toaster.toastError(err.errorResponse.debugMessage.split('\n')[0]);
-					}
-				}
-			}
-		];
-	};
 
 	//######################### Render #########################
 
 	editorContent = () => {
-		const editable = this.state.editedItem!;
+		const editable = this.state.editable!;
 		return <>
 			<TS_PropRenderer.Vertical label={'Project'}>
 				<DropDown_PermissionProject.editable
@@ -159,7 +106,7 @@ export class PermissionDomainsEditor
 	//######################### Render - levels #########################
 
 	private renderLevelsTable = () => {
-		const domain = this.state.editedItem;
+		const domain = this.state.editable;
 		if (!domain)
 			return '';
 
@@ -224,4 +171,48 @@ export class PermissionDomainsEditor
 			<TS_Icons.bin.component/>
 		</TS_BusyButton>;
 	};
+}
+
+export class PermissionDomainsEditor
+	extends Page_ItemsEditorV3<DBProto_PermissionDomain> {
+
+	//######################### Static #########################
+
+	static Route: TS_Route = {
+		key: 'domain-permission-editor',
+		path: 'domain-permission-editor',
+		Component: this
+	};
+
+	static defaultProps: Partial<InferProps<PermissionDomainsEditor>> = {
+		keys: ['selected'],
+		module: ModuleFE_PermissionDomain,
+		mapper: domain => [`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'],
+		sort: domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found',
+		itemRenderer: domain => <>{`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'}</>,
+		EditorRenderer: Component_EditDomain as React.ComponentType<EditableRef<DBProto_PermissionDomain['uiType']>>,
+		route: this.Route,
+		contextMenuActions: [
+			{
+				label: 'Delete Domain',
+				action: async (item) => {
+					try {
+						await ModuleFE_PermissionDomain.v1.delete(item as unknown as DB_PermissionDomain).executeSync();
+						return true;
+					} catch (err: any) {
+						StaticLogger.logError(err);
+						ModuleFE_Toaster.toastError(err.errorResponse.debugMessage.split('\n')[0]);
+					}
+				}
+			}
+		]
+	};
+
+
+	//######################### Logic #########################
+
+	protected renderHeader(): React.ReactNode {
+		return <>Permission Domain</>;
+	}
+
 }

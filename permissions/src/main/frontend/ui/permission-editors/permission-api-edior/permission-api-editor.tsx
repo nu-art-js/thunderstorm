@@ -1,0 +1,93 @@
+import * as React from 'react';
+import {
+	DB_PermissionAPI,
+	DBProto_PermissionAPI,
+	ModuleFE_PermissionAccessLevel,
+	ModuleFE_PermissionAPI,
+	ModuleFE_PermissionDomain
+} from '../../../_entity';
+import {Component_BasePermissionItemEditor} from '../editor-base';
+import {UniqueId} from '@nu-art/ts-common';
+import {EditableRef, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
+import {MultiSelect} from '../../ui-props';
+import {TS_Icons} from '@nu-art/ts-styles';
+import {ComponentProtoDef, Page_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
+import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
+import './permission-api-editor.scss';
+
+type Props = {
+	projectId: UniqueId;
+};
+
+class Component_APIEditor
+	extends Component_BasePermissionItemEditor<DBProto_PermissionAPI> {
+	static defaultProps = {
+		module: ModuleFE_PermissionAPI,
+		displayResolver: (item: DB_PermissionAPI) => item.path
+	};
+
+	editorContent = () => {
+		const api = this.state.editable;
+		if (!api)
+			return;
+
+		return <>
+			<TS_PropRenderer.Vertical label={'Path'}>
+				<div>{api.item.path}</div>
+			</TS_PropRenderer.Vertical>
+			<TS_PropRenderer.Vertical label={'Access Levels'}>
+				<MultiSelect.AccessLevel
+					editable={api}
+					prop={'accessLevelIds'}
+					className={'domain-level-list'}
+					itemRenderer={(levelId, onDelete) => {
+						const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId)!;
+						const domain = ModuleFE_PermissionDomain.cache.unique(level.domainId)!;
+						return <div key={levelId} className={'domain-level-list__item'}>
+							<TS_Icons.x.component onClick={onDelete}/>
+							{`${domain.namespace}: ${level.name} (${level.value})`}
+						</div>;
+					}}/>
+			</TS_PropRenderer.Vertical>
+		</>;
+	};
+
+}
+
+export class PermissionAPIEditor
+	extends Page_ItemsEditorV3<DBProto_PermissionAPI, ComponentProtoDef, Props> {
+
+	//######################### Static #########################
+
+	static Route: TS_Route = {
+		key: 'api-permission-editor',
+		path: 'api-permission-editor',
+		Component: this,
+	};
+
+	static defaultProps: Partial<InferProps<PermissionAPIEditor>> = {
+		keys: ['selected'],
+		module: ModuleFE_PermissionAPI,
+		mapper: api => [api.path],
+		sort: api => api.path,
+		id: 'api-permission-editor',
+		itemRenderer: api => <>{api.path}</>,
+		EditorRenderer: Component_APIEditor as React.ComponentType<EditableRef<DBProto_PermissionAPI['uiType']>>,
+		hideAddItem: true,
+		route: this.Route,
+	};
+
+
+	//######################### Lifecycle #########################
+
+	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
+		state = super.deriveStateFromProps(nextProps, state);
+		state.filter = item => item.projectId === nextProps.projectId;
+		return state;
+	}
+
+	protected renderHeader(): React.ReactNode {
+		return <>Permission APIs</>;
+	}
+
+}

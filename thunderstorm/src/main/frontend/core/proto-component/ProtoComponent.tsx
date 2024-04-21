@@ -1,5 +1,5 @@
 import {ComponentSync} from '../ComponentSync';
-import {compare, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
+import {BadImplementationException, compare, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
 import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2} from '../../modules/ModuleFE_BrowserHistoryV2';
 import {ProtoComponentDef} from './types';
 
@@ -41,10 +41,14 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * Generates an object connection each query param key given in the props to its current value as read from the URL
 	 */
 	private getQueryParamResultsObject() {
-		return this.props.keys.reduce((map, key) => {
-			map[key] = this.getQueryParam(key);
-			return map;
-		}, {} as NonNullable<Def['state']['previousResultsObject']>);
+		try {
+			return this.props.keys.reduce((map, key) => {
+				map[key] = this.getQueryParam(key);
+				return map;
+			}, {} as NonNullable<Def['state']['previousResultsObject']>);
+		} catch (err: any) {
+			throw new BadImplementationException('proto component implementation must implement default props with keys', err);
+		}
 	}
 
 	// ######################## Singulars

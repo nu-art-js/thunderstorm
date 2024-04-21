@@ -2,7 +2,7 @@ import * as React from 'react';
 import {asArray, DB_Object, dbObjectToId, DBProto, exists, UniqueId} from '@nu-art/ts-common';
 import {FrameLayout} from '../FrameLayout';
 import {TS_Route} from '../../modules/routing';
-import {LL_H_C, LL_H_T, LL_V_L, LL_VH_C} from '../Layouts';
+import {LL_H_C, LL_H_T, LL_V_L} from '../Layouts';
 import './Page_ItemsEditorV3.scss';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem';
@@ -12,14 +12,21 @@ import {ItemEditor_FilterType, ItemEditor_MapperType, ItemEditor_SortType} from 
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter';
 import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ModuleFE_MouseInteractivity, mouseInteractivity_PopUp, openContent} from '../../component-modules/mouse-interactivity';
+import {
+	ModuleFE_MouseInteractivity,
+	mouseInteractivity_PopUp,
+	openContent
+} from '../../component-modules/mouse-interactivity';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
 import {_className} from '../../utils/tools';
 import {InferProps, InferState} from '../../utils/types';
 import {ProtoComponent, ProtoComponentDef, SuperProto} from '../../core/proto-component';
 
 
-export type MenuAction<Proto extends DBProto<any>> = { label: string, action: (state: State_ItemsEditorV3<Proto>) => Promise<any> }
+export type MenuAction<Proto extends DBProto<any>> = {
+	label: string,
+	action: (state: State_ItemsEditorV3<Proto>) => Promise<any>
+}
 type State_ItemsEditorV3<Proto extends DBProto<any>> = {
 	editable: EditableItem<Proto['uiType']>,
 	filter: ItemEditor_FilterType<Proto>,
@@ -35,6 +42,9 @@ export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 	mapper: ItemEditor_MapperType<Proto>
 	itemRenderer: (item: Proto['uiType']) => JSX.Element,
 	actions: MenuAction<Proto>[]
+	id?: string,
+	contextMenuActions: MenuAction<Proto>[]
+	hideAddItem: boolean
 };
 
 /**
@@ -102,29 +112,31 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 		const Filter: Props_ItemsEditorV3<Proto>['Filter'] = this.props.Filter || ItemEditor_DefaultFilter;
 		const Editor: Props_ItemsEditorV3<Proto>['EditorRenderer'] = this.props.EditorRenderer;
 		const sort = this.props.sort || ((item: DB_Object) => item.__created);
-		return <FrameLayout className="editor-page">
+		return <FrameLayout id={this.props.id} className="editor-page">
 			<LL_H_T className="editor-content match_parent">
-				{this.renderHeader()}
-				<LL_V_L className="match_height">
-					<LL_H_C>
+				<LL_V_L className="items-editor__list">
+					<LL_V_L className={'items-editor__list-header-content'}>
+						<div className={'items-editor__list-header'}>
+							{this.renderHeader()}
+						</div>
 						<Filter
 							onFilterChanged={filter => this.setState({filter} as InferState<this>)}
 							mapper={this.props.mapper}
 						/>
 						{this.renderMenuIcon()}
-					</LL_H_C>
+					</LL_V_L>
 					<List
+						contextMenuItems={this.props.contextMenuActions}
 						itemRenderer={this.props.itemRenderer}
 						filter={this.state.filter}
 						selected={this.state.editable?.item}
 						sort={sort}
 						module={this.props.module}
 						onSelected={this.onSelected.bind(this)}/>
+					{this.renderAddNewItem()}
 				</LL_V_L>
-				<div className="separator"/>
 				{this.state.editable && <div className="item-editor"><Editor editable={this.state.editable}/></div>}
 			</LL_H_T>
-			{this.renderAddNewItem()}
 		</FrameLayout>;
 	}
 
@@ -133,7 +145,11 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 	}
 
 	protected renderAddNewItem() {
-		return <Component_AddNewItem onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
+		if (this.props.hideAddItem)
+			return '';
+
+		return <Component_AddNewItem entity={this.renderHeader()}
+									 onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
 	}
 
 	private onSelected(item?: Partial<Proto['uiType']>) {
@@ -196,8 +212,8 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 
 }
 
-export const Component_AddNewItem = (props: { onCreateNewItem: () => Promise<any> }) => {
-	return <LL_VH_C
-		className="add-item clickable"
-		onClick={props.onCreateNewItem}>+</LL_VH_C>;
+export const Component_AddNewItem = (props: { onCreateNewItem: () => Promise<any>, entity: React.ReactNode }) => {
+	return <LL_H_C
+		className="add-item-v3 clickable"
+		onClick={props.onCreateNewItem}>Add new {props.entity}</LL_H_C>;
 };
