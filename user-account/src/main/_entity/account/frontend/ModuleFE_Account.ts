@@ -102,7 +102,6 @@ class ModuleFE_Account_Class
 	protected init(): void {
 		super.init();
 
-		const defaultSessionId = StorageKey_SessionId.get();
 		let defaultTabId = StorageKey_TabId.get();
 
 		if (!exists(StorageKey_DeviceId.get())) {
@@ -117,7 +116,7 @@ class ModuleFE_Account_Class
 			StorageKey_TabId.set(defaultTabId);
 		}
 
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, defaultSessionId!);
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get()!);
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, defaultTabId!);
 		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
 			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))

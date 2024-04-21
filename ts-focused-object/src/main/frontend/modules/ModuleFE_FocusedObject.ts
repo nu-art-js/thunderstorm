@@ -1,20 +1,11 @@
-import {_keys, _values, debounce, exists, filterDuplicates, flatArray, Module, TypedMap} from '@nu-art/ts-common';
+import {_keys, _values, debounce, exists, filterDuplicates, flatArray, Module, removeItemFromArray, Second, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {
-	ModuleFE_FirebaseListener,
-	RefListenerFE
-} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-import {
-	ApiDef_FocusedObject,
-	ApiStruct_FocusedObject,
-	FocusData_Map,
-	Focused,
-	FocusEvent_Focused,
-	FocusEvent_Unfocused
-} from '../../shared';
-import {LoggedStatus, ModuleFE_Account} from '@nu-art/user-account/frontend';
-import {getRelationalPath} from '../../shared/consts';
+import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, Focused,} from '../../shared';
+import {LoggedStatus, ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
+import {DefaultTTL_Unfocus, getRelationalPath} from '../../shared/consts';
+import {DataSnapshot} from 'firebase/database';
 
 
 export interface OnFocusedDataReceived {
@@ -24,11 +15,23 @@ export interface OnFocusedDataReceived {
 export const dispatch_onFocusedDataReceived = new ThunderDispatcher<OnFocusedDataReceived, '__onFocusedDataReceived'>('__onFocusedDataReceived');
 
 export class ModuleFE_FocusedObject_Class
-	extends Module {
-	private debounceSync?: () => void;
+	extends Module
+	implements OnLoginStatusUpdated {
+
 	readonly _v1: ApiDefCaller<ApiStruct_FocusedObject>['_v1'];
 	private focusFirebaseListener!: RefListenerFE<FocusData_Map>;
-	private focusDataMap: TypedMap<Focused[]> = {};
+	private focusDataMap: FocusData_Map = {};
+	private currentlyFocused: TypedMap<UniqueId[]> = {};
+	private readonly apiDebounce: VoidFunction;
+	private windowIsFocused: boolean = true;
+	private unfocusTimeout: NodeJS.Timeout | undefined;
+	private keepAliveTimeout: NodeJS.Timeout | undefined;
+
+	__onLoginStatusUpdated() {
+		const status = ModuleFE_Account.getLoggedStatus();
+		if (status === LoggedStatus.LOGGED_OUT)
+			this.onUserLoggedOut();
+	};
 
 	constructor() {
 		super();
@@ -37,26 +40,132 @@ export class ModuleFE_FocusedObject_Class
 			setFocusStatusByTabId: apiWithBody(ApiDef_FocusedObject._v1.setFocusStatusByTabId),
 			releaseObject: apiWithBody(ApiDef_FocusedObject._v1.releaseObject),
 			releaseByTabId: apiWithBody(ApiDef_FocusedObject._v1.releaseByTabId),
+			update: apiWithBody(ApiDef_FocusedObject._v1.update),
 		};
-		this.debounceSync = debounce(async () => {
-			if (!this.focusFirebaseListener)
-				return this.logWarning('Ignoring entity focus data state, listener is undefined');
-
-			await this.sendFocusDataToRTDB();
-		}, 1000, 5000);
+		this.apiDebounce = debounce(this.updateRTDB, 2 * Second, 10 * Second);
 	}
 
 	init() {
-		this.focusFirebaseListener = ModuleFE_FirebaseListener.createListener(getRelationalPath());
-		this.focusFirebaseListener.startListening((snapshot) => {
-			this.logDebug('Received firebase focus data');
-			const value: FocusData_Map = snapshot.val();
-			// Update all the FocusedEntityRef components
-			dispatch_onFocusedDataReceived.dispatchAll(value);
-		});
-		this.listenToFocusEvents();
-		this.listenToPageClosed();
+		this.initFirebaseListening();
+		this.initWindowFocusListeners();
+		this.initWindowCloseListeners();
 	}
+
+	// ######################## Init listeners ########################
+
+	private initFirebaseListening = () => {
+		this.focusFirebaseListener = ModuleFE_FirebaseListener.createListener(getRelationalPath());
+		this.focusFirebaseListener.startListening(this.onRTDBChange);
+	};
+
+	private initWindowFocusListeners() {
+		window.addEventListener('focus', this.onWindowFocus);
+		window.addEventListener('blur', this.onWindowBlur);
+	}
+
+	private initWindowCloseListeners() {
+		window.addEventListener('beforeunload', async (event) => {
+			await this._v1.releaseByTabId({}).executeSync();
+			// navigator.sendBeacon('/log', JSON.stringify({ type:'application/json' }));
+		});
+	}
+
+	// ######################## Listener Callbacks ########################
+
+	private onRTDBChange = (snapshot: DataSnapshot) => {
+		this.focusDataMap = snapshot.val() as FocusData_Map;
+		this.logDebug('Received firebase focus data', this.focusDataMap);
+		// Update all the FocusedEntityRef components
+		dispatch_onFocusedDataReceived.dispatchAll(this.focusDataMap);
+	};
+
+	private onWindowFocus = () => {
+		this.windowIsFocused = true;
+	};
+
+	private onWindowBlur = () => {
+		this.windowIsFocused = false;
+	};
+
+	private onUserLoggedOut = () => {
+		//If user is logged out
+		this.currentlyFocused = {};
+		
+	};
+
+	// private async focusWindow() {
+	// 	if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
+	// 		return;
+	//
+	// 	if (!_keys(this.focusDataMap))
+	// 		return this.logDebug('Received window focus event, but no data to change in rtdb.');
+	//
+	// 	await this._v1.setFocusStatusByTabId({event: FocusEvent_Focused}).executeSync();
+	// }
+	//
+	// private async unfocusWindow() {
+	// 	if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
+	// 		return;
+	//
+	// 	if (!_keys(this.focusDataMap))
+	// 		return this.logDebug('Received window unfocus(blur) event, but no data to change in rtdb.');
+	//
+	// 	await this._v1.setFocusStatusByTabId({event: FocusEvent_Unfocused}).executeSync();
+	// }
+
+	// ######################## Timer Interactions ########################
+
+	private triggerKeepAlive = () => {
+		clearTimeout(this.keepAliveTimeout);
+		//No need to set keepalive timeout if currentlyFocused has no data
+		if (!_keys(this.currentlyFocused).length)
+			return;
+
+		this.keepAliveTimeout = setTimeout(() => {
+			//No need to keepalive if window is not focused
+			if (!this.windowIsFocused)
+				return;
+
+			this.apiDebounce();
+		}, DefaultTTL_Unfocus - 20 * Second);
+	};
+
+	// ######################## API Logic ########################
+
+	private updateRTDB = () => {
+		//Call API
+		this._v1.update({currentlyFocused: this.currentlyFocused})
+			.executeSync()
+			.then()
+			.catch(e => {
+				this.logError('Update focused object failed', e);
+			})
+			.finally(() => {
+				//Set / Clear timers
+				clearTimeout(this.unfocusTimeout);
+				this.triggerKeepAlive();
+			});
+	};
+
+	// ######################## Logic ########################
+
+	public focus = (dbKey: string, itemId: UniqueId) => {
+		if (!this.currentlyFocused[dbKey])
+			this.currentlyFocused[dbKey] = [];
+
+		this.currentlyFocused[dbKey] = filterDuplicates([...this.currentlyFocused[dbKey], itemId]);
+		this.apiDebounce();
+	};
+
+	public unfocus = (dbKey: string, itemId: UniqueId) => {
+		if (!this.currentlyFocused[dbKey])
+			return;
+
+		this.currentlyFocused[dbKey] = removeItemFromArray(this.currentlyFocused[dbKey], itemId);
+		clearTimeout(this.unfocusTimeout);
+		this.unfocusTimeout = setTimeout(() => this.apiDebounce(), 20 * Second);
+	};
+
 
 	async focusData(focusId: string, focusData: Focused[]) {
 		// We want to check if the focusDataMap already has this new focusData. If it doesn't, then we want to update the RTDB.
@@ -105,26 +214,6 @@ export class ModuleFE_FocusedObject_Class
 		}).executeSync();
 	}
 
-	private async focusWindow() {
-		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
-			return;
-
-		if (!_keys(this.focusDataMap))
-			return this.logDebug('Received window focus event, but no data to change in rtdb.');
-
-		await this._v1.setFocusStatusByTabId({event: FocusEvent_Focused}).executeSync();
-	}
-
-	private async unfocusWindow() {
-		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
-			return;
-
-		if (!_keys(this.focusDataMap))
-			return this.logDebug('Received window unfocus(blur) event, but no data to change in rtdb.');
-
-		await this._v1.setFocusStatusByTabId({event: FocusEvent_Unfocused}).executeSync();
-	}
-
 	public async releaseFocusData(focusId: string, focusDataToRelease: Focused[]) {
 		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
 			return;
@@ -148,22 +237,6 @@ export class ModuleFE_FocusedObject_Class
 
 	getWindowFocusState() {
 		return document.hasFocus();
-	}
-
-	private listenToFocusEvents() {
-		window.addEventListener('blur', async () => {
-			await this.unfocusWindow();
-		});
-		window.addEventListener('focus', async () => {
-			await this.focusWindow();
-		});
-	}
-
-	private listenToPageClosed() {
-		window.addEventListener('beforeunload', async (event) => {
-			await this._v1.releaseByTabId({}).executeSync();
-			// navigator.sendBeacon('/log', JSON.stringify({ type:'application/json' }));
-		});
 	}
 
 	private compareFocusData(a: Focused, b: Focused): boolean {
