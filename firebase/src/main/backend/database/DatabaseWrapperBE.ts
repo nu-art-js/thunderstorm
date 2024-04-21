@@ -37,14 +37,14 @@ export class DatabaseWrapperBE
 		this.database = getDatabase(firebaseSession.app) as Firebase_DB;
 	}
 
-	public async get<T>(path: string, defaultValue?: T): Promise<T> {
+	public async get<T>(path: string, fallbackValue?: T): Promise<T> {
 		const snapshot = await this.getRef(path).once('value');
-		let toRet = defaultValue;
+		let toRet = fallbackValue;
 		if (snapshot)
 			toRet = snapshot.val() as T;
 
 		if (!toRet)
-			toRet = defaultValue;
+			toRet = fallbackValue;
 
 		return toRet as T;
 	}
@@ -134,8 +134,6 @@ export class DatabaseWrapperBE
 	}
 }
 
-type Something<Type, DefaultValueType> = DefaultValueType extends undefined ? Type | undefined : NonNullable<Type>
-
 /**
  * simplified interface for interacting with  Firebase
  */
@@ -149,8 +147,10 @@ export class FirebaseRef<T> {
 		this.path = path;
 	}
 
-	public get<V extends T>(defaultValue?: V): Promise<Something<T, V>> {
-		return this.db.get(this.path, defaultValue) as Promise<Something<T, V>>;
+	public get(): Promise<T | undefined>
+	public get(fallbackValue: T): Promise<T>;
+	public get(fallbackValue?: T): Promise<T | undefined> {
+		return this.db.get(this.path, fallbackValue);
 	}
 
 	public set(value: T) {
