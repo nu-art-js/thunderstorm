@@ -1,26 +1,32 @@
 import * as React from 'react';
-import {asArray, DB_Object, dbObjectToId, DBProto, exists} from '@nu-art/ts-common';
+import {asArray, DB_Object, dbObjectToId, DBProto, exists, sortArray, UniqueId} from '@nu-art/ts-common';
 import {FrameLayout} from '../FrameLayout';
-import {ModuleFE_RoutingV2, TS_Route} from '../../modules/routing';
-import {LL_H_C, LL_H_T, LL_V_L, LL_VH_C} from '../Layouts';
-import {getQueryParameter} from '../../modules/ModuleFE_BrowserHistory';
+import {TS_Route} from '../../modules/routing';
+import {LL_H_C, LL_H_T, LL_V_L} from '../Layouts';
 import './Page_ItemsEditorV3.scss';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem';
-import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
 import {ItemEditor_DefaultList, Props_ListRendererV3} from './defaults/ItemEditor_ListRenderer';
 import {ItemEditor_FilterType, ItemEditor_MapperType, ItemEditor_SortType} from './types';
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter';
 import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
-import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ModuleFE_MouseInteractivity, mouseInteractivity_PopUp, openContent} from '../../component-modules/mouse-interactivity';
+import {
+	ModuleFE_MouseInteractivity,
+	mouseInteractivity_PopUp,
+	openContent
+} from '../../component-modules/mouse-interactivity';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
 import {_className} from '../../utils/tools';
 import {InferProps, InferState} from '../../utils/types';
+import {ProtoComponent, ProtoComponentDef, SuperProto} from '../../core/proto-component';
+import {Props_EditableItemControllerProto} from '../TS_EditableItemControllerProto';
 
 
-export type MenuAction<Proto extends DBProto<any>> = { label: string, action: (state: State_ItemsEditorV3<Proto>) => Promise<any> }
+export type MenuAction<Proto extends DBProto<any>> = {
+	label: string,
+	action: (state: State_ItemsEditorV3<Proto>) => Promise<any>
+}
 type State_ItemsEditorV3<Proto extends DBProto<any>> = {
 	editable: EditableItem<Proto['uiType']>,
 	filter: ItemEditor_FilterType<Proto>,
@@ -28,7 +34,7 @@ type State_ItemsEditorV3<Proto extends DBProto<any>> = {
 };
 export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 	ListRenderer?: React.ComponentType<Props_ListRendererV3<Proto>>
-	EditorRenderer: React.ComponentType<EditableRef<Proto['uiType']>>
+	EditorRenderer: React.ComponentType<Partial<Props_EditableItemControllerProto<Proto>>>,
 	Filter?: React.ComponentType<Props_Filter<Proto>>
 	module: ModuleFE_v3_BaseApi<Proto>,
 	route: TS_Route<{ _id: string }>,
@@ -36,18 +42,35 @@ export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 	mapper: ItemEditor_MapperType<Proto>
 	itemRenderer: (item: Proto['uiType']) => JSX.Element,
 	actions: MenuAction<Proto>[]
+	id?: string,
+	contextMenuActions: MenuAction<Proto>[]
+	hideAddItem: boolean
 };
 
 /**
  * Manages a list of items on the left with a selected item, and an editor on the right
  */
-export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
-	Props extends Props_ItemsEditorV3<Proto> & P = Props_ItemsEditorV3<Proto> & P,
-	State extends State_ItemsEditorV3<Proto> & S = State_ItemsEditorV3<Proto> & S>
-	extends ComponentSync<Props, State> {
+export type ComponentProtoDef = ProtoComponentDef<'selected', {
+	selected: { [dbKey: string]: UniqueId }
+}>
 
-	constructor(p: Props) {
+export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
+	CProto extends SuperProto<ComponentProtoDef, ProtoComponentDef<string, any>> = ComponentProtoDef,
+	P = {}, S = {}, >
+	extends ProtoComponent<CProto, Props_ItemsEditorV3<Proto> & P, State_ItemsEditorV3<Proto> & S> {
+
+	static _defaultProps: ComponentProtoDef['props'] = {
+		keys: ['selected']
+	};
+
+	constructor(p: InferProps<Page_ItemsEditorV3<Proto, CProto, P, S>>) {
 		super(p);
+	}
+
+	componentDidMount() {
+		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected'])[this.props.module.dbDef.dbKey];
+		if (!selectedId)
+			this.onSelected(sortArray(this.props.module.cache.allMutable(), this.props.sort)[0]);
 	}
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
@@ -58,30 +81,38 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 			this[nextProps.module.defaultDispatcher.method] = (...args: any[]) => this.__onItemUpdated(...args);
 		}
 
-		const selectedId = getQueryParameter('_id');
-		if (selectedId === undefined)
+		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']) [this.props.module.dbDef.dbKey];
+		if (!exists(selectedId)) {
+			state.editable = this.createEditableItem({} as Proto['uiType']);
 			return state;
-
-		if (selectedId === null)
-			state.editable = this.createEditableItem({});
-		else if (selectedId) {
-			const item = this.props.module.cache.unique(selectedId as string)!;
-			state.editable = this.createEditableItem(item);
 		}
-		state.filter ??= (item: Proto['uiType']) => true;
+
+
+		const item = this.props.module.cache.unique(selectedId as string);
+		if (!exists(item)) {
+			this.logError(`Could not find item ${this.props.module.dbDef.dbKey} with id ${selectedId}`);
+			this.onSelected();
+			return state;
+		}
+
+		state.editable = this.createEditableItem(item);
+		state.filter ??= () => true;
 		return state;
 	}
 
 	private __onItemUpdated = (...params: ApiCallerEventTypeV3<Proto>): void => {
 		const items = asArray(params[1]);
 		if (!items.map(dbObjectToId).includes(this.state.editable.get('_id') as string))
-			return;
+			return this.onSelected(items[0]);
+
+		if (params[0] === 'delete' || params[0] === 'delete-multi')
+			return this.onSelected();
 
 		return this.reDeriveState();
 	};
 
-	private createEditableItem(item: Partial<Proto>) {
-		return new EditableDBItemV3<Proto>({...item}, this.props.module, this.onSelected).setAutoSave(true);
+	private createEditableItem(item: Partial<Proto['uiType']>) {
+		return new EditableDBItemV3<Proto>({...item}, this.props.module, this.onSelected.bind(this)).setAutoSave(true);
 	}
 
 	render() {
@@ -89,29 +120,31 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 		const Filter: Props_ItemsEditorV3<Proto>['Filter'] = this.props.Filter || ItemEditor_DefaultFilter;
 		const Editor: Props_ItemsEditorV3<Proto>['EditorRenderer'] = this.props.EditorRenderer;
 		const sort = this.props.sort || ((item: DB_Object) => item.__created);
-		return <FrameLayout className="editor-page">
+		return <FrameLayout id={this.props.id} className="editor-page">
 			<LL_H_T className="editor-content match_parent">
-				{this.renderHeader()}
-				<LL_V_L className="match_height">
-					<LL_H_C>
+				<LL_V_L className="items-editor__list">
+					<LL_V_L className={'items-editor__list-header-content'}>
+						<div className={'items-editor__list-header'}>
+							{this.renderHeader()}
+						</div>
 						<Filter
-							onFilterChanged={filter => this.setState({filter})}
+							onFilterChanged={filter => this.setState({filter} as InferState<this>)}
 							mapper={this.props.mapper}
 						/>
 						{this.renderMenuIcon()}
-					</LL_H_C>
+					</LL_V_L>
 					<List
+						contextMenuItems={this.props.contextMenuActions}
 						itemRenderer={this.props.itemRenderer}
 						filter={this.state.filter}
 						selected={this.state.editable?.item}
 						sort={sort}
 						module={this.props.module}
-						onSelected={this.onSelected}/>
+						onSelected={this.onSelected.bind(this)}/>
+					{this.renderAddNewItem()}
 				</LL_V_L>
-				<div className="separator"/>
-				{this.state.editable && <div className="item-editor"><Editor editable={this.state.editable}/></div>}
+				<div className="item-editor"><Editor item={this.state.editable?.item}/></div>
 			</LL_H_T>
-			{this.renderAddNewItem()}
 		</FrameLayout>;
 	}
 
@@ -120,13 +153,25 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 	}
 
 	protected renderAddNewItem() {
-		return <Component_AddNewItem onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
+		if (this.props.hideAddItem)
+			return '';
+
+		return <Component_AddNewItem entity={this.renderHeader()}
+									 onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
 	}
 
-	private onSelected = (item: Partial<Proto['uiType']>) => {
-		ModuleFE_RoutingV2.goToRoute(this.props.route, {_id: item._id});
+	private onSelected(item?: Partial<Proto['uiType']>) {
+		const selected = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']);
+
+		const selectedId = item?._id;
+		if (!selectedId)
+			delete selected[this.props.module.dbDef.dbKey];
+		else
+			selected[this.props.module.dbDef.dbKey] = selectedId;
+
+		this.setQueryParam('selected', selected);
 		this.reDeriveState();
-	};
+	}
 
 	private renderMenuIcon = () => {
 		if (!this.props.actions)
@@ -155,7 +200,7 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 						if (exists(this.state.actionInProgress))
 							return;
 
-						this.setState({actionInProgress: index}, async () => {
+						this.setState({actionInProgress: index} as InferState<this>, async () => {
 							refreshPopup();
 
 							try {
@@ -166,8 +211,7 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 								this.setState({actionInProgress: undefined}, () => refreshPopup());
 							}
 						});
-					}}
-				>
+					}}>
 					{action.label}
 				</div>;
 			})}
@@ -176,8 +220,8 @@ export class Page_ItemsEditorV3<Proto extends DBProto<any>, P = {}, S = {},
 
 }
 
-export const Component_AddNewItem = (props: { onCreateNewItem: () => Promise<any> }) => {
-	return <LL_VH_C
-		className="add-item clickable"
-		onClick={props.onCreateNewItem}>+</LL_VH_C>;
+export const Component_AddNewItem = (props: { onCreateNewItem: () => Promise<any>, entity: React.ReactNode }) => {
+	return <LL_H_C
+		className="add-item-v3 clickable"
+		onClick={props.onCreateNewItem}>Add new {props.entity}</LL_H_C>;
 };
