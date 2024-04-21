@@ -1,56 +1,48 @@
 import * as React from 'react';
-import {EditableDBItemV3, EventType_Create, EventType_Delete, EventType_Update, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
+import {DB_PermissionUser, DBProto_PermissionUser, ModuleFE_PermissionUser} from '../../_entity';
+import {Page_ItemsEditorV3, Props_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
+import {EditableRef, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
 import {MultiSelect} from '../ui-props';
-import {DB_PermissionUser, DBProto_PermissionUser, DispatcherType_PermissionUser, ModuleFE_PermissionUser} from '../../_entity';
-import {EditorBase, Props_EditorBase, State_EditorBase} from './editor-base';
-import {ApiCallerEventTypeV3, DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {Component_BasePermissionItemEditor} from './editor-base';
 
-type State = State_EditorBase<DBProto_PermissionUser>;
 
-type Props = Props_EditorBase<DBProto_PermissionUser> & {
-	renderAccount: (accountId: string) => string
-}
-
-export class PermissionUsersEditor
-	extends EditorBase<DBProto_PermissionUser, State, Props>
-	implements DispatcherInterface<DispatcherType_PermissionUser> {
-
-	//######################### Static #########################
+class Component_EditAccount
+	extends Component_BasePermissionItemEditor<DBProto_PermissionUser> {
 
 	static defaultProps = {
-		renderAccount: (accountId: string) => ModuleFE_Account.getAccounts().find(account => account._id === accountId)?.email || 'Not Found',
 		module: ModuleFE_PermissionUser,
-		itemName: 'Permission User',
-		itemNamePlural: 'Permission Users',
-		itemDisplay: (user: DB_PermissionUser) => this.defaultProps.renderAccount(user._id),
+		displayResolver: (item: DB_PermissionUser) => ModuleFE_Account.cache.unique(item._id)?.email ?? 'Not Found'
 	};
-
-	//######################### Life Cycle #########################
-
-	__onPermissionUserUpdated(...params: ApiCallerEventTypeV3<DBProto_PermissionUser>) {
-		if ([EventType_Update, EventType_Create].includes(params[0])) {
-			const level = params[1] as DB_PermissionUser;
-			this.reDeriveState({
-				selectedItemId: level._id,
-				editedItem: new EditableDBItemV3(level, ModuleFE_PermissionUser).setAutoSave(true)
-			});
-		}
-		if (params[0] === EventType_Delete)
-			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
-	}
-
-	//######################### Render #########################
 
 	editorContent = () => {
 		return <TS_PropRenderer.Vertical label={'Groups'}>
 			<MultiSelect.Group
 				className={'user-permission-groups'}
-				editable={this.state.editedItem!}
+				editable={this.state.editable!}
 				prop={'groups'}
 			/>
 		</TS_PropRenderer.Vertical>;
 	};
+}
 
-	protected renderListButton = () => <></>;
+export class PermissionUsersEditor
+	extends Page_ItemsEditorV3<DBProto_PermissionUser> {
+
+	//######################### Static #########################
+
+	static Route: TS_Route = {
+		key: 'user-permission-editor',
+		path: 'user-permission-editor',
+		Component: this
+	};
+
+	static defaultProps: Partial<Props_ItemsEditorV3<DBProto_PermissionUser>> = {
+		module: ModuleFE_PermissionUser,
+		mapper: (user) => [ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'],
+		sort: (user) => ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found',
+		itemRenderer: (user) => <>{ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'}</>,
+		EditorRenderer: Component_EditAccount as React.ComponentType<EditableRef<DBProto_PermissionUser['uiType']>>,
+		route: this.Route
+	};
 }

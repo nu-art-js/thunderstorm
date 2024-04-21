@@ -2,6 +2,7 @@ import {ResolvableContent} from '@nu-art/ts-common';
 import * as React from 'react';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
+import {TS_Route} from '../../modules/routing';
 
 
 export type AppToolsScreen = {
@@ -10,6 +11,7 @@ export type AppToolsScreen = {
 	renderer: React.ComponentType<any>;
 	icon?: React.ComponentType; //Icon for rendering in the navigator
 	group?: string; //For grouping in the navigator
+	children?: TS_Route<any>[]
 	modulesToAwait?: ResolvableContent<(ModuleFE_BaseDB<any, any> | ModuleFE_v3_BaseDB<any, any>)[]>;
 }
 

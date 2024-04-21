@@ -6,7 +6,8 @@ import {
 	EventType_Update,
 	ModuleFE_Toaster,
 	TS_ErrorBoundary,
-	TS_PropRenderer
+	TS_PropRenderer,
+	TS_Route
 } from '@nu-art/thunderstorm/frontend';
 import {MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
 import {MultiSelect} from '../ui-props';
@@ -41,6 +42,13 @@ export class PermissionGroupsEditor
 		itemNamePlural: 'Permission Groups',
 		itemDisplay: (item: DB_PermissionGroup) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)?.name || 'Global'}/${item.label}`,
 	};
+
+	static Route: TS_Route = {
+		key: 'group-permission-editor',
+		path: 'group-permission-editor',
+		Component: this
+	};
+
 
 	//######################### Life Cycle #########################
 
