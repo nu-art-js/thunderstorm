@@ -37,6 +37,9 @@ export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 	actions: MenuAction<Proto>[]
 };
 
+/**
+ * Manages a list of items on the left with a selected item, and an editor on the right
+ */
 export type ComponentProtoDef = ProtoComponentDef<'selected', {
 	selected: { [dbKey: string]: UniqueId }
 }>
