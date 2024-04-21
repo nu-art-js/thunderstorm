@@ -49,15 +49,16 @@ export class ATS_ProtoComponent
 	extends ProtoComponent<ComponentDef1, {}, State> {
 
 	static defaultProps: Partial<ComponentDef1['props']> = {
-		queryParamsKeys: ['selectedNumber', 'selectedExampleId'],
+		keys: ['selectedNumber', 'selectedExampleId'],
 	};
 
 	protected deriveStateFromProps(nextProps: ComponentDef1['props'], state: ComponentDef1['state'] & State) {
 		state = super.deriveStateFromProps(nextProps, state);
-		state.selectedNumber = state.queryParams.selectedNumber.get();
-		state.selectedExampleId = state.queryParams.selectedExampleId.get();
+		state.selectedNumber = this.getQueryParam('selectedNumber');
+		state.selectedExampleId = this.getQueryParam('selectedExampleId');
 		return state;
 	}
+
 
 	static screen: AppToolsScreen = {
 		name: 'ProtoComponent',

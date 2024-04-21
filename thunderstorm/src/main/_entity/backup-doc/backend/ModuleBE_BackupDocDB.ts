@@ -24,7 +24,6 @@ import {DBApiConfigV3, ModuleBE_BaseDBV3} from '../../../backend/modules/db-api-
 import {ModuleBE_BaseDBV2} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV2';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {Readable} from 'stream';
 import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc} from '../shared/types';
@@ -52,16 +51,16 @@ type Config = DBApiConfigV3<DBProto_BackupDoc> & {
 	excludedDbKeys?: string[],
 }
 
-const CSVConfig = {
-	fieldSeparator: ',',
-	quoteStrings: '',
-	decimalSeparator: '.',
-	showLabels: true,
-	showTitle: false,
-	useTextFile: false,
-	useBom: true,
-	useKeysAsHeaders: true,
-};
+// const CSVConfig = {
+// 	fieldSeparator: ',',
+// 	quoteStrings: '',
+// 	decimalSeparator: '.',
+// 	showLabels: true,
+// 	showTitle: false,
+// 	useTextFile: false,
+// 	useBom: true,
+// 	useKeysAsHeaders: true,
+// };
 
 type DBModules = ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>;
 
@@ -236,7 +235,6 @@ export class ModuleBE_BackupDocDB_Class
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
 		const storage = firebaseSessionAdmin.getStorage();
 		const bucket = await storage.getMainBucket();
-		CSVModule.updateExporterSettings(CSVConfig);
 		let metadata: BackupMetaData;
 
 		if (modules.length === 0)
