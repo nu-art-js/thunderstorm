@@ -1,11 +1,5 @@
 import * as React from 'react';
-import {
-	EditableRef,
-	ModuleFE_Toaster,
-	TS_ErrorBoundary,
-	TS_PropRenderer,
-	TS_Route
-} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Toaster, TS_ErrorBoundary, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
 import {MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 import {MultiSelect} from '../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
@@ -21,6 +15,10 @@ import {Input_Text_Blur} from './components';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
 import {Page_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
+import {
+	Props_EditableItemControllerProto,
+	TS_EditableItemControllerProto
+} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
 
 class Component_EditGroup
 	extends Component_BasePermissionItemEditor<DBProto_PermissionGroup> {
@@ -77,6 +75,17 @@ class Component_EditGroup
 	};
 }
 
+class Controller_EditGroup
+	extends TS_EditableItemControllerProto<DBProto_PermissionGroup> {
+	static defaultProps = {
+		keys: ['selected'],
+		module: ModuleFE_PermissionGroup,
+		editor: Component_EditGroup,
+		createInitialInstance: () => ({}),
+		autoSave: true
+	};
+}
+
 export class PermissionGroupsEditor
 	extends Page_ItemsEditorV3<DBProto_PermissionGroup> {
 
@@ -94,7 +103,7 @@ export class PermissionGroupsEditor
 		mapper: group => [group.label ?? 'Not Found'],
 		sort: group => group.label ?? 'Not Found',
 		itemRenderer: group => <>{group.label ?? 'Not Found'}</>,
-		EditorRenderer: Component_EditGroup as React.ComponentType<EditableRef<DBProto_PermissionGroup['uiType']>>,
+		EditorRenderer: Controller_EditGroup as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionGroup>>>,
 		route: this.Route,
 		contextMenuActions: [
 			{

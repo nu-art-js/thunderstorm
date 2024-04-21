@@ -1,6 +1,15 @@
 import * as React from 'react';
-import './TS_EditableItemController.scss';
-import {asArray, BadImplementationException, DB_Object, DBProto, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import './TS_EditableItemControllerProto.scss';
+import {
+	asArray,
+	BadImplementationException,
+	DB_Object,
+	DBProto,
+	deepClone,
+	exists,
+	ResolvableContent,
+	resolveContent
+} from '@nu-art/ts-common';
 import {EditableDBItemV3} from '../../utils/EditableItem';
 import {State_ItemEditor} from '../Item_Editor';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
@@ -12,7 +21,10 @@ import {ProtoComponent} from '../../core/proto-component';
 import {InferProps, InferState} from '../../utils/types';
 
 
-export type Props_EditableItemControllerProto<Proto extends DBProto<any>, EditorProps extends {} = {}> = Props_Controller & {
+export type Props_EditableItemControllerProto<Proto extends DBProto<any>, EditorProps extends {} = {}> =
+	Props_Controller
+	& ComponentProtoDef['props']
+	& {
 	item?: Readonly<Partial<Proto['uiType']>> | string,
 	module: ModuleFE_v3_BaseApi<Proto>,
 	onError?: (err: Error) => any | Promise<any>
@@ -60,7 +72,7 @@ export class TS_EditableItemControllerProto<Proto extends DBProto<any>,
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
 		const _state = (state || {}) as InferState<this>;
-		const selectedId = this.getQueryParam('selected');
+		const selectedId = this.getQueryParam('selected')?.[this.props.module.dbDef.dbKey];
 
 		let item = typeof nextProps.item === 'string' ? nextProps.module.cache.unique(nextProps.item) : nextProps.item;
 		if (!exists(item))

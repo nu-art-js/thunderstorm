@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
 	EditableDBItemV3,
-	EditableRef,
 	ModuleFE_Toaster,
 	TS_BusyButton,
 	TS_PropRenderer,
@@ -31,6 +30,10 @@ import {DropDownCaret, Input_Number_Blur, Input_Text_Blur} from './components';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
 import {Page_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
+import {
+	Props_EditableItemControllerProto,
+	TS_EditableItemControllerProto
+} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
 
 
 class Component_EditDomain
@@ -173,6 +176,17 @@ class Component_EditDomain
 	};
 }
 
+class Controller_DomainsEditor
+	extends TS_EditableItemControllerProto<DBProto_PermissionDomain> {
+	static defaultProps = {
+		keys: ['selected'],
+		module: ModuleFE_PermissionDomain,
+		editor: Component_EditDomain,
+		createInitialInstance: () => ({}),
+		autoSave: true
+	};
+}
+
 export class PermissionDomainsEditor
 	extends Page_ItemsEditorV3<DBProto_PermissionDomain> {
 
@@ -190,7 +204,7 @@ export class PermissionDomainsEditor
 		mapper: domain => [`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'],
 		sort: domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found',
 		itemRenderer: domain => <>{`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'}</>,
-		EditorRenderer: Component_EditDomain as React.ComponentType<EditableRef<DBProto_PermissionDomain['uiType']>>,
+		EditorRenderer: Controller_DomainsEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionDomain>>>,
 		route: this.Route,
 		contextMenuActions: [
 			{

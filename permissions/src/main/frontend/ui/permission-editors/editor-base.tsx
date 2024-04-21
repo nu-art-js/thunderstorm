@@ -16,9 +16,9 @@ type ItemEditor_Props<T extends DBProto<any>> = EditableRef<T['uiType']> & {
 type ItemEditor_State<T extends DBProto<any>> = EditableRef<T['uiType']> & {}
 
 export abstract class Component_BasePermissionItemEditor<
-	T extends DBProto<any>,
-	P extends ItemEditor_Props<T> = ItemEditor_Props<T>,
-	S extends ItemEditor_State<T> = ItemEditor_State<T>> extends TS_EditableItemComponentV3<T, P, S> {
+	Proto extends DBProto<any>,
+	Props extends ItemEditor_Props<Proto> = ItemEditor_Props<Proto>,
+	State extends ItemEditor_State<Proto> = ItemEditor_State<Proto>> extends TS_EditableItemComponentV3<Proto, Props, State> {
 
 	abstract editorContent: () => React.ReactNode;
 
@@ -30,7 +30,7 @@ export abstract class Component_BasePermissionItemEditor<
 
 		return <>
 			<div
-				className={'item-editor__header'}>{item.item._id ? this.props.displayResolver?.(item.item as T) : `New ${this.props.module!.dbDef.entityName}`}</div>
+				className={'item-editor__header'}>{item.item._id ? this.props.displayResolver?.(item.item as Proto) : `New ${this.props.module!.dbDef.entityName}`}</div>
 			<LL_V_L className={'item-editor__main'}>
 				{this.editorContent()}
 			</LL_V_L>
