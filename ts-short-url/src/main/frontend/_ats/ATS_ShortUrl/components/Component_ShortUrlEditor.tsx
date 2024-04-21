@@ -19,6 +19,7 @@ import {
 	TS_EditableItemStatus
 } from '@nu-art/thunderstorm/frontend/components/TS_EditableItemStatus/TS_EditableItemStatus';
 import {ModuleFE_ShortUrl} from '../../../../_entity/short-url/frontend';
+import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
 
 type Props = EditableRef<UI_ShortUrl> & { deleteCallback?: VoidFunction }
 type State = EditableRef<UI_ShortUrl>
@@ -28,8 +29,8 @@ const StringEditableInput = TS_InputV2.editable({
 	type: 'text',
 	saveEvent: ['blur', 'accept']
 });
-const OptionalStringInput = TS_InputV2.editableOptional({
-	type: 'text',
+
+const TextArea = TS_TextAreaV2.editable({
 	saveEvent: ['blur', 'accept']
 });
 
@@ -67,9 +68,10 @@ export class Component_ShortUrlEditor
 				/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical label={'Full Url'}>
-				<StringEditableInput
+				<TextArea
 					editable={this.state.editable}
 					prop={'fullUrl'}
+					className={'url-input'}
 					onChange={value => {
 						if (value.length)
 							return this.state.editable.updateObj({fullUrl: value});
@@ -79,7 +81,7 @@ export class Component_ShortUrlEditor
 				/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical label={'Description'}>
-				<OptionalStringInput
+				<TextArea
 					editable={this.state.editable}
 					prop={'description'}
 					onChange={value => {
