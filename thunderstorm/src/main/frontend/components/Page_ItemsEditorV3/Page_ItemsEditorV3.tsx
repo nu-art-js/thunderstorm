@@ -1,12 +1,11 @@
 import * as React from 'react';
-import {asArray, DB_Object, dbObjectToId, DBProto, exists, UniqueId} from '@nu-art/ts-common';
+import {asArray, DB_Object, dbObjectToId, DBProto, exists, sortArray, UniqueId} from '@nu-art/ts-common';
 import {FrameLayout} from '../FrameLayout';
 import {TS_Route} from '../../modules/routing';
 import {LL_H_C, LL_H_T, LL_V_L} from '../Layouts';
 import './Page_ItemsEditorV3.scss';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem';
-import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
 import {ItemEditor_DefaultList, Props_ListRendererV3} from './defaults/ItemEditor_ListRenderer';
 import {ItemEditor_FilterType, ItemEditor_MapperType, ItemEditor_SortType} from './types';
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter';
@@ -21,6 +20,7 @@ import {TS_ButtonLoader} from '../TS_ButtonLoader';
 import {_className} from '../../utils/tools';
 import {InferProps, InferState} from '../../utils/types';
 import {ProtoComponent, ProtoComponentDef, SuperProto} from '../../core/proto-component';
+import {Props_EditableItemControllerProto} from '../TS_EditableItemControllerProto';
 
 
 export type MenuAction<Proto extends DBProto<any>> = {
@@ -34,7 +34,7 @@ type State_ItemsEditorV3<Proto extends DBProto<any>> = {
 };
 export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
 	ListRenderer?: React.ComponentType<Props_ListRendererV3<Proto>>
-	EditorRenderer: React.ComponentType<EditableRef<Proto['uiType']>>
+	EditorRenderer: React.ComponentType<Partial<Props_EditableItemControllerProto<Proto>>>,
 	Filter?: React.ComponentType<Props_Filter<Proto>>
 	module: ModuleFE_v3_BaseApi<Proto>,
 	route: TS_Route<{ _id: string }>,
@@ -67,6 +67,12 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 		super(p);
 	}
 
+	componentDidMount() {
+		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected'])[this.props.module.dbDef.dbKey];
+		if (!selectedId)
+			this.onSelected(sortArray(this.props.module.cache.allMutable(), this.props.sort)[0]);
+	}
+
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
 		if (nextProps === this.props || nextProps.module !== this.props.module) {
 			// @ts-ignore
@@ -76,12 +82,11 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 		}
 
 		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']) [this.props.module.dbDef.dbKey];
-		if (!exists(selectedId))
+		if (!exists(selectedId)) {
+			state.editable = this.createEditableItem({} as Proto['uiType']);
 			return state;
+		}
 
-		/*		if (selectedId === null)
-					state.editable = this.createEditableItem({});
-				else*/
 
 		const item = this.props.module.cache.unique(selectedId as string);
 		if (!exists(item)) {
@@ -98,12 +103,15 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 	private __onItemUpdated = (...params: ApiCallerEventTypeV3<Proto>): void => {
 		const items = asArray(params[1]);
 		if (!items.map(dbObjectToId).includes(this.state.editable.get('_id') as string))
-			return;
+			return this.onSelected(items[0]);
+
+		if (params[0] === 'delete' || params[0] === 'delete-multi')
+			return this.onSelected();
 
 		return this.reDeriveState();
 	};
 
-	private createEditableItem(item: Partial<Proto>) {
+	private createEditableItem(item: Partial<Proto['uiType']>) {
 		return new EditableDBItemV3<Proto>({...item}, this.props.module, this.onSelected.bind(this)).setAutoSave(true);
 	}
 
@@ -135,7 +143,7 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 						onSelected={this.onSelected.bind(this)}/>
 					{this.renderAddNewItem()}
 				</LL_V_L>
-				{this.state.editable && <div className="item-editor"><Editor editable={this.state.editable}/></div>}
+				<div className="item-editor"><Editor item={this.state.editable?.item}/></div>
 			</LL_H_T>
 		</FrameLayout>;
 	}

@@ -8,12 +8,16 @@ import {
 } from '../../../_entity';
 import {Component_BasePermissionItemEditor} from '../editor-base';
 import {UniqueId} from '@nu-art/ts-common';
-import {EditableRef, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
+import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
 import {MultiSelect} from '../../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ComponentProtoDef, Page_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
 import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
 import './permission-api-editor.scss';
+import {
+	Props_EditableItemControllerProto,
+	TS_EditableItemControllerProto
+} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
 
 type Props = {
 	projectId: UniqueId;
@@ -51,7 +55,17 @@ class Component_APIEditor
 			</TS_PropRenderer.Vertical>
 		</>;
 	};
+}
 
+class Controller_ApiEditor
+	extends TS_EditableItemControllerProto<DBProto_PermissionAPI> {
+	static defaultProps = {
+		module: ModuleFE_PermissionAPI,
+		editor: Component_APIEditor,
+		keys: ['selected'],
+		createInitialInstance: () => ({}),
+		autoSave: true
+	};
 }
 
 export class PermissionAPIEditor
@@ -72,7 +86,7 @@ export class PermissionAPIEditor
 		sort: api => api.path,
 		id: 'api-permission-editor',
 		itemRenderer: api => <>{api.path}</>,
-		EditorRenderer: Component_APIEditor as React.ComponentType<EditableRef<DBProto_PermissionAPI['uiType']>>,
+		EditorRenderer: Controller_ApiEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionAPI>>>,
 		hideAddItem: true,
 		route: this.Route,
 	};
