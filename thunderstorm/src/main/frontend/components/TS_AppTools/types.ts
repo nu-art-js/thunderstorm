@@ -8,7 +8,7 @@ import {TS_Route} from '../../modules/routing';
 export type AppToolsScreen = {
 	key?: string;
 	name: string;
-	renderer: React.ComponentType;
+	renderer: React.ComponentType<any>;
 	icon?: React.ComponentType; //Icon for rendering in the navigator
 	group?: string; //For grouping in the navigator
 	children?: TS_Route<any>[]
