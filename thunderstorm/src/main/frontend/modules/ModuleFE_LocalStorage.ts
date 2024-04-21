@@ -91,7 +91,7 @@ export class StorageModule_Class
 		delete this.cache[key];
 	}
 
-	public get(key: string, defaultValue?: GetType, persist: boolean = true): string | number | object | undefined {
+	public get(key: string, fallbackValue?: GetType, persist: boolean = true): string | number | object | undefined {
 		let value: string | number | object | null = this.cache[key];
 		if (value)
 			return value;
@@ -99,7 +99,7 @@ export class StorageModule_Class
 		value = this.getStorage(persist).getItem(key);
 		// this.logDebug(`get: ${key} = ${value}`)
 		if (!exists(value) || value === 'null' || value === 'undefined')
-			return defaultValue;
+			return fallbackValue;
 
 		// if (!this.isIncognito)
 		return this.cache[key] = JSON.parse(value!);
@@ -168,10 +168,10 @@ export class StorageKey<ValueType = string | number | object> {
 	}
 
 	get(): ValueType | undefined;
-	get(defaultValue: ValueType): ValueType;
-	get(defaultValue?: ValueType): ValueType {
+	get(fallbackValue: ValueType): ValueType;
+	get(fallbackValue?: ValueType): ValueType {
 		// @ts-ignore
-		return ModuleFE_LocalStorage.get(this.key, defaultValue, this.persist) as unknown as ValueType;
+		return ModuleFE_LocalStorage.get(this.key, fallbackValue, this.persist) as unknown as ValueType;
 	}
 
 	patch(value: ValueType extends TS_Object ? Partial<ValueType> : ValueType) {
@@ -209,5 +209,3 @@ export class StorageKey<ValueType = string | number | object> {
 
 	getPersistence = () => this.persist;
 }
-
-
