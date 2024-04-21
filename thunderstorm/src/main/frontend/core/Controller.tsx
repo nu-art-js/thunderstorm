@@ -2,6 +2,7 @@ import {ComponentSync} from './ComponentSync';
 import * as React from 'react';
 import {TS_ErrorBoundary} from '../components/TS_ErrorBoundary';
 
+
 export type Props_Controller = {
 	ignoreError?: boolean
 }

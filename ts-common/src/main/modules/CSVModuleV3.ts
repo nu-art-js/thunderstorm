@@ -61,7 +61,7 @@ export class CSVModuleV3_Class
 		return this.writeImpl<I>(writable, items, options);
 	};
 
-	protected writeImpl = <I extends any>(writable: Writable, items: I[], options?: csv.FormatterOptionsArgs<any, any>) => {
+	protected writeImpl = <I>(writable: Writable, items: I[], options?: csv.FormatterOptionsArgs<any, any>) => {
 		return new Promise<void>((resolve, reject) => {
 			csv.writeToStream(writable, items as csv.FormatterRow[], options)
 				.on('finish', () => resolve())

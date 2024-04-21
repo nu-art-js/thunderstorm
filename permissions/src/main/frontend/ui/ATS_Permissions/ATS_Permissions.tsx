@@ -23,7 +23,7 @@ import {ModuleFE_PermissionGroup} from '../../../_entity/permission-group/fronte
 import {ModuleFE_PermissionUser} from '../../../_entity/permission-user/frontend';
 import {Outlet} from 'react-router-dom';
 import {PermissionUsersEditor} from '../permission-editors/permission-users-editor';
-import {PermissionProjectsEditor} from '../permission-editors/permission-projects-editor';
+import {PermissionProjectsEditor} from '../permission-editors/permission-project-editor/permission-projects-editor';
 import {PermissionDomainsEditor} from '../permission-editors/permission-domains-editor';
 import {PermissionGroupsEditor} from '../permission-editors/permission-groups-editor';
 

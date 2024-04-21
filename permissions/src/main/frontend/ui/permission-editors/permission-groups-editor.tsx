@@ -1,92 +1,34 @@
 import * as React from 'react';
-import {
-	EditableDBItemV3,
-	EventType_Create,
-	EventType_Delete,
-	EventType_Update,
-	ModuleFE_Toaster,
-	TS_ErrorBoundary,
-	TS_PropRenderer,
-	TS_Route
-} from '@nu-art/thunderstorm/frontend';
-import {MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
+import {ModuleFE_Toaster, TS_ErrorBoundary, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
+import {MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 import {MultiSelect} from '../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {
 	DB_PermissionGroup,
 	DBProto_PermissionGroup,
-	DispatcherType_PermissionGroup,
 	ModuleFE_PermissionAccessLevel,
 	ModuleFE_PermissionDomain,
-	ModuleFE_PermissionGroup,
-	ModuleFE_PermissionProject
+	ModuleFE_PermissionGroup
 } from '../../_entity';
-import {EditorBase, Permissions_MenuAction, State_EditorBase} from './editor-base';
-import {ApiCallerEventTypeV3, DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {Component_BasePermissionItemEditor} from './editor-base';
 import {Input_Text_Blur} from './components';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
+import {Page_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
+import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
+import {
+	Props_EditableItemControllerProto,
+	TS_EditableItemControllerProto
+} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
 
-type State = State_EditorBase<DBProto_PermissionGroup> & {
-	newLevelDomainId?: UniqueId;
-};
-
-export class PermissionGroupsEditor
-	extends EditorBase<DBProto_PermissionGroup, State>
-	implements DispatcherInterface<DispatcherType_PermissionGroup> {
-
-	//######################### Static #########################
-
+class Component_EditGroup
+	extends Component_BasePermissionItemEditor<DBProto_PermissionGroup> {
 	static defaultProps = {
 		module: ModuleFE_PermissionGroup,
-		itemName: 'Permission Group',
-		itemNamePlural: 'Permission Groups',
-		itemDisplay: (item: DB_PermissionGroup) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)?.name || 'Global'}/${item.label}`,
+		displayResolver: (item: DB_PermissionGroup) => ModuleFE_PermissionGroup.cache.unique(item._id)?.label ?? 'Not Found'
 	};
-
-	static Route: TS_Route = {
-		key: 'group-permission-editor',
-		path: 'group-permission-editor',
-		Component: this
-	};
-
-
-	//######################### Life Cycle #########################
-
-	__onPermissionGroupUpdated(...params: ApiCallerEventTypeV3<DBProto_PermissionGroup>) {
-		if ([EventType_Update, EventType_Create].includes(params[0])) {
-			const group = params[1] as DB_PermissionGroup;
-			this.reDeriveState({
-				selectedItemId: group._id,
-				editedItem: new EditableDBItemV3(group, ModuleFE_PermissionGroup)
-			});
-		}
-		if (params[0] === EventType_Delete)
-			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
-	}
-
-	//######################### Logic #########################
-
-	protected getItemMenuActions = (item: DB_PermissionGroup): Permissions_MenuAction[] => {
-		return [
-			{
-				label: 'Delete Group',
-				action: async () => {
-					try {
-						await ModuleFE_PermissionGroup.v1.delete(item).executeSync();
-						return true;
-					} catch (err: any) {
-						this.logError({...err});
-						ModuleFE_Toaster.toastError(err.errorResponse.debugMessage.split('\n')[0]);
-					}
-				}
-			}
-		];
-	};
-
-	//######################### Render #########################
 
 	private renderLevels = () => {
-		const group = this.state.editedItem;
+		const group = this.state.editable;
 		if (!group)
 			return '';
 
@@ -114,7 +56,7 @@ export class PermissionGroupsEditor
 	};
 
 	editorContent = () => {
-		const group = this.state.editedItem!;
+		const group = this.state.editable!;
 		return <>
 			<TS_PropRenderer.Vertical label={'Label'}>
 				<Input_Text_Blur
@@ -131,4 +73,55 @@ export class PermissionGroupsEditor
 			{this.renderLevels()}
 		</>;
 	};
+}
+
+class Controller_EditGroup
+	extends TS_EditableItemControllerProto<DBProto_PermissionGroup> {
+	static defaultProps = {
+		keys: ['selected'],
+		module: ModuleFE_PermissionGroup,
+		editor: Component_EditGroup,
+		createInitialInstance: () => ({}),
+		autoSave: true
+	};
+}
+
+export class PermissionGroupsEditor
+	extends Page_ItemsEditorV3<DBProto_PermissionGroup> {
+
+	//######################### Static #########################
+
+	static Route: TS_Route = {
+		key: 'group-permission-editor',
+		path: 'group-permission-editor',
+		Component: this
+	};
+
+	static defaultProps: Partial<InferProps<PermissionGroupsEditor>> = {
+		keys: ['selected'],
+		module: ModuleFE_PermissionGroup,
+		mapper: group => [group.label ?? 'Not Found'],
+		sort: group => group.label ?? 'Not Found',
+		itemRenderer: group => <>{group.label ?? 'Not Found'}</>,
+		EditorRenderer: Controller_EditGroup as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionGroup>>>,
+		route: this.Route,
+		contextMenuActions: [
+			{
+				label: 'Delete Group',
+				action: async (item) => {
+					try {
+						await ModuleFE_PermissionGroup.v1.delete(item as unknown as DB_PermissionGroup).executeSync();
+						return true;
+					} catch (err: any) {
+						StaticLogger.logError({...err});
+						ModuleFE_Toaster.toastError(err.errorResponse.debugMessage.split('\n')[0]);
+					}
+				}
+			}
+		]
+	};
+
+	protected renderHeader(): React.ReactNode {
+		return <>Permission Group</>;
+	}
 }
