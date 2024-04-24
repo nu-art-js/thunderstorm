@@ -251,19 +251,15 @@ export type RecursiveWritable<T> =
  * type Profile = { name: string; contacts: { email: { primary: string; secondary: string } } };
  * type ProfilePaths = DotNotation<Profile>; // 'name' | 'contacts' | 'contacts.email' | 'contacts.email.primary' | 'contacts.email.secondary'
  */
-type NonEmptyObject<T> = T extends object ? (keyof T extends never ? never : T) : never;
-
-export type DotNotation<T extends object> =
-	NonNullable<T extends object ? {
-			[K in keyof T]: K extends string
-				? T[K] extends object
-					? NonEmptyObject<T[K]> extends never
-						? T[K] extends string | string[] ? `${K & string}` : never
-						: `${K & string}.${DotNotation<T[K]>}`
-					: `${K & string}`
-				: never;
-		}[keyof T]
-		: ''>;
+export type DotNotation<T extends object> = {
+	[K in keyof T]-?: K extends string
+		? NonNullable<T[K]> extends string | string[]
+			? K
+			: NonNullable<T[K]> extends object
+				? `${K}.${DotNotation<NonNullable<T[K]>>}`
+				: never
+		: never
+}[keyof T];
 
 /**
  * Replaces the type of nested property within an object, based on a specified path.
