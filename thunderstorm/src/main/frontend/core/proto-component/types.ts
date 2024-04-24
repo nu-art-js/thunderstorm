@@ -1,5 +1,4 @@
 import {Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives, SubsetObjectByKeys} from '@nu-art/ts-common';
-import {QueryParamKey} from '../../modules/ModuleFE_BrowserHistoryV2';
 
 
 /**
@@ -14,10 +13,9 @@ export type ProtoComponentDef<
 	queryParamKeys: ParamKeys;
 	queryParamDef: SubsetObjectByKeys<ParamTypes, ParamKeys>
 	props: {
-		queryParamsKeys?: ParamKeys[]
+		keys: ParamKeys[]
 	}
 	state: {
-		queryParams: { [Key in ParamKeys]: QueryParamKey<ParamTypes[Key]> };
 		previousResultsObject?: { [Key in ParamKeys]: ParamTypes[Key] };
 	}
 }

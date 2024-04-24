@@ -23,6 +23,8 @@
  * Created by tacb0ss on 28/07/2018.
  */
 import {BaseComponent} from './ComponentBase';
+import {InferProps, InferState} from '../utils/types';
+
 
 export abstract class ComponentSync<P = any, S = any>
 	extends BaseComponent<P, S> {
@@ -37,5 +39,20 @@ export abstract class ComponentSync<P = any, S = any>
 
 	protected deriveStateFromProps(nextProps: P, state: S): S {
 		return state as S;
+	}
+}
+
+export abstract class ComponentSyncInfer<P = any, S = any>
+	extends BaseComponent<P, S> {
+
+	protected _deriveStateFromProps(nextProps: InferProps<this>, state?: InferState<this>): InferState<this> {
+		this.logVerbose('Deriving state from props');
+		const _state = this.deriveStateFromProps(nextProps, (state ?? this.state ? {...this.state} : {}) as InferState<this>);
+		this.mounted && _state && this.setState(_state);
+		return _state as InferState<this>;
+	}
+
+	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
+		return state;
 	}
 }

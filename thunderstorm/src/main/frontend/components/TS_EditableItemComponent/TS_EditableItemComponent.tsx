@@ -58,7 +58,7 @@ export abstract class TS_EditableItemComponentV3<Proto extends DBProto<any>, P =
 >
 	extends Controller<Props, State> {
 
-	shouldReDeriveState(nextProps: Readonly<Props>): boolean {
+	shouldReDeriveState(nextProps: Readonly<InferProps<this>>): boolean {
 		if (this.state.tag !== nextProps.editable.tag)
 			return true;
 

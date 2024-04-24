@@ -118,7 +118,7 @@ class ModuleFE_Account_Class
 		}
 
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get()!);
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_DeviceId, () => StorageKey_DeviceId.get()!);
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_DeviceId, () => defaultDeviceId!);
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, defaultTabId!);
 		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
 			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
