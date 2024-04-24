@@ -1,6 +1,6 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {BadImplementationException, ImplementationMissingException, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
-import {_SessionKey_Session, DB_Session, HeaderKey_SessionId, HeaderKey_TabId} from '../shared';
+import {_SessionKey_Session, DB_Session, HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '../shared';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {_SessionKey_Account} from '../../account/shared';
 
@@ -10,6 +10,7 @@ export const MemKey_SessionData = new MemKey<TS_Object>('session-data', true);
 export const MemKey_SessionObject = new MemKey<DB_Session>('session-object', true);
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId, 403);
 export const Header_TabId = new HeaderKey(HeaderKey_TabId);
+export const Header_DeviceId = new HeaderKey(HeaderKey_DeviceId);
 
 export class SessionKey_BE<Binder extends TypedKeyValue<string | number, any>> {
 	private readonly key: Binder['key'];
