@@ -28,7 +28,6 @@ import {
 	filterDuplicates,
 	filterInstances,
 	flatArray,
-	LogLevel,
 	Module,
 	Proto_DB_Object,
 	reduceToMap,
@@ -101,7 +100,7 @@ export class ModuleFE_SyncManager_Class
 
 	constructor() {
 		super();
-		this.setMinLevel(LogLevel.Debug);
+		// this.setMinLevel(LogLevel.Debug);
 		this.syncQueue = new QueueV2<QueuedModuleData>('Sync Queue', this.performFullSync)
 			.setParallelCount(4)
 			.setSorter((data) => {

@@ -88,7 +88,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 				case 'symbol':
 				case 'bigint':
 				case 'undefined':
-					throw new BadImplementationException('Headers values can only be of type: (() => string | string[]) | string | string[] ');
+					throw new BadImplementationException(`Headers values can only be of type: (() => string | string[]) | string | string[], got type ${typeof defaultHeader} `);
 			}
 
 			return toRet;
