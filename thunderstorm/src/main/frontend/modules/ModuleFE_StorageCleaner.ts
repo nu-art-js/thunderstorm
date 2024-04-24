@@ -75,8 +75,14 @@ class ModuleFE_StorageCleaner_Class
 		this.cleanCookies();
 		await this.cleanCache();
 		await this.cleanIDBStorage();
-		if (callback)
-			setTimeout(() => callback());
+		if (callback) {
+			await new Promise<void>(resolve => {
+				setTimeout(() => {
+					callback();
+					resolve();
+				});
+			});
+		}
 	};
 
 	// ######################## Internal Logic ########################
