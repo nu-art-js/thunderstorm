@@ -20,7 +20,7 @@ export function composeUrl(url: string, params: RouteParams = {}, hash = '') {
 		return `${url}?${queryAsEncodedString}`;
 
 	if (hash.length)
-		return `${url}#${hash}`;
+		return `${url}${hash.startsWith('#') ? hash : `#${hash}`}`;
 
 	return url;
 }
