@@ -1,161 +1,184 @@
-import {_keys, currentTimeMillis, flatArray, Module, UniqueId} from '@nu-art/ts-common';
+import {_keys, cloneObj, compare, currentTimeMillis, flatArray, Module, UniqueId} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {Header_TabId, MemKey_AccountId, OnPreLogout} from '@nu-art/user-account/backend';
+import {Header_DeviceId, Header_TabId, MemKey_AccountId, OnPreLogout} from '@nu-art/user-account/backend';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {
-	ApiDef_FocusedObject,
-	FocusData_Map,
-	FocusData_Object,
-	Focused, FocusEvent_Focused, FocusEvent_Unfocused,
-	Request_ReleaseObject,
-	Request_SetFocusStatus,
-	Request_UpdateFocusObject
-} from '../../shared';
-import {DefaultTTL_Focus, DefaultTTL_Unfocus, getRelationalPath} from '../../shared/consts';
+import {ApiDef_FocusedObject, FocusData_Map, FocusedEntity, FocusedItem_Update,} from '../../shared';
+import {DefaultTTL_FocusedObject, getRelationalPath} from '../../shared/consts';
 
-type Config = {
-	TTL: {
-		focus?: number
-		unfocused?: number
-	}
+type Config = {}
+
+type NodeProcessorResolution = keyof NodeProcessor;
+type NodeProcessor = {
+	dbKey: (dbKey: string) => boolean;
+	itemId: (dbKey: string, itemId: UniqueId) => boolean;
+	accountId: (dbKey: string, itemId: UniqueId, accountId: UniqueId) => boolean;
+	deviceId: (dbKey: string, itemId: UniqueId, accountId: UniqueId, deviceId: UniqueId) => boolean;
+	tabId: (dbKey: string, itemId: UniqueId, accountId: UniqueId, deviceId: UniqueId, tabId: UniqueId) => boolean;
 }
 
 export class ModuleBE_FocusedObject_Class
 	extends Module<Config>
 	implements OnPreLogout {
+
 	__onPreLogout = async () => {
-		await this.releaseByAccountId();
+		console.log('USER LOG OUT');
+		await this.onAccountLogOut();
 	};
 
 	protected init() {
 		addRoutes([
-			createBodyServerApi(ApiDef_FocusedObject._v1.setFocusStatusByTabId, this.setFocusStatusByTab), // set-focus-status
-			createBodyServerApi(ApiDef_FocusedObject._v1.updateFocusData, this.focusData), // focus
-			createBodyServerApi(ApiDef_FocusedObject._v1.releaseObject, this.releaseObject), // release
-			createBodyServerApi(ApiDef_FocusedObject._v1.releaseByTabId, this.releaseByTabId), // release-tab
+			createBodyServerApi(ApiDef_FocusedObject._v1.update, this.updateFocusData)
 		]);
 	}
 
-	private focusData = async (request: Request_UpdateFocusObject) => {
-		if (request.focusData.length === 0)
+	// ######################## Callbacks ########################
+
+	private updateFocusData = async (request: FocusedItem_Update['request']) => {
+		const tabId = Header_TabId.get();
+		const oldFocusMap = await this.getFocusMap();
+		const newFocusMap = cloneObj(oldFocusMap);
+
+		//Make changes to newFocusMap
+		this.cleanTTL(newFocusMap);
+		this.clearFocusForTabId(newFocusMap, tabId);
+		this.setNewFocusData(newFocusMap, request.focusedEntities);
+
+		//Return if there are no changes
+		if (compare(oldFocusMap, newFocusMap))
 			return;
 
-		const objectToWrite: FocusData_Object = {timestamp: currentTimeMillis(), event: request.event};
-
-		const rootRef = this.getRootRef();
-		const patchData: FocusData_Map = {};
-		request.focusData.forEach(toFocus => (patchData[this.getPathToObject(toFocus)] as any) = objectToWrite);
-		await rootRef.patch(patchData);
-
-		// Clean expired
-		await this.cleanExpiredNodes();
+		await this.setFocusMap(newFocusMap);
 	};
 
-	releaseObject = async (request: Request_ReleaseObject) => {
-		if (request.objectsToRelease.length === 0)
+	private onAccountLogOut = async () => {
+		const deviceId = Header_DeviceId.get();
+		const oldFocusMap = await this.getFocusMap();
+		const newFocusMap = cloneObj(oldFocusMap);
+
+		this.clearFocusForDeviceId(newFocusMap, deviceId);
+
+		//Return if there are no changes
+		if (compare(oldFocusMap, newFocusMap))
 			return;
 
-		const patchData: FocusData_Map = {};
-		request.objectsToRelease.forEach(focusItem => (patchData[this.getPathToObject(focusItem)] as any) = null);
-		const rootRef = this.getRootRef();
-		await rootRef.patch(patchData);
+		await this.setFocusMap(newFocusMap);
 	};
 
-	setFocusStatusByTab = async (request: Request_SetFocusStatus) => {
-		//todo fail fast on account level
-		await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
-			if (Header_TabId.get() !== _tabId)
+	// ######################## Logic ########################
+
+	private getFocusMap = async () => {
+		const ref = ModuleBE_Firebase.createAdminSession().getDatabase().ref<FocusData_Map>(getRelationalPath());
+		return await ref.get({});
+	};
+
+	private setFocusMap = async (map: FocusData_Map) => {
+		const ref = ModuleBE_Firebase.createAdminSession().getDatabase().ref<FocusData_Map>(getRelationalPath());
+		return await ref.patch(map);
+	};
+
+	private cleanTTL = (map: FocusData_Map): boolean => {
+		const now = currentTimeMillis();
+		return this.processNodes(map, 'tabId', (dbKey, itemId, accountId, deviceId, tabId) => {
+			if (map[dbKey][itemId][accountId][deviceId][tabId] + DefaultTTL_FocusedObject >= now)
 				return false;
 
-			(patchData[`${this.getPathToObject({dbName: _dbName, itemId: _itemId})}/event`] as any) = request.event;
+			delete map[dbKey][itemId][accountId][deviceId][tabId];
 			return true;
 		});
 	};
 
-	releaseByTabId = async () => await this.cleanNodesByTabId(Header_TabId.get());
-
-	releaseByAccountId = async () => {
-		await this.cleanNodesByAccountId(MemKey_AccountId.get());
-	};
-
-	/**
-	 * Look for expired TTL nodes, clean them.
-	 */
-	cleanExpiredNodes = async () => {
-		// Must run on all nodes.. maybe skip initiating tabId? Currently runs only after finishing to focus data
-		await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
-			let ttl;
-			switch (rootData[_dbName][_itemId][_accountId][_tabId].event) {
-				case FocusEvent_Focused:
-					ttl = DefaultTTL_Focus;
-					break;
-				case FocusEvent_Unfocused:
-				default:
-					ttl = DefaultTTL_Unfocus;
-			}
-
-			if (currentTimeMillis() < rootData[_dbName][_itemId][_accountId][_tabId].timestamp + ttl)
+	private clearFocusForTabId = (map: FocusData_Map, _tabId: UniqueId): boolean => {
+		return this.processNodes(map, 'tabId', (dbKey, itemId, accountId, deviceId, tabId) => {
+			if (_tabId !== tabId)
 				return false;
 
-			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId}, _accountId, _tabId)] as any) = null;
-			return true;
-		});
-	};
-	cleanNodesByTabId = async (tabIdToClean: UniqueId) => {
-		//todo fail fast on account level - this should probably not be used to handle tabs of other accounts.
-		return await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
-			if (tabIdToClean !== _tabId)
-				return false;
+			delete map[dbKey][itemId][accountId][deviceId][tabId];
 
-			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId}, _accountId, tabIdToClean)] as any) = null;
+			// //No more entries under this deviceId
+			// if (!_keys(map[dbKey][itemId][accountId][deviceId]).length)
+			// 	delete map[dbKey][itemId][accountId][deviceId];
+			//
+			// //No more entries under this accountId
+			// if (!_keys(map[dbKey][itemId][accountId]).length)
+			// 	delete map[dbKey][itemId][accountId];
+			//
+			// //If no more entries under this itemId
+			// if (_keys(map[dbKey][itemId]).length)
+			// 	delete map[dbKey][itemId];
+			//
+			// //If no more entries under this dbKey
+			// if (_keys(map[dbKey]).length)
+			// 	delete map[dbKey];
+
 			return true;
 		});
 	};
 
-	/**
-	 * Uses own accountId and tabId if not specified.
-	 * @param focused dbName and itemId
-	 * @param accountId receive accountId or use initiating session to get accountID
-	 * @param tabId receive tabId or use initiating session to get tabID
-	 */
-	private getPathToObject(focused: Focused, accountId?: string, tabId?: string) {
-		return `${focused.dbName}/${focused.itemId}/${accountId ?? MemKey_AccountId.get()}/${tabId ?? Header_TabId.get()}`;
-	}
+	private setNewFocusData = (map: FocusData_Map, focusEntities: FocusedEntity[]) => {
+		const now = currentTimeMillis();
+		const tabId = Header_TabId.get();
+		const accountId = MemKey_AccountId.get();
+		const deviceId = Header_DeviceId.get();
+		focusEntities.forEach(focusEntity => {
+			map[focusEntity.dbKey] ??= {};
+			map[focusEntity.dbKey][focusEntity.itemId] ??= {};
+			map[focusEntity.dbKey][focusEntity.itemId][accountId] ??= {};
+			map[focusEntity.dbKey][focusEntity.itemId][accountId][deviceId] ??= {};
+			map[focusEntity.dbKey][focusEntity.itemId][accountId][deviceId][tabId] = now;
+		});
+	};
 
-	getRootRef = () => ModuleBE_Firebase.createAdminSession().getDatabase().ref<FocusData_Map>(getRelationalPath());
-
-	cleanNodesByAccountId = async (accountIdToClean: UniqueId) => {
-		//todo fail fast on account level
-		await this.processAllNodes((rootData, patchData, _dbName, _itemId, _accountId, _tabId) => {
-			if (accountIdToClean !== _accountId)
+	private clearFocusForDeviceId = (map: FocusData_Map, _deviceId: UniqueId) => {
+		this.processNodes(map, 'deviceId', (dbKey, itemId, accountId, deviceId) => {
+			if (deviceId !== _deviceId)
 				return false;
 
-			(patchData[this.getPathToObject({dbName: _dbName, itemId: _itemId}, accountIdToClean, _tabId)] as any) = null;
+			delete map[dbKey][itemId][accountId][deviceId];
+
+			// //No more entries under this accountId
+			// if (!_keys(map[dbKey][itemId][accountId]).length)
+			// 	delete map[dbKey][itemId][accountId];
+			//
+			// //If no more entries under this itemId
+			// if (_keys(map[dbKey][itemId]).length)
+			// 	delete map[dbKey][itemId];
+			//
+			// //If no more entries under this dbKey
+			// if (_keys(map[dbKey]).length)
+			// 	delete map[dbKey];
+
 			return true;
 		});
 	};
 
-	/**
-	 * Run over all focus data rtdb nodes
-	 * @param processor Returns true if a change was made.
-	 */
-	processAllNodes = async (processor: (rootData: FocusData_Map, patchData: FocusData_Map, _dbName: string, _itemId: UniqueId, _accountId: UniqueId, _tabId: string) => boolean) => {
-		//get root node
-		const rootRef = this.getRootRef();
-		const rootData = await rootRef.get({});
-		const patchData: FocusData_Map = {};
-		//run over all nodes, pass the indexing data to a processor function
-		// DB NAME ---/ ITEM ID ---/ ACCOUNT ID ---/ TAB ID
-		const somethingChanged = flatArray(
-			_keys(rootData).map(_dbName => // go over all db names
-				_keys(rootData[_dbName]).map(_itemId => // go over all currently focused items for each db
-					_keys(rootData[_dbName][_itemId]).map(_accountId => // go over all accounts viewing an item
-						_keys(rootData[_dbName][_itemId][_accountId]).map(__tabId => // go over all tabs of the specific account
-							processor(rootData, patchData, _dbName as string, _itemId as string, _accountId as string, __tabId as string)))))).some(i => i);
+	// ######################## Logic - Process Nodes ########################
 
-		//set processed root node
-		if (somethingChanged)
-			await rootRef.patch(patchData);
+	private processNodes = <T extends NodeProcessorResolution>(map: FocusData_Map, resolution: T, processor: NodeProcessor[T]): boolean => {
+		return flatArray(
+			_keys(map).map(dbKey => { //For every dbKey
+				if (resolution === 'dbKey')
+					return (processor as NodeProcessor['dbKey'])(dbKey as string);
+
+				return _keys(map[dbKey]).map(itemId => { //For every itemId
+					if (resolution === 'itemId')
+						return (processor as NodeProcessor['itemId'])(dbKey as string, itemId as string);
+
+					return _keys(map[dbKey][itemId]).map(accountId => { //For every accountId
+						if (resolution === 'accountId')
+							return (processor as NodeProcessor['accountId'])(dbKey as string, itemId as string, accountId as string);
+
+						return _keys(map[dbKey][itemId][accountId]).map(deviceId => {  //For every deviceId
+							if (resolution === 'deviceId')
+								return (processor as NodeProcessor['deviceId'])(dbKey as string, itemId as string, accountId as string, deviceId as string);
+
+							return _keys(map[dbKey][itemId][accountId][deviceId]).map(tabId => //For every tabId
+								processor(dbKey as string, itemId as string, accountId as string, deviceId as string, tabId as string)
+							);
+						});
+					});
+				});
+			})
+		).some(i => i);
 	};
 }
 

@@ -38,7 +38,7 @@ import * as RDC from 'react-dom/client';
 import {appWithJSX} from './AppWrapper';
 import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 
-export const Storage_AppVersion = new StorageKey<string>('app-version');
+export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();
 
 export class Thunder
 	extends ModuleManager {

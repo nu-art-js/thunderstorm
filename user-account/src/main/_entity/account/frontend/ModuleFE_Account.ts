@@ -20,7 +20,7 @@ import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/
 import {
 	Account_ChangeThumbnail,
 	Account_GetPasswordAssertionConfig,
-	ApiDef_Account, ApiDef_SAML, ApiStruct_Account, ApiStruct_SAML, DB_Account, DBDef_Accounts, DBProto_Account,
+	ApiDef_Account, ApiDef_SAML, ApiStruct_Account, ApiStruct_SAML, DB_Account, DBDef_Accounts, DBProto_Account, HeaderKey_DeviceId,
 	HeaderKey_SessionId, HeaderKey_TabId, QueryParam_SessionId, Response_Auth, SAML_Login, UI_Account
 } from '../shared';
 import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp, StorageKey_TabId} from './consts';
@@ -102,22 +102,23 @@ class ModuleFE_Account_Class
 	protected init(): void {
 		super.init();
 
-		const defaultSessionId = StorageKey_SessionId.get();
 		let defaultTabId = StorageKey_TabId.get();
-
-		if (!exists(StorageKey_DeviceId.get())) {
-			const deviceId = generateHex(32);
-			console.log(`Defining new device Id: ${deviceId}`);
-			StorageKey_DeviceId.set(deviceId);
+		let defaultDeviceId = StorageKey_DeviceId.get();
+		
+		if (!defaultDeviceId) {
+			defaultDeviceId = generateHex(32);
+			console.log(`Defining new device Id: ${defaultDeviceId}`);
+			StorageKey_DeviceId.set(defaultDeviceId);
 		}
 
-		if (!exists(StorageKey_TabId.get())) {
+		if (!defaultTabId) {
 			defaultTabId = generateHex(32);
 			console.log(`Defining new tab Id: ${defaultTabId}`);
 			StorageKey_TabId.set(defaultTabId);
 		}
 
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, defaultSessionId!);
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get()!);
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_DeviceId, () => defaultDeviceId!);
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, defaultTabId!);
 		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
 			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
