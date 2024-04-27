@@ -11,16 +11,13 @@ import {ItemEditor_FilterType, ItemEditor_MapperType, ItemEditor_SortType} from 
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter';
 import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {
-	ModuleFE_MouseInteractivity,
-	mouseInteractivity_PopUp,
-	openContent
-} from '../../component-modules/mouse-interactivity';
+import {ModuleFE_MouseInteractivity, mouseInteractivity_PopUp, openContent} from '../../component-modules/mouse-interactivity';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
 import {_className} from '../../utils/tools';
 import {InferProps, InferState} from '../../utils/types';
 import {ProtoComponent, ProtoComponentDef, SuperProto} from '../../core/proto-component';
 import {Props_EditableItemControllerProto} from '../TS_EditableItemControllerProto';
+import {ModuleFE_BrowserHistoryV2} from '../../modules/ModuleFE_BrowserHistoryV2';
 
 
 export type MenuAction<Proto extends DBProto<any>> = {
@@ -86,7 +83,6 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 			state.editable = this.createEditableItem({} as Proto['uiType']);
 			return state;
 		}
-
 
 		const item = this.props.module.cache.unique(selectedId as string);
 		if (!exists(item)) {
@@ -156,20 +152,34 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 		if (this.props.hideAddItem)
 			return '';
 
-		return <Component_AddNewItem entity={this.renderHeader()}
-									 onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
+		return <Component_AddNewItem
+			entity={this.renderHeader()}
+			onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
+	}
+
+	static refactoring_setSelected<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, id?: string) {
+		const selected = (ModuleFE_BrowserHistoryV2.get('selected') ?? {}) as { [dbKey: string]: UniqueId };
+
+		const selectedId = id;
+		if (!selectedId)
+			delete selected[module.dbDef.dbKey];
+		else
+			selected[module.dbDef.dbKey] = selectedId;
+
+		ModuleFE_BrowserHistoryV2.set('selected', selected);
 	}
 
 	private onSelected(item?: Partial<Proto['uiType']>) {
-		const selected = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']);
-
-		const selectedId = item?._id;
-		if (!selectedId)
-			delete selected[this.props.module.dbDef.dbKey];
-		else
-			selected[this.props.module.dbDef.dbKey] = selectedId;
-
-		this.setQueryParam('selected', selected);
+		Page_ItemsEditorV3.refactoring_setSelected(this.props.module, item?._id);
+		// const selected = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']);
+		//
+		// const selectedId = item?._id;
+		// if (!selectedId)
+		// 	delete selected[this.props.module.dbDef.dbKey];
+		// else
+		// 	selected[this.props.module.dbDef.dbKey] = selectedId;
+		//
+		// this.setQueryParam('selected', selected);
 		this.reDeriveState();
 	}
 

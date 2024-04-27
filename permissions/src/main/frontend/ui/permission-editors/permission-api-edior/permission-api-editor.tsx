@@ -19,6 +19,7 @@ import {
 	TS_EditableItemControllerProto
 } from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
 
+
 type Props = {
 	projectId: UniqueId;
 };
@@ -59,6 +60,7 @@ class Component_APIEditor
 
 class Controller_ApiEditor
 	extends TS_EditableItemControllerProto<DBProto_PermissionAPI> {
+
 	static defaultProps = {
 		module: ModuleFE_PermissionAPI,
 		editor: Component_APIEditor,
@@ -86,11 +88,10 @@ export class PermissionAPIEditor
 		sort: api => api.path,
 		id: 'api-permission-editor',
 		itemRenderer: api => <>{api.path}</>,
-		EditorRenderer: Controller_ApiEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionAPI>>>,
+		EditorRenderer: (props) => <Controller_ApiEditor {...props}/>,
 		hideAddItem: true,
 		route: this.Route,
 	};
-
 
 	//######################### Lifecycle #########################
 
