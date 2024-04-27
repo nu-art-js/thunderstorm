@@ -31,7 +31,7 @@ class ModuleFE_RoutingV2_Class
 	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {
 		const fullPath = this.getFullPath(route.key);
 		try {
-			const url = composeUrl(fullPath, params);
+			const url = composeUrl(fullPath, params, window.location.hash);
 			if (window.location.href === url)
 				return this.logWarning(`attempting to set same route: ${url}`);
 

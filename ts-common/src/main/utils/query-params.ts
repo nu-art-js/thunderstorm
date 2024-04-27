@@ -13,11 +13,14 @@ export function composeQueryParams(params: RouteParams = {}) {
 	}).join('&');
 }
 
-export function composeUrl(url: string, params: RouteParams = {}) {
+export function composeUrl(url: string, params: RouteParams = {}, hash = '') {
 	const queryAsEncodedString = composeQueryParams(params);
 
 	if (queryAsEncodedString.length)
 		return `${url}?${queryAsEncodedString}`;
+
+	if (hash.length)
+		return `${url}#${hash}`;
 
 	return url;
 }
