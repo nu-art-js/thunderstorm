@@ -21,11 +21,11 @@ import {LogLevel, LogLevelOrdinal} from './logger/types';
 
 
 export class DebugFlag {
-
+	public static DefaultLogLevel = LogLevel.Info;
 	private readonly key: string;
 	private minLogLevel: LogLevel;
 
-	private constructor(key: string, minLogLevel: LogLevel = LogLevel.Info) {
+	private constructor(key: string, minLogLevel: LogLevel = DebugFlag.DefaultLogLevel) {
 		this.key = key;
 		this.minLogLevel = minLogLevel;
 
