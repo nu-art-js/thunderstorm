@@ -75,7 +75,7 @@ export class EditableItem<T>
 	 * @param saveAction The function to be called when saving the item.
 	 * @param deleteAction The function to be called when deleting the item.
 	 */
-	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>) {
+	constructor(item: Partial<T>, saveAction: (item: T) => Promise<T>, deleteAction: (item: T) => Promise<any>) {
 		super();
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
 
@@ -86,11 +86,16 @@ export class EditableItem<T>
 		}
 		this.item = Object.isFrozen(item) ? cloneObj(item) : item;
 		this.originalItem = item;
-		this.saveAction = saveAction;
+		this.saveAction = async (item) => {
+			const response = await saveAction(item);
+			this.onSaveCompleted?.(response);
+			return response;
+		};
 		this.deleteAction = deleteAction;
 		this.preformAutoSave.bind(this);
 	}
 
+	protected onSaveCompleted?: (item: T) => any;
 	protected onChanged?: Editable_OnChange<T>;
 	protected saveAction: Editable_SaveAction<T>;
 	protected deleteAction: Editable_DeleteAction<T>;
@@ -100,13 +105,18 @@ export class EditableItem<T>
 		return this;
 	}
 
-	setOnSave(onSave: Editable_SaveAction<T>) {
-		this.saveAction = onSave;
+	setSaveAction(saveAction: Editable_SaveAction<T>) {
+		this.saveAction = saveAction;
 		return this;
 	}
 
 	setOnDelete(onDelete: (item: T) => Promise<any>) {
 		this.deleteAction = onDelete;
+		return this;
+	}
+
+	setOnSaveCompleted(onSaved?: (item: T) => any) {
+		this.onSaveCompleted = onSaved;
 		return this;
 	}
 
@@ -128,7 +138,6 @@ export class EditableItem<T>
 		this._autoSave = mode;
 		return this;
 	}
-
 
 	/**
 	 * Get the saving status of the current editable instance
@@ -339,9 +348,10 @@ export class EditableItem<T>
 
 		const editableProp = new EditableItem<NonNullable<T[K]>>(
 			itemToEdit,
-			async (value: T[K]) => {
+			async (value: NonNullable<T[K]>) => {
 				this.set(key, value);
-				return this.autoSave();
+				await this.autoSave();
+				return value;
 			},
 			() => this.delete())
 			.setValidationResults(validationResults)
