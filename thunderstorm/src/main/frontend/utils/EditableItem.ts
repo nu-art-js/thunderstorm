@@ -87,9 +87,24 @@ export class EditableItem<T>
 		this.item = Object.isFrozen(item) ? cloneObj(item) : item;
 		this.originalItem = item;
 		this.saveAction = async (item) => {
-			const response = await saveAction(item);
-			this.onSaveCompleted?.(response);
-			return response;
+			// update ui and make sure it called the on change
+			this._isSaving = true;
+			this.callOnChange();
+
+			try {
+				const response = await saveAction(item);
+
+				// call the post save callback if exists
+				this.onSaveCompleted?.(response);
+
+				//update is saving flag post save
+				this._isSaving = false;
+
+				return response;
+			} catch (err: any) {
+				this._isSaving = false;
+				throw err;
+			}
 		};
 		this.deleteAction = deleteAction;
 		this.preformAutoSave.bind(this);
@@ -260,11 +275,6 @@ export class EditableItem<T>
 	 */
 	protected async preformAutoSave(): Promise<T | undefined> {
 		this.logDebug(`performing autosave`);
-
-		// Setting the saving flag to true and triggering the callback
-		this._isSaving = true;
-		this.callOnChange();
-
 		// Return item cloned to make sure it's not frozen
 		return deepClone((await this.saveAction(this.item as T)));
 	}
@@ -298,13 +308,8 @@ export class EditableItem<T>
 	async save(consumeError = false) {
 		this.logInfo(`Saving`);
 
-		// Update the ui with the saving status
-		this._isSaving = true;
-		this.callOnChange();
-
 		// Save the current item
 		const toRet = await this.saveAction(this.item as T);
-		this._isSaving = false;
 
 		// Make sure to update the instance item and the saving status
 		this.callOnChange(deepClone(toRet));
@@ -485,7 +490,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		try {
 			return await super.save(consumeError);
 		} catch (e: any) {
-			this._isSaving = false;
 			this.handleValidationError(e);
 			if (!consumeError)
 				throw e;
@@ -516,7 +520,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				this.logDebug(`Debounce Completed - ${dbItem?.__updated}`);
 
 				// Changing the saving flag back to false and call onChange
-				this._isSaving = false;
 				const currentUIItem = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
 				this.callOnChange(mergeObject(dbItem, currentUIItem), dbItem);
 
@@ -524,7 +527,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				resolve(dbItem);
 			}).catch((err) => {
 				this.logError('Debounce Error', err);
-				this._isSaving = false;
 				reject(err);
 			});
 
