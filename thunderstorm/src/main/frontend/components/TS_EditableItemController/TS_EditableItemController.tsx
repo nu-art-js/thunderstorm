@@ -7,17 +7,23 @@ import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi'
 import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
 import {Props_ItemsEditorV3} from '../Page_ItemsEditorV3';
 import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
-import {Controller, Props_Controller} from '../../core/Controller';
+import {ComponentSync} from '../../core/ComponentSync';
 
 
-export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps extends {} = {}> = Props_Controller & {
-	item?: Readonly<Partial<Proto['uiType']>> | string,
+export type TemplatingProps_EditableItemController<Proto extends DBProto<any>, EditorProps extends object = object> = {
 	module: ModuleFE_v3_BaseApi<Proto>,
 	onError?: (err: Error) => any | Promise<any>
+	onSave?: (err: Proto['uiType']) => any | Promise<any>
 	autoSave?: ResolvableContent<boolean, [Readonly<Proto['uiType']>]>
 	editor: React.ComponentType<EditableRef<Proto['uiType']> & EditorProps>
 	createInitialInstance?: () => Readonly<Partial<Proto['uiType']>>
 	editorProps?: EditorProps
+};
+
+export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps extends object = object> =
+	TemplatingProps_EditableItemController<Proto, EditorProps>
+	& {
+	item?: Readonly<Partial<Proto['uiType']>> | string,
 };
 
 /**
@@ -29,9 +35,9 @@ export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps
  * @template Props - The Props this class component takes
  */
 export class TS_EditableItemController<Proto extends DBProto<any>,
-	EditorProps extends {} = {},
+	EditorProps extends object = object,
 	Props extends Props_EditableItemController<Proto, EditorProps> = Props_EditableItemController<Proto, EditorProps>>
-	extends Controller<Props, State_ItemEditor<Proto['uiType']>> {
+	extends ComponentSync<Props, State_ItemEditor<Proto['uiType']>> {
 
 	static DefaultAutoSave = (item?: Partial<DB_Object>) => {
 		return !!item?._id;
@@ -69,7 +75,8 @@ export class TS_EditableItemController<Proto extends DBProto<any>,
 			.setOnChanged(async editable => {
 				this.setState({editable});
 			})
-			.setAutoSave(resolveContent(nextProps.autoSave || TS_EditableItemController.DefaultAutoSave, item) || false);
+			.setAutoSave(resolveContent(nextProps.autoSave || TS_EditableItemController.DefaultAutoSave, item) || false)
+			.setOnSaveCompleted(this.props.onSave);
 		return _state;
 	}
 
