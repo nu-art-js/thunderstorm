@@ -30,6 +30,7 @@ export class EditableDBItem<T extends DB_Object, Ks extends keyof PreDB<T> = Def
 			try {
 				const dbItem: T = await module.v1.upsert(_item).executeSync();
 				await onSaved?.(dbItem);
+				return dbItem;
 			} catch (e: any) {
 				await onError?.(e);
 				throw e;

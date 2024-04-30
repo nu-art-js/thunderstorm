@@ -27,6 +27,7 @@ import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {gzip, ungzip} from 'pako';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
+
 type AdvancedQueryParam = Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives;
 
 export class QueryParamKey<T extends AdvancedQueryParam> {
