@@ -84,6 +84,7 @@ export * from './components/TS_ReadMore';
 export * from './components/AwaitModules/AwaitModules';
 export * from './components/AwaitSync/AwaitSync';
 export * from './components/Show';
+export * from './components/TS_EditableItemComponent/TS_EditableItemComponent';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
