@@ -38,7 +38,7 @@ type BaseAppLevelProps_TS_GenericDropDownV3<T> = BaseInfraProps_TS_GenericDropDo
 	disabled?: boolean
 }
 
-type AppLevelProps_TS_GenericDropDownV3<T> = Props_CanUnselect<T> & BaseAppLevelProps_TS_GenericDropDownV3<T> & {
+export type AppLevelProps_TS_GenericDropDownV3<T> = Props_CanUnselect<T> & BaseAppLevelProps_TS_GenericDropDownV3<T> & {
 	selected?: T | string | (() => T | undefined);
 }
 
