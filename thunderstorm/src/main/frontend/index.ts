@@ -94,8 +94,6 @@ export * from './components/form/Form';
 export * from './components/adapter/Adapter';
 export * from './components/adapter/BaseRenderer';
 
-export * from './core/SmartComponent';
-export * from './core/SmartPage';
 export * from './components/GenericDropDown';
 export * from './components/TS_MultiSelect';
 
