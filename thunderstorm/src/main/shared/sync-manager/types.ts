@@ -1,6 +1,5 @@
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
 
-
 export type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
 export type SyncDataFirebaseState = TypedMap<LastUpdated>
 export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], toDelete: DB_Object[] };
@@ -34,9 +33,3 @@ export type DeltaSyncModule = SyncDbData & {
 export type FullSyncModule = SyncDbData & {
 	sync: typeof SmartSync_FullSync
 };
-
-export type SmartSync_SyncGroups = {
-	[SmartSync_UpToDateSync]: NoNeedToSyncModule[];
-	[SmartSync_DeltaSync]: DeltaSyncModule[];
-	[SmartSync_FullSync]: FullSyncModule[];
-}
