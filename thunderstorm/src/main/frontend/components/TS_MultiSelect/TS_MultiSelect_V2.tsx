@@ -44,6 +44,7 @@ export type MultiSelect_Selector<ItemType> = {
 
 export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 	extends Component<Props_TS_MultiSelect_V2<Binder>, any> {
+
 	static prepare<EnclosingItem, K extends keyof EnclosingItem, InnerType>(_props: StaticProps_TS_MultiSelect_V2<InnerType>) {
 		return <EnclosingItem, Prop extends SubsetKeys<keyof EnclosingItem, EnclosingItem, InnerType[] | undefined>>(props: DynamicProps_TS_MultiSelect_V2<EnclosingItem, Prop> & Partial<StaticProps_TS_MultiSelect_V2<InnerType>>) =>
 			<TS_MultiSelect_V2<Binder_MultiSelect<EnclosingItem, Prop, InnerType>>

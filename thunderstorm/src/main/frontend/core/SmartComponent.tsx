@@ -20,12 +20,12 @@
  */
 
 import * as React from 'react';
-import {DB_Object, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {OnSyncStatusChangedListener} from '../core/db-api-gen/types';
-import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB';
+import {LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {TS_Loader} from '../components/TS_Loader';
 import {DataStatus} from './db-api-gen/consts';
 import {BaseComponent} from './ComponentBase';
+import {ModuleFE_v3_BaseDB} from '../modules/db-api-gen/ModuleFE_v3_BaseDB';
+import {OnSyncStatusChangedListener} from './db-api-gen/v3_types';
 
 
 export enum ComponentStatus {
@@ -35,7 +35,7 @@ export enum ComponentStatus {
 }
 
 export type Props_SmartComponent = {
-	modules?: ResolvableContent<ModuleFE_BaseDB<any>[]>;
+	modules?: ResolvableContent<ModuleFE_v3_BaseDB<any>[]>;
 }
 
 export type State_SmartComponent = {
@@ -69,7 +69,7 @@ export abstract class SmartComponent<P = {}, S = {},
 	Props extends Props_SmartComponent & P = Props_SmartComponent & P,
 	State extends State_SmartComponent & S = State_SmartComponent & S>
 	extends BaseComponent<Props, State>
-	implements OnSyncStatusChangedListener<DB_Object> {
+	implements OnSyncStatusChangedListener<any> {
 
 	static logLevel = LogLevel.Info;
 	// static defaultProps = {
@@ -117,7 +117,7 @@ export abstract class SmartComponent<P = {}, S = {},
 
 	// ######################### Life Cycle #########################
 
-	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>): void {
+	__onSyncStatusChanged(module: ModuleFE_v3_BaseDB<any, any>): void {
 		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
 
 		const modules = resolveContent(this.props.modules);
@@ -130,7 +130,7 @@ export abstract class SmartComponent<P = {}, S = {},
 		return this.getUnpreparedModules().length === 0 && super.shouldReDeriveState(nextProps);
 	}
 
-	protected getUnpreparedModules(): ModuleFE_BaseDB<any>[] {
+	protected getUnpreparedModules(): ModuleFE_v3_BaseDB<any>[] {
 		const modules = resolveContent(this.props.modules);
 		return modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
 	}
@@ -217,7 +217,6 @@ export abstract class SmartComponent<P = {}, S = {},
 	// ######################### Abstract #########################
 
 	protected abstract deriveStateFromProps(nextProps: Props, state?: Partial<S> & State_SmartComponent): Promise<State>;
-
 
 	// ######################### Render #########################
 	protected logAwaitedModules() {

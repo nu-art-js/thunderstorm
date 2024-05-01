@@ -16,7 +16,6 @@ import {ungzip} from 'pako';
 import {cloneObj, composeUrl, currentTimeMillis, DB_BaseObject, Exception, exists, generateHex, KB, TS_Object} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {
 	Account_ChangeThumbnail,
 	Account_GetPasswordAssertionConfig,
@@ -25,6 +24,7 @@ import {
 } from '../shared';
 import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp, StorageKey_TabId} from './consts';
 import {PasswordAssertionConfig} from '../../_enum';
+import {ApiCallerEventTypeV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
 
 
 export interface OnLoginStatusUpdated {
@@ -32,7 +32,7 @@ export interface OnLoginStatusUpdated {
 }
 
 export interface OnAccountsUpdated {
-	__onAccountsUpdated: (...params: ApiCallerEventType<DB_Account>) => void;
+	__onAccountsUpdated: (...params: ApiCallerEventTypeV3<DBProto_Account>) => void;
 }
 
 export enum LoggedStatus {
@@ -104,7 +104,7 @@ class ModuleFE_Account_Class
 
 		let defaultTabId = StorageKey_TabId.get();
 		let defaultDeviceId = StorageKey_DeviceId.get();
-		
+
 		if (!defaultDeviceId) {
 			defaultDeviceId = generateHex(32);
 			console.log(`Defining new device Id: ${defaultDeviceId}`);

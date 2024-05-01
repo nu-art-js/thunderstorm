@@ -2,7 +2,6 @@ import * as React from 'react';
 import './TS_EditableItemControllerProto.scss';
 import {asArray, BadImplementationException, DB_Object, DBProto, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {EditableDBItemV3} from '../../utils/EditableItem';
-import {State_ItemEditor} from '../Item_Editor';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
 import {ComponentProtoDef} from '../Page_ItemsEditorV3';
@@ -34,7 +33,7 @@ export type Props_EditableItemControllerProto<Proto extends DBProto<any>, Editor
 export class TS_EditableItemControllerProto<Proto extends DBProto<any>,
 	EditorProps extends {} = {},
 	Props extends Props_EditableItemControllerProto<Proto, EditorProps> = Props_EditableItemControllerProto<Proto, EditorProps>>
-	extends ProtoComponent<ComponentProtoDef, Props, State_ItemEditor<Proto['uiType']>> {
+	extends ProtoComponent<ComponentProtoDef, Props, EditableRef<Proto['uiType']>> {
 
 	static DefaultAutoSave = (item?: Partial<DB_Object>) => {
 		return !!item?._id;

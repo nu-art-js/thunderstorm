@@ -1,18 +1,12 @@
 import * as React from 'react';
-import {
-	_className,
-	AwaitModules,
-	ComponentSync,
-	ModuleFE_v3_BaseApi,
-	TS_ErrorBoundary,
-	TS_Loader
-} from '@nu-art/thunderstorm/frontend';
+import {_className, AwaitModules, ComponentSync, ModuleFE_v3_BaseApi, TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {cloneObj, filterDuplicates, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {DB_Account} from '../../../shared';
+import {DB_Account, DBProto_Account} from '../../../shared';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_AccountThumbnail.scss';
+import {ApiCallerEventTypeV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+
 
 type Props = {
 	accountId: UniqueId;
@@ -44,7 +38,7 @@ class Component_AccountThumbnail_Impl
 		return true;
 	}
 
-	__onAccountsUpdated = (...params: ApiCallerEventType<DB_Account>) => {
+	__onAccountsUpdated = (...params: ApiCallerEventTypeV3<DBProto_Account>) => {
 		this.reDeriveState();
 	};
 

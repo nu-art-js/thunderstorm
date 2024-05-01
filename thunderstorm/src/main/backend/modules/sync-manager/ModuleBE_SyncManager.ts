@@ -39,7 +39,6 @@ import {
 import {firestore} from 'firebase-admin';
 import {createBodyServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
-import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
 import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
 import {
 	DeltaSyncModule,
@@ -86,7 +85,7 @@ export class ModuleBE_SyncManager_Class
 	public collection!: FirestoreCollectionV3<DBProto_DeletedDoc>;
 
 	private database!: DatabaseWrapperBE;
-	private dbModules!: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[];
+	private dbModules!: (ModuleBE_BaseDBV3<any>)[];
 	private syncData!: FirebaseRef<SyncDataFirebaseState>;
 	private deletedCount!: FirebaseRef<number>;
 	public smartSyncApi;
@@ -124,16 +123,16 @@ export class ModuleBE_SyncManager_Class
 		const frontendCollectionNames = body.modules.map(item => item.dbKey);
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 
-		const permissibleModules: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbKey)));
+		const permissibleModules: (ModuleBE_BaseDBV3<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbKey)));
 		this.logVerbose(`Modules found: ${__stringify(permissibleModules.map(_module => _module.dbDef.dbKey))}`);
 
-		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>)) => item.dbDef.dbKey);
+		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: (ModuleBE_BaseDBV3<any>)) => item.dbDef.dbKey);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
 		const upToDateSyncData = await this.getOrCreateSyncData(body);
 
 		// For each module, create the response, which says what type of sync it needs: none, delta or full.
 		await Promise.all(body.modules.map(async syncRequest => {
-			const moduleToCheck = dbNameToModuleMap[syncRequest.dbKey] as (ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>);
+			const moduleToCheck = dbNameToModuleMap[syncRequest.dbKey] as (ModuleBE_BaseDBV3<any>);
 			if (!moduleToCheck)
 				return this.logError(`Calculating collections to sync, failing to find dbKey: ${syncRequest.dbKey}`);
 
@@ -308,12 +307,12 @@ export class ModuleBE_SyncManager_Class
 		return this.database.patch<LastUpdated>(`/state/${this.getName()}/syncData/${collectionName}`, {oldestDeleted});
 	}
 
-	setModuleFilter = (filter: (modules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => Promise<(ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]>) => {
+	setModuleFilter = (filter: (modules: (ModuleBE_BaseDBV3<any>)[]) => Promise<(ModuleBE_BaseDBV3<any>)[]>) => {
 		const previousFilter = this.filterModules;
 		this.filterModules = async modules => filter(await previousFilter(modules));
 	};
 
-	private filterModules = async (modules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
+	private filterModules = async (modules: (ModuleBE_BaseDBV3<any>)[]) => {
 		return modules;
 	};
 }

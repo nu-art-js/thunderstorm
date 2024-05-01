@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ModuleFE_AppConfig, ModuleFE_BaseDB, Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_AppConfig, Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/thunderstorm/frontend';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {AccessLevel, OnPermissionsChanged} from '../modules/ModuleFE_PermissionsAssert';
 
@@ -17,7 +17,7 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 	implements OnPermissionsChanged {
 
 	static defaultProps = {
-		modules: [ModuleFE_AppConfig as unknown as ModuleFE_BaseDB<any>]
+		modules: [ModuleFE_AppConfig]
 	};
 
 	shouldComponentUpdate(nextProps: Readonly<Props_SmartComponent & P>, nextState: Readonly<State_SmartComponent>, nextContext: any): boolean {
