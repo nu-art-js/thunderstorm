@@ -1,21 +1,9 @@
-import {DB_Object, DBProto, UniqueId} from '@nu-art/ts-common';
+import {DBProto, UniqueId} from '@nu-art/ts-common';
 import * as React from 'react';
 import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2} from '../TS_MultiSelect';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {ComponentSync} from '../../core/ComponentSync';
-import {ReactNode} from 'react';
 
-
-export type TS_MultiSelect_Renderer<InnerItem extends DB_Object> = {
-	className?: string
-	module: ModuleFE_v3_BaseApi<InnerItem>,
-	itemRenderer: (item?: InnerItem, onDelete?: () => Promise<void>) => ReactNode
-	placeholder: string
-	noOptionsRenderer: string
-	createNewItemFromLabel?: (filterText: string, matchingItems: InnerItem[], e: React.KeyboardEvent) => Promise<PreDB<InnerItem>>;
-	selectionRenderer: React.ComponentType<PartialProps_GenericDropDown<InnerItem> | PartialProps_DropDown<InnerItem>>,
-	itemResolver?: () => InnerItem[]
-};
 
 type UISelector<Proto extends DBProto<any>> = (props: {
 	queryFilter: (item: Proto['dbType']) => boolean
