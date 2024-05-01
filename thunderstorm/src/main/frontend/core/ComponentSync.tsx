@@ -47,7 +47,7 @@ export abstract class ComponentSyncInfer<P = any, S = any>
 
 	protected _deriveStateFromProps(nextProps: InferProps<this>, state?: InferState<this>): InferState<this> {
 		this.logVerbose('Deriving state from props');
-		const _state = this.deriveStateFromProps(nextProps, (state ?? this.state ? {...this.state} : {}) as InferState<this>);
+		const _state = this.deriveStateFromProps(nextProps, (state ?? (this.state ? {...this.state} : {})) as InferState<this>);
 		this.mounted && _state && this.setState(_state);
 		return _state as InferState<this>;
 	}
