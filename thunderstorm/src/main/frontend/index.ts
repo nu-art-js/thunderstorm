@@ -125,6 +125,8 @@ export * from './modules/action-processor/ModuleFE_ActionProcessor';
 export * from './modules/component-loader';
 export * from './modules/ModuleFE_StorageCleaner';
 export * from './modules/ModuleFE_ServerInfo';
+export * from './modules/sync-manager/ModuleFE_SyncManager';
+export * from './modules/sync-manager/ModuleFE_SyncManager_CSV';
 
 export * from './utils/tools';
 export * from './utils/EditableItem';
