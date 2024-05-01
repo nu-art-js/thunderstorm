@@ -75,7 +75,7 @@ export class EditableItem<T>
 	 * @param saveAction The function to be called when saving the item.
 	 * @param deleteAction The function to be called when deleting the item.
 	 */
-	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>) {
+	constructor(item: Partial<T>, saveAction: (item: T) => Promise<T>, deleteAction: (item: T) => Promise<any>) {
 		super();
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
 
@@ -86,11 +86,31 @@ export class EditableItem<T>
 		}
 		this.item = Object.isFrozen(item) ? cloneObj(item) : item;
 		this.originalItem = item;
-		this.saveAction = saveAction;
+		this.saveAction = async (item) => {
+			// update ui and make sure it called the on change
+			this._isSaving = true;
+			this.callOnChange();
+
+			try {
+				const response = await saveAction(item);
+
+				// call the post save callback if exists
+				this.onSaveCompleted?.(response);
+
+				//update is saving flag post save
+				this._isSaving = false;
+
+				return response;
+			} catch (err: any) {
+				this._isSaving = false;
+				throw err;
+			}
+		};
 		this.deleteAction = deleteAction;
 		this.preformAutoSave.bind(this);
 	}
 
+	protected onSaveCompleted?: (item: T) => any;
 	protected onChanged?: Editable_OnChange<T>;
 	protected saveAction: Editable_SaveAction<T>;
 	protected deleteAction: Editable_DeleteAction<T>;
@@ -100,13 +120,18 @@ export class EditableItem<T>
 		return this;
 	}
 
-	setOnSave(onSave: Editable_SaveAction<T>) {
-		this.saveAction = onSave;
+	setSaveAction(saveAction: Editable_SaveAction<T>) {
+		this.saveAction = saveAction;
 		return this;
 	}
 
 	setOnDelete(onDelete: (item: T) => Promise<any>) {
 		this.deleteAction = onDelete;
+		return this;
+	}
+
+	setOnSaveCompleted(onSaved?: (item: T) => any) {
+		this.onSaveCompleted = onSaved;
 		return this;
 	}
 
@@ -128,7 +153,6 @@ export class EditableItem<T>
 		this._autoSave = mode;
 		return this;
 	}
-
 
 	/**
 	 * Get the saving status of the current editable instance
@@ -251,11 +275,6 @@ export class EditableItem<T>
 	 */
 	protected async preformAutoSave(): Promise<T | undefined> {
 		this.logDebug(`performing autosave`);
-
-		// Setting the saving flag to true and triggering the callback
-		this._isSaving = true;
-		this.callOnChange();
-
 		// Return item cloned to make sure it's not frozen
 		return deepClone((await this.saveAction(this.item as T)));
 	}
@@ -289,13 +308,8 @@ export class EditableItem<T>
 	async save(consumeError = false) {
 		this.logInfo(`Saving`);
 
-		// Update the ui with the saving status
-		this._isSaving = true;
-		this.callOnChange();
-
 		// Save the current item
 		const toRet = await this.saveAction(this.item as T);
-		this._isSaving = false;
 
 		// Make sure to update the instance item and the saving status
 		this.callOnChange(deepClone(toRet));
@@ -339,9 +353,10 @@ export class EditableItem<T>
 
 		const editableProp = new EditableItem<NonNullable<T[K]>>(
 			itemToEdit,
-			async (value: T[K]) => {
+			async (value: NonNullable<T[K]>) => {
 				this.set(key, value);
-				return this.autoSave();
+				await this.autoSave();
+				return value;
 			},
 			() => this.delete())
 			.setValidationResults(validationResults)
@@ -475,7 +490,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		try {
 			return await super.save(consumeError);
 		} catch (e: any) {
-			this._isSaving = false;
 			this.handleValidationError(e);
 			if (!consumeError)
 				throw e;
@@ -506,7 +520,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				this.logDebug(`Debounce Completed - ${dbItem?.__updated}`);
 
 				// Changing the saving flag back to false and call onChange
-				this._isSaving = false;
 				const currentUIItem = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.module.dbDef.generatedPropsValidator)]);
 				this.callOnChange(mergeObject(dbItem, currentUIItem), dbItem);
 
@@ -514,7 +527,6 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 				resolve(dbItem);
 			}).catch((err) => {
 				this.logError('Debounce Error', err);
-				this._isSaving = false;
 				reject(err);
 			});
 

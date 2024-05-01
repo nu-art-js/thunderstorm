@@ -1,28 +1,17 @@
 import * as React from 'react';
 import './TS_EditableItemControllerProto.scss';
-import {
-	asArray,
-	BadImplementationException,
-	DB_Object,
-	DBProto,
-	deepClone,
-	exists,
-	ResolvableContent,
-	resolveContent
-} from '@nu-art/ts-common';
+import {asArray, BadImplementationException, DB_Object, DBProto, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {EditableDBItemV3} from '../../utils/EditableItem';
 import {State_ItemEditor} from '../Item_Editor';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
 import {ComponentProtoDef} from '../Page_ItemsEditorV3';
 import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
-import {Props_Controller} from '../../core/Controller';
 import {ProtoComponent} from '../../core/proto-component';
 import {InferProps, InferState} from '../../utils/types';
 
 
 export type Props_EditableItemControllerProto<Proto extends DBProto<any>, EditorProps extends {} = {}> =
-	Props_Controller
 	& ComponentProtoDef['props']
 	& {
 	item?: Readonly<Partial<Proto['uiType']>> | string,

@@ -87,9 +87,12 @@ class ModuleFE_Thunderstorm_Class
 			return this.logWarning('printingContentWindow is undefined');
 
 		//Populate the window document
-		const containerText = '<div style="display: none">printDiv function!</div>';
-		printingContentWindow.document.open();
-		printingContentWindow.document.write(containerText);
+		printingContentWindow.document.documentElement.innerHTML = `
+        <html>
+            <head></head>
+            <body></body>
+        </html>`;
+
 
 		//Grab essential elements
 		const html = printingContentWindow.document.getElementsByTagName('html')?.[0];
