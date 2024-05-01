@@ -21,7 +21,6 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV3';
-import {ModuleBE_BaseDBV2} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV2';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {Readable} from 'stream';
@@ -62,7 +61,7 @@ type Config = DBApiConfigV3<DBProto_BackupDoc> & {
 // 	useKeysAsHeaders: true,
 // };
 
-type DBModules = ModuleBE_BaseDBV2<any> | ModuleBE_BaseDBV3<any>;
+type DBModules = ModuleBE_BaseDBV3<any>;
 
 /**
  * This module is in charge of making a backup of the db in firebase storage,

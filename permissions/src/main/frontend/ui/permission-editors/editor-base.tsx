@@ -1,8 +1,9 @@
 import * as React from 'react';
-import {EditableRef, LL_V_L, ModuleFE_v3_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {LL_V_L, ModuleFE_v3_BaseApi} from '@nu-art/thunderstorm/frontend';
 import {DBProto} from '@nu-art/ts-common';
 import './editor-base.scss';
 import {
+	EditableRef,
 	TS_EditableItemComponentV3
 } from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
 

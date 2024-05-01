@@ -24,7 +24,7 @@ export type MenuAction<Proto extends DBProto<any>> = {
 	label: string,
 	action: (state: State_ItemsEditorV3<Proto>) => Promise<any>
 }
-type State_ItemsEditorV3<Proto extends DBProto<any>> = {
+export type State_ItemsEditorV3<Proto extends DBProto<any>> = {
 	editable: EditableItem<Proto['uiType']>,
 	filter: ItemEditor_FilterType<Proto>,
 	actionInProgress?: number
