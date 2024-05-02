@@ -11,6 +11,7 @@ import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncMana
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {LL_H_C, LL_V_L} from '../Layouts/Layouts';
 import {TS_ProgressBar} from '../TS_ProgressBar/TS_ProgressBar';
+import {ModuleSyncType} from '../../modules/db-api-gen/types';
 
 
 type Props = React.PropsWithChildren<{
@@ -64,7 +65,6 @@ export class AwaitModules
 	}
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
-		state.awaiting ??= true;
 		//Collect modules that are awaitable
 		state.validModules ??= resolveContent(nextProps.modules).filter(module => {
 			const validModule = RuntimeModules().includes(module) && exists(module.dbDef);
@@ -77,9 +77,8 @@ export class AwaitModules
 		//Collect ready modules
 		state.readyModules = state.validModules.filter(module => module.getDataStatus() === DataStatus.ContainsData);
 
-		// Set awaiting false if all valid modules are ready
-		if (state.validModules.length === state.readyModules.length)
-			state.awaiting = false;
+		// Set awaiting true if not all valid modules are ready
+		state.awaiting = state.validModules.length !== state.readyModules.length;
 		return state;
 	}
 
@@ -94,7 +93,7 @@ export class AwaitModules
 		if (!permissibleModules.length)
 			return [];
 
-		return this.state.validModules.filter(module => !permissibleModules.includes(module.dbDef.dbKey));
+		return this.state.validModules.filter(module => module.syncType === ModuleSyncType.APISync && !permissibleModules.includes(module.dbDef.dbKey));
 	};
 
 	// ######################### Render #########################
@@ -105,7 +104,7 @@ export class AwaitModules
 			<LL_V_L className={'missing-permission-modules'}>
 				<h1>Missing Permissions For The Following Databases</h1>
 				<LL_H_C>
-					{missingPermissionModules.map(module => <span>{module.dbDef.entityName}</span>)}
+					{missingPermissionModules.map(module => <span key={module.dbDef.dbKey}>{module.dbDef.entityName}</span>)}
 				</LL_H_C>
 			</LL_V_L>
 		</div>;
@@ -144,12 +143,12 @@ export class AwaitModules
 	};
 
 	render() {
-		if (!this.state.awaiting)
-			return this.props.children;
-
 		if (this.getMissingPermissionModules().length)
 			return this.renderMissingPermissions();
 
-		return this.renderLoader();
+		if (this.state.awaiting)
+			return this.renderLoader();
+
+		return this.props.children;
 	}
 }

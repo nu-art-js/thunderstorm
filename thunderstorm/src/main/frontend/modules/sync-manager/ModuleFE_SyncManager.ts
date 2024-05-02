@@ -72,6 +72,7 @@ const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleMo
 export class ModuleFE_SyncManager_Class
 	extends Module
 	implements ApiDefCaller<ApiStruct_SyncManager>, OnConnectivityChange {
+	
 	async __onConnectivityChange() {
 		if (ModuleFE_ConnectivityModule.isConnected()) {
 			this.logInfo(`Browser gained network connectivity- initiating smartSync.`);
