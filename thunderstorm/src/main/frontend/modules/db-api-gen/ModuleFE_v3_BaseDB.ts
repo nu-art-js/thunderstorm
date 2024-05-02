@@ -90,7 +90,7 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		this.dataStatus = DataStatus.NoData;
 		this.setDefaultConfig(config as Config);
 		this.cache = new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
-		this.IDB = new IDBCache<Proto>(this.config.dbConfig);
+		this.IDB = new IDBCache<Proto>(this.config.dbConfig, this.config.key);
 	}
 
 	protected init() {
@@ -215,12 +215,12 @@ class IDBCache<Proto extends DBProto<any>>
 	protected readonly lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
 
-	constructor(dbConfig: DBConfigV3<Proto>) {
-		super(`indexdb-${dbConfig.name}`);
+	constructor(dbConfig: DBConfigV3<Proto>, dbKey: string) {
+		super(`indexdb-${dbKey}`);
 		const currentVersion = dbConfig.version[0];
 		this.setMinLevel(LogLevel.Verbose);
-		this.lastSync = new StorageKey<number>('last-sync--' + dbConfig.name);
-		this.lastVersion = new StorageKey<string>('last-version--' + dbConfig.name);
+		this.lastSync = new StorageKey<number>('last-sync--' + dbKey);
+		this.lastVersion = new StorageKey<string>('last-version--' + dbKey);
 		const onOpenedCallback = () => {
 			const previousVersion = this.lastVersion.get();
 			this.lastVersion.set(currentVersion);
