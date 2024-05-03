@@ -22,7 +22,7 @@ type Props = React.PropsWithChildren<{
 type State = {
 	validModules: (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[];
 	readyModules: (ModuleFE_BaseDB<any> | ModuleFE_v3_BaseDB<any>)[];
-	awaiting: boolean;
+	ready: boolean;
 };
 
 export type AwaitModule_LoaderProps = {
@@ -75,10 +75,13 @@ export class AwaitModules
 		});
 
 		//Collect ready modules
-		state.readyModules = state.validModules.filter(module => module.getDataStatus() === DataStatus.ContainsData);
+		state.readyModules = state.validModules.filter(module => {
+			return module.getDataStatus() === DataStatus.ContainsData || state.ready && module.getDataStatus() === DataStatus.UpdatingData;
+		});
 
 		// Set awaiting true if not all valid modules are ready
-		state.awaiting = state.validModules.length !== state.readyModules.length;
+		state.ready = state.validModules.length === state.readyModules.length;
+
 		return state;
 	}
 
@@ -146,7 +149,7 @@ export class AwaitModules
 		if (this.getMissingPermissionModules().length)
 			return this.renderMissingPermissions();
 
-		if (this.state.awaiting)
+		if (!this.state.ready)
 			return this.renderLoader();
 
 		return this.props.children;
