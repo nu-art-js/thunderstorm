@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery, Clause_Where, DB_EntityDependency, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
+import {Clause_Where, DB_EntityDependency, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	_keys,
 	ApiException,
@@ -40,7 +40,7 @@ import {
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
-import {DBApiBEConfigV3, getModuleBEConfigV3} from '../../core/v3-db-def';
+import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
 import {Response_DBSync} from '../../../shared/sync-manager/types';
@@ -54,7 +54,7 @@ export type BaseDBApiConfigV3 = {
 	chunksSize: number
 }
 
-export type DBApiConfigV3<Proto extends DBProto<any>> = BaseDBApiConfigV3 & DBApiBEConfigV3<Proto>
+export type DBApiConfigV3<Proto extends DBProto<any>> = BaseDBApiConfigV3 & DBApiBEConfig<Proto>
 const CONST_DefaultWriteChunkSize = 200;
 
 /**
@@ -62,7 +62,7 @@ const CONST_DefaultWriteChunkSize = 200;
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType = any,
+export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = any,
 	Config extends ConfigType & DBApiConfigV3<Proto> = ConfigType & DBApiConfigV3<Proto>>
 	extends Module<Config>
 	implements CanDeleteDBEntitiesProto {
@@ -83,7 +83,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 	protected constructor(dbDef: DBDef_V3<Proto>, appConfig?: BaseDBApiConfigV3) {
 		super();
 
-		const config = getModuleBEConfigV3(dbDef);
+		const config = getModuleBEConfig(dbDef);
 
 		const preConfig = {chunksSize: CONST_DefaultWriteChunkSize, ...config, ...appConfig};
 		// @ts-ignore

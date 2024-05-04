@@ -2,7 +2,7 @@ import {DB_Object, DBProto, Filter, ResolvableContent, resolveContent, sortArray
 import * as React from 'react';
 import {CSSProperties} from 'react';
 import {TS_DropDown} from '../TS_Dropdown';
-import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {Adapter, SimpleListAdapter} from '../adapter/Adapter';
 import {ComponentSync} from '../../core/ComponentSync';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
@@ -54,8 +54,8 @@ type EditableItemProps_GenericDropDownV3<T> =
 export type TemplatingProps_TS_GenericDropDown<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
 	BaseInfraProps_TS_GenericDropDownV3<T> & {
 	placeholder: string;
-	module: ModuleFE_v3_BaseApi<Proto>;
-	modules: ModuleFE_v3_BaseApi<Proto>[];
+	module: ModuleFE_BaseApi<Proto>;
+	modules: ModuleFE_BaseApi<Proto>[];
 	mapper: (item: T) => (string | undefined)[]
 	renderer: (item: T) => React.ReactElement
 	selectedItemRenderer?: (selected: T) => React.ReactNode
@@ -136,7 +136,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 		return state;
 	}
 
-	private getSelected(module: ModuleFE_v3_BaseApi<Proto>, selectMethod?: Proto['dbType'] | string | (() => (Proto['dbType'])) | undefined) {
+	private getSelected(module: ModuleFE_BaseApi<Proto>, selectMethod?: Proto['dbType'] | string | (() => (Proto['dbType'])) | undefined) {
 		switch (typeof selectMethod) {
 			case 'string':
 				return module.cache.unique(selectMethod);

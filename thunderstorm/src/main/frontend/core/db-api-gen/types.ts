@@ -1,17 +1,17 @@
 import {DBProto} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../thunder-dispatcher';
-import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 
 
 export type SingleApiEvent = 'create' | 'update' | 'unique' | 'delete' | 'patch'
 export type MultiApiEvent = 'query' | 'upsert-all' | 'sync' | 'delete-multi'
 
-export type ApiCallerEventTypeV3<Proto extends DBProto<any>> =
+export type ApiCallerEventType<Proto extends DBProto<any>> =
 	[SingleApiEvent, Proto['dbType']]
 	| [MultiApiEvent, Proto['dbType'][]];
 
 export interface OnSyncStatusChangedListener<Proto extends DBProto<any>> {
-	__onSyncStatusChanged: (module: ModuleFE_v3_BaseDB<Proto['dbType'], any>) => void;
+	__onSyncStatusChanged: (module: ModuleFE_BaseDB<Proto['dbType'], any>) => void;
 }
 
 export type DispatcherInterface<Def extends DispatcherDef<any, any>> = {
@@ -20,7 +20,7 @@ export type DispatcherInterface<Def extends DispatcherDef<any, any>> = {
 
 export type DispatcherDef<Proto extends DBProto<any>, MethodName extends `${'__'}${string}`> = {
 	eventName: MethodName
-	method: (...params: ApiCallerEventTypeV3<Proto>) => void
+	method: (...params: ApiCallerEventType<Proto>) => void
 }
 
 export class ThunderDispatcherV3<T extends DispatcherDef<any, any>>

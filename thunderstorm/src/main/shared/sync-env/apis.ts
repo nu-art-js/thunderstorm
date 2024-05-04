@@ -3,7 +3,7 @@ import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
 import {BackupMetaData} from '../../_entity/backup-doc/shared';
 
 
-export type Request_FetchFromEnvV2 = {
+export type Request_FetchFromEnv = {
 	backupId: string,
 	env: string,
 	chunkSize: number,
@@ -16,17 +16,17 @@ export type Request_GetMetadata = { backupId: UniqueId, env: string }
 export type Response_FetchBackupMetadata = BackupMetaData & {
 	remoteCollectionNames: string[]
 }
-export type ApiStruct_SyncEnvV2 = {
+export type ApiStruct_SyncEnv = {
 	vv1: {
 		syncToEnv: BodyApi<any, { env: 'dev' | 'prod', moduleName: string, items: any[] }>
-		syncFromEnvBackup: BodyApi<any, Request_FetchFromEnvV2>
+		syncFromEnvBackup: BodyApi<any, Request_FetchFromEnv>
 		createBackup: QueryApi<{ pathToBackup: string } | undefined>,
 		fetchBackupMetadata: QueryApi<Response_FetchBackupMetadata, Request_GetMetadata>,
 		syncFirebaseFromBackup: QueryApi<any, Request_FetchFirebaseBackup>
 	}
 }
 
-export const ApiDef_SyncEnvV2: ApiDefResolver<ApiStruct_SyncEnvV2> = {
+export const ApiDef_SyncEnv: ApiDefResolver<ApiStruct_SyncEnv> = {
 	vv1: {
 		syncToEnv: {method: HttpMethod.POST, path: 'v1/sync-env/sync-to-env', timeout: 5 * Minute},
 		syncFromEnvBackup: {method: HttpMethod.POST, path: 'v1/sync-env/fetch-from-env-v2', timeout: 5 * Minute},

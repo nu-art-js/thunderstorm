@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {DB_PermissionUser, DBProto_PermissionUser, ModuleFE_PermissionUser} from '../../_entity';
-import {Page_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
 import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
 import {MultiSelect} from '../ui-props';
 import {Component_BasePermissionItemEditor} from './editor-base';
@@ -44,7 +44,7 @@ class Controller_EditAccount
 }
 
 export class PermissionUsersEditor
-	extends Page_ItemsEditorV3<DBProto_PermissionUser> {
+	extends Page_ItemsEditor<DBProto_PermissionUser> {
 
 	//######################### Static #########################
 

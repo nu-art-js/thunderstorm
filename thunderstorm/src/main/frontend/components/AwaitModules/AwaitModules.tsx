@@ -3,34 +3,34 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {exists, ResolvableContent, resolveContent, RuntimeModules} from '@nu-art/ts-common';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import './AwaitModules.scss';
-import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager';
 import {LL_H_C, LL_V_L} from '../Layouts/Layouts';
 import {TS_ProgressBar} from '../TS_ProgressBar/TS_ProgressBar';
-import {OnSyncStatusChangedListener} from '../../core/db-api-gen/v3_types';
+import {OnSyncStatusChangedListener} from '../../core/db-api-gen/types';
 import {ModuleSyncType} from '../../modules/db-api-gen/types';
 
 
 type Props = React.PropsWithChildren<{
-	modules: ResolvableContent<(ModuleFE_v3_BaseDB<any>)[]>;
+	modules: ResolvableContent<(ModuleFE_BaseDB<any>)[]>;
 	customLoader?: ResolvableContent<React.ReactNode, [AwaitModule_LoaderProps]>;
 }>;
 
 type State = {
-	validModules: (ModuleFE_v3_BaseDB<any>)[];
-	readyModules: (ModuleFE_v3_BaseDB<any>)[];
+	validModules: (ModuleFE_BaseDB<any>)[];
+	readyModules: (ModuleFE_BaseDB<any>)[];
 	awaiting: boolean;
 };
 
 export type AwaitModule_LoaderProps = {
-	validModules: (ModuleFE_v3_BaseDB<any>)[];
-	readyModules: (ModuleFE_v3_BaseDB<any>)[];
-	awaitedModules: (ModuleFE_v3_BaseDB<any>)[];
+	validModules: (ModuleFE_BaseDB<any>)[];
+	readyModules: (ModuleFE_BaseDB<any>)[];
+	awaitedModules: (ModuleFE_BaseDB<any>)[];
 }
 
 interface QueryAwaitedModules {
-	__queryAwaitedModule(): (ModuleFE_v3_BaseDB<any>)[];
+	__queryAwaitedModule(): (ModuleFE_BaseDB<any>)[];
 }
 
 export const dispatch_QueryAwaitedModules = new ThunderDispatcher<QueryAwaitedModules, '__queryAwaitedModule'>('__queryAwaitedModule');
@@ -41,7 +41,7 @@ export class AwaitModules
 
 	// ######################### Life Cycle #########################
 
-	__onSyncStatusChanged(module: ModuleFE_v3_BaseDB<any, any>): void {
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<any, any>): void {
 		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
 		if (this.state.validModules.includes(module))
 			this.reDeriveState();
@@ -82,7 +82,7 @@ export class AwaitModules
 
 	// ######################### Logic #########################
 
-	protected getUnpreparedModules(): (ModuleFE_v3_BaseDB<any>)[] {
+	protected getUnpreparedModules(): (ModuleFE_BaseDB<any>)[] {
 		return this.state.validModules.filter(module => !this.state.readyModules.includes(module));
 	}
 
@@ -120,7 +120,7 @@ export class AwaitModules
 
 		//Calculate Ratios
 		const relevantInProgressModules = ModuleFE_SyncManager.getCurrentlySyncingModules()
-			.filter(module => this.state.validModules.includes(module as ModuleFE_v3_BaseDB<any>));
+			.filter(module => this.state.validModules.includes(module as ModuleFE_BaseDB<any>));
 		const readyAndInProgressModulesRatio = (relevantInProgressModules.length + this.state.readyModules.length) / this.state.validModules.length;
 		const readyModulesRatio = this.state.readyModules.length / this.state.validModules.length;
 

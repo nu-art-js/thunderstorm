@@ -3,13 +3,13 @@ import {asArray, DB_Object, dbObjectToId, DBProto, exists, sortArray, UniqueId} 
 import {FrameLayout} from '../FrameLayout';
 import {TS_Route} from '../../modules/routing';
 import {LL_H_C, LL_H_T, LL_V_L} from '../Layouts';
-import './Page_ItemsEditorV3.scss';
-import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
+import './Page_ItemsEditor.scss';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem';
-import {ItemEditor_DefaultList, Props_ListRendererV3} from './defaults/ItemEditor_ListRenderer';
+import {ItemEditor_DefaultList, Props_ListRenderer} from './defaults/ItemEditor_ListRenderer';
 import {ItemEditor_FilterType, ItemEditor_MapperType, ItemEditor_SortType} from './types';
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter';
-import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
+import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_MouseInteractivity, mouseInteractivity_PopUp, openContent} from '../../component-modules/mouse-interactivity';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
@@ -22,18 +22,18 @@ import {ModuleFE_BrowserHistoryV2} from '../../modules/ModuleFE_BrowserHistoryV2
 
 export type MenuAction<Proto extends DBProto<any>> = {
 	label: string,
-	action: (state: State_ItemsEditorV3<Proto>) => Promise<any>
+	action: (state: State_ItemsEditor<Proto>) => Promise<any>
 }
-export type State_ItemsEditorV3<Proto extends DBProto<any>> = {
+export type State_ItemsEditor<Proto extends DBProto<any>> = {
 	editable: EditableItem<Proto['uiType']>,
 	filter: ItemEditor_FilterType<Proto>,
 	actionInProgress?: number
 };
-export type Props_ItemsEditorV3<Proto extends DBProto<any>> = {
-	ListRenderer?: React.ComponentType<Props_ListRendererV3<Proto>>
+export type Props_ItemsEditor<Proto extends DBProto<any>> = {
+	ListRenderer?: React.ComponentType<Props_ListRenderer<Proto>>
 	EditorRenderer: React.ComponentType<Partial<Props_EditableItemControllerProto<Proto>>>,
 	Filter?: React.ComponentType<Props_Filter<Proto>>
-	module: ModuleFE_v3_BaseApi<Proto>,
+	module: ModuleFE_BaseApi<Proto>,
 	route: TS_Route<{ _id: string }>,
 	sort: ItemEditor_SortType<Proto>,
 	mapper: ItemEditor_MapperType<Proto>
@@ -51,16 +51,16 @@ export type ComponentProtoDef = ProtoComponentDef<'selected', {
 	selected: { [dbKey: string]: UniqueId }
 }>
 
-export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
+export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 	CProto extends SuperProto<ComponentProtoDef, ProtoComponentDef<string, any>> = ComponentProtoDef,
 	P = {}, S = {}, >
-	extends ProtoComponent<CProto, Props_ItemsEditorV3<Proto> & P, State_ItemsEditorV3<Proto> & S> {
+	extends ProtoComponent<CProto, Props_ItemsEditor<Proto> & P, State_ItemsEditor<Proto> & S> {
 
 	static _defaultProps: ComponentProtoDef['props'] = {
 		keys: ['selected']
 	};
 
-	constructor(p: InferProps<Page_ItemsEditorV3<Proto, CProto, P, S>>) {
+	constructor(p: InferProps<Page_ItemsEditor<Proto, CProto, P, S>>) {
 		super(p);
 	}
 
@@ -96,7 +96,7 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 		return state;
 	}
 
-	private __onItemUpdated = (...params: ApiCallerEventTypeV3<Proto>): void => {
+	private __onItemUpdated = (...params: ApiCallerEventType<Proto>): void => {
 		const items = asArray(params[1]);
 		if (!items.map(dbObjectToId).includes(this.state.editable.get('_id') as string))
 			return this.onSelected(items[0]);
@@ -113,8 +113,8 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 
 	render() {
 		const List = this.props.ListRenderer || ItemEditor_DefaultList;
-		const Filter: Props_ItemsEditorV3<Proto>['Filter'] = this.props.Filter || ItemEditor_DefaultFilter;
-		const Editor: Props_ItemsEditorV3<Proto>['EditorRenderer'] = this.props.EditorRenderer;
+		const Filter: Props_ItemsEditor<Proto>['Filter'] = this.props.Filter || ItemEditor_DefaultFilter;
+		const Editor: Props_ItemsEditor<Proto>['EditorRenderer'] = this.props.EditorRenderer;
 		const sort = this.props.sort || ((item: DB_Object) => item.__created);
 		return <FrameLayout id={this.props.id} className="editor-page">
 			<LL_H_T className="editor-content match_parent">
@@ -157,7 +157,7 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 			onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
 	}
 
-	static refactoring_setSelected<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, id?: string) {
+	static refactoring_setSelected<Proto extends DBProto<any>>(module: ModuleFE_BaseApi<Proto>, id?: string) {
 		const selected = (ModuleFE_BrowserHistoryV2.get('selected') ?? {}) as { [dbKey: string]: UniqueId };
 
 		const selectedId = id;
@@ -170,7 +170,7 @@ export abstract class Page_ItemsEditorV3<Proto extends DBProto<any>,
 	}
 
 	private onSelected(item?: Partial<Proto['uiType']>) {
-		Page_ItemsEditorV3.refactoring_setSelected(this.props.module, item?._id);
+		Page_ItemsEditor.refactoring_setSelected(this.props.module, item?._id);
 		// const selected = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']);
 		//
 		// const selectedId = item?._id;

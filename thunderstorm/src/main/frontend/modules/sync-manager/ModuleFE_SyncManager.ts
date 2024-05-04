@@ -57,7 +57,7 @@ import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
 import {ApiDefCaller, BodyApi, HttpMethod} from '../../../shared/types';
-import {ModuleFE_v3_BaseApi} from '../db-api-gen/ModuleFE_v3_BaseApi';
+import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ModuleSyncType} from '../db-api-gen/types';
 
 
@@ -122,7 +122,7 @@ export class ModuleFE_SyncManager_Class
 
 	// ######################### Smart Sync #########################
 
-	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_v3_BaseApi<any>>((module) => module.syncType === ModuleSyncType.APISync);
+	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module) => module.syncType === ModuleSyncType.APISync);
 
 	private getLocalSyncData = (): SyncDbData[] => {
 		const existingDBModules = this.getModulesToSync();
@@ -209,7 +209,7 @@ export class ModuleFE_SyncManager_Class
 	// ######################### Sync operations #########################
 
 	private performSync = (data: NoNeedToSyncModule | DeltaSyncModule | FullSyncModule) => {
-		const rtModule = RuntimeModules().find<ModuleFE_v3_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
+		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
 		if (!rtModule)
 			throw new MUSTNeverHappenException(`Trying to queue a module to sync without an existing rtModule: ${data.dbKey}`);
 
@@ -230,7 +230,7 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private performNoSync = async (data: NoNeedToSyncModule) => {
-		const rtModule = RuntimeModules().find<ModuleFE_v3_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
+		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
 		if (!rtModule)
 			throw new MUSTNeverHappenException(`Trying perform NoSync without an existing rtModule: ${data.dbKey}`);
 
@@ -256,7 +256,7 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private performDeltaSync = async (data: DeltaSyncModule) => {
-		const rtModule = RuntimeModules().find<ModuleFE_v3_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
+		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
 		if (!rtModule)
 			throw new MUSTNeverHappenException(`Trying perform DeltaSync without an existing rtModule: ${data.dbKey}`);
 
@@ -283,7 +283,7 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private performFullSync = async (data: FullSyncModule) => {
-		const rtModule = RuntimeModules().find<ModuleFE_v3_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
+		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
 		if (!rtModule)
 			throw new MUSTNeverHappenException(`Trying perform DeltaSync without an existing rtModule: ${data.dbKey}`);
 

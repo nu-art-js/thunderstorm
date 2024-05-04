@@ -1,7 +1,7 @@
 import {_keys, arrayToMap, mergeObject, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {Readable, Writable} from 'stream';
 import {DataStatus} from '../../core/db-api-gen/consts';
-import {ModuleFE_v3_BaseDB} from '../db-api-gen/ModuleFE_v3_BaseDB';
+import {ModuleFE_BaseDB} from '../db-api-gen/ModuleFE_BaseDB';
 import {Parser, ParseResult, ParseStepResult} from 'papaparse';
 import {ModuleFE_CSVParser, PapaparseConfig} from '../ModuleFE_CSVParser';
 import {ModuleSyncType} from '../db-api-gen/types';
@@ -17,7 +17,7 @@ export class ModuleFE_SyncManager_CSV_Class
 		super();
 	}
 
-	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_v3_BaseDB<any>>((module) => module.syncType === ModuleSyncType.CSVSync);
+	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseDB<any>>((module) => module.syncType === ModuleSyncType.CSVSync);
 
 	syncFromCSVUrl = async (url: string, config?: PapaparseConfig) => {
 		const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.dbKey);
@@ -98,19 +98,19 @@ export const ModuleFE_SyncManager_CSV = new ModuleFE_SyncManager_CSV_Class();
 class ModuleIDBWriter
 	extends Writable {
 
-	readonly modules: ModuleFE_v3_BaseDB<any>[];
-	readonly moduleNameMap: TypedMap<ModuleFE_v3_BaseDB<any>>;
+	readonly modules: ModuleFE_BaseDB<any>[];
+	readonly moduleNameMap: TypedMap<ModuleFE_BaseDB<any>>;
 	readonly paginationSize: number;
 	private itemsToUpsert: any[] = [];
 
-	constructor(modules: ModuleFE_v3_BaseDB<any>[], paginationSize: number = 1000) {
+	constructor(modules: ModuleFE_BaseDB<any>[], paginationSize: number = 1000) {
 		super();
 		this.modules = modules;
 		this.paginationSize = paginationSize;
 		this.moduleNameMap = modules.reduce((acc, curr) => {
 			acc[curr.dbDef.backend.name as string] = curr;
 			return acc;
-		}, {} as TypedMap<ModuleFE_v3_BaseDB<any>>);
+		}, {} as TypedMap<ModuleFE_BaseDB<any>>);
 	}
 
 	async _write(chunk: any, encoding: BufferEncoding, callback: (error?: (Error | null)) => void) {

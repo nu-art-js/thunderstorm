@@ -35,7 +35,7 @@ import {
 } from '@nu-art/ts-common';
 import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
-import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDBV3, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDB, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './ModuleBE_BucketListener';
@@ -96,7 +96,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 };
 
 export class ModuleBE_AssetsDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_Assets, MyConfig>
+	extends ModuleBE_BaseDB<DBProto_Assets, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {

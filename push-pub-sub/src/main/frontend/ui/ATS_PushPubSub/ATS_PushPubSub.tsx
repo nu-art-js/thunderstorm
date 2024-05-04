@@ -27,7 +27,7 @@ import {PushMessage_Payload} from '../../../shared';
 import './ATS_PushPubSub.scss';
 import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 import {ModuleFE_PushSubscription} from '../../modules/ModuleFE_PushSubscription';
-import {ApiCallerEventTypeV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {DBProto_PushSubscription} from '../../../shared/push-subscription';
 
 
@@ -78,7 +78,7 @@ export class ATS_PushPubSub
 
 	// ######################## Lifecycle ########################
 
-	__onSubscriptionUpdated(...params: ApiCallerEventTypeV3<DBProto_PushSubscription>): void {
+	__onSubscriptionUpdated(...params: ApiCallerEventType<DBProto_PushSubscription>): void {
 		this.forceUpdate();
 	}
 

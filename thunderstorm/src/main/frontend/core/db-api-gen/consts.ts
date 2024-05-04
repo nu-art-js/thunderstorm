@@ -1,5 +1,5 @@
 import {ThunderDispatcher} from '../thunder-dispatcher';
-import {OnSyncStatusChangedListener} from './v3_types';
+import {OnSyncStatusChangedListener} from './types';
 
 
 export enum SyncStatus {

@@ -16,8 +16,8 @@ import {TS_BusyButton} from '../../components/TS_BusyButton';
 import {TS_DropDown} from '../../components/TS_Dropdown';
 import {_className} from '../../utils/tools';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
-import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
-import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 
 
 const Environments = ['prod', 'staging', 'dev', 'local'] as const;
@@ -157,7 +157,7 @@ export class ATS_SyncEnvironment
 
 	private getCollectionModuleList(): string[] {
 		//the moduleKey in ModuleBE_BaseDB's config is taken from collection's name.
-		return (RuntimeModules().filter<ModuleFE_v3_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbKey)).map(_module => _module.dbDef.dbKey).sort();
+		return (RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbKey)).map(_module => _module.dbDef.dbKey).sort();
 	}
 
 	private allModulesSelected = () => {
@@ -333,7 +333,7 @@ export class ATS_SyncEnvironment
 		if ((this.state.searchFilter && this.state.searchFilter.length) && !moduleName.includes(this.state.searchFilter))
 			return;
 
-		const relevantLocalModules: ModuleFE_v3_BaseDB<any>[] = RuntimeModules().filter((module: ModuleFE_v3_BaseApi<any>) => {
+		const relevantLocalModules: ModuleFE_BaseDB<any>[] = RuntimeModules().filter((module: ModuleFE_BaseApi<any>) => {
 			return (!!module.getCollectionName && module.getCollectionName() == collectionMetadata?.dbKey);
 		});
 

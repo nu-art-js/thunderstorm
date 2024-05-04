@@ -5,7 +5,7 @@ import {UniqueId} from '@nu-art/ts-common';
 import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
 import {MultiSelect} from '../../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ComponentProtoDef, Page_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
+import {ComponentProtoDef, Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
 import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
 import './permission-api-editor.scss';
 import {TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
@@ -62,7 +62,7 @@ class Controller_ApiEditor
 }
 
 export class PermissionAPIEditor
-	extends Page_ItemsEditorV3<DBProto_PermissionAPI, ComponentProtoDef, Props> {
+	extends Page_ItemsEditor<DBProto_PermissionAPI, ComponentProtoDef, Props> {
 
 	//######################### Static #########################
 
