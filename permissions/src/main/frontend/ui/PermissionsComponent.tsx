@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AwaitModules, ComponentSync, ModuleFE_AppConfig, ModuleFE_v3_BaseDB} from '@nu-art/thunderstorm/frontend';
+import {AwaitModules, ComponentSync, ModuleFE_AppConfig, ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {AccessLevel} from '../modules/ModuleFE_PermissionsAssert';
 
@@ -61,7 +61,7 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 	};
 
 	render() {
-		return <AwaitModules modules={[ModuleFE_AppConfig] as ModuleFE_v3_BaseDB<any>[]}>
+		return <AwaitModules modules={[ModuleFE_AppConfig] as ModuleFE_BaseDB<any>[]}>
 			{this.renderImpl()}
 		</AwaitModules>;
 	}

@@ -27,7 +27,7 @@ import {
 	ValidationException,
 	WhoCallThisException
 } from '@nu-art/ts-common';
-import {ModuleFE_v3_BaseApi} from '../modules/db-api-gen/ModuleFE_v3_BaseApi';
+import {ModuleFE_BaseApi} from '../modules/db-api-gen/ModuleFE_BaseApi';
 
 
 export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, ItemType, Prop extends AssetValueType<EnclosingItem, K, ItemType> = AssetValueType<EnclosingItem, K, ItemType>> = {
@@ -376,7 +376,7 @@ export class EditableItem<T>
 	 *
 	 * @returns The new EditableItem.
 	 */
-	editRefV3<Proto extends DBProto<any>, K extends SubsetKeys<keyof T, T, string>>(key: K, module: ModuleFE_v3_BaseApi<Proto>, initialValue: Partial<Proto['uiType']>) {
+	editRefV3<Proto extends DBProto<any>, K extends SubsetKeys<keyof T, T, string>>(key: K, module: ModuleFE_BaseApi<Proto>, initialValue: Partial<Proto['uiType']>) {
 		const itemId = this.item[key] as string;
 		let editingItem;
 		if (!exists(itemId))
@@ -438,7 +438,7 @@ export class EditableItem<T>
 export class EditableDBItemV3<Proto extends DBProto<any>>
 	extends EditableItem<Proto['uiType']> {
 
-	private readonly module: ModuleFE_v3_BaseApi<Proto>;
+	private readonly module: ModuleFE_BaseApi<Proto>;
 	// @ts-ignore
 	private readonly onError?: (err: Error) => any | Promise<any>;
 	// @ts-ignore
@@ -454,7 +454,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @param onError The function to be called when an error occurs.
 	 * @param debounceInstance Debounce instance from previous editable item
 	 */
-	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onError?: (err: Error) => any | Promise<any>, debounceInstance?: AwaitedDebounceInstance<any, any>) {
+	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_BaseApi<Proto>, onError?: (err: Error) => any | Promise<any>, debounceInstance?: AwaitedDebounceInstance<any, any>) {
 		super(item, EditableDBItemV3.save(module, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
 
 		this.module = module;
@@ -465,7 +465,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		this.preformAutoSave.bind(this);
 	}
 
-	private static save<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, onError?: (err: Error) => any | Promise<any>) {
+	private static save<Proto extends DBProto<any>>(module: ModuleFE_BaseApi<Proto>, onError?: (err: Error) => any | Promise<any>) {
 		return async (_item: Proto['uiType']) => {
 			try {
 				return await module.v1.upsert(_item).executeSync();

@@ -43,8 +43,8 @@ export * from './core/typed-api';
 // from db-api-generator
 export * from './core/db-def';
 export * from './modules/archiving/ModuleBE_Archiving';
-export * from './modules/sync-env/ModuleBE_v2_SyncEnv';
+export * from './modules/sync-env/ModuleBE_SyncEnv';
 export * from './modules/sync-manager/ModuleBE_SyncManager';
-export * from './modules/db-api-gen/ModuleBE_BaseDBV3';
-export * from './modules/db-api-gen/ModuleBE_BaseApiV3';
+export * from './modules/db-api-gen/ModuleBE_BaseDB';
+export * from './modules/db-api-gen/ModuleBE_BaseApi';
 export * from './_entity';

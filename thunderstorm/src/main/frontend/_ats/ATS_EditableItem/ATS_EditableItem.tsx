@@ -2,7 +2,7 @@ import * as React from 'react';
 import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';
 import {ComponentSync} from '../../core/ComponentSync';
 import {DBProto_EditableTest, ModuleFE_EditableTest, UI_EditableTest} from '../../_entity';
-import {TS_EditableItemComponentV3} from '../../components/TS_EditableItemComponent/TS_EditableItemComponent';
+import {TS_EditableItemComponentProto} from '../../components/TS_EditableItemComponent/TS_EditableItemComponent';
 import {LL_V_L} from '../../components/Layouts';
 import {TS_PropRenderer} from '../../components/TS_PropRenderer';
 import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem';
@@ -56,7 +56,7 @@ const Dropdown_Zevel = TS_DropDown.prepareEditable({
 });
 
 class EditableItemTestEditor
-	extends TS_EditableItemComponentV3<DBProto_EditableTest> {
+	extends TS_EditableItemComponentProto<DBProto_EditableTest> {
 	render() {
 		return <LL_V_L>
 			<TS_PropRenderer.Vertical label={'Prop A'}>

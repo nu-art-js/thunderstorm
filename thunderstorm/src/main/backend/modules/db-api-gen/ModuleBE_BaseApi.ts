@@ -20,7 +20,7 @@
  */
 
 import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
-import {ModuleBE_BaseDBV3} from './ModuleBE_BaseDBV3';
+import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {DBApiDefGeneratorIDBV3} from '../../../shared';
 import {addRoutes} from '../ModuleBE_APIs';
@@ -32,13 +32,13 @@ import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
+export class ModuleBE_BaseApi_Class<Proto extends DBProto<any>>
 	extends Module {
 
-	readonly dbModule: ModuleBE_BaseDBV3<Proto>;
+	readonly dbModule: ModuleBE_BaseDB<Proto>;
 	readonly apiDef;
 
-	constructor(dbModule: ModuleBE_BaseDBV3<Proto, any>, version?: string) {
+	constructor(dbModule: ModuleBE_BaseDB<Proto, any>, version?: string) {
 		super(`GenApiV3(${dbModule.getName()})`);
 		this.dbModule = dbModule;
 		this.apiDef = DBApiDefGeneratorIDBV3<Proto>(this.dbModule.dbDef, version);
@@ -82,6 +82,6 @@ export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 	};
 }
 
-export const createApisForDBModuleV3 = <Proto extends DBProto<any>>(dbModule: ModuleBE_BaseDBV3<Proto>, version?: string) => {
-	return new ModuleBE_BaseApiV3_Class<Proto>(dbModule, version);
+export const createApisForDBModuleV3 = <Proto extends DBProto<any>>(dbModule: ModuleBE_BaseDB<Proto>, version?: string) => {
+	return new ModuleBE_BaseApi_Class<Proto>(dbModule, version);
 };

@@ -6,13 +6,13 @@ import {genericNotificationAction} from '../../components/TS_Notifications';
 import {LL_H_C} from '../../components/Layouts';
 import {TS_BusyButton} from '../../components/TS_BusyButton';
 import {ModuleFE_UpgradeCollection} from '../../modules/upgrade-collection/ModuleFE_UpgradeCollection';
-import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
-import {ModuleFE_v3_BaseDB} from '../../modules/db-api-gen/ModuleFE_v3_BaseDB';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {ComponentSync} from '../../core/ComponentSync';
 
 
 type State = {
-	upgradableModules: ModuleFE_v3_BaseApi<any, any>[];
+	upgradableModules: ModuleFE_BaseApi<any, any>[];
 };
 
 export class ATS_CollectionUpgrades
@@ -26,18 +26,18 @@ export class ATS_CollectionUpgrades
 	};
 
 	protected deriveStateFromProps(nextProps: {}, state: State) {
-		state.upgradableModules ??= sortArray(RuntimeModules().filter((module: ModuleFE_v3_BaseApi<any>) => {
+		state.upgradableModules ??= sortArray(RuntimeModules().filter((module: ModuleFE_BaseApi<any>) => {
 			return !!module.getCollectionName;
 		}), item => item.getCollectionName());
 
 		return state;
 	}
 
-	__onSyncStatusChanged(module: ModuleFE_v3_BaseDB<any, any>) {
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<any, any>) {
 		this.forceUpdate();
 	}
 
-	private upgradeCollection = async (collectionName: string, module: ModuleFE_v3_BaseApi<any, any>, e: React.MouseEvent) => {
+	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<any, any>, e: React.MouseEvent) => {
 		await genericNotificationAction(async () => {
 			await ModuleFE_UpgradeCollection.vv1.upgrade({
 				collectionsToUpgrade: [module.dbDef.dbKey],

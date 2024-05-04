@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDBV3, ServerApi,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB, ServerApi,} from '@nu-art/thunderstorm/backend';
 import {DB_PermissionAPI, DBDef_PermissionAPI, DBProto_PermissionAPI} from '../shared';
 import {dbObjectToId, filterInstances, PreDB, UniqueId} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend/ModuleBE_PermissionAccessLevelDB';
@@ -11,7 +11,7 @@ import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 type Config = DBApiConfigV3<DBProto_PermissionAPI> & {}
 
 export class ModuleBE_PermissionAPIDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_PermissionAPI, Config> {
+	extends ModuleBE_BaseDB<DBProto_PermissionAPI, Config> {
 
 	constructor() {
 		super(DBDef_PermissionAPI);

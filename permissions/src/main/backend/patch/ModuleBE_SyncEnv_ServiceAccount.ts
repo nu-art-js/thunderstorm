@@ -5,7 +5,7 @@ import {DefaultDef_ServiceAccount, RequiresServiceAccount, ServiceAccountCredent
 /**
  * this is a temporary class till the project dependency structure would be fixed
  */
-export class ModuleBE_v2_SyncEnv_ServiceAccount_Class
+export class ModuleBE_SyncEnv_ServiceAccount_Class
 	extends Module<ServiceAccountCredentials>
 	implements RequiresServiceAccount {
 
@@ -23,4 +23,4 @@ export class ModuleBE_v2_SyncEnv_ServiceAccount_Class
 	}
 }
 
-export const ModuleBE_v2_SyncEnv_ServiceAccount = new ModuleBE_v2_SyncEnv_ServiceAccount_Class();
+export const ModuleBE_SyncEnv_ServiceAccount = new ModuleBE_SyncEnv_ServiceAccount_Class();

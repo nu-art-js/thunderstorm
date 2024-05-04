@@ -5,7 +5,7 @@ import {Component_AccountEditor} from '../../account-editor/Component_AccountEdi
 import {DB_Account, DBProto_Account} from '../../../shared';
 import {generateUUID} from '@nu-art/ts-common';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account';
-import {ApiCallerEventTypeV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 type Props = {}
@@ -63,7 +63,7 @@ class Component_AccountList
 	extends ComponentSync<ListProps, ListState>
 	implements OnAccountsUpdated {
 
-	__onAccountsUpdated(...params: ApiCallerEventTypeV3<DBProto_Account>) {
+	__onAccountsUpdated(...params: ApiCallerEventType<DBProto_Account>) {
 		this.reDeriveState();
 	}
 

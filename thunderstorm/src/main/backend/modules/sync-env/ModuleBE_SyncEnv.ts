@@ -14,23 +14,23 @@ import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {
 	ApiDef,
-	ApiDef_SyncEnvV2,
+	ApiDef_SyncEnv,
 	ApiModule,
 	DBModuleType,
 	HttpMethod,
 	QueryApi,
 	Request_FetchFirebaseBackup,
-	Request_FetchFromEnvV2,
+	Request_FetchFromEnv,
 	Request_GetMetadata,
 	Response_BackupDocs,
 	Response_FetchBackupMetadata
 } from '../../../shared';
 import {AxiosHttpModule} from '../http/AxiosHttpModule';
 import {MemKey_HttpRequest} from '../server/consts';
-import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
+import {ModuleBE_BaseApi_Class} from '../db-api-gen/ModuleBE_BaseApi';
 import {Storm} from '../../core/Storm';
 import {ModuleBE_BackupDocDB} from '../../../_entity/backup-doc/backend';
-import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
+import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB';
 import {Transform, Writable} from 'stream';
 import {firestore} from 'firebase-admin';
 
@@ -50,7 +50,7 @@ export interface OnSyncEnvCompleted {
 const dispatch_OnSyncEnvCompleted = new Dispatcher<OnSyncEnvCompleted, '__onSyncEnvCompleted'>(
 	'__onSyncEnvCompleted');
 
-class ModuleBE_v2_SyncEnv_Class
+class ModuleBE_SyncEnv_Class
 	extends Module<Config> {
 
 	constructor() {
@@ -61,11 +61,11 @@ class ModuleBE_v2_SyncEnv_Class
 	init() {
 		super.init();
 		addRoutes([
-			createBodyServerApi(ApiDef_SyncEnvV2.vv1.syncToEnv, this.pushToEnv),
-			createBodyServerApi(ApiDef_SyncEnvV2.vv1.syncFromEnvBackup, this.syncFromEnvBackup),
-			createQueryServerApi(ApiDef_SyncEnvV2.vv1.createBackup, this.createBackup),
-			createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata, this.fetchBackupMetadata),
-			createQueryServerApi(ApiDef_SyncEnvV2.vv1.syncFirebaseFromBackup, this.syncFirebaseFromBackup),
+			createBodyServerApi(ApiDef_SyncEnv.vv1.syncToEnv, this.pushToEnv),
+			createBodyServerApi(ApiDef_SyncEnv.vv1.syncFromEnvBackup, this.syncFromEnvBackup),
+			createQueryServerApi(ApiDef_SyncEnv.vv1.createBackup, this.createBackup),
+			createQueryServerApi(ApiDef_SyncEnv.vv1.fetchBackupMetadata, this.fetchBackupMetadata),
+			createQueryServerApi(ApiDef_SyncEnv.vv1.syncFirebaseFromBackup, this.syncFirebaseFromBackup),
 		]);
 	}
 
@@ -81,7 +81,7 @@ class ModuleBE_v2_SyncEnv_Class
 		return {
 			...backupInfo.metadata,
 			remoteCollectionNames: (RuntimeModules()
-				.filter<ModuleBE_BaseDBV3<any>>((module: DBModuleType) => !!module.dbDef?.dbKey)).map(_module => _module.dbDef.dbKey)
+				.filter<ModuleBE_BaseDB<any>>((module: DBModuleType) => !!module.dbDef?.dbKey)).map(_module => _module.dbDef.dbKey)
 		};
 	};
 
@@ -98,7 +98,7 @@ class ModuleBE_v2_SyncEnv_Class
 		const url = remoteUrls[body.env];
 		const sessionId = MemKey_HttpRequest.get().headers['x-session-id'];
 
-		const module = RuntimeModules().find<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbKey === body.moduleName);
+		const module = RuntimeModules().find<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbKey === body.moduleName);
 
 		const upsertAll = module.apiDef.v1.upsertAll;
 		const response: Response_BackupDocs = await AxiosHttpModule
@@ -115,7 +115,7 @@ class ModuleBE_v2_SyncEnv_Class
 		return ModuleBE_BackupDocDB.initiateBackup(true);
 	};
 
-	syncFromEnvBackup = async (body: Request_FetchFromEnvV2) => {
+	syncFromEnvBackup = async (body: Request_FetchFromEnv) => {
 		if (Storm.getInstance().getEnvironment().toLowerCase() === 'prod' && body.env.toLowerCase() !== 'prod') {
 			throw new MUSTNeverHappenException('MUST NEVER SYNC ENV THAT IS NOT PROD TO PROD!!');
 		}
@@ -191,7 +191,7 @@ class ModuleBE_v2_SyncEnv_Class
 	};
 }
 
-export const ModuleBE_v2_SyncEnv = new ModuleBE_v2_SyncEnv_Class();
+export const ModuleBE_SyncEnv = new ModuleBE_SyncEnv_Class();
 
 class SyncCollectionFilter
 	extends Transform {

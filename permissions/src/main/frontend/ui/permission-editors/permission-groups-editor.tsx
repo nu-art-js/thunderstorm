@@ -13,7 +13,7 @@ import {
 import {Component_BasePermissionItemEditor} from './editor-base';
 import {Input_Text_Blur} from './components';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
-import {Page_ItemsEditorV3} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditorV3';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
 import {
 	Props_EditableItemControllerProto,
@@ -87,7 +87,7 @@ class Controller_EditGroup
 }
 
 export class PermissionGroupsEditor
-	extends Page_ItemsEditorV3<DBProto_PermissionGroup> {
+	extends Page_ItemsEditor<DBProto_PermissionGroup> {
 
 	//######################### Static #########################
 

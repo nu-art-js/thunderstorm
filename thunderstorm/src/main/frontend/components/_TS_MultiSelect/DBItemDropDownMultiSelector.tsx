@@ -1,7 +1,7 @@
 import {DBProto, UniqueId} from '@nu-art/ts-common';
 import * as React from 'react';
 import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2} from '../TS_MultiSelect';
-import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ComponentSync} from '../../core/ComponentSync';
 
 
@@ -17,7 +17,7 @@ type Props<Proto extends DBProto<any>> = {
 };
 
 export type MultiSelectDropDownPropsV3<Proto extends DBProto<any>> = {
-	module: ModuleFE_v3_BaseApi<Proto>;
+	module: ModuleFE_BaseApi<Proto>;
 	itemRenderer: (item?: Readonly<Proto['dbType']>, onDelete?: () => Promise<void>) => JSX.Element
 	uiSelector: UISelector<Proto>
 }

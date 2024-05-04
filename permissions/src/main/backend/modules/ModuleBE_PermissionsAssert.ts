@@ -36,8 +36,8 @@ import {
 import {
 	addRoutes,
 	createBodyServerApi,
-	ModuleBE_BaseApiV3_Class,
-	ModuleBE_BaseDBV3,
+	ModuleBE_BaseApi_Class,
+	ModuleBE_BaseDB,
 	ModuleBE_SyncManager,
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm/backend';
@@ -139,13 +139,13 @@ export class ModuleBE_PermissionsAssert_Class
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
-		ModuleBE_SyncManager.setModuleFilter(async (dbModules: ( ModuleBE_BaseDBV3<any>)[]) => {
+		ModuleBE_SyncManager.setModuleFilter(async (dbModules: ( ModuleBE_BaseDB<any>)[]) => {
 			// return dbModules;
 			//Filter out any module we don't have permission to sync
 			const userPermissions = MemKey_UserPermissions.get();
 
 			const mapDbNameToApiModules = arrayToMap(RuntimeModules()
-				.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule.dbDef.dbKey);
+				.filter<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule.dbDef.dbKey);
 
 			const paths = dbModules.map(module => {
 				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbKey];
