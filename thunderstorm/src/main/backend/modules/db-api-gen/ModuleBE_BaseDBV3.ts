@@ -35,6 +35,7 @@ import {
 	filterDuplicates,
 	filterInstances,
 	flatArray,
+	getDotNotatedValue,
 	Module,
 	TypedMap,
 	UniqueId
@@ -172,7 +173,11 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 				if (dependencies[key].dbKey !== toDeleteDbName)
 					return;
 
-				const targetIds = asArray<string>(conflictingDbItem[key]);
+				//todo split path if necessary and go into each prop properly
+				//In case the key in the dependency is dot-notated, like _refs._valueIds inside DB_Expression, get the dot notated value
+				const dotNotationValue = getDotNotatedValue(key, conflictingDbItem);
+
+				const targetIds = asArray<string>(dotNotationValue);
 				itemIdsToDelete.forEach(idToDelete => {
 					//Check if the ids in conflictingDbItem's field contain any of the target ids
 					if (!targetIds.includes(idToDelete))
