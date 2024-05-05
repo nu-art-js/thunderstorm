@@ -1,0 +1,2 @@
+packageName=build-and-install
+ModuleName=build-and-install
