@@ -145,28 +145,26 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 		if (!conflictPromises.length)
 			return result;
 
-		const conflictingObjects = flatArray(await Promise.all(conflictPromises));
-
 		// Update result with the conflicts
-		await this.checkConflicts(conflictingObjects, transaction, dependencies, toDeleteDbName, itemIdsToDelete, result);
+		this.checkConflicts(flatArray(await Promise.all(conflictPromises)), transaction, dependencies, toDeleteDbName, itemIdsToDelete, result);
 		return result;
 	}
 
-	protected async checkConflicts<T extends DBProto<any>>(conflictItems: Proto['dbType'][], transaction: FirebaseFirestore.Transaction | undefined, dependencies: Proto['dependencies'], toDeleteDbName: T['dbKey'], itemIdsToDelete: string[], result: DB_EntityDependencyV2) {
+	protected checkConflicts<T extends DBProto<any>>(conflictItems: Proto['dbType'][], transaction: FirebaseFirestore.Transaction | undefined, dependencies: Proto['dependencies'], toDeleteDbName: T['dbKey'], itemIdsToDelete: string[], result: DB_EntityDependencyV2) {
 		//All gathered objects that contain the targets' ids
-		let conflictingObjects = filterDuplicates(conflictItems, item => item._id);
+		conflictItems = filterDuplicates(conflictItems, item => item._id);
 		//The MemKey_DeletedDocs object associated with this transaction
-		//Use it to filter out conflictingObjects that were 'deleted earlier' in the transaction
+		//Use it to filter out conflictItems that were 'deleted earlier' in the transaction
 		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
 		if (ignoredInThisTransaction) {
 			//The key associated with this collection
-			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.entityName];
+			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.dbKey];
 			//Filter out all ids of items which were already deleted in this transaction
-			conflictingObjects = conflictingObjects.filter(object => !ignoredForThisCollection?.has(object._id));
+			conflictItems = conflictItems.filter(object => !ignoredForThisCollection?.has(object._id));
 		}
 
-		//Using a map to over all conflictingObjects, for ease-of-access and avoiding duplications
-		const mapOfIssues = conflictingObjects.reduce<TypedMap<Conflict>>((issuesMap, conflictingDbItem: Proto['dbType']) => {
+		//Using a map to over all conflictItems, for ease-of-access and avoiding duplications
+		const mapOfIssues = conflictItems.reduce<TypedMap<Conflict>>((issuesMap, conflictingDbItem: Proto['dbType']) => {
 			//dependencyKeys are the field names that contain ids, like __groupIds.
 			const dependencyKeys: string[] = _keys(dependencies);
 			dependencyKeys.forEach(key => {
