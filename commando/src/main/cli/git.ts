@@ -41,95 +41,96 @@ export class Cli_Git
 		status: this.git_status,
 	};
 
-	private git_clone(url: string, options?: GitCloneParams) {
+	private git_clone(url: string, options?: GitCloneParams): Cli_Git {
 		const branch = `${options?.branch ? ` -b ${options?.branch}` : ''}`;
 		const recursive = `${options?.recursive ? ` --recursive` : ''}`;
-		const outputFolder = `${options.outputFolder ? ` ${options.outputFolder}` : ''}`;
+		const outputFolder = `${options?.outputFolder ? ` ${options.outputFolder}` : ''}`;
 		this.cli.append(`git clone${recursive}${branch} ${url}${outputFolder}`);
+		return this;
 	}
 
-	private git_checkout(branch: string) {
+	private git_checkout(branch: string): Cli_Git {
 		this.cli.append(`git checkout ${branch}`);
 		return this;
 	}
 
-	private git_createTag(tagName: string) {
+	private git_createTag(tagName: string): Cli_Git {
 		this.cli.append(`git tag -f ${tagName}`);
 		return this;
 	}
 
-	private git_gitCommit(commitMessage: string) {
+	private git_gitCommit(commitMessage: string): Cli_Git {
 		this.cli.append(`git commit -m "${commitMessage}"`);
 		return this;
 
 	}
 
-	private git_add(file: string) {
+	private git_add(file: string): Cli_Git {
 		this.cli.append(`git add "${file}"`);
 		return this;
 
 	}
 
-	private git_addAll() {
+	private git_addAll(): Cli_Git {
 		this.cli.append(`git add .`);
 		return this;
 
 	}
 
-	private git_addAndCommit(commitMessage: string) {
+	private git_addAndCommit(commitMessage: string): Cli_Git {
 		this.cli.append(`git commit -am "${commitMessage}"`);
 		return this;
 
 	}
 
-	private git_push(options?: GitPushParams) {
-		this.cli.append(`git push ${options.remote} ${options.branch}`);
+	private git_push(options?: GitPushParams): Cli_Git {
+		this.cli.append(`git push ${options?.remote} ${options?.branch}`);
 		return this;
 	}
 
-	private git_pushTags() {
+	private git_pushTags(): Cli_Git {
 		this.cli.append('git push --tags --force');
 		return this;
 	}
 
-	private git_fetch() {
+	private git_fetch(): Cli_Git {
 		this.cli.append('git fetch');
 		return this;
 
 	}
 
-	private git_resetHard(tag = '') {
+	private git_resetHard(tag = ''): Cli_Git {
 		this.cli.append('git reset --hard ${tag}');
 		return this;
 	}
 
-	private git_getCurrentBranch() {
+	private git_getCurrentBranch(): Cli_Git {
 		this.cli.append('git status | grep "On branch" | sed -E "s');
 		return this;
 	}
 
-	private git_pull(params) {
+	private git_pull(params: string): Cli_Git {
 		this.cli.append('git pull ${params}');
 		return this;
 	}
 
-	private git_merge(mergeFrom) {
+	private git_merge(mergeFrom: string): Cli_Git {
 		this.cli.append(`git merge ${mergeFrom}`);
 		return this;
 	}
 
-	private git_createBranch(branch) {
+	private git_createBranch(branch: string): Cli_Git {
 		this.cli.append(`git checkout - b ${branch}`);
 		this.cli.append(`git push-- set -upstream origin ${branch}`);
 		return this;
 	}
 
-	private git_gsui(modules = '') {
+	private git_gsui(modules = ''): Cli_Git {
 		this.cli.append('git submodule update --recursive --init ${modules}');
 		return this;
 	}
 
-	private git_status() {
+	private git_status(): Cli_Git {
 		this.cli.append('git status');
 		return this;
 	}
