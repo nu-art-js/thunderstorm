@@ -4,14 +4,14 @@ import {asArray, BadImplementationException, DB_Object, DBProto, deepClone, exis
 import {EditableDBItemV3} from '../../utils/EditableItem';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
-import {ComponentProtoDef} from '../Page_ItemsEditor';
+import {ProtoDef_Selection} from '../Page_ItemsEditor';
 import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
 import {ProtoComponent} from '../../core/proto-component';
 import {InferProps, InferState} from '../../utils/types';
 
 
 export type Props_EditableItemControllerProto<Proto extends DBProto<any>, EditorProps extends {} = {}> =
-	& ComponentProtoDef['props']
+	& ProtoDef_Selection['props']
 	& {
 	item?: Readonly<Partial<Proto['uiType']>> | string,
 	module: ModuleFE_BaseApi<Proto>,
@@ -33,7 +33,7 @@ export type Props_EditableItemControllerProto<Proto extends DBProto<any>, Editor
 export class TS_EditableItemControllerProto<Proto extends DBProto<any>,
 	EditorProps extends {} = {},
 	Props extends Props_EditableItemControllerProto<Proto, EditorProps> = Props_EditableItemControllerProto<Proto, EditorProps>>
-	extends ProtoComponent<ComponentProtoDef, Props, EditableRef<Proto['uiType']>> {
+	extends ProtoComponent<ProtoDef_Selection, Props, EditableRef<Proto['uiType']>> {
 
 	static DefaultAutoSave = (item?: Partial<DB_Object>) => {
 		return !!item?._id;
