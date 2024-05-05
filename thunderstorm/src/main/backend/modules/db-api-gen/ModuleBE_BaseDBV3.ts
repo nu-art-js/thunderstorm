@@ -32,6 +32,7 @@ import {
 	DBDef_V3,
 	dbObjectToId,
 	DBProto,
+	DotNotation,
 	filterDuplicates,
 	filterInstances,
 	flatArray,
@@ -175,7 +176,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType =
 
 				//todo split path if necessary and go into each prop properly
 				//In case the key in the dependency is dot-notated, like _refs._valueIds inside DB_Expression, get the dot notated value
-				const dotNotationValue = getDotNotatedValue(key, conflictingDbItem);
+				const dotNotationValue = getDotNotatedValue(key as DotNotation<Proto['dbType']>, conflictingDbItem);
 
 				const targetIds = asArray<string>(dotNotationValue);
 				itemIdsToDelete.forEach(idToDelete => {
