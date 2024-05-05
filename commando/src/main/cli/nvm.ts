@@ -1,19 +1,25 @@
 import {Cli_Programming} from './programming';
 import {Cli_Basic} from './basic';
-import {CliWrapper, Commando} from '../core/cli';
+import {CliWrapper, Commando, CommandoInteractive} from '../core/cli';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import * as path from 'path';
-import {filterDuplicates, removeAnsiCodes} from '../../test/bai/core/tools';
-import {Constructor} from '../../test/bai/core/types';
+import {removeAnsiCodes} from '../core/tools';
+import {Constructor, filterDuplicates, Logger, LogLevel} from '@nu-art/ts-common';
 
 
 const CONST__FILE_NVMRC = '.nvmrc';
 
-export class Cli_NVM {
+export class Cli_NVM
+	extends Logger {
 
 	private _expectedVersion = '0.35.3';
 	private _homeEnvVar = '$NVM_DIR';
+
+	constructor() {
+		super();
+		this.setMinLevel(LogLevel.Verbose);
+	}
 
 	get homeEnvVar(): string {
 		return this._homeEnvVar;
@@ -76,10 +82,12 @@ export class Cli_NVM {
 	installRequiredVersionIfNeeded = async () => {
 		const requiredVersion = await this.getRequiredNode_Version();
 		const installedVersions = await this.getInstalledNode_Versions();
+		this.logDebug('Found versions:', installedVersions);
 		if (installedVersions.includes(requiredVersion))
-			return;
+			return false;
 
-		await this.installVersion();
+		await this.installVersion(requiredVersion);
+		return true;
 	};
 
 	getInstalledNode_Versions = async () => {
@@ -106,7 +114,7 @@ export class Cli_NVM {
 	}
 
 	uninstall = async () => {
-		console.log('Uninstalling PNPM');
+		this.logDebug('Uninstalling PNPM');
 		const absolutePathToNVM_Home = process.env[this._homeEnvVar];
 		if (!absolutePathToNVM_Home)
 			return;
@@ -114,18 +122,19 @@ export class Cli_NVM {
 		fs.rmSync(absolutePathToNVM_Home, {recursive: true, force: true});
 	};
 
-	private installVersion = async () => {
-		return this.createCommando().append(`nvm install ${await this.getRequiredNode_Version()}`).execute();
+	private installVersion = async (requiredVersion?: string) => {
+		requiredVersion ??= await this.getRequiredNode_Version();
+		this.logDebug(`Installing version: ${requiredVersion}`);
+		return this.createCommando().append(`nvm install ${requiredVersion}`).execute();
 	};
 
-	// createInteractiveCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
-	// 	return this.createCommando(...plugins)
-	// 		.interactive()
-	// 		.append('export NVM_DIR="$HOME/.nvm"')
-	// 		.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
-	// 		.append('[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
-	// 		.append('nvm use');
-	// }
+	createInteractiveCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
+		return CommandoInteractive.create(...plugins).debug()
+			.append('export NVM_DIR="$HOME/.nvm"')
+			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
+			.append('[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
+			.append('nvm use');
+	}
 
 	createCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
 		return Commando.create(...plugins)
