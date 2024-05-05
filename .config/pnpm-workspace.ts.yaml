@@ -2,6 +2,8 @@ packages:
   - ts-common
   - ts-styles
   - neural
+  - commando
+  - build-and-install
   - google-services
   - firebase
   - thunderstorm
