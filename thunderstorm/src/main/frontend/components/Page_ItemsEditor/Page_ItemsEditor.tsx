@@ -47,16 +47,16 @@ export type Props_ItemsEditor<Proto extends DBProto<any>> = {
 /**
  * Manages a list of items on the left with a selected item, and an editor on the right
  */
-export type ComponentProtoDef = ProtoComponentDef<'selected', {
+export type ProtoDef_Selection = ProtoComponentDef<'selected', {
 	selected: { [dbKey: string]: UniqueId }
 }>
 
 export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
-	CProto extends SuperProto<ComponentProtoDef, ProtoComponentDef<string, any>> = ComponentProtoDef,
-	P = {}, S = {}, >
+	CProto extends SuperProto<ProtoDef_Selection, ProtoComponentDef<string, any>> = ProtoDef_Selection,
+	P = {}, S = {}>
 	extends ProtoComponent<CProto, Props_ItemsEditor<Proto> & P, State_ItemsEditor<Proto> & S> {
 
-	static _defaultProps: ComponentProtoDef['props'] = {
+	static _defaultProps: ProtoDef_Selection['props'] = {
 		keys: ['selected']
 	};
 
