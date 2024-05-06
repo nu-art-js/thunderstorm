@@ -305,7 +305,7 @@ export class EditableItem<T>
 	 *
 	 * @returns The promise returned by the saveAction function.
 	 */
-	async save(consumeError = false) {
+	async save(consumeError = true) {
 		this.logInfo(`Saving`);
 
 		// Save the current item
@@ -486,7 +486,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		return this;
 	}
 
-	async save(consumeError = false): Promise<Proto['dbType']> {
+	async save(consumeError = true): Promise<Proto['dbType']> {
 		try {
 			return await super.save(consumeError);
 		} catch (e: any) {

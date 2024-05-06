@@ -27,7 +27,7 @@ const Failed_Action_Default_Label = 'Action Failed';
  * @param additionalData !Optional! any additional data the notification/toast might need
  * @param throwBackError !Optional! if true, will throw error back outside the action
  */
-export async function performAction(action: () => Promise<any>, feedbackOptions: FeedbackOptions, additionalData?: any, throwBackError: boolean = false) {
+export async function performAction(action: () => Promise<any>, feedbackOptions: FeedbackOptions, additionalData?: any, throwBackError: boolean = false, skipToast: boolean = false) {
 	switch (feedbackOptions.type) {
 		case 'notification':
 			if (feedbackOptions.notificationLabels) {
@@ -38,17 +38,21 @@ export async function performAction(action: () => Promise<any>, feedbackOptions:
 			break;
 		case 'toast':
 			try {
-				const content: React.ReactNode = feedbackOptions.successContent ?? <div>{Successful_Action_Default_Label}</div>;
+				const content: React.ReactNode = feedbackOptions.successContent ??
+                    <div>{Successful_Action_Default_Label}</div>;
 				await action();
 				new ToastBuilder()
 					.setContent(content)
 					.setDuration(feedbackOptions.duration ?? Default_Toast_Duration)
 					.show();
 			} catch (err: any) {
-				const content: React.ReactNode = feedbackOptions.failContent ?? <div>{Failed_Action_Default_Label}</div>;
-				new ToastBuilder()
-					.setContent(generateErrorToastContent(err, content, additionalData))
-					.setDuration(feedbackOptions.duration ? feedbackOptions.duration : Default_Toast_Duration).show();
+				if (!skipToast) {
+					const content: React.ReactNode = feedbackOptions.failContent ??
+                        <div>{Failed_Action_Default_Label}</div>;
+					new ToastBuilder()
+						.setContent(generateErrorToastContent(err, content, additionalData))
+						.setDuration(feedbackOptions.duration ? feedbackOptions.duration : Default_Toast_Duration).show();
+				}
 				if (throwBackError)
 					throw err;
 			}
