@@ -18,7 +18,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, _keys, asArray, BadImplementationException, exists, isErrorOfType, Logger, Minute, ModuleManager} from '@nu-art/ts-common';
+import {
+	__stringify,
+	_keys,
+	asArray,
+	BadImplementationException,
+	exists,
+	isErrorOfType,
+	Logger,
+	Minute,
+	ModuleManager
+} from '@nu-art/ts-common';
 import {HttpMethod, TypedApi} from './types';
 import {HttpException, TS_Progress} from './request-types';
 import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
@@ -256,7 +266,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	execute(onSuccess: (response: API['R'], data?: string) => Promise<void> | void = () => this.logger?.logVerbose(`Completed: ${this.label}`),
-					onError: (reason: HttpException<API['E']>) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
+			onError: (reason: HttpException<API['E']>) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
 
 		this.executeSync()
 			.then(onSuccess)
@@ -288,9 +298,27 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	};
 
 	setOnError(onError?: (errorResponse: HttpException<API['E']>, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
-		this.onError = onError;
+		if (!onError)
+			return this;
+
+		if (this.onError && onError) {
+			const _onError = this.onError;
+			this.onError = async (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => {
+				await _onError(response, input, request);
+				await onError(response, input, request);
+			};
+		} else
+			this.onError = async (response: API['R'], input: API['P'] | API['B'], request: BaseHttpRequest<API>) => {
+				await onError?.(response, input, request);
+			};
+
 		return this;
 	}
+
+	// setOnError(onError?: (errorResponse: HttpException<API['E']>, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+	// 	this.onError = onError;
+	// 	return this;
+	// }
 
 	protected abstract getResponse(): API['R']
 

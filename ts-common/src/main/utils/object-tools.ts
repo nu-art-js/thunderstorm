@@ -16,10 +16,16 @@
  * limitations under the License.
  */
 
-import {TS_Object} from './types';
+import {DotNotation, TS_Object} from './types';
 import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
 import {asArray} from './array-tools';
 
+export function getDotNotatedValue<T extends object>(key: DotNotation<T>, dotNotatedObject: T) {
+	const pathParts = key.split('.');
+	return pathParts.reduce((value: any, _pathPart: string) => {
+		return value[_pathPart];
+	}, dotNotatedObject);
+}
 
 export function deepClone<T>(obj: T | Readonly<T>): T {
 	if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'undefined' || obj === null)
