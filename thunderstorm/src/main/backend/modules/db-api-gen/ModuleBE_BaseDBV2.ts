@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
+import {_EmptyQuery, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	_keys,
 	ApiException,
@@ -46,6 +46,7 @@ import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/const
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {Response_DBSync} from '../../../shared/sync-manager/types';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import Transaction = firestore.Transaction;
 
 
@@ -255,13 +256,18 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	 * @param dbItems - The DB entry that is going to be deleted.
 	 */
 	async canDeleteItems(dbItems: Type[], transaction?: Transaction) {
-		const dependencies = await this.collectDependencies(dbItems, transaction);
-		if (dependencies)
-			throw new ApiException<EntityDependencyError>(422, 'entity has dependencies').setErrorBody({
-				type: 'has-dependencies',
-				data: dependencies
-			});
+		//todo Maybe throwing an exception is not the answer and we should return an empty result
 
+		const dependencies = await this.collectDependencies(dbItems, transaction);
+		if (!dependencies)
+			return;
+
+		throw HttpCodes._5XX.NOT_IMPLEMENTED('DB V2 can no longer check for dependencies, must be converted into proto.');
+
+		// 	throw new ApiException<EntityDependencyError>(422, 'entity has dependencies').setErrorBody({
+		// 		type: 'has-dependencies',
+		// 		data: dependencies
+		// 	});
 		//todo Add permission assertion, does the user have deletion permission over these objects
 	}
 

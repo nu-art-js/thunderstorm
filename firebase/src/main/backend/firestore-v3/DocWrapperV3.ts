@@ -175,8 +175,8 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 			return;
 
 		addDeletedToTransaction(transaction, {
-			collectionKey: this.collection.dbDef.entityName,
-			conflictingIds: [dbItem._id]
+			dbKey: this.collection.dbDef.entityName,
+			ids: [dbItem._id]
 		});
 		await this.collection.hooks?.canDeleteItems([dbItem], transaction);
 
