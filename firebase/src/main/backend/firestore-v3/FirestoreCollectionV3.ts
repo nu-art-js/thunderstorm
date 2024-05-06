@@ -45,6 +45,7 @@ import {
 	tsValidateUniqueId,
 	TypedMap,
 	UniqueId,
+	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {
@@ -325,7 +326,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		const dbItems = filterInstances(await this.getAll(docsToBeDeleted, transaction));
 		const itemsToCheck = dbItems.filter((item, index) => docsToBeDeleted[index].ref.id == item._id);
 		addDeletedToTransaction(transaction, {
-			dbKey: this.dbDef.entityName,
+			dbKey: this.dbDef.dbKey,
 			ids: dbItems.map(dbObjectToId)
 		});
 		await this.hooks?.canDeleteItems(itemsToCheck, transaction);
@@ -497,8 +498,9 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	protected onValidationError(instance: Proto['dbType'], results: InvalidResult<Proto['dbType']>) {
 		StaticLogger.logError(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		// console.error(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
-		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
-		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
+		// const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
+		const validationException = new ValidationException(`error validating ${this.dbDef.entityName}`, instance, results);
+		throw new ApiException(HttpCodes._4XX.FAILED_VALIDATION.code, `error validating ${this.dbDef.entityName}`).setErrorBody(validationException as any);
 	}
 
 	private assertNoDuplicatedIds(items: Proto['dbType'][], originFunctionName: string) {
