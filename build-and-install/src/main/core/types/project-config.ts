@@ -9,7 +9,7 @@ export type ProjectConfig = {
 export type RuntimeProjectConfig = {
 	packages: Package[];
 	params: StringMap;
-	packagesDependency?: RuntimePackage[][];
+	packagesDependency: RuntimePackage[][];
 	packageMap?: { [packageName: string]: RuntimePackage };
 };
 

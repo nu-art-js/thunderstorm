@@ -382,6 +382,9 @@ export const Phase_Compile: BuildPhase = {
 		await _fs.writeFile(`${pkg.output}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJsonOutput, null, 2), {encoding: 'utf-8'});
 
 		if (pkg.type == 'firebase-functions-app') {
+			pkg.packageJsonRuntime!.main = pkg.packageJsonRuntime!.main.replace('dist/', '');
+			pkg.packageJsonRuntime!.types = pkg.packageJsonRuntime!.types.replace('dist/', '');
+
 			await _fs.writeFile(`${pkg.output}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJsonRuntime, null, 2), {encoding: 'utf-8'});
 			const runTimePackages = filterDuplicates(projectPackages.packagesDependency?.flat().filter(_pkg => {
 				if (_pkg.name === pkg.name)
@@ -500,7 +503,6 @@ export const Phase_DeployFrontend: BuildPhase = {
 	name: 'deploy-frontend',
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => {
-		console.log(`deploy flag(${pkg.name}): ${RuntimeParams.deploy}`);
 		return !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0] && pkg.type === 'firebase-hosting-app';
 	},
 	action: async (pkg) => {

@@ -61,7 +61,7 @@ export function createFirebaseFunctionsJSON<Env extends string>(pkg: Package_Fir
 
 	return {
 		functions: {
-			source: pkg.output.replace(pkg.path, ''),
+			source: pkg.output.replace(`${pkg.path}/`, ''),
 			ignore: pkg.envConfig.functions?.ignore
 		}
 	};

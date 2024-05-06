@@ -1,21 +1,22 @@
+import {ProjectConfig, RuntimePackage, RuntimePackage_WithOutput, RuntimeProjectConfig} from '../core/types';
 import {
-	PackageType,
-	PackageType_Sourceless,
-	PackageTypesWithOutput,
-	ProjectConfig,
-	RuntimePackage,
-	RuntimePackage_WithOutput,
-	RuntimeProjectConfig
-} from '../core/types';
-import {CliError} from '@nu-art/commando/core/CliError';
-import {BeLogged, filterDuplicates, filterInstances, LogClient_Terminal, Logger, LogLevel} from '@nu-art/ts-common';
+	__stringify,
+	BadImplementationException,
+	BeLogged,
+	filterDuplicates,
+	flatArray,
+	lastElement,
+	LogClient_Terminal,
+	Logger,
+	LogLevel,
+	sleep
+} from '@nu-art/ts-common';
+import {RuntimeParams} from '../core/params/params';
 
 
 export const PackageBuildPhaseType_Package = 'package' as const;
 export const PackageBuildPhaseType_PackageWithOutput = 'package-with-output' as const;
 export const PackageBuildPhaseType_Project = 'project' as const;
-const PackageBuildPhaseTypes = [PackageBuildPhaseType_Package, PackageBuildPhaseType_PackageWithOutput, PackageBuildPhaseType_Project] as const;
-type PackageBuildPhaseType = typeof PackageBuildPhaseTypes[number];
 
 type BuildPhase_Base = {
 	name: string,
@@ -41,16 +42,29 @@ type BuildPhase_Project = BuildPhase_Base & {
 }
 
 export type BuildPhase = BuildPhase_Package | BuildPhase_PackageWithOutput | BuildPhase_Project
+const mapToName = (item: { name: string }) => item.name;
+
+function resolveAllMandatoryPhases(phase: BuildPhase): BuildPhase[] {
+	let result: BuildPhase[] = [phase];
+	if (phase.mandatoryPhases) {
+		for (const childPhase of phase.mandatoryPhases) {
+			result = result.concat(resolveAllMandatoryPhases(childPhase));
+		}
+	}
+	return filterDuplicates(result, result => result.name);
+}
 
 export class ProjectManager
 	extends Logger {
 
 	private phases: BuildPhase[] = [];
 	private config: RuntimeProjectConfig;
+	private dryRun = RuntimeParams.dryRun;
+	private terminate = false;
 
 	constructor(config: ProjectConfig) {
 		super();
-		this.config = config;
+		this.config = config as RuntimeProjectConfig;
 		BeLogged.addClient(LogClient_Terminal);
 		this.setMinLevel(LogLevel.Verbose);
 	}
@@ -59,122 +73,117 @@ export class ProjectManager
 		this.phases.push(phase);
 	}
 
-	async execute(phasesToRun?: BuildPhase[]) {
-		for (const phase of (phasesToRun ?? this.phases)) {
-			const didRun = await this.runPhase(phase);
+	async prepare(phases = this.phases, index: number = 0) {
+		const phasesToRun: BuildPhase[] = [];
+		let i = index;
+		for (; i < phases.length; i++) {
+			const phase = phases[i];
+			const isNotSamePackageType = phasesToRun[0] && phase.type !== phasesToRun[0].type;
+			const isNextPhaseANoneValidProjectPackage = phase.type === 'project' && (phase.filter && !(await phase.filter()));
+			if (isNotSamePackageType) {
+				if (isNextPhaseANoneValidProjectPackage)
+					continue;
+				else
+					break;
+			}
 
-			//terminate execution if phase is terminating
-			if (didRun && phase.terminatingPhase)
+			if (phase.type !== 'project' || (!phase.filter || await phase.filter?.()))
+				phasesToRun.push(phase);
+
+			if (phasesToRun.length > 0 && phase.terminatingPhase) {
+				i++;
 				break;
-		}
-	}
-
-	private resolveAllMandatoryPhases(phase: BuildPhase): BuildPhase[] {
-		let result: BuildPhase[] = [phase];
-		if (phase.mandatoryPhases) {
-			for (const childPhase of phase.mandatoryPhases) {
-				result = result.concat(this.resolveAllMandatoryPhases(childPhase));
 			}
 		}
-		return filterDuplicates(result, result => result.name);
-	}
 
-	async runPhaseByKey(phaseKey: string) {
-		const phase = this.phases.find(phase => phase.name === phaseKey);
-		if (!phase)
+		if (!phasesToRun.length)
 			return;
 
-		const finalPhasesToRun = this.resolveAllMandatoryPhases(phase).reverse();
-		return this.execute(finalPhasesToRun);
+		const nextAction = await this.prepare(phases, i);
+		this.logDebug('Scheduling phases: ', phasesToRun.map(mapToName));
+
+		if (phasesToRun[0].type === 'project')
+			return async () => {
+				if (this.terminate)
+					return this.logInfo(`Skipping project phases:`, phasesToRun.map(mapToName));
+
+				let didRun = false;
+				for (const phase of phasesToRun) {
+					this.logInfo(`Running project phase: ${phase.name}`);
+					if (this.dryRun) {
+						await sleep(1000);
+					} else
+						await (phase as BuildPhase_Project).action();
+
+					didRun = true;
+				}
+
+				if (didRun && lastElement(phasesToRun)!.terminatingPhase)
+					this.terminate = true;
+
+				await nextAction?.();
+			};
+
+		return async () => {
+			let didRun = false;
+			let didPrintPhase = false;
+
+			const toRunPackages = this.config.packagesDependency.map(packages => {
+				return async () => {
+					let didPrintPackages = false;
+					const values = flatArray(packages.map(async pkg => {
+						for (const phase of phasesToRun as BuildPhase_Package[]) {
+							if (!(!phase.filter || await phase.filter(pkg)))
+								continue;
+
+							if (!didPrintPhase) {
+								this.logInfo(`Running package phase: ${__stringify(phasesToRun.map(mapToName))}`);
+								didPrintPhase = true;
+							}
+
+							if (!didPrintPackages) {
+								this.logVerbose(` - on packages: ${__stringify(packages.map(mapToName))}`);
+								didPrintPackages = true;
+							}
+
+							didRun = true;
+							this.logDebug(`   - ${pkg.name}:${phase.name}`);
+							if (this.dryRun) {
+								await sleep(1000);
+							} else
+								await phase.action(pkg);
+						}
+
+					}));
+
+					await Promise.all(values);
+				};
+			});
+
+			if (this.terminate)
+				return this.logInfo(`Skipping packages phases:`, phasesToRun.map(mapToName));
+
+			for (const toRunPackage of toRunPackages) {
+				await toRunPackage();
+			}
+
+			if (didRun && lastElement(phasesToRun)!.terminatingPhase)
+				this.terminate = true;
+
+			await nextAction?.();
+		};
 	}
 
-	private getPackagesForPhaseType = (phaseType: PackageBuildPhaseType) => {
-		const allRuntimePackages: RuntimePackage[] = [];
-		this.config.packagesDependency?.forEach(dependency => dependency.forEach(_package => allRuntimePackages.push(_package)));
-		switch (phaseType) {
-			case PackageBuildPhaseType_Project:
-				return [];
+	async execute() {
+		await (await this.prepare())?.();
+	}
 
-			case PackageBuildPhaseType_Package:
-				return allRuntimePackages;
+	async executePhase(phaseKey: string) {
+		const phase = this.phases.find(phase => phase.name === phaseKey);
+		if (!phase)
+			throw new BadImplementationException(`No Such Phase: ${phaseKey}`);
 
-			case PackageBuildPhaseType_PackageWithOutput:
-				return allRuntimePackages.filter(_package => {
-					const packageType = _package.type as Exclude<PackageType, typeof PackageType_Sourceless>;
-					return PackageTypesWithOutput.includes(packageType);
-				});
-
-			default:
-				return allRuntimePackages;
-		}
-	};
-
-	private async runPhase(phase: BuildPhase) {
-		if (phase.type === PackageBuildPhaseType_Project) {
-			if (!phase.filter || await phase.filter()) {
-				this.logInfo(`Running project phase: ${phase.name}`);
-				await phase.action();
-				return true;
-			}
-
-			this.logVerbose(`Skipping project phase: ${phase.name}`);
-			return false;
-		}
-
-		const relevantPackages = this.getPackagesForPhaseType(phase.type);
-		if (relevantPackages.length === 0)
-			return false;
-
-		let didPrint = false;
-		let didRun = false;
-		for (const packages of this.config.packagesDependency ?? []) {
-			const packagesToCheck = packages.filter(pkg => relevantPackages.includes(pkg)) as RuntimePackage_WithOutput[];
-			const filteredPackages = filterInstances(await Promise.all(packagesToCheck.map(async pkg => {
-				if (!phase.filter || await phase.filter(pkg))
-					return pkg;
-			})));
-
-			const finalPackages = filteredPackages.filter(pkg => pkg) as RuntimePackage_WithOutput[];
-			if (finalPackages.length === 0)
-				continue;
-
-			if (!didPrint) {
-				this.logInfo(`Running phase: ${phase.name}`);
-				didPrint = true;
-			}
-
-			if (finalPackages.length === 1)
-				this.logDebug(`  Package: ${packagesToCheck.map(pkg => pkg.name)[0]}`);
-			else
-				this.logDebug(`  Packages: ${JSON.stringify(packagesToCheck.map(pkg => pkg.name))}`);
-
-			const errors = await Promise.all(finalPackages.map(async pkg => {
-				try {
-					await phase.action(pkg);
-					didRun = true;
-				} catch (e: any) {
-					return e as CliError;
-				}
-			}));
-
-			if (filterInstances(errors).length > 0) {
-				errors.forEach((error, index) => {
-					if (!error)
-						return;
-
-					this.logError(`\nError in package: ${packages[index].packageJsonTemplate?.name}`);
-
-					if (error.stdout?.length)
-						this.logVerbose(error.stdout);
-					if (error.stderr?.length)
-						this.logVerboseBold(error.stderr);
-					else if (error.message?.length)
-						this.logError(error.message);
-				});
-				throw new Error(`${filterInstances(errors).length} Errors in phase "${phase.name}"`);
-			}
-		}
-		return didRun;
-		// throw new Error(`Unknown phase type '${JSON.stringify(phase)}'`);
+		const finalPhasesToRun = resolveAllMandatoryPhases(phase).reverse();
+		await (await this.prepare(finalPhasesToRun))?.();
 	}
 }

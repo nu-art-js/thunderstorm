@@ -170,6 +170,14 @@ export const BaiParam_NoBuild: BaseCliParam<'noBuild', boolean> = {
 	description: 'Skip the build and link steps'
 };
 
+export const BaiParam_DryRun: BaseCliParam<'dryRun', boolean> = {
+	keys: ['--dry-run', '-dry'],
+	keyName: 'dryRun',
+	group: 'Other',
+	type: 'boolean',
+	description: 'Do not perform any phase impl, only log the process'
+};
+
 export const BaiParam_ThunderstormHome: BaseCliParam<'thunderstormHome', boolean> = {
 	keys: ['--thunderstorm-home', '-th'],
 	keyName: 'thunderstormHome',
@@ -405,6 +413,7 @@ export const AllBaiParams = [
 	BaiParam_GenerateDocs,
 	BaiParam_LinkOnly,
 	BaiParam_NoBuild,
+	BaiParam_DryRun,
 	BaiParam_ThunderstormHome,
 	BaiParam_NoThunderstorm,
 	BaiParam_Lint,

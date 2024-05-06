@@ -10,8 +10,8 @@ export type PackageJson = JSONVersion & {
 	},
 	'license'?: 'Apache-2.0' | string,
 	'author'?: string,
-	'main'?: 'index.js' | string,
-	'types'?: 'index.d.ts' | string,
+	'main': string,
+	'types': string,
 	'scripts'?: StringMap,
 	'dependencies'?: StringMap,
 	'_moduleAliases'?: StringMap
