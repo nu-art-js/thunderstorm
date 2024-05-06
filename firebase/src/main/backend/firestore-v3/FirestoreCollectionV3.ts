@@ -45,6 +45,7 @@ import {
 	tsValidateUniqueId,
 	TypedMap,
 	UniqueId,
+	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {
@@ -321,19 +322,19 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		return itemsToReturn;
 	};
 
-	protected _deleteAll = async (docs: DocWrapperV3<Proto>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
-		const dbItems = filterInstances(await this.getAll(docs, transaction));
-		const itemsToCheck = dbItems.filter((item, index) => docs[index].ref.id == item._id);
+	protected _deleteAll = async (docsToBeDeleted: DocWrapperV3<Proto>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+		const dbItems = filterInstances(await this.getAll(docsToBeDeleted, transaction));
+		const itemsToCheck = dbItems.filter((item, index) => docsToBeDeleted[index].ref.id == item._id);
 		addDeletedToTransaction(transaction, {
-			collectionKey: this.dbDef.entityName,
-			conflictingIds: dbItems.map(dbObjectToId)
+			dbKey: this.dbDef.dbKey,
+			ids: dbItems.map(dbObjectToId)
 		});
 		await this.hooks?.canDeleteItems(itemsToCheck, transaction);
 		if (transaction)
 			// here we do not call doc.delete because we have performed all the delete preparation as a group of items before this call
-			docs.map(async doc => transaction.delete(doc.ref));
+			docsToBeDeleted.map(async doc => transaction.delete(doc.ref));
 		else
-			await this.multiWrite(multiWriteType, docs, 'delete');
+			await this.multiWrite(multiWriteType, docsToBeDeleted, 'delete');
 
 		await this.hooks?.postWriteProcessing?.({deleted: dbItems}, transaction);
 		return dbItems;
@@ -497,8 +498,9 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	protected onValidationError(instance: Proto['dbType'], results: InvalidResult<Proto['dbType']>) {
 		StaticLogger.logError(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		// console.error(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
-		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
-		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
+		// const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
+		const validationException = new ValidationException(`error validating ${this.dbDef.entityName}`, instance, results);
+		throw new ApiException(HttpCodes._4XX.FAILED_VALIDATION.code, `error validating ${this.dbDef.entityName}`).setErrorBody(validationException as any);
 	}
 
 	private assertNoDuplicatedIds(items: Proto['dbType'][], originFunctionName: string) {

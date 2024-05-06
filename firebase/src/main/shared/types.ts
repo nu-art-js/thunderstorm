@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {MandatoryKeys, RequireOptionals, TS_Object} from '@nu-art/ts-common';
+import {MandatoryKeys, RequireOptionals, TS_Object, UniqueId} from '@nu-art/ts-common';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 
@@ -92,7 +92,28 @@ export type FirestoreQueryImpl<T extends TS_Object> = {
 
 export type FirebaseProjectCollections = { projectId: string, collections: string[] };
 
-export type DB_EntityDependency<Type extends string = string> = { collectionKey: Type, conflictingIds: string[] };
-export type EntityDependencyError<Type extends string = string> = ResponseError<'has-dependencies', DB_EntityDependency<Type>[]>;
+/**
+ * Only for MemKey_DeletedDocs
+ */
+export type PotentialDependenciesToDelete<Type extends string = string> = { dbKey: Type, ids: string[] };
+
+export type DB_EntityDependency<Type extends string = string> = {
+	collectionKey: Type,
+	conflictingIds: string[]
+};
+
+// New dependency conflict
+export type EntityRef = { dbKey: string, id: UniqueId }; //dbKey of target to delete, id of target to delete
+export type EntityRefs = { dbKey: string, ids: UniqueId[] }; //dbKey of conflicting collection, ids of conflicting items in collection
+
+export type Conflict = { target: EntityRef, conflicts: EntityRefs }
+
+export type DB_EntityDependencyV2 = {
+	originalItemsToDelete: EntityRef[] // trying to delete variables a, b and c
+	issues: Conflict[] // an array of variables a, b and c and each with their conflicts, or empty conflicts array for items that don't have conflicts between items that do
+};
+//fin New dependency conflict
+
+export type EntityDependencyError = ResponseError<'has-dependencies', DB_EntityDependencyV2[]>;
 
 export type MultiWriteOperation = 'create' | 'set' | 'update' | 'delete';

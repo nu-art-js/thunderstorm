@@ -50,6 +50,7 @@ export class ModuleFE_XHR_Class
 			.setMethod(apiDef.method)
 			.setTimeout(this.timeout)
 			.setOnCompleted(this.defaultOnComplete)
+			.setOnError(this.defaultOnError)
 			.addHeaders(this.getDefaultHeaders());
 
 		if (apiDef.fullUrl)
