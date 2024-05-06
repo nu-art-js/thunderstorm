@@ -19,6 +19,9 @@
  * limitations under the License.
  */
 
+export * from './core/SmartComponent';
+
+
 export * from './_ats';
 export * from './core/types';
 export * from './core/ThunderstormDefaultApp';
