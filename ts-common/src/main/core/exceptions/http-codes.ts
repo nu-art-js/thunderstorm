@@ -60,6 +60,7 @@ export const HttpCodes = {
 		RANGE_NOT_SATISFIABLE: createGeneralError(416),
 		EXPECTATION_FAILED: createGeneralError(417),
 		IM_A_TEAPOT: createGeneralError(418),
+		FAILED_VALIDATION: createGeneralError(420),
 		MISDIRECTED_REQUEST: createGeneralError(421),
 		UNPROCESSABLE_ENTITY: createGeneralError(422),
 		LOCKED: createGeneralError(423),
