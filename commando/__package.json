@@ -31,7 +31,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION"
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION_DEPENDENCY"
   },
   "devDependencies": {
     "@types/node": "^18.0.0"

@@ -1,10 +1,11 @@
-import {ProjectConfig, RuntimePackage, RuntimePackage_WithOutput, RuntimeProjectConfig} from '../core/types';
+import {RuntimePackage, RuntimePackage_WithOutput} from '../core/types';
 import {
 	__stringify,
 	BadImplementationException,
 	BeLogged,
 	filterDuplicates,
 	flatArray,
+	ImplementationMissingException,
 	lastElement,
 	LogClient_Terminal,
 	Logger,
@@ -12,6 +13,12 @@ import {
 	sleep
 } from '@nu-art/ts-common';
 import {RuntimeParams} from '../core/params/params';
+import {convertToFullPath} from '@nu-art/commando/core/tools';
+import {mapProjectPackages} from './map-project-packages';
+import {MemKey_Packages} from '../core/consts';
+import * as fs from 'fs';
+import {Default_Files, MemKey_DefaultFiles} from '../defaults';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export const PackageBuildPhaseType_Package = 'package' as const;
@@ -58,15 +65,29 @@ export class ProjectManager
 	extends Logger {
 
 	private phases: BuildPhase[] = [];
-	private config: RuntimeProjectConfig;
 	private dryRun = RuntimeParams.dryRun;
 	private terminate = false;
 
-	constructor(config: ProjectConfig) {
+	constructor() {
 		super();
-		this.config = config as RuntimeProjectConfig;
 		BeLogged.addClient(LogClient_Terminal);
 		this.setMinLevel(LogLevel.Verbose);
+	}
+
+	private async init() {
+		MemKey_DefaultFiles.set(Default_Files);
+		this.loadPackage();
+	}
+
+	private loadPackage() {
+		const pathToConfig = convertToFullPath('./.config/project-config.ts');
+		if (!fs.existsSync(pathToConfig))
+			throw new ImplementationMissingException(`Missing ./.config/project-config.ts file, could not find in path: ${pathToConfig}`);
+
+		const projectConfig = require(pathToConfig).default;
+
+		const packages = mapProjectPackages(projectConfig);
+		MemKey_Packages.set(packages);
 	}
 
 	registerPhase(phase: BuildPhase) {
@@ -128,7 +149,7 @@ export class ProjectManager
 			let didRun = false;
 			let didPrintPhase = false;
 
-			const toRunPackages = this.config.packagesDependency.map(packages => {
+			const toRunPackages = MemKey_Packages.get().packagesDependency.map(packages => {
 				return async () => {
 					let didPrintPackages = false;
 					const values = flatArray(packages.map(async pkg => {
@@ -153,7 +174,6 @@ export class ProjectManager
 							} else
 								await phase.action(pkg);
 						}
-
 					}));
 
 					await Promise.all(values);
@@ -174,8 +194,11 @@ export class ProjectManager
 		};
 	}
 
-	async execute() {
-		await (await this.prepare())?.();
+	async execute(phases = this.phases) {
+		return new MemStorage().init(async () => {
+			await this.init();
+			return (await this.prepare(phases))!();
+		});
 	}
 
 	async executePhase(phaseKey: string) {
@@ -184,6 +207,7 @@ export class ProjectManager
 			throw new BadImplementationException(`No Such Phase: ${phaseKey}`);
 
 		const finalPhasesToRun = resolveAllMandatoryPhases(phase).reverse();
-		await (await this.prepare(finalPhasesToRun))?.();
+		return this.execute(finalPhasesToRun);
 	}
+
 }

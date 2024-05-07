@@ -1,31 +1,11 @@
-import {
-	BuildPhase,
-	PackageBuildPhaseType_Package,
-	PackageBuildPhaseType_PackageWithOutput
-} from '../logic/ProjectManager';
-import {convertPackageJSONTemplateToPackJSON_Value, mapProjectPackages} from '../logic/map-project-packages';
+import {BuildPhase, PackageBuildPhaseType_Package, PackageBuildPhaseType_PackageWithOutput} from '../logic/ProjectManager';
+import {convertPackageJSONTemplateToPackJSON_Value} from '../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../core/consts';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, MemKey_Packages} from '../core/consts';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
-import {
-	__stringify,
-	_keys,
-	BadImplementationException,
-	exists,
-	filterDuplicates,
-	ImplementationMissingException,
-	reduceToMap,
-	sleep,
-	TypedMap
-} from '@nu-art/ts-common';
-import {
-	JSONVersion,
-	Package_FirebaseFunctionsApp,
-	Package_FirebaseHostingApp,
-	PackageType_InfraLib,
-	RuntimePackage_WithOutput
-} from '../core/types';
+import {__stringify, _keys, BadImplementationException, exists, filterDuplicates, reduceToMap, sleep, TypedMap} from '@nu-art/ts-common';
+import {JSONVersion, Package_FirebaseFunctionsApp, Package_FirebaseHostingApp, PackageType_InfraLib, RuntimePackage_WithOutput} from '../core/types';
 import {createFirebaseFunctionsJSON, createFirebaseHostingJSON, createFirebaseRC} from '../core/package/generate';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {AllBaiParams, RuntimeParams} from '../core/params/params';
@@ -36,11 +16,6 @@ import * as chokidar from 'chokidar';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults';
 
 
-const pathToConfig = convertToFullPath('./.config/project-config.ts');
-if (!fs.existsSync(pathToConfig))
-	throw new ImplementationMissingException(`Missing ./.config/project-config.ts file, could not find in path: ${pathToConfig}`);
-
-const projectConfig = require(pathToConfig).default;
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_SDK_VERSION_DEPENDENCY';
 const CONST_ProjectVersionKey = 'APP_VERSION';
@@ -50,7 +25,6 @@ const CONST_RunningRoot = process.cwd();
 
 const pathToProjectTS_Config = convertToFullPath(`./.config/${CONST_TS_Config}`);
 const pathToProjectEslint = convertToFullPath('./.config/.eslintrc.js');
-export const projectPackages = mapProjectPackages(projectConfig);
 const runInDebug = false;
 let runningWithInfra = false;
 
@@ -89,7 +63,8 @@ export const Phase_SetWithThunderstorm: BuildPhase = {
 			return runningWithInfra = true;
 
 		// Remove all the infra packages from the runtime project
-		projectPackages.packagesDependency = projectPackages.packagesDependency?.map(_packageArray => _packageArray.filter(_package => _package.type !== PackageType_InfraLib));
+		const packages = MemKey_Packages.get();
+		packages.packagesDependency = packages.packagesDependency?.map(_packageArray => _packageArray.filter(_package => _package.type !== PackageType_InfraLib));
 
 		return runningWithInfra = false;
 	}
@@ -100,12 +75,14 @@ export const Phase_SetupProject: BuildPhase = {
 	name: 'setup-project',
 	action: async () => {
 		const thunderstormVersionJson = require(convertToFullPath('./version-thunderstorm.json')) as JSONVersion;
-		projectPackages.params[CONST_ThunderstormVersionKey] = thunderstormVersionJson.version;
-		projectPackages.params[CONST_ThunderstormDependencyKey] = thunderstormVersionJson.version;
+		const packages = MemKey_Packages.get();
+
+		packages.params[CONST_ThunderstormVersionKey] = thunderstormVersionJson.version;
+		packages.params[CONST_ThunderstormDependencyKey] = `~${thunderstormVersionJson.version}`;
 
 		const projectVersionJson = require(convertToFullPath('./version-app.json')) as JSONVersion;
-		projectPackages.params[CONST_ProjectVersionKey] = projectVersionJson.version;
-		projectPackages.params[CONST_ProjectDependencyKey] = projectVersionJson.version;
+		packages.params[CONST_ProjectVersionKey] = projectVersionJson.version;
+		packages.params[CONST_ProjectDependencyKey] = projectVersionJson.version;
 	}
 };
 
@@ -114,24 +91,26 @@ export const Phase_ResolveTemplate: BuildPhase = {
 	name: 'resolve-template',
 	mandatoryPhases: [Phase_SetupProject, Phase_SetWithThunderstorm],
 	action: async (pkg) => {
+		const packages = MemKey_Packages.get();
+
 		// with workspace: *
 		pkg.packageJsonWorkspace = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
-			const toRet = projectConfig.params[key!] ? 'workspace:*' : projectConfig.params[value];
+			const toRet = packages.params[key!] ? 'workspace:*' : packages.params[value];
 			return toRet;
 		});
 
 		// placed package name to version
-		projectConfig.params[pkg.packageJsonWorkspace.name] = pkg.packageJsonWorkspace.version;
-		projectConfig.params[`${pkg.packageJsonWorkspace.name}_path`] = `file:.dependencies/${pkg.name}`;
+		packages.params[pkg.packageJsonWorkspace.name] = pkg.packageJsonWorkspace.version;
+		packages.params[`${pkg.packageJsonWorkspace.name}_path`] = `file:.dependencies/${pkg.name}`;
 
 		// with versions for all packages, for be output: file:.dependencies/${pkg.name}
 		pkg.packageJsonOutput = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
-			const toRet = projectConfig.params[key!] ?? projectConfig.params[value];
+			const toRet = packages.params[key!] ?? packages.params[value];
 			return toRet;
 		});
 
 		pkg.packageJsonRuntime = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
-			const toRet = projectConfig.params[`${key}_path`] ?? projectConfig.params[key!] ?? projectConfig.params[value];
+			const toRet = packages.params[`${key}_path`] ?? packages.params[key!] ?? packages.params[value];
 			return toRet;
 		});
 
@@ -307,7 +286,9 @@ export const Phase_InstallPackages: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async () => RuntimeParams.installPackages,
 	action: async () => {
-		const listOfLibs = projectPackages.packages
+		const packages = MemKey_Packages.get();
+
+		const listOfLibs = packages.packages
 			.filter(pkg => runningWithInfra || ['project-lib', 'app', 'sourceless'].includes(pkg.type))
 			.map(pkg => pkg.path.replace(`${process.cwd()}/`, '').replace(process.cwd(), '.'));
 
@@ -347,7 +328,8 @@ export const Phase_Debug: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async () => RuntimeParams.debug,
 	action: async () => {
-		console.log(JSON.stringify(projectPackages, null, 2));
+		const packages = MemKey_Packages.get();
+		console.log(JSON.stringify(packages, null, 2));
 	}
 };
 
@@ -367,6 +349,8 @@ export const Phase_Compile: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => pkg.type !== 'sourceless' && !RuntimeParams.noBuild,
 	action: async (pkg) => {
+		const packages = MemKey_Packages.get();
+
 		if (pkg.type === 'sourceless')
 			return;
 
@@ -389,7 +373,7 @@ export const Phase_Compile: BuildPhase = {
 			pkg.packageJsonRuntime!.types = pkg.packageJsonRuntime!.types.replace('dist/', '');
 
 			await _fs.writeFile(`${pkg.output}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJsonRuntime, null, 2), {encoding: 'utf-8'});
-			const runTimePackages = filterDuplicates(projectPackages.packagesDependency?.flat().filter(_pkg => {
+			const runTimePackages = filterDuplicates(packages.packagesDependency?.flat().filter(_pkg => {
 				if (_pkg.name === pkg.name)
 					return false;
 

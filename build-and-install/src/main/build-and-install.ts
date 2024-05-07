@@ -3,7 +3,8 @@ import {StaticLogger} from '@nu-art/ts-common';
 import {
 	Phase_CheckCyclicImports,
 	Phase_Clean,
-	Phase_Compile, Phase_CompileWatch,
+	Phase_Compile,
+	Phase_CompileWatch,
 	Phase_DeployBackend,
 	Phase_DeployFrontend,
 	Phase_InstallGlobals,
@@ -21,13 +22,10 @@ import {
 	Phase_ResolveTemplate,
 	Phase_SetupProject,
 	Phase_SetWithThunderstorm,
-	projectPackages
 } from './phases/phases';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {Default_Files, MemKey_DefaultFiles} from './defaults';
 
 
-const projectManager = new ProjectManager(projectPackages);
+const projectManager = new ProjectManager();
 
 projectManager.registerPhase(Phase_PrintHelp);
 projectManager.registerPhase(Phase_SetWithThunderstorm);
@@ -52,11 +50,6 @@ projectManager.registerPhase(Phase_DeployFrontend);
 projectManager.registerPhase(Phase_DeployBackend);
 // projectManager.registerPhase(Phase_Debug);
 
-
-new MemStorage().init(async () => {
-	MemKey_DefaultFiles.set(Default_Files);
-
-	return projectManager.execute();
-})
+projectManager.execute()
 	.then(() => StaticLogger.logInfo('completed'))
 	.catch(err => StaticLogger.logError('Failed with error: ', err));
