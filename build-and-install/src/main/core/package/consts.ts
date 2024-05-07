@@ -30,12 +30,6 @@ export const Default_FunctionsIgnoreFiles = [
 	'firebase-debug.log'
 ];
 
-export const Default_ListOfFirebaseConfigFiles = [
-	'database.rules.json',
-	'firestore.indexes.json',
-	'firestore.rules',
-	'storage.rules',
-];
 export const Default_HostingConfig = {
 	public: 'dist',
 	rewrites: [

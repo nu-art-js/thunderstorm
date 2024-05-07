@@ -12,7 +12,8 @@ import {
 	__stringify,
 	_keys,
 	BadImplementationException,
-	exists, filterDuplicates,
+	exists,
+	filterDuplicates,
 	ImplementationMissingException,
 	reduceToMap,
 	sleep,
@@ -26,13 +27,13 @@ import {
 	RuntimePackage_WithOutput
 } from '../core/types';
 import {createFirebaseFunctionsJSON, createFirebaseHostingJSON, createFirebaseRC} from '../core/package/generate';
-import {Default_ListOfFirebaseConfigFiles} from '../core/package/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {AllBaiParams, RuntimeParams} from '../core/params/params';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {PNPM} from '@nu-art/commando/cli/pnpm';
 import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
 import * as chokidar from 'chokidar';
+import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults';
 
 
 const pathToConfig = convertToFullPath('./.config/project-config.ts');
@@ -154,7 +155,9 @@ export const Phase_ResolveEnv: BuildPhase = {
 	action: async (pkg) => {
 		const firebasePkg = pkg as Package_FirebaseHostingApp | Package_FirebaseFunctionsApp;
 		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(createFirebaseRC(firebasePkg, RuntimeParams.setEnv), null, 2), {encoding: 'utf-8'});
+		const defaultFiles = MemKey_DefaultFiles.get();
 
+		console.log('MMEEEMMMMKEYYYY', defaultFiles);
 		let fileContent;
 		if (pkg.type === 'firebase-hosting-app')
 			fileContent = createFirebaseHostingJSON(firebasePkg as Package_FirebaseHostingApp, RuntimeParams.setEnv);
@@ -173,7 +176,7 @@ export const Phase_ResolveEnv: BuildPhase = {
 				try {
 					await _fs.access(pathToProxyFile);
 				} catch (e: any) {
-					let defaultFileContent = await _fs.readFile(`${__dirname}/defaults/backend-proxy/proxy._ts`, {encoding: 'utf-8'});
+					let defaultFileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
 					defaultFileContent = defaultFileContent.replace(/SERVER_PORT/g, `${firebasePkg.envConfig.basePort}`);
 					defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_KEY/g, `${firebasePkg.envConfig.ssl?.pathToKey}`);
 					defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${firebasePkg.envConfig.ssl?.pathToCertificate}`);
@@ -181,12 +184,12 @@ export const Phase_ResolveEnv: BuildPhase = {
 				}
 			}
 
-			await Promise.all(Default_ListOfFirebaseConfigFiles.map(async firebaseConfigFile => {
-					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${firebaseConfigFile}`;
+			await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
+					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
 					try {
 						await _fs.access(pathToConfigFile);
 					} catch (e: any) {
-						const defaultFileContent = await _fs.readFile(`${__dirname}/defaults/.firebase_config/${firebaseConfigFile}`, {encoding: 'utf-8'});
+						const defaultFileContent = await _fs.readFile(defaultFiles.firebaseConfig[firebaseConfigKey], {encoding: 'utf-8'});
 						await _fs.writeFile(pathToConfigFile, defaultFileContent, {encoding: 'utf-8'});
 					}
 				})
