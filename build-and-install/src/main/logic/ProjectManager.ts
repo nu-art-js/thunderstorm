@@ -77,7 +77,6 @@ export class ProjectManager
 	private async init() {
 		MemKey_DefaultFiles.set(Default_Files);
 		process.on('exit', () => {
-			console.log('SIGINT signal received.');
 
 			MemKey_RunningStatus.get()
 			//SAVE
