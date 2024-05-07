@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {compare, merge, Module, Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
+import {_keys, compare, merge, Module, Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {gzip, ungzip} from 'pako';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
@@ -64,7 +64,7 @@ export const dispatcher_urlParamsChangedV2 = new ThunderDispatcher<OnUrlParamsCh
 export class ModuleFE_BrowserHistoryV2_Class
 	extends Module {
 	private readonly history: History<any>;
-	private state: RecursiveObjectOfPrimitives;
+	private state: Readonly<RecursiveObjectOfPrimitives>;
 
 	constructor() {
 		super();
@@ -82,7 +82,7 @@ export class ModuleFE_BrowserHistoryV2_Class
 	}
 
 	private encode(state = this.state): any {
-		this.state = state;
+		this.state = Object.freeze(state);
 		window.location.hash = window.btoa(new Uint8Array(gzip(JSON.stringify(this.state))).reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
 		dispatcher_urlParamsChangedV2.dispatchUI();
 	}
@@ -112,24 +112,34 @@ export class ModuleFE_BrowserHistoryV2_Class
 	}
 
 	set(key: string, queryParams: AdvancedQueryParam) {
-		this.state[key] = queryParams;
-		this.encode();
+		const state = {...this.state};
+		state[key] = queryParams;
+		this.encode(state);
 	}
 
-	get(key: string) {
+	setObject(object: RecursiveObjectOfPrimitives) {
+		const state = {...this.state};
+		_keys(object).forEach(key => {
+			state[key] = object[key];
+		});
+		this.encode(state);
+	}
+
+	get(key: string): Readonly<AdvancedQueryParam | undefined> {
 		return this.state[key];
 	}
 
 	delete(key: string) {
-		delete this.state[key];
-		this.encode();
+		const state = {...this.state};
+		delete state[key];
+		this.encode(state);
 	}
 
 	setState = (state: RecursiveObjectOfPrimitives) => {
 		this.encode(state);
 	};
 
-	getState = () => ({...this.state});
+	getState = () => this.state;
 }
 
 export const ModuleFE_BrowserHistoryV2 = new ModuleFE_BrowserHistoryV2_Class();
