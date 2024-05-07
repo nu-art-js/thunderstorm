@@ -95,8 +95,13 @@ export class CLIParams_Resolver<T extends BaseCliParam<string, any>[], Output ex
 			if (cliParamToResolve.options && !cliParamToResolve.options.includes(value))
 				throw new Error('value not supported for this param');
 
-			//TODO: OPTIMIZE THIS IS PURE JS
 			const key = cliParamToResolve.keyName as Key;
+
+			if (exists(cliParamToResolve.dependencies))
+				cliParamToResolve.dependencies?.forEach(dependency => {
+					output[dependency.param.keyName as Key] = dependency.value;
+				});
+
 			if (cliParamToResolve.isArray) {
 				let currentValues = output[key] as Value;
 				currentValues = filterDuplicates([...currentValues ?? [], finalValue]) as Value;
