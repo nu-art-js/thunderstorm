@@ -17,7 +17,7 @@ import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {mapProjectPackages} from './map-project-packages';
 import {MemKey_Packages} from '../core/consts';
 import * as fs from 'fs';
-import {Default_Files, MemKey_DefaultFiles} from '../defaults';
+import {Default_Files, MemKey_DefaultFiles, MemKey_RunningStatus} from '../defaults';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
@@ -76,6 +76,14 @@ export class ProjectManager
 
 	private async init() {
 		MemKey_DefaultFiles.set(Default_Files);
+		process.on('exit', () => {
+			console.log('SIGINT signal received.');
+
+			MemKey_RunningStatus.get()
+			//SAVE
+			// fs.write zevel
+			process.exit(0);
+		});
 		this.loadPackage();
 	}
 
