@@ -1,5 +1,5 @@
 import {ComponentSync} from '../ComponentSync';
-import {BadImplementationException, compare, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
+import {BadImplementationException, compare, deepClone} from '@nu-art/ts-common';
 import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2} from '../../modules/ModuleFE_BrowserHistoryV2';
 import {ProtoComponentDef} from './types';
 
@@ -29,9 +29,12 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * if there were changes in the hash that are relevant to this component.
 	 */
 	__onUrlParamsChangedV2 = () => {
+		const previousResultsObject = this.state?.previousResultsObject;
 		const queryParams = this.getQueryParamResultsObject();
-		if (!compare(queryParams, this.state?.previousResultsObject)) {
-			this.reDeriveState({previousResultsObject: queryParams} as State);
+		const hasChanges = !compare(queryParams, previousResultsObject);
+		this.logDebug(`Query params has changes: ${hasChanges}`, previousResultsObject, queryParams);
+		if (hasChanges) {
+			this.reDeriveState({previousResultsObject: deepClone(queryParams)} as State);
 		}
 	};
 
@@ -68,7 +71,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * @param {K} key - The query parameter key.
 	 * @return {Def['queryParamDef'][K] | undefined} - The value of the specified query parameter, or undefined if it doesn't exist.
 	 */
-	getQueryParam<K extends Def['queryParamKeys']>(key: K): Def['queryParamDef'][K] | undefined;
+	getQueryParam<K extends Def['queryParamKeys']>(key: K): Readonly<Def['queryParamDef'][K]> | undefined;
 
 	/**
 	 * Retrieves the value of the specified query parameter from the URL.
@@ -77,10 +80,10 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * @param {Def.queryParamDef[K]} defaultValue - The default value to return if the query parameter is not found in the URL.
 	 * @returns {Def.queryParamDef[K]} - The value of the specified query parameter, or the default value if not found.
 	 */
-	getQueryParam<K extends Def['queryParamKeys']>(key: K, defaultValue: Def['queryParamDef'][K]): Def['queryParamDef'][K];
+	getQueryParam<K extends Def['queryParamKeys']>(key: K, defaultValue: Def['queryParamDef'][K]): Readonly<Def['queryParamDef'][K]>;
 
 	getQueryParam<K extends Def['queryParamKeys']>(key: K, defaultValue?: Def['queryParamDef'][K]) {
-		return ModuleFE_BrowserHistoryV2.get(key) as Def['queryParamDef'][K] ?? defaultValue;
+		return ModuleFE_BrowserHistoryV2.get(key) as Readonly<Def['queryParamDef'][K]> ?? Object.freeze(defaultValue);
 	}
 
 	/**
@@ -98,8 +101,6 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * @param query
 	 */
 	setQueryParams(query: Partial<Def['queryParamDef']>) {
-		const currentState = ModuleFE_BrowserHistoryV2.getState();
-		const merged = {...currentState, ...query};
-		ModuleFE_BrowserHistoryV2.setState(merged as RecursiveObjectOfPrimitives);
+		ModuleFE_BrowserHistoryV2.setObject(query);
 	}
 }
