@@ -33,20 +33,21 @@ export const BaiParam_PrintEnv: BaseCliParam<'printEnv', boolean> = {
 	description: 'Will print the current versions of the important tools'
 };
 
-export const BaiParam_Purge: BaseCliParam<'purge', boolean> = {
-	keys: ['--purge', '-p'],
-	keyName: 'purge',
-	group: 'Clean',
-	type: 'boolean',
-	description: 'Will delete the node_modules folder in all project packages \nWill perform --clean --install'
-};
-
 export const BaiParam_Clean: BaseCliParam<'clean', boolean> = {
 	keys: ['--clean', '-c'],
 	keyName: 'clean',
 	type: 'boolean',
 	group: 'Clean',
 	description: 'Will delete the output(dist) & test output(dist-test) folders in all project packages'
+};
+
+export const BaiParam_Purge: BaseCliParam<'purge', boolean> = {
+	keys: ['--purge', '-p'],
+	dependencies: [{param: BaiParam_Clean, value: true}],
+	keyName: 'purge',
+	group: 'Clean',
+	type: 'boolean',
+	description: 'Will delete the node_modules folder in all project packages \nWill perform --clean --install'
 };
 
 export const BaiParam_continue: BaseCliParam<'continue', boolean> = {
