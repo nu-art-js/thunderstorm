@@ -17,7 +17,14 @@ import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {mapProjectPackages} from './map-project-packages';
 import {MemKey_Packages} from '../core/consts';
 import * as fs from 'fs';
-import {Default_Files, MemKey_DefaultFiles, MemKey_RunningStatus} from '../defaults';
+import {promises as _fs} from 'fs';
+import {
+	Default_Files,
+	Default_OutputFiles,
+	MemKey_DefaultFiles,
+	MemKey_RunningStatus,
+	RunningStatus
+} from '../defaults/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
@@ -67,6 +74,7 @@ export class ProjectManager
 	private phases: BuildPhase[] = [];
 	private dryRun = RuntimeParams.dryRun;
 	private terminate = false;
+	private prevRunningStatus?: RunningStatus;
 
 	constructor() {
 		super();
@@ -76,14 +84,29 @@ export class ProjectManager
 
 	private async init() {
 		MemKey_DefaultFiles.set(Default_Files);
-		process.on('exit', () => {
-			console.log('SIGINT signal received.');
 
-			MemKey_RunningStatus.get()
-			//SAVE
-			// fs.write zevel
-			process.exit(0);
+		try {
+			if (RuntimeParams.continue)
+				this.prevRunningStatus = JSON.parse(await _fs.readFile(Default_OutputFiles.runningStatus, {encoding: 'utf-8'}));
+		} catch (e: any) {
+			this.logError('Failed reading running status', e);
+		}
+
+		process.on('exit', async () => {
+			const status = MemKey_RunningStatus.get();
+			this.logDebug('running status:', status);
+			if (!status)
+				process.exit(0);
+
+			try {
+				await _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(status, true));
+				process.exit(0);
+			} catch (e: any) {
+				this.logError('failed to save running status', e);
+				process.exit(1);
+			}
 		});
+
 		this.loadPackage();
 	}
 
@@ -138,7 +161,20 @@ export class ProjectManager
 
 				let didRun = false;
 				for (const phase of phasesToRun) {
+					// if there's a previous running status and the current phase is the one to continue from clean
+					if (this.prevRunningStatus && this.prevRunningStatus.phaseKey === phase.name)
+						delete this.prevRunningStatus;
+
+					// keep the current running status updated
+					if (!this.prevRunningStatus)
+						MemKey_RunningStatus.set({phaseKey: phase.name});
+
 					this.logInfo(`Running project phase: ${phase.name}`);
+
+					// if prev running status still exists skip execution
+					if (this.prevRunningStatus)
+						return;
+
 					if (this.dryRun) {
 						await sleep(1000);
 					} else
@@ -157,8 +193,17 @@ export class ProjectManager
 			let didRun = false;
 			let didPrintPhase = false;
 
-			const toRunPackages = MemKey_Packages.get().packagesDependency.map(packages => {
+			const toRunPackages = MemKey_Packages.get().packagesDependency.map((packages, i) => {
 				return async () => {
+
+					// if there's a previous running status and the current phase is the one to continue from clean
+					if (this.prevRunningStatus && this.prevRunningStatus.phaseKey === phasesToRun[0].name && i === this.prevRunningStatus.packageDependencyIndex)
+						delete this.prevRunningStatus;
+
+					// keep the current running status updated
+					if (!this.prevRunningStatus)
+						MemKey_RunningStatus.set({phaseKey: phasesToRun[0].name, packageDependencyIndex: i});
+
 					let didPrintPackages = false;
 					const values = flatArray(packages.map(async pkg => {
 						for (const phase of phasesToRun as BuildPhase_Package[]) {
@@ -177,6 +222,11 @@ export class ProjectManager
 
 							didRun = true;
 							this.logDebug(`   - ${pkg.name}:${phase.name}`);
+
+							// if prev running status still exists skip execution
+							if (this.prevRunningStatus)
+								return;
+
 							if (this.dryRun) {
 								await sleep(1000);
 							} else

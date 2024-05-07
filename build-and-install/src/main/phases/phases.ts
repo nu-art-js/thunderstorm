@@ -1,11 +1,30 @@
-import {BuildPhase, PackageBuildPhaseType_Package, PackageBuildPhaseType_PackageWithOutput} from '../logic/ProjectManager';
+import {
+	BuildPhase,
+	PackageBuildPhaseType_Package,
+	PackageBuildPhaseType_PackageWithOutput
+} from '../logic/ProjectManager';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, MemKey_Packages} from '../core/consts';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
-import {__stringify, _keys, BadImplementationException, exists, filterDuplicates, reduceToMap, sleep, TypedMap} from '@nu-art/ts-common';
-import {JSONVersion, Package_FirebaseFunctionsApp, Package_FirebaseHostingApp, PackageType_InfraLib, RuntimePackage_WithOutput} from '../core/types';
+import {
+	__stringify,
+	_keys,
+	BadImplementationException,
+	exists,
+	filterDuplicates,
+	reduceToMap,
+	sleep,
+	TypedMap
+} from '@nu-art/ts-common';
+import {
+	JSONVersion,
+	Package_FirebaseFunctionsApp,
+	Package_FirebaseHostingApp,
+	PackageType_InfraLib,
+	RuntimePackage_WithOutput
+} from '../core/types';
 import {createFirebaseFunctionsJSON, createFirebaseHostingJSON, createFirebaseRC} from '../core/package/generate';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {AllBaiParams, RuntimeParams} from '../core/params/params';
@@ -13,7 +32,7 @@ import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {PNPM} from '@nu-art/commando/cli/pnpm';
 import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
 import * as chokidar from 'chokidar';
-import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults';
+import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults/consts';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';

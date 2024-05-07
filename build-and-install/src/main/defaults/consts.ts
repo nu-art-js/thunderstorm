@@ -29,9 +29,15 @@ export const Const_FirebaseConfigKeys: (keyof typeof Default_Files['firebaseConf
 	'storageRules',
 ];
 
-export const MemKey_DefaultFiles = new MemKey<typeof Default_Files>('default-files');
-type RunningStatus = {
-	phaseKey: string,
-	packageDependencyIndex: number
+export const Default_OutputFiles = {
+	runningStatus: './.trash/running-status.json'
 };
+
+export const MemKey_DefaultFiles = new MemKey<typeof Default_Files>('default-files');
+
+export type RunningStatus = {
+	phaseKey: string,
+	packageDependencyIndex?: number
+};
+
 export const MemKey_RunningStatus = new MemKey<RunningStatus>('running-status');
