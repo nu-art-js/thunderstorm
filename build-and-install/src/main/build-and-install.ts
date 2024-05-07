@@ -23,6 +23,8 @@ import {
 	Phase_SetWithThunderstorm,
 	projectPackages
 } from './phases/phases';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {Default_Files, MemKey_DefaultFiles} from './defaults';
 
 
 const projectManager = new ProjectManager(projectPackages);
@@ -50,17 +52,11 @@ projectManager.registerPhase(Phase_DeployFrontend);
 projectManager.registerPhase(Phase_DeployBackend);
 // projectManager.registerPhase(Phase_Debug);
 
-(async () => {
+
+new MemStorage().init(async () => {
+	MemKey_DefaultFiles.set(Default_Files);
+
 	return projectManager.execute();
-	// await projectManager.runPhaseByKey('with-ts-home');
-	// await projectManager.runPhaseByKey('setup-project');
-	// await projectManager.runPhaseByKey('resolve-template');
-	// await projectManager.runPhaseByKey('debug');
-	// await projectManager.runPhaseByKey('resolve-env');
-	// await projectManager.runPhaseByKey('firebase-function-test');
-	// await projectManager.runPhaseByKey('install');
-	// return projectManager.runPhaseByKey('launch');
-	// return projectManager.runPhaseByKey('print-dependency-tree');
-})()
+})
 	.then(() => StaticLogger.logInfo('completed'))
 	.catch(err => StaticLogger.logError('Failed with error: ', err));

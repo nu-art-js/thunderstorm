@@ -171,7 +171,7 @@ export const BaiParam_NoBuild: BaseCliParam<'noBuild', boolean> = {
 };
 
 export const BaiParam_DryRun: BaseCliParam<'dryRun', boolean> = {
-	keys: ['--dry-run', '-dry'],
+	keys: ['--dry-run', '-dry', '--dryrun'],
 	keyName: 'dryRun',
 	group: 'Other',
 	type: 'boolean',
