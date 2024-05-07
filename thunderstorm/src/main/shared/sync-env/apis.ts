@@ -8,6 +8,7 @@ export type Request_FetchFromEnvV2 = {
 	env: string,
 	chunkSize: number,
 	selectedModules: string[]
+	cleanSync?: boolean
 }
 
 export type Request_FetchFirebaseBackup = { backupId: UniqueId, env: string }
