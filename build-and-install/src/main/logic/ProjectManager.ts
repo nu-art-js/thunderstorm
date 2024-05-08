@@ -92,20 +92,19 @@ export class ProjectManager
 			this.logError('Failed reading running status', e);
 		}
 
-		process.on('exit', async () => {
-			const status = MemKey_RunningStatus.get();
-			this.logDebug('running status:', status);
-			if (!status)
-				process.exit(0);
-
-			try {
-				await _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(status, true));
-				process.exit(0);
-			} catch (e: any) {
-				this.logError('failed to save running status', e);
-				process.exit(1);
-			}
-		});
+		// process.on('exit', async () => {
+		// 	const status = MemKey_RunningStatus.get();
+		// 	this.logDebug('running status:', status);
+		// 	if (!status)
+		// 		process.exit(0);
+		//
+		// 	try {
+		// 		process.exit(0);
+		// 	} catch (e: any) {
+		// 		this.logError('failed to save running status', e);
+		// 		process.exit(1);
+		// 	}
+		// });
 
 		this.loadPackage();
 	}
@@ -124,6 +123,10 @@ export class ProjectManager
 	registerPhase(phase: BuildPhase) {
 		this.phases.push(phase);
 	}
+
+	private updateRunningStatus = async (runningStatus: RunningStatus = MemKey_RunningStatus.get()) => {
+		return _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(runningStatus, true));
+	};
 
 	async prepare(phases = this.phases, index: number = 0) {
 		const phasesToRun: BuildPhase[] = [];
@@ -172,8 +175,10 @@ export class ProjectManager
 					this.logInfo(`Running project phase: ${phase.name}`);
 
 					// if prev running status still exists skip execution
-					if (this.prevRunningStatus)
-						return;
+					if (this.prevRunningStatus) {
+						this.logVerbose('Skipping duo continue');
+						continue;
+					}
 
 					if (this.dryRun) {
 						await sleep(1000);
@@ -181,6 +186,9 @@ export class ProjectManager
 						await (phase as BuildPhase_Project).action();
 
 					didRun = true;
+
+					//update running status
+					await this.updateRunningStatus();
 				}
 
 				if (didRun && lastElement(phasesToRun)!.terminatingPhase)
@@ -224,13 +232,18 @@ export class ProjectManager
 							this.logDebug(`   - ${pkg.name}:${phase.name}`);
 
 							// if prev running status still exists skip execution
-							if (this.prevRunningStatus)
-								return;
+							if (this.prevRunningStatus) {
+								this.logVerbose('Skipping duo continue');
+								continue;
+							}
 
 							if (this.dryRun) {
 								await sleep(1000);
 							} else
 								await phase.action(pkg);
+
+							// save the running status post action execution
+							await this.updateRunningStatus();
 						}
 					}));
 
