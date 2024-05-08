@@ -33,6 +33,7 @@ import {PNPM} from '@nu-art/commando/cli/pnpm';
 import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
 import * as chokidar from 'chokidar';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults/consts';
+import {MemKey_ProjectManager} from '../project-manager';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
@@ -76,6 +77,7 @@ export const Phase_PrintHelp: BuildPhase = {
 export const Phase_SetWithThunderstorm: BuildPhase = {
 	type: 'project',
 	name: 'with-ts-home',
+	isMandatory: true,
 	action: async () => {
 		// set value of the running with infra flag
 		if (RuntimeParams.thunderstormHome)
@@ -92,6 +94,7 @@ export const Phase_SetWithThunderstorm: BuildPhase = {
 export const Phase_SetupProject: BuildPhase = {
 	type: 'project',
 	name: 'setup-project',
+	isMandatory: true,
 	action: async () => {
 		const thunderstormVersionJson = require(convertToFullPath('./version-thunderstorm.json')) as JSONVersion;
 		const packages = MemKey_Packages.get();
@@ -105,10 +108,32 @@ export const Phase_SetupProject: BuildPhase = {
 	}
 };
 
+
+export const Phase_PrepareParams: BuildPhase = {
+	type: 'package',
+	name: 'prepare-params',
+	isMandatory: true,
+	mandatoryPhases: [Phase_SetupProject, Phase_SetWithThunderstorm],
+	action: async (pkg) => {
+		const packages = MemKey_Packages.get();
+
+		// with workspace: *
+		const tempPackageJson = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
+			const toRet = packages.params[key!] ? 'workspace:*' : ``;
+			return toRet;
+		});
+
+		// placed package name to version
+		packages.params[tempPackageJson.name] = tempPackageJson.version;
+		packages.params[`${tempPackageJson.name}_path`] = `file:.dependencies/${pkg.name}`;
+	}
+};
+
 export const Phase_ResolveTemplate: BuildPhase = {
 	type: 'package',
 	name: 'resolve-template',
-	mandatoryPhases: [Phase_SetupProject, Phase_SetWithThunderstorm],
+	isMandatory: true,
+	mandatoryPhases: [Phase_PrepareParams, Phase_SetupProject, Phase_SetWithThunderstorm],
 	action: async (pkg) => {
 		const packages = MemKey_Packages.get();
 
@@ -148,6 +173,7 @@ export const Phase_ResolveTemplate: BuildPhase = {
 export const Phase_ResolveEnv: BuildPhase = {
 	type: 'package',
 	name: 'resolve-env',
+	isMandatory: true,
 	mandatoryPhases: [Phase_ResolveTemplate, Phase_SetupProject, Phase_SetWithThunderstorm],
 	filter: async (pkg) => pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app',
 	action: async (pkg) => {
@@ -155,7 +181,6 @@ export const Phase_ResolveEnv: BuildPhase = {
 		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(createFirebaseRC(firebasePkg, RuntimeParams.setEnv), null, 2), {encoding: 'utf-8'});
 		const defaultFiles = MemKey_DefaultFiles.get();
 
-		console.log('MMEEEMMMMKEYYYY', defaultFiles);
 		let fileContent;
 		if (pkg.type === 'firebase-hosting-app')
 			fileContent = createFirebaseHostingJSON(firebasePkg as Package_FirebaseHostingApp, RuntimeParams.setEnv);
@@ -436,12 +461,18 @@ export const Phase_CompileWatch: BuildPhase = {
 	filter: async () => RuntimeParams.watch,
 	action: async () => {
 		const watcher = chokidar.watch(sourcesPaths);
+		const projectManager = MemKey_ProjectManager.get();
 		const watchListener = (path: string, deleteDist?: boolean) => {
 			const libPath = _keys(compileActions).find(libPath => path.startsWith(libPath as string));
 			if (!libPath)
 				return console.error(`couldn't find lib to run for path: ${libPath}...\nListening on: ${__stringify(sourcesPaths, true)}`);
 
-			return compileActions[libPath](deleteDist);
+			const rtPackages = MemKey_Packages.get();
+			const packageIndex = rtPackages.packagesDependency.findIndex(packages => {
+				return packages.some(pkg => pkg.path === libPath);
+			});
+
+			projectManager.executePhase('compile', {phaseKey: 'compile', packageDependencyIndex: packageIndex});
 		};
 
 		watcher

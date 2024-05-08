@@ -13,7 +13,7 @@ import {
 	Phase_InstallPnpm,
 	Phase_Launch,
 	Phase_Lint,
-	Phase_PackagePurge,
+	Phase_PackagePurge, Phase_PrepareParams,
 	Phase_PrintDependencyTree,
 	Phase_PrintEnv,
 	Phase_PrintHelp,
@@ -31,6 +31,7 @@ const projectManager = new ProjectManager();
 projectManager.registerPhase(Phase_PrintHelp);
 projectManager.registerPhase(Phase_SetWithThunderstorm);
 projectManager.registerPhase(Phase_SetupProject);
+projectManager.registerPhase(Phase_PrepareParams);
 projectManager.registerPhase(Phase_ResolveTemplate);
 projectManager.registerPhase(Phase_ResolveEnv);
 projectManager.registerPhase(Phase_ResolvePackages);
