@@ -1,5 +1,5 @@
-import {ModuleFE_v3_BaseApi} from '@nu-art/thunderstorm/frontend';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {DBDef_PermissionDomain, DBProto_PermissionDomain} from '../shared';
 
 export type DispatcherType_PermissionDomain = DispatcherDef<DBProto_PermissionDomain, `__onPermissionDomainUpdated`>;
@@ -7,7 +7,7 @@ export type DispatcherType_PermissionDomain = DispatcherDef<DBProto_PermissionDo
 export const dispatch_onPermissionDomainChanged = new ThunderDispatcherV3<DispatcherType_PermissionDomain>('__onPermissionDomainUpdated');
 
 export class ModuleFE_PermissionDomain_Class
-	extends ModuleFE_v3_BaseApi<DBProto_PermissionDomain> {
+	extends ModuleFE_BaseApi<DBProto_PermissionDomain> {
 
 	constructor() {
 		super(DBDef_PermissionDomain, dispatch_onPermissionDomainChanged);

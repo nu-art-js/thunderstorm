@@ -1,11 +1,11 @@
 import * as React from 'react';
 import './Component_ShortUrlEditor.scss';
 import {
-	TS_EditableItemComponentV3
+	EditableRef,
+	TS_EditableItemComponentProto
 } from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
 import {DBProto_ShortUrl, UI_ShortUrl} from '../../../../_entity/short-url/shared';
 import {
-	EditableRef,
 	LL_H_C,
 	ModuleFE_Thunderstorm,
 	TS_BusyButton,
@@ -21,9 +21,9 @@ import {
 import {ModuleFE_ShortUrl} from '../../../../_entity/short-url/frontend';
 import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
 
+
 type Props = EditableRef<UI_ShortUrl> & { deleteCallback?: VoidFunction }
 type State = EditableRef<UI_ShortUrl>
-
 
 const StringEditableInput = TS_InputV2.editable({
 	type: 'text',
@@ -35,7 +35,7 @@ const TextArea = TS_TextAreaV2.editable({
 });
 
 export class Component_ShortUrlEditor
-	extends TS_EditableItemComponentV3<DBProto_ShortUrl, Props, State> {
+	extends TS_EditableItemComponentProto<DBProto_ShortUrl, Props, State> {
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
 		state = super.deriveStateFromProps(nextProps, state);

@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {TS_EditableItemComponent} from '../TS_EditableItemComponent/TS_EditableItemComponent';
-import {EditableRef} from '../Item_Editor';
+import {EditableRef, TS_EditableItemComponent} from '../TS_EditableItemComponent/TS_EditableItemComponent';
+
 
 type Props = {}
 type State = {

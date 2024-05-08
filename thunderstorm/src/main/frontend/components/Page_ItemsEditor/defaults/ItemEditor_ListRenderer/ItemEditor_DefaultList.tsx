@@ -1,13 +1,13 @@
 import * as React from 'react';
 import {DBProto} from '@nu-art/ts-common';
-import {ModuleFE_v3_BaseApi} from '../../../../modules/db-api-gen/ModuleFE_v3_BaseApi';
+import {ModuleFE_BaseApi} from '../../../../modules/db-api-gen/ModuleFE_BaseApi';
 import {LL_V_L} from '../../../Layouts';
 import {_className} from '../../../../utils/tools';
 import './ItemEditor_DefaultList.scss';
 import {ItemEditor_FilterType, ItemEditor_SortType} from '../../types';
 import {ComponentSync} from '../../../../core/ComponentSync';
-import {ApiCallerEventTypeV3} from '../../../../core/db-api-gen/v3_types';
-import {MenuAction} from '../../Page_ItemsEditorV3';
+import {ApiCallerEventType} from '../../../../core/db-api-gen/types';
+import {MenuAction} from '../../Page_ItemsEditor';
 import {
 	Model_PopUp,
 	ModuleFE_MouseInteractivity,
@@ -16,8 +16,8 @@ import {
 import {TS_BusyButton} from '../../../TS_BusyButton';
 
 
-export type Props_ListRendererV3<Proto extends DBProto<any>> = {
-	module: ModuleFE_v3_BaseApi<Proto>,
+export type Props_ListRenderer<Proto extends DBProto<any>> = {
+	module: ModuleFE_BaseApi<Proto>,
 	selected?: Partial<Proto['uiType']>
 	filter: ItemEditor_FilterType<Proto>,
 	onSelected: (item: Proto['uiType']) => void
@@ -27,9 +27,9 @@ export type Props_ListRendererV3<Proto extends DBProto<any>> = {
 };
 
 export class ItemEditor_DefaultList<Proto extends DBProto<any>>
-	extends ComponentSync<Props_ListRendererV3<Proto>> {
+	extends ComponentSync<Props_ListRenderer<Proto>> {
 
-	protected deriveStateFromProps(nextProps: Props_ListRendererV3<Proto>, state: Partial<any>) {
+	protected deriveStateFromProps(nextProps: Props_ListRenderer<Proto>, state: Partial<any>) {
 		if (nextProps === this.props || nextProps.module !== this.props.module) {
 			// @ts-ignore
 			delete this[this.props.module.defaultDispatcher.method];
@@ -44,7 +44,7 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 		return true;
 	}
 
-	private __onItemUpdated = (...params: ApiCallerEventTypeV3<Proto>): void => {
+	private __onItemUpdated = (...params: ApiCallerEventType<Proto>): void => {
 		return this.forceUpdate();
 	};
 

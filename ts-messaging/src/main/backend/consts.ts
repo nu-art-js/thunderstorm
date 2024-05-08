@@ -1,5 +1,5 @@
 import {filterInstances} from '@nu-art/ts-common';
-import {ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend';
 import {ModulePackBE_Messaging} from './module-pack';
 import {DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions/shared/types';
 import {
@@ -23,7 +23,7 @@ export const Permissions_Messaging: DefaultDef_Package = {
 			...Domain_Messaging,
 			levels: [...DuplicateDefaultAccessLevels(Domain_Messaging._id)],
 			dbNames: [
-				...filterInstances(ModulePackBE_Messaging as ModuleBE_BaseDBV3<any>[])
+				...filterInstances(ModulePackBE_Messaging as ModuleBE_BaseDB<any>[])
 					.filter(module => module.dbDef && module.dbDef.dbKey)
 					.map(module => module.dbDef),
 			].map(dbDef => dbDef.dbKey)

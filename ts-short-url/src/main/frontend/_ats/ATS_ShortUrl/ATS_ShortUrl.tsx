@@ -14,7 +14,7 @@ import {DBProto_ShortUrl} from '../../../_entity/short-url/shared';
 import {Component_ShortUrlEditor} from './components/Component_ShortUrlEditor';
 import {sortArray, voidFunction} from '@nu-art/ts-common';
 import {TS_EditableItemController} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemController';
-import {ApiCallerEventTypeV3, DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {ApiCallerEventType, DispatcherInterface} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 type State = {};
@@ -32,7 +32,7 @@ export class ATS_ShortUrl
 		group: ATS_Fullstack
 	};
 
-	__onShortUrlsUpdated(...params: ApiCallerEventTypeV3<DBProto_ShortUrl>) {
+	__onShortUrlsUpdated(...params: ApiCallerEventType<DBProto_ShortUrl>) {
 		this.forceUpdate();
 	}
 

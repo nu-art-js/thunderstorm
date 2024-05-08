@@ -19,6 +19,9 @@
  * limitations under the License.
  */
 
+export * from './core/SmartComponent';
+
+
 export * from './_ats';
 export * from './core/types';
 export * from './core/ThunderstormDefaultApp';
@@ -84,6 +87,7 @@ export * from './components/TS_ReadMore';
 export * from './components/AwaitModules/AwaitModules';
 export * from './components/AwaitSync/AwaitSync';
 export * from './components/Show';
+export * from './components/TS_EditableItemComponent/TS_EditableItemComponent';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
@@ -94,10 +98,6 @@ export * from './components/form/Form';
 export * from './components/adapter/Adapter';
 export * from './components/adapter/BaseRenderer';
 
-export * from './core/SmartComponent';
-export * from './core/SmartPage';
-export * from './components/Item_Editor';
-export * from './components/Page_ItemsEditor';
 export * from './components/GenericDropDown';
 export * from './components/TS_MultiSelect';
 
@@ -105,9 +105,7 @@ export * from './modules/component-loader/ReactEntryComponentInjector';
 export * from './modules/component-loader/entry-component-loading-module';
 export * from './core/db-api-gen/consts';
 export * from './modules/db-api-gen/ModuleFE_BaseDB';
-export * from './modules/db-api-gen/ModuleFE_v3_BaseDB';
 export * from './modules/db-api-gen/ModuleFE_BaseApi';
-export * from './modules/db-api-gen/ModuleFE_v3_BaseApi';
 export * from './modules/archiving/ModuleFE_Archiving';
 export * from './modules/ModuleFE_BrowserHistory';
 export * from './modules/ModuleFE_ConnectivityModule';
@@ -130,7 +128,6 @@ export * from './modules/sync-manager/ModuleFE_SyncManager_CSV';
 
 export * from './utils/tools';
 export * from './utils/EditableItem';
-export * from './utils/EditableDBItem';
 export * from './utils/perform-action';
 
 export * from './behavior-functions';

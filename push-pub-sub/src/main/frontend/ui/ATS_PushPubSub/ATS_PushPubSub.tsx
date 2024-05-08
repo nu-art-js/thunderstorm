@@ -3,14 +3,11 @@ import {
 	_className,
 	AppToolsScreen,
 	ATS_Fullstack,
-	CellRenderer,
+	CellRenderer, ComponentSync,
 	LL_H_C,
 	LL_H_T,
 	LL_V_L,
 	ModuleFE_Toaster,
-	Props_SmartComponent,
-	SmartComponent,
-	State_SmartComponent,
 	TS_BusyButton,
 	TS_Button,
 	TS_Input,
@@ -30,7 +27,7 @@ import {PushMessage_Payload} from '../../../shared';
 import './ATS_PushPubSub.scss';
 import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 import {ModuleFE_PushSubscription} from '../../modules/ModuleFE_PushSubscription';
-import {ApiCallerEventTypeV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {DBProto_PushSubscription} from '../../../shared/push-subscription';
 
 
@@ -67,25 +64,21 @@ const ConfigPreset_1 = {
 };
 
 export class ATS_PushPubSub
-	extends SmartComponent<Props, State>
+	extends ComponentSync<Props, State>
 	implements OnPushMessageReceived {
 
-	static screen: AppToolsScreen = {name: `Push Messages`, renderer: this, group: ATS_Fullstack};
-	static defaultProps = {
-		modules: [ModuleFE_PushSubscription]
+	// ######################## Static ########################
+
+	static screen: AppToolsScreen = {
+		name: `Push Messages`,
+		renderer: this,
+		group: ATS_Fullstack,
+		modulesToAwait: [ModuleFE_PushSubscription]
 	};
 
-	constructor(p: Props) {
-		super(p);
-	}
+	// ######################## Lifecycle ########################
 
-	protected async deriveStateFromProps(nextProps: Props_SmartComponent & Props, _state: (Partial<State> & State_SmartComponent) | undefined): Promise<State_SmartComponent & State> {
-		const state = _state ?? {} as State_SmartComponent & State;
-
-		return {...state, ...ConfigPreset_1.config, receivedPushPayloads: []};
-	}
-
-	__onSubscriptionUpdated(...params: ApiCallerEventTypeV3<DBProto_PushSubscription>): void {
+	__onSubscriptionUpdated(...params: ApiCallerEventType<DBProto_PushSubscription>): void {
 		this.forceUpdate();
 	}
 
@@ -93,6 +86,45 @@ export class ATS_PushPubSub
 		console.log('GOT PUSH:', payload.message.topic, payload.message.props, payload.message.data);
 		this.setState({receivedPushPayloads: [...this.state.receivedPushPayloads, payload]});
 	}
+
+	protected deriveStateFromProps(nextProps: Props, _state: (Partial<State>) | undefined): State {
+		const state = _state ?? {} as State;
+		return {...state, ...ConfigPreset_1.config, receivedPushPayloads: []};
+	}
+
+	// ######################## Logic ########################
+
+	private composeFilter(objProps: ObjProps[]) {
+		return objProps.reduce((toRet, item) => {
+			if (!!item.key && item.key !== '')
+				toRet[item.key] = item.value;
+			return toRet;
+		}, {} as TS_Object);
+	}
+
+	private trigger = async () => {
+		if (!ModuleFE_PushPubSub.hasToken())
+			return ModuleFE_Toaster.toastError('No push token generated');
+
+		const filter = this.composeFilter(this.state.triggerFilter);
+		const data = {'a': 'aaa'};
+
+		const message = {topic: this.state.triggerKey, filter, data};
+		this.logInfo(`triggering push: ${__stringify(message, true)}`);
+		await ModuleFE_PushPubSub.v1.test({message}).executeSync();
+	};
+
+	private subscribe = async () => {
+		if (!ModuleFE_PushPubSub.hasToken())
+			return ModuleFE_Toaster.toastError('No push token generated');
+
+		await ModuleFE_PushPubSub.v1.register({
+			topic: this.state.registerKey,
+			filter: this.composeFilter(this.state.registerFilter)
+		}).executeSync();
+	};
+
+	// ######################## Render ########################
 
 	render() {
 		const className = _className('notification-icon', ModuleFE_PushPubSub.isNotificationEnabled() ? 'notification-enabled' : 'notification-disabled',);
@@ -135,36 +167,6 @@ export class ATS_PushPubSub
 			</LL_H_T>
 		</LL_V_L>;
 	}
-
-	private composeFilter(objProps: ObjProps[]) {
-		return objProps.reduce((toRet, item) => {
-			if (!!item.key && item.key !== '')
-				toRet[item.key] = item.value;
-			return toRet;
-		}, {} as TS_Object);
-	}
-
-	private trigger = async () => {
-		if (!ModuleFE_PushPubSub.hasToken())
-			return ModuleFE_Toaster.toastError('No push token generated');
-
-		const filter = this.composeFilter(this.state.triggerFilter);
-		const data = {'a': 'aaa'};
-
-		const message = {topic: this.state.triggerKey, filter, data};
-		this.logInfo(`triggering push: ${__stringify(message, true)}`);
-		await ModuleFE_PushPubSub.v1.test({message}).executeSync();
-	};
-
-	private subscribe = async () => {
-		if (!ModuleFE_PushPubSub.hasToken())
-			return ModuleFE_Toaster.toastError('No push token generated');
-
-		await ModuleFE_PushPubSub.v1.register({
-			topic: this.state.registerKey,
-			filter: this.composeFilter(this.state.registerFilter)
-		}).executeSync();
-	};
 
 	private renderPanel(title: string, rows: ObjProps[], key: 'registerKey' | 'triggerKey', action: () => Promise<void>) {
 		const cellRenderer: CellRenderer<ObjProps, Actions> = (prop, item, index: number) => {
@@ -222,6 +224,4 @@ export class ATS_PushPubSub
 	title(title: string): React.ReactNode {
 		return <div>{title}</div>;
 	}
-
 }
-

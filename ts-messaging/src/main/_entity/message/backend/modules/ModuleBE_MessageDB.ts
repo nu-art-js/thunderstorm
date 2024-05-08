@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDBV3,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
 import {DBDef_message, DBProto_Message} from '../shared';
 import {getAuditorId, ModuleBE_AccountDB} from '@nu-art/user-account/backend';
 import {arrayToMap} from '@nu-art/ts-common';
@@ -7,7 +7,7 @@ import {arrayToMap} from '@nu-art/ts-common';
 type Config = DBApiConfigV3<DBProto_Message> & {}
 
 export class ModuleBE_MessageDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_Message, Config> {
+	extends ModuleBE_BaseDB<DBProto_Message, Config> {
 
 	constructor() {
 		super(DBDef_message);

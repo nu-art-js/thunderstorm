@@ -19,17 +19,13 @@
  * limitations under the License.
  */
 
-import {ApiDefCaller, ApiStruct_DBApiGenIDB, BaseHttpRequest, DBApiDefGeneratorIDB, HttpException, QueryParams, TypedApi,} from '../../shared';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-
-import {BadImplementationException, DB_BaseObject, DB_Object, DBDef, Default_UniqueKey, IndexKeys, PreDB, TypedMap} from '@nu-art/ts-common';
-
+import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
+import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException,  TypedApi} from '../../shared';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
-import {ApiCallerEventType} from '../../core/db-api-gen/types';
-import {DataStatus} from '../../core/db-api-gen/consts';
-import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {ModuleSyncType} from './types';
 
 
@@ -46,18 +42,18 @@ type Operation = {
 	pending?: Pending
 }
 
-export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
-	extends ModuleFE_BaseDB<DBType, Ks, Config>
-	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>> {
+export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config extends {} = {}, Config extends _Config & DBApiFEConfig<Proto> = _Config & DBApiFEConfig<Proto>>
+	extends ModuleFE_BaseDB<Proto, Config>
+	implements ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>> {
 
 	// @ts-ignore
-	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['v1'];
 	private operations: TypedMap<Operation> = {};
 
-	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>) {
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string) {
 		super(dbDef, defaultDispatcher, ModuleSyncType.APISync);
 
-		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
+		const apiDef = this.resolveApiDef(dbDef, version);
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
@@ -71,15 +67,15 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore
 		this.v1 = {
-			query: (query?: FirestoreQuery<DBType>) => _query(query || _EmptyQuery),
+			query: (query?: FirestoreQuery<Proto['dbType']>) => _query(query || _EmptyQuery),
 			// @ts-ignore
-			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
-				return queryUnique(typeof uniqueKeys === 'string' ? {_id: uniqueKeys} : uniqueKeys as unknown as QueryParams);
+			queryUnique: (_id: string) => {
+				return queryUnique({_id});
 			},
 			// @ts-ignore
-			upsert: (toUpsert: PreDB<DBType>) => {
+			upsert: (toUpsert: Proto['uiType']) => {
 				toUpsert = this.cleanUp(toUpsert);
-				this.validateImpl(toUpsert);
+				this.validateInternal(toUpsert);
 				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
 			upsertAll: apiWithBody(apiDef.v1.upsertAll, async (items) => {
@@ -90,7 +86,7 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 			}),
 			// @ts-ignore
 			patch: (toPatch: Partial<DBType>) => {
-				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch as IndexKeys<DBType, Ks> & Partial<DBType>), 'patch');
+				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch as IndexKeys<Proto['dbType'], keyof Proto['dbType']> & Proto['uiType']), 'patch');
 			},
 			delete: (item: DB_BaseObject) => {
 				return this.updatePending(item, _delete(item), 'delete');
@@ -100,16 +96,11 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 		};
 	}
 
-	protected init() {
-		super.init();
-		const superClear = this.IDB.clear;
-		this.IDB.clear = async (reSync = false) => {
-			await superClear();
-			this.setDataStatus(DataStatus.NoData);
-		};
+	protected resolveApiDef(dbDef: DBDef_V3<Proto>, version: string | undefined) {
+		return DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
 	}
 
-	protected cleanUp = (toUpsert: PreDB<DBType>) => {
+	protected cleanUp = (toUpsert: Proto['uiType']) => {
 		return toUpsert;
 	};
 
