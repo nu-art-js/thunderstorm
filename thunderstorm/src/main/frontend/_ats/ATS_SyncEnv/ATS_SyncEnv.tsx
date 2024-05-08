@@ -1,6 +1,14 @@
 import * as React from 'react';
 import './ATS_SyncEnv.scss';
-import {_keys, filterKeys, RuntimeModules, tsValidateResult, tsValidateUniqueId, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {
+	_keys,
+	filterKeys,
+	RuntimeModules,
+	tsValidateResult,
+	tsValidateUniqueId,
+	TypedMap,
+	UniqueId
+} from '@nu-art/ts-common';
 import {AppToolsScreen, ATS_Fullstack, TS_AppTools} from '../../components/TS_AppTools';
 import {genericNotificationAction} from '../../components/TS_Notifications';
 import {ModuleFE_SyncEnvV2} from '../../modules/sync-env/ModuleFE_SyncEnvV2';
@@ -42,12 +50,14 @@ type State = {
 	backupId?: string;
 	selectedModules: Set<string>;
 
-	moduleList: TypedMap<ModuleMetadata> //name, origin data like local-only, remote-only, from backup-only
+	moduleList: TypedMap<ModuleMetadata> //name, origin data like local-only, remote-only, from backup-only 'LRB'
 	searchFilter: string;
 	restoreTime?: string;
 	backingUpInProgress?: boolean;
 	fetchMetadataInProgress?: boolean;
 	metadata?: Response_FetchBackupMetadata;
+
+	cleanSync: boolean
 }
 
 export class ATS_SyncEnvironment
@@ -121,7 +131,8 @@ export class ATS_SyncEnvironment
 				env: this.state.selectedEnv!,
 				backupId: this.state.backupId!,
 				chunkSize: this.state.selectedChunkSize!,
-				selectedModules: Array.from(this.state.selectedModules)
+				selectedModules: Array.from(this.state.selectedModules),
+				cleanSync:this.state.cleanSync,
 			}, 'selectedModules')).executeSync();
 		}, 'Syncing Env');
 		const end = performance.now();
@@ -230,7 +241,8 @@ export class ATS_SyncEnvironment
 
 	private renderMenu = () => {
 		const envAdapter = SimpleListAdapter([...Environments], item => <div className={'node-data'}>{item.item}</div>);
-		const chunkSizesAdapter = SimpleListAdapter([...ChunkSizes], item => <div className={'node-data'}>{item.item}</div>);
+		const chunkSizesAdapter = SimpleListAdapter([...ChunkSizes], item => <div
+			className={'node-data'}>{item.item}</div>);
 		return <LL_V_L className={'sync-env-page__menu'}>
 			<LL_H_C className={'sync-env-page__menu__row'}>
 				<TS_PropRenderer.Vertical label={'Environment'}>
@@ -281,10 +293,16 @@ export class ATS_SyncEnvironment
 				<TS_BusyButton onClick={this.createNewBackup}>Trigger Backup</TS_BusyButton>
 				<TS_BusyButton onClick={this.syncEnv} disabled={!this.canSync()}>Sync Environment</TS_BusyButton>
 				{Thunder.getInstance().getConfig().name?.toLowerCase() === this.state.selectedEnv && <TS_BusyButton
-					onClick={this.syncFirebase}
-					disabled={!this.canSync()}
-					className={'deter-users-from-this-button'}
-				>Restore Firebase To Older Backup</TS_BusyButton>}
+                    onClick={this.syncFirebase}
+                    disabled={!this.canSync()}
+                    className={'deter-users-from-this-button'}
+                >Restore Firebase To Older Backup</TS_BusyButton>}
+				<TS_Checkbox
+					checked={this.state.cleanSync}
+					onCheck={(value) => {
+						this.setState({cleanSync: value});
+					}}
+				>Clean Sync</TS_Checkbox>
 			</LL_H_C>
 		</TS_PropRenderer.Vertical>;
 	};
@@ -353,7 +371,7 @@ export class ATS_SyncEnvironment
 			<LL_H_C className={'collection-row'}>
 				<LL_H_C className={'backup-info'}>
 					{diffShow !== undefined &&
-						<div className={_className(diffShow > 0 ? 'higher' : 'lower')}>
+                        <div className={_className(diffShow > 0 ? 'higher' : 'lower')}>
 							{`${diffShow > 0 ? '+' : ''}${diffShow}`}</div>}
 					<div>{collectionMetadata?.numOfDocs !== undefined ? collectionMetadata?.numOfDocs : '--'}</div>
 					|

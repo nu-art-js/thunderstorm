@@ -1,18 +1,9 @@
-import {ChildProcessWithoutNullStreams, ExecOptions, exec, spawn} from 'child_process';
+import {exec, ExecOptions} from 'child_process';
 import {CreateMergedInstance} from './class-merger';
-import {Constructor} from '../../../../ts-common/src/main';
 import {CliError} from './CliError';
+import {Constructor, Logger, LogLevel} from '@nu-art/ts-common';
+import {ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 
-
-const colors = {
-	red: '\x1b[31m',
-	green: '\x1b[32m',
-	yellow: '\x1b[33m',
-	blue: '\x1b[34m',
-	magenta: '\x1b[35m',
-	cyan: '\x1b[36m',
-	reset: '\x1b[0m' // Resets the color
-};
 
 export type CliBlock<Cli extends CliWrapper> = (cli: Cli) => void;
 export type CliOptions = ExecOptions & {
@@ -34,21 +25,39 @@ const defaultOptions: Options = {
 	indentation: 2,
 };
 
-export class Cli {
-	private indentation = 0;
-	private option: Options;
-	private commands: string[] = [];
-	private _debug: boolean = false;
-	private cliOptions: Partial<CliOptions> = {shell: '/bin/bash'};
+export class BaseCLI
+	extends Logger {
 
-	// private shell?: ChildProcessWithoutNullStreams;
+	protected commands: string[] = [];
+	private indentation: number = 0;
+	protected _debug: boolean = false;
+	protected option: Options;
 
 	/**
 	 * Constructs a CLI instance with given options.
 	 * @param {Options} options - Configuration options for the CLI instance.
 	 */
 	constructor(options: Partial<Options> = defaultOptions) {
+		super();
+		this.setMinLevel(LogLevel.Verbose);
 		this.option = options as Options;
+	}
+
+	protected getIndentation = (): string => {
+		return ' '.repeat(this.option.indentation * this.indentation);
+	};
+
+	readonly indentIn = () => {
+		this.indentation++;
+	};
+
+	readonly indentOut = () => {
+		this.indentation++;
+	};
+
+	debug(debug?: boolean) {
+		this._debug = debug ?? !this._debug;
+		return this._debug;
 	}
 
 	/**
@@ -61,17 +70,61 @@ export class Cli {
 		return this;
 	};
 
-	readonly indentIn = () => {
-		this.indentation++;
-	};
+}
 
-	readonly indentOut = () => {
-		this.indentation++;
-	};
+export class CliInteractive
+	extends BaseCLI {
 
-	private getIndentation(): string {
-		return ' '.repeat(this.option.indentation * this.indentation);
+	private shell: ChildProcessWithoutNullStreams;
+
+	constructor() {
+		super();
+		this.shell = spawn('/bin/bash', {});
+
+		// Handle shell output (stdout)
+		const printer = (data: Buffer) => {
+			const message = data.toString().trim();
+			if (!message.length)
+				return;
+
+			console.log(message);
+		};
+
+		this.shell.stdout.on('data', printer);
+
+		this.shell.stderr.on('data', printer);
+
+		// Handle shell errors (stderr)
+		this.shell.on('data', printer);
+
+		// Handle shell exit
+		this.shell.on('close', (code) => {
+			console.log(`child process exited with code ${code}`);
+		});
 	}
+
+	execute = async (): Promise<void> => {
+		const command = this.commands.join(this.option.newlineDelimiter);
+		if (this._debug)
+			this.logDebug(`executing: `, `"""\n${command}\n"""`);
+
+		this.shell.stdin.write(command + this.option.newlineDelimiter, 'utf-8', (err?: Error | null) => {
+			console.log('GOT HERE');
+			if (err)
+				console.error(err);
+		});
+		this.commands = [];
+	};
+
+	endInteractive = () => {
+		this.shell.stdin.end();
+	};
+}
+
+export class Cli
+	extends BaseCLI {
+
+	private cliOptions: Partial<CliOptions> = {shell: '/bin/bash'};
 
 	/**
 	 * Executes the accumulated commands in the command list.
@@ -80,16 +133,7 @@ export class Cli {
 	execute = async (): Promise<{ stdout: string, stderr: string }> => {
 		const command = this.commands.join(this.option.newlineDelimiter);
 		if (this._debug)
-			console.log(`executing: `, `"""\n${command}\n"""`);
-
-		// if (this.shell) {
-		// 	this.shell.stdin.write(command, 'utf-8', (err?: Error) => {
-		// 		if (err)
-		// 			console.error(err);
-		// 	});
-		// 	this.commands = [];
-		// 	return;
-		// }
+			this.logDebug(`executing: `, `"""\n${command}\n"""`);
 
 		return new Promise((resolve, reject) => {
 			exec(command, this.cliOptions, (error, stdout, stderr) => {
@@ -102,38 +146,17 @@ export class Cli {
 				if (stderr)
 					reject(stderr);
 
+				if (stdout) {
+					console.log(stdout);
+					this.logVerbose(stdout);
+				}
+
+				if (stderr)
+					this.logVerboseBold(stderr);
 				resolve({stdout, stderr});
 			});
 		});
 	};
-
-	// interactive = () => {
-	// 	this.shell = spawn('bash');
-	//
-	// 	// Handle shell output (stdout)
-	// 	this.shell.stdout.on('data', (data) => {
-	// 		console.log(`${colors.blue}${data}${colors.reset}`);
-	// 	});
-	//
-	// 	this.shell.stderr.on('data', (data) => {
-	// 		console.log(`${colors.red}${data}${colors.reset}`);
-	// 	});
-	//
-	// 	// Handle shell errors (stderr)
-	// 	this.shell.on('data', (data) => {
-	// 		console.log(`${colors.green}${data}${colors.reset}`);
-	// 	});
-	//
-	// 	// Handle shell exit
-	// 	this.shell.on('close', (code) => {
-	// 		console.log(`child process exited with code ${code}`);
-	// 	});
-	// };
-
-	// endInteractive = () => {
-	// 	this.shell?.stdin.end();
-	// 	delete this.shell;
-	// };
 
 	/**
 	 * Appends an empty line to the script for readability.
@@ -150,11 +173,6 @@ export class Cli {
 
 	setOptions(options: Partial<CliOptions>) {
 		this.cliOptions = options;
-	};
-
-	debug(debug?: boolean) {
-		this._debug = debug ?? !this._debug;
-		return this._debug;
 	}
 }
 
@@ -162,25 +180,27 @@ export class CliWrapper {
 	cli!: Cli;
 }
 
-export class Commando
-	extends CliWrapper {
+export class Commando {
+	cli!: Cli;
 
 	static create<T extends Constructor<CliWrapper>[]>(...plugins: T) {
 		const _commando = CreateMergedInstance(...plugins);
 		const commando = _commando as Commando & typeof _commando;
 		const cli = new Cli();
+		cli.setMinLevel(LogLevel.Verbose);
+
 		commando.cli = cli;
-		commando.execute = cli.execute;
+		commando.execute = () => commando.cli.execute();
 		commando.debug = (debug?: boolean) => {
-			cli.debug(debug);
+			commando.cli.debug(debug);
 			return commando;
 		};
 		commando.setOptions = (options: Partial<CliOptions>) => {
-			cli.setOptions(options);
+			commando.cli.setOptions(options);
 			return commando;
 		};
 		commando.setShell = (shell: string) => {
-			cli.setShell(shell);
+			commando.cli.setShell(shell);
 			return commando;
 		};
 		commando.executeFile = (filePath: string, interpreter?: string) => {
@@ -196,14 +216,9 @@ export class Commando
 			return new Cli().append(`curl -o- "${pathToFile}" | ${interpreter}`).execute();
 		};
 		commando.append = (command: string) => {
-			cli.append(command);
+			commando.cli.append(command);
 			return commando;
 		};
-		// commando.interactive = () => {
-		// 	cli.interactive();
-		// 	return commando;
-		// };
-
 		return commando;
 	}
 
@@ -212,7 +227,6 @@ export class Commando
 	public debug = (debug?: boolean) => this;
 	append = (command: string) => this;
 
-	// interactive = () => this;
 	execute = async (): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});// placeholder
 
 	/**
@@ -227,6 +241,29 @@ export class Commando
 	executeRemoteFile = async (pathToFile: string, interpreter: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
 
 	private constructor() {
-		super();
 	}
+}
+
+export class CommandoInteractive {
+
+	cli!: CliInteractive;
+
+	static create<T extends Constructor<CliWrapper>[]>(...plugins: T) {
+		const _commando = Commando.create(...plugins);
+		const commando = _commando as unknown as CommandoInteractive;
+		const cli = new CliInteractive();
+		cli.setMinLevel(LogLevel.Verbose);
+
+		commando.cli = cli;
+
+		commando.close = () => {
+
+			return commando;
+		};
+
+		return commando as CommandoInteractive & typeof _commando;
+	}
+
+	close = () => this;
+
 }

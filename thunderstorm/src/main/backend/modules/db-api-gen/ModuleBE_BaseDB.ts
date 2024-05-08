@@ -19,9 +19,10 @@
  * limitations under the License.
  */
 
-import {Clause_Where, DB_EntityDependency, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
+import {Clause_Where, Conflict, DB_EntityDependencyV2, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	_keys,
+	_values,
 	ApiException,
 	asArray,
 	BadImplementationException,
@@ -31,15 +32,17 @@ import {
 	DBDef_V3,
 	dbObjectToId,
 	DBProto,
+	DotNotation,
 	filterDuplicates,
 	filterInstances,
 	flatArray,
+	getDotNotatedValue,
 	Module,
+	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
@@ -102,22 +105,24 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 * If it doesn't- return nothing.
 	 * If it does- return conflict ids.
 	 */
-	async __canDeleteEntitiesProto<T extends DBProto<any>>(toDeleteDbName: T['dbKey'], itemIdsToDelete: string[], transaction?: Transaction) {
-		const result: DB_EntityDependency = {
-			collectionKey: this.dbDef.entityName,
-			conflictingIds: []
+	async __canDeleteEntitiesProto<T extends DBProto<any>>(toDeleteDbName: T['dbKey'], itemIdsToDelete: string[], transaction?: Transaction): Promise<DB_EntityDependencyV2> {
+		const result: DB_EntityDependencyV2 = {
+			originalItemsToDelete: itemIdsToDelete.map(id => ({dbKey: toDeleteDbName, id: id})),
+			issues: []
 		};
 
 		const dependencies = this.dbDef.dependencies;
+
+		//If this object has no dependencies, there's nothing to check.
 		if (!dependencies)
 			return result;
 
-		const promises: Promise<Proto['dbType'][]>[] = [];
+		const conflictPromises: Promise<Proto['dbType'][]>[] = [];
 		_keys(dependencies).map(key => {
 			if (dependencies[key].dbKey !== toDeleteDbName)
 				return;
 
-			promises.push(batchActionParallel(itemIdsToDelete,
+			conflictPromises.push(batchActionParallel(itemIdsToDelete,
 				10, async ids => {
 					let query = undefined;
 					if (dependencies[key].fieldType === 'string')
@@ -133,21 +138,73 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 				}));
 		});
 
-		if (!promises.length)
+		//If we have no conflicts, fail-fast.
+		if (!conflictPromises.length)
 			return result;
 
-		//All gathered conflicting ids
-		let conflictingIds = filterDuplicates(flatArray(await Promise.all(promises)).map(dbObjectToId));
+		// Update result with the conflicts
+		this.checkConflicts(flatArray(await Promise.all(conflictPromises)), transaction, dependencies, toDeleteDbName, itemIdsToDelete, result);
+		return result;
+	}
+
+	protected checkConflicts<T extends DBProto<any>>(conflictItems: Proto['dbType'][], transaction: FirebaseFirestore.Transaction | undefined, dependencies: Proto['dependencies'], toDeleteDbName: T['dbKey'], itemIdsToDelete: string[], result: DB_EntityDependencyV2) {
+		//All gathered objects that contain the targets' ids
+		conflictItems = filterDuplicates(conflictItems, item => item._id);
 		//The MemKey_DeletedDocs object associated with this transaction
+		//Use it to filter out conflictItems that were 'deleted earlier' in the transaction
 		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
 		if (ignoredInThisTransaction) {
 			//The key associated with this collection
-			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.entityName];
+			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.dbKey];
 			//Filter out all ids of items which were already deleted in this transaction
-			conflictingIds = conflictingIds.filter(id => !ignoredForThisCollection?.has(id));
+			conflictItems = conflictItems.filter(object => !ignoredForThisCollection?.has(object._id));
 		}
-		result.conflictingIds = conflictingIds;
-		return result;
+
+		//Using a map to over all conflictItems, for ease-of-access and avoiding duplications
+		const mapOfIssues = conflictItems.reduce<TypedMap<Conflict>>((issuesMap, conflictingDbItem: Proto['dbType']) => {
+			//dependencyKeys are the field names that contain ids, like __groupIds.
+			const dependencyKeys: string[] = _keys(dependencies);
+			dependencyKeys.forEach(key => {
+				//If we find a field that contains an id of the 'toDeleteDbName'(which was received as param in the function) handle it
+				if (dependencies[key].dbKey !== toDeleteDbName)
+					return;
+
+				//todo split path if necessary and go into each prop properly
+				//In case the key in the dependency is dot-notated, like _refs._valueIds inside DB_Expression, get the dot notated value
+				const dotNotationValue = getDotNotatedValue(key as DotNotation<Proto['dbType']>, conflictingDbItem);
+
+				const targetIds = asArray<string>(dotNotationValue);
+				itemIdsToDelete.forEach(idToDelete => {
+					//Check if the ids in conflictingDbItem's field contain any of the target ids
+					if (!targetIds.includes(idToDelete))
+						return;
+
+					//Get or create a conflict object for the target id in the map
+					const targetConflictObject: Conflict = issuesMap[idToDelete] ?? {
+						target: {dbKey: toDeleteDbName, id: idToDelete},
+						conflicts: {dbKey: this.dbDef.dbKey, ids: []}
+					};
+
+					//Add the conflictingDbItem's _id to the conflicting ids array
+					if (!targetConflictObject.conflicts.ids.includes(conflictingDbItem._id))
+						targetConflictObject.conflicts.ids.push(conflictingDbItem._id);
+
+					issuesMap[idToDelete] = targetConflictObject;
+				});
+			});
+			return issuesMap;
+		}, {});
+
+		// let conflictingIds = filterDuplicates(flatArray(await Promise.all(promises)).map(dbObjectToId));
+		// //The MemKey_DeletedDocs object associated with this transaction
+		// const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
+		// if (ignoredInThisTransaction) {
+		// 	//The key associated with this collection
+		// 	const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.entityName];
+		// 	//Filter out all ids of items which were already deleted in this transaction
+		// 	conflictingIds = conflictingIds.filter(id => !ignoredForThisCollection?.has(id));
+		// }
+		result.issues = _values(mapOfIssues);
 	}
 
 	/**
@@ -271,15 +328,14 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			});
 	}
 
-	async collectDependencies(dbInstances: Proto['dbType'][], transaction?: Transaction) {
+	async collectDependencies(dbInstances: Proto['dbType'][], transaction?: Transaction): Promise<DB_EntityDependencyV2[] | undefined> {
 		const potentialProtoDependencyError = await canDeleteDispatcherV3.dispatchModuleAsync(this.dbDef.dbKey, dbInstances.map(dbObjectToId), transaction);
-		const protoDependencies = filterInstances(potentialProtoDependencyError.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
+		const protoDependencies = filterInstances(potentialProtoDependencyError.map(item => (item.issues.length || 0) === 0 ? undefined : item));
 
-		const potentialErrors = await canDeleteDispatcherV2.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
-		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
+		// const potentialErrors = await canDeleteDispatcherV2.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
+		// const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 
-		const resultDependencies = [...protoDependencies, ...dependencies];
-		return resultDependencies.length > 0 ? resultDependencies : undefined;
+		return protoDependencies.length > 0 ? protoDependencies : undefined;
 	}
 
 	private versionUpgrades: { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> } = {} as { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> };

@@ -41,6 +41,9 @@ type Config = {
 	sessionMap: TypedMap<TypedMap<string>>,
 	maxBatch: number
 	shouldBackupBeforeSync?: boolean;
+	allowCleanSync?: boolean;
+	allowSyncEnv?: boolean;
+	allowedEnvsToSyncFrom?: string[]
 }
 
 export interface OnSyncEnvCompleted {
@@ -116,8 +119,19 @@ class ModuleBE_SyncEnv_Class
 	};
 
 	syncFromEnvBackup = async (body: Request_FetchFromEnv) => {
+		if (!this.config.allowSyncEnv) {
+			throw new MUSTNeverHappenException(`SyncEnv is disabled on this env- to sync into this env, add 'allowSyncEnv: true'.`);
+		}
+
+		if (!this.config.allowCleanSync && body.cleanSync) { //CleanSync means deleting collections before syncing them
+			throw new MUSTNeverHappenException(`CleanSync is disabled on this env- to CleanSync into this env, add 'allowCleanSync: true'.`);
+		}
 		if (Storm.getInstance().getEnvironment().toLowerCase() === 'prod' && body.env.toLowerCase() !== 'prod') {
 			throw new MUSTNeverHappenException('MUST NEVER SYNC ENV THAT IS NOT PROD TO PROD!!');
+		}
+
+		if (this.config.allowedEnvsToSyncFrom && !this.config.allowedEnvsToSyncFrom.includes(body.env)) {
+			throw new MUSTNeverHappenException(`Env ${Storm.getInstance().getEnvironment().toLowerCase()} doesn't have env ${body.env} in it's allowedEnvsToSyncFrom list.`);
 		}
 
 		this.logInfoBold('Received API call Fetch From Env!');
@@ -133,6 +147,17 @@ class ModuleBE_SyncEnv_Class
 			this.logInfo(`Backup took ${((endTime - startTime) / 1000).toFixed(3)} seconds`);
 		}
 
+		if (body.cleanSync) {
+			//Delete all modules specified for syncing
+			await Promise.all(RuntimeModules().map((module: DBModuleType) => {
+				if (!body.selectedModules.includes(module.dbDef?.dbKey))
+					return;
+
+				(module as ModuleBE_BaseDB<any>).collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+			}));
+		}
+
+		//Prepare Syncing data
 		const backupInfo = await this.getBackupInfo(body);
 		const stream = await ModuleBE_BackupDocDB.createBackupReadStream(backupInfo);
 		const collectionFilter = new SyncCollectionFilter(body.selectedModules);
