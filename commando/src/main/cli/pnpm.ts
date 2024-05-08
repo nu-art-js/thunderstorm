@@ -2,13 +2,20 @@ import {Cli_Programming} from './programming';
 import {Cli_Basic} from './basic';
 import {Commando} from '../core/cli';
 import {promises as fs} from 'fs';
-import {convertToFullPath} from '../../test/bai/core/tools';
+import {convertToFullPath} from '../core/tools';
+import {Logger, LogLevel} from '@nu-art/ts-common';
 
 
-export class Cli_PNPM {
+export class Cli_PNPM
+	extends Logger {
 
 	private _expectedVersion = '8.15.5';
 	private _homeEnvVar = 'PNPM_HOME';
+
+	constructor() {
+		super();
+		this.setMinLevel(LogLevel.Verbose);
+	}
 
 	get homeEnvVar(): string {
 		return this._homeEnvVar;
@@ -35,7 +42,7 @@ export class Cli_PNPM {
 			await this.uninstall();
 		}
 
-		console.log(`installing PNPM version ${this._expectedVersion}`);
+		this.logDebug(`installing PNPM version ${this._expectedVersion}`);
 		await (commando ?? Commando.create())
 			.append(`curl -fsSL "https://get.pnpm.io/install.sh" | env PNPM_VERSION=${this._expectedVersion} sh -`)
 			.execute();
@@ -61,7 +68,7 @@ export class Cli_PNPM {
 	}
 
 	uninstall = async () => {
-		console.log('Uninstalling PNPM');
+		this.logDebug('Uninstalling PNPM');
 		const absolutePathToPNPM_Home = process.env[this._homeEnvVar];
 		if (!absolutePathToPNPM_Home)
 			return;
@@ -84,9 +91,9 @@ export class Cli_PNPM {
 				workspace += `  - '${lib}'\n`;
 			});
 			await fs.writeFile(pathToWorkspaceFile, workspace, 'utf8');
-			console.log(`Workspace file created at ${pathToWorkspaceFile}`);
-		} catch (error) {
-			console.error('Failed to create workspace file:', error);
+			this.logDebug(`Workspace file created at ${pathToWorkspaceFile}`);
+		} catch (error: any) {
+			this.logError('Failed to create workspace file:', error);
 		}
 	};
 }
