@@ -3,8 +3,8 @@ import {createBodyServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ApiDef_UpgradeCollection, Request_UpgradeCollections} from '../../../shared/upgrade-collection';
 import {ApiModule} from '../../../shared';
-import {ModuleBE_BaseApiV3_Class} from '../db-api-gen/ModuleBE_BaseApiV3';
-import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
+import {ModuleBE_BaseApi_Class} from '../db-api-gen/ModuleBE_BaseApi';
+import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB';
 
 
 export class ModuleBE_UpgradeCollection_Class
@@ -27,7 +27,7 @@ export class ModuleBE_UpgradeCollection_Class
 		this.logInfo('upgrade-all');
 		const filterModules = (module: any) => body.collectionsToUpgrade.length > 0 ? body.collectionsToUpgrade.includes(module.dbModule?.dbDef?.dbKey) : true;
 
-		const allCollectionModulesToCheck = RuntimeModules().filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) =>
+		const allCollectionModulesToCheck = RuntimeModules().filter<ModuleBE_BaseApi_Class<any>>((module: ApiModule) =>
 			!!module.dbModule?.dbDef?.dbKey
 			&& !(module.dbModule as { advisorCollectionModule: boolean }).advisorCollectionModule
 			&& filterModules(module));
@@ -35,7 +35,7 @@ export class ModuleBE_UpgradeCollection_Class
 		await Promise_all_sequentially(allCollectionModulesToCheck.map(module => () => this.upgradeModuleIfNecessary(module.dbModule)));
 	};
 
-	upgradeModuleIfNecessary = async (dbModule: ModuleBE_BaseDBV3<any>) => {
+	upgradeModuleIfNecessary = async (dbModule: ModuleBE_BaseDB<any>) => {
 		if (!(await dbModule.isCollectionUpToDate()))
 			await dbModule.upgradeCollection();
 	};
@@ -43,7 +43,7 @@ export class ModuleBE_UpgradeCollection_Class
 	upgrade = async (body: Request_UpgradeCollections) => {
 		const toUpgrade = body.collectionsToUpgrade;
 		const moduleToUpgrade = RuntimeModules()
-			.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbKey && toUpgrade.includes(module.dbModule?.dbDef?.dbKey));
+			.filter<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => !!module.dbModule?.dbDef?.dbKey && toUpgrade.includes(module.dbModule?.dbDef?.dbKey));
 		await Promise_all_sequentially(moduleToUpgrade.map(module => () => module.dbModule.upgradeCollection(body.force)));
 	};
 }

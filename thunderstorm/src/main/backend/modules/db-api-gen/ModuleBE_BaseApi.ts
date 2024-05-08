@@ -19,20 +19,10 @@
  * limitations under the License.
  */
 
-import {
-	__stringify,
-	_values,
-	ApiException,
-	DB_BaseObject,
-	DB_Object,
-	Default_UniqueKey,
-	Metadata,
-	Module,
-	PreDB
-} from '@nu-art/ts-common';
-import {DBApiConfig, ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
+import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
+import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {DBApiDefGeneratorIDBV2} from '../../../shared';
+import {DBApiDefGeneratorIDBV3} from '../../../shared';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 
@@ -42,28 +32,33 @@ import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof PreDB<Type> = Default_UniqueKey>
+export class ModuleBE_BaseApi_Class<Proto extends DBProto<any>>
 	extends Module {
 
-	readonly dbModule: ModuleBE_BaseDBV2<Type, any, Ks>;
+	readonly dbModule: ModuleBE_BaseDB<Proto>;
 	readonly apiDef;
 
-	constructor(dbModule: ModuleBE_BaseDBV2<Type, any, Ks>, version?: string) {
-		super(`Gen(${dbModule.getName()}, Api)`);
+	constructor(dbModule: ModuleBE_BaseDB<Proto, any>, version?: string) {
+		super(`GenApiV3(${dbModule.getName()})`);
 		this.dbModule = dbModule;
-		this.apiDef = DBApiDefGeneratorIDBV2<Type, Ks>(this.dbModule.dbDef, version);
+		this.apiDef = DBApiDefGeneratorIDBV3<Proto>(this.dbModule.dbDef, version);
 	}
 
 	init() {
+		this.logDebug(`Adding routes : ${this.apiDef.v1.query.path}`);
 		addRoutes([
-			createBodyServerApi(this.apiDef.v1.query, this.dbModule.query.custom),
+			createBodyServerApi(this.apiDef.v1.query, async queryBody => {
+				const items = await this.dbModule.query.where(queryBody);
+				await this.dbModule.upgradeInstances(items);
+				return items;
+			}),
 			createQueryServerApi(this.apiDef.v1.queryUnique, async (queryObject: DB_BaseObject) => {
 				const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 				if (!toReturnItem)
 					throw new ApiException(404, `Could not find ${this.dbModule.collection.dbDef.entityName} with _id: ${queryObject._id}`);
 				return toReturnItem;
 			}),
-			createBodyServerApi(this.apiDef.v1.upsert, (item) => this._upsert(item)),
+			createBodyServerApi(this.apiDef.v1.upsert, this.dbModule.set.item),
 			createBodyServerApi(this.apiDef.v1.upsertAll, (body) => this.dbModule.set.all(body)),
 			createQueryServerApi(this.apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
 			createBodyServerApi(this.apiDef.v1.deleteQuery, this._deleteQuery),
@@ -72,11 +67,11 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 		]);
 	}
 
-	private _metadata = async (): Promise<Metadata<Type>> => {
-		return {...this.dbModule.dbDef.metadata} as Metadata<Type> || `not implemented yet for collection '${this.dbModule.dbDef.dbKey}'`;
+	private _metadata = async (): Promise<Metadata<Proto['dbType']>> => {
+		return {...this.dbModule.dbDef.metadata} as unknown as Metadata<Proto['dbType']> || `not implemented yet for collection '${this.dbModule.dbDef.dbKey}'`;
 	};
 
-	private _deleteQuery = async (query: FirestoreQuery<Type>): Promise<Type[]> => {
+	private _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 		if (!query.where)
 			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);
 
@@ -85,12 +80,8 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 
 		return this.dbModule.delete.query(query);
 	};
-
-	protected async _upsert(item: PreDB<Type>) {
-		return this.dbModule.set.item(item);
-	}
 }
 
-export const createApisForDBModuleV2 = <DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey>(dbModule: ModuleBE_BaseDBV2<DBType, any, Ks>, version ?: string) => {
-	return new ModuleBE_BaseApiV2_Class<DBType, any, Ks>(dbModule, version);
+export const createApisForDBModuleV3 = <Proto extends DBProto<any>>(dbModule: ModuleBE_BaseDB<Proto>, version?: string) => {
+	return new ModuleBE_BaseApi_Class<Proto>(dbModule, version);
 };

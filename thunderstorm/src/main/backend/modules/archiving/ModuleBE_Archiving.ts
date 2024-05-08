@@ -12,7 +12,7 @@ import {
 	RuntimeModules
 } from '@nu-art/ts-common';
 import {ModuleBE_FirestoreListener} from '@nu-art/firebase/backend';
-import {ModuleBE_BaseDBV3} from '../db-api-gen/ModuleBE_BaseDBV3';
+import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {
@@ -37,7 +37,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	extends ModuleBE_FirestoreListener<DBType> {
 	private readonly TTL: number; // Time to live for each instance
 	private readonly lastUpdatedTTL: number; // Time to live after last update
-	protected readonly moduleMapper: { [key: string]: ModuleBE_BaseDBV3<any> }; // Module mapper, mapping collection name to module
+	protected readonly moduleMapper: { [key: string]: ModuleBE_BaseDB<any> }; // Module mapper, mapping collection name to module
 
 	/**
 	 * Constructor initializes TTL, lastUpdatedTTL moduleMapper and sets api routes for the module.
@@ -61,7 +61,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 
 		// Add all DB modules to the mapper
 		RuntimeModules()
-			.filter<ModuleBE_BaseDBV3<any>>((module: DBModuleType) => !!module.dbDef)
+			.filter<ModuleBE_BaseDB<any>>((module: DBModuleType) => !!module.dbDef)
 			.forEach(_module => this.moduleMapper[_module.collection.collection.path] = _module);
 
 		addRoutes([
@@ -167,7 +167,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param dbModule - The Firestore database module the document belongs to.
 	 * @returns - A boolean indicating whether the TTL has been exceeded (true) or not (false).
 	 */
-	private checkTTL<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(instance: T, dbModule: ModuleBE_BaseDBV3<Proto>) {
+	private checkTTL<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(instance: T, dbModule: ModuleBE_BaseDB<Proto>) {
 		const timestamp = currentTimeMillis();
 		const TTL = dbModule.dbDef.TTL || this.TTL;
 
@@ -187,7 +187,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param dbModule - The Firestore database module the document belongs to.
 	 * @returns - A boolean indicating whether the `lastUpdatedTTL` has been exceeded (true) or not (false).
 	 */
-	private checkLastUpdatedTTL<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(instance: T, dbModule: ModuleBE_BaseDBV3<Proto>) {
+	private checkLastUpdatedTTL<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(instance: T, dbModule: ModuleBE_BaseDB<Proto>) {
 		const timestamp = currentTimeMillis();
 		const lastUpdatedTTL = dbModule.dbDef.lastUpdatedTTL || this.lastUpdatedTTL;
 
@@ -207,7 +207,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param before - The state of the document before changes.
 	 * @returns - A promise that performs the archiving operation or undefined in case of an error.
 	 */
-	private async insertToArchive<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(dbModule: ModuleBE_BaseDBV3<Proto>, before: T) {
+	private async insertToArchive<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(dbModule: ModuleBE_BaseDB<Proto>, before: T) {
 		if (before.__hardDelete)
 			return;
 		// Reference to the original collection
@@ -242,7 +242,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param dbModule - The Firestore database module the document belongs to.
 	 * @returns - A promise to perform the deletion operation.
 	 */
-	private async hardDeleteDoc<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(instance: T, dbModule: ModuleBE_BaseDBV3<Proto>) {
+	private async hardDeleteDoc<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(instance: T, dbModule: ModuleBE_BaseDB<Proto>) {
 		// Get reference to the collection the document belongs to
 		const collectionRef = dbModule.collection.collection;
 		// Get reference to the document instance to delete

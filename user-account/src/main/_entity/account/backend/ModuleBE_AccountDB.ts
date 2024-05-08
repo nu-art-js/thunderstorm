@@ -14,7 +14,7 @@ import {
 	Year
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
-import {addRoutes, createBodyServerApi, createQueryServerApi, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi, ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
@@ -89,7 +89,7 @@ type Config = {
 }
 
 export class ModuleBE_AccountDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_Account, Config>
+	extends ModuleBE_BaseDB<DBProto_Account, Config>
 	implements CollectSessionData<_SessionKey_Account> {
 
 	readonly Middleware = async () => {

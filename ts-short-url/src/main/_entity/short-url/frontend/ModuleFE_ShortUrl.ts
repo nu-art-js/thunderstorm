@@ -1,6 +1,6 @@
 import {ApiDef_ShortUrl, ApiStruct_ShortUrl, DBDef_ShortUrl, DBProto_ShortUrl} from '../shared';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
-import {apiWithQuery, ModuleFE_v3_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {apiWithQuery, ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 
 
@@ -9,7 +9,7 @@ export type DispatcherType_ShortUrl = DispatcherDef<DBProto_ShortUrl, `__onShort
 export const dispatch_onShortUrlsUpdated = new ThunderDispatcherV3<DispatcherType_ShortUrl>('__onShortUrlsUpdated');
 
 export class ModuleFE_ShortUrl_Class
-	extends ModuleFE_v3_BaseApi<DBProto_ShortUrl>
+	extends ModuleFE_BaseApi<DBProto_ShortUrl>
 	implements ApiDefCaller<ApiStruct_ShortUrl> {
 
 	_v1: ApiDefCaller<ApiStruct_ShortUrl>['_v1'];

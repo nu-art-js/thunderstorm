@@ -1,9 +1,7 @@
-import {DBApiConfigV3, ModuleBE_BaseDBV3,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from './shared';
-import {CanDeletePermissionEntities} from '../../../backend/core/can-delete';
-import {PermissionTypes} from '../../../shared/types';
-import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
-import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates, flatArray} from '@nu-art/ts-common';
+import {Clause_Where} from '@nu-art/firebase';
+import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates} from '@nu-art/ts-common';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
@@ -16,19 +14,7 @@ import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/Fir
 type Config = DBApiConfigV3<DBProto_PermissionAccessLevel> & {}
 
 export class ModuleBE_PermissionAccessLevelDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_PermissionAccessLevel, Config>
-	implements CanDeletePermissionEntities<'PermissionDomain', 'PermissionAccessLevel'> {
-
-	__canDeleteEntities = async <T extends 'PermissionDomain'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'PermissionAccessLevel'>> => {
-		let conflicts: DB_PermissionAccessLevel[] = [];
-		const dependencies: Promise<DB_PermissionAccessLevel[]>[] = [];
-
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query.custom({where: {domainId: {$in: ids}}})));
-		if (dependencies.length)
-			conflicts = flatArray(await Promise.all(dependencies));
-
-		return {collectionKey: 'PermissionAccessLevel', conflictingIds: conflicts.map(dbObjectToId)};
-	};
+	extends ModuleBE_BaseDB<DBProto_PermissionAccessLevel, Config> {
 
 	constructor() {
 		super(DBDef_PermissionAccessLevel);

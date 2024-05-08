@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {DB_Object, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {DBProto, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {OnSyncStatusChangedListener} from '../core/db-api-gen/types';
 import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB';
 import {TS_Loader} from '../components/TS_Loader';
@@ -69,7 +69,7 @@ export abstract class SmartComponent<P = {}, S = {},
 	Props extends Props_SmartComponent & P = Props_SmartComponent & P,
 	State extends State_SmartComponent & S = State_SmartComponent & S>
 	extends BaseComponent<Props, State>
-	implements OnSyncStatusChangedListener<DB_Object> {
+	implements OnSyncStatusChangedListener<DBProto<any>> {
 
 	static logLevel = LogLevel.Info;
 	// static defaultProps = {
@@ -117,7 +117,7 @@ export abstract class SmartComponent<P = {}, S = {},
 
 	// ######################### Life Cycle #########################
 
-	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>): void {
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<DBProto<any>, any>): void {
 		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
 
 		const modules = resolveContent(this.props.modules);

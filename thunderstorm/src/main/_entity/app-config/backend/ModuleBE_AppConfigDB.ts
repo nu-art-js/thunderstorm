@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDBV3} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDBV3';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB';
 import {DBDef_AppConfig, DBProto_AppConfig, DB_AppConfig} from './shared';
 import {_keys, ApiException, Logger, PreDB, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 
@@ -6,7 +6,7 @@ type InferType<T> = T extends AppConfigKey_BE<infer ValueType> ? ValueType : nev
 type Config = DBApiConfigV3<DBProto_AppConfig> & {}
 
 export class ModuleBE_AppConfigDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_AppConfig, Config> {
+	extends ModuleBE_BaseDB<DBProto_AppConfig, Config> {
 
 	private keyMap: TypedMap<AppConfigKey_BE<any>> = {};
 

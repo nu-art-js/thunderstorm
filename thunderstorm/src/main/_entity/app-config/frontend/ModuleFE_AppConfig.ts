@@ -1,6 +1,6 @@
-import {DispatcherDef, ThunderDispatcherV3} from '../../../frontend/core/db-api-gen/v3_types';
+import {DispatcherDef, ThunderDispatcherV3} from '../../../frontend/core/db-api-gen/types';
 import {apiWithQuery} from '../../../frontend/core/typed-api';
-import {ModuleFE_v3_BaseApi} from '../../../frontend/modules/db-api-gen/ModuleFE_v3_BaseApi';
+import {ModuleFE_BaseApi} from '../../../frontend/modules/db-api-gen/ModuleFE_BaseApi';
 import {ApiDefCaller} from '../../../shared/types';
 import {ApiDef_AppConfig, ApiStruct_AppConfig, DBDef_AppConfig, DBProto_AppConfig, DB_AppConfig} from './shared';
 import {BadImplementationException, cloneObj, TypedKeyValue} from '@nu-art/ts-common';
@@ -12,7 +12,7 @@ type InferType<T> = T extends AppConfigKey_FE<infer ValueType> ? ValueType : nev
 export const dispatch_onAppConfigsUpdated = new ThunderDispatcherV3<DispatcherType_AppConfig>('__onAppConfigsUpdated');
 
 export class ModuleFE_AppConfig_Class
-	extends ModuleFE_v3_BaseApi<DBProto_AppConfig>
+	extends ModuleFE_BaseApi<DBProto_AppConfig>
 	implements ApiDefCaller<ApiStruct_AppConfig> {
 
 	_v1: ApiDefCaller<ApiStruct_AppConfig>['_v1'];

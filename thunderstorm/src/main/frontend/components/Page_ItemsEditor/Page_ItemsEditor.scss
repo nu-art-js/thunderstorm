@@ -1,56 +1,104 @@
-.editor-page {
+@use '@nu-art/ts-styles' as styles;
 
+.editor-page {
   .editor-content {
     position: absolute;
 
-    .items-list {
-      width: 300px;
-
-      .list-item {
-        padding: 4px;
-        padding-block: 8px;
-
-        &:hover {
-          background: cornsilk;
-        }
-      }
-
-      .list-item__selected {
-        background: aquamarine;
-
-        &:hover {
-          background: #b6d58c;
-        }
-      }
-    }
-
-    .ts-space {
+    .items-editor__list {
       height: 100%;
-      background: var(--separator-color);
+      border: 2px solid black;
+      border-radius: 10px;
+      overflow: hidden;
+      min-width: 300px;
+
+      .items-editor__list-header-content {
+        width: 100%;
+
+        .items-editor__list-header {
+          height: 40px;
+          width: 100%;
+          border-bottom: 2px solid black;
+          background: #a4a4a4;
+          color: white;
+          display: grid;
+          font-size: 18px;
+          place-content: center;
+          font-weight: bold;
+          flex-shrink: 0;
+        }
+
+        .item-editor__default-filter {
+          background: white;
+          width: 100%;
+          height: 30px;
+          border-bottom: 2px solid black;
+
+          .icon--wrapper {
+            flex-shrink: 0;
+            width: 30px;
+          }
+
+          .ts-input {
+            height: 100%;
+            width: 0;
+            flex-grow: 1;
+            border: none;
+            outline: none !important;
+          }
+        }
+      }
+
+      .items-list {
+        @include styles.customScrollbar('vertical', true);
+        width: 300px;
+        gap: 2px;
+
+        .list-item {
+          cursor: pointer;
+          padding: 8px;
+          font-weight: bold;
+          display: flex;
+          flex-shrink: 0;
+          align-items: center;
+          background: #b6b6b6;
+          white-space: pre-wrap;
+          color: white;
+          font-size: 14px;
+        }
+
+        .list-item__selected {
+          background: white;
+          color: #b6b6b6;
+        }
+
+      }
+
+      .add-item-v3 {
+        width: 100%;
+        height: 35px;
+        font-weight: bold;
+        justify-content: center;
+        font-size: 16px;
+        background: #b4b4b4;
+        color: white;
+
+        &:hover {
+          background: #929292;
+        }
+      }
     }
 
     .item-editor {
+      height: 100%;
+      flex-grow: 1;
+
       div[data-lastpass-icon-root] {
         display: none;
       }
-
-      flex-grow: 1;
 
       .editor-container {
         gap: 12px;
       }
     }
-  }
-
-  .add-item {
-    width: 50px;
-    height: 50px;
-    font-size: 32px;
-    position: absolute;
-    top: calc(100% - 150px);
-    left: calc(100% - 100px);
-    background: #00A5F6;
-    color: white;
-    border-radius: 50%;
   }
 }

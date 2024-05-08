@@ -3,51 +3,46 @@ import {FirebaseAnalyticsModule} from '@nu-art/firebase/frontend';
 // import {TS_Icons} from '@nu-art/ts-styles';
 import {
 	AppToolsScreen,
-	ATS_Fullstack,
+	ATS_Fullstack, ComponentSync,
 	LL_H_C,
 	LL_H_T,
 	LL_V_L,
 	openContent,
-	Props_SmartComponent,
-	SmartComponent,
-	State_SmartComponent,
 	TS_DragAndDrop
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
 import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
-import {sortArray} from '@nu-art/ts-common';
+import {ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';
 
 
-type ATS_FileUploader_Props = {
-	//
+type Props = {
+	pageTitle?: ResolvableContent<string>
 };
-type ATS_FileUploader_State = {
-	//
-};
+
+type State = {};
 
 export class ATS_FileUploader
-	extends SmartComponent<ATS_FileUploader_Props, ATS_FileUploader_State> {
+	extends ComponentSync<Props, State> {
 
-	static screen: AppToolsScreen = {name: `File Uploader`, renderer: this, group: ATS_Fullstack};
+	static screen: AppToolsScreen = {
+		name: `File Uploader`,
+		renderer: this,
+		group: ATS_Fullstack,
+		modulesToAwait: [ModuleFE_Assets],
+	};
 
-	static defaultProps = {
-		modules: [ModuleFE_Assets],
+	static defaultProps: Partial<Props> = {
 		pageTitle: () => this.screen.name
 	};
 
-	constructor(p: ATS_FileUploader_Props) {
+	constructor(p: Props) {
 		super(p);
 		// @ts-ignore
-		FirebaseAnalyticsModule.setCurrentScreen(this.pageTitle);
-	}
-
-	protected async deriveStateFromProps(nextProps: Props_SmartComponent & ATS_FileUploader_Props, state: (Partial<ATS_FileUploader_State> & State_SmartComponent)) {
-		return state;
+		FirebaseAnalyticsModule.setCurrentScreen(resolveContent(this.props.pageTitle));
 	}
 
 	render() {
-
-		return <LL_H_T>
+		return <LL_H_T>§
 			<LL_V_L>
 				{sortArray([...ModuleFE_Assets.cache.all()], asset => asset.__updated).map(asset => {
 					const tooltip = openContent.tooltip.bottom(`${asset._id}-tooltip`, () => {
