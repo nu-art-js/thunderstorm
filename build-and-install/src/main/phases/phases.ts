@@ -495,8 +495,7 @@ export const Phase_CompileWatch: BuildPhase = {
 
 			const rtPackages = MemKey_Packages.get();
 			const packageIndex = rtPackages.packagesDependency.findIndex(packages => {
-				console.log(libPath);
-				return packages.some(pkg => path.startsWith(pkg.path));
+				return packages.some(pkg => path.startsWith(pkg.path) && pkg.type !== 'sourceless');
 			});
 
 			try {
