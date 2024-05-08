@@ -2,20 +2,19 @@ import * as React from 'react';
 import './TS_EditableItemControllerProto.scss';
 import {asArray, BadImplementationException, DB_Object, DBProto, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {EditableDBItemV3} from '../../utils/EditableItem';
-import {State_ItemEditor} from '../Item_Editor';
-import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
-import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
-import {ComponentProtoDef} from '../Page_ItemsEditorV3';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
+import {ApiCallerEventType} from '../../core/db-api-gen/types';
+import {ProtoDef_Selection} from '../Page_ItemsEditor';
 import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
 import {ProtoComponent} from '../../core/proto-component';
 import {InferProps, InferState} from '../../utils/types';
 
 
 export type Props_EditableItemControllerProto<Proto extends DBProto<any>, EditorProps extends {} = {}> =
-	& ComponentProtoDef['props']
+	& ProtoDef_Selection['props']
 	& {
 	item?: Readonly<Partial<Proto['uiType']>> | string,
-	module: ModuleFE_v3_BaseApi<Proto>,
+	module: ModuleFE_BaseApi<Proto>,
 	onError?: (err: Error) => any | Promise<any>
 	autoSave?: ResolvableContent<boolean, [Readonly<Proto['uiType']>]>
 	editor: React.ComponentType<EditableRef<Proto['uiType']> & EditorProps>
@@ -34,7 +33,7 @@ export type Props_EditableItemControllerProto<Proto extends DBProto<any>, Editor
 export class TS_EditableItemControllerProto<Proto extends DBProto<any>,
 	EditorProps extends {} = {},
 	Props extends Props_EditableItemControllerProto<Proto, EditorProps> = Props_EditableItemControllerProto<Proto, EditorProps>>
-	extends ProtoComponent<ComponentProtoDef, Props, State_ItemEditor<Proto['uiType']>> {
+	extends ProtoComponent<ProtoDef_Selection, Props, EditableRef<Proto['uiType']>> {
 
 	static DefaultAutoSave = (item?: Partial<DB_Object>) => {
 		return !!item?._id;
@@ -48,7 +47,7 @@ export class TS_EditableItemControllerProto<Proto extends DBProto<any>,
 		this[method] = this.__onItemUpdated;
 	}
 
-	private __onItemUpdated = (...params: ApiCallerEventTypeV3<Proto>): void => {
+	private __onItemUpdated = (...params: ApiCallerEventType<Proto>): void => {
 		const itemId = this.state.editable.get('_id');
 		if (!itemId)
 			return;

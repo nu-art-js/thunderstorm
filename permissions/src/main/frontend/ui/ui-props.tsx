@@ -1,19 +1,8 @@
 import * as React from 'react';
-import {ComponentSync, LL_V_L, MultiSelect_Selector, PartialProps_GenericDropDown} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_V_L, MultiSelect_Selector} from '@nu-art/thunderstorm/frontend';
 import {dbObjectToId, sortArray, UniqueId} from '@nu-art/ts-common';
-import {
-	StaticProps_TS_MultiSelect_V2,
-	TS_MultiSelect_V2
-} from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect';
-import {
-	DB_PermissionAccessLevel,
-	DB_PermissionDomain,
-	DB_PermissionGroup,
-	DB_PermissionProject,
-	ModuleFE_PermissionAccessLevel,
-	ModuleFE_PermissionDomain,
-	ModuleFE_PermissionGroup
-} from '../_entity';
+import {StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect';
+import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_PermissionGroup} from '../_entity';
 import {DropDown_PermissionAccessLevel} from '../../_entity/permission-access-level/frontend/ui-components';
 import {DropDown_PermissionProject} from '../../_entity/permission-project/frontend/ui-components';
 import {DropDown_PermissionDomain} from '../../_entity/permission-domain/frontend/ui-components';
@@ -21,16 +10,7 @@ import {DropDown_PermissionGroup} from '../../_entity/permission-group/frontend/
 import {TS_Icons} from '@nu-art/ts-styles';
 
 
-type PP_GDD<T> = PartialProps_GenericDropDown<T>
-
-type PermissionsDBTypes = {
-	Project: DB_PermissionProject,
-	AccessLevel: DB_PermissionAccessLevel,
-	Domain: DB_PermissionDomain,
-	Group: DB_PermissionGroup,
-}
-
-export const Permissions_DropDown: { [K in keyof PermissionsDBTypes]: ((props: PP_GDD<PermissionsDBTypes[K]>) => JSX.Element) } = {
+export const Permissions_DropDown = {
 	Project: DropDown_PermissionProject.selectable,
 	AccessLevel: DropDown_PermissionAccessLevel.selectable,
 	Domain: DropDown_PermissionDomain.selectable,

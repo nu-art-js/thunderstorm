@@ -1,19 +1,10 @@
 import * as React from 'react';
 import {__stringify} from '@nu-art/ts-common';
 import {ModuleFE_Account} from '../../_entity/account/frontend/ModuleFE_Account';
-import {
-	AppToolsScreen,
-	ComponentSync,
-	LL_V_L, OnStorageKeyChangedListener,
-	Props_SmartComponent,
-	TS_Input,
-	TS_TextArea
-} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ComponentSync, LL_V_L, OnStorageKeyChangedListener, TS_Input, TS_TextArea} from '@nu-art/thunderstorm/frontend';
 
+type ATS_SessionData_Props = {};
 
-type ATS_SessionData_Props = {
-	//
-};
 type ATS_SessionData_State = {
 	sessionId?: string
 };
@@ -29,7 +20,7 @@ export class ATS_SessionData
 		pageTitle: () => this.screen.name
 	};
 
-	protected deriveStateFromProps(nextProps: ATS_SessionData_Props & Props_SmartComponent, state: ATS_SessionData_State): ATS_SessionData_State {
+	protected deriveStateFromProps(nextProps: ATS_SessionData_Props, state: ATS_SessionData_State): ATS_SessionData_State {
 		state = this.state ?? {};
 		return state as ATS_SessionData_State;
 	}

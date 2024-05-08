@@ -1,14 +1,14 @@
 import * as React from 'react';
-import {__stringify, DB_Object, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
+import {__stringify, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_CollectionUpgrades.scss';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {ComponentStatus, Props_SmartComponent, SmartComponent, State_SmartComponent} from '../../core/SmartComponent';
 import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools';
 import {genericNotificationAction} from '../../components/TS_Notifications';
 import {LL_H_C} from '../../components/Layouts';
 import {TS_BusyButton} from '../../components/TS_BusyButton';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {ModuleFE_UpgradeCollection} from '../../modules/upgrade-collection/ModuleFE_UpgradeCollection';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
+import {ComponentSync} from '../../core/ComponentSync';
 
 
 type State = {
@@ -16,37 +16,28 @@ type State = {
 };
 
 export class ATS_CollectionUpgrades
-	extends SmartComponent<{}, State> {
-
-	static defaultProps = {};
+	extends ComponentSync<{}, State> {
 
 	static screen: AppToolsScreen = {
 		name: 'Collection Upgrades',
 		key: 'collection-upgrades',
 		renderer: this,
-		group: ATS_Backend
+		group: ATS_Backend,
 	};
 
-	protected async deriveStateFromProps(nextProps: {}, state: State & State_SmartComponent) {
+	protected deriveStateFromProps(nextProps: {}, state: State) {
 		state.upgradableModules ??= sortArray(RuntimeModules().filter((module: ModuleFE_BaseApi<any>) => {
 			return !!module.getCollectionName;
 		}), item => item.getCollectionName());
 
-		state.componentPhase = ComponentStatus.Synced;
 		return state;
 	}
 
-	protected createInitialState(nextProps: Props_SmartComponent) {
-		const initialState = super.createInitialState(nextProps);
-		initialState.componentPhase = ComponentStatus.Synced;
-		return initialState;
-	}
-
-	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>) {
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<any, any>) {
 		this.forceUpdate();
 	}
 
-	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<DB_Object, any>, e: React.MouseEvent) => {
+	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<any, any>, e: React.MouseEvent) => {
 		await genericNotificationAction(async () => {
 			await ModuleFE_UpgradeCollection.vv1.upgrade({
 				collectionsToUpgrade: [module.dbDef.dbKey],

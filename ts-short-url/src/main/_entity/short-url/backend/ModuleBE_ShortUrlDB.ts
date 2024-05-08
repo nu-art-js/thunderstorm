@@ -1,5 +1,5 @@
 import {ApiDef_ShortUrl, DBDef_ShortUrl, DBProto_ShortUrl, GetShortUrlRequest, GetShortUrlResponse} from '../shared';
-import {addRoutes, createQueryServerApi, DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createQueryServerApi, DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend';
 import {generateShortURL} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
@@ -9,7 +9,7 @@ type Config = DBApiConfigV3<DBProto_ShortUrl> & {
 }
 
 export class ModuleBE_ShortUrlDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_ShortUrl, Config> {
+	extends ModuleBE_BaseDB<DBProto_ShortUrl, Config> {
 
 	constructor() {
 		super(DBDef_ShortUrl);

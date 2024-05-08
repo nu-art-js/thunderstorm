@@ -1,22 +1,7 @@
-import {DBApiConfigV3, ModuleBE_BaseDBV3,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
 import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from './shared';
-import {CanDeletePermissionEntities} from '../../../backend/core/can-delete';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
-import {
-	_keys,
-	ApiException,
-	asOptionalArray,
-	batchActionParallel,
-	DB_BaseObject,
-	dbObjectToId,
-	exists,
-	filterDuplicates,
-	filterInstances,
-	flatArray,
-	TypedMap
-} from '@nu-art/ts-common';
-import {PermissionTypes} from '../../../shared/types';
-import {DB_EntityDependency} from '@nu-art/firebase';
+import {_keys, ApiException, asOptionalArray, DB_BaseObject, dbObjectToId, exists, filterDuplicates, filterInstances, TypedMap} from '@nu-art/ts-common';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
 import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
@@ -24,11 +9,12 @@ import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account';
 import {MemKey_UserPermissions} from '../../../backend/consts';
 
+
 type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
 
 export class ModuleBE_PermissionUserDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_PermissionUser, Config>
-	implements OnNewUserRegistered, OnUserLogin, CanDeletePermissionEntities<'PermissionGroup', 'PermissionUser'>, PerformProjectSetup {
+	extends ModuleBE_BaseDB<DBProto_PermissionUser, Config>
+	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup {
 
 	private defaultPermissionGroups?: User_Group[];
 
@@ -58,17 +44,6 @@ export class ModuleBE_PermissionUserDB_Class
 		await this.set.all(usersToUpsert);
 		await this.delete.all(usersToDelete);
 	}
-
-	__canDeleteEntities = async <T extends 'PermissionGroup'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'PermissionUser'>> => {
-		let conflicts: DB_PermissionUser[] = [];
-		const dependencies: Promise<DB_PermissionUser[]>[] = [];
-
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query.custom({where: {__groupIds: {$aca: ids}}})));
-		if (dependencies.length)
-			conflicts = flatArray(await Promise.all(dependencies));
-
-		return {collectionKey: 'PermissionUser', conflictingIds: filterDuplicates(conflicts.map(dbObjectToId))};
-	};
 
 	async __onUserLogin(account: UI_Account, transaction: Transaction) {
 		await this.insertIfNotExist(account as UI_Account & DB_BaseObject, transaction);

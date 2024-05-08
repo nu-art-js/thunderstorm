@@ -1,6 +1,6 @@
-import {apiWithBody, apiWithQuery, ModuleFE_v3_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {ApiDef_message, ApiStruct_message, DBDef_message, DBProto_Message, MessageType_Text} from '../shared';
 
 
@@ -9,7 +9,7 @@ export type DispatcherType_Message = DispatcherDef<DBProto_Message, `__onMessage
 export const dispatch_onMessagesUpdated = new ThunderDispatcherV3<DispatcherType_Message>('__onMessagesUpdated');
 
 export class ModuleFE_Message_Class
-	extends ModuleFE_v3_BaseApi<DBProto_Message>
+	extends ModuleFE_BaseApi<DBProto_Message>
 	implements ApiDefCaller<ApiStruct_message> {
 
 	_v1: ApiDefCaller<ApiStruct_message>['_v1'];

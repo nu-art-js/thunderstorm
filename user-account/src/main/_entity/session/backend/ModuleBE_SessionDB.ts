@@ -1,7 +1,7 @@
 import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, filterKeys, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
-import {DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import Transaction = firestore.Transaction;
 import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_Session, HeaderKey_SessionId} from '../shared';
@@ -24,7 +24,7 @@ type Config = DBApiConfigV3<DBProto_Session> & {
 type PreDBSessionContent = { accountId: string, deviceId: string, prevSession?: string[], label: string };
 
 export class ModuleBE_SessionDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_Session, Config>
+	extends ModuleBE_BaseDB<DBProto_Session, Config>
 	implements CollectSessionData<_SessionKey_Session> {
 
 	readonly ServiceAccount_Middleware = async (sessionId: string) => {

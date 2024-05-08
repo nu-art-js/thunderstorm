@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDBV3,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
 import {DBDef_PermissionProject, DBProto_PermissionProject, DB_PermissionProject} from '../shared';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
@@ -6,7 +6,7 @@ import {MemKey_AccountId} from '@nu-art/user-account/backend';
 type Config = DBApiConfigV3<DBProto_PermissionProject> & {}
 
 export class ModuleBE_PermissionProjectDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_PermissionProject, Config> {
+	extends ModuleBE_BaseDB<DBProto_PermissionProject, Config> {
 
 	constructor() {
 		super(DBDef_PermissionProject);

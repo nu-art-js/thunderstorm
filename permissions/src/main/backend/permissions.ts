@@ -14,7 +14,7 @@ import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE';
 import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys';
 import {ApiDef_UpgradeCollection} from '@nu-art/thunderstorm/shared/upgrade-collection';
 import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor';
-import {ApiDef_SyncEnvV2} from '@nu-art/thunderstorm';
+import {ApiDef_SyncEnv} from '@nu-art/thunderstorm';
 import {
 	DBDef_PermissionAPI,
 	DBDef_PermissionAccessLevel,
@@ -76,11 +76,11 @@ const _Domain_Developer: DefaultDef_Domain = {
 		{path: ApiDef_ActionProcessing.vv1.list.path, accessLevel: DefaultAccessLevel_Read.name},
 		{path: ApiDef_ActionProcessing.vv1.execute.path, accessLevel: DefaultAccessLevel_Admin.name},
 
-		{path: ApiDef_SyncEnvV2.vv1.fetchBackupMetadata.path, accessLevel: DefaultAccessLevel_Read.name},
-		{path: ApiDef_SyncEnvV2.vv1.createBackup.path, accessLevel: DefaultAccessLevel_Write.name},
-		{path: ApiDef_SyncEnvV2.vv1.syncFromEnvBackup.path, accessLevel: DefaultAccessLevel_Write.name},
-		{path: ApiDef_SyncEnvV2.vv1.syncFirebaseFromBackup.path, accessLevel: DefaultAccessLevel_Write.name},
-		{path: ApiDef_SyncEnvV2.vv1.syncToEnv.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDef_SyncEnv.vv1.fetchBackupMetadata.path, accessLevel: DefaultAccessLevel_Read.name},
+		{path: ApiDef_SyncEnv.vv1.createBackup.path, accessLevel: DefaultAccessLevel_Write.name},
+		{path: ApiDef_SyncEnv.vv1.syncFromEnvBackup.path, accessLevel: DefaultAccessLevel_Write.name},
+		{path: ApiDef_SyncEnv.vv1.syncFirebaseFromBackup.path, accessLevel: DefaultAccessLevel_Write.name},
+		{path: ApiDef_SyncEnv.vv1.syncToEnv.path, accessLevel: DefaultAccessLevel_Admin.name},
 
 	]
 };
