@@ -36,6 +36,7 @@ export const PackageBuildPhaseType_Project = 'project' as const;
 type BuildPhase_Base = {
 	name: string,
 	terminatingPhase?: boolean
+	breakAfterPhase?: boolean
 	mandatoryPhases?: BuildPhase[]
 	isMandatory?: boolean
 }
@@ -85,13 +86,18 @@ export class ProjectManager
 	}
 
 	private async init() {
-		MemKey_DefaultFiles.set(Default_Files);
-
 		//Update the project manager mem key to be used elsewhere in the project
 		MemKey_ProjectManager.set(this);
 
+		MemKey_DefaultFiles.set(Default_Files);
+
 		// Set default value to memKey
 		MemKey_RunningStatus.set({phaseKey: ''});
+
+		process.on('SIGINT', async (status) => {
+			this.logDebug('SIGINT - running status:', status);
+			process.exit(0);
+		});
 
 		try {
 			if (RuntimeParams.continue)
@@ -118,7 +124,7 @@ export class ProjectManager
 		this.phases.push(phase);
 	}
 
-	private updateRunningStatus = async (runningStatus: RunningStatus = MemKey_RunningStatus.get(undefined)) => {
+	updateRunningStatus = async (runningStatus: RunningStatus = MemKey_RunningStatus.get(undefined)) => {
 		if (runningStatus)
 			return _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(runningStatus, true));
 	};
@@ -140,7 +146,7 @@ export class ProjectManager
 			if (phase.type !== 'project' || (!phase.filter || await phase.filter?.()))
 				phasesToRun.push(phase);
 
-			if (phasesToRun.length > 0 && phase.terminatingPhase) {
+			if ((phasesToRun.length > 0 && phase.terminatingPhase) || phase.breakAfterPhase) {
 				i++;
 				break;
 			}
@@ -164,7 +170,7 @@ export class ProjectManager
 						delete this.prevRunningStatus;
 
 					// keep the current running status updated
-					if (!this.prevRunningStatus)
+					if (!this.prevRunningStatus && !phase.terminatingPhase)
 						MemKey_RunningStatus.set({phaseKey: phase.name});
 
 					this.logInfo(`Running project phase: ${phase.name}`);
@@ -200,18 +206,18 @@ export class ProjectManager
 				return async () => {
 
 					// if there's a previous running status and the current phase is the one to continue from clean
-					if (this.prevRunningStatus && this.prevRunningStatus.phaseKey === phasesToRun[0].name && i === this.prevRunningStatus.packageDependencyIndex)
+					if (phasesToRun.find(phase => phase.name === this.prevRunningStatus?.phaseKey) && i === this.prevRunningStatus?.packageDependencyIndex)
 						delete this.prevRunningStatus;
-
-					// keep the current running status updated
-					if (!this.prevRunningStatus)
-						MemKey_RunningStatus.set({phaseKey: phasesToRun[0].name, packageDependencyIndex: i});
 
 					let didPrintPackages = false;
 					const values = flatArray(packages.map(async pkg => {
 						for (const phase of phasesToRun as BuildPhase_Package[]) {
 							if (!(!phase.filter || await phase.filter(pkg)))
 								continue;
+
+							// keep the current running status updated
+							if (!this.prevRunningStatus && !phase.terminatingPhase)
+								MemKey_RunningStatus.set({phaseKey: phase.name, packageDependencyIndex: i});
 
 							if (!didPrintPhase) {
 								this.logInfo(`Running package phase: ${__stringify(phasesToRun.map(mapToName))}`);
@@ -260,24 +266,28 @@ export class ProjectManager
 		};
 	}
 
-	async execute(phases = this.phases) {
+	async execute(phases = this.phases, prevRunningStatus?: RunningStatus) {
 		return new MemStorage().init(async () => {
 			await this.init();
+
+			// update prev running status if passed
+			if (prevRunningStatus) {
+				this.logWarning('Setting prev running status: ', prevRunningStatus);
+				this.prevRunningStatus = prevRunningStatus;
+			}
+
 			return (await this.prepare(phases))!();
 		});
 	}
+
 
 	async executePhase(phaseKey: string, prevRunningStatus?: RunningStatus) {
 		const phase = this.phases.find(phase => phase.name === phaseKey);
 		if (!phase)
 			throw new BadImplementationException(`No Such Phase: ${phaseKey}`);
 
-		// update prev running status if passed
-		if (prevRunningStatus)
-			this.prevRunningStatus = prevRunningStatus;
-
 		const finalPhasesToRun = resolveAllMandatoryPhases(phase).reverse();
-		return this.execute(finalPhasesToRun);
+		return this.execute(finalPhasesToRun, prevRunningStatus);
 	}
 
 }

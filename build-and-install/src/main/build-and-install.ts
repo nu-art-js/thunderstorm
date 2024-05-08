@@ -13,7 +13,7 @@ import {
 	Phase_InstallPnpm,
 	Phase_Launch,
 	Phase_Lint,
-	Phase_PackagePurge, Phase_PrepareParams,
+	Phase_PackagePurge, Phase_PrepareParams, Phase_PrepareWatch,
 	Phase_PrintDependencyTree,
 	Phase_PrintEnv,
 	Phase_PrintHelp,
@@ -24,6 +24,7 @@ import {
 	Phase_SetWithThunderstorm,
 } from './phases/phases';
 import {RuntimeParams} from './core/params/params';
+
 
 DebugFlag.DefaultLogLevel = RuntimeParams.debug ? LogLevel.Debug : LogLevel.Info;
 const projectManager = new ProjectManager();
@@ -45,6 +46,7 @@ projectManager.registerPhase(Phase_InstallGlobals);
 projectManager.registerPhase(Phase_InstallPnpm);
 projectManager.registerPhase(Phase_InstallPackages);
 projectManager.registerPhase(Phase_Lint);
+projectManager.registerPhase(Phase_PrepareWatch);
 projectManager.registerPhase(Phase_Compile);
 projectManager.registerPhase(Phase_CompileWatch);
 projectManager.registerPhase(Phase_Launch);

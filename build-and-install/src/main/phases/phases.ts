@@ -108,18 +108,18 @@ export const Phase_SetupProject: BuildPhase = {
 	}
 };
 
-
 export const Phase_PrepareParams: BuildPhase = {
 	type: 'package',
 	name: 'prepare-params',
 	isMandatory: true,
+	breakAfterPhase: true,
 	mandatoryPhases: [Phase_SetupProject, Phase_SetWithThunderstorm],
 	action: async (pkg) => {
 		const packages = MemKey_Packages.get();
 
 		// with workspace: *
 		const tempPackageJson = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
-			const toRet = packages.params[key!] ? 'workspace:*' : ``;
+			const toRet = packages.params[key!] ? 'workspace:*' : packages.params[value];
 			return toRet;
 		});
 
@@ -386,15 +386,13 @@ const suffixes = [
 	'svg',
 ];
 const compileActions: { [path: string]: (deleteDist?: boolean) => Promise<void> } = {};
-
-export const Phase_Compile: BuildPhase = {
+export const Phase_PrepareWatch: BuildPhase = {
 	type: 'package',
-	name: 'compile',
+	name: 'prepare-compile',
+	isMandatory: true,
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => pkg.type !== 'sourceless' && !RuntimeParams.noBuild,
 	action: async (pkg) => {
-		const packages = MemKey_Packages.get();
-
 		if (pkg.type === 'sourceless')
 			return;
 
@@ -404,10 +402,39 @@ export const Phase_Compile: BuildPhase = {
 			sourcesPaths.push(`${sourceFolder}/**/*.${suffix}`);
 		});
 
+		// --- HERE ---
+		compileActions[sourceFolder] = async (deleteDist?: boolean) => {
+			if (deleteDist)
+				await _fs.rmdir(pkg.output);
+
+			const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
+			const commando = NVM.createCommando();
+			await commando
+				.append(`tsc -p "${pathToLocalTsConfig}" --rootDir "${sourceFolder}" --outDir "${pkg.output}"`)
+				.execute();
+		};
+	}
+};
+
+export const Phase_Compile: BuildPhase = {
+	type: 'package',
+	name: 'compile',
+	mandatoryPhases: [Phase_PrepareWatch],
+	filter: async (pkg) => pkg.type !== 'sourceless' && !RuntimeParams.noBuild,
+	action: async (pkg) => {
+		const packages = MemKey_Packages.get();
+
+		if (pkg.type === 'sourceless')
+			return;
+
+		const folder = 'main';
+		const sourceFolder = `${pkg.path}/src/${folder}`;
 		const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
-		const commando = NVM.createCommando();
-		if (!pkg.customTsConfig)
+		const inPackageTsConfig = await _fs.readFile(pathToProjectTS_Config, {encoding: 'utf-8'});
+		const defaultPackageTsConfig = await _fs.readFile(pathToProjectTS_Config, {encoding: 'utf-8'});
+		if (!pkg.customTsConfig && inPackageTsConfig !== defaultPackageTsConfig) {
 			await _fs.copyFile(pathToProjectTS_Config, pathToLocalTsConfig);
+		}
 
 		// --- HERE ---
 		await _fs.writeFile(`${pkg.output}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJsonOutput, null, 2), {encoding: 'utf-8'});
@@ -441,27 +468,26 @@ export const Phase_Compile: BuildPhase = {
 				}
 			}
 		}
-
-		compileActions[sourceFolder] = async (deleteDist?: boolean) => {
-			if (deleteDist)
-				await _fs.rmdir(pkg.output);
-
-			await commando
-				.append(`tsc -p "${pathToLocalTsConfig}" --rootDir "${sourceFolder}" --outDir "${pkg.output}"`)
-				.execute();
-		};
 		return compileActions[sourceFolder]();
 	}
 };
 
+
 export const Phase_CompileWatch: BuildPhase = {
 	type: 'project',
 	name: 'compile-watch',
-	mandatoryPhases: [Phase_ResolveEnv],
+	terminatingPhase: true,
+	mandatoryPhases: [Phase_PrepareWatch],
 	filter: async () => RuntimeParams.watch,
 	action: async () => {
 		const watcher = chokidar.watch(sourcesPaths);
 		const projectManager = MemKey_ProjectManager.get();
+		await MemKey_ProjectManager.get().updateRunningStatus({
+				'phaseKey': 'compile-watch',
+				'packageDependencyIndex': 0
+			}
+		);
+
 		const watchListener = (path: string, deleteDist?: boolean) => {
 			const libPath = _keys(compileActions).find(libPath => path.startsWith(libPath as string));
 			if (!libPath)
@@ -469,35 +495,54 @@ export const Phase_CompileWatch: BuildPhase = {
 
 			const rtPackages = MemKey_Packages.get();
 			const packageIndex = rtPackages.packagesDependency.findIndex(packages => {
-				return packages.some(pkg => pkg.path === libPath);
+				console.log(libPath);
+				return packages.some(pkg => path.startsWith(pkg.path));
 			});
 
-			projectManager.executePhase('compile', {phaseKey: 'compile', packageDependencyIndex: packageIndex});
+			try {
+				projectManager.executePhase('compile', {phaseKey: 'compile', packageDependencyIndex: packageIndex});
+			} catch (e) {
+				console.log(e);
+			}
 		};
 
-		watcher
-			.on('add', (path) => {
-				console.log(`New File added: ${path}`);
-				watchListener(path);
-			})
-			.on('change', (path) => {
-				console.log(`Detected changes in file: ${path}`);
-				watchListener(path);
-			})
-			.on('unlinkDir', (path) => {
-				console.log(`Deleted Directory: ${path}`);
-				watchListener(path, true);
-			})
-			.on('error', (error) => {
-				console.log(`error`, error);
-			})
-			.on('unlink', (path) => {
-				console.log(`File Deleted: ${path}`);
-				watchListener(path, true);
-			})
-			.on('ready', () => {
-				console.log('Watching: ', sourcesPaths);
+		return new Promise<void>((resolve, error) => {
+			watcher
+				.on('error', (error) => {
+					console.log(`error`, error);
+				})
+				.on('ready', () => {
+					console.log('Watching: ', sourcesPaths);
+					watcher
+						.on('add', (path) => {
+							console.log(`New File added: ${path}`);
+							watchListener(path);
+						})
+						.on('change', (path) => {
+							console.log(`Detected changes in file: ${path}`);
+							watchListener(path);
+						})
+						.on('unlinkDir', (path) => {
+							console.log(`Deleted Directory: ${path}`);
+							watchListener(path, true);
+						})
+						.on('unlink', (path) => {
+							console.log(`File Deleted: ${path}`);
+							watchListener(path, true);
+						});
+				});
+
+			process.on('SIGINT', async (status) => {
+				await watcher.close();
+				await MemKey_ProjectManager.get().updateRunningStatus({
+						'phaseKey': 'compile-watch',
+						'packageDependencyIndex': 0
+					}
+				);
+				process.exit(0);
+				resolve();
 			});
+		});
 	}
 };
 
@@ -505,6 +550,7 @@ let counter = 0;
 export const Phase_Launch: BuildPhase = {
 	type: 'package',
 	name: 'launch',
+	terminatingPhase: true,
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.launch))?.[0] && (pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app'),
 	action: async (pkg) => {
@@ -538,6 +584,7 @@ export const Phase_Launch: BuildPhase = {
 export const Phase_DeployFrontend: BuildPhase = {
 	type: 'package',
 	name: 'deploy-frontend',
+	terminatingPhase: true,
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => {
 		return !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0] && pkg.type === 'firebase-hosting-app';
@@ -556,6 +603,7 @@ export const Phase_DeployFrontend: BuildPhase = {
 export const Phase_DeployBackend: BuildPhase = {
 	type: 'package',
 	name: 'deploy-functions',
+	terminatingPhase: true,
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0] && pkg.type === 'firebase-functions-app',
 	action: async (pkg) => {
