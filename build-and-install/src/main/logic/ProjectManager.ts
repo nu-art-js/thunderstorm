@@ -96,6 +96,7 @@ export class ProjectManager
 
 		process.on('SIGINT', async (status) => {
 			this.logDebug('SIGINT - running status:', status);
+			await this.updateRunningStatus()
 			process.exit(0);
 		});
 
@@ -188,8 +189,6 @@ export class ProjectManager
 
 					didRun = true;
 
-					//update running status
-					await this.updateRunningStatus();
 				}
 
 				if (didRun && lastElement(phasesToRun)!.terminatingPhase)
@@ -243,8 +242,6 @@ export class ProjectManager
 							} else
 								await phase.action(pkg);
 
-							// save the running status post action execution
-							await this.updateRunningStatus();
 						}
 					}));
 
@@ -276,7 +273,13 @@ export class ProjectManager
 				this.prevRunningStatus = prevRunningStatus;
 			}
 
-			return (await this.prepare(phases))!();
+			try {
+				await (await this.prepare(phases))!();
+			} catch (e: any) {
+				this.logError(e);
+			}
+
+			await this.updateRunningStatus();
 		});
 	}
 
