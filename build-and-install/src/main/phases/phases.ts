@@ -13,7 +13,7 @@ import {
 	_keys,
 	BadImplementationException,
 	exists,
-	filterDuplicates,
+	filterDuplicates, flatArray,
 	reduceToMap,
 	sleep,
 	TypedMap
@@ -403,10 +403,7 @@ export const Phase_PrepareWatch: BuildPhase = {
 		});
 
 		// --- HERE ---
-		compileActions[sourceFolder] = async (deleteDist?: boolean) => {
-			if (deleteDist)
-				await _fs.rmdir(pkg.output);
-
+		compileActions[sourceFolder] = async () => {
 			const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
 			const commando = NVM.createCommando();
 			await commando
@@ -472,7 +469,6 @@ export const Phase_Compile: BuildPhase = {
 	}
 };
 
-
 export const Phase_CompileWatch: BuildPhase = {
 	type: 'project',
 	name: 'compile-watch',
@@ -488,18 +484,29 @@ export const Phase_CompileWatch: BuildPhase = {
 			}
 		);
 
-		const watchListener = (path: string, deleteDist?: boolean) => {
+		let controller: AbortController | undefined;
+		const watchListener = async (path: string, deleteDist?: boolean) => {
 			const libPath = _keys(compileActions).find(libPath => path.startsWith(libPath as string));
 			if (!libPath)
 				return console.error(`couldn't find lib to run for path: ${libPath}...\nListening on: ${__stringify(sourcesPaths, true)}`);
 
 			const rtPackages = MemKey_Packages.get();
+			const pkg = flatArray(rtPackages.packagesDependency).find(pkg => {
+				return path.startsWith(pkg.path) && pkg.type !== 'sourceless';
+			});
+			if (deleteDist && pkg && 'output' in pkg)
+				await _fs.rmdir(pkg.output);
+
 			const packageIndex = rtPackages.packagesDependency.findIndex(packages => {
 				return packages.some(pkg => path.startsWith(pkg.path) && pkg.type !== 'sourceless');
 			});
 
 			try {
-				projectManager.executePhase('compile', {phaseKey: 'compile', packageDependencyIndex: packageIndex});
+				if (controller)
+					controller.abort();
+
+				controller = new AbortController();
+				await projectManager.executePhase('compile', {phaseKey: 'compile', packageDependencyIndex: packageIndex}, controller.signal);
 			} catch (e) {
 				console.log(e);
 			}

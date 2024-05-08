@@ -26,7 +26,7 @@ import {
 	RunningStatus
 } from '../defaults/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {MemKey_ProjectManager} from '../project-manager';
+import {MemKey_AbortSignal, MemKey_ProjectManager} from '../project-manager';
 
 
 export const PackageBuildPhaseType_Package = 'package' as const;
@@ -85,31 +85,6 @@ export class ProjectManager
 		this.setMinLevel(LogLevel.Verbose);
 	}
 
-	private async init() {
-		//Update the project manager mem key to be used elsewhere in the project
-		MemKey_ProjectManager.set(this);
-
-		MemKey_DefaultFiles.set(Default_Files);
-
-		// Set default value to memKey
-		MemKey_RunningStatus.set({phaseKey: ''});
-
-		process.on('SIGINT', async (status) => {
-			this.logDebug('SIGINT - running status:', status);
-			await this.updateRunningStatus()
-			process.exit(0);
-		});
-
-		try {
-			if (RuntimeParams.continue)
-				this.prevRunningStatus = JSON.parse(await _fs.readFile(Default_OutputFiles.runningStatus, {encoding: 'utf-8'}));
-		} catch (e: any) {
-			this.logError('Failed reading running status', e);
-		}
-
-		this.loadPackage();
-	}
-
 	private loadPackage() {
 		const pathToConfig = convertToFullPath('./.config/project-config.ts');
 		if (!fs.existsSync(pathToConfig))
@@ -166,6 +141,9 @@ export class ProjectManager
 
 				let didRun = false;
 				for (const phase of phasesToRun) {
+					if (ProjectManager.isAborted())
+						return;
+
 					// if there's a previous running status and the current phase is the one to continue from clean
 					if (this.prevRunningStatus && this.prevRunningStatus.phaseKey === phase.name)
 						delete this.prevRunningStatus;
@@ -211,6 +189,9 @@ export class ProjectManager
 					let didPrintPackages = false;
 					const values = flatArray(packages.map(async pkg => {
 						for (const phase of phasesToRun as BuildPhase_Package[]) {
+							if (ProjectManager.isAborted())
+								return;
+
 							if (!(!phase.filter || await phase.filter(pkg)))
 								continue;
 
@@ -263,9 +244,42 @@ export class ProjectManager
 		};
 	}
 
-	async execute(phases = this.phases, prevRunningStatus?: RunningStatus) {
+	private static isAborted() {
+		try {
+			return MemKey_AbortSignal.get().aborted;
+		} catch (e) {
+			return false;
+		}
+	}
+
+	async execute(phases = this.phases, prevRunningStatus?: RunningStatus, signal?: AbortSignal) {
 		return new MemStorage().init(async () => {
-			await this.init();
+			//Update the project manager mem key to be used elsewhere in the project
+			MemKey_ProjectManager.set(this);
+
+			MemKey_DefaultFiles.set(Default_Files);
+
+			// Set default value to memKey
+			MemKey_RunningStatus.set({phaseKey: ''});
+
+			const listener = async (status: string) => {
+				this.logDebug('SIGINT - running status:', status);
+				await this.updateRunningStatus();
+				process.exit(0);
+			};
+			process.on('SIGINT', listener);
+
+			try {
+				if (RuntimeParams.continue)
+					this.prevRunningStatus = JSON.parse(await _fs.readFile(Default_OutputFiles.runningStatus, {encoding: 'utf-8'}));
+			} catch (e: any) {
+				this.logError('Failed reading running status', e);
+			}
+
+			this.loadPackage();
+
+			if (signal)
+				MemKey_AbortSignal.set(signal);
 
 			// update prev running status if passed
 			if (prevRunningStatus) {
@@ -279,18 +293,18 @@ export class ProjectManager
 				this.logError(e);
 			}
 
+			process.off('SIGINT', listener);
 			await this.updateRunningStatus();
 		});
 	}
 
-
-	async executePhase(phaseKey: string, prevRunningStatus?: RunningStatus) {
+	async executePhase(phaseKey: string, prevRunningStatus?: RunningStatus, signal?: AbortSignal) {
 		const phase = this.phases.find(phase => phase.name === phaseKey);
 		if (!phase)
 			throw new BadImplementationException(`No Such Phase: ${phaseKey}`);
 
 		const finalPhasesToRun = resolveAllMandatoryPhases(phase).reverse();
-		return this.execute(finalPhasesToRun, prevRunningStatus);
+		return this.execute(finalPhasesToRun, prevRunningStatus, signal);
 	}
 
 }
