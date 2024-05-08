@@ -1,40 +1,36 @@
 import * as React from 'react';
-import {ModuleFE_AppConfig, ModuleFE_BaseDB, Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/thunderstorm/frontend';
+import {AwaitModules, ComponentSync, ModuleFE_AppConfig, ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend';
 import {PermissionKey_FE} from '../PermissionKey_FE';
-import {AccessLevel, OnPermissionsChanged} from '../modules/ModuleFE_PermissionsAssert';
+import {AccessLevel} from '../modules/ModuleFE_PermissionsAssert';
 
+export const RoutePermissions = (permissionKey: PermissionKey_FE<any>) => () => permissionKey.getAccessLevel() === AccessLevel.HasAccess;
 
 export type Props_PermissionComponent = React.PropsWithChildren<{
 	permissionKey: PermissionKey_FE
 	loadingComponent?: React.ComponentType
 	fallback?: React.ComponentType
-}> & Props_SmartComponent;
+}>;
 
-export type State_PermissionComponent = State_SmartComponent
+export class PermissionsComponent<P extends Props_PermissionComponent = Props_PermissionComponent, S extends {} = {}>
+	extends ComponentSync<P, S> {
 
-export class PermissionsComponent<P extends Props_PermissionComponent = Props_PermissionComponent, S extends State_PermissionComponent = State_PermissionComponent>
-	extends SmartComponent<P, S>
-	implements OnPermissionsChanged {
+	// ######################## Static ########################
 
 	static defaultProps = {
-		modules: [ModuleFE_AppConfig as unknown as ModuleFE_BaseDB<any>]
+		modules: [ModuleFE_AppConfig]
 	};
 
-	shouldComponentUpdate(nextProps: Readonly<Props_SmartComponent & P>, nextState: Readonly<State_SmartComponent>, nextContext: any): boolean {
+	// ######################## Lifecycle ########################
+
+	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
 		return true;
 	}
 
-	protected async deriveStateFromProps(nextProps: P, state: S) {
-		return state;
-	}
+	// ######################## Render ########################
 
 	protected renderLoader = () => {
 		return <></>;
 	};
-
-	__onPermissionsChanged() {
-		this.forceUpdate();
-	}
 
 	protected renderWaitingOnPermissions = () => {
 		const Loader = this.props.loadingComponent as React.ComponentType;
@@ -53,7 +49,7 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 		return null;
 	};
 
-	render() {
+	private renderImpl = () => {
 		const permitted = this.props.permissionKey.getAccessLevel();
 		if (permitted === AccessLevel.Undefined)
 			return this.renderWaitingOnPermissions();
@@ -62,7 +58,12 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 			return this.renderPermitted();
 
 		return this.renderFallback();
+	};
+
+	render() {
+		return <AwaitModules modules={[ModuleFE_AppConfig] as ModuleFE_BaseDB<any>[]}>
+			{this.renderImpl()}
+		</AwaitModules>;
 	}
 }
 
-export const RoutePermissions = (permissionKey: PermissionKey_FE<any>) => () => permissionKey.getAccessLevel() === AccessLevel.HasAccess;

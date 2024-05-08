@@ -1,9 +1,9 @@
-import {addRoutes, createBodyServerApi, ModuleBE_BaseApiV3_Class} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, ModuleBE_BaseApi_Class} from '@nu-art/thunderstorm/backend';
 import {ApiDef_PermissionUser, DBProto_PermissionUser} from './shared';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
 
 class ModuleBE_PermissionUserAPI_Class
-	extends ModuleBE_BaseApiV3_Class<DBProto_PermissionUser> {
+	extends ModuleBE_BaseApi_Class<DBProto_PermissionUser> {
 
 	constructor() {
 		super(ModuleBE_PermissionUserDB);

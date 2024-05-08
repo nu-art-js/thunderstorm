@@ -19,7 +19,7 @@ import {
 	createQueryServerApi,
 	MemKey_ServerApi,
 	ModuleBE_AppConfigDB,
-	ModuleBE_BaseApiV3_Class,
+	ModuleBE_BaseApi_Class,
 	Storm
 } from '@nu-art/thunderstorm/backend';
 import {
@@ -359,7 +359,7 @@ class ModuleBE_Permissions_Class
 				})));
 
 				const apiModules = arrayToMap(RuntimeModules()
-					.filter<ModuleBE_BaseApiV3_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule!.dbDef!.dbKey);
+					.filter<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule!.dbDef!.dbKey);
 
 				this.logDebug(_keys(apiModules));
 

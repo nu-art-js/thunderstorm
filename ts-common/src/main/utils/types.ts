@@ -22,7 +22,7 @@ import {Default_UniqueKey} from '../db/types';
 export type Primitive = string | number | boolean;
 
 export type RecursiveObjectOfPrimitives = {
-	[key: string]: Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives;
+	[key: string]: Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives | undefined;
 };
 
 export type RecursiveArrayOfPrimitives = (Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives)[]

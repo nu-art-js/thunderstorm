@@ -51,7 +51,7 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
 	item = (): Partial<ItemType> => this.state.editable.item;
 }
 
-export abstract class TS_EditableItemComponentV3<Proto extends DBProto<any>, P = {}, S = {},
+export abstract class TS_EditableItemComponentProto<Proto extends DBProto<any>, P = {}, S = {},
 	UI_Type extends Proto['uiType'] = Proto['uiType'],
 	Props extends P & EditableRef<UI_Type> & Props_Controller = P & EditableRef<UI_Type> & Props_Controller,
 	State extends S & _State<UI_Type> = S & _State<UI_Type>,

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {PermissionsComponent, Props_PermissionComponent, State_PermissionComponent} from './PermissionsComponent';
+import {PermissionsComponent, Props_PermissionComponent} from './PermissionsComponent';
 import {_className} from '@nu-art/thunderstorm/frontend';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
@@ -10,15 +10,14 @@ type Props = Props_PermissionComponent & {
 	style?: React.CSSProperties;
 };
 
-type State = State_PermissionComponent & {
+type State = {
 	forceLock?: boolean;
 };
 
 export class PermissionsEditableComponent
 	extends PermissionsComponent<Props, State> {
 
-	protected async deriveStateFromProps(nextProps: Props, state: State): Promise<State_PermissionComponent> {
-		state = await super.deriveStateFromProps(nextProps, state);
+	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.forceLock = nextProps.forceLock;
 		return state;
 	}

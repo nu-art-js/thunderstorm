@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync, ModuleFE_v3_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
 import {_keys, filterDuplicates, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {DBModuleType} from '@nu-art/thunderstorm';
 import {graphviz} from 'd3-graphviz';
@@ -7,7 +7,7 @@ import {Digraph, Edge, Node, Subgraph, toDot} from 'ts-graphviz';
 
 
 type State = {
-	protoModules: ModuleFE_v3_BaseApi<any>[]
+	protoModules: ModuleFE_BaseApi<any>[]
 };
 
 export class Component_DependencyViewer
@@ -25,7 +25,7 @@ export class Component_DependencyViewer
 
 	protected deriveStateFromProps(nextProps: {}, state: State): State {
 		state = super.deriveStateFromProps(nextProps, state);
-		state.protoModules = RuntimeModules().filter<ModuleFE_v3_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbKey);
+		state.protoModules = RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbKey);
 		return state;
 	}
 

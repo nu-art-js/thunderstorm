@@ -4,7 +4,7 @@ import {
 	apiWithQuery,
 	getQueryParameter,
 	ModuleFE_BrowserHistory,
-	ModuleFE_v3_BaseApi,
+	ModuleFE_BaseApi,
 	ModuleFE_XHR,
 	OnStorageKeyChangedListener,
 	readFileContent,
@@ -16,7 +16,6 @@ import {ungzip} from 'pako';
 import {cloneObj, composeUrl, currentTimeMillis, DB_BaseObject, Exception, exists, generateHex, KB, TS_Object} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {
 	Account_ChangeThumbnail,
 	Account_GetPasswordAssertionConfig,
@@ -25,6 +24,7 @@ import {
 } from '../shared';
 import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp, StorageKey_TabId} from './consts';
 import {PasswordAssertionConfig} from '../../_enum';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 export interface OnLoginStatusUpdated {
@@ -32,7 +32,7 @@ export interface OnLoginStatusUpdated {
 }
 
 export interface OnAccountsUpdated {
-	__onAccountsUpdated: (...params: ApiCallerEventType<DB_Account>) => void;
+	__onAccountsUpdated: (...params: ApiCallerEventType<DBProto_Account>) => void;
 }
 
 export enum LoggedStatus {
@@ -49,7 +49,7 @@ const StorageKey_PasswordAssertionConfig = new StorageKey<PasswordAssertionConfi
 type ApiDefCaller_Account = ApiDefCaller<{ _v1: ApiStruct_Account['_v1'] & ApiStruct_SAML['_v1'] }>;
 
 class ModuleFE_Account_Class
-	extends ModuleFE_v3_BaseApi<DBProto_Account>
+	extends ModuleFE_BaseApi<DBProto_Account>
 	implements ApiDefCaller_Account, OnAuthRequiredListener, OnStorageKeyChangedListener, OnLoginStatusUpdated {
 
 	// @ts-ignore
@@ -104,7 +104,7 @@ class ModuleFE_Account_Class
 
 		let defaultTabId = StorageKey_TabId.get();
 		let defaultDeviceId = StorageKey_DeviceId.get();
-		
+
 		if (!defaultDeviceId) {
 			defaultDeviceId = generateHex(32);
 			console.log(`Defining new device Id: ${defaultDeviceId}`);

@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDBV3,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
 import {DB_PermissionDomain, DBDef_PermissionDomain, DBProto_PermissionDomain} from '../shared';
 import {ApiException} from '@nu-art/ts-common';
 import {Transaction} from 'firebase-admin/firestore';
@@ -9,7 +9,7 @@ import { ModuleBE_PermissionProjectDB } from '../../permission-project/backend/M
 type Config = DBApiConfigV3<DBProto_PermissionDomain> & {}
 
 export class ModuleBE_PermissionDomainDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_PermissionDomain, Config> {
+	extends ModuleBE_BaseDB<DBProto_PermissionDomain, Config> {
 
 	constructor() {
 		super(DBDef_PermissionDomain);

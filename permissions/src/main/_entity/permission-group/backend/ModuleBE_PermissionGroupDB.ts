@@ -1,35 +1,21 @@
-import {DBApiConfigV3, ModuleBE_BaseDBV3,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
 import {DB_PermissionGroup, DBDef_PermissionGroup, DBProto_PermissionGroup} from './shared';
-import {CanDeletePermissionEntities} from '../../../backend/core/can-delete';
-import {PermissionTypes} from '../../../shared/types';
-import {DB_EntityDependency} from '@nu-art/firebase';
-import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, flatArray, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend/ModuleBE_PermissionAccessLevelDB';
+import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, reduceToMap, TypedMap} from '@nu-art/ts-common';
+import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account/backend';
-import {ModuleBE_PermissionUserDB} from '../../permission-user/backend/ModuleBE_PermissionUserDB';
+import {ModuleBE_PermissionUserDB} from '../../permission-user/backend';
+
 
 type Config = DBApiConfigV3<DBProto_PermissionGroup> & {}
 
 export class ModuleBE_PermissionGroupDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_PermissionGroup, Config>
-	implements CanDeletePermissionEntities<'PermissionAccessLevel', 'PermissionGroup'> {
+	extends ModuleBE_BaseDB<DBProto_PermissionGroup, Config> {
 
 	constructor() {
 		super(DBDef_PermissionGroup);
 	}
-
-	__canDeleteEntities = async <T extends 'PermissionAccessLevel'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'PermissionGroup'>> => {
-		let conflicts: DB_PermissionGroup[] = [];
-		const dependencies: Promise<DB_PermissionGroup[]>[] = [];
-
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query.custom({where: {accessLevelIds: {$aca: ids}}})));
-		if (dependencies.length)
-			conflicts = flatArray(await Promise.all(dependencies));
-
-		return {collectionKey: 'PermissionGroup', conflictingIds: filterDuplicates(conflicts.map(dbObjectToId))};
-	};
 
 	protected async preWriteProcessing(instance: DB_PermissionGroup, t?: Transaction) {
 		instance._auditorId = MemKey_AccountId.get();

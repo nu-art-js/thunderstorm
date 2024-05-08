@@ -1,6 +1,6 @@
-import {ModuleFE_v3_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {ApiStruct_PermissionAPI, DBDef_PermissionAPI, DBProto_PermissionAPI} from '../shared';
 
 
@@ -9,7 +9,7 @@ export type DispatcherType_PermissionAPI = DispatcherDef<DBProto_PermissionAPI, 
 export const dispatch_onPermissionAPIChanged = new ThunderDispatcherV3<DispatcherType_PermissionAPI>('__onPermissionAPIUpdated');
 
 export class ModuleFE_PermissionAPI_Class
-	extends ModuleFE_v3_BaseApi<DBProto_PermissionAPI>
+	extends ModuleFE_BaseApi<DBProto_PermissionAPI>
 	implements ApiDefCaller<ApiStruct_PermissionAPI> {
 
 	_v1: ApiDefCaller<ApiStruct_PermissionAPI>['_v1'];
