@@ -26,6 +26,7 @@ import {
 	RunningStatus
 } from '../defaults/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey_ProjectManager} from '../project-manager';
 
 
 export const PackageBuildPhaseType_Package = 'package' as const;
@@ -36,6 +37,7 @@ type BuildPhase_Base = {
 	name: string,
 	terminatingPhase?: boolean
 	mandatoryPhases?: BuildPhase[]
+	isMandatory?: boolean
 }
 type BuildPhase_Package = BuildPhase_Base & {
 	type: typeof PackageBuildPhaseType_Package;
@@ -85,26 +87,18 @@ export class ProjectManager
 	private async init() {
 		MemKey_DefaultFiles.set(Default_Files);
 
+		//Update the project manager mem key to be used elsewhere in the project
+		MemKey_ProjectManager.set(this);
+
+		// Set default value to memKey
+		MemKey_RunningStatus.set({phaseKey: ''});
+
 		try {
 			if (RuntimeParams.continue)
 				this.prevRunningStatus = JSON.parse(await _fs.readFile(Default_OutputFiles.runningStatus, {encoding: 'utf-8'}));
 		} catch (e: any) {
 			this.logError('Failed reading running status', e);
 		}
-
-		// process.on('exit', async () => {
-		// 	const status = MemKey_RunningStatus.get();
-		// 	this.logDebug('running status:', status);
-		// 	if (!status)
-		// 		process.exit(0);
-		//
-		// 	try {
-		// 		process.exit(0);
-		// 	} catch (e: any) {
-		// 		this.logError('failed to save running status', e);
-		// 		process.exit(1);
-		// 	}
-		// });
 
 		this.loadPackage();
 	}
@@ -124,8 +118,9 @@ export class ProjectManager
 		this.phases.push(phase);
 	}
 
-	private updateRunningStatus = async (runningStatus: RunningStatus = MemKey_RunningStatus.get()) => {
-		return _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(runningStatus, true));
+	private updateRunningStatus = async (runningStatus: RunningStatus = MemKey_RunningStatus.get(undefined)) => {
+		if (runningStatus)
+			return _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(runningStatus, true));
 	};
 
 	async prepare(phases = this.phases, index: number = 0) {
@@ -175,13 +170,13 @@ export class ProjectManager
 					this.logInfo(`Running project phase: ${phase.name}`);
 
 					// if prev running status still exists skip execution
-					if (this.prevRunningStatus) {
+					if (this.prevRunningStatus && !phase.isMandatory) {
 						this.logVerbose('Skipping duo continue');
 						continue;
 					}
 
 					if (this.dryRun) {
-						await sleep(1000);
+						await sleep(200);
 					} else
 						await (phase as BuildPhase_Project).action();
 
@@ -232,13 +227,13 @@ export class ProjectManager
 							this.logDebug(`   - ${pkg.name}:${phase.name}`);
 
 							// if prev running status still exists skip execution
-							if (this.prevRunningStatus) {
+							if (this.prevRunningStatus && !phase.isMandatory) {
 								this.logVerbose('Skipping duo continue');
 								continue;
 							}
 
 							if (this.dryRun) {
-								await sleep(1000);
+								await sleep(200);
 							} else
 								await phase.action(pkg);
 
@@ -272,10 +267,14 @@ export class ProjectManager
 		});
 	}
 
-	async executePhase(phaseKey: string) {
+	async executePhase(phaseKey: string, prevRunningStatus?: RunningStatus) {
 		const phase = this.phases.find(phase => phase.name === phaseKey);
 		if (!phase)
 			throw new BadImplementationException(`No Such Phase: ${phaseKey}`);
+
+		// update prev running status if passed
+		if (prevRunningStatus)
+			this.prevRunningStatus = prevRunningStatus;
 
 		const finalPhasesToRun = resolveAllMandatoryPhases(phase).reverse();
 		return this.execute(finalPhasesToRun);
