@@ -1,54 +1,78 @@
 import * as React from 'react';
 import {
+	_className,
 	AppToolsScreen,
 	ComponentSync,
 	genericNotificationAction,
 	LL_H_C,
-	LL_V_L,
-	Props_SmartComponent,
-	SmartComponent,
-	State_SmartComponent,
-	Tab,
+	LL_V_L, ModuleFE_RoutingV2,
 	TS_AppTools,
 	TS_Button,
-	TS_Tabs
+	TS_NavLink
 } from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
-import {
-	ModuleFE_PermissionsAccessLevel,
-	ModuleFE_PermissionsDomain,
-	ModuleFE_PermissionsGroup,
-	ModuleFE_PermissionsProject,
-	ModuleFE_PermissionsUser,
-	PermissionDomainsEditor,
-	PermissionGroupsEditor,
-	PermissionProjectsEditor,
-	PermissionUsersEditor, SessionKey_StrictMode_FE
-} from '../..';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
-import {ModuleFE_SyncManagerV2} from '@nu-art/thunderstorm/frontend/modules/sync-manager/ModuleFE_SyncManagerV2';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
-import {timeout} from '@nu-art/ts-common';
-
-
-type _Props = {}
-type _State = { creatingPermissions?: boolean }
+import {arrayIncludesAny, timeout} from '@nu-art/ts-common';
+import {SessionKey_StrictMode_FE} from '../../consts';
+import {ModuleFE_PermissionAccessLevel} from '../../../_entity/permission-access-level/frontend';
+import {ModuleFE_PermissionAPI} from '../../../_entity/permission-api/frontend';
+import {ModuleFE_PermissionProject} from '../../../_entity/permission-project/frontend';
+import {ModuleFE_PermissionDomain} from '../../../_entity/permission-domain/frontend';
+import {ModuleFE_PermissionGroup} from '../../../_entity/permission-group/frontend';
+import {ModuleFE_PermissionUser} from '../../../_entity/permission-user/frontend';
+import {Outlet} from 'react-router-dom';
+import {PermissionUsersEditor} from '../permission-editors/permission-users-editor';
+import {PermissionProjectsEditor} from '../permission-editors/permission-project-editor/permission-projects-editor';
+import {PermissionDomainsEditor} from '../permission-editors/permission-domains-editor';
+import {PermissionGroupsEditor} from '../permission-editors/permission-groups-editor';
 
 export class ATS_Permissions
-	extends ComponentSync<_Props, _State> {
+	extends ComponentSync {
 
 	static screen: AppToolsScreen = {
 		key: 'permissions-dev-page',
 		name: 'Permissions',
 		renderer: this,
-		group: 'Permissions'
+		group: 'Permissions',
+		modulesToAwait: [
+			ModuleFE_PermissionAccessLevel,
+			ModuleFE_PermissionAPI,
+			ModuleFE_PermissionProject,
+			ModuleFE_PermissionDomain,
+			ModuleFE_PermissionGroup,
+			ModuleFE_PermissionUser,
+		],
+		children: [
+			PermissionProjectsEditor.Route,
+			PermissionDomainsEditor.Route,
+			PermissionGroupsEditor.Route,
+			PermissionUsersEditor.Route,
+		]
 	};
 
-	//######################### Life Cycle #########################
-
-	protected deriveStateFromProps(nextProps: _Props, state: _State) {
-		return state ?? {};
+	componentDidMount() {
+		const routeKeys = [PermissionProjectsEditor.Route.key,
+			PermissionDomainsEditor.Route.key,
+			PermissionGroupsEditor.Route.key,
+			PermissionUsersEditor.Route.key,
+		];
+		if (!arrayIncludesAny(window.location.pathname.split('/'), routeKeys))
+			ModuleFE_RoutingV2.goToRoute(PermissionProjectsEditor.Route);
 	}
+
+	//######################### Logic #########################
+
+	private toggleStrictMode = async () => {
+		await genericNotificationAction(async (notification) => {
+			this.setState({creatingPermissions: true});
+			await ModuleFE_PermissionsAssert.v1.toggleStrictMode({}).executeSync();
+			await timeout(3000);
+			await ModuleFE_Account._v1.refreshSession({}).executeSync();
+		}, 'Toggling Strict Mode');
+
+		this.setState({creatingPermissions: false});
+	};
 
 	//######################### Render #########################
 
@@ -59,83 +83,47 @@ export class ATS_Permissions
 					<TS_Button
 						disabled={this.state.creatingPermissions}
 						className={'item-list__add-button'}
-						onClick={this.toggleStrictMode}>{SessionKey_StrictMode_FE.get() ? 'Disable' : 'Enable'} Strict Mode</TS_Button>
-					<TS_Button
-						disabled={this.state.creatingPermissions}
-						className={'item-list__add-button'}
-						onClick={this.createPermissions}>Create Project</TS_Button>
+						onClick={this.toggleStrictMode}>{SessionKey_StrictMode_FE.get() ? 'Disable' : 'Enable'} Strict
+						Mode</TS_Button>
 				</LL_H_C>
 			</LL_H_C>
-			<ComponentEditor_Permissions/>
-		</LL_V_L>;
-	}
-
-	private toggleStrictMode = async () => {
-		await genericNotificationAction(async (notification) => {
-			this.setState({creatingPermissions: true});
-			await ModuleFE_PermissionsAssert.v1.toggleStrictMode({}).executeSync();
-			await timeout(3000);
-			await ModuleFE_Account.vv1.refreshSession({}).executeSync();
-			await ModuleFE_SyncManagerV2.v1.checkSync().executeSync();
-		}, 'Toggling Strict Mode');
-
-		this.setState({creatingPermissions: false});
-	};
-
-	private createPermissions = async () => {
-		await genericNotificationAction(async (notification) => {
-			this.setState({creatingPermissions: true});
-			await ModuleFE_PermissionsAssert.v1.createProject({}).executeSync();
-			await ModuleFE_Account.vv1.refreshSession({}).executeSync();
-			notification.content('Syncing dbs').show();
-			await ModuleFE_SyncManagerV2.v1.checkSync().executeSync();
-		}, 'Creating Permissions');
-
-		this.setState({creatingPermissions: false});
-	};
-}
-
-type State = State_SmartComponent;
-
-type Props = Props_SmartComponent;
-
-export class ComponentEditor_Permissions
-	extends SmartComponent<Props, State> {
-
-	static defaultProps = {
-		modules: [ModuleFE_PermissionsProject, ModuleFE_PermissionsDomain, ModuleFE_PermissionsAccessLevel, ModuleFE_PermissionsGroup, ModuleFE_PermissionsUser]
-	};
-
-	//######################### Life Cycle #########################
-
-	protected async deriveStateFromProps(nextProps: Props, state: State) {
-		state ??= (this.state ? {...this.state} : {}) as State;
-		return state;
-	}
-
-	//######################### Render #########################
-
-	private renderTabs = () => {
-		const tabs: Tab[] = [
-			{title: 'Projects', uid: 'projects', content: <PermissionProjectsEditor/>},
-			{
-				title: 'Domains',
-				uid: 'domains',
-				content: () => <PermissionDomainsEditor/>
-			},
-			{
-				title: 'Groups',
-				uid: 'groups',
-				content: <PermissionGroupsEditor/>
-			},
-			{title: 'Users', uid: 'users', content: <PermissionUsersEditor/>},
-		];
-		return <TS_Tabs tabs={tabs}/>;
-	};
-
-	render() {
-		return <LL_V_L id={'dev-page__permissions'}>
-			{this.renderTabs()}
+			<LL_H_C className={'links-container'}>
+				<TS_NavLink
+					key={PermissionProjectsEditor.Route.key}
+					route={PermissionProjectsEditor.Route}
+					ignoreClickOnSameRoute={true}
+					className={({isActive}) => _className('link-button', isActive && 'selected')}
+				>
+					Project
+				</TS_NavLink>
+				<TS_NavLink
+					key={PermissionDomainsEditor.Route.key}
+					route={PermissionDomainsEditor.Route}
+					ignoreClickOnSameRoute={true}
+					className={({isActive}) => _className('link-button', isActive && 'selected')}
+				>
+					Domains
+				</TS_NavLink>
+				<TS_NavLink
+					key={PermissionGroupsEditor.Route.key}
+					route={PermissionGroupsEditor.Route}
+					ignoreClickOnSameRoute={true}
+					className={({isActive}) => _className('link-button', isActive && 'selected')}
+				>
+					Groups
+				</TS_NavLink>
+				<TS_NavLink
+					key={PermissionUsersEditor.Route.key}
+					route={PermissionUsersEditor.Route}
+					ignoreClickOnSameRoute={true}
+					className={({isActive}) => _className('link-button', isActive && 'selected')}
+				>
+					Users
+				</TS_NavLink>
+			</LL_H_C>
+			<Outlet/>
 		</LL_V_L>;
 	}
 }
+
+

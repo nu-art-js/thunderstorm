@@ -9,6 +9,7 @@ import {
 	tsValidateString
 } from '@nu-art/ts-common';
 import {DBProto_PushSubscription} from './types';
+import {PushPubSubDBGroup} from '../shared';
 
 
 const Validator_FilterKey = (value?: number | string) => {
@@ -21,7 +22,7 @@ const Validator_FilterKey = (value?: number | string) => {
 	if (exists(value))
 		return `expected type number | string but received ${typeof value}`;
 
-	return tsValidateResult(value, tsValidateMustExist);
+	return tsValidateResult<string | number>(value, tsValidateMustExist);
 };
 
 const Validator_ModifiableProps: DBProto_PushSubscription['modifiablePropsValidator'] = {
@@ -38,6 +39,13 @@ export const DBDef_PushSubscription: DBDef_V3<DBProto_PushSubscription> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbName: convertUpperCamelCase('PushSubscription', '-').toLowerCase(),
+	dbKey: 'push-subscription',
 	entityName: convertUpperCamelCase('PushSubscription', '-').toLowerCase(),
+	frontend: {
+		group: PushPubSubDBGroup,
+		name: 'subscription',
+	},
+	backend: {
+		name: 'push-subscription'
+	}
 };

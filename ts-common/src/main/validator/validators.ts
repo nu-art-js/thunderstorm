@@ -1,11 +1,5 @@
 import {tsValidateExists, Validator, ValidatorTypeResolver} from './validator-core';
-import {
-	tsValidateArray,
-	tsValidateBoolean,
-	tsValidateRegexp,
-	tsValidateString,
-	tsValidateTimestamp
-} from './type-validators';
+import {tsValidateArray, tsValidateBoolean, tsValidateRegexp, tsValidateString, tsValidateTimestamp} from './type-validators';
 import {AuditableV2} from '../utils/types';
 
 
@@ -30,6 +24,11 @@ export const tsValidateBucketUrl = (mandatory?: boolean) => tsValidateRegexp(
 	/gs?:\/\/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
 export const tsValidateGeneralUrl = (mandatory?: boolean) => tsValidateRegexp(
 	/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
+
+export const tsValidateShortUrl = (mandatory = true)=> tsValidateRegexp(
+	/^[A-Za-z0-9-_.!*'()]{8}$/, mandatory
+)
+
 export const tsValidateVersion = tsValidateRegexp(/\d{1,3}\.\d{1,3}\.\d{1,3}/);
 export const tsValidateUniqueId = tsValidateId(dbIdLength);
 export const tsValidator_arrayOfUniqueIds = tsValidateArray(tsValidateUniqueId);
@@ -49,6 +48,8 @@ export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9
 export const tsValidator_AuditableV2: ValidatorTypeResolver<AuditableV2> = {_auditorId: tsValidateString()};
 
 export const DB_Object_validator = {
+	// this will be the way to handle app level context via proto.. need to rename this to __metadata once done
+	__metadata1: tsValidateOptional,
 	_id: tsValidateUniqueId,
 	_v: tsValidateVersion,
 	_originDocId: tsValidateOptionalId,

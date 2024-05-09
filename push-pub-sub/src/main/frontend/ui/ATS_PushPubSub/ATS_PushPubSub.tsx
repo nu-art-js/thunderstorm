@@ -3,28 +3,31 @@ import {
 	_className,
 	AppToolsScreen,
 	ATS_Fullstack,
-	CellRenderer,
+	CellRenderer, ComponentSync,
 	LL_H_C,
 	LL_H_T,
 	LL_V_L,
 	ModuleFE_Toaster,
-	Props_SmartComponent,
-	SmartComponent,
-	State_SmartComponent,
 	TS_BusyButton,
 	TS_Button,
 	TS_Input,
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {__stringify, DateTimeFormat_yyyyMMDDTHHmmss, groupArrayBy, removeFromArrayByIndex, TS_Object,} from '@nu-art/ts-common';
+import {
+	__stringify,
+	DateTimeFormat_yyyyMMDDTHHmmss,
+	groupArrayBy,
+	removeFromArrayByIndex,
+	TS_Object,
+} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_PushPubSub, OnPushMessageReceived} from '../../modules/ModuleFE_PushPubSub';
 import {PushMessage_Payload} from '../../../shared';
 import './ATS_PushPubSub.scss';
 import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 import {ModuleFE_PushSubscription} from '../../modules/ModuleFE_PushSubscription';
-import {ApiCallerEventTypeV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/v3_types';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {DBProto_PushSubscription} from '../../../shared/push-subscription';
 
 
@@ -61,25 +64,21 @@ const ConfigPreset_1 = {
 };
 
 export class ATS_PushPubSub
-	extends SmartComponent<Props, State>
+	extends ComponentSync<Props, State>
 	implements OnPushMessageReceived {
 
-	static screen: AppToolsScreen = {name: `Push Messages`, renderer: this, group: ATS_Fullstack};
-	static defaultProps = {
-		modules: [ModuleFE_PushSubscription]
+	// ######################## Static ########################
+
+	static screen: AppToolsScreen = {
+		name: `Push Messages`,
+		renderer: this,
+		group: ATS_Fullstack,
+		modulesToAwait: [ModuleFE_PushSubscription]
 	};
 
-	constructor(p: Props) {
-		super(p);
-	}
+	// ######################## Lifecycle ########################
 
-	protected async deriveStateFromProps(nextProps: Props_SmartComponent & Props, _state: (Partial<State> & State_SmartComponent) | undefined): Promise<State_SmartComponent & State> {
-		const state = _state ?? {} as State_SmartComponent & State;
-
-		return {...state, ...ConfigPreset_1.config, receivedPushPayloads: []};
-	}
-
-	__onSubscriptionUpdated(...params: ApiCallerEventTypeV3<DBProto_PushSubscription>): void {
+	__onSubscriptionUpdated(...params: ApiCallerEventType<DBProto_PushSubscription>): void {
 		this.forceUpdate();
 	}
 
@@ -88,45 +87,12 @@ export class ATS_PushPubSub
 		this.setState({receivedPushPayloads: [...this.state.receivedPushPayloads, payload]});
 	}
 
-	render() {
-		const className = _className('notification-icon', ModuleFE_PushPubSub.isNotificationEnabled() ? 'notification-enabled' : 'notification-disabled',);
-		const mySubscription = ModuleFE_PushSubscription.cache.all()
-			.filter(subscription => subscription.pushSessionId === ModuleFE_PushPubSub.getPushSessionId());
-
-		return <LL_V_L className="ats-PushPubSub">
-			<LL_H_C>Push Session Id: {ModuleFE_PushPubSub.getPushSessionId()}</LL_H_C>
-			<LL_H_C className="header match_width">
-				<div>{TS_Icons.bell.component({
-					className: className,
-					onClick: async (e) => {
-						await ModuleFE_PushPubSub.requestPermissions();
-					}
-				})}</div>
-				<TS_BusyButton onClick={ModuleFE_PushPubSub.deleteToken}>Delete Token</TS_BusyButton>
-				<TS_BusyButton onClick={ModuleFE_PushPubSub.getToken}>Generate Token</TS_BusyButton>
-			</LL_H_C>
-			<LL_H_T className="panels-container h-gap__n match_width">
-				{this.renderPanel('Register', this.state.registerFilter, 'registerKey', this.subscribe)}
-				{this.renderPanel('Trigger', this.state.triggerFilter, 'triggerKey', this.trigger)}
-			</LL_H_T>
-			<LL_H_T className="panels-container h-gap__n match_width">
-				<LL_V_L className="panel v-gap__l">
-					{groupArrayBy(mySubscription, (subscription) => subscription.topic)
-						.map((subscription, index) => <LL_H_C key={index}>
-							<LL_H_C style={{width: 100}}>{subscription.key}</LL_H_C>
-							<LL_V_L>{subscription.values.map((value, index) => <LL_H_C key={index}><TS_Icons.bin.component
-								onClick={() => ModuleFE_PushSubscription.v1.delete({_id: value._id}).executeSync()}/>{JSON.stringify(value.filter)}</LL_H_C>)}</LL_V_L>
-						</LL_H_C>)}
-				</LL_V_L>
-				<LL_V_L className="panel">
-					{this.state.receivedPushPayloads.map(payload => <LL_H_C>
-						<span style={{width: 200}}>{DateTimeFormat_yyyyMMDDTHHmmss.format(payload.timestamp)}</span>
-						{JSON.stringify(payload.message)}
-					</LL_H_C>)}
-				</LL_V_L>
-			</LL_H_T>
-		</LL_V_L>;
+	protected deriveStateFromProps(nextProps: Props, _state: (Partial<State>) | undefined): State {
+		const state = _state ?? {} as State;
+		return {...state, ...ConfigPreset_1.config, receivedPushPayloads: []};
 	}
+
+	// ######################## Logic ########################
 
 	private composeFilter(objProps: ObjProps[]) {
 		return objProps.reduce((toRet, item) => {
@@ -156,9 +122,51 @@ export class ATS_PushPubSub
 			topic: this.state.registerKey,
 			filter: this.composeFilter(this.state.registerFilter)
 		}).executeSync();
-
-		await ModuleFE_PushSubscription.v1.sync().executeSync();
 	};
+
+	// ######################## Render ########################
+
+	render() {
+		const className = _className('notification-icon', ModuleFE_PushPubSub.isNotificationEnabled() ? 'notification-enabled' : 'notification-disabled',);
+		const mySubscription = ModuleFE_PushSubscription.cache.all()
+			.filter(subscription => subscription.pushSessionId === ModuleFE_PushPubSub.getPushSessionId());
+
+		return <LL_V_L className="ats-PushPubSub">
+			<LL_H_C>Push Session Id: {ModuleFE_PushPubSub.getPushSessionId()}</LL_H_C>
+			<LL_H_C className="header match_width">
+				<div>{TS_Icons.bell.component({
+					className: className,
+					onClick: async (e) => {
+						await ModuleFE_PushPubSub.requestPermissions();
+					}
+				})}</div>
+				<TS_BusyButton onClick={ModuleFE_PushPubSub.deleteToken}>Delete Token</TS_BusyButton>
+				<TS_BusyButton onClick={ModuleFE_PushPubSub.getToken}>Generate Token</TS_BusyButton>
+			</LL_H_C>
+			<LL_H_T className="panels-container h-gap__n match_width">
+				{this.renderPanel('Register', this.state.registerFilter, 'registerKey', this.subscribe)}
+				{this.renderPanel('Trigger', this.state.triggerFilter, 'triggerKey', this.trigger)}
+			</LL_H_T>
+			<LL_H_T className="panels-container h-gap__n match_width">
+				<LL_V_L className="panel v-gap__l">
+					{groupArrayBy(mySubscription, (subscription) => subscription.topic)
+						.map((subscription, index) => <LL_H_C key={index}>
+							<LL_H_C style={{width: 100}}>{subscription.key}</LL_H_C>
+							<LL_V_L>{subscription.values.map((value, index) => <LL_H_C
+								key={index}><TS_Icons.bin.component
+								onClick={() => ModuleFE_PushSubscription.v1.delete({_id: value._id}).executeSync()}/>{JSON.stringify(value.filter)}
+							</LL_H_C>)}</LL_V_L>
+						</LL_H_C>)}
+				</LL_V_L>
+				<LL_V_L className="panel">
+					{this.state.receivedPushPayloads.map(payload => <LL_H_C>
+						<span style={{width: 200}}>{DateTimeFormat_yyyyMMDDTHHmmss.format(payload.timestamp)}</span>
+						{JSON.stringify(payload.message)}
+					</LL_H_C>)}
+				</LL_V_L>
+			</LL_H_T>
+		</LL_V_L>;
+	}
 
 	private renderPanel(title: string, rows: ObjProps[], key: 'registerKey' | 'triggerKey', action: () => Promise<void>) {
 		const cellRenderer: CellRenderer<ObjProps, Actions> = (prop, item, index: number) => {
@@ -216,6 +224,4 @@ export class ATS_PushPubSub
 	title(title: string): React.ReactNode {
 		return <div>{title}</div>;
 	}
-
 }
-

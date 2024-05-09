@@ -19,66 +19,93 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import './TS_ListOrganizer.scss';
-import {_className} from '../../utils/tools';
 import {ReactNode} from 'react';
+import './TS_ListOrganizer.scss';
 import {LL_V_L} from '../Layouts';
+import {ComponentSync} from '../../core/ComponentSync';
+import {exists, swapInArrayByIndex} from '@nu-art/ts-common';
 
 
 type State<T> = {
 	items: T[]
 }
 
+export type TS_ListOrganizer_RendererProps<T> = {
+	item: T;
+	index: number;
+	dragged: boolean;
+	onDragStart: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
+	onDragOver: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
+	onDragLeave: (e: React.DragEvent<HTMLElement>, itemIndex: number) => void;
+	onDragEnd: (e: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+}
+
 type Props<T> = {
 	items: T[]
-	renderer: (item: T, index: number) => ReactNode
-	onOrderChanged: (items: T[]) => void | Promise<void>
+	renderer: (props: TS_ListOrganizer_RendererProps<T>) => ReactNode;
+	onOrderChanged: (items: T[]) => void | Promise<void>;
 }
 
 export class TS_ListOrganizer<T>
-	extends React.Component<Props<T>, State<T>> {
+	extends ComponentSync<Props<T>, State<T>> {
 
-	private draggedItemIndex: { current: number | null } = {current: null};
-	private draggedOverItemIndex: { current: number | null } = {current: null};
+	private draggedItemIndex: number | undefined = undefined;
+	private lockRowIndex: number | undefined = undefined;
+
+	//######################### Lifecycle #########################
+
+	protected deriveStateFromProps(nextProps: Props<T>, state: State<T>): State<T> {
+		state.items = [...nextProps.items];
+		return state;
+	}
+
+	//######################### Logic #########################
 
 	onDragStart = (e: React.DragEvent<HTMLElement>, rowIndex: number) => {
-		this.draggedItemIndex.current = rowIndex;
+		this.draggedItemIndex = rowIndex;
+		this.forceUpdate();
 	};
 
-	onDragEnter = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
-		if (this.draggedItemIndex.current === null)
+	onDragOver = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
+		if (rowIndex === this.lockRowIndex)
 			return;
 
-		this.draggedOverItemIndex.current = rowIndex;
-		const items = [...this.state.items];
-		const draggingItemContent = items[this.draggedItemIndex.current];
+		if (!exists(this.draggedItemIndex) || this.draggedItemIndex === rowIndex)
+			return;
 
-		items.splice(this.draggedItemIndex.current, 1);
-		items.splice(this.draggedOverItemIndex.current, 0, draggingItemContent);
-
-		this.draggedItemIndex.current = this.draggedOverItemIndex.current;
-		this.draggedOverItemIndex.current = null;
-		this.setState({items});
+		swapInArrayByIndex(this.state.items, rowIndex, this.draggedItemIndex);
+		this.lockRowIndex = this.draggedItemIndex;
+		this.draggedItemIndex = rowIndex;
+		this.forceUpdate();
 	};
 
 	onDragEnd = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-		this.draggedItemIndex = {current: null};
-		this.forceUpdate();
+		this.draggedItemIndex = undefined;
+		this.lockRowIndex = undefined;
+		this.forceUpdate(()=> this.props.onOrderChanged(this.state.items));
 	};
+
+	onDragLeave = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
+		if (rowIndex === this.lockRowIndex)
+			this.lockRowIndex = undefined;
+	};
+
+	//######################### Render #########################
 
 	render() {
 		return <LL_V_L className={'ts-list-organizer__list'}>
 			{this.state.items.map((item, itemIndex) => {
-				const className = _className('ts-list-organizer__item', itemIndex === this.draggedItemIndex.current ? 'ts-list-organizer__dragged' : undefined);
-				return <div
-					key={itemIndex}
-					className={className}
-					draggable={'true'}
-					onDragStart={(e) => this.onDragStart(e, itemIndex)}
-					onDragOver={(e) => e.preventDefault()}
-					onDragEnter={(e) => this.onDragEnter(e, itemIndex)}
-					onDragEnd={this.onDragEnd}
-				>{this.props.renderer(item, itemIndex)}</div>;
+				const dragged = itemIndex === this.draggedItemIndex;
+				return this.props.renderer({
+					item,
+					dragged,
+					index: itemIndex,
+					onDragEnd: this.onDragEnd,
+					onDragOver: this.onDragOver,
+					onDragLeave: this.onDragLeave,
+					onDragStart: this.onDragStart,
+				});
+
 			})}
 		</LL_V_L>;
 	}

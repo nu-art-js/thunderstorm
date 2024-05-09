@@ -3,13 +3,13 @@ import {BaseSubscriptionData, PushSessionId} from '../types';
 
 
 type VersionTypes_PushSubscription = { '1.0.0': DB_PushSubscription };
-type Versions = VersionsDeclaration< ['1.0.0'], VersionTypes_PushSubscription>;
+type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PushSubscription>;
 type Dependencies = {
 //
 }
 
 type UniqueKeys = '_id';
-type Proto = Proto_DB_Object<DB_PushSubscription, never, Versions, UniqueKeys, Dependencies>;
+type Proto = Proto_DB_Object<DB_PushSubscription, 'push-subscription', never, Versions, UniqueKeys, Dependencies>;
 
 export type DBProto_PushSubscription = DBProto<Proto>;
 

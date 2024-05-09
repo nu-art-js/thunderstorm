@@ -1,0 +1,50 @@
+{
+  "name": "@nu-art/ts-messaging",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "ts-messaging - Express & Typescript based backend framework",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "ts-messaging"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/permissions": "$THUNDERSTORM_SDK_VERSION",
+    "firebase": "$FIREBASE_PKG_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
+    "react": "$REACT_PKG_VERSION"
+  },
+  "devDependencies": {
+    "@types/react": "$REACT_TYPES_VERSION",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1"
+  }
+}

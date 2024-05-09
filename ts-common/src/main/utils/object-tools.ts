@@ -16,10 +16,16 @@
  * limitations under the License.
  */
 
-import {TS_Object} from './types';
+import {DotNotation, TS_Object} from './types';
 import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
 import {asArray} from './array-tools';
 
+export function getDotNotatedValue<T extends object>(key: DotNotation<T>, dotNotatedObject: T) {
+	const pathParts = key.split('.');
+	return pathParts.reduce((value: any, _pathPart: string) => {
+		return value[_pathPart];
+	}, dotNotatedObject);
+}
 
 export function deepClone<T>(obj: T | Readonly<T>): T {
 	if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'undefined' || obj === null)
@@ -54,7 +60,7 @@ export function cloneObj<T extends TS_Object>(obj: T): T {
 	}, {} as T);
 }
 
-export function partialCompare<T extends any>(one?: T, two?: T, keysToFilterOut?: (keyof T)[]): boolean {
+export function partialCompare<T>(one?: T, two?: T, keysToFilterOut?: (keyof T)[]): boolean {
 	one = deepClone(one);
 	two = deepClone(two);
 
@@ -66,7 +72,10 @@ export function partialCompare<T extends any>(one?: T, two?: T, keysToFilterOut?
 	return compare(one, two);
 }
 
-export function compare<T extends any>(one?: T, two?: T, keys?: (keyof T)[]): boolean {
+/**
+ * Returns true for equal.
+ */
+export function compare<T>(one?: T, two?: T, keys?: (keyof T)[]): boolean {
 	const typeofOne = typeof one;
 	const typeofTwo = typeof two;
 

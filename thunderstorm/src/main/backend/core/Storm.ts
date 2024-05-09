@@ -64,7 +64,7 @@ export class Storm
 	}
 
 	startServer(onStarted?: () => Promise<void>) {
-		const modulesAsFunction: ModuleBE_BaseFunction[] = this.modules.filter((module: Module): module is ModuleBE_BaseFunction => {
+		const modulesAsFunction: ModuleBE_BaseFunction[] = this.modules.filter((module: ModuleBE_BaseFunction) => {
 			const b = module instanceof ModuleBE_BaseFunction;
 			// console.log(`${module.getName()} function ${b}`)
 			return b;

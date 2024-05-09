@@ -21,6 +21,7 @@
 
 import {BaseHttpRequest} from './BaseHttpRequest';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {DBDef_V3} from '@nu-art/ts-common';
 
 
 export enum HttpMethod {
@@ -97,4 +98,5 @@ export type ApiCaller<API> =
 		API extends BodyApi<any, any, any, any, HttpMethod_Body> ? ApiCaller_Body<API> :
 			API extends TypedApi<any, any, any, any, any> ? ApiCaller_Any<API> : never;
 
-export type ApiModule = { dbModule: { dbDef: { dbName: string } }, apiDef: { [name: string]: { [name: string]: { path: string } } } }
+export type DBModuleType = { dbDef?: DBDef_V3<any> };
+export type ApiModule = { dbModule?: DBModuleType, apiDef?: { [name: string]: { [name: string]: { path: string } } } }

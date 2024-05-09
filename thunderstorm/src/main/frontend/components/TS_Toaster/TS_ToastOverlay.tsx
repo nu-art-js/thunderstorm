@@ -23,6 +23,7 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {Toast_Model, ToastListener, ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster';
 
+
 type State = { model?: Toast_Model };
 
 export type ToastProps = {
@@ -33,7 +34,7 @@ export class TS_ToastOverlay
 	extends ComponentSync<ToastProps, State>
 	implements ToastListener {
 
-	protected deriveStateFromProps(nextProps: ToastProps): State | undefined {
+	protected deriveStateFromProps(nextProps: ToastProps): State {
 		return {model: this.state?.model};
 	}
 

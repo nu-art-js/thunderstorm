@@ -23,6 +23,7 @@ import * as React from 'react';
 import './TS_Overlay.scss';
 import {stopPropagation, _className} from '../../utils/tools';
 
+
 type Props = React.PropsWithChildren<{
 	flat?: boolean
 	showOverlay: boolean
@@ -42,12 +43,12 @@ export class TS_Overlay
 			<div
 				className={_className('ts-overlay', this.props.className)}
 				onClick={this.props.onClickOverlay}
+				onContextMenu={this.props.onClickOverlay}
 				onMouseMove={e => e.stopPropagation()}
 				onMouseOver={e => e.stopPropagation()}
 				onMouseEnter={e => e.stopPropagation()}
 				onMouseLeave={e => e.stopPropagation()}
-				onMouseOut={e => e.stopPropagation()}
-			>
+				onMouseOut={e => e.stopPropagation()}>
 				{!this.props.flat && overlayChild}
 			</div>
 			{this.props.flat && overlayChild}

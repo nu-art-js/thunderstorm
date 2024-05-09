@@ -9,17 +9,22 @@ import {
 	MUSTNeverHappenException,
 	PreDB,
 	reduceToMap,
+	RuntimeModules,
 	TS_Object,
 	TypedMap,
 	Year,
 } from '@nu-art/ts-common';
-import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfig, Storm} from '@nu-art/thunderstorm/backend';
-import {ApiDef_Permissions, DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionDomain, DB_PermissionProject} from '../../shared';
-import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
-import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
-import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
-import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
-import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+import {
+	addRoutes,
+	createQueryServerApi,
+	MemKey_ServerApi,
+	ModuleBE_AppConfigDB,
+	ModuleBE_BaseApi_Class,
+	Storm
+} from '@nu-art/thunderstorm/backend';
+import {
+	ApiDef_Permissions,
+} from '../../shared';
 import {
 	CollectSessionData,
 	MemKey_AccountId,
@@ -27,8 +32,7 @@ import {
 	ModuleBE_SessionDB,
 	SessionCollectionParam
 } from '@nu-art/user-account/backend';
-import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
-import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
+import {DefaultDef_Group, DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -47,8 +51,23 @@ import {
 } from '../../shared/consts';
 import {ApiModule} from '@nu-art/thunderstorm';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
+import {
+	DefaultDef_ServiceAccount,
+	dispatcher_collectServiceAccounts
+} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
+import {
+	DB_PermissionAccessLevel,
+	DB_PermissionAPI,
+	DB_PermissionDomain,
+	DB_PermissionProject,
+	ModuleBE_PermissionAccessLevelDB,
+	ModuleBE_PermissionAPIDB,
+	ModuleBE_PermissionDomainDB,
+	ModuleBE_PermissionGroupDB,
+	ModuleBE_PermissionProjectDB,
+	ModuleBE_PermissionUserDB
+} from '../_entity';
 
 
 export interface CollectPermissionsProjects {
@@ -59,49 +78,68 @@ const dispatcher_collectPermissionsProjects = new Dispatcher<CollectPermissionsP
 
 const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
 
+export const PermissionGroup_Permissions_SuperAdmin: DefaultDef_Group = {
+	_id: GroupId_SuperAdmin,
+	name: 'Super Admin',
+	accessLevels: {
+		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Admin.name,
+		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Admin.name,
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
+		[Domain_Developer.namespace]: DefaultAccessLevel_Admin.name,
+	}
+};
+
+export const PermissionGroup_Permissions_Viewer: DefaultDef_Group = {
+	_id: '8c38d3bd2d76bbc37b5281f481c0bc1b',
+	name: 'Permissions Viewer',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
+		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
+		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Read.name,
+	}
+};
+
+export const PermissionGroup_Permissions_Editor: DefaultDef_Group = {
+	_id: '1524909cae174d0052b76a469b339218',
+	name: 'Permissions Editor',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
+		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
+		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Write.name,
+	}
+};
+
+export const PermissionGroup_Account_Manager: DefaultDef_Group = {
+	_id: '6bb5feb12d0712ecee77f7f44188ec79',
+	name: 'Accounts Manager',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Write.name,
+	}
+};
+
+export const PermissionGroup_Account_Admin: DefaultDef_Group = {
+	_id: '761a84bdde3f9be3fde9c50402a60401',
+	name: 'Accounts Admin',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
+	}
+};
+
+export const PermissionGroup_Account_Viewer: DefaultDef_Group = {
+	_id: '7343853a980149ec94f967ac7ff4ccc3',
+	name: 'Accounts Viewer',
+	accessLevels: {
+		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
+	}
+};
+
 export const PermissionGroups_Permissions = [
-	{
-		_id: GroupId_SuperAdmin,
-		name: 'Super Admin',
-		accessLevels: {
-			[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Admin.name,
-			[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Admin.name,
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
-			[Domain_Developer.namespace]: DefaultAccessLevel_Admin.name,
-		}
-	},
-	{
-		_id: '8c38d3bd2d76bbc37b5281f481c0bc1b',
-		name: 'Permissions Viewer',
-		accessLevels: {
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
-			[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
-			[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Read.name,
-		}
-	},
-	{
-		_id: '1524909cae174d0052b76a469b339218',
-		name: 'Permissions Editor',
-		accessLevels: {
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
-			[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
-			[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Write.name,
-		}
-	},
-	{
-		_id: '6bb5feb12d0712ecee77f7f44188ec79',
-		name: 'Accounts Manager',
-		accessLevels: {
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Write.name,
-		}
-	},
-	{
-		_id: '761a84bdde3f9be3fde9c50402a60401',
-		name: 'Accounts Admin',
-		accessLevels: {
-			[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
-		}
-	},
+	PermissionGroup_Permissions_SuperAdmin,
+	PermissionGroup_Permissions_Viewer,
+	PermissionGroup_Permissions_Editor,
+	PermissionGroup_Account_Manager,
+	PermissionGroup_Account_Admin,
+	PermissionGroup_Account_Viewer,
 	// {
 	// 	_id: '60a417683e4016f4d933fee88953f0d5',
 	// 	name: 'Permissions Read Self',
@@ -141,7 +179,7 @@ class ModuleBE_Permissions_Class
 		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({_id: data.accountId});
 		const permissionMap: TypedMap<number> = {};
 		const groupIds = user.groups.map(g => g.groupId);
-		const groups = filterInstances(await ModuleBE_PermissionGroup.query.all(groupIds));
+		const groups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(groupIds));
 		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
 		levelMaps.forEach(levelMap => {
 			_keys(levelMap).forEach(domainId => {
@@ -154,7 +192,7 @@ class ModuleBE_Permissions_Class
 		});
 
 		//All domains that are not defined for the user, are NoAccess by default.
-		const allDomains = await ModuleBE_PermissionDomain.query.where({});
+		const allDomains = await ModuleBE_PermissionDomainDB.query.where({});
 		allDomains.forEach(domain => {
 			if (!permissionMap[domain._id])
 				permissionMap[domain._id] = DefaultAccessLevel_NoAccess.value; //"fill in the gaps" - All domains that are not defined for the user, are NoAccess by default.
@@ -175,6 +213,11 @@ class ModuleBE_Permissions_Class
 		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
 		const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
 
+		projects.reduce((issues, project) => {
+			return project.packages.reduce((issues, _package) => {
+				return issues;
+			}, issues);
+		}, [] as string[]);
 		// Create All Projects
 		const map_nameToDBProject: TypedMap<DB_PermissionProject> = await this.createProjects(projects);
 		const map_nameToDbDomain: TypedMap<DB_PermissionDomain> = await this.createDomains(projects, map_nameToDBProject);
@@ -194,7 +237,7 @@ class ModuleBE_Permissions_Class
 	private async createProjects(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating Projects');
 		const _auditorId = MemKey_AccountId.get();
-		const preDBProjects = await ModuleBE_PermissionProject.set.all(projects.map(project => ({
+		const preDBProjects = await ModuleBE_PermissionProjectDB.set.all(projects.map(project => ({
 			_id: project._id,
 			name: project.name,
 			_auditorId
@@ -219,7 +262,7 @@ class ModuleBE_Permissions_Class
 			projectId: map_nameToDBProject[project.name]._id,
 			_auditorId
 		})))));
-		const dbDomain = await ModuleBE_PermissionDomain.set.all(domainsToUpsert);
+		const dbDomain = await ModuleBE_PermissionDomainDB.set.all(domainsToUpsert);
 		const domainsMap_nameToDbDomain = reduceToMap(dbDomain, domain => domain.namespace, domain => domain);
 		this.logInfoBold(`Created ${dbDomain.length} Domains`);
 		return domainsMap_nameToDbDomain;
@@ -250,7 +293,7 @@ class ModuleBE_Permissions_Class
 			});
 		}))));
 
-		const dbLevels = await ModuleBE_PermissionAccessLevel.set.all(levelsToUpsert);
+		const dbLevels = await ModuleBE_PermissionAccessLevelDB.set.all(levelsToUpsert);
 		const domainNameToLevelNameToDBAccessLevel: {
 			[domainName: string]: { [levelName: string]: DB_PermissionAccessLevel }
 		} = reduceToMap(dbLevels, level => level.domainId, (level, index, map) => {
@@ -291,7 +334,7 @@ class ModuleBE_Permissions_Class
 				};
 			});
 		}));
-		const dbGroups = await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
+		const dbGroups = await ModuleBE_PermissionGroupDB.set.all(groupsToUpsert);
 		this.logInfoBold(`Created ${dbGroups.length} Groups`);
 	}
 
@@ -306,7 +349,7 @@ class ModuleBE_Permissions_Class
 		const _auditorId = MemKey_AccountId.get();
 		const apisToUpsert = flatArray(projects.map(project => {
 			return project.packages.map(_package => _package.domains.map(domain => {
-				const apis: PreDB<DB_PermissionApi>[] = [];
+				const apis: PreDB<DB_PermissionAPI>[] = [];
 
 				apis.push(...(domain.customApis || []).map(api => ({
 					projectId: project._id,
@@ -315,8 +358,8 @@ class ModuleBE_Permissions_Class
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
 
-				const apiModules = arrayToMap(Storm.getInstance()
-					.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+				const apiModules = arrayToMap(RuntimeModules()
+					.filter<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule!.dbDef!.dbKey);
 
 				this.logDebug(_keys(apiModules));
 
@@ -326,7 +369,7 @@ class ModuleBE_Permissions_Class
 					if (!apiModule)
 						throw new MUSTNeverHappenException(`Could not find api module with dbName: ${dbName}`);
 
-					const _apiDefs = apiModule.apiDef;
+					const _apiDefs = apiModule.apiDef!;
 					return _keys(_apiDefs).map(_apiDefKey => {
 						const apiDefs = _apiDefs[_apiDefKey];
 						return filterInstances(_keys(apiDefs).map(apiDefKey => {
@@ -352,7 +395,7 @@ class ModuleBE_Permissions_Class
 			}));
 		}));
 
-		const dbApis = await ModuleBE_PermissionApi.set.all(apisToUpsert);
+		const dbApis = await ModuleBE_PermissionAPIDB.set.all(apisToUpsert);
 		this.logInfoBold(`Created ${dbApis.length} APIs`);
 	}
 
@@ -364,7 +407,7 @@ class ModuleBE_Permissions_Class
 	private async createPermissionsKeys(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating App Config');
 		// const permissionKeysToCreate: PermissionKey_BE<any>[] = filterInstances(flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.permissionKeys)))));
-		await ModuleBE_AppConfig.createDefaults(this);
+		await ModuleBE_AppConfigDB.createDefaults(this);
 		this.logInfoBold('Created App Config');
 	}
 
@@ -435,7 +478,6 @@ class ModuleBE_Permissions_Class
 				this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
 			});
 	}
-
 }
 
 export const ModuleBE_Permissions = new ModuleBE_Permissions_Class();

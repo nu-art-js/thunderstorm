@@ -1,4 +1,4 @@
-import {addRoutes, createBodyServerApi, ModuleBE_BaseApiV3_Class} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, ModuleBE_BaseApi_Class} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_AssetsDB} from './ModuleBE_AssetsDB';
 import {ApiDef_Assets, DBProto_Assets} from '../../shared';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage';
@@ -6,7 +6,7 @@ import {DB_BaseObject} from '@nu-art/ts-common';
 
 
 export class ModuleBE_AssetsAPI_Class
-	extends ModuleBE_BaseApiV3_Class<DBProto_Assets> {
+	extends ModuleBE_BaseApi_Class<DBProto_Assets> {
 
 	constructor() {
 		super(ModuleBE_AssetsDB);

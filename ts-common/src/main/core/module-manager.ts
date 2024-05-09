@@ -33,14 +33,38 @@ export function moduleResolver() {
 	return _modules;
 }
 
+const modulesInterface = {
+	filter: <T>(filter: (item: T, index: number, array: T[]) => boolean) => {
+		return _modules.filter(filter as (item: Module, index: number, array: Module[]) => boolean) as T[];
+	},
+	find: <T>(filter: (item: T, index: number, array: T[]) => boolean) => {
+		return _modules.find(filter as (item: Module, index: number, array: Module[]) => boolean) as T;
+	},
+	some: <T>(filter: (item: T, index: number, array: T[]) => boolean) => {
+		return _modules.some(filter as (item: Module, index: number, array: Module[]) => boolean) as T;
+	},
+	map: <T, S>(processor: (item: T, index: number, array: T[]) => S) => {
+		return _modules.map(processor as (item: Module, index: number, array: Module[]) => S) as S[];
+	},
+	forEach: <T>(processor: (item: T, index: number, array: T[]) => void) => {
+		return _modules.forEach(processor as (item: Module, index: number, array: Module[]) => void);
+	},
+	includes: <T>(module: T) => {
+		return _modules.includes(module as Module);
+	},
+	all: _modules
+};
+export const RuntimeModules = () => ModuleManager.instance.modules;
+export const RuntimeVersion = () => ModuleManager.instance.version;
+
 export class ModuleManager
 	extends Logger {
 
 	protected config!: any;
-	readonly modules = _modules;
+	readonly modules = modulesInterface;
 	public static instance: ModuleManager;
+	readonly version?: string;
 
-	// noinspection JSUnusedLocalSymbols
 	protected constructor() {
 		super();
 		if (ModuleManager.instance)
@@ -57,12 +81,14 @@ export class ModuleManager
 		delete ModuleManager.instance;
 	}
 
-	filterModules<T>(filter: (module: Module) => boolean) {
-		return this.modules.filter(filter) as unknown as T[];
-	}
-
 	public setConfig(config: object) {
 		this.config = config || {};
+		return this;
+	}
+
+	public setVersion(version: string) {
+		// @ts-ignore
+		this.version = version;
 		return this;
 	}
 
@@ -72,7 +98,7 @@ export class ModuleManager
 				addItemToArray(carry, module);
 
 			return carry;
-		}, this.modules);
+		}, this.modules.all);
 		return this;
 	}
 
@@ -100,7 +126,7 @@ export class ModuleManager
 				module.setConfig(this.config[module.getName()]);
 		});
 
-		this.modules.forEach(module => {
+		this.modules.forEach((module: Module) => {
 			this.logDebug(`---------  ${module.getName()}  ---------`);
 			try { // @ts-ignore
 				module.init();

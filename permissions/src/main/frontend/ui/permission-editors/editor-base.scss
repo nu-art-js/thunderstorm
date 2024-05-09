@@ -1,12 +1,83 @@
 @use '@nu-art/ts-styles' as styles;
 
-.permissions-editor {
+#dev-page__permissions .permissions-editor, .editor-content {
   gap: 16px;
 
-  .ts-dropdown {
-    width: 200px;
+  //TS Components Design
+  .ts-input {
+    width: 250px;
+    max-width: unset;
+    height: 40px;
+    min-height: unset;
+    border: 2px solid styles.gray(1);
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+
+    &::placeholder {
+      font-size: 12px;
+    }
   }
 
+  .ts-dropdown {
+    width: 250px;
+
+    .ts-tree__node {
+      font: {
+        size: 14px;
+      }
+    }
+
+    .ts-dropdown__header {
+      border: 2px solid styles.gray(1);
+      border-radius: 8px;
+      position: relative;
+      align-items: center;
+
+      .icon--wrapper {
+        width: 30px;
+        rotate: 90deg;
+
+        &.flip {
+          rotate: -90deg;
+        }
+      }
+    }
+
+    .ts-dropdown__items-container {
+      border: 2px solid styles.gray(1);
+      padding-top: 18px;
+      transform: translateY(-18px);
+    }
+
+    &.disabled {
+      opacity: 0.5;
+
+      .ts-dropdown__header {
+        background: styles.gray(6);
+      }
+    }
+  }
+
+  .ts-table {
+    .ts-table__body .ts-table__tr {
+      height: 40px;
+
+      .ts-table__td {
+        height: 40px;
+
+        .ts-input {
+          background: transparent;
+          border-radius: 0;
+          border: none;
+          width: 100%;
+          height: 40px;
+        }
+      }
+    }
+  }
+
+  //Editor Parts
   .item-list {
     height: 100%;
     width: 300px;
@@ -20,7 +91,7 @@
       width: 100%;
       border-bottom: 2px solid black;
       background: styles.gray(3);
-      color: styles.gray(7);
+      color: white;
       display: grid;
       place-content: center;
       font: {
@@ -28,6 +99,27 @@
         weight: bold;
       }
       flex-shrink: 0;
+    }
+
+    .item-list__filter {
+      background: white;
+      width: 100%;
+      height: 30px;
+      border-bottom: 2px solid black;
+
+      .icon--wrapper {
+        width: 30px;
+        flex-shrink: 0;
+      }
+
+      .ts-input {
+        width: 0;
+        height: 100%;
+        flex-grow: 1;
+        border-radius: 0;
+        border: none;
+        outline: none !important;
+      }
     }
 
     .item-list__list {
@@ -68,6 +160,7 @@
         size: 16px;
         weight: bold;
       }
+      flex-shrink: 0;
       border-radius: 0;
     }
   }
@@ -84,7 +177,7 @@
       width: 100%;
       border-bottom: 2px solid black;
       background: styles.gray(3);
-      color: styles.gray(7);
+      color: white;
       display: flex;
       align-items: center;
       padding: 0 16px;
@@ -142,29 +235,71 @@
     }
   }
 
-  .levels {
+  .user-permission-groups {
     width: 100%;
-    flex-wrap: wrap;
     gap: 16px;
 
-    .level {
-      gap: 8px;
-      background: white;
-      padding: 16px;
+    .ts-multi-select__list-value {
+      width: 150px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-      .ts-dropdown {
-        width: 200px;
+      position: relative;
+      border: 1px solid black;
+      border-radius: 4px;
+      font: {
+        size: 11px;
+        weight: bold;
+      }
+      overflow: hidden;
+      white-space: break-spaces;
+      text-align: center;
+
+      .icon--wrapper {
+        @include styles.mouse-interactive-icon(white);
+        background: styles.red(4);
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 40px;
+        width: 30px;
+        padding: 8px;
+        transform: translateX(100%);
+        transition: transform 200ms ease-out;
+        cursor: pointer;
+      }
+
+      &:hover {
+        .icon--wrapper {
+          transform: translateX(0);
+        }
       }
     }
   }
+}
 
-  .groups {
-    width: 100%;
-    gap: 16px;
+#permission-editor-item-menu {
+  border: 1px solid styles.gray(1);
+  border-radius: 6px;
 
-    .group {
-      padding: 8px;
-      background: white;
+  .ts-busy-button {
+    margin: 0;
+    background: transparent;
+    color: styles.gray(1);
+    font: {
+      size: 14px;
+      weight: normal;
+    }
+    padding-inline: 10px;
+
+    .ts-button-loader div {
+      background: styles.gray(1);
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid styles.gray(2);
     }
   }
 }

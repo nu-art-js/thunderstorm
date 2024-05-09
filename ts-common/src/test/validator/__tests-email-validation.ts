@@ -58,7 +58,7 @@ export const TestSuite_Accounts_EmailValidation: EmailValidationSuite = {
 	label: '\n################ Email Validation Tests ################\n',
 	testcases: TestCases_PasswordValidation,
 	processor: (testCase) => {
-		let result = tsValidateResult(testCase.input, tsValidateEmail);
+		let result: string | undefined | boolean = tsValidateResult(testCase.input, tsValidateEmail);
 
 		//Returned no errors
 		if (!result)

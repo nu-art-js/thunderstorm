@@ -80,15 +80,15 @@ export class FirestoreWrapperBEV3
 	};
 
 	public getCollection<Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>): FirestoreCollectionV3<Proto> {
-		const collection = this.collections[dbDef.dbName];
+		const collection = this.collections[dbDef.dbKey];
 		if (collection)
 			return collection;
 
-		return this.collections[dbDef.dbName] = new FirestoreCollectionV3<Proto>(this, dbDef, hooks);
+		return this.collections[dbDef.dbKey] = new FirestoreCollectionV3<Proto>(this, dbDef, hooks);
 	}
 
 	public listen<Proto extends DBProto<any>>(collection: FirestoreCollectionV3<Proto>, doc: string) {
-		collection.wrapper.firestore.doc(`${collection.name}/${doc}`).onSnapshot(_snapshot => {
+		collection.wrapper.firestore.doc(`${collection.collection.path}/${doc}`).onSnapshot(() => {
 			this.logInfo('received snapshot!');
 		});
 	}

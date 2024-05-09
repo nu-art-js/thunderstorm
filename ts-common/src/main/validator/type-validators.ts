@@ -8,9 +8,9 @@ import {
 	Validator,
 	ValidatorTypeResolver
 } from './validator-core';
-import {currentTimeMillis} from '../utils/date-time-tools';
+import {currentTimeMillis, TimeRange} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
-import {filterInstances} from '../utils/array-tools';
+import {asArray, filterInstances} from '../utils/array-tools';
 import {_keys} from '../utils/object-tools';
 import {BadImplementationException} from '../core/exceptions/exceptions';
 
@@ -39,7 +39,7 @@ export const tsValidateDynamicObject = <T extends object>(valuesValidator: Valid
 		}];
 };
 
-export const tsValidateUnion = <T extends any>(validators: ValidatorTypeResolver<T>[], mandatory = true) => {
+export const tsValidateUnion = <T>(validators: ValidatorTypeResolver<T>[], mandatory = true) => {
 	return [tsValidateExists(mandatory),
 		(input?: any) => {
 			const results: InvalidResultArray<T>[] = [];
@@ -47,7 +47,7 @@ export const tsValidateUnion = <T extends any>(validators: ValidatorTypeResolver
 				const _res = tsValidateResult(input, validator);
 				if (!_res)
 					return;
-				results.push(_res);
+				results.push(_res as InvalidResultArray<T>);
 			}
 
 			return filterInstances(results).length !== 0 ? ['Input does not match any of the possible types',
@@ -55,14 +55,14 @@ export const tsValidateUnion = <T extends any>(validators: ValidatorTypeResolver
 		}];
 };
 
-export const tsValidateCustom = <T extends any>(processor: (input?: T, parentInput?: any) => InvalidResult<T>, mandatory = true): Validator<T>[] => {
+export const tsValidateCustom = <T>(processor: (input?: T, parentInput?: any) => InvalidResult<T>, mandatory = true): Validator<T>[] => {
 	return [tsValidateExists(mandatory), processor];
 };
 
 const typeFunc = (type: any) => typeof type;
 type types = ReturnType<typeof typeFunc>;
 type validatorObject<T> = { [k in types]?: ValidatorTypeResolver<T> }
-export const tsValidateUnionV3 = <T extends any>(validatorObject: validatorObject<T>, mandatory = true) => {
+export const tsValidateUnionV3 = <T>(validatorObject: validatorObject<T>, mandatory = true) => {
 	return [tsValidateExists(mandatory),
 		(input?: T) => {
 			const _type = typeof input;
@@ -71,35 +71,41 @@ export const tsValidateUnionV3 = <T extends any>(validatorObject: validatorObjec
 		}];
 };
 
-export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true, minimumLength: number = 0): Validator<I[]> => {
+export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayType<T>>(validator: ValidatorTypeResolver<I> | ValidatorTypeResolver<I>[], mandatory = true, minimumLength: number = 0): Validator<I[]> => {
 	return [tsValidateExists(mandatory),
-		(input?: I[]) => {
-			const results: InvalidResultArray<I>[] = [];
-			const _input = input as unknown as I[];
-			if (_input.length < minimumLength)
-				return 'Array length smaller than minimum defined length';
-			for (let i = 0; i < _input.length; i++) {
-				results[i] = tsValidateResult(_input[i], validator);
-			}
+		...asArray(validator).map(validator => {
+			return (input?: I[]) => {
+				const results: InvalidResultArray<I>[] = [];
+				const _input = input as unknown as I[];
+				if (_input.length < minimumLength)
+					return 'Array length smaller than minimum defined length';
+				for (let i = 0; i < _input.length; i++) {
+					results[i] = tsValidateResult(_input[i], validator, undefined, input) as InvalidResultArray<I>;
+				}
 
-			return filterInstances(results).length !== 0 ? results : undefined;
-		}];
+				return filterInstances(results).length !== 0 ? results : undefined;
+			};
+		})];
 };
 
-export const tsValidateString = (length: number = -1, mandatory = true): Validator<string> => {
+export const tsValidateString = (length: number | [number, number] = -1, mandatory = true): Validator<string> => {
 	return [tsValidateExists(mandatory),
 		(input?: string) => {
 			// noinspection SuspiciousTypeOfGuard
 			if (typeof input !== 'string')
 				return `input is not a string`;
 
-			if (length === -1)
-				return;
+			if (Array.isArray(length)) {
+				if (length[0] !== -1 && length[0] > input.length)
+					return `input length is lesser than ${length[0]}`;
 
-			if (input.length <= length)
-				return;
+				if (length[1] !== -1 && input.length > length[1])
+					return `input length is longer than ${length[1]}`;
 
-			return `input is longer than ${length}`;
+			} else if (length !== -1 && input.length > length)
+				return `input length is longer than ${length}`;
+
+			return;
 		}];
 };
 
@@ -150,7 +156,7 @@ export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 		}];
 };
 
-export const tsValidateValue = <T>(values: T[], mandatory = true): Validator<any> => {
+export const tsValidateValue = <T>(values: T[] | ReadonlyArray<T>, mandatory = true): Validator<any> => {
 	return [tsValidateExists(mandatory),
 		(input?: T) => {
 			if (values.includes(input!))
@@ -217,18 +223,39 @@ export const tsValidateAudit = (range?: RangeTimestamp) => {
 	};
 };
 
-export const tsValidateNonMandatoryObject = <T extends object>(validator: ValidatorTypeResolver<T>) => {
+export const tsValidateTimeRange = (mandatory: boolean = true): Validator<TimeRange> => {
+	return [tsValidateExists(mandatory), (instance?: TimeRange) => {
+		if (!instance)
+			return 'No instance was provided to validation';
+
+		if (!instance.length || instance.every(value => value === undefined))
+			return 'Empty time range provided';
+
+		if (instance.length > 2)
+			return 'Time range provided has too many values';
+
+		if (!instance[0] && typeof instance[1] === 'number')
+			return;
+
+		if (!instance[1] && typeof instance[0] === 'number')
+			return;
+
+		return tsValidateResult(instance, tsValidateRange());
+	}];
+};
+
+export const tsValidateNonMandatoryObject = <T extends object | undefined>(validator: ValidatorTypeResolver<T>) => {
 	return [tsValidateExists(false),
 		(input?: T) => tsValidateResult(input, validator)];
 };
 
 export const tsValidateOptionalObject = tsValidateNonMandatoryObject;
 
-export const tsValidator_valueByKey = <T extends any>(validatorObject: {
+export const tsValidator_valueByKey = <T>(validatorObject: {
 	[k: string]: ValidatorTypeResolver<any>
 }, prop = 'type') => {
 	return tsValidateCustom((value?, parentObject?) => {
-		return tsValidateResult(value!, validatorObject[parentObject![prop]]);
+		return tsValidateResult(value!, validatorObject[parentObject![prop]]) as InvalidResult<T>;
 	}) as ValidatorTypeResolver<T>;
 };
 
@@ -243,4 +270,17 @@ export const tsValidator_ArrayOfObjectsByKey = <T extends Object>(key: keyof T, 
 
 		return tsValidateResult(_value, validator);
 	}) as ValidatorTypeResolver<T>);
+};
+
+export const tsValidator_stringOrNumber = (mandatory = true) => {
+	return tsValidateCustom((input?: string | number) => {
+		switch (typeof input) {
+			case 'string':
+				return tsValidateResult(input, tsValidateString());
+
+			case 'number':
+				return tsValidateResult(input, tsValidateNumber());
+		}
+		return 'Input is not string or number.';
+	}, mandatory) as ValidatorTypeResolver<string | number>;
 };

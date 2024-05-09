@@ -1,18 +1,15 @@
-import {Module} from '@nu-art/ts-common';
+import {Module, RuntimeVersion} from '@nu-art/ts-common';
 import {createQueryServerApi} from '../core/typed-api';
-import {Storm} from '../core/Storm';
 import {ApiDef_ServerInfo, Response_ServerInfo} from '../../shared';
 import {addRoutes} from './ModuleBE_APIs';
+import {Storm} from '../core/Storm';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 
 
-type Config = {};
+type Config = Response_ServerInfo
 
 export class ModuleBE_ServerInfo_Class
 	extends Module<Config> {
-	serverInfoApi = createQueryServerApi(ApiDef_ServerInfo.v1.getServerInfo, async (): Promise<Response_ServerInfo> => ({
-		environment: Storm.getInstance().getEnvironment(),
-		version: Storm.getInstance().getVersion(),
-	}));
 
 	constructor() {
 		super();
@@ -20,8 +17,18 @@ export class ModuleBE_ServerInfo_Class
 
 	init() {
 		super.init();
-		addRoutes([this.serverInfoApi]);
+
+		ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket().then(bucket => {
+			this.setDefaultConfig({
+				environment: Storm.getInstance().getEnvironment(),
+				version: RuntimeVersion(),
+				bucketName: bucket.getBucketName()
+			});
+		});
+
+		addRoutes([createQueryServerApi(ApiDef_ServerInfo.v1.getServerInfo, async () => this.config)]);
 	}
+
 }
 
 export const ModuleBE_ServerInfo = new ModuleBE_ServerInfo_Class();

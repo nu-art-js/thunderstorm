@@ -25,6 +25,15 @@
   "scripts": {
     "build": "tsc"
   },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
   "publishConfig": {
     "directory": "dist",
     "linkDirectory": true
@@ -52,12 +61,16 @@
     "compression": "^1.7.4",
     "csstype": "^3.0.0",
     "history": "^4.9.0",
-    "moment": "^2.24.0",
+    "moment": "$MOMENT_PKG_VERSION",
     "qs": "^6.6.0",
     "react-window": "^1.8.8",
-    "react-virtualized-auto-sizer": "^1.0.12"
+    "react-virtualized-auto-sizer": "^1.0.12",
+    "pako": "^2.1.0",
+    "papaparse": "^5.4.1"
   },
   "devDependencies": {
+    "@types/papaparse": "^5.3.14",
+    "@types/pako": "^2.0.0",
     "@types/react": "$REACT_TYPES_VERSION",
     "@types/react-dom": "$REACT_DOM_TYPES_VERSION",
     "@types/react-router": "$REACT_ROUTER_TYPES_VERSION",

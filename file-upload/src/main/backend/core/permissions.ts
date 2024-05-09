@@ -1,6 +1,11 @@
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions/shared/types';
 import {ApiDef_Assets, ApiDef_AssetUploader} from '../../shared';
-import {DefaultAccessLevel_Admin, DefaultAccessLevel_Delete, DefaultAccessLevel_Read, DefaultAccessLevel_Write} from '@nu-art/permissions/shared/consts';
+import {
+	DefaultAccessLevel_Admin,
+	DefaultAccessLevel_Delete,
+	DefaultAccessLevel_Read,
+	DefaultAccessLevel_Write
+} from '@nu-art/permissions/shared/consts';
 import {Domain_Developer} from '@nu-art/permissions/backend/permissions';
 import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI';
 
@@ -19,10 +24,13 @@ const _PermissionsDomain_AssetsManager: DefaultDef_Domain = {
 		{path: ModuleBE_AssetsAPI.apiDef.v1.delete.path, accessLevel: DefaultAccessLevel_Delete.name},
 		{path: ModuleBE_AssetsAPI.apiDef.v1.queryUnique.path, accessLevel: DefaultAccessLevel_Read.name},
 		{path: ModuleBE_AssetsAPI.apiDef.v1.query.path, accessLevel: DefaultAccessLevel_Read.name},
-		{path: ModuleBE_AssetsAPI.apiDef.v1.sync.path, accessLevel: DefaultAccessLevel_Read.name},
 		{path: ApiDef_Assets.vv1.getReadSignedUrl.path, accessLevel: DefaultAccessLevel_Read.name},
 		{path: ApiDef_AssetUploader.vv1.getUploadUrl.path, accessLevel: DefaultAccessLevel_Write.name},
-		{path: ApiDef_AssetUploader.vv1.processAssetManually.path, domainId: Domain_Developer._id, accessLevel: DefaultAccessLevel_Write.name},
+		{
+			path: ApiDef_AssetUploader.vv1.processAssetManually.path,
+			domainId: Domain_Developer._id,
+			accessLevel: DefaultAccessLevel_Write.name
+		},
 	]
 };
 

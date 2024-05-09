@@ -20,7 +20,7 @@
 import {generateHex, ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {Platform_Slack, ReportLogFile, Request_BugReport} from '../..';
 import {TicketDetails} from './ModuleBE_BugReport';
-import {ModuleBE_Slack} from '@nu-art/slack';
+import {ModuleBE_Slack} from '@nu-art/slack/backend';
 
 type Config = {
 	channel: string

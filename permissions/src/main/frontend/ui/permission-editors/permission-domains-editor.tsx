@@ -1,179 +1,122 @@
 import * as React from 'react';
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionProject} from '../../shared';
-import {EditorBase, State_EditorBase} from './editor-base';
 import {
-	ModuleFE_PermissionsAccessLevel,
-	ModuleFE_PermissionsDomain,
-	ModuleFE_PermissionsProject,
-	OnPermissionsDomainsUpdated,
-	OnPermissionsLevelsUpdated
-} from '../../core/module-pack';
-import {
-	EditableDBItem,
-	EventType_Create,
-	EventType_Delete,
-	EventType_Update,
-	genericNotificationAction,
-	getElementCenterPos,
-	LL_H_C,
-	Model_PopUp,
-	ModuleFE_MouseInteractivity,
-	mouseInteractivity_PopUp,
-	openContent,
-	Props_SmartComponent,
-	State_SmartComponent,
-	Thunder,
+	EditableDBItemV3,
+	ModuleFE_Toaster,
 	TS_BusyButton,
-	TS_Button,
-	TS_Input,
 	TS_PropRenderer,
+	TS_Route,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, filterInstances, Module, PreDB, sortArray} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	capitalizeFirstLetter,
+	exists,
+	PreDB,
+	sortArray,
+	StaticLogger
+} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {defaultAccessLevels} from '../../../shared/consts';
-import {Permissions_DropDown} from '../ui-props';
+import {
+	DB_PermissionAccessLevel,
+	DB_PermissionDomain,
+	DBProto_PermissionAccessLevel,
+	DBProto_PermissionDomain,
+	ModuleFE_PermissionAccessLevel,
+	ModuleFE_PermissionDomain,
+	ModuleFE_PermissionProject
+} from '../../_entity';
+import {Component_BasePermissionItemEditor} from './editor-base';
+import {DropDownCaret, Input_Number_Blur, Input_Text_Blur} from './components';
+import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
+import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
+import {
+	Props_EditableItemControllerProto,
+	TS_EditableItemControllerProto
+} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
 
 
-type State = State_EditorBase<DB_PermissionDomain> & {
-	projects: Readonly<DB_PermissionProject[]>
-	newLevel: EditableDBItem<DB_PermissionAccessLevel>;
-	dbDefs: DBDef<any>[];
-};
-
-const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB_PermissionAccessLevel>);
-
-export class PermissionDomainsEditor
-	extends EditorBase<DB_PermissionDomain, State>
-	implements OnPermissionsDomainsUpdated, OnPermissionsLevelsUpdated {
-
-	//######################### Static #########################
-
-	readonly module = ModuleFE_PermissionsDomain;
-	readonly itemName = 'Permission Domain';
-	readonly itemNamePlural = 'Permission Domains';
-	readonly itemDisplay = (item: DB_PermissionDomain) => `${ModuleFE_PermissionsProject.cache.unique(item.projectId)!.name}/${item.namespace}`;
+class Component_EditDomain
+	extends Component_BasePermissionItemEditor<DBProto_PermissionDomain> {
 	static defaultProps = {
-		modules: [ModuleFE_PermissionsDomain]
+		module: ModuleFE_PermissionDomain,
+		displayResolver: (item: DB_PermissionDomain) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)!.name}/${item.namespace}`
 	};
 
-	//######################### Life Cycle #########################
 
-	__onPermissionsDomainsUpdated(...params: ApiCallerEventType<DB_PermissionDomain>) {
-		if ([EventType_Update, EventType_Create].includes(params[0])) {
-			const domain = params[1] as DB_PermissionDomain;
-			this.reDeriveState({
-				selectedItemId: domain._id,
-				editedItem: new EditableDBItem<DB_PermissionDomain>(domain, ModuleFE_PermissionsDomain)
-			});
+	//######################### logic #########################
+
+	private deleteLevel = async (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
+		try {
+			await editable.delete();
+			this.forceUpdate();
+		} catch (err: any) {
+			this.logError({...err});
+			ModuleFE_Toaster.toastError(err.errorResponse.debugMessage.split('\n')[0]);
 		}
-		if (params[0] === EventType_Delete)
-			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
-	}
+	};
 
-	__onPermissionsLevelsUpdated(...params: ApiCallerEventType<DB_PermissionAccessLevel>) {
-		this.forceUpdate();
-	}
-
-	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
-		state.items = ModuleFE_PermissionsDomain.cache.all();
-		state.projects = ModuleFE_PermissionsProject.cache.all();
-		state.newLevel ??= new EditableDBItem(emptyLevel, ModuleFE_PermissionsAccessLevel);
-
-		if (!state.editedItem && state.items.length) {
-			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsDomain);
-			state.selectedItemId = state.items[0]._id;
+	private updateLevel = async <K extends keyof DBProto_PermissionAccessLevel['dbType']>(editable: EditableDBItemV3<DBProto_PermissionAccessLevel>, prop: K, value: DBProto_PermissionAccessLevel['dbType'][K]) => {
+		if (editable.item._id) {
+			try {
+				await editable.updateObj({[prop]: value});
+				return this.forceUpdate();
+			} catch (err: any) {
+				return this.logError(err);
+			}
 		}
 
-		state.dbDefs ??= filterInstances(Thunder.getInstance()
-			.filterModules<Module>(module => 'dbDef' in module)
-			.map(module => 'dbDef' in module ? module.dbDef as DBDef<any> : undefined));
+		editable.set(prop, value);
+		editable.validate();
+		if (editable.hasErrors())
+			return;
 
-		return state;
-	}
-
-	//######################### Logic #########################
-
-	private updateLevel = async <K extends keyof DB_PermissionAccessLevel>(_level: DB_PermissionAccessLevel, key: K, value: DB_PermissionAccessLevel[K]) => {
-		const domain = this.state.editedItem;
-		if (!domain)
-			throw new BadImplementationException('Editing a level with no selected domain');
-
-		const level = new EditableDBItem(_level, ModuleFE_PermissionsAccessLevel);
-		level.set(key, value);
-		if (!level.item.domainId)
-			level.set('domainId', domain.item._id);
-
-		await level.save();
+		await editable.save();
 		this.forceUpdate();
 	};
 
-	private deleteLevel = async (_level: DB_PermissionAccessLevel) => {
-		const level = new EditableDBItem(_level, ModuleFE_PermissionsAccessLevel);
-		return level.delete();
+	private getEmptyLevel(): PreDB<DB_PermissionAccessLevel> {
+		return {
+			domainId: this.state.editable?.item._id,
+		} as PreDB<DB_PermissionAccessLevel>;
+	}
+
+	//######################### Render #########################
+
+	editorContent = () => {
+		const editable = this.state.editable!;
+		return <>
+			<TS_PropRenderer.Vertical label={'Project'}>
+				<DropDown_PermissionProject.editable
+					editable={editable}
+					prop={'projectId'}
+					caret={DropDownCaret}
+					disabled={!!editable.item._id}
+				/>
+			</TS_PropRenderer.Vertical>
+			<TS_PropRenderer.Vertical label={'Namespace'}>
+				<Input_Text_Blur
+					editable={editable}
+					prop={'namespace'}
+				/>
+			</TS_PropRenderer.Vertical>
+			<TS_PropRenderer.Vertical label={'Levels'}>
+				{this.renderLevelsTable()}
+			</TS_PropRenderer.Vertical>
+		</>;
 	};
 
-	private saveNewLevel = async () => {
-		if (!this.state.editedItem)
-			throw new BadImplementationException('Saving level with no selected domain');
-
-		this.state.newLevel.set('domainId', this.state.editedItem.item._id);
-		return this.state.newLevel.save();
-	};
-
-	private _saveImpl = async (createLevels: boolean) => {
-		ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
-		await genericNotificationAction(
-			async () => {
-				await new EditableDBItem(this.state.editedItem!.item, ModuleFE_PermissionsDomain, async (domain) => {
-					if (!createLevels)
-						return;
-
-					await ModuleFE_PermissionsAccessLevel.v1.upsertAll(defaultAccessLevels.map(i => ({
-						...i,
-						domainId: domain._id
-					} as PreDB<DB_PermissionAccessLevel>))).executeSync();
-
-				}).save();
-			},
-			`Saving ${this.itemName}`, 3);
-	};
-
-	protected saveItem = async (e: React.MouseEvent) => {
-		if (this.state.editedItem?.item._id)
-			await this._saveImpl(false);
-
-		const model: Model_PopUp = {
-			id: 'save-initial-domain',
-			modalPos: {x: 0, y: -1},
-			offset: {x: 0, y: -10},
-			originPos: getElementCenterPos(e.target as Element),
-			content: () => <>
-				<div className={'save-initial-domain__title'}>Create default access levels?</div>
-				<LL_H_C className={'save-initial-domain__buttons'}>
-					<TS_Button onClick={() => this._saveImpl(false)}>No</TS_Button>
-					<TS_Button onClick={() => {
-						this._saveImpl(true);
-					}}>Yes</TS_Button>
-				</LL_H_C>
-			</>,
-		};
-		ModuleFE_MouseInteractivity.showContent(model);
-	};
-
-	//######################### Render levels #########################
+	//######################### Render - levels #########################
 
 	private renderLevelsTable = () => {
-		const domain = this.state.editedItem;
+		const domain = this.state.editable;
 		if (!domain)
 			return '';
 
-		let levels = ModuleFE_PermissionsAccessLevel.cache.filter(level => level.domainId === domain.item._id);
+		let levels = ModuleFE_PermissionAccessLevel.cache.filter(level => level.domainId === domain.item._id) as PreDB<DB_PermissionAccessLevel>[];
 		levels = sortArray(levels, i => i.value);
-		levels.push(cloneObj(emptyLevel) as DB_PermissionAccessLevel);
-		return <TS_Table<DB_PermissionAccessLevel, 'action'>
+		levels.push(this.getEmptyLevel());
+		return <TS_Table<PreDB<DB_PermissionAccessLevel>, 'action'>
 			header={['name', 'value', {widthPx: 50, header: 'action'}]}
 			headerRenderer={header => header === 'action' ? '' : capitalizeFirstLetter(header)}
 			rows={levels}
@@ -181,125 +124,109 @@ export class PermissionDomainsEditor
 		/>;
 	};
 
-	private levelsCellRenderer = (prop: keyof DB_PermissionAccessLevel | 'action', item: DB_PermissionAccessLevel, index: number) => {
+	private levelsCellRenderer = (prop: keyof DB_PermissionAccessLevel | 'action', item: PreDB<DB_PermissionAccessLevel>, index: number) => {
+		const editable = new EditableDBItemV3(item, ModuleFE_PermissionAccessLevel)
+			.setAutoSave(true)
+			.setDebounceTimeout(0);
 		switch (prop) {
 			case 'name':
-				return this.renderLevelName(item);
+				return this.renderLevelName(editable);
 
 			case 'value':
-				return this.renderLevelValue(item);
+				return this.renderLevelValue(editable);
 
 			case 'action':
-				return this.renderLevelAction(item);
+				return this.renderLevelAction(editable);
 			default:
 				throw new BadImplementationException(`No renderer defined for key ${prop}`);
 		}
 	};
 
-	private renderLevelName = (level: DB_PermissionAccessLevel) => {
-		const actionProp = level._id
-			? {onBlur: async (value: string) => await this.updateLevel(level, 'name', value)}
-			: {
-				onChange: (value: string) => {
-					this.state.newLevel.set('name', value);
-					this.forceUpdate();
-				}
-			};
-
-		return <TS_Input
-			type={'text'}
-			value={level.name}
+	private renderLevelName = (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
+		return <Input_Text_Blur
+			editable={editable}
+			prop={'name'}
+			value={editable.item.name}
 			placeholder={'Enter level name'}
-			{...actionProp}
+			onChange={value => this.updateLevel(editable, 'name', value)}
 		/>;
 	};
 
-	private renderLevelValue = (level: DB_PermissionAccessLevel) => {
-		const actionProp = level._id
-			? {onBlur: async (value: string) => await this.updateLevel(level, 'value', Number(value))}
-			: {
-				onChange: (value: string) => {
-					this.state.newLevel.set('value', Number(value));
-					this.forceUpdate();
-				}
-			};
-
-		return <TS_Input
-			type={'number'}
-			value={level.value >= 0 ? String(level.value) : undefined}
+	private renderLevelValue = (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
+		return <Input_Number_Blur
+			// @ts-ignore
+			editable={editable}
+			prop={'value'}
+			value={exists(editable.item.value) ? String(editable.item.value) : undefined}
 			placeholder={'Enter level value'}
-			{...actionProp}
+			onChange={value => this.updateLevel(editable, 'value', Number(value))}
 		/>;
 	};
 
-	private renderLevelAction = (level: DB_PermissionAccessLevel) => {
-		if (!level._id)
-			return <TS_BusyButton onClick={this.saveNewLevel} className={'action-button save'}>
-				<TS_Icons.save.component/>
-			</TS_BusyButton>;
+	private renderLevelAction = (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
+		if (!editable.item._id)
+			return;
 
 		return <TS_BusyButton
-			onClick={async () => await this.deleteLevel(level)}
+			onClick={async () => await this.deleteLevel(editable)}
 			className={'action-button delete'}
-			key={level._id}>
+		>
 			<TS_Icons.bin.component/>
 		</TS_BusyButton>;
 	};
+}
 
-	//######################### Render #########################
+class Controller_DomainsEditor
+	extends TS_EditableItemControllerProto<DBProto_PermissionDomain> {
+	static defaultProps = {
+		keys: ['selected'],
+		module: ModuleFE_PermissionDomain,
+		editor: Component_EditDomain,
+		createInitialInstance: () => ({}),
+		autoSave: true
+	};
+}
 
-	private renderDBDefList = () => {
-		return <>
-			{this.state.dbDefs.map(dbDef => {
-				return <div
-					onClick={() => {
-						ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
-						Dialog_ActionProcessorConfirmation.show(
-							{
-								key: 'connect-domain-to-routes',
-								description: `Connect domain ${this.state.editedItem!.item.namespace} to default routes under module ${dbDef.entityName}?`,
-								group: ''
-							},
-							async () => {
-								// await ModuleFE_PermissionsAssert.v1.connectDomainToRoutes({domainId: this.state.editedItem!.item._id!, dbName: dbDef.dbName}).executeSync();
-							}
-						);
-					}}
-					className={'db-def-list__item'}
-				>{dbDef.entityName}</div>;
-			})}
-		</>;
+export class PermissionDomainsEditor
+	extends Page_ItemsEditor<DBProto_PermissionDomain> {
+
+	//######################### Static #########################
+
+	static Route: TS_Route = {
+		key: 'domain-permission-editor',
+		path: 'domain-permission-editor',
+		Component: this
 	};
 
-	private renderConnectDomainButton = () => {
-		if (!this.state.editedItem?.item._id)
-			return '';
-
-		return <TS_Button
-			{...openContent.popUp.right('db-def-list', this.renderDBDefList)}
-			className={'db-def-button'}
-		>Connect To Routes</TS_Button>;
+	static defaultProps: Partial<InferProps<PermissionDomainsEditor>> = {
+		keys: ['selected'],
+		module: ModuleFE_PermissionDomain,
+		mapper: domain => [`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'],
+		sort: domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found',
+		itemRenderer: domain => <>{`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'}</>,
+		EditorRenderer: Controller_DomainsEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionDomain>>>,
+		route: this.Route,
+		contextMenuActions: [
+			{
+				label: 'Delete Domain',
+				action: async (item) => {
+					try {
+						await ModuleFE_PermissionDomain.v1.delete(item as unknown as DB_PermissionDomain).executeSync();
+						return true;
+					} catch (err: any) {
+						StaticLogger.logError(err);
+						ModuleFE_Toaster.toastError(err.errorResponse.debugMessage.split('\n')[0]);
+					}
+				}
+			}
+		]
 	};
 
-	editorContent = () => {
-		const domain = this.state.editedItem!;
-		return <>
-			<TS_PropRenderer.Vertical label={'Namespace'}>
-				<LL_H_C className={'match_width'} style={{gap: '10px'}}>
-					<TS_Input type={'text'} value={domain.item.namespace}
-										onChange={value => this.setProperty('namespace', value)}/>
-					<Permissions_DropDown.Project
-						onSelected={(item) => {
-							return this.setProperty('projectId', item._id);
-						}}
-						selected={domain.item.projectId}
-					/>
-					{this.renderConnectDomainButton()}
-				</LL_H_C>
-			</TS_PropRenderer.Vertical>
-			<TS_PropRenderer.Vertical label={'Levels'}>
-				{this.renderLevelsTable()}
-			</TS_PropRenderer.Vertical>
-		</>;
-	};
+
+	//######################### Logic #########################
+
+	protected renderHeader(): React.ReactNode {
+		return <>Permission Domain</>;
+	}
+
 }

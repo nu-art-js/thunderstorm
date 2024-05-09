@@ -30,26 +30,26 @@ import {CustomException} from '../core/exceptions/exceptions';
  * 				K extends [infer E1, infer E2, infer E3, infer E4] ? [Validator<E1>,Validator<E2>,Validator<E2>,Validator<E4>] :
  */
 export type ValidatorTypeResolver<K> =
-	K extends [infer E1] ? Validator<K> :
-		K extends [infer E1, infer E2] ? Validator<K> :
-			K extends [infer E1, infer E2, infer E3] ? Validator<K> :
-				K extends [infer E1, infer E2, infer E3, infer E4] ? Validator<K> :
+	K extends [any] ? Validator<K> :
+		K extends [any, any] ? Validator<K> :
+			K extends [any, any, any] ? Validator<K> :
+				K extends [any, any, any, any] ? Validator<K> :
 					K extends any[] ? Validator<K> :
 						K extends TS_Object ? TypeValidator<K> | Validator<K> :
 							Validator<K>;
 
-export type ValidatorImpl<P> = (p?: P) => (InvalidResult<P> | undefined);
+export type ValidatorImpl<P> = (p?: P, parentObj?: any) => (InvalidResult<P> | undefined);
 export type Validator<P> = ValidatorImpl<P> | ValidatorImpl<P>[];
 export type TypeValidator<T extends TS_Object> = { [P in keyof T]-?: ValidatorTypeResolver<T[P]> };
 
-export type InvalidResultObject<T extends any> = { [K in keyof T]?: InvalidResult<T[K]> };
-export type InvalidResultArray<T extends any> = InvalidResult<T> | undefined;
-export type InvalidResult<T extends any> =
-	T extends object ? InvalidResultObject<T> | string :
-		T extends (infer I)[] ? (InvalidResultArray<I>[]) | string :
-			string;
+export type InvalidResultObject<T> = { [K in keyof T]?: InvalidResult<T[K]> };
+export type InvalidResultArray<T> = InvalidResult<T> | undefined;
+export type InvalidResult<T> =
+	T extends object ? InvalidResultObject<T> | string | undefined :
+		T extends (infer I)[] ? (InvalidResultArray<I>[]) | string | undefined :
+			string | undefined;
 
-export class ValidationException<T extends any>
+export class ValidationException<T>
 	extends CustomException {
 	public input?: T;
 	public result?: InvalidResult<T>;
@@ -62,9 +62,6 @@ export class ValidationException<T extends any>
 }
 
 const CONST_NO_ERROR = '###';
-
-export const assertValidateMandatoryProperty = (mandatory: boolean, input?: any) => {
-};
 
 export const tsValidateExists = (mandatory = true): ValidatorImpl<any> => {
 	return (input?: any) => {
@@ -97,40 +94,42 @@ export const tsValidateExists = (mandatory = true): ValidatorImpl<any> => {
 // 		}
 // 	}];
 
-export const tsValidate = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, strict = true) => {
+export const tsValidate = <T>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, strict = true): InvalidResult<T> | undefined => {
 	const results = tsValidateResult(instance, _validator);
 
 	if (results && strict) {
 		console.error(results);
-		throw new ValidationException(`Error validating object: `, instance, results);
+		throw new ValidationException(`Error validating object: `, instance, results as InvalidResult<T>);
 	}
 
 	return results;
 };
 
-export const tsValidateResult = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, parentInstance?: any) => {
+export const tsValidateResult = <T>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, parentInstance?: any): InvalidResult<T> | undefined => {
 	if (!_validator)
-		return 'No validator provided!';
+		return 'No validator provided!' as InvalidResult<T>;
 
 	const validator: ValidatorImpl<T>[] | object = typeof _validator === 'function' ? [_validator] : _validator;
 	if (Array.isArray(validator)) {
-		const result = validator.reduce((result, __validator) => result === CONST_NO_ERROR ? result : result || __validator(instance, parentInstance),
+		const result = (validator as ValidatorImpl<T>[]).reduce((result, __validator) => {
+				return result === CONST_NO_ERROR ? result : result || __validator(instance, parentInstance);
+			},
 			undefined as InvalidResult<T> | undefined);
 		return result !== CONST_NO_ERROR ? result : undefined;
 	}
 
 	if (typeof validator === 'object') {
 		if (!instance && validator)
-			return `Missing Property:\n The key '${String(key)}' wasn't defined in the instance.`;
+			return `Missing Property:\n The key '${String(key)}' wasn't defined in the instance.` as InvalidResult<T>;
 		if (typeof instance !== 'object')
-			return `Unexpected instance '${instance}'.\nExpected to receive an object, but received something else.`;
+			return `Unexpected instance '${instance}'.\nExpected to receive an object, but received something else.` as InvalidResult<T>;
 
 		const __validator = validator as TypeValidator<object>;
-		return tsValidateObject(__validator, instance);
+		return tsValidateObject(__validator, instance as object) as InvalidResult<T>;
 	}
 };
 
-export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance: T, path = '') => {
+export const tsValidateObject = <T extends object>(__validator: TypeValidator<T>, instance: T, path = ''): InvalidResultObject<T> | undefined => {
 	const validatorKeys = _keys(__validator);
 	const instanceKeys = Object.keys(instance as unknown as object);
 
@@ -145,9 +144,9 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 	for (const key of validatorKeys) {
 		const value: T[keyof T] = instance[key];
 		const validator = __validator[key];
-		const propsResult = tsValidateResult(value, validator, key, instance);
+		const propsResult = tsValidateResult(value as any, validator as any, key, instance);
 		if (propsResult && propsResult !== CONST_NO_ERROR)
-			result[key as keyof T] = propsResult;
+			result[key as keyof T] = propsResult as InvalidResult<T[keyof T]>;
 	}
 
 	if (_keys(result).length === 0)

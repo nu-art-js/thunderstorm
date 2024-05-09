@@ -2,15 +2,21 @@ packages:
   - ts-common
   - ts-styles
   - neural
+  - commando
+  - build-and-install
   - google-services
   - firebase
   - thunderstorm
   - slack
   - live-docs
   - user-account
+  - ts-focused-object
+  - ts-messaging
   - ts-workspace
   - ts-pdf
   - permissions
+  - ts-short-url
+  - ts-dependency-viewer
   - push-pub-sub
   - jira
   - bug-report

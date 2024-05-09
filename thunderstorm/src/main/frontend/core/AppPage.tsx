@@ -23,12 +23,13 @@ import {ComponentSync} from './ComponentSync';
 import {dispatch_onPageTitleChanged} from './consts';
 
 // Deprecated use AppPageV2
-export abstract class AppPage<P extends { pageTitle?: string | ((state: S) => string) } = {}, S extends {} = {}>
-	extends ComponentSync<P, S> {
+export abstract class AppPage<P extends {} = {}, S extends {} = {},
+	Props extends P & { pageTitle?: string | ((state: S) => string) } = P & { pageTitle?: string | ((state: S) => string) }>
+	extends ComponentSync<Props, S> {
 
 	private prevTitle!: string;
 
-	protected constructor(p: P) {
+	protected constructor(p: Props) {
 		super(p);
 		const _componentDidMount = this.componentDidMount?.bind(this);
 		this.componentDidMount = () => {

@@ -23,6 +23,7 @@ import {ApiDef, TypedApi} from './types';
 
 import {BadImplementationException, Module,} from '@nu-art/ts-common';
 import {BaseHttpRequest} from './BaseHttpRequest';
+import {HttpException} from './request-types';
 
 
 type HttpConfig = {
@@ -38,6 +39,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 	protected timeout: number = 10000;
 	private readonly defaultHeaders: { [s: string]: (() => string | string[]) | string | string[] } = {};
 	protected defaultOnComplete?: (response: unknown, input: unknown, request: BaseHttpRequest<any>) => Promise<any>;
+	protected defaultOnError?: (errorResponse: HttpException, input: unknown, request: BaseHttpRequest<any>) => Promise<any>;
 
 	constructor() {
 		super();
@@ -58,6 +60,10 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 
 	setDefaultOnComplete = (defaultOnComplete: (response: unknown, input: unknown, request: BaseHttpRequest<any>) => Promise<any>) => {
 		this.defaultOnComplete = defaultOnComplete;
+	};
+
+	setDefaultOnError = (defaultOnError: (errorResponse: HttpException, input: unknown, request: BaseHttpRequest<any>) => Promise<any>) => {
+		this.defaultOnError = defaultOnError;
 	};
 
 	addDefaultHeader(key: string, header: (() => string | string[]) | string | string[]) {
@@ -88,7 +94,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 				case 'symbol':
 				case 'bigint':
 				case 'undefined':
-					throw new BadImplementationException('Headers values can only be of type: (() => string | string[]) | string | string[] ');
+					throw new BadImplementationException(`Headers values can only be of type: (() => string | string[]) | string | string[], got type ${typeof defaultHeader} `);
 			}
 
 			return toRet;

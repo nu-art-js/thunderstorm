@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {exists, merge, Module, TS_Object, TypedMap} from '@nu-art/ts-common';
+import {_keys, exists, merge, Module, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 
@@ -30,6 +30,8 @@ import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 export interface OnStorageKeyChangedListener {
 	__onStorageKeyEvent(event: StorageEvent): void;
 }
+
+type GetType = string | number | object
 
 export class StorageModule_Class
 	extends Module
@@ -42,10 +44,15 @@ export class StorageModule_Class
 		window.addEventListener('storage', this.handleStorageEvent);
 	}
 
-	async __onClearWebsiteData(resync: boolean) {
+	async __onClearWebsiteData() {
 		const items = this.withstandDeletionKeys.map(key => key.get());
 		localStorage.clear();
-		this.withstandDeletionKeys.forEach((key, index) => key.set(items[index]));
+		sessionStorage.clear();
+		_keys(this.cache).forEach(key => delete this.cache[key]);
+		this.withstandDeletionKeys.forEach((key, index) => {
+			if (items[index])
+				key.set(items[index]!);
+		});
 	}
 
 	private handleStorageEvent = async (e: StorageEvent) => {
@@ -57,7 +64,7 @@ export class StorageModule_Class
 		if (!storageKey)
 			return this.logVerbose(`no StorageKey for '${key}'`);
 
-		this.logInfo(`Storage key '${key}' was updated:\nBefore: ${e.oldValue}\n After: ${e.newValue}`);
+		this.logInfo(`Storage key '${key}' was updated`, e.oldValue, e.newValue);
 
 		// @ts-ignore
 		await storageKey._onChange?.();
@@ -86,7 +93,7 @@ export class StorageModule_Class
 		delete this.cache[key];
 	}
 
-	public get(key: string, defaultValue?: string | number | object, persist: boolean = true): string | number | object | undefined {
+	public get(key: string, fallbackValue?: GetType, persist: boolean = true): string | number | object | undefined {
 		let value: string | number | object | null = this.cache[key];
 		if (value)
 			return value;
@@ -94,7 +101,7 @@ export class StorageModule_Class
 		value = this.getStorage(persist).getItem(key);
 		// this.logDebug(`get: ${key} = ${value}`)
 		if (!exists(value) || value === 'null' || value === 'undefined')
-			return defaultValue;
+			return fallbackValue;
 
 		// if (!this.isIncognito)
 		return this.cache[key] = JSON.parse(value!);
@@ -153,15 +160,20 @@ export class StorageKey<ValueType = string | number | object> {
 		ModuleFE_LocalStorage.registerKey(this);
 	}
 
+	/**
+	 * Will not delete this storage key if the delete operation is performed from __onClearWebsiteData
+	 */
 	withstandDeletion() {
 		// @ts-ignore
 		ModuleFE_LocalStorage.withstandDeletion(this);
 		return this;
 	}
 
-	get(defaultValue?: ValueType): ValueType {
+	get(): ValueType | undefined;
+	get(fallbackValue: ValueType): ValueType;
+	get(fallbackValue?: ValueType): ValueType {
 		// @ts-ignore
-		return ModuleFE_LocalStorage.get(this.key, defaultValue, this.persist) as unknown as ValueType;
+		return ModuleFE_LocalStorage.get(this.key, fallbackValue, this.persist) as unknown as ValueType;
 	}
 
 	patch(value: ValueType extends TS_Object ? Partial<ValueType> : ValueType) {
@@ -196,6 +208,6 @@ export class StorageKey<ValueType = string | number | object> {
 
 		return this;
 	}
+
+	getPersistence = () => this.persist;
 }
-
-

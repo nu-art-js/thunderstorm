@@ -62,11 +62,7 @@ export class TS_BusyButton
 		loadingRenderer: <TS_ButtonLoader/>,
 		disabled: false
 	};
-
-	// _constructor() {
-	// 	this.logger.setMinLevel(LogLevel.Verbose);
-	// }
-
+	
 	protected async deriveStateFromProps(nextProps: Props_Button, state = {} as State_Button) {
 		state.disabled = nextProps.disabled;
 		state.isBusy ??= false;

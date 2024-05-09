@@ -1,26 +1,22 @@
-import {
-	_values,
-	ApiException,
-	BadImplementationException,
-	isErrorOfType,
-	Logger,
-	LogLevel,
-	Module,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_values, ApiException, BadImplementationException, exists, isErrorOfType, Logger, LogLevel, Module, resolveContent, TypedMap} from '@nu-art/ts-common';
 // import {ApiDefServer} from '../../utils/api-caller-types';
-import {ActionMetaData, ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
+import {ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ActionDeclaration} from './types';
 import {RAD_SetupProject} from './Action_SetupProject';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
+
+type Action = {
+	action: (data: any) => Promise<any>,
+	declaration: ActionDeclaration
+};
 
 export class ModuleBE_ActionProcessor_Class
 	extends Module {
 
-	private readonly actionMap: TypedMap<(data: any) => Promise<any>> = {};
-	private readonly actionMetaData: TypedMap<ActionMetaData> = {};
+	private readonly actions: TypedMap<Action> = {};
 
 	constructor() {
 		super();
@@ -39,19 +35,25 @@ export class ModuleBE_ActionProcessor_Class
 
 	readonly registerAction = (rad: ActionDeclaration, logger: Logger) => {
 		this.logInfo(`Registering action: ${rad.key}`);
-		if (this.actionMap[rad.key])
+		if (this.actions[rad.key])
 			throw new BadImplementationException(`ActionProcessor with key ${rad.key} was registered twice!`);
 
-		this.actionMap[rad.key] = (data: any) => rad.processor(logger || this, data);
-		this.actionMetaData[rad.key] = {key: rad.key, description: rad.description, group: rad.group};
+		this.actions[rad.key] = {
+			action: (data: any) => rad.processor(logger || this, data),
+			declaration: rad
+		};
 	};
 
 	private refactor = async (action: Request_ActionToProcess) => {
 		this.logWarning(`RECEIVED ACTION: ${action.key}`);
 
-		const refactoringAction = this.actionMap[action.key];
+		const actionObj = this.actions[action.key];
+		if (exists(actionObj.declaration.visible) && !resolveContent(actionObj.declaration.visible))
+			throw HttpCodes._4XX.FORBIDDEN('Action Forbidden for User');
+
+		const refactoringAction = actionObj.action;
 		if (!refactoringAction) {
-			throw new ApiException(404, `NO SUCH ACTION: ${action.key}`);
+			throw HttpCodes._4XX.NOT_FOUND(`NO SUCH ACTION: ${action.key}`);
 		}
 
 		try {
@@ -60,15 +62,26 @@ export class ModuleBE_ActionProcessor_Class
 			this.logWarning(`ACTION '${action.key}' - SUCCESSFUL`);
 		} catch (e: any) {
 			this.logError(`ACTION '${action.key}' - FAILED`, e);
-			const message = `ACTION FAILED: ${action.key}`;
 			if (isErrorOfType(e, ApiException))
 				throw e;
-			throw new ApiException(500, message, e);
+
+			const message = `ACTION FAILED: ${actionObj.declaration.label}`;
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(message, '', e);
 		}
 	};
 
 	private list = async () => {
-		return _values(this.actionMetaData);
+		return _values(this.actions)
+			.filter(action => !exists(action.declaration.visible) || resolveContent(action.declaration.visible))
+			.map(action => {
+				const declaration = action.declaration;
+				return {
+					key: declaration.key,
+					label: declaration.label ?? declaration.key,
+					description: declaration.description,
+					group: declaration.group,
+				};
+			});
 	};
 
 }

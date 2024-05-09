@@ -33,6 +33,7 @@ export type ReduceFunction_V3<ItemType, ReturnType> = (
 
 export type DBConfigV3<Proto extends DBProto<any>> = {
 	name: string
+	group: string;
 	version?: number
 	autoIncrement?: boolean,
 	uniqueKeys: (keyof Proto['dbType'])[]
@@ -78,6 +79,10 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 		};
 	}
 
+	async exists() {
+		return (await window.indexedDB.databases()).find(db => db.name === this.config.name);
+	}
+
 	async open(): Promise<IDBDatabase> {
 		return new Promise((resolve, reject) => {
 			if (!IDBAPI)
@@ -89,13 +94,13 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 				this.config.upgradeProcessor?.(db);
 			};
 
-			request.onsuccess = (event) => {
+			request.onsuccess = () => {
 				// console.log(`${this.config.name} - IDB result`, request.result);
 				this.db = request.result;
 				resolve(this.db);
 			};
 
-			request.onerror = (event) => {
+			request.onerror = () => {
 				reject(new Error(`Error opening IDB - ${this.config.name}`));
 			};
 		});
@@ -127,7 +132,7 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 	};
 
 	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: Proto['dbType']) => void,
-							 endCallback: () => void, limiterCallback?: () => boolean) => {
+													 endCallback: () => void, limiterCallback?: () => boolean) => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 
