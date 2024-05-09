@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {QueryParams} from '../../shared';
-import {ModuleFE_BaseDB} from '../db-api-gen/ModuleFE_BaseDB';
 import {ResolvableContent} from '@nu-art/ts-common';
-
+import {ModuleFE_BaseDB} from '../db-api-gen/ModuleFE_BaseDB';
+import {AwaitModule_LoaderProps} from '../../components/AwaitModules/AwaitModules';
 
 export type TS_Route<T extends QueryParams = QueryParams> = {
 	key: string;
@@ -14,6 +14,8 @@ export type TS_Route<T extends QueryParams = QueryParams> = {
 	fallback?: boolean;
 	index?: boolean;
 	children?: TS_Route<any>[]
-	modulesToAwait?: ModuleFE_BaseDB<any, any>[];
-	awaitLoader?: ResolvableContent<React.ReactNode>;
+	modulesToAwait?: ResolvableContent<(ModuleFE_BaseDB<any, any>)[]>;
+	awaitModulesLoader?: ResolvableContent<React.ReactNode, [AwaitModule_LoaderProps]>;
+	awaitSync?: boolean;
+	awaitSyncLoader?: ResolvableContent<React.ReactNode>;
 }

@@ -23,9 +23,9 @@ import * as React from 'react';
 import {ComponentType} from 'react';
 import {_keys} from '@nu-art/ts-common';
 import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem';
-import {State_ItemEditor} from '../Item_Editor';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_PropRenderer} from '../TS_PropRenderer';
+import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
 
 
 export type Props_FormV3<T> = {
@@ -52,8 +52,8 @@ export class Component_FormV3<T>
 		super(p);
 	}
 
-	protected deriveStateFromProps(nextProps: Props_FormV3<T>, state?: Partial<State_ItemEditor<T>>): (State_ItemEditor<T>) | undefined {
-		const _state = (state || {}) as State_ItemEditor<T>;
+	protected deriveStateFromProps(nextProps: Props_FormV3<T>, state?: Partial<EditableRef<T>>): (EditableRef<T>) {
+		const _state = (state || {}) as EditableRef<T>;
 		_state.editable = nextProps.editable;
 		return _state;
 	}

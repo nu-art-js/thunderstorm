@@ -21,9 +21,8 @@
 
 import {Express, NextFunction} from 'express';
 import {ExpressRequest, ExpressResponse, ServerApi_Middleware} from '../../../utils/types';
-import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
-import {asArray, Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {asArray, Logger, LogLevel, Module, MUSTNeverHappenException, RuntimeModules} from '@nu-art/ts-common';
 import {ModuleBE_APIs_Class} from '../../ModuleBE_APIs';
 import {ApiDef} from '../../../../shared';
 
@@ -51,7 +50,7 @@ export class RouteResolver_ModulePath
 	}
 
 	public resolveApi() {
-		const modules: (Module | ModuleBE_APIs_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ModuleBE_APIs_Class).useRoutes);
+		const modules: (Module | ModuleBE_APIs_Class)[] = RuntimeModules().filter((module: ModuleBE_APIs_Class) => !!module.useRoutes);
 
 		//Filter Api modules
 		const routes: ServerApi<any>[] = [];
@@ -71,9 +70,8 @@ export class RouteResolver_ModulePath
 		});
 
 		this.express.all('*', (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
-
 			this.logErrorBold(`Received unknown url with path: '${req.path}' - url: '${req.url}'`);
-
+			res.status(404).send(`The requested URL '${req.url}' was not found on this server.`);
 		});
 	}
 

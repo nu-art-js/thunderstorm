@@ -19,6 +19,7 @@
 import {exists} from './tools';
 import {_keys} from './object-tools';
 import {NestedArrayType, TypedMap} from './types';
+import {BadImplementationException} from '../core/exceptions/exceptions';
 
 
 export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { filteredIn: T[], filteredOut: T[] } {
@@ -54,6 +55,22 @@ export function removeFromArrayByIndex<T>(array: T[], index: number) {
 	if (index > -1)
 		array.splice(index, 1);
 
+	return array;
+}
+
+export function swapInArrayByIndex<T>(array: T[], i1: number, i2: number) {
+	if (i1 < 0 || i1 >= array.length)
+		throw new BadImplementationException(`index i1 out of bounds: ${i1}`);
+
+	if (i2 < 0 || i2 >= array.length)
+		throw new BadImplementationException(`index i2 out of bounds: ${i2}`);
+
+	if (i1 === i2)
+		return array;
+
+	const temp = array[i1];
+	array[i1] = array[i2];
+	array[i2] = temp;
 	return array;
 }
 
@@ -97,7 +114,7 @@ export function findDuplicates<T>(array1: T[], array2: T[]): T[] {
 	return array1.filter(val => array2.indexOf(val) !== -1);
 }
 
-const defaultMapper: <T extends any>(item: T) => any = (item) => item;
+const defaultMapper: <T>(item: T) => any = (item) => item;
 
 /**
  remove all duplicates in array
@@ -129,7 +146,7 @@ export function filterFalsy<T>(array?: (T | undefined | null | void)[]): T[] {
  * */
 export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: {
 	[k: string]: T
-}) => string | number, map: {
+}) => string | number | (string | number)[], map: {
 	[k: string]: T
 } = {}): { [k: string]: T } {
 	return reduceToMap<T, T>(array, getKey, item => item, map);
@@ -137,7 +154,7 @@ export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, inde
 
 type KeyResolver<Input, Output = Input> = (item: Input, index: number, map: {
 	[k: string]: Output
-}) => string | number;
+}) => string | number | (string | number)[];
 
 type Mapper<Input, Output = Input> = (item: Input, index: number, map: { [k: string]: Output }) => Output;
 
@@ -147,7 +164,13 @@ type Mapper<Input, Output = Input> = (item: Input, index: number, map: { [k: str
  */
 export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<Input[]>), keyResolver: KeyResolver<Input, Output>, mapper: Mapper<Input, Output>, map: TypedMap<Output> = {}): TypedMap<Output> {
 	return (array as (Input[])).reduce((toRet, element, index) => {
-		toRet[keyResolver(element, index, toRet)] = mapper(element, index, toRet);
+		const keys = keyResolver(element, index, toRet);
+		const output = mapper(element, index, toRet);
+		if (typeof keys === 'string' || typeof keys === 'number')
+			toRet[keys] = output;
+		else
+			keys.forEach(key => toRet[key] = output);
+
 		return toRet;
 	}, map);
 }
@@ -181,7 +204,7 @@ export function sortArray<T>(array: T[], map: keyof T | (keyof T)[] | ((item: T)
 /**
  * "splits" array into given size of chunks and then does "action" on chunk and return to array of actions on chunks +-
  * */
-export async function batchAction<T extends any = any, R extends any = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
+export async function batchAction<T = any, R = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
 	const result: R[] = [];
 	for (let i = 0, j = arr.length; i < j; i += chunk) {
 		const items: R[] | R = await action(arr.slice(i, i + chunk));
@@ -220,7 +243,7 @@ export async function Promise_all_sequentially<T>(promises: Array<() => Promise<
 	return results;
 }
 
-export async function batchActionParallel<T extends any = any, R extends any = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
+export async function batchActionParallel<T = any, R = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
 	const promises: Promise<R>[] = [];
 	for (let i = 0, j = arr.length; i < j; i += chunk) {
 		addItemToArray(promises, action(arr.slice(i, i + chunk)));
@@ -261,7 +284,7 @@ export function filterFlatInstances<T extends any[], K = NestedArrayType<T>>(arr
 	return filterInstances(flatArray(arr, result)) as Exclude<K, undefined>[];
 }
 
-export function groupArrayBy<T extends object, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): {
+export function groupArrayBy<T, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): {
 	key: K,
 	values: T[]
 }[] {
@@ -274,7 +297,7 @@ export function groupArrayBy<T extends object, K extends string | number>(arr: T
 	return _keys(map).map(key => ({key, values: map[key]}));
 }
 
-export function toggleInArray<T extends any = string, K extends any = (T extends object ? keyof T : T)>(arr: T[], item: T, mapper: (item: T) => K = item => item as unknown as K) {
+export function toggleInArray<T = string, K = (T extends object ? keyof T : T)>(arr: T[], item: T, mapper: (item: T) => K = item => item as unknown as K) {
 	const index = arr.findIndex(_item => mapper(_item) === mapper(item));
 	if (index !== -1)
 		removeFromArrayByIndex(arr, index);
@@ -282,30 +305,30 @@ export function toggleInArray<T extends any = string, K extends any = (T extends
 		arr.push(item);
 }
 
-export function generateArray<T extends any = number>(length: number, mapper: (index: number) => T = i => i as T) {
+export function generateArray<T = number>(length: number, mapper: (index: number) => T = i => i as T) {
 	return Array.from({length}).map((e, i) => mapper(i));
 }
 
-export function asArray<T extends any>(toBeArray: T | T[]): T[] {
+export function asArray<T>(toBeArray: T | T[]): T[] {
 	return Array.isArray(toBeArray) ? toBeArray : [toBeArray];
 }
 
-export function asOptionalArray<T extends any>(toBeArray?: T | T[]): T[] | undefined {
+export function asOptionalArray<T>(toBeArray?: T | T[]): T[] | undefined {
 	if (!exists(toBeArray))
 		return undefined;
 
 	return asArray(toBeArray);
 }
 
-export function lastElement<T extends any>(array: T[] | undefined) {
+export function lastElement<T>(array: T[] | undefined) {
 	return array?.[array?.length - 1];
 }
 
-export function firstElement<T extends any>(array?: T[]) {
+export function firstElement<T>(array?: T[]) {
 	return array?.[1];
 }
 
-export function arrayIncludesAny<T extends any>(arr1: T[], arr2: T[]): boolean {
+export function arrayIncludesAny<T>(arr1: T[], arr2: T[]): boolean {
 	return arr1.some(item => arr2.includes(item));
 }
 
@@ -314,6 +337,6 @@ export function arrayIncludesAny<T extends any>(arr1: T[], arr2: T[]): boolean {
  * @param arr1
  * @param arr2
  */
-export function arrayIncludesAll<T extends any>(arr1: T[], arr2: T[]): boolean {
+export function arrayIncludesAll<T>(arr1: T[], arr2: T[]): boolean {
 	return arr2.every(item => arr1.includes(item));
 }

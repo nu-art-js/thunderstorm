@@ -3,6 +3,7 @@ import {BadImplementationException} from '../core/exceptions/exceptions';
 
 import {AsyncLocalStorage} from 'async_hooks';
 import {generateHex} from '../utils/random-tools';
+import {ValidationException} from '../validator/validator-core';
 
 
 const asyncLocalStorage = new AsyncLocalStorage<MemStorage>();
@@ -66,6 +67,18 @@ export class MemKey<T> {
 			return;
 
 		this.set(value as T);
+	};
+
+	assert = (value?: T) => {
+		const storedValue = this.get();
+		if (!exists(value))
+			return storedValue;
+
+		if (value !== storedValue) {
+			throw new ValidationException(`Asserting MemKey(${this.key}) ${value} !== ${storedValue}!`);
+		}
+
+		return storedValue;
 	};
 
 	get = (value?: T): T => {

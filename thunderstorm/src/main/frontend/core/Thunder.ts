@@ -20,7 +20,15 @@
  */
 
 import * as React from 'react';
-import {BeLogged, ImplementationMissingException, LogClient_Browser, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
+import {
+	AsyncVoidFunction,
+	BeLogged,
+	ImplementationMissingException,
+	LogClient_BrowserGroups,
+	ModuleManager,
+	Promise_all_sequentially,
+	removeItemFromArray
+} from '@nu-art/ts-common';
 import {ThunderDispatcher} from './thunder-dispatcher';
 
 import '../styles/impl/basic.scss';
@@ -28,7 +36,9 @@ import '../styles/impl/icons.scss';
 import {ThunderAppWrapperProps} from './types';
 import * as RDC from 'react-dom/client';
 import {appWithJSX} from './AppWrapper';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 
+export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();
 
 export class Thunder
 	extends ModuleManager {
@@ -36,6 +46,7 @@ export class Thunder
 	private listeners: any[] = [];
 	private renderFunc!: (props: ThunderAppWrapperProps) => React.ReactElement;
 	private props!: ThunderAppWrapperProps<any>;
+	private preBuildActions: AsyncVoidFunction[] = [];
 
 	constructor() {
 		super();
@@ -49,7 +60,7 @@ export class Thunder
 	}
 
 	init() {
-		BeLogged.addClient(LogClient_Browser);
+		BeLogged.addClient(LogClient_BrowserGroups);
 
 		super.init();
 
@@ -96,13 +107,23 @@ export class Thunder
 	}
 
 	public build(onStarted?: () => void) {
-		super.build();
-		onStarted?.();
+		Promise_all_sequentially(this.preBuildActions).then(() => {
+			super.build();
+			onStarted?.();
+		});
+	}
+
+	public setVersion(version: string): this {
+		Storage_AppVersion.set(version);
+		return super.setVersion(version);
 	}
 
 	public getConfig() {
 		return this.config;
 	}
+
+	public addPreBuildAction = (func: AsyncVoidFunction) => {
+		this.preBuildActions.push(func);
+		return this;
+	};
 }
-
-

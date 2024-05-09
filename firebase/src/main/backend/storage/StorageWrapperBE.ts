@@ -17,7 +17,14 @@
  */
 
 import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {Bucket, CreateReadStreamOptions, CreateWriteStreamOptions, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
+import {
+	Bucket,
+	CreateReadStreamOptions,
+	CreateWriteStreamOptions,
+	File,
+	GetSignedUrlConfig,
+	MakeFilePublicResponse,
+} from '@google-cloud/storage';
 import {Firebase_CopyResponse, FirebaseType_Metadata, FirebaseType_Storage, ReturnType_Metadata} from './types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
@@ -93,6 +100,10 @@ export class BucketWrapper {
 		const filteredFiles: File[] = [];
 		await this.iterateOverFiles(folder, filter, async (file: File) => filteredFiles.push(file));
 		return filteredFiles;
+	}
+
+	getBucketName(): string {
+		return this.bucket.name;
 	}
 
 	async deleteFiles(folder: string = '', filter: (file: File) => boolean = () => true): Promise<void> {
@@ -264,7 +275,7 @@ export class FileWrapper {
 
 	private async getSignedUrl(options: GetSignedUrlConfig) {
 		const results = await this.file.getSignedUrl(options);
-		const url = results[0];
+		const url = results[0]; // An array with a single string is returned
 
 		return {
 			fileName: this.path,

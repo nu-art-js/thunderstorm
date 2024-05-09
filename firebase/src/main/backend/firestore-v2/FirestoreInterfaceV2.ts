@@ -19,7 +19,13 @@
 import {ComparatorMap, FirestoreQuery, QueryComparator} from '../..';
 import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from '../firestore/types';
 import {FirestoreCollectionV2} from './FirestoreCollectionV2';
-import {__stringify, _keys, BadImplementationException, ImplementationMissingException, DB_Object, StaticLogger} from '@nu-art/ts-common';
+import {
+	__stringify,
+	BadImplementationException,
+	DB_Object,
+	ImplementationMissingException,
+	StaticLogger
+} from '@nu-art/ts-common';
 import {Query} from 'firebase-admin/firestore';
 
 
@@ -98,7 +104,7 @@ export class FirestoreInterfaceV2 {
 
 					// console.log(`limit: ${query.limit.itemsCount} * ${page}`);
 					if (page > 0)
-						myQuery = myQuery.offset(query.limit.itemsCount * page + 1);
+						myQuery = myQuery.offset(query.limit.itemsCount * page);
 
 					myQuery = myQuery.limit(query.limit.itemsCount);
 				}

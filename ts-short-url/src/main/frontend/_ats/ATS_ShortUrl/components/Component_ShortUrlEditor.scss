@@ -1,0 +1,45 @@
+.short-url-editor {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  gap: 15px;
+  height: fit-content;
+  padding: 15px;
+  width: 650px;
+  background: white;
+  justify-content: space-between;
+
+
+  .ts-textarea {
+    resize: none;
+    height: 120px;
+
+    &.url-input {
+      font-family: monospace;
+      font-weight: normal;
+      resize: vertical;
+    }
+  }
+
+  .utils {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    gap: 10px;
+
+    .icon--wrapper {
+      cursor: pointer;
+    }
+  }
+
+  .buttons-container {
+    gap: 10px;
+    width: 100%;
+    padding-top: 10px;
+    justify-content: flex-end;
+
+    .ts-busy-button {
+      margin: 0;
+    }
+  }
+}

@@ -20,10 +20,9 @@
  */
 
 import * as React from 'react';
-import {DB_Object, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {DBProto, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {OnSyncStatusChangedListener} from '../core/db-api-gen/types';
 import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB';
-import {TS_ErrorBoundary} from '../components/TS_ErrorBoundary';
 import {TS_Loader} from '../components/TS_Loader';
 import {DataStatus} from './db-api-gen/consts';
 import {BaseComponent} from './ComponentBase';
@@ -66,11 +65,11 @@ export type State_SmartComponent = {
  * Any "on{Item}Updated" function should NOT be an arrow function, as it can't be re-binded in the constructor,
  * thus obstructing the SmartComponent ability to listen to sync events, causing it to load forever.
  */
-export abstract class SmartComponent<P extends any = {}, S extends any = {},
+export abstract class SmartComponent<P = {}, S = {},
 	Props extends Props_SmartComponent & P = Props_SmartComponent & P,
 	State extends State_SmartComponent & S = State_SmartComponent & S>
 	extends BaseComponent<Props, State>
-	implements OnSyncStatusChangedListener<DB_Object> {
+	implements OnSyncStatusChangedListener<DBProto<any>> {
 
 	static logLevel = LogLevel.Info;
 	// static defaultProps = {
@@ -82,8 +81,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		props: Props,
 		state: State
 	};
-
-	private unpreparedModules?: ModuleFE_BaseDB<any>[];
 
 	/**
 	 * The constructor does 2 important things:
@@ -110,25 +107,32 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				return <>
 					{_render()}
 					{this.state.componentPhase === ComponentStatus.Syncing &&
-                        <div className={'loader-transparent-container'}><TS_Loader/></div>}
+						<div className={'loader-transparent-container'}><TS_Loader/></div>}
 				</>;
 			};
 
-			return <TS_ErrorBoundary onError={this.reDeriveState} error={this.state.error}>
-				{toRet()}
-			</TS_ErrorBoundary>;
+			return toRet();
 		};
 	}
 
 	// ######################### Life Cycle #########################
 
-	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>): void {
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<DBProto<any>, any>): void {
 		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
 
 		const modules = resolveContent(this.props.modules);
 
 		if (modules?.includes(module))
 			this.reDeriveState();
+	}
+
+	shouldReDeriveState(nextProps: Readonly<Props>): boolean {
+		return this.getUnpreparedModules().length === 0 && super.shouldReDeriveState(nextProps);
+	}
+
+	protected getUnpreparedModules(): ModuleFE_BaseDB<any>[] {
+		const modules = resolveContent(this.props.modules);
+		return modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
 	}
 
 	/**
@@ -144,16 +148,13 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	protected _deriveStateFromProps(nextProps: Props, partialState: State = this.createInitialState(nextProps)): State | undefined {
 		const currentState = partialState;
 
-		const modules = resolveContent(this.props.modules);
+		const unpreparedModules = this.getUnpreparedModules();
 
-		this.unpreparedModules = modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
-
-		if (this.unpreparedModules.length > 0) {
-			const state = this.createInitialState(nextProps);
-			this.logVerbose(`Component not ready ${this.unpreparedModules.map(module => module.getName()).join(', ')}`, state);
-			return state;
+		if (unpreparedModules.length > 0) {
+			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, currentState);
+			return currentState;
 		}
-
+		this.logDebug('Module Statuses', resolveContent(this.props.modules)?.map(_module => `${_module.getName()}=${_module.getDataStatus()},\n`));
 		if (this.derivingState) {
 			this.logVerbose('Scheduling new props', nextProps as {});
 			this.pending = {props: nextProps, state: partialState};
@@ -220,7 +221,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Render #########################
 	protected logAwaitedModules() {
-		this.logWarning(`Waiting for modules: ${this.unpreparedModules?.map(module => module.getName())}`);
+		this.logWarning(`Waiting for modules: ${this.getUnpreparedModules()?.map(module => module.getName())}`);
 	}
 
 	protected renderLoader = () => {

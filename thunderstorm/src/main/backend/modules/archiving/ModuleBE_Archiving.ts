@@ -4,24 +4,26 @@ import {
 	currentTimeMillis,
 	Day,
 	DB_Object,
-	dbIdLength,
+	dbIdLength, DBProto,
 	deepClone,
 	generateHex,
-	Hour,
-	removeDBObjectKeys
+	Hour, Proto_DB_Object,
+	removeDBObjectKeys,
+	RuntimeModules
 } from '@nu-art/ts-common';
 import {ModuleBE_FirestoreListener} from '@nu-art/firebase/backend';
-import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
-import {Storm} from '../../core/Storm';
+import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {
 	ApiDef_Archiving,
+	DBModuleType,
 	RequestBody_HardDeleteUnique,
 	RequestQuery_DeleteAll,
 	RequestQuery_GetHistory
 } from '../../../shared';
 import {_EmptyQuery} from '@nu-art/firebase';
+
 
 type Params = { collectionName: string, docId: string }
 
@@ -35,7 +37,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	extends ModuleBE_FirestoreListener<DBType> {
 	private readonly TTL: number; // Time to live for each instance
 	private readonly lastUpdatedTTL: number; // Time to live after last update
-	protected readonly moduleMapper: { [key: string]: ModuleBE_BaseDBV2<DBType> }; // Module mapper, mapping collection name to module
+	protected readonly moduleMapper: { [key: string]: ModuleBE_BaseDB<any> }; // Module mapper, mapping collection name to module
 
 	/**
 	 * Constructor initializes TTL, lastUpdatedTTL moduleMapper and sets api routes for the module.
@@ -56,15 +58,12 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 */
 	protected init() {
 		super.init();
-		const modules = Storm.getInstance().filterModules(module => !!module);
 
-		modules.map(module => {
-			const dbModule = module as ModuleBE_BaseDBV2<DBType>;
+		// Add all DB modules to the mapper
+		RuntimeModules()
+			.filter<ModuleBE_BaseDB<any>>((module: DBModuleType) => !!module.dbDef)
+			.forEach(_module => this.moduleMapper[_module.collection.collection.path] = _module);
 
-			if (dbModule && dbModule.dbDef && dbModule.dbDef.dbName)
-				// If this module is a Firestore DB module, add it to the mapper
-				this.moduleMapper[dbModule.dbDef.dbName] = dbModule;
-		});
 		addRoutes([
 			createBodyServerApi(ApiDef_Archiving.vv1.hardDeleteUnique, this.hardDeleteUnique),
 			createQueryServerApi(ApiDef_Archiving.vv1.hardDeleteAll, this.hardDeleteAll),
@@ -124,7 +123,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		const collectionItems = await dbModule.query.custom(_EmptyQuery);
 		await batchActionParallel(collectionItems, 10, (chunk) => Promise.all(chunk.map(item => this.hardDeleteUnique({
 			_id: item._id,
-			collectionName: dbModule.collection.name,
+			collectionName: dbModule.collection.collection.path,
 			dbInstance: item
 		}))));
 	};
@@ -168,7 +167,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param dbModule - The Firestore database module the document belongs to.
 	 * @returns - A boolean indicating whether the TTL has been exceeded (true) or not (false).
 	 */
-	private checkTTL(instance: DBType, dbModule: ModuleBE_BaseDBV2<DBType>) {
+	private checkTTL<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(instance: T, dbModule: ModuleBE_BaseDB<Proto>) {
 		const timestamp = currentTimeMillis();
 		const TTL = dbModule.dbDef.TTL || this.TTL;
 
@@ -188,7 +187,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param dbModule - The Firestore database module the document belongs to.
 	 * @returns - A boolean indicating whether the `lastUpdatedTTL` has been exceeded (true) or not (false).
 	 */
-	private checkLastUpdatedTTL(instance: DBType, dbModule: ModuleBE_BaseDBV2<DBType>) {
+	private checkLastUpdatedTTL<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(instance: T, dbModule: ModuleBE_BaseDB<Proto>) {
 		const timestamp = currentTimeMillis();
 		const lastUpdatedTTL = dbModule.dbDef.lastUpdatedTTL || this.lastUpdatedTTL;
 
@@ -208,10 +207,9 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param before - The state of the document before changes.
 	 * @returns - A promise that performs the archiving operation or undefined in case of an error.
 	 */
-	private async insertToArchive(dbModule: ModuleBE_BaseDBV2<DBType>, before: DBType) {
+	private async insertToArchive<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(dbModule: ModuleBE_BaseDB<Proto>, before: T) {
 		if (before.__hardDelete)
 			return;
-
 		// Reference to the original collection
 		const collectionRef = dbModule.collection.collection;
 		const timestamp = currentTimeMillis();
@@ -223,7 +221,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		const subCollection = collectionRef.doc(dbInstance._id).collection(Const_ArchivedCollectionPath);
 
 		// Remove the keys from the original object that shouldn't be in the archive
-		dbInstance = removeDBObjectKeys(dbInstance) as DBType;
+		dbInstance = removeDBObjectKeys(dbInstance) as T;
 
 		// Record the original document ID
 		dbInstance._originDocId = before._id;
@@ -244,7 +242,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param dbModule - The Firestore database module the document belongs to.
 	 * @returns - A promise to perform the deletion operation.
 	 */
-	private async hardDeleteDoc(instance: DBType, dbModule: ModuleBE_BaseDBV2<DBType>) {
+	private async hardDeleteDoc<T extends DB_Object, Proto extends DBProto<Proto_DB_Object<T, any, any, any>>>(instance: T, dbModule: ModuleBE_BaseDB<Proto>) {
 		// Get reference to the collection the document belongs to
 		const collectionRef = dbModule.collection.collection;
 		// Get reference to the document instance to delete

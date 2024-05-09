@@ -1,26 +1,21 @@
-import {_className, LL_H_C, LL_V_L, Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/thunderstorm/frontend';
+import {_className, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunderstorm/frontend';
 import {_values} from '@nu-art/ts-common';
 import * as React from 'react';
 import '../permission-keys-editor.scss';
 import {Component_AccessLevelsEditor} from './Component_AccessLevelsEditor';
 import {PermissionKey_FE} from '../../../PermissionKey_FE';
-import {ModuleFE_PermissionsAccessLevel} from '../../../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {ModuleFE_PermissionsAssert} from '../../../modules/ModuleFE_PermissionsAssert';
 
-type Props = Props_SmartComponent & {};
+type Props = {};
 
-type State = State_SmartComponent & {
+type State = {
 	editedItem?: PermissionKey_FE
 };
 
 export class PermissionKeysEditor
-	extends SmartComponent<Props, State> {
+	extends ComponentSync<Props, State> {
 
-	static defaultProps = {
-		modules: [ModuleFE_PermissionsAccessLevel]
-	};
-
-	protected async deriveStateFromProps(nextProps: Props, state: State): Promise<State> {
+	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state ??= this.state ? {...this.state} : {} as State;
 		return state;
 	}

@@ -19,37 +19,14 @@
  * limitations under the License.
  */
 
-import {
-	ApiDefCaller,
-	ApiStruct_DBApiGenIDB,
-	BaseHttpRequest,
-	DBApiDefGeneratorIDB,
-	DBSyncData,
-	HttpException,
-	QueryParams,
-	TypedApi,
-} from '../../shared';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-
-import {
-	BadImplementationException,
-	DB_BaseObject,
-	DB_Object,
-	DBDef,
-	Default_UniqueKey, exists,
-	IndexKeys,
-	merge,
-	PreDB,
-	TypedMap
-} from '@nu-art/ts-common';
-
+import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
+import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException,  TypedApi} from '../../shared';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
-import {ApiCallerEventType} from '../../core/db-api-gen/types';
-import {DataStatus} from '../../core/db-api-gen/consts';
-import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {SyncIfNeeded} from '../sync-manager/ModuleFE_SyncManagerV2';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api';
+import {ModuleSyncType} from './types';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -65,85 +42,65 @@ type Operation = {
 	pending?: Pending
 }
 
-export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
-	extends ModuleFE_BaseDB<DBType, Ks, Config>
-	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
+export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config extends {} = {}, Config extends _Config & DBApiFEConfig<Proto> = _Config & DBApiFEConfig<Proto>>
+	extends ModuleFE_BaseDB<Proto, Config>
+	implements ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>> {
 
 	// @ts-ignore
-	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['v1'];
 	private operations: TypedMap<Operation> = {};
 
-	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>) {
-		super(dbDef, defaultDispatcher);
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string) {
+		super(dbDef, defaultDispatcher, ModuleSyncType.APISync);
 
-		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
+		const apiDef = this.resolveApiDef(dbDef, version);
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
-		const sync = apiWithBody(apiDef.v1.sync, this.onSyncCompleted);
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
-		const upsert = apiWithBody(apiDef.v1.upsert, this.onEntryUpdated);
+		const upsert = apiWithBody(apiDef.v1.upsert, async (item, orginal) => {
+			const toRet = await this.onEntryUpdated(item, orginal);
+			this.IDB.setLastUpdated(item.__updated);
+			return toRet;
+		});
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
-
-		// this.dataStatus = this.IDB.getLastSync() !== 0 ? DataStatus.containsData : DataStatus.NoData;
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore
 		this.v1 = {
-			sync: (additionalQuery: FirestoreQuery<DBType> = _EmptyQuery) => {
-				const originalSyncQuery = {
-					where: {__updated: {$gt: this.IDB.getLastSync()}},
-					orderBy: [{key: '__updated', order: 'desc'}],
-				};
-				const query: FirestoreQuery<DBType> = merge(originalSyncQuery, additionalQuery);
-
-				const syncRequest = sync(query);
-				const _execute = syncRequest.execute.bind(syncRequest);
-				const _executeSync = syncRequest.executeSync.bind(syncRequest);
-
-				syncRequest.execute = (onSuccess, onError) => {
-					return _execute(onSuccess, onError);
-				};
-
-				syncRequest.executeSync = async () => {
-					return _executeSync();
-				};
-
-				return syncRequest;
-			},
-
-			query: (query?: FirestoreQuery<DBType>) => _query(query || _EmptyQuery),
+			query: (query?: FirestoreQuery<Proto['dbType']>) => _query(query || _EmptyQuery),
 			// @ts-ignore
-			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
-				return queryUnique(typeof uniqueKeys === 'string' ? {_id: uniqueKeys} : uniqueKeys as unknown as QueryParams);
+			queryUnique: (_id: string) => {
+				return queryUnique({_id});
 			},
 			// @ts-ignore
-			upsert: (toUpsert: PreDB<DBType>) => {
+			upsert: (toUpsert: Proto['uiType']) => {
 				toUpsert = this.cleanUp(toUpsert);
-				this.validateImpl(toUpsert);
+				this.validateInternal(toUpsert);
 				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
-			upsertAll: apiWithBody(apiDef.v1.upsertAll, this.onEntriesUpdated),
+			upsertAll: apiWithBody(apiDef.v1.upsertAll, async (items) => {
+				const toRet = await this.onEntriesUpdated(items);
+				const lastUpdated = items.reduce((toRet, current) => Math.max(toRet, current.__updated), -1);
+				this.IDB.setLastUpdated(lastUpdated);
+				return toRet;
+			}),
 			// @ts-ignore
 			patch: (toPatch: Partial<DBType>) => {
-				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch as IndexKeys<DBType, Ks> & Partial<DBType>), 'patch');
+				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch as IndexKeys<Proto['dbType'], keyof Proto['dbType']> & Proto['uiType']), 'patch');
 			},
 			delete: (item: DB_BaseObject) => {
 				return this.updatePending(item, _delete(item), 'delete');
 			},
 			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
-			deleteAll: apiWithQuery(apiDef.v1.deleteAll, () => this.v1.sync().executeSync()),
-		};
-
-		const superClear = this.IDB.clear;
-		this.IDB.clear = async (reSync = false) => {
-			await superClear();
-			this.setDataStatus(DataStatus.NoData);
-			if (reSync)
-				this.v1.sync().execute();
+			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
 		};
 	}
 
-	protected cleanUp = (toUpsert: PreDB<DBType>) => {
+	protected resolveApiDef(dbDef: DBDef_V3<Proto>, version: string | undefined) {
+		return DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
+	}
+
+	protected cleanUp = (toUpsert: Proto['uiType']) => {
 		return toUpsert;
 	};
 
@@ -197,36 +154,6 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 			return request;
 		};
 
-		// request.executeSync = async () => {
-		// 	const operation = this.operations[id];
-		// 	if (!operation) {
-		// 		this.operations[id] = {running: {request, requestType}};
-		// 		return request.executeSync();
-		// 	}
-		// };
 		return request;
 	}
-
-	__syncIfNeeded = async (syncData: DBSyncData[]) => {
-		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
-		if (!exists(mySyncData))
-			return;
-
-		if (mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.IDB.getLastSync()) {
-			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.IDB.getLastSync()}`);
-			await this.IDB.clear();
-			this.cache.clear();
-		}
-
-		if (mySyncData.lastUpdated <= this.IDB.getLastSync()) {
-			if (!this.cache.loaded)
-				await this.cache.load();
-
-			this.setDataStatus(DataStatus.ContainsData);
-			return;
-		}
-
-		this.setDataStatus(DataStatus.UpdatingData);
-		await this.v1.sync().executeSync();
-	};
 }

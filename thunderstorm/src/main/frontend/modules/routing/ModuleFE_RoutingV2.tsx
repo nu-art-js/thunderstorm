@@ -5,8 +5,9 @@ import {TS_Route} from './types';
 import {BadImplementationException, composeUrl, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {LocationChangeListener} from './LocationChangeListener';
 import {QueryParams} from '../../../shared';
-import {mouseEventHandler} from '../../utils/tools';
+import {mouseEventHandler, stopPropagation} from '../../utils/tools';
 import {AwaitModules} from '../../components/AwaitModules/AwaitModules';
+import {AwaitSync} from '../../components/AwaitSync/AwaitSync';
 
 
 class ModuleFE_RoutingV2_Class
@@ -14,21 +15,23 @@ class ModuleFE_RoutingV2_Class
 
 	// ######################## Inner Data ########################
 
-	private routesMapByKey: { [key: string]: { route: TS_Route, fullPath: string } } = {};
-	private routesMapByPath: { [fullPath: string]: TS_Route } = {};
+	private routesMapByKey: {
+		[key: string]: {
+			route: TS_Route,
+			fullPath: string
+		}
+	} = {};
+	private routesMapByPath: {
+		[fullPath: string]: TS_Route
+	} = {};
 	private navigate!: NavigateFunction;
-
-	// constructor() {
-	// 	super();
-	// 	this.setMinLevel(LogLevel.Debug);
-	// }
 
 	// ######################## Public Functions ########################
 
 	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {
 		const fullPath = this.getFullPath(route.key);
 		try {
-			const url = composeUrl(fullPath, params);
+			const url = composeUrl(fullPath, params, window.location.hash);
 			if (window.location.href === url)
 				return this.logWarning(`attempting to set same route: ${url}`);
 
@@ -98,18 +101,54 @@ class ModuleFE_RoutingV2_Class
 		if (!route.Component)
 			return undefined;
 
-		if (!route.modulesToAwait?.length)
+		const shouldAwaitModules = !!route.modulesToAwait;
+		const shouldAwaitSync = !!route.awaitSync;
+
+		//No awaiting of any type
+		if (!shouldAwaitModules && !shouldAwaitSync)
 			return route.Component;
 
-		//route.Component is a class component
-		if (route.Component.prototype.render) {
-			const Component = route.Component as ComponentClass;
-			return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}><Component/></AwaitModules>;
+		//Awaiting both modules and sync
+		if (shouldAwaitModules && shouldAwaitSync) {
+			if (route.Component.prototype.render) {
+				const Component = route.Component as ComponentClass;
+				return () => <AwaitSync customLoader={route.awaitSyncLoader}>
+					<AwaitModules modules={route.modulesToAwait!}
+												customLoader={route.awaitModulesLoader}><Component/></AwaitModules>
+				</AwaitSync>;
+			}
+			const component = route.Component as FunctionComponent;
+			return () => <AwaitSync customLoader={route.awaitSyncLoader}>
+				<AwaitModules modules={route.modulesToAwait!}
+											customLoader={route.awaitModulesLoader}>{component({})}</AwaitModules>
+			</AwaitSync>;
 		}
 
-		//route.Component is a function component
-		const component = route.Component as FunctionComponent;
-		return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitLoader}>{component({})}</AwaitModules>;
+		//Awaiting only modules
+		if (shouldAwaitModules && !shouldAwaitSync) {
+			//route.Component is a class component
+			if (route.Component.prototype.render) {
+				const Component = route.Component as ComponentClass;
+				return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitModulesLoader}><Component/></AwaitModules>;
+			}
+
+			//route.Component is a function component
+			const component = route.Component as FunctionComponent;
+			return () => <AwaitModules modules={route.modulesToAwait!}
+																 customLoader={route.awaitModulesLoader}>{component({})}</AwaitModules>;
+		}
+
+		//Awaiting only sync
+		if (shouldAwaitModules && !shouldAwaitSync) {
+			if (route.Component.prototype.render) {
+				const Component = route.Component as ComponentClass;
+				return () => <AwaitSync customLoader={route.awaitSyncLoader}><Component/></AwaitSync>;
+			}
+
+			//route.Component is a function component
+			const component = route.Component as FunctionComponent;
+			return () => <AwaitSync customLoader={route.awaitSyncLoader}>{component({})}</AwaitSync>;
+		}
 	};
 
 	getRouteByKey(routeKey: string): TS_Route | undefined {
@@ -133,9 +172,11 @@ class ModuleFE_RoutingV2_Class
 	}
 }
 
-export const TS_NavLink = (props: { route: TS_Route } & Partial<NavLinkProps>) => {
-	const {route, children, ..._props} = props;
-
+export const TS_NavLink = (props: {
+	route: TS_Route;
+	ignoreClickOnSameRoute?: boolean;
+} & Partial<NavLinkProps>) => {
+	const {route, children, ignoreClickOnSameRoute, ..._props} = props;
 	const fullPath = ModuleFE_RoutingV2.getFullPath(route.key);
 	if (!fullPath)
 		throw new BadImplementationException(`Route with key ${route.key} is not defined in routing module`);
@@ -144,6 +185,11 @@ export const TS_NavLink = (props: { route: TS_Route } & Partial<NavLinkProps>) =
 		{..._props}
 		to={fullPath}
 		key={route.key}
+		onClick={e => {
+			const pathname = window.location.pathname;
+			if (props.ignoreClickOnSameRoute && pathname === fullPath)
+				stopPropagation(e);
+		}}
 		onMouseUp={e => mouseEventHandler(e, {
 			middle: () => window.open(fullPath, '_blank'),
 		})}

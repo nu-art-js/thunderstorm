@@ -60,21 +60,24 @@ class ModuleFE_Thunderstorm_Class
 		document.title = appName;
 	}
 
-	printDiv(div: HTMLDivElement, bodyAttributes?: TypedKeyValue<string, string>[]) {
-		const themeValue = document.body.getAttribute('theme');
-		if (themeValue)
-			(bodyAttributes || (bodyAttributes = [])).push({key: 'theme', value: themeValue});
+	async printDiv(div: HTMLDivElement, bodyAttributes?: TypedKeyValue<string, string>[]) {
+		return new Promise<void>((resolve, reject) => {
+			const themeValue = document.body.getAttribute('theme');
+			if (themeValue)
+				(bodyAttributes || (bodyAttributes = [])).push({key: 'theme', value: themeValue});
 
-		//create, and remove iframe from body dynamically!!
-		const printingIFrame = document.createElement('iframe');
-		printingIFrame.style.width = '0';
-		printingIFrame.style.height = '0';
-		printingIFrame.style.position = 'absolute';
-		const body = document.getElementsByTagName('body')[0];
-		body?.appendChild(printingIFrame);
-		this._populatePrintFrame(printingIFrame, div, bodyAttributes);
-		printingIFrame.contentWindow?.addEventListener('afterprint', () => {
-			body.removeChild(printingIFrame);
+			//create, and remove iframe from body dynamically!!
+			const printingIFrame = document.createElement('iframe');
+			printingIFrame.style.width = '0';
+			printingIFrame.style.height = '0';
+			printingIFrame.style.position = 'absolute';
+			const body = document.getElementsByTagName('body')[0];
+			body?.appendChild(printingIFrame);
+			this._populatePrintFrame(printingIFrame, div, bodyAttributes);
+			printingIFrame.contentWindow?.addEventListener('afterprint', () => {
+				body.removeChild(printingIFrame);
+				resolve();
+			}, {once: true});
 		});
 	}
 
@@ -84,9 +87,12 @@ class ModuleFE_Thunderstorm_Class
 			return this.logWarning('printingContentWindow is undefined');
 
 		//Populate the window document
-		const containerText = '<div style="display: none">printDiv function!</div>';
-		printingContentWindow.document.open();
-		printingContentWindow.document.write(containerText);
+		printingContentWindow.document.documentElement.innerHTML = `
+        <html>
+            <head></head>
+            <body></body>
+        </html>`;
+
 
 		//Grab essential elements
 		const html = printingContentWindow.document.getElementsByTagName('html')?.[0];
@@ -123,8 +129,8 @@ class ModuleFE_Thunderstorm_Class
 		themeTag.setAttribute('content', themeColor);
 	}
 
-	async clearWebsiteData(resync: boolean = false) {
-		return dispatch_onClearWebsiteData.dispatchModuleAsync(resync);
+	async clearWebsiteData() {
+		return await dispatch_onClearWebsiteData.dispatchModuleAsync();
 	}
 
 	async copyToClipboard(toCopy: string) {

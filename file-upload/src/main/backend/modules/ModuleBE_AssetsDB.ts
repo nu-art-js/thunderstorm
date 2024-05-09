@@ -35,7 +35,7 @@ import {
 } from '@nu-art/ts-common';
 import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
-import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfig, ModuleBE_BaseDBV3, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDB, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './ModuleBE_BucketListener';
@@ -44,9 +44,11 @@ import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus
 import {PushMessageBE_FileUploadStatus} from '../core/messages';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted';
+import {firestore} from 'firebase-admin';
+import Transaction = firestore.Transaction;
 
 
-type MyConfig = DBApiConfig<DB_Asset> & {
+type MyConfig = DBApiConfigV3<DBProto_Assets> & {
 	authKey: string
 	bucketName?: string
 	storagePath: string
@@ -94,7 +96,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 };
 
 export class ModuleBE_AssetsDB_Class
-	extends ModuleBE_BaseDBV3<DBProto_Assets, MyConfig>
+	extends ModuleBE_BaseDB<DBProto_Assets, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
@@ -110,10 +112,10 @@ export class ModuleBE_AssetsDB_Class
 	mimeTypeValidator: TypedMap<FileValidator> = {};
 	fileValidator: TypedMap<FileTypeValidation> = {};
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_Assets>): Promise<void> {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_Assets>, transaction?: Transaction): Promise<void> {
 		const deletedItems = data.deleted;
 		if (exists(deletedItems))
-			await ModuleBE_AssetsDeleted.create.all(asArray(deletedItems));
+			await ModuleBE_AssetsDeleted.create.all(asArray(deletedItems), transaction);
 	}
 
 	init() {
@@ -161,7 +163,7 @@ export class ModuleBE_AssetsDB_Class
 	}
 
 	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: FirestoreTransaction): Promise<DB_Asset> {
-		const dbAsset = await super.query.uniqueCustom({where});
+		const dbAsset = await this.query.uniqueCustom({where});
 		const signedUrl = (dbAsset.signedUrl?.validUntil || 0) > currentTimeMillis() ? dbAsset.signedUrl : undefined;
 		if (!signedUrl) {
 			const url = await ModuleBE_AssetsStorage.getReadSignedUrl(dbAsset);

@@ -50,6 +50,7 @@ export class ModuleFE_XHR_Class
 			.setMethod(apiDef.method)
 			.setTimeout(this.timeout)
 			.setOnCompleted(this.defaultOnComplete)
+			.setOnError(this.defaultOnError)
 			.addHeaders(this.getDefaultHeaders());
 
 		if (apiDef.fullUrl)
@@ -111,6 +112,17 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 	protected prepareJsonBody(bodyObject: any) {
 		return JSON.stringify(bodyObject);
 	}
+
+	// private buildXHR = () => {
+	// 	const xhr = new XMLHttpRequest();
+	// 	const fullUrl = composeUrl(this.url, this.params);
+	// 	xhr.open(this.method, fullUrl);
+	// 	xhr.timeout = this.timeout;
+	// 	Object.keys(this.headers).forEach((key) => {
+	// 		xhr.setRequestHeader(key, this.headers[key].join('; '));
+	// 	});
+	// 	return xhr;
+	// };
 
 	protected executeImpl(): Promise<void> {
 		//loop through whatever preprocessor
@@ -184,6 +196,38 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 			return this.xhr.send(body);
 		});
 	}
+
+	// stream() {
+	// 	const readable = new Readable();
+	// 	const xhr = this.buildXHR();
+	// 	let lastPosition = 0;
+	//
+	// 	// @ts-ignore
+	// 	// noinspection JSConstantReassignment
+	// 	this.xhr = xhr;
+	//
+	// 	this.xhr.onreadystatechange = () => {
+	// 		//If Loading
+	// 		if (xhr.readyState === 3) {
+	// 			const currentChunk = xhr.responseText.substring(lastPosition);
+	// 			lastPosition = xhr.responseText.length;
+	// 			readable.push(currentChunk);
+	// 		} else if (xhr.readyState === 4) {
+	// 			readable.push(null);
+	// 		}
+	// 	};
+	//
+	// 	let body: any = this.body;
+	// 	if (typeof body === 'string' && this.compress)
+	// 		try {
+	// 			this.body = gzipSync(this.body);
+	// 		} catch (error) {
+	// 			throw error;
+	// 		}
+	//
+	// 	this.xhr.send(body);
+	// 	return readable;
+	// }
 
 	_getResponseHeader(headerKey: string): string | string[] | undefined {
 		if (!this.xhr)

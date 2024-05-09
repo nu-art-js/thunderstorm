@@ -24,6 +24,7 @@ import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_TextAreaV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
@@ -45,7 +46,8 @@ type BaseInfraProps_TS_TextAreaV2 = {
 }
 
 type BaseAppLevelProps_TS_TextAreaV2 =
-	Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref'>
+	ComponentProps_Error
+	& Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref'>
 	& BaseInfraProps_TS_TextAreaV2
 	& {
 	id?: string
@@ -66,7 +68,9 @@ export type Props_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & {
 }
 
 export type NativeProps_TS_TextAreaV2 = Props_TS_TextAreaV2
-export type EditableItemProps_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & UIProps_EditableItem<any, any, string>
+export type EditableItemProps_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2
+	& UIProps_EditableItem<any, any, string>
+	& { onChange?: (value: string) => void, }
 
 /**
  * A better way to capture user input
@@ -86,21 +90,25 @@ export class TS_TextAreaV2
 	static readonly editable = (templateProps: TemplatingProps_TS_TextAreaV2) => {
 		return (props: EditableItemProps_TS_TextAreaV2) => {
 			const {editable, prop, saveEvent, ...rest} = props;
+			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
 			let onAccept;
-			if (saveEvent!.includes('change'))
-				onChange = (value: string) => editable.updateObj({[prop]: value});
 
-			if (saveEvent!.includes('blur'))
-				onBlur = (value: string) => editable.updateObj({[prop]: value});
+			const saveEventHandler = (value: string) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value});
+			if (_saveEvents!.includes('change'))
+				onChange = saveEventHandler;
 
-			if (saveEvent!.includes('accept'))
-				onAccept = (value: string) => editable.updateObj({[prop]: value});
+			if (_saveEvents!.includes('blur'))
+				onBlur = saveEventHandler;
+
+			if (_saveEvents!.includes('accept'))
+				onAccept = saveEventHandler;
 
 			return <TS_TextAreaV2
 				{...templateProps}
 				{...rest}
+				error={resolveEditableError(props)}
 				onChange={onChange}
 				onBlur={onBlur}
 				onAccept={onAccept}
@@ -179,10 +187,11 @@ export class TS_TextAreaV2
 	};
 
 	render() {
-		const {onAccept, trim, saveEvent, forceAcceptKeys, focus, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, focus, ...props} = this.props;
 
 		return <textarea
 			{...props}
+			{...convertToHTMLDataAttributes(this.props.error, 'error')}
 			autoFocus={focus}
 			ref={props.innerRef}
 			onBlur={(event) => {
@@ -191,7 +200,7 @@ export class TS_TextAreaV2
 				props.onBlur?.(value, event);
 			}}
 			name={props.name || props.id}
-			className={_className('ts-input', props.className)}
+			className={_className('ts-textarea', props.className)}
 			value={this.state.value}
 			onChange={this.changeValue}
 			onKeyDown={this.onKeyDown}

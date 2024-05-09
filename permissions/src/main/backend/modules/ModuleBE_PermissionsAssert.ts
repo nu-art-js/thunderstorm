@@ -28,6 +28,7 @@ import {
 	filterInstances,
 	ImplementationMissingException,
 	Module,
+	RuntimeModules,
 	StringMap,
 	TypedKeyValue,
 	TypedMap
@@ -35,32 +36,23 @@ import {
 import {
 	addRoutes,
 	createBodyServerApi,
-	ModuleBE_BaseDBV2,
-	ModuleBE_BaseDBV3,
-	ModuleBE_v2_SyncManager,
-	ServerApi_Middleware,
-	Storm
+	ModuleBE_BaseApi_Class,
+	ModuleBE_BaseDB,
+	ModuleBE_SyncManager,
+	ServerApi_Middleware
 } from '@nu-art/thunderstorm/backend';
 import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {
-	ApiDef_PermissionsAssert,
-	Base_AccessLevel,
-	DB_PermissionAccessLevel,
-	DB_PermissionApi,
-	Request_AssertApiForUser
-} from '../../shared';
-import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
-import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
+import {ApiDef_PermissionsAssert, Request_AssertApiForUser} from '../../shared';
 import {
 	MemKey_HttpRequestBody,
 	MemKey_HttpRequestMethod,
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl
 } from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {SessionKey_Permissions_BE} from '../consts';
+import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts';
 import {PermissionKey_BE} from '../PermissionKey_BE';
+import {Base_AccessLevel, DB_PermissionAccessLevel, DB_PermissionAPI, ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -73,7 +65,7 @@ type Config = {
 /**
  * [DomainId uniqueString]: accessLevel's numerical value
  */
-export const MemKey_UserPermissions = new MemKey<TypedMap<number>>('user-permissions');
+
 export type SessionData_StrictMode = TypedKeyValue<'strictMode', boolean>
 
 export class ModuleBE_PermissionsAssert_Class
@@ -139,11 +131,6 @@ export class ModuleBE_PermissionsAssert_Class
 		await action(projectId, customFields);
 	};
 
-	// constructor() {
-	// 	super();
-	// 	this.setMinLevel(LogLevel.Debug);
-	// }
-
 	async __collectSessionData(): Promise<SessionData_StrictMode> {
 		return {key: 'strictMode', value: this.isStrictMode()};
 	}
@@ -152,28 +139,28 @@ export class ModuleBE_PermissionsAssert_Class
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
-		ModuleBE_v2_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDBV2<any, any> | ModuleBE_BaseDBV3<any>)[]) => {
+		ModuleBE_SyncManager.setModuleFilter(async (dbModules: ( ModuleBE_BaseDB<any>)[]) => {
 			// return dbModules;
 			//Filter out any module we don't have permission to sync
 			const userPermissions = MemKey_UserPermissions.get();
 
-			const mapDbNameToApiModules = arrayToMap(Storm.getInstance()
-				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+			const mapDbNameToApiModules = arrayToMap(RuntimeModules()
+				.filter<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule.dbDef.dbKey);
 
 			const paths = dbModules.map(module => {
-				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbName];
+				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbKey];
 				if (!mapDbNameToApiModule) {
-					// this.logWarning(`no module found for ${module.dbDef.dbName}`);
+					// this.logWarning(`no module found for ${module.dbDef.dbKey}`);
 					return undefined;
 				}
 
-				return mapDbNameToApiModule.apiDef['v1']['sync'].path;
+				return mapDbNameToApiModule.apiDef?.['v1']?.['query'].path;
 			});
 			// this.logWarning(`Paths(${paths.length}):`, paths);
-			const _allApis = await ModuleBE_PermissionApi.query.where({});
+			const _allApis = await ModuleBE_PermissionAPIDB.query.where({});
 
 			const apis = _allApis.filter(_api => paths.includes(_api.path));
-			const mapPathToDBApi: TypedMap<DB_PermissionApi> = arrayToMap(apis, api => api.path);
+			const mapPathToDBApi: TypedMap<DB_PermissionAPI> = arrayToMap(apis, api => api.path);
 
 			return dbModules.filter((dbModule, index) => {
 				const path = paths[index];
@@ -250,7 +237,7 @@ export class ModuleBE_PermissionsAssert_Class
 			path = path.substring(1);
 
 		this.logDebug(`Fetching Permission API for path: ${path} and project id: ${projectId}`);
-		const dbApi = (await ModuleBE_PermissionApi.query.custom({
+		const dbApi = (await ModuleBE_PermissionAPIDB.query.custom({
 			where: {
 				path,
 				projectId
@@ -269,7 +256,7 @@ export class ModuleBE_PermissionsAssert_Class
 
 	async getApisDetails(urls: string[], projectId: string) {
 		const paths = urls.map(_path => _path.substring(0, (_path + '?').indexOf('?')));
-		const apiDbs = await batchActionParallel(paths, 10, elements => ModuleBE_PermissionApi.query.custom({
+		const apiDbs = await batchActionParallel(paths, 10, elements => ModuleBE_PermissionAPIDB.query.custom({
 			where: {
 				projectId,
 				path: {$in: elements}
@@ -294,7 +281,7 @@ export class ModuleBE_PermissionsAssert_Class
 
 	private async getAccessLevels(_accessLevelIds?: string[]): Promise<DB_PermissionAccessLevel[]> {
 		const accessLevelIds = filterDuplicates(_accessLevelIds || []);
-		const requestPermissions = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(accessLevelIds));
+		const requestPermissions = filterInstances(await ModuleBE_PermissionAccessLevelDB.query.all(accessLevelIds));
 		const idNotFound = accessLevelIds.find(lId => !requestPermissions.find(r => r._id === lId));
 		if (idNotFound)
 			throw new ApiException(404, `Could not find api level with _id: ${idNotFound}`);

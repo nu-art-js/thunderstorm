@@ -1,25 +1,9 @@
-import {ApiDefResolver, BodyApi, QueryApi, HttpMethod} from '@nu-art/thunderstorm';
-import {DBDef_PushSubscription} from './db-def';
-
-
-export type RequestType = {
-//
-};
-export type ResponseType = {
-//
-};
+import {ApiDefResolver} from '@nu-art/thunderstorm';
 
 export type ApiStruct_PushSubscription = {
-	_v1: {
-		'?': BodyApi<ResponseType, RequestType>,
-		'??': QueryApi<ResponseType, RequestType>,
-
-	}
+	_v1: {}
 }
 
 export const ApiDef_PushSubscription: ApiDefResolver<ApiStruct_PushSubscription> = {
-	_v1: {
-		'?': {method: HttpMethod.POST, path: `v1/${DBDef_PushSubscription.dbName}/post`},
-		'??': {method: HttpMethod.GET, path: `v1/${DBDef_PushSubscription.dbName}/get`},
-	}
+	_v1: {}
 };

@@ -23,7 +23,7 @@ import {BeLogged} from './BeLogged';
 
 export class Logger {
 
-	private tag: string;
+	readonly tag: string;
 	public static defaultFlagState = true;
 	protected readonly _DEBUG_FLAG: DebugFlag;
 
@@ -39,6 +39,7 @@ export class Logger {
 	}
 
 	protected setTag(tag: string): void {
+		// @ts-ignore
 		this.tag = tag;
 		this._DEBUG_FLAG.rename(tag);
 	}

@@ -1,21 +1,10 @@
 import * as React from 'react';
 import './ATS_AccountEditor.scss';
-import {
-	_className,
-	AppToolsScreen,
-	ComponentSync,
-	LL_H_C,
-	LL_V_L,
-	Props_SmartComponent,
-	SmartComponent,
-	State_SmartComponent,
-	TS_BusyButton,
-	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
+import {_className, AppToolsScreen, ComponentSync, LL_H_C, LL_V_L, TS_BusyButton, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
-import {DB_Account} from '../../../shared';
+import {DB_Account, DBProto_Account} from '../../../shared';
 import {generateUUID} from '@nu-art/ts-common';
-import {ModuleFE_Account, OnAccountsUpdated} from '../../modules/ModuleFE_Account';
+import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
@@ -33,7 +22,8 @@ export class ATS_AccountEditor
 		name: 'Accounts Editor',
 		key: 'user-account',
 		renderer: this,
-		group: 'Permissions'
+		group: 'Permissions',
+		modulesToAwait: [ModuleFE_Account]
 	};
 
 	// ######################### Life Cycle #########################
@@ -60,34 +50,29 @@ export class ATS_AccountEditor
 	}
 }
 
-type ListState = State_SmartComponent & {
+type ListState = {
 	list: DB_Account[],
 };
 
-type ListProps = Props_SmartComponent & {
+type ListProps = {
 	setSelectedAccount: (account?: DB_Account) => void,
 	user?: DB_Account
 }
 
 class Component_AccountList
-	extends SmartComponent<ListProps, ListState>
+	extends ComponentSync<ListProps, ListState>
 	implements OnAccountsUpdated {
 
-	__onAccountsUpdated(...params: ApiCallerEventType<DB_Account>) {
+	__onAccountsUpdated(...params: ApiCallerEventType<DBProto_Account>) {
 		this.reDeriveState();
 	}
 
-	static defaultProps = {
-		modules: [ModuleFE_Account]
-	};
-
-	protected async deriveStateFromProps(nextProps: ListProps, state: ListState) {
+	protected deriveStateFromProps(nextProps: ListProps, state: ListState) {
 		state.list = ModuleFE_Account.cache.allMutable() as DB_Account[];
 		return state;
 	}
 
 	render() {
-
 		return <LL_V_L className={'form-container account-list'}>
 			<LL_H_C className={'match_width'}>
 				<TS_PropRenderer.Horizontal className={'match_width'} label={'Accounts List'}>

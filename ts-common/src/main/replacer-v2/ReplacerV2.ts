@@ -20,6 +20,6 @@ export class ReplacerV2 {
 		if (!matches)
 			return [];
 
-		return filterInstances(matches.map((param) => param.match(ReplacerV2.Regexp_param)?.[1]!));
+		return filterInstances(matches.map((param) => param.match(ReplacerV2.Regexp_param)?.[1]));
 	}
 }

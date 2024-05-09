@@ -10,7 +10,7 @@ import {
 	tsValidateRegexp,
 	tsValidateString
 } from '@nu-art/ts-common';
-import {DBProto_Assets} from './types';
+import {AssetDBGroup, DBProto_Assets, DBProto_AssetsDeleted, DBProto_AssetsTemp} from './types';
 
 
 const Validator_ModifiableProps: DBProto_Assets['modifiablePropsValidator'] = {
@@ -39,18 +39,39 @@ export const DBDef_Assets: DBDef_V3<DBProto_Assets> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.2', '1.0.1', '1.0.0'],
-	dbName: convertUpperCamelCase('Assets', '-').toLowerCase(),
+	dbKey: 'assets',
 	entityName: convertUpperCamelCase('Assets', '-').toLowerCase(),
+	frontend: {
+		group: AssetDBGroup,
+		name: 'asset'
+	},
+	backend: {
+		name: 'assets',
+	}
 };
 
-export const DBDef_TempAssets: DBDef_V3<DBProto_Assets> = {
+export const DBDef_TempAssets: DBDef_V3<DBProto_AssetsTemp> = {
 	...DBDef_Assets,
-	dbName: 'assets-temp',
+	dbKey: 'assets-temp',
 	entityName: 'assets-temp',
+	frontend: {
+		group: AssetDBGroup,
+		name: 'temp'
+	},
+	backend: {
+		name: 'assets-temp',
+	}
 };
 
-export const DBDef_TempDeleted: DBDef_V3<DBProto_Assets> = {
+export const DBDef_TempDeleted: DBDef_V3<DBProto_AssetsDeleted> = {
 	...DBDef_Assets,
-	dbName: 'assets-deleted',
+	dbKey: 'assets-deleted',
 	entityName: 'assets-deleted',
+	frontend: {
+		group: AssetDBGroup,
+		name: 'deleted'
+	},
+	backend: {
+		name: 'assets-deleted',
+	}
 };

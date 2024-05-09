@@ -6,6 +6,7 @@ import {assertUniqueId, FirestoreCollectionV3, PostWriteProcessingData} from './
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {addDeletedToTransaction} from './consts';
 
 
 export type UpdateObject<Proto extends DBProto<any>> =
@@ -104,14 +105,14 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 
 		const currDBItem = await this.get(transaction);
 		if ((currDBItem?.__updated || 0) > ((item as DB_Object).__updated || currentTimeMillis()))
-			throw HttpCodes._4XX.ENTITY_IS_OUTDATED('Item is outdated', `${this.collection.name}/${currDBItem?._id} is outdated`);
+			throw HttpCodes._4XX.ENTITY_IS_OUTDATED('Item is outdated', `${this.collection.collection.path}/${currDBItem?._id} is outdated`);
 
 		const newDBItem = await this.prepareForSet(item as Proto['dbType'], currDBItem!, transaction, false);
 
 		// Will always get here with a transaction!
 		transaction!.set(this.ref, newDBItem);
 		this.data = currDBItem;
-		this.postWriteProcessing({updated: newDBItem}, transaction);
+		this.postWriteProcessing({updated: newDBItem, before: currDBItem}, transaction);
 
 		return newDBItem;
 	};
@@ -173,6 +174,10 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		if (!dbItem)
 			return;
 
+		addDeletedToTransaction(transaction, {
+			dbKey: this.collection.dbDef.entityName,
+			ids: [dbItem._id]
+		});
 		await this.collection.hooks?.canDeleteItems([dbItem], transaction);
 
 		// Will always get here with a transaction!

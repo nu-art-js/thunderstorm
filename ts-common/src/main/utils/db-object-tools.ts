@@ -3,19 +3,20 @@ import {deepClone} from './object-tools';
 import {exists} from './tools';
 
 
-export const KeysOfDB_Object: (keyof DB_Object)[] = ['_id', '_v', '__created', '__updated'];
+export const KeysOfDB_Object: (keyof DB_Object)[] = ['_id', '_v', '__created', '__updated', '__metadata1'];
 
 export function dbObjectToId(i: DB_Object) {
 	return i._id;
 }
 
 export function removeDBObjectKeys<T extends DB_Object>(instance: T): OmitDBObject<T> {
-	const _instance = deepClone(instance);
-	KeysOfDB_Object.forEach(key => delete _instance[key]);
-	return _instance;
+	return deleteKeysObject(instance, KeysOfDB_Object);
 }
 
-export function deleteKeysObject<T extends DB_Object, Ks extends keyof T>(instance: T, keysToRemove: Ks[]): Omit<T, Ks> {
+/**
+ * Returns a cloned object with the keys removed.
+ */
+export function deleteKeysObject<T extends TS_Object, Ks extends keyof T>(instance: T, keysToRemove: Ks[]): Omit<T, Ks> {
 	const _instance = deepClone(instance);
 	keysToRemove.forEach(key => delete _instance[key]);
 	return _instance;

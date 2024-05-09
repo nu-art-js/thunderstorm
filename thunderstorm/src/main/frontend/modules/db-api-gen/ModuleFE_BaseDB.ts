@@ -19,31 +19,29 @@
  * limitations under the License.
  */
 
-import {Response_DBSync,} from '../../shared';
-
 import {
+	_keys,
 	arrayToMap,
 	DB_Object,
-	DBDef,
+	DBDef_V3,
 	dbObjectToId,
-	Default_UniqueKey,
+	DBProto,
+	deleteKeysObject,
 	exists,
 	IndexKeys,
 	InvalidResult,
+	KeysOfDB_Object,
 	Logger,
+	LogLevel,
 	Module,
-	PreDB,
 	sortArray,
 	tsValidateResult,
 	TypedMap,
-	UniqueParam,
-	ValidationException,
-	ValidatorTypeResolver
+	ValidationException
 } from '@nu-art/ts-common';
-
 import {composeDbObjectUniqueId} from '@nu-art/firebase';
 import {OnClearWebsiteData} from '../clearWebsiteDataDispatcher';
-import {DBApiFEConfig, getModuleFEConfig} from '../../core/db-api-gen/db-def';
+import {DBApiFEConfig, getModuleFEConfigV3} from '../../core/db-api-gen/db-def';
 import {
 	DataStatus,
 	EventType_Create,
@@ -56,66 +54,57 @@ import {
 	EventType_UpsertAll,
 	syncDispatcher
 } from '../../core/db-api-gen/consts';
-import {ApiCallerEventType, MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
 import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {DBConfig, IndexDb_Query, IndexedDB, ReduceFunction} from '../../core/IndexedDB';
+import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
+import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store';
+import {DBConfigV3} from '../../core/IndexedDBV4/types';
+import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
+import {ModuleSyncType} from './types';
+import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
 
-// type Message_CacheCollection = {
-// 	key: 'cache-sync'
-// 	dbName: string
-// 	lastSync: number
-// }
 
-export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
+export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfig<Proto> = DBApiFEConfig<Proto>>
 	extends Module<Config>
 	implements OnClearWebsiteData {
-	readonly validator: ValidatorTypeResolver<DBType>;
-	readonly cache: MemCache<DBType, Ks>;
-	readonly IDB: IDBCache<DBType, Ks>;
-	readonly dbDef: DBDef<DBType, Ks>;
-	private dataStatus: DataStatus;
-	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>;
 
-	// static dbChannel = new TS_BroadcastChannel<Message_CacheCollection>('need-to-cache')
-	// 	.mount()
-	// 	.addProcessor('cache-sync', async (message) => {
-	// 		const module = Thunder.getInstance().filterModules(module => {
-	// 			const apiModule = (module as unknown as ApiModule['dbModule']);
-	// 			return apiModule?.dbDef?.dbName === message.dbName;
-	// 		})[0];
-	//
-	// 		await (module as ModuleFE_BaseDB<any>).cache.load();
-	// 	});
+	readonly validator: Proto['modifiablePropsValidator'];
+	readonly cache: MemCache<Proto>;
+	readonly IDB!: IDBCache<Proto>;
+	readonly dbDef: DBDef_V3<Proto>;
+	private dataStatus: DataStatus;
+	readonly defaultDispatcher: ThunderDispatcher<any, string>;
+	public readonly syncType: ModuleSyncType;
 
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
 
-	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>) {
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType) {
 		super();
+		this.syncType = syncType;
 		this.defaultDispatcher = defaultDispatcher;
-
-		const config = getModuleFEConfig(dbDef);
+		const config = getModuleFEConfigV3(dbDef);
 		this.validator = config.validator;
-		this.setDefaultConfig(config as Config);
+		this.dbDef = dbDef;
 		//Set Statuses
 		this.dataStatus = DataStatus.NoData;
+		this.setDefaultConfig(config as Config);
+		this.cache = new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
+		this.IDB = new IDBCache<Proto>(this.config.dbConfig, this.config.key);
+	}
 
-		this.cache = new MemCache<DBType, Ks>(this, config.dbConfig.uniqueKeys);
-		this.IDB = new IDBCache<DBType, Ks>(config.dbConfig, config.versions[0]);
+	protected init() {
 		this.IDB.onLastUpdateListener(async (after, before) => {
 			if (!exists(after) || after === before)
 				return;
 
-			this.logInfo('syncing...');
 			await this.cache.load();
-			this.defaultDispatcher.dispatchAll('update', {} as DBType);
+			this.defaultDispatcher.dispatchAll('update', {} as Proto['dbType']);
 			this.OnDataStatusChanged();
 		});
-		this.dbDef = dbDef;
 	}
 
-	protected setDataStatus(status: DataStatus) {
+	setDataStatus(status: DataStatus) {
 		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
 		if (this.dataStatus === status)
 			return;
@@ -133,11 +122,8 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		return this.dataStatus;
 	}
 
-	protected init() {
-	}
-
-	async __onClearWebsiteData(resync: boolean) {
-		await this.IDB.clear(resync);
+	async __onClearWebsiteData() {
+		await this.IDB.clear();
 		this.setDataStatus(DataStatus.NoData);
 	}
 
@@ -145,92 +131,74 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		return this.config.dbConfig.name;
 	};
 
-	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
+	private dispatchSingle = (event: SingleApiEvent, item: Proto['dbType']) => {
 		this.defaultDispatcher?.dispatchModule(event, item);
 		this.defaultDispatcher?.dispatchUI(event, item);
 	};
 
-	private dispatchMulti = (event: MultiApiEvent, items: DBType[]) => {
+	dispatchMulti = (event: MultiApiEvent, items: Proto['dbType'][]) => {
 		this.defaultDispatcher?.dispatchModule(event, items);
 		this.defaultDispatcher?.dispatchUI(event, items);
 	};
 
-	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
-		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		try {
-			await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
-		} catch (e: any) {
-			this.logError('Error while syncing', e);
-			throw e;
-		}
-		await this.cache.load();
-		this.setDataStatus(DataStatus.ContainsData);
-
-		if (syncData.toDelete)
-			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
-
-		if (syncData.toUpdate)
-			this.dispatchMulti(EventType_Query, syncData.toUpdate);
-	};
-
-	public onEntriesDeleted = async (items: DBType[]): Promise<void> => {
+	public onEntriesDeleted = async (items: Proto['dbType'][]): Promise<void> => {
 		await this.IDB.syncIndexDb([], items);
 		// @ts-ignore
 		this.cache.onEntriesDeleted(items);
 		this.dispatchMulti(EventType_DeleteMulti, items);
 	};
 
-	public onEntryDeleted = async (item: DBType): Promise<void> => {
+	protected onEntryDeleted = async (item: Proto['dbType']): Promise<void> => {
 		await this.IDB.syncIndexDb([], [item]);
 		// @ts-ignore
 		this.cache.onEntriesDeleted([item]);
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
-	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
+	public onEntriesUpdated = async (items: Proto['dbType'][]): Promise<void> => {
 		await this.IDB.syncIndexDb(items);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
-	public onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
+	public onEntryUpdated = async (item: Proto['dbType'], original: Proto['uiType']): Promise<void> => {
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
 	};
 
-	protected onEntryPatched = async (item: DBType): Promise<void> => {
+	protected onEntryPatched = async (item: Proto['dbType']): Promise<void> => {
 		return this.onEntryUpdatedImpl(EventType_Patch, item);
 	};
 
-	public validateObject(instance: Partial<DBType>) {
-		return tsValidateResult(instance as DBType, this.validator);
-	}
-
-	public validateImpl(instance: PreDB<DBType>) {
-		const results = tsValidateResult(instance as DBType, this.validator);
+	public validateImpl(_instance: Partial<Proto['uiType']>) {
+		const instance = deleteKeysObject(_instance as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.dbDef.generatedPropsValidator)]);
+		const results = tsValidateResult(instance, this.validator);
 		if (results) {
-			this.onValidationError(instance, results);
+			this.onValidationError(instance, results as InvalidResult<Proto['uiType']>);
 		}
 	}
 
-	protected onValidationError(instance: PreDB<DBType>, results: InvalidResult<DBType>) {
+	protected validateInternal(_instance: Partial<Proto['uiType']>) {
+		this.validateImpl(_instance);
+	}
+
+	protected onValidationError(instance: Proto['uiType'], results: InvalidResult<Proto['dbType']>) {
 		this.logError(`Error validating object:`, instance, 'With Error: ', results);
 		throw new ValidationException('Error validating object', instance, results);
 	}
 
-	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
-		this.validateImpl(item);
+	private async onEntryUpdatedImpl(event: SingleApiEvent, item: Proto['dbType']): Promise<void> {
 		await this.IDB.syncIndexDb([item]);
 		// @ts-ignore
 		this.cache.onEntriesUpdated([item]);
 		this.dispatchSingle(event, item);
 	}
 
-	protected onGotUnique = async (item: DBType): Promise<void> => {
+	protected onGotUnique = async (item: Proto['dbType']): Promise<void> => {
 		return this.onEntryUpdatedImpl(EventType_Unique, item);
 	};
 
-	protected onQueryReturned = async (toUpdate: DBType[], toDelete: DB_Object[] = []): Promise<void> => {
+	protected onQueryReturned = async (toUpdate: Proto['dbType'][], toDelete: DB_Object[] = []): Promise<void> => {
 		await this.IDB.syncIndexDb(toUpdate, toDelete);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(toUpdate);
@@ -240,37 +208,47 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	};
 }
 
-class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
+class IDBCache<Proto extends DBProto<any>>
 	extends Logger {
 
-	protected readonly db: IndexedDB<DBType, Ks>;
+	readonly storeWrapper: IndexedDB_Store<Proto>;
 	protected readonly lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
 
-	constructor(dbConfig: DBConfig<DBType, Ks>, currentVersion: string) {
-		super(`indexdb-${dbConfig.name}`);
-		this.db = IndexedDB.getOrCreate(dbConfig);
-		this.lastSync = new StorageKey<number>('last-sync--' + dbConfig.name);
-		this.lastVersion = new StorageKey<string>('last-version--' + dbConfig.name);
+	constructor(dbConfig: DBConfigV3<Proto>, dbKey: string) {
+		super(`indexdb-${dbKey}`);
+		const currentVersion = dbConfig.version[0];
+		this.setMinLevel(LogLevel.Verbose);
+		this.lastSync = new StorageKey<number>('last-sync--' + dbKey);
+		this.lastVersion = new StorageKey<string>('last-version--' + dbKey);
+		const onOpenedCallback = () => {
+			const previousVersion = this.lastVersion.get();
+			this.lastVersion.set(currentVersion);
 
-		const previousVersion = this.lastVersion.get();
-		this.lastVersion.set(currentVersion);
+			this.storeWrapper.exists().then(exists => {
+				if (!exists) {
+					this.logInfo(`Database doesn't exist.. reset last sync timestamp`);
+					this.lastSync.delete();
+				}
+			});
 
-		if (!previousVersion || previousVersion === currentVersion)
-			return;
+			if (!previousVersion || previousVersion === currentVersion)
+				return;
 
-		this.logInfo(`Cleaning up & Sync...`);
-		this.clear(true)
-			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
-			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
-
+			this.lastSync.delete();
+			this.logInfo(`Cleaning up & Sync...`);
+			this.clear()
+				.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
+				.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
+		};
+		this.storeWrapper = ModuleFE_IDBManager.register(dbConfig, onOpenedCallback);
 	}
 
 	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
 		this.lastSync.onChange(onChangeListener);
 	}
 
-	forEach = async (processor: (item: DBType) => void) => {
+	forEach = async (processor: (item: Proto['dbType']) => void) => {
 		const allItems = await this.query();
 		allItems.forEach(processor);
 		return allItems;
@@ -278,15 +256,15 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 
 	clear = async (resync = false) => {
 		this.lastSync.delete();
-		return this.db.clearDB();
+		return this.storeWrapper.clearStore();
 	};
 
 	delete = async (resync = false) => {
 		this.lastSync.delete();
-		return this.db.deleteDB();
+		return this.storeWrapper.clearStore();
 	};
 
-	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> => (await this.db.query({
+	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<Proto['dbType'][]> => (await this.storeWrapper.query({
 		query,
 		indexKey
 	})) || [];
@@ -299,7 +277,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return Array of items or empty array
 	 */
-	filter = async (filter: (item: DBType) => boolean, query?: IndexDb_Query): Promise<DBType[]> => this.db.queryFilter(filter, query);
+	filter = async (filter: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<Proto['dbType'][]> => this.storeWrapper.queryFilter(filter, query);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns the first item that passes the filter
@@ -308,7 +286,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return a single item or undefined
 	 */
-	find = async (filter: (item: DBType) => boolean): Promise<DBType | undefined> => this.db.queryFind(filter);
+	find = async (filter: (item: Proto['dbType']) => boolean): Promise<Proto['dbType'] | undefined> => this.storeWrapper.queryFind(filter);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns an array of items based on the mapper.
@@ -319,7 +297,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return An array of mapped items
 	 */
-	map = async <MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean, query?: IndexDb_Query): Promise<MapType[]> => this.db.WIP_queryMap(mapper, filter, query);
+	map = async <MapType>(mapper: (item: Proto['dbType']) => MapType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<MapType[]> => this.storeWrapper.WIP_queryMap(mapper, filter, query);
 
 	/**
 	 * iterates over all DB objects in the related collection, and reduces them to a single value based on the reducer.
@@ -330,54 +308,48 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return a single reduced value.
 	 */
-	reduce = async <ReturnType>(reducer: ReduceFunction<DBType, ReturnType>, initialValue: ReturnType, filter?: (item: DBType) => boolean, query?: IndexDb_Query): Promise<ReturnType> => this.db.queryReduce(reducer, initialValue, filter, query);
+	reduce = async <ReturnType>(reducer: ReduceFunction<Proto['dbType'], ReturnType>, initialValue: ReturnType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<ReturnType> => this.storeWrapper.queryReduce(reducer, initialValue, filter, query);
 
-	unique = async (_key?: string | IndexKeys<DBType, Ks>): Promise<DBType | undefined> => {
+	unique = async (_key?: string | IndexKeys<Proto['dbType'], keyof Proto['dbType']>): Promise<Proto['dbType'] | undefined> => {
 		if (_key === undefined)
 			return _key;
 
-		const key = typeof _key === 'string' ? {_id: _key} as unknown as IndexKeys<DBType, Ks> : _key;
-		return this.db.get(key);
+		const key = typeof _key === 'string' ? {_id: _key} as unknown as IndexKeys<Proto['dbType'], keyof Proto['dbType']> : _key;
+		return this.storeWrapper.get(key);
 	};
 
 	getLastSync() {
 		return this.lastSync.get(0);
 	}
 
-	async syncIndexDb(toUpdate: DBType[], toDelete: DB_Object[] = []) {
-		await this.db.upsertAll(toUpdate);
-		await this.db.deleteAll(toDelete as DBType[]);
+	setLastUpdated(lastUpdated: number) {
+		this.lastSync.set(lastUpdated);
+	}
 
-		let latest = -1;
-		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-
-		// FIXME: this breaks when deleting __deletedDocs from the db manually.
-		//  Maybe the latest timestamp should be the actual time the sync happens instead of aligning with the latest changed item?
-
-		if (latest !== -1)
-			this.lastSync.set(latest);
+	async syncIndexDb(toUpdate: Proto['dbType'][], toDelete: DB_Object[] = []) {
+		await this.storeWrapper.upsertAll(toUpdate);
+		await this.storeWrapper.deleteAll(toDelete as Proto['dbType'][]);
 	}
 }
 
-class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey> {
+class MemCache<Proto extends DBProto<any>> {
 
-	private readonly module: ModuleFE_BaseDB<DBType, Ks>;
-	private readonly keys: Ks[];
+	private readonly module: ModuleFE_BaseDB<Proto>;
+	private readonly keys: (keyof Proto['dbType'])[];
 	loaded: boolean = false;
 
-	_map!: Readonly<TypedMap<Readonly<DBType>>>;
-	_array!: Readonly<Readonly<DBType>[]>;
+	_map!: Readonly<TypedMap<Readonly<Proto['dbType']>>>;
+	_array!: Readonly<Readonly<Proto['dbType']>[]>;
 
-	private cacheFilter?: (item: Readonly<DBType>) => boolean;
+	private cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean;
 
-	constructor(module: ModuleFE_BaseDB<DBType, Ks>, keys: Ks[]) {
+	constructor(module: ModuleFE_BaseDB<Proto, any>, keys: (keyof Proto['dbType'])[]) {
 		this.module = module;
 		this.keys = keys;
 		this.clear();
 	}
 
-	forEach = (processor: (item: Readonly<DBType>) => void) => {
+	forEach = (processor: (item: Readonly<Proto['dbType']>) => void) => {
 		this._array.forEach(processor);
 	};
 
@@ -385,7 +357,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Defaul
 		this.setCache([]);
 	};
 
-	load = async (cacheFilter?: (item: Readonly<DBType>) => boolean) => {
+	load = async (cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean) => {
 		this.module.logDebug(`${this.module.getName()} cache is loading`);
 		let allItems;
 		this.cacheFilter = cacheFilter;
@@ -394,7 +366,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Defaul
 		else
 			allItems = await this.module.IDB.query();
 
-		const frozenItems = allItems.map(item => Object.freeze(item));
+		const frozenItems = allItems.map((item: any) => Object.freeze(item));
 
 		this.setCache(frozenItems);
 
@@ -402,63 +374,67 @@ class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Defaul
 		this.module.logDebug(`${this.module.getName()} cache finished loading, count: ${this.all().length}`);
 	};
 
-	unique = (_key?: UniqueParam<DBType, Ks>): Readonly<DBType> | undefined => {
+	unique = (_key?: Proto['uniqueParam']): Readonly<Proto['dbType']> | undefined => {
 		if (_key === undefined)
 			return _key;
 
-		const _id = typeof _key === 'string' ? _key : (('_id' in _key && typeof _key['_id'] === 'string') ? _key['_id'] : composeDbObjectUniqueId(_key, this.keys));
+		const _id = typeof _key === 'string' ? _key : (('_id' in (_key as {
+			[p: string]: any
+		}) && typeof _key['_id'] === 'string') ? _key['_id'] : composeDbObjectUniqueId(_key, this.keys));
 		return this._map[_id];
 	};
 
-	all = (): Readonly<Readonly<DBType>[]> => {
+	all = (): Readonly<Readonly<Proto['dbType']>[]> => {
 		return this._array;
 	};
 
-	allMutable = (): Readonly<DBType>[] => {
+	allMutable = (): Readonly<Proto['dbType']>[] => {
 		return [...this._array];
 	};
 
-	filter = (filter: (item: Readonly<DBType>, index: number, array: Readonly<DBType[]>) => boolean): Readonly<DBType>[] => {
+	filter = (filter: (item: Readonly<Proto['dbType']>, index: number, array: Readonly<Proto['dbType'][]>) => boolean): Readonly<Proto['dbType']>[] => {
 		return this.all().filter(filter);
 	};
 
-	find = (filter: (item: Readonly<DBType>, index: number, array: Readonly<DBType[]>) => boolean): Readonly<DBType> | undefined => {
+	byIds = (ids: Proto['uniqueParam'][]): Readonly<Proto['dbType'][]> => {
+		return ids.map(id => this.unique(id));
+	};
+
+	find = (filter: (item: Readonly<Proto['dbType']>, index: number, array: Readonly<Proto['dbType'][]>) => boolean): Readonly<Proto['dbType']> | undefined => {
 		return this.all().find(filter);
 	};
 
-	map = <MapType>(mapper: (item: Readonly<DBType>, index: number, array: Readonly<DBType[]>) => MapType): MapType[] => {
+	map = <MapType>(mapper: (item: Readonly<Proto['dbType']>, index: number, array: Readonly<Proto['dbType'][]>) => MapType): MapType[] => {
 		return this.all().map(mapper);
 	};
 
-	sort = <MapType>(map: keyof DBType | (keyof DBType)[] | ((item: Readonly<DBType>) => any) = i => i, invert = false): Readonly<DBType>[] => {
+	sort = <MapType>(map: keyof Proto['dbType'] | (keyof Proto['dbType'])[] | ((item: Readonly<Proto['dbType']>) => any) = i => i, invert = false): Readonly<Proto['dbType']>[] => {
 		return sortArray(this.allMutable(), map, invert);
 	};
 
-	arrayToMap = (getKey: (item: Readonly<DBType>, index: number, map: {
-		[k: string]: Readonly<DBType>
+	arrayToMap = (getKey: (item: Readonly<Proto['dbType']>, index: number, map: {
+		[k: string]: Readonly<Proto['dbType']>
 	}) => string | number, map: {
-		[k: string]: Readonly<DBType>
+		[k: string]: Readonly<Proto['dbType']>
 	} = {}) => arrayToMap(this.allMutable(), getKey, map);
 
 	// @ts-ignore
-	private onEntriesDeleted(itemsDeleted: DBType[]) {
+	private onEntriesDeleted(itemsDeleted: Proto['dbType'][]) {
 		const ids = new Set<string>(itemsDeleted.map(dbObjectToId));
 		this.setCache(this.filter(i => !ids.has(i._id)));
-		// ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 	}
 
 	// @ts-ignore
-	private onEntriesUpdated(itemsUpdated: DBType[]) {
+	private onEntriesUpdated(itemsUpdated: Proto['dbType'][]) {
 		const frozenItems = itemsUpdated.map(item => Object.freeze(item));
 		const ids = new Set<string>(itemsUpdated.map(dbObjectToId));
 		const toCache = this.filter(i => !ids.has(i._id));
 		toCache.push(...frozenItems);
 		this.setCache(toCache);
-		// ModuleFE_BaseDB.dbChannel.sendMessage({key: 'cache-sync', dbName: this.module.dbDef.dbName});
 	}
 
-	private setCache(cacheArray: Readonly<DBType>[]) {
-		this._map = Object.freeze({...arrayToMap(cacheArray, dbObjectToId)});
+	private setCache(cacheArray: Readonly<Proto['dbType']>[]) {
+		this._map = Object.freeze({...arrayToMap(cacheArray as Readonly<DB_Object>[], dbObjectToId)});
 		this._array = Object.freeze(cacheArray);
 	}
 }

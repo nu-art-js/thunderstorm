@@ -27,12 +27,14 @@ export const Hour = Minute * 60;
 export const Day = Hour * 24;
 export const Week = Day * 7;
 export const Year = Day * 365;
+export const Month = Year / 12;
 
 export const Format_HHmmss_DDMMYYYY = 'HH:mm:ss_DD-MM-YYYY';
 export const Format_YYYYMMDD_HHmmss = 'YYYY-MM-DD_HH:mm:ss';
 export type Weekday = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
 export const Weekdays: Weekday[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 export type TimerHandler = (...args: any[]) => void;
+export type TimeRange = [number, number] | [undefined, number] | [number, undefined];
 
 export async function timeout(sleepMs: number) {
 	return new Promise(resolve => setTimeout(resolve, sleepMs, undefined));
@@ -134,6 +136,7 @@ export const DateTimeFormat = (format: string) => {
 };
 export const DateTimeFormat_yyyyMMDDTHHmmss = DateTimeFormat('YYYY-MM-DDTHH:mm:ss');
 export const DateTimeFormat_yyyyMMDD = DateTimeFormat('YYYY-MM-DD');
+export const DateTimeFormat_DDMMYYYY = DateTimeFormat('DD/MM/YYYY');
 
 export function isSameDay(date1: Date, date2: Date): boolean {
 	return moment(date1).isSame(date2, 'day');

@@ -20,7 +20,7 @@
  */
 
 import {FirestoreQuery} from '@nu-art/firebase';
-import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB, Second} from '@nu-art/ts-common';
+import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi, QueryParams} from '../types';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
@@ -37,7 +37,6 @@ import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
  */
 export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 	v1: {
-		sync: BodyApi<DBType[], FirestoreQuery<DBType>, undefined>,
 		query: BodyApi<DBType[], FirestoreQuery<DBType>, FirestoreQuery<DBType> | undefined | {}>,
 		queryUnique: QueryApi<DBType, DB_BaseObject, ResponseError<string, any>, string>,
 		upsert: BodyApi<DBType, PreDB<DBType>>,
@@ -52,7 +51,6 @@ export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 
 export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBType> = {
 	v1: {
-		sync: BodyApi<Response_DBSync<DBType>, FirestoreQuery<DBType>, undefined>,
 		query: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		queryUnique: QueryApi<DBType, QueryParams, ResponseError<string, any>, string | IndexKeys<DBType, Ks>>,
 		upsert: BodyApi<DBType, PreDB<DBType>>,
@@ -68,16 +66,15 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType, '_id'>): ApiDefResolver<ApiStruct_DBApiGen<DBType>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`, timeout: 60 * Second},
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
+			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/patch`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-all`},
+			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/metadata`},
 		}
 	};
 };
@@ -85,37 +82,16 @@ export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType,
 export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof DBType>(dbDef: DBDef<DBType, Ks>): ApiDefResolver<ApiStruct_DBApiGenIDB<DBType, Ks>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/sync`, timeout: 60 * Second},
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
+			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/patch`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-all`},
+			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/metadata`},
 		}
 	};
 };
 
-export type DBSyncData = { name: string, lastUpdated: number, oldestDeleted?: number };
-export type Response_DBSyncData = { syncData: DBSyncData[] };
-export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], toDelete: DB_Object[] };
-export type ApiStruct_SyncManager = {
-	v1: {
-		checkSync: QueryApi<Response_DBSyncData, undefined>
-	},
-}
-
-export const ApiDef_SyncManager: ApiDefResolver<ApiStruct_SyncManager> = {
-	v1: {
-		checkSync: {method: HttpMethod.GET, path: 'v1/db-api/sync-all'},
-	}
-};
-
-export const ApiDef_SyncManagerV2: ApiDefResolver<ApiStruct_SyncManager> = {
-	v1: {
-		checkSync: {method: HttpMethod.GET, path: 'v2/db-api/sync-all-v2', timeout: 60 * Second},
-	}
-};

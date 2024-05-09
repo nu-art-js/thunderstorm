@@ -1,15 +1,14 @@
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionProject} from './management';
-import {DB_PermissionGroup, DB_PermissionUser} from './assign';
 import {TypedKeyValue, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {PermissionKey_BE} from '../backend/PermissionKey_BE';
+import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject, DB_PermissionUser} from './_entity';
 
 
 export type PermissionTypes = {
-	Project: DB_PermissionProject;
-	Domain: DB_PermissionDomain;
-	Level: DB_PermissionAccessLevel;
-	Group: DB_PermissionGroup;
-	User: DB_PermissionUser;
+	PermissionProject: DB_PermissionProject;
+	PermissionDomain: DB_PermissionDomain;
+	PermissionAccessLevel: DB_PermissionAccessLevel;
+	PermissionGroup: DB_PermissionGroup;
+	PermissionUser: DB_PermissionUser;
 }
 
 export type SessionData_Permissions = TypedKeyValue<'permissions', TypedMap<number>>

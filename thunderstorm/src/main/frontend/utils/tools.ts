@@ -37,6 +37,20 @@ export async function base64ToBlob(imageAsBase64: string) {
 	return (await fetch(imageAsBase64)).blob();
 }
 
+export function stringToArrayBuffer(stringToConvert: string) {
+	return stringToUint8Array(stringToConvert).buffer;
+}
+
+export function stringToUint8Array(stringToConvert: string) {
+	let n = stringToConvert.length;
+	const u8arr = new Uint8Array(n);
+
+	while (n--) {
+		u8arr[n] = stringToConvert.charCodeAt(n);
+	}
+	return u8arr;
+}
+
 //data:image/jpeg;base64,<!-- Base64 data -->
 export function convertBase64ToFile(fileName: string, base64: string, _mimeType?: string) {
 	const arr = base64.split(',');
@@ -45,15 +59,53 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 	if (!mimeType)
 		throw new ImplementationMissingException('Could not extract mime type from data...');
 
-	const bstr = atob(arr[1]);
-	let n = bstr.length;
-	const u8arr = new Uint8Array(n);
-
-	while (n--) {
-		u8arr[n] = bstr.charCodeAt(n);
-	}
+	const stringAsBase64 = atob(arr[1]);
+	const u8arr = stringToUint8Array(stringAsBase64);
 
 	return new File([u8arr], fileName, {type: mimeType});
+}
+
+function readFileContentImpl(file: File, format: 'array-buffer' | 'binary' | 'data-url' | 'string') {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			resolve(reader.result as ArrayBuffer);
+		};
+		reader.onerror = reject;
+		switch (format) {
+			case 'array-buffer':
+				reader.readAsArrayBuffer(file);
+				break;
+			case 'binary':
+				reader.readAsBinaryString(file);
+				break;
+			case 'data-url':
+				reader.readAsDataURL(file);
+				break;
+			case 'string':
+				reader.readAsText(file);
+				break;
+
+		}
+	});
+}
+
+export async function readFileAs_ArrayBuffer(file: File) {
+	return readFileContentImpl(file, 'array-buffer') as Promise<ArrayBuffer>;
+}
+
+export const readFileContent = readFileAs_ArrayBuffer;
+
+export async function readFileAs_BinaryString(file: File) {
+	return readFileContentImpl(file, 'binary') as Promise<string>;
+}
+
+export async function readFileAs_DataURL(file: File) {
+	return readFileContentImpl(file, 'data-url') as Promise<string>;
+}
+
+export async function readFileAs_Text(file: File) {
+	return readFileContentImpl(file, 'string') as Promise<string>;
 }
 
 export function _className(...classes: (string | boolean | undefined)[]) {

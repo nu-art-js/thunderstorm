@@ -21,9 +21,7 @@ import {Firebase_DB} from './types';
 import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-art/ts-common';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {getDatabase} from 'firebase-admin/database';
-import firebase from 'firebase/compat';
-import TransactionResult = firebase.database.TransactionResult;
+import {getDatabase, Reference} from 'firebase-admin/database';
 
 
 /**
@@ -39,14 +37,14 @@ export class DatabaseWrapperBE
 		this.database = getDatabase(firebaseSession.app) as Firebase_DB;
 	}
 
-	public async get<T>(path: string, defaultValue?: T): Promise<T> {
+	public async get<T>(path: string, fallbackValue?: T): Promise<T> {
 		const snapshot = await this.getRef(path).once('value');
-		let toRet = defaultValue;
+		let toRet = fallbackValue;
 		if (snapshot)
 			toRet = snapshot.val() as T;
 
 		if (!toRet)
-			toRet = defaultValue;
+			toRet = fallbackValue;
 
 		return toRet as T;
 	}
@@ -64,7 +62,7 @@ export class DatabaseWrapperBE
 		}
 	}
 
-	public stopListening<T>(path: string, listener: any): void {
+	public stopListening(path: string, listener: any): void {
 		try {
 			this.database.ref(path).off('value', listener);
 		} catch (e: any) {
@@ -104,12 +102,12 @@ export class DatabaseWrapperBE
 		}
 	}
 
-	public async remove<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+	public async remove(path: string, assertionRegexp: string = '^/.*?/.*') {
 		this.logWarning('remove will be deprecated!! please use delete');
 		return this.delete(path, assertionRegexp);
 	}
 
-	public async delete<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+	public async delete(path: string, assertionRegexp: string = '^/.*?/.*') {
 		if (!path)
 			throw new BadImplementationException(`Falsy value, path: '${path}'`);
 
@@ -123,7 +121,7 @@ export class DatabaseWrapperBE
 		}
 	}
 
-	public async transaction<T>(path: string, func: (currentValue: T) => T): Promise<TransactionResult> {
+	public async transaction<T>(path: string, func: (currentValue: T) => T): ReturnType<Reference['transaction']> {
 		return this.database.ref(path).transaction(func);
 	}
 
@@ -149,8 +147,10 @@ export class FirebaseRef<T> {
 		this.path = path;
 	}
 
-	public get(defaultValue?: T) {
-		return this.db.get(this.path, defaultValue);
+	public get(): Promise<T | undefined>
+	public get(fallbackValue: T): Promise<T>;
+	public get(fallbackValue?: T): Promise<T | undefined> {
+		return this.db.get(this.path, fallbackValue);
 	}
 
 	public set(value: T) {
@@ -170,7 +170,7 @@ export class FirebaseRef<T> {
 	 * @param assertionRegexp
 	 */
 	public delete(assertionRegexp: string = '^/.*?/.*') {
-		return this.db.delete<T>(this.path, assertionRegexp);
+		return this.db.delete(this.path, assertionRegexp);
 	}
 
 	/**
@@ -186,7 +186,7 @@ export class FirebaseRef<T> {
 	 * @param listener
 	 */
 	public stopListening(listener: any): void {
-		return this.db.stopListening<T>(this.path, listener);
+		return this.db.stopListening(this.path, listener);
 	}
 
 	/**

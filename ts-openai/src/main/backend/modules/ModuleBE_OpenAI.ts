@@ -18,7 +18,10 @@ type GPT_Model = 'gpt-4'
 	| 'gpt-3.5-turbo-16k-0613'
 
 type Config = {
-	directives: TypedMap<string>
+	directives: TypedMap<{
+		agent?: GPT_Model,
+		directive: string
+	}>
 	defaultModel: GPT_Model
 	apiKey: string
 	orgId?: string
@@ -33,6 +36,11 @@ type Config = {
 // 	apiKey: 'YourAPI-Key',
 // 	orgId: 'YourORG-Id'
 // };
+type Request_PredefiedDirective = {
+	directiveKey: string,
+	message: string
+	model?: GPT_Model
+};
 
 export class ModuleBE_OpenAI_Class
 	extends Module<Config> {
@@ -51,20 +59,26 @@ export class ModuleBE_OpenAI_Class
 		this.openai = new OpenAI(opts);
 
 		addRoutes([
-			createBodyServerApi(ApiDef_OpenAI.v1.test, this.simpleQuery),
+			createBodyServerApi(ApiDef_OpenAI.v1.test, this.test),
 		]);
 	}
 
-	simpleQuery = async (query: Request_ChatGPT) => {
-		const systemDirective = this.config.directives[query.directive];
-		if (!systemDirective)
-			throw new BadImplementationException(`Missing instruction for directive: ${query.directive}`);
+	test = async (query: Request_ChatGPT) => this.simpleQuery(query);
 
+	predefinedQuery = async (query: Request_PredefiedDirective) => {
+		const directive = this.config.directives[query.directiveKey];
+		if (!directive)
+			throw new BadImplementationException(`Missing instruction for directive: ${query.directiveKey}`);
+
+		return this.simpleQuery({model: directive.agent ?? query.model, message: query.message, directive: directive.directive});
+	};
+
+	simpleQuery = async (query: Request_ChatGPT) => {
 		const completion = await this.openai.chat.completions.create({
 			messages: [
 				{
 					role: 'system',
-					content: systemDirective
+					content: query.directive
 				},
 				{
 					role: 'user',
@@ -74,8 +88,8 @@ export class ModuleBE_OpenAI_Class
 			model: query.model || this.config.defaultModel || 'gpt-3.5-turbo',
 		});
 
-		console.log(completion);
 		const content = completion.choices[0].message.content;
+		this.logInfo(completion);
 		if (!content)
 			throw new ThisShouldNotHappenException(`Didn't receive a response from GPT, got: ${__stringify(completion, true)}`);
 

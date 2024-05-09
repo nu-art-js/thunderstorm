@@ -1,7 +1,6 @@
 .ts-prop-renderer {
   width: 100%;
 
-
   &.disabled {
     .ts-prop-renderer__label {
       color: #929292;
@@ -9,6 +8,8 @@
   }
 
   &.vertical {
+    row-gap: 4px;
+
     .ts-prop-renderer__label {
       width: 100%;
     }
