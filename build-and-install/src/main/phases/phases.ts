@@ -20,6 +20,7 @@ import {
 } from '@nu-art/ts-common';
 import {
 	JSONVersion,
+	Package,
 	Package_FirebaseFunctionsApp,
 	Package_FirebaseHostingApp,
 	PackageType_InfraLib,
@@ -46,7 +47,6 @@ const CONST_RunningRoot = process.cwd();
 const pathToProjectTS_Config = convertToFullPath(`./.config/${CONST_TS_Config}`);
 const pathToProjectEslint = convertToFullPath('./.config/.eslintrc.js');
 const runInDebug = false;
-let runningWithInfra = false;
 
 export const Phase_PrintHelp: BuildPhase = {
 	type: 'project',
@@ -80,14 +80,15 @@ export const Phase_SetWithThunderstorm: BuildPhase = {
 	isMandatory: true,
 	action: async () => {
 		// set value of the running with infra flag
-		if (RuntimeParams.thunderstormHome)
-			return runningWithInfra = true;
+		if (RuntimeParams.runWithThunderstorm)
+			return;
 
 		// Remove all the infra packages from the runtime project
 		const packages = MemKey_Packages.get();
-		packages.packagesDependency = packages.packagesDependency?.map(_packageArray => _packageArray.filter(_package => _package.type !== PackageType_InfraLib));
+		const filter = (pkg: Package) => pkg.type !== PackageType_InfraLib || (RuntimeParams.withCommando && ['commando', 'build-and-install'].includes(pkg.name));
 
-		return runningWithInfra = false;
+		packages.packages.filter(filter);
+		packages.packagesDependency = packages.packagesDependency?.map(_packageArray => _packageArray.filter(filter));
 	}
 };
 
@@ -333,7 +334,6 @@ export const Phase_InstallPackages: BuildPhase = {
 		const packages = MemKey_Packages.get();
 
 		const listOfLibs = packages.packages
-			.filter(pkg => runningWithInfra || ['project-lib', 'app', 'sourceless'].includes(pkg.type))
 			.map(pkg => pkg.path.replace(`${process.cwd()}/`, '').replace(process.cwd(), '.'));
 
 		await PNPM.createWorkspace(listOfLibs);
@@ -427,7 +427,7 @@ export const Phase_Compile: BuildPhase = {
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;
 		const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
-		const inPackageTsConfig = await _fs.readFile(pathToProjectTS_Config, {encoding: 'utf-8'});
+		const inPackageTsConfig = await _fs.readFile(pathToLocalTsConfig, {encoding: 'utf-8'});
 		const defaultPackageTsConfig = await _fs.readFile(pathToProjectTS_Config, {encoding: 'utf-8'});
 		if (!pkg.customTsConfig && inPackageTsConfig !== defaultPackageTsConfig) {
 			await _fs.copyFile(pathToProjectTS_Config, pathToLocalTsConfig);

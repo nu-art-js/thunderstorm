@@ -132,12 +132,20 @@ export const BaiParam_DryRun: BaseCliParam<'dryRun', boolean> = {
 	description: 'Do not perform any phase impl, only log the process'
 };
 
-export const BaiParam_ThunderstormHome: BaseCliParam<'thunderstormHome', boolean> = {
-	keys: ['--thunderstorm-home', '-th'],
-	keyName: 'thunderstormHome',
+export const BaiParam_RunWithThunderstorm: BaseCliParam<'runWithThunderstorm', boolean> = {
+	keys: ['--with-thunderstorm', '-th'],
+	keyName: 'runWithThunderstorm',
 	type: 'boolean',
 	group: 'Build',
 	description: 'Will link the output folder of the libraries of thunderstorm that exists under the give path \nMUST have ThunderstormHome env variable defined and point to the Thunderstorm sample project'
+};
+
+export const BaiParam_WithCommando: BaseCliParam<'withCommando', boolean> = {
+	keys: ['--with-commando', '-wc'],
+	keyName: 'withCommando',
+	type: 'boolean',
+	group: 'Build',
+	description: 'Build with local commando from ts'
 };
 
 export const BaiParam_NoThunderstorm: BaseCliParam<'noThunderstorm', boolean> = {
@@ -281,7 +289,8 @@ export const AllBaiParams = [
 	BaiParam_GenerateDocs,// TODO: to implement
 	BaiParam_NoBuild,
 	BaiParam_DryRun,
-	BaiParam_ThunderstormHome,
+	BaiParam_RunWithThunderstorm,
+	BaiParam_WithCommando,
 	BaiParam_NoThunderstorm,
 	BaiParam_Lint,
 	BaiParam_Watch,
