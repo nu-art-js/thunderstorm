@@ -13,7 +13,7 @@ import {
 	Phase_InstallPnpm,
 	Phase_Launch,
 	Phase_Lint,
-	Phase_PackagePurge, Phase_PrepareParams, Phase_PrepareWatch,
+	Phase_PackagePurge, Phase_PrepareParams, Phase_PrepareCompile,
 	Phase_PrintDependencyTree,
 	Phase_PrintEnv,
 	Phase_PrintHelp,
@@ -21,7 +21,7 @@ import {
 	Phase_ResolvePackages,
 	Phase_ResolveTemplate,
 	Phase_SetupProject,
-	Phase_SetWithThunderstorm,
+	Phase_SetWithThunderstorm, Phase_PreCompile,
 } from './phases/phases';
 import {RuntimeParams} from './core/params/params';
 import {MemKey_ProjectScreen} from './screen/ProjectScreen';
@@ -47,7 +47,8 @@ projectManager.registerPhase(Phase_InstallGlobals);
 projectManager.registerPhase(Phase_InstallPnpm);
 projectManager.registerPhase(Phase_InstallPackages);
 projectManager.registerPhase(Phase_Lint);
-projectManager.registerPhase(Phase_PrepareWatch);
+projectManager.registerPhase(Phase_PrepareCompile);
+projectManager.registerPhase(Phase_PreCompile);
 projectManager.registerPhase(Phase_Compile);
 projectManager.registerPhase(Phase_CompileWatch);
 projectManager.registerPhase(Phase_Launch);
