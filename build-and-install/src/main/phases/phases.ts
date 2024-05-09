@@ -35,6 +35,7 @@ import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
 import * as chokidar from 'chokidar';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults/consts';
 import {MemKey_ProjectManager} from '../project-manager';
+import {MemKey_ProjectScreen} from '../screen/ProjectScreen';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
@@ -117,7 +118,9 @@ export const Phase_PrepareParams: BuildPhase = {
 	mandatoryPhases: [Phase_SetupProject, Phase_SetWithThunderstorm],
 	action: async (pkg) => {
 		const packages = MemKey_Packages.get();
+		const projectScreen = MemKey_ProjectScreen.get();
 
+		projectScreen.updateOrCreatePackage(pkg.name, 'Preparing Pramas');
 		// with workspace: *
 		const tempPackageJson = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
 			const toRet = packages.params[key!] ? 'workspace:*' : packages.params[value];
@@ -127,6 +130,7 @@ export const Phase_PrepareParams: BuildPhase = {
 		// placed package name to version
 		packages.params[tempPackageJson.name] = tempPackageJson.version;
 		packages.params[`${tempPackageJson.name}_path`] = `file:.dependencies/${pkg.name}`;
+		projectScreen.updateOrCreatePackage(pkg.name, 'Pramas Prepared');
 	}
 };
 
@@ -137,7 +141,9 @@ export const Phase_ResolveTemplate: BuildPhase = {
 	mandatoryPhases: [Phase_PrepareParams, Phase_SetupProject, Phase_SetWithThunderstorm],
 	action: async (pkg) => {
 		const packages = MemKey_Packages.get();
+		const projectScreen = MemKey_ProjectScreen.get();
 
+		projectScreen.updateOrCreatePackage(pkg.name, 'Resolving Templates');
 		// with workspace: *
 		pkg.packageJsonWorkspace = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
 			const toRet = packages.params[key!] ? 'workspace:*' : packages.params[value];
@@ -168,6 +174,9 @@ export const Phase_ResolveTemplate: BuildPhase = {
 
 		if (!fs.existsSync(pkg.output))
 			await _fs.mkdir(pkg.output);
+
+
+		projectScreen.updateOrCreatePackage(pkg.name, 'Resolved Templates');
 	}
 };
 
@@ -175,12 +184,15 @@ export const Phase_ResolveEnv: BuildPhase = {
 	type: 'package',
 	name: 'resolve-env',
 	isMandatory: true,
-	mandatoryPhases: [Phase_ResolveTemplate, Phase_SetupProject, Phase_SetWithThunderstorm],
+	mandatoryPhases: [Phase_ResolveTemplate, Phase_PrepareParams, Phase_SetupProject, Phase_SetWithThunderstorm],
 	filter: async (pkg) => pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app',
 	action: async (pkg) => {
 		const firebasePkg = pkg as Package_FirebaseHostingApp | Package_FirebaseFunctionsApp;
 		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(createFirebaseRC(firebasePkg, RuntimeParams.setEnv), null, 2), {encoding: 'utf-8'});
 		const defaultFiles = MemKey_DefaultFiles.get();
+		const projectScreen = MemKey_ProjectScreen.get();
+
+		projectScreen.updateOrCreatePackage(pkg.name, 'Resolving Env');
 
 		let fileContent;
 		if (pkg.type === 'firebase-hosting-app')
@@ -222,6 +234,8 @@ export const Phase_ResolveEnv: BuildPhase = {
 		}
 
 		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
+
+		projectScreen.updateOrCreatePackage(pkg.name, 'Env Resolved');
 	}
 };
 
@@ -301,6 +315,12 @@ export const Phase_PackagePurge: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => fs.existsSync(pkg.output) && RuntimeParams.purge,
 	action: async (pkg) => {
+		const projectScreen = MemKey_ProjectScreen.get();
+
+		//Update cli ui
+		projectScreen.updateOrCreatePackage(pkg.name, 'Purging');
+
+		//Perform the action
 		await _fs.rm(pkg.output, {recursive: true, force: true});
 	}
 };
@@ -347,6 +367,9 @@ export const Phase_Clean: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => RuntimeParams.clean,
 	action: async (pkg) => {
+		const projectScreen = MemKey_ProjectScreen.get();
+
+		projectScreen.updateOrCreatePackage(pkg.name, 'Cleaning');
 		if (!fs.existsSync(pkg.output))
 			return;
 
@@ -360,6 +383,10 @@ export const Phase_Lint: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => RuntimeParams.lint && pkg.type !== 'sourceless',
 	action: async (pkg) => {
+		const projectScreen = MemKey_ProjectScreen.get();
+
+		projectScreen.updateOrCreatePackage(pkg.name, 'Linting');
+
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;
 		return NVM.createCommando().append(`eslint --config ${pathToProjectEslint} --ext .ts --ext .tsx "${sourceFolder}"`).execute();
@@ -398,6 +425,8 @@ export const Phase_PrepareWatch: BuildPhase = {
 
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;
+		const projectScreen = MemKey_ProjectScreen.get();
+
 		suffixes.forEach(suffix => {
 			sourcesPaths.push(`${sourceFolder}/**/*.${suffix}`);
 		});
@@ -405,10 +434,14 @@ export const Phase_PrepareWatch: BuildPhase = {
 		// --- HERE ---
 		compileActions[sourceFolder] = async () => {
 			const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
+			projectScreen.updateOrCreatePackage(pkg.name, 'Compiling');
+
 			const commando = NVM.createCommando();
 			await commando
 				.append(`tsc -p "${pathToLocalTsConfig}" --rootDir "${sourceFolder}" --outDir "${pkg.output}"`)
 				.execute();
+
+			projectScreen.updateOrCreatePackage(pkg.name, 'Compiled');
 		};
 	}
 };
@@ -469,6 +502,7 @@ export const Phase_Compile: BuildPhase = {
 	}
 };
 
+
 export const Phase_CompileWatch: BuildPhase = {
 	type: 'project',
 	name: 'compile-watch',
@@ -478,6 +512,9 @@ export const Phase_CompileWatch: BuildPhase = {
 	action: async () => {
 		const watcher = chokidar.watch(sourcesPaths);
 		const projectManager = MemKey_ProjectManager.get();
+		const projectScreen = MemKey_ProjectScreen.get();
+		const packages = MemKey_Packages.get();
+
 		await MemKey_ProjectManager.get().updateRunningStatus({
 				'phaseKey': 'compile-watch',
 				'packageDependencyIndex': 0
@@ -485,6 +522,8 @@ export const Phase_CompileWatch: BuildPhase = {
 		);
 
 		let controller: AbortController | undefined;
+		let prevController: AbortController | undefined;
+
 		const watchListener = async (path: string, deleteDist?: boolean) => {
 			const libPath = _keys(compileActions).find(libPath => path.startsWith(libPath as string));
 			if (!libPath)
@@ -505,12 +544,25 @@ export const Phase_CompileWatch: BuildPhase = {
 				if (controller)
 					controller.abort();
 
+
+				prevController = controller;
 				controller = new AbortController();
-				await projectManager.executePhase('compile', {phaseKey: 'compile', packageDependencyIndex: packageIndex}, controller.signal);
+				await projectManager.executePhase('compile', {
+					phaseKey: 'compile',
+					packageDependencyIndex: packageIndex
+				}, controller.signal);
+
+
+				if (!prevController?.signal.aborted) {
+					// reset all packages back to watching
+					packages.packages.map(pkg => projectScreen.updateOrCreatePackage(pkg.name, 'Watching'));
+					projectScreen.updateRunningPhase('compile-watch');
+				}
 			} catch (e) {
 				console.log(e);
 			}
 		};
+
 
 		return new Promise<void>((resolve, error) => {
 			watcher
@@ -519,6 +571,8 @@ export const Phase_CompileWatch: BuildPhase = {
 				})
 				.on('ready', () => {
 					console.log('Watching: ', sourcesPaths);
+					packages.packages.map(pkg => projectScreen.updateOrCreatePackage(pkg.name, 'Watching'));
+
 					watcher
 						.on('add', (path) => {
 							console.log(`New File added: ${path}`);
@@ -560,6 +614,9 @@ export const Phase_Launch: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.launch))?.[0] && (pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app'),
 	action: async (pkg) => {
+		const projectScreen = MemKey_ProjectScreen.get();
+
+		projectScreen.updateOrCreatePackage(pkg.name, 'Deploying Application');
 		if (pkg.type === 'firebase-functions-app') {
 			await sleep(1000 * counter++);
 			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
@@ -584,6 +641,8 @@ export const Phase_Launch: BuildPhase = {
 				.append(`pwd`)
 				.append(`npm run start`)
 				.execute();
+
+		projectScreen.updateOrCreatePackage(pkg.name, 'Application Deployed');
 	}
 };
 
@@ -596,13 +655,17 @@ export const Phase_DeployFrontend: BuildPhase = {
 		return !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0] && pkg.type === 'firebase-hosting-app';
 	},
 	action: async (pkg) => {
+		const projectScreen = MemKey_ProjectScreen.get();
+
 		if (pkg.type !== 'firebase-hosting-app')
 			throw new BadImplementationException(`Somehow got a non firebase hosting package here: ${__stringify(pkg)}`);
 
+		projectScreen.updateOrCreatePackage(pkg.name, 'Deploying Hosting');
 		await NVM.createCommando(Cli_Basic)
 			.cd(pkg.path)
 			.append(`firebase deploy --only hosting`)
 			.execute();
+		projectScreen.updateOrCreatePackage(pkg.name, 'Hosting Deployed');
 	}
 };
 
@@ -613,12 +676,17 @@ export const Phase_DeployBackend: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0] && pkg.type === 'firebase-functions-app',
 	action: async (pkg) => {
+		const projectScreen = MemKey_ProjectScreen.get();
 		if (pkg.type !== 'firebase-functions-app')
 			throw new BadImplementationException(`Somehow got a non firebase functions package here: ${__stringify(pkg)}`);
+
+		projectScreen.updateOrCreatePackage(pkg.name, 'Deploying Functions');
 
 		await NVM.createCommando(Cli_Basic)
 			.cd(pkg.path)
 			.append(`firebase --debug deploy --only functions --force`)
 			.execute();
+
+		projectScreen.updateOrCreatePackage(pkg.name, 'Functions Deployed');
 	}
 };

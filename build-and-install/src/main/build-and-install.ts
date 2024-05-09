@@ -24,6 +24,7 @@ import {
 	Phase_SetWithThunderstorm,
 } from './phases/phases';
 import {RuntimeParams} from './core/params/params';
+import {MemKey_ProjectScreen} from './screen/ProjectScreen';
 
 
 DebugFlag.DefaultLogLevel = RuntimeParams.debug ? LogLevel.Debug : LogLevel.Info;
@@ -54,6 +55,10 @@ projectManager.registerPhase(Phase_DeployFrontend);
 projectManager.registerPhase(Phase_DeployBackend);
 // projectManager.registerPhase(Phase_Debug);
 
+
 projectManager.execute()
-	.then(() => StaticLogger.logInfo('completed'))
+	.then(() => {
+		StaticLogger.logInfo('completed');
+		MemKey_ProjectScreen.get().endRun();
+	})
 	.catch(err => StaticLogger.logError('Failed with error: ', err));
