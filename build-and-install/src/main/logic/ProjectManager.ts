@@ -27,6 +27,7 @@ import {
 } from '../defaults/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_AbortSignal, MemKey_ProjectManager} from '../project-manager';
+import {MemKey_ProjectScreen, ProjectScreen} from '../screen/ProjectScreen';
 
 
 export const PackageBuildPhaseType_Package = 'package' as const;
@@ -59,7 +60,7 @@ type BuildPhase_Project = BuildPhase_Base & {
 }
 
 export type BuildPhase = BuildPhase_Package | BuildPhase_PackageWithOutput | BuildPhase_Project
-const mapToName = (item: { name: string }) => item.name;
+
 
 function resolveAllMandatoryPhases(phase: BuildPhase): BuildPhase[] {
 	let result: BuildPhase[] = [phase];
@@ -78,11 +79,13 @@ export class ProjectManager
 	private dryRun = RuntimeParams.dryRun;
 	private terminate = false;
 	private prevRunningStatus?: RunningStatus;
+	private readonly projectScreen: ProjectScreen;
 
 	constructor() {
 		super();
 		BeLogged.addClient(LogClient_Terminal);
 		this.setMinLevel(LogLevel.Verbose);
+		this.projectScreen = new ProjectScreen([]);
 	}
 
 	private loadPackage() {
@@ -94,6 +97,11 @@ export class ProjectManager
 
 		const packages = mapProjectPackages(projectConfig);
 		MemKey_Packages.set(packages);
+
+		//Update UI with packages on first run
+		if (!this.projectScreen.packageData.length) {
+			packages.packagesDependency.map(packages => packages.map(pkg => this.projectScreen.updateOrCreatePackage(pkg.name, 'Initiated')));
+		}
 	}
 
 	registerPhase(phase: BuildPhase) {
@@ -107,6 +115,7 @@ export class ProjectManager
 
 	async prepare(phases = this.phases, index: number = 0) {
 		const phasesToRun: BuildPhase[] = [];
+
 		let i = index;
 		for (; i < phases.length; i++) {
 			const phase = phases[i];
@@ -132,12 +141,11 @@ export class ProjectManager
 			return;
 
 		const nextAction = await this.prepare(phases, i);
-		this.logDebug('Scheduling phases: ', phasesToRun.map(mapToName));
 
 		if (phasesToRun[0].type === 'project')
 			return async () => {
 				if (this.terminate)
-					return this.logInfo(`Skipping project phases:`, phasesToRun.map(mapToName));
+					return;
 
 				let didRun = false;
 				for (const phase of phasesToRun) {
@@ -152,13 +160,14 @@ export class ProjectManager
 					if (!this.prevRunningStatus && !phase.terminatingPhase)
 						MemKey_RunningStatus.set({phaseKey: phase.name});
 
-					this.logInfo(`Running project phase: ${phase.name}`);
-
 					// if prev running status still exists skip execution
 					if (this.prevRunningStatus && !phase.isMandatory) {
-						this.logVerbose('Skipping duo continue');
 						continue;
 					}
+
+					//Update project screen
+					this.projectScreen?.updateRunningPhase(phase.name);
+
 
 					if (this.dryRun) {
 						await sleep(200);
@@ -200,21 +209,27 @@ export class ProjectManager
 								MemKey_RunningStatus.set({phaseKey: phase.name, packageDependencyIndex: i});
 
 							if (!didPrintPhase) {
-								this.logInfo(`Running package phase: ${__stringify(phasesToRun.map(mapToName))}`);
 								didPrintPhase = true;
 							}
 
 							if (!didPrintPackages) {
-								this.logVerbose(` - on packages: ${__stringify(packages.map(mapToName))}`);
 								didPrintPackages = true;
 							}
 
+
 							didRun = true;
-							this.logDebug(`   - ${pkg.name}:${phase.name}`);
+							//Update project screen
+							this.projectScreen?.updateRunningPhase(phase.name);
 
 							// if prev running status still exists skip execution
 							if (this.prevRunningStatus && !phase.isMandatory) {
-								this.logVerbose('Skipping duo continue');
+								continue;
+							}
+
+							// skip packages indexes
+							const packageDependencyIndex = this.prevRunningStatus?.packageDependencyIndex ?? 0;
+							if (packageDependencyIndex > i) {
+								this.projectScreen.updateOrCreatePackage(pkg.name, 'Skipped');
 								continue;
 							}
 
@@ -231,7 +246,7 @@ export class ProjectManager
 			});
 
 			if (this.terminate)
-				return this.logInfo(`Skipping packages phases:`, phasesToRun.map(mapToName));
+				return;
 
 			for (const toRunPackage of toRunPackages) {
 				await toRunPackage();
@@ -262,8 +277,10 @@ export class ProjectManager
 			// Set default value to memKey
 			MemKey_RunningStatus.set({phaseKey: ''});
 
+			//Set project screen
+			MemKey_ProjectScreen.set(this.projectScreen);
+
 			const listener = async (status: string) => {
-				this.logDebug('SIGINT - running status:', status);
 				await this.updateRunningStatus();
 				process.exit(0);
 			};
@@ -283,7 +300,6 @@ export class ProjectManager
 
 			// update prev running status if passed
 			if (prevRunningStatus) {
-				this.logWarning('Setting prev running status: ', prevRunningStatus);
 				this.prevRunningStatus = prevRunningStatus;
 			}
 
