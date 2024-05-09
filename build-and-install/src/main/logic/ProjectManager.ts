@@ -101,8 +101,12 @@ export class ProjectManager
 	}
 
 	updateRunningStatus = async (runningStatus: RunningStatus = MemKey_RunningStatus.get(undefined)) => {
-		if (runningStatus)
-			return _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(runningStatus, true));
+		if (!runningStatus)
+			return;
+
+		if (!fs.existsSync(Default_OutputFiles.output))
+			await _fs.mkdir(Default_OutputFiles.output, {recursive: true});
+		await _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(runningStatus, true));
 	};
 
 	async prepare(phases = this.phases, index: number = 0) {
