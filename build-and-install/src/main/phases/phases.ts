@@ -37,7 +37,7 @@ import {MemKey_ProjectManager} from '../project-manager';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
-const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_SDK_VERSION_DEPENDENCY';
+const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_DEPENDENCY_VERSION';
 const CONST_ProjectVersionKey = 'APP_VERSION';
 const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
 const CONST_TS_Config = `tsconfig.json`;
