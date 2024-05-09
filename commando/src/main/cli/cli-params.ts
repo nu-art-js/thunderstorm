@@ -40,6 +40,10 @@ export type CliParams<T extends BaseCliParam<string, any>[]> = {
 	[K in T[number]['keyName']]: NonNullable<Extract<T[number], { keyName: K }>['defaultValue']>
 }
 
+export type DependencyParam<T extends Primitive | Primitive[]> = {
+	param: BaseCliParam<string, T>, value: T
+}
+
 export type BaseCliParam<K extends string, V extends Primitive | Primitive[]> = {
 	keys: string[];
 	keyName: K;
@@ -51,6 +55,7 @@ export type BaseCliParam<K extends string, V extends Primitive | Primitive[]> = 
 	process?: (value?: string, defaultValue?: V) => V;
 	isArray?: true;
 	group?: string;
+	dependencies?: DependencyParam<any>[]
 }
 
 export type CliParam<K extends string, V extends Primitive | Primitive[]> = BaseCliParam<K, V> & {
@@ -90,8 +95,13 @@ export class CLIParams_Resolver<T extends BaseCliParam<string, any>[], Output ex
 			if (cliParamToResolve.options && !cliParamToResolve.options.includes(value))
 				throw new Error('value not supported for this param');
 
-			//TODO: OPTIMIZE THIS IS PURE JS
 			const key = cliParamToResolve.keyName as Key;
+
+			if (exists(cliParamToResolve.dependencies))
+				cliParamToResolve.dependencies?.forEach(dependency => {
+					output[dependency.param.keyName as Key] = dependency.value;
+				});
+
 			if (cliParamToResolve.isArray) {
 				let currentValues = output[key] as Value;
 				currentValues = filterDuplicates([...currentValues ?? [], finalValue]) as Value;
