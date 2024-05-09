@@ -62,4 +62,7 @@ projectManager.execute()
 		StaticLogger.logInfo('completed');
 		MemKey_ProjectScreen.get().endRun();
 	})
-	.catch(err => StaticLogger.logError('Failed with error: ', err));
+	.catch(err => {
+		StaticLogger.logError('Failed with error: ', err);
+		MemKey_ProjectScreen.get().endRun();
+	});
