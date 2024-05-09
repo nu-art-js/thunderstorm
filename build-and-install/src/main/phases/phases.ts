@@ -3,17 +3,17 @@ import {
 	PackageBuildPhaseType_Package,
 	PackageBuildPhaseType_PackageWithOutput
 } from '../logic/ProjectManager';
-import {convertPackageJSONTemplateToPackJSON_Value, mapProjectPackages} from '../logic/map-project-packages';
+import {convertPackageJSONTemplateToPackJSON_Value} from '../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../core/consts';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, MemKey_Packages} from '../core/consts';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {
 	__stringify,
 	_keys,
 	BadImplementationException,
-	exists, filterDuplicates,
-	ImplementationMissingException,
+	exists,
+	filterDuplicates, flatArray,
 	reduceToMap,
 	sleep,
 	TypedMap
@@ -26,20 +26,16 @@ import {
 	RuntimePackage_WithOutput
 } from '../core/types';
 import {createFirebaseFunctionsJSON, createFirebaseHostingJSON, createFirebaseRC} from '../core/package/generate';
-import {Default_ListOfFirebaseConfigFiles} from '../core/package/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {AllBaiParams, RuntimeParams} from '../core/params/params';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {PNPM} from '@nu-art/commando/cli/pnpm';
 import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
 import * as chokidar from 'chokidar';
+import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults/consts';
+import {MemKey_ProjectManager} from '../project-manager';
 
 
-const pathToConfig = convertToFullPath('./.config/project-config.ts');
-if (!fs.existsSync(pathToConfig))
-	throw new ImplementationMissingException(`Missing ./.config/project-config.ts file, could not find in path: ${pathToConfig}`);
-
-const projectConfig = require(pathToConfig).default;
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_SDK_VERSION_DEPENDENCY';
 const CONST_ProjectVersionKey = 'APP_VERSION';
@@ -49,7 +45,6 @@ const CONST_RunningRoot = process.cwd();
 
 const pathToProjectTS_Config = convertToFullPath(`./.config/${CONST_TS_Config}`);
 const pathToProjectEslint = convertToFullPath('./.config/.eslintrc.js');
-export const projectPackages = mapProjectPackages(projectConfig);
 const runInDebug = false;
 let runningWithInfra = false;
 
@@ -82,13 +77,15 @@ export const Phase_PrintHelp: BuildPhase = {
 export const Phase_SetWithThunderstorm: BuildPhase = {
 	type: 'project',
 	name: 'with-ts-home',
+	isMandatory: true,
 	action: async () => {
 		// set value of the running with infra flag
 		if (RuntimeParams.thunderstormHome)
 			return runningWithInfra = true;
 
 		// Remove all the infra packages from the runtime project
-		projectPackages.packagesDependency = projectPackages.packagesDependency?.map(_packageArray => _packageArray.filter(_package => _package.type !== PackageType_InfraLib));
+		const packages = MemKey_Packages.get();
+		packages.packagesDependency = packages.packagesDependency?.map(_packageArray => _packageArray.filter(_package => _package.type !== PackageType_InfraLib));
 
 		return runningWithInfra = false;
 	}
@@ -97,40 +94,67 @@ export const Phase_SetWithThunderstorm: BuildPhase = {
 export const Phase_SetupProject: BuildPhase = {
 	type: 'project',
 	name: 'setup-project',
+	isMandatory: true,
 	action: async () => {
 		const thunderstormVersionJson = require(convertToFullPath('./version-thunderstorm.json')) as JSONVersion;
-		projectPackages.params[CONST_ThunderstormVersionKey] = thunderstormVersionJson.version;
-		projectPackages.params[CONST_ThunderstormDependencyKey] = thunderstormVersionJson.version;
+		const packages = MemKey_Packages.get();
+
+		packages.params[CONST_ThunderstormVersionKey] = thunderstormVersionJson.version;
+		packages.params[CONST_ThunderstormDependencyKey] = `~${thunderstormVersionJson.version}`;
 
 		const projectVersionJson = require(convertToFullPath('./version-app.json')) as JSONVersion;
-		projectPackages.params[CONST_ProjectVersionKey] = projectVersionJson.version;
-		projectPackages.params[CONST_ProjectDependencyKey] = projectVersionJson.version;
+		packages.params[CONST_ProjectVersionKey] = projectVersionJson.version;
+		packages.params[CONST_ProjectDependencyKey] = projectVersionJson.version;
+	}
+};
+
+export const Phase_PrepareParams: BuildPhase = {
+	type: 'package',
+	name: 'prepare-params',
+	isMandatory: true,
+	breakAfterPhase: true,
+	mandatoryPhases: [Phase_SetupProject, Phase_SetWithThunderstorm],
+	action: async (pkg) => {
+		const packages = MemKey_Packages.get();
+
+		// with workspace: *
+		const tempPackageJson = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
+			const toRet = packages.params[key!] ? 'workspace:*' : packages.params[value];
+			return toRet;
+		});
+
+		// placed package name to version
+		packages.params[tempPackageJson.name] = tempPackageJson.version;
+		packages.params[`${tempPackageJson.name}_path`] = `file:.dependencies/${pkg.name}`;
 	}
 };
 
 export const Phase_ResolveTemplate: BuildPhase = {
 	type: 'package',
 	name: 'resolve-template',
-	mandatoryPhases: [Phase_SetupProject, Phase_SetWithThunderstorm],
+	isMandatory: true,
+	mandatoryPhases: [Phase_PrepareParams, Phase_SetupProject, Phase_SetWithThunderstorm],
 	action: async (pkg) => {
+		const packages = MemKey_Packages.get();
+
 		// with workspace: *
 		pkg.packageJsonWorkspace = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
-			const toRet = projectConfig.params[key!] ? 'workspace:*' : projectConfig.params[value];
+			const toRet = packages.params[key!] ? 'workspace:*' : packages.params[value];
 			return toRet;
 		});
 
 		// placed package name to version
-		projectConfig.params[pkg.packageJsonWorkspace.name] = pkg.packageJsonWorkspace.version;
-		projectConfig.params[`${pkg.packageJsonWorkspace.name}_path`] = `file:.dependencies/${pkg.name}`;
+		packages.params[pkg.packageJsonWorkspace.name] = pkg.packageJsonWorkspace.version;
+		packages.params[`${pkg.packageJsonWorkspace.name}_path`] = `file:.dependencies/${pkg.name}`;
 
 		// with versions for all packages, for be output: file:.dependencies/${pkg.name}
 		pkg.packageJsonOutput = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
-			const toRet = projectConfig.params[key!] ?? projectConfig.params[value];
+			const toRet = packages.params[key!] ?? packages.params[value];
 			return toRet;
 		});
 
 		pkg.packageJsonRuntime = convertPackageJSONTemplateToPackJSON_Value(pkg.packageJsonTemplate, (value, key) => {
-			const toRet = projectConfig.params[`${key}_path`] ?? projectConfig.params[key!] ?? projectConfig.params[value];
+			const toRet = packages.params[`${key}_path`] ?? packages.params[key!] ?? packages.params[value];
 			return toRet;
 		});
 
@@ -149,11 +173,13 @@ export const Phase_ResolveTemplate: BuildPhase = {
 export const Phase_ResolveEnv: BuildPhase = {
 	type: 'package',
 	name: 'resolve-env',
+	isMandatory: true,
 	mandatoryPhases: [Phase_ResolveTemplate, Phase_SetupProject, Phase_SetWithThunderstorm],
 	filter: async (pkg) => pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app',
 	action: async (pkg) => {
 		const firebasePkg = pkg as Package_FirebaseHostingApp | Package_FirebaseFunctionsApp;
 		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(createFirebaseRC(firebasePkg, RuntimeParams.setEnv), null, 2), {encoding: 'utf-8'});
+		const defaultFiles = MemKey_DefaultFiles.get();
 
 		let fileContent;
 		if (pkg.type === 'firebase-hosting-app')
@@ -173,7 +199,7 @@ export const Phase_ResolveEnv: BuildPhase = {
 				try {
 					await _fs.access(pathToProxyFile);
 				} catch (e: any) {
-					let defaultFileContent = await _fs.readFile(`${__dirname}/defaults/backend-proxy/proxy._ts`, {encoding: 'utf-8'});
+					let defaultFileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
 					defaultFileContent = defaultFileContent.replace(/SERVER_PORT/g, `${firebasePkg.envConfig.basePort}`);
 					defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_KEY/g, `${firebasePkg.envConfig.ssl?.pathToKey}`);
 					defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${firebasePkg.envConfig.ssl?.pathToCertificate}`);
@@ -181,12 +207,12 @@ export const Phase_ResolveEnv: BuildPhase = {
 				}
 			}
 
-			await Promise.all(Default_ListOfFirebaseConfigFiles.map(async firebaseConfigFile => {
-					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${firebaseConfigFile}`;
+			await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
+					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
 					try {
 						await _fs.access(pathToConfigFile);
 					} catch (e: any) {
-						const defaultFileContent = await _fs.readFile(`${__dirname}/defaults/.firebase_config/${firebaseConfigFile}`, {encoding: 'utf-8'});
+						const defaultFileContent = await _fs.readFile(defaultFiles.firebaseConfig[firebaseConfigKey], {encoding: 'utf-8'});
 						await _fs.writeFile(pathToConfigFile, defaultFileContent, {encoding: 'utf-8'});
 					}
 				})
@@ -304,7 +330,9 @@ export const Phase_InstallPackages: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async () => RuntimeParams.installPackages,
 	action: async () => {
-		const listOfLibs = projectPackages.packages
+		const packages = MemKey_Packages.get();
+
+		const listOfLibs = packages.packages
 			.filter(pkg => runningWithInfra || ['project-lib', 'app', 'sourceless'].includes(pkg.type))
 			.map(pkg => pkg.path.replace(`${process.cwd()}/`, '').replace(process.cwd(), '.'));
 
@@ -344,7 +372,8 @@ export const Phase_Debug: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async () => RuntimeParams.debug,
 	action: async () => {
-		console.log(JSON.stringify(projectPackages, null, 2));
+		const packages = MemKey_Packages.get();
+		console.log(JSON.stringify(packages, null, 2));
 	}
 };
 
@@ -357,10 +386,10 @@ const suffixes = [
 	'svg',
 ];
 const compileActions: { [path: string]: (deleteDist?: boolean) => Promise<void> } = {};
-
-export const Phase_Compile: BuildPhase = {
+export const Phase_PrepareWatch: BuildPhase = {
 	type: 'package',
-	name: 'compile',
+	name: 'prepare-compile',
+	isMandatory: true,
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => pkg.type !== 'sourceless' && !RuntimeParams.noBuild,
 	action: async (pkg) => {
@@ -373,10 +402,36 @@ export const Phase_Compile: BuildPhase = {
 			sourcesPaths.push(`${sourceFolder}/**/*.${suffix}`);
 		});
 
+		// --- HERE ---
+		compileActions[sourceFolder] = async () => {
+			const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
+			const commando = NVM.createCommando();
+			await commando
+				.append(`tsc -p "${pathToLocalTsConfig}" --rootDir "${sourceFolder}" --outDir "${pkg.output}"`)
+				.execute();
+		};
+	}
+};
+
+export const Phase_Compile: BuildPhase = {
+	type: 'package',
+	name: 'compile',
+	mandatoryPhases: [Phase_PrepareWatch],
+	filter: async (pkg) => pkg.type !== 'sourceless' && !RuntimeParams.noBuild,
+	action: async (pkg) => {
+		const packages = MemKey_Packages.get();
+
+		if (pkg.type === 'sourceless')
+			return;
+
+		const folder = 'main';
+		const sourceFolder = `${pkg.path}/src/${folder}`;
 		const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
-		const commando = NVM.createCommando();
-		if (!pkg.customTsConfig)
+		const inPackageTsConfig = await _fs.readFile(pathToProjectTS_Config, {encoding: 'utf-8'});
+		const defaultPackageTsConfig = await _fs.readFile(pathToProjectTS_Config, {encoding: 'utf-8'});
+		if (!pkg.customTsConfig && inPackageTsConfig !== defaultPackageTsConfig) {
 			await _fs.copyFile(pathToProjectTS_Config, pathToLocalTsConfig);
+		}
 
 		// --- HERE ---
 		await _fs.writeFile(`${pkg.output}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJsonOutput, null, 2), {encoding: 'utf-8'});
@@ -386,7 +441,7 @@ export const Phase_Compile: BuildPhase = {
 			pkg.packageJsonRuntime!.types = pkg.packageJsonRuntime!.types.replace('dist/', '');
 
 			await _fs.writeFile(`${pkg.output}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJsonRuntime, null, 2), {encoding: 'utf-8'});
-			const runTimePackages = filterDuplicates(projectPackages.packagesDependency?.flat().filter(_pkg => {
+			const runTimePackages = filterDuplicates(packages.packagesDependency?.flat().filter(_pkg => {
 				if (_pkg.name === pkg.name)
 					return false;
 
@@ -410,15 +465,6 @@ export const Phase_Compile: BuildPhase = {
 				}
 			}
 		}
-
-		compileActions[sourceFolder] = async (deleteDist?: boolean) => {
-			if (deleteDist)
-				await _fs.rmdir(pkg.output);
-
-			await commando
-				.append(`tsc -p "${pathToLocalTsConfig}" --rootDir "${sourceFolder}" --outDir "${pkg.output}"`)
-				.execute();
-		};
 		return compileActions[sourceFolder]();
 	}
 };
@@ -426,41 +472,83 @@ export const Phase_Compile: BuildPhase = {
 export const Phase_CompileWatch: BuildPhase = {
 	type: 'project',
 	name: 'compile-watch',
-	mandatoryPhases: [Phase_ResolveEnv],
+	terminatingPhase: true,
+	mandatoryPhases: [Phase_PrepareWatch],
 	filter: async () => RuntimeParams.watch,
 	action: async () => {
 		const watcher = chokidar.watch(sourcesPaths);
-		const watchListener = (path: string, deleteDist?: boolean) => {
+		const projectManager = MemKey_ProjectManager.get();
+		await MemKey_ProjectManager.get().updateRunningStatus({
+				'phaseKey': 'compile-watch',
+				'packageDependencyIndex': 0
+			}
+		);
+
+		let controller: AbortController | undefined;
+		const watchListener = async (path: string, deleteDist?: boolean) => {
 			const libPath = _keys(compileActions).find(libPath => path.startsWith(libPath as string));
 			if (!libPath)
 				return console.error(`couldn't find lib to run for path: ${libPath}...\nListening on: ${__stringify(sourcesPaths, true)}`);
 
-			return compileActions[libPath](deleteDist);
+			const rtPackages = MemKey_Packages.get();
+			const pkg = flatArray(rtPackages.packagesDependency).find(pkg => {
+				return path.startsWith(pkg.path) && pkg.type !== 'sourceless';
+			});
+			if (deleteDist && pkg && 'output' in pkg)
+				await _fs.rmdir(pkg.output);
+
+			const packageIndex = rtPackages.packagesDependency.findIndex(packages => {
+				return packages.some(pkg => path.startsWith(pkg.path) && pkg.type !== 'sourceless');
+			});
+
+			try {
+				if (controller)
+					controller.abort();
+
+				controller = new AbortController();
+				await projectManager.executePhase('compile', {phaseKey: 'compile', packageDependencyIndex: packageIndex}, controller.signal);
+			} catch (e) {
+				console.log(e);
+			}
 		};
 
-		watcher
-			.on('add', (path) => {
-				console.log(`New File added: ${path}`);
-				watchListener(path);
-			})
-			.on('change', (path) => {
-				console.log(`Detected changes in file: ${path}`);
-				watchListener(path);
-			})
-			.on('unlinkDir', (path) => {
-				console.log(`Deleted Directory: ${path}`);
-				watchListener(path, true);
-			})
-			.on('error', (error) => {
-				console.log(`error`, error);
-			})
-			.on('unlink', (path) => {
-				console.log(`File Deleted: ${path}`);
-				watchListener(path, true);
-			})
-			.on('ready', () => {
-				console.log('Watching: ', sourcesPaths);
+		return new Promise<void>((resolve, error) => {
+			watcher
+				.on('error', (error) => {
+					console.log(`error`, error);
+				})
+				.on('ready', () => {
+					console.log('Watching: ', sourcesPaths);
+					watcher
+						.on('add', (path) => {
+							console.log(`New File added: ${path}`);
+							watchListener(path);
+						})
+						.on('change', (path) => {
+							console.log(`Detected changes in file: ${path}`);
+							watchListener(path);
+						})
+						.on('unlinkDir', (path) => {
+							console.log(`Deleted Directory: ${path}`);
+							watchListener(path, true);
+						})
+						.on('unlink', (path) => {
+							console.log(`File Deleted: ${path}`);
+							watchListener(path, true);
+						});
+				});
+
+			process.on('SIGINT', async (status) => {
+				await watcher.close();
+				await MemKey_ProjectManager.get().updateRunningStatus({
+						'phaseKey': 'compile-watch',
+						'packageDependencyIndex': 0
+					}
+				);
+				process.exit(0);
+				resolve();
 			});
+		});
 	}
 };
 
@@ -468,6 +556,7 @@ let counter = 0;
 export const Phase_Launch: BuildPhase = {
 	type: 'package',
 	name: 'launch',
+	terminatingPhase: true,
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.launch))?.[0] && (pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app'),
 	action: async (pkg) => {
@@ -501,6 +590,7 @@ export const Phase_Launch: BuildPhase = {
 export const Phase_DeployFrontend: BuildPhase = {
 	type: 'package',
 	name: 'deploy-frontend',
+	terminatingPhase: true,
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => {
 		return !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0] && pkg.type === 'firebase-hosting-app';
@@ -519,6 +609,7 @@ export const Phase_DeployFrontend: BuildPhase = {
 export const Phase_DeployBackend: BuildPhase = {
 	type: 'package',
 	name: 'deploy-functions',
+	terminatingPhase: true,
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0] && pkg.type === 'firebase-functions-app',
 	action: async (pkg) => {

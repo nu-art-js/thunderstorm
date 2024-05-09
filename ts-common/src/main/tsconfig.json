@@ -1,3 +1,21 @@
 {
-  "extends": "../../../dev-tools/typescript/tsconfig-lib-ts.json"
+  "compilerOptions": {
+    "target": "es2017",
+    "jsx": "react",
+    "lib": [
+      "es5",
+      "es6",
+      "es7",
+      "dom"
+    ],
+    "declaration": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "module": "commonjs",
+    "sourceMap": false,
+    "strict": true
+  },
+  "esModuleInterop": true,
+  "module": "ES2020"
 }
