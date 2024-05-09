@@ -88,7 +88,7 @@ export const Phase_SetWithThunderstorm: BuildPhase = {
 		const packages = MemKey_Packages.get();
 		const filter = (pkg: Package) => pkg.type !== PackageType_InfraLib || (RuntimeParams.withCommando && ['commando', 'build-and-install'].includes(pkg.name));
 
-		packages.packages.filter(filter);
+		packages.packages = packages.packages.filter(filter);
 		packages.packagesDependency = packages.packagesDependency?.map(_packageArray => _packageArray.filter(filter));
 	}
 };
@@ -413,7 +413,7 @@ const suffixes = [
 	'svg',
 ];
 const compileActions: { [path: string]: (deleteDist?: boolean) => Promise<void> } = {};
-export const Phase_PrepareWatch: BuildPhase = {
+export const Phase_PrepareCompile: BuildPhase = {
 	type: 'package',
 	name: 'prepare-compile',
 	isMandatory: true,
@@ -446,10 +446,31 @@ export const Phase_PrepareWatch: BuildPhase = {
 	}
 };
 
+export const Phase_PreCompile: BuildPhase = {
+	type: 'package',
+	name: 'pre-compile',
+	isMandatory: true,
+	mandatoryPhases: [Phase_ResolveEnv],
+	filter: async (pkg) => {
+		if (pkg.type === 'sourceless')
+			return false;
+
+		if (RuntimeParams.noBuild)
+			return false;
+
+		return fs.existsSync(`${pkg.path}/prebuild.sh`);
+	},
+	action: async (pkg) => {
+		return NVM.createCommando(Cli_Basic)
+			.cd(pkg.path)
+			.append(`bash ${pkg.path}/prebuild.sh`).execute();
+	}
+};
+
 export const Phase_Compile: BuildPhase = {
 	type: 'package',
 	name: 'compile',
-	mandatoryPhases: [Phase_PrepareWatch],
+	mandatoryPhases: [Phase_PrepareCompile],
 	filter: async (pkg) => pkg.type !== 'sourceless' && !RuntimeParams.noBuild,
 	action: async (pkg) => {
 		const packages = MemKey_Packages.get();
@@ -507,7 +528,7 @@ export const Phase_CompileWatch: BuildPhase = {
 	type: 'project',
 	name: 'compile-watch',
 	terminatingPhase: true,
-	mandatoryPhases: [Phase_PrepareWatch],
+	mandatoryPhases: [Phase_PrepareCompile],
 	filter: async () => RuntimeParams.watch,
 	action: async () => {
 		const watcher = chokidar.watch(sourcesPaths);
