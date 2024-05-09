@@ -35,7 +35,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION_DEPENDENCY",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
     "@google-cloud/pubsub": "3.3.0",
     "google-auth-library": "^6.0.6",
     "googleapis": "^55.0.0"

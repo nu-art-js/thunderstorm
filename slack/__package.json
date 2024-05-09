@@ -33,8 +33,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION_DEPENDENCY",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION_DEPENDENCY",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
     "@slack/web-api": "^5.1.0",
     "@slack/events-api": "^2.3.0",
     "firebase": "$FIREBASE_PKG_VERSION",
