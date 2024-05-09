@@ -1,5 +1,6 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 
+
 const CONST_FirebaseConfig = `${__dirname}/.firebase_config`;
 const CONST_BackendProxy = `${__dirname}/backend-proxy`;
 
@@ -29,8 +30,10 @@ export const Const_FirebaseConfigKeys: (keyof typeof Default_Files['firebaseConf
 	'storageRules',
 ];
 
+const Default_OutputPath = './.trash';
 export const Default_OutputFiles = {
-	runningStatus: './.trash/running-status.json'
+	output: Default_OutputPath,
+	runningStatus: `${Default_OutputPath}/running-status.json`
 };
 
 export const MemKey_DefaultFiles = new MemKey<typeof Default_Files>('default-files');
