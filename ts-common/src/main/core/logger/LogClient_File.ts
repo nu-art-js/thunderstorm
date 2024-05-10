@@ -41,7 +41,6 @@ export class LogClient_File
 		this.prepare();
 	}
 
-
 	private getFileName(index = 0) {
 		return `${this.pathToFolder}/${this.name}-${index}.txt`;
 	}

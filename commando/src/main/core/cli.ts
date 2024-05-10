@@ -1,7 +1,7 @@
 import {exec, ExecOptions} from 'child_process';
 import {CreateMergedInstance} from './class-merger';
 import {CliError} from './CliError';
-import {Constructor, Logger, LogLevel} from '@nu-art/ts-common';
+import {Constructor, Logger, LogLevel, StaticLogger} from '@nu-art/ts-common';
 import {ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 
 
@@ -87,7 +87,7 @@ export class CliInteractive
 			if (!message.length)
 				return;
 
-			console.log(message);
+			StaticLogger.logInfo(message);
 		};
 
 		this.shell.stdout.on('data', printer);
@@ -99,7 +99,7 @@ export class CliInteractive
 
 		// Handle shell exit
 		this.shell.on('close', (code) => {
-			console.log(`child process exited with code ${code}`);
+			StaticLogger.logInfo(`child process exited with code ${code}`);
 		});
 	}
 
@@ -109,9 +109,8 @@ export class CliInteractive
 			this.logDebug(`executing: `, `"""\n${command}\n"""`);
 
 		this.shell.stdin.write(command + this.option.newlineDelimiter, 'utf-8', (err?: Error | null) => {
-			console.log('GOT HERE');
 			if (err)
-				console.error(err);
+				StaticLogger.logError('error', err);
 		});
 		this.commands = [];
 	};
@@ -147,7 +146,6 @@ export class Cli
 					reject(stderr);
 
 				if (stdout) {
-					console.log(stdout);
 					this.logVerbose(stdout);
 				}
 
