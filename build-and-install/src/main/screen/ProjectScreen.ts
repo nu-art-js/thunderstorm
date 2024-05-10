@@ -2,6 +2,7 @@
 import * as blessed from 'neo-blessed';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 
+
 export type PackageStatus = {
 	packageName: string,
 	status: string,
@@ -13,12 +14,17 @@ type CurrentRunningPhase = { phaseName: string };
 export class ProjectScreen {
 	public readonly packageData: PackageStatus[];
 	private currentRunningPhase!: CurrentRunningPhase;
+	private readonly logsResolver;
+
 	private readonly screen: blessed.Widgets.Screen;
 	private readonly phaseBox: blessed.Widgets.BoxElement;
 	private readonly packageTable: blessed.Widgets.TableElement;
+	// private readonly loggerTitle: blessed.Widgets.TextElement;
+	private readonly logger: blessed.Widgets.LogElement;
 
-	constructor(initialData: PackageStatus[]) {
+	constructor(initialData: PackageStatus[], logsResolver: () => string) {
 		this.packageData = initialData;
+		this.logsResolver = logsResolver;
 		this.screen = blessed.screen({
 			smartCSR: true,
 			title: 'Build and install',
@@ -29,39 +35,38 @@ export class ProjectScreen {
 		});
 
 		// Create the UI components
-		this.phaseBox = blessed.box({
+		this.phaseBox = blessed.text({
 			parent: this.screen,
-			top: 2,
-			left: 'center',
+			top: 0,
+			left: 0,
+			height: 3,
 			width: '40%',
-			height: 2,
-			content: '',
+			content: 'phases',
+			border: {type: 'line'},
 			tags: true,
 			style: {
-				border: {fg: 'blue'},
-				fg: 'white',
-				bg: 'blue',
+				border: {fg: 'green'},
+				fg: 'black',
 			},
-			valign: 'middle',
 			align: 'center'
 		});
 
 		this.packageTable = blessed.listtable({
 			parent: this.screen,
-			top: 'center',
-			left: 'left',
-			width: '100%',
+			top: 3,
+			left: 0,
+			width: '40%',
 			height: '70%',
 			keys: true,
-			mouse: true,
 			border: {type: 'line'},
 			align: 'left',
 			tags: true,
 			style: {
-				border: {fg: 'green'},
+				border: {fg: 'blue'},
 				header: {bold: true},
 				cell: {fg: 'white', selected: {bg: 'blue'}}
 			},
+			mouse: true,
 			interactive: true,
 			scrollbar: {
 				ch: ' ',
@@ -71,11 +76,46 @@ export class ProjectScreen {
 			}
 		});
 
+		blessed.text({
+			parent: this.screen,
+			top: 0,
+			right: 0,
+			width: '60%',
+			height: 3,
+			border: {type: 'line'},
+			content: 'Log',
+			tags: true,
+			style: {
+				border: {fg: 'green'},
+				fg: 'black',
+			},
+			align: 'center'
+		});
+
+		this.logger = blessed.log({
+			parent: this.screen,
+			top: 3,
+			right: 0,
+			width: '60%',
+			mouse: true,
+			interactive: true,
+			bottom: '0',
+			tags: true,
+			border: {type: 'line'},
+			style: {
+				border: {fg: 'blue'},
+				fg: 'white',
+			},
+			valign: 'top',
+			align: 'left'
+		});
+
 	}
 
 	public renderScreen = () => {
 		this.renderCurrentRunningPhase();
 		this.renderPackageTableTable();
+		this.logger.setContent(this.logsResolver());
 		this.screen.render();
 	};
 
@@ -93,8 +133,8 @@ export class ProjectScreen {
 		const selectedIndex = this.packageTable.selected;
 
 		const data = [
-			['Package Name', 'Status', 'Error'],
-			...this.packageData.map(pkg => [pkg.packageName, pkg.status, pkg.error ?? '-'])
+			['Package Name', 'Status'],
+			...this.packageData.map(pkg => [pkg.packageName, pkg.status])
 		];
 
 		this.packageTable.setData(data);

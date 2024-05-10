@@ -6,8 +6,7 @@ import {
 	filterDuplicates,
 	flatArray,
 	ImplementationMissingException,
-	lastElement,
-	LogClient_Terminal,
+	lastElement, LogClient_MemBuffer,
 	Logger,
 	LogLevel,
 	sleep
@@ -18,13 +17,7 @@ import {mapProjectPackages} from './map-project-packages';
 import {MemKey_Packages} from '../core/consts';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {
-	Default_Files,
-	Default_OutputFiles,
-	MemKey_DefaultFiles,
-	MemKey_RunningStatus,
-	RunningStatus
-} from '../defaults/consts';
+import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, MemKey_RunningStatus, RunningStatus} from '../defaults/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_AbortSignal, MemKey_ProjectManager} from '../project-manager';
 import {MemKey_ProjectScreen, ProjectScreen} from '../screen/ProjectScreen';
@@ -61,7 +54,6 @@ type BuildPhase_Project = BuildPhase_Base & {
 
 export type BuildPhase = BuildPhase_Package | BuildPhase_PackageWithOutput | BuildPhase_Project
 
-
 function resolveAllMandatoryPhases(phase: BuildPhase): BuildPhase[] {
 	let result: BuildPhase[] = [phase];
 	if (phase.mandatoryPhases) {
@@ -83,9 +75,10 @@ export class ProjectManager
 
 	constructor() {
 		super();
-		BeLogged.addClient(LogClient_Terminal);
+		const logger = new LogClient_MemBuffer('output.txt');
+		BeLogged.addClient(logger);
 		this.setMinLevel(LogLevel.Verbose);
-		this.projectScreen = new ProjectScreen([]);
+		this.projectScreen = new ProjectScreen([], () => logger.buffers[0]);
 	}
 
 	private loadPackage() {
@@ -172,7 +165,6 @@ export class ProjectManager
 					//Update project screen
 					this.projectScreen?.updateRunningPhase(phase.name);
 
-
 					if (this.dryRun) {
 						await sleep(200);
 					} else
@@ -219,7 +211,6 @@ export class ProjectManager
 							if (!didPrintPackages) {
 								didPrintPackages = true;
 							}
-
 
 							didRun = true;
 							//Update project screen

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import * as moment from 'moment';
+import moment from 'moment';
 import {utc} from 'moment';
 import {AuditBy, Timestamp} from './types';
 

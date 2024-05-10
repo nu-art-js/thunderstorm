@@ -33,6 +33,7 @@ export const Const_FirebaseConfigKeys: (keyof typeof Default_Files['firebaseConf
 const Default_OutputPath = './.trash';
 export const Default_OutputFiles = {
 	output: Default_OutputPath,
+	outputLogs: `${Default_OutputPath}/logs`,
 	runningStatus: `${Default_OutputPath}/running-status.json`
 };
 

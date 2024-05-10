@@ -15,7 +15,7 @@ import {
 	exists,
 	filterDuplicates, flatArray,
 	reduceToMap,
-	sleep,
+	sleep, StaticLogger,
 	TypedMap
 } from '@nu-art/ts-common';
 import {
@@ -48,6 +48,7 @@ const CONST_RunningRoot = process.cwd();
 const pathToProjectTS_Config = convertToFullPath(`./.config/${CONST_TS_Config}`);
 const pathToProjectEslint = convertToFullPath('./.config/.eslintrc.js');
 const runInDebug = false;
+const CommandoLibs = ['commando', 'build-and-install', 'ts-common'];
 
 export const Phase_PrintHelp: BuildPhase = {
 	type: 'project',
@@ -86,7 +87,7 @@ export const Phase_SetWithThunderstorm: BuildPhase = {
 
 		// Remove all the infra packages from the runtime project
 		const packages = MemKey_Packages.get();
-		const filter = (pkg: Package) => pkg.type !== PackageType_InfraLib || (RuntimeParams.withCommando && ['commando', 'build-and-install'].includes(pkg.name));
+		const filter = (pkg: Package) => pkg.type !== PackageType_InfraLib || (RuntimeParams.withCommando && CommandoLibs.includes(pkg.name));
 
 		packages.packages = packages.packages.filter(filter);
 		packages.packagesDependency = packages.packagesDependency?.map(_packageArray => _packageArray.filter(filter));
@@ -174,7 +175,6 @@ export const Phase_ResolveTemplate: BuildPhase = {
 
 		if (!fs.existsSync(pkg.output))
 			await _fs.mkdir(pkg.output);
-
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Resolved Templates');
 	}
@@ -400,7 +400,7 @@ export const Phase_Debug: BuildPhase = {
 	filter: async () => RuntimeParams.debug,
 	action: async () => {
 		const packages = MemKey_Packages.get();
-		console.log(JSON.stringify(packages, null, 2));
+		StaticLogger.logInfo(JSON.stringify(packages, null, 2));
 	}
 };
 
@@ -523,7 +523,6 @@ export const Phase_Compile: BuildPhase = {
 	}
 };
 
-
 export const Phase_CompileWatch: BuildPhase = {
 	type: 'project',
 	name: 'compile-watch',
@@ -565,7 +564,6 @@ export const Phase_CompileWatch: BuildPhase = {
 				if (controller)
 					controller.abort();
 
-
 				prevController = controller;
 				controller = new AbortController();
 				await projectManager.executePhase('compile', {
@@ -573,42 +571,40 @@ export const Phase_CompileWatch: BuildPhase = {
 					packageDependencyIndex: packageIndex
 				}, controller.signal);
 
-
 				if (!prevController?.signal.aborted) {
 					// reset all packages back to watching
 					packages.packages.map(pkg => projectScreen.updateOrCreatePackage(pkg.name, 'Watching'));
 					projectScreen.updateRunningPhase('compile-watch');
 				}
-			} catch (e) {
-				console.log(e);
+			} catch (e: any) {
+				StaticLogger.logError(e);
 			}
 		};
-
 
 		return new Promise<void>((resolve, error) => {
 			watcher
 				.on('error', (error) => {
-					console.log(`error`, error);
+					StaticLogger.logError('Error while watching', error);
 				})
 				.on('ready', () => {
-					console.log('Watching: ', sourcesPaths);
+					StaticLogger.logInfo('Watching: ', sourcesPaths);
 					packages.packages.map(pkg => projectScreen.updateOrCreatePackage(pkg.name, 'Watching'));
 
 					watcher
 						.on('add', (path) => {
-							console.log(`New File added: ${path}`);
+							StaticLogger.logInfo(`New File added: ${path}`);
 							watchListener(path);
 						})
 						.on('change', (path) => {
-							console.log(`Detected changes in file: ${path}`);
+							StaticLogger.logInfo(`Detected changes in file: ${path}`);
 							watchListener(path);
 						})
 						.on('unlinkDir', (path) => {
-							console.log(`Deleted Directory: ${path}`);
+							StaticLogger.logInfo(`Deleted Directory: ${path}`);
 							watchListener(path, true);
 						})
 						.on('unlink', (path) => {
-							console.log(`File Deleted: ${path}`);
+							StaticLogger.logInfo(`File Deleted: ${path}`);
 							watchListener(path, true);
 						});
 				});
