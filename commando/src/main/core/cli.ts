@@ -145,12 +145,11 @@ export class Cli
 				if (stderr)
 					reject(stderr);
 
-				if (stdout) {
-					this.logVerbose(stdout);
-				}
+				if (stdout)
+					this.logError(stdout);
 
 				if (stderr)
-					this.logVerboseBold(stderr);
+					this.logError(stderr);
 				resolve({stdout, stderr});
 			});
 		});

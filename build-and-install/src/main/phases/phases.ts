@@ -1,32 +1,28 @@
-import {
-	BuildPhase,
-	PackageBuildPhaseType_Package,
-	PackageBuildPhaseType_PackageWithOutput
-} from '../logic/ProjectManager';
+import {BuildPhase, PackageBuildPhaseType_Package, PackageBuildPhaseType_PackageWithOutput} from '../logic/ProjectManager';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, MemKey_Packages} from '../core/consts';
+import {CONST_FirebaseRC, CONST_PackageJSON, MemKey_Packages} from '../core/consts';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {
 	__stringify,
 	_keys,
 	BadImplementationException,
 	exists,
-	filterDuplicates, flatArray,
+	filterDuplicates,
+	flatArray,
 	reduceToMap,
-	sleep, StaticLogger,
+	sleep,
+	StaticLogger,
 	TypedMap
 } from '@nu-art/ts-common';
+import {JSONVersion, Package, Package_FirebaseFunctionsApp, Package_FirebaseHostingApp, PackageType_InfraLib, RuntimePackage_WithOutput} from '../core/types';
 import {
-	JSONVersion,
-	Package,
-	Package_FirebaseFunctionsApp,
-	Package_FirebaseHostingApp,
-	PackageType_InfraLib,
-	RuntimePackage_WithOutput
-} from '../core/types';
-import {createFirebaseFunctionsJSON, createFirebaseHostingJSON, createFirebaseRC} from '../core/package/generate';
+	createFirebaseRC, writeToFile_functionFirebaseConfigJSON,
+	writeToFile_FunctionFirebaseJSON,
+	writeToFile_HostingFirebaseConfigJSON,
+	writeToFile_HostingFirebaseJSON
+} from '../core/package/generate';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {AllBaiParams, RuntimeParams} from '../core/params/params';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
@@ -36,6 +32,7 @@ import * as chokidar from 'chokidar';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults/consts';
 import {MemKey_ProjectManager} from '../project-manager';
 import {MemKey_ProjectScreen} from '../screen/ProjectScreen';
+import {Commando} from '@nu-art/commando/core/cli';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
@@ -194,9 +191,10 @@ export const Phase_ResolveEnv: BuildPhase = {
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Resolving Env');
 
-		let fileContent;
-		if (pkg.type === 'firebase-hosting-app')
-			fileContent = createFirebaseHostingJSON(firebasePkg as Package_FirebaseHostingApp, RuntimeParams.setEnv);
+		if (pkg.type === 'firebase-hosting-app') {
+			await writeToFile_HostingFirebaseJSON(firebasePkg as Package_FirebaseHostingApp, RuntimeParams.setEnv);
+			await writeToFile_HostingFirebaseConfigJSON(firebasePkg as Package_FirebaseHostingApp, RuntimeParams.setEnv);
+		}
 
 		if (pkg.type === 'firebase-functions-app') {
 			const firebaseFunctionPkg = firebasePkg as Package_FirebaseFunctionsApp;
@@ -207,18 +205,14 @@ export const Phase_ResolveEnv: BuildPhase = {
 				await _fs.mkdir(pathToFirebaseConfigFolder, {recursive: true});
 			}
 
-			if (firebasePkg.envConfig.ssl) {
-				const pathToProxyFile = `${firebaseFunctionPkg.path}/src/main/proxy.ts`;
-				try {
-					await _fs.access(pathToProxyFile);
-				} catch (e: any) {
-					let defaultFileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
-					defaultFileContent = defaultFileContent.replace(/SERVER_PORT/g, `${firebasePkg.envConfig.basePort}`);
-					defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_KEY/g, `${firebasePkg.envConfig.ssl?.pathToKey}`);
-					defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${firebasePkg.envConfig.ssl?.pathToCertificate}`);
-					await _fs.writeFile(pathToProxyFile, defaultFileContent, {encoding: 'utf-8'});
-				}
-			}
+			// if (firebasePkg.envConfig.ssl) {
+			// 	const pathToProxyFile = `${firebaseFunctionPkg.path}/src/main/proxy.ts`;
+			// 	let defaultFileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
+			// 	defaultFileContent = defaultFileContent.replace(/SERVER_PORT/g, `${firebasePkg.envConfig.basePort}`);
+			// 	defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_KEY/g, `${firebasePkg.envConfig.ssl?.pathToKey}`);
+			// 	defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${firebasePkg.envConfig.ssl?.pathToCertificate}`);
+			// 	await _fs.writeFile(pathToProxyFile, defaultFileContent, {encoding: 'utf-8'});
+			// }
 
 			await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
 					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
@@ -230,10 +224,9 @@ export const Phase_ResolveEnv: BuildPhase = {
 					}
 				})
 			);
-			fileContent = createFirebaseFunctionsJSON(firebaseFunctionPkg, RuntimeParams.setEnv);
+			await writeToFile_functionFirebaseConfigJSON(firebaseFunctionPkg, RuntimeParams.setEnv);
+			await writeToFile_FunctionFirebaseJSON(firebaseFunctionPkg, RuntimeParams.setEnv);
 		}
-
-		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Env Resolved');
 	}
@@ -478,6 +471,19 @@ export const Phase_Compile: BuildPhase = {
 		if (pkg.type === 'sourceless')
 			return;
 
+		try {
+			await Commando.create(Cli_Basic)
+				.cd(`${pkg.path}/src/main`)
+				.append(`find . -name '*.scss' | cpio -pdm "${pkg.output}" > /dev/null`)
+				.append(`find . -name '*.svg' | cpio -pdm "${pkg.output}" > /dev/null`)
+				.append(`find . -name '*.png' | cpio -pdm "${pkg.output}" > /dev/null`)
+				.append(`find . -name '*.jpg' | cpio -pdm "${pkg.output}" > /dev/null`)
+				.append(`find . -name '*.jpeg' | cpio -pdm "${pkg.output}" > /dev/null`)
+				.execute();
+		} catch (e) {
+			console.log(e);
+		}
+
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;
 		const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
@@ -515,6 +521,7 @@ export const Phase_Compile: BuildPhase = {
 						.append(`mkdir -p ${pkgOutputFolderAsDependency}`)
 						.append(`rsync -a --delete ${(rtPack as RuntimePackage_WithOutput).output}/ ${pkg.output}/.dependencies/${rtPack.name}/`)
 						.execute();
+
 					await _fs.writeFile(`${pkgOutputFolderAsDependency}/${CONST_PackageJSON}`, JSON.stringify(rtPack.packageJsonRuntime, null, 2), {encoding: 'utf-8'});
 				}
 			}

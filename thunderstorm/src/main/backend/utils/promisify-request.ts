@@ -19,16 +19,16 @@
  * limitations under the License.
  */
 
-import * as _request from 'request';
-import {Response} from 'request';
+import request, {Response} from 'request';
 import {__stringify, ApiException} from '@nu-art/ts-common';
 import {RequestOptions} from '../../backend';
 
-export async function promisifyRequest(request: RequestOptions, throwException: boolean = true): Promise<Response> {
+
+export async function promisifyRequest(_request: RequestOptions, throwException: boolean = true): Promise<Response> {
 	return new Promise<Response>((resolve, rejected) => {
-		_request(request, (error, response: Response) => {
+		request(_request, (error, response: Response) => {
 			if (error)
-				return rejected(new ApiException(503, `Error: ${error}\n Request: ${__stringify(request, true)}`));
+				return rejected(new ApiException(503, `Error: ${error}\n Request: ${__stringify(_request, true)}`));
 
 			if (throwException && response.statusCode !== 200)
 				return rejected(new ApiException(response.statusCode, `Redirect proxy message, ${__stringify(response.body)} \n${__stringify(request, true)}`));

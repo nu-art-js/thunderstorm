@@ -2,11 +2,11 @@ import {RuntimePackage, RuntimePackage_WithOutput} from '../core/types';
 import {
 	__stringify,
 	BadImplementationException,
-	BeLogged,
+	BeLogged, DebugFlag,
 	filterDuplicates,
 	flatArray,
 	ImplementationMissingException,
-	lastElement, LogClient_MemBuffer,
+	lastElement, LogClient, LogClient_MemBuffer, LogClient_Terminal,
 	Logger,
 	LogLevel,
 	sleep
@@ -64,6 +64,8 @@ function resolveAllMandatoryPhases(phase: BuildPhase): BuildPhase[] {
 	return filterDuplicates(result, result => result.name);
 }
 
+DebugFlag.DefaultLogLevel = LogLevel.Verbose;
+
 export class ProjectManager
 	extends Logger {
 
@@ -72,13 +74,28 @@ export class ProjectManager
 	private terminate = false;
 	private prevRunningStatus?: RunningStatus;
 	private readonly projectScreen: ProjectScreen;
+	private logger?: LogClient;
 
 	constructor() {
 		super();
-		const logger = new LogClient_MemBuffer('output.txt');
-		BeLogged.addClient(logger);
-		this.setMinLevel(LogLevel.Verbose);
-		this.projectScreen = new ProjectScreen([], () => logger.buffers[0]);
+		this.showAllLogs();
+		this.projectScreen = new ProjectScreen([], () => (this.logger as LogClient_MemBuffer).buffers[0]);
+	}
+
+	showAllLogs() {
+		if (this.logger)
+			BeLogged.removeConsole(this.logger);
+
+		this.projectScreen?.disable();
+		BeLogged.addClient(this.logger = LogClient_Terminal);
+	}
+
+	showPrettyLogs() {
+		if (this.logger)
+			BeLogged.removeConsole(this.logger);
+
+		this.projectScreen.enable();
+		BeLogged.addClient(this.projectScreen.logClient);
 	}
 
 	private loadPackage() {
@@ -304,6 +321,7 @@ export class ProjectManager
 				this.logError(e);
 			}
 
+			MemKey_ProjectScreen.get().endRun();
 			process.off('SIGINT', listener);
 			await this.updateRunningStatus();
 		});
