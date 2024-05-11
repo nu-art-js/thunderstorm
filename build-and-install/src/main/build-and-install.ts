@@ -1,9 +1,20 @@
 import {ProjectManager} from './logic/ProjectManager';
 import {DebugFlag, LogLevel, StaticLogger} from '@nu-art/ts-common';
 import {
-	Phase_CheckCyclicImports, Phase_Clean, Phase_Compile, Phase_InstallGlobals,
-	Phase_InstallNvm, Phase_InstallPackages, Phase_InstallPnpm, Phase_Lint, Phase_PackagePurge, Phase_PreCompile, Phase_PrepareCompile,
-	Phase_PrepareParams, Phase_PrintDependencyTree, Phase_PrintEnv,
+	Phase_CheckCyclicImports,
+	Phase_Clean,
+	Phase_Compile,
+	Phase_InstallGlobals,
+	Phase_InstallNvm,
+	Phase_InstallPackages,
+	Phase_InstallPnpm,
+	Phase_Lint,
+	Phase_PackagePurge,
+	Phase_PreCompile,
+	Phase_PrepareCompile,
+	Phase_PrepareParams,
+	Phase_PrintDependencyTree,
+	Phase_PrintEnv,
 	Phase_PrintHelp,
 	Phase_ResolveEnv,
 	Phase_ResolvePackages,
@@ -12,7 +23,6 @@ import {
 	Phase_SetWithThunderstorm,
 } from './phases/phases';
 import {RuntimeParams} from './core/params/params';
-import {MemKey_ProjectScreen} from './screen/ProjectScreen';
 
 
 DebugFlag.DefaultLogLevel = RuntimeParams.debug ? LogLevel.Debug : LogLevel.Info;
@@ -47,9 +57,7 @@ projectManager.registerPhase(Phase_Compile);
 projectManager.execute()
 	.then(() => {
 		StaticLogger.logInfo('completed');
-		MemKey_ProjectScreen.get().endRun();
 	})
 	.catch(err => {
 		StaticLogger.logError('Failed with error: ', err);
-		MemKey_ProjectScreen.get().endRun();
 	});

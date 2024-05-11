@@ -99,7 +99,6 @@ export const BaiParam_Purge: BaseCliParam<'purge', boolean> = {
 	description: 'Will delete the node_modules folder in all project packages \nWill perform --clean --install'
 };
 
-
 export const BaiParam_Generate: BaseCliParam<'generate', boolean> = {
 	keys: ['--generate', '-g'],
 	keyName: 'generate',
@@ -308,4 +307,7 @@ export const AllBaiParams = [
 	BaiParam_Publish, // TODO: to implement
 ];
 
-export const RuntimeParams = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();
+const params = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();
+if (!params.setEnv)
+	params.setEnv = 'local';
+export const RuntimeParams = params;

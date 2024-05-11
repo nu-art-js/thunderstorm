@@ -23,18 +23,18 @@
  * Module dependencies.
  */
 
-import * as compression from 'compression';
 
 import {Server} from 'http';
 import {Socket} from 'net';
 import * as fs from 'fs';
 import {addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
-import * as express from 'express';
+import express from 'express';
 
 import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from '../../utils/types';
 import {DefaultApiErrorMessageComposer} from './server-errors';
 import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase/backend';
 import {ServerApi} from './server-api';
+import compression from 'compression';
 
 
 const ALL_Methods: string[] = [

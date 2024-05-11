@@ -1,16 +1,43 @@
-import {Package_FirebaseFunctionsApp, Package_FirebaseHostingApp} from '../types';
+import {FirebaseEnvConfig, Package_FirebaseFunctionsApp, Package_FirebaseHostingAndFunctionApp, Package_FirebaseHostingApp} from '../types';
+import {BadImplementationException} from '@nu-art/ts-common';
+import {promises as _fs} from 'fs';
+import {CONST_FirebaseJSON} from '../consts';
 
 
-export function createFirebaseRC<Env extends string>(pkg: Package_FirebaseHostingApp | Package_FirebaseFunctionsApp, env: Env) {
+export function createFirebaseHostingConfig<Env extends string>(pkg: Package_FirebaseHostingApp, env: Env) {
+	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
+	if (!envConfig)
+		throw new BadImplementationException(`Could not find env: ${env}`);
+
 	return {
 		projects: {
-			default: pkg.envConfig.projectIds[env],
+			default: envConfig.projectId,
 		}
 	};
 }
 
-export function createFirebaseHostingJSON<Env extends string>(pkg: Package_FirebaseHostingApp, env: Env) {
-	if (env === 'local')
+export function createFirebaseFunctionConfig<Env extends string>(pkg: Package_FirebaseHostingApp, env: Env) {
+	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
+	if (!envConfig)
+		throw new BadImplementationException(`Could not find env: ${env}`);
+
+	return;
+}
+
+export function createFirebaseRC<Env extends string>(pkg: Package_FirebaseHostingApp | Package_FirebaseFunctionsApp, env: Env) {
+	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
+	if (!envConfig)
+		throw new BadImplementationException(`Could not find env: ${env}`);
+
+	return {
+		projects: {
+			default: envConfig.projectId,
+		}
+	};
+}
+
+function getHostingConfig(pkg: Package_FirebaseHostingApp | Package_FirebaseHostingAndFunctionApp, envConfig: FirebaseEnvConfig<string>) {
+	if (envConfig.isLocal)
 		return {};
 
 	return {
@@ -18,9 +45,62 @@ export function createFirebaseHostingJSON<Env extends string>(pkg: Package_Fireb
 	};
 }
 
-export function createFirebaseFunctionsJSON<Env extends string>(pkg: Package_FirebaseFunctionsApp, env: Env) {
-	if (env === 'local') {
-		let port = pkg.envConfig.basePort;
+export async function writeToFile_HostingFirebaseJSON<Env extends string>(pkg: Package_FirebaseHostingApp | Package_FirebaseHostingAndFunctionApp, env: Env) {
+	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
+	if (!envConfig)
+		throw new BadImplementationException(`Could not find env: ${env}`);
+
+	const fileContent = getHostingConfig(pkg, envConfig);
+	await _fs.writeFile(`${pkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
+}
+
+export async function writeToFile_HostingFirebaseConfigJSON<Env extends string>(pkg: Package_FirebaseHostingApp | Package_FirebaseHostingAndFunctionApp, env: Env) {
+	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
+	if (!envConfig)
+		throw new BadImplementationException(`Could not find env: ${env}`);
+
+	const emulatorConfig = {
+		hostname: 'localhost',
+		port: pkg.envConfig.basePort + 2,
+	};
+
+	const feConfig = {
+		ModuleFE_Thunderstorm: {
+			appName: `${pkg.name} - (${env})`
+		},
+		ModuleFE_XHR: {
+			origin: envConfig.isLocal ? `https://localhost:${pkg.envConfig.basePort + 1}` : envConfig.backend.url,
+			timeout: envConfig.backend.timeout || 30000,
+			compress: envConfig.backend.compress || false,
+			minLogLevel: envConfig.backend.minLogLevel || false,
+		},
+		ModuleFE_FirebaseListener: {
+			emulatorConfig: envConfig.isLocal ? emulatorConfig : undefined,
+			firebaseConfig: envConfig.firebase.listener?.config
+		}
+	};
+
+	const fileContent = `export const config = ${JSON.stringify(feConfig, null, 2)};`;
+	await _fs.writeFile(`${pkg.path}/src/main/config.ts`, fileContent, {encoding: 'utf-8'});
+}
+
+export async function writeToFile_functionFirebaseConfigJSON<Env extends string>(pkg: Package_FirebaseFunctionsApp | Package_FirebaseHostingAndFunctionApp, env: Env) {
+	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
+	if (!envConfig)
+		throw new BadImplementationException(`Could not find env: ${env}`);
+
+	const beConfig = {
+		name: envConfig.env
+	};
+
+	const fileContent = `${envConfig.isLocal ? '// @ts-ignore\nprocess.env[\'NODE_TLS_REJECT_UNAUTHORIZED\'] = 0;\n' : ''}
+export const Environment = ${JSON.stringify(beConfig)};`;
+	await _fs.writeFile(`${pkg.path}/src/main/config.ts`, fileContent, {encoding: 'utf-8'});
+}
+
+function getFunctionConfig(pkg: Package_FirebaseFunctionsApp | Package_FirebaseHostingAndFunctionApp, envConfig: FirebaseEnvConfig<string>) {
+	if (envConfig.isLocal) {
+		const port = pkg.envConfig.basePort;
 		return {
 			database: {
 				rules: `${pkg.envConfig.pathToFirebaseConfig}/database.rules.json`
@@ -43,33 +123,46 @@ export function createFirebaseFunctionsJSON<Env extends string>(pkg: Package_Fir
 				]
 			},
 			emulators: {
-				functions: {port: port++},
-				database: {port: port++},
+				functions: {port: port + 1},
+				database: {port: port + 2},
 				firestore: {
-					port: port++,
-					websocketPort: port++
+					port: port + 3,
+					websocketPort: port + 4
 				},
-				pubsub: {port: port++},
-				storage: {port: port++},
-				auth: {port: port++},
-				ui: {port: port++, enabled: true},
-				hub: {port: port++},
-				logging: {port: port++}
+				pubsub: {port: port + 5},
+				storage: {port: port + 6},
+				auth: {port: port + 7},
+				ui: {port: port + 8, enabled: true},
+				hub: {port: port + 9},
+				logging: {port: port + 10}
+			}
+		};
+	} else {
+		return {
+			functions: {
+				source: pkg.output.replace(`${pkg.path}/`, ''),
+				ignore: pkg.envConfig.functions?.ignore
 			}
 		};
 	}
-
-	return {
-		functions: {
-			source: pkg.output.replace(`${pkg.path}/`, ''),
-			ignore: pkg.envConfig.functions?.ignore
-		}
-	};
 }
 
-export function createFirebaseFullJSON<Env extends string>(pkg: Package_FirebaseFunctionsApp & Package_FirebaseHostingApp, env: Env) {
-	const hosting = createFirebaseHostingJSON(pkg, env);
-	const functions = createFirebaseFunctionsJSON(pkg, env);
+export async function writeToFile_FunctionFirebaseJSON<Env extends string>(pkg: Package_FirebaseFunctionsApp | Package_FirebaseHostingAndFunctionApp, env: Env) {
+	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
+	if (!envConfig)
+		throw new BadImplementationException(`Could not find env: ${env}`);
+
+	const fileContent = getFunctionConfig(pkg, envConfig);
+	await _fs.writeFile(`${pkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
+}
+
+export function createFirebaseFullJSON<Env extends string>(pkg: Package_FirebaseHostingAndFunctionApp, env: Env) {
+	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
+	if (!envConfig)
+		throw new BadImplementationException(`Could not find env: ${env}`);
+
+	const hosting = writeToFile_HostingFirebaseJSON(pkg, env);
+	const functions = writeToFile_FunctionFirebaseJSON(pkg, env);
 	return {
 		...hosting,
 		...functions

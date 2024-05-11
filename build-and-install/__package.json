@@ -33,6 +33,7 @@
   "dependencies": {
     "chokidar": "^3.6.0",
     "neo-blessed": "^0.2.0",
+    "glob": "^10.3.14",
     "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
     "@nu-art/commando": "$THUNDERSTORM_DEPENDENCY_VERSION"
   },

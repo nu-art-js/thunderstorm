@@ -1,6 +1,7 @@
 // @ts-ignore
 import * as blessed from 'neo-blessed';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {LogClient_MemBuffer} from '@nu-art/ts-common';
 
 
 export type PackageStatus = {
@@ -16,15 +17,20 @@ export class ProjectScreen {
 	private currentRunningPhase!: CurrentRunningPhase;
 	private readonly logsResolver;
 
-	private readonly screen: blessed.Widgets.Screen;
-	private readonly phaseBox: blessed.Widgets.BoxElement;
-	private readonly packageTable: blessed.Widgets.TableElement;
-	// private readonly loggerTitle: blessed.Widgets.TextElement;
-	private readonly logger: blessed.Widgets.LogElement;
+	private screen: blessed.Widgets.Screen;
+	private phaseBox: blessed.Widgets.BoxElement;
+	private packageTable: blessed.Widgets.TableElement;
+	private logger: blessed.Widgets.LogElement;
+	readonly logClient = new LogClient_MemBuffer('output.txt');
+	private enabled = false;
 
 	constructor(initialData: PackageStatus[], logsResolver: () => string) {
 		this.packageData = initialData;
 		this.logsResolver = logsResolver;
+	}
+
+	enable() {
+		this.enabled = true;
 		this.screen = blessed.screen({
 			smartCSR: true,
 			title: 'Build and install',
@@ -109,10 +115,23 @@ export class ProjectScreen {
 			valign: 'top',
 			align: 'left'
 		});
+	}
 
+	disable() {
+		this.enabled = false;
+		this.screen.detach();
+		this.phaseBox.detach();
+		this.packageTable.detach();
+		this.logger.detach();
+		this.screen.clear();
+		this.screen.destroy();
+		process.stdout.write('\x1bc');  // This sends the terminal reset escape code
 	}
 
 	public renderScreen = () => {
+		if (!this.enabled)
+			return;
+
 		this.renderCurrentRunningPhase();
 		this.renderPackageTableTable();
 		this.logger.setContent(this.logsResolver());
