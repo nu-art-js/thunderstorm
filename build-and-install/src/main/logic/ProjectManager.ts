@@ -20,7 +20,13 @@ import {mapProjectPackages} from './map-project-packages';
 import {MemKey_Packages} from '../core/consts';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, MemKey_RunningStatus, RunningStatus} from '../defaults/consts';
+import {
+	Default_Files,
+	Default_OutputFiles,
+	MemKey_DefaultFiles,
+	MemKey_RunningStatus,
+	RunningStatus
+} from '../defaults/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_AbortSignal, MemKey_ProjectManager} from '../project-manager';
 import {MemKey_ProjectScreen, ProjectScreen} from '../screen/ProjectScreen';
@@ -83,7 +89,7 @@ export class ProjectManager
 	constructor() {
 		super();
 		this.projectScreen = new ProjectScreen([]);
-		this.showAllLogs();
+		RuntimeParams.allLogs ? this.showAllLogs() : this.showPrettyLogs();
 	}
 
 	showAllLogs() {

@@ -271,6 +271,14 @@ export const BaiParam_Publish: BaseCliParam<'publish', string> = {
 	defaultValue: 'patch'
 };
 
+export const BaiParam_AllLogs: BaseCliParam<'allLogs', boolean> = {
+	keys: ['--all-logs', '-al'],
+	keyName: 'allLogs',
+	type: 'boolean',
+	group: 'Other',
+	description: 'will disable ui and show verbose logs for bai run',
+};
+
 export const AllBaiParams = [
 	BaiParam_Help,
 	BaiParam_DependencyTree,
@@ -305,6 +313,7 @@ export const AllBaiParams = [
 	BaiParam_Debug,
 	BaiParam_QuickDeploy, // TODO: to implement
 	BaiParam_Publish, // TODO: to implement
+	BaiParam_AllLogs
 ];
 
 const params = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();
