@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {_keys, compare, merge, Module, Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
+import {_keys, compare, deepClone, merge, Module, Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {gzip, ungzip} from 'pako';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
@@ -47,7 +47,7 @@ export class QueryParamKey<T extends AdvancedQueryParam> {
 	}
 
 	update(value: T) {
-		return ModuleFE_BrowserHistoryV2.update({[this.key]: value});
+		return ModuleFE_BrowserHistoryV2.set(this.key, value);
 	}
 
 	delete() {
@@ -66,11 +66,17 @@ export class ModuleFE_BrowserHistoryV2_Class
 	private readonly history: History<any>;
 	private state: Readonly<RecursiveObjectOfPrimitives>;
 
+	//Temp vars for encoding and dispatching in an async way
+	private encodeTimeout?: NodeJS.Timeout;
+	private encodeState?: RecursiveObjectOfPrimitives;
+
 	constructor() {
 		super();
 		this.history = createBrowserHistory();
 		this.state = this.decode();
 	}
+
+	//######################### State Interaction #########################
 
 	private decode(hash: string = window.location.hash): any {
 		if (!hash || hash.length === 0)
@@ -81,11 +87,56 @@ export class ModuleFE_BrowserHistoryV2_Class
 		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(window.atob(hash || window.location.hash), c => c.charCodeAt(0)))));
 	}
 
-	private encode(state = this.state): any {
-		this.state = Object.freeze(state);
-		window.location.hash = window.btoa(new Uint8Array(gzip(JSON.stringify(this.state))).reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
-		dispatcher_urlParamsChangedV2.dispatchUI();
+	private encode(state: RecursiveObjectOfPrimitives): any {
+		this.encodeState = merge(this.encodeState ?? {}, state);
+		if (this.encodeTimeout)
+			return;
+
+		this.encodeTimeout = setTimeout(() => {
+			this.state = Object.freeze(this.encodeState!);
+			window.location.hash = window.btoa(new Uint8Array(gzip(JSON.stringify(this.state))).reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
+			delete this.encodeTimeout;
+			delete this.encodeState;
+			dispatcher_urlParamsChangedV2.dispatchUI();
+		}, 1);
 	}
+
+	//The current state is the encoded state if we are already waiting for an encode, else the state
+	private getState = () => this.encodeState ?? deepClone(this.state);
+
+	//######################### Get Data #########################
+
+	get(key: string): Readonly<AdvancedQueryParam | undefined> {
+		return this.state[key] ? deepClone(this.state[key]) : undefined;
+	}
+
+	//######################### Set Data #########################
+
+	set(key: string, queryParams: AdvancedQueryParam) {
+		const state = this.getState();
+		state[key] = queryParams;
+		this.encode(state);
+	}
+
+	setObject(object: RecursiveObjectOfPrimitives) {
+		const state = this.getState();
+		_keys(object).forEach(key => {
+			state[key] = object[key];
+		});
+		this.encode(state);
+	}
+
+	delete(key: string) {
+		const state = this.getState();
+		delete state[key];
+		this.encode(state);
+	}
+
+	setState = (state: RecursiveObjectOfPrimitives) => {
+		this.encode(state);
+	};
+
+	//######################### Location Interaction #########################
 
 	/**
 	 * Update and navigate according to query params
@@ -105,41 +156,6 @@ export class ModuleFE_BrowserHistoryV2_Class
 		if (!compare(this.state, lastState))
 			dispatcher_urlParamsChangedV2.dispatchUI();
 	}
-
-	update(queryParams: AdvancedQueryParam) {
-		this.state = merge(this.state, queryParams);
-		this.encode();
-	}
-
-	set(key: string, queryParams: AdvancedQueryParam) {
-		const state = {...this.state};
-		state[key] = queryParams;
-		this.encode(state);
-	}
-
-	setObject(object: RecursiveObjectOfPrimitives) {
-		const state = {...this.state};
-		_keys(object).forEach(key => {
-			state[key] = object[key];
-		});
-		this.encode(state);
-	}
-
-	get(key: string): Readonly<AdvancedQueryParam | undefined> {
-		return this.state[key];
-	}
-
-	delete(key: string) {
-		const state = {...this.state};
-		delete state[key];
-		this.encode(state);
-	}
-
-	setState = (state: RecursiveObjectOfPrimitives) => {
-		this.encode(state);
-	};
-
-	getState = () => this.state;
 }
 
 export const ModuleFE_BrowserHistoryV2 = new ModuleFE_BrowserHistoryV2_Class();
