@@ -25,6 +25,9 @@ export class ProjectScreen {
 
 	constructor(initialData: PackageStatus[]) {
 		this.packageData = initialData;
+		this.logClient.setLogAppendedListener(() => {
+			this.renderScreen();
+		});
 	}
 
 	enable() {

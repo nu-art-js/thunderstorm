@@ -88,6 +88,11 @@ export const Phase_SetWithThunderstorm: BuildPhase = {
 
 		packages.packages = packages.packages.filter(filter);
 		packages.packagesDependency = packages.packagesDependency?.map(_packageArray => _packageArray.filter(filter));
+
+		const projectScreen = MemKey_ProjectScreen.get();
+		if (!projectScreen.packageData.length) {
+			packages.packagesDependency.map(packages => packages.map(pkg => projectScreen.updateOrCreatePackage(pkg.name, 'Initiated')));
+		}
 	}
 };
 
@@ -472,15 +477,21 @@ export const Phase_Compile: BuildPhase = {
 			return;
 
 		try {
+			const otherFiles = [
+				'scss',
+				'svg',
+				'png',
+				'jpg',
+				'jpeg',
+				'rules',
+			];
+
+			const command = `find . \\( -name ${otherFiles.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${pkg.output}" > /dev/null`;
 			await Commando.create(Cli_Basic)
 				.cd(`${pkg.path}/src/main`)
-				.append(`find . -name '*.scss' | cpio -pdm "${pkg.output}" > /dev/null`)
-				.append(`find . -name '*.svg' | cpio -pdm "${pkg.output}" > /dev/null`)
-				.append(`find . -name '*.png' | cpio -pdm "${pkg.output}" > /dev/null`)
-				.append(`find . -name '*.jpg' | cpio -pdm "${pkg.output}" > /dev/null`)
-				.append(`find . -name '*.jpeg' | cpio -pdm "${pkg.output}" > /dev/null`)
+				.append(command)
 				.execute();
-		} finally {
+		} catch (e) {
 			//
 		}
 

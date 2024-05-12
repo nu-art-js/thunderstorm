@@ -17,20 +17,26 @@
  * limitations under the License.
  */
 
-import {LogClient_BaseRotate} from "./LogClient_BaseRotate";
+import {LogClient_BaseRotate} from './LogClient_BaseRotate';
 
 
 export class LogClient_MemBuffer
 	extends LogClient_BaseRotate {
 
-	readonly buffers: string[] = [""];
+	readonly buffers: string[] = [''];
+	private onLogAppended?: VoidFunction;
 
 	constructor(name: string, maxBuffers = 10, maxBufferSize = 1024 * 1024) {
 		super(name, maxBuffers, maxBufferSize);
 	}
 
+	setLogAppendedListener(onLogAppended: VoidFunction) {
+		this.onLogAppended = onLogAppended;
+	}
+
 	protected printLogMessage(log: string) {
 		this.buffers[0] += log;
+		this.onLogAppended?.();
 	}
 
 	protected cleanup(): void {
@@ -41,6 +47,6 @@ export class LogClient_MemBuffer
 	}
 
 	protected prepare(): void {
-		this.buffers[0] = "";
+		this.buffers[0] = '';
 	}
 }

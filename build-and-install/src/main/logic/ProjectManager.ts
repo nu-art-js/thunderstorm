@@ -117,11 +117,6 @@ export class ProjectManager
 
 		const packages = mapProjectPackages(projectConfig);
 		MemKey_Packages.set(packages);
-
-		//Update UI with packages on first run
-		if (!this.projectScreen.packageData.length) {
-			packages.packagesDependency.map(packages => packages.map(pkg => this.projectScreen.updateOrCreatePackage(pkg.name, 'Initiated')));
-		}
 	}
 
 	registerPhase(phase: BuildPhase) {
