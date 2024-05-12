@@ -9,7 +9,7 @@ import {Logger, LogLevel} from '@nu-art/ts-common';
 export class Cli_PNPM
 	extends Logger {
 
-	private _expectedVersion = '8.15.5';
+	private _expectedVersion = '9.1.0';
 	private _homeEnvVar = 'PNPM_HOME';
 
 	constructor() {
