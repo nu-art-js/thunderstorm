@@ -480,8 +480,8 @@ export const Phase_Compile: BuildPhase = {
 				.append(`find . -name '*.jpg' | cpio -pdm "${pkg.output}" > /dev/null`)
 				.append(`find . -name '*.jpeg' | cpio -pdm "${pkg.output}" > /dev/null`)
 				.execute();
-		} catch (e) {
-			console.log(e);
+		} finally {
+			//
 		}
 
 		const folder = 'main';
