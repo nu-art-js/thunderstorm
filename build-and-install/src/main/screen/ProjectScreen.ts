@@ -15,7 +15,6 @@ type CurrentRunningPhase = { phaseName: string };
 export class ProjectScreen {
 	public readonly packageData: PackageStatus[];
 	private currentRunningPhase!: CurrentRunningPhase;
-	private readonly logsResolver;
 
 	private screen: blessed.Widgets.Screen;
 	private phaseBox: blessed.Widgets.BoxElement;
@@ -24,9 +23,8 @@ export class ProjectScreen {
 	readonly logClient = new LogClient_MemBuffer('output.txt');
 	private enabled = false;
 
-	constructor(initialData: PackageStatus[], logsResolver: () => string) {
+	constructor(initialData: PackageStatus[]) {
 		this.packageData = initialData;
-		this.logsResolver = logsResolver;
 	}
 
 	enable() {
@@ -119,6 +117,9 @@ export class ProjectScreen {
 
 	disable() {
 		this.enabled = false;
+		if (!this.screen)
+			return;
+
 		this.screen.detach();
 		this.phaseBox.detach();
 		this.packageTable.detach();
@@ -134,12 +135,13 @@ export class ProjectScreen {
 
 		this.renderCurrentRunningPhase();
 		this.renderPackageTableTable();
-		this.logger.setContent(this.logsResolver());
+		this.logger.setContent(this.logClient.buffers[0]);
 		this.screen.render();
 	};
 
 	public endRun = () => {
-		process.exit(0);
+		this.disable();
+		console.log(this.logClient.buffers[0]);
 	};
 
 	private renderCurrentRunningPhase = () => {

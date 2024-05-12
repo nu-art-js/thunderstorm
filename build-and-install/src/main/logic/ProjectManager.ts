@@ -2,11 +2,14 @@ import {RuntimePackage, RuntimePackage_WithOutput} from '../core/types';
 import {
 	__stringify,
 	BadImplementationException,
-	BeLogged, DebugFlag,
+	BeLogged,
+	DebugFlag,
 	filterDuplicates,
 	flatArray,
 	ImplementationMissingException,
-	lastElement, LogClient, LogClient_MemBuffer, LogClient_Terminal,
+	lastElement,
+	LogClient,
+	LogClient_Terminal,
 	Logger,
 	LogLevel,
 	sleep
@@ -53,6 +56,7 @@ type BuildPhase_Project = BuildPhase_Base & {
 }
 
 export type BuildPhase = BuildPhase_Package | BuildPhase_PackageWithOutput | BuildPhase_Project
+const mapToName = (item: { name: string }) => item.name;
 
 function resolveAllMandatoryPhases(phase: BuildPhase): BuildPhase[] {
 	let result: BuildPhase[] = [phase];
@@ -78,8 +82,8 @@ export class ProjectManager
 
 	constructor() {
 		super();
+		this.projectScreen = new ProjectScreen([]);
 		this.showAllLogs();
-		this.projectScreen = new ProjectScreen([], () => (this.logger as LogClient_MemBuffer).buffers[0]);
 	}
 
 	showAllLogs() {
@@ -95,7 +99,7 @@ export class ProjectManager
 			BeLogged.removeConsole(this.logger);
 
 		this.projectScreen.enable();
-		BeLogged.addClient(this.projectScreen.logClient);
+		BeLogged.addClient(this.logger = this.projectScreen.logClient);
 	}
 
 	private loadPackage() {
@@ -155,11 +159,12 @@ export class ProjectManager
 			return;
 
 		const nextAction = await this.prepare(phases, i);
+		this.logDebug('Scheduling phases: ', phasesToRun.map(mapToName));
 
 		if (phasesToRun[0].type === 'project')
 			return async () => {
 				if (this.terminate)
-					return;
+					return this.logInfo(`Skipping project phases:`, phasesToRun.map(mapToName));
 
 				let didRun = false;
 				for (const phase of phasesToRun) {
@@ -174,8 +179,11 @@ export class ProjectManager
 					if (!this.prevRunningStatus && !phase.terminatingPhase)
 						MemKey_RunningStatus.set({phaseKey: phase.name});
 
+					this.logInfo(`Running project phase: ${phase.name}`);
+
 					// if prev running status still exists skip execution
 					if (this.prevRunningStatus && !phase.isMandatory) {
+						this.logVerbose('Skipping duo continue');
 						continue;
 					}
 
@@ -222,14 +230,18 @@ export class ProjectManager
 								MemKey_RunningStatus.set({phaseKey: phase.name, packageDependencyIndex: i});
 
 							if (!didPrintPhase) {
+								this.logInfo(`Running package phase: ${__stringify(phasesToRun.map(mapToName))}`);
 								didPrintPhase = true;
 							}
 
 							if (!didPrintPackages) {
+								this.logVerbose(` - on packages: ${__stringify(packages.map(mapToName))}`);
 								didPrintPackages = true;
 							}
 
 							didRun = true;
+							this.logDebug(`   - ${pkg.name}:${phase.name}`);
+
 							//Update project screen
 							this.projectScreen?.updateRunningPhase(phase.name);
 
@@ -241,6 +253,7 @@ export class ProjectManager
 							// skip packages indexes
 							const packageDependencyIndex = this.prevRunningStatus?.packageDependencyIndex ?? 0;
 							if (packageDependencyIndex > i) {
+								this.logVerbose('Skipping duo continue');
 								this.projectScreen.updateOrCreatePackage(pkg.name, 'Skipped');
 								continue;
 							}
@@ -258,7 +271,7 @@ export class ProjectManager
 			});
 
 			if (this.terminate)
-				return;
+				return this.logInfo(`Skipping packages phases:`, phasesToRun.map(mapToName));
 
 			for (const toRunPackage of toRunPackages) {
 				await toRunPackage();
@@ -293,6 +306,7 @@ export class ProjectManager
 			MemKey_ProjectScreen.set(this.projectScreen);
 
 			const listener = async (status: string) => {
+				this.logDebug('SIGINT - running status:', status);
 				await this.updateRunningStatus();
 				process.exit(0);
 			};
@@ -312,6 +326,7 @@ export class ProjectManager
 
 			// update prev running status if passed
 			if (prevRunningStatus) {
+				this.logWarning('Setting prev running status: ', prevRunningStatus);
 				this.prevRunningStatus = prevRunningStatus;
 			}
 
