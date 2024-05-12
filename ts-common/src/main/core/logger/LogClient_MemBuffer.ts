@@ -18,11 +18,41 @@
  */
 
 import {LogClient_BaseRotate} from './LogClient_BaseRotate';
+import {LogLevel, LogParam} from './types';
+import {_logger_convertLogParamsToStrings, _logger_indentNewLineBy} from './utils';
+import {NoColor} from './LogClient_Terminal';
 
+
+function getColor(level: LogLevel, bold = false): string {
+	let color;
+	switch (level) {
+		case LogLevel.Verbose:
+			color = '\x1b[90m';
+			break;
+
+		case LogLevel.Debug:
+			color = '\x1b[34m';
+			break;
+
+		case LogLevel.Info:
+			color = '\x1b[32m';
+			break;
+
+		case LogLevel.Warning:
+			color = '\x1b[33m';
+			break;
+
+		case LogLevel.Error:
+			color = '\x1b[31m';
+			break;
+	}
+	return color + (bold ? '\x1b[1m' : '');
+}
 
 export class LogClient_MemBuffer
 	extends LogClient_BaseRotate {
 
+	forTerminal = false;
 	readonly buffers: string[] = [''];
 	private onLogAppended?: VoidFunction;
 
@@ -30,8 +60,18 @@ export class LogClient_MemBuffer
 		super(name, maxBuffers, maxBufferSize);
 	}
 
+	setForTerminal() {
+		this.forTerminal = true;
+	}
+
 	setLogAppendedListener(onLogAppended: VoidFunction) {
 		this.onLogAppended = onLogAppended;
+	}
+
+	protected processLogMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]) {
+		const color = getColor(level, bold);
+		const paramsAsStrings = _logger_convertLogParamsToStrings(toLog);
+		return _logger_indentNewLineBy(color + prefix, paramsAsStrings.join(' ')) + NoColor;
 	}
 
 	protected printLogMessage(log: string) {

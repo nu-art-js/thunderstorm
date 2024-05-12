@@ -500,6 +500,7 @@ export const Phase_Compile: BuildPhase = {
 		const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
 		const inPackageTsConfig = await _fs.readFile(pathToLocalTsConfig, {encoding: 'utf-8'});
 		const defaultPackageTsConfig = await _fs.readFile(pathToProjectTS_Config, {encoding: 'utf-8'});
+		StaticLogger.logInfo(`Copying tsconfig: ${pathToProjectTS_Config} => ${pathToLocalTsConfig}`);
 		if (!pkg.customTsConfig && inPackageTsConfig !== defaultPackageTsConfig) {
 			await _fs.copyFile(pathToProjectTS_Config, pathToLocalTsConfig);
 		}
