@@ -54,6 +54,7 @@ export class Cli_PNPM
 
 	installPackages = async (commando?: Commando) => {
 		await (commando ?? Commando.create())
+			.append(`pnpm store prune`)
 			.append(`pnpm install -f --no-frozen-lockfile --prefer-offline false`)
 			.execute();
 
