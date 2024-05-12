@@ -1,7 +1,7 @@
 // @ts-ignore
 import * as blessed from 'neo-blessed';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {LogClient_MemBuffer} from '@nu-art/ts-common';
+import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, LogClient_MemBuffer, LogLevel} from '@nu-art/ts-common';
 
 
 export type PackageStatus = {
@@ -25,6 +25,13 @@ export class ProjectScreen {
 
 	constructor(initialData: PackageStatus[]) {
 		this.packageData = initialData;
+		this.logClient.setForTerminal();
+		this.logClient.setComposer((tag: string, level: LogLevel): string => {
+			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
+			const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23).split('_')[1];
+			return `  ${date} ${_logger_getPrefix(level)} ${tag}:  `;
+		});
+
 		this.logClient.setLogAppendedListener(() => {
 			this.renderScreen();
 		});
