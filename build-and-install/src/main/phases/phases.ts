@@ -492,6 +492,7 @@ export const Phase_Compile: BuildPhase = {
 
 		try {
 			const otherFiles = [
+				'json',
 				'scss',
 				'svg',
 				'png',
@@ -685,7 +686,7 @@ export const Phase_Launch: BuildPhase = {
 			await sleep(1000 * counter++);
 			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
 			const command = NVM.createInteractiveCommando(Cli_Basic)
-				.cd(pkg.path).debug()
+				.cd(pkg.path)
 				.append(`nvm use`)
 				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`);
