@@ -12,10 +12,11 @@ import {
 	__stringify,
 	_keys,
 	BadImplementationException,
+	currentTimeMillis,
 	exists,
 	filterDuplicates,
-	flatArray,
-	reduceToMap,
+	flatArray, Hour, Minute,
+	reduceToMap, Second,
 	sleep,
 	StaticLogger,
 	TypedMap
@@ -24,7 +25,7 @@ import {
 	JSONVersion,
 	Package,
 	Package_FirebaseFunctionsApp,
-	Package_FirebaseHostingApp,
+	Package_FirebaseHostingApp, PackageType_FirebaseFunctionsApp, PackageType_FirebaseHostingApp,
 	PackageType_InfraLib,
 	RuntimePackage_WithOutput
 } from '../core/types';
@@ -52,6 +53,7 @@ const CONST_ProjectVersionKey = 'APP_VERSION';
 const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
 const CONST_TS_Config = `tsconfig.json`;
 const CONST_RunningRoot = process.cwd();
+const CONST_VersionApp = 'version-app.json';
 
 const pathToProjectTS_Config = convertToFullPath(`./.config/${CONST_TS_Config}`);
 const pathToProjectEslint = convertToFullPath('./.config/.eslintrc.js');
@@ -444,13 +446,14 @@ export const Phase_PrepareCompile: BuildPhase = {
 		compileActions[sourceFolder] = async () => {
 			const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
 			projectScreen.updateOrCreatePackage(pkg.name, 'Compiling');
+			const counter = timeCounter();
 
 			const commando = NVM.createCommando();
 			await commando
 				.append(`tsc -p "${pathToLocalTsConfig}" --rootDir "${sourceFolder}" --outDir "${pkg.output}"`)
 				.execute();
 
-			projectScreen.updateOrCreatePackage(pkg.name, 'Compiled');
+			projectScreen.updateOrCreatePackage(pkg.name, `Compiled (${counter.format('mm:ss.zzz')})`);
 		};
 	}
 };
@@ -510,6 +513,11 @@ export const Phase_Compile: BuildPhase = {
 		const sourceFolder = `${pkg.path}/src/${folder}`;
 		const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
 
+		const pathToVersionAppJSON = `${CONST_RunningRoot}/${CONST_VersionApp}`;
+
+		//copy version-app.json file
+		const versionAppJSON = await _fs.readFile(pathToVersionAppJSON, {encoding: 'utf-8'});
+
 		// only read if exists
 		let inPackageTsConfig = '';
 		if (fs.existsSync(pathToLocalTsConfig))
@@ -525,7 +533,10 @@ export const Phase_Compile: BuildPhase = {
 		// --- HERE ---
 		await _fs.writeFile(`${pkg.output}/${CONST_PackageJSON}`, JSON.stringify(pkg.packageJsonOutput, null, 2), {encoding: 'utf-8'});
 
-		if (pkg.type == 'firebase-functions-app') {
+		if (pkg.type === PackageType_FirebaseFunctionsApp || pkg.type === PackageType_FirebaseHostingApp)
+			await _fs.writeFile(`${sourceFolder}/${CONST_VersionApp}`, versionAppJSON, {encoding: 'utf-8'});
+
+		if (pkg.type === 'firebase-functions-app') {
 			pkg.packageJsonRuntime!.main = pkg.packageJsonRuntime!.main.replace('dist/', '');
 			pkg.packageJsonRuntime!.types = pkg.packageJsonRuntime!.types.replace('dist/', '');
 
@@ -669,17 +680,15 @@ export const Phase_Launch: BuildPhase = {
 	action: async (pkg) => {
 		const projectScreen = MemKey_ProjectScreen.get();
 
-		projectScreen.updateOrCreatePackage(pkg.name, 'Deploying Application');
+		projectScreen.updateOrCreatePackage(pkg.name, 'Launching...');
 		if (pkg.type === 'firebase-functions-app') {
 			await sleep(1000 * counter++);
 			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
 			const command = NVM.createInteractiveCommando(Cli_Basic)
 				.cd(pkg.path).debug()
 				.append(`nvm use`)
-				.append(`echo RUNNING PACKAGE1 ${pkg.name}`)
 				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
-				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-				.append(`echo RUNNING PACKAGE2 ${pkg.name}`);
+				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`);
 
 			command.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''}`);
 
@@ -690,12 +699,13 @@ export const Phase_Launch: BuildPhase = {
 		if (pkg.type === 'firebase-hosting-app')
 			return NVM.createInteractiveCommando(Cli_Basic)
 				.cd(pkg.path)
+				.append(`array=($(lsof -ti:${[pkg.envConfig.basePort - 1].join(',')}))`)
+				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 				.append(`nvm use`)
-				.append(`pwd`)
 				.append(`npm run start`)
 				.execute();
 
-		projectScreen.updateOrCreatePackage(pkg.name, 'Application Deployed');
+		projectScreen.updateOrCreatePackage(pkg.name, 'Died');
 	}
 };
 
@@ -713,12 +723,15 @@ export const Phase_DeployFrontend: BuildPhase = {
 		if (pkg.type !== 'firebase-hosting-app')
 			throw new BadImplementationException(`Somehow got a non firebase hosting package here: ${__stringify(pkg)}`);
 
-		projectScreen.updateOrCreatePackage(pkg.name, 'Deploying Hosting');
+		projectScreen.updateOrCreatePackage(pkg.name, 'Deploying');
+		const counter = timeCounter();
+
 		await NVM.createCommando(Cli_Basic)
 			.cd(pkg.path)
 			.append(`firebase deploy --only hosting`)
 			.execute();
-		projectScreen.updateOrCreatePackage(pkg.name, 'Hosting Deployed');
+
+		projectScreen.updateOrCreatePackage(pkg.name, `Deployed (${counter.format('mm:ss.zzz')})`);
 	}
 };
 
@@ -733,13 +746,39 @@ export const Phase_DeployBackend: BuildPhase = {
 		if (pkg.type !== 'firebase-functions-app')
 			throw new BadImplementationException(`Somehow got a non firebase functions package here: ${__stringify(pkg)}`);
 
-		projectScreen.updateOrCreatePackage(pkg.name, 'Deploying Functions');
+		projectScreen.updateOrCreatePackage(pkg.name, 'Deploying...');
+		const counter = timeCounter();
 
 		await NVM.createCommando(Cli_Basic)
 			.cd(pkg.path)
 			.append(`firebase --debug deploy --only functions --force`)
 			.execute();
 
-		projectScreen.updateOrCreatePackage(pkg.name, 'Functions Deployed');
+		projectScreen.updateOrCreatePackage(pkg.name, `Deployed (${counter.format('mm:ss.zzz')})`);
 	}
 };
+
+function timeCounter() {
+	const started = currentTimeMillis();
+	return {
+		dt: () => currentTimeMillis() - started,
+		format: (format: string) => {
+			let dt = currentTimeMillis() - started;
+			const hours = Math.floor(dt / Hour);
+			dt -= hours * Hour;
+
+			const minutes = Math.floor(dt / Minute);
+			dt -= minutes * Minute;
+
+			const seconds = Math.floor(dt / Second);
+			dt -= seconds * Second;
+
+			const millis = dt;
+			return format
+				.replace('hh', String(hours).padStart(2, '0'))
+				.replace('mm', String(minutes).padStart(2, '0'))
+				.replace('ss', String(seconds).padStart(2, '0'))
+				.replace('zzz', String(millis).padStart(3, '0'));
+		}
+	};
+}
