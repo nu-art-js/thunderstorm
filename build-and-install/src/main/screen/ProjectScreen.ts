@@ -1,7 +1,13 @@
 // @ts-ignore
 import * as blessed from 'neo-blessed';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, LogClient_MemBuffer, LogLevel} from '@nu-art/ts-common';
+import {
+	_logger_finalDate,
+	_logger_getPrefix,
+	_logger_timezoneOffset,
+	LogClient_MemBuffer,
+	LogLevel
+} from '@nu-art/ts-common';
 
 
 export type PackageStatus = {
@@ -20,6 +26,7 @@ export class ProjectScreen {
 	private phaseBox: blessed.Widgets.BoxElement;
 	private packageTable: blessed.Widgets.TableElement;
 	private logger: blessed.Widgets.LogElement;
+	private titleElement: blessed.Widgets.TextElement;
 	readonly logClient = new LogClient_MemBuffer('output.txt');
 	private enabled = false;
 
@@ -90,7 +97,7 @@ export class ProjectScreen {
 			}
 		});
 
-		blessed.text({
+		this.titleElement = blessed.text({
 			parent: this.screen,
 			top: 0,
 			right: 0,
@@ -130,10 +137,11 @@ export class ProjectScreen {
 		if (!this.screen)
 			return;
 
-		this.screen.detach();
 		this.phaseBox.detach();
 		this.packageTable.detach();
+		this.titleElement.detach();
 		this.logger.detach();
+		this.screen.detach();
 		this.screen.clear();
 		this.screen.destroy();
 		process.stdout.write('\x1bc');  // This sends the terminal reset escape code
