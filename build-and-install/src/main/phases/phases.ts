@@ -1,4 +1,8 @@
-import {BuildPhase, PackageBuildPhaseType_Package, PackageBuildPhaseType_PackageWithOutput} from '../logic/ProjectManager';
+import {
+	BuildPhase,
+	PackageBuildPhaseType_Package,
+	PackageBuildPhaseType_PackageWithOutput
+} from '../logic/ProjectManager';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
@@ -16,7 +20,14 @@ import {
 	StaticLogger,
 	TypedMap
 } from '@nu-art/ts-common';
-import {JSONVersion, Package, Package_FirebaseFunctionsApp, Package_FirebaseHostingApp, PackageType_InfraLib, RuntimePackage_WithOutput} from '../core/types';
+import {
+	JSONVersion,
+	Package,
+	Package_FirebaseFunctionsApp,
+	Package_FirebaseHostingApp,
+	PackageType_InfraLib,
+	RuntimePackage_WithOutput
+} from '../core/types';
 import {
 	createFirebaseRC, writeToFile_functionFirebaseConfigJSON,
 	writeToFile_FunctionFirebaseJSON,
@@ -498,7 +509,12 @@ export const Phase_Compile: BuildPhase = {
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;
 		const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
-		const inPackageTsConfig = await _fs.readFile(pathToLocalTsConfig, {encoding: 'utf-8'});
+
+		// only read if exists
+		let inPackageTsConfig = '';
+		if (fs.existsSync(pathToLocalTsConfig))
+			inPackageTsConfig = await _fs.readFile(pathToLocalTsConfig, {encoding: 'utf-8'});
+
 		const defaultPackageTsConfig = await _fs.readFile(pathToProjectTS_Config, {encoding: 'utf-8'});
 
 		StaticLogger.logInfo(`Copying tsconfig: ${pathToProjectTS_Config} => ${pathToLocalTsConfig}`);
