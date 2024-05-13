@@ -331,7 +331,6 @@ export class ProjectManager
 				this.logError(e);
 			}
 
-			MemKey_ProjectScreen.get().endRun();
 			process.off('SIGINT', listener);
 			await this.updateRunningStatus();
 		});
