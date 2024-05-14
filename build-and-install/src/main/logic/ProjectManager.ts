@@ -91,6 +91,7 @@ export class ProjectManager
 		this.projectScreen = new ProjectScreen([]);
 		RuntimeParams.allLogs ? this.showAllLogs() : this.showPrettyLogs();
 		this.setMinLevel(LogLevel.Verbose);
+		this.logInfo('Runtime params:', RuntimeParams);
 	}
 
 	showAllLogs() {
@@ -211,6 +212,8 @@ export class ProjectManager
 			let didRun = false;
 			let didPrintPhase = false;
 
+			const phasesRan: BuildPhase_Package[] = [];
+
 			const toRunPackages = MemKey_Packages.get().packagesDependency.map((packages, i) => {
 				return async () => {
 
@@ -232,6 +235,8 @@ export class ProjectManager
 								MemKey_RunningStatus.set({phaseKey: phase.name, packageDependencyIndex: i});
 
 							if (!didPrintPhase) {
+								// will only be called once per phase
+								phasesRan.push(phase);
 								this.logInfo(`Running package phase: ${__stringify(phasesToRun.map(mapToName))}`);
 								didPrintPhase = true;
 							}
@@ -272,7 +277,7 @@ export class ProjectManager
 				await toRunPackage();
 			}
 
-			if (didRun && lastElement(phasesToRun)!.terminatingPhase)
+			if (didRun && lastElement(phasesRan)!.terminatingPhase)
 				this.terminate = true;
 
 			await nextAction?.();

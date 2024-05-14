@@ -448,10 +448,37 @@ export const Phase_PrepareCompile: BuildPhase = {
 			projectScreen.updateOrCreatePackage(pkg.name, 'Compiling');
 			const counter = timeCounter();
 
-			const commando = NVM.createCommando();
-			await commando
-				.append(`tsc -p "${pathToLocalTsConfig}" --rootDir "${sourceFolder}" --outDir "${pkg.output}"`)
-				.execute();
+			const commando = NVM.createCommando(Cli_Basic);
+			if (pkg.type === 'firebase-hosting-app') {
+				commando
+					.cd(pkg.path)
+					.append(`ENV=${RuntimeParams.setEnv} npm run build`);
+			} else {
+				try {
+					const otherFiles = [
+						'json',
+						'scss',
+						'svg',
+						'png',
+						'jpg',
+						'jpeg',
+						'rules',
+					];
+
+					const command = `find . \\( -name ${otherFiles.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${pkg.output}" > /dev/null`;
+					await Commando.create(Cli_Basic)
+						.cd(`${pkg.path}/src/main`)
+						.append(command)
+						.execute();
+				} catch (e) {
+					//
+				}
+
+				commando
+					.append(`tsc -p "${pathToLocalTsConfig}" --rootDir "${sourceFolder}" --outDir "${pkg.output}"`);
+			}
+
+			await commando.execute();
 
 			projectScreen.updateOrCreatePackage(pkg.name, `Compiled (${counter.format('mm:ss.zzz')})`);
 		};
@@ -489,26 +516,6 @@ export const Phase_Compile: BuildPhase = {
 
 		if (pkg.type === 'sourceless')
 			return;
-
-		try {
-			const otherFiles = [
-				'json',
-				'scss',
-				'svg',
-				'png',
-				'jpg',
-				'jpeg',
-				'rules',
-			];
-
-			const command = `find . \\( -name ${otherFiles.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${pkg.output}" > /dev/null`;
-			await Commando.create(Cli_Basic)
-				.cd(`${pkg.path}/src/main`)
-				.append(command)
-				.execute();
-		} catch (e) {
-			//
-		}
 
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;
@@ -713,10 +720,12 @@ export const Phase_Launch: BuildPhase = {
 export const Phase_DeployFrontend: BuildPhase = {
 	type: 'package',
 	name: 'deploy-frontend',
-	terminatingPhase: true,
+	terminatingPhase: false,
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => {
-		return !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0] && pkg.type === 'firebase-hosting-app';
+		const match = !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0];
+		StaticLogger.logWarning(`deploy-frontend: ${pkg.name} match: ${match}`);
+		return match && pkg.type === 'firebase-hosting-app';
 	},
 	action: async (pkg) => {
 		const projectScreen = MemKey_ProjectScreen.get();
@@ -741,7 +750,11 @@ export const Phase_DeployBackend: BuildPhase = {
 	name: 'deploy-functions',
 	terminatingPhase: true,
 	mandatoryPhases: [Phase_ResolveEnv],
-	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0] && pkg.type === 'firebase-functions-app',
+	filter: async (pkg) => {
+		const match = !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0];
+		StaticLogger.logWarning(`deploy-functions: ${pkg.name} match: ${match}`);
+		return match && pkg.type === 'firebase-functions-app';
+	},
 	action: async (pkg) => {
 		const projectScreen = MemKey_ProjectScreen.get();
 		if (pkg.type !== 'firebase-functions-app')
