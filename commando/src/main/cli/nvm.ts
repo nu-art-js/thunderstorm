@@ -13,7 +13,7 @@ const CONST__FILE_NVMRC = '.nvmrc';
 export class Cli_NVM
 	extends Logger {
 
-	private _expectedVersion = '0.35.3';
+	private _expectedVersion = '0.39.7';
 	private _homeEnvVar = '$NVM_DIR';
 
 	constructor() {
