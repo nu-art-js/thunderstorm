@@ -31,6 +31,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "neo-blessed": "^0.2.0",
     "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION"
   },
   "devDependencies": {
