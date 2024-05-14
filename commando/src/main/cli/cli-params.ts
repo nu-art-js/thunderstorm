@@ -64,6 +64,7 @@ export type CliParam<K extends string, V extends Primitive | Primitive[]> = Base
 }
 
 export class CLIParams_Resolver<T extends BaseCliParam<string, any>[], Output extends CliParams<T> = CliParams<T>> {
+
 	private params: CliParam<string, any>[];
 
 	static create<T extends BaseCliParam<string, any>[]>(...params: T) {
@@ -80,13 +81,13 @@ export class CLIParams_Resolver<T extends BaseCliParam<string, any>[], Output ex
 	 * @returns CliParamsObject
 	 */
 	resolveParamValue(inputParams = process.argv.slice(2, process.argv.length)) {
-		return inputParams.reduce((output, inputParam) => {
+		type Key = keyof Output
+		type Value = Output[Key];
+
+		const runtimeParams = inputParams.reduce((output, inputParam) => {
 			const cliParamToResolve = this.findMatchingParamToResolve(inputParam);
 			if (!cliParamToResolve)
 				return output;
-
-			type Key = keyof Output
-			type Value = Output[Key];
 
 			const value = inputParam.split('=')[1];
 			const finalValue = cliParamToResolve.process(value, cliParamToResolve.defaultValue);
@@ -118,6 +119,12 @@ export class CLIParams_Resolver<T extends BaseCliParam<string, any>[], Output ex
 			output[key] = finalValue;
 			return output;
 		}, {} as Output);
+
+		this.params.filter(param => exists(param.defaultValue) && !exists(runtimeParams[param.keyName as Key])).forEach(param => {
+			runtimeParams[param.keyName as Key] = param.defaultValue;
+		});
+
+		return runtimeParams;
 	}
 
 	/**
