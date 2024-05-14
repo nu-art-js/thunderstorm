@@ -177,7 +177,7 @@ export const BaiParam_Test: BaseCliParam<'test', string> = {
 	type: 'string',
 	group: 'Test',
 	description: 'Run the tests in all the project packages\naccepts test label to run optionally. default will be empty string',
-	defaultValue: '.*'
+	process: (regexp) => regexp ?? '.*',
 };
 
 export const BaiParam_Launch: BaseCliParam<'launch', string> = {
@@ -185,7 +185,7 @@ export const BaiParam_Launch: BaseCliParam<'launch', string> = {
 	keyName: 'launch',
 	type: 'string',
 	group: 'Apps',
-	process: () => '.*',
+	process: (regexp) => regexp ?? '.*',
 	description: 'It will add the provided App to the launch list \nrequired input: path-to-app-to-launch(string)'
 };
 
@@ -218,7 +218,7 @@ export const BaiParam_Deploy: BaseCliParam<'deploy', string> = {
 	keyName: 'deploy',
 	type: 'string',
 	group: 'Apps',
-	process: () => '.*',
+	process: (regexp) => regexp ?? '.*',
 	description: 'Will add the provided App to the deploy list or all applications'
 };
 
@@ -268,7 +268,7 @@ export const BaiParam_Publish: BaseCliParam<'publish', string> = {
 	type: 'string',
 	group: 'Other',
 	description: 'Will publish thunderstorm && promote thunderstorm version \nenum options: patch | minor | major \nDefault Param: patch',
-	defaultValue: 'patch'
+	process: (part) => part ?? 'patch'
 };
 
 export const BaiParam_AllLogs: BaseCliParam<'allLogs', boolean> = {

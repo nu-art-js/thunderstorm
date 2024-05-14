@@ -724,7 +724,6 @@ export const Phase_DeployFrontend: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => {
 		const match = !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0];
-		StaticLogger.logWarning(`deploy-frontend: ${pkg.name} match: ${match}`);
 		return match && pkg.type === 'firebase-hosting-app';
 	},
 	action: async (pkg) => {
@@ -752,7 +751,6 @@ export const Phase_DeployBackend: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => {
 		const match = !!pkg.name.match(new RegExp(RuntimeParams.deploy))?.[0];
-		StaticLogger.logWarning(`deploy-functions: ${pkg.name} match: ${match}`);
 		return match && pkg.type === 'firebase-functions-app';
 	},
 	action: async (pkg) => {
