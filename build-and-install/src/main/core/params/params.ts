@@ -41,9 +41,9 @@ export const BaiParam_continue: BaseCliParam<'continue', boolean> = {
 	description: 'Will pick up where last build process failed'
 };
 
-export const BaiParam_SetEnv: BaseCliParam<'setEnv', string> = {
+export const BaiParam_SetEnv: BaseCliParam<'environment', string> = {
 	keys: ['--set-env', '-se'],
-	keyName: 'setEnv',
+	keyName: 'environment',
 	type: 'string',
 	group: 'Build',
 	defaultValue: 'local',
@@ -311,12 +311,9 @@ export const AllBaiParams = [
 	BaiParam_DeployFrontend,
 	BaiParam_NoGit, // TODO: to implement
 	BaiParam_Debug,
-	BaiParam_QuickDeploy, // TODO: to implement
 	BaiParam_Publish, // TODO: to implement
 	BaiParam_AllLogs
 ];
 
 const params = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();
-if (!params.setEnv)
-	params.setEnv = 'local';
 export const RuntimeParams = params;

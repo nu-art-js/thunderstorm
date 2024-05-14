@@ -203,15 +203,15 @@ export const Phase_ResolveEnv: BuildPhase = {
 	filter: async (pkg) => pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app',
 	action: async (pkg) => {
 		const firebasePkg = pkg as Package_FirebaseHostingApp | Package_FirebaseFunctionsApp;
-		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(createFirebaseRC(firebasePkg, RuntimeParams.setEnv), null, 2), {encoding: 'utf-8'});
+		await _fs.writeFile(`${firebasePkg.path}/${CONST_FirebaseRC}`, JSON.stringify(createFirebaseRC(firebasePkg, RuntimeParams.environment), null, 2), {encoding: 'utf-8'});
 		const defaultFiles = MemKey_DefaultFiles.get();
 		const projectScreen = MemKey_ProjectScreen.get();
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Resolving Env');
 
 		if (pkg.type === 'firebase-hosting-app') {
-			await writeToFile_HostingFirebaseJSON(firebasePkg as Package_FirebaseHostingApp, RuntimeParams.setEnv);
-			await writeToFile_HostingFirebaseConfigJSON(firebasePkg as Package_FirebaseHostingApp, RuntimeParams.setEnv);
+			await writeToFile_HostingFirebaseJSON(firebasePkg as Package_FirebaseHostingApp, RuntimeParams.environment);
+			await writeToFile_HostingFirebaseConfigJSON(firebasePkg as Package_FirebaseHostingApp, RuntimeParams.environment);
 		}
 
 		if (pkg.type === 'firebase-functions-app') {
@@ -242,8 +242,8 @@ export const Phase_ResolveEnv: BuildPhase = {
 					}
 				})
 			);
-			await writeToFile_functionFirebaseConfigJSON(firebaseFunctionPkg, RuntimeParams.setEnv);
-			await writeToFile_FunctionFirebaseJSON(firebaseFunctionPkg, RuntimeParams.setEnv);
+			await writeToFile_functionFirebaseConfigJSON(firebaseFunctionPkg, RuntimeParams.environment);
+			await writeToFile_FunctionFirebaseJSON(firebaseFunctionPkg, RuntimeParams.environment);
 		}
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Env Resolved');
@@ -452,7 +452,7 @@ export const Phase_PrepareCompile: BuildPhase = {
 			if (pkg.type === 'firebase-hosting-app') {
 				commando
 					.cd(pkg.path)
-					.append(`ENV=${RuntimeParams.setEnv} npm run build`);
+					.append(`ENV=${RuntimeParams.environment} npm run build`);
 			} else {
 				try {
 					const otherFiles = [
