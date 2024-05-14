@@ -3,11 +3,15 @@ import {DebugFlag, LogLevel, StaticLogger} from '@nu-art/ts-common';
 import {
 	Phase_CheckCyclicImports,
 	Phase_Clean,
-	Phase_Compile, Phase_CompileWatch, Phase_Debug, Phase_DeployBackend, Phase_DeployFrontend,
+	Phase_Compile,
+	Phase_CompileWatch,
+	Phase_DeployBackend,
+	Phase_DeployFrontend,
 	Phase_InstallGlobals,
 	Phase_InstallNvm,
 	Phase_InstallPackages,
-	Phase_InstallPnpm, Phase_Launch,
+	Phase_InstallPnpm,
+	Phase_Launch,
 	Phase_Lint,
 	Phase_PackagePurge,
 	Phase_PreCompile,
@@ -52,7 +56,6 @@ projectManager.registerPhase(Phase_CompileWatch);
 projectManager.registerPhase(Phase_Launch);
 projectManager.registerPhase(Phase_DeployFrontend);
 projectManager.registerPhase(Phase_DeployBackend);
-projectManager.registerPhase(Phase_Debug);
 
 projectManager.execute()
 	.then(() => {
