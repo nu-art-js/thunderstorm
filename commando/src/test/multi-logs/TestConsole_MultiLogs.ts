@@ -1,8 +1,8 @@
+import {ConsoleScreen} from '../../main/console/ConsoleScreen';
 import {BadImplementationException, LogClient_MemBuffer, removeItemFromArray} from '@nu-art/ts-common';
-import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
 
 
-export class RunningProcessLogs
+export class TestConsole_MultiLogs
 	extends ConsoleScreen<{ logs: { key: string, logClient: LogClient_MemBuffer }[] }> {
 
 	constructor() {
@@ -17,6 +17,7 @@ export class RunningProcessLogs
 			]
 
 		});
+
 		this.state = {logs: []};
 	}
 

@@ -1,7 +1,7 @@
 // @ts-ignore
-import {blessed} from 'neo-blessed';
+import * as blessed from 'neo-blessed';
 
-import {mergeObject, removeFromArray, ResolvableContent} from '@nu-art/ts-common';
+import {mergeObject, ResolvableContent} from '@nu-art/ts-common';
 import {BoxOptions, ScreenOptions, WidgetTypes} from './types';
 
 
@@ -22,6 +22,7 @@ export abstract class ConsoleScreen<State extends object> {
 	setState(state: ResolvableContent<Partial<State>>) {
 		this.state = mergeObject(this.state, state);
 		this._render();
+		return this;
 	}
 
 	createWidget(type: WidgetTypes, props: Omit<BoxOptions, 'parent'>) {
@@ -35,8 +36,8 @@ export abstract class ConsoleScreen<State extends object> {
 	}
 
 	private _render() {
-		this.render();
 		this.screen.render();
+		this.render();
 	}
 
 	// this for inheriting and rendering the state according to the widgets
@@ -63,10 +64,7 @@ export abstract class ConsoleScreen<State extends object> {
 	 */
 	clearScreen(clearContent: boolean = true) {
 		this.widgets.forEach(widget => widget.detach());
-		this.widgets.forEach(widget => removeFromArray(this.widgets, widget));
-		if (clearContent) {
-			this.screen.clear();
-		}
-		this._render();
+		// @ts-ignore
+		this.widgets = [];
 	}
 }

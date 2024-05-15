@@ -1,7 +1,7 @@
 import {exec, ExecOptions} from 'child_process';
 import {CreateMergedInstance} from './class-merger';
 import {CliError} from './CliError';
-import {Constructor, Logger, LogLevel, StaticLogger} from '@nu-art/ts-common';
+import {Constructor, generateHex, Logger, LogLevel} from '@nu-art/ts-common';
 import {ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 
 
@@ -32,6 +32,7 @@ export class BaseCLI
 	private indentation: number = 0;
 	protected _debug: boolean = false;
 	protected option: Options;
+	protected uid: string = generateHex((8));
 
 	/**
 	 * Constructs a CLI instance with given options.
@@ -70,6 +71,9 @@ export class BaseCLI
 		return this;
 	};
 
+	setUID(uuid: string) {
+		this.setTag(uuid);
+	}
 }
 
 export class CliInteractive
@@ -87,7 +91,7 @@ export class CliInteractive
 			if (!message.length)
 				return;
 
-			StaticLogger.logInfo(message);
+			this.logInfo(`${message}`);
 		};
 
 		this.shell.stdout.on('data', printer);
@@ -99,7 +103,7 @@ export class CliInteractive
 
 		// Handle shell exit
 		this.shell.on('close', (code) => {
-			StaticLogger.logInfo(`child process exited with code ${code}`);
+			this.logInfo(`child process exited with code ${code}`);
 		});
 	}
 
@@ -110,7 +114,7 @@ export class CliInteractive
 
 		this.shell.stdin.write(command + this.option.newlineDelimiter, 'utf-8', (err?: Error | null) => {
 			if (err)
-				StaticLogger.logError('error', err);
+				this.logError(`error`, err);
 		});
 		this.commands = [];
 	};
@@ -216,6 +220,10 @@ export class Commando {
 			commando.cli.append(command);
 			return commando;
 		};
+		commando.setUID = (uid: string) => {
+			commando.cli.setUID(uid);
+			return commando;
+		};
 		return commando;
 	}
 
@@ -223,6 +231,7 @@ export class Commando {
 	setOptions = (options: ExecOptions) => this;
 	public debug = (debug?: boolean) => this;
 	append = (command: string) => this;
+	setUID = (uid: string) => this;
 
 	execute = async (): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});// placeholder
 
@@ -252,6 +261,10 @@ export class CommandoInteractive {
 		cli.setMinLevel(LogLevel.Verbose);
 
 		commando.cli = cli;
+		commando.setUID = (uid: string) => {
+			commando.cli.setUID(uid);
+			return commando;
+		};
 
 		commando.close = () => {
 
@@ -261,6 +274,7 @@ export class CommandoInteractive {
 		return commando as CommandoInteractive & typeof _commando;
 	}
 
+	setUID = (uid: string) => this;
 	close = () => this;
 
 }

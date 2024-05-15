@@ -1,8 +1,4 @@
-import {
-	BuildPhase,
-	PackageBuildPhaseType_Package,
-	PackageBuildPhaseType_PackageWithOutput
-} from '../logic/ProjectManager';
+import {BuildPhase, PackageBuildPhaseType_Package, PackageBuildPhaseType_PackageWithOutput} from '../logic/ProjectManager';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
@@ -11,12 +7,20 @@ import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {
 	__stringify,
 	_keys,
+	_logger_finalDate,
+	_logger_getPrefix,
+	_logger_timezoneOffset,
 	BadImplementationException,
 	currentTimeMillis,
 	exists,
 	filterDuplicates,
-	flatArray, Hour, Minute,
-	reduceToMap, Second,
+	flatArray,
+	Hour,
+	LogClient_MemBuffer,
+	LogLevel,
+	Minute,
+	reduceToMap,
+	Second,
 	sleep,
 	StaticLogger,
 	TypedMap
@@ -25,12 +29,15 @@ import {
 	JSONVersion,
 	Package,
 	Package_FirebaseFunctionsApp,
-	Package_FirebaseHostingApp, PackageType_FirebaseFunctionsApp, PackageType_FirebaseHostingApp,
+	Package_FirebaseHostingApp,
+	PackageType_FirebaseFunctionsApp,
+	PackageType_FirebaseHostingApp,
 	PackageType_InfraLib,
 	RuntimePackage_WithOutput
 } from '../core/types';
 import {
-	createFirebaseRC, writeToFile_functionFirebaseConfigJSON,
+	createFirebaseRC,
+	writeToFile_functionFirebaseConfigJSON,
 	writeToFile_FunctionFirebaseJSON,
 	writeToFile_HostingFirebaseConfigJSON,
 	writeToFile_HostingFirebaseJSON
@@ -678,6 +685,7 @@ export const Phase_CompileWatch: BuildPhase = {
 	}
 };
 
+// const runningAppsLogs = new RunningProcessLogs();
 let counter = 0;
 export const Phase_Launch: BuildPhase = {
 	type: 'package',
@@ -687,25 +695,43 @@ export const Phase_Launch: BuildPhase = {
 	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.launch))?.[0] && (pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app'),
 	action: async (pkg) => {
 		const projectScreen = MemKey_ProjectScreen.get();
+		// if (projectScreen.isEnabled()) {
+		// 	projectScreen.disable();
+		// 	runningAppsLogs.enable();
+		// }
+
+		const logClient = new LogClient_MemBuffer(pkg.name);
+		logClient.setForTerminal();
+		logClient.setComposer((tag: string, level: LogLevel): string => {
+			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
+			const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23).split('_')[1];
+			return `${date} ${_logger_getPrefix(level)}:  `;
+		});
+
+		logClient.setFilter((level, tag) => {
+			return tag === pkg.name;
+		});
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Launching...');
 		if (pkg.type === 'firebase-functions-app') {
 			await sleep(1000 * counter++);
 			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
 			const command = NVM.createInteractiveCommando(Cli_Basic)
+				.setUID(pkg.name)
 				.cd(pkg.path)
 				.append(`nvm use`)
 				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`);
 
 			command.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''}`);
-
+			// runningAppsLogs.registerApp(pkg.name, logClient);
 			return command
 				.execute();
 		}
 
 		if (pkg.type === 'firebase-hosting-app')
 			return NVM.createInteractiveCommando(Cli_Basic)
+				.setUID(pkg.name)
 				.cd(pkg.path)
 				.append(`array=($(lsof -ti:${[pkg.envConfig.basePort - 1].join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
