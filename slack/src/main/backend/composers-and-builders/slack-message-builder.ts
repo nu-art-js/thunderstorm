@@ -1,6 +1,5 @@
-import {Block, KnownBlock} from '@slack/web-api';
+import {SlackBlock} from '../SlackBuilder';
 
-export type SlackBlock = Block | KnownBlock;
 export const SlackBuilder_TextSection = (text: string): SlackBlock => {
 	return {
 		type: 'section',
