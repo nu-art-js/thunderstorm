@@ -1,5 +1,6 @@
 // @ts-ignore
-import * as blessed from 'neo-blessed';
+import {blessed} from 'neo-blessed';
+
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {
 	_logger_finalDate,

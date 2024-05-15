@@ -1,14 +1,15 @@
+// @ts-ignore
+import {blessed} from 'neo-blessed';
+
 import {mergeObject, removeFromArray, ResolvableContent} from '@nu-art/ts-common';
 import {BoxOptions, ScreenOptions, WidgetTypes} from './types';
-// @ts-ignore
-import * as blessed from 'neo-blessed';
 
 
-export abstract class Screen<State extends object> {
+export abstract class ConsoleScreen<State extends object> {
 
 	protected state!: State;
-	private screen: blessed.Widgets.Screen;
-	protected readonly widgets: blessed.Widgets.Node[] = [];
+	private screen: any;
+	protected readonly widgets: any[] = [];
 
 	constructor(props?: ScreenOptions) {
 		this.screen = blessed.screen(props);
@@ -19,8 +20,8 @@ export abstract class Screen<State extends object> {
 	}
 
 	setState(state: ResolvableContent<Partial<State>>) {
-		this.state = Object.freeze(mergeObject(this.state, state));
-		this.render();
+		this.state = mergeObject(this.state, state);
+		this._render();
 	}
 
 	createWidget(type: WidgetTypes, props: Omit<BoxOptions, 'parent'>) {
@@ -33,6 +34,11 @@ export abstract class Screen<State extends object> {
 		return this.screen.focused;
 	}
 
+	private _render() {
+		this.render();
+		this.screen.render();
+	}
+
 	// this for inheriting and rendering the state according to the widgets
 	protected abstract render(): void ;
 
@@ -41,7 +47,7 @@ export abstract class Screen<State extends object> {
 			widget.focusable = true;
 			widget.interactive = true;
 		});
-		this.screen.render();
+		this._render();
 	}
 
 	disable() {
@@ -49,7 +55,7 @@ export abstract class Screen<State extends object> {
 			widget.focusable = false;
 			widget.interactive = false;
 		});
-		this.screen.render();
+		this._render();
 	}
 
 	/**
@@ -61,6 +67,6 @@ export abstract class Screen<State extends object> {
 		if (clearContent) {
 			this.screen.clear();
 		}
-		this.screen.render();
+		this._render();
 	}
 }

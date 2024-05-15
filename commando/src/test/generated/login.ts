@@ -1,4 +1,4 @@
-import {Screen} from '../../main/screen/Screen';
+import {ConsoleScreen} from '../../main/console/ConsoleScreen';
 
 
 interface UserInputScreenState {
@@ -8,7 +8,7 @@ interface UserInputScreenState {
 }
 
 export class UserInputScreen
-	extends Screen<UserInputScreenState> {
+	extends ConsoleScreen<UserInputScreenState> {
 
 	constructor() {
 		super({
