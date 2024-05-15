@@ -1,5 +1,5 @@
 // @ts-ignore
-import {blessed} from 'neo-blessed';
+import * as blessed from 'neo-blessed';
 
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {
@@ -131,6 +131,10 @@ export class ProjectScreen {
 			valign: 'top',
 			align: 'left'
 		});
+	}
+
+	isEnabled() {
+		return this.enabled;
 	}
 
 	disable() {

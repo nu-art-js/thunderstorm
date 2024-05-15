@@ -9,6 +9,9 @@ interface UserInputScreenState {
 
 export class UserInputScreen
 	extends ConsoleScreen<UserInputScreenState> {
+	private userName: any;
+	private email: any;
+	private log: any;
 
 	constructor() {
 		super({
@@ -21,7 +24,9 @@ export class UserInputScreen
 				},
 				{
 					keys: ['C-enter'],  // Example to submit form with Enter key
-					callback: () => this.submitForm()
+					callback: () => {
+						this.updateLog(`Submitting using Keyboard, input Username: ${this.state.username}, Email: ${this.state.email}`);
+					}
 				},
 				{
 					keys: ['C-c'],  // Example to submit form with Enter key
@@ -36,7 +41,7 @@ export class UserInputScreen
 		};
 
 		// Username input
-		this.createWidget('textbox', {
+		this.userName = this.createWidget('textbox', {
 			top: 2,
 			left: 'center',
 			width: '50%',
@@ -45,13 +50,13 @@ export class UserInputScreen
 			label: ' Username ',
 			border: {type: 'line'},
 			style: {focus: {border: {fg: 'blue'}}, border: {fg: 'gray'}}
-		}).on('submit', (value: string) => {
-			this.setState({username: value});
-			this.logMessage(`Username set to ${value}`);
+		}).on('submit', (username: string) => {
+			this.setState({username});
+			this.updateLog(`Username set to ${username}`);
 		});
 
 		// Email input
-		this.createWidget('textbox', {
+		this.email = this.createWidget('textbox', {
 			top: 6,
 			left: 'center',
 			width: '50%',
@@ -60,9 +65,9 @@ export class UserInputScreen
 			label: ' Email ',
 			border: {type: 'line'},
 			style: {focus: {border: {fg: 'blue'}}, border: {fg: 'gray'}, hover: {border: {fg: 'blue'}}}
-		}).on('submit', (value: string) => {
-			this.setState({email: value});
-			this.logMessage(`Email set to ${value}`);
+		}).on('submit', (email: string) => {
+			this.setState({email});
+			this.updateLog(`Email set to ${email}`);
 		});
 
 		// Submit button
@@ -78,11 +83,11 @@ export class UserInputScreen
 			style: {focus: {fg: 'white', bg: 'green'}, hover: {fg: 'red'}}
 		}).on('click', (e: any) => {
 			if (e.button === 'left')
-				this.submitForm();
+				this.updateLog(`Submitting using Mouse, input Username: ${this.state.username}, Email: ${this.state.email}`);
 		});
 
 		// Log box for output messages
-		this.createWidget('log', {
+		this.log = this.createWidget('log', {
 			top: 14,
 			left: 'center',
 			width: '80%',
@@ -95,7 +100,10 @@ export class UserInputScreen
 		});
 	}
 
-	render(): void {
+	render() {
+		this.userName.setContent(this.state.username);
+		this.email.setContent(this.state.email);
+		this.log.setContent(this.state.logMessages);
 	}
 
 	private navigateWidgets = () => {
@@ -106,17 +114,9 @@ export class UserInputScreen
 		focusableWidgets[nextIndex].focus();
 	};
 
-	private logMessage(message: string) {
-		this.state.logMessages.push(message);
-		const logBox = this.widgets.find(widget => widget.type === 'log');
-		logBox.add(message);
-		this.render();
-	}
-
-	private submitForm() {
-		this.logMessage(`Submitting form with Username: ${this.state.username}, Email: ${this.state.email}`);
+	private updateLog(log: string) {
+		this.state.logMessages.push(log);
+		this.setState({logMessages: this.state.logMessages});
 		// Imagine processing the form here
 	}
 }
-
-new UserInputScreen().render();

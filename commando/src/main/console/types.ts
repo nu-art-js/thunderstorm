@@ -1,4 +1,3 @@
-
 /**
  * Styles configuration for the box component.
  */
@@ -141,7 +140,7 @@ export type ScreenOptions = {
 	/** Time in milliseconds to wait after a resize event before redrawing the screen. */
 	resizeTimeout?: number;
 
-	keyBinding: {
+	keyBinding?: {
 		keys: string[],
 		callback: VoidFunction
 	}[];
