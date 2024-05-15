@@ -1,6 +1,3 @@
-// @ts-ignore
-import * as blessed from 'neo-blessed';
-
 
 /**
  * Styles configuration for the box component.
@@ -53,7 +50,7 @@ export type BoxStyle = {
  */
 export type BoxOptions = {
 	/** Parent screen object. */
-	parent?: blessed.Widgets.Screen;
+	parent?: any;
 	/** Top position (can be in pixels or percentage). */
 	top?: number | string;
 	/** Left position (can be in pixels or percentage). */
