@@ -232,7 +232,7 @@ export const Phase_ResolveEnv: BuildPhase = {
 			}
 
 			if (firebasePkg.envConfig.ssl)
-				await generateProxyFile(firebasePkg,`${firebaseFunctionPkg.path}/src/main/proxy.ts`)
+				await generateProxyFile(firebasePkg, `${firebaseFunctionPkg.path}/src/main/proxy.ts`);
 
 			await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
 					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
@@ -715,23 +715,32 @@ export const Phase_Launch: BuildPhase = {
 		if (pkg.type === 'firebase-functions-app') {
 			await sleep(1000 * counter++);
 			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
-			const command = NVM.createInteractiveCommando(Cli_Basic)
+			runningAppsLogs.registerApp(pkg.name, logClient);
+			await NVM.createCommando(Cli_Basic)
+				.setUID(pkg.name)
+				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
+				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
+				.execute();
+
+			await NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name)
 				.cd(pkg.path)
-				.append(`nvm use`)
-				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
-				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`);
-
-			command.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''}`);
-			runningAppsLogs.registerApp(pkg.name, logClient);
-			return command
+				.append(`ts-node src/main/proxy.ts`)
 				.execute();
+
+			await NVM.createInteractiveCommando(Cli_Basic)
+				.setUID(pkg.name)
+				.cd(pkg.path)
+				.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''}`)
+				.execute();
+
+			return;
 		}
 
 		if (pkg.type === 'firebase-hosting-app') {
 			runningAppsLogs.registerApp(pkg.name, logClient);
 
-			if(!pkg.envConfig.hostingPort)
+			if (!pkg.envConfig.hostingPort)
 				throw new BadImplementationException('Missing hosting port in envConfig');
 
 			return NVM.createInteractiveCommando(Cli_Basic)
