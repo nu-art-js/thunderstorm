@@ -231,14 +231,14 @@ export const Phase_ResolveEnv: BuildPhase = {
 				await _fs.mkdir(pathToFirebaseConfigFolder, {recursive: true});
 			}
 
-			// if (firebasePkg.envConfig.ssl) {
-			// 	const pathToProxyFile = `${firebaseFunctionPkg.path}/src/main/proxy.ts`;
-			// 	let defaultFileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
-			// 	defaultFileContent = defaultFileContent.replace(/SERVER_PORT/g, `${firebasePkg.envConfig.basePort}`);
-			// 	defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_KEY/g, `${firebasePkg.envConfig.ssl?.pathToKey}`);
-			// 	defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${firebasePkg.envConfig.ssl?.pathToCertificate}`);
-			// 	await _fs.writeFile(pathToProxyFile, defaultFileContent, {encoding: 'utf-8'});
-			// }
+			if (firebasePkg.envConfig.ssl) {
+				const pathToProxyFile = `${firebaseFunctionPkg.path}/src/main/proxy.ts`;
+				let defaultFileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
+				defaultFileContent = defaultFileContent.replace(/SERVER_PORT/g, `${firebasePkg.envConfig.basePort}`);
+				defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_KEY/g, `${firebasePkg.envConfig.ssl?.pathToKey}`);
+				defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${firebasePkg.envConfig.ssl?.pathToCertificate}`);
+				await _fs.writeFile(pathToProxyFile, defaultFileContent, {encoding: 'utf-8'});
+			}
 
 			await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
 					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
