@@ -71,6 +71,8 @@ export class ModuleBE_SessionDB_Class
 		//Get the existing dbSession for this sessionIdFromRequest, there is one, even in previousSessions
 		const md5SessionId = md5(sessionIdFromRequest); // We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
 		const dbSession = await this.runTransaction(async transaction => {
+			// If we find the dbSession - this means that the JWT was not modified, as we managed to find a md5 matching sessionId.
+			// This is how we verify the JWT was not tampered!!!!!!!!!
 			let dbSession;
 			try {
 				dbSession = await ModuleBE_SessionDB.query.uniqueWhere({sessionId: md5SessionId}, transaction);
