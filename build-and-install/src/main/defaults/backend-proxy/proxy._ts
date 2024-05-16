@@ -10,9 +10,9 @@ _express.all('*', (req, res) => {
 	const qMark = req.originalUrl.indexOf('?');
 	const query = qMark > 1 ? req.originalUrl.substring(qMark) : '';
 	const path = req.path;
-	let url = `http://127.0.0.1:SERVER_PORT/shopify-manager-tool-dev/us-central1/api${path}${query}`;
+	let url = `http://127.0.0.1:SERVER_PORT/PROJECT_ID/us-central1/api${path}${query}`;
 	if (path.startsWith('/emulatorDownload') || path.startsWith('/emulatorUpload'))
-		url = `http://127.0.0.1:SERVER_PORT/shopify-manager-tool-dev/us-central1${path}${query}`;
+		url = `http://127.0.0.1:SERVER_PORT/PROJECT_ID/us-central1${path}${query}`;
 
 	console.log(`PROXY ${counter} - [${req.method}] ${url}`);
 
@@ -60,5 +60,5 @@ const options = {
 	requestCert: false,
 };
 
-require('https').createServer(options, _express).listen(8008);
+require('https').createServer(options, _express).listen(PROXY_PORT);
 console.log('SSL proxy started!!!');

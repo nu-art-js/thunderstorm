@@ -36,7 +36,7 @@ import {
 	RuntimePackage_WithOutput
 } from '../core/types';
 import {
-	createFirebaseRC,
+	createFirebaseRC, generateProxyFile,
 	writeToFile_functionFirebaseConfigJSON,
 	writeToFile_FunctionFirebaseJSON,
 	writeToFile_HostingFirebaseConfigJSON,
@@ -231,14 +231,8 @@ export const Phase_ResolveEnv: BuildPhase = {
 				await _fs.mkdir(pathToFirebaseConfigFolder, {recursive: true});
 			}
 
-			if (firebasePkg.envConfig.ssl) {
-				const pathToProxyFile = `${firebaseFunctionPkg.path}/src/main/proxy.ts`;
-				let defaultFileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
-				defaultFileContent = defaultFileContent.replace(/SERVER_PORT/g, `${firebasePkg.envConfig.basePort}`);
-				defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_KEY/g, `${firebasePkg.envConfig.ssl?.pathToKey}`);
-				defaultFileContent = defaultFileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${firebasePkg.envConfig.ssl?.pathToCertificate}`);
-				await _fs.writeFile(pathToProxyFile, defaultFileContent, {encoding: 'utf-8'});
-			}
+			if (firebasePkg.envConfig.ssl)
+				await generateProxyFile(firebasePkg,`${firebaseFunctionPkg.path}/src/main/proxy.ts`)
 
 			await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
 					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
@@ -737,10 +731,13 @@ export const Phase_Launch: BuildPhase = {
 		if (pkg.type === 'firebase-hosting-app') {
 			runningAppsLogs.registerApp(pkg.name, logClient);
 
+			if(!pkg.envConfig.hostingPort)
+				throw new BadImplementationException('Missing hosting port in envConfig');
+
 			return NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name)
 				.cd(pkg.path)
-				.append(`array=($(lsof -ti:${[pkg.envConfig.basePort - 1].join(',')}))`)
+				.append(`array=($(lsof -ti:${[pkg.envConfig.hostingPort].join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 				.append(`nvm use`)
 				.append(`npm run start`)

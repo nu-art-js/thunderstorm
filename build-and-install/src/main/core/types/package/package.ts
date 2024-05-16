@@ -41,6 +41,7 @@ export type FirebasePackageConfig<Env extends string = string> = {
 
 	debugPort: number,
 	basePort: number,
+	hostingPort?:number,
 	pathToFirebaseConfig: string
 	ssl?: {
 		pathToKey: string
