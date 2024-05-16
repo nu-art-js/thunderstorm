@@ -39,6 +39,7 @@ import {
 } from '@slack/web-api';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_Slack} from '../shared';
+import {Stream} from 'stream';
 
 
 interface ChatPostMessageResult
@@ -71,7 +72,7 @@ type MessageMap = {
 	[text: string]: number
 }
 
-export type ThreadPointer = { ts: string, channel: string };
+export type ThreadPointer = { ts?: string, channel: string };
 
 export class ModuleBE_Slack_Class
 	extends Module<ConfigType_ModuleBE_Slack, any> {
@@ -119,13 +120,14 @@ export class ModuleBE_Slack_Class
 		const message: FilesUploadArguments = {
 			file,
 			filename: name,
-			channels: this.config.defaultChannel
+			channels: this.config.defaultChannel,
+			filetype: 'auto'
 		};
 		if (thread) {
 			message.channels = thread.channel;
 			message.thread_ts = thread.ts;
 		}
-		await this.web.files.upload(message);
+		return await this.web.files.upload(message);
 	}
 
 	public async postStructuredMessage(message: PreSendSlackStructuredMessage, thread?: ThreadPointer) {
@@ -153,6 +155,15 @@ export class ModuleBE_Slack_Class
 		this.logDebug(`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);
 		return {ts: res.ts, channel: res.channel};
 	}
+
+	public uploadFile = async (file: Buffer | Stream, name: string, tp?: ThreadPointer) => {
+		const channel = tp?.channel || this.config.defaultChannel;
+		return await this.web.files.upload({
+			channels: channel,
+			file: file,
+			filename: name,
+		});
+	};
 
 	public async getUserIdByEmail(email: string): Promise<string | undefined> {
 		const result: WebAPICallResult = await this.web.users.lookupByEmail({email});
