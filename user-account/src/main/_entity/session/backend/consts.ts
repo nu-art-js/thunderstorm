@@ -1,8 +1,9 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {BadImplementationException, ImplementationMissingException, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
-import {_SessionKey_Session, DB_Session, HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '../shared';
+import {_SessionKey_Session, DB_Session} from '../shared';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {_SessionKey_Account} from '../../account/shared';
+import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
 
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
@@ -28,7 +29,7 @@ export class SessionKey_BE<Binder extends TypedKeyValue<string | number, any>> {
 }
 
 export const SessionKey_Account_BE = new SessionKey_BE<_SessionKey_Account>('account');
-export const SessionKey_Session_BE = new SessionKey_BE<_SessionKey_Session>('session');
+export const SessionKey_Session_BE = new SessionKey_BE<_SessionKey_Session>('session'); // from __collectSessionData with key 'session'....
 
 export async function getAuditorId() {
 	const sessionData = SessionKey_Account_BE.get();
