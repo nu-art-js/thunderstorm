@@ -471,6 +471,7 @@ export const Phase_PrepareCompile: BuildPhase = {
 						'jpg',
 						'jpeg',
 						'rules',
+						'_ts',
 					];
 
 					const command = `find . \\( -name ${otherFiles.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${pkg.output}" > /dev/null`;
