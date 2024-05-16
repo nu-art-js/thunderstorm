@@ -1,4 +1,4 @@
-import {BadImplementationException, LogClient_MemBuffer, removeItemFromArray} from '@nu-art/ts-common';
+import {BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray} from '@nu-art/ts-common';
 import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
 
 
@@ -50,30 +50,45 @@ export class RunningProcessLogs
 
 	private recalculateWidgets(logs: { key: string; logClient: LogClient_MemBuffer }[]) {
 		this.clearScreen(false);
-		const totalApps = logs.length;
-		const fraction = 100 / totalApps;
-		logs.forEach((log, index) => {
-			const top = `${(index * fraction).toFixed(0)}%`;
-			const height = `${fraction.toFixed(0)}%`;
-			this.createWidget('log', {
-				top: top,
-				left: 0,
-				width: '100%',
-				height: height,
-				label: ` Log for ${log.key} `,
-				border: {type: 'line'},
-				scrollable: true,
-				scrollbar: {
-					ch: ' ',
-					track: {
-						bg: 'grey'
+		const fittingGrid = gridPreset[logs.length - 1];
+		if (!exists(fittingGrid))
+			return;
+
+		if (!fittingGrid)
+			throw new Error(`No preset available for this number of cells ${logs.length}`);
+
+		let index = 0;
+		let xPos = 0;
+		fittingGrid.forEach(column => {
+			let yPos = 0;
+			column.forEach(cell => {
+				const [fracWidth, fracHeight] = cell;
+				const width = 100 * fracWidth;
+				const height = 100 * fracHeight;
+
+				this.createWidget('log', {
+					top: `${yPos}%`,
+					left: `${xPos}%`,
+					width: `${width}%`,
+					height: `${height}%`,
+					label: ` Log for ${logs[index++].key} `,
+					border: {type: 'line'},
+					scrollable: true,
+					scrollbar: {
+						ch: ' ',
+						track: {
+							bg: 'grey'
+						},
+						style: {
+							inverse: true
+						}
 					},
-					style: {
-						inverse: true
-					}
-				},
-				mouse: true
+					mouse: true
+				});
+
+				yPos += height;  // Assumes all cells in a column have the same height
 			});
+			xPos += column[0][0] * 100;
 		});
 	}
 
@@ -83,3 +98,22 @@ export class RunningProcessLogs
 		});
 	}
 }
+
+type GridCell = [number, number];  // Represents [fractionWidth, fractionHeight]
+type GridColumn = GridCell[];
+const columnOf1_halfWidth: GridColumn = [[0.5, 1]];
+const columnOf2_halfWidth: GridColumn = [[0.5, 0.5], [0.5, 0.5]];
+const columnOf3_halfWidth: GridColumn = [[0.5, 1 / 3], [0.5, 1 / 3], [0.5, 1 / 3]];
+const columnOf2_3rdWidth: GridColumn = [[1 / 3, 0.5], [1 / 3, 0.5]];
+const columnOf3_3rdWidth: GridColumn = [[1 / 3, 1 / 3], [1 / 3, 1 / 3], [1 / 3, 1 / 3]];
+const gridPreset: GridColumn[][] = [
+	[[[1, 1]]],
+	[columnOf1_halfWidth, columnOf1_halfWidth],
+	[columnOf2_halfWidth, columnOf1_halfWidth],
+	[columnOf2_halfWidth, columnOf2_halfWidth],
+	[columnOf3_halfWidth, columnOf2_halfWidth],
+	[columnOf3_halfWidth, columnOf3_halfWidth],
+	[columnOf3_3rdWidth, columnOf2_3rdWidth, columnOf2_3rdWidth],
+	[columnOf3_3rdWidth, columnOf3_3rdWidth, columnOf2_3rdWidth],
+	[columnOf3_3rdWidth, columnOf3_3rdWidth, columnOf3_3rdWidth],
+];

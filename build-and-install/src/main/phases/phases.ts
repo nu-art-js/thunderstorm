@@ -10,7 +10,7 @@ import {
 	_logger_finalDate,
 	_logger_getPrefix,
 	_logger_timezoneOffset,
-	BadImplementationException,
+	BadImplementationException, BeLogged,
 	currentTimeMillis,
 	exists,
 	filterDuplicates,
@@ -52,6 +52,7 @@ import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_Defaul
 import {MemKey_ProjectManager} from '../project-manager';
 import {MemKey_ProjectScreen} from '../screen/ProjectScreen';
 import {Commando} from '@nu-art/commando/core/cli';
+import {RunningProcessLogs} from '../screen/RunningProcessLogs';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
@@ -685,7 +686,7 @@ export const Phase_CompileWatch: BuildPhase = {
 	}
 };
 
-// const runningAppsLogs = new RunningProcessLogs();
+let runningAppsLogs: RunningProcessLogs;
 let counter = 0;
 export const Phase_Launch: BuildPhase = {
 	type: 'package',
@@ -694,11 +695,14 @@ export const Phase_Launch: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.launch))?.[0] && (pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app'),
 	action: async (pkg) => {
+		const projectManager = MemKey_ProjectManager.get();
 		const projectScreen = MemKey_ProjectScreen.get();
-		// if (projectScreen.isEnabled()) {
-		// 	projectScreen.disable();
-		// 	runningAppsLogs.enable();
-		// }
+		if (!runningAppsLogs) {
+			projectScreen.disable();
+			projectManager.clearLogger();
+			runningAppsLogs = new RunningProcessLogs();
+			runningAppsLogs.enable();
+		}
 
 		const logClient = new LogClient_MemBuffer(pkg.name);
 		logClient.setForTerminal();
@@ -711,7 +715,7 @@ export const Phase_Launch: BuildPhase = {
 		logClient.setFilter((level, tag) => {
 			return tag === pkg.name;
 		});
-
+		BeLogged.addClient(logClient);
 		projectScreen.updateOrCreatePackage(pkg.name, 'Launching...');
 		if (pkg.type === 'firebase-functions-app') {
 			await sleep(1000 * counter++);
@@ -724,12 +728,14 @@ export const Phase_Launch: BuildPhase = {
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`);
 
 			command.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''}`);
-			// runningAppsLogs.registerApp(pkg.name, logClient);
+			runningAppsLogs.registerApp(pkg.name, logClient);
 			return command
 				.execute();
 		}
 
-		if (pkg.type === 'firebase-hosting-app')
+		if (pkg.type === 'firebase-hosting-app') {
+			runningAppsLogs.registerApp(pkg.name, logClient);
+
 			return NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name)
 				.cd(pkg.path)
@@ -738,6 +744,7 @@ export const Phase_Launch: BuildPhase = {
 				.append(`nvm use`)
 				.append(`npm run start`)
 				.execute();
+		}
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Died');
 	}
