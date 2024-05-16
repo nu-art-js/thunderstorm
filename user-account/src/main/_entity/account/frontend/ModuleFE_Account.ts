@@ -3,8 +3,8 @@ import {
 	apiWithBody,
 	apiWithQuery,
 	getQueryParameter,
-	ModuleFE_BrowserHistory,
 	ModuleFE_BaseApi,
+	ModuleFE_BrowserHistory,
 	ModuleFE_XHR,
 	OnStorageKeyChangedListener,
 	readFileContent,
@@ -13,18 +13,43 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {cloneObj, composeUrl, currentTimeMillis, DB_BaseObject, Exception, exists, generateHex, KB, TS_Object} from '@nu-art/ts-common';
+import {
+	cloneObj,
+	composeUrl,
+	currentTimeMillis,
+	DB_BaseObject,
+	Exception,
+	exists,
+	generateHex,
+	KB,
+	TS_Object
+} from '@nu-art/ts-common';
+import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
-
 import {
 	Account_ChangeThumbnail,
 	Account_GetPasswordAssertionConfig,
-	ApiDef_Account, ApiDef_SAML, ApiStruct_Account, ApiStruct_SAML, DB_Account, DBDef_Accounts, DBProto_Account, HeaderKey_DeviceId,
-	HeaderKey_SessionId, HeaderKey_TabId, QueryParam_SessionId, Response_Auth, SAML_Login, UI_Account
+	ApiDef_Account,
+	ApiDef_SAML,
+	ApiStruct_Account,
+	ApiStruct_SAML,
+	DB_Account,
+	DBDef_Accounts,
+	DBProto_Account,
+	QueryParam_SessionId,
+	Response_Auth,
+	SAML_Login,
+	UI_Account
 } from '../shared';
-import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp, StorageKey_TabId} from './consts';
+import {
+	StorageKey_DeviceId,
+	StorageKey_SessionId,
+	StorageKey_SessionTimeoutTimestamp,
+	StorageKey_TabId
+} from './consts';
 import {PasswordAssertionConfig} from '../../_enum';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {jwtDecode} from 'jwt-decode';
 
 
 export interface OnLoginStatusUpdated {
@@ -144,7 +169,7 @@ class ModuleFE_Account_Class
 		if (_sessionId)
 			return this.processSessionStatus(_sessionId);
 
-		this.logDebug('login out user.... ');
+		this.logDebug('logging out user.... ');
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	}
 
@@ -208,7 +233,9 @@ class ModuleFE_Account_Class
 		if (!sessionData.length)
 			return;
 
-		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(sessionData), c => c.charCodeAt(0)))));
+		const decodedJWT = jwtDecode<{ sessionData: string }>(sessionData);
+		const base64Zip = decodedJWT.sessionData;
+		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(base64Zip), c => c.charCodeAt(0)))));
 	}
 
 	logout = async (url?: string) => {

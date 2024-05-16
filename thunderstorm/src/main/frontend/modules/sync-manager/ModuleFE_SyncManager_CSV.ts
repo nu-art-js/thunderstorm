@@ -27,7 +27,7 @@ export class ModuleFE_SyncManager_CSV_Class
 
 		await new Promise<void>(resolve => {
 			const isEmulator = Thunder.getInstance().getConfig().label?.toLowerCase() === 'local';
-			const downloadRequestHeaders = isEmulator ? undefined : {'Content-Type': 'text/csv'};
+			const downloadRequestHeaders = isEmulator ? undefined : {HeaderKey_ContentType: 'text/csv'};
 			const finalConfig = config ? mergeObject({downloadRequestHeaders}, config) : {downloadRequestHeaders};
 			ModuleFE_CSVParser.fromURL(
 				url,

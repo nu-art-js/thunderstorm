@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {HttpCodes as _HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HeaderKey_SessionId} from './headers';
 
 
 export const HeaderKey_Env = 'x-env';
@@ -31,7 +31,7 @@ export const DefaultHttpServerConfig = {
 	'bodyParserLimit': 200,
 	'cors': {
 		'headers': [
-			'x-session-id',
+			HeaderKey_SessionId,
 			'x-browser-type',
 			'x-app-version'
 		],
@@ -40,7 +40,7 @@ export const DefaultHttpServerConfig = {
 			'POST'
 		],
 		'responseHeaders': [
-			'x-session-id'
+			HeaderKey_SessionId
 		]
 	},
 	'host': 'localhost'
