@@ -80,7 +80,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,
-				'Content-Type': 'application/json',
+				HeaderKey_ContentType: 'application/json',
 				[this.config.secretHeaderName]: this.config.secret,
 				[this.config.proxyHeaderName]: this.config.proxyId,
 			},

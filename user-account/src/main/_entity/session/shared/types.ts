@@ -14,7 +14,8 @@ export type DB_Session = DB_Object & {
 	label?: string
 	accountId: string
 	deviceId: string
-	sessionId: string
+	sessionId: string //md5 of sessionIdJwt
+	sessionIdJwt: string //jwt
 	timestamp: number
 	needToRefresh?: boolean
 	prevSession?: string[]
