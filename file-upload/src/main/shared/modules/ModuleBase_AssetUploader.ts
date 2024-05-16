@@ -17,7 +17,14 @@
  * limitations under the License.
  */
 import {__stringify, _keys, BadImplementationException, Dispatcher, Minute, Module, Queue} from '@nu-art/ts-common';
-import {ApiDef, ApiDefCaller, BaseHttpRequest, TS_Progress, TypedApi} from '@nu-art/thunderstorm';
+import {
+	ApiDef,
+	ApiDefCaller,
+	BaseHttpRequest,
+	HeaderKey_ContentType,
+	TS_Progress,
+	TypedApi
+} from '@nu-art/thunderstorm';
 
 import {
 	ApiDef_UploadFile,
@@ -178,7 +185,7 @@ export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = U
 
 		const request = this.createRequest(ApiDef_UploadFile)
 			.setUrl(response.signedUrl)
-			.setHeader('Content-Type', response.asset.mimeType)
+			.setHeader(HeaderKey_ContentType, response.asset.mimeType)
 			.setTimeout(20 * Minute)
 			.setBody(fileInfo.file)
 			.setOnProgressListener((ev: TS_Progress) => {
