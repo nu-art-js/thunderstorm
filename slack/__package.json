@@ -35,7 +35,7 @@
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
-    "@slack/web-api": "^7.0.0",
+    "@slack/web-api": "^5.1.0",
     "@slack/events-api": "^2.3.0",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
