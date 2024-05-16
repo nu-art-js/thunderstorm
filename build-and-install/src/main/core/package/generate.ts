@@ -2,6 +2,8 @@ import {FirebaseEnvConfig, Package_FirebaseFunctionsApp, Package_FirebaseHosting
 import {BadImplementationException} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON} from '../consts';
+import {MemKey_DefaultFiles} from '../../defaults/consts';
+import {RuntimeParams} from '../params/params';
 
 
 export function createFirebaseHostingConfig<Env extends string>(pkg: Package_FirebaseHostingApp, env: Env) {
@@ -69,7 +71,7 @@ export async function writeToFile_HostingFirebaseConfigJSON<Env extends string>(
 			appName: `${pkg.name} - (${env})`
 		},
 		ModuleFE_XHR: {
-			origin: envConfig.isLocal ? `https://localhost:${pkg.envConfig.basePort + 1}` : envConfig.backend.url,
+			origin: envConfig.isLocal ? `https://localhost:${pkg.envConfig.basePort}` : envConfig.backend.url,
 			timeout: envConfig.backend.timeout || 30000,
 			compress: envConfig.backend.compress || false,
 			minLogLevel: envConfig.backend.minLogLevel || false,
@@ -148,10 +150,7 @@ function getFunctionConfig(pkg: Package_FirebaseFunctionsApp | Package_FirebaseH
 }
 
 export async function writeToFile_FunctionFirebaseJSON<Env extends string>(pkg: Package_FirebaseFunctionsApp | Package_FirebaseHostingAndFunctionApp, env: Env) {
-	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
-	if (!envConfig)
-		throw new BadImplementationException(`Could not find env: ${env}`);
-
+	const envConfig = getEnvConfig(pkg);
 	const fileContent = getFunctionConfig(pkg, envConfig);
 	await _fs.writeFile(`${pkg.path}/${CONST_FirebaseJSON}`, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
 }
@@ -167,4 +166,25 @@ export function createFirebaseFullJSON<Env extends string>(pkg: Package_Firebase
 		...hosting,
 		...functions
 	};
+}
+
+export function getEnvConfig(pkg: Package_FirebaseHostingApp | Package_FirebaseFunctionsApp | Package_FirebaseHostingAndFunctionApp) {
+	const env = RuntimeParams.environment;
+	const envConfig = pkg.envConfig.envs.find(_env => _env.env === env);
+	if (!envConfig)
+		throw new BadImplementationException(`No env config for env ${env} in package ${pkg.name}`);
+
+	return envConfig;
+}
+
+export async function generateProxyFile(firebasePkg: Package_FirebaseHostingApp | Package_FirebaseFunctionsApp, pathToFile: string) {
+	const envConfig = getEnvConfig(firebasePkg);
+	const defaultFiles = MemKey_DefaultFiles.get();
+	let fileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
+	fileContent = fileContent.replace(/PROJECT_ID/g, `${envConfig.projectId}`);
+	fileContent = fileContent.replace(/PROXY_PORT/g, `${firebasePkg.envConfig.basePort}`);
+	fileContent = fileContent.replace(/SERVER_PORT/g, `${firebasePkg.envConfig.basePort + 1}`);
+	fileContent = fileContent.replace(/PATH_TO_SSL_KEY/g, `${firebasePkg.envConfig.ssl?.pathToKey}`);
+	fileContent = fileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${firebasePkg.envConfig.ssl?.pathToCertificate}`);
+	await _fs.writeFile(pathToFile, fileContent, {encoding: 'utf-8'});
 }
