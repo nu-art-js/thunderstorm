@@ -94,17 +94,20 @@ export class ProjectManager
 		this.logInfo('Runtime params:', RuntimeParams);
 	}
 
-	showAllLogs() {
+	clearLogger() {
 		if (this.logger)
 			BeLogged.removeConsole(this.logger);
+	}
+
+	showAllLogs() {
+		this.clearLogger();
 
 		this.projectScreen?.disable();
 		BeLogged.addClient(this.logger = LogClient_Terminal);
 	}
 
 	showPrettyLogs() {
-		if (this.logger)
-			BeLogged.removeConsole(this.logger);
+		this.clearLogger();
 
 		this.projectScreen.enable();
 		BeLogged.addClient(this.logger = this.projectScreen.logClient);
