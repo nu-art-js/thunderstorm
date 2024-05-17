@@ -690,13 +690,13 @@ export const Phase_Launch: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.launch))?.[0] && (pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app'),
 	action: async (pkg) => {
-		const projectManager = MemKey_ProjectManager.get();
+		// const projectManager = MemKey_ProjectManager.get();
 		const projectScreen = MemKey_ProjectScreen.get();
 		if (!runningAppsLogs) {
 			projectScreen.disable();
-			projectManager.clearLogger();
-			runningAppsLogs = new RunningProcessLogs();
-			runningAppsLogs.enable();
+			// projectManager.clearLogger();
+			// runningAppsLogs = new RunningProcessLogs();
+			// runningAppsLogs.enable();
 		}
 
 		const logClient = new LogClient_MemBuffer(pkg.name);
@@ -715,9 +715,9 @@ export const Phase_Launch: BuildPhase = {
 		if (pkg.type === 'firebase-functions-app') {
 			await sleep(1000 * counter++);
 			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
-			runningAppsLogs.registerApp(pkg.name, logClient);
+			// runningAppsLogs.registerApp(pkg.name, logClient);
 			await NVM.createCommando(Cli_Basic)
-				.setUID(pkg.name)
+				.setUID(pkg.name).debug()
 				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 				.execute();
@@ -738,13 +738,13 @@ export const Phase_Launch: BuildPhase = {
 		}
 
 		if (pkg.type === 'firebase-hosting-app') {
-			runningAppsLogs.registerApp(pkg.name, logClient);
+			// runningAppsLogs.registerApp(pkg.name, logClient);
 
 			if (!pkg.envConfig.hostingPort)
 				throw new BadImplementationException('Missing hosting port in envConfig');
 
 			return NVM.createInteractiveCommando(Cli_Basic)
-				.setUID(pkg.name)
+				.setUID(pkg.name).debug()
 				.cd(pkg.path)
 				.append(`array=($(lsof -ti:${[pkg.envConfig.hostingPort].join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
