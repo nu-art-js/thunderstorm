@@ -199,7 +199,7 @@ export class Component_AccountEditor
 				{this.state.sessions.map(session => {
 					const createdAt = DateTimeFormat_yyyyMMDDTHHmmss.format(session.timestamp);
 					// @ts-ignore
-					const sessionData = ModuleFE_Account.decode(session.sessionId);
+					const sessionData = ModuleFE_Account.decode(session.sessionIdJwt);
 					SessionKeyFE_SessionData.get(sessionData).expiration;
 					const validTill = DateTimeFormat_yyyyMMDDTHHmmss.format(SessionKeyFE_SessionData.get(sessionData).expiration);
 					return <React.Fragment key={session._id}>
@@ -208,7 +208,7 @@ export class Component_AccountEditor
 						<LL_H_C className={'grid-cell'}>{`${validTill}`}</LL_H_C>
 						<LL_H_C className={'grid-cell'}>{session.deviceId}</LL_H_C>
 						<TS_Icons.copy.component
-							onClick={() => ModuleFE_Thunderstorm.copyToClipboard(session.sessionId)}/>
+							onClick={() => ModuleFE_Thunderstorm.copyToClipboard(session.sessionIdJwt)}/>
 					</React.Fragment>;
 				})}
 			</Grid>
