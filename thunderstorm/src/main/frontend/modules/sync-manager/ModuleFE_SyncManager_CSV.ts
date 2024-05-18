@@ -8,6 +8,7 @@ import {ModuleSyncType} from '../db-api-gen/types';
 import {Thunder} from '../../core/Thunder';
 import firebase from 'firebase/compat';
 import Error = firebase.auth.Error;
+import { HeaderKey_ContentType } from '../../shared';
 
 
 export class ModuleFE_SyncManager_CSV_Class
@@ -27,7 +28,7 @@ export class ModuleFE_SyncManager_CSV_Class
 
 		await new Promise<void>(resolve => {
 			const isEmulator = Thunder.getInstance().getConfig().label?.toLowerCase() === 'local';
-			const downloadRequestHeaders = isEmulator ? undefined : {HeaderKey_ContentType: 'text/csv'};
+			const downloadRequestHeaders = isEmulator ? undefined : {[HeaderKey_ContentType]: 'text/csv'};
 			const finalConfig = config ? mergeObject({downloadRequestHeaders}, config) : {downloadRequestHeaders};
 			ModuleFE_CSVParser.fromURL(
 				url,
