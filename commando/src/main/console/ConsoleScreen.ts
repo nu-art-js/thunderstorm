@@ -1,22 +1,22 @@
 // @ts-ignore
 import * as blessed from 'neo-blessed';
 
-import {mergeObject, ResolvableContent} from '@nu-art/ts-common';
+import {Logger, mergeObject, ResolvableContent} from '@nu-art/ts-common';
 import {BoxOptions, ScreenOptions, WidgetTypes} from './types';
 
 
-export abstract class ConsoleScreen<State extends object> {
+export abstract class ConsoleScreen<State extends object>
+	extends Logger {
 
-	protected state!: State;
+	private readonly screenProps: ScreenOptions | undefined;
+	private enabled = false;
+	protected state: State = {} as State;
 	private screen: any;
 	protected readonly widgets: any[] = [];
 
 	constructor(props?: ScreenOptions) {
-		this.screen = blessed.screen(props);
-
-		props?.keyBinding?.map(keyBinding => {
-			this.screen.key(keyBinding.keys, keyBinding.callback);
-		});
+		super(props?.title);
+		this.screenProps = props;
 	}
 
 	setState(state: ResolvableContent<Partial<State>>) {
@@ -35,7 +35,49 @@ export abstract class ConsoleScreen<State extends object> {
 		return this.screen.focused;
 	}
 
+	private createScreen() {
+		if (this.screen)
+			return this.logWarning(`will not create screen, already exists!`);
+
+		this.screen = blessed.screen(this.screenProps);
+		this.screenProps?.keyBinding?.map(keyBinding => {
+			this.screen.key(keyBinding.keys, keyBinding.callback);
+		});
+	}
+
+	private _createWidgets() {
+		if (this.widgets.length > 0)
+			return this.logWarning(`will not create widgets, already have ${this.widgets.length} widgets!`);
+
+		this.createWidgets();
+	}
+
+	protected abstract createWidgets(): void;
+
+	readonly create = () => {
+		this.createScreen();
+		this._createWidgets();
+		if (!this.enabled)
+			this.resume();
+
+		return this;
+	};
+
+	readonly resume = () => {
+		this.enabled = true;
+		this.widgets.forEach(widget => {
+			widget.focusable = true;
+			widget.interactive = true;
+		});
+
+		this._render();
+		return this;
+	};
+
 	private _render() {
+		if (!this.enabled)
+			return;
+
 		this.screen.render();
 		this.render();
 	}
@@ -43,28 +85,23 @@ export abstract class ConsoleScreen<State extends object> {
 	// this for inheriting and rendering the state according to the widgets
 	protected abstract render(): void ;
 
-	enable() {
-		this.widgets.forEach(widget => {
-			widget.focusable = true;
-			widget.interactive = true;
-		});
-		this._render();
-	}
-
-	disable() {
+	readonly pause = () => {
+		this.enabled = false;
 		this.widgets.forEach(widget => {
 			widget.focusable = false;
 			widget.interactive = false;
 		});
-		this._render();
-	}
+		return this;
+	};
 
-	/**
-	 * Clears all widgets from the screen and optionally clears the screen.
-	 */
-	clearScreen(clearContent: boolean = true) {
+	readonly dispose = () => {
+
 		this.widgets.forEach(widget => widget.detach());
 		// @ts-ignore
 		this.widgets = [];
-	}
+		this._render();
+		if (this.enabled)
+			this.pause();
+		return this;
+	};
 }
