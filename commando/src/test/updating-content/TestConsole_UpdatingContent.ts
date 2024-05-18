@@ -10,7 +10,9 @@ export class TestConsole_UpdatingContent
 		super({
 			mouse: true,  // Enable mouse handling
 		});
+	}
 
+	protected createWidgets() {
 		const boxOptions: BoxOptions = {
 			top: '0',
 			left: 'center',
@@ -29,22 +31,32 @@ export class TestConsole_UpdatingContent
 			}
 		};
 
-		// Create a box widget
 		this.box = this.createWidget('box', boxOptions);
-
 	}
 
-	// Implement the abstract render method, even if it does nothing for now
 	protected render(): void {
 		this.box.setContent(this.state.content);
-		// This can be left empty or used to update UI elements based on state changes
 	}
 
-	/**
-	 * Test method to create a box widget and render it.
-	 */
-	printConsole() {
-		// Optionally, add assertions or checks here to validate the existence and properties of the box
-		console.log('Box created and rendered with content:', this.box.getContent());
+	runTest() {
+		let content = '';
+		let index = 1;
+		const helloWorldLovelyWeatherToday = 'Hello, world!\nLovely weather today...';
+		for (const char of helloWorldLovelyWeatherToday) {
+			const stateContent = content += char;
+			setTimeout(() => {
+				this.setState({content: stateContent});
+
+				if (stateContent?.length >= helloWorldLovelyWeatherToday.length) {
+					setTimeout(() => {
+						this.dispose();
+						this.setState({content: ''});
+						setTimeout(() => {
+							this.create().runTest();
+						}, 2000);
+					}, 1000);
+				}
+			}, 200 * index++);
+		}
 	}
 }
