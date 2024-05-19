@@ -1,9 +1,9 @@
 import {Cli_Programming} from './programming';
 import {Cli_Basic} from './basic';
-import {Commando} from '../core/cli';
 import {promises as fs} from 'fs';
 import {convertToFullPath} from '../core/tools';
 import {Logger, LogLevel} from '@nu-art/ts-common';
+import { Commando } from '../core/commando/Commando';
 
 
 export class Cli_PNPM

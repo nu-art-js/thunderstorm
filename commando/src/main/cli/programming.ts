@@ -1,8 +1,10 @@
-import {CliBlock, CliWrapper} from '../core/cli';
+import {BaseCommando, CliBlock} from '../core/commando/BaseCommando';
+import {Cli} from '../core/commando/Commando';
+import {CliInteractive} from '../core/commando/CommandoInteractive';
 
 
 export class Cli_Programming
-	extends CliWrapper {
+	extends BaseCommando<Cli | CliInteractive> {
 
 	/**
 	 * Constructs an if-else conditional command structure.

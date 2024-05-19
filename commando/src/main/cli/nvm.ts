@@ -1,11 +1,12 @@
 import {Cli_Programming} from './programming';
 import {Cli_Basic} from './basic';
-import {CliWrapper, Commando, CommandoInteractive} from '../core/cli';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import * as path from 'path';
 import {removeAnsiCodes} from '../core/tools';
 import {Constructor, filterDuplicates, Logger, LogLevel} from '@nu-art/ts-common';
+import {Commando} from '../core/commando/Commando';
+import {CommandoInteractive} from '../core/commando/CommandoInteractive';
 
 
 const CONST__FILE_NVMRC = '.nvmrc';
@@ -128,7 +129,7 @@ export class Cli_NVM
 		return this.createCommando().append(`nvm install ${requiredVersion}`).execute();
 	};
 
-	createInteractiveCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
+	createInteractiveCommando<T extends Constructor<any>[]>(...plugins: T) {
 		return CommandoInteractive.create(...plugins).debug()
 			.append('export NVM_DIR="$HOME/.nvm"')
 			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
@@ -136,11 +137,13 @@ export class Cli_NVM
 			.append('nvm use');
 	}
 
-	createCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
-		return Commando.create(...plugins)
+	createCommando<T extends Constructor<any>[]>(...plugins: T) {
+		const commando = Commando.create(...plugins);
+		commando
 			.append('export NVM_DIR="$HOME/.nvm"')
 			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
 			.append('[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion');
+		return commando;
 	}
 }
 
