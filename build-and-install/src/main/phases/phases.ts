@@ -720,6 +720,7 @@ export const Phase_Launch: BuildPhase = {
 				.setUID(pkg.name).debug()
 				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
+				// .append(`echo ZE ZEVEL`)
 				.execute();
 
 			await NVM.createInteractiveCommando(Cli_Basic)
