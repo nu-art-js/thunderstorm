@@ -1,9 +1,11 @@
-import {BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray} from '@nu-art/ts-common';
+import {AsyncVoidFunction, BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray} from '@nu-art/ts-common';
 import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
 
 
 export class RunningProcessLogs
 	extends ConsoleScreen<{ logs: { key: string, logClient: LogClient_MemBuffer }[] }> {
+
+	private onTerminateCallbacks: AsyncVoidFunction[] = [];
 
 	constructor() {
 		super({
@@ -12,7 +14,10 @@ export class RunningProcessLogs
 			keyBinding: [
 				{
 					keys: ['C-c'],  // Example to submit form with Enter key
-					callback: () => process.exit(0)
+					callback: async () => {
+						await Promise.all(this.onTerminateCallbacks.map(callback => callback()))
+						process.exit(0)
+					}
 				}
 			]
 
@@ -105,6 +110,10 @@ export class RunningProcessLogs
 		} catch (e) {
 			console.log(e);
 		}
+	}
+
+	public addOnTerminateCallback = (callback: AsyncVoidFunction) => {
+		this.onTerminateCallbacks.push(callback);
 	}
 }
 
