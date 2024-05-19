@@ -1,7 +1,7 @@
 import {exec, ExecOptions} from 'child_process';
 import {CreateMergedInstance} from './class-merger';
 import {CliError} from './CliError';
-import {Constructor, generateHex, Logger, LogLevel, removeItemFromArray, sleep} from '@nu-art/ts-common';
+import {AsyncVoidFunction, Constructor, generateHex, Logger, LogLevel, removeItemFromArray} from '@nu-art/ts-common';
 import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 
 
@@ -146,8 +146,8 @@ export class CliInteractive
 		this.commands = [];
 	};
 
-	endInteractive = () => {
-		this.shell.stdin?.end();
+	endInteractive = (cb?: AsyncVoidFunction) => {
+		this.shell.stdin?.end(cb);
 	};
 
 	kill = (signal?: NodeJS.Signals | number) => {
@@ -159,7 +159,6 @@ export class CliInteractive
 			console.log('Killing process');
 			this.shell.on('exit', async (code, signal) => {
 				console.log(`Process Killed ${signal}`);
-				await sleep(5000);
 				resolve();
 			});
 
@@ -171,7 +170,7 @@ export class CliInteractive
 				this.shell.kill('SIGINT');
 			}
 
-		}).then(() => sleep(10000));
+		});
 	};
 }
 
@@ -343,7 +342,8 @@ export class CommandoInteractive {
 			return commando;
 		};
 
-		commando.close = () => {
+		commando.close = (cb?: AsyncVoidFunction) => {
+			commando.cli.endInteractive(cb);
 			return commando;
 		};
 
@@ -379,7 +379,7 @@ export class CommandoInteractive {
 	removeStdoutProcessor = (processor: (stdout: string) => void) => this;
 	removeStderrProcessor = (processor: (stderr: string) => void) => this;
 	setUID = (uid: string) => this;
-	close = () => this;
+	close = (cb?: AsyncVoidFunction) => this;
 	kill = (signal?: NodeJS.Signals | number) => true;
 
 	gracefullyKill = (pid?: number) => {

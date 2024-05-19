@@ -721,49 +721,58 @@ export const Phase_Launch: BuildPhase = {
 				.setUID(pkg.name).debug()
 				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
+				.append('echo ')
 				.execute();
 
+			const KILL_CONFIRM_LOG = `KILL PROCESS`;
 			const PROXY_PID_PROCESS = 'PROXY_PID_PROCESS';
 			let proxyPid: number;
 			const proxyPidProcessor = (stdout: string) => {
+				if (stdout.includes(KILL_CONFIRM_LOG))
+					return proxyCommando.close();
+
 				const pid = stdout.match(new RegExp(`${PROXY_PID_PROCESS}=(\\d+)`))?.[1];
 				if (!exists(pid))
 					return;
 
 				proxyPid = +pid;
-				proxyCommando.removeStdoutProcessor(proxyPidProcessor);
+				// proxyCommando.removeStdoutProcessor(proxyPidProcessor);
 			};
 
 			const proxyCommando = NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name)
 				.cd(pkg.path)
 				.addStdoutProcessor(proxyPidProcessor)
-				.addStderrProcessor(proxyPidProcessor)
+				.append('echo ZE ZEVEL1')
 				.append('ts-node src/main/proxy.ts &')
 				.append('pid=$!')
 				.append(`echo "${PROXY_PID_PROCESS}=\${pid}"`)
-				.append(`wait \$pid`);
+				.append(`wait \$pid`)
+				.append(`echo "${KILL_CONFIRM_LOG} \${pid}"`);
 
 			const EMULATOR_PID_PROCESS = 'EMULATOR_PID_PROCESS';
 			let emulatorPid: number;
 			const emulatorPidProcessor = (stdout: string) => {
+				if (stdout.includes(KILL_CONFIRM_LOG))
+					return emulatorCommando.close();
+
 				const pid = stdout.match(new RegExp(`${EMULATOR_PID_PROCESS}=(\\d+)`))?.[1];
 				if (!exists(pid))
 					return;
 
 				emulatorPid = +pid;
-				emulatorCommando.removeStdoutProcessor(emulatorPidProcessor);
 			};
 
 			const emulatorCommando = NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name)
 				.cd(pkg.path)
 				.addStdoutProcessor(emulatorPidProcessor)
-				.addStderrProcessor(emulatorPidProcessor)
+				.append('echo ZE ZEVEL2')
 				.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''} &`)
 				.append('pid=$!')
 				.append(`echo "${EMULATOR_PID_PROCESS}=\${pid}"`)
-				.append(`wait \$pid`);
+				.append(`wait \$pid`)
+				.append(`echo "${KILL_CONFIRM_LOG} \${pid}"`);
 
 			await proxyCommando.execute();
 			await emulatorCommando.execute();
@@ -772,6 +781,7 @@ export const Phase_Launch: BuildPhase = {
 				console.log('HERE');
 				await emulatorCommando.gracefullyKill(emulatorPid);
 				await proxyCommando.gracefullyKill(proxyPid);
+				runningAppsLogs.unregisterApp(pkg.name);
 			});
 			return;
 		}
@@ -785,6 +795,7 @@ export const Phase_Launch: BuildPhase = {
 			return NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name).debug()
 				.cd(pkg.path)
+				.append('echo ZE ZEVEL3')
 				.append(`array=($(lsof -ti:${[pkg.envConfig.hostingPort].join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 				.append(`nvm use`)
