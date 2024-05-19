@@ -2,13 +2,7 @@
 import * as blessed from 'neo-blessed';
 
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {
-	_logger_finalDate,
-	_logger_getPrefix,
-	_logger_timezoneOffset,
-	LogClient_MemBuffer,
-	LogLevel
-} from '@nu-art/ts-common';
+import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, LogClient_MemBuffer, LogLevel} from '@nu-art/ts-common';
 import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
 
 
@@ -38,7 +32,7 @@ export class ProjectScreen
 			title: 'Build and install',
 			keyBinding: [{
 				keys: ['escape', 'q', 'C-c'],
-				callback: () => {
+				callback: async () => {
 					return process.exit(1); // Quit on q, esc, or ctrl-c
 				}
 			}]

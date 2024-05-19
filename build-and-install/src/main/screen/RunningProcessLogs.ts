@@ -1,4 +1,4 @@
-import {AsyncVoidFunction, BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray} from '@nu-art/ts-common';
+import {AsyncVoidFunction, BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray, sleep} from '@nu-art/ts-common';
 import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
 
 
@@ -8,6 +8,7 @@ export class RunningProcessLogs
 	private onTerminateCallbacks: AsyncVoidFunction[] = [];
 
 	constructor() {
+		let killed = false;
 		super({
 			smartCSR: true,
 			title: 'Runtime-Logs',
@@ -15,8 +16,18 @@ export class RunningProcessLogs
 				{
 					keys: ['C-c'],  // Example to submit form with Enter key
 					callback: async () => {
-						await Promise.all(this.onTerminateCallbacks.map(callback => callback()))
-						process.exit(0)
+						if (killed)
+							return;
+
+						killed = true;
+						// this.dispose();
+						console.log('exiting1');
+						await sleep(2000);
+						console.log('exiting2');
+						await sleep(2000);
+						await Promise.all(this.onTerminateCallbacks.map(callback => callback()));
+
+						process.exit(0);
 					}
 				}
 			]
@@ -114,7 +125,7 @@ export class RunningProcessLogs
 
 	public addOnTerminateCallback = (callback: AsyncVoidFunction) => {
 		this.onTerminateCallbacks.push(callback);
-	}
+	};
 }
 
 type GridCell = [number, number];  // Represents [fractionWidth, fractionHeight]

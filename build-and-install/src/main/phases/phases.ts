@@ -721,27 +721,58 @@ export const Phase_Launch: BuildPhase = {
 				.setUID(pkg.name).debug()
 				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-				// .append(`echo ZE ZEVEL`)
 				.execute();
+
+			const PROXY_PID_PROCESS = 'PROXY_PID_PROCESS';
+			let proxyPid: number;
+			const proxyPidProcessor = (stdout: string) => {
+				const pid = stdout.match(new RegExp(`${PROXY_PID_PROCESS}=(\\d+)`))?.[1];
+				if (!exists(pid))
+					return;
+
+				proxyPid = +pid;
+				proxyCommando.removeStdoutProcessor(proxyPidProcessor);
+			};
 
 			const proxyCommando = NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name)
 				.cd(pkg.path)
-				.append(`ts-node src/main/proxy.ts`);
+				.addStdoutProcessor(proxyPidProcessor)
+				.addStderrProcessor(proxyPidProcessor)
+				.append('ts-node src/main/proxy.ts &')
+				.append('pid=$!')
+				.append(`echo "${PROXY_PID_PROCESS}=\${pid}"`)
+				.append(`wait \$pid`);
 
-			const emulatorCommando =  NVM.createInteractiveCommando(Cli_Basic)
+			const EMULATOR_PID_PROCESS = 'EMULATOR_PID_PROCESS';
+			let emulatorPid: number;
+			const emulatorPidProcessor = (stdout: string) => {
+				const pid = stdout.match(new RegExp(`${EMULATOR_PID_PROCESS}=(\\d+)`))?.[1];
+				if (!exists(pid))
+					return;
+
+				emulatorPid = +pid;
+				emulatorCommando.removeStdoutProcessor(emulatorPidProcessor);
+			};
+
+			const emulatorCommando = NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name)
 				.cd(pkg.path)
-				.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''}`);
+				.addStdoutProcessor(emulatorPidProcessor)
+				.addStderrProcessor(emulatorPidProcessor)
+				.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''} &`)
+				.append('pid=$!')
+				.append(`echo "${EMULATOR_PID_PROCESS}=\${pid}"`)
+				.append(`wait \$pid`);
 
 			await proxyCommando.execute();
-			await	emulatorCommando.execute();
+			await emulatorCommando.execute();
 
 			runningAppsLogs.addOnTerminateCallback(async () => {
-				console.log('HERE')
-				await proxyCommando.gracefullyKill();
-				await emulatorCommando.gracefullyKill();
-			})
+				console.log('HERE');
+				await emulatorCommando.gracefullyKill(emulatorPid);
+				await proxyCommando.gracefullyKill(proxyPid);
+			});
 			return;
 		}
 
