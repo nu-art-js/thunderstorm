@@ -76,10 +76,12 @@ class Package_FirebaseFunction
 
 const item1 = new Package_FirebaseHosting('item-1');
 const item2 = new Package_Lib('item-2');
+const item3 = new Package_FirebaseFunction('item-3');
 
 new ProjectManagerV2(...AllPhases)
 	.register(item1)
 	.register(item2)
+	.register(item3)
 	.execute()
 	.then(() => console.log('completed'))
 	.catch((e) => console.error(e))

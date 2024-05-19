@@ -52,6 +52,10 @@ export type BoxOptions = {
 	parent?: any;
 	/** Top position (can be in pixels or percentage). */
 	top?: number | string;
+	/** Right position (can be in pixels or percentage). */
+	right?: number | string;
+	/** Bottom position (can be in pixels or percentage). */
+	bottom?: number | string;
 	/** Left position (can be in pixels or percentage). */
 	left?: number | string;
 	/** Width of the box (can be in pixels or percentage). */

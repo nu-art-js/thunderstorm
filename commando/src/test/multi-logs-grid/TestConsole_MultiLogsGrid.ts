@@ -21,36 +21,9 @@ export class TestConsole_MultiLogsGrid
 		this.state = {logs: []};
 	}
 
-	registerApp(appKey: string, logClient: LogClient_MemBuffer) {
+	protected createWidgets() {
 		const logs = this.state.logs;
-		const foundLog = logs.find(log => log.key === appKey);
-		if (foundLog)
-			throw new BadImplementationException(`already have log for appkey: ${appKey}`);
 
-		logs.push({key: appKey, logClient});
-		this.recalculateWidgets(logs);
-
-		logClient.setLogAppendedListener(() => {
-			this.render();
-			// might have a leak.. need to remove the listener at some point
-		});
-		this.setState({logs});
-	}
-
-	unregisterApp(appKey: string) {
-		const foundLog = this.state.logs.find(log => log.key === appKey);
-		if (!foundLog)
-			throw new BadImplementationException(`Could not find log for appkey: ${appKey}`);
-
-		const logs = this.state.logs;
-		removeItemFromArray(logs, foundLog);
-
-		this.recalculateWidgets(logs);
-		this.setState({logs});
-	}
-
-	private recalculateWidgets(logs: { key: string; logClient: LogClient_MemBuffer }[]) {
-		this.clearScreen(false);
 		const fittingGrid = gridPreset[logs.length - 1];
 		if (!exists(fittingGrid))
 			return;
@@ -93,9 +66,40 @@ export class TestConsole_MultiLogsGrid
 		});
 	}
 
+	registerApp(appKey: string, logClient: LogClient_MemBuffer) {
+		const logs = this.state.logs;
+		const foundLog = logs.find(log => log.key === appKey);
+		if (foundLog)
+			throw new BadImplementationException(`already have log for appkey: ${appKey}`);
+
+		logs.push({key: appKey, logClient});
+		this.dispose();
+		this.create();
+
+		logClient.setLogAppendedListener(() => {
+			this.render();
+			// might have a leak.. need to remove the listener at some point
+		});
+		this.setState({logs});
+	}
+
+	unregisterApp(appKey: string) {
+		const foundLog = this.state.logs.find(log => log.key === appKey);
+		if (!foundLog)
+			throw new BadImplementationException(`Could not find log for appkey: ${appKey}`);
+
+		const logs = this.state.logs;
+		removeItemFromArray(logs, foundLog);
+
+		this.dispose();
+		this.create();
+
+		this.setState({logs});
+	}
+
 	protected render(): void {
 		this.state.logs.forEach((log, i) => {
-			this.widgets[i].setContent(log.logClient.buffers[0] ?? 'asdsd');
+			this.widgets[i]?.setContent(log.logClient.buffers[0] ?? 'asdsd');
 		});
 	}
 }
