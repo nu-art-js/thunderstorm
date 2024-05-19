@@ -102,14 +102,14 @@ export class ProjectManager
 	showAllLogs() {
 		this.clearLogger();
 
-		this.projectScreen?.disable();
+		this.projectScreen?.dispose();
 		BeLogged.addClient(this.logger = LogClient_Terminal);
 	}
 
 	showPrettyLogs() {
 		this.clearLogger();
 
-		this.projectScreen.enable();
+		this.projectScreen.create();
 		BeLogged.addClient(this.logger = this.projectScreen.logClient);
 	}
 

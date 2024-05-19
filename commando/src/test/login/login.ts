@@ -4,14 +4,14 @@ import {ConsoleScreen} from '../../main/console/ConsoleScreen';
 interface UserInputScreenState {
 	username: string;
 	email: string;
-	logMessages: string[];
+	logMessages: string;
 }
 
 export class UserInputScreen
 	extends ConsoleScreen<UserInputScreenState> {
 	private userName: any;
 	private email: any;
-	private log: any;
+	private logWidget: any;
 
 	constructor() {
 		super({
@@ -37,9 +37,11 @@ export class UserInputScreen
 		this.state = {
 			username: '',
 			email: '',
-			logMessages: []
+			logMessages: ''
 		};
+	}
 
+	protected createWidgets() {
 		// Username input
 		this.userName = this.createWidget('textbox', {
 			top: 2,
@@ -50,7 +52,8 @@ export class UserInputScreen
 			label: ' Username ',
 			border: {type: 'line'},
 			style: {focus: {border: {fg: 'blue'}}, border: {fg: 'gray'}}
-		}).on('submit', (username: string) => {
+		});
+		this.userName.on('submit', (username: string) => {
 			this.setState({username});
 			this.updateLog(`Username set to ${username}`);
 		});
@@ -65,13 +68,14 @@ export class UserInputScreen
 			label: ' Email ',
 			border: {type: 'line'},
 			style: {focus: {border: {fg: 'blue'}}, border: {fg: 'gray'}, hover: {border: {fg: 'blue'}}}
-		}).on('submit', (email: string) => {
+		});
+		this.email.on('submit', (email: string) => {
 			this.setState({email});
 			this.updateLog(`Email set to ${email}`);
 		});
 
 		// Submit button
-		this.createWidget('button', {
+		const button = this.createWidget('button', {
 			top: 10,
 			left: 'center',
 			width: '20%',
@@ -81,13 +85,18 @@ export class UserInputScreen
 			valign: 'middle',
 			mouse: true,
 			style: {focus: {fg: 'white', bg: 'green'}, hover: {fg: 'red'}}
-		}).on('click', (e: any) => {
+		});
+		button.on('click', (e: any) => {
 			if (e.button === 'left')
 				this.updateLog(`Submitting using Mouse, input Username: ${this.state.username}, Email: ${this.state.email}`);
 		});
+		// button.on('submit', (email: string) => {
+		// 	this.setState({email});
+		// 	this.updateLog(`Email set to ${email}`);
+		// });
 
 		// Log box for output messages
-		this.log = this.createWidget('log', {
+		this.logWidget = this.createWidget('log', {
 			top: 14,
 			left: 'center',
 			width: '80%',
@@ -103,7 +112,7 @@ export class UserInputScreen
 	render() {
 		this.userName.setContent(this.state.username);
 		this.email.setContent(this.state.email);
-		this.log.setContent(this.state.logMessages);
+		this.logWidget.setContent(this.state.logMessages);
 	}
 
 	private navigateWidgets = () => {
@@ -115,8 +124,7 @@ export class UserInputScreen
 	};
 
 	private updateLog(log: string) {
-		this.state.logMessages.push(log);
-		this.setState({logMessages: this.state.logMessages});
+		this.setState({logMessages: this.state.logMessages + `${log}\n`});
 		// Imagine processing the form here
 	}
 }

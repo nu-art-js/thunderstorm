@@ -9,6 +9,7 @@ import {
 	LogClient_MemBuffer,
 	LogLevel
 } from '@nu-art/ts-common';
+import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
 
 
 export type PackageStatus = {
@@ -18,21 +19,34 @@ export type PackageStatus = {
 };
 
 type CurrentRunningPhase = { phaseName: string };
+type State = {
+	packageData: PackageStatus[],
+	currentRunningPhase: CurrentRunningPhase
+}
 
-export class ProjectScreen {
-	public readonly packageData: PackageStatus[];
-	private currentRunningPhase!: CurrentRunningPhase;
+export class ProjectScreen
+	extends ConsoleScreen<State> {
 
-	private screen: blessed.Widgets.Screen;
 	private phaseBox: blessed.Widgets.BoxElement;
 	private packageTable: blessed.Widgets.TableElement;
 	private logger: blessed.Widgets.LogElement;
-	private titleElement: blessed.Widgets.TextElement;
 	readonly logClient = new LogClient_MemBuffer('output.txt');
-	private enabled = false;
 
 	constructor(initialData: PackageStatus[]) {
-		this.packageData = initialData;
+		super({
+			smartCSR: true,
+			title: 'Build and install',
+			keyBinding: [{
+				keys: ['escape', 'q', 'C-c'],
+				callback: () => {
+					return process.exit(1); // Quit on q, esc, or ctrl-c
+				}
+			}]
+		});
+		this.setState({
+			packageData: initialData
+		});
+
 		this.logClient.setForTerminal();
 		this.logClient.setComposer((tag: string, level: LogLevel): string => {
 			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
@@ -41,24 +55,16 @@ export class ProjectScreen {
 		});
 
 		this.logClient.setLogAppendedListener(() => {
-			this.renderScreen();
+			this.setState({});
 		});
 	}
 
-	enable() {
-		this.enabled = true;
-		this.screen = blessed.screen({
-			smartCSR: true,
-			title: 'Build and install',
-		});
+	getPackageData() {
+		return this.state.packageData;
+	}
 
-		this.screen.key(['escape', 'q', 'C-c'], () => {
-			return process.exit(1); // Quit on q, esc, or ctrl-c
-		});
-
-		// Create the UI components
-		this.phaseBox = blessed.text({
-			parent: this.screen,
+	protected createWidgets() {
+		this.phaseBox = this.createWidget('text', {
 			top: 0,
 			left: 0,
 			height: 3,
@@ -73,8 +79,7 @@ export class ProjectScreen {
 			align: 'center'
 		});
 
-		this.packageTable = blessed.listtable({
-			parent: this.screen,
+		this.packageTable = this.createWidget('listtable', {
 			top: 3,
 			left: 0,
 			width: '40%',
@@ -85,6 +90,7 @@ export class ProjectScreen {
 			tags: true,
 			style: {
 				border: {fg: 'blue'},
+				// @ts-ignore
 				header: {bold: true},
 				cell: {fg: 'white', selected: {bg: 'blue'}}
 			},
@@ -98,8 +104,7 @@ export class ProjectScreen {
 			}
 		});
 
-		this.titleElement = blessed.text({
-			parent: this.screen,
+		this.createWidget('text', {
 			top: 0,
 			right: 0,
 			width: '60%',
@@ -114,8 +119,7 @@ export class ProjectScreen {
 			align: 'center'
 		});
 
-		this.logger = blessed.log({
-			parent: this.screen,
+		this.logger = this.createWidget('log', {
 			top: 3,
 			right: 0,
 			width: '60%',
@@ -133,42 +137,14 @@ export class ProjectScreen {
 		});
 	}
 
-	isEnabled() {
-		return this.enabled;
-	}
-
-	disable() {
-		this.enabled = false;
-		if (!this.screen)
-			return;
-
-		this.phaseBox.detach();
-		this.packageTable.detach();
-		this.titleElement.detach();
-		this.logger.detach();
-		this.screen.detach();
-		this.screen.clear();
-		this.screen.destroy();
-		process.stdout.write('\x1bc');  // This sends the terminal reset escape code
-	}
-
-	public renderScreen = () => {
-		if (!this.enabled)
-			return;
-
+	protected render() {
 		this.renderCurrentRunningPhase();
 		this.renderPackageTableTable();
 		this.logger.setContent(this.logClient.buffers[0]);
-		this.screen.render();
-	};
-
-	public endRun = () => {
-		this.disable();
-		console.log(this.logClient.buffers[0]);
-	};
+	}
 
 	private renderCurrentRunningPhase = () => {
-		const content = `Phase Name: ${this.currentRunningPhase?.phaseName ?? 'No Phase'}\n`;
+		const content = `Phase Name: ${this.state?.currentRunningPhase?.phaseName ?? 'No Phase'}\n`;
 		this.phaseBox.setContent(content);
 	};
 
@@ -178,7 +154,7 @@ export class ProjectScreen {
 
 		const data = [
 			['Package Name', 'Status'],
-			...this.packageData.map(pkg => [pkg.packageName, pkg.status])
+			...(this.state.packageData ?? []).map(pkg => [pkg.packageName, pkg.status])
 		];
 
 		this.packageTable.setData(data);
@@ -187,20 +163,19 @@ export class ProjectScreen {
 	};
 
 	public updateOrCreatePackage = (name: string, status: string, error?: string): void => {
-		const index = this.packageData.findIndex(pkg => pkg.packageName === name);
+		const packageData = this.state.packageData;
+		const index = packageData.findIndex(pkg => pkg.packageName === name);
 		if (index !== -1) {
-			this.packageData[index].status = status;
-			this.packageData[index].error = error;
-			return this.renderScreen();
+			packageData[index].status = status;
+			packageData[index].error = error;
+		} else {
+			packageData.push({packageName: name, status});
 		}
-
-		this.packageData.push({packageName: name, status});
-		this.renderScreen();
+		this.setState({packageData});
 	};
 
 	public updateRunningPhase = (name: string): void => {
-		this.currentRunningPhase = {phaseName: name};
-		this.renderScreen();
+		this.setState({currentRunningPhase: {phaseName: name}});
 	};
 }
 

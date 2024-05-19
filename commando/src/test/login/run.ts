@@ -1,4 +1,4 @@
 import {UserInputScreen} from './login';
 
 
-new UserInputScreen().render();
+new UserInputScreen().create().render();
