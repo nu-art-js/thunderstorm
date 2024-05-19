@@ -1,8 +1,8 @@
 import {exec, ExecOptions} from 'child_process';
 import {CreateMergedInstance} from './class-merger';
 import {CliError} from './CliError';
-import {Constructor, generateHex, Logger, LogLevel} from '@nu-art/ts-common';
-import {ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
+import {Constructor, generateHex, Logger, LogLevel, removeItemFromArray, sleep} from '@nu-art/ts-common';
+import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 
 
 export type CliBlock<Cli extends CliWrapper> = (cli: Cli) => void;
@@ -27,6 +27,9 @@ const defaultOptions: Options = {
 
 export class BaseCLI
 	extends Logger {
+
+	protected stdoutProcessors: ((stdout: string) => void)[] = [];
+	protected stderrProcessors: ((stdout: string) => void)[] = [];
 
 	protected commands: string[] = [];
 	private indentation: number = 0;
@@ -74,17 +77,37 @@ export class BaseCLI
 	setUID(uuid: string) {
 		this.setTag(uuid);
 	}
+
+	addStdoutProcessor(processor: (stdout: string) => void) {
+		this.stdoutProcessors.push(processor);
+	}
+
+	addStderrProcessor(processor: (stderr: string) => void) {
+		this.stderrProcessors.push(processor);
+	}
+
+	removeStdoutProcessor(processor: (stdout: string) => void) {
+		removeItemFromArray(this.stdoutProcessors, processor);
+	}
+
+	removeStderrProcessor(processor: (stderr: string) => void) {
+		removeItemFromArray(this.stderrProcessors, processor);
+	}
+
 }
 
 export class CliInteractive
 	extends BaseCLI {
 
-	private shell: ChildProcessWithoutNullStreams;
+	private shell: ChildProcessWithoutNullStreams | ChildProcess
+
+	;
 
 	constructor() {
 		super();
 		this.shell = spawn('/bin/bash', {
-			// detached:true,
+			detached: true,  // This is important to make the process a session leader
+			shell: true
 		});
 
 		// Handle shell output (stdout)
@@ -93,12 +116,14 @@ export class CliInteractive
 			if (!message.length)
 				return;
 
+			this.stdoutProcessors.forEach(processor => processor(message));
+			this.stderrProcessors.forEach(processor => processor(message));
 			this.logInfo(`${message}`);
 		};
 
-		this.shell.stdout.on('data', printer);
+		this.shell.stdout?.on('data', printer);
 
-		this.shell.stderr.on('data', printer);
+		this.shell.stderr?.on('data', printer);
 
 		// Handle shell errors (stderr)
 		this.shell.on('data', printer);
@@ -114,7 +139,7 @@ export class CliInteractive
 		if (this._debug)
 			this.logDebug(`executing: `, `"""\n${command}\n"""`);
 
-		this.shell.stdin.write(command + this.option.newlineDelimiter, 'utf-8', (err?: Error | null) => {
+		this.shell.stdin?.write(command + this.option.newlineDelimiter, 'utf-8', (err?: Error | null) => {
 			if (err)
 				this.logError(`error`, err);
 		});
@@ -122,26 +147,32 @@ export class CliInteractive
 	};
 
 	endInteractive = () => {
-		this.shell.stdin.end();
+		this.shell.stdin?.end();
 	};
 
 	kill = (signal?: NodeJS.Signals | number) => {
 		return this.shell.kill(signal);
-	}
+	};
 
-	gracefullyKill = async () => {
-		return new Promise<void>((resolve,reject) => {
+	gracefullyKill = async (pid?: number) => {
+		return new Promise<void>((resolve, reject) => {
 			console.log('Killing process');
-			this.shell.on('exit',(code, signal) => {
-				console.log('Process Killed')
+			this.shell.on('exit', async (code, signal) => {
+				console.log(`Process Killed ${signal}`);
+				await sleep(5000);
 				resolve();
-			})
-			if(!this.shell.pid)
+			});
+
+			if (pid) {
+				console.log(`KILLING PID: ${pid}`);
+				process.kill(pid, 'SIGINT');
+			} else {
+				console.log(`KILLING SHELL WITH SIGINT`);
 				this.shell.kill('SIGINT');
-			else
-				process.kill(-this.shell.pid,'SIGINT');
-		})
-	}
+			}
+
+		}).then(() => sleep(10000));
+	};
 }
 
 export class Cli
@@ -169,11 +200,15 @@ export class Cli
 				if (stderr)
 					reject(stderr);
 
-				if (stdout)
-					this.logError(stdout);
+				if (stdout) {
+					this.stdoutProcessors.forEach(processor => processor(stdout));
+					this.logInfo(stdout);
+				}
 
-				if (stderr)
+				if (stderr) {
+					this.stderrProcessors.forEach(processor => processor(stdout));
 					this.logError(stderr);
+				}
 				resolve({stdout, stderr});
 			});
 		});
@@ -244,6 +279,23 @@ export class Commando {
 			commando.cli.setUID(uid);
 			return commando;
 		};
+
+		commando.addStdoutProcessor = (processor) => {
+			cli.addStdoutProcessor(processor);
+			return commando;
+		};
+		commando.addStderrProcessor = (processor) => {
+			cli.addStderrProcessor(processor);
+			return commando;
+		};
+		commando.removeStdoutProcessor = (processor) => {
+			cli.removeStdoutProcessor(processor);
+			return commando;
+		};
+		commando.removeStderrProcessor = (processor) => {
+			cli.removeStderrProcessor(processor);
+			return commando;
+		};
 		return commando;
 	}
 
@@ -265,6 +317,11 @@ export class Commando {
 	 */
 	executeFile = async (filePath: string, interpreter?: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
 	executeRemoteFile = async (pathToFile: string, interpreter: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
+
+	addStdoutProcessor = (processor: (stdout: string) => void) => this;
+	addStderrProcessor = (processor: (stderr: string) => void) => this;
+	removeStdoutProcessor = (processor: (stdout: string) => void) => this;
+	removeStderrProcessor = (processor: (stderr: string) => void) => this;
 
 	private constructor() {
 	}
@@ -291,24 +348,41 @@ export class CommandoInteractive {
 		};
 
 		commando.kill = (signal?: NodeJS.Signals | number) => {
-			return commando.cli.kill(signal)
-		}
+			return commando.cli.kill(signal);
+		};
 
-		commando.gracefullyKill = () => {
-			console.log('Commando Inter calling gracefullyKill')
-			return commando.cli.gracefullyKill();
-		}
-
+		commando.gracefullyKill = async (pid?: number) => {
+			console.log('Commando Inter calling gracefullyKill');
+			await commando.cli.gracefullyKill(pid);
+		};
+		commando.addStdoutProcessor = (processor) => {
+			cli.addStdoutProcessor(processor);
+			return commando;
+		};
+		commando.addStderrProcessor = (processor) => {
+			cli.addStderrProcessor(processor);
+			return commando;
+		};
+		commando.removeStdoutProcessor = (processor) => {
+			cli.removeStdoutProcessor(processor);
+			return commando;
+		};
+		commando.removeStderrProcessor = (processor) => {
+			cli.removeStderrProcessor(processor);
+			return commando;
+		};
 		return commando as CommandoInteractive & typeof _commando;
 	}
 
+	addStdoutProcessor = (processor: (stdout: string) => void) => this;
+	addStderrProcessor = (processor: (stderr: string) => void) => this;
+	removeStdoutProcessor = (processor: (stdout: string) => void) => this;
+	removeStderrProcessor = (processor: (stderr: string) => void) => this;
 	setUID = (uid: string) => this;
-
 	close = () => this;
-
 	kill = (signal?: NodeJS.Signals | number) => true;
 
-	gracefullyKill = () => {
+	gracefullyKill = (pid?: number) => {
 		return new Promise<void>(resolve => resolve());
-	}
+	};
 }
