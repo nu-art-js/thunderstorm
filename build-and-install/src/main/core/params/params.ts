@@ -214,7 +214,7 @@ export const BaiParam_DebugBackend: BaseCliParam<'debugBackend', boolean> = {
 };
 
 export const BaiParam_Deploy: BaseCliParam<'deploy', string> = {
-	keys: ['--deploy', '-d'],
+	keys: ['--deploy', '-dep'],
 	keyName: 'deploy',
 	type: 'string',
 	group: 'Apps',
