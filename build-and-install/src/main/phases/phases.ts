@@ -51,8 +51,8 @@ import * as chokidar from 'chokidar';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults/consts';
 import {MemKey_ProjectManager} from '../project-manager';
 import {MemKey_ProjectScreen} from '../screen/ProjectScreen';
-import {Commando} from '@nu-art/commando/core/cli';
 import {RunningProcessLogs} from '../screen/RunningProcessLogs';
+import {Commando} from '@nu-art/commando/core/commando/Commando';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';

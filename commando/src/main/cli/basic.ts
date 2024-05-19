@@ -1,4 +1,6 @@
-import {CliBlock, CliWrapper} from '../core/cli';
+import {BaseCommando, CliBlock} from '../core/commando/BaseCommando';
+import {CliInteractive} from '../core/commando/CommandoInteractive';
+import {Cli} from '../core/commando/Commando';
 
 
 type Cli_EchoOptions = {
@@ -13,8 +15,7 @@ type Cli_EchoOptions = {
  * Represents a Command Line Interface (CLI) to build and execute shell commands.
  */
 export class Cli_Basic
-	extends CliWrapper {
-
+	extends BaseCommando<Cli | CliInteractive> {
 
 	/**
 	 * Changes directory and optionally executes a block of commands in that directory.

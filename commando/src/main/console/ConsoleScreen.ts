@@ -106,11 +106,11 @@ export abstract class ConsoleScreen<State extends object>
 	};
 
 	readonly releaseScreen = () => {
-		if(!this.screen)
+		if (!this.screen)
 			return;
 
 		this.screen.detach();
 		this.screen.clear();
 		this.screen.destroy();
-	}
+	};
 }
