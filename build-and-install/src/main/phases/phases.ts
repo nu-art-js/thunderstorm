@@ -693,7 +693,7 @@ export const Phase_Launch: BuildPhase = {
 		const projectManager = MemKey_ProjectManager.get();
 		const projectScreen = MemKey_ProjectScreen.get();
 		if (!runningAppsLogs) {
-			projectScreen.dispose();
+			projectScreen.dispose().releaseScreen();
 			projectManager.clearLogger();
 			runningAppsLogs = new RunningProcessLogs();
 			runningAppsLogs.create();
@@ -712,6 +712,7 @@ export const Phase_Launch: BuildPhase = {
 		});
 		BeLogged.addClient(logClient);
 		projectScreen.updateOrCreatePackage(pkg.name, 'Launching...');
+
 		if (pkg.type === 'firebase-functions-app') {
 			await sleep(1000 * counter++);
 			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
@@ -722,18 +723,24 @@ export const Phase_Launch: BuildPhase = {
 				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 				.execute();
 
-			await NVM.createInteractiveCommando(Cli_Basic)
+			const proxyCommando = NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name)
 				.cd(pkg.path)
-				.append(`ts-node src/main/proxy.ts`)
-				.execute();
+				.append(`ts-node src/main/proxy.ts`);
 
-			await NVM.createInteractiveCommando(Cli_Basic)
+			const emulatorCommando =  NVM.createInteractiveCommando(Cli_Basic)
 				.setUID(pkg.name)
 				.cd(pkg.path)
-				.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''}`)
-				.execute();
+				.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''}`);
 
+			await proxyCommando.execute();
+			await	emulatorCommando.execute();
+
+			runningAppsLogs.addOnTerminateCallback(async () => {
+				console.log('HERE')
+				await proxyCommando.gracefullyKill();
+				await emulatorCommando.gracefullyKill();
+			})
 			return;
 		}
 

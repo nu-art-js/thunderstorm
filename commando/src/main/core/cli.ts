@@ -83,7 +83,9 @@ export class CliInteractive
 
 	constructor() {
 		super();
-		this.shell = spawn('/bin/bash', {});
+		this.shell = spawn('/bin/bash', {
+			// detached:true,
+		});
 
 		// Handle shell output (stdout)
 		const printer = (data: Buffer) => {
@@ -122,6 +124,24 @@ export class CliInteractive
 	endInteractive = () => {
 		this.shell.stdin.end();
 	};
+
+	kill = (signal?: NodeJS.Signals | number) => {
+		return this.shell.kill(signal);
+	}
+
+	gracefullyKill = async () => {
+		return new Promise<void>((resolve,reject) => {
+			console.log('Killing process');
+			this.shell.on('exit',(code, signal) => {
+				console.log('Process Killed')
+				resolve();
+			})
+			if(!this.shell.pid)
+				this.shell.kill('SIGINT');
+			else
+				process.kill(-this.shell.pid,'SIGINT');
+		})
+	}
 }
 
 export class Cli
@@ -267,14 +287,28 @@ export class CommandoInteractive {
 		};
 
 		commando.close = () => {
-
 			return commando;
 		};
+
+		commando.kill = (signal?: NodeJS.Signals | number) => {
+			return commando.cli.kill(signal)
+		}
+
+		commando.gracefullyKill = () => {
+			console.log('Commando Inter calling gracefullyKill')
+			return commando.cli.gracefullyKill();
+		}
 
 		return commando as CommandoInteractive & typeof _commando;
 	}
 
 	setUID = (uid: string) => this;
+
 	close = () => this;
 
+	kill = (signal?: NodeJS.Signals | number) => true;
+
+	gracefullyKill = () => {
+		return new Promise<void>(resolve => resolve());
+	}
 }
