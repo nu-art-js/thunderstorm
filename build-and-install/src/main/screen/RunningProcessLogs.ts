@@ -1,4 +1,4 @@
-import {AsyncVoidFunction, BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray, sleep} from '@nu-art/ts-common';
+import {AsyncVoidFunction, BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray} from '@nu-art/ts-common';
 import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
 
 
@@ -21,12 +21,7 @@ export class RunningProcessLogs
 
 						killed = true;
 						// this.dispose();
-						console.log('exiting1');
-						await sleep(2000);
-						console.log('exiting2');
-						await sleep(2000);
 						await Promise.all(this.onTerminateCallbacks.map(callback => callback()));
-
 						process.exit(0);
 					}
 				}

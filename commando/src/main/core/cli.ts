@@ -1,7 +1,16 @@
 import {exec, ExecOptions} from 'child_process';
 import {CreateMergedInstance} from './class-merger';
 import {CliError} from './CliError';
-import {AsyncVoidFunction, Constructor, generateHex, Logger, LogLevel, removeItemFromArray} from '@nu-art/ts-common';
+import {
+	AsyncVoidFunction,
+	Constructor,
+	generateHex,
+	Logger,
+	LogLevel,
+	removeItemFromArray,
+	ThisShouldNotHappenException,
+	voidFunction
+} from '@nu-art/ts-common';
 import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 
 
@@ -99,9 +108,7 @@ export class BaseCLI
 export class CliInteractive
 	extends BaseCLI {
 
-	private shell: ChildProcessWithoutNullStreams | ChildProcess
-
-	;
+	private shell: ChildProcessWithoutNullStreams | ChildProcess;
 
 	constructor() {
 		super();
@@ -116,9 +123,13 @@ export class CliInteractive
 			if (!message.length)
 				return;
 
-			this.stdoutProcessors.forEach(processor => processor(message));
-			this.stderrProcessors.forEach(processor => processor(message));
-			this.logInfo(`${message}`);
+			try {
+				this.stdoutProcessors.forEach(processor => processor(message));
+				this.stderrProcessors.forEach(processor => processor(message));
+				this.logInfo(`${message}`);
+			} catch (e:any) {
+				this.logError(e);
+			}
 		};
 
 		this.shell.stdout?.on('data', printer);
@@ -156,17 +167,13 @@ export class CliInteractive
 
 	gracefullyKill = async (pid?: number) => {
 		return new Promise<void>((resolve, reject) => {
-			console.log('Killing process');
 			this.shell.on('exit', async (code, signal) => {
-				console.log(`Process Killed ${signal}`);
 				resolve();
 			});
 
 			if (pid) {
-				console.log(`KILLING PID: ${pid}`);
 				process.kill(pid, 'SIGINT');
 			} else {
-				console.log(`KILLING SHELL WITH SIGINT`);
 				this.shell.kill('SIGINT');
 			}
 
@@ -352,7 +359,6 @@ export class CommandoInteractive {
 		};
 
 		commando.gracefullyKill = async (pid?: number) => {
-			console.log('Commando Inter calling gracefullyKill');
 			await commando.cli.gracefullyKill(pid);
 		};
 		commando.addStdoutProcessor = (processor) => {
@@ -385,4 +391,82 @@ export class CommandoInteractive {
 	gracefullyKill = (pid?: number) => {
 		return new Promise<void>(resolve => resolve());
 	};
+}
+
+type CommandoCLIListener_Callback = (stdout:string) => void;
+export class CommandoCLIListener {
+
+	private cb: CommandoCLIListener_Callback
+	protected filter?:RegExp;
+
+	constructor(callback: CommandoCLIListener_Callback,filter?:string | RegExp) {
+		this.cb = callback;
+		if(!filter)
+			return;
+
+		if(typeof filter === 'string')
+			this.filter = new RegExp(filter);
+		else
+			this.filter = filter as RegExp;
+	}
+
+	//######################### Inner Logic #########################
+
+	private _process (stdout:string) {
+		if(!this.stdoutPassesFilter(stdout))
+			return;
+
+		this.process(stdout);
+	}
+
+	private stdoutPassesFilter = (stdout:string):boolean => {
+		if(!this.filter)
+			return true;
+
+		return this.filter.test(stdout);
+	}
+
+	//######################### Functions #########################
+
+	public listen = <T extends Commando | CommandoInteractive>(commando:T):T => {
+		const process = this._process.bind(this);
+		commando.addStdoutProcessor(process)
+		commando.addStderrProcessor(process)
+		return commando;
+	}
+
+	protected process(stdout:string) {
+		this.cb(stdout);
+	}
+}
+
+export class CommandoCLIKeyValueListener
+	extends CommandoCLIListener {
+
+	private value: string | undefined;
+
+	constructor(pattern: string | RegExp) {
+		const filter = typeof pattern === 'string' ? new RegExp(pattern) : pattern as RegExp;
+		super(voidFunction,filter);
+	}
+
+	//######################### Inner Logic #########################
+
+	private setValue = (value:string) => {
+		this.value = value;
+	}
+
+	//######################### Functions #########################
+
+	protected process(stdout: string) {
+		const pattern = this.filter;
+		if(!pattern)
+			throw new ThisShouldNotHappenException('Class does not have a pattern, but it should have been initialized with one');
+
+		const value = stdout.match(pattern)?.[1];
+		if(value)
+			this.setValue(value);
+	}
+
+	public getValue = () => this.value;
 }

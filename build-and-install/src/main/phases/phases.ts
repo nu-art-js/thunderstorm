@@ -51,7 +51,7 @@ import * as chokidar from 'chokidar';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults/consts';
 import {MemKey_ProjectManager} from '../project-manager';
 import {MemKey_ProjectScreen} from '../screen/ProjectScreen';
-import {Commando} from '@nu-art/commando/core/cli';
+import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener} from '@nu-art/commando/core/cli';
 import {RunningProcessLogs} from '../screen/RunningProcessLogs';
 
 
@@ -714,9 +714,12 @@ export const Phase_Launch: BuildPhase = {
 		projectScreen.updateOrCreatePackage(pkg.name, 'Launching...');
 
 		if (pkg.type === 'firebase-functions-app') {
+			//Stagger app initialization
 			await sleep(1000 * counter++);
-			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
 			runningAppsLogs.registerApp(pkg.name, logClient);
+
+			//Make sure app ports are released
+			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
 			await NVM.createCommando(Cli_Basic)
 				.setUID(pkg.name).debug()
 				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
@@ -724,25 +727,18 @@ export const Phase_Launch: BuildPhase = {
 				.append('echo ')
 				.execute();
 
+
 			const KILL_CONFIRM_LOG = `KILL PROCESS`;
 			const PROXY_PID_PROCESS = 'PROXY_PID_PROCESS';
-			let proxyPid: number;
-			const proxyPidProcessor = (stdout: string) => {
-				if (stdout.includes(KILL_CONFIRM_LOG))
-					return proxyCommando.close();
+			const EMULATOR_PID_PROCESS = 'EMULATOR_PID_PROCESS';
 
-				const pid = stdout.match(new RegExp(`${PROXY_PID_PROCESS}=(\\d+)`))?.[1];
-				if (!exists(pid))
-					return;
-
-				proxyPid = +pid;
-				// proxyCommando.removeStdoutProcessor(proxyPidProcessor);
-			};
-
-			const proxyCommando = NVM.createInteractiveCommando(Cli_Basic)
+			const proxyCommando = NVM.createInteractiveCommando(Cli_Basic);
+			//Listen on proxy kill command & proxy pid
+			const proxyPIDListener = new CommandoCLIKeyValueListener(new RegExp(`${PROXY_PID_PROCESS}=(\\d+)`))
+			new CommandoCLIListener(() => proxyCommando.close(), KILL_CONFIRM_LOG).listen(proxyCommando);
+			proxyPIDListener.listen(proxyCommando)
 				.setUID(pkg.name)
 				.cd(pkg.path)
-				.addStdoutProcessor(proxyPidProcessor)
 				.append('echo ZE ZEVEL1')
 				.append('ts-node src/main/proxy.ts &')
 				.append('pid=$!')
@@ -750,23 +746,13 @@ export const Phase_Launch: BuildPhase = {
 				.append(`wait \$pid`)
 				.append(`echo "${KILL_CONFIRM_LOG} \${pid}"`);
 
-			const EMULATOR_PID_PROCESS = 'EMULATOR_PID_PROCESS';
-			let emulatorPid: number;
-			const emulatorPidProcessor = (stdout: string) => {
-				if (stdout.includes(KILL_CONFIRM_LOG))
-					return emulatorCommando.close();
-
-				const pid = stdout.match(new RegExp(`${EMULATOR_PID_PROCESS}=(\\d+)`))?.[1];
-				if (!exists(pid))
-					return;
-
-				emulatorPid = +pid;
-			};
-
-			const emulatorCommando = NVM.createInteractiveCommando(Cli_Basic)
+			const emulatorCommando = NVM.createInteractiveCommando(Cli_Basic);
+			//Listen on emulator kill command & emulator pid
+			const emulatorPIDListener = new CommandoCLIKeyValueListener(new RegExp(`${EMULATOR_PID_PROCESS}=(\\d+)`));
+			new CommandoCLIListener(() => emulatorCommando.close(), KILL_CONFIRM_LOG).listen(emulatorCommando);
+			emulatorPIDListener.listen(emulatorCommando)
 				.setUID(pkg.name)
 				.cd(pkg.path)
-				.addStdoutProcessor(emulatorPidProcessor)
 				.append('echo ZE ZEVEL2')
 				.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''} &`)
 				.append('pid=$!')
@@ -778,9 +764,10 @@ export const Phase_Launch: BuildPhase = {
 			await emulatorCommando.execute();
 
 			runningAppsLogs.addOnTerminateCallback(async () => {
-				console.log('HERE');
-				await emulatorCommando.gracefullyKill(emulatorPid);
-				await proxyCommando.gracefullyKill(proxyPid);
+				const emulatorPid = Number(emulatorPIDListener.getValue());
+				const proxyPid = Number(proxyPIDListener.getValue());
+				await emulatorCommando.gracefullyKill(isNaN(emulatorPid) ? undefined : emulatorPid);
+				await proxyCommando.gracefullyKill(isNaN(proxyPid) ? undefined : proxyPid);
 				runningAppsLogs.unregisterApp(pkg.name);
 			});
 			return;
