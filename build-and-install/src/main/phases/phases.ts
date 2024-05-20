@@ -10,7 +10,8 @@ import {
 	_logger_finalDate,
 	_logger_getPrefix,
 	_logger_timezoneOffset,
-	BadImplementationException, BeLogged,
+	BadImplementationException,
+	BeLogged,
 	currentTimeMillis,
 	exists,
 	filterDuplicates,
@@ -21,7 +22,6 @@ import {
 	Minute,
 	reduceToMap,
 	Second,
-	sleep,
 	StaticLogger,
 	TypedMap
 } from '@nu-art/ts-common';
@@ -36,7 +36,8 @@ import {
 	RuntimePackage_WithOutput
 } from '../core/types';
 import {
-	createFirebaseRC, generateProxyFile,
+	createFirebaseRC,
+	generateProxyFile,
 	writeToFile_functionFirebaseConfigJSON,
 	writeToFile_FunctionFirebaseJSON,
 	writeToFile_HostingFirebaseConfigJSON,
@@ -51,8 +52,9 @@ import * as chokidar from 'chokidar';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults/consts';
 import {MemKey_ProjectManager} from '../project-manager';
 import {MemKey_ProjectScreen} from '../screen/ProjectScreen';
-import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener} from '@nu-art/commando/core/cli';
+import {Commando} from '@nu-art/commando/core/cli';
 import {RunningProcessLogs} from '../screen/RunningProcessLogs';
+import {CommandExecutor_FirebaseFunction, CommandExecutor_FirebaseHosting} from '../logic/command-executors';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
@@ -65,7 +67,6 @@ const CONST_VersionApp = 'version-app.json';
 
 const pathToProjectTS_Config = convertToFullPath(`./.config/${CONST_TS_Config}`);
 const pathToProjectEslint = convertToFullPath('./.config/.eslintrc.js');
-const runInDebug = false;
 const CommandoLibs = ['commando', 'build-and-install', 'ts-common'];
 
 export const Phase_PrintHelp: BuildPhase = {
@@ -682,7 +683,6 @@ export const Phase_CompileWatch: BuildPhase = {
 };
 
 let runningAppsLogs: RunningProcessLogs;
-let counter = 0;
 export const Phase_Launch: BuildPhase = {
 	type: 'package',
 	name: 'launch',
@@ -714,60 +714,10 @@ export const Phase_Launch: BuildPhase = {
 		projectScreen.updateOrCreatePackage(pkg.name, 'Launching...');
 
 		if (pkg.type === 'firebase-functions-app') {
-			//Stagger app initialization
-			await sleep(1000 * counter++);
 			runningAppsLogs.registerApp(pkg.name, logClient);
-
-			//Make sure app ports are released
-			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
-			await NVM.createCommando(Cli_Basic)
-				.setUID(pkg.name).debug()
-				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
-				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-				.append('echo ')
-				.execute();
-
-
-			const KILL_CONFIRM_LOG = `KILL PROCESS`;
-			const PROXY_PID_PROCESS = 'PROXY_PID_PROCESS';
-			const EMULATOR_PID_PROCESS = 'EMULATOR_PID_PROCESS';
-
-			const proxyCommando = NVM.createInteractiveCommando(Cli_Basic);
-			//Listen on proxy kill command & proxy pid
-			const proxyPIDListener = new CommandoCLIKeyValueListener(new RegExp(`${PROXY_PID_PROCESS}=(\\d+)`))
-			new CommandoCLIListener(() => proxyCommando.close(), KILL_CONFIRM_LOG).listen(proxyCommando);
-			proxyPIDListener.listen(proxyCommando)
-				.setUID(pkg.name)
-				.cd(pkg.path)
-				.append('echo ZE ZEVEL1')
-				.append('ts-node src/main/proxy.ts &')
-				.append('pid=$!')
-				.append(`echo "${PROXY_PID_PROCESS}=\${pid}"`)
-				.append(`wait \$pid`)
-				.append(`echo "${KILL_CONFIRM_LOG} \${pid}"`);
-
-			const emulatorCommando = NVM.createInteractiveCommando(Cli_Basic);
-			//Listen on emulator kill command & emulator pid
-			const emulatorPIDListener = new CommandoCLIKeyValueListener(new RegExp(`${EMULATOR_PID_PROCESS}=(\\d+)`));
-			new CommandoCLIListener(() => emulatorCommando.close(), KILL_CONFIRM_LOG).listen(emulatorCommando);
-			emulatorPIDListener.listen(emulatorCommando)
-				.setUID(pkg.name)
-				.cd(pkg.path)
-				.append('echo ZE ZEVEL2')
-				.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''} &`)
-				.append('pid=$!')
-				.append(`echo "${EMULATOR_PID_PROCESS}=\${pid}"`)
-				.append(`wait \$pid`)
-				.append(`echo "${KILL_CONFIRM_LOG} \${pid}"`);
-
-			await proxyCommando.execute();
-			await emulatorCommando.execute();
-
+			const executor = await new CommandExecutor_FirebaseFunction(pkg).execute();
 			runningAppsLogs.addOnTerminateCallback(async () => {
-				const emulatorPid = Number(emulatorPIDListener.getValue());
-				const proxyPid = Number(proxyPIDListener.getValue());
-				await emulatorCommando.gracefullyKill(isNaN(emulatorPid) ? undefined : emulatorPid);
-				await proxyCommando.gracefullyKill(isNaN(proxyPid) ? undefined : proxyPid);
+				await executor.kill();
 				runningAppsLogs.unregisterApp(pkg.name);
 			});
 			return;
@@ -775,19 +725,11 @@ export const Phase_Launch: BuildPhase = {
 
 		if (pkg.type === 'firebase-hosting-app') {
 			runningAppsLogs.registerApp(pkg.name, logClient);
-
-			if (!pkg.envConfig.hostingPort)
-				throw new BadImplementationException('Missing hosting port in envConfig');
-
-			return NVM.createInteractiveCommando(Cli_Basic)
-				.setUID(pkg.name).debug()
-				.cd(pkg.path)
-				.append('echo ZE ZEVEL3')
-				.append(`array=($(lsof -ti:${[pkg.envConfig.hostingPort].join(',')}))`)
-				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-				.append(`nvm use`)
-				.append(`npm run start`)
-				.execute();
+			const executor = await new CommandExecutor_FirebaseHosting(pkg).execute();
+			runningAppsLogs.addOnTerminateCallback(async () => {
+				await executor.kill();
+				runningAppsLogs.unregisterApp(pkg.name);
+			})
 		}
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Died');
