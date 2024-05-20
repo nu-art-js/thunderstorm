@@ -1,11 +1,25 @@
 import {Phase, ProjectManagerV2} from '../ProjectManagerV2';
 import {BasePackage} from '../BasePackage';
 import {AsyncVoidFunction} from '@nu-art/ts-common';
+import {RuntimeParams} from '../../core/params/params';
+import {Commando} from '@nu-art/commando/core/cli';
 
 
 const Phase_A: Phase<'compile'> = {
 	name: 'Compile',
-	method: 'compile'
+	method: 'compile',
+	filter: async () => !RuntimeParams.noBuild
+};
+
+const Phase_I: Phase<'install'> = {
+	name: 'Compile',
+	method: 'install',
+	filter: async () => !RuntimeParams.install
+};
+
+const Phase_C: Phase<'copyPackageJson'> = {
+	name: 'Copy Package Json',
+	method: 'copyPackageJson',
 };
 
 const Phase_B: Phase<'launch'> = {
@@ -22,9 +36,30 @@ type PhaseImplementor<P extends Phase<string>> = {
 	[K in P['method']]: AsyncVoidFunction
 }
 
-abstract class Package_Typescript
-	extends BasePackage {
+export abstract class Package_Python
+	extends BasePackage
+	implements PhaseImplementor<typeof Phase_I> {
 
+	async install() {
+		await Commando.create().append('pip install -r requirements.txt').execute();
+	}
+}
+
+abstract class Package_Typescript
+	extends BasePackage
+	implements PhaseImplementor<typeof Phase_C> {
+
+	async copyPackageJson() {
+
+	}
+}
+
+export class Package_Root
+	extends Package_Typescript {
+
+	constructor(name: string) {
+		super(name);
+	}
 }
 
 class Package_Lib
