@@ -18,9 +18,11 @@
 
 import {Module} from '@nu-art/ts-common';
 import {ModulePackBE_AccountDB, ModulePackBE_SAML, ModulePackBE_SessionDB} from './_entity';
+import {ModuleBE_SecretManager} from '@nu-art/google-services/backend/modules/ModuleBE_SecretManager';
 
 export const ModulePackBE_Accounts: Module[] = [
 	...ModulePackBE_AccountDB,
 	...ModulePackBE_SAML,
 	...ModulePackBE_SessionDB,
+	ModuleBE_SecretManager
 ];
