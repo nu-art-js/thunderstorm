@@ -30,15 +30,6 @@ export class Component_FocusedEntityRef
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
 		state.focusedEntities = nextProps.focusedEntities;
 		state.ignoreCurrentUser = nextProps.ignoreCurrentUser;
-
-		//Change in focused entities, set new focused
-		if (!compare(state.focusedEntities, this.state?.focusedEntities)) {
-			//Unfocus previous entities
-			ModuleFE_FocusedObject.unfocus(this.state?.focusedEntities ?? []);
-			//focus current entities
-			ModuleFE_FocusedObject.focus(state.focusedEntities ?? []);
-		}
-
 		state.accountIds = state.focusedEntities?.reduce((accountIds, focusedEntity) => {
 			const accountIdsForFocusedItem = ModuleFE_FocusedObject.getAccountIdsForFocusedItem(focusedEntity.dbKey, focusedEntity.itemId, state.ignoreCurrentUser);
 			return filterDuplicates([...accountIds, ...accountIdsForFocusedItem]);
@@ -46,9 +37,39 @@ export class Component_FocusedEntityRef
 		return state;
 	}
 
+	/**
+	 * Mount / Unmount logic handled in
+	 * - ComponentWillUnmount
+	 * - ComponentDidMount
+	 * - ComponentDidUpdate
+	 *
+	 * It must be the case, in order for un-focusing and focusing to happen in the correct order
+	 * no matter how the component is rendered or recycled.
+	 */
+
+
 	componentWillUnmount() {
 		if (this.state.focusedEntities)
 			ModuleFE_FocusedObject.unfocus(this.state.focusedEntities);
+	}
+
+	componentDidMount() {
+		//If mounted with focus entities, focus on them
+		if (this.state.focusedEntities)
+			ModuleFE_FocusedObject.focus(this.state.focusedEntities);
+	}
+
+	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+		//Change in focused entities, set new focused
+		if (!compare(prevState.focusedEntities, this.state.focusedEntities)) {
+			//Unfocus previous entities
+			if (this.state.focusedEntities)
+				ModuleFE_FocusedObject.unfocus(this.state.focusedEntities);
+
+			//focus current entities
+			if (prevState.focusedEntities)
+				ModuleFE_FocusedObject.focus(prevState.focusedEntities);
+		}
 	}
 
 	// ######################## Render ########################
