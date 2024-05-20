@@ -8,6 +8,7 @@ export type PhasesImplementor<Phases extends Phase<string>[]> = {
 export type Phase<PhaseMethod extends string> = {
 	name?: string
 	method: PhaseMethod
+	filter?: () => Promise<boolean>
 }
 
 export class ProjectManagerV2<Phases extends Phase<string>[]> {
