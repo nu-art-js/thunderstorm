@@ -68,7 +68,7 @@ export class ProjectScreen
 			tags: true,
 			style: {
 				border: {fg: 'green'},
-				fg: 'black',
+				fg: 'green',
 			},
 			align: 'center'
 		});
@@ -108,9 +108,9 @@ export class ProjectScreen
 			tags: true,
 			style: {
 				border: {fg: 'green'},
-				fg: 'black',
+				fg: 'green',
 			},
-			align: 'center'
+			align: 'center',
 		});
 
 		this.logger = this.createWidget('log', {
