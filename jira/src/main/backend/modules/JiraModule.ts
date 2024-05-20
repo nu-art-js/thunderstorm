@@ -25,7 +25,7 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {promisifyRequest} from '@nu-art/thunderstorm/backend';
-import {HttpMethod} from '@nu-art/thunderstorm';
+import {HeaderKey_ContentType, HttpMethod} from '@nu-art/thunderstorm';
 import {CoreOptions, Headers, Response, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils';
 import {JiraVersion, JiraVersion_Create} from '../../shared/version';
@@ -158,10 +158,10 @@ export class ModuleBE_Jira_Class
 
 		if (!check) {
 			headers['X-Atlassian-Token'] = 'no-check';
-			headers['Content-Type'] = 'multipart/form-data';
+			headers[HeaderKey_ContentType] = 'multipart/form-data';
 		} else {
 			headers.Accept = 'application/json';
-			headers['Content-Type'] = 'application/json';
+			headers[HeaderKey_ContentType] = 'application/json';
 		}
 
 		return headers;
