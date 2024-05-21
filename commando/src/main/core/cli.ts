@@ -3,7 +3,7 @@ import {CreateMergedInstance} from './class-merger';
 import {CliError} from './CliError';
 import {
 	AsyncVoidFunction,
-	Constructor,
+	Constructor, filterInOut,
 	generateHex,
 	Logger,
 	LogLevel,
@@ -37,6 +37,7 @@ const defaultOptions: Options = {
 export class BaseCLI
 	extends Logger {
 
+	protected stderrValidator: ((stdout: string) => boolean) = () => true;
 	protected stdoutProcessors: ((stdout: string) => void)[] = [];
 	protected stderrProcessors: ((stdout: string) => void)[] = [];
 
@@ -124,10 +125,13 @@ export class CliInteractive
 				return;
 
 			try {
-				this.stdoutProcessors.forEach(processor => processor(message));
-				this.stderrProcessors.forEach(processor => processor(message));
+				if (!this.stderrValidator(message))
+					this.stdoutProcessors.forEach(processor => processor(message));
+				else
+					this.stderrProcessors.forEach(processor => processor(message));
+
 				this.logInfo(`${message}`);
-			} catch (e:any) {
+			} catch (e: any) {
 				this.logError(e);
 			}
 		};
@@ -203,7 +207,11 @@ export class Cli
 					reject(new CliError(`executing:\n${command}\n`, stdout, stderr, error));
 				}
 
-				if (stderr)
+				const errorLogs = stderr.split('\n');
+				const {filteredIn, filteredOut} = filterInOut(errorLogs, this.stderrValidator);
+				stderr = filteredIn.join('\n').trim();
+				stdout += `from stderr: \n${filteredOut.join('\n')}`;
+				if (stderr && stderr.length > 0)
 					reject(stderr);
 
 				if (stdout) {
@@ -393,18 +401,19 @@ export class CommandoInteractive {
 	};
 }
 
-type CommandoCLIListener_Callback = (stdout:string) => void;
+type CommandoCLIListener_Callback = (stdout: string) => void;
+
 export class CommandoCLIListener {
 
-	private cb: CommandoCLIListener_Callback
-	protected filter?:RegExp;
+	private cb: CommandoCLIListener_Callback;
+	protected filter?: RegExp;
 
-	constructor(callback: CommandoCLIListener_Callback,filter?:string | RegExp) {
+	constructor(callback: CommandoCLIListener_Callback, filter?: string | RegExp) {
 		this.cb = callback;
-		if(!filter)
+		if (!filter)
 			return;
 
-		if(typeof filter === 'string')
+		if (typeof filter === 'string')
 			this.filter = new RegExp(filter);
 		else
 			this.filter = filter as RegExp;
@@ -412,30 +421,30 @@ export class CommandoCLIListener {
 
 	//######################### Inner Logic #########################
 
-	private _process (stdout:string) {
-		if(!this.stdoutPassesFilter(stdout))
+	private _process(stdout: string) {
+		if (!this.stdoutPassesFilter(stdout))
 			return;
 
 		this.process(stdout);
 	}
 
-	private stdoutPassesFilter = (stdout:string):boolean => {
-		if(!this.filter)
+	private stdoutPassesFilter = (stdout: string): boolean => {
+		if (!this.filter)
 			return true;
 
 		return this.filter.test(stdout);
-	}
+	};
 
 	//######################### Functions #########################
 
-	public listen = <T extends Commando | CommandoInteractive>(commando:T):T => {
+	public listen = <T extends Commando | CommandoInteractive>(commando: T): T => {
 		const process = this._process.bind(this);
-		commando.addStdoutProcessor(process)
-		commando.addStderrProcessor(process)
+		commando.addStdoutProcessor(process);
+		commando.addStderrProcessor(process);
 		return commando;
-	}
+	};
 
-	protected process(stdout:string) {
+	protected process(stdout: string) {
 		this.cb(stdout);
 	}
 }
@@ -447,24 +456,24 @@ export class CommandoCLIKeyValueListener
 
 	constructor(pattern: string | RegExp) {
 		const filter = typeof pattern === 'string' ? new RegExp(pattern) : pattern as RegExp;
-		super(voidFunction,filter);
+		super(voidFunction, filter);
 	}
 
 	//######################### Inner Logic #########################
 
-	private setValue = (value:string) => {
+	private setValue = (value: string) => {
 		this.value = value;
-	}
+	};
 
 	//######################### Functions #########################
 
 	protected process(stdout: string) {
 		const pattern = this.filter;
-		if(!pattern)
+		if (!pattern)
 			throw new ThisShouldNotHappenException('Class does not have a pattern, but it should have been initialized with one');
 
 		const value = stdout.match(pattern)?.[1];
-		if(value)
+		if (value)
 			this.setValue(value);
 	}
 
