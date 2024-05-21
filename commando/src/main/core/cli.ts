@@ -43,7 +43,7 @@ export class BaseCLI
 
 	protected commands: string[] = [];
 	private indentation: number = 0;
-	protected _debug: boolean = false;
+	protected _debug: boolean = true;
 	protected option: Options;
 	protected uid: string = generateHex((8));
 
@@ -209,11 +209,14 @@ export class Cli
 
 				const errorLogs = stderr.split('\n');
 				const {filteredIn, filteredOut} = filterInOut(errorLogs, this.stderrValidator);
+
 				stderr = filteredIn.join('\n').trim();
-				stdout += `from stderr: \n${filteredOut.join('\n')}`;
 				if (stderr && stderr.length > 0)
 					reject(stderr);
 
+				const stdErrToOut = filteredOut.join('\n').trim();
+				if (stdErrToOut && stdErrToOut.length > 0)
+					stdout += `from stderr: \n${stdErrToOut}`;
 				if (stdout) {
 					this.stdoutProcessors.forEach(processor => processor(stdout));
 					this.logInfo(stdout);
