@@ -54,7 +54,6 @@ export class Cli_PNPM
 
 	installPackages = async (commando?: Commando) => {
 		await (commando ?? Commando.create())
-			.append(`source /home/jenkins/.bashrc`)
 			.append(`pnpm store prune`)
 			.append(`pnpm install -f --no-frozen-lockfile --prefer-offline false`)
 			.execute();
@@ -64,8 +63,6 @@ export class Cli_PNPM
 
 	private async getVersion() {
 		const commando = Commando.create(Cli_Programming, Cli_Basic);
-		commando.append(`source /home/jenkins/.bashrc`);
-
 		return commando.if('[[ -x "$(command -v pnpm)" ]]', (commando) => {
 			commando.cli.append('pnpm --version');
 		}).execute();
