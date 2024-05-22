@@ -1,15 +1,4 @@
-import {AsyncVoidFunction} from '@nu-art/ts-common';
-
-
-export type PhasesImplementor<Phases extends Phase<string>[]> = {
-	[K in Phases[number]['method']]?: AsyncVoidFunction
-}
-
-export type Phase<PhaseMethod extends string> = {
-	name?: string
-	method: PhaseMethod
-	filter?: () => Promise<boolean>
-}
+import { Phase, PhasesImplementor } from "./phase-runner/types";
 
 export class ProjectManagerV2<Phases extends Phase<string>[]> {
 	private manageables: PhasesImplementor<Phases>[] = [];

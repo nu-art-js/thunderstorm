@@ -4,7 +4,8 @@ export const PackageType_FirebaseHostingApp = 'firebase-hosting-app' as const;
 export const PackageType_FirebaseHostingAndFunctionApp = 'firebase-app' as const;
 export const PackageType_FirebaseFunctionsApp = 'firebase-functions-app' as const;
 export const PackageType_Sourceless = 'sourceless' as const;
-export const PackageTypes = [PackageType_InfraLib, PackageType_ProjectLib, PackageType_FirebaseHostingApp, PackageType_FirebaseFunctionsApp, PackageType_Sourceless] as const;
+export const PackageType_Python = 'python' as const;
+export const PackageTypes = [PackageType_InfraLib, PackageType_ProjectLib, PackageType_FirebaseHostingApp, PackageType_FirebaseFunctionsApp, PackageType_Sourceless, PackageType_Python] as const;
 export const PackageTypesWithOutput = [PackageType_InfraLib, PackageType_ProjectLib, PackageType_FirebaseHostingApp, PackageType_FirebaseFunctionsApp];
 export type PackageType = typeof PackageTypes[number];
 
@@ -41,7 +42,7 @@ export type FirebasePackageConfig<Env extends string = string> = {
 
 	debugPort: number,
 	basePort: number,
-	hostingPort?:number,
+	hostingPort?: number,
 	pathToFirebaseConfig: string
 	ssl?: {
 		pathToKey: string
@@ -66,6 +67,11 @@ export type Package_Base = {
 export type Package_Sourceless = Package_Base & {
 	type: typeof PackageType_Sourceless;
 };
+
+export type Package_Python = Package_Base & {
+	type: typeof PackageType_Python;
+	path: string;
+}
 
 export type Package_WithSources = Package_Base & {
 	output: string;
@@ -113,3 +119,4 @@ export type Package =
 	| Package_FirebaseFunctionsApp
 	| Package_InfraLib
 	| Package_ProjectLib
+	| Package_Python;

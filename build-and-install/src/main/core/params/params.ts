@@ -279,6 +279,14 @@ export const BaiParam_AllLogs: BaseCliParam<'allLogs', boolean> = {
 	description: 'will disable ui and show verbose logs for bai run',
 };
 
+export const BaiParam_EncounterManager: BaseCliParam<'encounterManager', boolean> = {
+	keys: ['-em', '--encounter-manager'],
+	keyName: 'encounterManager',
+	type: 'boolean',
+	group: 'Other',
+	description: 'Will install encounter manager shit',
+};
+
 export const AllBaiParams = [
 	BaiParam_Help,
 	BaiParam_DependencyTree,
@@ -312,7 +320,8 @@ export const AllBaiParams = [
 	BaiParam_NoGit, // TODO: to implement
 	BaiParam_Debug,
 	BaiParam_Publish, // TODO: to implement
-	BaiParam_AllLogs
+	BaiParam_AllLogs,
+	BaiParam_EncounterManager
 ];
 
 const params = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();

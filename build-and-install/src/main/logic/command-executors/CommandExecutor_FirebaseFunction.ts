@@ -4,6 +4,8 @@ import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInte
 import {Second, sleep} from '@nu-art/ts-common';
 import {Package_FirebaseFunctionsApp} from '../../core/types';
 
+type OnReadyCallback = (pkg:Package_FirebaseFunctionsApp)=>Promise<void>
+
 type CommandExecutor_FirebaseFunction_Listeners = {
 	proxy: {
 		pid: CommandoCLIKeyValueListener;
@@ -13,6 +15,7 @@ type CommandExecutor_FirebaseFunction_Listeners = {
 		pid: CommandoCLIKeyValueListener;
 		kill: CommandoCLIListener;
 	};
+	onReady: CommandoCLIListener;
 }
 
 export class CommandExecutor_FirebaseFunction {
@@ -31,6 +34,7 @@ export class CommandExecutor_FirebaseFunction {
 	};
 	private listeners!: CommandExecutor_FirebaseFunction_Listeners;
 	private debugMode?: boolean;
+	private onReadyCallbacks: OnReadyCallback[] = [];
 
 	constructor(pkg: Package_FirebaseFunctionsApp) {
 		this.pkg = pkg;
@@ -52,12 +56,14 @@ export class CommandExecutor_FirebaseFunction {
 			emulator: {
 				pid: new CommandoCLIKeyValueListener(new RegExp(`${this.EMULATOR_PID_LOG}=(\\d+)`)),
 				kill: new CommandoCLIListener(() => this.commandos.emulator.close(), this.EMULATOR_KILL_LOG),
-			}
+			},
+			onReady: new CommandoCLIListener(()=> this.onReady(),new RegExp('.*Emulator Hub running.*')),
 		};
 		this.listeners.proxy.kill.listen(this.commandos.proxy);
 		this.listeners.proxy.pid.listen(this.commandos.proxy);
 		this.listeners.emulator.kill.listen(this.commandos.emulator);
 		this.listeners.emulator.pid.listen(this.commandos.emulator);
+		this.listeners.onReady.listen(this.commandos.emulator);
 	}
 
 	private async clearPorts() {
@@ -100,10 +106,14 @@ export class CommandExecutor_FirebaseFunction {
 		return isNaN(pid) ? undefined : pid;
 	}
 
+	private async onReady () {
+		await Promise.all(this.onReadyCallbacks.map(cb => cb(this.pkg)));
+	}
+
 	//######################### Functions #########################
 
 	public async execute() {
-		await sleep(Second * CommandExecutor_FirebaseFunction.staggerCount++);
+		await sleep(2 * Second * CommandExecutor_FirebaseFunction.staggerCount++);
 		await this.clearPorts();
 		await this.runProxy();
 		await this.runEmulator();
@@ -119,5 +129,9 @@ export class CommandExecutor_FirebaseFunction {
 
 	public setDebug(debug: boolean) {
 		this.debugMode = debug;
+	}
+
+	public addOnReadyCallback (cb: OnReadyCallback) {
+		this.onReadyCallbacks.push(cb);
 	}
 }
