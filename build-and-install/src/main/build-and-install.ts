@@ -8,9 +8,7 @@ import {
 	Phase_DeployBackend,
 	Phase_DeployFrontend,
 	Phase_InstallGlobals,
-	Phase_InstallNvm,
 	Phase_InstallPackages,
-	Phase_InstallPnpm,
 	Phase_Launch,
 	Phase_Lint,
 	Phase_PackagePurge,
@@ -39,13 +37,11 @@ projectManager.registerPhase(Phase_PrepareParams);
 projectManager.registerPhase(Phase_ResolveTemplate);
 projectManager.registerPhase(Phase_ResolveEnv);
 projectManager.registerPhase(Phase_ResolvePackages);
-projectManager.registerPhase(Phase_InstallNvm);
 projectManager.registerPhase(Phase_PrintDependencyTree);
 projectManager.registerPhase(Phase_CheckCyclicImports);
 projectManager.registerPhase(Phase_PrintEnv);
 projectManager.registerPhase(Phase_PackagePurge);
 projectManager.registerPhase(Phase_InstallGlobals);
-projectManager.registerPhase(Phase_InstallPnpm);
 projectManager.registerPhase(Phase_InstallPackages);
 projectManager.registerPhase(Phase_Clean);
 projectManager.registerPhase(Phase_Lint);

@@ -261,17 +261,17 @@ export const Phase_ResolvePackages: BuildPhase = {
 	}
 };
 
-export const Phase_InstallNvm: BuildPhase = {
-	type: 'project',
-	name: 'install-nvm',
-	mandatoryPhases: [Phase_ResolveEnv],
-	action: async () => {
-		const installed = await NVM.installRequiredVersionIfNeeded();
-		if (!installed)
-			return;
-
-	}
-};
+// export const Phase_InstallNvm: BuildPhase = {
+// 	type: 'project',
+// 	name: 'install-nvm',
+// 	mandatoryPhases: [Phase_ResolveEnv],
+// 	action: async () => {
+// 		const installed = await NVM.installRequiredVersionIfNeeded();
+// 		if (!installed)
+// 			return;
+//
+// 	}
+// };
 
 export const Phase_PrintDependencyTree: BuildPhase = {
 	type: PackageBuildPhaseType_Package,
@@ -350,14 +350,14 @@ export const Phase_InstallGlobals: BuildPhase = {
 	}
 };
 
-export const Phase_InstallPnpm: BuildPhase = {
-	type: 'project',
-	name: 'install-pnpm',
-	mandatoryPhases: [Phase_ResolveEnv],
-	action: async () => {
-		await PNPM.install(NVM.createCommando());
-	}
-};
+// export const Phase_InstallPnpm: BuildPhase = {
+// 	type: 'project',
+// 	name: 'install-pnpm',
+// 	mandatoryPhases: [Phase_ResolveEnv],
+// 	action: async () => {
+// 		await PNPM.install(NVM.createCommando());
+// 	}
+// };
 
 export const Phase_InstallPackages: BuildPhase = {
 	type: 'project',
