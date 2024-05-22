@@ -1,8 +1,8 @@
-import {Phase, ProjectManagerV2} from '../ProjectManagerV2';
 import {BasePackage} from '../BasePackage';
-import {AsyncVoidFunction} from '@nu-art/ts-common';
 import {RuntimeParams} from '../../core/params/params';
 import {Commando} from '@nu-art/commando/core/cli';
+import {Phase, PhaseImplementor} from '../phase-runner/types';
+import {ProjectManagerV2} from '../ProjectManagerV2';
 
 
 const Phase_A: Phase<'compile'> = {
@@ -14,7 +14,7 @@ const Phase_A: Phase<'compile'> = {
 const Phase_I: Phase<'install'> = {
 	name: 'Compile',
 	method: 'install',
-	filter: async () => !RuntimeParams.install
+	filter: async () => RuntimeParams.install
 };
 
 const Phase_C: Phase<'copyPackageJson'> = {
@@ -32,13 +32,10 @@ const AllPhases = [
 	Phase_B,
 ];
 
-type PhaseImplementor<P extends Phase<string>> = {
-	[K in P['method']]: AsyncVoidFunction
-}
 
 export abstract class Package_Python
 	extends BasePackage
-	implements PhaseImplementor<typeof Phase_I> {
+	implements PhaseImplementor<[typeof Phase_I]> {
 
 	async install() {
 		await Commando.create().append('pip install -r requirements.txt').execute();
@@ -47,7 +44,7 @@ export abstract class Package_Python
 
 abstract class Package_Typescript
 	extends BasePackage
-	implements PhaseImplementor<typeof Phase_C> {
+	implements PhaseImplementor<[typeof Phase_C]> {
 
 	async copyPackageJson() {
 
@@ -64,7 +61,7 @@ export class Package_Root
 
 class Package_Lib
 	extends Package_Typescript
-	implements PhaseImplementor<typeof Phase_A> {
+	implements PhaseImplementor<[typeof Phase_A]> {
 
 	constructor(name: string) {
 		super(name);
@@ -77,7 +74,7 @@ class Package_Lib
 
 class Package_FirebaseHosting
 	extends Package_Typescript
-	implements PhaseImplementor<typeof Phase_B>, PhaseImplementor<typeof Phase_A> {
+	implements PhaseImplementor<[typeof Phase_A, typeof Phase_B]> {
 
 	constructor(name: string) {
 		super(name);
@@ -94,7 +91,7 @@ class Package_FirebaseHosting
 
 class Package_FirebaseFunction
 	extends Package_Typescript
-	implements PhaseImplementor<typeof Phase_B>, PhaseImplementor<typeof Phase_A> {
+	implements PhaseImplementor<[typeof Phase_A, typeof Phase_B]> {
 
 	constructor(name: string) {
 		super(name);

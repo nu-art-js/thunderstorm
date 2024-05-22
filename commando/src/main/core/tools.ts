@@ -17,8 +17,8 @@ export function convertToFullPath(pathToFile: string, assetParentPath = process.
 		pathToFile = pathToFile.substring(1);
 
 	const absolutePath = path.resolve(assetParentPath, pathToFile);
-	if (!absolutePath.startsWith(assetParentPath))
-		throw new Error(`Found path: '${absolutePath}' which is out of the scope of the assert directory: '${assetParentPath}'`);
+	// if (!absolutePath.startsWith(assetParentPath))
+	// 	throw new Error(`Found path: '${absolutePath}' which is out of the scope of the assert directory: '${assetParentPath}'`);
 
 	return absolutePath;
 }
