@@ -821,7 +821,7 @@ export const Phase_DeployFrontend: BuildPhase = {
 
 		await NVM.createCommando(Cli_Basic)
 			.cd(pkg.path)
-			.append(`firebase deploy --only hosting`)
+			.append(`firebase --debug deploy --only hosting`)
 			.execute();
 
 		projectScreen.updateOrCreatePackage(pkg.name, `Deployed (${counter.format('mm:ss.zzz')})`);
