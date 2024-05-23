@@ -1,5 +1,5 @@
 import {asArray, exists} from '@nu-art/ts-common';
-import {Phase} from './types';
+import {Phase, RunnerParamKeys, RunnerParams} from './types';
 import {UnitPhaseImplementor} from '../unit/core/types';
 import {BaseUnit} from '../unit/core/BaseUnit';
 
@@ -10,10 +10,16 @@ export class PhaseRunner<P extends Phase<string>[]>
 
 	private readonly phases: P;
 	private units: Unit<P>[] = [];
+	private runnerParams: RunnerParams = {} as RunnerParams;
 
 	constructor(phases: P) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
 		this.phases = phases;
+	}
+
+	protected async init() {
+		this.runnerParams['rootPath'] = process.cwd();
+		this.runnerParams['configPath'] = this.runnerParams['rootPath'] + '/.config';
 	}
 
 	//######################### Unit Logic #########################
@@ -26,10 +32,13 @@ export class PhaseRunner<P extends Phase<string>[]>
 		return this.units.filter(unit => exists(unit[phase.method as keyof UnitPhaseImplementor<P>]));
 	}
 
+	private _getRunnerParam = (runnerParamKey: RunnerParamKeys) => this.runnerParams[runnerParamKey];
+
 	private async initUnits() {
-		return Promise.all(this.units.map(unit=> {
+		return Promise.all(this.units.map(unit => {
+			unit.setGetRunnerParamCaller(this._getRunnerParam);
 			// @ts-ignore
-			unit.init()
+			unit.init();
 		}));
 	}
 
@@ -53,6 +62,7 @@ export class PhaseRunner<P extends Phase<string>[]>
 	//######################### Public Functions #########################
 
 	public async execute() {
+		await this.init()
 		await this.initUnits();
 		await this.executeImpl();
 	}

@@ -1,10 +1,16 @@
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
-import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '@nu-art/commando/core/cli';
+import {
+	Commando,
+	CommandoCLIKeyValueListener,
+	CommandoCLIListener,
+	CommandoInteractive
+} from '@nu-art/commando/core/cli';
 import {Second, sleep} from '@nu-art/ts-common';
 import {Package_FirebaseFunctionsApp} from '../../core/types';
+import {RuntimeParams} from '../../core/params/params';
 
-type OnReadyCallback = (pkg:Package_FirebaseFunctionsApp)=>Promise<void>
+type OnReadyCallback = (pkg: Package_FirebaseFunctionsApp) => Promise<void>
 
 type CommandExecutor_FirebaseFunction_Listeners = {
 	proxy: {
@@ -33,7 +39,6 @@ export class CommandExecutor_FirebaseFunction {
 		proxy: CommandoInteractive & Commando & Cli_Basic
 	};
 	private listeners!: CommandExecutor_FirebaseFunction_Listeners;
-	private debugMode?: boolean;
 	private onReadyCallbacks: OnReadyCallback[] = [];
 
 	constructor(pkg: Package_FirebaseFunctionsApp) {
@@ -57,7 +62,7 @@ export class CommandExecutor_FirebaseFunction {
 				pid: new CommandoCLIKeyValueListener(new RegExp(`${this.EMULATOR_PID_LOG}=(\\d+)`)),
 				kill: new CommandoCLIListener(() => this.commandos.emulator.close(), this.EMULATOR_KILL_LOG),
 			},
-			onReady: new CommandoCLIListener(()=> this.onReady(),new RegExp('.*Emulator Hub running.*')),
+			onReady: new CommandoCLIListener(() => this.onReady(), new RegExp('.*Emulator Hub running.*')),
 		};
 		this.listeners.proxy.kill.listen(this.commandos.proxy);
 		this.listeners.proxy.pid.listen(this.commandos.proxy);
@@ -93,7 +98,7 @@ export class CommandExecutor_FirebaseFunction {
 		await this.commandos.emulator
 			.setUID(this.pkg.name)
 			.cd(this.pkg.path)
-			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${this.debugMode ? `--inspect-functions ${this.pkg.envConfig.ssl}` : ''} &`)
+			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.pkg.envConfig.debugPort}` : ''} &`)
 			.append('pid=$!')
 			.append(`echo "${this.EMULATOR_PID_LOG}=\${pid}"`)
 			.append(`wait \$pid`)
@@ -106,7 +111,7 @@ export class CommandExecutor_FirebaseFunction {
 		return isNaN(pid) ? undefined : pid;
 	}
 
-	private async onReady () {
+	private async onReady() {
 		await Promise.all(this.onReadyCallbacks.map(cb => cb(this.pkg)));
 	}
 
@@ -127,11 +132,7 @@ export class CommandExecutor_FirebaseFunction {
 		await this.commandos.proxy.gracefullyKill(proxyPid);
 	}
 
-	public setDebug(debug: boolean) {
-		this.debugMode = debug;
-	}
-
-	public addOnReadyCallback (cb: OnReadyCallback) {
+	public addOnReadyCallback(cb: OnReadyCallback) {
 		this.onReadyCallbacks.push(cb);
 	}
 }
