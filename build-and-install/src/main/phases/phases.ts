@@ -595,7 +595,7 @@ export const Phase_Compile: BuildPhase = {
 				if (_pkg.name === pkg.name)
 					return false;
 
-				if (pkg.packageJsonOutput?.dependencies && !_keys(pkg.packageJsonOutput?.dependencies).includes(_pkg.packageJsonTemplate.name))
+				if (pkg.packageJsonOutput?.dependencies && !_keys(pkg.packageJsonOutput?.dependencies).includes(_pkg.packageJsonTemplate?.name))
 					return false;
 
 				return _pkg.type !== 'sourceless';

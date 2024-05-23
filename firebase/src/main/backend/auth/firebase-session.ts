@@ -57,7 +57,7 @@ export abstract class FirebaseSession<Config>
 	protected messaging?: PushMessagesWrapperBE;
 
 	protected config: Config;
-	protected sessionName: string;
+	protected firebaseAppName: string;
 	private readonly admin: boolean;
 
 	/**
@@ -68,12 +68,10 @@ export abstract class FirebaseSession<Config>
 	 */
 	protected constructor(config: Config, sessionName: string, _admin = true) {
 		super(`firebase: ${sessionName}`);
-		this.sessionName = sessionName;
+		this.firebaseAppName = sessionName;
 		this.config = config;
 		this.admin = _admin;
 	}
-
-	abstract getProjectId(): string;
 
 	public isAdmin() {
 		return this.admin;
