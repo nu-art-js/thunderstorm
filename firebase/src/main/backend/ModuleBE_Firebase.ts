@@ -47,36 +47,26 @@ export class ModuleBE_Firebase_Class
 	}
 
 	public createAdminSession(authKey: string = FIREBASE_DEFAULT_PROJECT_ID) {
-		let session = this.adminSessions[authKey];
+		const session = this.adminSessions[authKey];
 		if (session)
 			return session;
 
-		let config;
+		// try to fetch the service account from the auth serviceAccount by the authKey
+		let serviceAccount;
 		try {
-			config = ModuleBE_Auth.getAuthConfig(authKey);
+			serviceAccount = ModuleBE_Auth.getAuthConfig(authKey);
 		} catch (e: any) {
 			if (authKey !== FIREBASE_DEFAULT_PROJECT_ID)
 				throw e;
 		}
 
-		if (typeof config === 'string')
-			config = JSON.parse(readFileSync(config, 'utf8'));
+		// if we received a string we assume it is a path to the service account, and we load it into our serviceAccount
+		if (typeof serviceAccount === 'string')
+			serviceAccount = JSON.parse(readFileSync(serviceAccount, 'utf8'));
 
-		const appId = config?.project_id || authKey;
-		session = this.adminSessions[appId];
-		if (session) {
-			this.adminSessions[authKey] = session;
-			return session;
-		}
-
-		this.logInfo(`Creating Firebase session for project id: ${authKey} `, config);
-
-		session = new FirebaseSession_Admin(appId, config);
-		this.adminSessions[authKey] = session;
-		this.adminSessions[session.getProjectId()] = session;
-
-		session.connect();
-		return session;
+		// define a unique key for the firebase session, and any following requests for this auth key
+		this.logInfo(`Creating Firebase session for auth key: ${authKey}`, serviceAccount);
+		return this.adminSessions[authKey] = new FirebaseSession_Admin(authKey, serviceAccount).connect();
 	}
 
 	createModuleStateFirebaseRef<T>(module: Module, _relativePath: string) {
@@ -87,29 +77,6 @@ export class ModuleBE_Firebase_Class
 		const path = `/state/${module.getName()}/${relativePath}`;
 		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<T>(path);
 	}
-
-	// listCollectionsInModules() {
-	// 	const modules: Module[] = moduleResolver();
-	//
-	// 	const firebaseProjectCollections = modules.reduce((toRet, module) => {
-	// 		const keys = _keys(module);
-	// 		const _collections: FirestoreCollection<any>[] = keys
-	// 			.filter(key => typeof module[key] === 'object' && module[key].constructor?.['name'].startsWith('FirestoreCollection'))
-	// 			.map(key => module[key] as unknown as FirestoreCollection<any>)
-	// 			.filter(collection => collection.wrapper.isAdmin());
-	//
-	// 		for (const collection of _collections) {
-	// 			const projectId = collection.wrapper.firebaseSession.getProjectId();
-	// 			const collectionName = collection.name;
-	// 			const project = toRet[projectId] || (toRet[projectId] = {projectId: projectId, collections: []});
-	// 			project.collections.push(collectionName);
-	// 		}
-	//
-	// 		return toRet;
-	// 	}, {} as { [k: string]: FirebaseProjectCollections });
-	// 	return Object.values(firebaseProjectCollections);
-	// }
-
 }
 
 export const ModuleBE_Firebase = new ModuleBE_Firebase_Class();

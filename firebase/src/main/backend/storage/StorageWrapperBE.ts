@@ -47,31 +47,25 @@ export class StorageWrapperBE
 	}
 
 	async getMainBucket(): Promise<BucketWrapper> {
-		// @ts-ignore
-		return new BucketWrapper('admin', await this.storage.bucket(`gs://${this.firebaseSession.getProjectId()}.appspot.com`), this);
+		return this.getOrCreateBucket();
 	}
 
 	async getOrCreateBucket(bucketName?: string): Promise<BucketWrapper> {
-		let _bucketName = bucketName;
-		if (!_bucketName)
-			_bucketName = `gs://${this.firebaseSession.getProjectId()}.appspot.com`;
+		bucketName ??= `gs://${process.env.GCLOUD_PROJECT}.appspot.com`;
 
-		if (!_bucketName.startsWith('gs://'))
+		if (!bucketName.startsWith('gs://'))
 			throw new BadImplementationException('Bucket name MUST start with \'gs://\'');
 
-		let bucket = this.storage.bucket(_bucketName);
+		let bucket = this.storage.bucket(bucketName);
 		if (!this.isEmulator())
 			bucket = (await bucket.get({autoCreate: true}))[0];
+
 		// @ts-ignore
 		return new BucketWrapper(_bucketName, bucket, this);
 	}
 
 	async getFile(pathToRemoteFile: string, bucketName?: string) {
-		let bucket;
-		if (!bucketName)
-			bucket = await this.getMainBucket();
-		else
-			bucket = await this.getOrCreateBucket(bucketName);
+		const bucket = await this.getOrCreateBucket(bucketName);
 		return bucket.getFile(pathToRemoteFile);
 	}
 
