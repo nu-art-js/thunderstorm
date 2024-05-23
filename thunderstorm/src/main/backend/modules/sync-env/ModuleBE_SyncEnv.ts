@@ -38,7 +38,6 @@ import {firestore} from 'firebase-admin';
 
 type Config = {
 	urlMap: TypedMap<string>
-	fetchBackupDocsSecretsMap: TypedMap<string>,
 	sessionMap: TypedMap<TypedMap<string>>,
 	maxBatch: number
 	shouldBackupBeforeSync?: boolean;

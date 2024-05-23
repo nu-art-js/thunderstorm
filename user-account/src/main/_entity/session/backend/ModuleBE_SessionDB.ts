@@ -121,12 +121,11 @@ export class ModuleBE_SessionDB_Class
 
 	private getPrivateKeyForSessionSigning = async (): Promise<string> => {
 		if (Storm.getInstance().getEnvironment() === 'local')
-			return 'f29a755ba5caaa2713cfa95adff14ca5f9fa8de3345141d426209f69660a5013'; // Local's private key for JWT signing
+			this.sessionSigningPrivateKey = 'f29a755ba5caaa2713cfa95adff14ca5f9fa8de3345141d426209f69660a5013'; // Local's private key for JWT signing
+		else
+			this.sessionSigningPrivateKey = await ModuleBE_SecretManager.getSecret(this.config.accountSessionIdSigner_SecretName);
 
-		if (this.sessionSigningPrivateKey)
-			return this.sessionSigningPrivateKey;
-
-		return this.sessionSigningPrivateKey = await ModuleBE_SecretManager.getSecret(this.config.accountSessionIdSigner_SecretName);
+		return this.sessionSigningPrivateKey;
 	};
 
 	private sessionData = {
