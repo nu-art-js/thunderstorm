@@ -788,7 +788,7 @@ export const Phase_Launch: BuildPhase = {
 			if (!advisorExecutor)
 				logClient.log(pkg.name, LogLevel.Error, true, ['Advisor BE executor not registered yet']);
 
-			if(!kmExecutor)
+			if (!kmExecutor)
 				logClient.log(pkg.name, LogLevel.Error, true, ['KM BE executor not registered yet']);
 
 			let advisorUp: boolean = false;
@@ -802,11 +802,11 @@ export const Phase_Launch: BuildPhase = {
 					runningAppsLogs?.unregisterApp(pkg.name);
 				});
 				await executor.execute();
-			}
+			};
 
 			advisorExecutor?.addOnReadyCallback(async () => {
 				advisorUp = true;
-				if(!kmUp)
+				if (!kmUp)
 					return logClient.log(pkg.name, LogLevel.Info, true, ['Advisor launched, waiting for KM']);
 
 				await startPython();
@@ -814,7 +814,7 @@ export const Phase_Launch: BuildPhase = {
 
 			kmExecutor?.addOnReadyCallback(async () => {
 				kmUp = true;
-				if(!advisorUp)
+				if (!advisorUp)
 					return logClient.log(pkg.name, LogLevel.Info, true, ['KM launched, waiting for Advisor']);
 
 				await startPython();
@@ -871,6 +871,11 @@ export const Phase_DeployBackend: BuildPhase = {
 
 		await NVM.createCommando(Cli_Basic)
 			.cd(pkg.path)
+			.cd('dist')
+			.ls()
+			.cat('package.json')
+			.cat('index.js')
+			.cd_()
 			.append(`firebase --debug deploy --only functions --force`)
 			.execute();
 
