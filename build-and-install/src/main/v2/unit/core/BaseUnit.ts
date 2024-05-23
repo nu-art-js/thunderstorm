@@ -1,4 +1,13 @@
-import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, BeLogged, LogClient_MemBuffer, Logger, LogLevel} from '@nu-art/ts-common';
+import {
+	_logger_finalDate,
+	_logger_getPrefix,
+	_logger_timezoneOffset,
+	BeLogged,
+	LogClient_MemBuffer,
+	Logger,
+	LogLevel
+} from '@nu-art/ts-common';
+import {RunnerParamKeys} from '../../phase-runner/types';
 
 type _Config<Config> = {
 	key: string;
@@ -10,13 +19,15 @@ export class BaseUnit<Config extends {} = {}, C extends _Config<Config> = _Confi
 
 	readonly config: Readonly<C>;
 
+	protected getRunnerParam!: (runnerParamKey: RunnerParamKeys) => string | undefined;
+
 	constructor(config: C) {
 		super(config.key);
 		this.config = Object.freeze(config);
 		this.initLogClient();
 	}
 
-	protected async init () {
+	protected async init() {
 		//Inheritor classes should define their own init
 	}
 
@@ -35,5 +46,9 @@ export class BaseUnit<Config extends {} = {}, C extends _Config<Config> = _Confi
 			return tag === this.tag;
 		});
 		BeLogged.addClient(logClient);
+	}
+
+	public setGetRunnerParamCaller = (caller:(runnerParamKey: RunnerParamKeys) => string) => {
+		this.getRunnerParam = caller;
 	}
 }
