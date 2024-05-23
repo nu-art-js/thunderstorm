@@ -780,20 +780,44 @@ export const Phase_Launch: BuildPhase = {
 
 		if (pkg.type === PackageType_Python) {
 			runningAppsLogs?.registerApp(pkg.name, logClient);
-			logClient.log(pkg.name, LogLevel.Info, true, ['Awaiting Advisor BE launch']);
+			logClient.log(pkg.name, LogLevel.Info, true, ['Awaiting Advisor & KM BE launch']);
+
 			const advisorExecutor = executorMap['advisor-backend'];
+			const kmExecutor = executorMap['km-backend'];
 
 			if (!advisorExecutor)
-				logClient.log(pkg.name, LogLevel.Error, true, ['Advisor executor not registered yet']);
+				logClient.log(pkg.name, LogLevel.Error, true, ['Advisor BE executor not registered yet']);
 
-			advisorExecutor?.addOnReadyCallback(async () => {
-				logClient.log(pkg.name, LogLevel.Info, true, ['Advisor BE launched, Starting!']);
+			if(!kmExecutor)
+				logClient.log(pkg.name, LogLevel.Error, true, ['KM BE executor not registered yet']);
+
+			let advisorUp: boolean = false;
+			let kmUp: boolean = false;
+
+			const startPython = async () => {
+				logClient.log(pkg.name, LogLevel.Info, true, ['Advisor & KM BE launched, Starting!']);
 				const executor = new CommandExecutor_Python(pkg);
 				runningAppsLogs?.addOnTerminateCallback(async () => {
 					await executor.kill();
 					runningAppsLogs?.unregisterApp(pkg.name);
 				});
 				await executor.execute();
+			}
+
+			advisorExecutor?.addOnReadyCallback(async () => {
+				advisorUp = true;
+				if(!kmUp)
+					return logClient.log(pkg.name, LogLevel.Info, true, ['Advisor launched, waiting for KM']);
+
+				await startPython();
+			});
+
+			kmExecutor?.addOnReadyCallback(async () => {
+				kmUp = true;
+				if(!advisorUp)
+					return logClient.log(pkg.name, LogLevel.Info, true, ['KM launched, waiting for Advisor']);
+
+				await startPython();
 			});
 		}
 
