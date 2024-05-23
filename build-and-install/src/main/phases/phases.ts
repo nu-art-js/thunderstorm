@@ -595,6 +595,9 @@ export const Phase_Compile: BuildPhase = {
 				if (_pkg.name === pkg.name)
 					return false;
 
+				if(_pkg.type === PackageType_Python)
+					return false;
+
 				if (pkg.packageJsonOutput?.dependencies && !_keys(pkg.packageJsonOutput?.dependencies).includes(_pkg.packageJsonTemplate.name))
 					return false;
 
