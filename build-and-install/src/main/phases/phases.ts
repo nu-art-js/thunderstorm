@@ -595,7 +595,7 @@ export const Phase_Compile: BuildPhase = {
 				if (_pkg.name === pkg.name)
 					return false;
 
-				if(_pkg.type === PackageType_Python)
+				if (_pkg.type === PackageType_Python)
 					return false;
 
 				if (pkg.packageJsonOutput?.dependencies && !_keys(pkg.packageJsonOutput?.dependencies).includes(_pkg.packageJsonTemplate?.name))
@@ -741,7 +741,7 @@ export const Phase_Launch: BuildPhase = {
 		const projectManager = MemKey_ProjectManager.get();
 		const projectScreen = MemKey_ProjectScreen.get();
 		if (!runningAppsLogs) {
-			projectScreen.dispose().releaseScreen();
+			projectScreen.dispose();
 			projectManager.clearLogger();
 			runningAppsLogs = new RunningProcessLogs();
 			runningAppsLogs.create();
