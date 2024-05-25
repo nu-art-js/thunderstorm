@@ -404,25 +404,6 @@ export const Phase_InstallPythonPackages: BuildPhase = {
 	}
 };
 
-export const Phase_Clean: BuildPhase = {
-	type: PackageBuildPhaseType_PackageWithOutput,
-	name: 'clean',
-	mandatoryPhases: [Phase_ResolveEnv],
-	filter: async (pkg) => RuntimeParams.clean,
-	action: async (pkg) => {
-		if (pkg.type === PackageType_Python)
-			return;
-
-		const projectScreen = MemKey_ProjectScreen.get();
-
-		projectScreen.updateOrCreatePackage(pkg.name, 'Cleaning');
-		if (!fs.existsSync(pkg.output))
-			return;
-
-		await _fs.rm(pkg.output, {recursive: true, force: true});
-	}
-};
-
 export const Phase_Lint: BuildPhase = {
 	type: 'package',
 	name: 'lint',
@@ -492,6 +473,9 @@ export const Phase_PrepareCompile: BuildPhase = {
 					.cd(pkg.path)
 					.append(`ENV=${RuntimeParams.environment} npm run build`);
 			} else {
+				if (fs.existsSync(pkg.output))
+					await _fs.rm(pkg.output, {recursive: true, force: true});
+
 				try {
 					const otherFiles = [
 						'json',

@@ -2,7 +2,6 @@ import {ProjectManager} from './logic/ProjectManager';
 import {DebugFlag, LogLevel, StaticLogger} from '@nu-art/ts-common';
 import {
 	Phase_CheckCyclicImports,
-	Phase_Clean,
 	Phase_Compile,
 	Phase_CompileWatch,
 	Phase_DeployBackend,
@@ -45,7 +44,6 @@ projectManager.registerPhase(Phase_PackagePurge);
 projectManager.registerPhase(Phase_InstallGlobals);
 projectManager.registerPhase(Phase_InstallPackages);
 projectManager.registerPhase(Phase_InstallPythonPackages);
-projectManager.registerPhase(Phase_Clean);
 projectManager.registerPhase(Phase_Lint);
 projectManager.registerPhase(Phase_PrepareCompile);
 projectManager.registerPhase(Phase_PreCompile);
