@@ -1,30 +1,19 @@
-import {AsyncVoidFunction, BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray} from '@nu-art/ts-common';
-import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
-import {BlessedWidget} from '@nu-art/commando/console/types';
+import {ConsoleScreen} from '../../main/console/ConsoleScreen';
+import {BadImplementationException, LogClient_MemBuffer, exists, removeItemFromArray} from '@nu-art/ts-common';
+import {BlessedWidget} from '../../main/console/types';
 
 
-export class RunningProcessLogs
+export class TestConsole_ControlledScroll
 	extends ConsoleScreen<{ logs: { key: string, logClient: LogClient_MemBuffer }[] }> {
 
-	private onTerminateCallbacks: AsyncVoidFunction[] = [];
-
 	constructor() {
-		let killed = false;
 		super({
 				smartCSR: true,
 				title: 'Runtime-Logs',
 			}, [
 				{
 					keys: ['C-c'],  // Example to submit form with Enter key
-					callback: async () => {
-						if (killed)
-							return;
-
-						killed = true;
-						// this.dispose();
-						await Promise.all(this.onTerminateCallbacks.map(callback => callback()));
-						process.exit(0);
-					}
+					callback: () => process.exit(0)
 				}
 			]
 		);
@@ -109,18 +98,10 @@ export class RunningProcessLogs
 	}
 
 	protected render(): void {
-		try {
-			this.state.logs.forEach((log, i) => {
-				(this.widgets[i] as BlessedWidget['log'])?.setContent(log.logClient.buffers[0] ?? 'asdsd');
-			});
-		} catch (e) {
-			console.log(e);
-		}
+		this.state.logs.forEach((log, i) => {
+			(this.widgets[i] as BlessedWidget['log'])?.setContent(log.logClient.buffers[0] ?? 'no logs');
+		});
 	}
-
-	public addOnTerminateCallback = (callback: AsyncVoidFunction) => {
-		this.onTerminateCallbacks.push(callback);
-	};
 }
 
 type GridCell = [number, number];  // Represents [fractionWidth, fractionHeight]

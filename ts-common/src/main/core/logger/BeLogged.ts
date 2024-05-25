@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-
-import {LogClient} from "./LogClient";
-import {removeItemFromArray} from "../../utils/array-tools";
+import {LogClient} from './LogClient';
+import {removeItemFromArray} from '../../utils/array-tools';
 import {
 	LogLevel,
 	LogParam
-} from "./types";
+} from './types';
+
 
 class BeLogged_Class {
 
@@ -37,6 +37,10 @@ class BeLogged_Class {
 	}
 
 	public removeConsole<Client extends LogClient>(client: Client) {
+		this.removeClient(client);
+	}
+
+	public removeClient<Client extends LogClient>(client: Client) {
 		if (this.clients.indexOf(client) === -1)
 			return;
 
@@ -52,7 +56,6 @@ class BeLogged_Class {
 			client.log(tag, level, bold, toLog);
 		}
 	}
-
 
 	public clearFooter() {
 		for (let i = 0; i < this.lineCount + 3; i++) {

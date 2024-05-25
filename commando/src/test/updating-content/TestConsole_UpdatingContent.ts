@@ -12,7 +12,7 @@ export class TestConsole_UpdatingContent
 		});
 	}
 
-	protected createWidgets() {
+	protected createContent() {
 		const boxOptions: BoxOptions = {
 			top: '0',
 			left: 'center',
