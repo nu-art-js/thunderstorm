@@ -18,6 +18,7 @@
     "sourceMap": true,
     "strict": true,
     "typeRoots": [
+      "../../node_modules/@types",
       "../types"
     ]
   },
