@@ -18,9 +18,12 @@
     "sourceMap": true,
     "strict": true,
     "typeRoots": [
-      "../types"
+      "./types"
     ]
   },
+  "include": [
+    "./**/*.d.ts"
+  ],
   "esModuleInterop": true,
   "module": "ES2020"
 }

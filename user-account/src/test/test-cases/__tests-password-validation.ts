@@ -1,7 +1,7 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
-import {assertPasswordRules, PasswordAssertionConfig} from '../../main/shared/assertion';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {assertPasswordRules, PasswordAssertionConfig} from '../../main';
 
 
 type PasswordValidationInput = {
@@ -200,8 +200,8 @@ export const TestSuite_Accounts_PasswordValidation: PasswordValidationSuite = {
 	label: '\n################ Password Validation Tests ################\n',
 	testcases: TestCases_PasswordValidation,
 	processor: (testCase) => {
-		let result = assertPasswordRules(testCase.input.password, testCase.input.assertionConfig);
-
+		const report = assertPasswordRules(testCase.input.password, testCase.input.assertionConfig);
+		let result;
 		//Returned no errors
 		if (!result)
 			result = true;
