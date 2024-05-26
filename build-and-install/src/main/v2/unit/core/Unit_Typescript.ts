@@ -13,18 +13,30 @@ import {MemKey_PackageJSONParams} from '../../phase-runner/RunnerParams';
 const PackageJsonTargetKey_Root = 'root';
 const PackageJsonTargetKey_Dist = 'dist';
 const PackageJsonTargetKey_Dependency = 'dependency';
-const PackageJsonTargetKeys = [PackageJsonTargetKey_Root,PackageJsonTargetKey_Dist,PackageJsonTargetKey_Dependency] as const;
+const PackageJsonTargetKeys = [PackageJsonTargetKey_Root, PackageJsonTargetKey_Dist, PackageJsonTargetKey_Dependency] as const;
 type PackageJsonTargetKey = typeof PackageJsonTargetKeys[number];
 
-type _Config<Config> = {
+type _Config<C> = {
 	pathToPackage: string
-} & Config
+} & C
 
-export class Unit_Typescript<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
-	extends BaseUnit<C>
+type RTC_Unit_Typescript<RTC> = {
+	path: { pkg: string };
+} & RTC;
+
+export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = {},
+	C extends _Config<Config> = _Config<Config>, RTC extends RTC_Unit_Typescript<RuntimeConfig> = RTC_Unit_Typescript<RuntimeConfig>>
+	extends BaseUnit<C, RTC>
 	implements UnitPhaseImplementor<[Phase_CopyPackageJSON]> {
 
-	readonly packageJson: {[k in PackageJsonTargetKey]:PackageJson} = {} as {[k in PackageJsonTargetKey]:PackageJson};
+	readonly packageJson: { [k in PackageJsonTargetKey]: PackageJson } = {} as { [k in PackageJsonTargetKey]: PackageJson };
+
+	protected async init () {
+		await super.init()
+		this.runtime.path = {
+			pkg: convertToFullPath(this.config.pathToPackage),
+		};
+	}
 
 	//######################### Internal Logic #########################
 
@@ -32,15 +44,15 @@ export class Unit_Typescript<Config extends {} = {}, C extends _Config<Config> =
 	 * Create a packageJson object for each target key
 	 * @private
 	 */
-	private async populatePackageJson () {
-		const unitRootPath = convertToFullPath(this.config.pathToPackage);
+	private async populatePackageJson() {
+		const unitRootPath = this.runtime.path.pkg;
 		const templatePath = `${unitRootPath}/${CONST_PackageJSONTemplate}`;
 
-		if(!fs.existsSync(templatePath))
+		if (!fs.existsSync(templatePath))
 			throw new BadImplementationException(`Missing __package.json file in root for unit ${this.config.label}`);
 
 		const template = JSON.parse(await _fs.readFile(templatePath, 'utf-8')) as PackageJson;
-		PackageJsonTargetKeys.forEach(key => this.packageJson[key] = this.convertTemplatePackageJSON(key,template))
+		PackageJsonTargetKeys.forEach(key => this.packageJson[key] = this.convertTemplatePackageJSON(key, template));
 	}
 
 	/**
@@ -79,7 +91,7 @@ export class Unit_Typescript<Config extends {} = {}, C extends _Config<Config> =
 		params[`${converted.name}_path`] = `file:.dependencies/${this.config.key}`; //Not sure about this one
 
 		MemKey_PackageJSONParams.set(params);
-		return converted
+		return converted;
 	}
 
 	/**
@@ -116,7 +128,7 @@ export class Unit_Typescript<Config extends {} = {}, C extends _Config<Config> =
 		//Populate packageJson objects
 		await this.populatePackageJson();
 		//Get path
-		const unitRootPath = convertToFullPath(this.config.pathToPackage);
+		const unitRootPath = this.runtime.path.pkg;
 		const targetPath = `${unitRootPath}/${CONST_PackageJSON}`;
 		//Create the package.json file in target location
 		await _fs.writeFile(targetPath, JSON.stringify(this.packageJson.root, null, 2), {encoding: 'utf-8'});

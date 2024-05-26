@@ -19,10 +19,6 @@ runner
 
 // const projectManager = new ProjectManager();
 //
-// projectManager.registerPhase(Phase_PrintDependencyTree);
-// projectManager.registerPhase(Phase_CheckCyclicImports);
-// projectManager.registerPhase(Phase_PrintEnv);
-// projectManager.registerPhase(Phase_PackagePurge);
 // projectManager.registerPhase(Phase_InstallGlobals);
 // projectManager.registerPhase(Phase_InstallPackages);
 // projectManager.registerPhase(Phase_InstallPythonPackages);

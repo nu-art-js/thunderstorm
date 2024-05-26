@@ -1,21 +1,27 @@
 import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, BeLogged, LogClient_MemBuffer, Logger, LogLevel} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey} from '../../phase-runner/RunnerParams';
 
-type _Config<Config> = {
+type Config<C> = {
 	key: string;
 	label: string;
 	filter?: () => boolean | Promise<boolean>;
-} & Config;
+} & C;
 
-export class BaseUnit<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
+type RuntimeConfig<C> = {} & C;
+
+
+export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
+	C extends Config<_Config> = Config<_Config>, RTC extends RuntimeConfig<_RuntimeConfig> = RuntimeConfig<_RuntimeConfig>>
 	extends Logger {
 
 	readonly config: Readonly<C>;
+	readonly runtime: RTC;
 	private unitStatus?: string;
 
 	constructor(config: C) {
 		super(config.key);
 		this.config = Object.freeze(config);
+		this.runtime = {} as RTC;
 		this.initLogClient();
 	}
 

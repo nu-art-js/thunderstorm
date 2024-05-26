@@ -10,7 +10,6 @@ import {convertToFullPath} from '@nu-art/commando/core/tools';
 
 type _Config<Config> = {
 	firebaseConfig: FirebasePackageConfig;
-	output: string;
 	sources?: string[];
 } & Config
 

@@ -7,12 +7,13 @@ import {
 	ImplementationMissingException,
 	LogClient_Terminal,
 	LogLevel,
-	reduceToMap, sortArray,
+	reduceToMap,
+	sortArray,
 	StringMap,
 	TypedMap
 } from '@nu-art/ts-common';
 import {MemKey_PackageJSONParams, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
-import {Phase, Phase_Help} from '../phase';
+import {Phase, Phase_Help, Phase_PrintEnv} from '../phase';
 import {Unit, UnitPhaseImplementor} from '../unit/types';
 import {BaseUnit, Unit_TypescriptProject} from '../unit/core';
 import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
@@ -23,6 +24,8 @@ import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
 import {Default_Files, MemKey_DefaultFiles} from '../../defaults/consts';
+import {NVM} from '@nu-art/commando/cli/nvm';
+import {Cli_Basic} from '@nu-art/commando/cli/basic';
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_DEPENDENCY_VERSION';
@@ -31,7 +34,7 @@ const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
 
 export class PhaseRunner<P extends Phase<string>[]>
 	extends BaseUnit
-	implements UnitPhaseImplementor<[Phase_Help]> {
+	implements UnitPhaseImplementor<[Phase_Help, Phase_PrintEnv]> {
 
 	private readonly phases: P;
 	private units: BaseUnit[];
@@ -130,29 +133,6 @@ export class PhaseRunner<P extends Phase<string>[]>
 
 	//######################### Phase Logic #########################
 
-	async printHelp () {
-		this.logInfo("Build and install parameters:")
-		const noGroupConst = 'No Group'
-
-		//Resolve all params by group
-		const paramsByGroup: TypedMap<BaseCliParam<string, any>[]> = reduceToMap(AllBaiParams, param => param.group ?? noGroupConst, (item, index, mapper) => {
-			mapper[item.group ?? noGroupConst] = [...mapper[item.group ?? noGroupConst] ?? [], item];
-			return mapper[item.group ?? noGroupConst];
-		});
-
-		_keys(paramsByGroup).map(paramGroup => {
-			this.logWarningBold(`${paramGroup}: \n`);
-			// commando.append(`echo "${paramGroup}:" \n`);
-
-			paramsByGroup[paramGroup].map(param => {
-				const paramKeys = param.keys.join(' | ');
-				const paramDescription = param.description.trim().split('\n').join('\n\t\t');
-				this.logInfo(`${paramKeys} \n\t\t ${paramDescription} \n`);
-				// commando.append(`echo "\n	${param.keys.join(' | ')} \n \t\t${param.description.trim().split('\n').join('\n\t\t')} \n"`);
-			});
-		});
-	}
-
 	/**
 	 * Determines whether to run the phase.</br>
 	 * returns true if phase ran, false otherwise
@@ -198,5 +178,39 @@ export class PhaseRunner<P extends Phase<string>[]>
 		this.projectConfig = require(fullPathToConfig).default as ProjectConfigV2;
 		this.registerUnits(this.projectConfig.units);
 		return this;
+	}
+
+	//######################### Phase Implementation #########################
+
+	async printHelp () {
+		this.logInfo("Build and install parameters:")
+		const noGroupConst = 'No Group'
+
+		//Resolve all params by group
+		const paramsByGroup: TypedMap<BaseCliParam<string, any>[]> = reduceToMap(AllBaiParams, param => param.group ?? noGroupConst, (item, index, mapper) => {
+			mapper[item.group ?? noGroupConst] = [...mapper[item.group ?? noGroupConst] ?? [], item];
+			return mapper[item.group ?? noGroupConst];
+		});
+
+		_keys(paramsByGroup).map(paramGroup => {
+			this.logWarningBold(`${paramGroup}: \n`);
+			// commando.append(`echo "${paramGroup}:" \n`);
+
+			paramsByGroup[paramGroup].map(param => {
+				const paramKeys = param.keys.join(' | ');
+				const paramDescription = param.description.trim().split('\n').join('\n\t\t');
+				this.logInfo(`${paramKeys} \n\t\t ${paramDescription} \n`);
+				// commando.append(`echo "\n	${param.keys.join(' | ')} \n \t\t${param.description.trim().split('\n').join('\n\t\t')} \n"`);
+			});
+		});
+	}
+
+	async printEnv () {
+		await NVM.createCommando(Cli_Basic)
+			.append('npm -g list typescript eslint firebase-tools sort-package-json --depth=0')
+			.append('echo "npm version:"; npm -v')
+			.append('echo "node version:"; node -v')
+			.append('echo "base version:"; bash --version')
+			.execute();
 	}
 }

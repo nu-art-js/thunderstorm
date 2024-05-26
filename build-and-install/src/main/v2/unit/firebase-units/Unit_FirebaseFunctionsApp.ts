@@ -11,7 +11,6 @@ import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_Defaul
 
 type _Config<Config> = {
 	firebaseConfig: FirebasePackageConfig;
-	output: string;
 	sources?: string[];
 } & Config
 
