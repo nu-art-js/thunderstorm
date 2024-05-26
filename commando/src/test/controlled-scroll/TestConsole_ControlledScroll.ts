@@ -1,124 +1,77 @@
 import {ConsoleScreen} from '../../main/console/ConsoleScreen';
-import {BadImplementationException, LogClient_MemBuffer, exists, removeItemFromArray} from '@nu-art/ts-common';
 import {BlessedWidget} from '../../main/console/types';
 
 
+interface LogScreenState {
+	logs: string;
+}
+
 export class TestConsole_ControlledScroll
-	extends ConsoleScreen<{ logs: { key: string, logClient: LogClient_MemBuffer }[] }> {
+	extends ConsoleScreen<LogScreenState> {
+	private logElement!: BlessedWidget['log'];
 
 	constructor() {
-		super({
+		super(
+			{
 				smartCSR: true,
-				title: 'Runtime-Logs',
-			}, [
+				title: 'Controlled-Scroll-Logs',
+			},
+			[
 				{
-					keys: ['C-c'],  // Example to submit form with Enter key
-					callback: () => process.exit(0)
-				}
+					keys: ['C-c'], // Exit on Control-C
+					callback: () => process.exit(0),
+				},
+				{
+					keys: ['up'], // Scroll up on Control-U
+					callback: () => this.scrollLog(-1),
+				},
+				{
+					keys: ['down'], // Scroll down on Control-D
+					callback: () => this.scrollLog(1),
+				},
 			]
 		);
 
-		this.state = {logs: []};
+		this.state = {logs: logs};
 	}
 
 	protected createContent() {
-		const logs = this.state.logs;
-
-		const fittingGrid = gridPreset[logs.length - 1];
-		if (!exists(fittingGrid))
-			return;
-
-		if (!fittingGrid)
-			throw new Error(`No preset available for this number of cells ${logs.length}`);
-
-		let index = 0;
-		let xPos = 0;
-		fittingGrid.forEach(column => {
-			let yPos = 0;
-			column.forEach(cell => {
-				const [fracWidth, fracHeight] = cell;
-				const width = 100 * fracWidth;
-				const height = 100 * fracHeight;
-
-				this.createWidget('log', {
-					top: `${yPos}%`,
-					left: `${xPos}%`,
-					width: `${width}%`,
-					height: `${height}%`,
-					label: ` Log for ${logs[index++].key} `,
-					border: {type: 'line'},
-					scrollable: true,
-					scrollbar: {
-						ch: ' ',
-						track: {
-							bg: 'grey'
-						},
-						style: {
-							inverse: true
-						}
-					},
-					mouse: true
-				});
-
-				yPos += height;  // Assumes all cells in a column have the same height
-			});
-			xPos += column[0][0] * 100;
+		this.logElement = this.createWidget('log', {
+			top: '0',
+			left: '0',
+			width: '100%',
+			height: '100%',
+			label: ' Logs',
+			border: {type: 'line'},
+			scrollbar: {
+				ch: ' ',
+				track: {
+					bg: 'grey',
+				},
+				style: {
+					inverse: true,
+				},
+			},
 		});
-	}
-
-	registerApp(appKey: string, logClient: LogClient_MemBuffer) {
-		const logs = this.state.logs;
-		const foundLog = logs.find(log => log.key === appKey);
-		if (foundLog)
-			throw new BadImplementationException(`already have log for appkey: ${appKey}`);
-
-		logs.push({key: appKey, logClient});
-		this.dispose();
-		this.create();
-
-		logClient.setLogAppendedListener(() => {
-			this.render();
-			// might have a leak.. need to remove the listener at some point
-		});
-		this.setState({logs});
-	}
-
-	unregisterApp(appKey: string) {
-		const foundLog = this.state.logs.find(log => log.key === appKey);
-		if (!foundLog)
-			throw new BadImplementationException(`Could not find log for appkey: ${appKey}`);
-
-		const logs = this.state.logs;
-		removeItemFromArray(logs, foundLog);
-
-		this.dispose();
-		this.create();
-
-		this.setState({logs});
 	}
 
 	protected render(): void {
-		this.state.logs.forEach((log, i) => {
-			(this.widgets[i] as BlessedWidget['log'])?.setContent(log.logClient.buffers[0] ?? 'no logs');
-		});
+		this.logElement.setContent(this.state.logs);
+	}
+
+	private addLog(log: string) {
+		this.setState({logs: `${this.state.logs}\n${log}`});
+		this.render();
+	}
+
+	private scrollLog(direction: number) {
+		this.logElement.scroll(direction);
+		this.logElement.setLabel(`Scrolled position ${this.logElement.getScroll()}`);
+		this.container.screen.render();
 	}
 }
 
-type GridCell = [number, number];  // Represents [fractionWidth, fractionHeight]
-type GridColumn = GridCell[];
-const columnOf1_halfWidth: GridColumn = [[0.5, 1]];
-const columnOf2_halfWidth: GridColumn = [[0.5, 0.5], [0.5, 0.5]];
-const columnOf3_halfWidth: GridColumn = [[0.5, 1 / 3], [0.5, 1 / 3], [0.5, 1 / 3]];
-const columnOf2_3rdWidth: GridColumn = [[1 / 3, 0.5], [1 / 3, 0.5]];
-const columnOf3_3rdWidth: GridColumn = [[1 / 3, 1 / 3], [1 / 3, 1 / 3], [1 / 3, 1 / 3]];
-const gridPreset: GridColumn[][] = [
-	[[[1, 1]]],
-	[columnOf1_halfWidth, columnOf1_halfWidth],
-	[columnOf2_halfWidth, columnOf1_halfWidth],
-	[columnOf2_halfWidth, columnOf2_halfWidth],
-	[columnOf3_halfWidth, columnOf2_halfWidth],
-	[columnOf3_halfWidth, columnOf3_halfWidth],
-	[columnOf3_3rdWidth, columnOf2_3rdWidth, columnOf2_3rdWidth],
-	[columnOf3_3rdWidth, columnOf3_3rdWidth, columnOf2_3rdWidth],
-	[columnOf3_3rdWidth, columnOf3_3rdWidth, columnOf3_3rdWidth],
-];
+let logs = '';
+for (let i = 0; i < 5000; i++) {
+	logs += `${String(i).padStart(3, '0')}\n`;
+}

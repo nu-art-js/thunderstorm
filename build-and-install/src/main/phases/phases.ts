@@ -540,8 +540,10 @@ export const Phase_Compile: BuildPhase = {
 		if (pkg.type === 'sourceless' || pkg.type === PackageType_Python)
 			return;
 
-		if (fs.existsSync(pkg.output))
+		if (fs.existsSync(pkg.output)) {
 			await _fs.rm(pkg.output, {recursive: true, force: true});
+			await _fs.mkdir(pkg.output, {recursive: true});
+		}
 
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;

@@ -28,6 +28,7 @@ ModuleBE_APIs.resetForTests();
 
 new Storm()
 	.addModulePack(modules)
-	.setConfig({isDebug: true})
+	.setConfig({isDebug: true,})
+	.setEnvironment('local')
 	.setInitialRouteResolver(new RouteResolver_Dummy())
 	.init();
