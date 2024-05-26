@@ -356,7 +356,7 @@ export const Phase_InstallGlobals: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async () => RuntimeParams.installGlobals,
 	action: async () => {
-		const globalPackages = 'firebase-tools@latest ts-node@latest typescript@latest eslint@^8.0.0';
+		const globalPackages = 'firebase-tools@5.0.4 ts-node@latest typescript@latest eslint@^8.0.0';
 		await NVM.createCommando().append(`npm i -g ${globalPackages}`).execute();
 	}
 };
