@@ -61,7 +61,7 @@ export class StorageWrapperBE
 			bucket = (await bucket.get({autoCreate: true}))[0];
 
 		// @ts-ignore
-		return new BucketWrapper(_bucketName, bucket, this);
+		return new BucketWrapper(bucketName, bucket, this);
 	}
 
 	async getFile(pathToRemoteFile: string, bucketName?: string) {

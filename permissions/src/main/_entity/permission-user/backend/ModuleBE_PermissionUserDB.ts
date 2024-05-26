@@ -11,7 +11,6 @@ import {
 	_keys,
 	ApiException,
 	asOptionalArray,
-	batchActionParallel,
 	DB_BaseObject,
 	dbObjectToId,
 	exists,
@@ -122,7 +121,8 @@ export class ModuleBE_PermissionUserDB_Class
 
 	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
 		const create = async (transaction?: Transaction) => {
-			const permissionGroups = this.defaultPermissionGroups ? filterInstances(await batchActionParallel(this.defaultPermissionGroups, 10, items => ModuleBE_PermissionGroupDB.query.all(items.map(item => item.groupId)))) : [];
+			const permissionGroups = this.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(this.defaultPermissionGroups.map(item => item.groupId))) : [];
+			this.logInfo(`Received ${this.defaultPermissionGroups?.length} groups to assign, ${permissionGroups.length} of which exist`);
 			const permissionsUserToCreate = {
 				_id: uiAccount._id,
 				groups: permissionGroups.map(group => ({groupId: group._id})),
