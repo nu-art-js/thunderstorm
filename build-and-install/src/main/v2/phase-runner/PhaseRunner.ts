@@ -12,7 +12,7 @@ import {
 	StringMap,
 	TypedMap
 } from '@nu-art/ts-common';
-import {MemKey_PackageJSONParams, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
+import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
 import {Phase, Phase_Help, Phase_PrintEnv} from '../phase';
 import {Unit, UnitPhaseImplementor} from '../unit/types';
 import {BaseUnit, Unit_TypescriptProject} from '../unit/core';
@@ -61,8 +61,11 @@ export class PhaseRunner<P extends Phase<string>[]>
 		MemKey_RunnerParams.set(runnerParams);
 
 		const projectParams = this.prepareProjectParams();
-		this.logDebug('\nSetting ProjectParams:', projectParams)
-		MemKey_PackageJSONParams.set(projectParams);
+		MemKey_ProjectConfig.set({
+			...this.projectConfig,
+			units: this.units,
+			params: projectParams,
+		})
 
 		this.logDebug('\nSetting Default Files',Default_Files)
 		MemKey_DefaultFiles.set(Default_Files);
