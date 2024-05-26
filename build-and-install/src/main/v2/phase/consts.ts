@@ -48,7 +48,7 @@ export type Phase_Install = typeof phase_Install;
 export const phase_Install: Phase<'install'> = {
 	name: 'Install',
 	method: 'install',
-	filter: () => RuntimeParams.install,
+	filter: () => RuntimeParams.install || RuntimeParams.installPackages || RuntimeParams.installGlobals,
 };
 
 export type Phase_CopyPackageJSON = typeof phase_CopyPackageJSON;
@@ -86,12 +86,12 @@ export const phase_Purge: Phase<'purge'> = {
 }
 
 const buildPhases: Phase<string>[] = [
-	phase_Install,
+	phase_Purge,
 	phase_CopyPackageJSON,
+	phase_Install,
+	phase_ResolveConfigs,
 	phase_PreCompile,
 	phase_Compile,
-	phase_ResolveConfigs,
-	phase_Purge,
 ];
 
 export const allPhases = [...terminatingPhases, ...buildPhases];

@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {Phase_CopyPackageJSON} from '../../phase';
 import {UnitPhaseImplementor} from '../types';
-import {MemKey_PackageJSONParams} from '../../phase-runner/RunnerParams';
+import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 
 const PackageJsonTargetKey_Root = 'root';
 const PackageJsonTargetKey_Dist = 'dist';
@@ -81,16 +81,16 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 	 */
 	private convertPJForRoot(template: PackageJson) {
 		//Get the package params for replacing in the template package json
-		const params = MemKey_PackageJSONParams.get();
+		const projectConfig = MemKey_ProjectConfig.get();
 
 		//Convert template to actual package.json
-		const converted = convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ? 'workspace:*' : params[value]);
+		const converted = convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => projectConfig.params[key!] ? 'workspace:*' : projectConfig.params[value]);
 
 		//Set dynamic params for this pkg
-		params[converted.name] = converted.version;
-		params[`${converted.name}_path`] = `file:.dependencies/${this.config.key}`; //Not sure about this one
+		projectConfig.params[converted.name] = converted.version;
+		projectConfig.params[`${converted.name}_path`] = `file:.dependencies/${this.config.key}`; //Not sure about this one
 
-		MemKey_PackageJSONParams.set(params);
+		MemKey_ProjectConfig.set(projectConfig);
 		return converted;
 	}
 
@@ -101,7 +101,7 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 	 */
 	private convertPJForDist(template: PackageJson) {
 		//Get the package params for replacing in the template package json
-		const params = MemKey_PackageJSONParams.get();
+		const params = MemKey_ProjectConfig.get().params;
 
 		//Convert template to actual package.json
 		return convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ?? params[value]);
@@ -115,7 +115,7 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 	 */
 	private convertPJForDependency(template: PackageJson) {
 		//Get the package params for replacing in the template package json
-		const params = MemKey_PackageJSONParams.get() ?? {};
+		const params = MemKey_ProjectConfig.get().params;
 
 		//Convert template to actual package.json
 		return convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ?? params[value]);
