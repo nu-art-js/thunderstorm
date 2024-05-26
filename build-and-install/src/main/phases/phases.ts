@@ -473,9 +473,6 @@ export const Phase_PrepareCompile: BuildPhase = {
 					.cd(pkg.path)
 					.append(`ENV=${RuntimeParams.environment} npm run build`);
 			} else {
-				if (fs.existsSync(pkg.output))
-					await _fs.rm(pkg.output, {recursive: true, force: true});
-
 				try {
 					const otherFiles = [
 						'json',
@@ -542,6 +539,9 @@ export const Phase_Compile: BuildPhase = {
 
 		if (pkg.type === 'sourceless' || pkg.type === PackageType_Python)
 			return;
+
+		if (fs.existsSync(pkg.output))
+			await _fs.rm(pkg.output, {recursive: true, force: true});
 
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;
