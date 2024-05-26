@@ -225,7 +225,7 @@ export class ModuleBE_AccountDB_Class
 
 			this.impl.fixEmail(accountWithPassword);
 			this.impl.assertPasswordCheck(accountWithPassword);
-			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
+			const spicedAccount = this.impl.spiceAccount({email: accountWithPassword.email, password: accountWithPassword.password});
 			const dbSafeAccount = await this.runTransaction(async transaction => {
 				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
 				await this.impl.setAccountMemKeys(dbSafeAccount);
@@ -416,10 +416,10 @@ export class ModuleBE_AccountDB_Class
 	// @ts-ignore
 	private token = {
 		create: async ({
-						   accountId,
-						   ttl,
-						   label
-					   }: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
+										 accountId,
+										 ttl,
+										 label
+									 }: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
 			if (!exists(ttl) || ttl < Year)
 				throw HttpCodes._4XX.BAD_REQUEST('Invalid token TTL', `TTL value is invalid (${ttl})`);
 

@@ -203,7 +203,7 @@ export const TestSuite_Accounts_PasswordValidation: PasswordValidationSuite = {
 		const report = assertPasswordRules(testCase.input.password, testCase.input.assertionConfig);
 		let result;
 		//Returned no errors
-		if (!result)
+		if (!report)
 			result = true;
 
 		//Returned errors
