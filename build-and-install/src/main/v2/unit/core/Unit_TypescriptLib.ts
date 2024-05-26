@@ -1,10 +1,12 @@
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Unit_Typescript} from './Unit_Typescript';
-import {Phase_Compile, Phase_PreCompile, UnitPhaseImplementor} from './types';
 import * as fs from 'fs';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
+import {RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
+import { UnitPhaseImplementor } from '../types';
+import {Phase_Compile, Phase_PreCompile } from '../../phase';
 
 type _Config<Config> = {
 	customTSConfig?: boolean;
@@ -30,7 +32,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, C extends _Config<Config
 		}
 
 		//Copy project ts config file into the unit main folder
-		const pathToProjectConfig = this.getRunnerParam('configPath');
+		const pathToProjectConfig = this.getRunnerParam(RunnerParamKey_ConfigPath);
 		if(!pathToProjectConfig)
 			throw new BadImplementationException('Could not get config path from runner params');
 
@@ -49,6 +51,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, C extends _Config<Config
 		if (!fs.existsSync(`${this.config.pathToPackage}/prebuild.sh`))
 			return;
 
+		this.setStatus('Pre-Compile');
 		await NVM.createCommando(Cli_Basic)
 			.cd(this.config.pathToPackage)
 			.append('bash prebuild.sh')
@@ -56,6 +59,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, C extends _Config<Config
 	}
 
 	async compile() {
+		this.setStatus('Compile');
 		await this.resolveTSConfig();
 	}
 }
