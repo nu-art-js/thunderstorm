@@ -1,12 +1,14 @@
 import {BaseUnit} from './BaseUnit';
-import {Phase_CopyPackageJSON, UnitPhaseImplementor} from './types';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
-import {CONST_PackageJSONTemplate, MemKey_Packages} from '../../../core/consts';
+import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../../core/consts';
 import {PackageJson} from '../../../core/types';
 import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../../../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
+import {Phase_CopyPackageJSON} from '../../phase';
+import {UnitPhaseImplementor} from '../types';
+import {MemKey_PackageJSONParams} from '../../phase-runner/RunnerParams';
 
 const PackageJsonTargetKey_Root = 'root';
 const PackageJsonTargetKey_Dist = 'dist';
@@ -38,7 +40,6 @@ export class Unit_Typescript<Config extends {} = {}, C extends _Config<Config> =
 			throw new BadImplementationException(`Missing __package.json file in root for unit ${this.config.label}`);
 
 		const template = JSON.parse(await _fs.readFile(templatePath, 'utf-8')) as PackageJson;
-
 		PackageJsonTargetKeys.forEach(key => this.packageJson[key] = this.convertTemplatePackageJSON(key,template))
 	}
 
@@ -68,10 +69,17 @@ export class Unit_Typescript<Config extends {} = {}, C extends _Config<Config> =
 	 */
 	private convertPJForRoot(template: PackageJson) {
 		//Get the package params for replacing in the template package json
-		const params = MemKey_Packages.get()?.params ?? {};
+		const params = MemKey_PackageJSONParams.get();
 
 		//Convert template to actual package.json
-		return convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ? 'workspace:*' : params[value]);
+		const converted = convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ? 'workspace:*' : params[value]);
+
+		//Set dynamic params for this pkg
+		params[converted.name] = converted.version;
+		params[`${converted.name}_path`] = `file:.dependencies/${this.config.key}`; //Not sure about this one
+
+		MemKey_PackageJSONParams.set(params);
+		return converted
 	}
 
 	/**
@@ -81,11 +89,7 @@ export class Unit_Typescript<Config extends {} = {}, C extends _Config<Config> =
 	 */
 	private convertPJForDist(template: PackageJson) {
 		//Get the package params for replacing in the template package json
-		const params = MemKey_Packages.get()?.params ?? {};
-		const converted = this.packageJson[PackageJsonTargetKey_Root] ?? this.convertPJForRoot(template);
-
-		params[converted.name] = converted.version;
-		params[`${converted.name}_path`] = `file:.dependencies/${this.config.key}`; //Not sure about this one
+		const params = MemKey_PackageJSONParams.get();
 
 		//Convert template to actual package.json
 		return convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ?? params[value]);
@@ -99,11 +103,7 @@ export class Unit_Typescript<Config extends {} = {}, C extends _Config<Config> =
 	 */
 	private convertPJForDependency(template: PackageJson) {
 		//Get the package params for replacing in the template package json
-		const params = MemKey_Packages.get()?.params ?? {};
-		const converted = this.packageJson[PackageJsonTargetKey_Root] ?? this.convertPJForRoot(template);
-
-		params[converted.name] = converted.version;
-		params[`${converted.name}_path`] = `file:.dependencies/${this.config.key}`; //Not sure about this one
+		const params = MemKey_PackageJSONParams.get() ?? {};
 
 		//Convert template to actual package.json
 		return convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ?? params[value]);
@@ -112,11 +112,13 @@ export class Unit_Typescript<Config extends {} = {}, C extends _Config<Config> =
 	//######################### Phase Implementations #########################
 
 	async copyPackageJson() {
+		this.setStatus('Resolving PackageJSON');
 		//Populate packageJson objects
 		await this.populatePackageJson();
 		//Get path
 		const unitRootPath = convertToFullPath(this.config.pathToPackage);
+		const targetPath = `${unitRootPath}/${CONST_PackageJSON}`;
 		//Create the package.json file in target location
-		await _fs.writeFile(unitRootPath, JSON.stringify(this.packageJson.root, null, 2), {encoding: 'utf-8'});
+		await _fs.writeFile(targetPath, JSON.stringify(this.packageJson.root, null, 2), {encoding: 'utf-8'});
 	}
 }

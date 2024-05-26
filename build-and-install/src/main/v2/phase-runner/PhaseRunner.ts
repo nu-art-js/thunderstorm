@@ -1,75 +1,202 @@
-import {asArray, exists} from '@nu-art/ts-common';
-import {Phase, RunnerParamKeys, RunnerParams} from './types';
-import {UnitPhaseImplementor} from '../unit/core/types';
-import {BaseUnit} from '../unit/core/BaseUnit';
+import {
+	_keys,
+	asArray,
+	BadImplementationException,
+	BeLogged,
+	exists,
+	ImplementationMissingException,
+	LogClient_Terminal,
+	LogLevel,
+	reduceToMap, sortArray,
+	StringMap,
+	TypedMap
+} from '@nu-art/ts-common';
+import {MemKey_PackageJSONParams, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
+import {Phase, Phase_Help} from '../phase';
+import {Unit, UnitPhaseImplementor} from '../unit/types';
+import {BaseUnit, Unit_TypescriptProject} from '../unit/core';
+import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
+import {AllBaiParams, RuntimeParams} from '../../core/params/params';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import fs from 'fs';
+import {convertToFullPath} from '@nu-art/commando/core/tools';
+import {ProjectConfigV2} from '../project/types';
+import {allTSUnits} from '../unit/thunderstorm';
+import {Default_Files, MemKey_DefaultFiles} from '../../defaults/consts';
 
-type Unit<P extends Phase<string>[]> = BaseUnit & UnitPhaseImplementor<P>;
+const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
+const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_DEPENDENCY_VERSION';
+const CONST_ProjectVersionKey = 'APP_VERSION';
+const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
 
 export class PhaseRunner<P extends Phase<string>[]>
-	extends BaseUnit {
+	extends BaseUnit
+	implements UnitPhaseImplementor<[Phase_Help]> {
 
 	private readonly phases: P;
-	private units: Unit<P>[] = [];
-	private runnerParams: RunnerParams = {} as RunnerParams;
+	private units: BaseUnit[];
+	private projectConfig!:ProjectConfigV2;
 
 	constructor(phases: P) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
 		this.phases = phases;
+		this.units = [this,...allTSUnits];
+		this.showAllLogs()
+		this.setMinLevel(LogLevel.Verbose);
+		this.logDebug('Runtime params:', RuntimeParams);
 	}
 
 	protected async init() {
-		this.runnerParams['rootPath'] = process.cwd();
-		this.runnerParams['configPath'] = this.runnerParams['rootPath'] + '/.config';
+		if(!this.config)
+			throw new BadImplementationException('Trying to run PhaseRunner with no project config, did you forget to call .registerProject() ?');
+
+		const runnerParams: RunnerParams = {
+			rootPath: process.cwd(),
+			configPath: process.cwd() + '/.config',
+		};
+		this.logDebug('\nSetting RunnerParams:',runnerParams);
+		MemKey_RunnerParams.set(runnerParams);
+
+		const projectParams = this.prepareProjectParams();
+		this.logDebug('\nSetting ProjectParams:', projectParams)
+		MemKey_PackageJSONParams.set(projectParams);
+
+		this.logDebug('\nSetting Default Files',Default_Files)
+		MemKey_DefaultFiles.set(Default_Files);
+
+		this.logInfoBold('\nInit Done! Unit order:',this.units.map(unit=>unit.config.label))
+
+	}
+
+	//######################### Internal Logic #########################
+
+	private showAllLogs() {
+		// this.clearLogger();
+
+		// this.projectScreen?.dispose();
+		BeLogged.addClient(LogClient_Terminal);
+	}
+
+	private async executeImpl() {
+		for (const phase of this.phases) {
+			const phaseDidRun = await this.executePhase(phase);
+
+			//If phase is terminating
+			if (phaseDidRun && phase.terminateAfterPhase)
+				break;
+		}
+	}
+
+	private prepareProjectParams ():StringMap {
+		const params = this.projectConfig.params ?? {};
+		params[CONST_ThunderstormVersionKey] = this.projectConfig.thunderstormVersion;
+		params[CONST_ThunderstormDependencyKey] = this.projectConfig.thunderstormVersion;
+		params[CONST_ProjectVersionKey] = this.projectConfig.projectVersion;
+		params[CONST_ProjectDependencyKey] = this.projectConfig.projectVersion;
+		return params;
 	}
 
 	//######################### Unit Logic #########################
 
-	public registerUnits(units: Unit<P> | Unit<P>[]) {
-		asArray(units).forEach(unit => this.units.push(unit));
+	public registerUnits(units: BaseUnit | BaseUnit[]) {
+		this.units.push(...asArray(units));
+		sortArray(this.units, unit => {
+			//Phase runner is first
+			if(unit === this)
+				return 0
+
+			//Second priority for project units
+			if(unit instanceof Unit_TypescriptProject)
+				return 1;
+
+			//TS units after project units, but before the rest
+			return allTSUnits.includes(unit) ? 2 : 3;
+		})
 	}
 
 	private getUnitsForPhase(phase: P[number]) {
-		return this.units.filter(unit => exists(unit[phase.method as keyof UnitPhaseImplementor<P>]));
+		const filteredUnits = this.units.filter(unit => !exists(unit.config.filter) || unit.config.filter());
+		return filteredUnits.filter(unit => {
+			return exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>])
+		});
 	}
-
-	private _getRunnerParam = (runnerParamKey: RunnerParamKeys) => this.runnerParams[runnerParamKey];
 
 	private async initUnits() {
 		return Promise.all(this.units.map(unit => {
-			unit.setGetRunnerParamCaller(this._getRunnerParam);
 			// @ts-ignore
-			unit.init();
+			return unit.init();
 		}));
 	}
 
 	//######################### Phase Logic #########################
 
-	private async executePhase(phase: P[number]) {
-		const willExecutePhase = exists(phase.filter) && !phase.filter();
-		if (!willExecutePhase)
-			return this.logInfo(`Will not execute phase: ${phase.name}, did not pass filter`);
+	async printHelp () {
+		this.logInfo("Build and install parameters:")
+		const noGroupConst = 'No Group'
+
+		//Resolve all params by group
+		const paramsByGroup: TypedMap<BaseCliParam<string, any>[]> = reduceToMap(AllBaiParams, param => param.group ?? noGroupConst, (item, index, mapper) => {
+			mapper[item.group ?? noGroupConst] = [...mapper[item.group ?? noGroupConst] ?? [], item];
+			return mapper[item.group ?? noGroupConst];
+		});
+
+		_keys(paramsByGroup).map(paramGroup => {
+			this.logWarningBold(`${paramGroup}: \n`);
+			// commando.append(`echo "${paramGroup}:" \n`);
+
+			paramsByGroup[paramGroup].map(param => {
+				const paramKeys = param.keys.join(' | ');
+				const paramDescription = param.description.trim().split('\n').join('\n\t\t');
+				this.logInfo(`${paramKeys} \n\t\t ${paramDescription} \n`);
+				// commando.append(`echo "\n	${param.keys.join(' | ')} \n \t\t${param.description.trim().split('\n').join('\n\t\t')} \n"`);
+			});
+		});
+	}
+
+	/**
+	 * Determines whether to run the phase.</br>
+	 * returns true if phase ran, false otherwise
+	 * @param phase
+	 * @private
+	 */
+	private async executePhase(phase: P[number]): Promise<boolean> {
+		const willExecutePhase = !exists(phase.filter) || phase.filter();
+		if (!willExecutePhase) {
+			this.logDebug(`Will not execute phase: ${phase.name}, did not pass filter`);
+			return false;
+		}
 
 		const units = this.getUnitsForPhase(phase);
-		if (!units.length)
-			return this.logInfo(`Will not execute phase: ${phase.name}, no units to execute`);
-
-		this.logInfo(`Executing phase: ${phase.name} for ${units.length} units`);
-		for (const unit of units) {
-			await unit[phase.method as keyof UnitPhaseImplementor<P>]();
+		if (!units.length) {
+			this.logDebug(`Will not execute phase: ${phase.name}, no units to execute`);
+			return false
 		}
+
+		this.setStatus(`Executing Phase: ${phase.name}`);
+		this.logDebug(`Executing phase: ${phase.name} for ${units.length} units`);
+		for (const unit of units) {
+			await (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]();
+		}
+		return true;
 	}
 
 	//######################### Public Functions #########################
 
 	public async execute() {
-		await this.init()
-		await this.initUnits();
-		await this.executeImpl();
+		return new MemStorage().init(async () => {
+			await this.initUnits();
+			await this.executeImpl();
+		})
 	}
 
-	private async executeImpl() {
-		for (const phase of this.phases) {
-			await this.executePhase(phase);
-		}
+	public registerProject (pathToConfig: string) {
+		const fullPathToConfig = convertToFullPath(pathToConfig);
+
+		if (!fs.existsSync(fullPathToConfig))
+			throw new ImplementationMissingException(`Missing project config file, could not find in path: ${fullPathToConfig}`);
+
+		this.projectConfig = require(fullPathToConfig).default as ProjectConfigV2;
+		this.registerUnits(this.projectConfig.units);
+		return this;
 	}
 }

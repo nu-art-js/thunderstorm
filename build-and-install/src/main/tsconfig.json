@@ -16,10 +16,7 @@
     "noUnusedLocals": true,
     "module": "commonjs",
     "sourceMap": true,
-    "strict": true,
-    "typeRoots": [
-      "../types"
-    ]
+    "strict": true
   },
   "esModuleInterop": true,
   "module": "ES2020"

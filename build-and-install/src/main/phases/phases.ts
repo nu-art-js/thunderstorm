@@ -232,14 +232,15 @@ export const Phase_ResolveEnv: BuildPhase = {
 		if (pkg.type === 'firebase-functions-app') {
 			const firebaseFunctionPkg = firebasePkg as Package_FirebaseFunctionsApp;
 			const pathToFirebaseConfigFolder = `${firebaseFunctionPkg.path}/${firebaseFunctionPkg.envConfig.pathToFirebaseConfig}`;
+
+			if (firebasePkg.envConfig.ssl)
+				await generateProxyFile(firebasePkg, `${firebaseFunctionPkg.path}/src/main/proxy.ts`);
+
 			try {
 				await _fs.access(pathToFirebaseConfigFolder);
 			} catch (e: any) {
 				await _fs.mkdir(pathToFirebaseConfigFolder, {recursive: true});
 			}
-
-			if (firebasePkg.envConfig.ssl)
-				await generateProxyFile(firebasePkg, `${firebaseFunctionPkg.path}/src/main/proxy.ts`);
 
 			await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
 					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;

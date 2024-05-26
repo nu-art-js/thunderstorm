@@ -1,9 +1,12 @@
-import {AsyncVoidFunction} from '@nu-art/ts-common';
-import { Phase } from '../../phase-runner/types';
-import { RuntimeParams } from '../../../core/params/params';
+import {Phase} from './types';
+import {RuntimeParams} from '../../core/params/params';
 
-export type UnitPhaseImplementor<P extends Phase<string>[]> = {
-	[K in P[number]['method']]:AsyncVoidFunction;
+export type Phase_Help = typeof phase_Help;
+export const phase_Help: Phase<'printHelp'> = {
+	name:'Help',
+	method:'printHelp',
+	filter: () => RuntimeParams.help,
+	terminateAfterPhase: true,
 }
 
 export type Phase_Install = typeof phase_Install;
@@ -32,3 +35,12 @@ export const phase_Compile: Phase<'compile'> = {
 	method: 'compile',
 	filter: () => !RuntimeParams.noBuild,
 }
+
+export type Phase_ResolveConfigs = typeof phase_ResolveConfigs;
+export const phase_ResolveConfigs: Phase<'resolveConfigs'> = {
+	name:'Resolve Configs',
+	method:'resolveConfigs',
+	//TODO: Should have a filter
+}
+
+export const allPhases = [phase_Help,phase_Install,phase_CopyPackageJSON,phase_PreCompile,phase_Compile,phase_ResolveConfigs];
