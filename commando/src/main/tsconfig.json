@@ -21,9 +21,6 @@
       "./types"
     ]
   },
-  "include": [
-    "./**/*.d.ts"
-  ],
   "esModuleInterop": true,
   "module": "ES2020"
 }
