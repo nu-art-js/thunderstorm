@@ -88,6 +88,10 @@ export class BaseCLI
 		this.setTag(uuid);
 	}
 
+	setStdErrorValidator(processor: (stderr: string) => boolean) {
+		this.stderrValidator = processor;
+	}
+
 	addStdoutProcessor(processor: (stdout: string) => void) {
 		this.stdoutProcessors.push(processor);
 	}
@@ -313,6 +317,10 @@ export class Commando {
 			cli.removeStderrProcessor(processor);
 			return commando;
 		};
+		commando.setStdErrorValidator = (processor) => {
+			cli.setStdErrorValidator(processor);
+			return commando;
+		}
 		return commando;
 	}
 
@@ -339,6 +347,7 @@ export class Commando {
 	addStderrProcessor = (processor: (stderr: string) => void) => this;
 	removeStdoutProcessor = (processor: (stdout: string) => void) => this;
 	removeStderrProcessor = (processor: (stderr: string) => void) => this;
+	setStdErrorValidator = (processor: (stderr: string) => boolean) => this;
 
 	private constructor() {
 	}
@@ -388,6 +397,10 @@ export class CommandoInteractive {
 			cli.removeStderrProcessor(processor);
 			return commando;
 		};
+		commando.setStdErrorValidator = (processor) => {
+			cli.setStdErrorValidator(processor);
+			return commando;
+		}
 		return commando as CommandoInteractive & typeof _commando;
 	}
 
@@ -395,6 +408,7 @@ export class CommandoInteractive {
 	addStderrProcessor = (processor: (stderr: string) => void) => this;
 	removeStdoutProcessor = (processor: (stdout: string) => void) => this;
 	removeStderrProcessor = (processor: (stderr: string) => void) => this;
+	setStdErrorValidator = (processor: (stderr: string) => boolean) => this;
 	setUID = (uid: string) => this;
 	close = (cb?: AsyncVoidFunction) => this;
 	kill = (signal?: NodeJS.Signals | number) => true;
