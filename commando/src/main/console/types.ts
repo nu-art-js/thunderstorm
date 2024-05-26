@@ -1,4 +1,5 @@
-import blessed, {Widgets} from 'neo-blessed';
+import * as blessed from 'neo-blessed';
+import {Widgets} from 'blessed';
 
 
 /**

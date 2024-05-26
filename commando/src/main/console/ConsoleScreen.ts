@@ -1,6 +1,5 @@
 import {ConsoleContainer} from './ConsoleContainer';
-import {Widgets} from 'neo-blessed';
-
+import {Widgets} from 'blessed';
 
 type ScreenKeyBinding = {
 	keys: string[];
