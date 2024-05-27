@@ -1,5 +1,5 @@
-import {ConsoleScreen} from '../../main/console/ConsoleScreen';
-import {BlessedWidget} from '../../main/console/types';
+import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
+import {BlessedWidget} from '../../../main/console/types';
 
 
 interface LogScreenState {
