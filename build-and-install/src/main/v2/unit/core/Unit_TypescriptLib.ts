@@ -4,9 +4,9 @@ import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {BadImplementationException} from '@nu-art/ts-common';
-import {RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
+import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor} from '../types';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
+import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
 
 type _Config<Config> = {
 	customTSConfig?: boolean;
@@ -17,10 +17,15 @@ type _RuntimeConfig<RTC> = {
 	path: { pkg: string; output: string }
 } & RTC;
 
+const extensionsToLint = ['.ts','.tsx'];
+
 export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {} = {},
 	C extends _Config<Config> = _Config<Config>, RTC extends _RuntimeConfig<RuntimeConfig> = _RuntimeConfig<RuntimeConfig>>
 	extends Unit_Typescript<C, RTC>
-	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Purge]> {
+	implements UnitPhaseImplementor<[
+		Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports,
+		Phase_Purge, Phase_Lint,
+	]> {
 
 	protected async init() {
 		await super.init();
@@ -97,6 +102,16 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 			})
 			.append(`npx madge --no-spinner --image "./imports-${this.config.key}.svg" --circular ${this.runtime.path.output}`)
 			.append('echo $?')
+			.execute();
+	}
+
+	async lint() {
+		const pathToProjectESLint = MemKey_RunnerParams.get()[RunnerParamKey_ConfigPath] + '/.eslintrc.js';
+		const pathToLint = this.runtime.path.pkg + 'src/main';
+		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ')
+
+		await NVM.createCommando()
+			.append(`eslint --config ${pathToProjectESLint} ${extensions} ${pathToLint}`)
 			.execute();
 	}
 }

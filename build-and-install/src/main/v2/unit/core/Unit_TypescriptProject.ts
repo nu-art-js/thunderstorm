@@ -19,25 +19,35 @@ export class Unit_TypescriptProject<Config extends {} = {}, RuntimeConfig extend
 	extends Unit_Typescript<C, RTC>
 	implements UnitPhaseImplementor<[Phase_Install]> {
 
+	//######################### Internal Logic #########################
+
+	private async installGlobals () {
+		if((!RuntimeParams.install && !RuntimeParams.installGlobals) || !this.config.globalPackages)
+			return;
+
+		const packages = _keys(this.config.globalPackages)
+			.reduce((acc, pkg) => {
+				acc.push(`${pkg as string}@${this.config.globalPackages![pkg as string]}`);
+				return acc;
+			}, [] as string[]);
+		this.logInfo(`Installing Global Packages: ${packages.join(' ')}`);
+		await NVM.createCommando().append(`npm i -g ${packages.join(' ')}`).execute();
+	}
+
+	private async installPackages () {
+		if(!RuntimeParams.install && !RuntimeParams.installPackages)
+			return;
+
+		const units = MemKey_ProjectConfig.get().units.filter(unit => unit instanceof Unit_Typescript) as Unit_Typescript[];
+		const packages = units.map(unit=>unit.config.pathToPackage)
+		await PNPM.createWorkspace(packages);
+		await PNPM.installPackages(NVM.createCommando());
+	}
+
+	//######################### Phase Implementation #########################
+
 	async install() {
-		const installGlobals = RuntimeParams.install || RuntimeParams.installGlobals;
-		const installPackages = RuntimeParams.install || RuntimeParams.installPackages;
-
-		if (installGlobals && this.config.globalPackages) {
-			const packages = _keys(this.config.globalPackages)
-				.reduce((acc, pkg) => {
-					acc.push(`${pkg as string}@${this.config.globalPackages![pkg as string]}`);
-					return acc;
-				}, [] as string[]);
-			this.logInfo(`Installing Global Packages: ${packages.join(' ')}`);
-			await NVM.createCommando().append(`npm i -g ${packages.join(' ')}`).execute();
-		}
-
-		if (installPackages) {
-			const units = MemKey_ProjectConfig.get().units.filter(unit => unit instanceof Unit_Typescript) as Unit_Typescript[];
-			const packages = units.map(unit=>unit.config.pathToPackage)
-			await PNPM.createWorkspace(packages);
-			await PNPM.installPackages(NVM.createCommando());
-		}
+		await this.installGlobals();
+		await this.installPackages();
 	}
 }

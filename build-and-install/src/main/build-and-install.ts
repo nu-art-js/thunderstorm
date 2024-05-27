@@ -19,10 +19,6 @@ runner
 
 // const projectManager = new ProjectManager();
 //
-// projectManager.registerPhase(Phase_InstallGlobals);
-// projectManager.registerPhase(Phase_InstallPackages);
-// projectManager.registerPhase(Phase_InstallPythonPackages);
-// projectManager.registerPhase(Phase_Lint);
 // projectManager.registerPhase(Phase_PrepareCompile);
 // projectManager.registerPhase(Phase_PreCompile);
 // projectManager.registerPhase(Phase_Compile);
