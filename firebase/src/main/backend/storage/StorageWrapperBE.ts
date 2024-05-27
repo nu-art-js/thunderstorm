@@ -51,10 +51,11 @@ export class StorageWrapperBE
 	}
 
 	async getOrCreateBucket(bucketName?: string): Promise<BucketWrapper> {
-		bucketName ??= `gs://${process.env.GCLOUD_PROJECT}.appspot.com`;
+		const gcpBucketPrefix = 'gs://';
+		bucketName ??= `${gcpBucketPrefix}${process.env.GCLOUD_PROJECT}.appspot.com`;
 
-		if (!bucketName.startsWith('gs://'))
-			throw new BadImplementationException('Bucket name MUST start with \'gs://\'');
+		if (!bucketName.startsWith(gcpBucketPrefix))
+			throw new BadImplementationException(`Bucket name MUST start with '${gcpBucketPrefix}', received '${bucketName}'`);
 
 		let bucket = this.storage.bucket(bucketName);
 		if (!this.isEmulator())

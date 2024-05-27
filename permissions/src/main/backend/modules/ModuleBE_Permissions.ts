@@ -224,6 +224,7 @@ class ModuleBE_Permissions_Class
 		await this.createApis(projects, domainNameToLevelNameToDBAccessLevel);
 		await this.createPermissionsKeys(projects);
 		await this.assignSuperAdmin();
+		// This stage updates the rtdb's config- which is why it's last. Changing the rtdb's config kills the server.
 		await this.createSystemServiceAccount(serviceAccounts);
 	};
 
