@@ -1,14 +1,15 @@
 import {Unit_TypescriptLib} from '../core';
 import {UnitPhaseImplementor} from '../types';
 import {Phase_ResolveConfigs} from '../../phase';
-import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
 import {promises as _fs} from 'fs';
 import {RuntimeParams} from '../../../core/params/params';
-import {FirebasePackageConfig} from '../../../core/types';
-import {ImplementationMissingException} from '@nu-art/ts-common';
+import {FirebasePackageConfig, PackageJson} from '../../../core/types';
+import {_keys, deepClone, ImplementationMissingException} from '@nu-art/ts-common';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
+import {NVM} from '@nu-art/commando/cli/nvm';
 
 type _Config<Config> = {
 	firebaseConfig: FirebasePackageConfig;
@@ -131,7 +132,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	private async resolveFunctionsRuntimeConfig() {
 		const envConfig = this.getEnvConfig();
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/src/main/config.ts`)
+		const targetPath = convertToFullPath(`${this.config.pathToPackage}/src/main/config.ts`);
 		const beConfig = {name: envConfig.env};
 		const fileContent = `${envConfig.isLocal ? '// @ts-ignore\nprocess.env[\'NODE_TLS_REJECT_UNAUTHORIZED\'] = 0;\n' : ''}
 		export const Environment = ${JSON.stringify(beConfig)};`;
@@ -141,10 +142,59 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//copyAssetsToOutput will move the file to output
-		const targetPath = this.runtime.path.pkg + `/${CONST_VersionApp}`;
+		const targetPath = `${this.runtime.path.pkg}/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
-		await _fs.writeFile(targetPath, fileContent, {encoding:'utf-8'});
+		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
+	}
+
+	private async createDependenciesDir() {
+		//Gather units that are dependencies of this unit
+		const dependencies = _keys(this.packageJson.root.dependencies ?? {}) as string[];
+		const tsLibUnits = MemKey_ProjectConfig.get().units.filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
+		const dependencyUnits = tsLibUnits.filter(unit => {
+			const unitPJName = unit.packageJson.root.name;
+			return dependencies.includes(unitPJName);
+		});
+
+		if (!dependencyUnits.length)
+			return;
+
+		const packageJsonConverter = (pj: PackageJson): PackageJson => {
+			const finalPJ = deepClone(this.packageJson.dist);
+			finalPJ.dependencies ??= {};
+			_keys(finalPJ.dependencies).reduce((acc, packageName) => {
+				const unit = dependencyUnits.find(unit => unit.packageJson.template.name === packageName);
+				if (!unit)
+					return acc;
+
+				acc[packageName] = `file:.dependencies/${unit.config.key}`;
+				return acc;
+			}, finalPJ.dependencies);
+
+			return finalPJ;
+		};
+
+		await Promise.all(dependencyUnits.map(async unit => {
+			const commando = NVM.createCommando();
+
+			//Copy dependency unit output into this units output/.dependency dir
+			const dependencyOutputPath = `${unit.runtime.path.output}/`;
+			const targetPath = `${this.runtime.path.output}/.dependencies/${unit.config.key}/`;
+			const pjTargetPath = `${targetPath}/${CONST_PackageJSON}`;
+
+			await commando
+				.append(`mkdir -p ${targetPath}`)
+				.append(`rsync -a --delete ${dependencyOutputPath} ${targetPath}`)
+				.execute();
+
+			//Copy units dependency package into newly created dir
+			const dependencyPJ = packageJsonConverter(unit.packageJson.dist)
+			const fileContent = JSON.stringify(dependencyPJ, null, 2);
+			await _fs.writeFile(pjTargetPath, fileContent, {encoding: 'utf-8'});
+		}));
+
+		this.packageJson.dist = packageJsonConverter(this.packageJson.dist)
 	}
 
 	//######################### Phase Implementations #########################
@@ -157,13 +207,14 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		await this.resolveFunctionsJSON();
 	}
 
-	async compile () {
+	async compile() {
 		this.setStatus('Compile');
 		await this.resolveTSConfig();
 		await this.clearOutputDir();
-		await this.copyPackageJSONToOutput();
 		await this.createAppVersionFile();
 		await this.compileImpl();
 		await this.copyAssetsToOutput();
+		await this.createDependenciesDir();
+		await this.copyPackageJSONToOutput();
 	}
 }
