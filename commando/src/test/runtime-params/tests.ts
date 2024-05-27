@@ -6,7 +6,7 @@ import {expect} from 'chai';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
 
-type TestSuite_RuntimeParams<Params extends BaseCliParam<string, any>[], Output extends CliParams<Params> = CliParams<Params>>
+type TestSuite_RuntimeParams<Params extends BaseCliParam<string, any>[], Output extends Partial<CliParams<Params>> = Partial<CliParams<Params>>>
 	= TestSuite<Input, Output>
 
 type Input = {
@@ -14,7 +14,7 @@ type Input = {
 	input: string
 }
 
-function createTestCase<Params extends BaseCliParam<string, any>[], Output extends CliParams<Params> = CliParams<Params>>(
+function createTestCase<Params extends BaseCliParam<string, any>[], Output extends Partial<CliParams<Params>> = Partial<CliParams<Params>>>(
 	description: string, params: Params, output: Output, paramsAsString: string): TestSuite_RuntimeParams<Params, Output>['testcases'][number] {
 	return {
 		description,
@@ -34,8 +34,31 @@ export const Param_Help: BaseCliParam<'help', boolean> = {
 	description: 'This help menu'
 };
 
+export const Param_I: BaseCliParam<'i', boolean> = {
+	keys: ['-i'],
+	keyName: 'i',
+	type: 'boolean',
+	group: 'General',
+	description: ''
+};
+export const Param_IP: BaseCliParam<'ip', boolean> = {
+	keys: ['-ip'],
+	keyName: 'ip',
+	type: 'boolean',
+	group: 'General',
+	description: ''
+};
+
 const TestCase_merge: TestSuite_RuntimeParams<any, any>['testcases'] = [
-	createTestCase('Simple help param', [Param_Help], {help: true}, '-h')
+	createTestCase('Simple help param', [Param_Help], {help: true}, '-h'),
+	createTestCase('distinct -i and -ip - 1', [Param_I, Param_IP], {i: true}, '-i'),
+	createTestCase('distinct -i and -ip - 2', [Param_I, Param_IP], {ip: true}, '-ip'),
+	createTestCase('distinct -i and -ip - 3', [Param_I, Param_IP], {i: true, ip: true}, '-i -ip'),
+	createTestCase('distinct -i and -ip - 4', [Param_I, Param_IP], {i: true, ip: true}, '-ip -i'),
+	createTestCase('distinct -ip and -i - 1', [Param_IP, Param_I], {i: true}, '-i'),
+	createTestCase('distinct -ip and -i - 2', [Param_IP, Param_I], {ip: true}, '-ip'),
+	createTestCase('distinct -ip and -i - 3', [Param_IP, Param_I], {i: true, ip: true}, '-i -ip'),
+	createTestCase('distinct -ip and -i - 4', [Param_IP, Param_I], {i: true, ip: true}, '-ip -i'),
 ];
 
 export const TestSuite_RuntimeParams: TestSuite<Input, any> = {
