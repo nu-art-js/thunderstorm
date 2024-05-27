@@ -1,14 +1,16 @@
 import {Unit_TypescriptLib} from '../core';
 import {UnitPhaseImplementor} from '../types';
-import {Phase_ResolveConfigs} from '../../phase';
+import {Phase_Launch, Phase_ResolveConfigs} from '../../phase';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
 import {promises as _fs} from 'fs';
 import {RuntimeParams} from '../../../core/params/params';
 import {FirebasePackageConfig, PackageJson} from '../../../core/types';
-import {_keys, deepClone, ImplementationMissingException} from '@nu-art/ts-common';
+import {_keys, deepClone, ImplementationMissingException, Second, sleep} from '@nu-art/ts-common';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
+import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '@nu-art/commando/core/cli';
+import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {NVM} from '@nu-art/commando/cli/nvm';
 
 type _Config<Config> = {
@@ -16,13 +18,69 @@ type _Config<Config> = {
 	sources?: string[];
 } & Config
 
+type CommandExecutor_FirebaseFunction_Listeners = {
+	proxy: {
+		pid: CommandoCLIKeyValueListener;
+		kill: CommandoCLIListener;
+	};
+	emulator: {
+		pid: CommandoCLIKeyValueListener;
+		kill: CommandoCLIListener;
+	};
+	onReady: CommandoCLIListener;
+}
+
 const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_ResolveConfigs]> {
+	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch]> {
 
-	//######################### Internal Logic #########################
+	static staggerCount: number = 0;
+
+	private readonly PROXY_PID_LOG = '_PROXY_PID_';
+	private readonly PROXY_KILL_LOG = '_PROXY_KILLED_';
+	private readonly EMULATOR_PID_LOG = '_EMULATOR_PID_';
+	private readonly EMULATOR_KILL_LOG = '_EMULATOR_KILLED_';
+
+	private launchCommandos!: {
+		emulator: CommandoInteractive & Commando & Cli_Basic;
+		proxy: CommandoInteractive & Commando & Cli_Basic
+	};
+	private listeners!: CommandExecutor_FirebaseFunction_Listeners;
+
+	//######################### Phase Implementations #########################
+
+	async resolveConfigs() {
+		await this.resolveFunctionsRC();
+		await this.resolveProxyFile();
+		await this.resolveConfigDir();
+		await this.resolveFunctionsRuntimeConfig();
+		await this.resolveFunctionsJSON();
+	}
+
+	async compile() {
+		this.setStatus('Compile');
+		await this.resolveTSConfig();
+		await this.clearOutputDir();
+		await this.createAppVersionFile();
+		await this.compileImpl();
+		await this.copyAssetsToOutput();
+		await this.createDependenciesDir();
+		await this.copyPackageJSONToOutput();
+	}
+
+	async launch() {
+		this.setStatus('Launching')
+		await sleep(2 * Second * Unit_FirebaseFunctionsApp.staggerCount++);
+		await this.initLaunch();
+		await this.initLaunchListeners();
+		await this.clearPorts();
+		await this.runProxy();
+		await this.runEmulator();
+	}
+
+	//######################### ResolveConfig Logic #########################
 
 	private getEnvConfig() {
 		const env = RuntimeParams.environment;
@@ -139,6 +197,8 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
+	//######################### Compile Logic #########################
+
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//copyAssetsToOutput will move the file to output
@@ -176,45 +236,96 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		};
 
 		await Promise.all(dependencyUnits.map(async unit => {
-			const commando = NVM.createCommando();
 
 			//Copy dependency unit output into this units output/.dependency dir
 			const dependencyOutputPath = `${unit.runtime.path.output}/`;
 			const targetPath = `${this.runtime.path.output}/.dependencies/${unit.config.key}/`;
 			const pjTargetPath = `${targetPath}/${CONST_PackageJSON}`;
 
-			await commando
+			await Commando.create()
 				.append(`mkdir -p ${targetPath}`)
 				.append(`rsync -a --delete ${dependencyOutputPath} ${targetPath}`)
 				.execute();
 
 			//Copy units dependency package into newly created dir
-			const dependencyPJ = packageJsonConverter(unit.packageJson.dist)
+			const dependencyPJ = packageJsonConverter(unit.packageJson.dist);
 			const fileContent = JSON.stringify(dependencyPJ, null, 2);
 			await _fs.writeFile(pjTargetPath, fileContent, {encoding: 'utf-8'});
 		}));
 
-		this.packageJson.dist = packageJsonConverter(this.packageJson.dist)
+		this.packageJson.dist = packageJsonConverter(this.packageJson.dist);
 	}
 
-	//######################### Phase Implementations #########################
+	//######################### Launch Logic #########################
 
-	async resolveConfigs() {
-		await this.resolveFunctionsRC();
-		await this.resolveProxyFile();
-		await this.resolveConfigDir();
-		await this.resolveFunctionsRuntimeConfig();
-		await this.resolveFunctionsJSON();
+	private async initLaunch () {
+		this.launchCommandos = {
+			emulator: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.path.pkg),
+			proxy: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.path.pkg),
+		};
 	}
 
-	async compile() {
-		this.setStatus('Compile');
-		await this.resolveTSConfig();
-		await this.clearOutputDir();
-		await this.createAppVersionFile();
-		await this.compileImpl();
-		await this.copyAssetsToOutput();
-		await this.createDependenciesDir();
-		await this.copyPackageJSONToOutput();
+	private async initLaunchListeners() {
+		this.listeners = {
+			proxy: {
+				pid: new CommandoCLIKeyValueListener(new RegExp(`${this.PROXY_PID_LOG}=(\\d+)`)),
+				kill: new CommandoCLIListener(() => this.launchCommandos.proxy.close(), this.PROXY_KILL_LOG),
+			},
+			emulator: {
+				pid: new CommandoCLIKeyValueListener(new RegExp(`${this.EMULATOR_PID_LOG}=(\\d+)`)),
+				kill: new CommandoCLIListener(() => this.launchCommandos.emulator.close(), this.EMULATOR_KILL_LOG),
+			},
+			onReady: new CommandoCLIListener(() => this.setStatus('Launch Complete'), new RegExp('.*Emulator Hub running.*')),
+		};
+		this.listeners.proxy.kill.listen(this.launchCommandos.proxy);
+		this.listeners.proxy.pid.listen(this.launchCommandos.proxy);
+		this.listeners.emulator.kill.listen(this.launchCommandos.emulator);
+		this.listeners.emulator.pid.listen(this.launchCommandos.emulator);
+		this.listeners.onReady.listen(this.launchCommandos.emulator);
+	}
+
+	private async clearPorts() {
+		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.firebaseConfig.basePort + i}`);
+		await Commando.create(Cli_Basic)
+			.debug()
+			.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
+			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
+			.append('echo ')
+			.execute();
+	}
+
+	private async runProxy() {
+		await this.launchCommandos.proxy
+			.append('ts-node src/main/proxy.ts &')
+			.append('pid=$!')
+			.append(`echo "${this.PROXY_PID_LOG}=\${pid}"`)
+			.append(`wait \$pid`)
+			.append(`echo "${this.PROXY_KILL_LOG} \${pid}"`)
+			.execute();
+	}
+
+	private async runEmulator() {
+		await this.launchCommandos.emulator
+			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''} &`)
+			.append('pid=$!')
+			.append(`echo "${this.EMULATOR_PID_LOG}=\${pid}"`)
+			.append(`wait \$pid`)
+			.append(`echo "${this.EMULATOR_KILL_LOG} \${pid}"`)
+			.execute();
+	}
+
+	private getPID(listener: CommandoCLIKeyValueListener) {
+		const pid = Number(listener.getValue());
+		return isNaN(pid) ? undefined : pid;
+	}
+
+	public async kill() {
+		if(!this.launchCommandos)
+			return;
+
+		const emulatorPid = this.getPID(this.listeners.emulator.pid);
+		const proxyPid = this.getPID(this.listeners.proxy.pid);
+		await this.launchCommandos.emulator.gracefullyKill(emulatorPid);
+		await this.launchCommandos.proxy.gracefullyKill(proxyPid);
 	}
 }
