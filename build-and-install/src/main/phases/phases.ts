@@ -540,7 +540,7 @@ export const Phase_Compile: BuildPhase = {
 		if (pkg.type === 'sourceless' || pkg.type === PackageType_Python)
 			return;
 
-		if (fs.existsSync(pkg.output)) {
+		if (RuntimeParams.clean && fs.existsSync(pkg.output)) {
 			await _fs.rm(pkg.output, {recursive: true, force: true});
 			await _fs.mkdir(pkg.output, {recursive: true});
 		}
