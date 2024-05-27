@@ -54,7 +54,7 @@ export class StorageWrapperBE
 		bucketName ??= `gs://${process.env.GCLOUD_PROJECT}.appspot.com`;
 
 		if (!bucketName.startsWith('gs://'))
-			throw new BadImplementationException('Bucket name MUST start with \'gs://\'');
+			throw new BadImplementationException(`Bucket name MUST start with \'gs://\', received '${bucketName}'`);
 
 		let bucket = this.storage.bucket(bucketName);
 		if (!this.isEmulator())
