@@ -1,5 +1,7 @@
 import {Logger, mergeObject, ResolvableContent} from '@nu-art/ts-common';
 import {BlessedWidget, BlessedWidgetOptions, BlessedWidgetsType, createBlessedWidget} from './types';
+import {Widgets} from 'blessed';
+import INodeOptions = Widgets.INodeOptions;
 
 
 type KeyBinding = {
@@ -31,7 +33,7 @@ export abstract class ConsoleContainer<Type extends BlessedWidgetsType, State ex
 	 * @param {KeyBinding[]} [keyBinding] - An array of key bindings for the container widget.
 	 */
 	protected constructor(type: Type, containerProps?: BlessedWidgetOptions[Type], keyBinding: KeyBinding[] = []) {
-		super(containerProps?.name);
+		super((containerProps as INodeOptions)?.name);
 		this.type = type;
 		this.keyBinding = keyBinding;
 		this.containerProps = containerProps;
