@@ -7,11 +7,16 @@ import {ImplementationMissingException} from '@nu-art/ts-common/core/exceptions/
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
+import {NVM} from '@nu-art/commando/cli/nvm';
+import {Cli_Basic} from '@nu-art/commando/cli/basic';
+import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 
 type _Config<Config> = {
 	firebaseConfig: FirebasePackageConfig;
 	sources?: string[];
 } & Config
+
+const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
 	extends Unit_TypescriptLib<C>
@@ -28,11 +33,11 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		return envConfig;
 	}
 
-	private async resolveHostingRC () {
+	private async resolveHostingRC() {
 		const envConfig = this.getEnvConfig();
 		const rcConfig = {projects: {default: envConfig.projectId}};
 		const targetPath = convertToFullPath(`${this.config.pathToPackage}/${CONST_FirebaseRC}`);
-		await _fs.writeFile(targetPath,JSON.stringify(rcConfig, null, 2),{encoding: 'utf-8'})
+		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveHostingJSON() {
@@ -71,11 +76,37 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
+	protected async compileImpl() {
+		await NVM
+			.createCommando(Cli_Basic)
+			.cd(this.runtime.path.pkg)
+			.append(`ENV=${RuntimeParams.environment} npm run build`)
+			.execute();
+	}
+
+	private async createAppVersionFile() {
+		//Writing the file to the package source instead of the output is fine,
+		//Webpack bundles files into the output automatically!
+		const targetPath = this.runtime.path.pkg + `/${CONST_VersionApp}`;
+		const appVersion = MemKey_ProjectConfig.get().projectVersion;
+		const fileContent = JSON.stringify({version: appVersion}, null, 2);
+		await _fs.writeFile(targetPath, fileContent, {encoding:'utf-8'});
+	}
+
 	//######################### Phase Implementations #########################
 
 	async resolveConfigs() {
 		await this.resolveHostingRC();
 		await this.resolveHostingJSON();
 		await this.resolveHostingRuntimeConfig();
+	}
+
+	async compile() {
+		this.setStatus('Compile');
+		await this.resolveTSConfig();
+		await this.clearOutputDir();
+		await this.createAppVersionFile();
+		await this.copyPackageJSONToOutput();
+		await this.compileImpl();
 	}
 }

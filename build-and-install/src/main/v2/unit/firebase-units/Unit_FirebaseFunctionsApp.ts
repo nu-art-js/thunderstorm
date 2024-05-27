@@ -8,11 +8,14 @@ import {FirebasePackageConfig} from '../../../core/types';
 import {ImplementationMissingException} from '@nu-art/ts-common';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
+import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 
 type _Config<Config> = {
 	firebaseConfig: FirebasePackageConfig;
 	sources?: string[];
 } & Config
+
+const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
 	extends Unit_TypescriptLib<C>
@@ -135,6 +138,15 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
+	private async createAppVersionFile() {
+		//Writing the file to the package source instead of the output is fine,
+		//copyAssetsToOutput will move the file to output
+		const targetPath = this.runtime.path.pkg + `/${CONST_VersionApp}`;
+		const appVersion = MemKey_ProjectConfig.get().projectVersion;
+		const fileContent = JSON.stringify({version: appVersion}, null, 2);
+		await _fs.writeFile(targetPath, fileContent, {encoding:'utf-8'});
+	}
+
 	//######################### Phase Implementations #########################
 
 	async resolveConfigs() {
@@ -143,5 +155,15 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		await this.resolveConfigDir();
 		await this.resolveFunctionsRuntimeConfig();
 		await this.resolveFunctionsJSON();
+	}
+
+	async compile () {
+		this.setStatus('Compile');
+		await this.resolveTSConfig();
+		await this.clearOutputDir();
+		await this.copyPackageJSONToOutput();
+		await this.createAppVersionFile();
+		await this.compileImpl();
+		await this.copyAssetsToOutput();
 	}
 }

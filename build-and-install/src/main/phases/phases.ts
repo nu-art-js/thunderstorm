@@ -357,7 +357,7 @@ export const Phase_InstallGlobals: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async () => RuntimeParams.installGlobals,
 	action: async () => {
-		const globalPackages = 'firebase-tools@latest ts-node@latest typescript@latest eslint@^8.0.0';
+		const globalPackages = 'firebase-tools@5.0.4 ts-node@latest typescript@latest eslint@^8.0.0';
 		await NVM.createCommando().append(`npm i -g ${globalPackages}`).execute();
 	}
 };
@@ -474,9 +474,6 @@ export const Phase_PrepareCompile: BuildPhase = {
 					.cd(pkg.path)
 					.append(`ENV=${RuntimeParams.environment} npm run build`);
 			} else {
-				if (fs.existsSync(pkg.output))
-					await _fs.rm(pkg.output, {recursive: true, force: true});
-
 				try {
 					const otherFiles = [
 						'json',
@@ -544,6 +541,11 @@ export const Phase_Compile: BuildPhase = {
 		if (pkg.type === 'sourceless' || pkg.type === PackageType_Python)
 			return;
 
+		if (fs.existsSync(pkg.output)) {
+			await _fs.rm(pkg.output, {recursive: true, force: true});
+			await _fs.mkdir(pkg.output, {recursive: true});
+		}
+
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;
 		const pathToLocalTsConfig = `${sourceFolder}/${CONST_TS_Config}`;
@@ -609,6 +611,7 @@ export const Phase_Compile: BuildPhase = {
 				}
 			}
 		}
+
 		return compileActions[sourceFolder]();
 	}
 };

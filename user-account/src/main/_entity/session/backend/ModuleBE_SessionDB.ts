@@ -19,7 +19,7 @@ import {
 	Header_SessionId,
 	MemKey_AccountId,
 	MemKey_SessionData,
-	MemKey_SessionObject,
+	MemKey_SessionObject, SessionKey_Account_BE,
 	SessionKey_Session_BE
 } from './consts';
 import * as jwt from 'jsonwebtoken';
@@ -27,6 +27,7 @@ import {ModuleBE_SecretManager} from '@nu-art/google-services/backend/modules/Mo
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {HeaderKey_SessionId} from '@nu-art/thunderstorm/shared/headers';
 import Transaction = firestore.Transaction;
+
 
 export type SessionCollectionParam = { accountId: string, deviceId: string };
 
@@ -188,6 +189,9 @@ export class ModuleBE_SessionDB_Class
 			return expiration > now;
 		},
 		canRotate: (createdAt: number, sessionData?: TS_Object) => {
+			if (SessionKey_Account_BE.get(sessionData).type === 'service')
+				return false;
+
 			const expiration = SessionKey_Session_BE.get(sessionData).expiration;
 			const renewSessionTTL = (expiration - createdAt) * this.config.rotationFactor;
 
@@ -199,12 +203,18 @@ export class ModuleBE_SessionDB_Class
 			const callerAccountIncluded = accountIds.length !== _accountIds.length;
 			if (accountIds.length > 0) {
 				const sessions = await batchActionParallel(accountIds, 10, async ids => await this.query.custom({where: {accountId: {$in: ids}}}));
-				sessions.forEach(session => session.needToRefresh = true);
+				sessions.forEach(session => {
+					if (SessionKey_Account_BE.get(this.sessionData.decodeJWT(session.sessionIdJwt)).type === 'service')
+						return;
+
+					session.needToRefresh = true;
+				});
 				await this.set.all(sessions);
 			}
 
 			if (callerAccountIncluded) {
-				await this.session.rotate(MemKey_SessionObject.get());
+				if (SessionKey_Account_BE.get().type !== 'service')
+					await this.session.rotate(MemKey_SessionObject.get());
 			}
 		},
 		delete: async (transaction?: Transaction) => {

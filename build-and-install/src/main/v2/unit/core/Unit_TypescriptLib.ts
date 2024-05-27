@@ -7,6 +7,8 @@ import {BadImplementationException} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor} from '../types';
 import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
+import {Commando} from '@nu-art/commando/core/cli';
+import {CONST_PackageJSON} from '../../../core/consts';
 
 type _Config<Config> = {
 	customTSConfig?: boolean;
@@ -17,7 +19,17 @@ type _RuntimeConfig<RTC> = {
 	path: { pkg: string; output: string }
 } & RTC;
 
-const extensionsToLint = ['.ts','.tsx'];
+const extensionsToLint = ['.ts', '.tsx'];
+const assetExtensions = [
+	'json',
+	'scss',
+	'svg',
+	'png',
+	'jpg',
+	'jpeg',
+	'rules',
+	'_ts'
+];
 
 export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {} = {},
 	C extends _Config<Config> = _Config<Config>, RTC extends _RuntimeConfig<RuntimeConfig> = _RuntimeConfig<RuntimeConfig>>
@@ -34,7 +46,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 
 	//######################### Internal Logic #########################
 
-	private async resolveTSConfig() {
+	protected async resolveTSConfig() {
 		const pathToUnitTSConfig = `${this.runtime.path.pkg}/src/main/tsconfig.json`;
 		// const pathToProjectTSConfig = '';
 
@@ -61,6 +73,41 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 		await _fs.copyFile(pathToProjectTSConfig, pathToUnitTSConfig);
 	}
 
+	protected async clearOutputDir() {
+		//Return if output dir doesn't exist
+		if (!fs.existsSync(this.runtime.path.output))
+			return;
+
+		await _fs.rm(this.runtime.path.output, {recursive: true, force: true});
+		await _fs.mkdir(this.runtime.path.output, {recursive: true});
+	}
+
+	protected async compileImpl() {
+		const pathToCompile = this.runtime.path.pkg + '/src/main';
+		const pathToTSConfig = pathToCompile + `${pathToCompile}/tsconfig.json`;
+
+		await NVM
+			.createCommando(Cli_Basic)
+			.cd(this.runtime.path.pkg)
+			.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.path.output}"`)
+			.execute();
+	}
+
+	protected async copyAssetsToOutput() {
+		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${this.runtime.path.output}" > /dev/null`;
+		await Commando
+			.create(Cli_Basic)
+			.cd(this.runtime.path.pkg + '/src/main')
+			.append(command)
+			.execute();
+	}
+
+	protected async copyPackageJSONToOutput() {
+		const targetPath = this.runtime.path.output + `/${CONST_PackageJSON}`;
+		const fileContent = JSON.stringify(this.packageJson.dist, null, 2);
+		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
+	}
+
 	//######################### Phase Implementations #########################
 
 	async preCompile() {
@@ -77,6 +124,10 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	async compile() {
 		this.setStatus('Compile');
 		await this.resolveTSConfig();
+		await this.clearOutputDir();
+		await this.copyPackageJSONToOutput();
+		await this.compileImpl();
+		await this.copyAssetsToOutput();
 	}
 
 	async purge() {
@@ -108,7 +159,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	async lint() {
 		const pathToProjectESLint = MemKey_RunnerParams.get()[RunnerParamKey_ConfigPath] + '/.eslintrc.js';
 		const pathToLint = this.runtime.path.pkg + 'src/main';
-		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ')
+		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ');
 
 		await NVM.createCommando()
 			.append(`eslint --config ${pathToProjectESLint} ${extensions} ${pathToLint}`)

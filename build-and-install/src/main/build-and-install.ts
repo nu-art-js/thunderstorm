@@ -20,9 +20,11 @@ runner
 // const projectManager = new ProjectManager();
 //
 // projectManager.registerPhase(Phase_PrepareCompile);
-// projectManager.registerPhase(Phase_PreCompile);
-// projectManager.registerPhase(Phase_Compile);
 // projectManager.registerPhase(Phase_CompileWatch);
+
+// projectManager.registerPhase(Phase_Compile);
+
+
 // projectManager.registerPhase(Phase_Launch);
 // projectManager.registerPhase(Phase_DeployFrontend);
 // projectManager.registerPhase(Phase_DeployBackend);
