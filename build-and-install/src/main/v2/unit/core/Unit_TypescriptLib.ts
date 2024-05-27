@@ -84,7 +84,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 
 	protected async compileImpl() {
 		const pathToCompile = `${this.runtime.path.pkg}/src/main`;
-		const pathToTSConfig = `${pathToCompile}${pathToCompile}/tsconfig.json`;
+		const pathToTSConfig = `${pathToCompile}/tsconfig.json`;
 
 		await NVM
 			.createCommando(Cli_Basic)
@@ -98,6 +98,9 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 		await Commando
 			.create(Cli_Basic)
 			.cd(`${this.runtime.path.pkg}/src/main`)
+			.setStdErrorValidator(stderr => {
+				return !stderr.match(/\d+\sblock/);
+			})
 			.append(command)
 			.execute();
 	}

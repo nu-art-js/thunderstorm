@@ -48,7 +48,7 @@ const terminatingPhases: Phase<string>[] = [
 	phase_PrintDependencyTree,
 	phase_CheckCyclicImports,
 	phase_PrintEnv,
-	phase_Debug
+	// phase_Debug
 ];
 
 //######################### Build Phases #########################
