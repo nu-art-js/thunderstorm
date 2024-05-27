@@ -87,7 +87,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//Webpack bundles files into the output automatically!
-		const targetPath = this.runtime.path.pkg + `/${CONST_VersionApp}`;
+		const targetPath = `${this.runtime.path.pkg}/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding:'utf-8'});
@@ -106,7 +106,6 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		await this.resolveTSConfig();
 		await this.clearOutputDir();
 		await this.createAppVersionFile();
-		await this.copyPackageJSONToOutput();
 		await this.compileImpl();
 	}
 }

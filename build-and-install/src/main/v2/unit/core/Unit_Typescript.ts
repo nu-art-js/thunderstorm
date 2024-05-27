@@ -10,10 +10,10 @@ import {Phase_CopyPackageJSON} from '../../phase';
 import {UnitPhaseImplementor} from '../types';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 
+const PackageJsonTargetKey_Template = 'template';
 const PackageJsonTargetKey_Root = 'root';
 const PackageJsonTargetKey_Dist = 'dist';
-const PackageJsonTargetKey_Dependency = 'dependency';
-const PackageJsonTargetKeys = [PackageJsonTargetKey_Root, PackageJsonTargetKey_Dist, PackageJsonTargetKey_Dependency] as const;
+const PackageJsonTargetKeys = [PackageJsonTargetKey_Template,PackageJsonTargetKey_Root, PackageJsonTargetKey_Dist] as const;
 type PackageJsonTargetKey = typeof PackageJsonTargetKeys[number];
 
 type _Config<C> = {
@@ -63,12 +63,12 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 	 */
 	private convertTemplatePackageJSON(targetKey: PackageJsonTargetKey, template: PackageJson) {
 		switch (targetKey) {
+			case PackageJsonTargetKey_Template:
+				return template;
 			case PackageJsonTargetKey_Root:
 				return this.convertPJForRoot(template);
 			case PackageJsonTargetKey_Dist:
 				return this.convertPJForDist(template);
-			case PackageJsonTargetKey_Dependency:
-				return this.convertPJForDependency(template);
 			default:
 				throw new ImplementationMissingException(`No implementation for targetKey ${targetKey}`);
 		}
@@ -100,20 +100,6 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 	 * @private
 	 */
 	private convertPJForDist(template: PackageJson) {
-		//Get the package params for replacing in the template package json
-		const params = MemKey_ProjectConfig.get().params;
-
-		//Convert template to actual package.json
-		return convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ?? params[value]);
-	}
-
-	/**
-	 * Converts a template __package.json file into a usable package.json for the unit
-	 * as it will be in a .dependencies of a deployable unit
-	 * @param template
-	 * @private
-	 */
-	private convertPJForDependency(template: PackageJson) {
 		//Get the package params for replacing in the template package json
 		const params = MemKey_ProjectConfig.get().params;
 

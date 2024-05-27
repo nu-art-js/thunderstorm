@@ -83,8 +83,8 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	}
 
 	protected async compileImpl() {
-		const pathToCompile = this.runtime.path.pkg + '/src/main';
-		const pathToTSConfig = pathToCompile + `${pathToCompile}/tsconfig.json`;
+		const pathToCompile = `${this.runtime.path.pkg}/src/main`;
+		const pathToTSConfig = `${pathToCompile}${pathToCompile}/tsconfig.json`;
 
 		await NVM
 			.createCommando(Cli_Basic)
@@ -97,13 +97,13 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${this.runtime.path.output}" > /dev/null`;
 		await Commando
 			.create(Cli_Basic)
-			.cd(this.runtime.path.pkg + '/src/main')
+			.cd(`${this.runtime.path.pkg}/src/main`)
 			.append(command)
 			.execute();
 	}
 
 	protected async copyPackageJSONToOutput() {
-		const targetPath = this.runtime.path.output + `/${CONST_PackageJSON}`;
+		const targetPath = `${this.runtime.path.output}/${CONST_PackageJSON}`;
 		const fileContent = JSON.stringify(this.packageJson.dist, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
@@ -125,9 +125,9 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 		this.setStatus('Compile');
 		await this.resolveTSConfig();
 		await this.clearOutputDir();
-		await this.copyPackageJSONToOutput();
 		await this.compileImpl();
 		await this.copyAssetsToOutput();
+		await this.copyPackageJSONToOutput();
 	}
 
 	async purge() {
