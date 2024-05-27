@@ -35,14 +35,36 @@ export const phase_PrintEnv: Phase<'printEnv'> = {
 	filter: () => RuntimeParams.printEnv,
 };
 
+export type Phase_Debug = typeof phase_Debug;
+export const phase_Debug: Phase<'debug'> = {
+	name:'Debug',
+	method:'debug',
+	terminateAfterPhase: true,
+	filter: () => RuntimeParams.debug,
+};
+
 const terminatingPhases: Phase<string>[] = [
 	phase_Help,
 	phase_PrintDependencyTree,
 	phase_CheckCyclicImports,
-	phase_PrintEnv
+	phase_PrintEnv,
+	phase_Debug
 ];
 
 //######################### Build Phases #########################
+
+export type Phase_Purge = typeof phase_Purge;
+export const phase_Purge: Phase<'purge'> = {
+	name:'Purge',
+	method:'purge',
+	filter: () => RuntimeParams.purge,
+}
+
+export type Phase_CopyPackageJSON = typeof phase_CopyPackageJSON;
+export const phase_CopyPackageJSON: Phase<'copyPackageJson'> = {
+	name: 'Copy Package JSON',
+	method: 'copyPackageJson',
+};
 
 export type Phase_Install = typeof phase_Install;
 export const phase_Install: Phase<'install'> = {
@@ -51,11 +73,19 @@ export const phase_Install: Phase<'install'> = {
 	filter: () => RuntimeParams.install || RuntimeParams.installPackages || RuntimeParams.installGlobals,
 };
 
-export type Phase_CopyPackageJSON = typeof phase_CopyPackageJSON;
-export const phase_CopyPackageJSON: Phase<'copyPackageJson'> = {
-	name: 'Copy Package JSON',
-	method: 'copyPackageJson',
+export type Phase_ResolveConfigs = typeof phase_ResolveConfigs;
+export const phase_ResolveConfigs: Phase<'resolveConfigs'> = {
+	name: 'Resolve Configs',
+	method: 'resolveConfigs',
+	//TODO: Should have a filter
 };
+
+export type Phase_Lint = typeof phase_Lint;
+export const phase_Lint: Phase<'lint'> = {
+	name:'Lint',
+	method:'lint',
+	filter: () => RuntimeParams.lint,
+}
 
 export type Phase_PreCompile = typeof phase_PreCompile;
 export const phase_PreCompile: Phase<'preCompile'> = {
@@ -71,25 +101,12 @@ export const phase_Compile: Phase<'compile'> = {
 	filter: () => !RuntimeParams.noBuild,
 };
 
-export type Phase_ResolveConfigs = typeof phase_ResolveConfigs;
-export const phase_ResolveConfigs: Phase<'resolveConfigs'> = {
-	name: 'Resolve Configs',
-	method: 'resolveConfigs',
-	//TODO: Should have a filter
-};
-
-export type Phase_Purge = typeof phase_Purge;
-export const phase_Purge: Phase<'purge'> = {
-	name:'Purge',
-	method:'purge',
-	filter: () => RuntimeParams.purge,
-}
-
 const buildPhases: Phase<string>[] = [
 	phase_Purge,
 	phase_CopyPackageJSON,
 	phase_Install,
 	phase_ResolveConfigs,
+	phase_Lint,
 	phase_PreCompile,
 	phase_Compile,
 ];

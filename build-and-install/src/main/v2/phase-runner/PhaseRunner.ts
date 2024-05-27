@@ -13,7 +13,7 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
-import {Phase, Phase_Help, Phase_PrintEnv} from '../phase';
+import {Phase, Phase_Debug, Phase_Help, Phase_PrintEnv} from '../phase';
 import {Unit, UnitPhaseImplementor} from '../unit/types';
 import {BaseUnit, Unit_TypescriptProject} from '../unit/core';
 import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
@@ -34,7 +34,7 @@ const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
 
 export class PhaseRunner<P extends Phase<string>[]>
 	extends BaseUnit
-	implements UnitPhaseImplementor<[Phase_Help, Phase_PrintEnv]> {
+	implements UnitPhaseImplementor<[Phase_Help, Phase_PrintEnv, Phase_Debug]> {
 
 	private readonly phases: P;
 	private units: BaseUnit[];
@@ -215,5 +215,10 @@ export class PhaseRunner<P extends Phase<string>[]>
 			.append('echo "node version:"; node -v')
 			.append('echo "base version:"; bash --version')
 			.execute();
+	}
+
+	async debug () {
+		const configs = this.units.map(unit => unit.config);
+		this.logInfo(JSON.stringify(configs, null, 2));
 	}
 }
