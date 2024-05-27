@@ -88,6 +88,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 
 		await NVM
 			.createCommando(Cli_Basic)
+			.setUID(this.config.key)
 			.cd(this.runtime.path.pkg)
 			.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.path.output}"`)
 			.execute();

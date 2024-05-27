@@ -36,7 +36,7 @@ export const Unit_Commando = new Unit_TypescriptLib({
 export const Unit_BAI = new Unit_TypescriptLib({
 	key: 'build-and-install',
 	label: 'TS/build-and-install',
-	pathToPackage: '_thunderstorm/commando',
+	pathToPackage: '_thunderstorm/build-and-install',
 	output: 'dist',
 	filter: () => RuntimeParams.runWithThunderstorm,
 });

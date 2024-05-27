@@ -59,4 +59,8 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 	public getStatus() {
 		return this.unitStatus;
 	}
+
+	public async kill () {
+		return;
+	}
 }

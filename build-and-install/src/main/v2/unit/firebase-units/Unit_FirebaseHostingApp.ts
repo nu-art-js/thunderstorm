@@ -1,15 +1,16 @@
 import {Unit_TypescriptLib} from '../core';
 import {FirebasePackageConfig} from '../../../core/types';
 import {UnitPhaseImplementor} from '../types';
-import {Phase_ResolveConfigs} from '../../phase';
+import {Phase_Launch, Phase_ResolveConfigs} from '../../phase';
 import {RuntimeParams} from '../../../core/params/params';
-import {ImplementationMissingException} from '@nu-art/ts-common/core/exceptions/exceptions';
+import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
+import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '@nu-art/commando/core/cli';
 
 type _Config<Config> = {
 	firebaseConfig: FirebasePackageConfig;
@@ -20,9 +21,42 @@ const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_ResolveConfigs]> {
+	implements UnitPhaseImplementor<[Phase_ResolveConfigs,Phase_Launch]> {
 
-	//######################### Internal Logic #########################
+	private readonly APP_PID_LOG = '_APP_PID_';
+	private readonly APP_KILL_LOG = '_APP_KILLED_';
+
+	private launchCommando!: CommandoInteractive & Commando & Cli_Basic;
+	private listeners!: {
+		pid: CommandoCLIKeyValueListener;
+		kill: CommandoCLIListener;
+	};
+
+	//######################### Phase Implementations #########################
+
+	async resolveConfigs() {
+		await this.resolveHostingRC();
+		await this.resolveHostingJSON();
+		await this.resolveHostingRuntimeConfig();
+	}
+
+	async compile() {
+		this.setStatus('Compile');
+		await this.resolveTSConfig();
+		await this.clearOutputDir();
+		await this.createAppVersionFile();
+		await this.compileImpl();
+	}
+
+	async launch() {
+		this.setStatus('Launching')
+		await this.initLaunch();
+		await this.initLaunchListeners();
+		await this.clearPorts();
+		await this.runApp();
+	}
+
+	//######################### ResolveConfig Logic #########################
 
 	private getEnvConfig() {
 		const env = RuntimeParams.environment;
@@ -76,6 +110,8 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
+	//######################### Compile Logic #########################
+
 	protected async compileImpl() {
 		await NVM
 			.createCommando(Cli_Basic)
@@ -93,19 +129,55 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		await _fs.writeFile(targetPath, fileContent, {encoding:'utf-8'});
 	}
 
-	//######################### Phase Implementations #########################
+	//######################### Launch Logic #########################
 
-	async resolveConfigs() {
-		await this.resolveHostingRC();
-		await this.resolveHostingJSON();
-		await this.resolveHostingRuntimeConfig();
+	private async initLaunch () {
+		if(!this.config.firebaseConfig.hostingPort)
+			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
+
+		this.launchCommando = NVM.createInteractiveCommando(Cli_Basic)
+			.setUID(this.config.key)
+			.cd(this.runtime.path.pkg);
 	}
 
-	async compile() {
-		this.setStatus('Compile');
-		await this.resolveTSConfig();
-		await this.clearOutputDir();
-		await this.createAppVersionFile();
-		await this.compileImpl();
+	private async initLaunchListeners () {
+		this.listeners = {
+			pid: new CommandoCLIKeyValueListener(new RegExp(`${this.APP_PID_LOG}=(\\d+)`)),
+			kill: new CommandoCLIListener(() => this.launchCommando.close(), this.APP_KILL_LOG),
+		};
+		this.listeners.pid.listen(this.launchCommando);
+		this.listeners.kill.listen(this.launchCommando);
+	}
+
+	private getPID() {
+		const pid = Number(this.listeners.pid.getValue());
+		return isNaN(pid) ? undefined : pid;
+	}
+
+	private async clearPorts() {
+		await this.launchCommando
+			.debug()
+			.append(`array=($(lsof -ti:${[this.config.firebaseConfig.hostingPort].join(',')}))`)
+			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
+			.append('echo ')
+			.execute();
+	}
+
+	private async runApp () {
+		await this.launchCommando
+			.append(`npm run start &`)
+			.append('pid=$!')
+			.append(`echo "${this.APP_PID_LOG}=\${pid}"`)
+			.append(`wait \$pid`)
+			.append(`echo "${this.APP_KILL_LOG} \${pid}"`)
+			.execute();
+	}
+
+	public async kill() {
+		if(!this.launchCommando)
+			return;
+
+		const appPid = this.getPID();
+		await this.launchCommando?.gracefullyKill(appPid);
 	}
 }

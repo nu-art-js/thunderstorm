@@ -101,6 +101,13 @@ export const phase_Compile: Phase<'compile'> = {
 	filter: () => !RuntimeParams.noBuild,
 };
 
+export type Phase_Launch = typeof phase_Launch;
+export const phase_Launch: Phase<'launch'> = {
+	name:'Launch',
+	method: 'launch',
+	filter: () => !!RuntimeParams.launch,
+}
+
 const buildPhases: Phase<string>[] = [
 	phase_Purge,
 	phase_CopyPackageJSON,
@@ -109,6 +116,7 @@ const buildPhases: Phase<string>[] = [
 	phase_Lint,
 	phase_PreCompile,
 	phase_Compile,
+	phase_Launch
 ];
 
 export const allPhases = [...terminatingPhases, ...buildPhases];

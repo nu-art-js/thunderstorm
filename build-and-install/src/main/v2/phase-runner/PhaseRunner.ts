@@ -38,26 +38,34 @@ export class PhaseRunner<P extends Phase<string>[]>
 
 	private readonly phases: P;
 	private units: BaseUnit[];
-	private projectConfig!:ProjectConfigV2;
+	private projectConfig!: ProjectConfigV2;
 
 	constructor(phases: P) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
 		this.phases = phases;
-		this.units = [this,...allTSUnits];
-		this.showAllLogs()
+		this.units = [this, ...allTSUnits];
+		this.showAllLogs();
 		this.setMinLevel(LogLevel.Verbose);
 		this.logDebug('Runtime params:', RuntimeParams);
 	}
 
 	protected async init() {
-		if(!this.config)
+		if (!this.config)
 			throw new BadImplementationException('Trying to run PhaseRunner with no project config, did you forget to call .registerProject() ?');
+
+		//Listen on kill signal
+		process.on('SIGINT', async () => {
+			this.logInfo('Kill command received, killing units!');
+			await this.killRunner();
+			this.logInfo('Killed');
+			process.exit(0);
+		});
 
 		const runnerParams: RunnerParams = {
 			rootPath: process.cwd(),
 			configPath: process.cwd() + '/.config',
 		};
-		this.logDebug('\nSetting RunnerParams:',runnerParams);
+		this.logDebug('\nSetting RunnerParams:', runnerParams);
 		MemKey_RunnerParams.set(runnerParams);
 
 		const projectParams = this.prepareProjectParams();
@@ -65,13 +73,12 @@ export class PhaseRunner<P extends Phase<string>[]>
 			...this.projectConfig,
 			units: this.units,
 			params: projectParams,
-		})
+		});
 
-		this.logDebug('\nSetting Default Files',Default_Files)
+		this.logDebug('\nSetting Default Files', Default_Files);
 		MemKey_DefaultFiles.set(Default_Files);
 
-		this.logInfoBold('\nInit Done! Unit order:',this.units.map(unit=>unit.config.label))
-
+		this.logInfoBold('\nInit Done! Unit order:', this.units.map(unit => unit.config.label));
 	}
 
 	//######################### Internal Logic #########################
@@ -93,7 +100,7 @@ export class PhaseRunner<P extends Phase<string>[]>
 		}
 	}
 
-	private prepareProjectParams ():StringMap {
+	private prepareProjectParams(): StringMap {
 		const params = this.projectConfig.params ?? {};
 		params[CONST_ThunderstormVersionKey] = this.projectConfig.thunderstormVersion;
 		params[CONST_ThunderstormDependencyKey] = this.projectConfig.thunderstormVersion;
@@ -108,22 +115,22 @@ export class PhaseRunner<P extends Phase<string>[]>
 		this.units.push(...asArray(units));
 		sortArray(this.units, unit => {
 			//Phase runner is first
-			if(unit === this)
-				return 0
+			if (unit === this)
+				return 0;
 
 			//Second priority for project units
-			if(unit instanceof Unit_TypescriptProject)
+			if (unit instanceof Unit_TypescriptProject)
 				return 1;
 
 			//TS units after project units, but before the rest
 			return allTSUnits.includes(unit) ? 2 : 3;
-		})
+		});
 	}
 
 	private getUnitsForPhase(phase: P[number]) {
 		const filteredUnits = this.units.filter(unit => !exists(unit.config.filter) || unit.config.filter());
 		return filteredUnits.filter(unit => {
-			return exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>])
+			return exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]);
 		});
 	}
 
@@ -152,7 +159,7 @@ export class PhaseRunner<P extends Phase<string>[]>
 		const units = this.getUnitsForPhase(phase);
 		if (!units.length) {
 			this.logDebug(`Will not execute phase: ${phase.name}, no units to execute`);
-			return false
+			return false;
 		}
 
 		this.setStatus(`Executing Phase: ${phase.name}`);
@@ -169,10 +176,10 @@ export class PhaseRunner<P extends Phase<string>[]>
 		return new MemStorage().init(async () => {
 			await this.initUnits();
 			await this.executeImpl();
-		})
+		});
 	}
 
-	public registerProject (pathToConfig: string) {
+	public registerProject(pathToConfig: string) {
 		const fullPathToConfig = convertToFullPath(pathToConfig);
 
 		if (!fs.existsSync(fullPathToConfig))
@@ -183,11 +190,15 @@ export class PhaseRunner<P extends Phase<string>[]>
 		return this;
 	}
 
+	public async killRunner() {
+		await Promise.all(this.units.map(unit => unit.kill()));
+	}
+
 	//######################### Phase Implementation #########################
 
-	async printHelp () {
-		this.logInfo("Build and install parameters:")
-		const noGroupConst = 'No Group'
+	async printHelp() {
+		this.logInfo('Build and install parameters:');
+		const noGroupConst = 'No Group';
 
 		//Resolve all params by group
 		const paramsByGroup: TypedMap<BaseCliParam<string, any>[]> = reduceToMap(AllBaiParams, param => param.group ?? noGroupConst, (item, index, mapper) => {
@@ -208,7 +219,7 @@ export class PhaseRunner<P extends Phase<string>[]>
 		});
 	}
 
-	async printEnv () {
+	async printEnv() {
 		await NVM.createCommando(Cli_Basic)
 			.append('npm -g list typescript eslint firebase-tools sort-package-json --depth=0')
 			.append('echo "npm version:"; npm -v')
@@ -217,7 +228,7 @@ export class PhaseRunner<P extends Phase<string>[]>
 			.execute();
 	}
 
-	async debug () {
+	async debug() {
 		const configs = this.units.map(unit => unit.config);
 		this.logInfo(JSON.stringify(configs, null, 2));
 	}
