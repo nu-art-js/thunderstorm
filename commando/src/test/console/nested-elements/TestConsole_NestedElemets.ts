@@ -1,6 +1,6 @@
-import {ConsoleScreen} from '../../main/console/ConsoleScreen';
-import {ConsoleContainer} from '../../main/console/ConsoleContainer';
-import {BlessedWidget, BlessedWidgetOptions} from '../../main/console/types';
+import {ConsoleContainer} from '../../../main/console/ConsoleContainer';
+import {BlessedWidget, BlessedWidgetOptions} from '../../../main/console/types';
+import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
 
 
 type BoxState = { options: string[], title: string };
@@ -105,9 +105,9 @@ export class Application
 	private formContainer!: FormContainer;
 
 	createContent() {
-		this.addContainer(this.boxContainer = new BoxContainer({top: '0%', left: '0%', width: '100%', height: '33%', label: 'Top Box'}));
-		this.addContainer(this.logContainer = new LogContainer({top: '33%', left: '0%', width: '100%', height: '33%', label: 'Log'}));
-		this.addContainer(this.formContainer = new FormContainer({top: '66%', left: '0%', width: '100%', height: '33%', label: 'Form'}));
+		// this.addContainer(this.boxContainer = new BoxContainer({top: '0%', left: '0%', width: '100%', height: '33%', label: 'Top Box'}));
+		// this.addContainer(this.logContainer = new LogContainer({top: '33%', left: '0%', width: '100%', height: '33%', label: 'Log'}));
+		// this.addContainer(this.formContainer = new FormContainer({top: '66%', left: '0%', width: '100%', height: '33%', label: 'Form'}));
 	}
 
 	propagateState() {

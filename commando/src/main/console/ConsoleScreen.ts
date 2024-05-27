@@ -1,5 +1,6 @@
 import {ConsoleContainer} from './ConsoleContainer';
-import {Widgets} from 'blessed';
+import {BlessedWidgetOptions} from './types';
+
 
 type ScreenKeyBinding = {
 	keys: string[];
@@ -19,7 +20,7 @@ export abstract class ConsoleScreen<State extends object>
 	 * @param {Widgets.IScreenOptions} [props] - The properties to apply to the screen widget.
 	 * @param {ScreenKeyBinding[]} [keyBinding] - An array of key bindings for the screen widget.
 	 */
-	constructor(props?: Widgets.IScreenOptions, keyBinding: ScreenKeyBinding[] = []) {
+	constructor(props?: BlessedWidgetOptions['screen'], keyBinding: ScreenKeyBinding[] = []) {
 		super('screen', props, keyBinding);
 	}
 
