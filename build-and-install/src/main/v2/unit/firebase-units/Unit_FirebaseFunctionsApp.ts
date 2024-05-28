@@ -275,7 +275,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 				pid: new CommandoCLIKeyValueListener(new RegExp(`${this.EMULATOR_PID_LOG}=(\\d+)`)),
 				kill: new CommandoCLIListener(() => this.launchCommandos.emulator.close(), this.EMULATOR_KILL_LOG),
 			},
-			onReady: new CommandoCLIListener(() => this.setStatus('Launch Complete'), new RegExp('.*Emulator Hub running.*')),
+			onReady: new CommandoCLIListener(() => this.onLaunched(), new RegExp('.*Emulator Hub running.*')),
 		};
 		this.listeners.proxy.kill.listen(this.launchCommandos.proxy);
 		this.listeners.proxy.pid.listen(this.launchCommandos.proxy);
@@ -312,6 +312,10 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 			.append(`wait \$pid`)
 			.append(`echo "${this.EMULATOR_KILL_LOG} \${pid}"`)
 			.execute();
+	}
+
+	private onLaunched () {
+		this.setStatus('Launch Complete');
 	}
 
 	private getPID(listener: CommandoCLIKeyValueListener) {

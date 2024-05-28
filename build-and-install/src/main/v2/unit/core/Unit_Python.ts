@@ -18,7 +18,7 @@ export class Unit_Python<Config extends {} = {}, RuntimeConfig extends {} = {},
 	extends BaseUnit<C, RTC>
 	implements UnitPhaseImplementor<[Phase_Install]> {
 
-	private commando!: CommandoInteractive & Commando & Cli_Basic;
+	protected commando!: CommandoInteractive & Commando & Cli_Basic;
 
 	constructor(config: Unit_Python<C,RTC>['config']) {
 		super(config);
@@ -30,6 +30,7 @@ export class Unit_Python<Config extends {} = {}, RuntimeConfig extends {} = {},
 		this.runtime.path = {
 			pkg: convertToFullPath(this.config.pathToPackage),
 		}
+		this.logWarning(`Python Path ${this.runtime.path.pkg}`);
 		await this.initCommando();
 	}
 
