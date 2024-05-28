@@ -37,8 +37,8 @@ export const phase_PrintEnv: Phase<'printEnv'> = {
 
 export type Phase_Debug = typeof phase_Debug;
 export const phase_Debug: Phase<'debug'> = {
-	name:'Debug',
-	method:'debug',
+	name: 'Debug',
+	method: 'debug',
 	terminateAfterPhase: true,
 	filter: () => RuntimeParams.debug,
 };
@@ -55,10 +55,10 @@ const terminatingPhases: Phase<string>[] = [
 
 export type Phase_Purge = typeof phase_Purge;
 export const phase_Purge: Phase<'purge'> = {
-	name:'Purge',
-	method:'purge',
+	name: 'Purge',
+	method: 'purge',
 	filter: () => RuntimeParams.purge,
-}
+};
 
 export type Phase_CopyPackageJSON = typeof phase_CopyPackageJSON;
 export const phase_CopyPackageJSON: Phase<'copyPackageJson'> = {
@@ -82,10 +82,10 @@ export const phase_ResolveConfigs: Phase<'resolveConfigs'> = {
 
 export type Phase_Lint = typeof phase_Lint;
 export const phase_Lint: Phase<'lint'> = {
-	name:'Lint',
-	method:'lint',
+	name: 'Lint',
+	method: 'lint',
 	filter: () => RuntimeParams.lint,
-}
+};
 
 export type Phase_PreCompile = typeof phase_PreCompile;
 export const phase_PreCompile: Phase<'preCompile'> = {
@@ -103,10 +103,24 @@ export const phase_Compile: Phase<'compile'> = {
 
 export type Phase_Launch = typeof phase_Launch;
 export const phase_Launch: Phase<'launch'> = {
-	name:'Launch',
+	name: 'Launch',
 	method: 'launch',
 	filter: () => !!RuntimeParams.launch,
-}
+};
+
+export type Phase_DeployFrontend = typeof phase_DeployFrontend;
+export const phase_DeployFrontend: Phase<'deployFrontend'> = {
+	name: 'Deploy Frontend',
+	method: 'deployFrontend',
+	filter: () => RuntimeParams.deployFrontend,
+};
+
+export type Phase_DeployBackend = typeof phase_DeployBackend;
+export const phase_DeployBackend: Phase<'deployBackend'> = {
+	name: 'Deploy Backend',
+	method: 'deployBackend',
+	filter: () => RuntimeParams.deployBackend,
+};
 
 const buildPhases: Phase<string>[] = [
 	phase_Purge,
@@ -116,7 +130,9 @@ const buildPhases: Phase<string>[] = [
 	phase_Lint,
 	phase_PreCompile,
 	phase_Compile,
-	phase_Launch
+	phase_Launch,
+	phase_DeployFrontend,
+	phase_DeployBackend,
 ];
 
 export const allPhases = [...terminatingPhases, ...buildPhases];

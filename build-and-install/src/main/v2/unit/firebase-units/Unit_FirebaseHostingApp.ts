@@ -1,7 +1,7 @@
 import {Unit_TypescriptLib} from '../core';
 import {FirebasePackageConfig} from '../../../core/types';
 import {UnitPhaseImplementor} from '../types';
-import {Phase_Launch, Phase_ResolveConfigs} from '../../phase';
+import {Phase_DeployFrontend, Phase_Launch, Phase_ResolveConfigs} from '../../phase';
 import {RuntimeParams} from '../../../core/params/params';
 import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
@@ -21,7 +21,7 @@ const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_ResolveConfigs,Phase_Launch]> {
+	implements UnitPhaseImplementor<[Phase_ResolveConfigs,Phase_Launch,Phase_DeployFrontend]> {
 
 	private readonly APP_PID_LOG = '_APP_PID_';
 	private readonly APP_KILL_LOG = '_APP_KILLED_';
@@ -54,6 +54,10 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		await this.initLaunchListeners();
 		await this.clearPorts();
 		await this.runApp();
+	}
+
+	async deployFrontend () {
+		await this.deployImpl();
 	}
 
 	//######################### ResolveConfig Logic #########################
@@ -179,5 +183,14 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 
 		const appPid = this.getPID();
 		await this.launchCommando?.gracefullyKill(appPid);
+	}
+
+	//######################### Deploy Logic #########################
+
+	private async deployImpl () {
+		await NVM.createCommando(Cli_Basic)
+			.cd(this.runtime.path.pkg)
+			.append(`firebase --debug deploy --only hosting`)
+			.execute();
 	}
 }
