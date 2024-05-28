@@ -1,6 +1,6 @@
 import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, BeLogged, LogClient_MemBuffer, Logger, LogLevel} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey} from '../../phase-runner/RunnerParams';
-import {PhaseRunnerDispatcher, PhaseRunnerEventType_UnitStatusChange} from '../../phase-runner/PhaseRunnerDispatcher';
+import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../phase-runner/PhaseRunnerDispatcher';
 
 type Config<C> = {
 	key: string;
@@ -27,7 +27,8 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 	}
 
 	protected async init() {
-		//Inheritor classes should define their own init
+		dispatcher_PhaseChange.addListener(this);
+		dispatcher_UnitStatusChange.addListener(this);
 		this.setStatus('Initiated');
 	}
 
@@ -54,10 +55,7 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 
 	protected setStatus(status?: string) {
 		this.unitStatus = status;
-		PhaseRunnerDispatcher.fireEvent({
-			type: PhaseRunnerEventType_UnitStatusChange,
-			data: this,
-		});
+		dispatcher_UnitStatusChange.dispatch(this);
 	}
 
 	//######################### Public Functions #########################

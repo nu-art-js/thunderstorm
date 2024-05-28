@@ -28,7 +28,7 @@ import {allTSUnits} from '../unit/thunderstorm';
 import {Default_Files, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes} from '../../defaults/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
-import {PhaseRunnerDispatcher, PhaseRunnerEventType_PhaseChange} from './PhaseRunnerDispatcher';
+import {dispatcher_PhaseChange} from './PhaseRunnerDispatcher';
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_DEPENDENCY_VERSION';
@@ -176,7 +176,7 @@ export class PhaseRunner<P extends Phase<string>[]>
 		}
 
 		this.logDebug(`Executing phase: ${phase.name} for ${units.length} units`);
-		PhaseRunnerDispatcher.fireEvent({type: PhaseRunnerEventType_PhaseChange, data: phase});
+		dispatcher_PhaseChange.dispatch(phase);
 		for (const unit of units) {
 			await (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]();
 		}
