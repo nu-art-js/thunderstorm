@@ -51,6 +51,7 @@ export class StorageWrapperBE
 	}
 
 	async getOrCreateBucket(bucketName?: string): Promise<BucketWrapper> {
+		const originBucketName = bucketName;
 		const gcpBucketPrefix = 'gs://';
 		bucketName ??= `${gcpBucketPrefix}${process.env.GCLOUD_PROJECT}.appspot.com`;
 
@@ -60,7 +61,9 @@ export class StorageWrapperBE
 		let bucket = this.storage.bucket(bucketName);
 		if (!this.isEmulator())
 			bucket = (await bucket.get({autoCreate: true}))[0];
-		this.logWarningBold(`Bucket name: ${bucketName}`);
+
+		this.logWarningBold(`Creating bucket name: ${bucketName},\norigin bucket name: ${originBucketName}\nactual bucket name: ${bucket.name}`);
+
 		// @ts-ignore
 		return new BucketWrapper(bucketName, bucket, this);
 	}
