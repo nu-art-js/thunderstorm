@@ -247,7 +247,7 @@ export const BaiParam_NoGit: BaseCliParam<'noGit', boolean> = {
 };
 
 export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
-	keys: ['--debug'],
+	keys: ['--debug', '-d'],
 	keyName: 'debug',
 	group: 'Other',
 	type: 'boolean',
