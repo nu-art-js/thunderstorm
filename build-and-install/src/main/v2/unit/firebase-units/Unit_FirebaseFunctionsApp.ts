@@ -1,6 +1,6 @@
 import {Unit_TypescriptLib} from '../core';
 import {UnitPhaseImplementor} from '../types';
-import {Phase_Launch, Phase_ResolveConfigs} from '../../phase';
+import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../phase';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
 import {promises as _fs} from 'fs';
 import {RuntimeParams} from '../../../core/params/params';
@@ -34,7 +34,7 @@ const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch]> {
+	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]> {
 
 	static staggerCount: number = 0;
 
@@ -71,13 +71,18 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	}
 
 	async launch() {
-		this.setStatus('Launching')
+		this.setStatus('Launching');
 		await sleep(2 * Second * Unit_FirebaseFunctionsApp.staggerCount++);
 		await this.initLaunch();
 		await this.initLaunchListeners();
 		await this.clearPorts();
 		await this.runProxy();
 		await this.runEmulator();
+	}
+
+	async deployBackend () {
+		await this.printFiles();
+		await this.deployImpl();
 	}
 
 	//######################### ResolveConfig Logic #########################
@@ -258,7 +263,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	//######################### Launch Logic #########################
 
-	private async initLaunch () {
+	private async initLaunch() {
 		this.launchCommandos = {
 			emulator: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.path.pkg),
 			proxy: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.path.pkg),
@@ -314,7 +319,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 			.execute();
 	}
 
-	private onLaunched () {
+	private onLaunched() {
 		this.setStatus('Launch Complete');
 	}
 
@@ -324,12 +329,30 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	}
 
 	public async kill() {
-		if(!this.launchCommandos)
+		if (!this.launchCommandos)
 			return;
 
 		const emulatorPid = this.getPID(this.listeners.emulator.pid);
 		const proxyPid = this.getPID(this.listeners.proxy.pid);
 		await this.launchCommandos.emulator.gracefullyKill(emulatorPid);
 		await this.launchCommandos.proxy.gracefullyKill(proxyPid);
+	}
+
+	//######################### Deploy Logic #########################
+
+	private async printFiles () {
+		await NVM.createCommando(Cli_Basic)
+			.cd(this.runtime.path.output)
+			.ls()
+			.cat('package.json')
+			.cat('index.js')
+			.execute();
+	}
+
+	private async deployImpl () {
+		await NVM.createCommando(Cli_Basic)
+			.cd(this.runtime.path.pkg)
+			.append(`firebase --debug deploy --only functions --force`)
+			.execute();
 	}
 }
