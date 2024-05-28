@@ -3,10 +3,12 @@ import {
 	asArray,
 	BadImplementationException,
 	BeLogged,
+	deepClone,
 	exists,
 	ImplementationMissingException,
 	LogClient_Terminal,
 	LogLevel,
+	merge,
 	reduceToMap,
 	sortArray,
 	StringMap,
@@ -23,7 +25,7 @@ import fs from 'fs';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
-import {Default_Files, MemKey_DefaultFiles} from '../../defaults/consts';
+import {Default_Files, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes} from '../../defaults/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {PhaseRunnerDispatcher, PhaseRunnerEventType_PhaseChange} from './PhaseRunnerDispatcher';
@@ -62,6 +64,7 @@ export class PhaseRunner<P extends Phase<string>[]>
 			process.exit(0);
 		});
 
+		//Set runner params
 		const runnerParams: RunnerParams = {
 			rootPath: process.cwd(),
 			configPath: process.cwd() + '/.config',
@@ -69,6 +72,7 @@ export class PhaseRunner<P extends Phase<string>[]>
 		this.logDebug('\nSetting RunnerParams:', runnerParams);
 		MemKey_RunnerParams.set(runnerParams);
 
+		//Set Project Params
 		const projectParams = this.prepareProjectParams();
 		MemKey_ProjectConfig.set({
 			...this.projectConfig,
@@ -76,8 +80,10 @@ export class PhaseRunner<P extends Phase<string>[]>
 			params: projectParams,
 		});
 
-		this.logDebug('\nSetting Default Files', Default_Files);
-		MemKey_DefaultFiles.set(Default_Files);
+		//Set Default File Routes
+		const defaultFileRoutes =this.prepareDefaultFileRouts()
+		this.logDebug('\nSetting Default File Routes:',defaultFileRoutes);
+		MemKey_DefaultFiles.set(defaultFileRoutes);
 
 		this.logInfoBold('\nInit Done! Unit order:', this.units.map(unit => unit.config.label));
 	}
@@ -108,6 +114,12 @@ export class PhaseRunner<P extends Phase<string>[]>
 		params[CONST_ProjectVersionKey] = this.projectConfig.projectVersion;
 		params[CONST_ProjectDependencyKey] = this.projectConfig.projectVersion;
 		return params;
+	}
+
+	private prepareDefaultFileRouts (): ProjectConfig_DefaultFileRoutes {
+		const defaultFileRoutes = deepClone(Default_Files);
+		const projectDefaultFileRoutes = MemKey_ProjectConfig.get().defaultFileRoutes;
+		return merge(defaultFileRoutes,projectDefaultFileRoutes);
 	}
 
 	//######################### Unit Logic #########################

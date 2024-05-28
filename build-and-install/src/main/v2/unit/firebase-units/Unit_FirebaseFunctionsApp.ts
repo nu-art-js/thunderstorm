@@ -107,7 +107,11 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		const envConfig = this.getEnvConfig();
 		const defaultFiles = MemKey_DefaultFiles.get();
 		const targetPath = convertToFullPath(`${this.config.pathToPackage}/src/main/proxy.ts`);
-		let fileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
+		const path = defaultFiles?.backend?.proxy;
+		if(!path)
+			return;
+
+		let fileContent = await _fs.readFile(path, {encoding: 'utf-8'});
 		fileContent = fileContent.replace(/PROJECT_ID/g, `${envConfig.projectId}`);
 		fileContent = fileContent.replace(/PROXY_PORT/g, `${this.config.firebaseConfig.basePort}`);
 		fileContent = fileContent.replace(/SERVER_PORT/g, `${this.config.firebaseConfig.basePort + 1}`);
@@ -132,7 +136,11 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 				try {
 					await _fs.access(pathToConfigFile);
 				} catch (e: any) {
-					const defaultFileContent = await _fs.readFile(defaultFiles.firebaseConfig[firebaseConfigKey], {encoding: 'utf-8'});
+					const path = defaultFiles.firebaseConfig?.[firebaseConfigKey];
+					if(!path)
+						return;
+
+					const defaultFileContent = await _fs.readFile(path, {encoding: 'utf-8'});
 					await _fs.writeFile(pathToConfigFile, defaultFileContent, {encoding: 'utf-8'});
 				}
 			})
@@ -341,7 +349,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	//######################### Deploy Logic #########################
 
 	private async printFiles () {
-		await NVM.createCommando(Cli_Basic)
+		await Commando.create(Cli_Basic)
 			.cd(this.runtime.path.output)
 			.ls()
 			.cat('package.json')
