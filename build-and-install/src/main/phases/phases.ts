@@ -247,7 +247,10 @@ export const Phase_ResolveEnv: BuildPhase = {
 					try {
 						await _fs.access(pathToConfigFile);
 					} catch (e: any) {
-						const defaultFileContent = await _fs.readFile(defaultFiles.firebaseConfig[firebaseConfigKey], {encoding: 'utf-8'});
+						const path = defaultFiles.firebaseConfig?.[firebaseConfigKey];
+						if(!path)
+							return;
+						const defaultFileContent = await _fs.readFile(path, {encoding: 'utf-8'});
 						await _fs.writeFile(pathToConfigFile, defaultFileContent, {encoding: 'utf-8'});
 					}
 				})

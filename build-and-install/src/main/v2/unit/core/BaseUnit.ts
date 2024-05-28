@@ -28,6 +28,7 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 
 	protected async init() {
 		//Inheritor classes should define their own init
+		this.setStatus('Initiated');
 	}
 
 	//######################### Internal Logic #########################
