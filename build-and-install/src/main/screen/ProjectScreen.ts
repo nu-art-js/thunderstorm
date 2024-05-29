@@ -79,7 +79,7 @@ export class ProjectScreen
 			top: 3,
 			left: 0,
 			width: '40%',
-			height: '70%',
+			height: '100%',
 			keys: true,
 			border: {type: 'line'},
 			align: 'left',
