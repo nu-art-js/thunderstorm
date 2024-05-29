@@ -9,6 +9,7 @@ import {UnitPhaseImplementor} from '../types';
 import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
 import {Commando} from '@nu-art/commando/core/cli';
 import {CONST_PackageJSON} from '../../../core/consts';
+import {RuntimeParams} from '../../../core/params/params';
 
 type _Config<Config> = {
 	customTSConfig?: boolean;
@@ -76,6 +77,9 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	}
 
 	protected async clearOutputDir() {
+		if(!RuntimeParams.clean)
+			return;
+
 		//Return if output dir doesn't exist
 		if (!fs.existsSync(this.runtime.pathTo.output))
 			return;

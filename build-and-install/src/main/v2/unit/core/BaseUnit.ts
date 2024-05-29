@@ -21,6 +21,7 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 	readonly config: Readonly<C>;
 	readonly runtime: RTC;
 	private unitStatus?: string;
+	private logger!: LogClient_MemBuffer;
 
 	constructor(config: C) {
 		super(config.key);
@@ -48,18 +49,18 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 	}
 
 	private initLogClient() {
-		const logClient = new LogClient_MemBuffer(this.tag);
-		logClient.setForTerminal();
-		logClient.setComposer((tag: string, level: LogLevel): string => {
+		this.logger = new LogClient_MemBuffer(this.tag);
+		this.logger.setForTerminal();
+		this.logger.setComposer((tag: string, level: LogLevel): string => {
 			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
 			const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23).split('_')[1];
 			return `${date} ${_logger_getPrefix(level)}:  `;
 		});
 
-		logClient.setFilter((level, tag) => {
+		this.logger.setFilter((level, tag) => {
 			return tag === this.tag;
 		});
-		BeLogged.addClient(logClient);
+		BeLogged.addClient(this.logger);
 	}
 
 	protected setStatus(status?: string) {
@@ -75,5 +76,9 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 
 	public async kill() {
 		return;
+	}
+
+	public getLogs () {
+		return this.logger.buffers[0];
 	}
 }
