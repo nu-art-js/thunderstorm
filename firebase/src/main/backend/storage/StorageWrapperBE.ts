@@ -60,6 +60,7 @@ export class StorageWrapperBE
 		if (!this.isEmulator())
 			bucket = (await bucket.get({autoCreate: true}))[0];
 
+		this.logInfo(`Creating bucket ${bucketName}, actual: ${bucket.name}`);
 		// @ts-ignore
 		return new BucketWrapper(bucketName, bucket, this);
 	}
