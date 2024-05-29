@@ -7,4 +7,6 @@ export type Phase<PhaseMethod extends string> = {
 	filter?: () => (Promise<boolean> | boolean);
 	//Should the runner terminate after the phase, only matters if the phase did run
 	terminateAfterPhase?:boolean;
+	//Should this phase be run taking into account the dependency tree
+	runUnitsInDependency?: boolean
 }

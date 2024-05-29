@@ -1,15 +1,20 @@
 import {
 	_keys,
+	arrayIncludesAny,
 	asArray,
+	AsyncVoidFunction,
 	BadImplementationException,
 	BeLogged,
 	deepClone,
 	exists,
+	filterInstances,
+	flatArray,
 	ImplementationMissingException,
 	LogClient_Terminal,
 	LogLevel,
 	merge,
 	reduceToMap,
+	removeItemFromArray,
 	sortArray,
 	StringMap,
 	TypedMap
@@ -42,6 +47,8 @@ export class PhaseRunner<P extends Phase<string>[]>
 	private readonly phases: P;
 	private units: BaseUnit[];
 	private projectConfig!: ProjectConfigV2;
+	// @ts-ignore
+	private unitDependencyTree!: BaseUnit[][];
 
 	constructor(phases: P) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
@@ -81,8 +88,8 @@ export class PhaseRunner<P extends Phase<string>[]>
 		});
 
 		//Set Default File Routes
-		const defaultFileRoutes =this.prepareDefaultFileRouts()
-		this.logDebug('\nSetting Default File Routes:',defaultFileRoutes);
+		const defaultFileRoutes = this.prepareDefaultFileRouts();
+		this.logDebug('\nSetting Default File Routes:', defaultFileRoutes);
 		MemKey_DefaultFiles.set(defaultFileRoutes);
 
 		this.logInfoBold('\nInit Done! Unit order:', this.units.map(unit => unit.config.label));
@@ -116,10 +123,50 @@ export class PhaseRunner<P extends Phase<string>[]>
 		return params;
 	}
 
-	private prepareDefaultFileRouts (): ProjectConfig_DefaultFileRoutes {
+	private prepareDefaultFileRouts(): ProjectConfig_DefaultFileRoutes {
 		const defaultFileRoutes = deepClone(Default_Files);
 		const projectDefaultFileRoutes = MemKey_ProjectConfig.get().defaultFileRoutes;
-		return merge(defaultFileRoutes,projectDefaultFileRoutes);
+		return merge(defaultFileRoutes, projectDefaultFileRoutes);
+	}
+
+	private buildUnitDependencyTree() {
+		const units = [...this.units];
+		const allDependencies = units.map(unit => unit.runtime.dependencyName);
+		this.logDebug(allDependencies);
+		const resolvedUnitNames: string[] = [];
+		const dependencyTree: BaseUnit[][] = [];
+
+		while (units.length) {
+			if (!resolvedUnitNames.length) {
+				//First run - get all units that don't have other units as dependencies
+				const nonDependantUnits = units.filter(unit => {
+					return !arrayIncludesAny(unit.runtime.unitDependencyNames, allDependencies);
+				});
+				//Remove gathered units from the list of units to resolve
+				nonDependantUnits.forEach(unit => removeItemFromArray(units, unit));
+				//Add resolved unit names to the array
+				resolvedUnitNames.push(...nonDependantUnits.map(unit => unit.runtime.dependencyName));
+				//Add resolved units as a layer in the dependency tree
+				dependencyTree.push(nonDependantUnits);
+				continue;
+			}
+
+			//Not first run - get all units where their dependencies are already resolved.
+			const resolvingUnits = units.filter(unit => {
+				const dependencyUnitPackageNames = unit.runtime.unitDependencyNames.filter(dependency => allDependencies.includes(dependency));
+				return dependencyUnitPackageNames.every(dependency => resolvedUnitNames.includes(dependency));
+			});
+
+			//Remove gathered units from the list of units to resolve
+			resolvingUnits.forEach(unit => removeItemFromArray(units, unit));
+			//Add resolved unit names to the array
+			resolvedUnitNames.push(...resolvingUnits.map(unit => unit.runtime.dependencyName));
+			//Add resolved units as a layer in the dependency tree
+			dependencyTree.push(resolvingUnits);
+		}
+
+		this.logDebug('Setting Dependency Tree', dependencyTree.map(row => row.map(unit => unit.config.label)));
+		this.unitDependencyTree = dependencyTree;
 	}
 
 	//######################### Unit Logic #########################
@@ -141,10 +188,15 @@ export class PhaseRunner<P extends Phase<string>[]>
 	}
 
 	private getUnitsForPhase(phase: P[number]) {
-		const filteredUnits = this.units.filter(unit => !exists(unit.config.filter) || unit.config.filter());
-		return filteredUnits.filter(unit => {
-			return exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]);
-		});
+		return filterInstances(this.unitDependencyTree.map(row => {
+			const filteredRow = row.filter(unit => {
+				if (exists(unit.config.filter) && !unit.config.filter())
+					return false;
+
+				return exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]);
+			});
+			return filteredRow.length ? filteredRow : undefined;
+		}));
 	}
 
 	private async initUnits() {
@@ -152,6 +204,10 @@ export class PhaseRunner<P extends Phase<string>[]>
 			// @ts-ignore
 			return unit.init();
 		}));
+	}
+
+	public getUnits() {
+		return this.units;
 	}
 
 	//######################### Phase Logic #########################
@@ -175,19 +231,30 @@ export class PhaseRunner<P extends Phase<string>[]>
 			return false;
 		}
 
-		this.logDebug(`Executing phase: ${phase.name} for ${units.length} units`);
+		this.logDebug(`Executing phase: ${phase.name}`);
 		dispatcher_PhaseChange.dispatch(phase);
-		for (const unit of units) {
-			await (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]();
+
+		//Run all units at the same time
+		if (!phase.runUnitsInDependency) {
+			const unitsToRun = flatArray(units);
+			await Promise.all(unitsToRun.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]()));
+			return true;
+		}
+
+		//Run units according to dependency tree
+		for (const row of units) {
+			await Promise.all(row.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]()));
 		}
 		return true;
 	}
 
 	//######################### Public Functions #########################
 
-	public async execute() {
+	public async execute(cb?: AsyncVoidFunction) {
 		return new MemStorage().init(async () => {
 			await this.initUnits();
+			await cb?.();
+			this.buildUnitDependencyTree();
 			await this.executeImpl();
 		});
 	}
@@ -242,7 +309,9 @@ export class PhaseRunner<P extends Phase<string>[]>
 	}
 
 	async debug() {
-		const configs = this.units.map(unit => unit.config);
-		this.logInfo(JSON.stringify(configs, null, 2));
+		// const configs = this.units.map(unit => unit.config);
+		// this.logInfo(JSON.stringify(configs, null, 2));
+		const dependencyTree = this.unitDependencyTree.map(row => row.map(unit => unit.config.label));
+		this.logInfo(dependencyTree);
 	}
 }

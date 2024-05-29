@@ -16,7 +16,7 @@ type _Config<Config> = {
 } & Config;
 
 type _RuntimeConfig<RTC> = {
-	path: { pkg: string; output: string }
+	pathTo: { pkg: string; output: string }
 } & RTC;
 
 const extensionsToLint = ['.ts', '.tsx'];
@@ -39,15 +39,17 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 		Phase_Purge, Phase_Lint,
 	]> {
 
-	protected async init() {
-		await super.init();
-		this.runtime.path.output = this.runtime.path.pkg + `/${this.config.output}`;
+	protected async init(setInitialized: boolean = true) {
+		await super.init(false);
+		this.runtime.pathTo.output = this.runtime.pathTo.pkg + `/${this.config.output}`;
+		if (setInitialized)
+			this.setStatus('Initialized');
 	}
 
 	//######################### Internal Logic #########################
 
 	protected async resolveTSConfig() {
-		const pathToUnitTSConfig = `${this.runtime.path.pkg}/src/main/tsconfig.json`;
+		const pathToUnitTSConfig = `${this.runtime.pathTo.pkg}/src/main/tsconfig.json`;
 		// const pathToProjectTSConfig = '';
 
 		//If set to use a custom ts config
@@ -75,30 +77,30 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 
 	protected async clearOutputDir() {
 		//Return if output dir doesn't exist
-		if (!fs.existsSync(this.runtime.path.output))
+		if (!fs.existsSync(this.runtime.pathTo.output))
 			return;
 
-		await _fs.rm(this.runtime.path.output, {recursive: true, force: true});
-		await _fs.mkdir(this.runtime.path.output, {recursive: true});
+		await _fs.rm(this.runtime.pathTo.output, {recursive: true, force: true});
+		await _fs.mkdir(this.runtime.pathTo.output, {recursive: true});
 	}
 
 	protected async compileImpl() {
-		const pathToCompile = `${this.runtime.path.pkg}/src/main`;
+		const pathToCompile = `${this.runtime.pathTo.pkg}/src/main`;
 		const pathToTSConfig = `${pathToCompile}/tsconfig.json`;
 
 		await NVM
 			.createCommando(Cli_Basic)
 			.setUID(this.config.key)
-			.cd(this.runtime.path.pkg)
-			.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.path.output}"`)
+			.cd(this.runtime.pathTo.pkg)
+			.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
 			.execute();
 	}
 
 	protected async copyAssetsToOutput() {
-		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${this.runtime.path.output}" > /dev/null`;
+		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${this.runtime.pathTo.output}" > /dev/null`;
 		await Commando
 			.create(Cli_Basic)
-			.cd(`${this.runtime.path.pkg}/src/main`)
+			.cd(`${this.runtime.pathTo.pkg}/src/main`)
 			.setStdErrorValidator(stderr => {
 				return !stderr.match(/\d+\sblock/);
 			})
@@ -107,7 +109,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	}
 
 	protected async copyPackageJSONToOutput() {
-		const targetPath = `${this.runtime.path.output}/${CONST_PackageJSON}`;
+		const targetPath = `${this.runtime.pathTo.output}/${CONST_PackageJSON}`;
 		const fileContent = JSON.stringify(this.packageJson.dist, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
@@ -120,7 +122,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 
 		this.setStatus('Pre-Compile');
 		await NVM.createCommando(Cli_Basic)
-			.cd(this.runtime.path.pkg)
+			.cd(this.runtime.pathTo.pkg)
 			.append('bash prebuild.sh')
 			.execute();
 	}
@@ -132,17 +134,18 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 		await this.compileImpl();
 		await this.copyAssetsToOutput();
 		await this.copyPackageJSONToOutput();
+		this.setStatus('Compiled');
 	}
 
 	async purge() {
-		await _fs.rm(this.runtime.path.output, {recursive: true, force: true});
+		await _fs.rm(this.runtime.pathTo.output, {recursive: true, force: true});
 	}
 
 	async printDependencyTree() {
 		const CONST_RunningRoot = process.cwd();
 		this.logDebug(`Generating Dependency Tree - ${this.config.label}`);
 		await NVM.createCommando(Cli_Basic)
-			.cd(this.runtime.path.pkg)
+			.cd(this.runtime.pathTo.pkg)
 			.append(`mkdir -p ${CONST_RunningRoot}/.trash/dependencies`)
 			.append(`pnpm list --depth 1000 > "${CONST_RunningRoot}/.trash/dependencies/${this.config.key}.txt"`)
 			.execute();
@@ -151,18 +154,18 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	async checkCyclicImports() {
 		this.logDebug(`Checking Cyclic Imports - ${this.config.label}`);
 		await NVM.createCommando(Cli_Basic)
-			.cd(this.runtime.path.pkg)
+			.cd(this.runtime.pathTo.pkg)
 			.setStdErrorValidator(stderr => {
 				return !stderr.includes('Finding files') && !stderr.includes('Image created');
 			})
-			.append(`npx madge --no-spinner --image "./imports-${this.config.key}.svg" --circular ${this.runtime.path.output}`)
+			.append(`npx madge --no-spinner --image "./imports-${this.config.key}.svg" --circular ${this.runtime.pathTo.output}`)
 			.append('echo $?')
 			.execute();
 	}
 
 	async lint() {
 		const pathToProjectESLint = MemKey_RunnerParams.get()[RunnerParamKey_ConfigPath] + '/.eslintrc.js';
-		const pathToLint = this.runtime.path.pkg + 'src/main';
+		const pathToLint = this.runtime.pathTo.pkg + 'src/main';
 		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ');
 
 		await NVM.createCommando()

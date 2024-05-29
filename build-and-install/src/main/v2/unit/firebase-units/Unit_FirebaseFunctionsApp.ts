@@ -68,6 +68,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		await this.copyAssetsToOutput();
 		await this.createDependenciesDir();
 		await this.copyPackageJSONToOutput();
+		this.setStatus('Compiled');
 	}
 
 	async launch() {
@@ -215,7 +216,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//copyAssetsToOutput will move the file to output
-		const targetPath = `${this.runtime.path.pkg}/${CONST_VersionApp}`;
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
@@ -251,8 +252,8 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		await Promise.all(dependencyUnits.map(async unit => {
 
 			//Copy dependency unit output into this units output/.dependency dir
-			const dependencyOutputPath = `${unit.runtime.path.output}/`;
-			const targetPath = `${this.runtime.path.output}/.dependencies/${unit.config.key}/`;
+			const dependencyOutputPath = `${unit.runtime.pathTo.output}/`;
+			const targetPath = `${this.runtime.pathTo.output}/.dependencies/${unit.config.key}/`;
 			const pjTargetPath = `${targetPath}/${CONST_PackageJSON}`;
 
 			await Commando.create()
@@ -273,8 +274,8 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	private async initLaunch() {
 		this.launchCommandos = {
-			emulator: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.path.pkg),
-			proxy: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.path.pkg),
+			emulator: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.pathTo.pkg),
+			proxy: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.pathTo.pkg),
 		};
 	}
 
@@ -350,7 +351,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	private async printFiles () {
 		await Commando.create(Cli_Basic)
-			.cd(this.runtime.path.output)
+			.cd(this.runtime.pathTo.output)
 			.ls()
 			.cat('package.json')
 			.cat('index.js')
@@ -359,7 +360,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	private async deployImpl () {
 		await NVM.createCommando(Cli_Basic)
-			.cd(this.runtime.path.pkg)
+			.cd(this.runtime.pathTo.pkg)
 			.append(`firebase --debug deploy --only functions --force`)
 			.execute();
 	}

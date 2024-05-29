@@ -8,7 +8,10 @@ type Config<C> = {
 	filter?: () => boolean | Promise<boolean>;
 } & C;
 
-type RuntimeConfig<C> = {} & C;
+type RuntimeConfig<C> = {
+	dependencyName: string;
+	unitDependencyNames: string[];
+} & C;
 
 
 export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
@@ -22,14 +25,20 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 	constructor(config: C) {
 		super(config.key);
 		this.config = Object.freeze(config);
-		this.runtime = {} as RTC;
+		this.runtime = {
+			dependencyName: this.config.key,
+			unitDependencyNames: [] as string[],
+		} as RTC;
 		this.initLogClient();
 	}
 
-	protected async init() {
+	protected async init(setInitialized: boolean = true) {
+		this.setStatus('Initializing');
+		//Register the unit to PhaseRunnerEvent dispatcher
 		dispatcher_PhaseChange.addListener(this);
 		dispatcher_UnitStatusChange.addListener(this);
-		this.setStatus('Initiated');
+		if (setInitialized)
+			this.setStatus('Initialized');
 	}
 
 	//######################### Internal Logic #########################
