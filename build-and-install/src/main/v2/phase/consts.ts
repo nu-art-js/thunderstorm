@@ -92,6 +92,7 @@ export const phase_PreCompile: Phase<'preCompile'> = {
 	name: 'Pre Compile',
 	method: 'preCompile',
 	filter: () => !RuntimeParams.noBuild,
+	runUnitsInDependency: true,
 };
 
 export type Phase_Compile = typeof phase_Compile;
@@ -99,6 +100,7 @@ export const phase_Compile: Phase<'compile'> = {
 	name: 'Compile',
 	method: 'compile',
 	filter: () => !RuntimeParams.noBuild,
+	runUnitsInDependency: true,
 };
 
 export type Phase_Launch = typeof phase_Launch;

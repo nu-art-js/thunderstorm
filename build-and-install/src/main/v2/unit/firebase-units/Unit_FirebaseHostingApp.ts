@@ -46,6 +46,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		await this.clearOutputDir();
 		await this.createAppVersionFile();
 		await this.compileImpl();
+		this.setStatus('Compiled');
 	}
 
 	async launch() {
@@ -119,7 +120,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	protected async compileImpl() {
 		await NVM
 			.createCommando(Cli_Basic)
-			.cd(this.runtime.path.pkg)
+			.cd(this.runtime.pathTo.pkg)
 			.append(`ENV=${RuntimeParams.environment} npm run build`)
 			.execute();
 	}
@@ -127,7 +128,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//Webpack bundles files into the output automatically!
-		const targetPath = `${this.runtime.path.pkg}/${CONST_VersionApp}`;
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding:'utf-8'});
@@ -141,7 +142,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 
 		this.launchCommando = NVM.createInteractiveCommando(Cli_Basic)
 			.setUID(this.config.key)
-			.cd(this.runtime.path.pkg);
+			.cd(this.runtime.pathTo.pkg);
 	}
 
 	private async initLaunchListeners () {
@@ -189,7 +190,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 
 	private async deployImpl () {
 		await NVM.createCommando(Cli_Basic)
-			.cd(this.runtime.path.pkg)
+			.cd(this.runtime.pathTo.pkg)
 			.append(`firebase --debug deploy --only hosting`)
 			.execute();
 	}

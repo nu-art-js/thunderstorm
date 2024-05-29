@@ -10,7 +10,7 @@ type _Config<C> = {
 } & C
 
 type _RuntimeConfig<RTC> = {
-	path: { pkg: string };
+	pathTo: { pkg: string };
 } & RTC;
 
 export class Unit_Python<Config extends {} = {}, RuntimeConfig extends {} = {},
@@ -20,26 +20,26 @@ export class Unit_Python<Config extends {} = {}, RuntimeConfig extends {} = {},
 
 	protected commando!: CommandoInteractive & Commando & Cli_Basic;
 
-	constructor(config: Unit_Python<C,RTC>['config']) {
+	constructor(config: Unit_Python<C, RTC>['config']) {
 		super(config);
 		this.commando = CommandoInteractive.create(Cli_Basic);
 	}
 
 	protected async init() {
 		await super.init();
-		this.runtime.path = {
+		this.runtime.pathTo = {
 			pkg: convertToFullPath(this.config.pathToPackage),
-		}
-		this.logWarning(`Python Path ${this.runtime.path.pkg}`);
+		};
+		this.logWarning(`Python Path ${this.runtime.pathTo.pkg}`);
 		await this.initCommando();
 	}
 
 	//######################### Internal Logic #########################
 
-	private async initCommando () {
+	private async initCommando() {
 		this.commando
 			.setUID(this.config.key)
-			.cd(this.runtime.path.pkg)
+			.cd(this.runtime.pathTo.pkg)
 			.debug();
 
 		//Install & Enter VENV

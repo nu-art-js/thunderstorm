@@ -2,7 +2,7 @@ import {BaseUnit} from './BaseUnit';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../../core/consts';
 import {PackageJson} from '../../../core/types';
-import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
+import {BadImplementationException, ImplementationMissingException, _keys} from '@nu-art/ts-common';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../../../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
@@ -21,7 +21,7 @@ type _Config<C> = {
 } & C
 
 type RTC_Unit_Typescript<RTC> = {
-	path: { pkg: string };
+	pathTo: { pkg: string };
 } & RTC;
 
 export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = {},
@@ -31,28 +31,38 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 
 	readonly packageJson: { [k in PackageJsonTargetKey]: PackageJson } = {} as { [k in PackageJsonTargetKey]: PackageJson };
 
-	protected async init () {
-		await super.init()
-		this.runtime.path = {
+	protected async init (setInitialized: boolean = true) {
+		await super.init(false);
+		this.runtime.pathTo = {
 			pkg: convertToFullPath(this.config.pathToPackage),
 		};
+		await this.loadTemplatePackageJSON();
+		this.runtime.dependencyName = this.packageJson.template.name;
+		this.runtime.unitDependencyNames = _keys(this.packageJson.template.dependencies ?? {});
+		if(setInitialized)
+			this.setStatus('Initialized');
 	}
 
 	//######################### Internal Logic #########################
+
+	private async loadTemplatePackageJSON () {
+		const unitRootPath = this.runtime.pathTo.pkg;
+		const templatePath = `${unitRootPath}/${CONST_PackageJSONTemplate}`;
+
+		if (!fs.existsSync(templatePath))
+			throw new BadImplementationException(`Missing __package.json file in root for unit ${this.config.label}`);
+
+		this.packageJson.template = JSON.parse(await _fs.readFile(templatePath, 'utf-8')) as PackageJson;
+	}
 
 	/**
 	 * Create a packageJson object for each target key
 	 * @private
 	 */
 	private async populatePackageJson() {
-		const unitRootPath = this.runtime.path.pkg;
-		const templatePath = `${unitRootPath}/${CONST_PackageJSONTemplate}`;
-
-		if (!fs.existsSync(templatePath))
-			throw new BadImplementationException(`Missing __package.json file in root for unit ${this.config.label}`);
-
-		const template = JSON.parse(await _fs.readFile(templatePath, 'utf-8')) as PackageJson;
-		PackageJsonTargetKeys.forEach(key => this.packageJson[key] = this.convertTemplatePackageJSON(key, template));
+		if(!this.packageJson.template)
+			await this.loadTemplatePackageJSON();
+		PackageJsonTargetKeys.forEach(key => this.packageJson[key] = this.convertTemplatePackageJSON(key, this.packageJson.template));
 	}
 
 	/**
@@ -114,9 +124,10 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 		//Populate packageJson objects
 		await this.populatePackageJson();
 		//Get path
-		const unitRootPath = this.runtime.path.pkg;
+		const unitRootPath = this.runtime.pathTo.pkg;
 		const targetPath = `${unitRootPath}/${CONST_PackageJSON}`;
 		//Create the package.json file in target location
 		await _fs.writeFile(targetPath, JSON.stringify(this.packageJson.root, null, 2), {encoding: 'utf-8'});
+		this.setStatus('PackageJSON resolved');
 	}
 }

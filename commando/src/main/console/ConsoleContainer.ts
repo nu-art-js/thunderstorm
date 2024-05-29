@@ -135,8 +135,8 @@ export abstract class ConsoleContainer<Type extends BlessedWidgetsType, State ex
 		if (!this.enabled)
 			return;
 
-		this.container.screen.render();
 		this.render();
+		this.container.screen.render();
 	}
 
 	/**
