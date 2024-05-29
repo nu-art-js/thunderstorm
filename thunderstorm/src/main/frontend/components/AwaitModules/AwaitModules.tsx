@@ -27,6 +27,7 @@ export type AwaitModule_LoaderProps = {
 	validModules: (ModuleFE_BaseDB<any>)[];
 	readyModules: (ModuleFE_BaseDB<any>)[];
 	awaitedModules: (ModuleFE_BaseDB<any>)[];
+	onClick: VoidFunction
 }
 
 interface QueryAwaitedModules {
@@ -105,7 +106,8 @@ export class AwaitModules
 			<LL_V_L className={'missing-permission-modules'}>
 				<h1>Missing Permissions For The Following Databases</h1>
 				<LL_H_C>
-					{missingPermissionModules.map(module => <span key={module.dbDef.dbKey}>{module.dbDef.entityName}</span>)}
+					{missingPermissionModules.map(module => <span
+						key={module.dbDef.dbKey}>{module.dbDef.entityName}</span>)}
 				</LL_H_C>
 			</LL_V_L>
 		</div>;
@@ -117,7 +119,8 @@ export class AwaitModules
 			return resolveContent(this.props.customLoader, {
 				validModules: this.state.validModules,
 				readyModules: this.state.readyModules,
-				awaitedModules
+				awaitedModules,
+				onClick: this.onLoaderClick
 			});
 		}
 
@@ -135,12 +138,16 @@ export class AwaitModules
 				readyAndInProgressModulesRatio,
 				readyModulesRatio
 			]}
-			onClick={() => {
-				if (!awaitedModules.length)
-					this.logInfo('Not awaiting any modules');
-				this.logInfo('Waiting for modules:', ...awaitedModules.map(module => module.getName()));
-			}}
+			onClick={this.onLoaderClick}
 		/>;
+	};
+
+	private onLoaderClick = () => {
+		const awaitedModules = this.getUnpreparedModules();
+
+		if (!awaitedModules.length)
+			this.logInfo('Not awaiting any modules');
+		this.logInfo('Waiting for modules:', ...awaitedModules.map(module => module.getName()));
 	};
 
 	render() {
