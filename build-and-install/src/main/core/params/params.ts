@@ -51,11 +51,11 @@ export const BaiParam_SetEnv: BaseCliParam<'environment', string> = {
 };
 
 export const BaiParam_Setup: BaseCliParam<'setup', boolean> = {
-	keys: ['--setup', '-s'],
+	keys: ['--setup'],
 	keyName: 'setup',
 	type: 'boolean',
 	group: 'Build',
-	description: '--setup / -s are deprecated... use --install or -i'
+	description: 'Setup local project for developer'
 };
 
 export const BaiParam_Install: BaseCliParam<'install', boolean> = {
