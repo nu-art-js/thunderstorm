@@ -14,6 +14,7 @@ import {
 	LogLevel
 } from '@nu-art/ts-common';
 
+
 type ScreenKeyBinding = {
 	keys: string[];
 	callback: VoidFunction;
@@ -120,7 +121,7 @@ export class BAI_ListScreen
 			top: 3,
 			left: 0,
 			width: '30%',
-			height: '70%',
+			bottom: 0,
 			key: true,
 			border: {type: 'line'},
 			align: 'left',
@@ -144,7 +145,7 @@ export class BAI_ListScreen
 			height: '100%',
 			mouse: true,
 			tags: true,
-			border: {type:'line'},
+			border: {type: 'line'},
 			style: {
 				border: {fg: 'blue'}
 			},
@@ -163,7 +164,7 @@ export class BAI_ListScreen
 	}
 
 	private renderPhase() {
-		this.phaseWidget.setContent(this.state.currentPhase?.name ?? 'Initializing');
+		this.phaseWidget.setContent(`Phase: ${this.state.currentPhase?.name ?? 'Initializing'}`);
 	}
 
 	private renderUnitList() {
