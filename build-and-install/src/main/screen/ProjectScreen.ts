@@ -86,7 +86,6 @@ export class ProjectScreen
 			tags: true,
 			style: {
 				border: {fg: 'blue'},
-				// @ts-ignore
 				header: {bold: true},
 				cell: {fg: 'white', selected: {bg: 'blue'}}
 			},

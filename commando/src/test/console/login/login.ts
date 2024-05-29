@@ -1,5 +1,4 @@
-import {ConsoleScreen} from '../../main/console/ConsoleScreen';
-
+import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
 
 interface UserInputScreenState {
 	username: string;
