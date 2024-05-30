@@ -41,7 +41,7 @@ export class Cli_Git
 		status: this.git_status,
 	};
 
-	private git_clone(url: string, options?: GitCloneParams): this {
+	public git_clone(url: string, options?: GitCloneParams): this {
 		const branch = `${options?.branch ? ` -b ${options?.branch}` : ''}`;
 		const recursive = `${options?.recursive ? ` --recursive` : ''}`;
 		const outputFolder = `${options?.outputFolder ? ` ${options.outputFolder}` : ''}`;

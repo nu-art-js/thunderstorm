@@ -86,7 +86,7 @@ export class Cli_Basic
 	}
 
 	public cpdir(srcPath: string, destPath: string, options?: Cli_CpdirOptions): this {
-		let command = srcPath;
+		let command = `cp -r ${srcPath}`;
 		if (options?.contentOnly)
 			command += '/*';
 
