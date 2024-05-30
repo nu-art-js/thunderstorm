@@ -26,7 +26,7 @@ import {Unit, UnitPhaseImplementor} from '../unit/types';
 import {BaseUnit, Unit_TypescriptProject} from '../unit/core';
 import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
 import {AllBaiParams, RuntimeParams} from '../../core/params/params';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import fs from 'fs';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {ProjectConfigV2} from '../project/types';
@@ -40,6 +40,8 @@ const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_DEPENDENCY_VERSION';
 const CONST_ProjectVersionKey = 'APP_VERSION';
 const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
+
+export const MemKey_PhaseRunner = new MemKey<PhaseRunner<any>>('phase-runner');
 
 export class PhaseRunner<P extends Phase<string>[]>
 	extends BaseUnit
@@ -63,6 +65,8 @@ export class PhaseRunner<P extends Phase<string>[]>
 	protected async init() {
 		if (!this.config)
 			throw new BadImplementationException('Trying to run PhaseRunner with no project config, did you forget to call .registerProject() ?');
+
+		MemKey_PhaseRunner.set(this);
 
 		//Listen on kill signal
 		process.on('SIGINT', async () => {
