@@ -9,6 +9,15 @@ type Cli_EchoOptions = {
 	},
 };
 
+type Cli_RmdirOptions = {
+	force?: true,
+	recursive?: true;
+}
+
+type Cli_CpdirOptions = {
+	contentOnly?: boolean;
+}
+
 /**
  * Represents a Command Line Interface (CLI) to build and execute shell commands.
  */
@@ -61,6 +70,28 @@ export class Cli_Basic
 
 	public mkdir(dirName: string): this {
 		this.cli.append(`mkdir -p ${dirName}`);
+		return this;
+	}
+
+	public rmdir(dirPath: string, options?: Cli_RmdirOptions): this {
+		let command = 'rm';
+		if (options?.force)
+			command += ' -rf';
+
+		if (options?.recursive)
+			command += ' -r';
+
+		this.cli.append(`${command} ${dirPath}`);
+		return this;
+	}
+
+	public cpdir(srcPath: string, destPath: string, options?: Cli_CpdirOptions): this {
+		let command = srcPath;
+		if (options?.contentOnly)
+			command += '/*';
+
+		command += ` ${destPath}`;
+		this.cli.append(command);
 		return this;
 	}
 
