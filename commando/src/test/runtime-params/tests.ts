@@ -1,7 +1,7 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {BaseCliParam, CliParams} from '../../main/cli/cli-params';
 import {CLIParams_Resolver} from '../../../dist/cli/cli-params';
-import {compare} from '@nu-art/ts-common';
+import {BadImplementationException, compare} from '@nu-art/ts-common';
 import {expect} from 'chai';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
@@ -49,6 +49,30 @@ export const Param_IP: BaseCliParam<'ip', boolean> = {
 	description: ''
 };
 
+export const Param_String: BaseCliParam<'string', string> = {
+	keys: ['-s', '--string'],
+	keyName: 'string',
+	type: 'string',
+	group: 'General',
+	defaultValue: 'default',
+	description: ''
+};
+
+export const Param_StringWithProcess: BaseCliParam<'stringWithProcess', string> = {
+	keys: ['-swp', '--string-with-process'],
+	keyName: 'stringWithProcess',
+	type: 'string',
+	group: 'General',
+	defaultValue: 'default',
+	description: '',
+	process: (value, defaultValue) => {
+		if (!value && !defaultValue)
+			throw new BadImplementationException('must have at least default value');
+
+		return value ?? defaultValue!;
+	}
+};
+
 const TestCase_merge: TestSuite_RuntimeParams<any, any>['testcases'] = [
 	createTestCase('Simple help param', [Param_Help], {help: true}, '-h'),
 	createTestCase('distinct -i and -ip - 1', [Param_I, Param_IP], {i: true}, '-i'),
@@ -59,6 +83,13 @@ const TestCase_merge: TestSuite_RuntimeParams<any, any>['testcases'] = [
 	createTestCase('distinct -ip and -i - 2', [Param_IP, Param_I], {ip: true}, '-ip'),
 	createTestCase('distinct -ip and -i - 3', [Param_IP, Param_I], {i: true, ip: true}, '-i -ip'),
 	createTestCase('distinct -ip and -i - 4', [Param_IP, Param_I], {i: true, ip: true}, '-ip -i'),
+	createTestCase('take last value of all appearances of string param short flag', [Param_String], {string: 'final-value'}, '-s=zevel -s=string -s=final-value'),
+	createTestCase('take last value of all appearances of string param full flag', [Param_String], {string: 'final-value'}, '--string=zevel -s=string --string=final-value'),
+	createTestCase('take last value of all appearances of string param using different string flags', [Param_String], {string: 'final-value'}, '-s=zevel --string=string --string=final-value'),
+	createTestCase('test string param with default value - 1', [Param_String], {string: Param_StringWithProcess.defaultValue}, '-s'),
+	createTestCase('test string param with default value - 2', [Param_String], {string: Param_StringWithProcess.defaultValue}, '--string'),
+	createTestCase('test process - return value', [Param_StringWithProcess], {stringWithProcess: 'my-value'}, '-swp=my-value'),
+	createTestCase('test process - return default', [Param_StringWithProcess], {stringWithProcess: Param_StringWithProcess.defaultValue}, '-swp'),
 ];
 
 export const TestSuite_RuntimeParams: TestSuite<Input, any> = {

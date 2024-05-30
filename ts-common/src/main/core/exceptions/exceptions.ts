@@ -221,6 +221,13 @@ export class WhoCallThisException
 		super(WhoCallThisException, message, cause);
 	}
 }
+export class ConfigMissingException
+	extends CustomException {
+
+	constructor(message: string, cause?: Error) {
+		super(ConfigMissingException, message, cause);
+	}
+}
 
 /**
  * # <ins>AssertionException</ins>

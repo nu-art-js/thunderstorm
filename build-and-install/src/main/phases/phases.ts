@@ -1,4 +1,8 @@
-import {BuildPhase, PackageBuildPhaseType_Package, PackageBuildPhaseType_PackageWithOutput} from '../logic/ProjectManager';
+import {
+	BuildPhase,
+	PackageBuildPhaseType_Package,
+	PackageBuildPhaseType_PackageWithOutput
+} from '../logic/ProjectManager';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
@@ -393,7 +397,7 @@ export const Phase_InstallPackages: BuildPhase = {
 export const Phase_InstallPythonPackages: BuildPhase = {
 	type: 'package',
 	name: 'install-python-packages',
-	filter: async pkg => RuntimeParams.encounterManager && pkg.type === PackageType_Python,
+	filter: async pkg => (RuntimeParams.encounterManager || RuntimeParams.encounterManagerListen) && (RuntimeParams.installPackages || RuntimeParams.install) && pkg.type === PackageType_Python,
 	action: async (pkg) => {
 		if (pkg.type !== PackageType_Python)
 			return;
@@ -544,7 +548,7 @@ export const Phase_Compile: BuildPhase = {
 		if (pkg.type === 'sourceless' || pkg.type === PackageType_Python)
 			return;
 
-		if (fs.existsSync(pkg.output)) {
+		if (RuntimeParams.clean && fs.existsSync(pkg.output)) {
 			await _fs.rm(pkg.output, {recursive: true, force: true});
 			await _fs.mkdir(pkg.output, {recursive: true});
 		}
@@ -774,22 +778,8 @@ export const Phase_Launch: BuildPhase = {
 
 		if (pkg.type === PackageType_Python) {
 			runningAppsLogs?.registerApp(pkg.name, logClient);
-			logClient.log(pkg.name, LogLevel.Info, true, ['Awaiting Advisor & KM BE launch']);
-
-			const advisorExecutor = executorMap['advisor-backend'];
-			const kmExecutor = executorMap['km-backend'];
-
-			if (!advisorExecutor)
-				logClient.log(pkg.name, LogLevel.Error, true, ['Advisor BE executor not registered yet']);
-
-			if (!kmExecutor)
-				logClient.log(pkg.name, LogLevel.Error, true, ['KM BE executor not registered yet']);
-
-			let advisorUp: boolean = false;
-			let kmUp: boolean = false;
 
 			const startPython = async () => {
-				logClient.log(pkg.name, LogLevel.Info, true, ['Advisor & KM BE launched, Starting!']);
 				const executor = new CommandExecutor_Python(pkg);
 				runningAppsLogs?.addOnTerminateCallback(async () => {
 					await executor.kill();
@@ -798,21 +788,42 @@ export const Phase_Launch: BuildPhase = {
 				await executor.execute();
 			};
 
-			advisorExecutor?.addOnReadyCallback(async () => {
-				advisorUp = true;
-				if (!kmUp)
-					return logClient.log(pkg.name, LogLevel.Info, true, ['Advisor launched, waiting for KM']);
+			// will listen to advisor and km be execution and then launch em
+			if (RuntimeParams.encounterManagerListen) {
+				logClient.log(pkg.name, LogLevel.Info, true, ['Awaiting Advisor & KM BE launch']);
+				const advisorExecutor = executorMap['advisor-backend'];
+				const kmExecutor = executorMap['km-backend'];
 
+				if (!advisorExecutor)
+					logClient.log(pkg.name, LogLevel.Error, true, ['Advisor BE executor not registered yet']);
+
+				if (!kmExecutor)
+					logClient.log(pkg.name, LogLevel.Error, true, ['KM BE executor not registered yet']);
+
+				let advisorUp: boolean = false;
+				let kmUp: boolean = false;
+
+				advisorExecutor?.addOnReadyCallback(async () => {
+					advisorUp = true;
+					if (!kmUp)
+						return logClient.log(pkg.name, LogLevel.Info, true, ['Advisor launched, waiting for KM']);
+
+					logClient.log(pkg.name, LogLevel.Info, true, ['Advisor & KM BE launched, Starting!']);
+					await startPython();
+				});
+
+				kmExecutor?.addOnReadyCallback(async () => {
+					kmUp = true;
+					if (!advisorUp)
+						return logClient.log(pkg.name, LogLevel.Info, true, ['KM launched, waiting for Advisor']);
+
+					logClient.log(pkg.name, LogLevel.Info, true, ['Advisor & KM BE launched, Starting!']);
+					await startPython();
+				});
+			} else if (RuntimeParams.encounterManager) {
+				// will launch em without waiting
 				await startPython();
-			});
-
-			kmExecutor?.addOnReadyCallback(async () => {
-				kmUp = true;
-				if (!advisorUp)
-					return logClient.log(pkg.name, LogLevel.Info, true, ['KM launched, waiting for Advisor']);
-
-				await startPython();
-			});
+			}
 		}
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Died');
