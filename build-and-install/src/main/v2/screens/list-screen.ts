@@ -1,6 +1,10 @@
 import {ConsoleContainer} from '@nu-art/commando/console/ConsoleContainer';
 import {Widgets} from 'blessed';
-import {dispatcher_PhaseChange, dispatcher_UnitStatusChange, PhaseRunnerEventListener} from '../phase-runner/PhaseRunnerDispatcher';
+import {
+	dispatcher_PhaseChange,
+	dispatcher_UnitStatusChange,
+	PhaseRunnerEventListener
+} from '../phase-runner/PhaseRunnerDispatcher';
 import {Phase} from '../phase';
 import {BaseUnit} from '../unit/core';
 import {
@@ -20,7 +24,7 @@ type ScreenKeyBinding = {
 };
 
 type State = {
-	currentPhase?: Phase<string>;
+	currentPhaseName?: string;
 	selectedUnit?: BaseUnit;
 };
 
@@ -45,7 +49,7 @@ export class BAI_ListScreen
 	//######################### Lifecycle #########################
 
 	__onPhaseChange(phase: Phase<string>) {
-		this.setState({currentPhase: phase});
+		this.setState({currentPhaseName: phase.name});
 	}
 
 	__onUnitStatusChange(unit: BaseUnit) {
@@ -201,7 +205,7 @@ export class BAI_ListScreen
 	}
 
 	private renderPhase() {
-		this.phaseWidget.setContent(this.state.currentPhase?.name ?? 'Initializing');
+		this.phaseWidget.setContent(this.state.currentPhaseName ?? 'Initializing');
 	}
 
 	private renderUnitList() {
