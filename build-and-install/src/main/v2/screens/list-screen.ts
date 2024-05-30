@@ -246,7 +246,7 @@ export class BAI_ListScreen
 	//######################### Events #########################
 
 	private onUnitSelect(unit: BaseUnit, index: number) {
-		this.state.selectedUnit = unit;
+		this.state.selectedUnit = unit === this.state.selectedUnit ? undefined : unit;
 		this.renderUnitList();
 		this.renderLogs();
 		this.container.screen.render();
