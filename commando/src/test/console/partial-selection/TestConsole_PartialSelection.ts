@@ -1,5 +1,5 @@
-import {ConsoleScreen} from '../../main/console/ConsoleScreen';
-import {Widgets} from 'neo-blessed';
+import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
+import {BlessedWidget} from '../../../main/console/types';
 
 
 interface LogScreenState {
@@ -8,7 +8,7 @@ interface LogScreenState {
 
 export class TestConsole_PartialSelection
 	extends ConsoleScreen<LogScreenState> {
-	private logWidgets: Widgets.Log[] = [];
+	private logWidgets: BlessedWidget['log'][] = [];
 
 	constructor() {
 		super({
@@ -51,7 +51,7 @@ export class TestConsole_PartialSelection
 				mouse: true,
 				keys: true,
 				vi: true,
-			}) as Widgets.Log;
+			});
 
 			// Add click event listener to set focus on click
 			logWidget.on('click', () => {

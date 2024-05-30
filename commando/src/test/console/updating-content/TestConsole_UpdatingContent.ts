@@ -1,5 +1,4 @@
-import {ConsoleScreen} from '../../main/console/ConsoleScreen';
-import {BoxOptions} from '../../main/console/types';
+import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
 
 
 export class TestConsole_UpdatingContent
@@ -13,14 +12,14 @@ export class TestConsole_UpdatingContent
 	}
 
 	protected createContent() {
-		const boxOptions: BoxOptions = {
+		this.box = this.createWidget('box', {
 			top: '0',
 			left: 'center',
 			width: '50%',
 			height: '50%',
 			mouse: true,
 			scrollable: true,
-			border: {type: 'line', fg: '#FFFFFF'},
+			border: {type: 'line', fg: 2	},
 			style: {
 				fg: 'green',
 				bg: 'white',
@@ -29,9 +28,7 @@ export class TestConsole_UpdatingContent
 					fg: 'white'
 				}
 			}
-		};
-
-		this.box = this.createWidget('box', boxOptions);
+		});
 	}
 
 	protected render(): void {

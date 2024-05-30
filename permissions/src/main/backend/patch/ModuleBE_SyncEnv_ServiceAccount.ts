@@ -11,7 +11,7 @@ export class ModuleBE_SyncEnv_ServiceAccount_Class
 
 	constructor() {
 		super();
-		this.setDefaultConfig({serviceAccount: {email: 'sync-manager@nu-art-software.com'}});
+		this.setDefaultConfig({serviceAccount: {email: 'sync-env@nu-art-software.com'}});
 	}
 
 	__requiresServiceAccount(): DefaultDef_ServiceAccount | DefaultDef_ServiceAccount[] {

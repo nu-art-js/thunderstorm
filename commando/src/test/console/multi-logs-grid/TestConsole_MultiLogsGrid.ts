@@ -1,6 +1,6 @@
-import {ConsoleScreen} from '../../main/console/ConsoleScreen';
 import {BadImplementationException, LogClient_MemBuffer, exists, removeItemFromArray, BeLogged} from '@nu-art/ts-common';
-import {BlessedWidget} from '../../main/console/types';
+import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
+import {BlessedWidget} from '../../../main/console/types';
 
 
 export class TestConsole_MultiLogsGrid

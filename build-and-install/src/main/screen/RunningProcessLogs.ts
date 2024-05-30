@@ -25,11 +25,25 @@ export class RunningProcessLogs
 						await Promise.all(this.onTerminateCallbacks.map(callback => callback()));
 						process.exit(0);
 					}
-				}
+				},
+				{
+					keys: ['up'], // Scroll up on Control-U
+					callback: () => this.scrollFocusedLog(-1),
+				},
+				{
+					keys: ['down'], // Scroll down on Control-D
+					callback: () => this.scrollFocusedLog(1),
+				},
 			]
 		);
 
 		this.state = {logs: []};
+	}
+
+	scrollFocusedLog(direction: number): void {
+		const focusedWidget = this.getFocusedWidget() as BlessedWidget['log'];
+		focusedWidget.scroll(direction);
+		focusedWidget.setLabel(`scroll pos: ${focusedWidget.getScroll()}`);
 	}
 
 	protected createContent() {
@@ -58,6 +72,9 @@ export class RunningProcessLogs
 					height: `${height}%`,
 					label: ` Log for ${logs[index++].key} `,
 					border: {type: 'line'},
+					style: {
+						focus: {border: {fg: 'blue'}}, border: {fg: 'green'}, hover: {border: {fg: 'red'}}
+					},
 					scrollable: true,
 					scrollbar: {
 						ch: ' ',
@@ -68,7 +85,6 @@ export class RunningProcessLogs
 							inverse: true
 						}
 					},
-					mouse: true
 				});
 
 				yPos += height;  // Assumes all cells in a column have the same height
