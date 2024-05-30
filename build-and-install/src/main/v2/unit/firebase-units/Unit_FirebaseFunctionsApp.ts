@@ -227,7 +227,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		const dependencies = _keys(this.packageJson.root.dependencies ?? {}) as string[];
 		const tsLibUnits = MemKey_ProjectConfig.get().units.filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
 		const dependencyUnits = tsLibUnits.filter(unit => {
-			const unitPJName = unit.packageJson.root.name;
+			const unitPJName = unit.packageJson.template.name;
 			return dependencies.includes(unitPJName);
 		});
 
