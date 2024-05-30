@@ -1,5 +1,6 @@
 import {
 	_keys,
+	addItemToArrayAtIndex,
 	arrayIncludesAny,
 	asArray,
 	AsyncVoidFunction,
@@ -246,6 +247,58 @@ export class PhaseRunner<P extends Phase<string>[]>
 			await Promise.all(row.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]()));
 		}
 		return true;
+	}
+
+	/**
+	 * Will add a phase to the start of the phase array.
+	 * @param phase
+	 */
+	public prependPhase(phase: Phase<string>): void;
+	/**
+	 * Will add a phase before a specified phase.
+	 * If the specified phase is not in the phase array, will add to the start of the array.
+	 * @param phase
+	 * @param beforePhase
+	 */
+	public prependPhase(phase: Phase<string>, beforePhase: Phase<string>): void;
+	public prependPhase(phase: Phase<string>, beforePhase?: Phase<string>) {
+		if (!beforePhase) {
+			this.phases.unshift(phase);
+			return;
+		}
+
+		const index = this.phases.indexOf(beforePhase);
+		//If the beforePhase isn't in this.phases or is the first item
+		if (index === -1 || index === 0)
+			return this.prependPhase(phase);
+
+		addItemToArrayAtIndex(this.phases, phase, index - 1);
+	}
+
+	/**
+	 * Will add a phase to the end of the phase array.
+	 * @param phase
+	 */
+	public appendPhase(phase: Phase<string>): void;
+	/**
+	 * Will add a phase after a specified phase.
+	 * If the specified phase is not in the phase array, will add to the end of the array.
+	 * @param phase
+	 * @param afterPhase
+	 */
+	public appendPhase(phase: Phase<string>, afterPhase: Phase<string>): void;
+	public appendPhase(phase: Phase<string>, afterPhase?: Phase<string>) {
+		if (!afterPhase) {
+			this.phases.push(phase);
+			return;
+		}
+
+		const index = this.phases.indexOf(afterPhase);
+		//If the afterPhase isn't in this.phases or is the last item
+		if (index === -1 || index === this.phases.length - 1)
+			return this.appendPhase(phase);
+
+		addItemToArrayAtIndex(this.phases, phase, index + 1);
 	}
 
 	//######################### Public Functions #########################
