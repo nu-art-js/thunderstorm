@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 import {merge, TestSuite} from '../../_main';
+import {testSuiteTester} from '../../../../dist/testing/consts';
 
 type Input<T = any> = {
 	one: any
@@ -127,6 +128,33 @@ const TestCase_merge: TestSuite<Input, any> ['testcases'] = [
 			two: false
 		},
 	},
+	{
+		description: 'merge objects with different props',
+		result: {
+			currenPhase: {
+				name: 'Zevel2',
+				method: 'zevel2',
+				runUnitsInDependency: true,
+				filter: {}
+			}
+		},
+		input: {
+			one: {
+				currentPhase: {
+					name: 'Zevel',
+					method: 'zevel',
+					filter: {}
+				}
+			},
+			two: {
+				currentPhase: {
+					name: 'Zevel2',
+					method: 'zevel2',
+					runUnitsInDependency: true
+				}
+			},
+		},
+	}
 ];
 
 export const TestSuite_merge: TestSuite<Input, any> = {
@@ -138,6 +166,11 @@ export const TestSuite_merge: TestSuite<Input, any> = {
 		expect(result).to.eql(expected);
 	}
 };
+
+
+describe('Merge Tests', () => {
+	testSuiteTester(TestSuite_merge);
+});
 
 const TestCase_mergeFail: TestSuite<Input, any>['testcases'] = [
 	{
