@@ -123,7 +123,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	private async resolveConfigDir() {
 		//Create the dir if it doesn't exist
-		const pathToFirebaseConfigFolder = `${this.config.pathToPackage}/${this.config.firebaseConfig.pathToFirebaseConfig}`;
+		const pathToFirebaseConfigFolder = `${this.runtime.pathTo.pkg}/${this.config.firebaseConfig.pathToFirebaseConfig}`;
 		try {
 			await _fs.access(pathToFirebaseConfigFolder);
 		} catch (e: any) {
@@ -131,7 +131,12 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		}
 
 		//Fill config dir with relevant files for each file that doesn't exist
-		const defaultFiles = MemKey_DefaultFiles.get();
+		const defaultFiles = MemKey_ProjectConfig.get().defaultFileRoutes;
+		if(!defaultFiles) {
+			this.logError('No defaultFileRoutes in project config');
+			return;
+		}
+
 		await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
 				const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
 				try {
