@@ -1,5 +1,4 @@
-import {ConsoleScreen} from '../../main/console/ConsoleScreen';
-
+import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
 
 interface UserInputScreenState {
 	username: string;
@@ -15,9 +14,9 @@ export class UserInputScreen
 
 	constructor() {
 		super({
-			smartCSR: true,
-			title: 'User Input Example',
-			keyBinding: [
+				smartCSR: true,
+				title: 'User Input Example',
+			}, [
 				{
 					keys: ['tab'],  // Example to navigate through widgets
 					callback: () => this.navigateWidgets()
@@ -33,7 +32,7 @@ export class UserInputScreen
 					callback: () => process.exit(0)
 				}
 			]
-		});
+		);
 		this.state = {
 			username: '',
 			email: '',
@@ -41,7 +40,7 @@ export class UserInputScreen
 		};
 	}
 
-	protected createWidgets() {
+	protected createContent() {
 		// Username input
 		this.userName = this.createWidget('textbox', {
 			top: 2,
@@ -51,12 +50,13 @@ export class UserInputScreen
 			keys: true,
 			label: ' Username ',
 			border: {type: 'line'},
-			style: {focus: {border: {fg: 'blue'}}, border: {fg: 'gray'}}
+			style: {focus: {border: {fg: 'blue'}}, border: {fg: '#000000'}, hover: {border: {fg: 'green'}}}
 		});
 		this.userName.on('submit', (username: string) => {
 			this.setState({username});
 			this.updateLog(`Username set to ${username}`);
 		});
+		this.userName.focus();
 
 		// Email input
 		this.email = this.createWidget('textbox', {
@@ -67,7 +67,7 @@ export class UserInputScreen
 			keys: true,
 			label: ' Email ',
 			border: {type: 'line'},
-			style: {focus: {border: {fg: 'blue'}}, border: {fg: 'gray'}, hover: {border: {fg: 'blue'}}}
+			style: {focus: {border: {fg: 'blue'}}, border: {fg: 'gray'}, hover: {border: {fg: '#ff0000'}}}
 		});
 		this.email.on('submit', (email: string) => {
 			this.setState({email});
@@ -90,8 +90,8 @@ export class UserInputScreen
 			if (e.button === 'left')
 				this.updateLog(`Submitting using Mouse, input Username: ${this.state.username}, Email: ${this.state.email}`);
 		});
-		// button.on('submit', (email: string) => {
 		// 	this.setState({email});
+		// button.on('submit', (email: string) => {
 		// 	this.updateLog(`Email set to ${email}`);
 		// });
 
@@ -117,10 +117,11 @@ export class UserInputScreen
 
 	private navigateWidgets = () => {
 		// Implement cycling focus among input fields and buttons
-		const focusableWidgets = this.widgets.filter(widget => widget.keyable);
+		const focusableWidgets = this.widgets.filter(widget => widget.focusable);
 		const currentIndex = focusableWidgets.indexOf(this.getFocusedWidget());
 		const nextIndex = (currentIndex + 1) % focusableWidgets.length;
-		focusableWidgets[nextIndex].focus();
+		const elementToFocus = focusableWidgets[nextIndex];
+		('focus' in elementToFocus) && elementToFocus.focus();
 	};
 
 	private updateLog(log: string) {

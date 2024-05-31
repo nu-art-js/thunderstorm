@@ -22,9 +22,7 @@ import {
 	ModuleBE_BaseApi_Class,
 	Storm
 } from '@nu-art/thunderstorm/backend';
-import {
-	ApiDef_Permissions,
-} from '../../shared';
+import {ApiDef_Permissions,} from '../../shared';
 import {
 	CollectSessionData,
 	MemKey_AccountId,
@@ -226,6 +224,7 @@ class ModuleBE_Permissions_Class
 		await this.createApis(projects, domainNameToLevelNameToDBAccessLevel);
 		await this.createPermissionsKeys(projects);
 		await this.assignSuperAdmin();
+		// This stage updates the rtdb's config- which is why it's last. Changing the rtdb's config kills the server.
 		await this.createSystemServiceAccount(serviceAccounts);
 	};
 
@@ -407,7 +406,12 @@ class ModuleBE_Permissions_Class
 	private async createPermissionsKeys(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating App Config');
 		// const permissionKeysToCreate: PermissionKey_BE<any>[] = filterInstances(flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.permissionKeys)))));
-		await ModuleBE_AppConfigDB.createDefaults(this);
+		try {
+			await ModuleBE_AppConfigDB.createDefaults(this);
+			this.logInfoBold('Created Permission Key defaults.');
+		} catch (e: any) {
+			this.logErrorBold('Failed creating Permission Key defaults.', e);
+		}
 		this.logInfoBold('Created App Config');
 	}
 

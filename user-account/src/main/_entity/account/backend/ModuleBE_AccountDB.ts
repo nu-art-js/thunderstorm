@@ -10,6 +10,7 @@ import {
 	exists,
 	generateHex,
 	hashPasswordWithSalt,
+	md5,
 	MUSTNeverHappenException,
 	Year
 } from '@nu-art/ts-common';
@@ -38,7 +39,6 @@ import {
 	DB_Account,
 	DBDef_Accounts,
 	DBProto_Account,
-	HeaderKey_SessionId,
 	SafeDB_Account,
 	UI_Account
 } from '../shared';
@@ -53,6 +53,7 @@ import {
 	SessionKey_Account_BE,
 	SessionKey_Session_BE
 } from '../../session/backend';
+import {HeaderKey_SessionId} from '@nu-art/thunderstorm/shared/headers';
 import Transaction = firestore.Transaction;
 
 
@@ -125,7 +126,7 @@ export class ModuleBE_AccountDB_Class
 	manipulateQuery(query: FirestoreQuery<DB_Account>): FirestoreQuery<DB_Account> {
 		return {
 			...query,
-			select: ['__created', '__updated', 'email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']
+			select: ['__created', '_v', '__updated', 'email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']
 		};
 	}
 
@@ -224,7 +225,7 @@ export class ModuleBE_AccountDB_Class
 
 			this.impl.fixEmail(accountWithPassword);
 			this.impl.assertPasswordCheck(accountWithPassword);
-			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
+			const spicedAccount = this.impl.spiceAccount({email: accountWithPassword.email, password: accountWithPassword.password});
 			const dbSafeAccount = await this.runTransaction(async transaction => {
 				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
 				await this.impl.setAccountMemKeys(dbSafeAccount);
@@ -370,7 +371,7 @@ export class ModuleBE_AccountDB_Class
 				throw new ApiException(404, 'Missing sessionId');
 
 			await dispatch_onPreLogout.dispatchModuleAsync();
-			await ModuleBE_SessionDB.delete.query({where: {sessionId}});
+			await ModuleBE_SessionDB.delete.query({where: {sessionId: md5(sessionId)}});
 		},
 		getSessions: async (query: DB_BaseObject) => {
 			return {sessions: await ModuleBE_SessionDB.query.where({accountId: query._id})};
@@ -414,7 +415,11 @@ export class ModuleBE_AccountDB_Class
 
 	// @ts-ignore
 	private token = {
-		create: async ({accountId, ttl, label}: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
+		create: async ({
+										 accountId,
+										 ttl,
+										 label
+									 }: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
 			if (!exists(ttl) || ttl < Year)
 				throw HttpCodes._4XX.BAD_REQUEST('Invalid token TTL', `TTL value is invalid (${ttl})`);
 
@@ -434,12 +439,8 @@ export class ModuleBE_AccountDB_Class
 
 			return {token: sessionId};
 		},
-		invalidate: async (token: string) => {
-			await ModuleBE_SessionDB.delete.where({sessionId: token});
-		},
-		invalidateAll: async (accountId: string) => {
-			await ModuleBE_SessionDB.delete.where({accountId});
-		}
+		invalidate: async (token: string) => await ModuleBE_SessionDB.delete.where({sessionId: token}),
+		invalidateAll: async (accountId: string) => await ModuleBE_SessionDB.delete.where({accountId})
 	};
 }
 

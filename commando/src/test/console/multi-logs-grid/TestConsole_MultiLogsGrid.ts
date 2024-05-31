@@ -1,5 +1,6 @@
-import {ConsoleScreen} from '../../main/console/ConsoleScreen';
-import {BadImplementationException, LogClient_MemBuffer, exists, removeItemFromArray} from '@nu-art/ts-common';
+import {BadImplementationException, LogClient_MemBuffer, exists, removeItemFromArray, BeLogged} from '@nu-art/ts-common';
+import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
+import {BlessedWidget} from '../../../main/console/types';
 
 
 export class TestConsole_MultiLogsGrid
@@ -7,21 +8,20 @@ export class TestConsole_MultiLogsGrid
 
 	constructor() {
 		super({
-			smartCSR: true,
-			title: 'Runtime-Logs',
-			keyBinding: [
+				smartCSR: true,
+				title: 'Runtime-Logs',
+			}, [
 				{
 					keys: ['C-c'],  // Example to submit form with Enter key
 					callback: () => process.exit(0)
 				}
 			]
-
-		});
+		);
 
 		this.state = {logs: []};
 	}
 
-	protected createWidgets() {
+	protected createContent() {
 		const logs = this.state.logs;
 
 		const fittingGrid = gridPreset[logs.length - 1];
@@ -80,6 +80,7 @@ export class TestConsole_MultiLogsGrid
 			this.render();
 			// might have a leak.. need to remove the listener at some point
 		});
+		BeLogged.addClient(logClient);
 		this.setState({logs});
 	}
 
@@ -90,6 +91,7 @@ export class TestConsole_MultiLogsGrid
 
 		const logs = this.state.logs;
 		removeItemFromArray(logs, foundLog);
+		BeLogged.removeConsole(foundLog.logClient);
 
 		this.dispose();
 		this.create();
@@ -99,7 +101,7 @@ export class TestConsole_MultiLogsGrid
 
 	protected render(): void {
 		this.state.logs.forEach((log, i) => {
-			this.widgets[i]?.setContent(log.logClient.buffers[0] ?? 'asdsd');
+			(this.widgets[i] as BlessedWidget['log'])?.setContent(log.logClient.buffers[0] ?? 'asdsd');
 		});
 	}
 }

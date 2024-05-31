@@ -1,4 +1,8 @@
-import {BuildPhase, PackageBuildPhaseType_Package, PackageBuildPhaseType_PackageWithOutput} from '../logic/ProjectManager';
+import {
+	BuildPhase,
+	PackageBuildPhaseType_Package,
+	PackageBuildPhaseType_PackageWithOutput
+} from '../logic/ProjectManager';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
@@ -10,7 +14,8 @@ import {
 	_logger_finalDate,
 	_logger_getPrefix,
 	_logger_timezoneOffset,
-	BadImplementationException, BeLogged,
+	BadImplementationException,
+	BeLogged,
 	currentTimeMillis,
 	exists,
 	filterDuplicates,
@@ -21,7 +26,6 @@ import {
 	Minute,
 	reduceToMap,
 	Second,
-	sleep,
 	StaticLogger,
 	TypedMap
 } from '@nu-art/ts-common';
@@ -33,10 +37,12 @@ import {
 	PackageType_FirebaseFunctionsApp,
 	PackageType_FirebaseHostingApp,
 	PackageType_InfraLib,
+	PackageType_Python,
 	RuntimePackage_WithOutput
 } from '../core/types';
 import {
-	createFirebaseRC, generateProxyFile,
+	createFirebaseRC,
+	generateProxyFile,
 	writeToFile_functionFirebaseConfigJSON,
 	writeToFile_FunctionFirebaseJSON,
 	writeToFile_HostingFirebaseConfigJSON,
@@ -52,7 +58,9 @@ import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_Defaul
 import {MemKey_ProjectManager} from '../project-manager';
 import {MemKey_ProjectScreen} from '../screen/ProjectScreen';
 import {RunningProcessLogs} from '../screen/RunningProcessLogs';
-import {Commando} from '@nu-art/commando/core/commando/Commando';
+import {CommandExecutor_FirebaseFunction, CommandExecutor_FirebaseHosting} from '../logic/command-executors';
+import {CommandExecutor_Python} from '../logic/command-executors/CommandExecutor_Python';
+import {Commando} from '@nu-art/commando/core/cli';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
@@ -65,7 +73,6 @@ const CONST_VersionApp = 'version-app.json';
 
 const pathToProjectTS_Config = convertToFullPath(`./.config/${CONST_TS_Config}`);
 const pathToProjectEslint = convertToFullPath('./.config/.eslintrc.js');
-const runInDebug = false;
 const CommandoLibs = ['commando', 'build-and-install', 'ts-common'];
 
 export const Phase_PrintHelp: BuildPhase = {
@@ -140,6 +147,7 @@ export const Phase_PrepareParams: BuildPhase = {
 	isMandatory: true,
 	breakAfterPhase: true,
 	mandatoryPhases: [Phase_SetupProject, Phase_SetWithThunderstorm],
+	filter: async (pkg) => pkg.type !== PackageType_Python,
 	action: async (pkg) => {
 		const packages = MemKey_Packages.get();
 		const projectScreen = MemKey_ProjectScreen.get();
@@ -164,6 +172,9 @@ export const Phase_ResolveTemplate: BuildPhase = {
 	isMandatory: true,
 	mandatoryPhases: [Phase_PrepareParams, Phase_SetupProject, Phase_SetWithThunderstorm],
 	action: async (pkg) => {
+		if (pkg.type === PackageType_Python)
+			return;
+
 		const packages = MemKey_Packages.get();
 		const projectScreen = MemKey_ProjectScreen.get();
 
@@ -225,21 +236,25 @@ export const Phase_ResolveEnv: BuildPhase = {
 		if (pkg.type === 'firebase-functions-app') {
 			const firebaseFunctionPkg = firebasePkg as Package_FirebaseFunctionsApp;
 			const pathToFirebaseConfigFolder = `${firebaseFunctionPkg.path}/${firebaseFunctionPkg.envConfig.pathToFirebaseConfig}`;
+
+			if (firebasePkg.envConfig.ssl)
+				await generateProxyFile(firebasePkg, `${firebaseFunctionPkg.path}/src/main/proxy.ts`);
+
 			try {
 				await _fs.access(pathToFirebaseConfigFolder);
 			} catch (e: any) {
 				await _fs.mkdir(pathToFirebaseConfigFolder, {recursive: true});
 			}
 
-			if (firebasePkg.envConfig.ssl)
-				await generateProxyFile(firebasePkg, `${firebaseFunctionPkg.path}/src/main/proxy.ts`);
-
 			await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
 					const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
 					try {
 						await _fs.access(pathToConfigFile);
 					} catch (e: any) {
-						const defaultFileContent = await _fs.readFile(defaultFiles.firebaseConfig[firebaseConfigKey], {encoding: 'utf-8'});
+						const path = defaultFiles.firebaseConfig?.[firebaseConfigKey];
+						if (!path)
+							return;
+						const defaultFileContent = await _fs.readFile(path, {encoding: 'utf-8'});
 						await _fs.writeFile(pathToConfigFile, defaultFileContent, {encoding: 'utf-8'});
 					}
 				})
@@ -260,17 +275,17 @@ export const Phase_ResolvePackages: BuildPhase = {
 	}
 };
 
-export const Phase_InstallNvm: BuildPhase = {
-	type: 'project',
-	name: 'install-nvm',
-	mandatoryPhases: [Phase_ResolveEnv],
-	action: async () => {
-		const installed = await NVM.installRequiredVersionIfNeeded();
-		if (!installed)
-			return;
-
-	}
-};
+// export const Phase_InstallNvm: BuildPhase = {
+// 	type: 'project',
+// 	name: 'install-nvm',
+// 	mandatoryPhases: [Phase_ResolveEnv],
+// 	action: async () => {
+// 		const installed = await NVM.installRequiredVersionIfNeeded();
+// 		if (!installed)
+// 			return;
+//
+// 	}
+// };
 
 export const Phase_PrintDependencyTree: BuildPhase = {
 	type: PackageBuildPhaseType_Package,
@@ -296,6 +311,9 @@ export const Phase_CheckCyclicImports: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => RuntimeParams.checkCyclicImports,
 	action: async (pkg) => {
+		if (pkg.type === PackageType_Python)
+			return;
+
 		if (!pkg.output)
 			return;
 
@@ -326,8 +344,10 @@ export const Phase_PackagePurge: BuildPhase = {
 	type: PackageBuildPhaseType_PackageWithOutput,
 	name: 'package-purge',
 	mandatoryPhases: [Phase_ResolveEnv],
-	filter: async (pkg) => fs.existsSync(pkg.output) && RuntimeParams.purge,
+	filter: async (pkg) => pkg.type !== PackageType_Python && fs.existsSync(pkg.output) && RuntimeParams.purge,
 	action: async (pkg) => {
+		if (pkg.type === PackageType_Python)
+			return;
 		const projectScreen = MemKey_ProjectScreen.get();
 
 		//Update cli ui
@@ -344,19 +364,19 @@ export const Phase_InstallGlobals: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async () => RuntimeParams.installGlobals,
 	action: async () => {
-		const globalPackages = 'firebase-tools@latest ts-node@latest typescript@latest eslint@^8.0.0';
+		const globalPackages = 'firebase-tools@5.0.4 ts-node@latest typescript@latest eslint@^8.0.0';
 		await NVM.createCommando().append(`npm i -g ${globalPackages}`).execute();
 	}
 };
 
-export const Phase_InstallPnpm: BuildPhase = {
-	type: 'project',
-	name: 'install-pnpm',
-	mandatoryPhases: [Phase_ResolveEnv],
-	action: async () => {
-		await PNPM.install(NVM.createCommando());
-	}
-};
+// export const Phase_InstallPnpm: BuildPhase = {
+// 	type: 'project',
+// 	name: 'install-pnpm',
+// 	mandatoryPhases: [Phase_ResolveEnv],
+// 	action: async () => {
+// 		await PNPM.install(NVM.createCommando());
+// 	}
+// };
 
 export const Phase_InstallPackages: BuildPhase = {
 	type: 'project',
@@ -374,19 +394,21 @@ export const Phase_InstallPackages: BuildPhase = {
 	}
 };
 
-export const Phase_Clean: BuildPhase = {
-	type: PackageBuildPhaseType_PackageWithOutput,
-	name: 'clean',
-	mandatoryPhases: [Phase_ResolveEnv],
-	filter: async (pkg) => RuntimeParams.clean,
+export const Phase_InstallPythonPackages: BuildPhase = {
+	type: 'package',
+	name: 'install-python-packages',
+	filter: async pkg => (RuntimeParams.encounterManager || RuntimeParams.encounterManagerListen) && (RuntimeParams.installPackages || RuntimeParams.install) && pkg.type === PackageType_Python,
 	action: async (pkg) => {
-		const projectScreen = MemKey_ProjectScreen.get();
-
-		projectScreen.updateOrCreatePackage(pkg.name, 'Cleaning');
-		if (!fs.existsSync(pkg.output))
+		if (pkg.type !== PackageType_Python)
 			return;
 
-		await _fs.rm(pkg.output, {recursive: true, force: true});
+		await NVM.createCommando(Cli_Basic)
+			.cd(convertToFullPath(pkg.path))
+			.append('echo installing python')
+			.append('python3 -m venv venv')
+			.append('source venv/bin/activate')
+			.append('pip3 install -r requirements.txt')
+			.execute();
 	}
 };
 
@@ -396,6 +418,9 @@ export const Phase_Lint: BuildPhase = {
 	mandatoryPhases: [Phase_ResolveEnv],
 	filter: async (pkg) => RuntimeParams.lint && pkg.type !== 'sourceless',
 	action: async (pkg) => {
+		if (pkg.type === PackageType_Python)
+			return;
+
 		const projectScreen = MemKey_ProjectScreen.get();
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Linting');
@@ -431,9 +456,9 @@ export const Phase_PrepareCompile: BuildPhase = {
 	name: 'prepare-compile',
 	isMandatory: true,
 	mandatoryPhases: [Phase_ResolveEnv],
-	filter: async (pkg) => pkg.type !== 'sourceless' && !RuntimeParams.noBuild,
+	filter: async (pkg) => pkg.type !== 'sourceless' && pkg.type !== PackageType_Python && !RuntimeParams.noBuild,
 	action: async (pkg) => {
-		if (pkg.type === 'sourceless')
+		if (pkg.type === 'sourceless' || pkg.type === PackageType_Python)
 			return;
 
 		const folder = 'main';
@@ -503,6 +528,9 @@ export const Phase_PreCompile: BuildPhase = {
 		return fs.existsSync(`${pkg.path}/prebuild.sh`);
 	},
 	action: async (pkg) => {
+		if (pkg.type === PackageType_Python)
+			return;
+
 		return NVM.createCommando(Cli_Basic)
 			.cd(pkg.path)
 			.append(`bash ${pkg.path}/prebuild.sh`).execute();
@@ -517,8 +545,13 @@ export const Phase_Compile: BuildPhase = {
 	action: async (pkg) => {
 		const packages = MemKey_Packages.get();
 
-		if (pkg.type === 'sourceless')
+		if (pkg.type === 'sourceless' || pkg.type === PackageType_Python)
 			return;
+
+		if (RuntimeParams.clean && fs.existsSync(pkg.output)) {
+			await _fs.rm(pkg.output, {recursive: true, force: true});
+			await _fs.mkdir(pkg.output, {recursive: true});
+		}
 
 		const folder = 'main';
 		const sourceFolder = `${pkg.path}/src/${folder}`;
@@ -556,7 +589,10 @@ export const Phase_Compile: BuildPhase = {
 				if (_pkg.name === pkg.name)
 					return false;
 
-				if (pkg.packageJsonOutput?.dependencies && !_keys(pkg.packageJsonOutput?.dependencies).includes(_pkg.packageJsonTemplate.name))
+				if (_pkg.type === PackageType_Python)
+					return false;
+
+				if (pkg.packageJsonOutput?.dependencies && !_keys(pkg.packageJsonOutput?.dependencies).includes(_pkg.packageJsonTemplate?.name))
 					return false;
 
 				return _pkg.type !== 'sourceless';
@@ -564,12 +600,17 @@ export const Phase_Compile: BuildPhase = {
 
 			if (runTimePackages) {
 				for (const rtPack of runTimePackages) {
+					if (rtPack.type === PackageType_Python)
+						return;
+
+					// @ts-ignore
 					if (!(rtPack as RuntimePackage_WithOutput).output)
 						continue;
 
 					const pkgOutputFolderAsDependency = `${pkg.output}/.dependencies/${rtPack.name}/`;
 					await NVM.createCommando()
 						.append(`mkdir -p ${pkgOutputFolderAsDependency}`)
+						// @ts-ignore
 						.append(`rsync -a --delete ${(rtPack as RuntimePackage_WithOutput).output}/ ${pkg.output}/.dependencies/${rtPack.name}/`)
 						.execute();
 
@@ -577,6 +618,7 @@ export const Phase_Compile: BuildPhase = {
 				}
 			}
 		}
+
 		return compileActions[sourceFolder]();
 	}
 };
@@ -609,13 +651,13 @@ export const Phase_CompileWatch: BuildPhase = {
 
 			const rtPackages = MemKey_Packages.get();
 			const pkg = flatArray(rtPackages.packagesDependency).find(pkg => {
-				return path.startsWith(pkg.path) && pkg.type !== 'sourceless';
+				return path.startsWith(pkg.path) && pkg.type !== 'sourceless' && pkg.type !== PackageType_Python;
 			});
 			if (deleteDist && pkg && 'output' in pkg)
 				await _fs.rmdir(pkg.output);
 
 			const packageIndex = rtPackages.packagesDependency.findIndex(packages => {
-				return packages.some(pkg => path.startsWith(pkg.path) && pkg.type !== 'sourceless');
+				return packages.some(pkg => path.startsWith(pkg.path) && pkg.type !== 'sourceless' && pkg.type !== PackageType_Python);
 			});
 
 			try {
@@ -681,19 +723,20 @@ export const Phase_CompileWatch: BuildPhase = {
 	}
 };
 
+const executorMap: TypedMap<CommandExecutor_FirebaseFunction> = {};
+
 let runningAppsLogs: RunningProcessLogs;
-let counter = 0;
 export const Phase_Launch: BuildPhase = {
 	type: 'package',
 	name: 'launch',
 	terminatingPhase: true,
 	mandatoryPhases: [Phase_ResolveEnv],
-	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.launch))?.[0] && (pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app'),
+	filter: async (pkg) => !!pkg.name.match(new RegExp(RuntimeParams.launch))?.[0] && (pkg.type === 'firebase-functions-app' || pkg.type === 'firebase-hosting-app' || pkg.type === PackageType_Python),
 	action: async (pkg) => {
 		const projectManager = MemKey_ProjectManager.get();
 		const projectScreen = MemKey_ProjectScreen.get();
 		if (!runningAppsLogs) {
-			projectScreen.dispose().releaseScreen();
+			projectScreen.dispose();
 			projectManager.clearLogger();
 			runningAppsLogs = new RunningProcessLogs();
 			runningAppsLogs.create();
@@ -714,93 +757,73 @@ export const Phase_Launch: BuildPhase = {
 		projectScreen.updateOrCreatePackage(pkg.name, 'Launching...');
 
 		if (pkg.type === 'firebase-functions-app') {
-			await sleep(1000 * counter++);
-			const allPorts = Array.from({length: 10}, (_, i) => `${pkg.envConfig.basePort + i}`);
-			runningAppsLogs.registerApp(pkg.name, logClient);
-			await NVM.createCommando(Cli_Basic)
-				.setUID(pkg.name).debug()
-				.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
-				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-				.append('echo ')
-				.execute();
-
-			const KILL_CONFIRM_LOG = `KILL PROCESS`;
-			const PROXY_PID_PROCESS = 'PROXY_PID_PROCESS';
-			let proxyPid: number;
-			const proxyPidProcessor = (stdout: string) => {
-				if (stdout.includes(KILL_CONFIRM_LOG))
-					return proxyCommando.close();
-
-				const pid = stdout.match(new RegExp(`${PROXY_PID_PROCESS}=(\\d+)`))?.[1];
-				if (!exists(pid))
-					return;
-
-				proxyPid = +pid;
-				// proxyCommando.removeStdoutProcessor(proxyPidProcessor);
-			};
-
-			const proxyCommando = NVM.createInteractiveCommando(Cli_Basic)
-				.setUID(pkg.name)
-				.cd(pkg.path)
-				.addStdoutProcessor(proxyPidProcessor)
-				.append('echo ZE ZEVEL1')
-				.append('ts-node src/main/proxy.ts &')
-				.append('pid=$!')
-				.append(`echo "${PROXY_PID_PROCESS}=\${pid}"`)
-				.append(`wait \$pid`)
-				.append(`echo "${KILL_CONFIRM_LOG} \${pid}"`);
-
-			const EMULATOR_PID_PROCESS = 'EMULATOR_PID_PROCESS';
-			let emulatorPid: number;
-			const emulatorPidProcessor = (stdout: string) => {
-				if (stdout.includes(KILL_CONFIRM_LOG))
-					return emulatorCommando.close();
-
-				const pid = stdout.match(new RegExp(`${EMULATOR_PID_PROCESS}=(\\d+)`))?.[1];
-				if (!exists(pid))
-					return;
-
-				emulatorPid = +pid;
-			};
-
-			const emulatorCommando = NVM.createInteractiveCommando(Cli_Basic)
-				.setUID(pkg.name)
-				.cd(pkg.path)
-				.addStdoutProcessor(emulatorPidProcessor)
-				.append('echo ZE ZEVEL2')
-				.append(`firebase emulators:start --export-on-exit --import=.trash/data ${runInDebug ? `--inspect-functions ${pkg.envConfig.ssl}` : ''} &`)
-				.append('pid=$!')
-				.append(`echo "${EMULATOR_PID_PROCESS}=\${pid}"`)
-				.append(`wait \$pid`)
-				.append(`echo "${KILL_CONFIRM_LOG} \${pid}"`);
-
-			await proxyCommando.execute();
-			await emulatorCommando.execute();
-
-			runningAppsLogs.addOnTerminateCallback(async () => {
-				console.log('HERE');
-				await emulatorCommando.gracefullyKill(emulatorPid);
-				await proxyCommando.gracefullyKill(proxyPid);
-				runningAppsLogs.unregisterApp(pkg.name);
+			runningAppsLogs?.registerApp(pkg.name, logClient);
+			const executor = await new CommandExecutor_FirebaseFunction(pkg).execute();
+			executorMap[pkg.name] = executor;
+			runningAppsLogs?.addOnTerminateCallback(async () => {
+				await executor.kill();
+				runningAppsLogs?.unregisterApp(pkg.name);
 			});
 			return;
 		}
 
 		if (pkg.type === 'firebase-hosting-app') {
-			runningAppsLogs.registerApp(pkg.name, logClient);
+			runningAppsLogs?.registerApp(pkg.name, logClient);
+			const executor = await new CommandExecutor_FirebaseHosting(pkg).execute();
+			runningAppsLogs?.addOnTerminateCallback(async () => {
+				await executor.kill();
+				runningAppsLogs?.unregisterApp(pkg.name);
+			});
+		}
 
-			if (!pkg.envConfig.hostingPort)
-				throw new BadImplementationException('Missing hosting port in envConfig');
+		if (pkg.type === PackageType_Python) {
+			runningAppsLogs?.registerApp(pkg.name, logClient);
 
-			return NVM.createInteractiveCommando(Cli_Basic)
-				.setUID(pkg.name).debug()
-				.cd(pkg.path)
-				.append('echo ZE ZEVEL3')
-				.append(`array=($(lsof -ti:${[pkg.envConfig.hostingPort].join(',')}))`)
-				.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-				.append(`nvm use`)
-				.append(`npm run start`)
-				.execute();
+			const startPython = async () => {
+				const executor = new CommandExecutor_Python(pkg);
+				runningAppsLogs?.addOnTerminateCallback(async () => {
+					await executor.kill();
+					runningAppsLogs?.unregisterApp(pkg.name);
+				});
+				await executor.execute();
+			};
+
+			// will listen to advisor and km be execution and then launch em
+			if (RuntimeParams.encounterManagerListen) {
+				logClient.log(pkg.name, LogLevel.Info, true, ['Awaiting Advisor & KM BE launch']);
+				const advisorExecutor = executorMap['advisor-backend'];
+				const kmExecutor = executorMap['km-backend'];
+
+				if (!advisorExecutor)
+					logClient.log(pkg.name, LogLevel.Error, true, ['Advisor BE executor not registered yet']);
+
+				if (!kmExecutor)
+					logClient.log(pkg.name, LogLevel.Error, true, ['KM BE executor not registered yet']);
+
+				let advisorUp: boolean = false;
+				let kmUp: boolean = false;
+
+				advisorExecutor?.addOnReadyCallback(async () => {
+					advisorUp = true;
+					if (!kmUp)
+						return logClient.log(pkg.name, LogLevel.Info, true, ['Advisor launched, waiting for KM']);
+
+					logClient.log(pkg.name, LogLevel.Info, true, ['Advisor & KM BE launched, Starting!']);
+					await startPython();
+				});
+
+				kmExecutor?.addOnReadyCallback(async () => {
+					kmUp = true;
+					if (!advisorUp)
+						return logClient.log(pkg.name, LogLevel.Info, true, ['KM launched, waiting for Advisor']);
+
+					logClient.log(pkg.name, LogLevel.Info, true, ['Advisor & KM BE launched, Starting!']);
+					await startPython();
+				});
+			} else if (RuntimeParams.encounterManager) {
+				// will launch em without waiting
+				await startPython();
+			}
 		}
 
 		projectScreen.updateOrCreatePackage(pkg.name, 'Died');
@@ -827,7 +850,7 @@ export const Phase_DeployFrontend: BuildPhase = {
 
 		await NVM.createCommando(Cli_Basic)
 			.cd(pkg.path)
-			.append(`firebase deploy --only hosting`)
+			.append(`firebase --debug deploy --only hosting`)
 			.execute();
 
 		projectScreen.updateOrCreatePackage(pkg.name, `Deployed (${counter.format('mm:ss.zzz')})`);
@@ -853,6 +876,11 @@ export const Phase_DeployBackend: BuildPhase = {
 
 		await NVM.createCommando(Cli_Basic)
 			.cd(pkg.path)
+			.cd('dist')
+			.ls()
+			.cat('package.json')
+			.cat('index.js')
+			.cd_()
 			.append(`firebase --debug deploy --only functions --force`)
 			.execute();
 

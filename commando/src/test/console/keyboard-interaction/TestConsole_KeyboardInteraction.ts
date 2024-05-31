@@ -1,22 +1,23 @@
-import {ConsoleScreen} from '../../main/console/ConsoleScreen';
+import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
+import {BlessedWidget} from '../../../main/console/types';
 
 
 export class TestConsole_KeyboardInteraction
 	extends ConsoleScreen<{ counter: number }> {
-	private box: any;
+	private box!: BlessedWidget['textbox'];
 
 	constructor() {
-		super({
-			keyBinding: [{
+		super({}, [{
 				keys: ['up'], // Bind the 'up' arrow key
 				callback: () => this.incrementCounter() // Callback to increment the counter
 			}, {
 				keys: ['down'], // Bind the 'up' arrow key
 				callback: () => this.decrementCounter() // Callback to increment the counter
 			}]
-		});
+		);
+	}
 
-		// Create a box widget
+	protected createContent() {
 		this.box = this.createWidget('textbox', {
 			top: 'center',
 			left: 'center',
@@ -29,7 +30,6 @@ export class TestConsole_KeyboardInteraction
 				border: {fg: 'green'}
 			}
 		});
-
 	}
 
 	// Method to increment the counter state.

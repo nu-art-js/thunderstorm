@@ -51,11 +51,11 @@ export const BaiParam_SetEnv: BaseCliParam<'environment', string> = {
 };
 
 export const BaiParam_Setup: BaseCliParam<'setup', boolean> = {
-	keys: ['--setup', '-s'],
+	keys: ['--setup'],
 	keyName: 'setup',
 	type: 'boolean',
 	group: 'Build',
-	description: '--setup / -s are deprecated... use --install or -i'
+	description: 'Setup local project for developer'
 };
 
 export const BaiParam_Install: BaseCliParam<'install', boolean> = {
@@ -247,7 +247,7 @@ export const BaiParam_NoGit: BaseCliParam<'noGit', boolean> = {
 };
 
 export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
-	keys: ['--debug'],
+	keys: ['--debug', '-d'],
 	keyName: 'debug',
 	group: 'Other',
 	type: 'boolean',
@@ -278,6 +278,23 @@ export const BaiParam_AllLogs: BaseCliParam<'allLogs', boolean> = {
 	group: 'Other',
 	description: 'will disable ui and show verbose logs for bai run',
 };
+
+export const BaiParam_EncounterManager: BaseCliParam<'encounterManager', boolean> = {
+	keys: ['-em', '--encounter-manager'],
+	keyName: 'encounterManager',
+	type: 'boolean',
+	group: 'Other',
+	description: 'Will install encounter manager shit',
+};
+
+export const BaiParam_EncounterManagerListen: BaseCliParam<'encounterManagerListen', boolean> = {
+	keys: ['-eml', '--encounter-manager-listen'],
+	keyName: 'encounterManagerListen',
+	type: 'boolean',
+	group: 'Other',
+	description: 'Will install encounter manager shit and launch after advisor and km',
+};
+
 
 export const AllBaiParams = [
 	BaiParam_Help,
@@ -312,7 +329,9 @@ export const AllBaiParams = [
 	BaiParam_NoGit, // TODO: to implement
 	BaiParam_Debug,
 	BaiParam_Publish, // TODO: to implement
-	BaiParam_AllLogs
+	BaiParam_AllLogs,
+	BaiParam_EncounterManager,
+	BaiParam_EncounterManagerListen
 ];
 
 const params = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();

@@ -17,6 +17,7 @@ import {
 	ApiDef_SyncEnv,
 	ApiModule,
 	DBModuleType,
+	HeaderKey_SessionId,
 	HttpMethod,
 	QueryApi,
 	Request_FetchFirebaseBackup,
@@ -37,7 +38,6 @@ import {firestore} from 'firebase-admin';
 
 type Config = {
 	urlMap: TypedMap<string>
-	fetchBackupDocsSecretsMap: TypedMap<string>,
 	sessionMap: TypedMap<TypedMap<string>>,
 	maxBatch: number
 	shouldBackupBeforeSync?: boolean;
@@ -99,7 +99,7 @@ class ModuleBE_SyncEnv_Class
 		};
 
 		const url = remoteUrls[body.env];
-		const sessionId = MemKey_HttpRequest.get().headers['x-session-id'];
+		const sessionId = MemKey_HttpRequest.get().headers[HeaderKey_SessionId];
 
 		const module = RuntimeModules().find<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbKey === body.moduleName);
 
@@ -108,7 +108,7 @@ class ModuleBE_SyncEnv_Class
 			.createRequest({...upsertAll, fullUrl: url + '/' + upsertAll.path, timeout: 5 * Minute})
 			.setBody(body.items)
 			.setUrlParams(body.items)
-			.addHeader('x-session-id', sessionId!)
+			.addHeader(HeaderKey_SessionId, sessionId!)
 			.executeSync(true);
 
 		console.log(response);

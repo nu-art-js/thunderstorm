@@ -149,7 +149,7 @@ export class HttpServer_Class
 			if (origin) {
 				origin = resolveCorsOrigin(origin);
 				if (!origin)
-					this.logWarning(`CORS issue!!!\n Origin: '${req.headers.origin}' does not exists in config: ${JSON.stringify(cors.origins)}`);
+					this.logWarning(`CORS issue!!!\n Origin: '${req.headers.origin}' does not exist in config: ${JSON.stringify(cors.origins)}`);
 			}
 
 			res.header('Access-Control-Allow-Origin', origin || 'N/A');
