@@ -743,7 +743,6 @@ export const Phase_Launch: BuildPhase = {
 		}
 
 		const logClient = new LogClient_MemBuffer(pkg.name);
-		logClient.setForTerminal();
 		logClient.setComposer((tag: string, level: LogLevel): string => {
 			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
 			const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23).split('_')[1];

@@ -41,96 +41,109 @@ export class Cli_Git
 		status: this.git_status,
 	};
 
-	public git_clone(url: string, options?: GitCloneParams): this {
-		const branch = `${options?.branch ? ` -b ${options?.branch}` : ''}`;
-		const recursive = `${options?.recursive ? ` --recursive` : ''}`;
-		const outputFolder = `${options?.outputFolder ? ` ${options.outputFolder}` : ''}`;
-		this.cli.append(`git clone${recursive}${branch} ${url}${outputFolder}`);
-		return this;
+	async git_clone(url: string, options?: GitCloneParams): Promise<this> {
+		return new Promise<this>((resolve, reject) => {
+			const branch = `${options?.branch ? ` -b ${options?.branch}` : ''}`;
+			const recursive = `${options?.recursive ? ` --recursive` : ''}`;
+			const outputFolder = `${options?.outputFolder ? ` ${options.outputFolder}` : ''}`;
+			const command = `git clone${recursive}${branch} ${url}${outputFolder}`;
+			this.echo(command);
+			this.cli
+				.append(command)
+				.execute((exitCode: number, stdout: string, stderr: string) => {
+					if (exitCode === 0)
+						return resolve(this);
+
+					if (exitCode === 128)
+						return reject(new Error(`No access to repo: ${url}`));
+
+					return reject(new Error(`Got unexpected exit code(${exitCode}) while cloning: ${url}`));
+				});
+		});
 	}
 
-	private git_checkout(branch: string): Cli_Git {
+	private git_checkout(branch: string): this {
 		this.cli.append(`git checkout ${branch}`);
 		return this;
 	}
 
-	private git_createTag(tagName: string): Cli_Git {
+	private git_createTag(tagName: string): this {
 		this.cli.append(`git tag -f ${tagName}`);
 		return this;
 	}
 
-	private git_gitCommit(commitMessage: string): Cli_Git {
+	private git_gitCommit(commitMessage: string): this {
 		this.cli.append(`git commit -m "${commitMessage}"`);
 		return this;
 
 	}
 
-	private git_add(file: string): Cli_Git {
+	private git_add(file: string): this {
 		this.cli.append(`git add "${file}"`);
 		return this;
 
 	}
 
-	private git_addAll(): Cli_Git {
+	private git_addAll(): this {
 		this.cli.append(`git add .`);
 		return this;
 
 	}
 
-	private git_addAndCommit(commitMessage: string): Cli_Git {
+	private git_addAndCommit(commitMessage: string): this {
 		this.cli.append(`git commit -am "${commitMessage}"`);
 		return this;
 
 	}
 
-	private git_push(options?: GitPushParams): Cli_Git {
+	private git_push(options?: GitPushParams): this {
 		this.cli.append(`git push ${options?.remote} ${options?.branch}`);
 		return this;
 	}
 
-	private git_pushTags(): Cli_Git {
+	private git_pushTags(): this {
 		this.cli.append('git push --tags --force');
 		return this;
 	}
 
-	private git_fetch(): Cli_Git {
+	private git_fetch(): this {
 		this.cli.append('git fetch');
 		return this;
 
 	}
 
-	private git_resetHard(tag = ''): Cli_Git {
+	private git_resetHard(tag = ''): this {
 		this.cli.append('git reset --hard ${tag}');
 		return this;
 	}
 
-	private git_getCurrentBranch(): Cli_Git {
+	private git_getCurrentBranch(): this {
 		this.cli.append('git status | grep "On branch" | sed -E "s');
 		return this;
 	}
 
-	private git_pull(params: string): Cli_Git {
+	private git_pull(params: string): this {
 		this.cli.append('git pull ${params}');
 		return this;
 	}
 
-	private git_merge(mergeFrom: string): Cli_Git {
+	private git_merge(mergeFrom: string): this {
 		this.cli.append(`git merge ${mergeFrom}`);
 		return this;
 	}
 
-	private git_createBranch(branch: string): Cli_Git {
+	private git_createBranch(branch: string): this {
 		this.cli.append(`git checkout - b ${branch}`);
 		this.cli.append(`git push-- set -upstream origin ${branch}`);
 		return this;
 	}
 
-	private git_gsui(modules = ''): Cli_Git {
+	private git_gsui(modules = ''): this {
 		this.cli.append('git submodule update --recursive --init ${modules}');
 		return this;
 	}
 
-	private git_status(): Cli_Git {
+	private git_status(): this {
 		this.cli.append('git status');
 		return this;
 	}

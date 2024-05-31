@@ -3,12 +3,12 @@ import {CreateMergedInstance} from './class-merger';
 import {CliError} from './CliError';
 import {
 	AsyncVoidFunction,
-	Constructor, filterInOut,
+	Constructor,
 	generateHex,
 	Logger,
 	LogLevel,
 	removeItemFromArray,
-	ThisShouldNotHappenException,
+	ThisShouldNotHappenException, Void,
 	voidFunction
 } from '@nu-art/ts-common';
 import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
@@ -34,12 +34,12 @@ const defaultOptions: Options = {
 	indentation: 2,
 };
 
+type LogTypes = 'out' | 'err';
+
 export class BaseCLI
 	extends Logger {
 
-	protected stderrValidator: ((stdout: string) => boolean) = () => true;
-	protected stdoutProcessors: ((stdout: string) => void)[] = [];
-	protected stderrProcessors: ((stdout: string) => void)[] = [];
+	protected logProcessors: ((log: string, std: LogTypes) => boolean)[] = [];
 
 	protected commands: string[] = [];
 	private indentation: number = 0;
@@ -88,26 +88,53 @@ export class BaseCLI
 		this.setTag(uuid);
 	}
 
-	setStdErrorValidator(processor: (stderr: string) => boolean) {
-		this.stderrValidator = processor;
+	addLogProcessor(processor: (log: string, std: LogTypes) => boolean) {
+		this.logProcessors.push(processor);
+		return this;
 	}
 
-	addStdoutProcessor(processor: (stdout: string) => void) {
-		this.stdoutProcessors.push(processor);
+	removeLogProcessor(processor: (log: string, std: LogTypes) => boolean) {
+		removeItemFromArray(this.logProcessors, processor);
+		return this;
 	}
 
-	addStderrProcessor(processor: (stderr: string) => void) {
-		this.stderrProcessors.push(processor);
+	registerCommandHandler(handler: (exitCode: number, stdout: string, stderr: string) => void) {
+		const uniqueKey = generateHex(16);
+		const regexp = new RegExp(`${uniqueKey}=(\\d+)`);
+		let _stderr = '';
+		let _stdout = '';
+		const stdoutProcessor = (log: string, type: LogTypes) => {
+			if (type === 'err')
+				_stderr += `${log}`;
+			else
+				_stdout += `${log}`;
+
+			if (!log.includes(uniqueKey))
+				return true;
+
+			const match = log.match(regexp);
+			if (!match)
+				return true;
+
+			const exitCode = match?.[1];
+			console.log(`handling exitCode: ${exitCode}`);
+			try {
+				handler(+exitCode, _stdout, _stderr);
+			} catch (e) {
+				this.kill();
+			} finally {
+				this.removeLogProcessor(stdoutProcessor);
+			}
+
+			return false;
+		};
+
+		this.append(`echo ${uniqueKey}=$?`)
+			.addLogProcessor(stdoutProcessor);
 	}
 
-	removeStdoutProcessor(processor: (stdout: string) => void) {
-		removeItemFromArray(this.stdoutProcessors, processor);
+	kill(signal?: NodeJS.Signals | number) {
 	}
-
-	removeStderrProcessor(processor: (stderr: string) => void) {
-		removeItemFromArray(this.stderrProcessors, processor);
-	}
-
 }
 
 export class CliInteractive
@@ -123,26 +150,27 @@ export class CliInteractive
 		});
 
 		// Handle shell output (stdout)
-		const printer = (data: Buffer) => {
+		const printer = (std: LogTypes) => (data: Buffer) => {
 			const message = data.toString().trim();
 			if (!message.length)
 				return;
 
 			try {
-				if (!this.stderrValidator(message))
-					this.stdoutProcessors.forEach(processor => processor(message));
-				else
-					this.stderrProcessors.forEach(processor => processor(message));
+				const toPrint = this.logProcessors.reduce((toPrint, processor) => {
+					const filter = processor(message, std);
+					return toPrint && filter;
+				}, true);
 
-				this.logInfo(`${message}`);
+				if (toPrint)
+					this.logInfo(`${message}`);
 			} catch (e: any) {
 				this.logError(e);
 			}
 		};
 
-		this.shell.stdout?.on('data', printer);
+		this.shell.stdout?.on('data', printer('out'));
 
-		this.shell.stderr?.on('data', printer);
+		this.shell.stderr?.on('data', printer('err'));
 
 		// Handle shell errors (stderr)
 		this.shell.on('data', printer);
@@ -153,7 +181,10 @@ export class CliInteractive
 		});
 	}
 
-	execute = async (): Promise<void> => {
+	execute = async (handler?: (exitCode: number, stdout: string, stderr: string) => void): Promise<void> => {
+		if (handler)
+			this.registerCommandHandler(handler);
+
 		const command = this.commands.join(this.option.newlineDelimiter);
 		if (this._debug)
 			this.logDebug(`executing: `, `"""\n${command}\n"""`);
@@ -169,22 +200,21 @@ export class CliInteractive
 		this.shell.stdin?.end(cb);
 	};
 
-	kill = (signal?: NodeJS.Signals | number) => {
+	kill(signal?: NodeJS.Signals | number) {
 		return this.shell.kill(signal);
-	};
+	}
 
-	gracefullyKill = async (pid?: number) => {
+	gracefullyKill = async (pid?: number, signal: NodeJS.Signals | number = 'SIGINT') => {
 		return new Promise<void>((resolve, reject) => {
 			this.shell.on('exit', async (code, signal) => {
 				resolve();
 			});
 
 			if (pid) {
-				process.kill(pid, 'SIGINT');
+				process.kill(pid, signal);
 			} else {
-				this.shell.kill('SIGINT');
+				this.shell.kill(signal);
 			}
-
 		});
 	};
 }
@@ -198,7 +228,10 @@ export class Cli
 	 * Executes the accumulated commands in the command list.
 	 * @returns {Promise<string>} A promise that resolves with the standard output of the executed command.
 	 */
-	execute = async (): Promise<{ stdout: string, stderr: string }> => {
+	execute = async (handler?: (exitCode: number, stdout: string, stderr: string) => void): Promise<{ stdout: string, stderr: string }> => {
+		if (handler)
+			this.registerCommandHandler(handler);
+
 		const command = this.commands.join(this.option.newlineDelimiter);
 		if (this._debug)
 			this.logDebug(`executing: `, `"""\n${command}\n"""`);
@@ -207,29 +240,19 @@ export class Cli
 			exec(command, this.cliOptions, (error, stdout, stderr) => {
 				this.commands = [];
 
-				if (error) {
-					reject(new CliError(`executing:\n${command}\n`, stdout, stderr, error));
-				}
-
-				const errorLogs = stderr.split('\n');
-				const {filteredIn, filteredOut} = filterInOut(errorLogs, this.stderrValidator);
-
-				stderr = filteredIn.join('\n').trim();
-				if (stderr && stderr.length > 0)
-					reject(stderr);
-
-				const stdErrToOut = filteredOut.join('\n').trim();
-				if (stdErrToOut && stdErrToOut.length > 0)
-					stdout += `from stderr: \n${stdErrToOut}`;
 				if (stdout) {
-					this.stdoutProcessors.forEach(processor => processor(stdout));
+					[...this.logProcessors].forEach(processor => processor(stdout, 'out'));
 					this.logInfo(stdout);
 				}
 
 				if (stderr) {
-					this.stderrProcessors.forEach(processor => processor(stdout));
+					[...this.logProcessors].forEach(processor => processor(stdout, 'err'));
 					this.logError(stderr);
 				}
+
+				if (error)
+					return reject(new CliError(`executing:\n${command}\n`, stdout, stderr, error));
+
 				resolve({stdout, stderr});
 			});
 		});
@@ -301,26 +324,19 @@ export class Commando {
 			return commando;
 		};
 
-		commando.addStdoutProcessor = (processor) => {
-			cli.addStdoutProcessor(processor);
+		commando.addLogProcessor = (processor) => {
+			cli.addLogProcessor(processor);
 			return commando;
 		};
-		commando.addStderrProcessor = (processor) => {
-			cli.addStderrProcessor(processor);
+		commando.removeLogProcessor = (processor) => {
+			cli.removeLogProcessor(processor);
 			return commando;
 		};
-		commando.removeStdoutProcessor = (processor) => {
-			cli.removeStdoutProcessor(processor);
+		commando.registerCommandHandler = (processor) => {
+			cli.registerCommandHandler(processor);
 			return commando;
 		};
-		commando.removeStderrProcessor = (processor) => {
-			cli.removeStderrProcessor(processor);
-			return commando;
-		};
-		commando.setStdErrorValidator = (processor) => {
-			cli.setStdErrorValidator(processor);
-			return commando;
-		}
+
 		return commando;
 	}
 
@@ -343,11 +359,10 @@ export class Commando {
 	executeFile = async (filePath: string, interpreter?: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
 	executeRemoteFile = async (pathToFile: string, interpreter: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
 
-	addStdoutProcessor = (processor: (stdout: string) => void) => this;
-	addStderrProcessor = (processor: (stderr: string) => void) => this;
-	removeStdoutProcessor = (processor: (stdout: string) => void) => this;
-	removeStderrProcessor = (processor: (stderr: string) => void) => this;
-	setStdErrorValidator = (processor: (stderr: string) => boolean) => this;
+	addLogProcessor = (processor: (log: string, std: LogTypes) => boolean) => this;
+	removeLogProcessor = (processor: (log: string, std: LogTypes) => boolean) => this;
+
+	registerCommandHandler = (handler: (exitCode: number, stdout: string, stderr: string) => void) => this;
 
 	private constructor() {
 	}
@@ -381,34 +396,25 @@ export class CommandoInteractive {
 		commando.gracefullyKill = async (pid?: number) => {
 			await commando.cli.gracefullyKill(pid);
 		};
-		commando.addStdoutProcessor = (processor) => {
-			cli.addStdoutProcessor(processor);
+		commando.addLogProcessor = (processor) => {
+			cli.addLogProcessor(processor);
 			return commando;
 		};
-		commando.addStderrProcessor = (processor) => {
-			cli.addStderrProcessor(processor);
+		commando.removeLogProcessor = (processor) => {
+			cli.removeLogProcessor(processor);
 			return commando;
 		};
-		commando.removeStdoutProcessor = (processor) => {
-			cli.removeStdoutProcessor(processor);
-			return commando;
+		commando.execute = async (handler?: (exitCode: number, stdout: string, stderr: string) => void) => {
+			return cli.execute(handler);
 		};
-		commando.removeStderrProcessor = (processor) => {
-			cli.removeStderrProcessor(processor);
-			return commando;
-		};
-		commando.setStdErrorValidator = (processor) => {
-			cli.setStdErrorValidator(processor);
-			return commando;
-		}
 		return commando as CommandoInteractive & typeof _commando;
 	}
 
-	addStdoutProcessor = (processor: (stdout: string) => void) => this;
-	addStderrProcessor = (processor: (stderr: string) => void) => this;
-	removeStdoutProcessor = (processor: (stdout: string) => void) => this;
-	removeStderrProcessor = (processor: (stderr: string) => void) => this;
-	setStdErrorValidator = (processor: (stderr: string) => boolean) => this;
+	// placeholders
+	execute = async () => Void;
+	addLogProcessor = (processor: (log: string, std: LogTypes) => boolean) => this;
+	removeLogProcessor = (processor: (log: string, std: LogTypes) => boolean) => this;
+
 	setUID = (uid: string) => this;
 	close = (cb?: AsyncVoidFunction) => this;
 	kill = (signal?: NodeJS.Signals | number) => true;
@@ -440,9 +446,10 @@ export class CommandoCLIListener {
 
 	private _process(stdout: string) {
 		if (!this.stdoutPassesFilter(stdout))
-			return;
+			return false;
 
 		this.process(stdout);
+		return true;
 	}
 
 	private stdoutPassesFilter = (stdout: string): boolean => {
@@ -456,8 +463,7 @@ export class CommandoCLIListener {
 
 	public listen = <T extends Commando | CommandoInteractive>(commando: T): T => {
 		const process = this._process.bind(this);
-		commando.addStdoutProcessor(process);
-		commando.addStderrProcessor(process);
+		commando.addLogProcessor(process);
 		return commando;
 	};
 
