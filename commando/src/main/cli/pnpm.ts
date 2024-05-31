@@ -44,7 +44,7 @@ export class Cli_PNPM
 
 		this.logDebug(`installing PNPM version ${this._expectedVersion}`);
 		await (commando ?? Commando.create())
-			.append(`curl -fsSL "https://get.pnpm.io/install.sh" | env PNPM_VERSION=${this._expectedVersion} sh -`)
+			.append(`curl -fsSL "https://get.pnpm.io/install.sh" | env PNPM_VERSION=${this._expectedVersion} bash -`)
 			.execute();
 
 		return this;

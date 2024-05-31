@@ -180,6 +180,9 @@ export function getEnvConfig(pkg: Package_FirebaseHostingApp | Package_FirebaseF
 export async function generateProxyFile(firebasePkg: Package_FirebaseHostingApp | Package_FirebaseFunctionsApp, pathToFile: string) {
 	const envConfig = getEnvConfig(firebasePkg);
 	const defaultFiles = MemKey_DefaultFiles.get();
+	if(!defaultFiles?.backend?.proxy)
+		return;
+
 	let fileContent = await _fs.readFile(defaultFiles.backend.proxy, {encoding: 'utf-8'});
 	fileContent = fileContent.replace(/PROJECT_ID/g, `${envConfig.projectId}`);
 	fileContent = fileContent.replace(/PROXY_PORT/g, `${firebasePkg.envConfig.basePort}`);

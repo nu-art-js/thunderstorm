@@ -133,7 +133,6 @@ export class Cli_NVM
 		return CommandoInteractive.create(...plugins).debug()
 			.append('export NVM_DIR="$HOME/.nvm"')
 			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
-			.append('[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
 			.append('nvm use');
 	}
 
@@ -142,7 +141,7 @@ export class Cli_NVM
 		commando
 			.append('export NVM_DIR="$HOME/.nvm"')
 			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
-			.append('[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  # This loads nvm bash_completion');
+			.append('nvm use');
 		return commando;
 	}
 }

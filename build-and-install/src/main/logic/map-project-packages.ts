@@ -12,11 +12,13 @@ import {
 	PackageType_FirebaseHostingApp,
 	PackageType_InfraLib,
 	PackageType_ProjectLib,
+	PackageType_Python,
 	PackageType_Sourceless,
 	ProjectConfig,
-	RuntimePackage, RuntimeProjectConfig
+	RuntimePackage,
+	RuntimeProjectConfig
 } from '../core/types';
-import {__stringify, arrayToMap} from '@nu-art/ts-common';
+import {__stringify, arrayToMap, ImplementationMissingException} from '@nu-art/ts-common';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 
 
@@ -64,6 +66,9 @@ function getRuntimePackageBaseDetails(basePackage: Package): Required<Package> {
 		case PackageType_FirebaseFunctionsApp:
 		case PackageType_FirebaseHostingApp:
 			return getRuntimePackageBaseDetails_Firebase(basePackage);
+
+		default:
+			throw new ImplementationMissingException(`Missin runtime package converter for package of type ${basePackage.type}`);
 	}
 }
 
@@ -96,11 +101,15 @@ export function convertToRuntimePackage(basePackage: Package, project: ProjectCo
 }
 
 export function mapProjectPackages(projectConfig: ProjectConfig): RuntimeProjectConfig {
-	const packages = projectConfig.packages.map(basePackage => convertToRuntimePackage(basePackage, projectConfig));
+	const packages = projectConfig.packages.filter(pkg=>pkg.type !== PackageType_Python).map(basePackage => convertToRuntimePackage(basePackage, projectConfig));
+	const pythonPackages = projectConfig.packages.filter(pkg => pkg.type === PackageType_Python);
+
 	const packagesDependency = groupPackagesByDependencyLevel(packages);
+	packagesDependency.push(pythonPackages as RuntimePackage[])
+
 	return {
 		...projectConfig,
-		packages,
+		packages: [...packages, ...pythonPackages],
 		packagesDependency,
 		packageMap: arrayToMap(packages, p => p.packageJsonTemplate.name)
 	};

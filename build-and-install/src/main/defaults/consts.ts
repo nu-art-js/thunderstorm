@@ -1,17 +1,30 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 
-
 const CONST_FirebaseConfig = `${__dirname}/.firebase_config`;
 const CONST_BackendProxy = `${__dirname}/backend-proxy`;
 
-export const Const_FirebaseDefaultsKeyToFile: { [k in keyof typeof Default_Files['firebaseConfig']]: string } = {
+export const Const_FirebaseConfigKeys = [
+	'databaseRules',
+	'firestoreIndexesRules',
+	'firestoreRules',
+	'storageRules',
+] as const;
+
+export type ProjectConfig_DefaultFileRoutes = {
+	firebaseConfig?: {[k in typeof Const_FirebaseConfigKeys[number]]?:string};
+	backend?: {
+		proxy?: string;
+	}
+}
+
+export const Const_FirebaseDefaultsKeyToFile: { [k in typeof Const_FirebaseConfigKeys[number]]: string } = {
 	databaseRules: 'database.rules.json',
 	firestoreIndexesRules: 'firestore.indexes.json',
 	firestoreRules: 'firestore.rules',
 	storageRules: 'storage.rules',
 };
 
-export const Default_Files = {
+export const Default_Files: ProjectConfig_DefaultFileRoutes = {
 	firebaseConfig: {
 		databaseRules: `${CONST_FirebaseConfig}/database.rules.json`,
 		firestoreIndexesRules: `${CONST_FirebaseConfig}/firestore.indexes.json`,
@@ -22,13 +35,6 @@ export const Default_Files = {
 		proxy: `${CONST_BackendProxy}/proxy._ts`
 	}
 };
-
-export const Const_FirebaseConfigKeys: (keyof typeof Default_Files['firebaseConfig'])[] = [
-	'databaseRules',
-	'firestoreIndexesRules',
-	'firestoreRules',
-	'storageRules',
-];
 
 const Default_OutputPath = './.trash';
 export const Default_OutputFiles = {

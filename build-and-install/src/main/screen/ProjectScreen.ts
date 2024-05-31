@@ -4,6 +4,7 @@ import * as blessed from 'neo-blessed';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, LogClient_MemBuffer, LogLevel} from '@nu-art/ts-common';
 import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
+import {BlessedWidget} from '@nu-art/commando/console/types';
 
 
 export type PackageStatus = {
@@ -21,22 +22,23 @@ type State = {
 export class ProjectScreen
 	extends ConsoleScreen<State> {
 
-	private phaseBox: blessed.Widgets.BoxElement;
-	private packageTable: blessed.Widgets.TableElement;
-	private logger: blessed.Widgets.LogElement;
+	private phase!: BlessedWidget['text'];
+	private packageTable!: BlessedWidget['listTable'];
+	private logger!: BlessedWidget['log'];
+
 	readonly logClient = new LogClient_MemBuffer('output.txt');
 
 	constructor(initialData: PackageStatus[]) {
 		super({
-			smartCSR: true,
-			title: 'Build and install',
-			keyBinding: [{
+				smartCSR: true,
+				title: 'Build and install',
+			}, [{
 				keys: ['escape', 'q', 'C-c'],
 				callback: async () => {
 					return process.exit(1); // Quit on q, esc, or ctrl-c
 				}
 			}]
-		});
+		);
 		this.setState({
 			packageData: initialData
 		});
@@ -57,8 +59,8 @@ export class ProjectScreen
 		return this.state.packageData;
 	}
 
-	protected createWidgets() {
-		this.phaseBox = this.createWidget('text', {
+	protected createContent() {
+		this.phase = this.createWidget('text', {
 			top: 0,
 			left: 0,
 			height: 3,
@@ -68,23 +70,22 @@ export class ProjectScreen
 			tags: true,
 			style: {
 				border: {fg: 'green'},
-				fg: 'black',
+				fg: 'green',
 			},
 			align: 'center'
 		});
 
-		this.packageTable = this.createWidget('listtable', {
+		this.packageTable = this.createWidget('listTable', {
 			top: 3,
 			left: 0,
 			width: '40%',
-			height: '70%',
+			height: '100%',
 			keys: true,
 			border: {type: 'line'},
 			align: 'left',
 			tags: true,
 			style: {
 				border: {fg: 'blue'},
-				// @ts-ignore
 				header: {bold: true},
 				cell: {fg: 'white', selected: {bg: 'blue'}}
 			},
@@ -108,9 +109,9 @@ export class ProjectScreen
 			tags: true,
 			style: {
 				border: {fg: 'green'},
-				fg: 'black',
+				fg: 'green',
 			},
-			align: 'center'
+			align: 'center',
 		});
 
 		this.logger = this.createWidget('log', {
@@ -139,12 +140,11 @@ export class ProjectScreen
 
 	private renderCurrentRunningPhase = () => {
 		const content = `Phase Name: ${this.state?.currentRunningPhase?.phaseName ?? 'No Phase'}\n`;
-		this.phaseBox.setContent(content);
+		this.phase.setContent(content);
 	};
 
 	private renderPackageTableTable = () => {
 		const scrollPosition = this.packageTable.getScroll();
-		const selectedIndex = this.packageTable.selected;
 
 		const data = [
 			['Package Name', 'Status'],
@@ -152,7 +152,6 @@ export class ProjectScreen
 		];
 
 		this.packageTable.setData(data);
-		this.packageTable.select(selectedIndex);
 		this.packageTable.setScroll(scrollPosition);
 	};
 

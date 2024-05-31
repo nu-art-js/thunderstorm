@@ -1,5 +1,6 @@
-import {AsyncVoidFunction, BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray, sleep} from '@nu-art/ts-common';
+import {AsyncVoidFunction, BadImplementationException, exists, LogClient_MemBuffer, removeItemFromArray} from '@nu-art/ts-common';
 import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
+import {BlessedWidget} from '@nu-art/commando/console/types';
 
 
 export class RunningProcessLogs
@@ -10,9 +11,9 @@ export class RunningProcessLogs
 	constructor() {
 		let killed = false;
 		super({
-			smartCSR: true,
-			title: 'Runtime-Logs',
-			keyBinding: [
+				smartCSR: true,
+				title: 'Runtime-Logs',
+			}, [
 				{
 					keys: ['C-c'],  // Example to submit form with Enter key
 					callback: async () => {
@@ -21,23 +22,31 @@ export class RunningProcessLogs
 
 						killed = true;
 						// this.dispose();
-						console.log('exiting1');
-						await sleep(2000);
-						console.log('exiting2');
-						await sleep(2000);
 						await Promise.all(this.onTerminateCallbacks.map(callback => callback()));
-
 						process.exit(0);
 					}
-				}
+				},
+				{
+					keys: ['up'], // Scroll up on Control-U
+					callback: () => this.scrollFocusedLog(-1),
+				},
+				{
+					keys: ['down'], // Scroll down on Control-D
+					callback: () => this.scrollFocusedLog(1),
+				},
 			]
-
-		});
+		);
 
 		this.state = {logs: []};
 	}
 
-	protected createWidgets() {
+	scrollFocusedLog(direction: number): void {
+		const focusedWidget = this.getFocusedWidget() as BlessedWidget['log'];
+		focusedWidget.scroll(direction);
+		focusedWidget.setLabel(`scroll pos: ${focusedWidget.getScroll()}`);
+	}
+
+	protected createContent() {
 		const logs = this.state.logs;
 
 		const fittingGrid = gridPreset[logs.length - 1];
@@ -63,6 +72,9 @@ export class RunningProcessLogs
 					height: `${height}%`,
 					label: ` Log for ${logs[index++].key} `,
 					border: {type: 'line'},
+					style: {
+						focus: {border: {fg: 'blue'}}, border: {fg: 'green'}, hover: {border: {fg: 'red'}}
+					},
 					scrollable: true,
 					scrollbar: {
 						ch: ' ',
@@ -73,7 +85,6 @@ export class RunningProcessLogs
 							inverse: true
 						}
 					},
-					mouse: true
 				});
 
 				yPos += height;  // Assumes all cells in a column have the same height
@@ -116,7 +127,7 @@ export class RunningProcessLogs
 	protected render(): void {
 		try {
 			this.state.logs.forEach((log, i) => {
-				this.widgets[i]?.setContent(log.logClient.buffers[0] ?? 'asdsd');
+				(this.widgets[i] as BlessedWidget['log'])?.setContent(log.logClient.buffers[0] ?? 'asdsd');
 			});
 		} catch (e) {
 			console.log(e);
