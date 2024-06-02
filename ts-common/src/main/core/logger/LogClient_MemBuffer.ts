@@ -51,17 +51,12 @@ function getColor(level: LogLevel, bold = false): string {
 
 export class LogClient_MemBuffer
 	extends LogClient_BaseRotate {
-
-	forTerminal = false;
+	private keepNaturalColors = false;
 	readonly buffers: string[] = [''];
 	private onLogAppended?: VoidFunction;
 
 	constructor(name: string, maxBuffers = 10, maxBufferSize = 1024 * 1024) {
 		super(name, maxBuffers, maxBufferSize);
-	}
-
-	setForTerminal() {
-		this.forTerminal = true;
 	}
 
 	setLogAppendedListener(onLogAppended: VoidFunction) {
@@ -71,7 +66,8 @@ export class LogClient_MemBuffer
 	protected processLogMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]) {
 		const color = getColor(level, bold);
 		const paramsAsStrings = _logger_convertLogParamsToStrings(toLog);
-		return _logger_indentNewLineBy(color + prefix, paramsAsStrings.join(' ')) + NoColor;
+		const linePrefix = `${color}${prefix}${this.keepNaturalColors ? NoColor : ''}`;
+		return _logger_indentNewLineBy(linePrefix, paramsAsStrings.join(' '));
 	}
 
 	protected printLogMessage(log: string) {
@@ -88,5 +84,9 @@ export class LogClient_MemBuffer
 
 	protected prepare(): void {
 		this.buffers[0] = '';
+	}
+
+	public keepLogsNaturalColors(keepNaturalColors = true) {
+		this.keepNaturalColors = keepNaturalColors;
 	}
 }

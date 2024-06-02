@@ -1,74 +1,14 @@
-import {exists, filterDuplicates, Primitive, StaticLogger, TypedMap, TypeOfTypeAsString} from '@nu-art/ts-common';
+import {exists, filterDuplicates, StaticLogger} from '@nu-art/ts-common';
+import {BaseCliParam, CliParam, CliParams} from './types';
+import {DefaultProcessorsMapper} from './consts';
 
 
-export const DefaultProcessor_Boolean: CliParam<any, boolean>['process'] = (input?: string, defaultValue?: boolean): boolean => {
-	return true;
-};
-
-export const DefaultProcessor_String: CliParam<any, string>['process'] = (input?: string, defaultValue?: string): string => {
-	if (!input || !input.length) {
-		if (!defaultValue)
-			throw new Error('expected string value');
-
-		return defaultValue;
-	}
-
-	return input;
-};
-
-export const DefaultProcessor_Number: CliParam<any, number>['process'] = (input?: string, defaultValue?: number): number => {
-	if (!input) {
-		if (!defaultValue)
-			throw new Error('expected number value');
-
-		return defaultValue;
-	}
-
-	if (isNaN(Number(input)))
-		throw new Error('expected number value');
-
-	return Number(input);
-};
-
-const DefaultProcessorsMapper: TypedMap<CliParam<any, any>['process']> = {
-	string: DefaultProcessor_String,
-	boolean: DefaultProcessor_Boolean,
-	number: DefaultProcessor_Number,
-};
-
-export type CliParams<T extends BaseCliParam<string, any>[]> = {
-	[K in T[number]['keyName']]: NonNullable<Extract<T[number], { keyName: K }>['defaultValue']>
-}
-
-export type DependencyParam<T extends Primitive | Primitive[]> = {
-	param: BaseCliParam<string, T>, value: T
-}
-
-export type BaseCliParam<K extends string, V extends Primitive | Primitive[]> = {
-	keys: string[];
-	keyName: K;
-	type: TypeOfTypeAsString<V>;
-	description: string;
-	name?: string;
-	options?: string[];
-	defaultValue?: V;
-	process?: (value?: string, defaultValue?: V) => V;
-	isArray?: true;
-	group?: string;
-	dependencies?: DependencyParam<any>[]
-}
-
-export type CliParam<K extends string, V extends Primitive | Primitive[]> = BaseCliParam<K, V> & {
-	name: string;
-	process: (value?: string, defaultValue?: V) => V;
-}
-
-export class CLIParams_Resolver<T extends BaseCliParam<string, any>[], Output extends CliParams<T> = CliParams<T>> {
+export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output extends CliParams<T> = CliParams<T>> {
 
 	private params: CliParam<string, any>[];
 
 	static create<T extends BaseCliParam<string, any>[]>(...params: T) {
-		return new CLIParams_Resolver<T>(params);
+		return new CLIParamsResolver<T>(params);
 	}
 
 	constructor(params: BaseCliParam<string, any>[]) {

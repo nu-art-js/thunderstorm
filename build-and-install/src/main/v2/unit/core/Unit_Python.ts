@@ -1,9 +1,10 @@
 import {Phase_Install} from '../../phase';
 import {UnitPhaseImplementor} from '../types';
 import {BaseUnit} from './BaseUnit';
-import {Commando, CommandoInteractive} from '@nu-art/commando/core/cli';
-import {convertToFullPath} from '@nu-art/commando/core/tools';
+import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
+import {CommandoInteractive} from '@nu-art/commando/shell';
+
 
 type _Config<C> = {
 	pathToPackage: string
@@ -18,7 +19,7 @@ export class Unit_Python<Config extends {} = {}, RuntimeConfig extends {} = {},
 	extends BaseUnit<C, RTC>
 	implements UnitPhaseImplementor<[Phase_Install]> {
 
-	protected commando!: CommandoInteractive & Commando & Cli_Basic;
+	protected commando!: CommandoInteractive & Cli_Basic;
 
 	constructor(config: Unit_Python<C, RTC>['config']) {
 		super(config);

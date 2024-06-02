@@ -6,11 +6,12 @@ import {RuntimeParams} from '../../../core/params/params';
 import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
-import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '@nu-art/commando/core/cli';
+import {CommandoInteractive} from '@nu-art/commando/shell';
+import {convertToFullPath} from '@nu-art/commando/shell/tools';
+
 
 type _Config<Config> = {
 	firebaseConfig: FirebasePackageConfig;
@@ -21,16 +22,10 @@ const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_ResolveConfigs,Phase_Launch,Phase_DeployFrontend]> {
+	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
 
-	private readonly APP_PID_LOG = '_APP_PID_';
-	private readonly APP_KILL_LOG = '_APP_KILLED_';
-
-	private launchCommando!: CommandoInteractive & Commando & Cli_Basic;
-	private listeners!: {
-		pid: CommandoCLIKeyValueListener;
-		kill: CommandoCLIListener;
-	};
+	private launchCommando!: CommandoInteractive & Cli_Basic;
+	private hostingPid!: number;
 
 	//######################### Phase Implementations #########################
 
@@ -50,14 +45,13 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	}
 
 	async launch() {
-		this.setStatus('Launching')
+		this.setStatus('Launching');
 		await this.initLaunch();
-		await this.initLaunchListeners();
 		await this.clearPorts();
 		await this.runApp();
 	}
 
-	async deployFrontend () {
+	async deployFrontend() {
 		await this.deployImpl();
 	}
 
@@ -131,32 +125,18 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
-		await _fs.writeFile(targetPath, fileContent, {encoding:'utf-8'});
+		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
 	//######################### Launch Logic #########################
 
-	private async initLaunch () {
-		if(!this.config.firebaseConfig.hostingPort)
+	private async initLaunch() {
+		if (!this.config.firebaseConfig.hostingPort)
 			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
 
 		this.launchCommando = NVM.createInteractiveCommando(Cli_Basic)
 			.setUID(this.config.key)
 			.cd(this.runtime.pathTo.pkg);
-	}
-
-	private async initLaunchListeners () {
-		this.listeners = {
-			pid: new CommandoCLIKeyValueListener(new RegExp(`${this.APP_PID_LOG}=(\\d+)`)),
-			kill: new CommandoCLIListener(() => this.launchCommando.close(), this.APP_KILL_LOG),
-		};
-		this.listeners.pid.listen(this.launchCommando);
-		this.listeners.kill.listen(this.launchCommando);
-	}
-
-	private getPID() {
-		const pid = Number(this.listeners.pid.getValue());
-		return isNaN(pid) ? undefined : pid;
 	}
 
 	private async clearPorts() {
@@ -168,27 +148,24 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 			.execute();
 	}
 
-	private async runApp () {
+	private async runApp() {
 		await this.launchCommando
-			.append(`npm run start &`)
-			.append('pid=$!')
-			.append(`echo "${this.APP_PID_LOG}=\${pid}"`)
-			.append(`wait \$pid`)
-			.append(`echo "${this.APP_KILL_LOG} \${pid}"`)
-			.execute();
+			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`)
+			.executeAsync(pid => this.hostingPid = pid);
+
+		await this.launchCommando.gracefullyKill(this.hostingPid);
 	}
 
 	public async kill() {
-		if(!this.launchCommando)
+		if (!this.launchCommando)
 			return;
 
-		const appPid = this.getPID();
-		await this.launchCommando?.gracefullyKill(appPid);
+		await this.launchCommando?.gracefullyKill(this.hostingPid);
 	}
 
 	//######################### Deploy Logic #########################
 
-	private async deployImpl () {
+	private async deployImpl() {
 		await NVM.createCommando(Cli_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			.append(`firebase --debug deploy --only hosting`)
