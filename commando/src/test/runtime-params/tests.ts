@@ -1,9 +1,9 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {BaseCliParam, CliParams} from '../../main/cli/cli-params';
-import {CLIParams_Resolver} from '../../../dist/cli/cli-params';
 import {BadImplementationException, compare} from '@nu-art/ts-common';
 import {expect} from 'chai';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {BaseCliParam, CliParams} from '../../main/cli-params/types';
+import {CLIParamsResolver} from '../../main/cli-params/CLIParamsResolver';
 
 
 type TestSuite_RuntimeParams<Params extends BaseCliParam<string, any>[], Output extends Partial<CliParams<Params>> = Partial<CliParams<Params>>>
@@ -98,7 +98,7 @@ export const TestSuite_RuntimeParams: TestSuite<Input, any> = {
 	processor: async (testCase) => {
 		const paramsDef = testCase.input.params;
 		const inputParams = testCase.input.input.split(' ');
-		const resolvedParams = CLIParams_Resolver.create(...paramsDef).resolveParamValue(inputParams);
+		const resolvedParams = CLIParamsResolver.create(...paramsDef).resolveParamValue(inputParams);
 		const result = compare(resolvedParams, testCase.result);
 		if (!result) {
 			console.log('Expected: ', testCase.result);

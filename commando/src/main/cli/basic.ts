@@ -1,6 +1,5 @@
-import {BaseCommando, CliBlock} from '../core/commando/BaseCommando';
-import {CliInteractive} from '../core/commando/CommandoInteractive';
-import {Cli} from '../core/commando/Commando';
+import {BaseCommando} from '../shell/core/BaseCommando';
+import {CliBlock} from '../shell/types';
 
 
 type Cli_EchoOptions = {
@@ -24,7 +23,7 @@ type Cli_CpdirOptions = {
  * Represents a Command Line Interface (CLI) to build and execute shell commands.
  */
 export class Cli_Basic
-	extends BaseCommando<Cli | CliInteractive> {
+	extends BaseCommando {
 
 	/**
 	 * Changes directory and optionally executes a block of commands in that directory.
@@ -33,8 +32,8 @@ export class Cli_Basic
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	cd(folderName: string, toRun?: CliBlock<this>): this {
-		this.cli.append(`cd ${folderName}`);
-		this.cli.indentIn();
+		this.append(`cd ${folderName}`);
+		this.indentIn();
 
 		if (toRun) {
 			toRun(this);
@@ -45,7 +44,7 @@ export class Cli_Basic
 	}
 
 	custom(command: string) {
-		this.cli.append(command);
+		this.append(command);
 		return this;
 	}
 
@@ -54,8 +53,8 @@ export class Cli_Basic
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	cd_(): this {
-		this.cli.indentOut();
-		this.cli.append(`cd -`);
+		this.indentOut();
+		this.append(`cd -`);
 		return this;
 	}
 
@@ -65,12 +64,12 @@ export class Cli_Basic
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	public ls(params: string = ''): this {
-		this.cli.append(`ls ${params}`);
+		this.append(`ls ${params}`);
 		return this;
 	}
 
 	public mkdir(dirName: string): this {
-		this.cli.append(`mkdir -p ${dirName}`);
+		this.append(`mkdir -p ${dirName}`);
 		return this;
 	}
 
@@ -82,7 +81,7 @@ export class Cli_Basic
 		if (options?.recursive)
 			command += ' -r';
 
-		this.cli.append(`${command} ${dirPath}`);
+		this.append(`${command} ${dirPath}`);
 		return this;
 	}
 
@@ -92,12 +91,12 @@ export class Cli_Basic
 			command += '/*';
 
 		command += ` ${destPath}`;
-		this.cli.append(command);
+		this.append(command);
 		return this;
 	}
 
 	public cat(fileName: string) {
-		this.cli.append(`cat ${fileName}`);
+		this.append(`cat ${fileName}`);
 		return this;
 	}
 
@@ -106,7 +105,7 @@ export class Cli_Basic
 		const _toFile = options?.toFile ? `>${options.toFile.append ? '>' : ''} ${options.toFile.name}` : '';
 		const escapedLog = log.replace(/\\/g, '\\\\').replace(/\n/g, '\\\\n').replace(/\t/g, '\\\t');
 
-		this.cli.append(`echo ${_escape} "${escapedLog}" ${_toFile}`);
+		this.append(`echo ${_escape} "${escapedLog}" ${_toFile}`);
 		return this;
 	}
 
@@ -115,7 +114,7 @@ export class Cli_Basic
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	public pwd(): this {
-		this.cli.append('pwd');
+		this.append('pwd');
 		return this;
 	}
 
@@ -126,7 +125,7 @@ export class Cli_Basic
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	public assignVar(varName: string, value: string | string[]): this {
-		this.cli.append(`${varName}=(${Array.isArray(value) ? value : [value].join(' ')})`);
+		this.append(`${varName}=(${Array.isArray(value) ? value : [value].join(' ')})`);
 		return this;
 	}
 }

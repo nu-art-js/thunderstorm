@@ -7,9 +7,10 @@ import {BadImplementationException} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor} from '../types';
 import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
-import {Commando} from '@nu-art/commando/core/cli';
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
+import {Commando} from '@nu-art/commando/shell';
+
 
 type _Config<Config> = {
 	customTSConfig?: boolean;
@@ -105,9 +106,9 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 		await Commando
 			.create(Cli_Basic)
 			.cd(`${this.runtime.pathTo.pkg}/src/main`)
-			.setStdErrorValidator(stderr => {
-				return !stderr.match(/\d+\sblock/);
-			})
+			// .setStdErrorValidator(stderr => {
+			// 	return !stderr.match(/\d+\sblock/);
+			// })
 			.append(command)
 			.execute();
 	}
@@ -159,9 +160,9 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 		this.logDebug(`Checking Cyclic Imports - ${this.config.label}`);
 		await NVM.createCommando(Cli_Basic)
 			.cd(this.runtime.pathTo.pkg)
-			.setStdErrorValidator(stderr => {
-				return !stderr.includes('Finding files') && !stderr.includes('Image created');
-			})
+			// .setStdErrorValidator(stderr => {
+			// 	return !stderr.includes('Finding files') && !stderr.includes('Image created');
+			// })
 			.append(`npx madge --no-spinner --image "./imports-${this.config.key}.svg" --circular ${this.runtime.pathTo.output}`)
 			.append('echo $?')
 			.execute();

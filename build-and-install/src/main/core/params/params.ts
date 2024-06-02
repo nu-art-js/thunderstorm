@@ -1,4 +1,5 @@
-import {BaseCliParam, CLIParams_Resolver} from '@nu-art/commando/cli/cli-params';
+import {BaseCliParam} from '@nu-art/commando/cli-params/types';
+import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 
 
 export const BaiParam_Help: BaseCliParam<'help', boolean> = {
@@ -295,7 +296,6 @@ export const BaiParam_EncounterManagerListen: BaseCliParam<'encounterManagerList
 	description: 'Will install encounter manager shit and launch after advisor and km',
 };
 
-
 export const AllBaiParams = [
 	BaiParam_Help,
 	BaiParam_DependencyTree,
@@ -334,5 +334,5 @@ export const AllBaiParams = [
 	BaiParam_EncounterManagerListen
 ];
 
-const params = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();
+const params = CLIParamsResolver.create(...AllBaiParams).resolveParamValue();
 export const RuntimeParams = params;

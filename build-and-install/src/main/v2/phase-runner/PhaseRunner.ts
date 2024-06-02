@@ -24,17 +24,17 @@ import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerP
 import {Phase, Phase_Debug, Phase_Help, Phase_PrintEnv} from '../phase';
 import {Unit, UnitPhaseImplementor} from '../unit/types';
 import {BaseUnit, Unit_TypescriptProject} from '../unit/core';
-import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
 import {AllBaiParams, RuntimeParams} from '../../core/params/params';
 import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import fs from 'fs';
-import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
 import {Default_Files, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes} from '../../defaults/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {dispatcher_PhaseChange} from './PhaseRunnerDispatcher';
+import {convertToFullPath} from '@nu-art/commando/shell/tools';
+import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_DEPENDENCY_VERSION';
