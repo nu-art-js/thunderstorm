@@ -2,7 +2,7 @@ import {BaseUnit} from './BaseUnit';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../../core/consts';
 import {PackageJson} from '../../../core/types';
-import {BadImplementationException, ImplementationMissingException, _keys} from '@nu-art/ts-common';
+import {AbsolutePath, BadImplementationException, ImplementationMissingException, RelativePath, _keys} from '@nu-art/ts-common';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../../../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
@@ -17,11 +17,11 @@ const PackageJsonTargetKeys = [PackageJsonTargetKey_Template,PackageJsonTargetKe
 type PackageJsonTargetKey = typeof PackageJsonTargetKeys[number];
 
 type _Config<C> = {
-	pathToPackage: string
+	pathToPackage: RelativePath
 } & C
 
 type RTC_Unit_Typescript<RTC> = {
-	pathTo: { pkg: string };
+	pathTo: { pkg: AbsolutePath };
 } & RTC;
 
 export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = {},

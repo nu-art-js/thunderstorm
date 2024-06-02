@@ -5,8 +5,8 @@ import {RuntimeParams} from '../../../core/params/params';
 import {StringMap} from '@nu-art/ts-common/utils/types';
 import {_keys} from '@nu-art/ts-common';
 import {NVM} from '@nu-art/commando/cli/nvm';
-import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {PNPM} from '@nu-art/commando/cli/pnpm';
+import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 
 type _Config<Config> = {
 	globalPackages?: StringMap;
@@ -38,8 +38,9 @@ export class Unit_TypescriptProject<Config extends {} = {}, RuntimeConfig extend
 		if(!RuntimeParams.install && !RuntimeParams.installPackages)
 			return;
 
-		const units = MemKey_ProjectConfig.get().units.filter(unit => unit instanceof Unit_Typescript) as Unit_Typescript[];
-		const packages = units.map(unit=>unit.config.pathToPackage)
+		const runner = MemKey_PhaseRunner.get();
+		const units = runner.getUnits().filter(unit => unit instanceof Unit_Typescript) as Unit_Typescript[];
+		const packages =units.map(unit=>unit.config.pathToPackage)
 		await PNPM.createWorkspace(packages);
 		await PNPM.installPackages(NVM.createCommando());
 	}

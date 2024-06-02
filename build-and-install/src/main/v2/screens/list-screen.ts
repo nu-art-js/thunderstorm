@@ -33,7 +33,7 @@ export class BAI_ListScreen
 	implements PhaseRunnerEventListener {
 
 	private units: BaseUnit[];
-	private logClient: LogClient_MemBuffer;
+	private logClient!: LogClient_MemBuffer;
 	private onKillCB?: AsyncVoidFunction;
 
 	//Widgets
@@ -71,17 +71,18 @@ export class BAI_ListScreen
 			[{
 				keys: ['escape', 'q', 'C-c'],
 				callback: async () => {
+					this.logInfo('Kill command received');
 					await this.onKillCB?.();
+					this.logInfo('Killed!');
 					return process.exit(1);
 				}
 			}]
 		);
 		this.units = units;
-		this.logClient = new LogClient_MemBuffer('log-out.txt');
-		this.initLogger();
 	}
 
 	private initLogger() {
+		this.logClient = new LogClient_MemBuffer('log-out.txt');
 		BeLogged.removeConsole(LogClient_Terminal);
 		BeLogged.addClient(this.logClient);
 		this.logClient.setForTerminal();
@@ -97,6 +98,13 @@ export class BAI_ListScreen
 	}
 
 	//######################### Content Creation #########################
+
+	public create() {
+		if (!this.logClient)
+			this.initLogger();
+		super.create();
+		return this;
+	}
 
 	protected createContent() {
 		this.createPhaseWidget();
