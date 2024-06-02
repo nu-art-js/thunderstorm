@@ -1,4 +1,12 @@
-import {exists, filterDuplicates, Primitive, StaticLogger, TypedMap, TypeOfTypeAsString} from '@nu-art/ts-common';
+import {
+	asArray,
+	exists,
+	filterDuplicates,
+	Primitive,
+	StaticLogger,
+	TypedMap,
+	TypeOfTypeAsString
+} from '@nu-art/ts-common';
 
 
 export const DefaultProcessor_Boolean: CliParam<any, boolean>['process'] = (input?: string, defaultValue?: boolean): boolean => {
@@ -105,7 +113,7 @@ export class CLIParams_Resolver<T extends BaseCliParam<string, any>[], Output ex
 
 			if (cliParamToResolve.isArray) {
 				let currentValues = output[key] as Value;
-				currentValues = filterDuplicates([...currentValues ?? [], finalValue]) as Value;
+				currentValues = filterDuplicates([...(currentValues ?? []), ...asArray(finalValue)]) as Value;
 
 				output[key] = currentValues;
 				return output;
