@@ -10,13 +10,13 @@ type Options = {
  * Default options for Cli class instances.
  */
 const defaultOptions: Options = {
-	newlineDelimiter: '\n',
+	newlineDelimiter: '\n ',
 	indentation: 2,
 };
 
 export class CommandBuilder {
 
-	private commands: string[] = [];
+	commands: string[] = [];
 	private indentation: number = 0;
 	private option: Options = defaultOptions;
 
@@ -73,3 +73,12 @@ export class CommandBuilder {
 		return command;
 	}
 }
+
+
+
+
+
+
+
+
+

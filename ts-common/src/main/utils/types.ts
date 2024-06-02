@@ -322,3 +322,10 @@ export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
 export type AsyncVoidFunction = () => Promise<void>;
+
+declare const brand: unique symbol;
+//Type to brand a type with uniqueness
+export type Brand<T, Brand extends string> = T & { [brand]: Brand }
+
+export type RelativePath = Brand<string,'RelativePath'>;
+export type AbsolutePath = Brand<string,'AbsolutePath'>;

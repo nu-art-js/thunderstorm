@@ -22,9 +22,9 @@ export class CommandoInteractive
 		this.shell = new InteractiveShell();
 	}
 
-	debug(debug?: boolean) {
+	debug(debug?: boolean): boolean {
 		this.shell.debug(debug);
-		return this;
+		return super.debug(debug);
 	}
 
 	setUID(uid: string) {
@@ -95,12 +95,9 @@ export class CommandoInteractive
 			const uniqueKey = generateHex(16);
 			const regexp = new RegExp(`${uniqueKey}=(\\d+)`);
 
-			this.builder.append(`echo ${uniqueKey}=$?`);
-			const command = this.builder.reset();
-
 			let _stderr = '';
 			let _stdout = '';
-			const stdoutProcessor = (log: string, type: LogTypes) => {
+			const logProcessor = (log: string, type: LogTypes) => {
 				if (type === 'err')
 					_stderr += `${log}`;
 				else
@@ -115,7 +112,7 @@ export class CommandoInteractive
 
 				const exitCode = match?.[1];
 				console.log(`handling exitCode: ${exitCode}`);
-				this.removeLogProcessor(stdoutProcessor);
+				this.removeLogProcessor(logProcessor);
 
 				try {
 					resolve(callback?.(_stdout, _stderr, +exitCode)!);
@@ -126,8 +123,10 @@ export class CommandoInteractive
 				console.log(`is this code even reachable??`);
 				return false;
 			};
+			this.builder.append(`echo ${uniqueKey}=$?`);
+			const command = this.builder.reset();
 
-			this.shell.addLogProcessor(stdoutProcessor);
+			this.shell.addLogProcessor(logProcessor);
 			this.shell.execute(command);
 		});
 

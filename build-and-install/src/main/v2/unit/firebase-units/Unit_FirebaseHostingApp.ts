@@ -69,14 +69,14 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	private async resolveHostingRC() {
 		const envConfig = this.getEnvConfig();
 		const rcConfig = {projects: {default: envConfig.projectId}};
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/${CONST_FirebaseRC}`);
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseRC}`;
 		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveHostingJSON() {
 		const envConfig = this.getEnvConfig();
 		const fileContent: FirebasePackageConfig['hosting'] = envConfig.isLocal ? {} as FirebasePackageConfig['hosting'] : this.config.firebaseConfig.hosting;
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/${CONST_FirebaseJSON}`);
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
 		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
 	}
 

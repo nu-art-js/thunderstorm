@@ -4,7 +4,9 @@ import {CreateMergedInstance} from './class-merger';
 
 
 export class BaseCommando {
+
 	protected readonly builder: CommandBuilder;
+	protected _debug: boolean = false;
 
 	static _create<T extends Constructor<any>[]>(...plugins: T) {
 		const _commando = CreateMergedInstance(BaseCommando, ...plugins);
@@ -16,6 +18,11 @@ export class BaseCommando {
 
 	constructor() {
 		this.builder = new CommandBuilder();
+	}
+
+	debug(debug?: boolean) {
+		this._debug = debug ?? !this._debug;
+		return this._debug;
 	}
 
 	append(command: string) {

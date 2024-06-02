@@ -18,20 +18,23 @@ export class InteractiveShell
 		});
 
 		const printer = (std: LogTypes) => (data: Buffer) => {
-			const message = data.toString().trim();
-			if (!message.length)
+			const messages = data.toString().trim().split('\n');
+			if (!messages.length)
 				return;
 
-			try {
-				const toPrint = this.logProcessors.reduce((toPrint, processor) => {
-					const filter = processor(message, std);
-					return toPrint && filter;
-				}, true);
+			for (const message of messages) {
+				try {
+					const toPrint = this.logProcessors.length === 0 || this.logProcessors.reduce((toPrint, processor) => {
+						const filter = processor(message, std);
+						return toPrint && filter;
+					}, true);
 
-				if (toPrint)
-					this.logInfo(`${message}`);
-			} catch (e: any) {
-				this.logError(e);
+					if (toPrint)
+						this.logInfo(`${message}`);
+
+				} catch (e: any) {
+					this.logError(e);
+				}
 			}
 		};
 

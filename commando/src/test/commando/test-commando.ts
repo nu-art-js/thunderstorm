@@ -8,10 +8,17 @@ BeLogged.addClient(LogClient_Terminal);
 
 async function execute() {
 	const commando = CommandoInteractive.create(Cli_Basic);
-	const commando1 = commando.append('asdas');
-	const commando2 = commando1.echo('hello world');
-	await commando2.execute();
-	commando2.kill('SIGINT');
+	commando.echo('hello world 0', {escape: true});
+	commando.echo('hello world 1', {escape: true});
+	commando.echo('hello world 2', {escape: true});
+	commando.echo('hello world 3', {escape: true});
+	commando.echo('hello world 4', {escape: true});
+	commando.echo('hello world 5', {escape: true});
+	commando.echo('hello world 6', {escape: true});
+	commando.echo('hello world 7', {escape: true})
+		.debug();
+	await commando.execute();
+	// commando.kill('SIGINT');
 }
 
 execute().then(() => {

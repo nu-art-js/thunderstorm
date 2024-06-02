@@ -7,7 +7,6 @@ import {CliError} from '../core/CliError';
 export class Commando
 	extends BaseCommando {
 	private uid?: string;
-	private _debug: boolean = false;
 
 	static create<T extends Constructor<any>[]>(...plugins: T) {
 		const _commando = BaseCommando._create(Commando, ...plugins);
@@ -16,11 +15,6 @@ export class Commando
 
 	constructor() {
 		super();
-	}
-
-	debug(debug?: boolean) {
-		this._debug = debug ?? !this._debug;
-		return this;
 	}
 
 	setUID(uid: string) {
