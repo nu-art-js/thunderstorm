@@ -295,17 +295,17 @@ export const BaiParam_EncounterManagerListen: BaseCliParam<'encounterManagerList
 	description: 'Will install encounter manager shit and launch after advisor and km',
 };
 
-export const BaiParam_UsePackage: BaseCliParam<'usePackage', string> = {
+export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	keys: ['-up', '--use-packages'],
 	keyName: 'usePackage',
-	type: 'string',
+	type: 'string[]',
 	group: 'Other',
 	description: 'Will specify units to process',
 	process: (value) => {
 		if (!value)
-			return '';
+			return [];
 
-		return value!.split(',').map(str => str.trim()) as unknown as string;
+		return value!.split(',').map(str => str.trim());
 	}
 };
 
