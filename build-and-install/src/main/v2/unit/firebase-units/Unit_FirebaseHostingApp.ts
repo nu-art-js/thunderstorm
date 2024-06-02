@@ -21,7 +21,7 @@ const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_ResolveConfigs,Phase_Launch,Phase_DeployFrontend]> {
+	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
 
 	private readonly APP_PID_LOG = '_APP_PID_';
 	private readonly APP_KILL_LOG = '_APP_KILLED_';
@@ -50,14 +50,14 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	}
 
 	async launch() {
-		this.setStatus('Launching')
+		this.setStatus('Launching');
 		await this.initLaunch();
 		await this.initLaunchListeners();
 		await this.clearPorts();
 		await this.runApp();
 	}
 
-	async deployFrontend () {
+	async deployFrontend() {
 		await this.deployImpl();
 	}
 
@@ -75,14 +75,14 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	private async resolveHostingRC() {
 		const envConfig = this.getEnvConfig();
 		const rcConfig = {projects: {default: envConfig.projectId}};
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/${CONST_FirebaseRC}`);
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseRC}`;
 		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveHostingJSON() {
 		const envConfig = this.getEnvConfig();
 		const fileContent: FirebasePackageConfig['hosting'] = envConfig.isLocal ? {} as FirebasePackageConfig['hosting'] : this.config.firebaseConfig.hosting;
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/${CONST_FirebaseJSON}`);
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
 		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
 	}
 
@@ -131,13 +131,13 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
-		await _fs.writeFile(targetPath, fileContent, {encoding:'utf-8'});
+		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
 	//######################### Launch Logic #########################
 
-	private async initLaunch () {
-		if(!this.config.firebaseConfig.hostingPort)
+	private async initLaunch() {
+		if (!this.config.firebaseConfig.hostingPort)
 			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
 
 		this.launchCommando = NVM.createInteractiveCommando(Cli_Basic)
@@ -145,7 +145,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 			.cd(this.runtime.pathTo.pkg);
 	}
 
-	private async initLaunchListeners () {
+	private async initLaunchListeners() {
 		this.listeners = {
 			pid: new CommandoCLIKeyValueListener(new RegExp(`${this.APP_PID_LOG}=(\\d+)`)),
 			kill: new CommandoCLIListener(() => this.launchCommando.close(), this.APP_KILL_LOG),
@@ -168,7 +168,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 			.execute();
 	}
 
-	private async runApp () {
+	private async runApp() {
 		await this.launchCommando
 			.append(`npm run start &`)
 			.append('pid=$!')
@@ -179,7 +179,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	}
 
 	public async kill() {
-		if(!this.launchCommando)
+		if (!this.launchCommando)
 			return;
 
 		const appPid = this.getPID();
@@ -188,7 +188,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 
 	//######################### Deploy Logic #########################
 
-	private async deployImpl () {
+	private async deployImpl() {
 		await NVM.createCommando(Cli_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			.append(`firebase --debug deploy --only hosting`)

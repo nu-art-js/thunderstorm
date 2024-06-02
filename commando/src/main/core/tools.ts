@@ -1,3 +1,4 @@
+import {AbsolutePath} from '@nu-art/ts-common';
 import * as  path from 'path';
 
 
@@ -6,7 +7,7 @@ export function removeAnsiCodes(text: string) {
 	return text.replace(/\x1B\[\d+;?\d*m/g, '');
 }
 
-export function convertToFullPath(pathToFile: string, assetParentPath = process.cwd()) {
+export function convertToFullPath(pathToFile: string, assetParentPath = process.cwd()): AbsolutePath {
 	if (!pathToFile)
 		throw new Error('Path not provided');
 
@@ -20,5 +21,5 @@ export function convertToFullPath(pathToFile: string, assetParentPath = process.
 	// if (!absolutePath.startsWith(assetParentPath))
 	// 	throw new Error(`Found path: '${absolutePath}' which is out of the scope of the assert directory: '${assetParentPath}'`);
 
-	return absolutePath;
+	return absolutePath as AbsolutePath;
 }

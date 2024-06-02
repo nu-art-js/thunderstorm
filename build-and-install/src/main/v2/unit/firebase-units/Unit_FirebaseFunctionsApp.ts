@@ -6,12 +6,12 @@ import {promises as _fs} from 'fs';
 import {RuntimeParams} from '../../../core/params/params';
 import {FirebasePackageConfig, PackageJson} from '../../../core/types';
 import {_keys, deepClone, ImplementationMissingException, Second, sleep} from '@nu-art/ts-common';
-import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '@nu-art/commando/core/cli';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {NVM} from '@nu-art/commando/cli/nvm';
+import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 
 type _Config<Config> = {
 	firebaseConfig: FirebasePackageConfig;
@@ -81,7 +81,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		await this.runEmulator();
 	}
 
-	async deployBackend () {
+	async deployBackend() {
 		await this.printFiles();
 		await this.deployImpl();
 	}
@@ -100,16 +100,16 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	private async resolveFunctionsRC() {
 		const envConfig = this.getEnvConfig();
 		const rcConfig = {projects: {default: envConfig.projectId}};
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/${CONST_FirebaseRC}`);
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseRC}`;
 		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveProxyFile() {
 		const envConfig = this.getEnvConfig();
 		const defaultFiles = MemKey_DefaultFiles.get();
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/src/main/proxy.ts`);
+		const targetPath = `${this.runtime.pathTo.pkg}/src/main/proxy.ts`;
 		const path = defaultFiles?.backend?.proxy;
-		if(!path)
+		if (!path)
 			return;
 
 		let fileContent = await _fs.readFile(path, {encoding: 'utf-8'});
@@ -132,7 +132,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 		//Fill config dir with relevant files for each file that doesn't exist
 		const defaultFiles = MemKey_ProjectConfig.get().defaultFileRoutes;
-		if(!defaultFiles) {
+		if (!defaultFiles) {
 			this.logError('No defaultFileRoutes in project config');
 			return;
 		}
@@ -143,7 +143,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 					await _fs.access(pathToConfigFile);
 				} catch (e: any) {
 					const path = defaultFiles.firebaseConfig?.[firebaseConfigKey];
-					if(!path)
+					if (!path)
 						return;
 
 					const defaultFileContent = await _fs.readFile(path, {encoding: 'utf-8'});
@@ -155,7 +155,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	private async resolveFunctionsJSON() {
 		const envConfig = this.getEnvConfig();
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/${CONST_FirebaseJSON}`);
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
 		let fileContent;
 		if (envConfig.isLocal) {
 			const port = this.config.firebaseConfig.basePort;
@@ -209,7 +209,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	private async resolveFunctionsRuntimeConfig() {
 		const envConfig = this.getEnvConfig();
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/src/main/config.ts`);
+		const targetPath = `${this.runtime.pathTo.pkg}/src/main/config.ts`;
 		const beConfig = {name: envConfig.env};
 		const fileContent = `${envConfig.isLocal ? '// @ts-ignore\nprocess.env[\'NODE_TLS_REJECT_UNAUTHORIZED\'] = 0;\n' : ''}
 		export const Environment = ${JSON.stringify(beConfig)};`;
@@ -230,7 +230,8 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	private async createDependenciesDir() {
 		//Gather units that are dependencies of this unit
 		const dependencies = _keys(this.packageJson.root.dependencies ?? {}) as string[];
-		const tsLibUnits = MemKey_ProjectConfig.get().units.filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
+		const runner = MemKey_PhaseRunner.get();
+		const tsLibUnits = runner.getUnits().filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
 		const dependencyUnits = tsLibUnits.filter(unit => {
 			const unitPJName = unit.packageJson.template.name;
 			return dependencies.includes(unitPJName);
@@ -354,7 +355,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	//######################### Deploy Logic #########################
 
-	private async printFiles () {
+	private async printFiles() {
 		await Commando.create(Cli_Basic)
 			.cd(this.runtime.pathTo.output)
 			.ls()
@@ -363,7 +364,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 			.execute();
 	}
 
-	private async deployImpl () {
+	private async deployImpl() {
 		await NVM.createCommando(Cli_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			.append(`firebase --debug deploy --only functions --force`)
