@@ -34,11 +34,23 @@ import fs, {promises as _fs} from 'fs';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
-import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes, RunningStatus} from '../../defaults/consts';
+import {
+	Default_Files,
+	Default_OutputFiles,
+	MemKey_DefaultFiles,
+	ProjectConfig_DefaultFileRoutes,
+	RunningStatus
+} from '../../defaults/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {dispatcher_PhaseChange} from './PhaseRunnerDispatcher';
-import {CONST_ProjectDependencyKey, CONST_ProjectVersionKey, CONST_ThunderstormDependencyKey, CONST_ThunderstormVersionKey, MemKey_PhaseRunner} from './consts';
+import {
+	CONST_ProjectDependencyKey,
+	CONST_ProjectVersionKey,
+	CONST_ThunderstormDependencyKey,
+	CONST_ThunderstormVersionKey,
+	MemKey_PhaseRunner
+} from './consts';
 import {BAI_ListScreen} from '../screens/list-screen';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
 
@@ -76,6 +88,9 @@ export class PhaseRunner
 
 		//Load project for use in the phase runner
 		await this.loadProject();
+
+		//Filter specific units
+		this.filterUnits();
 
 		//Set Logger if one is not already set, or if the allLogs flag is set
 		if (!this.screen || RuntimeParams.allLogs) {
@@ -116,6 +131,23 @@ export class PhaseRunner
 			// @ts-ignore
 			return unit.init();
 		}));
+	}
+
+	private filterUnits() {
+		const useUnits = RuntimeParams.usePackage;
+		if (!useUnits || !useUnits.length)
+			return;
+
+		const unitsToRemove: BaseUnit[] = [];
+		for (const unit of this.units) {
+			if (unit === this)
+				continue;
+
+			if (!useUnits.includes(unit.config.key))
+				unitsToRemove.push(unit);
+		}
+
+		unitsToRemove.forEach(unit => removeItemFromArray(this.units, unit));
 	}
 
 	private async loadProject() {
@@ -225,15 +257,15 @@ export class PhaseRunner
 			const phaseIndex = this.phases.indexOf(phase);
 
 			//True if the phase index is larger equals the index of the first phase that will run in continue
-			if(phaseIndex >= currentPhaseIndex)
+			if (phaseIndex >= currentPhaseIndex)
 				return true;
 
 			//Check if phase should run as a dependency
 			const allPhasesThatWillRun: Phase<string>[] = [];
-			for(const phase of this.phases) {
+			for (const phase of this.phases) {
 				const index = this.phases.indexOf(phase);
-				if(index >= currentPhaseIndex && await this.phaseFilters[PhaseRunnerMode_Normal](phase))
-					allPhasesThatWillRun.push(phase)
+				if (index >= currentPhaseIndex && await this.phaseFilters[PhaseRunnerMode_Normal](phase))
+					allPhasesThatWillRun.push(phase);
 			}
 			const dependencyKeys = flatArray(allPhasesThatWillRun.map(phase => phase.dependencyPhaseKeys ?? []));
 			return dependencyKeys.includes(phase.key);
@@ -336,12 +368,12 @@ export class PhaseRunner
 			if ((phaseIndex === runningPhaseIndex) && index < runningStatusRowIndex)
 				continue;
 
-			this.logWarning(`Phase Index ${phaseIndex}, Row Index ${index}`)
-			this.logWarning(`RunningStatus Phase Index: ${runningPhaseIndex}, RunningStatus Row Index: ${runningStatusRowIndex}`)
+			this.logWarning(`Phase Index ${phaseIndex}, Row Index ${index}`);
+			this.logWarning(`RunningStatus Phase Index: ${runningPhaseIndex}, RunningStatus Row Index: ${runningStatusRowIndex}`);
 
-			if(phaseIndex > runningPhaseIndex) {
+			if (phaseIndex > runningPhaseIndex) {
 				//Index of the current phase is larger, update the running status
-				this.runningStatus = {phaseKey: phase.key, packageDependencyIndex: 0}
+				this.runningStatus = {phaseKey: phase.key, packageDependencyIndex: 0};
 				runningPhaseIndex = phaseIndex;
 				await this.setRunningStatus();
 				//Return to normal mode, if in continue

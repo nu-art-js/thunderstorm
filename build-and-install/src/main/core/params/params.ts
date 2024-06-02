@@ -295,6 +295,20 @@ export const BaiParam_EncounterManagerListen: BaseCliParam<'encounterManagerList
 	description: 'Will install encounter manager shit and launch after advisor and km',
 };
 
+export const BaiParam_UsePackage: BaseCliParam<'usePackage', string> = {
+	keys: ['-up', '--use-packages'],
+	keyName: 'usePackage',
+	type: 'string',
+	group: 'Other',
+	description: 'Will specify units to process',
+	process: (value) => {
+		if (!value)
+			return '';
+
+		return value!.split(',').map(str => str.trim()) as unknown as string;
+	}
+};
+
 
 export const AllBaiParams = [
 	BaiParam_Help,
@@ -331,7 +345,7 @@ export const AllBaiParams = [
 	BaiParam_Publish, // TODO: to implement
 	BaiParam_AllLogs,
 	BaiParam_EncounterManager,
-	BaiParam_EncounterManagerListen
+	BaiParam_EncounterManagerListen, BaiParam_UsePackage
 ];
 
 const params = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();
