@@ -11,7 +11,7 @@ import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Commando, CommandoInteractive} from '@nu-art/commando/shell';
-import {convertToFullPath} from '@nu-art/commando/shell/tools';
+import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 
 
 type _Config<Config> = {
@@ -88,14 +88,14 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	private async resolveFunctionsRC() {
 		const envConfig = this.getEnvConfig();
 		const rcConfig = {projects: {default: envConfig.projectId}};
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/${CONST_FirebaseRC}`);
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseRC}`;
 		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveProxyFile() {
 		const envConfig = this.getEnvConfig();
 		const defaultFiles = MemKey_DefaultFiles.get();
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/src/main/proxy.ts`);
+		const targetPath = `${this.runtime.pathTo.pkg}/src/main/proxy.ts`;
 		const path = defaultFiles?.backend?.proxy;
 		if (!path)
 			return;
@@ -143,7 +143,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	private async resolveFunctionsJSON() {
 		const envConfig = this.getEnvConfig();
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/${CONST_FirebaseJSON}`);
+		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
 		let fileContent;
 		if (envConfig.isLocal) {
 			const port = this.config.firebaseConfig.basePort;
@@ -197,7 +197,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 
 	private async resolveFunctionsRuntimeConfig() {
 		const envConfig = this.getEnvConfig();
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/src/main/config.ts`);
+		const targetPath = `${this.runtime.pathTo.pkg}/src/main/config.ts`;
 		const beConfig = {name: envConfig.env};
 		const fileContent = `${envConfig.isLocal ? '// @ts-ignore\nprocess.env[\'NODE_TLS_REJECT_UNAUTHORIZED\'] = 0;\n' : ''}
 		export const Environment = ${JSON.stringify(beConfig)};`;
@@ -218,7 +218,8 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	private async createDependenciesDir() {
 		//Gather units that are dependencies of this unit
 		const dependencies = _keys(this.packageJson.root.dependencies ?? {}) as string[];
-		const tsLibUnits = MemKey_ProjectConfig.get().units.filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
+		const runner = MemKey_PhaseRunner.get();
+		const tsLibUnits = runner.getUnits().filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
 		const dependencyUnits = tsLibUnits.filter(unit => {
 			const unitPJName = unit.packageJson.template.name;
 			return dependencies.includes(unitPJName);

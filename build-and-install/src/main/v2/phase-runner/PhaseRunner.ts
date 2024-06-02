@@ -1,9 +1,10 @@
 import {
+	__stringify,
 	_keys,
+	AbsolutePath,
 	addItemToArrayAtIndex,
 	arrayIncludesAny,
 	asArray,
-	AsyncVoidFunction,
 	BadImplementationException,
 	BeLogged,
 	deepClone,
@@ -15,9 +16,11 @@ import {
 	LogLevel,
 	merge,
 	reduceToMap,
+	RelativePath,
 	removeItemFromArray,
 	sortArray,
 	StringMap,
+	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
 import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
@@ -25,49 +28,121 @@ import {Phase, Phase_Debug, Phase_Help, Phase_PrintEnv} from '../phase';
 import {Unit, UnitPhaseImplementor} from '../unit/types';
 import {BaseUnit, Unit_TypescriptProject} from '../unit/core';
 import {AllBaiParams, RuntimeParams} from '../../core/params/params';
-import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import fs from 'fs';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import fs, {promises as _fs} from 'fs';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
-import {Default_Files, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes} from '../../defaults/consts';
+import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes, RunningStatus} from '../../defaults/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {dispatcher_PhaseChange} from './PhaseRunnerDispatcher';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
+import {BAI_ListScreen} from '../screens/list-screen';
+import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
+import {MemKey_PhaseRunner} from './consts';
+
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
 const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_DEPENDENCY_VERSION';
 const CONST_ProjectVersionKey = 'APP_VERSION';
 const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
 
-export const MemKey_PhaseRunner = new MemKey<PhaseRunner<any>>('phase-runner');
-
-export class PhaseRunner<P extends Phase<string>[]>
+export class PhaseRunner
 	extends BaseUnit
 	implements UnitPhaseImplementor<[Phase_Help, Phase_PrintEnv, Phase_Debug]> {
 
-	private readonly phases: P;
-	private units: BaseUnit[];
-	private projectConfig!: ProjectConfigV2;
-	// @ts-ignore
+	//Base properties for regular run of the PhaseRunner
+	private readonly phases: Phase<string>[];
+	private readonly units: BaseUnit[];
 	private unitDependencyTree!: BaseUnit[][];
+	private readonly project: { path: AbsolutePath; config: ProjectConfigV2 };
 
-	constructor(phases: P) {
+	//Properties for HOW the PhaseRunner should run
+	private runningStatus!: RunningStatus;
+	private screen?: BAI_ListScreen;
+	private phaseFilter: (phase: Phase<string>) => (boolean | Promise<boolean>);
+
+	constructor(projectPath: RelativePath) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
-		this.phases = phases;
-		this.units = [this, ...allTSUnits];
+		this.phases = [];
+		this.units = [this];
+		this.project = {path: convertToFullPath(projectPath), config: {} as ProjectConfigV2};
+		this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
 		this.showAllLogs();
 		this.setMinLevel(LogLevel.Verbose);
-		this.logDebug('Runtime params:', RuntimeParams);
 	}
 
-	protected async init() {
-		if (!this.config)
-			throw new BadImplementationException('Trying to run PhaseRunner with no project config, did you forget to call .registerProject() ?');
+	//######################### Initialization #########################
 
+	protected async init() {
+		// await super.init(false);
+		//Set phase runner to MemKey, so it can be referenced in the runtime
 		MemKey_PhaseRunner.set(this);
 
+		//Load project for use in the phase runner
+		await this.loadProject();
+
+		//Set Logger if one is not already set, or if the allLogs flag is set
+		if (!this.screen || RuntimeParams.allLogs) {
+			this.showAllLogs();
+		} else {
+			this.showScreenLogs();
+		}
+
+		this.logDebug('Runtime params:', RuntimeParams);
+
+		//Set runner params
+		const runnerParams: RunnerParams = {
+			rootPath: process.cwd(),
+			configPath: process.cwd() + '/.config',
+		};
+		MemKey_RunnerParams.set(runnerParams);
+
+		//Set Project Params
+		const projectParams = this.prepareProjectParams();
+		MemKey_ProjectConfig.set({
+			...this.project.config,
+			params: projectParams,
+		});
+
+		//Set Default File Routes
+		const defaultFileRoutes = this.prepareDefaultFileRouts();
+		MemKey_DefaultFiles.set(defaultFileRoutes);
+
+		//Load running status
+		await this.loadRunningStatus();
+
+		//Print init results
+		this.printInit();
+		this.setStatus('Initialized');
+
+		const units = this.units.filter(unit => unit !== this);
+		await Promise.all(units.map(unit => {
+			// @ts-ignore
+			return unit.init();
+		}));
+	}
+
+	private async loadProject() {
+		if (!fs.existsSync(this.project.path))
+			throw new ImplementationMissingException(`Missing project config file, could not find in path: ${this.project.path}`);
+
+		const projectConfigCB = require(this.project.path).default as () => Promise<ProjectConfigV2>;
+		if (typeof projectConfigCB !== 'function')
+			throw new BadImplementationException('Config file must be an asynchronous function returning a ProjectConfigV2 object');
+
+		this.project.config = await projectConfigCB();
+	}
+
+	private showAllLogs() {
+		if (this.screen)
+			// @ts-ignore
+			BeLogged.removeClient(this.screen.logClient);
+
+		BeLogged.addClient(LogClient_Terminal);
+
+		//If no screen is set, PhaseRunner should be responsible to listening to kill command
 		//Listen on kill signal
 		process.on('SIGINT', async () => {
 			this.logInfo('Kill command received, killing units!');
@@ -75,56 +150,21 @@ export class PhaseRunner<P extends Phase<string>[]>
 			this.logInfo('Killed');
 			process.exit(0);
 		});
-
-		//Set runner params
-		const runnerParams: RunnerParams = {
-			rootPath: process.cwd(),
-			configPath: process.cwd() + '/.config',
-		};
-		this.logDebug('\nSetting RunnerParams:', runnerParams);
-		MemKey_RunnerParams.set(runnerParams);
-
-		//Set Project Params
-		const projectParams = this.prepareProjectParams();
-		MemKey_ProjectConfig.set({
-			...this.projectConfig,
-			units: this.units,
-			params: projectParams,
-		});
-
-		//Set Default File Routes
-		const defaultFileRoutes = this.prepareDefaultFileRouts();
-		this.logDebug('\nSetting Default File Routes:', defaultFileRoutes);
-		MemKey_DefaultFiles.set(defaultFileRoutes);
-
-		this.logInfoBold('\nInit Done! Unit order:', this.units.map(unit => unit.config.label));
 	}
 
-	//######################### Internal Logic #########################
+	private showScreenLogs() {
+		if (!this.screen)
+			throw new ThisShouldNotHappenException('Calling showScreenLogs without a screen set!');
 
-	private showAllLogs() {
-		// this.clearLogger();
-
-		// this.projectScreen?.dispose();
-		BeLogged.addClient(LogClient_Terminal);
-	}
-
-	private async executeImpl() {
-		for (const phase of this.phases) {
-			const phaseDidRun = await this.executePhase(phase);
-
-			//If phase is terminating
-			if (phaseDidRun && phase.terminateAfterPhase)
-				break;
-		}
+		this.screen.create();
 	}
 
 	private prepareProjectParams(): StringMap {
-		const params = this.projectConfig.params ?? {};
-		params[CONST_ThunderstormVersionKey] = this.projectConfig.thunderstormVersion;
-		params[CONST_ThunderstormDependencyKey] = this.projectConfig.thunderstormVersion;
-		params[CONST_ProjectVersionKey] = this.projectConfig.projectVersion;
-		params[CONST_ProjectDependencyKey] = this.projectConfig.projectVersion;
+		const params = this.project.config.params ?? {};
+		params[CONST_ThunderstormVersionKey] = this.project.config.thunderstormVersion;
+		params[CONST_ThunderstormDependencyKey] = this.project.config.thunderstormVersion;
+		params[CONST_ProjectVersionKey] = this.project.config.projectVersion;
+		params[CONST_ProjectDependencyKey] = this.project.config.projectVersion;
 		return params;
 	}
 
@@ -137,7 +177,6 @@ export class PhaseRunner<P extends Phase<string>[]>
 	private buildUnitDependencyTree() {
 		const units = [...this.units];
 		const allDependencies = units.map(unit => unit.runtime.dependencyName);
-		this.logDebug(allDependencies);
 		const resolvedUnitNames: string[] = [];
 		const dependencyTree: BaseUnit[][] = [];
 
@@ -170,8 +209,51 @@ export class PhaseRunner<P extends Phase<string>[]>
 			dependencyTree.push(resolvingUnits);
 		}
 
-		this.logDebug('Setting Dependency Tree', dependencyTree.map(row => row.map(unit => unit.config.label)));
 		this.unitDependencyTree = dependencyTree;
+		const toPrint = dependencyTree.map(row => row.map(unit => unit.config.label));
+		this.logDebug('Unit Dependency Tree:', toPrint);
+	}
+
+	private printInit() {
+		this.logDebug('Runner Params:', MemKey_RunnerParams.get());
+		this.logDebug('Project Config:', MemKey_ProjectConfig.get());
+		this.logDebug('Default File Routes:', MemKey_DefaultFiles.get());
+	}
+
+	//######################### Internal Logic #########################
+
+	private phaseFilters: { [K in PhaseRunnerMode]: (phase: Phase<string>) => (boolean | Promise<boolean>) } = {
+		[PhaseRunnerMode_Normal]: async (phase) => {
+			return !exists(phase.filter) || (await phase.filter());
+		},
+		[PhaseRunnerMode_Continue]: async (phase) => {
+			const currentPhaseIndex = this.phases.findIndex(phase => phase.key === this.runningStatus.phaseKey);
+			const phaseIndex = this.phases.indexOf(phase);
+
+			//True if the phase index is larger equals the index of the first phase that will run in continue
+			if (phaseIndex >= currentPhaseIndex)
+				return true;
+
+			//Check if phase should run as a dependency
+			const allPhasesThatWillRun: Phase<string>[] = [];
+			for (const phase of this.phases) {
+				const index = this.phases.indexOf(phase);
+				if (index >= currentPhaseIndex && await this.phaseFilters[PhaseRunnerMode_Normal](phase))
+					allPhasesThatWillRun.push(phase);
+			}
+			const dependencyKeys = flatArray(allPhasesThatWillRun.map(phase => phase.dependencyPhaseKeys ?? []));
+			return dependencyKeys.includes(phase.key);
+		}
+	};
+
+	private async executeImpl() {
+		for (const phase of this.phases) {
+			const phaseDidRun = await this.executePhase(phase);
+
+			//If phase is terminating
+			if (phaseDidRun && phase.terminateAfterPhase)
+				break;
+		}
 	}
 
 	//######################### Unit Logic #########################
@@ -192,22 +274,15 @@ export class PhaseRunner<P extends Phase<string>[]>
 		});
 	}
 
-	private getUnitsForPhase(phase: P[number]) {
+	private getUnitsForPhase<P extends Phase<string>>(phase: P) {
 		return filterInstances(this.unitDependencyTree.map(row => {
 			const filteredRow = row.filter(unit => {
 				if (exists(unit.config.filter) && !unit.config.filter())
 					return false;
 
-				return exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]);
+				return exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]);
 			});
 			return filteredRow.length ? filteredRow : undefined;
-		}));
-	}
-
-	private async initUnits() {
-		return Promise.all(this.units.map(unit => {
-			// @ts-ignore
-			return unit.init();
 		}));
 	}
 
@@ -223,8 +298,8 @@ export class PhaseRunner<P extends Phase<string>[]>
 	 * @param phase
 	 * @private
 	 */
-	private async executePhase(phase: P[number]): Promise<boolean> {
-		const willExecutePhase = !exists(phase.filter) || phase.filter();
+	private async executePhase<P extends Phase<string>>(phase: P): Promise<boolean> {
+		const willExecutePhase = await this.phaseFilter(phase);
 		if (!willExecutePhase) {
 			this.logDebug(`Will not execute phase: ${phase.name}, did not pass filter`);
 			return false;
@@ -239,17 +314,56 @@ export class PhaseRunner<P extends Phase<string>[]>
 		this.logDebug(`Executing phase: ${phase.name}`);
 		dispatcher_PhaseChange.dispatch(phase);
 
+		const phaseIndex = this.phases.indexOf(phase);
+		let runningPhaseIndex = this.phases.findIndex(phase => phase.key === this.runningStatus.phaseKey);
+		const inContinueMode = this.phaseFilter === this.phaseFilters[PhaseRunnerMode_Continue];
+
 		//Run all units at the same time
 		if (!phase.runUnitsInDependency) {
+			//The current phase is (or is after) the running status phase
+			if (phaseIndex >= runningPhaseIndex) {
+				this.runningStatus = {phaseKey: phase.key, packageDependencyIndex: 0};
+				await this.setRunningStatus();
+				//Return to normal mode, if in continue
+				if (inContinueMode)
+					this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
+			}
 			const unitsToRun = flatArray(units);
-			await Promise.all(unitsToRun.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]()));
+			await Promise.all(unitsToRun.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]()));
 			return true;
 		}
 
 		//Run units according to dependency tree
 		for (const row of units) {
-			await Promise.all(row.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<P>]()));
+			const index = units.indexOf(row);
+			const runningStatusRowIndex = this.runningStatus.packageDependencyIndex ?? 0;
+
+			//Skip running status holds a larger index for the same phase
+			if ((phaseIndex === runningPhaseIndex) && index < runningStatusRowIndex)
+				continue;
+
+			this.logWarning(`Phase Index ${phaseIndex}, Row Index ${index}`);
+			this.logWarning(`RunningStatus Phase Index: ${runningPhaseIndex}, RunningStatus Row Index: ${runningStatusRowIndex}`);
+
+			if (phaseIndex > runningPhaseIndex) {
+				//Index of the current phase is larger, update the running status
+				this.runningStatus = {phaseKey: phase.key, packageDependencyIndex: 0};
+				runningPhaseIndex = phaseIndex;
+				await this.setRunningStatus();
+				//Return to normal mode, if in continue
+				if (inContinueMode)
+					this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
+			} else if (phaseIndex === runningPhaseIndex && index >= runningStatusRowIndex) {
+				//Index of the row is larger for the same phase, update running status
+				this.runningStatus = {phaseKey: phase.key, packageDependencyIndex: index};
+				await this.setRunningStatus();
+				//Return to normal mode, if in continue
+				if (inContinueMode)
+					this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
+			}
+			await Promise.all(row.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]()));
 		}
+
 		return true;
 	}
 
@@ -305,30 +419,61 @@ export class PhaseRunner<P extends Phase<string>[]>
 		addItemToArrayAtIndex(this.phases, phase, index + 1);
 	}
 
+	//######################### Running Status #########################
+
+	private async setRunningStatus() {
+		this.logDebug('Setting Running Status', this.runningStatus);
+		if (!fs.existsSync(Default_OutputFiles.output))
+			await _fs.mkdir(Default_OutputFiles.output, {recursive: true});
+		await _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(this.runningStatus, true));
+	}
+
+	private async loadRunningStatus() {
+
+		const setDefaultRunningStatus = () => {
+			this.runningStatus = {
+				phaseKey: this.phases[0].key,
+				packageDependencyIndex: 0,
+			};
+			this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
+		};
+
+		if (!RuntimeParams.continue) {
+			setDefaultRunningStatus();
+			return;
+		}
+
+		//If the dir exists, try to read the file
+		if (fs.existsSync(Default_OutputFiles.output)) {
+			try {
+				this.runningStatus = JSON.parse(await _fs.readFile(Default_OutputFiles.runningStatus, {encoding: 'utf-8'}));
+				this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Continue];
+			} catch (e) {
+				this.logError('Failed reading running status');
+				setDefaultRunningStatus();
+				return;
+			}
+		} else
+			setDefaultRunningStatus();
+	}
+
 	//######################### Public Functions #########################
 
-	public async execute(cb?: AsyncVoidFunction) {
+	public async execute() {
 		return new MemStorage().init(async () => {
-			await this.initUnits();
-			await cb?.();
+			await this.init();
 			this.buildUnitDependencyTree();
 			await this.executeImpl();
 		});
 	}
 
-	public registerProject(pathToConfig: string) {
-		const fullPathToConfig = convertToFullPath(pathToConfig);
-
-		if (!fs.existsSync(fullPathToConfig))
-			throw new ImplementationMissingException(`Missing project config file, could not find in path: ${fullPathToConfig}`);
-
-		this.projectConfig = require(fullPathToConfig).default as ProjectConfigV2;
-		this.registerUnits(this.projectConfig.units);
-		return this;
-	}
-
 	public async killRunner() {
 		await Promise.all(this.units.map(unit => unit.kill()));
+		await this.setRunningStatus();
+	}
+
+	public setScreen(screen: BAI_ListScreen) {
+		this.screen = screen;
 	}
 
 	//######################### Phase Implementation #########################

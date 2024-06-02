@@ -109,14 +109,14 @@ export abstract class ConsoleContainer<Type extends BlessedWidgetsType, State ex
 	 *
 	 * @returns {this} The current instance for method chaining.
 	 */
-	readonly create = (): this => {
+	public create(): this {
 		this.createContainer();
 		this._createWidgets();
 		if (!this.enabled)
 			this.resume();
 
 		return this;
-	};
+	}
 
 	/**
 	 * Resumes rendering and enables focus on the widgets.
