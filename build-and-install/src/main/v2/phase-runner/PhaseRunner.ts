@@ -204,8 +204,20 @@ export class PhaseRunner
 		return merge(defaultFileRoutes, projectDefaultFileRoutes);
 	}
 
-	private buildUnitDependencyTree() {
+	private async buildUnitDependencyTree() {
 		const units = [...this.units];
+
+		// Filter out units by their filter
+		for (const unit of units) {
+			if (exists(unit.config.filter) && !(await unit.config.filter())) {
+				removeItemFromArray(units, unit);
+
+				// @ts-ignore
+				unit.setStatus('Will not run');
+				unit.logInfo('unit will not run, did not pass unit filter');
+			}
+		}
+
 		const allDependencies = units.map(unit => unit.runtime.dependencyName);
 		const resolvedUnitNames: string[] = [];
 		const dependencyTree: BaseUnit[][] = [];
@@ -502,7 +514,7 @@ export class PhaseRunner
 	public async execute() {
 		return new MemStorage().init(async () => {
 			await this.init();
-			this.buildUnitDependencyTree();
+			await this.buildUnitDependencyTree();
 			await this.executeImpl();
 		});
 	}
