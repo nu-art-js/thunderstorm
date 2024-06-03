@@ -508,7 +508,9 @@ export class PhaseRunner
 	}
 
 	public async killRunner() {
+		this.logDebug('Killing units');
 		await Promise.all(this.units.map(unit => unit.kill()));
+		this.logDebug('Units killed');
 		await this.setRunningStatus();
 	}
 
