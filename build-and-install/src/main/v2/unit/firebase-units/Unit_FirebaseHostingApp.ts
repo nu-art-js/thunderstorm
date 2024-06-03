@@ -88,7 +88,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		const envConfig = this.getEnvConfig();
 		const fileContent: FirebasePackageConfig['hosting'] = envConfig.isLocal ? {} as FirebasePackageConfig['hosting'] : this.config.firebaseConfig.hosting;
 		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
-		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
+		await _fs.writeFile(targetPath, JSON.stringify({hosting: fileContent}, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveHostingRuntimeConfig() {
