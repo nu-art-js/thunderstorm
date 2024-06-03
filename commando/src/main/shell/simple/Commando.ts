@@ -39,15 +39,15 @@ export class Commando
 
 	async execute<T>(callback?: (stdout: string, stderr: string, exitCode: number) => T): Promise<T | void> {
 		const command = this.builder.reset();
+		const simpleShell = new SimpleShell().debug(this._debug);
 		try {
-			const simpleShell = new SimpleShell().debug(this._debug);
 			if (this.uid)
 				simpleShell.setUID(this.uid);
 
 			const {stdout, stderr} = await simpleShell.execute(command);
 			return callback?.(stdout, stderr, 0);
 		} catch (_error: any) {
-			console.log(_error);
+			simpleShell.logError(_error);
 			const cliError = _error as CliError;
 			if ('isInstanceOf' in cliError && cliError.isInstanceOf(CliError))
 				return callback?.(cliError.stdout, cliError.stderr, cliError.cause.code ?? -1);

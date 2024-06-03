@@ -1,25 +1,32 @@
 import {NVM} from '@nu-art/commando/cli/nvm';
-import {Unit_Typescript} from './Unit_Typescript';
+import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor} from '../types';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
+import {
+	Phase_CheckCyclicImports,
+	Phase_Compile,
+	Phase_Lint,
+	Phase_PreCompile,
+	Phase_PrintDependencyTree,
+	Phase_Purge
+} from '../../phase';
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
 import {Commando} from '@nu-art/commando/shell';
 
 
-type _Config<Config> = {
+export type Unit_TypescriptLib_Config = Unit_Typescript_Config & {
 	customTSConfig?: boolean;
 	output: string;
-} & Config;
+};
 
-type _RuntimeConfig<RTC> = {
+export type Unit_TypescriptLib_RuntimeConfig = Unit_Typescript_RuntimeConfig & {
 	pathTo: { pkg: string; output: string }
-} & RTC;
+};
 
 const extensionsToLint = ['.ts', '.tsx'];
 const assetExtensions = [
@@ -33,13 +40,17 @@ const assetExtensions = [
 	'_ts'
 ];
 
-export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {} = {},
-	C extends _Config<Config> = _Config<Config>, RTC extends _RuntimeConfig<RuntimeConfig> = _RuntimeConfig<RuntimeConfig>>
+export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config, RTC extends Unit_TypescriptLib_RuntimeConfig = Unit_TypescriptLib_RuntimeConfig>
 	extends Unit_Typescript<C, RTC>
 	implements UnitPhaseImplementor<[
 		Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports,
 		Phase_Purge, Phase_Lint,
 	]> {
+
+	constructor(config: Unit_TypescriptLib<C, RTC>['config']) {
+		super(config);
+		this.addToClassStack(Unit_TypescriptLib);
+	}
 
 	protected async init(setInitialized: boolean = true) {
 		await super.init(false);
@@ -78,7 +89,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	}
 
 	protected async clearOutputDir() {
-		if(!RuntimeParams.clean)
+		if (!RuntimeParams.clean)
 			return;
 
 		//Return if output dir doesn't exist
@@ -102,7 +113,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	}
 
 	protected async copyAssetsToOutput() {
-		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${this.runtime.pathTo.output}" > /dev/null`;
+		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdmuv "${this.runtime.pathTo.output}" > /dev/null 2>&1`;
 		await Commando
 			.create(Cli_Basic)
 			.cd(`${this.runtime.pathTo.pkg}/src/main`)

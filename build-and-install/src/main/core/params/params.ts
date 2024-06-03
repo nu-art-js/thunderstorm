@@ -1,5 +1,9 @@
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
+import {exists} from '@nu-art/ts-common';
+
+//util regex function
+const regexTemplate = (regexp: string | undefined) => exists(regexp) ? `.*${regexp}.*` : '.*';
 
 
 export const BaiParam_Help: BaseCliParam<'help', boolean> = {
@@ -178,7 +182,7 @@ export const BaiParam_Test: BaseCliParam<'test', string> = {
 	type: 'string',
 	group: 'Test',
 	description: 'Run the tests in all the project packages\naccepts test label to run optionally. default will be empty string',
-	process: (regexp) => regexp ?? '.*',
+	process: regexTemplate,
 };
 
 export const BaiParam_Launch: BaseCliParam<'launch', string> = {
@@ -186,7 +190,7 @@ export const BaiParam_Launch: BaseCliParam<'launch', string> = {
 	keyName: 'launch',
 	type: 'string',
 	group: 'Apps',
-	process: (regexp) => regexp ?? '.*',
+	process: regexTemplate,
 	description: 'It will add the provided App to the launch list \nrequired input: path-to-app-to-launch(string)'
 };
 
@@ -219,23 +223,25 @@ export const BaiParam_Deploy: BaseCliParam<'deploy', string> = {
 	keyName: 'deploy',
 	type: 'string',
 	group: 'Apps',
-	process: (regexp) => regexp ?? '.*',
+	process: regexTemplate,
 	description: 'Will add the provided App to the deploy list or all applications'
 };
 
-export const BaiParam_DeployBackend: BaseCliParam<'deployBackend', boolean> = {
+export const BaiParam_DeployBackend: BaseCliParam<'deployBackend', string> = {
 	keys: ['--deploy-backend', '-db'],
 	keyName: 'deployBackend',
 	group: 'Apps',
-	type: 'boolean',
+	type: 'string',
+	process: regexTemplate,
 	description: 'Will add the app-backend to the deploy list'
 };
 
-export const BaiParam_DeployFrontend: BaseCliParam<'deployFrontend', boolean> = {
+export const BaiParam_DeployFrontend: BaseCliParam<'deployFrontend', string> = {
 	keys: ['--deploy-frontend', '-df'],
 	keyName: 'deployFrontend',
-	type: 'boolean',
+	type: 'string',
 	group: 'Apps',
+	process: regexTemplate,
 	description: 'Will add the app frontend to the deploy list'
 };
 

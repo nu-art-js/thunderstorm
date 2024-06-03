@@ -1,3 +1,5 @@
+import {BaseUnit} from '../unit/core';
+
 export type Phase<PhaseMethod extends string> = {
 	//Key identifier of the phase, Unique
 	key: string;
@@ -7,6 +9,8 @@ export type Phase<PhaseMethod extends string> = {
 	method: PhaseMethod
 	//Filter to determine if the phase will run
 	filter?: () => (Promise<boolean> | boolean);
+	//Filter units for this phase
+	unitFilter?: (unit: BaseUnit) => (Promise<boolean> | boolean)
 	//Should the runner terminate after the phase, only matters if the phase did run
 	terminateAfterPhase?: boolean;
 	//Should this phase be run taking into account the dependency tree

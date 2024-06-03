@@ -9,6 +9,7 @@ export class InteractiveShell
 	private _debug: boolean = false;
 	private logProcessors: ((log: string, std: LogTypes) => boolean)[] = [];
 	private shell: ChildProcessWithoutNullStreams | ChildProcess;
+	private alive: boolean;
 
 	constructor() {
 		super();
@@ -16,6 +17,9 @@ export class InteractiveShell
 			detached: true,  // This is important to make the process a session leader
 			shell: true
 		});
+
+		//set alive
+		this.alive = true;
 
 		const printer = (std: LogTypes) => (data: Buffer) => {
 			const messages = data.toString().trim().split('\n');
@@ -46,6 +50,7 @@ export class InteractiveShell
 
 		// Handle shell exit
 		this.shell.on('close', (code) => {
+			this.alive = false;
 			this.logInfo(`child process exited with code ${code}`);
 		});
 	}
@@ -70,10 +75,16 @@ export class InteractiveShell
 	};
 
 	kill = (signal?: NodeJS.Signals | number) => {
+		if (!this.alive)
+			return;
+
 		return this.shell.kill(signal);
 	};
 
 	gracefullyKill = async (pid?: number) => {
+		if (!this.alive)
+			return;
+
 		return new Promise<void>((resolve, reject) => {
 			console.log('Killing process');
 			this.shell.on('exit', async (code, signal) => {
