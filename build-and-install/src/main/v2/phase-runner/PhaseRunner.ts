@@ -43,7 +43,7 @@ import {
 } from '../../defaults/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
-import {dispatcher_PhaseChange} from './PhaseRunnerDispatcher';
+import {dispatcher_PhaseChange, dispatcher_UnitChange} from './PhaseRunnerDispatcher';
 import {
 	CONST_ProjectDependencyKey,
 	CONST_ProjectVersionKey,
@@ -51,8 +51,8 @@ import {
 	CONST_ThunderstormVersionKey,
 	MemKey_PhaseRunner
 } from './consts';
-import {BAI_ListScreen} from '../screens/list-screen';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
+import {BAIScreen} from '../screens/BAIScreen';
 
 export class PhaseRunner
 	extends BaseUnit
@@ -66,7 +66,7 @@ export class PhaseRunner
 
 	//Properties for HOW the PhaseRunner should run
 	private runningStatus!: RunningStatus;
-	private screen?: BAI_ListScreen;
+	private screen?: BAIScreen;
 	private phaseFilter: (phase: Phase<string>) => (boolean | Promise<boolean>);
 
 	constructor(projectPath: RelativePath) {
@@ -147,7 +147,11 @@ export class PhaseRunner
 				unitsToRemove.push(unit);
 		}
 
+		if (!unitsToRemove.length)
+			return;
+
 		unitsToRemove.forEach(unit => removeItemFromArray(this.units, unit));
+		dispatcher_UnitChange.dispatch(this.units);
 	}
 
 	private async loadProject() {
@@ -298,6 +302,7 @@ export class PhaseRunner
 			//TS units after project units, but before the rest
 			return allTSUnits.includes(unit) ? 2 : 3;
 		});
+		dispatcher_UnitChange.dispatch(this.units);
 	}
 
 	private getUnitsForPhase<P extends Phase<string>>(phase: P) {
@@ -498,7 +503,7 @@ export class PhaseRunner
 		await this.setRunningStatus();
 	}
 
-	public setScreen(screen: BAI_ListScreen) {
+	public setScreen(screen: BAIScreen) {
 		this.screen = screen;
 	}
 
