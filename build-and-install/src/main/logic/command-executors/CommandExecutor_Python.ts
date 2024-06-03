@@ -16,8 +16,7 @@ export class CommandExecutor_Python {
 		this.pkg = pkg;
 		this.commando = CommandoInteractive.create(Cli_Basic)
 			.setUID(this.pkg.name)
-			.cd(convertToFullPath(this.pkg.path))
-			.debug();
+			.cd(convertToFullPath(this.pkg.path));
 		this.initListeners();
 	}
 

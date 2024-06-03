@@ -141,7 +141,6 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 
 	private async clearPorts() {
 		await this.launchCommando
-			.debug()
 			.append(`array=($(lsof -ti:${[this.config.firebaseConfig.hostingPort].join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')

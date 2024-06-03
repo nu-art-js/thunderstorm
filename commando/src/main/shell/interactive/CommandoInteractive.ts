@@ -111,7 +111,7 @@ export class CommandoInteractive
 					return true;
 
 				const exitCode = match?.[1];
-				console.log(`handling exitCode: ${exitCode}`);
+				// console.log(`handling exitCode: ${exitCode}`);
 				this.removeLogProcessor(logProcessor);
 
 				try {
@@ -120,7 +120,7 @@ export class CommandoInteractive
 					reject(err);
 				}
 
-				console.log(`is this code even reachable??`);
+				// console.log(`is this code even reachable??`);
 				return false;
 			};
 			this.builder.append(`echo ${uniqueKey}=$?`);

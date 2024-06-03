@@ -43,23 +43,6 @@ export class Cli_Git
 	};
 
 	git_clone(url: string, options?: GitCloneParams): this {
-		// return new Promise<this>((resolve, reject) => {
-		// 	const branch = `${options?.branch ? ` -b ${options?.branch}` : ''}`;
-		// 	const recursive = `${options?.recursive ? ` --recursive` : ''}`;
-		// 	const outputFolder = `${options?.outputFolder ? ` ${options.outputFolder}` : ''}`;
-		// 	const command = `git clone${recursive}${branch} ${url}${outputFolder}`;
-		// 	this.echo(command);
-		// 	this.append(command)
-		// 		.execute((stdout: string, stderr: string, exitCode: number) => {
-		// 			if (exitCode === 0)
-		// 				return resolve(this);
-		//
-		// 			if (exitCode === 128)
-		// 				return reject(new Error(`No access to repo: ${url}`));
-		//
-		// 			return reject(new Error(`Got unexpected exit code(${exitCode}) while cloning: ${url}`));
-		// 		});
-		// });
 		const branch = `${options?.branch ? ` -b ${options?.branch}` : ''}`;
 		const recursive = `${options?.recursive ? ` --recursive` : ''}`;
 		const outputFolder = `${options?.outputFolder ? ` ${options.outputFolder}` : ''}`;
@@ -67,6 +50,26 @@ export class Cli_Git
 		this.append(command);
 		return this;
 	}
+
+	// git_cloneAssert(url: string, options?: GitCloneParams) {
+	// 	return new Promise<void>((resolve, reject) => {
+	// 		const branch = `${options?.branch ? ` -b ${options?.branch}` : ''}`;
+	// 		const recursive = `${options?.recursive ? ` --recursive` : ''}`;
+	// 		const outputFolder = `${options?.outputFolder ? ` ${options.outputFolder}` : ''}`;
+	// 		const command = `git clone${recursive}${branch} ${url}${outputFolder}`;
+	// 		this.echo(command);
+	// 		this.append(command)
+	// 			.execute((stdout: string, stderr: string, exitCode: number) => {
+	// 				if (exitCode === 0)
+	// 					return resolve();
+	//
+	// 				if (exitCode === 128)
+	// 					return reject(new Error(`No access to repo: ${url}`));
+	//
+	// 				return reject(new Error(`Got unexpected exit code(${exitCode}) while cloning: ${url}`));
+	// 			});
+	// 	});
+	// }
 
 	private git_checkout(branch: string): this {
 		this.append(`git checkout ${branch}`);
