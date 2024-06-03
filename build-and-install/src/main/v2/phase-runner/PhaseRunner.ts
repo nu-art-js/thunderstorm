@@ -305,16 +305,25 @@ export class PhaseRunner
 		dispatcher_UnitChange.dispatch(this.units);
 	}
 
-	private getUnitsForPhase<P extends Phase<string>>(phase: P) {
-		return filterInstances(this.unitDependencyTree.map(row => {
-			const filteredRow = row.filter(unit => {
+	private async getUnitsForPhase<P extends Phase<string>>(phase: P) {
+		return filterInstances(await Promise.all(this.unitDependencyTree.map(async row => {
+			const filteredRow = await Promise.all(row.map(async unit => {
+				// Unit filter did not pass
 				if (exists(unit.config.filter) && !unit.config.filter())
-					return false;
+					return null;
 
-				return exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]);
-			});
-			return filteredRow.length ? filteredRow : undefined;
-		}));
+				// Unit doesn't implement the phase method
+				if (!exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]))
+					return null;
+
+				// If phase implements unit filter and unit doesn't pass
+				if (exists(phase.unitFilter) && !(await phase.unitFilter(unit)))
+					return null;
+
+				return unit;
+			}));
+			return filterInstances(filteredRow);
+		})).then(rows => rows.filter(row => row.length)));
 	}
 
 	public getUnits() {
@@ -336,7 +345,7 @@ export class PhaseRunner
 			return false;
 		}
 
-		const units = this.getUnitsForPhase(phase);
+		const units = await this.getUnitsForPhase(phase);
 		if (!units.length) {
 			this.logDebug(`Will not execute phase: ${phase.name}, no units to execute`);
 			return false;
