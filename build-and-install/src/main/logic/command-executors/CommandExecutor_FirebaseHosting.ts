@@ -30,7 +30,6 @@ export class CommandExecutor_FirebaseHosting {
 	private async clearPorts() {
 		await NVM.createCommando(Cli_Basic)
 			.setUID(this.pkg.name)
-			.debug()
 			.append(`array=($(lsof -ti:${[this.pkg.envConfig.hostingPort].join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')

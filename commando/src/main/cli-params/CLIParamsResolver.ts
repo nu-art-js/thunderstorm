@@ -1,4 +1,8 @@
-import {exists, filterDuplicates, StaticLogger} from '@nu-art/ts-common';
+import {
+	asArray,
+	exists,
+	filterDuplicates,
+	StaticLogger} from '@nu-art/ts-common';
 import {BaseCliParam, CliParam, CliParams} from './types';
 import {DefaultProcessorsMapper} from './consts';
 
@@ -45,7 +49,7 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 
 			if (cliParamToResolve.isArray) {
 				let currentValues = output[key] as Value;
-				currentValues = filterDuplicates([...currentValues ?? [], finalValue]) as Value;
+				currentValues = filterDuplicates([...(currentValues ?? []), ...asArray(finalValue)]) as Value;
 
 				output[key] = currentValues;
 				return output;

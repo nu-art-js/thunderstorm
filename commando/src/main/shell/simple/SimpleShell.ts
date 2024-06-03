@@ -27,9 +27,6 @@ export class SimpleShell
 					return reject(new CliError(`executing:\n${command}\n`, stdout, stderr, error));
 				}
 
-				if (stderr)
-					reject(stderr);
-
 				if (stdout)
 					this.logInfo(stdout);
 

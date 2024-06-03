@@ -42,7 +42,6 @@ export class CommandExecutor_FirebaseFunction {
 		const allPorts = Array.from({length: 10}, (_, i) => `${this.pkg.envConfig.basePort + i}`);
 		await NVM.createCommando(Cli_Basic)
 			.setUID(this.pkg.name)
-			.debug()
 			.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')

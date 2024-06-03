@@ -47,8 +47,9 @@ export class Commando
 			const {stdout, stderr} = await simpleShell.execute(command);
 			return callback?.(stdout, stderr, 0);
 		} catch (_error: any) {
+			console.log(_error);
 			const cliError = _error as CliError;
-			if (cliError.isInstanceOf(CliError))
+			if ('isInstanceOf' in cliError && cliError.isInstanceOf(CliError))
 				return callback?.(cliError.stdout, cliError.stderr, cliError.cause.code ?? -1);
 
 			throw new ThisShouldNotHappenException('Unhandled error', _error);
