@@ -150,7 +150,7 @@ export class ModuleBE_SessionDB_Class
 		createJWT: async (sessionData: any) => {
 			const payload = {sessionData: typeof sessionData === 'string' ? sessionData : JSON.stringify(sessionData)};
 			const privateKey = await this.getPrivateKeyForSessionSigning();
-			const options = {expiresIn: Math.floor(this.config.sessionTTLms / 1000)};
+			const options = {expiresIn: '100y'};
 			try {
 				return jwt.sign(payload, privateKey, options);
 			} catch (e: any) {
