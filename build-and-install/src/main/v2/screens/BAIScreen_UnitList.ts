@@ -21,19 +21,25 @@ export class BAIScreen_UnitList
 		PhaseRunner_OnUnitStatusChange,
 		PhaseRunner_OnUnitsChange {
 
+	//######################### Properties #########################
+
 	private units: BaseUnit[] = [];
 
 	//Widgets
+	private logWidget!: Widgets.Log;
+	private phaseWidget!: Widgets.TextElement;
 	private unitWrapperWidget!: Widgets.ListElement;
 	private unitWidgets: [
 		Widgets.BoxElement, //Containing Box
 		Widgets.TextElement, //Unit Label
 		Widgets.TextElement //Unit Status
 	][] = [];
-	private logWidget!: Widgets.Log;
-	private phaseWidget!: Widgets.TextElement;
 
 	//######################### Lifecycle #########################
+
+	constructor() {
+		super('bai-unit-list');
+	}
 
 	__onPhaseChange(phase: Phase<string>) {
 		this.setState({currentPhaseName: phase.name});
@@ -55,7 +61,7 @@ export class BAIScreen_UnitList
 
 	//######################### Content Destruction #########################
 
-	private destroyUnitListWidget () {
+	private destroyUnitListWidget() {
 		this.unitWrapperWidget?.destroy();
 		this.unitWidgets?.forEach(group => group.forEach(widget => widget.destroy()));
 	}

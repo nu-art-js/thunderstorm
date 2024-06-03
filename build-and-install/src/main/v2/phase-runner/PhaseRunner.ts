@@ -71,6 +71,7 @@ export class PhaseRunner
 
 	constructor(projectPath: RelativePath) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
+		this.addToClassStack(PhaseRunner);
 		this.phases = [];
 		this.units = [this];
 		this.project = {path: convertToFullPath(projectPath), config: {} as ProjectConfigV2};

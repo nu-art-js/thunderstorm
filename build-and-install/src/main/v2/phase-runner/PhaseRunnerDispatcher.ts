@@ -18,6 +18,9 @@ class PhaseRunnerDispatcher<T,
 	//######################### Listeners Logic #########################
 
 	public addListener(listener: any) {
+		if(this.listeners.includes(listener))
+			return;
+
 		this.listeners.push(listener);
 	}
 

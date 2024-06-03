@@ -1,4 +1,4 @@
-import {Unit_TypescriptLib} from '../core';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../core';
 import {UnitPhaseImplementor} from '../types';
 import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../phase';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
@@ -8,20 +8,15 @@ import {FirebasePackageConfig, PackageJson} from '../../../core/types';
 import {_keys, deepClone, ImplementationMissingException, Second, sleep} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {
-	Commando,
-	CommandoCLIKeyValueListener,
-	CommandoCLIListener,
-	CommandoInteractive
-} from '@nu-art/commando/core/cli';
+import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '@nu-art/commando/core/cli';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 
-type _Config<Config> = {
+export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig: FirebasePackageConfig;
 	sources?: string[];
-} & Config
+};
 
 type CommandExecutor_FirebaseFunction_Listeners = {
 	proxy: {
@@ -37,7 +32,7 @@ type CommandExecutor_FirebaseFunction_Listeners = {
 
 const CONST_VersionApp = 'version-app.json';
 
-export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
+export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]> {
 
@@ -53,6 +48,11 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		proxy: CommandoInteractive & Commando & Cli_Basic
 	};
 	private listeners!: CommandExecutor_FirebaseFunction_Listeners;
+
+	constructor(config: Unit_FirebaseFunctionsApp<C>['config']) {
+		super(config);
+		this.addToClassStack(Unit_FirebaseFunctionsApp);
+	}
 
 	//######################### Phase Implementations #########################
 
