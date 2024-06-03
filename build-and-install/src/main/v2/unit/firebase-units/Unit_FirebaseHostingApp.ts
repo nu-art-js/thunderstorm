@@ -10,7 +10,12 @@ import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '@nu-art/commando/core/cli';
+import {
+	Commando,
+	CommandoCLIKeyValueListener,
+	CommandoCLIListener,
+	CommandoInteractive
+} from '@nu-art/commando/core/cli';
 
 type _Config<Config> = {
 	firebaseConfig: FirebasePackageConfig;
@@ -128,7 +133,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//Webpack bundles files into the output automatically!
-		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_VersionApp}`;
+		const targetPath = `${this.runtime.pathTo.pkg}/src/main/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
