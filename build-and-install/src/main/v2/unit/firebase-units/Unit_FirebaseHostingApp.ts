@@ -187,8 +187,10 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		if (!this.launchCommando)
 			return;
 
+		this.logWarning(`Killing unit - ${this.config.label}`);
 		const appPid = this.getPID();
 		await this.launchCommando?.gracefullyKill(appPid);
+		this.logWarning(`Unit killed - ${this.config.label}`);
 	}
 
 	//######################### Deploy Logic #########################

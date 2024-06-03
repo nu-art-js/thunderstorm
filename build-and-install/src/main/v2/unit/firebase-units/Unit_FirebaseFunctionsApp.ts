@@ -352,10 +352,12 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		if (!this.launchCommandos)
 			return;
 
+		this.logWarning(`Killing unit - ${this.config.label}`);
 		const emulatorPid = this.getPID(this.listeners.emulator.pid);
 		const proxyPid = this.getPID(this.listeners.proxy.pid);
 		await this.launchCommandos.emulator.gracefullyKill(emulatorPid);
 		await this.launchCommandos.proxy.gracefullyKill(proxyPid);
+		this.logWarning(`Unit killed - ${this.config.label}`);
 	}
 
 	//######################### Deploy Logic #########################
