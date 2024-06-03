@@ -114,6 +114,7 @@ export class CliInteractive
 	extends BaseCLI {
 
 	private shell: ChildProcessWithoutNullStreams | ChildProcess;
+	private alive: boolean;
 
 	constructor() {
 		super();
@@ -121,6 +122,9 @@ export class CliInteractive
 			detached: true,  // This is important to make the process a session leader
 			shell: true
 		});
+
+		//set alive
+		this.alive = true;
 
 		// Handle shell output (stdout)
 		const printer = (data: Buffer) => {
@@ -149,6 +153,7 @@ export class CliInteractive
 
 		// Handle shell exit
 		this.shell.on('close', (code) => {
+			this.alive = false;
 			this.logInfo(`child process exited with code ${code}`);
 		});
 	}
@@ -174,8 +179,13 @@ export class CliInteractive
 	};
 
 	gracefullyKill = async (pid?: number) => {
+		// if the shell is already dead no need to wait for kill
+		if (!this.alive)
+			return;
+
 		return new Promise<void>((resolve, reject) => {
 			this.shell.on('exit', async (code, signal) => {
+				this.alive = false;
 				resolve();
 			});
 
@@ -320,7 +330,7 @@ export class Commando {
 		commando.setStdErrorValidator = (processor) => {
 			cli.setStdErrorValidator(processor);
 			return commando;
-		}
+		};
 		return commando;
 	}
 
@@ -340,8 +350,14 @@ export class Commando {
 	 *
 	 * @returns {Cli} - The script execution output.
 	 */
-	executeFile = async (filePath: string, interpreter?: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
-	executeRemoteFile = async (pathToFile: string, interpreter: string): Promise<{ stdout: string, stderr: string }> => ({stdout: '', stderr: '',});
+	executeFile = async (filePath: string, interpreter?: string): Promise<{
+		stdout: string,
+		stderr: string
+	}> => ({stdout: '', stderr: '',});
+	executeRemoteFile = async (pathToFile: string, interpreter: string): Promise<{
+		stdout: string,
+		stderr: string
+	}> => ({stdout: '', stderr: '',});
 
 	addStdoutProcessor = (processor: (stdout: string) => void) => this;
 	addStderrProcessor = (processor: (stderr: string) => void) => this;
@@ -400,7 +416,7 @@ export class CommandoInteractive {
 		commando.setStdErrorValidator = (processor) => {
 			cli.setStdErrorValidator(processor);
 			return commando;
-		}
+		};
 		return commando as CommandoInteractive & typeof _commando;
 	}
 
