@@ -1,40 +1,27 @@
-import {ConsoleContainer} from '@nu-art/commando/console/ConsoleContainer';
 import {Widgets} from 'blessed';
 import {
-	dispatcher_PhaseChange,
+	dispatcher_PhaseChange, dispatcher_UnitChange,
 	dispatcher_UnitStatusChange,
-	PhaseRunnerEventListener
+	PhaseRunner_OnPhaseChange, PhaseRunner_OnUnitsChange,
+	PhaseRunner_OnUnitStatusChange
 } from '../phase-runner/PhaseRunnerDispatcher';
 import {Phase} from '../phase';
 import {BaseUnit} from '../unit/core';
-import {
-	_logger_finalDate,
-	_logger_getPrefix,
-	_logger_timezoneOffset,
-	AsyncVoidFunction,
-	BeLogged,
-	LogClient_MemBuffer,
-	LogClient_Terminal,
-	LogLevel
-} from '@nu-art/ts-common';
-
-type ScreenKeyBinding = {
-	keys: string[];
-	callback: VoidFunction;
-};
+import {BAIScreen} from './BAIScreen';
+import {MemKey_PhaseRunner} from '../phase-runner/consts';
 
 type State = {
 	currentPhaseName?: string;
 	selectedUnit?: BaseUnit;
 };
 
-export class BAI_ListScreen
-	extends ConsoleContainer<'screen', State>
-	implements PhaseRunnerEventListener {
+export class BAIScreen_UnitList
+	extends BAIScreen<State>
+	implements PhaseRunner_OnPhaseChange,
+		PhaseRunner_OnUnitStatusChange,
+		PhaseRunner_OnUnitsChange {
 
-	private units: BaseUnit[];
-	private logClient!: LogClient_MemBuffer;
-	private onKillCB?: AsyncVoidFunction;
+	private units: BaseUnit[] = [];
 
 	//Widgets
 	private unitWrapperWidget!: Widgets.ListElement;
@@ -57,61 +44,35 @@ export class BAI_ListScreen
 		this.container.screen.render();
 	}
 
-	/**
-	 * Creates an instance of ConsoleScreen.
-	 *
-	 * @param units - The units this screen should keep track of
-	 * @param {Widgets.IScreenOptions} [props] - The properties to apply to the screen widget.
-	 * @param {ScreenKeyBinding[]} [keyBinding] - An array of key bindings for the screen widget.
-	 */
-	constructor(units: BaseUnit[], props?: Widgets.IScreenOptions, keyBinding: ScreenKeyBinding[] = []) {
-		super(
-			'screen',
-			{smartCSR: true, title: 'Build and Install'},
-			[{
-				keys: ['escape', 'q', 'C-c'],
-				callback: async () => {
-					this.logInfo('Kill command received');
-					await this.onKillCB?.();
-					this.logInfo('Killed!');
-					return process.exit(1);
-				}
-			}]
-		);
-		this.units = units;
+	__onUnitsChange(data: BaseUnit[]) {
+		this.createUnitListWidget();
+		this.renderUnitList();
 	}
 
-	private initLogger() {
-		this.logClient = new LogClient_MemBuffer('log-out.txt');
-		BeLogged.removeConsole(LogClient_Terminal);
-		BeLogged.addClient(this.logClient);
-		this.logClient.setForTerminal();
-		this.logClient.setComposer((tag: string, level: LogLevel): string => {
-			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
-			const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23).split('_')[1];
-			return `  ${date} ${_logger_getPrefix(level)} ${tag}:  `;
-		});
+	protected onLogUpdated = () => {
+		this.renderLogs();
+	};
 
-		this.logClient.setLogAppendedListener(() => {
-			this.renderLogs();
-		});
+	//######################### Content Destruction #########################
+
+	private destroyUnitListWidget () {
+		this.unitWrapperWidget?.destroy();
+		this.unitWidgets?.forEach(group => group.forEach(widget => widget.destroy()));
 	}
 
 	//######################### Content Creation #########################
 
-	public create() {
-		if (!this.logClient)
-			this.initLogger();
-		super.create();
-		return this;
-	}
-
 	protected createContent() {
+		//Create widgets
 		this.createPhaseWidget();
 		this.createUnitListWidget();
 		this.createLogWidget();
+		//Start listening on dispatchers
 		dispatcher_UnitStatusChange.addListener(this);
 		dispatcher_PhaseChange.addListener(this);
+		dispatcher_UnitChange.addListener(this);
+		//Start the log client
+		this.startLogClient();
 	}
 
 	private createPhaseWidget() {
@@ -123,7 +84,7 @@ export class BAI_ListScreen
 			content: 'phases',
 			border: {type: 'line'},
 			tags: true,
-			styles: {
+			style: {
 				border: {fg: 'blue'},
 				fg: 'blue',
 			},
@@ -133,6 +94,8 @@ export class BAI_ListScreen
 	}
 
 	private createUnitListWidget() {
+		this.units = MemKey_PhaseRunner.get().getUnits();
+		this.destroyUnitListWidget();
 		const props: Widgets.ListOptions<any> = {
 			top: 3,
 			left: 0,
@@ -232,23 +195,9 @@ export class BAI_ListScreen
 
 	private renderLogs() {
 		const scrollPosition = this.logWidget.getScroll();
-		const content = this.state.selectedUnit ? this.state.selectedUnit.getLogs() : this.logClient.buffers[0];
+		const content = this.state.selectedUnit ? this.state.selectedUnit.getLogs() : this.getLogs();
 		this.logWidget.setContent(content);
 		this.logWidget.setScroll(scrollPosition);
-	}
-
-	//######################### Kill #########################
-
-	public setKillCB(cb: AsyncVoidFunction) {
-		this.onKillCB = cb;
-		// Remove all listeners to the process kill event
-		// process.listeners('SIGINT').forEach(listener => process.removeListener('SIGINT', listener));
-		//Register a new listener for process kill event
-		// process.on('SIGINT', async () => {
-		// 	await cb();
-		// 	this.dispose();
-		// 	process.exit(0);
-		// });
 	}
 
 	//######################### Events #########################
