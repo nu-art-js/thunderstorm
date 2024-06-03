@@ -8,7 +8,12 @@ import {FirebasePackageConfig, PackageJson} from '../../../core/types';
 import {_keys, deepClone, ImplementationMissingException, Second, sleep} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '@nu-art/commando/core/cli';
+import {
+	Commando,
+	CommandoCLIKeyValueListener,
+	CommandoCLIListener,
+	CommandoInteractive
+} from '@nu-art/commando/core/cli';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
@@ -221,7 +226,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//copyAssetsToOutput will move the file to output
-		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_VersionApp}`;
+		const targetPath = `${this.runtime.pathTo.pkg}/src/main/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
