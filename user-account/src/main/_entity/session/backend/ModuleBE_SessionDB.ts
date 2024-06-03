@@ -19,7 +19,8 @@ import {
 	Header_SessionId,
 	MemKey_AccountId,
 	MemKey_SessionData,
-	MemKey_SessionObject, SessionKey_Account_BE,
+	MemKey_SessionObject,
+	SessionKey_Account_BE,
 	SessionKey_Session_BE
 } from './consts';
 import * as jwt from 'jsonwebtoken';
@@ -235,6 +236,10 @@ export class ModuleBE_SessionDB_Class
 			const session = await this.session.create(content, transaction);
 			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
 			return session.sessionData;
+		},
+		isExpired: (session: DB_Session) => {
+			const decodedJwt = this.sessionData.decodeJWT(session.sessionIdJwt);
+			return currentTimeMillis() >= decodedJwt.session.expiration;
 		}
 	};
 }

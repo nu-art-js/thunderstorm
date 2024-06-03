@@ -415,11 +415,7 @@ export class ModuleBE_AccountDB_Class
 
 	// @ts-ignore
 	private token = {
-		create: async ({
-										 accountId,
-										 ttl,
-										 label
-									 }: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
+		create: async ({accountId, ttl, label}: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
 			if (!exists(ttl) || ttl < Year)
 				throw HttpCodes._4XX.BAD_REQUEST('Invalid token TTL', `TTL value is invalid (${ttl})`);
 
@@ -436,7 +432,7 @@ export class ModuleBE_AccountDB_Class
 				SessionKey_Session_BE.get(sessionData).expiration = currentTimeMillis() + ttl;
 				return sessionData;
 			});
-
+			// sessionId here is the JWT that is created and placed inside DB_Session.sessionIdJWT
 			return {token: sessionId};
 		},
 		invalidate: async (token: string) => await ModuleBE_SessionDB.delete.where({sessionId: token}),
