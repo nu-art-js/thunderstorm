@@ -1,4 +1,4 @@
-import {Unit_TypescriptLib} from '../core';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../core';
 import {FirebasePackageConfig} from '../../../core/types';
 import {UnitPhaseImplementor} from '../types';
 import {Phase_DeployFrontend, Phase_Launch, Phase_ResolveConfigs} from '../../phase';
@@ -9,23 +9,29 @@ import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {CommandoInteractive} from '@nu-art/commando/shell';
+import {
+	CommandoInteractive} from '@nu-art/commando/shell';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 
-
-type _Config<Config> = {
+export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig: FirebasePackageConfig;
 	sources?: string[];
-} & Config
+};
 
 const CONST_VersionApp = 'version-app.json';
 
-export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
+export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
 
 	private launchCommando!: CommandoInteractive & Cli_Basic;
 	private hostingPid!: number;
+
+	constructor(config: Unit_FirebaseHostingApp<C>['config']) {
+		super(config);
+		this.addToClassStack(Unit_FirebaseHostingApp);
+	}
+
 
 	//######################### Phase Implementations #########################
 
@@ -77,7 +83,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		const envConfig = this.getEnvConfig();
 		const fileContent: FirebasePackageConfig['hosting'] = envConfig.isLocal ? {} as FirebasePackageConfig['hosting'] : this.config.firebaseConfig.hosting;
 		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
-		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
+		await _fs.writeFile(targetPath, JSON.stringify({hosting: fileContent}, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveHostingRuntimeConfig() {
@@ -122,7 +128,7 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//Webpack bundles files into the output automatically!
-		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_VersionApp}`;
+		const targetPath = `${this.runtime.pathTo.pkg}/src/main/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
@@ -159,7 +165,9 @@ export class Unit_FirebaseHostingApp<Config extends {} = {}, C extends _Config<C
 		if (!this.launchCommando)
 			return;
 
+		this.logWarning(`Killing unit - ${this.config.label}`);
 		await this.launchCommando?.gracefullyKill(this.hostingPid);
+		this.logWarning(`Unit killed - ${this.config.label}`);
 	}
 
 	//######################### Deploy Logic #########################

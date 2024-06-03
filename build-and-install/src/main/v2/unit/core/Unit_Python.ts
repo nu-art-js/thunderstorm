@@ -1,21 +1,20 @@
 import {Phase_Install} from '../../phase';
 import {UnitPhaseImplementor} from '../types';
-import {BaseUnit} from './BaseUnit';
+import {BaseUnit, BaseUnit_Config, BaseUnit_RuntimeConfig} from './BaseUnit';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {CommandoInteractive} from '@nu-art/commando/shell';
 
 
-type _Config<C> = {
+export type Unit_Python_Config = BaseUnit_Config & {
 	pathToPackage: string
-} & C
+}
 
-type _RuntimeConfig<RTC> = {
+export type Unit_Python_RuntimeConfig = BaseUnit_RuntimeConfig & {
 	pathTo: { pkg: string };
-} & RTC;
+}
 
-export class Unit_Python<Config extends {} = {}, RuntimeConfig extends {} = {},
-	C extends _Config<Config> = _Config<Config>, RTC extends _RuntimeConfig<RuntimeConfig> = _RuntimeConfig<RuntimeConfig>>
+export class Unit_Python<C extends Unit_Python_Config = Unit_Python_Config, RTC extends Unit_Python_RuntimeConfig = Unit_Python_RuntimeConfig>
 	extends BaseUnit<C, RTC>
 	implements UnitPhaseImplementor<[Phase_Install]> {
 
@@ -23,6 +22,7 @@ export class Unit_Python<Config extends {} = {}, RuntimeConfig extends {} = {},
 
 	constructor(config: Unit_Python<C, RTC>['config']) {
 		super(config);
+		this.addToClassStack(Unit_Python);
 		this.commando = CommandoInteractive.create(Cli_Basic);
 	}
 
@@ -31,7 +31,6 @@ export class Unit_Python<Config extends {} = {}, RuntimeConfig extends {} = {},
 		this.runtime.pathTo = {
 			pkg: convertToFullPath(this.config.pathToPackage),
 		};
-		this.logWarning(`Python Path ${this.runtime.pathTo.pkg}`);
 		await this.initCommando();
 	}
 

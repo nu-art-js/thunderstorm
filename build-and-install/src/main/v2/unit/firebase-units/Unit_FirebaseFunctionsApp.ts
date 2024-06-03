@@ -1,4 +1,4 @@
-import {Unit_TypescriptLib} from '../core';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../core';
 import {UnitPhaseImplementor} from '../types';
 import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../phase';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
@@ -14,14 +14,14 @@ import {Commando, CommandoInteractive} from '@nu-art/commando/shell';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 
 
-type _Config<Config> = {
+export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig: FirebasePackageConfig;
 	sources?: string[];
-} & Config
+};
 
 const CONST_VersionApp = 'version-app.json';
 
-export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config<Config> = _Config<Config>>
+export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]> {
 
@@ -34,6 +34,11 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		emulator: CommandoInteractive & Cli_Basic;
 		proxy: CommandoInteractive & Cli_Basic
 	};
+
+	constructor(config: Unit_FirebaseFunctionsApp<C>['config']) {
+		super(config);
+		this.addToClassStack(Unit_FirebaseFunctionsApp);
+	}
 
 	//######################### Phase Implementations #########################
 
@@ -209,7 +214,7 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//copyAssetsToOutput will move the file to output
-		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_VersionApp}`;
+		const targetPath = `${this.runtime.pathTo.pkg}/src/main/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
@@ -310,8 +315,10 @@ export class Unit_FirebaseFunctionsApp<Config extends {} = {}, C extends _Config
 		if (!this.launchCommandos)
 			return;
 
+		this.logWarning(`Killing unit - ${this.config.label}`);
 		await this.launchCommandos.emulator.gracefullyKill(this.emulatorPid);
 		await this.launchCommandos.proxy.gracefullyKill(this.proxyPid);
+		this.logWarning(`Unit killed - ${this.config.label}`);
 	}
 
 	//######################### Deploy Logic #########################

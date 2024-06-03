@@ -41,13 +41,13 @@ import {
 } from '../../defaults/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
-import {dispatcher_PhaseChange} from './PhaseRunnerDispatcher';
+import {dispatcher_PhaseChange, dispatcher_UnitChange} from './PhaseRunnerDispatcher';
 import {
 	convertToFullPath
 } from '@nu-art/commando/shell/tools';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
-import {BAI_ListScreen} from '../screens/list-screen';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
+import {BAIScreen} from '../screens/BAIScreen';
 import {MemKey_PhaseRunner} from './consts';
 
 
@@ -68,11 +68,12 @@ export class PhaseRunner
 
 	//Properties for HOW the PhaseRunner should run
 	private runningStatus!: RunningStatus;
-	private screen?: BAI_ListScreen;
+	private screen?: BAIScreen;
 	private phaseFilter: (phase: Phase<string>) => (boolean | Promise<boolean>);
 
 	constructor(projectPath: RelativePath) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
+		this.addToClassStack(PhaseRunner);
 		this.phases = [];
 		this.units = [this];
 		this.project = {path: convertToFullPath(projectPath), config: {} as ProjectConfigV2};
@@ -149,7 +150,11 @@ export class PhaseRunner
 				unitsToRemove.push(unit);
 		}
 
+		if (!unitsToRemove.length)
+			return;
+
 		unitsToRemove.forEach(unit => removeItemFromArray(this.units, unit));
+		dispatcher_UnitChange.dispatch(this.units);
 	}
 
 	private async loadProject() {
@@ -202,8 +207,20 @@ export class PhaseRunner
 		return merge(defaultFileRoutes, projectDefaultFileRoutes);
 	}
 
-	private buildUnitDependencyTree() {
+	private async buildUnitDependencyTree() {
 		const units = [...this.units];
+
+		// Filter out units by their filter
+		for (const unit of units) {
+			if (exists(unit.config.filter) && !(await unit.config.filter())) {
+				removeItemFromArray(units, unit);
+
+				// @ts-ignore
+				unit.setStatus('Will not run');
+				unit.logInfo('unit will not run, did not pass unit filter');
+			}
+		}
+
 		const allDependencies = units.map(unit => unit.runtime.dependencyName);
 		const resolvedUnitNames: string[] = [];
 		const dependencyTree: BaseUnit[][] = [];
@@ -300,18 +317,28 @@ export class PhaseRunner
 			//TS units after project units, but before the rest
 			return allTSUnits.includes(unit) ? 2 : 3;
 		});
+		dispatcher_UnitChange.dispatch(this.units);
 	}
 
-	private getUnitsForPhase<P extends Phase<string>>(phase: P) {
-		return filterInstances(this.unitDependencyTree.map(row => {
-			const filteredRow = row.filter(unit => {
+	private async getUnitsForPhase<P extends Phase<string>>(phase: P) {
+		return filterInstances(await Promise.all(this.unitDependencyTree.map(async row => {
+			const filteredRow = await Promise.all(row.map(async unit => {
+				// Unit filter did not pass
 				if (exists(unit.config.filter) && !unit.config.filter())
-					return false;
+					return null;
 
-				return exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]);
-			});
-			return filteredRow.length ? filteredRow : undefined;
-		}));
+				// Unit doesn't implement the phase method
+				if (!exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]))
+					return null;
+
+				// If phase implements unit filter and unit doesn't pass
+				if (exists(phase.unitFilter) && !(await phase.unitFilter(unit)))
+					return null;
+
+				return unit;
+			}));
+			return filterInstances(filteredRow);
+		})).then(rows => rows.filter(row => row.length)));
 	}
 
 	public getUnits() {
@@ -333,7 +360,7 @@ export class PhaseRunner
 			return false;
 		}
 
-		const units = this.getUnitsForPhase(phase);
+		const units = await this.getUnitsForPhase(phase);
 		if (!units.length) {
 			this.logDebug(`Will not execute phase: ${phase.name}, no units to execute`);
 			return false;
@@ -490,17 +517,19 @@ export class PhaseRunner
 	public async execute() {
 		return new MemStorage().init(async () => {
 			await this.init();
-			this.buildUnitDependencyTree();
+			await this.buildUnitDependencyTree();
 			await this.executeImpl();
 		});
 	}
 
 	public async killRunner() {
+		this.logDebug('Killing units');
 		await Promise.all(this.units.map(unit => unit.kill()));
+		this.logDebug('Units killed');
 		await this.setRunningStatus();
 	}
 
-	public setScreen(screen: BAI_ListScreen) {
+	public setScreen(screen: BAIScreen) {
 		this.screen = screen;
 	}
 

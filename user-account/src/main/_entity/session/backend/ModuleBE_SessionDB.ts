@@ -19,7 +19,8 @@ import {
 	Header_SessionId,
 	MemKey_AccountId,
 	MemKey_SessionData,
-	MemKey_SessionObject, SessionKey_Account_BE,
+	MemKey_SessionObject,
+	SessionKey_Account_BE,
 	SessionKey_Session_BE
 } from './consts';
 import * as jwt from 'jsonwebtoken';
@@ -150,7 +151,7 @@ export class ModuleBE_SessionDB_Class
 		createJWT: async (sessionData: any) => {
 			const payload = {sessionData: typeof sessionData === 'string' ? sessionData : JSON.stringify(sessionData)};
 			const privateKey = await this.getPrivateKeyForSessionSigning();
-			const options = {expiresIn: Math.floor(this.config.sessionTTLms / 1000)};
+			const options = {expiresIn: '100y'};
 			try {
 				return jwt.sign(payload, privateKey, options);
 			} catch (e: any) {
@@ -235,6 +236,10 @@ export class ModuleBE_SessionDB_Class
 			const session = await this.session.create(content, transaction);
 			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, session.sessionId);
 			return session.sessionData;
+		},
+		isExpired: (session: DB_Session) => {
+			const decodedJwt = this.sessionData.decodeJWT(session.sessionIdJwt);
+			return currentTimeMillis() >= decodedJwt.session.expiration;
 		}
 	};
 }
