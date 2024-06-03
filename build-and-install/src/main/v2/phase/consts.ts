@@ -128,6 +128,15 @@ export const phase_Compile: Phase<'compile'> = {
 	dependencyPhaseKeys: [phaseKey_CopyPackageJSON, phaseKey_PreCompile],
 };
 
+export type Phase_Watch = typeof phase_Watch;
+export const phaseKey_Watch = 'watch';
+export const phase_Watch: Phase<'watch'> = {
+	key: phaseKey_Watch,
+	name: 'Watch',
+	method: 'watch',
+	filter: () => RuntimeParams.watch,
+};
+
 export const phases_Build: Phase<string>[] = [
 	phase_Purge,
 	phase_CopyPackageJSON,
@@ -136,6 +145,7 @@ export const phases_Build: Phase<string>[] = [
 	phase_Lint,
 	phase_PreCompile,
 	phase_Compile,
+	phase_Watch
 ];
 
 //######################### Launch Phases #########################
