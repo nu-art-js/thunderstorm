@@ -6,7 +6,14 @@ import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor} from '../types';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
+import {
+	Phase_CheckCyclicImports,
+	Phase_Compile,
+	Phase_Lint,
+	Phase_PreCompile,
+	Phase_PrintDependencyTree,
+	Phase_Purge
+} from '../../phase';
 import {Commando} from '@nu-art/commando/core/cli';
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
@@ -77,7 +84,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	}
 
 	protected async clearOutputDir() {
-		if(!RuntimeParams.clean)
+		if (!RuntimeParams.clean)
 			return;
 
 		//Return if output dir doesn't exist
@@ -101,7 +108,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	}
 
 	protected async copyAssetsToOutput() {
-		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdmuv "${this.runtime.pathTo.output}" > /dev/null`;
+		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdmuv "${this.runtime.pathTo.output}" > /dev/null 2>&1`;
 		await Commando
 			.create(Cli_Basic)
 			.cd(`${this.runtime.pathTo.pkg}/src/main`)
