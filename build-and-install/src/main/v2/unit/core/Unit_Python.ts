@@ -30,7 +30,6 @@ export class Unit_Python<Config extends {} = {}, RuntimeConfig extends {} = {},
 		this.runtime.pathTo = {
 			pkg: convertToFullPath(this.config.pathToPackage),
 		};
-		this.logWarning(`Python Path ${this.runtime.pathTo.pkg}`);
 		await this.initCommando();
 	}
 
