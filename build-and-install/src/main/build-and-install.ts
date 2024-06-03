@@ -18,6 +18,10 @@ runner
 	.execute()
 	.then(() => {
 		StaticLogger.logInfo('completed');
+
+		//TODO: make it an array of non exit params
+		if (!RuntimeParams.launch)
+			process.exit(0);
 	})
 	.catch(err => {
 		StaticLogger.logError('Failed with error: ', err);
