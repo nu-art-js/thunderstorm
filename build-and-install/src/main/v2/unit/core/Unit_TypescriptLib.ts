@@ -101,7 +101,7 @@ export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {}
 	}
 
 	protected async copyAssetsToOutput() {
-		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdm "${this.runtime.pathTo.output}" > /dev/null`;
+		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdmuv "${this.runtime.pathTo.output}" > /dev/null`;
 		await Commando
 			.create(Cli_Basic)
 			.cd(`${this.runtime.pathTo.pkg}/src/main`)
