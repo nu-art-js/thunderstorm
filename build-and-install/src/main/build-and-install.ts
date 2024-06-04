@@ -16,7 +16,7 @@ runner
 		StaticLogger.logInfo('completed');
 
 		//TODO: make it an array of non exit params
-		if (!RuntimeParams.launch)
+		if (!RuntimeParams.launch && !RuntimeParams.watch)
 			process.exit(0);
 	})
 	.catch(err => {

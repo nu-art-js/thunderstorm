@@ -2,7 +2,7 @@ import {FunctionKeys, ParamResolver, removeItemFromArray} from '@nu-art/ts-commo
 import {Phase} from '../phase/types';
 import {BaseUnit} from '../unit/core';
 
-class PhaseRunnerDispatcher<T,
+export class PhaseRunnerDispatcher<T,
 	K extends FunctionKeys<T> = FunctionKeys<T>,
 	P extends ParamResolver<T, K> = ParamResolver<T, K>,
 > {
@@ -18,7 +18,7 @@ class PhaseRunnerDispatcher<T,
 	//######################### Listeners Logic #########################
 
 	public addListener(listener: any) {
-		if(this.listeners.includes(listener))
+		if (this.listeners.includes(listener))
 			return;
 
 		this.listeners.push(listener);

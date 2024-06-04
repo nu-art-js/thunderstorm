@@ -1,4 +1,4 @@
-import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../core';
+import {BaseUnit, Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../core';
 import {UnitPhaseImplementor} from '../types';
 import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../phase';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
@@ -17,6 +17,7 @@ import {
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
+import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnUnitWatchCompiled} from '../runner-dispatchers';
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig: FirebasePackageConfig;
@@ -39,7 +40,7 @@ const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]> {
+	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]>, OnUnitWatchCompiled {
 
 	static staggerCount: number = 0;
 
@@ -54,9 +55,21 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	};
 	private listeners!: CommandExecutor_FirebaseFunction_Listeners;
 
+	async __onUnitWatchCompiled(unit: BaseUnit) {
+		if (this.runtime.unitDependencyNames.includes(unit.runtime.dependencyName)) {
+			this.setStatus('Compile');
+			await this.compileImpl();
+			await this.copyAssetsToOutput();
+			await this.createDependenciesDir();
+			this.setStatus('Compiled');
+		}
+	}
+
 	constructor(config: Unit_FirebaseFunctionsApp<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_FirebaseFunctionsApp);
+		dispatcher_WatchEvent.removeListener(this);
+		dispatcher_UnitWatchCompile.addListener(this);
 	}
 
 	//######################### Phase Implementations #########################

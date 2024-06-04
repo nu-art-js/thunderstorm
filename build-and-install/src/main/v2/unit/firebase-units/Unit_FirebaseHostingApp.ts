@@ -16,6 +16,7 @@ import {
 	CommandoCLIListener,
 	CommandoInteractive
 } from '@nu-art/commando/core/cli';
+import {dispatcher_WatchEvent} from '../runner-dispatchers';
 
 export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig: FirebasePackageConfig;
@@ -40,8 +41,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	constructor(config: Unit_FirebaseHostingApp<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_FirebaseHostingApp);
+		dispatcher_WatchEvent.removeListener(this);
 	}
-
 
 	//######################### Phase Implementations #########################
 
