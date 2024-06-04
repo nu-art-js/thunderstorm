@@ -2,7 +2,13 @@ import {BaseUnit, BaseUnit_Config, BaseUnit_RuntimeConfig} from './BaseUnit';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../../core/consts';
 import {PackageJson} from '../../../core/types';
-import {AbsolutePath, BadImplementationException, ImplementationMissingException, RelativePath, _keys} from '@nu-art/ts-common';
+import {
+	AbsolutePath,
+	BadImplementationException,
+	ImplementationMissingException,
+	RelativePath,
+	_keys
+} from '@nu-art/ts-common';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../../../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
@@ -116,6 +122,14 @@ export class Unit_Typescript<C extends Unit_Typescript_Config = Unit_Typescript_
 	private convertPJForDist(template: PackageJson) {
 		//Get the package params for replacing in the template package json
 		const params = MemKey_ProjectConfig.get().params;
+
+		//if main prop exists on pkg json clear the dist from its ref
+		if (template.main)
+			template.main = template.main.replace('dist/', '');
+
+		//if types prop exists on pkg json clear the dist from its ref
+		if (template.types)
+			template.types = template.types.replace('dist/', '');
 
 		//Convert template to actual package.json
 		return convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ?? params[value]);
