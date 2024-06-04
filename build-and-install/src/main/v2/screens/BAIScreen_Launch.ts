@@ -3,7 +3,7 @@ import {BaseUnit} from '../unit/core';
 import {MemKey_PhaseRunner} from '../phase-runner/consts';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../unit/firebase-units';
 import {Widgets} from 'blessed';
-import {dispatcher_PhaseChange, dispatcher_UnitChange, dispatcher_UnitStatusChange, PhaseRunner_OnUnitsChange} from '../phase-runner/PhaseRunnerDispatcher';
+import {PhaseRunner_OnUnitsChange} from '../phase-runner/PhaseRunnerDispatcher';
 
 type GridCell = { width: number; height: number };
 type GridCol = GridCell[];
@@ -51,16 +51,10 @@ export class BAIScreen_Launch
 	protected createContent(): void {
 		this.updateUnits();
 		this.createGridWidgets();
-		//Start listening on dispatchers
-		dispatcher_UnitStatusChange.addListener(this);
-		dispatcher_PhaseChange.addListener(this);
-		dispatcher_UnitChange.addListener(this);
-		//Start the log client
-		this.startLogClient();
 	}
 
 	private createGridWidgets = () => {
-		this.gridCellWidgets.forEach(widget => widget.destroy());
+		this.destroyGridWidgets();
 		this.calculateGridDimensions();
 		let xPos = 0;
 		let widgetIndex = 0;
@@ -122,6 +116,16 @@ export class BAIScreen_Launch
 
 		return index === this.units.length ? 'Running Logs' : this.units[index].config.label;
 	};
+
+	//######################### Content Destruction #########################
+
+	protected destroyContent() {
+		this.destroyGridWidgets();
+	}
+
+	private destroyGridWidgets = () => {
+		this.gridCellWidgets.forEach(widget => widget.destroy());
+	}
 
 	//######################### Render #########################
 

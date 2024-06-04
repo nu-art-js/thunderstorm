@@ -1,14 +1,6 @@
 import {ConsoleContainer} from '@nu-art/commando/console/ConsoleContainer';
-import {
-	AsyncVoidFunction,
-	BeLogged,
-	LogClient_MemBuffer,
-	LogClient_Terminal,
-	LogLevel,
-	_logger_finalDate,
-	_logger_getPrefix,
-	_logger_timezoneOffset
-} from '@nu-art/ts-common';
+import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, AsyncVoidFunction, BeLogged, LogClient_MemBuffer, LogLevel} from '@nu-art/ts-common';
+import {dispatcher_PhaseChange, dispatcher_UnitStatusChange, dispatcher_UnitChange} from '../phase-runner/PhaseRunnerDispatcher';
 
 export abstract class BAIScreen<State extends {} = {}>
 	extends ConsoleContainer<'screen', State> {
@@ -55,20 +47,32 @@ export abstract class BAIScreen<State extends {} = {}>
 
 	//######################### Log Client Interaction #########################
 
-	public startLogClient = () => {
-		//Remove terminal from BeLogged
-		BeLogged.removeConsole(LogClient_Terminal);
-		//Add this log client to BeLogged
-		BeLogged.addClient(this.logClient);
-	};
-
-	public stopLogClient = () => {
-		BeLogged.removeClient(this.logClient);
-	};
-
 	protected abstract onLogUpdated: () => void;
 
 	protected getLogs = () => this.logClient.buffers[0];
+
+	public startScreen = () => {
+		//Start listening on dispatchers
+		dispatcher_UnitStatusChange.addListener(this);
+		dispatcher_PhaseChange.addListener(this);
+		dispatcher_UnitChange.addListener(this);
+		//Add this log client to BeLogged
+		BeLogged.addClient(this.logClient);
+		this.create();
+	};
+
+	public stopScreen = () => {
+		//Stop listening on dispatchers
+		dispatcher_UnitStatusChange.removeListener(this);
+		dispatcher_PhaseChange.removeListener(this);
+		dispatcher_UnitChange.removeListener(this);
+		//Remove this log client to BeLogged
+		BeLogged.removeClient(this.logClient);
+		this.destroyContent();
+		this.container.destroy();
+	};
+
+	protected abstract destroyContent(): void;
 
 	//######################### Kill Functionality #########################
 
