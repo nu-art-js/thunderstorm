@@ -26,19 +26,19 @@ export abstract class BAIScreen<State extends {} = {}>
 	 * @param {Widgets.IScreenOptions} [props] - The properties to apply to the screen widget.
 	 * @param {ScreenKeyBinding[]} [keyBinding] - An array of key bindings for the screen widget.
 	 */
-	constructor() {
+	constructor(logClientKey: string) {
 		super('screen',
 			{smartCSR: true, title: 'Build and Install'},
 			[{
 				keys: ['escape', 'q', 'C-c'],
 				callback: async () => await this.onKill(),
 			}]);
-		this.createLogClient();
+		this.createLogClient(logClientKey);
 	}
 
-	private createLogClient() {
+	private createLogClient(logClientKey: string) {
 		//Create the log client
-		this.logClient = new LogClient_MemBuffer('log-out.txt');
+		this.logClient = new LogClient_MemBuffer(`${logClientKey}.txt`);
 		//Set for terminal flag
 		this.logClient.setForTerminal();
 		//Set log composer to print logs with timestamps
@@ -48,8 +48,8 @@ export abstract class BAIScreen<State extends {} = {}>
 			return `  ${date} ${_logger_getPrefix(level)} ${tag}:  `;
 		});
 		//Connect callback to listen when log is appended
-		this.logClient.setLogAppendedListener(()=>{
-			this.onLogUpdated()
+		this.logClient.setLogAppendedListener(() => {
+			this.onLogUpdated();
 		});
 	}
 
