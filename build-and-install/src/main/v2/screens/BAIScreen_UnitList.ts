@@ -1,10 +1,5 @@
 import {Widgets} from 'blessed';
-import {
-	dispatcher_PhaseChange, dispatcher_UnitChange,
-	dispatcher_UnitStatusChange,
-	PhaseRunner_OnPhaseChange, PhaseRunner_OnUnitsChange,
-	PhaseRunner_OnUnitStatusChange
-} from '../phase-runner/PhaseRunnerDispatcher';
+import {PhaseRunner_OnPhaseChange, PhaseRunner_OnUnitsChange, PhaseRunner_OnUnitStatusChange} from '../phase-runner/PhaseRunnerDispatcher';
 import {Phase} from '../phase';
 import {BaseUnit} from '../unit/core';
 import {BAIScreen} from './BAIScreen';
@@ -61,9 +56,23 @@ export class BAIScreen_UnitList
 
 	//######################### Content Destruction #########################
 
+	protected destroyContent() {
+		this.destroyPhaseWidget();
+		this.destroyUnitListWidget();
+		this.destroyLogWidget();
+	}
+
+	private destroyPhaseWidget () {
+		this.phaseWidget?.destroy();
+	}
+
 	private destroyUnitListWidget() {
 		this.unitWrapperWidget?.destroy();
 		this.unitWidgets?.forEach(group => group.forEach(widget => widget.destroy()));
+	}
+
+	private destroyLogWidget () {
+		this.logWidget?.destroy();
 	}
 
 	//######################### Content Creation #########################
@@ -73,12 +82,6 @@ export class BAIScreen_UnitList
 		this.createPhaseWidget();
 		this.createUnitListWidget();
 		this.createLogWidget();
-		//Start listening on dispatchers
-		dispatcher_UnitStatusChange.addListener(this);
-		dispatcher_PhaseChange.addListener(this);
-		dispatcher_UnitChange.addListener(this);
-		//Start the log client
-		this.startLogClient();
 	}
 
 	private createPhaseWidget() {

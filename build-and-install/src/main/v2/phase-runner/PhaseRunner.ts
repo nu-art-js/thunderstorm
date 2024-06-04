@@ -6,13 +6,11 @@ import {
 	arrayIncludesAny,
 	asArray,
 	BadImplementationException,
-	BeLogged,
 	deepClone,
 	exists,
 	filterInstances,
 	flatArray,
 	ImplementationMissingException,
-	LogClient_Terminal,
 	LogLevel,
 	merge,
 	reduceToMap,
@@ -20,7 +18,6 @@ import {
 	removeItemFromArray,
 	sortArray,
 	StringMap,
-	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
 import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
@@ -34,25 +31,13 @@ import fs, {promises as _fs} from 'fs';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
-import {
-	Default_Files,
-	Default_OutputFiles,
-	MemKey_DefaultFiles,
-	ProjectConfig_DefaultFileRoutes,
-	RunningStatus
-} from '../../defaults/consts';
+import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes, RunningStatus} from '../../defaults/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {dispatcher_PhaseChange, dispatcher_UnitChange} from './PhaseRunnerDispatcher';
-import {
-	CONST_ProjectDependencyKey,
-	CONST_ProjectVersionKey,
-	CONST_ThunderstormDependencyKey,
-	CONST_ThunderstormVersionKey,
-	MemKey_PhaseRunner
-} from './consts';
+import {CONST_ProjectDependencyKey, CONST_ProjectVersionKey, CONST_ThunderstormDependencyKey, CONST_ThunderstormVersionKey, MemKey_PhaseRunner} from './consts';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
-import {BAIScreen} from '../screens/BAIScreen';
+import {BAIScreenManager} from '../screens/BAIScreenManager';
 
 export class PhaseRunner
 	extends BaseUnit
@@ -66,7 +51,6 @@ export class PhaseRunner
 
 	//Properties for HOW the PhaseRunner should run
 	private runningStatus!: RunningStatus;
-	private screen?: BAIScreen;
 	private phaseFilter: (phase: Phase<string>) => (boolean | Promise<boolean>);
 
 	constructor(projectPath: RelativePath) {
@@ -76,7 +60,6 @@ export class PhaseRunner
 		this.units = [this];
 		this.project = {path: convertToFullPath(projectPath), config: {} as ProjectConfigV2};
 		this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
-		this.showAllLogs();
 		this.setMinLevel(LogLevel.Verbose);
 	}
 
@@ -87,18 +70,14 @@ export class PhaseRunner
 		//Set phase runner to MemKey, so it can be referenced in the runtime
 		MemKey_PhaseRunner.set(this);
 
+		//Init screen manager
+		new BAIScreenManager();
+
 		//Load project for use in the phase runner
 		await this.loadProject();
 
 		//Filter specific units
 		this.filterUnits();
-
-		//Set Logger if one is not already set, or if the allLogs flag is set
-		if (!this.screen || RuntimeParams.allLogs) {
-			this.showAllLogs();
-		} else {
-			this.showScreenLogs();
-		}
 
 		this.logDebug('Runtime params:', RuntimeParams);
 
@@ -164,30 +143,6 @@ export class PhaseRunner
 			throw new BadImplementationException('Config file must be an asynchronous function returning a ProjectConfigV2 object');
 
 		this.project.config = await projectConfigCB();
-	}
-
-	private showAllLogs() {
-		if (this.screen)
-			// @ts-ignore
-			BeLogged.removeClient(this.screen.logClient);
-
-		BeLogged.addClient(LogClient_Terminal);
-
-		//If no screen is set, PhaseRunner should be responsible to listening to kill command
-		//Listen on kill signal
-		process.on('SIGINT', async () => {
-			this.logInfo('Kill command received, killing units!');
-			await this.killRunner();
-			this.logInfo('Killed');
-			process.exit(0);
-		});
-	}
-
-	private showScreenLogs() {
-		if (!this.screen)
-			throw new ThisShouldNotHappenException('Calling showScreenLogs without a screen set!');
-
-		this.screen.create();
 	}
 
 	private prepareProjectParams(): StringMap {
@@ -472,6 +427,8 @@ export class PhaseRunner
 		addItemToArrayAtIndex(this.phases, phase, index + 1);
 	}
 
+	public getPhases = () => [...this.phases];
+
 	//######################### Running Status #########################
 
 	private async setRunningStatus() {
@@ -525,10 +482,6 @@ export class PhaseRunner
 		await Promise.all(this.units.map(unit => unit.kill()));
 		this.logDebug('Units killed');
 		await this.setRunningStatus();
-	}
-
-	public setScreen(screen: BAIScreen) {
-		this.screen = screen;
 	}
 
 	//######################### Phase Implementation #########################
