@@ -5,7 +5,7 @@ import {promises as _fs} from 'fs';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
-import {UnitPhaseImplementor} from '../types';
+import {UnitPhaseImplementor, WatchEventType} from '../types';
 import {
 	Phase_CheckCyclicImports,
 	Phase_Compile,
@@ -17,6 +17,8 @@ import {
 import {Commando} from '@nu-art/commando/core/cli';
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
+import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnWatchEvent} from '../runner-dispatchers';
+import {WatchEvent_Ready, WatchEvent_RemoveDir, WatchEvent_RemoveFile} from '../consts';
 
 export type Unit_TypescriptLib_Config = Unit_Typescript_Config & {
 	customTSConfig?: boolean;
@@ -44,11 +46,18 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	implements UnitPhaseImplementor<[
 		Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports,
 		Phase_Purge, Phase_Lint,
-	]> {
+	]>, OnWatchEvent {
 
 	constructor(config: Unit_TypescriptLib<C, RTC>['config']) {
 		super(config);
 		this.addToClassStack(Unit_TypescriptLib);
+		dispatcher_WatchEvent.addListener(this);
+	}
+
+	async __onWatchEvent(type: WatchEventType, path?: string) {
+		if (type === WatchEvent_Ready)
+			return this.setStatus('Watching');
+		await this.handleWatchChange(path!, [WatchEvent_RemoveFile, WatchEvent_RemoveDir].includes(type));
 	}
 
 	protected async init(setInitialized: boolean = true) {
@@ -127,6 +136,51 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const targetPath = `${this.runtime.pathTo.output}/${CONST_PackageJSON}`;
 		const fileContent = JSON.stringify(this.packageJson.dist, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
+	}
+
+	protected async handleWatchChange(path: string, shouldRemoveDist: boolean = false) {
+		// ignore if path doesn't related to unit
+		if (!path.startsWith(this.config.pathToPackage))
+			return;
+
+		this.setStatus('Compile');
+
+		// check if dist folder must be cleared
+		if (shouldRemoveDist)
+			await this.removeSpecificFileFromDist(path);
+
+		// perform all watch actions
+		await this.compileImpl();
+		await this.copyAssetsToOutput();
+		this.setStatus('Watching');
+
+		// dispatch unit post compile
+		dispatcher_UnitWatchCompile.dispatch(this);
+	}
+
+	/**
+	 * Remove the deleted file/folder from the dist folder on watch remove file event
+	 * @param path The path of the currently removed file/folder
+	 * @private
+	 */
+	private async removeSpecificFileFromDist(path: string) {
+		const distPathBase = path.replace('src/main', 'dist').replace(/\.ts$/, '');
+		const pathsToDelete = [
+			`${distPathBase}.js`,
+			`${distPathBase}.d.ts`,
+			`${distPathBase}.js.map`,
+			distPathBase // in case it's a directory
+		];
+
+		// try to remove all path options from dist
+		for (const path of pathsToDelete) {
+			if (!fs.existsSync(path)) {
+				this.logDebug(`no file in path ${path}`);
+				continue;
+			}
+
+			await _fs.rm(path, {recursive: true, force: true});
+		}
 	}
 
 	//######################### Phase Implementations #########################
