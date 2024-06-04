@@ -234,7 +234,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			return;
 
 		const packageJsonConverter = (pj: PackageJson): PackageJson => {
-			const finalPJ = deepClone(this.packageJson.dist);
+			const finalPJ = deepClone(pj);
 			finalPJ.dependencies ??= {};
 			_keys(finalPJ.dependencies).reduce((acc, packageName) => {
 				const unit = dependencyUnits.find(unit => unit.packageJson.template.name === packageName);
