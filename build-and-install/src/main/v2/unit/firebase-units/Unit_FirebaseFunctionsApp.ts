@@ -8,7 +8,12 @@ import {FirebasePackageConfig, PackageJson} from '../../../core/types';
 import {_keys, deepClone, ImplementationMissingException, Second, sleep} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {Commando, CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '@nu-art/commando/core/cli';
+import {
+	Commando,
+	CommandoCLIKeyValueListener,
+	CommandoCLIListener,
+	CommandoInteractive
+} from '@nu-art/commando/core/cli';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
@@ -246,7 +251,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			return;
 
 		const packageJsonConverter = (pj: PackageJson): PackageJson => {
-			const finalPJ = deepClone(this.packageJson.dist);
+			const finalPJ = deepClone(pj);
 			finalPJ.dependencies ??= {};
 			_keys(finalPJ.dependencies).reduce((acc, packageName) => {
 				const unit = dependencyUnits.find(unit => unit.packageJson.template.name === packageName);
