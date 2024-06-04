@@ -1,5 +1,5 @@
 import {NVM} from '@nu-art/commando/cli/nvm';
-import {Unit_Typescript} from './Unit_Typescript';
+import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
@@ -18,14 +18,14 @@ import {Commando} from '@nu-art/commando/core/cli';
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
 
-type _Config<Config> = {
+export type Unit_TypescriptLib_Config = Unit_Typescript_Config & {
 	customTSConfig?: boolean;
 	output: string;
-} & Config;
+};
 
-type _RuntimeConfig<RTC> = {
+export type Unit_TypescriptLib_RuntimeConfig = Unit_Typescript_RuntimeConfig & {
 	pathTo: { pkg: string; output: string }
-} & RTC;
+};
 
 const extensionsToLint = ['.ts', '.tsx'];
 const assetExtensions = [
@@ -39,13 +39,17 @@ const assetExtensions = [
 	'_ts'
 ];
 
-export class Unit_TypescriptLib<Config extends {} = {}, RuntimeConfig extends {} = {},
-	C extends _Config<Config> = _Config<Config>, RTC extends _RuntimeConfig<RuntimeConfig> = _RuntimeConfig<RuntimeConfig>>
+export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config, RTC extends Unit_TypescriptLib_RuntimeConfig = Unit_TypescriptLib_RuntimeConfig>
 	extends Unit_Typescript<C, RTC>
 	implements UnitPhaseImplementor<[
 		Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports,
 		Phase_Purge, Phase_Lint,
 	]> {
+
+	constructor(config: Unit_TypescriptLib<C, RTC>['config']) {
+		super(config);
+		this.addToClassStack(Unit_TypescriptLib);
+	}
 
 	protected async init(setInitialized: boolean = true) {
 		await super.init(false);

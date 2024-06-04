@@ -2,26 +2,26 @@ import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, BeLogged, 
 import {MemKey_RunnerParams, RunnerParamKey} from '../../phase-runner/RunnerParams';
 import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../phase-runner/PhaseRunnerDispatcher';
 
-type Config<C> = {
+export type BaseUnit_Config = {
 	key: string;
 	label: string;
 	filter?: () => boolean | Promise<boolean>;
-} & C;
+}
 
-type RuntimeConfig<C> = {
+export type BaseUnit_RuntimeConfig = {
 	dependencyName: string;
 	unitDependencyNames: string[];
-} & C;
+}
 
 
-export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
-	C extends Config<_Config> = Config<_Config>, RTC extends RuntimeConfig<_RuntimeConfig> = RuntimeConfig<_RuntimeConfig>>
+export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends BaseUnit_RuntimeConfig = BaseUnit_RuntimeConfig>
 	extends Logger {
 
 	readonly config: Readonly<C>;
 	readonly runtime: RTC;
 	private unitStatus?: string;
 	private logger!: LogClient_MemBuffer;
+	private classStack: Set<string>;
 
 	constructor(config: C) {
 		super(config.key);
@@ -30,6 +30,8 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 			dependencyName: this.config.key,
 			unitDependencyNames: [] as string[],
 		} as RTC;
+		this.classStack = new Set<string>();
+		this.addToClassStack(BaseUnit);
 		this.initLogClient();
 	}
 
@@ -68,6 +70,16 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 		dispatcher_UnitStatusChange.dispatch(this);
 	}
 
+	//######################### Class Stack Logic #########################
+
+	protected addToClassStack = (cls: Function) => {
+		this.classStack.add(cls.name);
+	};
+
+	public isInstanceOf = (cls: Function) => {
+		return this.classStack.has(cls.name);
+	};
+
 	//######################### Public Functions #########################
 
 	public getStatus() {
@@ -78,7 +90,7 @@ export class BaseUnit<_Config extends {} = {}, _RuntimeConfig extends {} = {},
 		return;
 	}
 
-	public getLogs () {
+	public getLogs() {
 		return this.logger.buffers[0];
 	}
 }

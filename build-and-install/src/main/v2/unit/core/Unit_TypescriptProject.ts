@@ -1,5 +1,5 @@
 import {UnitPhaseImplementor} from '../types';
-import {Unit_Typescript} from './Unit_Typescript';
+import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
 import {Phase_Install} from '../../phase';
 import {RuntimeParams} from '../../../core/params/params';
 import {StringMap} from '@nu-art/ts-common/utils/types';
@@ -8,16 +8,19 @@ import {NVM} from '@nu-art/commando/cli/nvm';
 import {PNPM} from '@nu-art/commando/cli/pnpm';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 
-type _Config<Config> = {
-	globalPackages?: StringMap;
-} & Config;
+type Unit_TypescriptProject_Config = Unit_Typescript_Config & {globalPackages?: StringMap;};
 
-type _RuntimeConfig<RTC> = {} & RTC;
+type Unit_TypescriptProject_RuntimeConfig = Unit_Typescript_RuntimeConfig & {};
 
-export class Unit_TypescriptProject<Config extends {} = {}, RuntimeConfig extends {} = {},
-	C extends _Config<Config> = _Config<Config>, RTC extends _RuntimeConfig<RuntimeConfig> = _RuntimeConfig<RuntimeConfig>>
+export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config, RTC extends Unit_TypescriptProject_RuntimeConfig = Unit_TypescriptProject_RuntimeConfig>
 	extends Unit_Typescript<C, RTC>
 	implements UnitPhaseImplementor<[Phase_Install]> {
+
+	constructor(config: Unit_TypescriptProject<C>['config']) {
+		super(config);
+		this.addToClassStack(Unit_TypescriptProject);
+	}
+
 
 	//######################### Internal Logic #########################
 

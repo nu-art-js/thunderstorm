@@ -1,8 +1,14 @@
-import {BaseUnit} from './BaseUnit';
+import {BaseUnit, BaseUnit_Config, BaseUnit_RuntimeConfig} from './BaseUnit';
 import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../../core/consts';
 import {PackageJson} from '../../../core/types';
-import {AbsolutePath, BadImplementationException, ImplementationMissingException, RelativePath, _keys} from '@nu-art/ts-common';
+import {
+	AbsolutePath,
+	BadImplementationException,
+	ImplementationMissingException,
+	RelativePath,
+	_keys
+} from '@nu-art/ts-common';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../../../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
@@ -13,25 +19,29 @@ import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 const PackageJsonTargetKey_Template = 'template';
 const PackageJsonTargetKey_Root = 'root';
 const PackageJsonTargetKey_Dist = 'dist';
-const PackageJsonTargetKeys = [PackageJsonTargetKey_Template,PackageJsonTargetKey_Root, PackageJsonTargetKey_Dist] as const;
+const PackageJsonTargetKeys = [PackageJsonTargetKey_Template, PackageJsonTargetKey_Root, PackageJsonTargetKey_Dist] as const;
 type PackageJsonTargetKey = typeof PackageJsonTargetKeys[number];
 
-type _Config<C> = {
+export type Unit_Typescript_Config = BaseUnit_Config & {
 	pathToPackage: RelativePath
-} & C
+};
 
-type RTC_Unit_Typescript<RTC> = {
+export type Unit_Typescript_RuntimeConfig = BaseUnit_RuntimeConfig & {
 	pathTo: { pkg: AbsolutePath };
-} & RTC;
+};
 
-export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = {},
-	C extends _Config<Config> = _Config<Config>, RTC extends RTC_Unit_Typescript<RuntimeConfig> = RTC_Unit_Typescript<RuntimeConfig>>
+export class Unit_Typescript<C extends Unit_Typescript_Config = Unit_Typescript_Config, RTC extends Unit_Typescript_RuntimeConfig = Unit_Typescript_RuntimeConfig>
 	extends BaseUnit<C, RTC>
 	implements UnitPhaseImplementor<[Phase_CopyPackageJSON]> {
 
 	readonly packageJson: { [k in PackageJsonTargetKey]: PackageJson } = {} as { [k in PackageJsonTargetKey]: PackageJson };
 
-	protected async init (setInitialized: boolean = true) {
+	constructor(config: C) {
+		super(config);
+		this.addToClassStack(Unit_Typescript);
+	}
+
+	protected async init(setInitialized: boolean = true) {
 		await super.init(false);
 		this.runtime.pathTo = {
 			pkg: convertToFullPath(this.config.pathToPackage),
@@ -39,13 +49,13 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 		await this.loadTemplatePackageJSON();
 		this.runtime.dependencyName = this.packageJson.template.name;
 		this.runtime.unitDependencyNames = _keys(this.packageJson.template.dependencies ?? {});
-		if(setInitialized)
+		if (setInitialized)
 			this.setStatus('Initialized');
 	}
 
 	//######################### Internal Logic #########################
 
-	private async loadTemplatePackageJSON () {
+	private async loadTemplatePackageJSON() {
 		const unitRootPath = this.runtime.pathTo.pkg;
 		const templatePath = `${unitRootPath}/${CONST_PackageJSONTemplate}`;
 
@@ -60,7 +70,7 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 	 * @private
 	 */
 	private async populatePackageJson() {
-		if(!this.packageJson.template)
+		if (!this.packageJson.template)
 			await this.loadTemplatePackageJSON();
 		PackageJsonTargetKeys.forEach(key => this.packageJson[key] = this.convertTemplatePackageJSON(key, this.packageJson.template));
 	}
@@ -112,6 +122,14 @@ export class Unit_Typescript<Config extends {} = {}, RuntimeConfig extends {} = 
 	private convertPJForDist(template: PackageJson) {
 		//Get the package params for replacing in the template package json
 		const params = MemKey_ProjectConfig.get().params;
+
+		//if main prop exists on pkg json clear the dist from its ref
+		if (template.main)
+			template.main = template.main.replace('dist/', '');
+
+		//if types prop exists on pkg json clear the dist from its ref
+		if (template.types)
+			template.types = template.types.replace('dist/', '');
 
 		//Convert template to actual package.json
 		return convertPackageJSONTemplateToPackJSON_Value(template, (value: string, key?: string) => params[key!] ?? params[value]);
