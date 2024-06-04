@@ -1,13 +1,13 @@
 /**
- * Type definition for options used in Cli class.
+ * Type definition for options used in the CommandBuilder class.
  */
 type Options = {
-	newlineDelimiter: string; // Delimiter used for separating commands in execute function.
+	newlineDelimiter: string; // Delimiter used for separating commands in the execute function.
 	indentation: number; // Number of spaces for each indentation level.
 };
 
 /**
- * Default options for Cli class instances.
+ * Default options for CommandBuilder class instances.
  */
 const defaultOptions: Options = {
 	newlineDelimiter: '\n ',
@@ -15,34 +15,43 @@ const defaultOptions: Options = {
 };
 
 export class CommandBuilder {
-
 	commands: string[] = [];
 	private indentation: number = 0;
 	private option: Options = defaultOptions;
 
 	/**
-	 * Constructs a CLI instance with given options.
-	 * @param {Options} options - Configuration options for the CLI instance.
+	 * Constructs a CommandBuilder instance with given options.
+	 * @param {Partial<Options>} [options=defaultOptions] - Configuration options for the CommandBuilder instance.
 	 */
 	constructor(options: Partial<Options> = defaultOptions) {
 		this.option = options as Options;
 	}
 
+	/**
+	 * Generates a string of spaces for indentation based on the current indentation level.
+	 * @returns {string} - A string containing spaces for the current indentation level.
+	 */
 	protected getIndentation = (): string => {
 		return ' '.repeat(this.option.indentation * this.indentation);
 	};
 
+	/**
+	 * Increases the current indentation level by one.
+	 */
 	readonly indentIn = () => {
 		this.indentation++;
 	};
 
+	/**
+	 * Decreases the current indentation level by one.
+	 */
 	readonly indentOut = () => {
-		this.indentation++;
+		this.indentation--;
 	};
 
 	/**
-	 * Appends an empty line to the script for readability.
-	 * @returns {this} - The Cli instance for method chaining.
+	 * Appends an empty line to the command list for readability.
+	 * @returns {this} - The CommandBuilder instance for method chaining.
 	 */
 	public emptyLine(): this {
 		this.append('');
@@ -50,9 +59,9 @@ export class CommandBuilder {
 	}
 
 	/**
-	 * Appends a command or a Cli instance to the command list with proper indentation.
-	 * @param {string} command - The command or Cli instance to append.
-	 * @returns {this} - The Cli instance for method chaining.
+	 * Appends a command to the command list with proper indentation.
+	 * @param {string} command - The command to append.
+	 * @returns {this} - The CommandBuilder instance for method chaining.
 	 */
 	readonly append = (command: string): this => {
 		const commands = command.split(this.option.newlineDelimiter);
@@ -63,22 +72,21 @@ export class CommandBuilder {
 		return this;
 	};
 
+	/**
+	 * Retrieves the full command list as a single string.
+	 * @returns {string} - The full command list.
+	 */
 	getCommand(): string {
 		return this.commands.join(this.option.newlineDelimiter);
 	}
 
+	/**
+	 * Resets the command list and returns the previously accumulated commands.
+	 * @returns {string} - The previously accumulated commands.
+	 */
 	reset(): string {
 		const command = this.getCommand();
 		this.commands.length = 0;
 		return command;
 	}
 }
-
-
-
-
-
-
-
-
-

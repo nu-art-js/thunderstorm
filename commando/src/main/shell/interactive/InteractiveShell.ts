@@ -1,4 +1,4 @@
-import {AsyncVoidFunction, Logger, removeItemFromArray} from '@nu-art/ts-common';
+import {Logger, removeItemFromArray} from '@nu-art/ts-common';
 import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 import {LogTypes} from '../types';
 
@@ -11,6 +11,9 @@ export class InteractiveShell
 	private shell: ChildProcessWithoutNullStreams | ChildProcess;
 	private alive: boolean;
 
+	/**
+	 * Constructs an InteractiveShell instance, initializes a detached shell session, and sets up log processors.
+	 */
 	constructor() {
 		super();
 		this.shell = spawn('/bin/bash', {
@@ -18,13 +21,11 @@ export class InteractiveShell
 			shell: true
 		});
 
-		//set alive
 		this.alive = true;
 
 		const printer = (std: LogTypes) => (data: Buffer) => {
 			const messages = data.toString().trim().split('\n');
-			if (!messages.length)
-				return;
+			if (!messages.length) return;
 
 			for (const message of messages) {
 				try {
@@ -35,7 +36,6 @@ export class InteractiveShell
 
 					if (toPrint)
 						this.logInfo(`${message}`);
-
 				} catch (e: any) {
 					this.logError(e);
 				}
@@ -45,9 +45,6 @@ export class InteractiveShell
 		this.shell.stdout?.on('data', printer('out'));
 		this.shell.stderr?.on('data', printer('err'));
 
-		// Handle shell errors (stderr)
-		this.shell.on('data', printer);
-
 		// Handle shell exit
 		this.shell.on('close', (code) => {
 			this.alive = false;
@@ -55,25 +52,43 @@ export class InteractiveShell
 		});
 	}
 
+	/**
+	 * Toggles or sets the debug mode.
+	 * @param {boolean} [debug] - If provided, sets the debug mode to this value. Otherwise, toggles the current debug mode.
+	 * @returns {boolean} - The current state of debug mode.
+	 */
 	debug(debug?: boolean) {
 		this._debug = debug ?? !this._debug;
-		return this._debug;
+		return this;
 	}
 
+	/**
+	 * Executes a command in the interactive shell.
+	 * @param {string} command - The command to execute.
+	 */
 	execute = (command: string) => {
 		if (this._debug)
 			this.logDebug(`executing: `, `"""\n${command}\n"""`);
 
 		this.shell.stdin?.write(command + '\n', 'utf-8', (err?: Error | null) => {
-			if (err)
-				this.logError(`error`, err);
+			if (err) this.logError(`error`, err);
 		});
 	};
 
-	endInteractive = (cb?: AsyncVoidFunction) => {
-		this.shell.stdin?.end(cb);
+	/**
+	 * Awaits for the end of the interactive shell session.
+	 */
+	endInteractive = () => {
+		return new Promise<void>(resolve => {
+			this.shell.stdin?.end(resolve);
+		});
 	};
 
+	/**
+	 * Sends a signal to terminate the shell process.
+	 * @param {NodeJS.Signals | number} [signal] - The signal to send to the shell process.
+	 * @returns {boolean | undefined} - The result of the kill operation.
+	 */
 	kill = (signal?: NodeJS.Signals | number) => {
 		if (!this.alive)
 			return;
@@ -81,6 +96,11 @@ export class InteractiveShell
 		return this.shell.kill(signal);
 	};
 
+	/**
+	 * Attempts to gracefully terminate the shell process.
+	 * @param {number} [pid] - Process ID of the shell to terminate.
+	 * @returns {Promise<void>} - Resolves when the shell process is gracefully killed.
+	 */
 	gracefullyKill = async (pid?: number) => {
 		if (!this.alive)
 			return;
@@ -99,20 +119,34 @@ export class InteractiveShell
 				console.log(`KILLING SHELL WITH SIGINT`);
 				this.shell.kill('SIGINT');
 			}
-
 		});
 	};
 
+	/**
+	 * Adds a log processor to handle log messages.
+	 * @param {(log: string, std: LogTypes) => boolean} processor - The log processor function.
+	 * @returns {this} - The InteractiveShell instance for method chaining.
+	 */
 	addLogProcessor(processor: (log: string, std: LogTypes) => boolean) {
 		this.logProcessors.push(processor);
 		return this;
 	}
 
+	/**
+	 * Removes a log processor from handling log messages.
+	 * @param {(log: string, std: LogTypes) => boolean} processor - The log processor function to remove.
+	 * @returns {this} - The InteractiveShell instance for method chaining.
+	 */
 	removeLogProcessor(processor: (log: string, std: LogTypes) => boolean) {
 		removeItemFromArray(this.logProcessors, processor);
 		return this;
 	}
 
+	/**
+	 * Sets a unique identifier for the shell session.
+	 * @param {string} uid - The unique identifier.
+	 * @returns {this} - The InteractiveShell instance for method chaining.
+	 */
 	setUID(uid: string) {
 		this.setTag(uid);
 		return this;
