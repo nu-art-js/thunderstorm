@@ -7,7 +7,7 @@ import {convertPackageJSONTemplateToPackJSON_Value} from '../logic/map-project-p
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseRC, CONST_PackageJSON, MemKey_Packages} from '../core/consts';
-import {convertToFullPath} from '@nu-art/commando/core/tools';
+import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {
 	__stringify,
 	_keys,
@@ -52,15 +52,15 @@ import {NVM} from '@nu-art/commando/cli/nvm';
 import {AllBaiParams, RuntimeParams} from '../core/params/params';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {PNPM} from '@nu-art/commando/cli/pnpm';
-import {BaseCliParam} from '@nu-art/commando/cli/cli-params';
+import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import * as chokidar from 'chokidar';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles,} from '../defaults/consts';
 import {MemKey_ProjectManager} from '../project-manager';
 import {MemKey_ProjectScreen} from '../screen/ProjectScreen';
-import {Commando} from '@nu-art/commando/core/cli';
 import {RunningProcessLogs} from '../screen/RunningProcessLogs';
 import {CommandExecutor_FirebaseFunction, CommandExecutor_FirebaseHosting} from '../logic/command-executors';
 import {CommandExecutor_Python} from '../logic/command-executors/CommandExecutor_Python';
+import {Commando} from '@nu-art/commando/shell';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
@@ -252,7 +252,7 @@ export const Phase_ResolveEnv: BuildPhase = {
 						await _fs.access(pathToConfigFile);
 					} catch (e: any) {
 						const path = defaultFiles.firebaseConfig?.[firebaseConfigKey];
-						if(!path)
+						if (!path)
 							return;
 						const defaultFileContent = await _fs.readFile(path, {encoding: 'utf-8'});
 						await _fs.writeFile(pathToConfigFile, defaultFileContent, {encoding: 'utf-8'});
@@ -743,7 +743,6 @@ export const Phase_Launch: BuildPhase = {
 		}
 
 		const logClient = new LogClient_MemBuffer(pkg.name);
-		logClient.setForTerminal();
 		logClient.setComposer((tag: string, level: LogLevel): string => {
 			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
 			const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23).split('_')[1];

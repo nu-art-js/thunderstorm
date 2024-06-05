@@ -3,6 +3,7 @@ import {RuntimeParams} from './core/params/params';
 import {PhaseRunner} from './v2/phase-runner/PhaseRunner';
 import {allTSUnits} from './v2/unit/thunderstorm';
 
+
 DebugFlag.DefaultLogLevel = RuntimeParams.debug ? LogLevel.Debug : LogLevel.Info;
 
 const runner = new PhaseRunner('./.config/project-config-v2.ts' as RelativePath);
@@ -15,9 +16,13 @@ runner
 	.then(() => {
 		StaticLogger.logInfo('completed');
 
+		process.on('SIGINT', () => {
+			console.log('DEADEDAEDAEDAEDAEDAD');
+			return process.exit(0);
+		});
 		//TODO: make it an array of non exit params
 		if (!RuntimeParams.launch && !RuntimeParams.watch)
-			process.exit(0);
+			return process.exit(0);
 	})
 	.catch(err => {
 		StaticLogger.logError('Failed with error: ', err);
