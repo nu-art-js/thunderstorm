@@ -4,7 +4,6 @@ import {exists} from '@nu-art/ts-common';
 //util regex function
 const regexTemplate = (regexp: string | undefined) => exists(regexp) ? `.*${regexp}.*` : '.*';
 
-
 export const BaiParam_Help: BaseCliParam<'help', boolean> = {
 	keys: ['--help', '-h'],
 	keyName: 'help',
@@ -281,8 +280,16 @@ export const BaiParam_AllLogs: BaseCliParam<'allLogs', boolean> = {
 	keys: ['--all-logs', '-al'],
 	keyName: 'allLogs',
 	type: 'boolean',
-	group: 'Other',
+	group: 'UI',
 	description: 'will disable ui and show verbose logs for bai run',
+};
+
+export const BaiParam_CloseScreenOnExit: BaseCliParam<'closeOnExit', boolean> = {
+	keys: ['--close-on-exit', '-cox'],
+	keyName: 'closeOnExit',
+	type: 'boolean',
+	group: 'UI',
+	description: 'will close all the fancy screens once process is done',
 };
 
 export const BaiParam_EncounterManager: BaseCliParam<'encounterManager', boolean> = {
@@ -314,7 +321,6 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 		return value!.split(',').map(str => str.trim());
 	}
 };
-
 
 export const AllBaiParams = [
 	BaiParam_Help,
@@ -350,6 +356,7 @@ export const AllBaiParams = [
 	BaiParam_Debug,
 	BaiParam_Publish, // TODO: to implement
 	BaiParam_AllLogs,
+	BaiParam_CloseScreenOnExit,
 	BaiParam_EncounterManager,
 	BaiParam_EncounterManagerListen, BaiParam_UsePackage
 ];
