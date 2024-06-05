@@ -5,11 +5,13 @@ import {Phase} from '../phase';
 import {dispatcher_PhaseChange, PhaseRunner_OnPhaseChange} from '../phase-runner/PhaseRunnerDispatcher';
 import {MemKey_PhaseRunner} from '../phase-runner/consts';
 
+
 export const MemKey_BAIScreenManager = new MemKey<BAIScreenManager>('bai-screen-manager');
 
 type BAIScreenConditions = {
 	startOnPhase?: Phase<string>;
 	stopOnPhase?: Phase<string>;
+	condition?: () => boolean
 };
 
 type BAIScreenOption = {
@@ -58,6 +60,9 @@ export class BAIScreenManager
 		const phases = MemKey_PhaseRunner.get().getPhases();
 		const currentPhaseIndex = this.currentPhase ? phases.indexOf(this.currentPhase) : -1;
 		return this.screens.find(screenOption => {
+			if (screenOption.conditions.condition && !screenOption.conditions.condition())
+				return false;
+
 			//Fail fast if current phase is on or past the stopOnPhase
 			if (screenOption.conditions.stopOnPhase) {
 				const index = phases.indexOf(screenOption.conditions.stopOnPhase);
