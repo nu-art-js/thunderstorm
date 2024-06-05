@@ -48,6 +48,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		Phase_Purge, Phase_Lint,
 	]>, OnWatchEvent {
 
+	private compilationError: boolean = false;
+
 	constructor(config: Unit_TypescriptLib<C, RTC>['config']) {
 		super(config);
 		this.addToClassStack(Unit_TypescriptLib);
@@ -112,12 +114,28 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const pathToCompile = `${this.runtime.pathTo.pkg}/src/main`;
 		const pathToTSConfig = `${pathToCompile}/tsconfig.json`;
 
-		await NVM
-			.createCommando(Cli_Basic)
-			.setUID(this.config.key)
-			.cd(this.runtime.pathTo.pkg)
-			.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
-			.execute();
+		try {
+			await NVM
+				.createCommando(Cli_Basic)
+				.setUID(this.config.key)
+				.cd(this.runtime.pathTo.pkg)
+				.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
+				.execute();
+
+			// set compilation error status on success
+			this.compilationError = false;
+		} catch (e: any) {
+			//In order to finish compile when running watch we just log the error instead of throwing it
+			if (RuntimeParams.watch) {
+				// set compilation error status on error
+				this.compilationError = true;
+
+				return this.logError(e);
+			}
+
+			throw e;
+		}
+
 	}
 
 	protected async copyAssetsToOutput() {
@@ -152,7 +170,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		// perform all watch actions
 		await this.compileImpl();
 		await this.copyAssetsToOutput();
-		this.setStatus('Watching');
+		this.setStatus(`Watching${this.compilationError ? ' with error' : ''}`);
 
 		// dispatch unit post compile
 		dispatcher_UnitWatchCompile.dispatch(this);
@@ -203,7 +221,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		await this.compileImpl();
 		await this.copyAssetsToOutput();
 		await this.copyPackageJSONToOutput();
-		this.setStatus('Compiled');
+		this.setStatus(`Compiled${this.compilationError ? ' with error' : ''}`);
 	}
 
 	async purge() {
