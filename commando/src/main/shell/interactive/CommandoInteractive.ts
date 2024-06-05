@@ -75,23 +75,22 @@ export class CommandoInteractive
 	}
 
 	/**
-	 * Waits for a log message matching a filter, then calls a callback with the match.
-	 * @param {string | RegExp} filter - The filter to match log messages.
+	 * Waits for a log entry that matches a specified pattern, then executes a callback.
+	 * @param {string | RegExp} filter - The pattern to match in log entries.
+	 * @param {(match: RegExpMatchArray) => any} callback - The callback to execute when a match is found.
 	 */
-	async awaitForLog(filter: string | RegExp) {
-		return new Promise<RegExpMatchArray>((resolve) => {
-			const regexp = typeof filter === 'string' ? new RegExp(filter) : filter;
-			const pidLogProcessor = (log: string) => {
-				const match = log.match(regexp);
-				if (!match)
-					return true;
-
-				resolve(match);
+	onLog(filter: string | RegExp, callback: (match: RegExpMatchArray) => any) {
+		const regexp = typeof filter === 'string' ? new RegExp(filter) : filter;
+		const pidLogProcessor = (log: string) => {
+			const match = log.match(regexp);
+			if (!match)
 				return true;
-			};
 
-			this.addLogProcessor(pidLogProcessor);
-		});
+			callback(match);
+			return true;
+		};
+
+		this.addLogProcessor(pidLogProcessor);
 	}
 
 	/**
