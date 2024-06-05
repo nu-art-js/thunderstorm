@@ -1,5 +1,4 @@
 import {BaseUnit, BaseUnit_Config, BaseUnit_RuntimeConfig} from './BaseUnit';
-import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../../core/consts';
 import {PackageJson} from '../../../core/types';
 import {
@@ -15,6 +14,7 @@ import {promises as _fs} from 'fs';
 import {Phase_CopyPackageJSON} from '../../phase';
 import {UnitPhaseImplementor} from '../types';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
+import {convertToFullPath} from '@nu-art/commando/shell/tools';
 
 const PackageJsonTargetKey_Template = 'template';
 const PackageJsonTargetKey_Root = 'root';

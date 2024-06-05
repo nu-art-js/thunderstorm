@@ -1,6 +1,6 @@
-import {CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '../../main/core/cli';
 import {BeLogged, LogClient_Terminal, sleep} from '@nu-art/ts-common';
-import {Cli_Basic} from '../../main/cli/basic';
+import {CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '../../../main/core/cli';
+import {Cli_Basic} from '../../../main/cli/basic';
 
 
 BeLogged.addClient(LogClient_Terminal);

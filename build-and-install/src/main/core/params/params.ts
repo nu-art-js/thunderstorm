@@ -1,4 +1,5 @@
-import {BaseCliParam, CLIParams_Resolver} from '@nu-art/commando/cli/cli-params';
+import {BaseCliParam} from '@nu-art/commando/cli-params/types';
+import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {exists} from '@nu-art/ts-common';
 
 //util regex function
@@ -259,6 +260,14 @@ export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
 	description: 'Will print the parameters the script is running with'
 };
 
+export const BaiParam_Verbose: BaseCliParam<'verbose', boolean> = {
+	keys: ['--verbose', '-d'],
+	keyName: 'verbose',
+	group: 'Other',
+	type: 'boolean',
+	description: 'Set log level to verbose'
+};
+
 export const BaiParam_QuickDeploy: BaseCliParam<'quickDeploy', boolean> = {
 	keys: ['--quick-deploy', '-qd'],
 	keyName: 'quickDeploy',
@@ -354,6 +363,7 @@ export const AllBaiParams = [
 	BaiParam_DeployFrontend,
 	BaiParam_NoGit, // TODO: to implement
 	BaiParam_Debug,
+	BaiParam_Verbose,
 	BaiParam_Publish, // TODO: to implement
 	BaiParam_AllLogs,
 	BaiParam_CloseScreenOnExit,
@@ -361,5 +371,5 @@ export const AllBaiParams = [
 	BaiParam_EncounterManagerListen, BaiParam_UsePackage
 ];
 
-const params = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();
+const params = CLIParamsResolver.create(...AllBaiParams).resolveParamValue();
 export const RuntimeParams = params;

@@ -4,6 +4,8 @@ import {dispatcher_PhaseChange, dispatcher_UnitStatusChange, dispatcher_UnitChan
 import {RuntimeParams} from '../../core/params/params';
 
 
+
+
 export abstract class BAIScreen<State extends {} = {}>
 	extends ConsoleContainer<'screen', State> {
 
@@ -34,7 +36,7 @@ export abstract class BAIScreen<State extends {} = {}>
 		//Create the log client
 		this.logClient = new LogClient_MemBuffer(`${logClientKey}.txt`);
 		//Set for terminal flag
-		this.logClient.setForTerminal();
+		this.logClient.keepLogsNaturalColors();
 		//Set log composer to print logs with timestamps
 		this.logClient.setComposer((tag: string, level: LogLevel): string => {
 			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);

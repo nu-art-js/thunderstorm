@@ -19,7 +19,7 @@ import {
 	RuntimeProjectConfig
 } from '../core/types';
 import {__stringify, arrayToMap, ImplementationMissingException} from '@nu-art/ts-common';
-import {convertToFullPath} from '@nu-art/commando/core/tools';
+import {convertToFullPath} from '@nu-art/commando/shell/tools';
 
 
 function getRuntimePackageBaseDetails_Sourceless(basePackage: Package_Sourceless): Required<Package_Sourceless> {

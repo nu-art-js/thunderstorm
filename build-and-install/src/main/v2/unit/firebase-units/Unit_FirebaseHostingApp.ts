@@ -6,17 +6,15 @@ import {RuntimeParams} from '../../../core/params/params';
 import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
-import {convertToFullPath} from '@nu-art/commando/core/tools';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {
-	Commando,
-	CommandoCLIKeyValueListener,
-	CommandoCLIListener,
 	CommandoInteractive
-} from '@nu-art/commando/core/cli';
+} from '@nu-art/commando/shell';
+import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {dispatcher_WatchEvent} from '../runner-dispatchers';
+
 
 export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig: FirebasePackageConfig;
@@ -29,14 +27,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
 
-	private readonly APP_PID_LOG = '_APP_PID_';
-	private readonly APP_KILL_LOG = '_APP_KILLED_';
-
-	private launchCommando!: CommandoInteractive & Commando & Cli_Basic;
-	private listeners!: {
-		pid: CommandoCLIKeyValueListener;
-		kill: CommandoCLIListener;
-	};
+	private launchCommando!: CommandoInteractive & Cli_Basic;
+	private hostingPid!: number;
 
 	constructor(config: Unit_FirebaseHostingApp<C>['config']) {
 		super(config);
@@ -64,7 +56,6 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	async launch() {
 		this.setStatus('Launching');
 		await this.initLaunch();
-		await this.initLaunchListeners();
 		await this.clearPorts();
 		await this.runApp();
 	}
@@ -93,9 +84,15 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	private async resolveHostingJSON() {
 		const envConfig = this.getEnvConfig();
-		const fileContent: FirebasePackageConfig['hosting'] = envConfig.isLocal ? {} as FirebasePackageConfig['hosting'] : this.config.firebaseConfig.hosting;
 		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
-		await _fs.writeFile(targetPath, JSON.stringify({hosting: fileContent}, null, 2), {encoding: 'utf-8'});
+		let fileContent: any;
+
+		if (envConfig.isLocal)
+			fileContent = {};
+		else
+			fileContent = {hosting: this.config.firebaseConfig.hosting};
+
+		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveHostingRuntimeConfig() {
@@ -157,23 +154,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 			.cd(this.runtime.pathTo.pkg);
 	}
 
-	private async initLaunchListeners() {
-		this.listeners = {
-			pid: new CommandoCLIKeyValueListener(new RegExp(`${this.APP_PID_LOG}=(\\d+)`)),
-			kill: new CommandoCLIListener(() => this.launchCommando.close(), this.APP_KILL_LOG),
-		};
-		this.listeners.pid.listen(this.launchCommando);
-		this.listeners.kill.listen(this.launchCommando);
-	}
-
-	private getPID() {
-		const pid = Number(this.listeners.pid.getValue());
-		return isNaN(pid) ? undefined : pid;
-	}
-
 	private async clearPorts() {
 		await this.launchCommando
-			.debug()
 			.append(`array=($(lsof -ti:${[this.config.firebaseConfig.hostingPort].join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')
@@ -182,12 +164,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	private async runApp() {
 		await this.launchCommando
-			.append(`npm run start &`)
-			.append('pid=$!')
-			.append(`echo "${this.APP_PID_LOG}=\${pid}"`)
-			.append(`wait \$pid`)
-			.append(`echo "${this.APP_KILL_LOG} \${pid}"`)
-			.execute();
+			.append('npm run start')
+			.executeAsync(pid => this.hostingPid = pid);
 	}
 
 	public async kill() {
@@ -195,8 +173,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 			return;
 
 		this.logWarning(`Killing unit - ${this.config.label}`);
-		const appPid = this.getPID();
-		await this.launchCommando?.gracefullyKill(appPid);
+		await this.launchCommando?.gracefullyKill(this.hostingPid);
 		this.logWarning(`Unit killed - ${this.config.label}`);
 	}
 
