@@ -145,9 +145,9 @@ export class CommandoInteractive
 			let _stdout = '';
 			const logProcessor = (log: string, type: LogTypes) => {
 				if (type === 'err')
-					_stderr += `${log}`;
+					_stderr += `${log}\n`;
 				else
-					_stdout += `${log}`;
+					_stdout += `${log}\n`;
 
 				if (!log.includes(uniqueKey))
 					return true;

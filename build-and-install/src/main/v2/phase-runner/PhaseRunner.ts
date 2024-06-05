@@ -33,7 +33,8 @@ import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, ProjectConfig_D
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {dispatcher_PhaseChange, dispatcher_UnitChange} from './PhaseRunnerDispatcher';
-import {convertToFullPath
+import {
+	convertToFullPath
 } from '@nu-art/commando/shell/tools';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
@@ -55,6 +56,7 @@ export class PhaseRunner
 	private readonly units: BaseUnit[];
 	private unitDependencyTree!: BaseUnit[][];
 	private readonly project: { path: AbsolutePath; config: ProjectConfigV2 };
+	private killed?: boolean;
 
 	//Properties for HOW the PhaseRunner should run
 	private runningStatus!: RunningStatus;
@@ -67,7 +69,12 @@ export class PhaseRunner
 		this.units = [this];
 		this.project = {path: convertToFullPath(projectPath), config: {} as ProjectConfigV2};
 		this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
-		this.setMinLevel(LogLevel.Verbose);
+		this.setMinLevel(LogLevel.Info);
+		console.log('RuntimeParams.debug', RuntimeParams.debug);
+		if (RuntimeParams.debug)
+			this.setMinLevel(LogLevel.Debug);
+		if (RuntimeParams.verbose)
+			this.setMinLevel(LogLevel.Debug);
 	}
 
 	//######################### Initialization #########################
@@ -110,7 +117,6 @@ export class PhaseRunner
 		await this.loadRunningStatus();
 
 		//Print init results
-		this.printInit();
 		this.setStatus('Initialized');
 
 		const units = this.units.filter(unit => unit !== this);
@@ -219,12 +225,6 @@ export class PhaseRunner
 		this.logDebug('Unit Dependency Tree:', toPrint);
 	}
 
-	private printInit() {
-		this.logDebug('Runner Params:', MemKey_RunnerParams.get());
-		this.logDebug('Project Config:', MemKey_ProjectConfig.get());
-		this.logDebug('Default File Routes:', MemKey_DefaultFiles.get());
-	}
-
 	//######################### Internal Logic #########################
 
 	private phaseFilters: { [K in PhaseRunnerMode]: (phase: Phase<string>) => (boolean | Promise<boolean>) } = {
@@ -259,6 +259,7 @@ export class PhaseRunner
 			if (phaseDidRun && phase.terminateAfterPhase)
 				break;
 		}
+		this.killed = false;
 	}
 
 	//######################### Unit Logic #########################
@@ -345,11 +346,17 @@ export class PhaseRunner
 			}
 			const unitsToRun = flatArray(units);
 			await Promise.all(unitsToRun.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]()));
+			if (this.killed)
+				return true;
+
 			return true;
 		}
 
 		//Run units according to dependency tree
 		for (const row of units) {
+			if (this.killed)
+				break;
+
 			const index = units.indexOf(row);
 			const runningStatusRowIndex = this.runningStatus.packageDependencyIndex ?? 0;
 
@@ -357,8 +364,8 @@ export class PhaseRunner
 			if ((phaseIndex === runningPhaseIndex) && index < runningStatusRowIndex)
 				continue;
 
-			this.logWarning(`Phase Index ${phaseIndex}, Row Index ${index}`);
-			this.logWarning(`RunningStatus Phase Index: ${runningPhaseIndex}, RunningStatus Row Index: ${runningStatusRowIndex}`);
+			// this.logDebug(`Phase Index ${phaseIndex}, Row Index ${index}`);
+			// this.logDebug(`RunningStatus Phase Index: ${runningPhaseIndex}, RunningStatus Row Index: ${runningStatusRowIndex}`);
 
 			if (phaseIndex > runningPhaseIndex) {
 				//Index of the current phase is larger, update the running status
@@ -439,7 +446,7 @@ export class PhaseRunner
 	//######################### Running Status #########################
 
 	private async setRunningStatus() {
-		this.logDebug('Setting Running Status', this.runningStatus);
+		this.logVerbose('Setting Running Status', this.runningStatus);
 		if (!fs.existsSync(Default_OutputFiles.output))
 			await _fs.mkdir(Default_OutputFiles.output, {recursive: true});
 		await _fs.writeFile(Default_OutputFiles.runningStatus, __stringify(this.runningStatus, true));
@@ -485,10 +492,11 @@ export class PhaseRunner
 	}
 
 	public async killRunner() {
+		this.killed = true;
+		await this.setRunningStatus();
 		this.logDebug('Killing units');
 		await Promise.all(this.units.map(unit => unit.kill()));
 		this.logDebug('Units killed');
-		await this.setRunningStatus();
 	}
 
 	//######################### Phase Implementation #########################
@@ -525,10 +533,12 @@ export class PhaseRunner
 			.execute();
 	}
 
-	async debug() {
-		// const configs = this.units.map(unit => unit.config);
-		// this.logInfo(JSON.stringify(configs, null, 2));
+	async printDebug() {
+		this.logDebug('Runner Params:', MemKey_RunnerParams.get());
+		this.logDebug('Project Config:', MemKey_ProjectConfig.get());
+		this.logDebug('Default File Routes:', MemKey_DefaultFiles.get());
+
 		const dependencyTree = this.unitDependencyTree.map(row => row.map(unit => unit.config.label));
-		this.logInfo(dependencyTree);
+		this.logInfo('Unit Dependencies Tree:', dependencyTree);
 	}
 }

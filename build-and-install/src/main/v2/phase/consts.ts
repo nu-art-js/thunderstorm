@@ -45,11 +45,10 @@ export const phase_PrintEnv: Phase<'printEnv'> = {
 
 export type Phase_Debug = typeof phase_Debug;
 export const phaseKey_Debug = 'debug';
-export const phase_Debug: Phase<'debug'> = {
+export const phase_Debug: Phase<'printDebug'> = {
 	key: phaseKey_Debug,
 	name: 'Debug',
-	method: 'debug',
-	terminateAfterPhase: true,
+	method: 'printDebug',
 	filter: () => RuntimeParams.debug,
 };
 
@@ -58,7 +57,7 @@ export const phases_Terminating: Phase<string>[] = [
 	phase_PrintDependencyTree,
 	phase_CheckCyclicImports,
 	phase_PrintEnv,
-	// phase_Debug
+	phase_Debug
 ];
 
 //######################### Build Phases #########################
@@ -157,6 +156,7 @@ export const phase_Launch: Phase<'launch'> = {
 	name: 'Launch',
 	method: 'launch',
 	filter: () => !!RuntimeParams.launch,
+	dependencyPhaseKeys: [phaseKey_ResolveConfigs],
 };
 
 export const phases_Launch: Phase<string>[] = [

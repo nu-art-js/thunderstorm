@@ -1,6 +1,7 @@
 import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, BeLogged, LogClient_MemBuffer, Logger, LogLevel} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey} from '../../phase-runner/RunnerParams';
 import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../phase-runner/PhaseRunnerDispatcher';
+import {RuntimeParams} from '../../../core/params/params';
 
 
 export type BaseUnit_Config = {
@@ -66,6 +67,9 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 
 	protected setStatus(status?: string) {
 		this.unitStatus = status;
+		if (RuntimeParams.allLogs)
+			this.logInfo(`Unit status update: ${status}`);
+
 		dispatcher_UnitStatusChange.dispatch(this);
 	}
 

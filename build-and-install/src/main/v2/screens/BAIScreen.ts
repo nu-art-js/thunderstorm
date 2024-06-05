@@ -5,6 +5,7 @@ import {RuntimeParams} from '../../core/params/params';
 
 
 
+
 export abstract class BAIScreen<State extends {} = {}>
 	extends ConsoleContainer<'screen', State> {
 

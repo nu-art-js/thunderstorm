@@ -15,6 +15,7 @@ import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnUnitWatchCompiled} from '../runner-dispatchers';
 
 
+
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig: FirebasePackageConfig;
 	sources?: string[];
@@ -312,16 +313,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await this.launchCommandos.proxy
 			.append('ts-node src/main/proxy.ts')
 			.executeAsync(pid => this.proxyPid = pid);
-
-		await this.launchCommandos.proxy.gracefullyKill(this.proxyPid);
 	}
 
 	private async runEmulator() {
 		await this.launchCommandos.emulator
 			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`)
 			.executeAsync(pid => this.emulatorPid = pid);
-
-		await this.launchCommandos.emulator.gracefullyKill(this.emulatorPid);
 	}
 
 	public async kill() {
@@ -352,3 +349,50 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			.execute();
 	}
 }
+
+// export class CommandoCLIListener {
+//
+// 	private cb: CommandoCLIListener_Callback;
+// 	protected filter?: RegExp;
+//
+// 	constructor(callback: CommandoCLIListener_Callback, filter?: string | RegExp) {
+// 		this.cb = callback;
+// 		if (!filter)
+// 			return;
+//
+// 		if (typeof filter === 'string')
+// 			this.filter = new RegExp(filter);
+// 		else
+// 			this.filter = filter as RegExp;
+// 	}
+//
+// 	//######################### Inner Logic #########################
+//
+// 	private _process(stdout: string) {
+// 		if (!this.stdoutPassesFilter(stdout))
+// 			return false;
+//
+// 		this.process(stdout);
+// 		return true;
+// 	}
+//
+// 	private stdoutPassesFilter = (stdout: string): boolean => {
+// 		if (!this.filter)
+// 			return true;
+//
+// 		return this.filter.test(stdout);
+// 	};
+//
+// 	//######################### Functions #########################
+//
+// 	public listen = <T extends Commando | CommandoInteractive>(commando: T): T => {
+// 		const process = this._process.bind(this);
+// 		commando.addLogProcessor(process);
+// 		return commando;
+// 	};
+//
+// 	protected process(stdout: string) {
+// 		this.cb(stdout);
+// 	}
+// }
+
