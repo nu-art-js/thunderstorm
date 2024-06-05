@@ -157,6 +157,7 @@ export const phase_Launch: Phase<'launch'> = {
 	name: 'Launch',
 	method: 'launch',
 	filter: () => !!RuntimeParams.launch,
+	dependencyPhaseKeys: [phaseKey_ResolveConfigs],
 };
 
 export const phases_Launch: Phase<string>[] = [
