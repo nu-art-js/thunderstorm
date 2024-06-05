@@ -1,11 +1,12 @@
 import {Cli_Programming} from './programming';
 import {Cli_Basic} from './basic';
-import {CliWrapper, Commando, CommandoInteractive} from '../core/cli';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import * as path from 'path';
-import {removeAnsiCodes} from '../core/tools';
 import {Constructor, filterDuplicates, Logger, LogLevel} from '@nu-art/ts-common';
+import {Commando} from '../shell/simple/Commando';
+import {removeAnsiCodes} from '../shell/tools';
+import {CommandoInteractive} from '../shell/interactive/CommandoInteractive';
 
 
 const CONST__FILE_NVMRC = '.nvmrc';
@@ -39,7 +40,7 @@ export class Cli_NVM
 
 	install = async () => {
 		if (this.isInstalled()) {
-			const version = (await this.getVersion()).stdout.trim();
+			const version = (await this.getVersion()).trim();
 			if (this._expectedVersion === version)
 				return;
 
@@ -103,14 +104,14 @@ export class Cli_NVM
 
 		return extractInstalledVersions((await this.createCommando()
 			.append('nvm ls')
-			.execute()).stdout);
+			.execute((stdout) => stdout)));
 	};
 
 	private async getVersion() {
 		const commando = Commando.create(Cli_Programming, Cli_Basic);
 		return commando.if('[[ -x "$(command -v nvm)" ]]', (commando) => {
-			commando.cli.append('nvm --version');
-		}).execute();
+			commando.append('nvm --version');
+		}).execute((stdout) => stdout);
 	}
 
 	uninstall = async () => {
@@ -128,18 +129,20 @@ export class Cli_NVM
 		return this.createCommando().append(`nvm install ${requiredVersion}`).execute();
 	};
 
-	createInteractiveCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
-		return CommandoInteractive.create(...plugins).debug()
+	createInteractiveCommando<T extends Constructor<any>[]>(...plugins: T) {
+		return CommandoInteractive.create(...plugins)
 			.append('export NVM_DIR="$HOME/.nvm"')
 			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
 			.append('nvm use');
 	}
 
-	createCommando<T extends Constructor<CliWrapper>[]>(...plugins: T) {
-		return Commando.create(...plugins)
+	createCommando<T extends Constructor<any>[]>(...plugins: T) {
+		const commando = Commando.create(...plugins);
+		commando
 			.append('export NVM_DIR="$HOME/.nvm"')
 			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
 			.append('nvm use');
+		return commando;
 	}
 }
 

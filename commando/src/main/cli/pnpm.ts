@@ -1,9 +1,9 @@
 import {Cli_Programming} from './programming';
 import {Cli_Basic} from './basic';
-import {Commando} from '../core/cli';
 import {promises as fs} from 'fs';
-import {convertToFullPath} from '../core/tools';
 import {Logger, LogLevel} from '@nu-art/ts-common';
+import {Commando} from '../shell/simple/Commando';
+import {convertToFullPath} from '../shell/tools';
 
 
 export class Cli_PNPM
@@ -35,7 +35,7 @@ export class Cli_PNPM
 
 	install = async (commando?: Commando) => {
 		if (this.isInstalled()) {
-			const version = (await this.getVersion()).stdout.trim();
+			const version = (await this.getVersion()).trim();
 			if (this._expectedVersion === version)
 				return;
 
@@ -64,8 +64,8 @@ export class Cli_PNPM
 	private async getVersion() {
 		const commando = Commando.create(Cli_Programming, Cli_Basic);
 		return commando.if('[[ -x "$(command -v pnpm)" ]]', (commando) => {
-			commando.cli.append('pnpm --version');
-		}).execute();
+			commando.append('pnpm --version');
+		}).execute(stdout => stdout);
 	}
 
 	uninstall = async () => {

@@ -2,6 +2,7 @@ import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, BeLogged, 
 import {MemKey_RunnerParams, RunnerParamKey} from '../../phase-runner/RunnerParams';
 import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../phase-runner/PhaseRunnerDispatcher';
 
+
 export type BaseUnit_Config = {
 	key: string;
 	label: string;
@@ -12,7 +13,6 @@ export type BaseUnit_RuntimeConfig = {
 	dependencyName: string;
 	unitDependencyNames: string[];
 }
-
 
 export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends BaseUnit_RuntimeConfig = BaseUnit_RuntimeConfig>
 	extends Logger {
@@ -52,7 +52,6 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 
 	private initLogClient() {
 		this.logger = new LogClient_MemBuffer(this.tag);
-		this.logger.setForTerminal();
 		this.logger.setComposer((tag: string, level: LogLevel): string => {
 			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
 			const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23).split('_')[1];

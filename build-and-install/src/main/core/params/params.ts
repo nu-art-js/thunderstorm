@@ -1,4 +1,5 @@
-import {BaseCliParam, CLIParams_Resolver} from '@nu-art/commando/cli/cli-params';
+import {BaseCliParam} from '@nu-art/commando/cli-params/types';
+import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {exists} from '@nu-art/ts-common';
 
 //util regex function
@@ -361,5 +362,5 @@ export const AllBaiParams = [
 	BaiParam_EncounterManagerListen, BaiParam_UsePackage
 ];
 
-const params = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();
+const params = CLIParamsResolver.create(...AllBaiParams).resolveParamValue();
 export const RuntimeParams = params;

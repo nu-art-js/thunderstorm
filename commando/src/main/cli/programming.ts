@@ -1,8 +1,9 @@
-import {CliBlock, CliWrapper} from '../core/cli';
+import {BaseCommando} from '../shell/core/BaseCommando';
+import {CliBlock} from '../shell/types';
 
 
 export class Cli_Programming
-	extends CliWrapper {
+	extends BaseCommando {
 
 	/**
 	 * Constructs an if-else conditional command structure.
@@ -12,20 +13,20 @@ export class Cli_Programming
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	public if(condition: string, ifBlock: CliBlock<this>, elseBlock?: CliBlock<this>): this {
-		this.cli.append(`if ${condition}; then`);
-		this.cli.indentIn();
+		this.append(`if ${condition}; then`);
+		this.indentIn();
 		ifBlock(this);
 
 		if (elseBlock) {
-			this.cli.indentOut();
-			this.cli.append('else');
-			this.cli.indentIn();
+			this.indentOut();
+			this.append('else');
+			this.indentIn();
 			elseBlock(this);
 		}
 
-		this.cli.indentOut();
-		this.cli.append('fi');
-		this.cli.emptyLine();
+		this.indentOut();
+		this.append('fi');
+		this.emptyLine();
 		return this;
 	}
 
@@ -38,16 +39,16 @@ export class Cli_Programming
 	 */
 	public for(varName: string, arrayNameOrValues: string | string[], loop: CliBlock<this>): this {
 		if (typeof arrayNameOrValues === 'string') {
-			this.cli.append(`for ${varName} in "\${${arrayNameOrValues}[@]}"; do`);
+			this.append(`for ${varName} in "\${${arrayNameOrValues}[@]}"; do`);
 		} else {
 			const values = arrayNameOrValues.map(value => `"${value}"`).join(' ');
-			this.cli.append(`for ${varName} in ${values}; do`);
+			this.append(`for ${varName} in ${values}; do`);
 		}
-		this.cli.indentIn();
+		this.indentIn();
 		loop(this);
-		this.cli.indentOut();
-		this.cli.append('done');
-		this.cli.emptyLine();
+		this.indentOut();
+		this.append('done');
+		this.emptyLine();
 		return this;
 	}
 
@@ -56,7 +57,7 @@ export class Cli_Programming
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	continue(): this {
-		this.cli.append('continue');
+		this.append('continue');
 		return this;
 	}
 
@@ -65,7 +66,7 @@ export class Cli_Programming
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	break(): this {
-		this.cli.append('break');
+		this.append('break');
 		return this;
 	}
 
@@ -74,7 +75,7 @@ export class Cli_Programming
 	 * @returns {this} - The Cli instance for method chaining.
 	 */
 	return(): this {
-		this.cli.append('return');
+		this.append('return');
 		return this;
 	}
 }

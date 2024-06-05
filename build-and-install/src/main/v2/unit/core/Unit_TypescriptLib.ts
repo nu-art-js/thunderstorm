@@ -14,11 +14,12 @@ import {
 	Phase_PrintDependencyTree,
 	Phase_Purge
 } from '../../phase';
-import {Commando} from '@nu-art/commando/core/cli';
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnWatchEvent} from '../runner-dispatchers';
 import {WatchEvent_Ready, WatchEvent_RemoveDir, WatchEvent_RemoveFile} from '../consts';
+import {Commando} from '@nu-art/commando/shell';
+
 
 export type Unit_TypescriptLib_Config = Unit_Typescript_Config & {
 	customTSConfig?: boolean;
@@ -143,9 +144,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		await Commando
 			.create(Cli_Basic)
 			.cd(`${this.runtime.pathTo.pkg}/src/main`)
-			.setStdErrorValidator(stderr => {
-				return !stderr.match(/\d+\sblock/);
-			})
+			// .setStdErrorValidator(stderr => {
+			// 	return !stderr.match(/\d+\sblock/);
+			// })
 			.append(command)
 			.execute();
 	}
@@ -242,9 +243,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		this.logDebug(`Checking Cyclic Imports - ${this.config.label}`);
 		await NVM.createCommando(Cli_Basic)
 			.cd(this.runtime.pathTo.pkg)
-			.setStdErrorValidator(stderr => {
-				return !stderr.includes('Finding files') && !stderr.includes('Image created');
-			})
+			// .setStdErrorValidator(stderr => {
+			// 	return !stderr.includes('Finding files') && !stderr.includes('Image created');
+			// })
 			.append(`npx madge --no-spinner --image "./imports-${this.config.key}.svg" --circular ${this.runtime.pathTo.output}`)
 			.append('echo $?')
 			.execute();

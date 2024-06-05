@@ -8,33 +8,17 @@ import {FirebasePackageConfig, PackageJson} from '../../../core/types';
 import {_keys, deepClone, ImplementationMissingException, Second, sleep} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {
-	Commando,
-	CommandoCLIKeyValueListener,
-	CommandoCLIListener,
-	CommandoInteractive
-} from '@nu-art/commando/core/cli';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {NVM} from '@nu-art/commando/cli/nvm';
+import {Commando, CommandoInteractive} from '@nu-art/commando/shell';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnUnitWatchCompiled} from '../runner-dispatchers';
+
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig: FirebasePackageConfig;
 	sources?: string[];
 };
-
-type CommandExecutor_FirebaseFunction_Listeners = {
-	proxy: {
-		pid: CommandoCLIKeyValueListener;
-		kill: CommandoCLIListener;
-	};
-	emulator: {
-		pid: CommandoCLIKeyValueListener;
-		kill: CommandoCLIListener;
-	};
-	onReady: CommandoCLIListener;
-}
 
 const CONST_VersionApp = 'version-app.json';
 
@@ -44,16 +28,13 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	static staggerCount: number = 0;
 
-	private readonly PROXY_PID_LOG = '_PROXY_PID_';
-	private readonly PROXY_KILL_LOG = '_PROXY_KILLED_';
-	private readonly EMULATOR_PID_LOG = '_EMULATOR_PID_';
-	private readonly EMULATOR_KILL_LOG = '_EMULATOR_KILLED_';
+	private emulatorPid?: number;
+	private proxyPid?: number;
 
 	private launchCommandos!: {
-		emulator: CommandoInteractive & Commando & Cli_Basic;
-		proxy: CommandoInteractive & Commando & Cli_Basic
+		emulator: CommandoInteractive & Cli_Basic;
+		proxy: CommandoInteractive & Cli_Basic
 	};
-	private listeners!: CommandExecutor_FirebaseFunction_Listeners;
 
 	async __onUnitWatchCompiled(unit: BaseUnit) {
 		if (this.runtime.unitDependencyNames.includes(unit.runtime.dependencyName)) {
@@ -100,8 +81,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await this.initLaunch();
 		await this.initLaunchListeners();
 		await this.clearPorts();
-		await this.runProxy();
-		await this.runEmulator();
+		await Promise.all([
+			this.runProxy(),
+			this.runEmulator(),
+		]);
 	}
 
 	async deployBackend() {
@@ -301,6 +284,19 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	//######################### Launch Logic #########################
 
+	private async clearPorts() {
+		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.firebaseConfig.basePort + i}`);
+		await Commando.create(Cli_Basic)
+			.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
+			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
+			.append('echo ')
+			.execute();
+	}
+
+	private onLaunched() {
+		this.setStatus('Launch Complete');
+	}
+
 	private async initLaunch() {
 		this.launchCommandos = {
 			emulator: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.pathTo.pkg),
@@ -309,61 +305,23 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async initLaunchListeners() {
-		this.listeners = {
-			proxy: {
-				pid: new CommandoCLIKeyValueListener(new RegExp(`${this.PROXY_PID_LOG}=(\\d+)`)),
-				kill: new CommandoCLIListener(() => this.launchCommandos.proxy.close(), this.PROXY_KILL_LOG),
-			},
-			emulator: {
-				pid: new CommandoCLIKeyValueListener(new RegExp(`${this.EMULATOR_PID_LOG}=(\\d+)`)),
-				kill: new CommandoCLIListener(() => this.launchCommandos.emulator.close(), this.EMULATOR_KILL_LOG),
-			},
-			onReady: new CommandoCLIListener(() => this.onLaunched(), new RegExp('.*Emulator Hub running.*')),
-		};
-		this.listeners.proxy.kill.listen(this.launchCommandos.proxy);
-		this.listeners.proxy.pid.listen(this.launchCommandos.proxy);
-		this.listeners.emulator.kill.listen(this.launchCommandos.emulator);
-		this.listeners.emulator.pid.listen(this.launchCommandos.emulator);
-		this.listeners.onReady.listen(this.launchCommandos.emulator);
-	}
-
-	private async clearPorts() {
-		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.firebaseConfig.basePort + i}`);
-		await Commando.create(Cli_Basic)
-			.debug()
-			.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
-			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-			.append('echo ')
-			.execute();
+		this.launchCommandos.emulator.onLog(/.*Emulator Hub running.*/, () => this.onLaunched());
 	}
 
 	private async runProxy() {
 		await this.launchCommandos.proxy
-			.append('ts-node src/main/proxy.ts &')
-			.append('pid=$!')
-			.append(`echo "${this.PROXY_PID_LOG}=\${pid}"`)
-			.append(`wait \$pid`)
-			.append(`echo "${this.PROXY_KILL_LOG} \${pid}"`)
-			.execute();
+			.append('ts-node src/main/proxy.ts')
+			.executeAsync(pid => this.proxyPid = pid);
+
+		await this.launchCommandos.proxy.gracefullyKill(this.proxyPid);
 	}
 
 	private async runEmulator() {
 		await this.launchCommandos.emulator
-			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''} &`)
-			.append('pid=$!')
-			.append(`echo "${this.EMULATOR_PID_LOG}=\${pid}"`)
-			.append(`wait \$pid`)
-			.append(`echo "${this.EMULATOR_KILL_LOG} \${pid}"`)
-			.execute();
-	}
+			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`)
+			.executeAsync(pid => this.emulatorPid = pid);
 
-	private onLaunched() {
-		this.setStatus('Launch Complete');
-	}
-
-	private getPID(listener: CommandoCLIKeyValueListener) {
-		const pid = Number(listener.getValue());
-		return isNaN(pid) ? undefined : pid;
+		await this.launchCommandos.emulator.gracefullyKill(this.emulatorPid);
 	}
 
 	public async kill() {
@@ -371,10 +329,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			return;
 
 		this.logWarning(`Killing unit - ${this.config.label}`);
-		const emulatorPid = this.getPID(this.listeners.emulator.pid);
-		const proxyPid = this.getPID(this.listeners.proxy.pid);
-		await this.launchCommandos.emulator.gracefullyKill(emulatorPid);
-		await this.launchCommandos.proxy.gracefullyKill(proxyPid);
+		await this.launchCommandos.emulator.gracefullyKill(this.emulatorPid);
+		await this.launchCommandos.proxy.gracefullyKill(this.proxyPid);
 		this.logWarning(`Unit killed - ${this.config.label}`);
 	}
 
