@@ -27,6 +27,7 @@ import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 type State<T> = {
 	data: Partial<T>
 	errorMessages?: string[];
+	submitting: boolean
 }
 
 type Props = {}
@@ -55,10 +56,28 @@ const form: Form<AccountEmail & AccountPassword> = {
 export class Component_Login
 	extends ComponentSync<Props, State<Account_Login['request']>> {
 
+	componentDidMount() {
+		window.addEventListener('keydown', this.onAcceptHandler);
+	}
+
+	componentWillUnmount() {
+		window.removeEventListener('keydown', this.onAcceptHandler);
+	}
+
 	protected deriveStateFromProps(nextProps: Props, state: State<Account_Login['request']>) {
 		state.data ??= {};
 		return state;
 	}
+
+	private onAcceptHandler = (e: KeyboardEvent) => {
+		if (e.key !== 'Enter')
+			return;
+
+		this.setState({submitting: true}, async () => {
+			await this.loginClicked();
+			this.setState({submitting: false});
+		});
+	};
 
 	private renderErrorMessages = () => {
 		if (!this.state.errorMessages?.length)
@@ -82,7 +101,7 @@ export class Component_Login
 							value={data[key]}
 							type={field.type}
 							onChange={(value, id) => {
-								this.onValueChanged(value,id as keyof Account_Login['request'])
+								this.onValueChanged(value, id as keyof Account_Login['request']);
 							}}
 							onAccept={() => this.loginClicked()}
 						/>
@@ -91,6 +110,7 @@ export class Component_Login
 			)}
 			{this.renderErrorMessages()}
 			<TS_BusyButton onClick={this.loginClicked}
+						   isBusy={this.state.submitting}
 						   className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
 		</LL_V_C>;
 	}
@@ -118,7 +138,10 @@ export class Component_Login
 
 		try {
 			// this.logWarning('Login network begins');
-			await ModuleFE_Account._v1.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Account_Login['request']).executeSync();
+			await ModuleFE_Account._v1.login({
+				...this.state.data,
+				deviceId: StorageKey_DeviceId.get()
+			} as Account_Login['request']).executeSync();
 			// this.logWarning('Logged in');
 		} catch (err) {
 			// this.logWarning('Failed login network');
