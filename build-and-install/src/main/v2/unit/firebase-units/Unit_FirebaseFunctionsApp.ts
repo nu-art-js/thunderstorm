@@ -299,16 +299,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await this.launchCommandos.proxy
 			.append('ts-node src/main/proxy.ts')
 			.executeAsync(pid => this.proxyPid = pid);
-
-		await this.launchCommandos.proxy.gracefullyKill(this.proxyPid);
 	}
 
 	private async runEmulator() {
 		await this.launchCommandos.emulator
 			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`)
 			.executeAsync(pid => this.emulatorPid = pid);
-
-		await this.launchCommandos.emulator.gracefullyKill(this.emulatorPid);
 	}
 
 	public async kill() {

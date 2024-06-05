@@ -10,7 +10,8 @@ import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {
-	CommandoInteractive} from '@nu-art/commando/shell';
+	CommandoInteractive
+} from '@nu-art/commando/shell';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 
 export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
@@ -31,7 +32,6 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		super(config);
 		this.addToClassStack(Unit_FirebaseHostingApp);
 	}
-
 
 	//######################### Phase Implementations #########################
 
@@ -81,9 +81,15 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	private async resolveHostingJSON() {
 		const envConfig = this.getEnvConfig();
-		const fileContent: FirebasePackageConfig['hosting'] = envConfig.isLocal ? {} as FirebasePackageConfig['hosting'] : this.config.firebaseConfig.hosting;
 		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
-		await _fs.writeFile(targetPath, JSON.stringify({hosting: fileContent}, null, 2), {encoding: 'utf-8'});
+		let fileContent: any;
+
+		if (envConfig.isLocal)
+			fileContent = {};
+		else
+			fileContent = {hosting: this.config.firebaseConfig.hosting};
+
+		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveHostingRuntimeConfig() {
@@ -155,10 +161,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	private async runApp() {
 		await this.launchCommando
-			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`)
+			.append('npm run start')
 			.executeAsync(pid => this.hostingPid = pid);
-
-		await this.launchCommando.gracefullyKill(this.hostingPid);
 	}
 
 	public async kill() {

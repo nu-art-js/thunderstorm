@@ -18,7 +18,7 @@ export class Unit_Python<C extends Unit_Python_Config = Unit_Python_Config, RTC 
 	extends BaseUnit<C, RTC>
 	implements UnitPhaseImplementor<[Phase_Install]> {
 
-	protected commando!: CommandoInteractive & Cli_Basic;
+	protected commando: CommandoInteractive & Cli_Basic;
 
 	constructor(config: Unit_Python<C, RTC>['config']) {
 		super(config);
