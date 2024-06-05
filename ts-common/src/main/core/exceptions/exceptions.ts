@@ -221,7 +221,22 @@ export class WhoCallThisException
 		super(WhoCallThisException, message, cause);
 	}
 }
+
+/**
+ * When config for components or modules is missing
+ */
 export class ConfigMissingException
+	extends CustomException {
+
+	constructor(message: string, cause?: Error) {
+		super(ConfigMissingException, message, cause);
+	}
+}
+
+/**
+ * When a mandatory field is missing in an object when the object is fetched
+ */
+export class MissingDataException
 	extends CustomException {
 
 	constructor(message: string, cause?: Error) {
