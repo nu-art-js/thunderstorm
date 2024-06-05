@@ -292,7 +292,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async initLaunchListeners() {
-		this.launchCommandos.emulator.awaitForLog(/.*Emulator Hub running.*/, () => this.onLaunched());
+		this.launchCommandos.emulator.onLog(/.*Emulator Hub running.*/, () => this.onLaunched());
 	}
 
 	private async runProxy() {
