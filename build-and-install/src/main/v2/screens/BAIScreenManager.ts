@@ -63,21 +63,14 @@ export class BAIScreenManager
 			if (screenOption.conditions.condition && !screenOption.conditions.condition())
 				return false;
 
-			//Fail fast if current phase is on or past the stopOnPhase
-			if (screenOption.conditions.stopOnPhase) {
-				const index = phases.indexOf(screenOption.conditions.stopOnPhase);
-				if (currentPhaseIndex >= index)
-					return false;
-			}
+			const startPhaseIndex = screenOption.conditions.startOnPhase ? phases.indexOf(screenOption.conditions.startOnPhase) : phases.length;
+			const stopPhaseIndex = screenOption.conditions.stopOnPhase ? phases.indexOf(screenOption.conditions.stopOnPhase) : phases.length;
 
 			//Fail fast if current phase is before the startOnPhase
-			if (screenOption.conditions.startOnPhase) {
-				const index = phases.indexOf(screenOption.conditions.startOnPhase);
-				if (currentPhaseIndex < index)
-					return false;
-			}
+			if (currentPhaseIndex >= startPhaseIndex && currentPhaseIndex < stopPhaseIndex)
+				return true;
 
-			return true;
+			return false;
 		});
 	}
 
