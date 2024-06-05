@@ -15,7 +15,7 @@ import {
 	sleep
 } from '@nu-art/ts-common';
 import {RuntimeParams} from '../core/params/params';
-import {convertToFullPath} from '@nu-art/commando/core/tools';
+import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {mapProjectPackages} from './map-project-packages';
 import {MemKey_Packages} from '../core/consts';
 import * as fs from 'fs';
