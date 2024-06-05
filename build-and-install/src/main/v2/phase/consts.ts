@@ -172,7 +172,7 @@ export const phase_DeployFrontend: Phase<'deployFrontend'> = {
 	name: 'Deploy Frontend',
 	method: 'deployFrontend',
 	filter: () => !!RuntimeParams.deployFrontend,
-	dependencyPhaseKeys: [phaseKey_Lint, phaseKey_Compile],
+	dependencyPhaseKeys: [phaseKey_Compile],
 };
 
 export type Phase_DeployBackend = typeof phase_DeployBackend;
@@ -182,7 +182,7 @@ export const phase_DeployBackend: Phase<'deployBackend'> = {
 	name: 'Deploy Backend',
 	method: 'deployBackend',
 	filter: () => !!RuntimeParams.deployBackend,
-	dependencyPhaseKeys: [phaseKey_Lint, phaseKey_Compile],
+	dependencyPhaseKeys: [phaseKey_Compile],
 };
 
 export const phases_Deploy: Phase<string>[] = [phase_DeployFrontend, phase_DeployBackend];
