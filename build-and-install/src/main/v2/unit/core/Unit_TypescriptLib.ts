@@ -19,6 +19,7 @@ import {RuntimeParams} from '../../../core/params/params';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnWatchEvent} from '../runner-dispatchers';
 import {WatchEvent_Ready, WatchEvent_RemoveDir, WatchEvent_RemoveFile} from '../consts';
 import {Commando} from '@nu-art/commando/shell';
+import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 
 
 export type Unit_TypescriptLib_Config = Unit_Typescript_Config & {
@@ -117,11 +118,15 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 		try {
 			await NVM
-				.createCommando(Cli_Basic)
+				.createInteractiveCommando(Cli_Basic)
 				.setUID(this.config.key)
 				.cd(this.runtime.pathTo.pkg)
 				.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
-				.execute();
+				.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'))
+				.execute((stdout, stderr, exitCode) => {
+					if (exitCode > 0)
+						throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
+				});
 
 			// set compilation error status on success
 			this.compilationError = false;
@@ -140,7 +145,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	protected async copyAssetsToOutput() {
-		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`).join(' -o -name ')} \\) | cpio -pdmuv "${this.runtime.pathTo.output}" > /dev/null 2>&1`;
+		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`)
+			.join(' -o -name ')} \\) | cpio -pdmuv "${this.runtime.pathTo.output}" > /dev/null 2>&1`;
 		await Commando
 			.create(Cli_Basic)
 			.cd(`${this.runtime.pathTo.pkg}/src/main`)

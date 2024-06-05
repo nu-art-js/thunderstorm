@@ -16,3 +16,18 @@ export class CliError
 		this.cause = cause;
 	}
 }
+
+export class CommandoException
+	extends CustomException {
+
+	stdout: string;
+	stderr: string;
+	exitCode: number;
+
+	constructor(message: string, stdout: string, stderr: string, exitCode: number) {
+		super(CliError, message);
+		this.stdout = stdout;
+		this.stderr = stderr;
+		this.exitCode = exitCode;
+	}
+}
