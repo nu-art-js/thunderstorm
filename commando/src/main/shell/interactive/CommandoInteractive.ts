@@ -90,8 +90,8 @@ export class CommandoInteractive
 			return true;
 		};
 
-
 		this.addLogProcessor(pidLogProcessor);
+		return this;
 	}
 
 	/**
@@ -102,12 +102,9 @@ export class CommandoInteractive
 	 * @returns {Promise<T>} - The result of the callback function.
 	 */
 	async executeAsync<T>(pidListener: (pid: number) => void, callback?: (stdout: string, stderr: string, exitCode: number) => T): Promise<T> {
-		const uniqueFunctionName = generateHex(16);
 		const pidUniqueKey = generateHex(16);
 		const regexp = new RegExp(`${pidUniqueKey}=(\\d+)`);
-
-		const functionContent = this.builder.reset();
-		const functionName = `${uniqueFunctionName}() {`;
+		const functionContent = this.builder.reset().trim() + ' &';
 
 		const pidLogProcessor = (log: string) => {
 			const match = log.match(regexp);
@@ -120,13 +117,10 @@ export class CommandoInteractive
 		};
 
 		return await this
-			.append(functionName)
 			.append(functionContent)
-			.append('}')
-			.append(`${uniqueFunctionName} &`)
 			.append('pid=$!')
 			.append(`echo "${pidUniqueKey}=\${pid}"`)
-			.append(`wait \$pid`)
+			.append(`wait \$pid`).debug(true)
 			.addLogProcessor(pidLogProcessor)
 			.execute(callback);
 	}

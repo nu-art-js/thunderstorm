@@ -117,13 +117,18 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const pathToTSConfig = `${pathToCompile}/tsconfig.json`;
 
 		try {
-			await NVM
-				.createInteractiveCommando(Cli_Basic)
-				.setUID(this.config.key)
+			let pid: number;
+			const commando = NVM.createInteractiveCommando(Cli_Basic);
+			this.registerTerminatable(async () => {
+				console.log(`killing ${pid}`);
+				process.kill(pid, 2);
+			});
+
+			await commando.setUID(this.config.key)
 				.cd(this.runtime.pathTo.pkg)
 				.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
 				.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'))
-				.execute((stdout, stderr, exitCode) => {
+				.executeAsync(_pid => pid = _pid, (stdout, stderr, exitCode) => {
 					if (exitCode > 0)
 						throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
 				});

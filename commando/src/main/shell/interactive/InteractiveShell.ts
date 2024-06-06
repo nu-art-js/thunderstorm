@@ -93,7 +93,9 @@ export class InteractiveShell
 		if (!this.alive)
 			return;
 
-		return this.shell.kill(signal);
+		this.logWarning(`Killing......`);
+		// return this.gracefullyKill(this.shell.pid);
+		return this.shell.emit('exit', 2);
 	};
 
 	/**

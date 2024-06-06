@@ -61,6 +61,12 @@ export class PhaseRunner
 	//Properties for HOW the PhaseRunner should run
 	private runningStatus!: RunningStatus;
 	private phaseFilter: (phase: Phase<string>) => (boolean | Promise<boolean>);
+	/**
+	 * kill counter that will intercept the kill event and if the threshold will be met the main process will be killed as well
+	 * @private
+	 */
+	private killCounter: number = 0;
+	private static KILL_THRESHOLD = 5;
 
 	constructor(projectPath: RelativePath) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
@@ -485,6 +491,10 @@ export class PhaseRunner
 
 	public async execute() {
 		return new MemStorage().init(async () => {
+			process.on('SIGINT', () => {
+				this.killRunner();
+			});
+
 			await this.init();
 			await this.buildUnitDependencyTree();
 			await this.executeImpl();
@@ -492,11 +502,27 @@ export class PhaseRunner
 	}
 
 	public async killRunner() {
-		this.killed = true;
+		this.killCounter++;
+		if (this.killCounter === PhaseRunner.KILL_THRESHOLD)
+			process.exit(1);
+
+		if (this.killed)
+			process.exit(1);
+
 		await this.setRunningStatus();
 		this.logDebug('Killing units');
-		await Promise.all(this.units.map(unit => unit.kill()));
+		await Promise.all(this.units.map(async unit => {
+			try {
+				await unit.kill();
+			} catch (e: any) {
+				unit.logError(`Error killing unit`, e);
+			}
+		}));
 		this.logDebug('Units killed');
+		this.killed = true;
+
+		if (RuntimeParams.closeOnExit)
+			process.exit(1);
 	}
 
 	//######################### Phase Implementation #########################
