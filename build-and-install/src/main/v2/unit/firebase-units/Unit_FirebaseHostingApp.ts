@@ -128,7 +128,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	protected async compileImpl() {
 		await NVM
-			.createCommando(Cli_Basic)
+			.createInteractiveCommando(Cli_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			.append(`ENV=${RuntimeParams.environment} npm run build`)
 			.execute();
@@ -180,7 +180,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	//######################### Deploy Logic #########################
 
 	private async deployImpl() {
-		await NVM.createCommando(Cli_Basic)
+		await NVM.createInteractiveCommando(Cli_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			.append(`firebase --debug deploy --only hosting`)
 			.execute();

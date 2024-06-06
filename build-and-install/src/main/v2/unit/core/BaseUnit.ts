@@ -1,4 +1,13 @@
-import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, BeLogged, LogClient_MemBuffer, Logger, LogLevel} from '@nu-art/ts-common';
+import {
+	_logger_finalDate,
+	_logger_getPrefix,
+	_logger_timezoneOffset,
+	AsyncVoidFunction,
+	BeLogged,
+	LogClient_MemBuffer,
+	Logger,
+	LogLevel, removeItemFromArray
+} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey} from '../../phase-runner/RunnerParams';
 import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../phase-runner/PhaseRunnerDispatcher';
 import {RuntimeParams} from '../../../core/params/params';
@@ -23,6 +32,7 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 	private unitStatus?: string;
 	private logger!: LogClient_MemBuffer;
 	private classStack: Set<string>;
+	private processTerminator: AsyncVoidFunction[] = [];
 
 	constructor(config: C) {
 		super(config.key);
@@ -34,6 +44,14 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 		this.classStack = new Set<string>();
 		this.addToClassStack(BaseUnit);
 		this.initLogClient();
+	}
+
+	registerTerminatable(terminatable: AsyncVoidFunction) {
+		this.processTerminator.push(terminatable);
+	}
+
+	unregisterTerminatable(terminatable: AsyncVoidFunction) {
+		removeItemFromArray(this.processTerminator, terminatable);
 	}
 
 	protected async init(setInitialized: boolean = true) {
@@ -90,7 +108,12 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 	}
 
 	public async kill() {
-		return;
+		if (!this.processTerminator.length)
+			return;
+
+		this.logWarning(`Killing unit - ${this.config.label}`);
+		await Promise.all(this.processTerminator.map(toTerminate => toTerminate()));
+		this.logWarning(`Unit killed - ${this.config.label}`);
 	}
 
 	public getLogs() {

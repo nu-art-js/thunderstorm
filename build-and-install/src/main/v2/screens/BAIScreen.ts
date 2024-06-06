@@ -1,9 +1,6 @@
 import {ConsoleContainer} from '@nu-art/commando/console/ConsoleContainer';
 import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, AsyncVoidFunction, BeLogged, LogClient_MemBuffer, LogLevel} from '@nu-art/ts-common';
 import {dispatcher_PhaseChange, dispatcher_UnitStatusChange, dispatcher_UnitChange} from '../phase-runner/PhaseRunnerDispatcher';
-import {RuntimeParams} from '../../core/params/params';
-
-
 
 
 export abstract class BAIScreen<State extends {} = {}>
@@ -84,8 +81,6 @@ export abstract class BAIScreen<State extends {} = {}>
 		this.logInfo('Kill command received');
 		await this.onKillCallback?.();
 		this.logInfo('Killed!');
-		if (RuntimeParams.closeOnExit)
-			process.exit(1);
 	}
 
 	public setOnKillCallback = (cb: AsyncVoidFunction) => this.onKillCallback = cb;

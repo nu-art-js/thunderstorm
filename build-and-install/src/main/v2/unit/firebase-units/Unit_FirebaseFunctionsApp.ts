@@ -10,10 +10,9 @@ import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_Defaul
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {NVM} from '@nu-art/commando/cli/nvm';
-import {Commando, CommandoInteractive} from '@nu-art/commando/shell';
+import {Commando} from '@nu-art/commando/shell';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnUnitWatchCompiled} from '../runner-dispatchers';
-
 
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
@@ -28,14 +27,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]>, OnUnitWatchCompiled {
 
 	static staggerCount: number = 0;
-
-	private emulatorPid?: number;
-	private proxyPid?: number;
-
-	private launchCommandos!: {
-		emulator: CommandoInteractive & Cli_Basic;
-		proxy: CommandoInteractive & Cli_Basic
-	};
 
 	async __onUnitWatchCompiled(unit: BaseUnit) {
 		if (this.runtime.unitDependencyNames.includes(unit.runtime.dependencyName)) {
@@ -79,9 +70,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	async launch() {
 		this.setStatus('Launching');
 		await sleep(2 * Second * Unit_FirebaseFunctionsApp.staggerCount++);
-		await this.initLaunch();
-		await this.initLaunchListeners();
-		await this.clearPorts();
+		await this.releasePorts();
 		await Promise.all([
 			this.runProxy(),
 			this.runEmulator(),
@@ -89,7 +78,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	async deployBackend() {
-		await this.printFiles();
 		await this.deployImpl();
 	}
 
@@ -263,7 +251,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		};
 
 		await Promise.all(dependencyUnits.map(async unit => {
-
 			//Copy dependency unit output into this units output/.dependency dir
 			const dependencyOutputPath = `${unit.runtime.pathTo.output}/`;
 			const targetPath = `${this.runtime.pathTo.output}/.dependencies/${unit.config.key}/`;
@@ -285,114 +272,54 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	//######################### Launch Logic #########################
 
-	private async clearPorts() {
+	private async releasePorts() {
+		const commando = NVM.createInteractiveCommando(Cli_Basic);
 		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.firebaseConfig.basePort + i}`);
-		await Commando.create(Cli_Basic)
+
+		await commando.setUID(this.config.key)
 			.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')
 			.execute();
 	}
 
-	private onLaunched() {
-		this.setStatus('Launch Complete');
-	}
-
-	private async initLaunch() {
-		this.launchCommandos = {
-			emulator: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.pathTo.pkg),
-			proxy: NVM.createInteractiveCommando(Cli_Basic).setUID(this.config.key).cd(this.runtime.pathTo.pkg),
-		};
-	}
-
-	private async initLaunchListeners() {
-		this.launchCommandos.emulator.onLog(/.*Emulator Hub running.*/, () => this.onLaunched());
-	}
-
 	private async runProxy() {
-		await this.launchCommandos.proxy
+		let pid: number;
+		const commando = NVM.createInteractiveCommando(Cli_Basic);
+		this.registerTerminatable(() => commando.gracefullyKill(pid));
+		await commando.setUID(this.config.key)
+			.cd(this.runtime.pathTo.pkg)
 			.append('ts-node src/main/proxy.ts')
-			.executeAsync(pid => this.proxyPid = pid);
+			.executeAsync(_pid => pid = _pid);
 	}
 
 	private async runEmulator() {
-		await this.launchCommandos.emulator
+		let pid: number;
+		const commando = NVM.createInteractiveCommando(Cli_Basic);
+
+		const terminatable = () => commando.gracefullyKill(pid);
+		this.registerTerminatable(terminatable);
+
+		await commando.setUID(this.config.key)
+			.cd(this.runtime.pathTo.pkg)
+			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'))
 			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`)
-			.executeAsync(pid => this.emulatorPid = pid);
-	}
+			.executeAsync(_pid => pid = _pid);
 
-	public async kill() {
-		if (!this.launchCommandos)
-			return;
-
-		this.logWarning(`Killing unit - ${this.config.label}`);
-		await this.launchCommandos.emulator.gracefullyKill(this.emulatorPid);
-		await this.launchCommandos.proxy.gracefullyKill(this.proxyPid);
-		this.logWarning(`Unit killed - ${this.config.label}`);
+		this.unregisterTerminatable(terminatable);
 	}
 
 	//######################### Deploy Logic #########################
 
-	private async printFiles() {
-		await Commando.create(Cli_Basic)
+	private async deployImpl() {
+		await NVM.createInteractiveCommando(Cli_Basic)
 			.cd(this.runtime.pathTo.output)
 			.ls()
 			.cat('package.json')
 			.cat('index.js')
-			.execute();
-	}
-
-	private async deployImpl() {
-		await NVM.createCommando(Cli_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			.append(`firebase --debug deploy --only functions --force`)
 			.execute();
 	}
 }
-
-// export class CommandoCLIListener {
-//
-// 	private cb: CommandoCLIListener_Callback;
-// 	protected filter?: RegExp;
-//
-// 	constructor(callback: CommandoCLIListener_Callback, filter?: string | RegExp) {
-// 		this.cb = callback;
-// 		if (!filter)
-// 			return;
-//
-// 		if (typeof filter === 'string')
-// 			this.filter = new RegExp(filter);
-// 		else
-// 			this.filter = filter as RegExp;
-// 	}
-//
-// 	//######################### Inner Logic #########################
-//
-// 	private _process(stdout: string) {
-// 		if (!this.stdoutPassesFilter(stdout))
-// 			return false;
-//
-// 		this.process(stdout);
-// 		return true;
-// 	}
-//
-// 	private stdoutPassesFilter = (stdout: string): boolean => {
-// 		if (!this.filter)
-// 			return true;
-//
-// 		return this.filter.test(stdout);
-// 	};
-//
-// 	//######################### Functions #########################
-//
-// 	public listen = <T extends Commando | CommandoInteractive>(commando: T): T => {
-// 		const process = this._process.bind(this);
-// 		commando.addLogProcessor(process);
-// 		return commando;
-// 	};
-//
-// 	protected process(stdout: string) {
-// 		this.cb(stdout);
-// 	}
-// }
 
