@@ -72,6 +72,7 @@ export type Props_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & TypeProps_TS_Input
 	onChange?: (value: string, id: string) => void
 	onAccept?: (value: string, event: KeyboardEvent<HTMLInputElement>) => void
 	onBlur?: (value: string, event: React.FocusEvent<HTMLInputElement>) => void
+	allowAccept?: boolean
 }
 
 export type NativeProps_TS_InputV2 = Props_TS_InputV2
@@ -110,7 +111,7 @@ export class TS_InputV2
 	static readonly _editableTime = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & { [k in K]: number | string }>(props: EditableItemProps_TS_InputV2<number | string, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
-			const {editable, prop,showErrorTooltip, saveEvent, ...rest} = props;
+			const {editable, prop, showErrorTooltip, saveEvent, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
@@ -154,7 +155,7 @@ export class TS_InputV2
 	static readonly _editableNumber = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & { [k in K]: number }>(props: EditableItemProps_TS_InputV2<number, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
-			const {editable, prop, saveEvent,showErrorTooltip, ...rest} = props;
+			const {editable, prop, saveEvent, showErrorTooltip, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
@@ -282,7 +283,7 @@ export class TS_InputV2
 				ev.target.blur();
 
 				if (this.props.onAccept) {
-					if (value !== this.props.value)
+					if (value !== this.props.value || this.props.allowAccept)
 						this.props.onAccept(value, ev);
 					ev.stopPropagation();
 				}
@@ -296,7 +297,7 @@ export class TS_InputV2
 
 		if (ev.key === 'Enter' && this.props.forceAcceptKeys?.find(key => ev[key]))
 			if (this.props.onAccept) {
-				if (value !== this.props.value)
+				if (value !== this.props.value || this.props.allowAccept)
 					this.props.onAccept(value, ev);
 				ev.stopPropagation();
 			}
@@ -305,7 +306,7 @@ export class TS_InputV2
 	};
 
 	render() {
-		const {onAccept,showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
+		const {onAccept,allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
 
 		return <input
 			{...props}

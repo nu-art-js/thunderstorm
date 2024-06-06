@@ -24,7 +24,6 @@ import {
 	LL_H_C,
 	LL_V_C,
 	TS_BusyButton,
-	TS_Input,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
@@ -45,6 +44,7 @@ import {
 } from '../../shared';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../_entity';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 
 type State<T> = {
 	data: Partial<T>
@@ -92,14 +92,6 @@ export class Component_Register
 
 	// ######################### Lifecycle #########################
 
-	componentDidMount() {
-		window.addEventListener('keydown', this.onAcceptHandler);
-	}
-
-	componentWillUnmount() {
-		window.removeEventListener('keydown', this.onAcceptHandler);
-	}
-
 	protected deriveStateFromProps(nextProps: Props<Request_RegisterAccount>, state: State<Request_RegisterAccount>) {
 		state.data ??= {};
 		state.renderPasswordRules = nextProps.renderPasswordRules ?? false;
@@ -130,8 +122,25 @@ export class Component_Register
 		}
 	};
 
-	private onAcceptHandler = (e: KeyboardEvent) => {
-		if (e.key !== 'Enter')
+	private onValueChanged = (value: string, id: keyof Account_RegisterAccount['request'], onAccept: boolean = false) => {
+		const data = {...this.state.data};
+		data[id] = value;
+		if (id !== 'password')
+			return this.setState({data, errorMessages: undefined}, () => this.defaultFormStateUpdateCallback(onAccept));
+
+		const passwordFailureReport = assertPasswordRules(value, this.state.passwordAssertionConfig);
+		this.setState({
+			data,
+			errorMessages: undefined,
+			passwordFailureReport
+		}, () => this.defaultFormStateUpdateCallback(onAccept));
+	};
+
+	private defaultFormStateUpdateCallback = (onAccept: boolean) => {
+		if (!onAccept)
+			return;
+
+		if (!this.canSubmit())
 			return;
 
 		this.setState({submitting: true}, async () => {
@@ -140,17 +149,7 @@ export class Component_Register
 		});
 	};
 
-	private onValueChanged = (value: string, id: keyof Account_RegisterAccount['request']) => {
-		const data = {...this.state.data};
-		data[id] = value;
-		if (id !== 'password')
-			return this.setState({data, errorMessages: undefined});
-
-		const passwordFailureReport = assertPasswordRules(value, this.state.passwordAssertionConfig);
-		this.setState({data, errorMessages: undefined, passwordFailureReport});
-	};
-
-	private registerClicked = async () => {
+	private canSubmit = () => {
 		if (this.state.passwordFailureReport)
 			return;
 
@@ -164,8 +163,17 @@ export class Component_Register
 		if (validateError)
 			addItemToArray(errors, validateError);
 
-		if (errors.length > 0)
-			return this.setState({errorMessages: errors});
+		if (errors.length > 0) {
+			this.setState({errorMessages: errors});
+			return false;
+		}
+
+		return true;
+	};
+
+	private registerClicked = async () => {
+		if (!this.canSubmit())
+			return;
 
 		try {
 			await ModuleFE_Account._v1.registerAccount({
@@ -186,12 +194,13 @@ export class Component_Register
 			{_keys(form).map((key, i) => {
 					const field = form[key];
 					return <TS_PropRenderer.Vertical label={field.label} key={i}>
-						<TS_Input
+						<TS_InputV2
 							id={key}
 							value={data[key]}
 							type={field.type}
-							onChange={this.onValueChanged}
-							onAccept={this.registerClicked}
+							allowAccept={true}
+							onChange={(data) => this.onValueChanged(data, key)}
+							onAccept={(data) => this.onValueChanged(data, key, true)}
 						/>
 						{key === 'password' && this.renderPasswordRules()}
 					</TS_PropRenderer.Vertical>;
