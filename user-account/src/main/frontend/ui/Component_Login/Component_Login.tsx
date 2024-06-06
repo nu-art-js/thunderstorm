@@ -56,28 +56,10 @@ const form: Form<AccountEmail & AccountPassword> = {
 export class Component_Login
 	extends ComponentSync<Props, State<Account_Login['request']>> {
 
-	componentDidMount() {
-		window.addEventListener('keydown', this.onAcceptHandler);
-	}
-
-	componentWillUnmount() {
-		window.removeEventListener('keydown', this.onAcceptHandler);
-	}
-
 	protected deriveStateFromProps(nextProps: Props, state: State<Account_Login['request']>) {
 		state.data ??= {};
 		return state;
 	}
-
-	private onAcceptHandler = (e: KeyboardEvent) => {
-		if (e.key !== 'Enter')
-			return;
-
-		this.setState({submitting: true}, async () => {
-			await this.loginClicked();
-			this.setState({submitting: false});
-		});
-	};
 
 	private renderErrorMessages = () => {
 		if (!this.state.errorMessages?.length)
@@ -100,10 +82,13 @@ export class Component_Login
 							id={key}
 							value={data[key]}
 							type={field.type}
-							onChange={(value, id) => {
-								this.onValueChanged(value, id as keyof Account_Login['request']);
+							allowAccept={true}
+							onChange={(value) => {
+								this.onValueChanged(value, key as keyof Account_Login['request']);
 							}}
-							onAccept={() => this.loginClicked()}
+							onAccept={(value) => {
+								this.onValueChanged(value, key as keyof Account_Login['request'], true);
+							}}
 						/>
 					</TS_PropRenderer.Vertical>;
 				}
@@ -115,26 +100,41 @@ export class Component_Login
 		</LL_V_C>;
 	}
 
-	private onValueChanged = (value: string, id: keyof Account_Login['request']) => {
+	private onValueChanged = (value: string, id: keyof Account_Login['request'], isAccept: boolean = false) => {
 		const data = {...this.state.data};
 		data[id] = value;
-		this.setState({data, errorMessages: undefined});
+		this.setState({data, errorMessages: undefined}, () => {
+			if (!isAccept)
+				return;
+
+			if (!this.canSubmit())
+				return;
+
+			this.setState({submitting: true}, async () => {
+				await this.loginClicked();
+				this.setState({submitting: false});
+			});
+		});
 	};
 
-	private loginClicked = async () => {
+	private canSubmit = () => {
 		const data: Partial<Account_Login['request']> = this.state.data;
 		const errors = _keys(form).map(key => {
 			const field = form[key];
 			return data[key] ? undefined : `  * missing ${field.label}`;
 		}).filter(error => !!error);
 
-		// const validateError = this.props.validate(data);
-		// if (validateError)
-		// 	addItemToArray(errors, validateError);
-		// this.logWarning('Login');
-		if (errors.length > 0)
-			return ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
-		// this.logWarning('No errors during login');
+		if (errors.length > 0) {
+			ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
+			return false;
+		}
+
+		return true;
+	};
+
+	private loginClicked = async () => {
+		if (!this.canSubmit())
+			return;
 
 		try {
 			// this.logWarning('Login network begins');
