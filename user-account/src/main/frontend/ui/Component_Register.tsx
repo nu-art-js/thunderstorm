@@ -17,7 +17,15 @@
  */
 
 import * as React from 'react';
-import {_className, ComponentSync, Grid, LL_H_C, LL_V_C, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {
+	_className,
+	ComponentSync,
+	Grid,
+	LL_H_C,
+	LL_V_C,
+	TS_BusyButton,
+	TS_PropRenderer
+} from '@nu-art/thunderstorm/frontend';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
 import {
 	Account_RegisterAccount,
@@ -36,6 +44,7 @@ import {
 } from '../../shared';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../_entity';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 
 type State<T> = {
 	data: Partial<T>
@@ -43,6 +52,7 @@ type State<T> = {
 	renderPasswordRules: boolean;
 	passwordFailureReport?: PasswordFailureReport;
 	passwordAssertionConfig?: PasswordAssertionConfig;
+	submitting: boolean
 }
 type Props<T> = {
 	validate?: (data: Partial<T>) => string | undefined
@@ -112,17 +122,34 @@ export class Component_Register
 		}
 	};
 
-	private onValueChanged = (value: string, id: keyof Account_RegisterAccount['request']) => {
+	private onValueChanged = (value: string, id: keyof Account_RegisterAccount['request'], onAccept: boolean = false) => {
 		const data = {...this.state.data};
 		data[id] = value;
 		if (id !== 'password')
-			return this.setState({data, errorMessages: undefined});
+			return this.setState({data, errorMessages: undefined}, () => this.defaultFormStateUpdateCallback(onAccept));
 
 		const passwordFailureReport = assertPasswordRules(value, this.state.passwordAssertionConfig);
-		this.setState({data, errorMessages: undefined, passwordFailureReport});
+		this.setState({
+			data,
+			errorMessages: undefined,
+			passwordFailureReport
+		}, () => this.defaultFormStateUpdateCallback(onAccept));
 	};
 
-	private registerClicked = async () => {
+	private defaultFormStateUpdateCallback = (onAccept: boolean) => {
+		if (!onAccept)
+			return;
+
+		if (!this.canSubmit())
+			return;
+
+		this.setState({submitting: true}, async () => {
+			await this.registerClicked();
+			this.setState({submitting: false});
+		});
+	};
+
+	private canSubmit = () => {
 		if (this.state.passwordFailureReport)
 			return;
 
@@ -136,11 +163,23 @@ export class Component_Register
 		if (validateError)
 			addItemToArray(errors, validateError);
 
-		if (errors.length > 0)
-			return this.setState({errorMessages: errors});
+		if (errors.length > 0) {
+			this.setState({errorMessages: errors});
+			return false;
+		}
+
+		return true;
+	};
+
+	private registerClicked = async () => {
+		if (!this.canSubmit())
+			return;
 
 		try {
-			await ModuleFE_Account._v1.registerAccount({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Request_RegisterAccount).executeSync();
+			await ModuleFE_Account._v1.registerAccount({
+				...this.state.data,
+				deviceId: StorageKey_DeviceId.get()
+			} as Request_RegisterAccount).executeSync();
 		} catch (_err: any) {
 			const err = _err as Error;
 			this.setState({errorMessages: [err.message]});
@@ -155,12 +194,13 @@ export class Component_Register
 			{_keys(form).map((key, i) => {
 					const field = form[key];
 					return <TS_PropRenderer.Vertical label={field.label} key={i}>
-						<TS_Input
+						<TS_InputV2
 							id={key}
 							value={data[key]}
 							type={field.type}
-							onChange={this.onValueChanged}
-							onAccept={this.registerClicked}
+							allowAccept={true}
+							onChange={(data) => this.onValueChanged(data, key)}
+							onAccept={(data) => this.onValueChanged(data, key, true)}
 						/>
 						{key === 'password' && this.renderPasswordRules()}
 					</TS_PropRenderer.Vertical>;
@@ -169,6 +209,7 @@ export class Component_Register
 			{this.renderErrorMessages()}
 			<TS_BusyButton
 				onClick={this.registerClicked}
+				isBusy={this.state.submitting}
 				className={`clickable ts-account__action-button`}
 				disabled={!!this.state.passwordFailureReport}
 			>Register</TS_BusyButton>
