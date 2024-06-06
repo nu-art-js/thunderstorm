@@ -3,7 +3,7 @@ import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} 
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
-import {BadImplementationException} from '@nu-art/ts-common';
+import {BadImplementationException, debounce, Second} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor, WatchEventType} from '../types';
 import {
@@ -51,6 +51,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	]>, OnWatchEvent {
 
 	private compilationError: boolean = false;
+	private debounceWatch?: VoidFunction;
 
 	constructor(config: Unit_TypescriptLib<C, RTC>['config']) {
 		super(config);
@@ -61,7 +62,12 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	async __onWatchEvent(type: WatchEventType, path?: string) {
 		if (type === WatchEvent_Ready)
 			return this.setStatus('Watching');
-		await this.handleWatchChange(path!, [WatchEvent_RemoveFile, WatchEvent_RemoveDir].includes(type));
+
+		if (this.debounceWatch)
+			delete this.debounceWatch;
+
+		this.debounceWatch = debounce(() => this.handleWatchChange(path!, [WatchEvent_RemoveFile, WatchEvent_RemoveDir].includes(type)), Second * 4, Second * 10);
+		this.debounceWatch();
 	}
 
 	protected async init(setInitialized: boolean = true) {
