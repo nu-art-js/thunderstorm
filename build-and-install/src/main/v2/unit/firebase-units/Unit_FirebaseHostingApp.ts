@@ -9,9 +9,6 @@ import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {NVM} from '@nu-art/commando/cli/nvm';
 import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {
-	CommandoInteractive
-} from '@nu-art/commando/shell';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {dispatcher_WatchEvent} from '../runner-dispatchers';
 
@@ -27,13 +24,17 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
 
-	private launchCommando!: CommandoInteractive & Cli_Basic;
-	private hostingPid!: number;
-
 	constructor(config: Unit_FirebaseHostingApp<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_FirebaseHostingApp);
 		dispatcher_WatchEvent.removeListener(this);
+	}
+
+	protected async init(setInitialized: boolean = true): Promise<void> {
+		await super.init(setInitialized);
+
+		if (!this.config.firebaseConfig.hostingPort)
+			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
 	}
 
 	//######################### Phase Implementations #########################
@@ -55,8 +56,6 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	async launch() {
 		this.setStatus('Launching');
-		await this.initLaunch();
-		await this.clearPorts();
 		await this.runApp();
 	}
 
@@ -145,36 +144,22 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	//######################### Launch Logic #########################
 
-	private async initLaunch() {
-		if (!this.config.firebaseConfig.hostingPort)
-			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
+	private async runApp() {
+		let pid: number;
+		const commando = NVM.createInteractiveCommando(Cli_Basic);
+		const terminatable = () => commando.gracefullyKill(pid);
+		this.registerTerminatable(terminatable);
 
-		this.launchCommando = NVM.createInteractiveCommando(Cli_Basic)
+		await commando
 			.setUID(this.config.key)
-			.cd(this.runtime.pathTo.pkg);
-	}
-
-	private async clearPorts() {
-		await this.launchCommando
+			.cd(this.runtime.pathTo.pkg)
 			.append(`array=($(lsof -ti:${[this.config.firebaseConfig.hostingPort].join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')
-			.execute();
-	}
-
-	private async runApp() {
-		await this.launchCommando
 			.append('npm run start')
-			.executeAsync(pid => this.hostingPid = pid);
-	}
+			.executeAsync(_pid => pid = _pid);
 
-	public async kill() {
-		if (!this.launchCommando)
-			return;
-
-		this.logWarning(`Killing unit - ${this.config.label}`);
-		await this.launchCommando?.gracefullyKill(this.hostingPid);
-		this.logWarning(`Unit killed - ${this.config.label}`);
+		this.unregisterTerminatable(terminatable);
 	}
 
 	//######################### Deploy Logic #########################

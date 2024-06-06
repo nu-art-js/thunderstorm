@@ -123,10 +123,8 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 						});
 				});
 
-			process.on('SIGINT', async (status) => {
+			this.registerTerminatable(async () => {
 				await watcher.close();
-				process.exit(0);
-				resolve();
 			});
 		});
 	}

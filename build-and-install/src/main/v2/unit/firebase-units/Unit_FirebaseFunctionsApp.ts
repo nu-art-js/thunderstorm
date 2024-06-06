@@ -286,11 +286,14 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	private async runProxy() {
 		let pid: number;
 		const commando = NVM.createInteractiveCommando(Cli_Basic);
-		this.registerTerminatable(() => commando.gracefullyKill(pid));
+		const terminatable = () => commando.gracefullyKill(pid);
+		this.registerTerminatable(terminatable);
 		await commando.setUID(this.config.key)
 			.cd(this.runtime.pathTo.pkg)
 			.append('ts-node src/main/proxy.ts')
 			.executeAsync(_pid => pid = _pid);
+
+		this.unregisterTerminatable(terminatable);
 	}
 
 	private async runEmulator() {
