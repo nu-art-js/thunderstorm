@@ -109,11 +109,14 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 
 	public async kill() {
 		if (!this.processTerminator.length)
-			return;
+			return this.setStatus('Killed');
 
-		this.logWarning(`Killing unit - ${this.config.label}`);
-		await Promise.all(this.processTerminator.map(toTerminate => toTerminate()));
-		this.logWarning(`Unit killed - ${this.config.label}`);
+		this.setStatus('Killing');
+		try {
+			await Promise.all(this.processTerminator.map(toTerminate => toTerminate()));
+		} finally {
+			this.setStatus('Killed');
+		}
 	}
 
 	public getLogs() {
