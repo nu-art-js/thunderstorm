@@ -47,7 +47,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	async resolveConfigs() {
 		await this.resolveFunctionsRC();
-		await this.resolveProxyFile();
 		await this.resolveConfigDir();
 		await this.resolveFunctionsRuntimeConfig();
 		await this.resolveFunctionsJSON();
@@ -282,6 +281,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async runProxy() {
+		await this.resolveProxyFile();
+
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.runtime.pathTo.pkg)
 			.append('ts-node src/main/proxy.ts');
