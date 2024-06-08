@@ -33,6 +33,9 @@ export type FirebaseEnvConfig<Env extends string> = {
 				measurementId?: string
 			}
 		}
+	},
+	otherConfig?: {
+		[ModuleName: string]: any
 	}
 }
 
