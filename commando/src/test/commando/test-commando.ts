@@ -1,4 +1,4 @@
-import {Cli_Basic} from '../../main/cli/basic';
+import {Commando_Basic} from '../../main/shell/plugins/basic';
 import {BeLogged, LogClient_Terminal} from '@nu-art/ts-common';
 import {CommandoInteractive} from '../../main/shell';
 
@@ -7,7 +7,7 @@ LogClient_Terminal.keepLogsNaturalColors();
 BeLogged.addClient(LogClient_Terminal);
 
 async function execute() {
-	const commando = CommandoInteractive.create(Cli_Basic);
+	const commando = CommandoInteractive.create(Commando_Basic);
 	commando.echo('hello world 0', {escape: true});
 	commando.echo('hello world 1', {escape: true});
 	commando.echo('hello world 2', {escape: true});

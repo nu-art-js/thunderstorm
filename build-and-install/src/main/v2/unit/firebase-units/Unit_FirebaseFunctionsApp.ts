@@ -8,11 +8,9 @@ import {FirebasePackageConfig, PackageJson} from '../../../core/types';
 import {_keys, deepClone, ImplementationMissingException, Second, sleep} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {Cli_Basic} from '@nu-art/commando/cli/basic';
-import {NVM} from '@nu-art/commando/cli/nvm';
-import {Commando} from '@nu-art/commando/shell';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnUnitWatchCompiled} from '../runner-dispatchers';
+import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
@@ -30,11 +28,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	async __onUnitWatchCompiled(unit: BaseUnit) {
 		if (this.runtime.unitDependencyNames.includes(unit.runtime.dependencyName)) {
-			this.setStatus('Compile');
+			this.setStatus('Compiling', 'start');
 			await this.compileImpl();
 			await this.copyAssetsToOutput();
 			await this.createDependenciesDir();
-			this.setStatus('Compiled');
+			this.setStatus('Compiled', 'end');
 		}
 	}
 
@@ -56,7 +54,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	async compile() {
-		this.setStatus('Compile');
+		this.setStatus('Compiling', 'start');
 		await this.resolveTSConfig();
 		await this.clearOutputDir();
 		await this.createAppVersionFile();
@@ -64,7 +62,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await this.copyAssetsToOutput();
 		await this.createDependenciesDir();
 		await this.copyPackageJSONToOutput();
-		this.setStatus('Compiled');
+		this.setStatus('Compiled', 'end');
 	}
 
 	async launch() {
@@ -256,7 +254,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			const targetPath = `${this.runtime.pathTo.output}/.dependencies/${unit.config.key}/`;
 			const pjTargetPath = `${targetPath}/${CONST_PackageJSON}`;
 
-			await Commando.create()
+			await this.allocateCommando()
 				.append(`mkdir -p ${targetPath}`)
 				.append(`rsync -a --delete ${dependencyOutputPath} ${targetPath}`)
 				.execute();
@@ -273,7 +271,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	//######################### Launch Logic #########################
 
 	private async releasePorts() {
-		const commando = NVM.createInteractiveCommando(Cli_Basic);
+		const commando = this.allocateCommando(Commando_NVM).applyNVM();
 		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.firebaseConfig.basePort + i}`);
 
 		await commando.setUID(this.config.key)
@@ -284,45 +282,35 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async runProxy() {
-		let pid: number;
-		const commando = NVM.createInteractiveCommando(Cli_Basic);
-		const terminatable = () => commando.gracefullyKill(pid);
-		this.registerTerminatable(terminatable);
-		await commando.setUID(this.config.key)
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.runtime.pathTo.pkg)
-			.append('ts-node src/main/proxy.ts')
-			.executeAsync(_pid => pid = _pid);
+			.append('ts-node src/main/proxy.ts');
 
-		this.unregisterTerminatable(terminatable);
+		return this.executeAsyncCommando(commando);
 	}
 
 	private async runEmulator() {
-		let pid: number;
-		const commando = NVM.createInteractiveCommando(Cli_Basic);
-
-		const terminatable = () => commando.gracefullyKill(pid);
-		this.registerTerminatable(terminatable);
-
-		await commando.setUID(this.config.key)
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.setUID(this.config.key)
 			.cd(this.runtime.pathTo.pkg)
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'))
-			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`)
-			.executeAsync(_pid => pid = _pid);
+			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`);
 
-		this.unregisterTerminatable(terminatable);
+		return this.executeAsyncCommando(commando);
 	}
 
 	//######################### Deploy Logic #########################
 
 	private async deployImpl() {
-		await NVM.createInteractiveCommando(Cli_Basic)
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.runtime.pathTo.output)
 			.ls()
 			.cat('package.json')
 			.cat('index.js')
 			.cd(this.runtime.pathTo.pkg)
-			.append(`firebase --debug deploy --only functions --force`)
-			.execute();
+			.append(`firebase --debug deploy --only functions --force`);
+
+		return this.executeAsyncCommando(commando);
 	}
 }
 

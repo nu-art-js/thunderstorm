@@ -30,8 +30,6 @@ import fs, {promises as _fs} from 'fs';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
 import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes, RunningStatus} from '../../defaults/consts';
-import {NVM} from '@nu-art/commando/cli/nvm';
-import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {dispatcher_PhaseChange, dispatcher_UnitChange} from './PhaseRunnerDispatcher';
 import {
 	convertToFullPath
@@ -40,6 +38,7 @@ import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
 import {BAIScreenManager} from '../screens/BAIScreenManager';
 import {MemKey_PhaseRunner} from './consts';
+import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
@@ -498,6 +497,7 @@ export class PhaseRunner
 			await this.init();
 			await this.buildUnitDependencyTree();
 			await this.executeImpl();
+			this.killed = true;
 		});
 	}
 
@@ -551,7 +551,7 @@ export class PhaseRunner
 	}
 
 	async printEnv() {
-		await NVM.createCommando(Cli_Basic)
+		await this.allocateCommando(Commando_Basic)
 			.append('npm -g list typescript eslint firebase-tools sort-package-json --depth=0')
 			.append('echo "npm version:"; npm -v')
 			.append('echo "node version:"; node -v')

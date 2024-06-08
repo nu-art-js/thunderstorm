@@ -1,9 +1,7 @@
-import {Cli_Programming} from './programming';
-import {Cli_Basic} from './basic';
 import {promises as fs} from 'fs';
 import {Logger, LogLevel} from '@nu-art/ts-common';
-import {Commando} from '../shell/simple/Commando';
-import {convertToFullPath} from '../shell/tools';
+import {convertToFullPath} from '../tools';
+import {Commando_PNPM} from '../plugins/pnpm';
 
 
 export class Cli_PNPM
@@ -33,9 +31,9 @@ export class Cli_PNPM
 		this._expectedVersion = value;
 	}
 
-	install = async (commando?: Commando) => {
+	install = async (commando: Commando_PNPM) => {
 		if (this.isInstalled()) {
-			const version = (await this.getVersion()).trim();
+			const version = (await commando.getVersion());
 			if (this._expectedVersion === version)
 				return;
 
@@ -43,30 +41,16 @@ export class Cli_PNPM
 		}
 
 		this.logDebug(`installing PNPM version ${this._expectedVersion}`);
-		await (commando ?? Commando.create())
-			.append(`curl -fsSL "https://get.pnpm.io/install.sh" | env PNPM_VERSION=${this._expectedVersion} bash -`)
-			.execute();
+		await commando.install(this._expectedVersion);
 
 		return this;
 	};
 
 	isInstalled = () => !!process.env[this._homeEnvVar];
+	installPackages = async (commando: Commando_PNPM) => {
 
-	installPackages = async (commando?: Commando) => {
-		await (commando ?? Commando.create())
-			.append(`pnpm store prune`)
-			.append(`pnpm install -f --no-frozen-lockfile --prefer-offline false`)
-			.execute();
-
-		return this;
+		return await commando.installPackages();
 	};
-
-	private async getVersion() {
-		const commando = Commando.create(Cli_Programming, Cli_Basic);
-		return commando.if('[[ -x "$(command -v pnpm)" ]]', (commando) => {
-			commando.append('pnpm --version');
-		}).execute(stdout => stdout);
-	}
 
 	uninstall = async () => {
 		this.logDebug('Uninstalling PNPM');

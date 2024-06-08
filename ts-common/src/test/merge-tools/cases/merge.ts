@@ -1,6 +1,5 @@
 import {expect} from 'chai';
-import {merge, TestSuite} from '../../_main';
-import {testSuiteTester} from '../../../../dist/testing/consts';
+import {merge, TestSuite, testSuiteTester} from '../../_main';
 
 type Input<T = any> = {
 	one: any

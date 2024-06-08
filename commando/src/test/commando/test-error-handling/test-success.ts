@@ -1,13 +1,13 @@
 import {Commando, CommandoInteractive} from '../../../main/core/cli';
-import {Cli_Basic} from '../../../main/cli/basic';
+import {Commando_Basic} from '../../../main/shell/plugins/basic';
 import {BeLogged, generateHex, LogClient_Terminal} from '@nu-art/ts-common';
-import {Cli_Git} from '../../../main/cli/git';
+import {Commando_Git} from '../../../main/shell/plugins/git';
 
 
 LogClient_Terminal.keepLogsNaturalColors();
 BeLogged.addClient(LogClient_Terminal);
 
-const commando = CommandoInteractive.create(Cli_Basic, Cli_Git);
+const commando = CommandoInteractive.create(Commando_Basic, Commando_Git);
 
 async function execute() {
 	commando.append('rm -rf /tmp/dev-tools');

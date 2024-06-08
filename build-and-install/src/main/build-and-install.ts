@@ -20,9 +20,6 @@ runner
 			console.log('DEADEDAEDAEDAEDAEDAD');
 			return process.exit(0);
 		});
-		//TODO: make it an array of non exit params
-		if (!RuntimeParams.launch && !RuntimeParams.watch)
-			return process.exit(0);
 	})
 	.catch(err => {
 		StaticLogger.logError('Failed with error: ', err);

@@ -1,5 +1,5 @@
-import {BaseCommando} from '../shell/core/BaseCommando';
-import {CliBlock} from '../shell/types';
+import {BaseCommando} from '../core/BaseCommando';
+import {CliBlock} from '../types';
 
 
 type Cli_EchoOptions = {
@@ -22,7 +22,7 @@ type Cli_CpdirOptions = {
 /**
  * Represents a Command Line Interface (CLI) to build and execute shell commands.
  */
-export class Cli_Basic
+export class Commando_Basic
 	extends BaseCommando {
 
 	/**
