@@ -4,8 +4,6 @@ import {Phase_Install, Phase_Watch} from '../../phase';
 import {RuntimeParams} from '../../../core/params/params';
 import {StringMap} from '@nu-art/ts-common/utils/types';
 import {_keys} from '@nu-art/ts-common';
-import {NVM} from '@nu-art/commando/cli/nvm';
-import {PNPM} from '@nu-art/commando/cli/pnpm';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 import * as chokidar from 'chokidar';
 import {dispatcher_WatchEvent} from '../runner-dispatchers';
@@ -18,6 +16,10 @@ import {
 } from '../consts';
 import {Unit_TypescriptLib} from './Unit_TypescriptLib';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../firebase-units';
+import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
+import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
+import {PNPM} from '@nu-art/commando/shell/services/pnpm';
+
 
 type Unit_TypescriptProject_Config = Unit_Typescript_Config & { globalPackages?: StringMap; };
 
@@ -42,7 +44,6 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 		this.addToClassStack(Unit_TypescriptProject);
 	}
 
-
 	//######################### Internal Logic #########################
 
 	private async installGlobals() {
@@ -55,18 +56,22 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 				return acc;
 			}, [] as string[]);
 		this.logInfo(`Installing Global Packages: ${packages.join(' ')}`);
-		await NVM.createCommando().append(`npm i -g ${packages.join(' ')}`).execute();
+		await this.allocateCommando(Commando_NVM)
+			.append(`npm i -g ${packages.join(' ')}`)
+			.execute();
 	}
 
 	private async installPackages() {
 		if (!RuntimeParams.install && !RuntimeParams.installPackages)
 			return;
 
+		this.setStatus('Installing packages', 'start');
 		const runner = MemKey_PhaseRunner.get();
 		const units = runner.getUnits().filter(unit => unit instanceof Unit_Typescript) as Unit_Typescript[];
 		const packages = units.map(unit => unit.config.pathToPackage);
 		await PNPM.createWorkspace(packages);
-		await PNPM.installPackages(NVM.createCommando());
+		await PNPM.installPackages(this.allocateCommando(Commando_NVM, Commando_PNPM));
+		this.setStatus('Installed packages', 'end');
 	}
 
 	/**
@@ -78,7 +83,8 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 		// Using phase runner instance to resolve all project libs to watch
 		const cantBeInstanceOf = [Unit_FirebaseHostingApp, Unit_FirebaseFunctionsApp];
 		const projectLibs = MemKey_PhaseRunner.get()
-			.getUnits().filter(unit => unit.isInstanceOf(Unit_TypescriptLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_TypescriptLib[];
+			.getUnits()
+			.filter(unit => unit.isInstanceOf(Unit_TypescriptLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_TypescriptLib[];
 
 		//return all paths to watch
 		return projectLibs.map(lib => {
@@ -123,9 +129,12 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 						});
 				});
 
-			this.registerTerminatable(async () => {
+			const terminatable = async () => {
 				await watcher.close();
-			});
+				this.unregisterTerminatable(terminatable);
+			};
+
+			this.registerTerminatable(terminatable);
 		});
 	}
 

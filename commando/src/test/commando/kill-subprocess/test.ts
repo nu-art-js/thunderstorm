@@ -1,6 +1,6 @@
 import {BeLogged, LogClient_Terminal, sleep} from '@nu-art/ts-common';
 import {CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '../../../main/core/cli';
-import {Cli_Basic} from '../../../main/cli/basic';
+import {Commando_Basic} from '../../../main/shell/plugins/basic';
 
 
 BeLogged.addClient(LogClient_Terminal);
@@ -8,7 +8,7 @@ BeLogged.addClient(LogClient_Terminal);
 const KILL_CONFIRM_LOG = 'KILL_CONFIRM_LOG';
 const PROXY_PID_PROCESS = 'PROXY_PROCESS_PID';
 
-const commando = CommandoInteractive.create(Cli_Basic);
+const commando = CommandoInteractive.create(Commando_Basic);
 const proxyKillListener = new CommandoCLIListener(() => commando.close(), KILL_CONFIRM_LOG);
 const proxyPIDListener = new CommandoCLIKeyValueListener(new RegExp(`${PROXY_PID_PROCESS}=(\\d+)`));
 

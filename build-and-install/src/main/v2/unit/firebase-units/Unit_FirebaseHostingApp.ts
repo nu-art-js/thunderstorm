@@ -6,11 +6,11 @@ import {RuntimeParams} from '../../../core/params/params';
 import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
-import {NVM} from '@nu-art/commando/cli/nvm';
-import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {dispatcher_WatchEvent} from '../runner-dispatchers';
+import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
+import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 
 
 export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
@@ -46,12 +46,12 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	}
 
 	async compile() {
-		this.setStatus('Compile');
+		this.setStatus('Compiling', 'start');
 		await this.resolveTSConfig();
 		await this.clearOutputDir();
 		await this.createAppVersionFile();
 		await this.compileImpl();
-		this.setStatus('Compiled');
+		this.setStatus('Compiled', 'end');
 	}
 
 	async launch() {
@@ -126,11 +126,11 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	//######################### Compile Logic #########################
 
 	protected async compileImpl() {
-		await NVM
-			.createInteractiveCommando(Cli_Basic)
+		const commando = this.allocateCommando(Commando_NVM, Commando_Basic).applyNVM()
 			.cd(this.runtime.pathTo.pkg)
-			.append(`ENV=${RuntimeParams.environment} npm run build`)
-			.execute();
+			.append(`ENV=${RuntimeParams.environment} npm run build`);
+
+		await this.executeAsyncCommando(commando);
 	}
 
 	private async createAppVersionFile() {
@@ -145,29 +145,24 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	//######################### Launch Logic #########################
 
 	private async runApp() {
-		let pid: number;
-		const commando = NVM.createInteractiveCommando(Cli_Basic);
-		const terminatable = () => commando.gracefullyKill(pid);
-		this.registerTerminatable(terminatable);
-
-		await commando
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
 			.cd(this.runtime.pathTo.pkg)
 			.append(`array=($(lsof -ti:${[this.config.firebaseConfig.hostingPort].join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')
-			.append('npm run start')
-			.executeAsync(_pid => pid = _pid);
+			.append('npm run start');
 
-		this.unregisterTerminatable(terminatable);
+		return this.executeAsyncCommando(commando);
 	}
 
 	//######################### Deploy Logic #########################
 
 	private async deployImpl() {
-		await NVM.createInteractiveCommando(Cli_Basic)
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.runtime.pathTo.pkg)
-			.append(`firebase --debug deploy --only hosting`)
-			.execute();
+			.append(`firebase --debug deploy --only hosting`);
+
+		return this.executeAsyncCommando(commando);
 	}
 }

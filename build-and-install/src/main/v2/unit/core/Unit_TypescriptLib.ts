@@ -1,25 +1,17 @@
-import {NVM} from '@nu-art/commando/cli/nvm';
 import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {Cli_Basic} from '@nu-art/commando/cli/basic';
 import {BadImplementationException, debounce, Second} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor, WatchEventType} from '../types';
-import {
-	Phase_CheckCyclicImports,
-	Phase_Compile,
-	Phase_Lint,
-	Phase_PreCompile,
-	Phase_PrintDependencyTree,
-	Phase_Purge
-} from '../../phase';
+import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnWatchEvent} from '../runner-dispatchers';
 import {WatchEvent_Ready, WatchEvent_RemoveDir, WatchEvent_RemoveFile} from '../consts';
-import {Commando} from '@nu-art/commando/shell';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
+import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
+import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 
 
 export type Unit_TypescriptLib_Config = Unit_Typescript_Config & {
@@ -123,22 +115,15 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const pathToTSConfig = `${pathToCompile}/tsconfig.json`;
 
 		try {
-			let pid: number;
-			const commando = NVM.createInteractiveCommando(Cli_Basic);
-			this.registerTerminatable(async () => {
-				console.log(`killing ${pid}`);
-				process.kill(pid, 2);
-			});
-
-			await commando.setUID(this.config.key)
+			const commando = this.allocateCommando(Commando_NVM, Commando_Basic)
 				.cd(this.runtime.pathTo.pkg)
 				.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
-				.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'))
-				.executeAsync(_pid => pid = _pid, (stdout, stderr, exitCode) => {
-					if (exitCode > 0)
-						throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
-				});
+				.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'));
 
+			await this.executeAsyncCommando(commando, (stdout, stderr, exitCode) => {
+				if (exitCode > 0)
+					throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
+			});
 			// set compilation error status on success
 			this.compilationError = false;
 		} catch (e: any) {
@@ -158,8 +143,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	protected async copyAssetsToOutput() {
 		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`)
 			.join(' -o -name ')} \\) | cpio -pdmuv "${this.runtime.pathTo.output}" > /dev/null 2>&1`;
-		await Commando
-			.create(Cli_Basic)
+		await this.allocateCommando(Commando_Basic)
 			.cd(`${this.runtime.pathTo.pkg}/src/main`)
 			// .setStdErrorValidator(stderr => {
 			// 	return !stderr.match(/\d+\sblock/);
@@ -179,7 +163,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		if (!path.startsWith(this.config.pathToPackage))
 			return;
 
-		this.setStatus('Compile');
+		this.setStatus('Compiling');
 
 		// check if dist folder must be cleared
 		if (shouldRemoveDist)
@@ -226,20 +210,20 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			return;
 
 		this.setStatus('Pre-Compile');
-		await NVM.createCommando(Cli_Basic)
+		await this.allocateCommando(Commando_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			.append('bash prebuild.sh')
 			.execute();
 	}
 
 	async compile() {
-		this.setStatus('Compile');
+		this.setStatus('Compile', 'start');
 		await this.resolveTSConfig();
 		await this.clearOutputDir();
 		await this.compileImpl();
 		await this.copyAssetsToOutput();
 		await this.copyPackageJSONToOutput();
-		this.setStatus(`Compiled${this.compilationError ? ' with error' : ''}`);
+		this.setStatus(`Compiled${this.compilationError ? ' with error' : ''}`, 'end');
 	}
 
 	async purge() {
@@ -249,7 +233,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	async printDependencyTree() {
 		const CONST_RunningRoot = process.cwd();
 		this.logDebug(`Generating Dependency Tree - ${this.config.label}`);
-		await NVM.createCommando(Cli_Basic)
+		await this.allocateCommando(Commando_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			.append(`mkdir -p ${CONST_RunningRoot}/.trash/dependencies`)
 			.append(`pnpm list --depth 1000 > "${CONST_RunningRoot}/.trash/dependencies/${this.config.key}.txt"`)
@@ -258,7 +242,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	async checkCyclicImports() {
 		this.logDebug(`Checking Cyclic Imports - ${this.config.label}`);
-		await NVM.createCommando(Cli_Basic)
+		await this.allocateCommando(Commando_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			// .setStdErrorValidator(stderr => {
 			// 	return !stderr.includes('Finding files') && !stderr.includes('Image created');
@@ -273,7 +257,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const pathToLint = this.runtime.pathTo.pkg + 'src/main';
 		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ');
 
-		await NVM.createCommando()
+		await this.allocateCommando(Commando_NVM)
 			.append(`eslint --config ${pathToProjectESLint} ${extensions} ${pathToLint}`)
 			.execute();
 	}

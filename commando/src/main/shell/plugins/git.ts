@@ -1,10 +1,10 @@
-import {Cli_Programming} from './programming';
-import {Cli_Basic} from './basic';
-import {MergeClass} from '../shell/core/class-merger';
-import {BaseCommando} from '../shell/core/BaseCommando';
+import {Commando_Programming} from './programming';
+import {Commando_Basic} from './basic';
+import {MergeClass} from '../core/class-merger';
+import {BaseCommando} from '../core/BaseCommando';
 
 
-const Super = MergeClass(BaseCommando, Cli_Programming, Cli_Basic);
+const Super = MergeClass(BaseCommando, Commando_Programming, Commando_Basic);
 
 type GitCloneParams = {
 	outputFolder?: string,
@@ -19,7 +19,7 @@ type GitPushParams = {
 	force?: boolean
 };
 
-export class Cli_Git
+export class Commando_Git
 	extends Super {
 
 	git = {

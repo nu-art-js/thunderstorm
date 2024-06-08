@@ -120,7 +120,7 @@ export class CommandoInteractive
 			.append(functionContent)
 			.append('pid=$!')
 			.append(`echo "${pidUniqueKey}=\${pid}"`)
-			.append(`wait \$pid`).debug(true)
+			.append(`wait \$pid`)
 			.addLogProcessor(pidLogProcessor)
 			.execute(callback);
 	}
