@@ -8,13 +8,14 @@ import {
 	RelativePath,
 	_keys
 } from '@nu-art/ts-common';
-import {convertPackageJSONTemplateToPackJSON_Value} from '../../../logic/map-project-packages';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {Phase_CopyPackageJSON} from '../../phase';
 import {UnitPhaseImplementor} from '../types';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
+import {convertPackageJSONTemplateToPackJSON_Value} from '../tools/tools';
+
 
 const PackageJsonTargetKey_Template = 'template';
 const PackageJsonTargetKey_Root = 'root';

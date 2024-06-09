@@ -1,12 +1,8 @@
-import {Cli_Programming} from './programming';
-import {Cli_Basic} from './basic';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import * as path from 'path';
-import {Constructor, filterDuplicates, Logger, LogLevel} from '@nu-art/ts-common';
-import {Commando} from '../shell/simple/Commando';
-import {removeAnsiCodes} from '../shell/tools';
-import {CommandoInteractive} from '../shell/interactive/CommandoInteractive';
+import {Logger, LogLevel} from '@nu-art/ts-common';
+import {Commando_NVM} from '../plugins/nvm';
 
 
 const CONST__FILE_NVMRC = '.nvmrc';
@@ -38,18 +34,16 @@ export class Cli_NVM
 		this._expectedVersion = value;
 	}
 
-	install = async () => {
+	install = async (commando: Commando_NVM) => {
 		if (this.isInstalled()) {
-			const version = (await this.getVersion()).trim();
+			const version = (await commando.getVersion()).trim();
 			if (this._expectedVersion === version)
 				return;
 
 			await this.uninstall();
 		}
 
-		await Commando.create()
-			.append(`  curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v${this._expectedVersion}/install.sh" | bash`)
-			.execute();
+		await commando.install(this._expectedVersion);
 
 		const rcFile = path.resolve(process.env['HOME']!, '.bashrc');
 		let rcFileContent: string = '';
@@ -80,39 +74,16 @@ export class Cli_NVM
 		return content.trim();
 	};
 
-	installRequiredVersionIfNeeded = async () => {
+	installRequiredVersionIfNeeded = async (commando: Commando_NVM) => {
 		const requiredVersion = await this.getRequiredNode_Version();
-		const installedVersions = await this.getInstalledNode_Versions();
+		const installedVersions = await commando.getInstalledNodeVersions();
 		this.logDebug('Found versions:', installedVersions);
 		if (installedVersions.includes(requiredVersion))
 			return false;
 
-		await this.installVersion(requiredVersion);
+		await this.installVersion(commando, requiredVersion);
 		return true;
 	};
-
-	getInstalledNode_Versions = async () => {
-		function extractInstalledVersions(rawOutput: string) {
-			const cleanedOutput = removeAnsiCodes(rawOutput);
-			const lines = cleanedOutput.split('\n');
-			const filteredVersionLines = lines
-				.filter(line => !!line && line.match(/v\d+\.\d+\.\d+/) && !line.includes('N/A'));
-
-			return filterDuplicates(filteredVersionLines
-				.map(line => line.match(/v(\d+\.\d+\.\d+)/)?.[1]));
-		}
-
-		return extractInstalledVersions((await this.createCommando()
-			.append('nvm ls')
-			.execute((stdout) => stdout)));
-	};
-
-	private async getVersion() {
-		const commando = Commando.create(Cli_Programming, Cli_Basic);
-		return commando.if('[[ -x "$(command -v nvm)" ]]', (commando) => {
-			commando.append('nvm --version');
-		}).execute((stdout) => stdout);
-	}
 
 	uninstall = async () => {
 		this.logDebug('Uninstalling PNPM');
@@ -123,27 +94,11 @@ export class Cli_NVM
 		fs.rmSync(absolutePathToNVM_Home, {recursive: true, force: true});
 	};
 
-	private installVersion = async (requiredVersion?: string) => {
+	private installVersion = async (commando: Commando_NVM, requiredVersion?: string) => {
 		requiredVersion ??= await this.getRequiredNode_Version();
 		this.logDebug(`Installing version: ${requiredVersion}`);
-		return this.createCommando().append(`nvm install ${requiredVersion}`).execute();
+		return commando.installNodeVersion(requiredVersion);
 	};
-
-	createInteractiveCommando<T extends Constructor<any>[]>(...plugins: T) {
-		return CommandoInteractive.create(...plugins)
-			.append('export NVM_DIR="$HOME/.nvm"')
-			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
-			.append('nvm use');
-	}
-
-	createCommando<T extends Constructor<any>[]>(...plugins: T) {
-		const commando = Commando.create(...plugins);
-		commando
-			.append('export NVM_DIR="$HOME/.nvm"')
-			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
-			.append('nvm use');
-		return commando;
-	}
 }
 
 export const NVM = new Cli_NVM();

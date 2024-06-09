@@ -16,24 +16,25 @@ cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
 
 // Certificate attributes
 const attrs = [{
-	name: 'commonName',
-	value: 'example.org'
+	shortName: 'CN',
+	value: 'quai.md'
 }, {
-	name: 'countryName',
+	shortName: 'C',
 	value: 'US'
 }, {
 	shortName: 'ST',
-	value: 'California'
+	value: 'Delaware'
 }, {
-	name: 'localityName',
-	value: 'San Francisco'
+	shortName: 'L',
+	value: 'Lewes'
 }, {
-	name: 'organizationName',
-	value: 'Example Organization'
+	shortName: 'O',
+	value: 'Quai.MD Inc.'
 }, {
 	shortName: 'OU',
-	value: 'IT Department'
+	value: 'quai/epic-integration'
 }];
+
 cert.setSubject(attrs);
 cert.setIssuer(attrs);
 
@@ -46,21 +47,13 @@ const publicKeyPem = forge.pki.publicKeyToPem(keys.publicKey);
 const certPem = forge.pki.certificateToPem(cert);
 
 // Write to files
-fs.writeFileSync('private_key.pem', privateKeyPem);
-fs.writeFileSync('public_key.pem', publicKeyPem);
-fs.writeFileSync('public_key_cert.pem', certPem);
-
-console.log('Private key:', privateKeyPem);
-console.log('Public key:', publicKeyPem);
-console.log('Certificate:', certPem);
-
 const pathToOutput = '/Users/tacb0ss/dev/quai/test/quai-web/.trash/keys';
 const name = 'epic--vendor-services--sandbox';
-const {publicKey, privateKey} = generateKeyPair();
 if (!fs.existsSync(pathToOutput))
-	fs.mkdirSync(pathToOutput);
+	fs.mkdirSync(pathToOutput, {recursive: true});
 
-fs.writeFileSync(`${pathToOutput}/${name}-public`, publicKey, {encoding: 'utf-8'});
-fs.writeFileSync(`${pathToOutput}/${name}-private`, privateKey, {encoding: 'utf-8'});
+fs.writeFileSync(`${pathToOutput}/${name}-public-cert`, certPem, {encoding: 'utf-8'});
+fs.writeFileSync(`${pathToOutput}/${name}-public`, publicKeyPem, {encoding: 'utf-8'});
+fs.writeFileSync(`${pathToOutput}/${name}-private`, privateKeyPem, {encoding: 'utf-8'});
 
 

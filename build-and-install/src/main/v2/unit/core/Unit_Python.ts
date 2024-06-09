@@ -2,8 +2,7 @@ import {Phase_Install} from '../../phase';
 import {UnitPhaseImplementor} from '../types';
 import {BaseUnit, BaseUnit_Config, BaseUnit_RuntimeConfig} from './BaseUnit';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
-import {Cli_Basic} from '@nu-art/commando/cli/basic';
-import {CommandoInteractive} from '@nu-art/commando/shell';
+import {Commando_Python3} from '@nu-art/commando/shell/plugins/python';
 
 
 export type Unit_Python_Config = BaseUnit_Config & {
@@ -18,12 +17,9 @@ export class Unit_Python<C extends Unit_Python_Config = Unit_Python_Config, RTC 
 	extends BaseUnit<C, RTC>
 	implements UnitPhaseImplementor<[Phase_Install]> {
 
-	protected commando: CommandoInteractive & Cli_Basic;
-
 	constructor(config: Unit_Python<C, RTC>['config']) {
 		super(config);
 		this.addToClassStack(Unit_Python);
-		this.commando = CommandoInteractive.create(Cli_Basic);
 	}
 
 	protected async init() {
@@ -31,30 +27,15 @@ export class Unit_Python<C extends Unit_Python_Config = Unit_Python_Config, RTC 
 		this.runtime.pathTo = {
 			pkg: convertToFullPath(this.config.pathToPackage),
 		};
-		await this.initCommando();
-	}
-
-	//######################### Internal Logic #########################
-
-	private async initCommando() {
-		this.commando
-			.setUID(this.config.key)
-			.cd(this.runtime.pathTo.pkg)
-			.debug();
-
-		//Install & Enter VENV
-		await this.commando
-			.append('python3 -m venv venv')
-			.append('source venv/bin/activate')
-			.execute();
-
-		//Set Python Path
-		await this.commando.append('export PYTHONPATH=.').execute();
 	}
 
 	//######################### Phase Implementation #########################
 
 	async install() {
-		await this.commando.append('pip install -r requirements.txt').execute();
+		const commando = await this.allocateCommando(Commando_Python3)
+			.cd(this.runtime.pathTo.pkg)
+			.installVenv();
+
+		await commando.sourceVenv().installRequirements();
 	}
 }

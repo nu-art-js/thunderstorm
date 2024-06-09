@@ -108,17 +108,17 @@ export class InteractiveShell
 			return;
 
 		return new Promise<void>((resolve, reject) => {
-			console.log('Killing process');
+			this.logWarning('Killing process');
 			this.shell.on('exit', async (code, signal) => {
-				console.log(`Process Killed ${signal}`);
+				this.logWarning(`Process Killed ${signal}`);
 				resolve();
 			});
 
 			if (pid) {
-				console.log(`KILLING PID: ${pid}`);
+				this.logWarning(`KILLING PID: ${pid}`);
 				process.kill(pid, 'SIGINT');
 			} else {
-				console.log(`KILLING SHELL WITH SIGINT`);
+				this.logWarning(`KILLING SHELL WITH SIGINT`);
 				this.shell.kill('SIGINT');
 			}
 		});

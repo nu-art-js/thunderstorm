@@ -1,8 +1,8 @@
-import {BaseCommando} from '../shell/core/BaseCommando';
-import {CliBlock} from '../shell/types';
+import {BaseCommando} from '../core/BaseCommando';
+import {CliBlock} from '../types';
 
 
-export class Cli_Programming
+export class Commando_Programming
 	extends BaseCommando {
 
 	/**
