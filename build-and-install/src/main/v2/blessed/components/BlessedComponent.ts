@@ -46,13 +46,14 @@ export abstract class BlessedComponent<T extends BlessedWidgetsType, P extends {
 	protected alive: boolean;
 	private renderDebounce = debounce(() => this.renderImpl(), 20, 100);
 
-	protected constructor(type: T, widgetProps: BlessedWidgetOptions[T]) {
+	protected constructor(type: T, widgetProps: BlessedWidgetOptions[T], initialProps?: P) {
 		super(BlessedComponent.name);
 		this.widgetType = type;
 		this.widgetProps = widgetProps;
 		this.children = [];
 		this.props = {} as P;
-		this.state = this.getInitialState();
+		const initialState = this.getInitialState();
+		this.state = initialProps ? this.deriveStateFromProps(initialProps, initialState) : initialState;
 		this.alive = false;
 	}
 

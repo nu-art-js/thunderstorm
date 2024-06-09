@@ -9,7 +9,7 @@ import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 //######################### Unit List #########################
 
 type List_Props = {
-	onUnitClicked?: (unit: BaseUnit) => void;
+	onUnitSelected?: (unit?: BaseUnit) => void;
 	selectedUnitKey?: string;
 }
 
@@ -53,10 +53,15 @@ export class BlessedComponent_UnitList
 				height: 1,
 			};
 
-			this.registerChild(new BlessedComponent_Unit(props, unit),
+			//Initial Props - no unit starts selected
+			const initialProps = {unit: unit, selected: false};
+			this.registerChild(new BlessedComponent_Unit(props, initialProps),
 				state => {
 					const selected = unit.config.key === state.selectedUnitKey;
-					return {unitKey: unit.config.key, selected};
+					return {
+						unit: unit,
+						selected: selected,
+					};
 				});
 		});
 	}
@@ -64,16 +69,15 @@ export class BlessedComponent_UnitList
 
 //######################### Unit Item #########################
 
-type Unit_Props = { selected?: boolean };
+type Unit_Props = { unit: BaseUnit; selected?: boolean };
 type Unit_State = { unit: BaseUnit; selected: boolean; status: string };
 
 class BlessedComponent_Unit
 	extends BlessedComponent<'box', Unit_Props, Unit_State>
 	implements PhaseRunner_OnUnitStatusChange {
 
-	constructor(widgetProps: BlessedWidgetOptions['box'], unit: BaseUnit) {
-		super('box', widgetProps);
-		this.state.unit = unit;
+	constructor(widgetProps: BlessedWidgetOptions['box'], initialProps: Unit_Props) {
+		super('box', widgetProps, initialProps);
 	}
 
 	__onUnitStatusChange = (unit: BaseUnit) => {
@@ -84,6 +88,7 @@ class BlessedComponent_Unit
 	};
 
 	protected deriveStateFromProps(nextProps: Unit_Props, state: Unit_State): Unit_State {
+		state.unit ??= nextProps.unit;
 		state.status = state.unit.getStatus() ?? 'N/A';
 		state.selected = nextProps.selected ?? false;
 		return state;
