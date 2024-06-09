@@ -1,4 +1,4 @@
-import {BadImplementationException, cloneObj, compare, debounce, deepClone, Logger, mergeObject} from '@nu-art/ts-common';
+import {BadImplementationException, compare, debounce, Logger, mergeObject} from '@nu-art/ts-common';
 import {BlessedWidget, BlessedWidgetOptions, BlessedWidgetsType, createBlessedWidget} from '../core';
 import {dispatcher_PhaseChange, dispatcher_UnitChange, dispatcher_UnitStatusChange} from '../../phase-runner/PhaseRunnerDispatcher';
 
@@ -40,7 +40,7 @@ export abstract class BlessedComponent<T extends BlessedWidgetsType, P extends {
 	private readonly widgetType: T;
 	private readonly widgetProps: BlessedWidgetOptions[T];
 	public widget?: BlessedWidget[T];
-	private children: { component: BlessedComponent<BlessedWidgetsType>, renderCB?: (state: S) => BlessedComponent<BlessedWidgetsType> }[];
+	protected children: { component: BlessedComponent<BlessedWidgetsType>, renderCB?: (state: S) => BlessedComponent<BlessedWidgetsType> }[];
 	private parentWidget?: BlessedComponent<BlessedWidgetsType, any, any>;
 	//Keeps track of if the component is alive
 	protected alive: boolean;
@@ -51,7 +51,7 @@ export abstract class BlessedComponent<T extends BlessedWidgetsType, P extends {
 		this.widgetType = type;
 		this.widgetProps = widgetProps;
 		this.children = [];
-		this.props = {} as P;
+		this.props = initialProps ?? {} as P;
 		const initialState = this.getInitialState();
 		this.state = initialProps ? this.deriveStateFromProps(initialProps, initialState) : initialState;
 		this.alive = false;
@@ -66,8 +66,8 @@ export abstract class BlessedComponent<T extends BlessedWidgetsType, P extends {
 			return;
 
 		//Clone prevProps and nextProps to prevent referencing issues
-		const prevProps = deepClone(this.props);
-		const nextProps = deepClone(p);
+		const prevProps = {...this.props};
+		const nextProps = {...p};
 
 		//If there is no difference in the content of the props,
 		//no need to continue to calculate state.
@@ -76,7 +76,7 @@ export abstract class BlessedComponent<T extends BlessedWidgetsType, P extends {
 			return;
 
 		//spread prevState to prevent referencing issues
-		const nextState = this.deriveStateFromProps(nextProps, cloneObj(this.state));
+		const nextState = this.deriveStateFromProps(nextProps, {...this.state});
 
 		//Cement next props as de-facto props from this point forwards
 		this.props = nextProps;
@@ -96,7 +96,7 @@ export abstract class BlessedComponent<T extends BlessedWidgetsType, P extends {
 			return;
 
 		//Clone prevState to avoid referencing issues.
-		const prevState = cloneObj(this.state);
+		const prevState = {...this.state};
 		//nextState is a merge of the previous state and the new state data.
 		const nextState = mergeObject(this.state, state);
 
@@ -110,7 +110,6 @@ export abstract class BlessedComponent<T extends BlessedWidgetsType, P extends {
 
 		//Render this component and update all of its children
 		this.renderDebounce();
-		// this.renderImpl();
 	}
 
 	//######################### Stage - Creation #########################

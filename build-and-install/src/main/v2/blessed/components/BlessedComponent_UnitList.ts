@@ -8,7 +8,7 @@ import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 
 //######################### Unit List #########################
 
-type List_Props = {
+export type UnitList_Props = {
 	onUnitSelected?: (unit?: BaseUnit) => void;
 	selectedUnitKey?: string;
 }
@@ -19,11 +19,11 @@ type List_State = {
 };
 
 export class BlessedComponent_UnitList
-	extends BlessedComponent<'list', List_Props, List_State>
+	extends BlessedComponent<'list', UnitList_Props, List_State>
 	implements PhaseRunner_OnUnitsChange {
 
-	constructor(widgetProps: BlessedWidgetOptions['list']) {
-		super('list', widgetProps);
+	constructor(widgetProps: BlessedWidgetOptions['list'], initialProps?: UnitList_Props) {
+		super('list', widgetProps, initialProps);
 	}
 
 	__onUnitsChange = (data: BaseUnit[]) => {
@@ -38,10 +38,20 @@ export class BlessedComponent_UnitList
 		};
 	}
 
-	protected deriveStateFromProps(nextProps: List_Props, state: List_State): List_State {
+	protected deriveStateFromProps(nextProps: UnitList_Props, state: List_State): List_State {
+		console.log('Deriving');
 		state.selectedUnitKey = nextProps.selectedUnitKey;
 		return state;
 	}
+
+	private onUnitSelected = (unit: BaseUnit) => {
+		if (!this.props.onUnitSelected)
+			return;
+
+		console.log(`state: ${this.state.selectedUnitKey}, selected: ${unit.config.key}`);
+		const _unit = this.props.selectedUnitKey === unit.config.key ? undefined : unit;
+		return this.props.onUnitSelected(_unit);
+	};
 
 	protected createChildren() {
 		const units = this.state.units ?? [];
@@ -54,13 +64,19 @@ export class BlessedComponent_UnitList
 			};
 
 			//Initial Props - no unit starts selected
-			const initialProps = {unit: unit, selected: false};
+			const initialProps = {
+				unit: unit,
+				selected: false,
+				onUnitSelected: this.onUnitSelected,
+			} as Unit_Props;
+
 			this.registerChild(new BlessedComponent_Unit(props, initialProps),
 				state => {
 					const selected = unit.config.key === state.selectedUnitKey;
 					return {
 						unit: unit,
 						selected: selected,
+						onUnitSelected: this.onUnitSelected,
 					};
 				});
 		});
@@ -69,12 +85,14 @@ export class BlessedComponent_UnitList
 
 //######################### Unit Item #########################
 
-type Unit_Props = { unit: BaseUnit; selected?: boolean };
+type Unit_Props = { unit: BaseUnit; onUnitSelected: (unit: BaseUnit) => void; selected?: boolean };
 type Unit_State = { unit: BaseUnit; selected: boolean; status: string };
 
 class BlessedComponent_Unit
 	extends BlessedComponent<'box', Unit_Props, Unit_State>
 	implements PhaseRunner_OnUnitStatusChange {
+
+	//######################### Lifecycle #########################
 
 	constructor(widgetProps: BlessedWidgetOptions['box'], initialProps: Unit_Props) {
 		super('box', widgetProps, initialProps);
@@ -93,6 +111,14 @@ class BlessedComponent_Unit
 		state.selected = nextProps.selected ?? false;
 		return state;
 	}
+
+	//######################### Logic #########################
+
+	private onClick = () => {
+		this.props.onUnitSelected(this.state.unit);
+	};
+
+	//######################### Content Creation #########################
 
 	protected createChildren(): void {
 		this.createUnitName();
@@ -131,5 +157,23 @@ class BlessedComponent_Unit
 			new BlessedComponent_TextBox(props),
 			state => ({text: state.status})
 		);
+	}
+
+	protected createWidget() {
+		super.createWidget();
+		this.widget!.on('mousedown', () => this.onClick());
+	}
+
+	//######################### Render #########################
+
+	protected renderSelf() {
+		const fg = this.state.selected ? 'white' : 'blue';
+		const bg = this.state.selected ? 'blue' : undefined;
+		const unitName = this.children[0].component.widget as Widgets.TextElement;
+		const unitStatus = this.children[1].component.widget as Widgets.TextElement;
+		unitName.style.fg = fg;
+		unitName.style.bg = bg;
+		unitStatus.style.fg = fg;
+		unitStatus.style.bg = bg;
 	}
 }

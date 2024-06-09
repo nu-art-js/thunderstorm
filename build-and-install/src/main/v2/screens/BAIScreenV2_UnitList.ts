@@ -6,12 +6,13 @@ import {BAIScreenV2} from './BAIScreenV2';
 import {TypedMap} from '@nu-art/ts-common';
 import {BlessedComponent_BufferLogs} from '../blessed/components/BlessedComponent_BufferLogs';
 import {BlessedComponent_TextBox} from '../blessed/components/BlessedComponent_TextBox';
-import {BlessedComponent_UnitList} from '../blessed/components/BlessedComponent_UnitList';
+import {BlessedComponent_UnitList, UnitList_Props} from '../blessed/components/BlessedComponent_UnitList';
+import {MemKey_PhaseRunner} from '../phase-runner/consts';
 
 type State = {
 	unitStatusMap: TypedMap<string>;
 	currentPhaseName?: string;
-	selectedUnit?: BaseUnit;
+	selectedUnitKey?: string;
 	logs: string;
 };
 
@@ -30,9 +31,29 @@ export class BAIScreenV2_UnitList
 	}
 
 	protected onLogUpdated = () => {
-		const logs = this.state.selectedUnit ? this.state.selectedUnit.getLogs() : this.getLogClient().buffers[0];
-		this.setState({logs});
+		this.setState({logs: this.getLogs()});
 	};
+
+	//######################### Logic #########################
+
+	private onUnitSelected = (unit?: BaseUnit) => {
+		const key = unit?.config.key;
+		console.log(key);
+		this.setState({selectedUnitKey: key, logs: this.getLogs(key)});
+	};
+
+	private getLogs = (unitKey: string | undefined = this.state.selectedUnitKey) => {
+		if (!unitKey)
+			return this.getLogClient().buffers[0];
+		else {
+			const selectedUnit = MemKey_PhaseRunner.get().getUnits().find(unit => unit.config.key === this.state.selectedUnitKey);
+			return selectedUnit?.getLogs() ?? `Could not get logs for unit with key ${this.state.selectedUnitKey}`;
+		}
+	};
+
+	protected renderSelf() {
+		console.log('Render Screen');
+	}
 
 	//######################### Content Creation #########################
 
@@ -99,13 +120,19 @@ export class BAIScreenV2_UnitList
 				border: {fg: 'blue'},
 			},
 		};
+
+		const initialProps = {
+			onUnitSelected: unit => this.onUnitSelected(unit),
+		} as UnitList_Props;
+
 		this.registerChild(
-			new BlessedComponent_UnitList(props),
+			new BlessedComponent_UnitList(props, initialProps),
+			state => {
+				return {
+					onUnitSelected: unit => this.onUnitSelected(unit),
+					selectedUnitKey: state.selectedUnitKey
+				};
+			}
 		);
-	}
-
-	//######################### Render #########################
-
-	protected render() {
 	}
 }

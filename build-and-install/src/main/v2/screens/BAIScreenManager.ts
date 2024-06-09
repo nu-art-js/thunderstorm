@@ -39,7 +39,7 @@ export class BAIScreenManager
 
 	// ######################### Screens #########################
 
-	public addScreen = (screen: BAIScreenV2, conditions: BAIScreenConditions) => {
+	public addScreen = (screen: BAIScreenV2<any>, conditions: BAIScreenConditions) => {
 		if (this.screens.find(op => op.screen === screen))
 			return;
 
