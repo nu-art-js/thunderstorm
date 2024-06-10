@@ -81,7 +81,7 @@ export class CommandoInteractive
 	 */
 	onLog(filter: string | RegExp, callback: (match: RegExpMatchArray) => any) {
 		const regexp = typeof filter === 'string' ? new RegExp(filter) : filter;
-		const pidLogProcessor = (log: string) => {
+		const logFilter = (log: string) => {
 			const match = log.match(regexp);
 			if (!match)
 				return true;
@@ -90,9 +90,10 @@ export class CommandoInteractive
 			return true;
 		};
 
-		this.addLogProcessor(pidLogProcessor);
+		this.addLogProcessor(logFilter);
 		return this;
 	}
+
 
 	/**
 	 * Executes commands asynchronously and listens for the PID.
@@ -179,6 +180,10 @@ export class CommandoInteractive
 		return this;
 	}
 
+	setLogLevelFilter(processor: (log: string, std: LogTypes) => LogLevel) {
+		this.shell.setLogLevelFilter(processor);
+		return this;
+	}
 	/**
 	 * Removes a log processor from the shell.
 	 * @param {Function} processor - The log processor function to remove.

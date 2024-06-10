@@ -1,4 +1,4 @@
-import {Logger, removeItemFromArray} from '@nu-art/ts-common';
+import {Logger, LogLevel, removeItemFromArray} from '@nu-art/ts-common';
 import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 import {LogTypes} from '../types';
 
@@ -12,6 +12,7 @@ export class InteractiveShell
 	private logProcessors: (LogProcessor)[] = [];
 	private shell: ChildProcessWithoutNullStreams | ChildProcess;
 	private alive: boolean;
+	private logLevelFilter: (log: string, std: LogTypes) => LogLevel = (log: string, std: LogTypes) => std === 'err' ? LogLevel.Error : LogLevel.Info;
 
 	/**
 	 * Constructs an InteractiveShell instance, initializes a detached shell session, and sets up log processors.
@@ -36,11 +37,10 @@ export class InteractiveShell
 						return toPrint && filter;
 					}, true);
 
-					if (toPrint)
-						if (std === 'out')
-							this.logInfo(`${message}`);
-						else
-							this.logError(`${message}`);
+					if (toPrint) {
+						const logLevel = this.logLevelFilter(message, std);
+						this.log(logLevel, false, [message]);
+					}
 
 				} catch (e: any) {
 					this.logError(e);
@@ -113,7 +113,6 @@ export class InteractiveShell
 		if (!this.alive)
 			return;
 
-
 		return new Promise<void>((resolve, reject) => {
 			this.logWarning('Killing process');
 			this.shell.on('exit', async (code, signal) => {
@@ -138,6 +137,11 @@ export class InteractiveShell
 	 */
 	addLogProcessor(processor: LogProcessor) {
 		this.logProcessors.push(processor);
+		return this;
+	}
+
+	setLogLevelFilter(logLevelFilter: (log: string, std: LogTypes) => LogLevel) {
+		this.logLevelFilter = logLevelFilter;
 		return this;
 	}
 
