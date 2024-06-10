@@ -12,7 +12,8 @@ import {
 	flatArray,
 	ImplementationMissingException,
 	LogLevel,
-	merge, MUSTNeverHappenException,
+	merge,
+	MUSTNeverHappenException,
 	reduceToMap,
 	RelativePath,
 	removeItemFromArray,
@@ -31,9 +32,7 @@ import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
 import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes, RunningStatus} from '../../defaults/consts';
 import {dispatcher_PhaseChange, dispatcher_UnitChange} from './PhaseRunnerDispatcher';
-import {
-	convertToFullPath
-} from '@nu-art/commando/shell/tools';
+import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
 import {BAIScreenManager, MemKey_BAIScreenManager} from '../screens/BAIScreenManager';

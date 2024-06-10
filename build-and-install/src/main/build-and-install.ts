@@ -1,4 +1,4 @@
-import {DebugFlag, LogLevel, RelativePath, StaticLogger} from '@nu-art/ts-common';
+import {DebugFlag, LogLevel, RelativePath} from '@nu-art/ts-common';
 import {RuntimeParams} from './core/params/params';
 import {PhaseRunner} from './v2/phase-runner/PhaseRunner';
 import {allTSUnits} from './v2/unit/thunderstorm';
@@ -14,13 +14,14 @@ if (RuntimeParams.runWithThunderstorm)
 runner
 	.execute()
 	.then(() => {
-		StaticLogger.logInfo('completed');
-
 		process.on('SIGINT', () => {
-			console.log('DEADEDAEDAEDAEDAEDAD');
+			console.log('completed');
 			return process.exit(0);
 		});
 	})
 	.catch(err => {
-		StaticLogger.logError('Failed with error: ', err);
+		process.on('SIGINT', () => {
+			console.log('Failed with error: ', err);
+			return process.exit(1);
+		});
 	});

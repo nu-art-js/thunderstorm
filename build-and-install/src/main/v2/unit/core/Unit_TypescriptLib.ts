@@ -23,7 +23,7 @@ export type Unit_TypescriptLib_RuntimeConfig = Unit_Typescript_RuntimeConfig & {
 	pathTo: { pkg: string; output: string }
 };
 
-// const extensionsToLint = ['ts', 'tsx'];
+const extensionsToLint = ['ts', 'tsx'];
 const assetExtensions = [
 	'json',
 	'scss',
@@ -249,11 +249,12 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	async lint() {
-		const pathToProjectESLint = MemKey_RunnerParams.get()[RunnerParamKey_ConfigPath] + '/eslint.config.cjs';
-		const pathToFiles = `${this.runtime.pathTo.pkg}/src/main`;
+		const pathToProjectESLint = `${MemKey_RunnerParams.get()[RunnerParamKey_ConfigPath]}/eslint.config.cjs`;
+		const pathToLint = `${this.runtime.pathTo.pkg}src/main`;
+		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ');
 
 		await this.allocateCommando(Commando_NVM)
-			.append(`eslint -c ${pathToProjectESLint} ${pathToFiles}`)
+			.append(`eslint --config ${pathToProjectESLint} ${extensions} ${pathToLint}`)
 			.execute();
 	}
 }
