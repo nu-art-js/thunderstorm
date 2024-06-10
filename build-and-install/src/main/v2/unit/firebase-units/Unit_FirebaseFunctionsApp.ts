@@ -29,10 +29,16 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	async __onUnitWatchCompiled(unit: BaseUnit) {
 		if (this.runtime.unitDependencyNames.includes(unit.runtime.dependencyName)) {
 			this.setStatus('Compiling', 'start');
-			await this.compileImpl();
-			await this.copyAssetsToOutput();
-			await this.createDependenciesDir();
-			this.setStatus('Compiled', 'end');
+			try {
+				await this.compileImpl();
+				await this.copyAssetsToOutput();
+				await this.createDependenciesDir();
+				this.setStatus('Compiled', 'end');
+			} catch (e: any) {
+				this.setErrorStatus('Compilation Error', e);
+				this.logError(e);
+				// throw e;
+			}
 		}
 	}
 
@@ -47,7 +53,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	async resolveConfigs() {
 		await this.resolveFunctionsRC();
-		await this.resolveProxyFile();
 		await this.resolveConfigDir();
 		await this.resolveFunctionsRuntimeConfig();
 		await this.resolveFunctionsJSON();
@@ -55,14 +60,19 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	async compile() {
 		this.setStatus('Compiling', 'start');
-		await this.resolveTSConfig();
-		await this.clearOutputDir();
-		await this.createAppVersionFile();
-		await this.compileImpl();
-		await this.copyAssetsToOutput();
-		await this.createDependenciesDir();
-		await this.copyPackageJSONToOutput();
-		this.setStatus('Compiled', 'end');
+		try {
+			await this.resolveTSConfig();
+			await this.clearOutputDir();
+			await this.createAppVersionFile();
+			await this.compileImpl();
+			await this.copyAssetsToOutput();
+			await this.createDependenciesDir();
+			await this.copyPackageJSONToOutput();
+			this.setStatus('Compiled', 'end');
+		} catch (e: any) {
+			this.setErrorStatus('Compilation Error', e);
+			throw e;
+		}
 	}
 
 	async launch() {
@@ -282,6 +292,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async runProxy() {
+		await this.resolveProxyFile();
+
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.runtime.pathTo.pkg)
 			.append('ts-node src/main/proxy.ts');

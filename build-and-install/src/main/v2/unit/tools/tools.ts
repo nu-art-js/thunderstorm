@@ -6,7 +6,7 @@ export function convertPackageJSONTemplateToPackJSON_Value(template: PackageJson
 	let workspacePackageJsonAsString = __stringify(template, true);
 	let match = null;
 	do {
-		match = workspacePackageJsonAsString.match(/"(.*?)": ?"\$([A-Z_]+?)"/);
+		match = workspacePackageJsonAsString.match(/"(.*?)": ?"\$([A-Za-z0-9_]+?)"/);
 		if (match?.[0])
 			workspacePackageJsonAsString = workspacePackageJsonAsString.replace(new RegExp(`\\$${match[2]}`), value(match[2], match[1]));
 	} while (match);
