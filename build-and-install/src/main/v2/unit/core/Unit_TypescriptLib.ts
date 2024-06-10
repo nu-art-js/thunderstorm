@@ -1,7 +1,7 @@
 import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {BadImplementationException, debounce, Second} from '@nu-art/ts-common';
+import {BadImplementationException, debounce, LogLevel, Second} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor, WatchEventType} from '../types';
 import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
@@ -116,6 +116,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const commando = this.allocateCommando(Commando_NVM, Commando_Basic)
 			.cd(this.runtime.pathTo.pkg)
 			.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
+			.setLogLevelFilter((log, std) => {
+				return LogLevel.Error;
+			})
 			.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'));
 
 		await this.executeAsyncCommando(commando, (stdout, stderr, exitCode) => {

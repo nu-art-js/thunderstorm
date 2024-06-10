@@ -298,7 +298,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			.cd(this.runtime.pathTo.pkg)
 			.append('ts-node src/main/proxy.ts');
 
-		return this.executeAsyncCommando(commando);
+		await this.executeAsyncCommando(commando);
+		this.logWarning('PROXY TERMINATED');
 	}
 
 	private async runEmulator() {
@@ -308,7 +309,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'))
 			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`);
 
-		return this.executeAsyncCommando(commando);
+		await this.executeAsyncCommando(commando);
+		this.logWarning('EMULATORS TERMINATED');
 	}
 
 	//######################### Deploy Logic #########################
