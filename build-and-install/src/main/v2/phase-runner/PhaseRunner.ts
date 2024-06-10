@@ -12,7 +12,7 @@ import {
 	flatArray,
 	ImplementationMissingException,
 	LogLevel,
-	merge,
+	merge, MUSTNeverHappenException,
 	reduceToMap,
 	RelativePath,
 	removeItemFromArray,
@@ -36,7 +36,7 @@ import {
 } from '@nu-art/commando/shell/tools';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
-import {BAIScreenManager} from '../screens/BAIScreenManager';
+import {BAIScreenManager, MemKey_BAIScreenManager} from '../screens/BAIScreenManager';
 import {MemKey_PhaseRunner} from './consts';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 
@@ -54,7 +54,9 @@ export class PhaseRunner
 	private readonly phases: Phase<string>[];
 	private readonly units: BaseUnit[];
 	private unitDependencyTree!: BaseUnit[][];
-	private readonly project: { path: AbsolutePath; config: ProjectConfigV2 };
+	private readonly projectPath: AbsolutePath;
+	private projectConfig!: ProjectConfigV2;
+
 	private killed?: boolean;
 
 	//Properties for HOW the PhaseRunner should run
@@ -66,13 +68,21 @@ export class PhaseRunner
 	 */
 	private killCounter: number = 0;
 	private static KILL_THRESHOLD = 5;
+	public static instance: PhaseRunner;
+	private readonly screenManager: BAIScreenManager;
+	private defaultFileRoutes!: ProjectConfig_DefaultFileRoutes;
 
 	constructor(projectPath: RelativePath) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
+		if (exists(PhaseRunner.instance))
+			throw new MUSTNeverHappenException('phase runner instance must be unique');
+		Error.stackTraceLimit = 50;
+
 		this.addToClassStack(PhaseRunner);
+		this.screenManager = new BAIScreenManager();
 		this.phases = [];
 		this.units = [this];
-		this.project = {path: convertToFullPath(projectPath), config: {} as ProjectConfigV2};
+		this.projectPath = convertToFullPath(projectPath);
 		this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
 		this.setMinLevel(LogLevel.Info);
 		console.log('RuntimeParams.debug', RuntimeParams.debug);
@@ -85,15 +95,33 @@ export class PhaseRunner
 	//######################### Initialization #########################
 
 	protected async init() {
-		// await super.init(false);
-		//Set phase runner to MemKey, so it can be referenced in the runtime
 		MemKey_PhaseRunner.set(this);
+		MemKey_BAIScreenManager.set(this.screenManager);
+		const runnerParams: RunnerParams = {
+			rootPath: process.cwd(),
+			configPath: process.cwd() + '/.config',
+		};
+		MemKey_RunnerParams.set(runnerParams);
 
-		//Init screen manager
-		new BAIScreenManager();
+		if (this.projectConfig) {
+			const projectParams = this.prepareProjectParams();
+			MemKey_ProjectConfig.set({
+				...this.projectConfig,
+				params: projectParams,
+			});
+		}
+
+		if (this.defaultFileRoutes)
+			MemKey_DefaultFiles.set(this.defaultFileRoutes);
+
+		if (PhaseRunner.instance) {
+			return;
+		}
+
+		PhaseRunner.instance = this;
 
 		//Load project for use in the phase runner
-		await this.loadProject();
+		this.projectConfig ??= await this.loadProject();
 
 		//Filter specific units
 		this.filterUnits();
@@ -101,22 +129,17 @@ export class PhaseRunner
 		this.logDebug('Runtime params:', RuntimeParams);
 
 		//Set runner params
-		const runnerParams: RunnerParams = {
-			rootPath: process.cwd(),
-			configPath: process.cwd() + '/.config',
-		};
-		MemKey_RunnerParams.set(runnerParams);
 
 		//Set Project Params
 		const projectParams = this.prepareProjectParams();
 		MemKey_ProjectConfig.set({
-			...this.project.config,
+			...this.projectConfig,
 			params: projectParams,
 		});
 
 		//Set Default File Routes
-		const defaultFileRoutes = this.prepareDefaultFileRouts();
-		MemKey_DefaultFiles.set(defaultFileRoutes);
+		this.defaultFileRoutes = this.prepareDefaultFileRouts();
+		MemKey_DefaultFiles.set(this.defaultFileRoutes);
 
 		//Load running status
 		await this.loadRunningStatus();
@@ -153,22 +176,22 @@ export class PhaseRunner
 	}
 
 	private async loadProject() {
-		if (!fs.existsSync(this.project.path))
-			throw new ImplementationMissingException(`Missing project config file, could not find in path: ${this.project.path}`);
+		if (!fs.existsSync(this.projectPath))
+			throw new ImplementationMissingException(`Missing project config file, could not find in path: ${this.projectPath}`);
 
-		const projectConfigCB = require(this.project.path).default as () => Promise<ProjectConfigV2>;
+		const projectConfigCB = require(this.projectPath).default as () => Promise<ProjectConfigV2>;
 		if (typeof projectConfigCB !== 'function')
 			throw new BadImplementationException('Config file must be an asynchronous function returning a ProjectConfigV2 object');
 
-		this.project.config = await projectConfigCB();
+		return projectConfigCB();
 	}
 
 	private prepareProjectParams(): StringMap {
-		const params = this.project.config.params ?? {};
-		params[CONST_ThunderstormVersionKey] = this.project.config.thunderstormVersion;
-		params[CONST_ThunderstormDependencyKey] = this.project.config.thunderstormVersion;
-		params[CONST_ProjectVersionKey] = this.project.config.projectVersion;
-		params[CONST_ProjectDependencyKey] = this.project.config.projectVersion;
+		const params = this.projectConfig.params ?? {};
+		params[CONST_ThunderstormVersionKey] = this.projectConfig.thunderstormVersion;
+		params[CONST_ThunderstormDependencyKey] = this.projectConfig.thunderstormVersion;
+		params[CONST_ProjectVersionKey] = this.projectConfig.projectVersion;
+		params[CONST_ProjectDependencyKey] = this.projectConfig.projectVersion;
 		return params;
 	}
 
@@ -490,14 +513,25 @@ export class PhaseRunner
 
 	public async execute() {
 		return new MemStorage().init(async () => {
-			process.on('SIGINT', () => {
-				this.killRunner();
-			});
+			try {
+				process.on('SIGINT', () => {
+					this.killRunner();
+				});
 
-			await this.init();
-			await this.buildUnitDependencyTree();
-			await this.executeImpl();
-			this.killed = true;
+				await this.init();
+				await this.buildUnitDependencyTree();
+				await this.executeImpl();
+				this.killed = true;
+
+				this.logInfo('Completed successfully');
+				if (RuntimeParams.closeOnExit)
+					process.exit(0);
+
+			} catch (error: any) {
+				this.logError('Finished with Errors: ', error);
+				if (RuntimeParams.closeOnExit)
+					process.exit(1);
+			}
 		});
 	}
 

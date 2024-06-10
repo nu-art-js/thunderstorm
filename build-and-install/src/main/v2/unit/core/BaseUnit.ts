@@ -100,6 +100,7 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 
 	private initLogClient() {
 		this.logger = new LogClient_MemBuffer(this.tag);
+		this.logger.keepLogsNaturalColors();
 		this.logger.setComposer((tag: string, level: LogLevel): string => {
 			_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
 			const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23).split('_')[1];
@@ -110,6 +111,11 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 			return tag === this.tag;
 		});
 		BeLogged.addClient(this.logger);
+	}
+
+	protected setErrorStatus(status: string, error: Error) {
+		this.setStatus(status, 'end');
+		this.logError(error);
 	}
 
 	protected setStatus(status: string, type?: 'start' | 'end') {
