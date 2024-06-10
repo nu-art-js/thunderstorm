@@ -113,6 +113,7 @@ export class InteractiveShell
 		if (!this.alive)
 			return;
 
+
 		return new Promise<void>((resolve, reject) => {
 			this.logWarning('Killing process');
 			this.shell.on('exit', async (code, signal) => {
