@@ -527,7 +527,7 @@ export class PhaseRunner
 					process.exit(0);
 
 			} catch (error: any) {
-				this.logError('Finished with Errors: ', error);
+				// this.logError('Finished with Errors: ', error);
 				if (RuntimeParams.closeOnExit)
 					process.exit(1);
 			}

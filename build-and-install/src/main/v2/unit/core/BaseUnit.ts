@@ -114,11 +114,11 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 	}
 
 	protected setErrorStatus(status: string, error: Error) {
-		this.setStatus(status, 'end');
+		this.setStatus(status, 'end', LogLevel.Error);
 		this.logError(error);
 	}
 
-	protected setStatus(status: string, type?: 'start' | 'end') {
+	protected setStatus(status: string, type?: 'start' | 'end', logLevel: LogLevel = LogLevel.Info) {
 		let operationDuration: string | undefined = '';
 		if (type === 'start')
 			this.timeCounter = timeCounter();
@@ -131,7 +131,7 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 				delete this.timeCounter;
 			}
 
-		this.logInfo(`Unit status update: ${this.unitStatus} => ${status}${operationDuration}`);
+		this.log(logLevel, false, [`Unit status update: ${this.unitStatus} => ${status}${operationDuration}`]);
 		this.unitStatus = `${status}${operationDuration}`;
 
 		dispatcher_UnitStatusChange.dispatch(this);
