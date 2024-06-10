@@ -47,11 +47,16 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	async compile() {
 		this.setStatus('Compiling', 'start');
-		await this.resolveTSConfig();
-		await this.clearOutputDir();
-		await this.createAppVersionFile();
-		await this.compileImpl();
-		this.setStatus('Compiled', 'end');
+		try {
+			await this.resolveTSConfig();
+			await this.clearOutputDir();
+			await this.createAppVersionFile();
+			await this.compileImpl();
+			this.setStatus('Compiled', 'end');
+		} catch (e: any) {
+			this.setErrorStatus('Compilation Error', e);
+			throw e;
+		}
 	}
 
 	async launch() {
