@@ -158,7 +158,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 			.append('echo ')
 			.append('npm run start');
 
-		return this.executeAsyncCommando(commando);
+		await this.executeAsyncCommando(commando);
+		this.logWarning('HOSTING TERMINATED');
 	}
 
 	//######################### Deploy Logic #########################
