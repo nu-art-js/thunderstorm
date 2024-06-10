@@ -17,7 +17,7 @@ import {
 	reduceToMap,
 	RelativePath,
 	removeItemFromArray,
-	sortArray,
+	sortArray, StaticLogger,
 	StringMap,
 	TypedMap
 } from '@nu-art/ts-common';
@@ -523,6 +523,7 @@ export class PhaseRunner
 				this.killed = true;
 
 				this.logInfo('Completed successfully');
+				StaticLogger.logInfo('-----------', '---------------------------------- Process Completed successfully ----------------------------------');
 				if (RuntimeParams.closeOnExit)
 					process.exit(0);
 
