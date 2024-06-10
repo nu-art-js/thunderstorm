@@ -27,7 +27,6 @@ export class BAIScreenManager
 	private currentScreen?: BAIScreenOption;
 
 	constructor() {
-		MemKey_BAIScreenManager.set(this);
 		dispatcher_PhaseChange.addListener(this);
 		this.assignTerminal();
 	}
