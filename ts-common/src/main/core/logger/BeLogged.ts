@@ -20,7 +20,7 @@ import {LogClient} from './LogClient';
 import {removeItemFromArray} from '../../utils/array-tools';
 import {
 	LogLevel,
-	LogPearam
+	LogParam
 } from './types';
 
 
