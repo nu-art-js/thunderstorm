@@ -23,7 +23,7 @@ export type Unit_TypescriptLib_RuntimeConfig = Unit_Typescript_RuntimeConfig & {
 	pathTo: { pkg: string; output: string }
 };
 
-const extensionsToLint = ['.ts', '.tsx'];
+const extensionsToLint = ['ts', 'tsx'];
 const assetExtensions = [
 	'json',
 	'scss',
@@ -42,7 +42,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		Phase_Purge, Phase_Lint,
 	]>, OnWatchEvent {
 
-	private compilationError: boolean = false;
 	private debounceWatch?: VoidFunction;
 
 	constructor(config: Unit_TypescriptLib<C, RTC>['config']) {
@@ -58,7 +57,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		if (this.debounceWatch)
 			delete this.debounceWatch;
 
-		this.debounceWatch = debounce(() => this.handleWatchChange(path!, [WatchEvent_RemoveFile, WatchEvent_RemoveDir].includes(type)), Second * 4, Second * 10);
+		this.debounceWatch = debounce(() => this.handleWatchChange(path!, [WatchEvent_RemoveFile, WatchEvent_RemoveDir].includes(type)), Second * 2, Second * 10);
 		this.debounceWatch();
 	}
 
@@ -114,30 +113,18 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const pathToCompile = `${this.runtime.pathTo.pkg}/src/main`;
 		const pathToTSConfig = `${pathToCompile}/tsconfig.json`;
 
-		try {
-			const commando = this.allocateCommando(Commando_NVM, Commando_Basic)
-				.cd(this.runtime.pathTo.pkg)
-				.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
-				.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'));
+		const commando = this.allocateCommando(Commando_NVM, Commando_Basic)
+			.cd(this.runtime.pathTo.pkg)
+			.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
+			.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'));
 
-			await this.executeAsyncCommando(commando, (stdout, stderr, exitCode) => {
-				if (exitCode > 0)
-					throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
-			});
-			// set compilation error status on success
-			this.compilationError = false;
-		} catch (e: any) {
-			//In order to finish compile when running watch we just log the error instead of throwing it
-			if (RuntimeParams.watch) {
-				// set compilation error status on error
-				this.compilationError = true;
+		await this.executeAsyncCommando(commando, (stdout, stderr, exitCode) => {
+			if (stderr.length)
+				this.logError(stderr);
 
-				return this.logError(e);
-			}
-
-			throw e;
-		}
-
+			if (exitCode > 0)
+				throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
+		});
 	}
 
 	protected async copyAssetsToOutput() {
@@ -163,16 +150,20 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		if (!path.startsWith(this.config.pathToPackage))
 			return;
 
-		this.setStatus('Compiling');
+		try {
+			this.setStatus('Compiling', 'start');
 
-		// check if dist folder must be cleared
-		if (shouldRemoveDist)
-			await this.removeSpecificFileFromDist(path);
+			// check if dist folder must be cleared
+			if (shouldRemoveDist)
+				await this.removeSpecificFileFromDist(path);
 
-		// perform all watch actions
-		await this.compileImpl();
-		await this.copyAssetsToOutput();
-		this.setStatus(`Watching${this.compilationError ? ' with error' : ''}`);
+			// perform all watch actions
+			await this.compileImpl();
+			await this.copyAssetsToOutput();
+			this.setStatus(`Compiled and Watching`, 'end');
+		} catch (e: any) {
+			this.setStatus(`Watching with error`, e);
+		}
 
 		// dispatch unit post compile
 		dispatcher_UnitWatchCompile.dispatch(this);
@@ -217,13 +208,18 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	async compile() {
-		this.setStatus('Compile', 'start');
-		await this.resolveTSConfig();
-		await this.clearOutputDir();
-		await this.compileImpl();
-		await this.copyAssetsToOutput();
-		await this.copyPackageJSONToOutput();
-		this.setStatus(`Compiled${this.compilationError ? ' with error' : ''}`, 'end');
+		try {
+			this.setStatus('Compiling', 'start');
+			await this.resolveTSConfig();
+			await this.clearOutputDir();
+			await this.compileImpl();
+			await this.copyAssetsToOutput();
+			await this.copyPackageJSONToOutput();
+			this.setStatus(`Compiled`, 'end');
+		} catch (e: any) {
+			this.setErrorStatus('Compilation Error', e);
+			throw e;
+		}
 	}
 
 	async purge() {
@@ -253,8 +249,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	async lint() {
-		const pathToProjectESLint = MemKey_RunnerParams.get()[RunnerParamKey_ConfigPath] + '/.eslintrc.js';
-		const pathToLint = this.runtime.pathTo.pkg + 'src/main';
+		const pathToProjectESLint = `${MemKey_RunnerParams.get()[RunnerParamKey_ConfigPath]}/eslint.config.cjs`;
+		const pathToLint = `${this.runtime.pathTo.pkg}src/main`;
 		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ');
 
 		await this.allocateCommando(Commando_NVM)

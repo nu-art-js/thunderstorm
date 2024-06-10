@@ -3,11 +3,13 @@ import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_pr
 import {LogTypes} from '../types';
 
 
+type LogProcessor = (log: string, std: LogTypes) => boolean;
+
 export class InteractiveShell
 	extends Logger {
 
 	private _debug: boolean = false;
-	private logProcessors: ((log: string, std: LogTypes) => boolean)[] = [];
+	private logProcessors: (LogProcessor)[] = [];
 	private shell: ChildProcessWithoutNullStreams | ChildProcess;
 	private alive: boolean;
 
@@ -35,7 +37,11 @@ export class InteractiveShell
 					}, true);
 
 					if (toPrint)
-						this.logInfo(`${message}`);
+						if (std === 'out')
+							this.logInfo(`${message}`);
+						else
+							this.logError(`${message}`);
+
 				} catch (e: any) {
 					this.logError(e);
 				}
@@ -107,6 +113,7 @@ export class InteractiveShell
 		if (!this.alive)
 			return;
 
+
 		return new Promise<void>((resolve, reject) => {
 			this.logWarning('Killing process');
 			this.shell.on('exit', async (code, signal) => {
@@ -129,7 +136,7 @@ export class InteractiveShell
 	 * @param {(log: string, std: LogTypes) => boolean} processor - The log processor function.
 	 * @returns {this} - The InteractiveShell instance for method chaining.
 	 */
-	addLogProcessor(processor: (log: string, std: LogTypes) => boolean) {
+	addLogProcessor(processor: LogProcessor) {
 		this.logProcessors.push(processor);
 		return this;
 	}
@@ -139,7 +146,7 @@ export class InteractiveShell
 	 * @param {(log: string, std: LogTypes) => boolean} processor - The log processor function to remove.
 	 * @returns {this} - The InteractiveShell instance for method chaining.
 	 */
-	removeLogProcessor(processor: (log: string, std: LogTypes) => boolean) {
+	removeLogProcessor(processor: LogProcessor) {
 		removeItemFromArray(this.logProcessors, processor);
 		return this;
 	}

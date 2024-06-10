@@ -4,6 +4,9 @@ import {Phase} from '../phase';
 import {BaseUnit} from '../unit/core';
 import {BAIScreen} from './BAIScreen';
 import {MemKey_PhaseRunner} from '../phase-runner/consts';
+import {PhaseRunner} from '../phase-runner/PhaseRunner';
+import {RuntimeParams} from '../../core/params/params';
+
 
 type State = {
 	currentPhaseName?: string;
@@ -13,8 +16,8 @@ type State = {
 export class BAIScreen_UnitList
 	extends BAIScreen<State>
 	implements PhaseRunner_OnPhaseChange,
-		PhaseRunner_OnUnitStatusChange,
-		PhaseRunner_OnUnitsChange {
+						 PhaseRunner_OnUnitStatusChange,
+						 PhaseRunner_OnUnitsChange {
 
 	//######################### Properties #########################
 
@@ -46,6 +49,7 @@ export class BAIScreen_UnitList
 	}
 
 	__onUnitsChange(data: BaseUnit[]) {
+		this.destroyUnitListWidget();
 		this.createUnitListWidget();
 		this.renderUnitList();
 	}
@@ -62,7 +66,7 @@ export class BAIScreen_UnitList
 		this.destroyLogWidget();
 	}
 
-	private destroyPhaseWidget () {
+	private destroyPhaseWidget() {
 		this.phaseWidget?.destroy();
 	}
 
@@ -71,7 +75,7 @@ export class BAIScreen_UnitList
 		this.unitWidgets?.forEach(group => group.forEach(widget => widget.destroy()));
 	}
 
-	private destroyLogWidget () {
+	private destroyLogWidget() {
 		this.logWidget?.destroy();
 	}
 
@@ -98,8 +102,18 @@ export class BAIScreen_UnitList
 				fg: 'blue',
 			},
 			align: 'center',
+			label: 'phase',
+			mouse: true
 		};
 		this.phaseWidget = this.createWidget('text', props);
+		this.phaseWidget.on('mouse', (event) => {
+			if (event.button === 'left' && event.action === 'mousedown') {
+				RuntimeParams.continue = true;
+				PhaseRunner.instance.execute().then(() => this.logInfo('Completed')).catch((e) => {
+					this.logError('Error: ', e);
+				});
+			}
+		});
 	}
 
 	private createUnitListWidget() {
