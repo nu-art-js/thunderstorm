@@ -4,7 +4,14 @@ import {promises as _fs} from 'fs';
 import {BadImplementationException, debounce, LogLevel, Second} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor, WatchEventType} from '../types';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
+import {
+	Phase_CheckCyclicImports,
+	Phase_Compile,
+	Phase_Lint,
+	Phase_PreCompile,
+	Phase_PrintDependencyTree,
+	Phase_Purge
+} from '../../phase';
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnWatchEvent} from '../runner-dispatchers';
@@ -47,7 +54,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	constructor(config: Unit_TypescriptLib<C, RTC>['config']) {
 		super(config);
 		this.addToClassStack(Unit_TypescriptLib);
-		dispatcher_WatchEvent.addListener(this);
 	}
 
 	async __onWatchEvent(type: WatchEventType, path?: string) {
@@ -63,6 +69,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	protected async init(setInitialized: boolean = true) {
 		await super.init(false);
+		dispatcher_WatchEvent.addListener(this);
 		this.runtime.pathTo.output = this.runtime.pathTo.pkg + `/${this.config.output}`;
 		if (setInitialized)
 			this.setStatus('Initialized');
