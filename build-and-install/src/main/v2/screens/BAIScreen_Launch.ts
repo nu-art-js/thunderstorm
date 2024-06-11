@@ -4,6 +4,8 @@ import {MemKey_PhaseRunner} from '../phase-runner/consts';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../unit/firebase-units';
 import {Widgets} from 'blessed';
 import {PhaseRunner_OnUnitsChange} from '../phase-runner/PhaseRunnerDispatcher';
+import {currentTimeMillis, WhoCallThisException} from '@nu-art/ts-common';
+
 
 type GridCell = { width: number; height: number };
 type GridCol = GridCell[];
@@ -15,7 +17,8 @@ export class BAIScreen_Launch
 
 	//######################### Properties #########################
 
-	private units: BaseUnit[] = [];
+	private allUnits: BaseUnit[] = [];
+	private focusUnits: BaseUnit[] = [];
 	private gridDimensions: GridDimensions = [[{width: 1, height: 1}]];
 	private withRunningLogs: boolean = false;
 
@@ -30,10 +33,14 @@ export class BAIScreen_Launch
 
 	__onUnitsChange = (data: BaseUnit[]) => {
 		this.updateUnits();
+		this.rebuildScreens();
+	};
+
+	private rebuildScreens() {
 		this.createGridWidgets();
 		this.renderGridWidgets();
 		this.container.screen.render();
-	};
+	}
 
 	protected onLogUpdated = () => {
 		this.renderGridWidgets();
@@ -41,9 +48,12 @@ export class BAIScreen_Launch
 
 	private updateUnits = () => {
 		const runner = MemKey_PhaseRunner.get();
-		this.units = runner.getUnits().filter(unit => {
+		this.allUnits = runner.getUnits().filter(unit => {
 			return unit.isInstanceOf(Unit_FirebaseHostingApp) || unit.isInstanceOf(Unit_FirebaseFunctionsApp);
 		});
+
+		if (!this.focusUnits.length)
+			this.focusUnits = this.allUnits;
 	};
 
 	//######################### Content Creation #########################
@@ -53,8 +63,15 @@ export class BAIScreen_Launch
 		this.createGridWidgets();
 	}
 
+	protected scrollLog(direction: number) {
+		const focusedWidget = this.getFocusedWidget();
+		// @ts-ignore
+		this.gridCellWidgets.find(log => log._label.content === focusedWidget._label.content)?.scroll(direction);
+	}
+
 	private createGridWidgets = () => {
 		this.destroyGridWidgets();
+
 		this.calculateGridDimensions();
 		let xPos = 0;
 		let widgetIndex = 0;
@@ -71,13 +88,39 @@ export class BAIScreen_Launch
 					label: this.getGridWidgetLabel(widgetIndex),
 					border: {type: 'line'},
 					style: {
-						border: {fg: 'blue'},
+						hover: {border: {fg: 'blue'}},
+						border: {fg: 'gray'},
+						focus: {border: {fg: 'green'}}
 					},
 					valign: 'top',
 					align: 'left',
-					mouse: true,
+					interactive: true,
+					focusable: true,
 				};
-				this.gridCellWidgets.push(this.createWidget('log', props));
+
+				const logWidget = this.createWidget('log', props);
+				let doubleClickTimestamp = 0;
+				const unitIndex = widgetIndex;
+				logWidget.on('mouse', (event) => {
+					if (!(event.button === 'middle' && event.action === 'mouseup'))
+						return;
+
+					if (currentTimeMillis() - doubleClickTimestamp < 500) {
+						try {
+							this.toggleFullScreenMode(unitIndex);
+						} catch (e) {
+							console.log(e);
+							console.log(e);
+							console.log(e);
+							console.log(e);
+							console.log(e);
+						}
+						return;
+					}
+
+					doubleClickTimestamp = currentTimeMillis();
+				});
+				this.gridCellWidgets.push(logWidget);
 				yPos += height; //Assuming all cells in a column have the same height
 				widgetIndex++;
 			});
@@ -85,16 +128,24 @@ export class BAIScreen_Launch
 		});
 	};
 
-	private calculateGridDimensions = () => {
-		let n = this.units.length;
+	private toggleFullScreenMode(unitIndex: number) {
+		if (this.focusUnits.length !== this.allUnits.length)
+			this.focusUnits = this.allUnits;
+		else
+			this.focusUnits = [this.allUnits[unitIndex]];
+
+		this.rebuildScreens();
+	}
+
+	private calculateGridDimensions = (count = this.focusUnits.length) => {
 		//Add 1 more window for running logs
 		if (this.withRunningLogs)
-			n++;
+			count++;
 
 		const grid: GridDimensions = [];
-		const columns = Math.ceil(Math.sqrt(n)); // Calculate number of columns
+		const columns = Math.ceil(Math.sqrt(count)); // Calculate number of columns
 
-		let remainingItems = n;
+		let remainingItems = count;
 		for (let col = 0; col < columns; col++) {
 			const column: GridCol = [];
 			const itemsInThisColumn = Math.ceil(remainingItems / (columns - col));
@@ -112,9 +163,9 @@ export class BAIScreen_Launch
 
 	private getGridWidgetLabel = (index: number) => {
 		if (!this.withRunningLogs)
-			return this.units[index].config.label;
+			return this.focusUnits[index].config.label;
 
-		return index === this.units.length ? 'Running Logs' : this.units[index].config.label;
+		return index === this.focusUnits.length ? 'Running Logs' : this.focusUnits[index].config.label;
 	};
 
 	//######################### Content Destruction #########################
@@ -125,28 +176,31 @@ export class BAIScreen_Launch
 
 	private destroyGridWidgets = () => {
 		this.gridCellWidgets.forEach(widget => widget.destroy());
-	}
+		this.gridCellWidgets.length = 0;
+	};
 
 	//######################### Render #########################
 
 	protected render(): void {
 		this.renderGridWidgets();
 		this.logInfo('GRID DIMENSIONS', this.gridDimensions);
-		this.logInfo('UNITS', this.units.map(unit => unit.config.label));
+		this.logInfo('UNITS', this.focusUnits.map(unit => unit.config.label));
 		this.logInfo('RUNNER UNITS', MemKey_PhaseRunner.get().getUnits().map(unit => unit.config.label));
 	}
 
 	private getContentForWidget = (widgetIndex: number) => {
 		if (!this.withRunningLogs) {
-			const unit = this.units[widgetIndex];
+			const unit = this.focusUnits[widgetIndex];
+			if (!unit)
+				throw new WhoCallThisException(`focusedUnits: ${this.focusUnits.length}[${widgetIndex}]`);
 			return unit.getLogs() ?? `No logs for unit ${unit.config.label}`;
 		}
 
 		//With running logs, last index should return the running logs
-		if (widgetIndex === this.units.length)
+		if (widgetIndex === this.focusUnits.length)
 			return this.getLogs();
 
-		const unit = this.units[widgetIndex];
+		const unit = this.focusUnits[widgetIndex];
 		return unit.getLogs() ?? `No logs for unit ${unit.config.label}`;
 	};
 
