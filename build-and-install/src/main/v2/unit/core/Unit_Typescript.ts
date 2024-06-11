@@ -2,11 +2,11 @@ import {BaseUnit, BaseUnit_Config, BaseUnit_RuntimeConfig} from './BaseUnit';
 import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../../core/consts';
 import {PackageJson} from '../../../core/types';
 import {
+	_keys,
 	AbsolutePath,
 	BadImplementationException,
 	ImplementationMissingException,
-	RelativePath,
-	_keys
+	RelativePath
 } from '@nu-art/ts-common';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
@@ -63,7 +63,11 @@ export class Unit_Typescript<C extends Unit_Typescript_Config = Unit_Typescript_
 		if (!fs.existsSync(templatePath))
 			throw new BadImplementationException(`Missing __package.json file in root for unit ${this.config.label}`);
 
-		this.packageJson.template = JSON.parse(await _fs.readFile(templatePath, 'utf-8')) as PackageJson;
+		try {
+			this.packageJson.template = JSON.parse(await _fs.readFile(templatePath, 'utf-8')) as PackageJson;
+		} catch (e: any) {
+			throw new BadImplementationException(`There is an issue in the __package.json file in root for unit ${this.config.label}`);
+		}
 	}
 
 	/**
