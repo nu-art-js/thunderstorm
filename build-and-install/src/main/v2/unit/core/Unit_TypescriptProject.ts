@@ -2,18 +2,18 @@ import {UnitPhaseImplementor} from '../types';
 import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
 import {Phase_Install, Phase_Watch} from '../../phase';
 import {RuntimeParams} from '../../../core/params/params';
-import {StringMap} from '@nu-art/ts-common/utils/types';
-import {_keys} from '@nu-art/ts-common';
+import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
+import {
+	_keys,
+	clearArrayInstance,
+	MUSTNeverHappenException,
+	Promise_all_sequentially,
+	queuedDebounce,
+	Second
+} from '@nu-art/ts-common';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 import * as chokidar from 'chokidar';
-import {dispatcher_WatchEvent} from '../runner-dispatchers';
-import {
-	WatchEvent_Add,
-	WatchEvent_Ready,
-	WatchEvent_RemoveDir,
-	WatchEvent_RemoveFile,
-	WatchEvent_Update
-} from '../consts';
+import {dispatcher_UnitWatchCompile, dispatcher_WatchReady} from '../runner-dispatchers';
 import {Unit_TypescriptLib} from './Unit_TypescriptLib';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../firebase-units';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
@@ -25,11 +25,12 @@ type Unit_TypescriptProject_Config = Unit_Typescript_Config & { globalPackages?:
 
 type Unit_TypescriptProject_RuntimeConfig = Unit_Typescript_RuntimeConfig & {};
 
-type PathDeclaration = { paths: string[], unit: Unit_TypescriptLib };
+type PathDeclaration = { pathToPackage: AbsolutePath, paths: string[], unit: Unit_TypescriptLib };
 
 export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config, RTC extends Unit_TypescriptProject_RuntimeConfig = Unit_TypescriptProject_RuntimeConfig>
 	extends Unit_Typescript<C, RTC>
 	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch]> {
+	private watchDebounce!: VoidFunction;
 
 	private readonly suffixesToWatch: string[] = [
 		'ts',
@@ -88,8 +89,12 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 
 		//return all paths to watch
 		return projectLibs.map(lib => {
-			const sourceFolder = `${lib.config.pathToPackage}/src/main`;
-			return {paths: this.suffixesToWatch.map(suffix => `${sourceFolder}/**/*.${suffix}`), unit: lib};
+			const sourceFolder = `${lib.runtime.pathTo.pkg}/src/main`;
+			return {
+				paths: this.suffixesToWatch.map(suffix => `${sourceFolder}/**/*.${suffix}`),
+				unit: lib,
+				pathToPackage: lib.runtime.pathTo.pkg
+			};
 		});
 	}
 
@@ -102,9 +107,48 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 		const paths = pathDeclarations.flatMap(path => path.paths);
 		const watcher = chokidar.watch(paths);
 
+
 		// set all events to watch and handle them
 		return new Promise<void>((resolve, error) => {
 			this.logInfo('Starting the watcher...');
+
+			const units: Set<Unit_TypescriptLib> = new Set();
+			const pathsToDelete: { path: string, unit: Unit_TypescriptLib }[] = [];
+
+			const onUnitChange = (path: string) => {
+				const unit = this.findUnit(pathDeclarations, path as AbsolutePath);
+
+				// @ts-ignore - FIXME: should be a better way
+				unit.setStatus('dirty');
+
+				//add unit to set
+				units.add(unit);
+
+				return unit;
+			};
+
+			// set the debounce event
+			this.watchDebounce = queuedDebounce(async () => {
+				const _pathsToDelete = [...pathsToDelete];
+				const unitsToCompile = Array.from(units.values());
+
+				// clear values in order to start collecting values for next debounce
+				clearArrayInstance(pathsToDelete);
+				units.clear();
+
+				// fire all delete events
+				await Promise_all_sequentially(_pathsToDelete.map(path => {
+					return async () => path.unit.removeSpecificFileFromDist(path.path);
+				}));
+
+				// fire all compile events
+				await Promise_all_sequentially(unitsToCompile.map(unit => {
+					return async () => unit.watchCompile();
+				}));
+
+				//dispatch post debounce event to parent
+				await dispatcher_UnitWatchCompile.dispatchAsync(unitsToCompile);
+			}, 2 * Second, 10 * Second);
 
 			watcher
 				.on('error', (error) => {
@@ -112,20 +156,38 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 				})
 				.on('ready', () => {
 					this.logInfo('Watching...');
-					dispatcher_WatchEvent.dispatch(WatchEvent_Ready);
+					dispatcher_WatchReady.dispatch();
 
 					watcher
 						.on('add', (path) => {
-							dispatcher_WatchEvent.dispatch(WatchEvent_Add, path);
+							onUnitChange(path);
+
+							//trigger debounce
+							this.watchDebounce();
 						})
 						.on('change', (path) => {
-							dispatcher_WatchEvent.dispatch(WatchEvent_Update, path);
+							onUnitChange(path);
+
+							//trigger debounce
+							this.watchDebounce();
 						})
 						.on('unlinkDir', (path) => {
-							dispatcher_WatchEvent.dispatch(WatchEvent_RemoveDir, path);
+							const unit = onUnitChange(path);
+
+							//update paths to delete
+							pathsToDelete.push({path, unit});
+
+							//trigger debounce
+							this.watchDebounce();
 						})
 						.on('unlink', (path) => {
-							dispatcher_WatchEvent.dispatch(WatchEvent_RemoveFile, path);
+							const unit = onUnitChange(path);
+
+							//update paths to delete
+							pathsToDelete.push({path, unit});
+
+							//trigger debounce
+							this.watchDebounce();
 						});
 				});
 
@@ -137,6 +199,14 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 			this.registerTerminatable(terminatable);
 		});
 	}
+
+	private findUnit = (pathDeclarations: PathDeclaration[], currentPath: AbsolutePath): Unit_TypescriptLib => {
+		const unitToReturn = pathDeclarations.find(declaration => currentPath.startsWith(declaration.pathToPackage))?.unit;
+		if (!unitToReturn)
+			throw new MUSTNeverHappenException(`current path doesnt match any declared unit, current path: ${currentPath}`);
+
+		return unitToReturn;
+	};
 
 	private async watchImpl() {
 		await this.initWatch();
