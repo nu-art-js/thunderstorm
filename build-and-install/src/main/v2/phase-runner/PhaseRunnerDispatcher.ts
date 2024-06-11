@@ -34,6 +34,13 @@ export class PhaseRunnerDispatcher<T,
 			listener[this.method]?.(...data);
 		});
 	}
+
+	public async dispatchAsync(...data: P) {
+		await Promise.all(this.listeners.map(async listener => {
+			// @ts-ignore
+			return listener[this.method]?.(...data);
+		}));
+	}
 }
 
 export interface PhaseRunner_OnPhaseChange {

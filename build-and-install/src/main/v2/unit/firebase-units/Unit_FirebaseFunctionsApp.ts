@@ -9,7 +9,7 @@ import {_keys, deepClone, ImplementationMissingException, Second, sleep} from '@
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
-import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnUnitWatchCompiled} from '../runner-dispatchers';
+import {dispatcher_UnitWatchCompile, dispatcher_WatchReady, OnUnitWatchCompiled} from '../runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 
 
@@ -26,8 +26,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	static staggerCount: number = 0;
 
-	async __onUnitWatchCompiled(unit: BaseUnit) {
-		if (this.runtime.unitDependencyNames.includes(unit.runtime.dependencyName)) {
+	async __onUnitWatchCompiled(units: BaseUnit[]) {
+		if (units.some(unit => this.runtime.unitDependencyNames.includes(unit.runtime.dependencyName))) {
 			this.setStatus('Compiling', 'start');
 			try {
 				await this.compileImpl();
@@ -51,7 +51,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await super.init(false);
 
 		// only sign on listeners when the unit is being initialized
-		dispatcher_WatchEvent.removeListener(this);
+		dispatcher_WatchReady.removeListener(this);
 		dispatcher_UnitWatchCompile.addListener(this);
 
 		if (setInitialized)
