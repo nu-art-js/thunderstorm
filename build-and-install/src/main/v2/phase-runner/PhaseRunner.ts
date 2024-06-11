@@ -30,7 +30,13 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import fs, {promises as _fs} from 'fs';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
-import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes, RunningStatus} from '../../defaults/consts';
+import {
+	Default_Files,
+	Default_OutputFiles,
+	MemKey_DefaultFiles,
+	ProjectConfig_DefaultFileRoutes,
+	RunningStatus
+} from '../../defaults/consts';
 import {dispatcher_PhaseChange, dispatcher_UnitChange} from './PhaseRunnerDispatcher';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
@@ -597,6 +603,7 @@ export class PhaseRunner
 		this.logDebug('Runner Params:', MemKey_RunnerParams.get());
 		this.logDebug('Project Config:', MemKey_ProjectConfig.get());
 		this.logDebug('Default File Routes:', MemKey_DefaultFiles.get());
+		this.logDebug('Filtered Units:', this.units.map(unit => unit.config.label));
 
 		const dependencyTree = this.unitDependencyTree.map(row => row.map(unit => unit.config.label));
 		this.logInfo('Unit Dependencies Tree:', dependencyTree);

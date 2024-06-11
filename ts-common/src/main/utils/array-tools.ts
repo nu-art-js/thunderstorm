@@ -333,6 +333,15 @@ export function arrayIncludesAny<T>(arr1: T[], arr2: T[]): boolean {
 }
 
 /**
+ * Clear array instance and keep the same instance so save memory
+ * This function will take any array and clear it's content completely while keeping the same instance to save memory
+ * @param arr - Any array
+ */
+export function clearArrayInstance<T extends any[]>(arr: T): void {
+	arr.length = 0;
+}
+
+/**
  * Returns true if arr1 returns the entirety of arr2
  * @param arr1
  * @param arr2
