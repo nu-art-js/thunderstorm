@@ -27,12 +27,12 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	constructor(config: Unit_FirebaseHostingApp<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_FirebaseHostingApp);
-		dispatcher_WatchEvent.removeListener(this);
 	}
 
 	protected async init(setInitialized: boolean = true): Promise<void> {
 		await super.init(setInitialized);
 
+		dispatcher_WatchEvent.removeListener(this);
 		if (!this.config.firebaseConfig.hostingPort)
 			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
 	}

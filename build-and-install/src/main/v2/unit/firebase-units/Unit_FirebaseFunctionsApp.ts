@@ -45,8 +45,17 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	constructor(config: Unit_FirebaseFunctionsApp<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_FirebaseFunctionsApp);
+	}
+
+	protected async init(setInitialized: boolean = true): Promise<void> {
+		await super.init(false);
+
+		// only sign on listeners when the unit is being initialized
 		dispatcher_WatchEvent.removeListener(this);
 		dispatcher_UnitWatchCompile.addListener(this);
+
+		if (setInitialized)
+			this.setStatus('Initialized');
 	}
 
 	//######################### Phase Implementations #########################
