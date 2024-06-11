@@ -8,7 +8,7 @@ import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
-import {dispatcher_WatchEvent} from '../runner-dispatchers';
+import {dispatcher_WatchReady} from '../runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 
@@ -32,7 +32,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	protected async init(setInitialized: boolean = true): Promise<void> {
 		await super.init(setInitialized);
 
-		dispatcher_WatchEvent.removeListener(this);
+		dispatcher_WatchReady.removeListener(this);
 		if (!this.config.firebaseConfig.hostingPort)
 			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
 	}

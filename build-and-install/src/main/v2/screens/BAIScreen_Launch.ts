@@ -106,16 +106,7 @@ export class BAIScreen_Launch
 						return;
 
 					if (currentTimeMillis() - doubleClickTimestamp < 500) {
-						try {
-							this.toggleFullScreenMode(unitIndex);
-						} catch (e) {
-							console.log(e);
-							console.log(e);
-							console.log(e);
-							console.log(e);
-							console.log(e);
-						}
-						return;
+						return this.toggleFullScreenMode(unitIndex);
 					}
 
 					doubleClickTimestamp = currentTimeMillis();

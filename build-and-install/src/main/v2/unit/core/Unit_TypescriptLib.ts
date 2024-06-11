@@ -1,9 +1,9 @@
 import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {BadImplementationException, debounce, LogLevel, Second} from '@nu-art/ts-common';
+import {BadImplementationException, LogLevel} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
-import {UnitPhaseImplementor, WatchEventType} from '../types';
+import {UnitPhaseImplementor} from '../types';
 import {
 	Phase_CheckCyclicImports,
 	Phase_Compile,
@@ -14,8 +14,7 @@ import {
 } from '../../phase';
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
-import {dispatcher_UnitWatchCompile, dispatcher_WatchEvent, OnWatchEvent} from '../runner-dispatchers';
-import {WatchEvent_Ready, WatchEvent_RemoveDir, WatchEvent_RemoveFile} from '../consts';
+import {dispatcher_WatchReady, OnWatchReady} from '../runner-dispatchers';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
@@ -47,29 +46,20 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	implements UnitPhaseImplementor<[
 		Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports,
 		Phase_Purge, Phase_Lint,
-	]>, OnWatchEvent {
-
-	private debounceWatch?: VoidFunction;
+	]>, OnWatchReady {
 
 	constructor(config: Unit_TypescriptLib<C, RTC>['config']) {
 		super(config);
 		this.addToClassStack(Unit_TypescriptLib);
 	}
 
-	async __onWatchEvent(type: WatchEventType, path?: string) {
-		if (type === WatchEvent_Ready)
-			return this.setStatus('Watching');
-
-		if (this.debounceWatch)
-			delete this.debounceWatch;
-
-		this.debounceWatch = debounce(() => this.handleWatchChange(path!, [WatchEvent_RemoveFile, WatchEvent_RemoveDir].includes(type)), Second * 2, Second * 10);
-		this.debounceWatch();
+	async __onWatchReady() {
+		return this.setStatus('Watching');
 	}
 
 	protected async init(setInitialized: boolean = true) {
 		await super.init(false);
-		dispatcher_WatchEvent.addListener(this);
+		dispatcher_WatchReady.addListener(this);
 		this.runtime.pathTo.output = this.runtime.pathTo.pkg + `/${this.config.output}`;
 		if (setInitialized)
 			this.setStatus('Initialized');
@@ -155,17 +145,13 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
-	protected async handleWatchChange(path: string, shouldRemoveDist: boolean = false) {
-		// ignore if path doesn't related to unit
-		if (!path.startsWith(this.config.pathToPackage))
-			return;
-
+	/**
+	 * Watch compile actions, use this to perform all necessary compile actions for watch.
+	 * watch compile is a subset of the general watch action
+	 */
+	public async watchCompile() {
 		try {
 			this.setStatus('Compiling', 'start');
-
-			// check if dist folder must be cleared
-			if (shouldRemoveDist)
-				await this.removeSpecificFileFromDist(path);
 
 			// perform all watch actions
 			await this.compileImpl();
@@ -174,9 +160,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		} catch (e: any) {
 			this.setStatus(`Watching with error`, e);
 		}
-
-		// dispatch unit post compile
-		dispatcher_UnitWatchCompile.dispatch(this);
 	}
 
 	/**
@@ -184,7 +167,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	 * @param path The path of the currently removed file/folder
 	 * @private
 	 */
-	private async removeSpecificFileFromDist(path: string) {
+	public async removeSpecificFileFromDist(path: string) {
+		this.setStatus('Removing files from dist', 'start');
 		const distPathBase = path.replace('src/main', 'dist').replace(/\.ts$/, '');
 		const pathsToDelete = [
 			`${distPathBase}.js`,
@@ -202,6 +186,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 			await _fs.rm(path, {recursive: true, force: true});
 		}
+		this.setStatus('Files Removed and watching', 'end');
 	}
 
 	//######################### Phase Implementations #########################
