@@ -58,6 +58,16 @@ export class BAIScreen_UnitList
 		this.renderLogs();
 	};
 
+	protected scrollLog(direction: number) {
+		// const focusedWidget = this.getFocusedWidget();
+		// @ts-ignore
+		// console.log(`ZEVEL ${focusedWidget.type}`);
+		// if (focusedWidget !== this.logWidget)
+		// 	return;
+
+		this.logWidget.scroll(direction);
+	}
+
 	//######################### Content Destruction #########################
 
 	protected destroyContent() {
@@ -103,7 +113,6 @@ export class BAIScreen_UnitList
 			},
 			align: 'center',
 			label: 'phase',
-			mouse: true
 		};
 		this.phaseWidget = this.createWidget('text', props);
 		this.phaseWidget.on('mouse', (event) => {
@@ -183,9 +192,16 @@ export class BAIScreen_UnitList
 			style: {
 				border: {fg: 'blue'}
 			},
-			valign: 'top',
-			align: 'left',
-			mouse: true,
+			scrollbar: {
+				ch: ' ',
+				track: {
+					bg: 'grey',
+				},
+				style: {
+					inverse: true,
+				},
+			},
+			interactive: true // This is typically required for focus management
 		};
 		this.logWidget = this.createWidget('log', props);
 	}
@@ -217,10 +233,9 @@ export class BAIScreen_UnitList
 	}
 
 	private renderLogs() {
-		const scrollPosition = this.logWidget.getScroll();
 		const content = this.state.selectedUnit ? this.state.selectedUnit.getLogs() : this.getLogs();
+		this.logWidget.setLabel(` ${this.state.selectedUnit?.config.label ?? 'All Logs'} `);
 		this.logWidget.setContent(content);
-		this.logWidget.setScroll(scrollPosition);
 	}
 
 	//######################### Events #########################
@@ -232,3 +247,5 @@ export class BAIScreen_UnitList
 		this.container.screen.render();
 	}
 }
+
+// /Users/tacb0ss/.nvm/versions/node/v18.15.0/bin/ts-node -P /Users/tacb0ss/dev/quai/test/quai-web/_thunderstorm/commando/src/test/tsconfig.json /Users/tacb0ss/dev/quai/test/quai-web/_thunderstorm/commando/src/test/console/controlled-scroll/run.ts
