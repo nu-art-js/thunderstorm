@@ -157,9 +157,11 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 		if (!this.processTerminator.length)
 			return this.setStatus('Killed');
 
+		const processTerminator = [...this.processTerminator];
+		this.processTerminator.length = 0;
 		this.setStatus('Killing');
 		try {
-			await Promise.all(this.processTerminator.map(toTerminate => toTerminate()));
+			await Promise.all(processTerminator.map(toTerminate => toTerminate()));
 		} finally {
 			this.setStatus('Killed');
 		}
