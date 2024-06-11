@@ -1,10 +1,10 @@
-import {ConsoleContainer} from '@nu-art/commando/console/ConsoleContainer';
 import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, AsyncVoidFunction, BeLogged, LogClient_MemBuffer, LogLevel} from '@nu-art/ts-common';
-import {dispatcher_PhaseChange, dispatcher_UnitStatusChange, dispatcher_UnitChange} from '../phase-runner/PhaseRunnerDispatcher';
+import {dispatcher_PhaseChange, dispatcher_UnitChange, dispatcher_UnitStatusChange} from '../phase-runner/PhaseRunnerDispatcher';
+import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
 
 
 export abstract class BAIScreen<State extends {} = {}>
-	extends ConsoleContainer<'screen', State> {
+	extends ConsoleScreen<State> {
 
 	//######################### Class Properties #########################
 
@@ -20,12 +20,27 @@ export abstract class BAIScreen<State extends {} = {}>
 	 * @param {ScreenKeyBinding[]} [keyBinding] - An array of key bindings for the screen widget.
 	 */
 	constructor(logClientKey: string) {
-		super('screen',
-			{smartCSR: true, title: 'Build and Install'},
-			[{
-				keys: ['escape', 'q', 'C-c'],
-				callback: async () => await this.onKill(),
-			}]);
+		super({smartCSR: true, title: 'Build and Install'},
+			[
+				{
+					keys: ['escape', 'q', 'C-c'],
+					callback: async () => await this.onKill(),
+				},
+				{
+					keys: ['up'], // Scroll up on Control-U
+					callback: () => {
+						this.scrollLog(-1);
+					},
+				},
+				{
+					keys: ['down'], // Scroll down on Control-D
+					callback: () => {
+						this.scrollLog(1);
+					},
+				},
+
+			]);
+		this.scrollLog.bind(this);
 		this.createLogClient(logClientKey);
 	}
 
@@ -45,6 +60,8 @@ export abstract class BAIScreen<State extends {} = {}>
 			this.onLogUpdated();
 		});
 	}
+
+	protected abstract scrollLog(direction: number): void
 
 	//######################### Log Client Interaction #########################
 
