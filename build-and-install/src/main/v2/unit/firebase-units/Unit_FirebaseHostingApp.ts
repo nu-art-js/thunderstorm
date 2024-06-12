@@ -120,7 +120,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 			ModuleFE_FirebaseListener: {
 				emulatorConfig: envConfig.isLocal ? emulatorConfig : undefined,
 				firebaseConfig: envConfig.firebase.listener?.config
-			}
+			},
+			...envConfig.otherConfig
 		};
 
 		const targetPath = convertToFullPath(`${this.config.pathToPackage}/src/main/config.ts`);

@@ -131,7 +131,8 @@ class ModuleBE_SyncEnv_Class
 		}
 
 		if (this.config.allowedEnvsToSyncFrom && !this.config.allowedEnvsToSyncFrom.includes(body.env)) {
-			throw new MUSTNeverHappenException(`Env ${Storm.getInstance().getEnvironment().toLowerCase()} doesn't have env ${body.env} in it's allowedEnvsToSyncFrom list.`);
+			throw new MUSTNeverHappenException(`Env ${Storm.getInstance().getEnvironment()
+				.toLowerCase()} doesn't have env ${body.env} in it's allowedEnvsToSyncFrom list.`);
 		}
 
 		this.logInfoBold('Received API call Fetch From Env!');
@@ -169,8 +170,7 @@ class ModuleBE_SyncEnv_Class
 			stream
 				.pipe(collectionFilter)
 				.pipe(collectionWriter)
-				.on('finish', () => resolve())
-				.on('error', err => reject(err));
+				.on('finish', () => resolve());
 		});
 		endTime = performance.now();
 		this.logInfo(`Syncing Collections took ${((endTime - startTime) / 1000).toFixed(3)} seconds`);
@@ -257,7 +257,7 @@ class CollectionBatchWriter
 
 	async _write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
 		try {
-			const collectionName = this.modules[chunk.dbKey].dbDef!.dbKey;
+			const collectionName = this.modules[chunk.dbKey].dbDef!.backend.name;
 			const docRef = this.firestore.doc(`${collectionName}/${chunk._id}`);
 			const data = JSON.parse(chunk.document);
 			this.batchWriter.set(docRef, data);

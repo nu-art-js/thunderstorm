@@ -107,7 +107,6 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 		const paths = pathDeclarations.flatMap(path => path.paths);
 		const watcher = chokidar.watch(paths);
 
-
 		// set all events to watch and handle them
 		return new Promise<void>((resolve, error) => {
 			this.logInfo('Starting the watcher...');
@@ -119,7 +118,7 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 				const unit = this.findUnit(pathDeclarations, path as AbsolutePath);
 
 				// @ts-ignore - FIXME: should be a better way
-				unit.setStatus('dirty');
+				unit.setStatus('Dirty');
 
 				//add unit to set
 				units.add(unit);
