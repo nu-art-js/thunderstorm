@@ -75,7 +75,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		if (this.config.customTSConfig) {
 			//If ts config file does not exist in the main folder
 			if (!fs.existsSync(pathToUnitTSConfig))
-				throw new BadImplementationException(`Unit ${this.config.label} is set to use a custom tsconfig but is missing a tsconfig.json file in /src/main`);
+				throw new BadImplementationException(`Unit "${this.config.label}" is set to use a custom tsconfig but is missing a tsconfig.json file in /src/main`);
 
 			return;
 		}

@@ -286,11 +286,15 @@ export class PhaseRunner
 
 	private async executeImpl() {
 		for (const phase of this.phases) {
-			const phaseDidRun = await this.executePhase(phase);
+			try {
+				const phaseDidRun = await this.executePhase(phase);
 
-			//If phase is terminating
-			if (phaseDidRun && phase.terminateAfterPhase)
-				break;
+				//If phase is terminating
+				if (phaseDidRun && phase.terminateAfterPhase)
+					break;
+			} catch (e) {
+				this.logError(`Error running phase: ${phase.name}`, e);
+			}
 		}
 		this.killed = false;
 	}
