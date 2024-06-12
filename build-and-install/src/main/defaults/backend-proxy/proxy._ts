@@ -16,20 +16,24 @@ _express.all('*', (req, res) => {
 
 	console.log(`PROXY ${counter} - [${req.method}] ${url}`);
 
+	const handleError = (error: any) => {
+		console.log(`ERROR calling: ${url}`, error);
+	};
+
 	try {
 		let reqContent;
 		if (req.method === 'POST') {
-			reqContent = request.post({uri: url, body: req.body});
+			reqContent = request.post({uri: url, body: req.body}, handleError);
 		} else if (req.method === 'PUT') {
-			reqContent = request.put({uri: url, body: req.body});
+			reqContent = request.put({uri: url, body: req.body}, handleError);
 		} else if (req.method === 'GET') {
-			reqContent = request.get(url);
+			reqContent = request.get(url, handleError);
 		} else if (req.method === 'DELETE') {
-			reqContent = request.delete(url);
+			reqContent = request.delete(url, handleError);
 		} else if (req.method === 'HEAD') {
-			reqContent = request.head(url);
+			reqContent = request.head(url, handleError);
 		} else {
-			reqContent = request(url);
+			reqContent = request(url, handleError);
 		}
 
 		req.pipe(reqContent).pipe(res, {end: true});
