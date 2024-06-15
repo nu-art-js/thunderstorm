@@ -292,7 +292,7 @@ export class PhaseRunner
 				//If phase is terminating
 				if (phaseDidRun && phase.terminateAfterPhase)
 					break;
-			} catch (e) {
+			} catch (e: any) {
 				this.logError(`Error running phase: ${phase.name}`, e);
 			}
 		}
