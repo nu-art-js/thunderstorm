@@ -4,7 +4,7 @@ import {MemKey_PhaseRunner} from '../phase-runner/consts';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../unit/firebase-units';
 import {Widgets} from 'blessed';
 import {PhaseRunner_OnUnitsChange} from '../phase-runner/PhaseRunnerDispatcher';
-import {currentTimeMillis, WhoCallThisException} from '@nu-art/ts-common';
+import {currentTimeMillis, getStringSize, KB, maxSubstring, MB, WhoCallThisException} from '@nu-art/ts-common';
 
 
 type GridCell = { width: number; height: number };
@@ -152,11 +152,13 @@ export class BAIScreen_Launch
 		this.gridDimensions = grid;
 	};
 
-	private getGridWidgetLabel = (index: number) => {
-		if (!this.withRunningLogs)
-			return this.focusUnits[index].config.label;
+	private getGridWidgetLabel = (index: number): string => {
+		const widgetLogs = this.getContentForWidget(index);
 
-		return index === this.focusUnits.length ? 'Running Logs' : this.focusUnits[index].config.label;
+		if (!this.withRunningLogs)
+			return `${this.focusUnits[index].config.label} - Log Size: ${getStringSize(widgetLogs, 'KB').toFixed(3)} KB`;
+
+		return index === this.focusUnits.length ? 'Running Logs' : `${this.focusUnits[index].config.label} - Log Size: ${getStringSize(widgetLogs, 'KB').toFixed(3)} KB`;
 	};
 
 	//######################### Content Destruction #########################
@@ -184,15 +186,17 @@ export class BAIScreen_Launch
 			const unit = this.focusUnits[widgetIndex];
 			if (!unit)
 				throw new WhoCallThisException(`focusedUnits: ${this.focusUnits.length}[${widgetIndex}]`);
-			return unit.getLogs() ?? `No logs for unit ${unit.config.label}`;
+
+			const isFullScreen = this.focusUnits?.length === 1;
+			return maxSubstring(unit.getLogs() ?? `No logs for unit ${unit.config.label}`, isFullScreen ? MB : 100 * KB, 'end');
 		}
 
 		//With running logs, last index should return the running logs
 		if (widgetIndex === this.focusUnits.length)
-			return this.getLogs();
+			return maxSubstring(this.getLogs(), 100 * KB, 'end');
 
 		const unit = this.focusUnits[widgetIndex];
-		return unit.getLogs() ?? `No logs for unit ${unit.config.label}`;
+		return maxSubstring(unit.getLogs() ?? `No logs for unit ${unit.config.label}`, 100 * KB, 'end');
 	};
 
 	private renderGridWidgets = () => {
@@ -201,6 +205,7 @@ export class BAIScreen_Launch
 			const content = this.getContentForWidget(index);
 			widget.setContent(content);
 			widget.setScroll(scrollPosition);
+			widget.setLabel(this.getGridWidgetLabel(index));
 		});
 	};
 

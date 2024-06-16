@@ -1,7 +1,7 @@
 import {
 	_keys,
 	arrayToMap,
-	Dispatcher,
+	Dispatcher, exists,
 	filterInstances,
 	flatArray,
 	merge,
@@ -459,7 +459,11 @@ class ModuleBE_Permissions_Class
 		//Run over all service accounts
 		for (const serviceAccount of serviceAccounts) {
 			// Create account if it doesn't already exist
-			const accountsToRequest = {type: 'service', email: serviceAccount.email};
+			const accountsToRequest = {
+				type: 'service',
+				email: serviceAccount.email,
+				...(exists(serviceAccount.description)) && {description: serviceAccount.description}
+			};
 			let account;
 			//Get or create service account
 			try {
@@ -477,9 +481,19 @@ class ModuleBE_Permissions_Class
 			const sessions = await ModuleBE_AccountDB.account.getSessions(account);
 			//If we have a valid session(not expired) we use it's JWT instead of creating a new one
 			const validSession = sessions.sessions.find(_session => !ModuleBE_SessionDB.session.isExpired(_session));
-			const token = validSession?.sessionIdJwt ? {token: validSession?.sessionIdJwt} : await tokenCreator({accountId: account._id, ttl: 100 * Year});
+			const token = validSession?.sessionIdJwt ? {token: validSession?.sessionIdJwt} : await tokenCreator({
+				accountId: account._id,
+				ttl: 100 * Year
+			});
 
-			updatedConfig[serviceAccount.moduleName] = {serviceAccount: {token, accountId: account._id}};
+			updatedConfig[serviceAccount.moduleName] = {
+				serviceAccount: {
+					token,
+					description: account.description,
+					accountId: account._id,
+					email: account.email
+				}
+			};
 		}
 
 		if (_keys(updatedConfig).length > 0)
