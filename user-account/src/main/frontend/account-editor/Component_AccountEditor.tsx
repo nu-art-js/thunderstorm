@@ -228,6 +228,15 @@ export class Component_AccountEditor
 
 	};
 
+	private renderDescription = () => {
+		if (!this.state.user?.description)
+			return '';
+
+		return <TS_PropRenderer.Vertical label={'description'}>
+			{this.state.user.description}
+		</TS_PropRenderer.Vertical>;
+	};
+
 
 	render() {
 		return <LL_V_L className={'account-editor'}>
@@ -235,6 +244,7 @@ export class Component_AccountEditor
 				{this.renderDropdown()}
 				{this.renderInputs()}
 				{this.renderSubmitButton()}
+				{this.renderDescription()}
 			</LL_V_L>
 			<LL_V_L className={'editor-section'}>
 				{this.renderSessionGrid()}
