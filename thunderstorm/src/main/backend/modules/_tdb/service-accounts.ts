@@ -12,8 +12,10 @@ export type ServiceAccountCredentials = {
 export type DefaultDef_ServiceAccount = {
 	moduleName: string
 	email: string,
+	description?: string,
 	groupIds?: UniqueId[]
 }
+
 
 export interface RequiresServiceAccount {
 	__requiresServiceAccount(): DefaultDef_ServiceAccount | DefaultDef_ServiceAccount[];

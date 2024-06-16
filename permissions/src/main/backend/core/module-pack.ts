@@ -20,7 +20,6 @@
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
 import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
-import {ModuleBE_SyncEnv_ServiceAccount} from '../patch/ModuleBE_SyncEnv_ServiceAccount';
 import {
 	ModulePackBE_PermissionAccessLevel, ModulePackBE_PermissionAPI, ModulePackBE_PermissionDomain,
 	ModulePackBE_PermissionGroup, ModulePackBE_PermissionProject, ModulePackBE_PermissionUser
@@ -35,7 +34,6 @@ export const ModulePackBE_Permissions: Module[] = [
 	...ModulePackBE_PermissionUser,
 	ModuleBE_PermissionsAssert,
 	ModuleBE_Permissions,
-	ModuleBE_SyncEnv_ServiceAccount,
 ];
 
 export * from '../modules/ModuleBE_PermissionsAssert';

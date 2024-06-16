@@ -1,4 +1,12 @@
-import {AuditableV2, DB_BaseObject, DB_Object, DBProto, Proto_DB_Object, TypedKeyValue, VersionsDeclaration} from '@nu-art/ts-common';
+import {
+	AuditableV2,
+	DB_BaseObject,
+	DB_Object,
+	DBProto,
+	Proto_DB_Object,
+	TypedKeyValue,
+	VersionsDeclaration
+} from '@nu-art/ts-common';
 
 export const _accountTypes = ['user', 'service'];
 export const accountTypes = [..._accountTypes] as const;
@@ -26,6 +34,7 @@ export type DB_Account = DB_Object & AuditableV2 & {
 	thumbnail?: string
 	salt?: string
 	saltedPassword?: string
+	description?: string // mainly for service accounts, will be used to explain the usage of the account
 	_newPasswordRequired?: boolean
 }
 
