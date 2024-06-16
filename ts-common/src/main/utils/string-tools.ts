@@ -38,6 +38,49 @@ export function escape_RegExp(string: string) {
 	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
+export function maxSubstring(string: string, maxBytes: number, direction: 'start' | 'end' = 'start') {
+	const encoder = new TextEncoder();
+	const decoder = new TextDecoder();
+	const bytes = encoder.encode(string);
+
+	if (bytes.length <= maxBytes) {
+		return string;
+	}
+
+	let slicedBytes;
+	if (direction === 'start') {
+		slicedBytes = bytes.slice(0, maxBytes);
+	} else {
+		slicedBytes = bytes.slice(-maxBytes);
+	}
+
+	return decoder.decode(slicedBytes);
+}
+
+/**
+ * Calculate the size of a string in the specified unit.
+ * @param str - The input string whose size is to be calculated.
+ * @param unit - The unit of size ('KB', 'MB', or 'GB').
+ * @returns The size of the string in the specified unit.
+ * @throws Error if the unit is invalid.
+ */
+export function getStringSize(str: string, unit: 'KB' | 'MB' | 'GB' = 'KB'): number {
+	const encoder = new TextEncoder();
+	const bytes = encoder.encode(str);
+	const byteLength = bytes.length;
+
+	switch (unit) {
+		case 'KB':
+			return byteLength / 1024;
+		case 'MB':
+			return byteLength / (1024 * 1024);
+		case 'GB':
+			return byteLength / (1024 * 1024 * 1024);
+		default:
+			throw new Error('Invalid unit. Please specify "KB", "MB", or "GB".');
+	}
+}
+
 export function stringFormat(input: string, params: string[] = []) {
 	return params?.reduce((toRet: string, param, index) => {
 		return toRet.replace(new RegExp(`\\{${index}\\}`, 'g'), param);

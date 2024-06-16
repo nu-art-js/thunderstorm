@@ -1,4 +1,11 @@
-import {DBDef_V3, tsValidateBoolean, tsValidateEmail, tsValidateString, tsValidateValue, tsValidator_nonMandatoryString} from '@nu-art/ts-common';
+import {
+	DBDef_V3,
+	tsValidateBoolean,
+	tsValidateEmail,
+	tsValidateString,
+	tsValidateValue,
+	tsValidator_nonMandatoryString
+} from '@nu-art/ts-common';
 import {_accountTypes, DBProto_Account} from './types';
 import {accountGroupName} from '../../session/shared/consts';
 
@@ -7,6 +14,7 @@ const modifiablePropsValidator: DBProto_Account['modifiablePropsValidator'] = {
 	type: tsValidateValue(_accountTypes),
 	thumbnail: tsValidateString(undefined, false),
 	displayName: tsValidateString(undefined, false),
+	description: tsValidateString(undefined, false)
 };
 
 const generatedPropsValidator: DBProto_Account['generatedPropsValidator'] = {
