@@ -213,7 +213,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			this.setStatus(`Compiled`, 'end');
 		} catch (e: any) {
 			this.setErrorStatus('Compilation Error', e);
-			throw e;
+
+			if (!RuntimeParams.watch)
+				throw e;
 		}
 	}
 
