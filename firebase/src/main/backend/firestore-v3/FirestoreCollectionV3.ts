@@ -73,12 +73,12 @@ export type PostWriteProcessingData<Proto extends DBProto<any>> = {
 	updated?: Proto['dbType'] | Proto['dbType'][];
 	deleted?: Proto['dbType'] | Proto['dbType'][] | null;
 };
-
+export type CollectionActionType = 'create' | 'set' | 'update' | 'delete'
 export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
 	canDeleteItems: (dbItems: Proto['dbType'][], transaction?: Transaction) => Promise<void>,
 	preWriteProcessing?: (dbInstance: Proto['dbType'], transaction?: Transaction) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Proto['dbType']>) => FirestoreQuery<Proto['dbType']>,
-	postWriteProcessing?: (data: PostWriteProcessingData<Proto>, transaction?: Transaction) => Promise<void>,
+	postWriteProcessing?: (data: PostWriteProcessingData<Proto>, actionType: CollectionActionType, transaction?: Transaction) => Promise<void>,
 	upgradeInstances: (instances: Proto['dbType'][]) => Promise<any>
 }
 
@@ -241,7 +241,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		else
 			await this.multiWrite(multiWriteType, docs, 'create', dbItems);
 
-		await this.hooks?.postWriteProcessing?.({updated: dbItems});
+		await this.hooks?.postWriteProcessing?.({updated: dbItems}, 'create');
 		return dbItems;
 	};
 
@@ -267,7 +267,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
 
-		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems});
+		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems}, 'set');
 		return preparedItems;
 	};
 
@@ -298,7 +298,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		const toUpdate: UpdateObject<Proto['dbType']>[] = await Promise.all(docs.map(async (_doc, i) => await _doc.prepareForUpdate(updateData[i])));
 		await this.multiWrite(multiWriteType, docs, 'update', toUpdate);
 		const dbItems = await this.getAll(docs) as Proto['dbType'][];
-		await this.hooks?.postWriteProcessing?.({updated: dbItems});
+		await this.hooks?.postWriteProcessing?.({updated: dbItems}, 'update');
 		return dbItems;
 	};
 
@@ -336,7 +336,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		else
 			await this.multiWrite(multiWriteType, docsToBeDeleted, 'delete');
 
-		await this.hooks?.postWriteProcessing?.({deleted: dbItems}, transaction);
+		await this.hooks?.postWriteProcessing?.({deleted: dbItems}, 'delete', transaction);
 		return dbItems;
 	};
 
@@ -345,7 +345,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		const bulk = this.wrapper.firestore.bulkWriter();
 		refs.forEach(_ref => bulk.delete(_ref));
 		// deleted: null means that the whole collection has been deleted
-		await this.hooks?.postWriteProcessing?.({deleted: null});
+		await this.hooks?.postWriteProcessing?.({deleted: null}, 'delete');
 		await bulk.close();
 	};
 
