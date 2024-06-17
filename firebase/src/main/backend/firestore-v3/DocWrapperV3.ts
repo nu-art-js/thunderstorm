@@ -1,12 +1,25 @@
-import {_keys, currentTimeMillis, DB_Object, DBProto, exists, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
+import {
+	_keys,
+	currentTimeMillis,
+	DB_Object,
+	DBProto,
+	exists,
+	MUSTNeverHappenException,
+	UniqueId
+} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
-import {assertUniqueId, FirestoreCollectionV3, PostWriteProcessingData} from './FirestoreCollectionV3';
-import UpdateData = firestore.UpdateData;
-import FieldValue = firestore.FieldValue;
+import {
+	assertUniqueId,
+	CollectionActionType,
+	FirestoreCollectionV3,
+	PostWriteProcessingData
+} from './FirestoreCollectionV3';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {addDeletedToTransaction} from './consts';
+import UpdateData = firestore.UpdateData;
+import FieldValue = firestore.FieldValue;
 
 
 export type UpdateObject<Proto extends DBProto<any>> =
@@ -72,7 +85,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		} else
 			await this.ref.create(dbItem);
 
-		this.postWriteProcessing({updated: dbItem}, transaction);
+		this.postWriteProcessing({updated: dbItem}, 'create', transaction);
 		return dbItem;
 	};
 
@@ -112,13 +125,13 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		// Will always get here with a transaction!
 		transaction!.set(this.ref, newDBItem);
 		this.data = currDBItem;
-		this.postWriteProcessing({updated: newDBItem, before: currDBItem}, transaction);
+		this.postWriteProcessing({updated: newDBItem, before: currDBItem}, 'set', transaction);
 
 		return newDBItem;
 	};
 
-	private postWriteProcessing(data: PostWriteProcessingData<Proto>, transaction?: Transaction) {
-		const toExecute = () => this.collection.hooks?.postWriteProcessing?.(data);
+	private postWriteProcessing(data: PostWriteProcessingData<Proto>, actionType: CollectionActionType, transaction?: Transaction) {
+		const toExecute = () => this.collection.hooks?.postWriteProcessing?.(data, actionType);
 		if (transaction)
 			// @ts-ignore
 			transaction.postTransaction(toExecute);
@@ -162,7 +175,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		updateData = await this.prepareForUpdate(updateData);
 		await this.ref.update(updateData);
 		const dbItem = await this.get();
-		this.postWriteProcessing({updated: dbItem});
+		this.postWriteProcessing({updated: dbItem}, 'update');
 		return dbItem;
 	};
 
@@ -185,7 +198,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 
 		this.cleanCache();
 
-		this.postWriteProcessing({deleted: dbItem}, transaction);
+		this.postWriteProcessing({deleted: dbItem}, 'delete', transaction);
 		return dbItem;
 	};
 }
