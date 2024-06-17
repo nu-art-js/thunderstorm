@@ -18,7 +18,7 @@ type Props<Proto extends DBProto<any>> = {
 
 export type MultiSelectDropDownPropsV3<Proto extends DBProto<any>> = {
 	module: ModuleFE_BaseApi<Proto>;
-	itemRenderer: (item?: Readonly<Proto['dbType']>, onDelete?: () => Promise<void>) => JSX.Element
+	itemRenderer: (item?: Readonly<Proto['dbType']>, onDelete?: () => Promise<void>, disabled?: boolean) => JSX.Element
 	uiSelector: UISelector<Proto>
 }
 
@@ -35,9 +35,9 @@ export class DBItemDropDownMultiSelector<Proto extends DBProto<any>>
 
 	static propsV3 = <Proto extends DBProto<any>>(props: MultiSelectDropDownPropsV3<Proto>): StaticProps_TS_MultiSelect_V2<string> => {
 		return {
-			itemRenderer: (itemId, onDelete?: () => Promise<void>) => {
+			itemRenderer: (itemId, onDelete?: () => Promise<void>, disabled?: boolean) => {
 				const dbItem = props.module.cache.unique(itemId);
-				return props.itemRenderer(dbItem, onDelete);
+				return props.itemRenderer(dbItem, onDelete, disabled);
 			},
 			selectionRenderer: DBItemDropDownMultiSelector.selector(props.uiSelector),
 			selectionFilter: (item) => true,
