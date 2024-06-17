@@ -6,6 +6,7 @@ import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/Fir
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionUserDB} from '../../permission-user/backend';
+import {CollectionActionType} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionGroup> & {}
@@ -46,7 +47,7 @@ export class ModuleBE_PermissionGroupDB_Class
 		instance._levelsMap = reduceToMap(dbLevels, dbLevel => dbLevel.domainId, dbLevel => dbLevel.value);
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionGroup>) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionGroup>, actionType: CollectionActionType) {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId));
