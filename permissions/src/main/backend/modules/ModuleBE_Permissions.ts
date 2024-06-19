@@ -1,7 +1,7 @@
 import {
 	_keys,
 	arrayToMap,
-	Dispatcher,
+	Dispatcher, exists,
 	filterInstances,
 	flatArray,
 	merge,
@@ -22,9 +22,7 @@ import {
 	ModuleBE_BaseApi_Class,
 	Storm
 } from '@nu-art/thunderstorm/backend';
-import {
-	ApiDef_Permissions,
-} from '../../shared';
+import {ApiDef_Permissions,} from '../../shared';
 import {
 	CollectSessionData,
 	MemKey_AccountId,
@@ -211,13 +209,12 @@ class ModuleBE_Permissions_Class
 
 	__performProjectSetup = async (): Promise<void> => {
 		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
-		const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
-
 		projects.reduce((issues, project) => {
 			return project.packages.reduce((issues, _package) => {
 				return issues;
 			}, issues);
 		}, [] as string[]);
+
 		// Create All Projects
 		const map_nameToDBProject: TypedMap<DB_PermissionProject> = await this.createProjects(projects);
 		const map_nameToDbDomain: TypedMap<DB_PermissionDomain> = await this.createDomains(projects, map_nameToDBProject);
@@ -226,6 +223,9 @@ class ModuleBE_Permissions_Class
 		await this.createApis(projects, domainNameToLevelNameToDBAccessLevel);
 		await this.createPermissionsKeys(projects);
 		await this.assignSuperAdmin();
+
+		// This stage updates the rtdb's config- which is why it's last. Changing the rtdb's config kills the server.
+		const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
 		await this.createSystemServiceAccount(serviceAccounts);
 	};
 
@@ -407,7 +407,12 @@ class ModuleBE_Permissions_Class
 	private async createPermissionsKeys(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating App Config');
 		// const permissionKeysToCreate: PermissionKey_BE<any>[] = filterInstances(flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.permissionKeys)))));
-		await ModuleBE_AppConfigDB.createDefaults(this);
+		try {
+			await ModuleBE_AppConfigDB.createDefaults(this);
+			this.logInfoBold('Created Permission Key defaults.');
+		} catch (e: any) {
+			this.logErrorBold('Failed creating Permission Key defaults.', e);
+		}
 		this.logInfoBold('Created App Config');
 	}
 
@@ -450,10 +455,17 @@ class ModuleBE_Permissions_Class
 
 		const envConfigRef = Storm.getInstance().getGlobalEnvConfigRef();
 		const updatedConfig: TS_Object = {};
+
+		//Run over all service accounts
 		for (const serviceAccount of serviceAccounts) {
 			// Create account if it doesn't already exist
-			const accountsToRequest = {type: 'service', email: serviceAccount.email};
+			const accountsToRequest = {
+				type: 'service',
+				email: serviceAccount.email,
+				...(exists(serviceAccount.description)) && {description: serviceAccount.description}
+			};
 			let account;
+			//Get or create service account
 			try {
 				account = await ModuleBE_AccountDB.impl.querySafeAccount({email: serviceAccount.email});
 			} catch (e) {
@@ -465,10 +477,23 @@ class ModuleBE_Permissions_Class
 			permissionsUser.groups = serviceAccount.groupIds?.map(groupId => ({groupId})) || [];
 			await ModuleBE_PermissionUserDB.set.item(permissionsUser);
 
-			// Invalidate previous sessions
-			await invalidateAccount({accountId: account._id});
-			const token = await tokenCreator({accountId: account._id, ttl: 100 * Year});
-			updatedConfig[serviceAccount.moduleName] = {serviceAccount: {token, accountId: account._id}};
+			//Service accounts are only allowed to have one session... but this isn't the defined place to be a cop about it
+			const sessions = await ModuleBE_AccountDB.account.getSessions(account);
+			//If we have a valid session(not expired) we use it's JWT instead of creating a new one
+			const validSession = sessions.sessions.find(_session => !ModuleBE_SessionDB.session.isExpired(_session));
+			const token = validSession?.sessionIdJwt ? {token: validSession?.sessionIdJwt} : await tokenCreator({
+				accountId: account._id,
+				ttl: 100 * Year
+			});
+
+			updatedConfig[serviceAccount.moduleName] = {
+				serviceAccount: {
+					token,
+					description: account.description,
+					accountId: account._id,
+					email: account.email
+				}
+			};
 		}
 
 		if (_keys(updatedConfig).length > 0)

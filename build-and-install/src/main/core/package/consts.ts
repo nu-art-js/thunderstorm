@@ -8,7 +8,7 @@ const EnvName_dev = 'dev' as const;
 const EnvName_staging = 'staging' as const;
 const EnvName_prod = 'prod' as const;
 
-const Default_ProjectEnvs = [
+export const Default_ProjectEnvs = [
 	EnvName_local,
 	EnvName_dev,
 	EnvName_staging,
@@ -30,12 +30,6 @@ export const Default_FunctionsIgnoreFiles = [
 	'firebase-debug.log'
 ];
 
-export const Default_ListOfFirebaseConfigFiles = [
-	'database.rules.json',
-	'firestore.indexes.json',
-	'firestore.rules',
-	'storage.rules',
-];
 export const Default_HostingConfig = {
 	public: 'dist',
 	rewrites: [
@@ -46,8 +40,13 @@ export const Default_HostingConfig = {
 	]
 };
 
-export const Default_FirebaseProjectConfig: Omit<FirebasePackageConfig<DefaultType_ProjectEnvs>, 'projectIds' | 'basePort' | 'debugPort'> = {
-	envs: Default_ProjectEnvs,
+type SharedConfig = {
+	pathToFirebaseConfig: FirebasePackageConfig['pathToFirebaseConfig']
+	functions: { ignore: NonNullable<FirebasePackageConfig['functions']>['ignore'] }
+	hosting: FirebasePackageConfig['hosting']
+}
+
+export const Default_FirebaseProjectConfig: SharedConfig = {
 	pathToFirebaseConfig: '.firebase_config',
 	functions: {
 		ignore: Default_FunctionsIgnoreFiles,

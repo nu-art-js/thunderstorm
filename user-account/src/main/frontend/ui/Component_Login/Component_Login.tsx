@@ -20,19 +20,14 @@ import * as React from 'react';
 import {_keys} from '@nu-art/ts-common';
 import {Account_Login, AccountEmail, AccountPassword} from '../../../shared';
 import './Component_Login.scss';
-import {
-	ComponentSync,
-	LL_V_C,
-	ModuleFE_Toaster,
-	TS_BusyButton,
-	TS_Input,
-	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_V_C, ModuleFE_Toaster, TS_BusyButton, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity';
+import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 
 type State<T> = {
 	data: Partial<T>
 	errorMessages?: string[];
+	submitting: boolean
 }
 
 type Props = {}
@@ -83,45 +78,73 @@ export class Component_Login
 			{_keys(form).map((key, i) => {
 					const field = form[key];
 					return <TS_PropRenderer.Vertical label={field.label} key={i}>
-						<TS_Input
+						<TS_InputV2
 							id={key}
 							value={data[key]}
 							type={field.type}
-							onChange={this.onValueChanged}
-							onAccept={this.loginClicked}
+							allowAccept={true}
+							onChange={(value) => {
+								this.onValueChanged(value, key as keyof Account_Login['request']);
+							}}
+							onAccept={(value) => {
+								this.onValueChanged(value, key as keyof Account_Login['request'], true);
+							}}
 						/>
 					</TS_PropRenderer.Vertical>;
 				}
 			)}
 			{this.renderErrorMessages()}
 			<TS_BusyButton onClick={this.loginClicked}
-										 className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
+						   isBusy={this.state.submitting}
+						   className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
 		</LL_V_C>;
 	}
 
-	private onValueChanged = (value: string, id: keyof Account_Login['request']) => {
+	private onValueChanged = (value: string, id: keyof Account_Login['request'], isAccept: boolean = false) => {
 		const data = {...this.state.data};
 		data[id] = value;
-		this.setState({data, errorMessages: undefined});
+		this.setState({data, errorMessages: undefined}, () => {
+			if (!isAccept)
+				return;
+
+			if (!this.canSubmit())
+				return;
+
+			this.setState({submitting: true}, async () => {
+				await this.loginClicked();
+				this.setState({submitting: false});
+			});
+		});
 	};
 
-	private loginClicked = async () => {
+	private canSubmit = () => {
 		const data: Partial<Account_Login['request']> = this.state.data;
 		const errors = _keys(form).map(key => {
 			const field = form[key];
 			return data[key] ? undefined : `  * missing ${field.label}`;
 		}).filter(error => !!error);
 
-		// const validateError = this.props.validate(data);
-		// if (validateError)
-		// 	addItemToArray(errors, validateError);
+		if (errors.length > 0) {
+			ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
+			return false;
+		}
 
-		if (errors.length > 0)
-			return ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
+		return true;
+	};
+
+	private loginClicked = async () => {
+		if (!this.canSubmit())
+			return;
 
 		try {
-			await ModuleFE_Account._v1.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Account_Login['request']).executeSync();
+			// this.logWarning('Login network begins');
+			await ModuleFE_Account._v1.login({
+				...this.state.data,
+				deviceId: StorageKey_DeviceId.get()
+			} as Account_Login['request']).executeSync();
+			// this.logWarning('Logged in');
 		} catch (err) {
+			// this.logWarning('Failed login network');
 			this.setState({errorMessages: ['Email or password incorrect']});
 		}
 	};

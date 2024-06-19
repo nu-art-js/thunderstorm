@@ -61,7 +61,12 @@ export class Component_AccountEditor
 				passwordCheck: this.state.password!
 			}).executeSync();
 			this.props.onComplete?.(account._id);
-			this.setState({email: undefined, password: undefined, passwordCheck: undefined, type: undefined});
+			this.setState({
+				email: undefined,
+				password: undefined,
+				passwordCheck: undefined,
+				type: undefined
+			});
 		}, {
 			type: 'notification',
 			notificationLabels: {
@@ -95,7 +100,10 @@ export class Component_AccountEditor
 				adapter={SimpleListAdapter([...accountTypes], i => <div className={'node-data'}>
 					<span>{i.item}</span></div>)}
 				onSelected={(type: AccountType) => {
-					type === 'service' ? this.setState({type, password: undefined}) : this.setState({type});
+					type === 'service' ? this.setState({
+						type,
+						password: undefined
+					}) : this.setState({type});
 				}}></TS_DropDown>
 		</TS_PropRenderer.Vertical>;
 	};
@@ -107,23 +115,23 @@ export class Component_AccountEditor
 					<div>{this.state.user?.email}</div>
 				</TS_PropRenderer.Vertical>
 				{this.state.user?.type !== 'service' && <TS_PropRenderer.Vertical label={'Need To Set Password'}>
-					<div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
-				</TS_PropRenderer.Vertical>}
+                    <div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
+                </TS_PropRenderer.Vertical>}
 			</LL_H_C>;
 
 		return <LL_H_C className={'inputs-row'}>
 			<TS_PropRenderer.Vertical label={'Email'}>
 				<TS_Input type={'text'}
-									placeholder={'Email'}
-									value={this.state.email}
-									onBlur={(email) => this.setState({email})}/>
+						  placeholder={'Email'}
+						  value={this.state.email}
+						  onBlur={(email) => this.setState({email})}/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical disabled={!(this.state.type === 'user')} label={'Temporary Password'}>
 				<TS_Input disabled={!(this.state.type === 'user')}
-									type={'password'}
-									value={this.state.password}
-									placeholder={'Temporary Password'}
-									onBlur={(password) => this.setState({password})}/>
+						  type={'password'}
+						  value={this.state.password}
+						  placeholder={'Temporary Password'}
+						  onBlur={(password) => this.setState({password})}/>
 			</TS_PropRenderer.Vertical>
 		</LL_H_C>;
 	};
@@ -198,22 +206,35 @@ export class Component_AccountEditor
 				<div className={'grid-title'}></div>
 				{this.state.sessions.map(session => {
 					const createdAt = DateTimeFormat_yyyyMMDDTHHmmss.format(session.timestamp);
-					// @ts-ignore
-					const sessionData = ModuleFE_Account.decode(session.sessionId);
-					SessionKeyFE_SessionData.get(sessionData).expiration;
-					const validTill = DateTimeFormat_yyyyMMDDTHHmmss.format(SessionKeyFE_SessionData.get(sessionData).expiration);
-					return <React.Fragment key={session._id}>
-						<LL_H_C className={'grid-cell'}>{session.label ?? 'No Label'}</LL_H_C>
-						<LL_H_C className={'grid-cell'}>{`${createdAt}`}</LL_H_C>
-						<LL_H_C className={'grid-cell'}>{`${validTill}`}</LL_H_C>
-						<LL_H_C className={'grid-cell'}>{session.deviceId}</LL_H_C>
-						<TS_Icons.copy.component
-							onClick={() => ModuleFE_Thunderstorm.copyToClipboard(session.sessionId)}/>
-					</React.Fragment>;
+					try {
+						// @ts-ignore
+						const sessionData = ModuleFE_Account.decode(session.sessionIdJwt);
+						SessionKeyFE_SessionData.get(sessionData).expiration;
+						const validTill = DateTimeFormat_yyyyMMDDTHHmmss.format(SessionKeyFE_SessionData.get(sessionData).expiration);
+						return <React.Fragment key={session._id}>
+							<LL_H_C className={'grid-cell'}>{session.label ?? 'No Label'}</LL_H_C>
+							<LL_H_C className={'grid-cell'}>{`${createdAt}`}</LL_H_C>
+							<LL_H_C className={'grid-cell'}>{`${validTill}`}</LL_H_C>
+							<LL_H_C className={'grid-cell'}>{session.deviceId}</LL_H_C>
+							<TS_Icons.copy.component
+								onClick={() => ModuleFE_Thunderstorm.copyToClipboard(session.sessionIdJwt)}/>
+						</React.Fragment>;
+					} catch (e) {
+						return '';
+					}
 				})}
 			</Grid>
 		</TS_PropRenderer.Vertical>;
 
+	};
+
+	private renderDescription = () => {
+		if (!this.state.user?.description)
+			return '';
+
+		return <TS_PropRenderer.Vertical label={'description'}>
+			{this.state.user.description}
+		</TS_PropRenderer.Vertical>;
 	};
 
 
@@ -223,6 +244,7 @@ export class Component_AccountEditor
 				{this.renderDropdown()}
 				{this.renderInputs()}
 				{this.renderSubmitButton()}
+				{this.renderDescription()}
 			</LL_V_L>
 			<LL_V_L className={'editor-section'}>
 				{this.renderSessionGrid()}

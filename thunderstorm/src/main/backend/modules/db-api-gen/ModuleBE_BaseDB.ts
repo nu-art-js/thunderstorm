@@ -42,7 +42,11 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {
+	CollectionActionType,
+	FirestoreCollectionV3,
+	PostWriteProcessingData
+} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
@@ -281,7 +285,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	protected async preWriteProcessing(dbInstance: Proto['uiType'], transaction?: Transaction) {
 	}
 
-	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>, transaction?: Transaction) => {
+	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>, actionType: CollectionActionType, transaction?: Transaction) => {
 		const now = currentTimeMillis();
 
 		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
@@ -298,14 +302,16 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
 			await ModuleBE_SyncManager.setOldestDeleted(this.dbDef.dbKey, now);
 
-		await this.postWriteProcessing(data, transaction);
+		await this.postWriteProcessing(data, actionType, transaction);
 	};
 
 	/**
 	 * Override this method to customize processing that should be done after create, set, update or delete.
 	 * @param data
+	 * @param actionType create/set/update/delete
+	 * @param transaction
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>, transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>, actionType: CollectionActionType, transaction?: Transaction) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<Proto['dbType']>): FirestoreQuery<Proto['dbType']> {

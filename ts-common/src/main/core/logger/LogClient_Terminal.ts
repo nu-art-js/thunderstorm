@@ -19,17 +19,20 @@
 import {
 	LogLevel,
 	LogParam
-} from "./types";
-import {LogClient} from "./LogClient";
+} from './types';
+import {LogClient} from './LogClient';
 import {
 	_logger_convertLogParamsToStrings,
 	_logger_indentNewLineBy
-} from "./utils";
+} from './utils';
+
 
 export const NoColor = '\x1b[0m';
 
 class LogClient_Terminal_class
 	extends LogClient {
+
+	private keepNaturalColors = false;
 
 	getColor(level: LogLevel, bold = false): string {
 		let color;
@@ -61,9 +64,13 @@ class LogClient_Terminal_class
 		const color = this.getColor(level, bold);
 		const paramsAsStrings = _logger_convertLogParamsToStrings(toLog);
 
-		console.log(_logger_indentNewLineBy(color + prefix, paramsAsStrings.join(" ")) + NoColor)
+		const linePrefix = `${color}${prefix}${this.keepNaturalColors ? NoColor : ''}`;
+		console.log(_logger_indentNewLineBy(linePrefix, paramsAsStrings.join(' ')) + NoColor);
+	}
+
+	public keepLogsNaturalColors(keepNaturalColors = true) {
+		this.keepNaturalColors = keepNaturalColors;
 	}
 }
-
 
 export const LogClient_Terminal = new LogClient_Terminal_class();

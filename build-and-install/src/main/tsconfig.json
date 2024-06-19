@@ -9,11 +9,13 @@
       "dom"
     ],
     "declaration": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "noUnusedLocals": true,
     "module": "commonjs",
-    "sourceMap": false,
+    "sourceMap": true,
     "strict": true
   },
   "esModuleInterop": true,

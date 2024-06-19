@@ -51,6 +51,7 @@ export class TS_ListOrganizer<T>
 
 	private draggedItemIndex: number | undefined = undefined;
 	private lockRowIndex: number | undefined = undefined;
+	private activeDrag: true | undefined = undefined;
 
 	//######################### Lifecycle #########################
 
@@ -63,11 +64,15 @@ export class TS_ListOrganizer<T>
 
 	onDragStart = (e: React.DragEvent<HTMLElement>, rowIndex: number) => {
 		this.draggedItemIndex = rowIndex;
+		this.activeDrag = true;
 		this.forceUpdate();
 	};
 
 	onDragOver = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
 		if (rowIndex === this.lockRowIndex)
+			return;
+
+		if (!this.activeDrag)
 			return;
 
 		if (!exists(this.draggedItemIndex) || this.draggedItemIndex === rowIndex)
@@ -82,10 +87,14 @@ export class TS_ListOrganizer<T>
 	onDragEnd = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
 		this.draggedItemIndex = undefined;
 		this.lockRowIndex = undefined;
-		this.forceUpdate(()=> this.props.onOrderChanged(this.state.items));
+		this.activeDrag = undefined;
+		this.forceUpdate(() => this.props.onOrderChanged(this.state.items));
 	};
 
 	onDragLeave = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
+		if (!this.activeDrag)
+			return;
+
 		if (rowIndex === this.lockRowIndex)
 			this.lockRowIndex = undefined;
 	};

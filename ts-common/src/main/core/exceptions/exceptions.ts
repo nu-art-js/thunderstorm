@@ -223,6 +223,39 @@ export class WhoCallThisException
 }
 
 /**
+ * When config for components or modules is missing
+ */
+export class ConfigMissingException
+	extends CustomException {
+
+	constructor(message: string, cause?: Error) {
+		super(ConfigMissingException, message, cause);
+	}
+}
+
+/**
+ * When a mandatory field is missing in an object when the object is fetched
+ */
+export class MissingDataException
+	extends CustomException {
+
+	constructor(message: string, cause?: Error) {
+		super(MissingDataException, message, cause);
+	}
+}
+
+/**
+ * When attempting to perform an action without the necessary permission
+ */
+export class MissingPermissionException
+	extends CustomException {
+
+	constructor(message: string, cause?: Error) {
+		super(MissingPermissionException, message, cause);
+	}
+}
+
+/**
  * # <ins>AssertionException</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "AssertionException",
  * @category Exceptions

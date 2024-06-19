@@ -1,11 +1,11 @@
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
 import {addItemToArray} from '@nu-art/ts-common';
-import * as express from 'express';
-import {Express, Response} from 'express';
+import express, {Express, Response} from 'express';
 import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
 import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
 import {LocalRequest} from '../functions/firebase-function';
 import {WebSocket} from 'ws';
+
 
 export class ModuleBE_ExpressFunction_V2
 	extends ModuleBE_BaseFunction<{ options: HttpsOptions }> {
@@ -40,7 +40,6 @@ export class ModuleBE_ExpressFunction_V2
 
 export class ModuleBE_SocketFunction
 	extends ModuleBE_ExpressFunction_V2 {
-
 
 	protected createFunction(_express: Express) {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
