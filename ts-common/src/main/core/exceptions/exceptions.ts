@@ -240,7 +240,18 @@ export class MissingDataException
 	extends CustomException {
 
 	constructor(message: string, cause?: Error) {
-		super(ConfigMissingException, message, cause);
+		super(MissingDataException, message, cause);
+	}
+}
+
+/**
+ * When attempting to perform an action without the necessary permission
+ */
+export class MissingPermissionException
+	extends CustomException {
+
+	constructor(message: string, cause?: Error) {
+		super(MissingPermissionException, message, cause);
 	}
 }
 
