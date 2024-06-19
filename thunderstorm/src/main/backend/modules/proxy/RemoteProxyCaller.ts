@@ -24,6 +24,7 @@ import {BodyApi, QueryApi} from '../../../shared/types';
 import {promisifyRequest} from '../../utils/promisify-request';
 import {RequestOptions} from '../../../backend';
 import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
+import { HeaderKey_ContentType } from '../../shared';
 
 
 export type RemoteServerConfig = {
@@ -80,7 +81,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,
-				'Content-Type': 'application/json',
+				[HeaderKey_ContentType]: 'application/json',
 				[this.config.secretHeaderName]: this.config.secret,
 				[this.config.proxyHeaderName]: this.config.proxyId,
 			},

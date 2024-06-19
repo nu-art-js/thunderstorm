@@ -1,13 +1,38 @@
 import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from './shared';
+import {
+	DB_PermissionUser,
+	DBDef_PermissionUser,
+	DBProto_PermissionUser,
+	Request_AssignPermissions,
+	User_Group
+} from './shared';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
-import {_keys, ApiException, asOptionalArray, DB_BaseObject, dbObjectToId, exists, filterDuplicates, filterInstances, TypedMap} from '@nu-art/ts-common';
-import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import {
+	_keys,
+	ApiException,
+	asOptionalArray,
+	DB_BaseObject,
+	dbObjectToId,
+	exists,
+	filterDuplicates,
+	filterInstances,
+	TypedMap
+} from '@nu-art/ts-common';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
-import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {
+	MemKey_AccountId,
+	ModuleBE_AccountDB,
+	ModuleBE_SessionDB,
+	OnNewUserRegistered,
+	OnUserLogin
+} from '@nu-art/user-account/backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account';
 import {MemKey_UserPermissions} from '../../../backend/consts';
+import {
+	CollectionActionType,
+	PostWriteProcessingData
+} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
@@ -88,7 +113,7 @@ export class ModuleBE_PermissionUserDB_Class
 		//todo check for duplications in data
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionUser>) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_PermissionUser>, actionType: CollectionActionType) {
 		const deleted = asOptionalArray(data.deleted) ?? [];
 		const updated = asOptionalArray(data.updated) ?? [];
 		const beforeIds = (asOptionalArray(data.before) ?? []).map(before => before?._id);
@@ -98,13 +123,15 @@ export class ModuleBE_PermissionUserDB_Class
 	}
 
 	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
-		const permissionsUserToCreate = {
-			_id: uiAccount._id,
-			groups: this.defaultPermissionGroups ?? [],
-			_auditorId: MemKey_AccountId.get()
-		};
-
 		const create = async (transaction?: Transaction) => {
+			const permissionGroups = this.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(this.defaultPermissionGroups.map(item => item.groupId))) : [];
+			this.logInfo(`Received ${this.defaultPermissionGroups?.length} groups to assign, ${permissionGroups.length} of which exist`);
+			const permissionsUserToCreate = {
+				_id: uiAccount._id,
+				groups: permissionGroups.map(group => ({groupId: group._id})),
+				_auditorId: MemKey_AccountId.get()
+			};
+
 			return this.create.item(permissionsUserToCreate, transaction);
 		};
 

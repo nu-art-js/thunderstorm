@@ -17,6 +17,7 @@ import {
 	ApiDef_SyncEnv,
 	ApiModule,
 	DBModuleType,
+	HeaderKey_SessionId,
 	HttpMethod,
 	QueryApi,
 	Request_FetchFirebaseBackup,
@@ -37,7 +38,6 @@ import {firestore} from 'firebase-admin';
 
 type Config = {
 	urlMap: TypedMap<string>
-	fetchBackupDocsSecretsMap: TypedMap<string>,
 	sessionMap: TypedMap<TypedMap<string>>,
 	maxBatch: number
 	shouldBackupBeforeSync?: boolean;
@@ -99,7 +99,7 @@ class ModuleBE_SyncEnv_Class
 		};
 
 		const url = remoteUrls[body.env];
-		const sessionId = MemKey_HttpRequest.get().headers['x-session-id'];
+		const sessionId = MemKey_HttpRequest.get().headers[HeaderKey_SessionId];
 
 		const module = RuntimeModules().find<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbKey === body.moduleName);
 
@@ -108,7 +108,7 @@ class ModuleBE_SyncEnv_Class
 			.createRequest({...upsertAll, fullUrl: url + '/' + upsertAll.path, timeout: 5 * Minute})
 			.setBody(body.items)
 			.setUrlParams(body.items)
-			.addHeader('x-session-id', sessionId!)
+			.addHeader(HeaderKey_SessionId, sessionId!)
 			.executeSync(true);
 
 		console.log(response);
@@ -131,7 +131,8 @@ class ModuleBE_SyncEnv_Class
 		}
 
 		if (this.config.allowedEnvsToSyncFrom && !this.config.allowedEnvsToSyncFrom.includes(body.env)) {
-			throw new MUSTNeverHappenException(`Env ${Storm.getInstance().getEnvironment().toLowerCase()} doesn't have env ${body.env} in it's allowedEnvsToSyncFrom list.`);
+			throw new MUSTNeverHappenException(`Env ${Storm.getInstance().getEnvironment()
+				.toLowerCase()} doesn't have env ${body.env} in it's allowedEnvsToSyncFrom list.`);
 		}
 
 		this.logInfoBold('Received API call Fetch From Env!');
@@ -169,8 +170,7 @@ class ModuleBE_SyncEnv_Class
 			stream
 				.pipe(collectionFilter)
 				.pipe(collectionWriter)
-				.on('finish', () => resolve())
-				.on('error', err => reject(err));
+				.on('finish', () => resolve());
 		});
 		endTime = performance.now();
 		this.logInfo(`Syncing Collections took ${((endTime - startTime) / 1000).toFixed(3)} seconds`);
@@ -249,7 +249,7 @@ class CollectionBatchWriter
 		super({objectMode: true});
 		this.paginationSize = paginationSize;
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
-		this.firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
+		this.firestore = firebaseSessionAdmin.getFirestoreV3().firestore;
 		this.batchWriter = this.firestore.batch();
 		this.modules = arrayToMap(RuntimeModules()
 			.filter((module: DBModuleType) => !(!module || !module.dbDef)), module => module.dbDef!.dbKey);
@@ -257,7 +257,7 @@ class CollectionBatchWriter
 
 	async _write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
 		try {
-			const collectionName = this.modules[chunk.dbKey].dbDef!.dbKey;
+			const collectionName = this.modules[chunk.dbKey].dbDef!.backend.name;
 			const docRef = this.firestore.doc(`${collectionName}/${chunk._id}`);
 			const data = JSON.parse(chunk.document);
 			this.batchWriter.set(docRef, data);

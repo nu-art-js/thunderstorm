@@ -46,6 +46,44 @@ export const debounce = <Args extends any[]>(func: (...params: Args) => any | Pr
 	};
 };
 
+export const queuedDebounce = <Args extends any[]>(func: (...params: Args) => any | Promise<any>, timeout: number = 500, maxTimeout: number = 1000) => {
+	let timer: NodeJS.Timeout;
+	let defaultTimer: NodeJS.Timeout | undefined;
+	let running: boolean = false;
+
+	const debounceFunc = (...args: Args) => {
+		clearTimeout(timer);
+		timer = setTimeout(async () => {
+			clearTimeout(defaultTimer);
+			defaultTimer = undefined;
+			await execFunc(...args);
+		}, timeout);
+		if (!defaultTimer) {
+			defaultTimer = setTimeout(async () => {
+				defaultTimer = undefined;
+				await execFunc(...args);
+			}, maxTimeout);
+		}
+	};
+
+	const execFunc = async (...args: Args) => {
+		if (running) {
+			clearTimeout(defaultTimer);
+			defaultTimer = undefined;
+			return debounceFunc(...args);
+		}
+
+		try {
+			running = true;
+			await func(...args);
+		} finally {
+			running = false;
+		}
+	};
+
+	return debounceFunc;
+};
+
 export type AwaitedDebounceInstance<Args extends any[], ReturnValue> = (...args: Args) => Promise<ReturnValue | undefined>
 
 type DebounceParams<Args extends any[], ReturnValue = any> = {

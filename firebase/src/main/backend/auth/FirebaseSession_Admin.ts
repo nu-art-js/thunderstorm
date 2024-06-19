@@ -23,44 +23,31 @@ import {initializeApp} from 'firebase-admin/app';
 import {JWTInput} from 'google-auth-library';
 import {FirebaseSession} from './firebase-session';
 import {getAuth} from 'firebase-admin/auth';
-import {ThisShouldNotHappenException} from '@nu-art/ts-common';
+
 
 /**
  Represents an admin session for interacting with Firebase services.
  */
 export class FirebaseSession_Admin
-    extends FirebaseSession<JWTInput & { databaseURL?: string, isEmulator?: boolean } | undefined> {
+	extends FirebaseSession<JWTInput & { databaseURL?: string, isEmulator?: boolean } | undefined> {
 
-    constructor(sessionName: string, config?: any) {
-        super(config, sessionName);
-    }
+	constructor(firebaseAppName: string, config?: any) {
+		super(config, firebaseAppName);
+	}
 
-    /**
-     * Returns the project ID associated with the Firebase configuration data.
-     */
-    getProjectId(): string {
-        if (!this.config) {
-            if (!process.env.GCLOUD_PROJECT)
-                throw new ThisShouldNotHappenException('Could not deduce project id from function const!!');
-            return process.env.GCLOUD_PROJECT;
-        }
-        if (!this.config.project_id)
-            throw new ThisShouldNotHappenException('Could not deduce project id from session config.. if you need the functionality.. add it to the config!!');
-        return this.config.project_id;
-    }
+	/**
+	 * Establishes a connection to the Firebase project using the configuration data and the project ID.
+	 */
+	public connect(): this {
+		this.app = initializeApp(this.config, this.firebaseAppName);
+		return this;
+	}
 
-    /**
-     * Establishes a connection to the Firebase project using the configuration data and the project ID.
-     */
-    public connect(): void {
-        this.app = initializeApp(this.config, this.getProjectId());
-    }
-
-    /**
+	/**
      Returns an instance of the Firebase Authentication service.
-     */
-    public getAuth() {
-        return getAuth(this.app);
-    }
+	 */
+	public getAuth() {
+		return getAuth(this.app);
+	}
 }
 

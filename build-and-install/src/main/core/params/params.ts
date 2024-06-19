@@ -1,5 +1,9 @@
-import {BaseCliParam, CLIParams_Resolver} from '@nu-art/commando/cli/cli-params';
+import {BaseCliParam} from '@nu-art/commando/cli-params/types';
+import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
+import {exists} from '@nu-art/ts-common';
 
+//util regex function
+const regexTemplate = (regexp: string | undefined) => exists(regexp) ? `.*${regexp}.*` : '.*';
 
 export const BaiParam_Help: BaseCliParam<'help', boolean> = {
 	keys: ['--help', '-h'],
@@ -33,22 +37,6 @@ export const BaiParam_PrintEnv: BaseCliParam<'printEnv', boolean> = {
 	description: 'Will print the current versions of the important tools'
 };
 
-export const BaiParam_Purge: BaseCliParam<'purge', boolean> = {
-	keys: ['--purge', '-p'],
-	keyName: 'purge',
-	group: 'Clean',
-	type: 'boolean',
-	description: 'Will delete the node_modules folder in all project packages \nWill perform --clean --install'
-};
-
-export const BaiParam_Clean: BaseCliParam<'clean', boolean> = {
-	keys: ['--clean', '-c'],
-	keyName: 'clean',
-	type: 'boolean',
-	group: 'Clean',
-	description: 'Will delete the output(dist) & test output(dist-test) folders in all project packages'
-};
-
 export const BaiParam_continue: BaseCliParam<'continue', boolean> = {
 	keys: ['--continue', '-con'],
 	keyName: 'continue',
@@ -57,45 +45,21 @@ export const BaiParam_continue: BaseCliParam<'continue', boolean> = {
 	description: 'Will pick up where last build process failed'
 };
 
-export const BaiParam_UsePackage: BaseCliParam<'usePackage', string> = {
-	keys: ['--use-package', '-up'],
-	keyName: 'usePackage',
-	type: 'string',
-	group: 'Build',
-	description: 'Would ONLY run the script in the context of the specified project packages \nvalue required: project-package-folder(string)'
-};
-
-export const BaiParam_ProjectLibs: BaseCliParam<'projectLibs', boolean> = {
-	keys: ['--project-libs', '-pl'],
-	keyName: 'projectLibs',
-	type: 'boolean',
-	group: 'Build',
-	description: 'Would ONLY run the script in the context of the project libs'
-};
-
-export const BaiParam_SetEnv: BaseCliParam<'setEnv', string> = {
+export const BaiParam_SetEnv: BaseCliParam<'environment', string> = {
 	keys: ['--set-env', '-se'],
-	keyName: 'setEnv',
+	keyName: 'environment',
 	type: 'string',
 	group: 'Build',
 	defaultValue: 'local',
 	description: 'Will set the .config-${environment}.json as the current .config.json and prepare it as base 64 for local usage \ninput required: envName(string)'
 };
 
-export const BaiParam_FallbackEnv: BaseCliParam<'fallbackEnv', string> = {
-	keys: ['--fallback-env', '-fe'],
-	keyName: 'fallbackEnv',
-	type: 'string',
-	group: 'Build',
-	description: 'When setting env some of the files might be missing and would fallback to the provided env \ninput required: envName(string)'
-};
-
 export const BaiParam_Setup: BaseCliParam<'setup', boolean> = {
-	keys: ['--setup', '-s'],
+	keys: ['--setup'],
 	keyName: 'setup',
 	type: 'boolean',
 	group: 'Build',
-	description: '--setup / -s are deprecated... use --install or -i'
+	description: 'Setup local project for developer'
 };
 
 export const BaiParam_Install: BaseCliParam<'install', boolean> = {
@@ -122,6 +86,23 @@ export const BaiParam_InstallGlobals: BaseCliParam<'installGlobals', boolean> = 
 	description: 'Will install all global packages'
 };
 
+export const BaiParam_Clean: BaseCliParam<'clean', boolean> = {
+	keys: ['--clean', '-c'],
+	keyName: 'clean',
+	type: 'boolean',
+	group: 'Clean',
+	description: 'Will delete the output(dist) & test output(dist-test) folders in all project packages'
+};
+
+export const BaiParam_Purge: BaseCliParam<'purge', boolean> = {
+	keys: ['--purge', '-p'],
+	dependencies: [{param: BaiParam_Clean, value: true}, {param: BaiParam_InstallPackages, value: true}],
+	keyName: 'purge',
+	group: 'Clean',
+	type: 'boolean',
+	description: 'Will delete the node_modules folder in all project packages \nWill perform --clean --install'
+};
+
 export const BaiParam_Generate: BaseCliParam<'generate', boolean> = {
 	keys: ['--generate', '-g'],
 	keyName: 'generate',
@@ -130,36 +111,12 @@ export const BaiParam_Generate: BaseCliParam<'generate', boolean> = {
 	description: 'Will generate sources in the apps if needed'
 };
 
-export const BaiParam_CleanEnv: BaseCliParam<'cleanEnv', boolean> = {
-	keys: ['--clean-env', '-cenv'],
-	keyName: 'cleanEnv',
-	type: 'boolean',
-	group: 'Build',
-	description: 'will clean env'
-};
-
-export const BaiParam_Link: BaseCliParam<'link', boolean> = {
-	keys: ['--link', '-ln'],
-	keyName: 'link',
-	type: 'boolean',
-	group: 'Build',
-	description: 'Would link dependencies between project packages'
-};
-
 export const BaiParam_GenerateDocs: BaseCliParam<'generateDocs', boolean> = {
 	keys: ['--generate-docs', '-docs'],
 	keyName: 'generateDocs',
 	type: 'boolean',
 	group: 'Build',
 	description: 'Would generate ts-docs documentation'
-};
-
-export const BaiParam_LinkOnly: BaseCliParam<'linkOnly', boolean> = {
-	keys: ['--linkOnly', '-lo'],
-	keyName: 'linkOnly',
-	group: 'Build',
-	type: 'boolean',
-	description: 'Would ONLY link dependencies between project packages'
 };
 
 export const BaiParam_NoBuild: BaseCliParam<'noBuild', boolean> = {
@@ -171,19 +128,27 @@ export const BaiParam_NoBuild: BaseCliParam<'noBuild', boolean> = {
 };
 
 export const BaiParam_DryRun: BaseCliParam<'dryRun', boolean> = {
-	keys: ['--dry-run', '-dry'],
+	keys: ['--dry-run', '-dry', '--dryrun'],
 	keyName: 'dryRun',
 	group: 'Other',
 	type: 'boolean',
 	description: 'Do not perform any phase impl, only log the process'
 };
 
-export const BaiParam_ThunderstormHome: BaseCliParam<'thunderstormHome', boolean> = {
-	keys: ['--thunderstorm-home', '-th'],
-	keyName: 'thunderstormHome',
+export const BaiParam_RunWithThunderstorm: BaseCliParam<'runWithThunderstorm', boolean> = {
+	keys: ['--with-thunderstorm', '-th'],
+	keyName: 'runWithThunderstorm',
 	type: 'boolean',
 	group: 'Build',
 	description: 'Will link the output folder of the libraries of thunderstorm that exists under the give path \nMUST have ThunderstormHome env variable defined and point to the Thunderstorm sample project'
+};
+
+export const BaiParam_WithCommando: BaseCliParam<'withCommando', boolean> = {
+	keys: ['--with-commando', '-wc'],
+	keyName: 'withCommando',
+	type: 'boolean',
+	group: 'Build',
+	description: 'Build with local commando from ts'
 };
 
 export const BaiParam_NoThunderstorm: BaseCliParam<'noThunderstorm', boolean> = {
@@ -202,22 +167,6 @@ export const BaiParam_Lint: BaseCliParam<'lint', boolean> = {
 	description: 'Run lint on all the project packages'
 };
 
-export const BaiParam_OutputDir: BaseCliParam<'outputDir', string> = {
-	keys: ['--output-dir', '-od'],
-	keyName: 'outputDir',
-	type: 'string',
-	group: 'Build',
-	description: 'Set the output dir name/path (default: dist) \nrequired input: path-to-output-folder (string)'
-};
-
-export const BaiParam_CheckImports: BaseCliParam<'checkImports', boolean> = {
-	keys: ['--check-imports', '-ci'],
-	keyName: 'checkImports',
-	type: 'boolean',
-	group: 'Build',
-	description: 'Will check for circular import in files...'
-};
-
 export const BaiParam_Watch: BaseCliParam<'watch', boolean> = {
 	keys: ['--watch', '-w'],
 	keyName: 'watch',
@@ -232,23 +181,7 @@ export const BaiParam_Test: BaseCliParam<'test', string> = {
 	type: 'string',
 	group: 'Test',
 	description: 'Run the tests in all the project packages\naccepts test label to run optionally. default will be empty string',
-	defaultValue: '.*'
-};
-
-export const BaiParam_Account: BaseCliParam<'account', string> = {
-	keys: ['--account', '-a'],
-	keyName: 'account',
-	type: 'string',
-	group: 'Test',
-	description: 'Run the tests in all the project packages \ninput required, path to firebase service account (string'
-};
-
-export const BaiParam_OutputTestDir: BaseCliParam<'outputTestDir', string> = {
-	keys: ['--output-test-dir', '-otd'],
-	keyName: 'outputTestDir',
-	type: 'string',
-	group: 'Test',
-	description: 'Set the tests output dir name/path (default: dist-test) \ninput optional path to output folder'
+	process: regexTemplate,
 };
 
 export const BaiParam_Launch: BaseCliParam<'launch', string> = {
@@ -256,16 +189,8 @@ export const BaiParam_Launch: BaseCliParam<'launch', string> = {
 	keyName: 'launch',
 	type: 'string',
 	group: 'Apps',
-	process: () => '.*',
+	process: regexTemplate,
 	description: 'It will add the provided App to the launch list \nrequired input: path-to-app-to-launch(string)'
-};
-
-export const BaiParam_FileToLaunch: BaseCliParam<'fileToLaunch', string> = {
-	keys: ['--file', '-f'],
-	keyName: 'fileToLaunch',
-	group: 'Apps',
-	type: 'string',
-	description: 'The file name to launch \ninput required: path-to-file(string)'
 };
 
 export const BaiParam_LaunchFrontend: BaseCliParam<'launchFrontend', boolean> = {
@@ -293,36 +218,30 @@ export const BaiParam_DebugBackend: BaseCliParam<'debugBackend', boolean> = {
 };
 
 export const BaiParam_Deploy: BaseCliParam<'deploy', string> = {
-	keys: ['--deploy', '-d'],
+	keys: ['--deploy', '-dep'],
 	keyName: 'deploy',
 	type: 'string',
 	group: 'Apps',
-	process: () => '.*',
+	process: regexTemplate,
 	description: 'Will add the provided App to the deploy list or all applications'
 };
 
-export const BaiParam_DeployBackend: BaseCliParam<'deployBackend', boolean> = {
+export const BaiParam_DeployBackend: BaseCliParam<'deployBackend', string> = {
 	keys: ['--deploy-backend', '-db'],
 	keyName: 'deployBackend',
 	group: 'Apps',
-	type: 'boolean',
+	type: 'string',
+	process: regexTemplate,
 	description: 'Will add the app-backend to the deploy list'
 };
 
-export const BaiParam_DeployFrontend: BaseCliParam<'deployFrontend', boolean> = {
+export const BaiParam_DeployFrontend: BaseCliParam<'deployFrontend', string> = {
 	keys: ['--deploy-frontend', '-df'],
 	keyName: 'deployFrontend',
-	type: 'boolean',
-	group: 'Apps',
-	description: 'Will add the app frontend to the deploy list'
-};
-
-export const BaiParam_SetVersion: BaseCliParam<'setVersion', string> = {
-	keys: ['--set-version', '-sv'],
-	keyName: 'setVersion',
 	type: 'string',
 	group: 'Apps',
-	description: 'Set application version before deploy \ninput required: in the following structure: x.y.z (string)'
+	process: regexTemplate,
+	description: 'Will add the app frontend to the deploy list'
 };
 
 export const BaiParam_NoGit: BaseCliParam<'noGit', boolean> = {
@@ -333,37 +252,20 @@ export const BaiParam_NoGit: BaseCliParam<'noGit', boolean> = {
 	description: '',
 };
 
-export const BaiParam_DebugTranspiler: BaseCliParam<'debugTranspiler', boolean> = {
-	keys: ['--debug-transpiler', '-dt'],
-	keyName: 'debugTranspiler',
-	type: 'boolean',
-	group: 'Other',
-	description: ''
-};
-
 export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
-	keys: ['--debug'],
+	keys: ['--debug', '-d'],
 	keyName: 'debug',
 	group: 'Other',
 	type: 'boolean',
 	description: 'Will print the parameters the script is running with'
 };
 
-export const BaiParam_Debugger: BaseCliParam<'debugger', boolean> = {
-	keys: ['--debugger'],
-	keyName: 'debugger',
+export const BaiParam_Verbose: BaseCliParam<'verbose', boolean> = {
+	keys: ['--verbose', '-d'],
+	keyName: 'verbose',
 	group: 'Other',
 	type: 'boolean',
-	description: 'Will stop at break points'
-};
-
-export const BaiParam_Log: BaseCliParam<'setLogLevel', string> = {
-	keys: ['--log'],
-	keyName: 'setLogLevel',
-	group: 'Other',
-	type: 'string',
-	options: ['verbose', 'debug', 'info', 'warning', 'error'],
-	description: 'Set the script log level \nEnum options: verbose | debug | info | warning | error \ndefault level: info'
+	description: 'Set log level to verbose'
 };
 
 export const BaiParam_QuickDeploy: BaseCliParam<'quickDeploy', boolean> = {
@@ -380,15 +282,53 @@ export const BaiParam_Publish: BaseCliParam<'publish', string> = {
 	type: 'string',
 	group: 'Other',
 	description: 'Will publish thunderstorm && promote thunderstorm version \nenum options: patch | minor | major \nDefault Param: patch',
-	defaultValue: 'patch'
+	process: (part) => part ?? 'patch'
 };
 
-export const BaiParam_QuickPublish: BaseCliParam<'quickPublish', boolean> = {
-	keys: ['--quick-publish', '-qp'],
-	keyName: 'quickPublish',
+export const BaiParam_AllLogs: BaseCliParam<'allLogs', boolean> = {
+	keys: ['--all-logs', '-al'],
+	keyName: 'allLogs',
+	type: 'boolean',
+	group: 'UI',
+	description: 'will disable ui and show verbose logs for bai run',
+};
+
+export const BaiParam_CloseScreenOnExit: BaseCliParam<'closeOnExit', boolean> = {
+	keys: ['--close-on-exit', '-cox'],
+	keyName: 'closeOnExit',
+	type: 'boolean',
+	group: 'UI',
+	description: 'will close all the fancy screens once process is done',
+};
+
+export const BaiParam_EncounterManager: BaseCliParam<'encounterManager', boolean> = {
+	keys: ['-em', '--encounter-manager'],
+	keyName: 'encounterManager',
 	type: 'boolean',
 	group: 'Other',
-	description: 'Will publish thunderstorm without link clean lint and compile',
+	description: 'Will install encounter manager shit',
+};
+
+export const BaiParam_EncounterManagerListen: BaseCliParam<'encounterManagerListen', boolean> = {
+	keys: ['-eml', '--encounter-manager-listen'],
+	keyName: 'encounterManagerListen',
+	type: 'boolean',
+	group: 'Other',
+	description: 'Will install encounter manager shit and launch after advisor and km',
+};
+
+export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
+	keys: ['-up', '--use-packages'],
+	keyName: 'usePackage',
+	type: 'string[]',
+	group: 'Other',
+	description: 'Will specify units to process',
+	process: (value) => {
+		if (!value)
+			return [];
+
+		return value!.split(',').map(str => str.trim());
+	}
 };
 
 export const AllBaiParams = [
@@ -399,47 +339,37 @@ export const AllBaiParams = [
 	BaiParam_Purge,
 	BaiParam_Clean,
 	BaiParam_continue,
-	BaiParam_UsePackage,
-	BaiParam_ProjectLibs,
 	BaiParam_SetEnv,
-	BaiParam_FallbackEnv,
 	BaiParam_Setup,
 	BaiParam_Install,
 	BaiParam_InstallPackages,
 	BaiParam_InstallGlobals,
-	BaiParam_Generate,
-	BaiParam_CleanEnv,
-	BaiParam_Link,
-	BaiParam_GenerateDocs,
-	BaiParam_LinkOnly,
+	BaiParam_Generate, // TODO: to implement
+	BaiParam_GenerateDocs,// TODO: to implement
 	BaiParam_NoBuild,
 	BaiParam_DryRun,
-	BaiParam_ThunderstormHome,
+	BaiParam_RunWithThunderstorm,
+	BaiParam_WithCommando,
 	BaiParam_NoThunderstorm,
 	BaiParam_Lint,
-	BaiParam_OutputDir,
-	BaiParam_CheckImports,
 	BaiParam_Watch,
-	BaiParam_Test,
-	BaiParam_Account,
-	BaiParam_OutputTestDir,
+	BaiParam_Test,// TODO: to implement
 	BaiParam_Launch,
-	BaiParam_FileToLaunch,
-	BaiParam_LaunchFrontend,
-	BaiParam_LaunchBackend,
+	BaiParam_LaunchFrontend,// TODO: to implement
+	BaiParam_LaunchBackend,// TODO: to implement
 	BaiParam_DebugBackend,
 	BaiParam_Deploy,
 	BaiParam_DeployBackend,
 	BaiParam_DeployFrontend,
-	BaiParam_SetVersion,
-	BaiParam_NoGit,
-	BaiParam_DebugTranspiler,
+	BaiParam_NoGit, // TODO: to implement
 	BaiParam_Debug,
-	BaiParam_Debugger,
-	BaiParam_Log,
-	BaiParam_QuickDeploy,
-	BaiParam_Publish,
-	BaiParam_QuickPublish,
+	BaiParam_Verbose,
+	BaiParam_Publish, // TODO: to implement
+	BaiParam_AllLogs,
+	BaiParam_CloseScreenOnExit,
+	BaiParam_EncounterManager,
+	BaiParam_EncounterManagerListen, BaiParam_UsePackage
 ];
 
-export const RuntimeParams = CLIParams_Resolver.create(...AllBaiParams).resolveParamValue();
+const params = CLIParamsResolver.create(...AllBaiParams).resolveParamValue();
+export const RuntimeParams = params;

@@ -31,9 +31,9 @@ import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/
 
 import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
 
-import * as JSZip from 'jszip';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import JSZip from 'jszip';
 
 export type TicketDetails = {
 	platform: string
