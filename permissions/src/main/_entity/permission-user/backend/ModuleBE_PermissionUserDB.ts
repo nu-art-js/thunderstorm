@@ -18,7 +18,6 @@ import {
 	filterInstances,
 	TypedMap
 } from '@nu-art/ts-common';
-import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
 import {
 	MemKey_AccountId,
@@ -30,7 +29,10 @@ import {
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account';
 import {MemKey_UserPermissions} from '../../../backend/consts';
-import {CollectionActionType} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {
+	CollectionActionType,
+	PostWriteProcessingData
+} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
@@ -111,7 +113,7 @@ export class ModuleBE_PermissionUserDB_Class
 		//todo check for duplications in data
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionUser>, actionType: CollectionActionType) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_PermissionUser>, actionType: CollectionActionType) {
 		const deleted = asOptionalArray(data.deleted) ?? [];
 		const updated = asOptionalArray(data.updated) ?? [];
 		const beforeIds = (asOptionalArray(data.before) ?? []).map(before => before?._id);

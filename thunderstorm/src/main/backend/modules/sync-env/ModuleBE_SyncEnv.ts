@@ -249,7 +249,7 @@ class CollectionBatchWriter
 		super({objectMode: true});
 		this.paginationSize = paginationSize;
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
-		this.firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
+		this.firestore = firebaseSessionAdmin.getFirestoreV3().firestore;
 		this.batchWriter = this.firestore.batch();
 		this.modules = arrayToMap(RuntimeModules()
 			.filter((module: DBModuleType) => !(!module || !module.dbDef)), module => module.dbDef!.dbKey);
