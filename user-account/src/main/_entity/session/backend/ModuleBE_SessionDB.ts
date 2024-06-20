@@ -85,7 +85,7 @@ export class ModuleBE_SessionDB_Class
 			MemKey_SessionObject.set(dbSession);
 			this.sessionData.setToMemKey(sessionData);
 		} catch (err: any) {
-			this.logErrorBold(sessionIdFromRequest)
+			this.logErrorBold(sessionIdFromRequest);
 			throw HttpCodes._4XX.UNAUTHORIZED('JWT received in request is invalid', err);
 		}
 	};
@@ -195,10 +195,9 @@ export class ModuleBE_SessionDB_Class
 		invalidate: async (_accountIds: string[] = [MemKey_AccountId.get()]): Promise<void> => {
 			if (_accountIds.length > 0) {
 				const sessions = await batchActionParallel(_accountIds, 10, async ids => await this.query.custom({where: {accountId: {$in: ids}}}));
-				const filteredSessions = sessions.filter(session => SessionKey_Account_BE.get(this.sessionData.decodeJWT(session.sessionIdJwt)).type !== 'service');
 
 				const newSessions = (await this.runTransaction(t => {
-					return Promise.all(filteredSessions.map(async session => {
+					return Promise.all(sessions.map(async session => {
 						return this.session.rotate(session, t);
 					}));
 				}));
@@ -218,12 +217,18 @@ export class ModuleBE_SessionDB_Class
 		},
 		rotate: async (dbSession: DB_Session = MemKey_SessionObject.get(), transaction?: Transaction) => {
 			this.logInfo(`Rotating sessionId for Account: ${dbSession.accountId}`);
-			const content = {
+			const content: PreDBSessionContent = {
 				accountId: dbSession.accountId,
 				deviceId: dbSession.deviceId,
 				prevSession: [md5(dbSession.sessionIdJwt), ...(dbSession.prevSession || [])], // MD5 converts any string into a 32 hash. This is to be used as an identifier since the sessionId/JWT string is waaay too long.
 				label: 'user-auth-session'
 			};
+
+			if (SessionKey_Account_BE.get(this.sessionData.decodeJWT(dbSession.sessionIdJwt)).type === 'service') {
+				const decodedJwt = jwt.decode(dbSession.sessionIdJwt) as { exp: number };
+				content.ttl = (decodedJwt.exp * 1000) - currentTimeMillis(); // jwt expiry is in seconds, and we usually work in milliseconds so this is required to keep consistency
+			}
+
 			return await this.session.create(content, transaction);
 		},
 		isExpired: (session: DB_Session) => {
