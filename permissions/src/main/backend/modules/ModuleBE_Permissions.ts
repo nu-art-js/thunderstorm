@@ -489,7 +489,7 @@ class ModuleBE_Permissions_Class
 			updatedConfig[serviceAccount.moduleName] = {
 				serviceAccount: {
 					token,
-					description: account.description,
+					...(exists(serviceAccount.description)) && {description: serviceAccount.description},
 					accountId: account._id,
 					email: account.email
 				}
