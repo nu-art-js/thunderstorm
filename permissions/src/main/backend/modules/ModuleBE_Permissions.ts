@@ -1,7 +1,7 @@
 import {
 	_keys,
 	arrayToMap,
-	Dispatcher, exists,
+	Dispatcher,
 	filterInstances,
 	filterKeys,
 	flatArray,
@@ -480,11 +480,12 @@ class ModuleBE_Permissions_Class
 
 			//Service accounts are only allowed to have one session... but this isn't the defined place to be a cop about it
 			const sessions = await ModuleBE_AccountDB.account.getSessions(account);
-			//If we have a valid session(not expired) we use it's JWT instead of creating a new one
+			//If we have a valid session(not expired) we use its JWT instead of creating a new one
 			const validSession = sessions.sessions.find(_session => !ModuleBE_SessionDB.session.isExpired(_session));
+			this.logError(serviceAccount.ttl);
 			const token = validSession?.sessionIdJwt ? {token: validSession?.sessionIdJwt} : await tokenCreator({
 				accountId: account._id,
-				ttl: exists(serviceAccount.ttl) ?? Year
+				ttl: serviceAccount.ttl ?? Year
 			});
 
 			updatedConfig[serviceAccount.moduleName] = {
