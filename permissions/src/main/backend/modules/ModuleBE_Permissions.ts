@@ -1,7 +1,7 @@
 import {
 	_keys,
 	arrayToMap,
-	Dispatcher,
+	Dispatcher, exists,
 	filterInstances,
 	filterKeys,
 	flatArray,
@@ -484,7 +484,7 @@ class ModuleBE_Permissions_Class
 			const validSession = sessions.sessions.find(_session => !ModuleBE_SessionDB.session.isExpired(_session));
 			const token = validSession?.sessionIdJwt ? {token: validSession?.sessionIdJwt} : await tokenCreator({
 				accountId: account._id,
-				ttl: 100 * Year
+				ttl: exists(serviceAccount.ttl) ?? Year
 			});
 
 			updatedConfig[serviceAccount.moduleName] = {
