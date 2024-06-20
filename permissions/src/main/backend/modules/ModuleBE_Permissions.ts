@@ -1,8 +1,9 @@
 import {
 	_keys,
 	arrayToMap,
-	Dispatcher, exists,
+	Dispatcher,
 	filterInstances,
+	filterKeys,
 	flatArray,
 	merge,
 	Module,
@@ -459,11 +460,11 @@ class ModuleBE_Permissions_Class
 		//Run over all service accounts
 		for (const serviceAccount of serviceAccounts) {
 			// Create account if it doesn't already exist
-			const accountsToRequest = {
+			const accountsToRequest = filterKeys({
 				type: 'service',
 				email: serviceAccount.email,
-				...(exists(serviceAccount.description)) && {description: serviceAccount.description}
-			};
+				description: serviceAccount.description
+			});
 			let account;
 			//Get or create service account
 			try {
@@ -487,12 +488,12 @@ class ModuleBE_Permissions_Class
 			});
 
 			updatedConfig[serviceAccount.moduleName] = {
-				serviceAccount: {
+				serviceAccount: filterKeys({
 					token,
-					...(exists(serviceAccount.description)) && {description: serviceAccount.description},
+					description: serviceAccount.description,
 					accountId: account._id,
 					email: account.email
-				}
+				})
 			};
 		}
 
