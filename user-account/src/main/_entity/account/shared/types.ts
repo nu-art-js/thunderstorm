@@ -1,11 +1,11 @@
 import {
-	AuditableV2,
-	DB_BaseObject,
-	DB_Object,
-	DBProto,
-	Proto_DB_Object,
-	TypedKeyValue,
-	VersionsDeclaration
+    AuditableV2,
+    DB_BaseObject,
+    DB_Object,
+    DBProto,
+    Proto_DB_Object,
+    TypedKeyValue,
+    VersionsDeclaration
 } from '@nu-art/ts-common';
 
 export const _accountTypes = ['user', 'service'];
@@ -17,7 +17,8 @@ type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_Account>;
 type Dependencies = {};
 type UniqueKeys = '_id';
 type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'saltedPassword';
-type Proto = Proto_DB_Object<DB_Account, 'user-account--accounts', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
+export const Account_DbKey = 'user-account--accounts';
+type Proto = Proto_DB_Object<DB_Account, typeof Account_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
 export type DBProto_Account = DBProto<Proto>;
 
 export type UI_Account = DBProto_Account['uiType'];
@@ -28,14 +29,14 @@ export type UI_SessionAccount = UI_Account & DB_BaseObject & SessionData_HasPass
 export type _SessionKey_Account = TypedKeyValue<'account', UI_SessionAccount>
 
 export type DB_Account = DB_Object & AuditableV2 & {
-	type: AccountType;
-	email: string;
-	displayName?: string
-	thumbnail?: string
-	salt?: string
-	saltedPassword?: string
-	description?: string // mainly for service accounts, will be used to explain the usage of the account
-	_newPasswordRequired?: boolean
+    type: AccountType;
+    email: string;
+    displayName?: string
+    thumbnail?: string
+    salt?: string
+    saltedPassword?: string
+    description?: string // mainly for service accounts, will be used to explain the usage of the account
+    _newPasswordRequired?: boolean
 }
 
 export type SessionData_HasPassword = { hasPassword: boolean };
