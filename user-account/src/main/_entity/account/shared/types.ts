@@ -8,6 +8,8 @@ import {
 	VersionsDeclaration
 } from '@nu-art/ts-common';
 
+export const AccountType_User: AccountType = 'user';
+export const AccountType_Service: AccountType = 'service';
 export const _accountTypes = ['user', 'service'];
 export const accountTypes = [..._accountTypes] as const;
 export type AccountType = typeof accountTypes[number];
