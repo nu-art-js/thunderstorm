@@ -13,6 +13,7 @@ export type DefaultDef_ServiceAccount = {
 	moduleName: string
 	email: string,
 	description?: string,
+	ttl?: number;
 	groupIds?: UniqueId[]
 }
 
