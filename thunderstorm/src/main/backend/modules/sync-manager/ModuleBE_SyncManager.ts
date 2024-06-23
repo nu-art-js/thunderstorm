@@ -230,6 +230,9 @@ export class ModuleBE_SyncManager_Class
 			__collectionName: collectionName
 		};
 		uniqueKeys.forEach(key => {
+			//Don't replace the _id, some items in the system have a calculated _id and can be deleted and created over and over.
+			if (key === '_id')
+				return;
 			// @ts-ignore
 			deletedItem[key] = item[key] || '';
 		});
