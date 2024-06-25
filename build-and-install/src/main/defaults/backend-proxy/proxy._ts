@@ -17,6 +17,8 @@ _express.all('*', (req, res) => {
 	console.log(`PROXY ${counter} - [${req.method}] ${url}`);
 
 	const handleError = (error: any) => {
+	    if(!error)
+	        return;
 		console.log(`ERROR calling: ${url}`, error);
 	};
 
