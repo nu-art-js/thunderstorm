@@ -180,7 +180,7 @@ export class CommandoInteractive
 		return this;
 	}
 
-	setLogLevelFilter(processor: (log: string, std: LogTypes) => LogLevel) {
+	setLogLevelFilter(processor: (log: string, std: LogTypes) => LogLevel | undefined) {
 		this.shell.setLogLevelFilter(processor);
 		return this;
 	}

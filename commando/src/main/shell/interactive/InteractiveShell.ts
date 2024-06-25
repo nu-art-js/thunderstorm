@@ -5,6 +5,8 @@ import {LogTypes} from '../types';
 
 type LogProcessor = (log: string, std: LogTypes) => boolean;
 
+const defaultLogLevelFilter = (log: string, std: LogTypes) => std === 'err' ? LogLevel.Error : LogLevel.Info;
+
 export class InteractiveShell
 	extends Logger {
 
@@ -12,7 +14,7 @@ export class InteractiveShell
 	private logProcessors: (LogProcessor)[] = [];
 	private shell: ChildProcessWithoutNullStreams | ChildProcess;
 	private alive: boolean;
-	private logLevelFilter: (log: string, std: LogTypes) => LogLevel = (log: string, std: LogTypes) => std === 'err' ? LogLevel.Error : LogLevel.Info;
+	private logLevelFilter: (log: string, std: LogTypes) => LogLevel | undefined = defaultLogLevelFilter;
 
 	/**
 	 * Constructs an InteractiveShell instance, initializes a detached shell session, and sets up log processors.
@@ -38,7 +40,7 @@ export class InteractiveShell
 					}, true);
 
 					if (toPrint) {
-						const logLevel = this.logLevelFilter(message, std);
+						const logLevel = this.logLevelFilter(message, std) ?? defaultLogLevelFilter(message, std);
 						this.log(logLevel, false, [message]);
 					}
 
@@ -140,7 +142,7 @@ export class InteractiveShell
 		return this;
 	}
 
-	setLogLevelFilter(logLevelFilter: (log: string, std: LogTypes) => LogLevel) {
+	setLogLevelFilter(logLevelFilter: (log: string, std: LogTypes) => LogLevel | undefined) {
 		this.logLevelFilter = logLevelFilter;
 		return this;
 	}
