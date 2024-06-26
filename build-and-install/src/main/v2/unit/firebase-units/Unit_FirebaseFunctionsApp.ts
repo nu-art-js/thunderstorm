@@ -5,12 +5,13 @@ import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../
 import {promises as _fs} from 'fs';
 import {RuntimeParams} from '../../../core/params/params';
 import {FirebasePackageConfig, PackageJson} from '../../../core/types';
-import {_keys, deepClone, ImplementationMissingException, Second, sleep} from '@nu-art/ts-common';
+import {_keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchReady, OnUnitWatchCompiled} from '../runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
+import {firebaseFunctionEmulator_ErrorStrings, firebaseFunctionEmulator_WarningStrings} from './consts';
 
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
@@ -25,6 +26,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]>, OnUnitWatchCompiled {
 
 	static staggerCount: number = 0;
+
+	readonly emulatorLogStrings = {
+		error: firebaseFunctionEmulator_ErrorStrings,
+		warning: firebaseFunctionEmulator_WarningStrings,
+	};
 
 	async __onUnitWatchCompiled(units: BaseUnit[]) {
 		if (units.some(unit => this.runtime.unitDependencyNames.includes(unit.runtime.dependencyName))) {
@@ -45,6 +51,13 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	constructor(config: Unit_FirebaseFunctionsApp<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_FirebaseFunctionsApp);
+		this.logger.setLogTransformer(log => {
+			const prefix = _logger_logPrefixes.find(prefix => log.includes(prefix));
+			if (!prefix)
+				return log;
+
+			return log.substring(log.indexOf(prefix) + prefix.length);
+		});
 	}
 
 	protected async init(setInitialized: boolean = true): Promise<void> {
@@ -315,6 +328,13 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
 			.cd(this.runtime.pathTo.pkg)
+			.setLogLevelFilter((log, type) => {
+				if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
+					return LogLevel.Error;
+
+				if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
+					return LogLevel.Warning;
+			})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'))
 			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`);
 
