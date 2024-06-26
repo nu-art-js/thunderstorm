@@ -26,6 +26,7 @@ import {_className} from '../../utils/tools';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
+import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager';
 
 
 const Environments = ['prod', 'staging', 'dev', 'local'] as const;
@@ -126,14 +127,21 @@ export class ATS_SyncEnvironment
 			return;
 
 		const start = performance.now();
+		ModuleFE_SyncManager.stopListening();
 		await genericNotificationAction(async () => {
-			await ModuleFE_SyncEnvV2.vv1.syncFromEnvBackup(filterKeys({
-				env: this.state.selectedEnv!,
-				backupId: this.state.backupId!,
-				chunkSize: this.state.selectedChunkSize!,
-				selectedModules: Array.from(this.state.selectedModules),
-				cleanSync:this.state.cleanSync,
-			}, 'selectedModules')).executeSync();
+			try {
+				await ModuleFE_SyncEnvV2.vv1.syncFromEnvBackup(filterKeys({
+					env: this.state.selectedEnv!,
+					backupId: this.state.backupId!,
+					chunkSize: this.state.selectedChunkSize!,
+					selectedModules: Array.from(this.state.selectedModules),
+					cleanSync:this.state.cleanSync,
+				}, 'selectedModules')).executeSync();
+			} catch (err:any) {
+				this.logError(err);
+			} finally {
+				ModuleFE_SyncManager.startListening();
+			}
 		}, 'Syncing Env');
 		const end = performance.now();
 

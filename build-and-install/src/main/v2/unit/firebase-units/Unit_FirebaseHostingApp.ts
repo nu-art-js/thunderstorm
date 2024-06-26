@@ -3,7 +3,7 @@ import {FirebasePackageConfig} from '../../../core/types';
 import {UnitPhaseImplementor} from '../types';
 import {Phase_DeployFrontend, Phase_Launch, Phase_ResolveConfigs} from '../../phase';
 import {RuntimeParams} from '../../../core/params/params';
-import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
+import {BadImplementationException, ImplementationMissingException, LogLevel} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
@@ -154,6 +154,10 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
 			.cd(this.runtime.pathTo.pkg)
+			.setLogLevelFilter((log, type) => {
+				if (log.toLowerCase().includes('<i>'))
+					return LogLevel.Info;
+			})
 			.append(`array=($(lsof -ti:${[this.config.firebaseConfig.hostingPort].join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')

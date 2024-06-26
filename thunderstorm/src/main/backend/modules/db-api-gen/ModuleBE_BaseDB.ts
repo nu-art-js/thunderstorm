@@ -411,7 +411,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 				this.logVerbose(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
 				this.logVerbose(`No upgrade processor for: ${versionTransition}`);
 			} else {
-				this.logInfo(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
+				this.logVerbose(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
 				await upgradeProcessor?.(instancesToUpgrade);
 				instancesToSave.push(...instancesToUpgrade);
 			}
