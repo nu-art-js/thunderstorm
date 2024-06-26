@@ -104,6 +104,10 @@ export class FirestoreBulkException
 	}
 }
 
+/**
+ * If one of the validators is a function, returns an array of functions.
+ * If both validators are objects, returns a merged object.
+ */
 const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']] | Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'] => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
 		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
