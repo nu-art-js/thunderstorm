@@ -40,7 +40,7 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 	readonly config: Readonly<C>;
 	readonly runtime: RTC;
 	private unitStatus: string = 'Pending Initialization';
-	private logger!: LogClient_MemBuffer;
+	protected logger!: LogClient_MemBuffer;
 	private classStack: Set<string>;
 	private processTerminator: AsyncVoidFunction[] = [];
 	private timeCounter?: TimeCounter;

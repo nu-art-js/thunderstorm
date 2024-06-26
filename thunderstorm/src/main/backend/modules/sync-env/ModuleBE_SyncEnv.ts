@@ -149,13 +149,13 @@ class ModuleBE_SyncEnv_Class
 		}
 
 		if (body.cleanSync) {
+			this.logInfo(`----  Cleaning Collections From DB... ----`);
 			//Delete all modules specified for syncing
-			await Promise.all(RuntimeModules().map((module: DBModuleType) => {
-				if (!body.selectedModules.includes(module.dbDef?.dbKey))
-					return;
-
-				(module as ModuleBE_BaseDB<any>).collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-			}));
+			const modulesToDelete = RuntimeModules().filter((module: DBModuleType) => body.selectedModules.includes(module.dbDef?.dbKey));
+			for (const module of modulesToDelete) {
+				await (module as ModuleBE_BaseDB<any>).collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+				this.logInfo(`----  Cleaned Collection ${module.dbDef!.dbKey} ----`);
+			}
 		}
 
 		//Prepare Syncing data
@@ -257,7 +257,13 @@ class CollectionBatchWriter
 
 	async _write(chunk: any, encoding: string, callback: (error?: Error | null) => void) {
 		try {
-			const collectionName = this.modules[chunk.dbKey].dbDef!.backend.name;
+			const module = this.modules[chunk.dbKey];
+			if (!module) {
+				ModuleBE_SyncEnv.logWarning(`Could not get module for chunk with dbKey ${chunk.dbKey}`)
+				callback();
+			}
+
+			const collectionName = module.dbDef!.backend.name;
 			const docRef = this.firestore.doc(`${collectionName}/${chunk._id}`);
 			const data = JSON.parse(chunk.document);
 			this.batchWriter.set(docRef, data);
