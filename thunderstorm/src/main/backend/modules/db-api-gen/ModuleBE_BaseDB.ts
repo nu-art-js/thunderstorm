@@ -128,17 +128,17 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 
 			conflictPromises.push(batchActionParallel(itemIdsToDelete,
 				10, async ids => {
-					let query = undefined;
+					let where = undefined;
 					if (dependencies[key].fieldType === 'string')
-						query = {[key]: {$in: ids}};
+						where = {[key]: {$in: ids}};
 
 					if (dependencies[key].fieldType === 'string[]')
-						query = {[key]: {$aca: ids}};
+						where = {[key]: {$aca: ids}};
 
-					if (query === undefined)
+					if (where === undefined)
 						throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
 
-					return this.query.where(query as Clause_Where<Proto['dbType']>, transaction);
+					return this.query.unManipulatedQuery({where: where as Clause_Where<Proto['dbType']>}, transaction);
 				}));
 		});
 
