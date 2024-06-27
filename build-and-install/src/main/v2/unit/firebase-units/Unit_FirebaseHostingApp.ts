@@ -108,6 +108,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		};
 
 		const feConfig = {
+			label: envConfig.env.toLowerCase(),
 			ModuleFE_Thunderstorm: {
 				appName: `${this.config.key} - (${envConfig.env})`
 			},
