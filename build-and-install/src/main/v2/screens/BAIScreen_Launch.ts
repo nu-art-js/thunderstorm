@@ -6,13 +6,14 @@ import {Widgets} from 'blessed';
 import {PhaseRunner_OnUnitsChange} from '../phase-runner/PhaseRunnerDispatcher';
 import {
 	currentTimeMillis,
-	debounce,
+	debounce, exists,
 	getStringSize,
 	KB,
 	maxSubstring,
 	MB, Second,
 	WhoCallThisException
 } from '@nu-art/ts-common';
+import {phase_Launch} from '../phase';
 
 
 type GridCell = { width: number; height: number };
@@ -58,7 +59,8 @@ export class BAIScreen_Launch
 	private updateUnits = () => {
 		const runner = MemKey_PhaseRunner.get();
 		this.allUnits = runner.getUnits().filter(unit => {
-			return unit.isInstanceOf(Unit_FirebaseHostingApp) || unit.isInstanceOf(Unit_FirebaseFunctionsApp);
+			const isRelevantUnitType = unit.isInstanceOf(Unit_FirebaseHostingApp) || unit.isInstanceOf(Unit_FirebaseFunctionsApp);
+			return !!(isRelevantUnitType && (!exists(phase_Launch.unitFilter) || phase_Launch.unitFilter(unit)));
 		});
 
 		if (!this.focusUnits.length)
