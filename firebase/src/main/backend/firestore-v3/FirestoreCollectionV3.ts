@@ -104,6 +104,10 @@ export class FirestoreBulkException
 	}
 }
 
+/**
+ * If one of the validators is a function, returns an array of functions.
+ * If both validators are objects, returns a merged object.
+ */
 const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']] | Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'] => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
 		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
@@ -169,8 +173,11 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			return preDBItems.map(preDBItem => this.doc.item(preDBItem));
 		},
 		query: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction) => {
-			return (await this._customQuery(query, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
-		}
+			return (await this._customQuery(query, true, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
+		},
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction) => {
+			return (await this._customQuery(query, false, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
+		},
 	});
 
 	// ############################## Query ##############################
@@ -181,8 +188,10 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		return (await (transaction ?? this.wrapper.firestore).getAll(...docs.map(_doc => _doc.ref))).map(_snapshot => _snapshot.data() as Proto['dbType'] | undefined);
 	};
 
-	private _customQuery = async (tsQuery: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Proto['dbType']>[]> => {
-		tsQuery = this.hooks?.manipulateQuery?.(tsQuery) ?? tsQuery;
+	private _customQuery = async (tsQuery: FirestoreQuery<Proto['dbType']>, canManipulateQuery: boolean, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Proto['dbType']>[]> => {
+		if (canManipulateQuery)
+			tsQuery = this.hooks?.manipulateQuery?.(tsQuery) ?? tsQuery;
+
 		const firestoreQuery = FirestoreInterfaceV3.buildQuery<Proto>(this, tsQuery);
 		if (transaction)
 			return (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<Proto['dbType']>[];
@@ -212,10 +221,13 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		},
 		all: async (_ids: (Proto['uniqueParam'])[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
 		custom: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
+			return (await this._customQuery(query, true, transaction)).map(snapshot => snapshot.data());
 		},
 		where: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
 			return this.query.custom({where}, transaction);
+		},
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
+			return (await this._customQuery(query, false, transaction)).map(snapshot => snapshot.data());
 		},
 	});
 

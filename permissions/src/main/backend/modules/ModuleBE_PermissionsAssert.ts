@@ -219,6 +219,7 @@ export class ModuleBE_PermissionsAssert_Class
 			throw new ApiException(403, `No permissions configuration specified for api: ${projectId ? `${projectId}--` : ''}${path}`);
 		}
 
+		//_accessLevels is a map[domain id <> access level numeric value]
 		_keys(apiDetails.dbApi._accessLevels!).forEach(domainId => {
 			const userDomainPermission = userPermissions[domainId];
 			if (!exists(userDomainPermission))

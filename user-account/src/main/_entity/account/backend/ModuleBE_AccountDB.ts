@@ -434,7 +434,7 @@ export class ModuleBE_AccountDB_Class
 			if (account.type !== 'service')
 				throw new BadImplementationException('Can not generate a token for a non service account');
 
-			const content = {accountId, deviceId: accountId, label};
+			const content = {accountId, deviceId: accountId, label, ttl};
 			const {sessionId} = await ModuleBE_SessionDB.session.createCustom(content, (sessionData) => {
 				SessionKey_Session_BE.get(sessionData).expiration = currentTimeMillis() + ttl;
 				return sessionData;

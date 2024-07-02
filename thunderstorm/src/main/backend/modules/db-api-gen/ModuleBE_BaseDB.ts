@@ -42,11 +42,7 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {
-	CollectionActionType,
-	FirestoreCollectionV3,
-	PostWriteProcessingData
-} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
@@ -128,17 +124,17 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 
 			conflictPromises.push(batchActionParallel(itemIdsToDelete,
 				10, async ids => {
-					let query = undefined;
+					let where = undefined;
 					if (dependencies[key].fieldType === 'string')
-						query = {[key]: {$in: ids}};
+						where = {[key]: {$in: ids}};
 
 					if (dependencies[key].fieldType === 'string[]')
-						query = {[key]: {$aca: ids}};
+						where = {[key]: {$aca: ids}};
 
-					if (query === undefined)
+					if (where === undefined)
 						throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
 
-					return this.query.where(query as Clause_Where<Proto['dbType']>, transaction);
+					return this.query.unManipulatedQuery({where: where as Clause_Where<Proto['dbType']>}, transaction);
 				}));
 		});
 
@@ -411,7 +407,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 				this.logVerbose(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
 				this.logVerbose(`No upgrade processor for: ${versionTransition}`);
 			} else {
-				this.logInfo(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
+				this.logVerbose(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
 				await upgradeProcessor?.(instancesToUpgrade);
 				instancesToSave.push(...instancesToUpgrade);
 			}

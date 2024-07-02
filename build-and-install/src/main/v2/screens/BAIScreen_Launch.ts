@@ -4,7 +4,16 @@ import {MemKey_PhaseRunner} from '../phase-runner/consts';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../unit/firebase-units';
 import {Widgets} from 'blessed';
 import {PhaseRunner_OnUnitsChange} from '../phase-runner/PhaseRunnerDispatcher';
-import {currentTimeMillis, getStringSize, KB, maxSubstring, MB, WhoCallThisException} from '@nu-art/ts-common';
+import {
+	currentTimeMillis,
+	debounce, exists,
+	getStringSize,
+	KB,
+	maxSubstring,
+	MB, Second,
+	WhoCallThisException
+} from '@nu-art/ts-common';
+import {phase_Launch} from '../phase';
 
 
 type GridCell = { width: number; height: number };
@@ -21,6 +30,7 @@ export class BAIScreen_Launch
 	private focusUnits: BaseUnit[] = [];
 	private gridDimensions: GridDimensions = [[{width: 1, height: 1}]];
 	private withRunningLogs: boolean = false;
+	private renderDebounceAction = debounce(() => this.renderGridWidgets(), Second, 2 * Second);
 
 	//Widgets
 	private gridCellWidgets: Widgets.Log[] = [];
@@ -43,13 +53,14 @@ export class BAIScreen_Launch
 	}
 
 	protected onLogUpdated = () => {
-		this.renderGridWidgets();
+		this.renderDebounceAction();
 	};
 
 	private updateUnits = () => {
 		const runner = MemKey_PhaseRunner.get();
 		this.allUnits = runner.getUnits().filter(unit => {
-			return unit.isInstanceOf(Unit_FirebaseHostingApp) || unit.isInstanceOf(Unit_FirebaseFunctionsApp);
+			const isRelevantUnitType = unit.isInstanceOf(Unit_FirebaseHostingApp) || unit.isInstanceOf(Unit_FirebaseFunctionsApp);
+			return !!(isRelevantUnitType && (!exists(phase_Launch.unitFilter) || phase_Launch.unitFilter(unit)));
 		});
 
 		if (!this.focusUnits.length)

@@ -200,7 +200,7 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 	}
 
 	private findUnit = (pathDeclarations: PathDeclaration[], currentPath: AbsolutePath): Unit_TypescriptLib => {
-		const unitToReturn = pathDeclarations.find(declaration => currentPath.startsWith(declaration.pathToPackage))?.unit;
+		const unitToReturn = pathDeclarations.find(declaration => currentPath.startsWith(`${declaration.pathToPackage}/`))?.unit;
 		if (!unitToReturn)
 			throw new MUSTNeverHappenException(`current path doesnt match any declared unit, current path: ${currentPath}`);
 

@@ -98,6 +98,7 @@ export type DBDef_V3<Proto extends DBProto<any, any, any>> = {
     TTL?: number;
     lastUpdatedTTL?: number;
     upgradeChunksSize?: number;
+    generatedProps?: Proto['generatedProps']
     generatedPropsValidator: Proto['generatedPropsValidator'];
     modifiablePropsValidator: Proto['modifiablePropsValidator'];
     uniqueKeys?: Proto['uniqueKeys'];
