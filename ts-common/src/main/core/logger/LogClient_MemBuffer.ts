@@ -54,9 +54,14 @@ export class LogClient_MemBuffer
 	private keepNaturalColors = false;
 	readonly buffers: string[] = [''];
 	private onLogAppended?: VoidFunction;
+	private logTransformer?: (log: string) => string;
 
 	constructor(name: string, maxBuffers = 10, maxBufferSize = 1024 * 1024) {
 		super(name, maxBuffers, maxBufferSize);
+	}
+
+	setLogTransformer(logTransformer: (log: string) => string) {
+		this.logTransformer = logTransformer;
 	}
 
 	setLogAppendedListener(onLogAppended: VoidFunction) {
@@ -65,9 +70,13 @@ export class LogClient_MemBuffer
 
 	protected processLogMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]) {
 		const color = getColor(level, bold);
-		const paramsAsStrings = _logger_convertLogParamsToStrings(toLog);
+		let log = _logger_convertLogParamsToStrings(toLog).join(' ');
 		const linePrefix = `${color}${prefix}${this.keepNaturalColors ? NoColor : ''}`;
-		return _logger_indentNewLineBy(linePrefix, paramsAsStrings.join(' '));
+
+		if (this.logTransformer)
+			log = this.logTransformer(log);
+
+		return _logger_indentNewLineBy(linePrefix, log);
 	}
 
 	protected printLogMessage(log: string) {

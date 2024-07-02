@@ -22,6 +22,7 @@
 import {
 	_keys,
 	arrayToMap,
+	BadImplementationException,
 	DB_Object,
 	DBDef_V3,
 	dbObjectToId,
@@ -171,7 +172,15 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	};
 
 	public validateImpl(_instance: Partial<Proto['uiType']>) {
-		const instance = deleteKeysObject(_instance as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.dbDef.generatedPropsValidator)]);
+		let _generatedProps = this.dbDef.generatedProps;
+		if (!_generatedProps) {
+			if (typeof this.dbDef.generatedPropsValidator !== 'object')
+				throw new BadImplementationException('while using generated props as a function you must provide generated props in db-def explicitly');
+
+			_generatedProps = _keys(this.dbDef.generatedPropsValidator);
+		}
+
+		const instance = deleteKeysObject(_instance as Proto['dbType'], [...KeysOfDB_Object, ..._generatedProps]);
 		const results = tsValidateResult(instance, this.validator);
 		if (results) {
 			this.onValidationError(instance, results as InvalidResult<Proto['uiType']>);

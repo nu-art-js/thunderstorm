@@ -60,6 +60,10 @@ export interface OnAccountsUpdated {
 	__onAccountsUpdated: (...params: ApiCallerEventType<DBProto_Account>) => void;
 }
 
+export interface OnSessionUpdated {
+	__onSessionUpdated: VoidFunction;
+}
+
 export enum LoggedStatus {
 	VALIDATING,
 	LOGGED_OUT,
@@ -69,6 +73,7 @@ export enum LoggedStatus {
 
 export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
 export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
+export const dispatch_onSessionUpdated = new ThunderDispatcher<OnSessionUpdated, '__onSessionUpdated'>('__onSessionUpdated');
 const StorageKey_PasswordAssertionConfig = new StorageKey<PasswordAssertionConfig | undefined>('account__password-assertion-config', false);
 
 type ApiDefCaller_Account = ApiDefCaller<{ _v1: ApiStruct_Account['_v1'] & ApiStruct_SAML['_v1'] }>;
@@ -154,6 +159,10 @@ class ModuleFE_Account_Class
 				return;
 
 			const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
+			const oldSessionId = StorageKey_SessionId.get(sessionId);
+			if (oldSessionId !== sessionId)
+				dispatch_onSessionUpdated.dispatchAll();
+
 			StorageKey_SessionId.set(sessionId);
 			this.sessionData = this.decode(sessionId);
 			this.processSessionStatus(sessionId);
