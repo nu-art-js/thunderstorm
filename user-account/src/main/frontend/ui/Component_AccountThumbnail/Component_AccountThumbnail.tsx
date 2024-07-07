@@ -9,7 +9,7 @@ import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/
 
 
 type Props = {
-	accountId: UniqueId;
+	accountId: () => UniqueId;
 	onClick?: (e: React.MouseEvent, account: DB_Account) => void;
 	acronymComposer?: (accountId: UniqueId) => string | undefined;
 };
@@ -23,7 +23,7 @@ export const Component_AccountThumbnail = (props: Props & { modulesToAwait?: Mod
 	const {modulesToAwait, ...rest} = props;
 	const modules = [...(modulesToAwait ?? []), ModuleFE_Account] as unknown as ModuleFE_BaseApi<any>[];
 	return <AwaitModules modules={filterDuplicates(modules)}
-											 customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
+						 customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
 		<Component_AccountThumbnail_Impl {...rest} />
 	</AwaitModules>;
 };
@@ -43,7 +43,7 @@ class Component_AccountThumbnail_Impl
 	};
 
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
-		state.account = ModuleFE_Account.cache.unique(nextProps.accountId)!;
+		state.account = ModuleFE_Account.cache.unique(nextProps.accountId())!;
 		if (!state.account)
 			throw new MUSTNeverHappenException(`Could not find account for id ${nextProps.accountId}`);
 

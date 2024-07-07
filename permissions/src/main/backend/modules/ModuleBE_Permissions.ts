@@ -15,22 +15,9 @@ import {
 	TypedMap,
 	Year,
 } from '@nu-art/ts-common';
-import {
-	addRoutes,
-	createQueryServerApi,
-	MemKey_ServerApi,
-	ModuleBE_AppConfigDB,
-	ModuleBE_BaseApi_Class,
-	Storm
-} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm/backend';
 import {ApiDef_Permissions,} from '../../shared';
-import {
-	CollectSessionData,
-	MemKey_AccountId,
-	ModuleBE_AccountDB,
-	ModuleBE_SessionDB,
-	SessionCollectionParam
-} from '@nu-art/user-account/backend';
+import {CollectSessionData, MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, SessionCollectionParam} from '@nu-art/user-account/backend';
 import {DefaultDef_Group, DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {
 	Domain_AccountManagement,
@@ -50,10 +37,7 @@ import {
 } from '../../shared/consts';
 import {ApiModule} from '@nu-art/thunderstorm';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {
-	DefaultDef_ServiceAccount,
-	dispatcher_collectServiceAccounts
-} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
+import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
 import {
 	DB_PermissionAccessLevel,
@@ -160,6 +144,8 @@ class ModuleBE_Permissions_Class
 	extends Module
 	implements CollectSessionData<SessionData_Permissions>, PerformProjectSetup {
 
+	private userPermissionMap?: SessionData_Permissions;
+
 	protected init() {
 		super.init();
 
@@ -175,6 +161,14 @@ class ModuleBE_Permissions_Class
 	// }
 
 	async __collectSessionData(data: SessionCollectionParam): Promise<SessionData_Permissions> {
+		return await this.getUserPermissionMap(data);
+
+	}
+
+	public getUserPermissionMap = async (data: SessionCollectionParam): Promise<SessionData_Permissions> => {
+		if (this.userPermissionMap)
+			return this.userPermissionMap;
+
 		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({_id: data.accountId});
 		const permissionMap: TypedMap<number> = {};
 		const groupIds = user.groups.map(g => g.groupId);
@@ -196,8 +190,8 @@ class ModuleBE_Permissions_Class
 			if (!permissionMap[domain._id])
 				permissionMap[domain._id] = DefaultAccessLevel_NoAccess.value; //"fill in the gaps" - All domains that are not defined for the user, are NoAccess by default.
 		});
-		return {key: 'permissions', value: permissionMap};
-	}
+		return this.userPermissionMap = {key: 'permissions', value: permissionMap};
+	};
 
 	toggleStrictMode = async () => {
 		MemKey_ServerApi.get().addPostCallAction(async () => {
@@ -217,12 +211,10 @@ class ModuleBE_Permissions_Class
 		}, [] as string[]);
 
 		// Create All Projects
-		const map_nameToDBProject: TypedMap<DB_PermissionProject> = await this.createProjects(projects);
-		const map_nameToDbDomain: TypedMap<DB_PermissionDomain> = await this.createDomains(projects, map_nameToDBProject);
-		const domainNameToLevelNameToDBAccessLevel: TypedMap<TypedMap<DB_PermissionAccessLevel>> = await this.createAccessLevels(projects, map_nameToDbDomain);
-		await this.createGroups(projects, map_nameToDbDomain, domainNameToLevelNameToDBAccessLevel);
-		await this.createApis(projects, domainNameToLevelNameToDBAccessLevel);
+		await this.createPermissionProjects(projects);
+		// Create all AppConfigs
 		await this.createPermissionsKeys(projects);
+		//Assign Super Admin if necessary
 		await this.assignSuperAdmin();
 
 		// This stage updates the rtdb's config- which is why it's last. Changing the rtdb's config kills the server.
@@ -230,12 +222,20 @@ class ModuleBE_Permissions_Class
 		await this.createSystemServiceAccount(serviceAccounts);
 	};
 
+	public async createPermissionProjects(projects: DefaultDef_Project[]) {
+		const map_nameToDBProject: TypedMap<DB_PermissionProject> = await this.createProjects(projects);
+		const map_nameToDbDomain: TypedMap<DB_PermissionDomain> = await this.createDomains(projects, map_nameToDBProject);
+		const domainNameToLevelNameToDBAccessLevel: TypedMap<TypedMap<DB_PermissionAccessLevel>> = await this.createAccessLevels(projects, map_nameToDbDomain);
+		await this.createGroups(projects, map_nameToDbDomain, domainNameToLevelNameToDBAccessLevel);
+		await this.createApis(projects, domainNameToLevelNameToDBAccessLevel);
+	}
+
 	/**
 	 * Creates All the DB_PermissionProject
 	 *
 	 * @param projects - predefined permissions projects
 	 */
-	private async createProjects(projects: DefaultDef_Project[]) {
+	public async createProjects(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating Projects');
 		const _auditorId = MemKey_AccountId.get();
 		const preDBProjects = await ModuleBE_PermissionProjectDB.set.all(projects.map(project => ({
