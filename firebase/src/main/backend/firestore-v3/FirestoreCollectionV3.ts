@@ -107,14 +107,19 @@ export class FirestoreBulkException
 const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']] | Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'] => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
 		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
-	else if (typeof dbDef.modifiablePropsValidator === 'function' && typeof dbDef.generatedPropsValidator === 'function')
-		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
-	else {
-		if (typeof dbDef.modifiablePropsValidator === 'function')
-			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)] as Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'];
 
-		return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator)] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
-	}
+	if (typeof dbDef.modifiablePropsValidator === 'function' && typeof dbDef.generatedPropsValidator === 'function')
+		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
+
+	if (typeof dbDef.modifiablePropsValidator === 'function')
+		return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => {
+			const partialInstance = keepPartialObject(instance, _keys(dbDef.generatedPropsValidator));
+			return tsValidateResult(partialInstance, dbDef.generatedPropsValidator);
+		}] as Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'];
+
+	return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => {
+		return tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator);
+	}] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 };
 
 /**
