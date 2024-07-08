@@ -40,6 +40,7 @@ export type TreeNode = {
 	item: any
 	adapter: Adapter
 	expandToggler: (e: React.MouseEvent, expand?: boolean) => void
+	expandFromNode: (exapnd?: boolean) => void;
 	expanded: boolean,
 };
 
