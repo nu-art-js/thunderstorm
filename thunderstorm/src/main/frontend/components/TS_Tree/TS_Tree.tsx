@@ -272,6 +272,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			propKey: key,
 			item,
 			expandToggler: isParent ? this.toggleExpandState : ignoreToggler,
+			expandFromNode: expand => this.expandOrCollapse(path, expand),
 			expanded: !!expanded,
 		};
 
