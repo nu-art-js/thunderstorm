@@ -266,20 +266,21 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	// ############################## Set ##############################
 	private _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType, performUpgrade = true) => {
+		//Get all items
 		const docs = this.doc.allItems(items);
 		const dbItems = await this.getAll(docs);
-
+		//Prepare all items
 		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
 			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction, performUpgrade) : await docs[i].prepareForSet(items[i] as Proto['dbType'], _dbItem!, transaction, performUpgrade);
 		}));
 		this.assertNoDuplicatedIds(preparedItems, 'set.all');
-
+		//Write all items
 		if (transaction)
 			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
 			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
-
+		//postWriteProcessing if provided
 		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems}, 'set');
 		return preparedItems;
 	};
@@ -414,6 +415,12 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	});
 
 	// ############################## Multi Write ##############################
+	/**
+	 * @param writer Type of BulkWriter - can be Bulk writer or Batch writer
+	 * @param doc
+	 * @param operation create/update/set/delete
+	 * @param item - mandatory for everything but delete
+	 */
 	private addToMultiWrite = <Op extends MultiWriteOperation>(writer: BulkWriter | WriteBatch, doc: DocWrapperV3<Proto>, operation: Op, item?: MultiWriteItem<Op, Proto['dbType']>) => {
 		switch (operation) {
 			case 'create':
@@ -460,6 +467,11 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			throw new FirestoreBulkException(errors);
 	};
 
+	/**
+	 * @param docs docs to write to
+	 * @param operation create/update/set/delete
+	 * @param items mandatory for everything but delete
+	 */
 	private batchWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV3<Proto>[], operation: Op, items?: MultiWriteItem<Op, Proto['dbType']>[]) => {
 		for (let batchIndex = 0; batchIndex < docs.length; batchIndex += maxBatch) {
 			const batch = this.wrapper.firestore.batch();
