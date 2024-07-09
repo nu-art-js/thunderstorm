@@ -144,8 +144,6 @@ class ModuleBE_Permissions_Class
 	extends Module
 	implements CollectSessionData<SessionData_Permissions>, PerformProjectSetup {
 
-	private userPermissionMap?: SessionData_Permissions;
-
 	protected init() {
 		super.init();
 
@@ -162,13 +160,9 @@ class ModuleBE_Permissions_Class
 
 	async __collectSessionData(data: SessionCollectionParam): Promise<SessionData_Permissions> {
 		return await this.getUserPermissionMap(data);
-
 	}
 
 	public getUserPermissionMap = async (data: SessionCollectionParam): Promise<SessionData_Permissions> => {
-		if (this.userPermissionMap)
-			return this.userPermissionMap;
-
 		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({_id: data.accountId});
 		const permissionMap: TypedMap<number> = {};
 		const groupIds = user.groups.map(g => g.groupId);
