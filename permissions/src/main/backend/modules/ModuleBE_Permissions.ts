@@ -184,7 +184,7 @@ class ModuleBE_Permissions_Class
 			if (!permissionMap[domain._id])
 				permissionMap[domain._id] = DefaultAccessLevel_NoAccess.value; //"fill in the gaps" - All domains that are not defined for the user, are NoAccess by default.
 		});
-		return this.userPermissionMap = {key: 'permissions', value: permissionMap};
+		return {key: 'permissions', value: permissionMap};
 	};
 
 	toggleStrictMode = async () => {
