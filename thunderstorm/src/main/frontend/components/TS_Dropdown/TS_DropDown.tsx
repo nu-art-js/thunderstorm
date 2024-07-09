@@ -27,7 +27,8 @@ import {
 	debounce,
 	Filter,
 	ResolvableContent,
-	resolveContent
+	resolveContent,
+    voidFunction
 } from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
@@ -499,6 +500,7 @@ export class TS_DropDown<ItemType>
 			adapter: adapter,
 			expandToggler: (e: React.MouseEvent, expxand?: boolean) => {
 			},
+			expandFromNode: voidFunction,
 			onClick: (e: React.MouseEvent) => {
 			},
 			expanded: true,
