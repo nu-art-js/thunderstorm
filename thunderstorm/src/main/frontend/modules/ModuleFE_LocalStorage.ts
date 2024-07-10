@@ -64,7 +64,7 @@ export class StorageModule_Class
 		if (!storageKey)
 			return this.logVerbose(`no StorageKey for '${key}'`);
 
-		this.logInfo(`Storage key '${key}' was updated`, e.oldValue, e.newValue);
+		this.logDebug(`Storage key '${key}' was updated`, e.oldValue, e.newValue);
 
 		// @ts-ignore
 		await storageKey._onChange?.();
