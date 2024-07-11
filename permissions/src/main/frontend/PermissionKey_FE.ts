@@ -9,7 +9,6 @@ export class PermissionKey_FE<K extends string = string>
 
 	static generatePermissionKeysByLevels = <K extends PermissionKey>(keysMapper: { [key in K]: string }): { [key in K]: PermissionKey_FE } => {
 		return _keys(keysMapper).reduce((mapper, currentKey) => {
-			console.log(keysMapper[currentKey]);
 			if (!mapper[currentKey])
 				mapper[currentKey] = new PermissionKey_FE(keysMapper[currentKey]);
 			return mapper;
