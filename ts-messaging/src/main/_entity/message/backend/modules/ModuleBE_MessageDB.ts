@@ -23,7 +23,7 @@ export class ModuleBE_MessageDB_Class
 		});
 	}
 
-	protected async preWriteProcessing(dbInstance: DBProto_Message['uiType'], transaction?: FirebaseFirestore.Transaction) {
+	protected async preWriteProcessing(dbInstance: DBProto_Message['uiType'], originalDbInstance: DBProto_Message['dbType'], transaction?: FirebaseFirestore.Transaction) {
 		if (!dbInstance._auditorId)
 			dbInstance._auditorId = await getAuditorId();
 	}

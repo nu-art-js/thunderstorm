@@ -1,21 +1,8 @@
-import {
-	_keys,
-	currentTimeMillis,
-	DB_Object,
-	DBProto,
-	exists,
-	MUSTNeverHappenException,
-	UniqueId
-} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DB_Object, DBProto, exists, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
-import {
-	assertUniqueId,
-	CollectionActionType,
-	FirestoreCollectionV3,
-	PostWriteProcessingData
-} from './FirestoreCollectionV3';
+import {assertUniqueId, CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from './FirestoreCollectionV3';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {addDeletedToTransaction} from './consts';
 import UpdateData = firestore.UpdateData;
@@ -71,7 +58,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 			await this.collection.hooks?.upgradeInstances([preDBItem]);
 		}
 
-		await this.collection.hooks?.preWriteProcessing?.(preDBItem, transaction);
+		await this.collection.hooks?.preWriteProcessing?.(preDBItem, undefined, transaction);
 		this.collection.validateItem(preDBItem as Proto['dbType']);
 		return preDBItem as Proto['dbType'];
 	};
@@ -107,7 +94,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		}
 
 		updatedDBItem._v = this.collection.getVersion();
-		await this.collection.hooks?.preWriteProcessing?.(updatedDBItem, transaction);
+		await this.collection.hooks?.preWriteProcessing?.(updatedDBItem, dbItem, transaction);
 		this.collection.validateItem(updatedDBItem);
 		return updatedDBItem;
 	};
