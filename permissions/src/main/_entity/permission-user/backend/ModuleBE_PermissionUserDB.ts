@@ -1,38 +1,13 @@
 import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {
-	DB_PermissionUser,
-	DBDef_PermissionUser,
-	DBProto_PermissionUser,
-	Request_AssignPermissions,
-	User_Group
-} from './shared';
+import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from './shared';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
-import {
-	_keys,
-	ApiException,
-	asOptionalArray,
-	DB_BaseObject,
-	dbObjectToId,
-	exists,
-	filterDuplicates,
-	filterInstances,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_keys, ApiException, asOptionalArray, DB_BaseObject, dbObjectToId, exists, filterDuplicates, filterInstances, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
-import {
-	MemKey_AccountId,
-	ModuleBE_AccountDB,
-	ModuleBE_SessionDB,
-	OnNewUserRegistered,
-	OnUserLogin
-} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account';
 import {MemKey_UserPermissions} from '../../../backend/consts';
-import {
-	CollectionActionType,
-	PostWriteProcessingData
-} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
@@ -95,7 +70,7 @@ export class ModuleBE_PermissionUserDB_Class
 	// 		});
 	// }
 
-	protected async preWriteProcessing(instance: DB_PermissionUser, t?: Transaction): Promise<void> {
+	protected async preWriteProcessing(instance: DB_PermissionUser, originalDbInstance: DBProto_PermissionUser['dbType'], t?: Transaction): Promise<void> {
 		instance._auditorId = MemKey_AccountId.get();
 		instance.__groupIds = filterDuplicates(instance.groups.map(group => group.groupId) || []);
 
