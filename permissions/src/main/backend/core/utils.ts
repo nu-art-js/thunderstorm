@@ -85,7 +85,7 @@ export const generateDomainDefaults = (namespace: string, preDBAccessLevels: Pre
 	// Get all default db ready access levels using the provided ones
 	const accessLevels = CreateDefaultAccessLevels(newDomainId, preDBAccessLevels);
 
-	const keyDefinitions = generatePermissionKeys(preDBAccessLevels, permissionKeysByLevel, namespace);
+	const keyDefinitions = generatePermissionKeys(preDBAccessLevels, permissionKeysByLevel, newDomainId);
 
 	return {
 		domain: {
