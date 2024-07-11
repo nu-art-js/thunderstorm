@@ -1,6 +1,13 @@
 import {TypedKeyValue, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {PermissionKey_BE} from '../backend/PermissionKey_BE';
-import {DomainToLevelValueMap, DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject, DB_PermissionUser} from './_entity';
+import {
+	DomainToLevelValueMap,
+	DB_PermissionAccessLevel,
+	DB_PermissionDomain,
+	DB_PermissionGroup,
+	DB_PermissionProject,
+	DB_PermissionUser
+} from './_entity';
 
 
 export type PermissionTypes = {
@@ -62,8 +69,15 @@ export type DefaultDef_AccessLevel = {
 	value: number
 }
 
+export type PreDBAccessLevel = {
+	name: string,
+	value: number
+};
+
 export type DefaultDef_Group = {
 	_id: string
 	name: string
 	accessLevels: { [domainName: string]: string } // access level name
 };
+
+export type PermissionKey = string
