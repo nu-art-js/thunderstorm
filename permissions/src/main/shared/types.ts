@@ -1,12 +1,12 @@
 import {TypedKeyValue, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {PermissionKey_BE} from '../backend/PermissionKey_BE';
 import {
-	DomainToLevelValueMap,
 	DB_PermissionAccessLevel,
 	DB_PermissionDomain,
 	DB_PermissionGroup,
 	DB_PermissionProject,
-	DB_PermissionUser
+	DB_PermissionUser,
+	DomainToLevelValueMap
 } from './_entity';
 
 

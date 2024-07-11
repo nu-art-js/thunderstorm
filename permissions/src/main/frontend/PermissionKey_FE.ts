@@ -30,3 +30,11 @@ export class PermissionKey_FE<K extends string = string>
 		return ModuleFE_PermissionsAssert.getAccessLevel(this);
 	}
 }
+
+/**
+ * Permission mapper type for ModuleFEs
+ */
+export type ModuleFE_DefaultPermissions<UIMapper, CollectionMapper> = {
+	ui: { [key in keyof UIMapper]: PermissionKey_FE },
+	collection: { [key in keyof CollectionMapper]: PermissionKey_FE }
+};
