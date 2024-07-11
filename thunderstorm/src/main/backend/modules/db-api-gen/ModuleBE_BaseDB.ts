@@ -268,8 +268,8 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		return {toUpdate: items, toDelete: deletedItems};
 	};
 
-	private _preWriteProcessing = async (dbItem: Proto['uiType'], transaction?: Transaction, upgrade = true) => {
-		await this.preWriteProcessing(dbItem, transaction);
+	private _preWriteProcessing = async (dbItem: Proto['uiType'], originalDbInstance: Proto['dbType'], transaction?: Transaction, upgrade = true) => {
+		await this.preWriteProcessing(dbItem, originalDbInstance, transaction);
 	};
 
 	/**
@@ -277,8 +277,9 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 *
 	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
+	 * @param originalDbInstance - The DB instance fetched from remote firestore.
 	 */
-	protected async preWriteProcessing(dbInstance: Proto['uiType'], transaction?: Transaction) {
+	protected async preWriteProcessing(dbInstance: Proto['uiType'], originalDbInstance: Proto['dbType'], transaction?: Transaction) {
 	}
 
 	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>, actionType: CollectionActionType, transaction?: Transaction) => {

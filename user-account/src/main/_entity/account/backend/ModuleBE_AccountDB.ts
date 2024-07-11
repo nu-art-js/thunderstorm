@@ -145,7 +145,7 @@ export class ModuleBE_AccountDB_Class
 		};
 	}
 
-	protected async preWriteProcessing(dbInstance: UI_Account, transaction?: Transaction): Promise<void> {
+	protected async preWriteProcessing(dbInstance: UI_Account, originalDbInstance: DBProto_Account['dbType'], transaction?: Transaction): Promise<void> {
 		try {
 			dbInstance._auditorId = MemKey_AccountId.get();
 		} catch (e) {
