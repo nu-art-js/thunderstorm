@@ -70,17 +70,18 @@ export const generatePermissionKeys = (accessLevels: PreDBAccessLevel[], keyByLe
 
 /**
  * Automatic generator for domain default definitions,
+ * @param key MUST NEVER CHANGE! the key is the "key" to uniqueness of the entire permission decleration
  * @param namespace The name space of the current generated domain definitions
  * @param preDBAccessLevels The access levels to create (can be default or custom)
  * @param permissionKeysByLevel The permission key name for each access level
  * @param dbNames List of db names (optional)
  */
-export const generateDomainDefaults = (namespace: string, preDBAccessLevels: PreDBAccessLevel[], permissionKeysByLevel: TypedMap<string>, dbNames?: string[]): {
+export const generateDomainDefaults = (key: string, namespace: string, preDBAccessLevels: PreDBAccessLevel[], permissionKeysByLevel: TypedMap<string>, dbNames?: string[]): {
 	domain: DefaultDef_Domain
 	groups: DefaultDef_Group[]
 } => {
 	// Generate the new domain id
-	const newDomainId = md5(`domain/${namespace}`);
+	const newDomainId = md5(`domain/${key}`);
 
 	// Get all default db ready access levels using the provided ones
 	const accessLevels = CreateDefaultAccessLevels(newDomainId, preDBAccessLevels);
@@ -96,7 +97,7 @@ export const generateDomainDefaults = (namespace: string, preDBAccessLevels: Pre
 			dbNames
 		},
 		groups: accessLevels.map(accessLevel => ({
-			_id: md5(`${namespace}/${accessLevel.name}`),
+			_id: md5(`${key}/${accessLevel.name}`),
 			name: `${namespace}/${accessLevel.name}`,
 			accessLevels: {
 				[namespace]: accessLevel.name
