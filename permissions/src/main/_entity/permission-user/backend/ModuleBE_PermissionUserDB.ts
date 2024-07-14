@@ -16,7 +16,7 @@ export class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDB<DBProto_PermissionUser, Config>
 	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup {
 
-	private defaultPermissionGroups?: User_Group[];
+	private defaultPermissionGroups?: () => Promise<User_Group[]>;
 
 	constructor() {
 		super(DBDef_PermissionUser);
@@ -99,8 +99,9 @@ export class ModuleBE_PermissionUserDB_Class
 
 	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
 		const create = async (transaction?: Transaction) => {
-			const permissionGroups = this.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(this.defaultPermissionGroups.map(item => item.groupId))) : [];
-			this.logInfo(`Received ${this.defaultPermissionGroups?.length} groups to assign, ${permissionGroups.length} of which exist`);
+			const defaultPermissionGroups = this.defaultPermissionGroups ? await this.defaultPermissionGroups() : [];
+			const permissionGroups = this.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId))) : [];
+			this.logInfo(`Received ${defaultPermissionGroups.length} groups to assign, ${permissionGroups.length} of which exist`);
 			const permissionsUserToCreate = {
 				_id: uiAccount._id,
 				groups: permissionGroups.map(group => ({groupId: group._id})),
@@ -165,8 +166,8 @@ export class ModuleBE_PermissionUserDB_Class
 		await this.set.multi(usersToUpdate);
 	}
 
-	public setDefaultPermissionGroups = (groups: User_Group[]) => {
-		this.defaultPermissionGroups = groups;
+	public setDefaultPermissionGroups = (groupsGetter: () => Promise<User_Group[]>) => {
+		this.defaultPermissionGroups = groupsGetter;
 	};
 
 	public clearDefaultPermissionGroups = () => {
