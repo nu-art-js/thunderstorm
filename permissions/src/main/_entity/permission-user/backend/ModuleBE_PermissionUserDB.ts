@@ -97,10 +97,10 @@ export class ModuleBE_PermissionUserDB_Class
 		await ModuleBE_SessionDB.session.invalidate(accountIdToInvalidate);
 	}
 
-	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
+	insertIfNotExist = async (uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) => {
 		const create = async (transaction?: Transaction) => {
-			const defaultPermissionGroups = this.defaultPermissionGroups ? await this.defaultPermissionGroups() : [];
-			const permissionGroups = this.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId))) : [];
+			const defaultPermissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? await ModuleBE_PermissionUserDB.defaultPermissionGroups() : [];
+			const permissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId))) : [];
 			this.logInfo(`Received ${defaultPermissionGroups.length} groups to assign, ${permissionGroups.length} of which exist`);
 			const permissionsUserToCreate = {
 				_id: uiAccount._id,
@@ -108,11 +108,11 @@ export class ModuleBE_PermissionUserDB_Class
 				_auditorId: MemKey_AccountId.get()
 			};
 
-			return this.create.item(permissionsUserToCreate, transaction);
+			return ModuleBE_PermissionUserDB.create.item(permissionsUserToCreate, transaction);
 		};
 
-		return this.collection.uniqueGetOrCreate({_id: uiAccount._id}, create, transaction);
-	}
+		return ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: uiAccount._id}, create, transaction);
+	};
 
 	async assignPermissions(body: Request_AssignPermissions) {
 		if (!body.targetAccountIds.length)
