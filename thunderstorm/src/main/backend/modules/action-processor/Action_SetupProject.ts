@@ -23,7 +23,7 @@ const Action_SetupProject = async (logger: Logger) => {
 
 	const priorities = _keys(promiseMap).sort(); // Start with priority 0, as most important
 	for (const priorityKey of priorities) {
-		await Promise.all(promiseMap[priorityKey].processors);
+		await Promise.all(promiseMap[priorityKey].processors.map(async processor => processor()));
 	}
 
 	logger.logInfo('Project Setup Completed!');
