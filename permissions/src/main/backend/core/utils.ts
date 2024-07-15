@@ -1,10 +1,6 @@
-import {md5, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {_values, md5, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package, PreDBAccessLevel} from '../../shared/types';
-import {
-	CreateDefaultAccessLevels,
-	DefaultAccessLevel_NoAccess,
-	DefaultAccessLevel_Read,
-} from '../../shared/consts';
+import {CreateDefaultAccessLevels, DefaultAccessLevel_NoAccess, DefaultAccessLevel_Read,} from '../../shared/consts';
 import {defaultValueResolverV2, PermissionKey_BE} from '../PermissionKey_BE';
 
 
@@ -53,19 +49,15 @@ export const Permissions_abTest = (seed: UniqueId, namespace: string, permutatio
  * @param keyByLevelMapper the key name mapper by access level name
  * @param domainId the domain id to apply in the resolver
  */
-export const generatePermissionKeys = (accessLevels: PreDBAccessLevel[], keyByLevelMapper: TypedMap<string>, domainId: UniqueId): {
-	configKeys: PermissionKey_BE<string>[]
-} => {
+export const generatePermissionKeys = <Key extends string | number | symbol>(accessLevels: PreDBAccessLevel[], keyByLevelMapper: TypedMap<string>, domainId: UniqueId): { [key in Key]: PermissionKey_BE<string> } => {
 	return accessLevels.reduce((mapper, currentAccessLevel) => {
 		// declare default
 		const key = keyByLevelMapper[currentAccessLevel.name];
-		const permissionKeyBE = new PermissionKey_BE(key, () => defaultValueResolverV2(domainId, currentAccessLevel.name));
-
 		// update acc mapper
-		mapper.configKeys.push(permissionKeyBE);
+		mapper[currentAccessLevel.name as Key] = new PermissionKey_BE(key, () => defaultValueResolverV2(domainId, currentAccessLevel.name));
 
 		return mapper;
-	}, {configKeys: []} as { configKeys: PermissionKey_BE<string>[] });
+	}, {} as { [key in Key]: PermissionKey_BE<string> });
 };
 
 /**
@@ -76,9 +68,10 @@ export const generatePermissionKeys = (accessLevels: PreDBAccessLevel[], keyByLe
  * @param permissionKeysByLevel The permission key name for each access level
  * @param dbNames List of db names (optional)
  */
-export const generateDomainDefaults = (key: string, namespace: string, preDBAccessLevels: PreDBAccessLevel[], permissionKeysByLevel: TypedMap<string>, dbNames?: string[]): {
+export const generateDomainDefaults = <Key extends string | number | symbol>(key: string, namespace: string, preDBAccessLevels: PreDBAccessLevel[], permissionKeysByLevel: { [key in Key]: string }, dbNames?: string[]): {
 	domain: DefaultDef_Domain
 	groups: DefaultDef_Group[]
+	keys: { [key in Key]: PermissionKey_BE<string> }
 } => {
 	// Generate the new domain id
 	const newDomainId = md5(`domain/${key}`);
@@ -86,13 +79,13 @@ export const generateDomainDefaults = (key: string, namespace: string, preDBAcce
 	// Get all default db ready access levels using the provided ones
 	const accessLevels = CreateDefaultAccessLevels(newDomainId, preDBAccessLevels);
 
-	const keyDefinitions = generatePermissionKeys(preDBAccessLevels, permissionKeysByLevel, newDomainId);
+	const keyDefinitions = generatePermissionKeys<Key>(preDBAccessLevels, permissionKeysByLevel, newDomainId);
 
 	return {
 		domain: {
 			_id: newDomainId,
 			namespace,
-			permissionKeys: keyDefinitions.configKeys,
+			permissionKeys: _values(keyDefinitions),
 			levels: accessLevels,
 			dbNames
 		},
@@ -103,5 +96,6 @@ export const generateDomainDefaults = (key: string, namespace: string, preDBAcce
 				[namespace]: accessLevel.name
 			}
 		})),
+		keys: keyDefinitions
 	};
 };
