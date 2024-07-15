@@ -46,7 +46,7 @@ class Component_AccountThumbnail_Impl
 		const accountId = resolveContent(nextProps.accountId);
 		state.account = ModuleFE_Account.cache.unique(accountId)!;
 		if (!state.account)
-			throw new MUSTNeverHappenException(`Could not find account for id ${nextProps.accountId}`);
+			throw new MUSTNeverHappenException(`Could not find account for id ${accountId}`);
 
 		state.acronym = this.generateThumbnailAcronym(state.account);
 		return state;
