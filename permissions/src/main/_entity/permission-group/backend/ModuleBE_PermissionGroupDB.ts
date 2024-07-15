@@ -41,7 +41,7 @@ export class ModuleBE_PermissionGroupDB_Class
 			.map(domainId => duplicationMap[domainId] > 1 ? domainId : undefined) as string[]);
 
 		if (duplicateDomainIds.length > 0)
-			throw new ApiException(400, `Can't add a group with more than one access level per domain: ${duplicateDomainIds}`);
+			throw new ApiException(400, `Can't add a group with more than one access level per domain: ${duplicateDomainIds}, group: ${instance.label}`);
 
 		instance._levelsMap = reduceToMap(dbLevels, dbLevel => dbLevel.domainId, dbLevel => dbLevel.value);
 	}

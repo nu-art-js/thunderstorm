@@ -149,7 +149,7 @@ class ModuleBE_Permissions_Class
 
 		addRoutes([
 			createQueryServerApi(ApiDef_Permissions.v1.toggleStrictMode, this.toggleStrictMode),
-			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.__performProjectSetup),
+			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.__performProjectSetup().processor),
 			// createBodyServerApi(ApiDef_Permissions.v1.connectDomainToRoutes, this.connectDomainToRoutes)
 		]);
 	}
@@ -196,24 +196,29 @@ class ModuleBE_Permissions_Class
 		});
 	};
 
-	__performProjectSetup = async (): Promise<void> => {
-		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
-		projects.reduce((issues, project) => {
-			return project.packages.reduce((issues, _package) => {
-				return issues;
-			}, issues);
-		}, [] as string[]);
+	__performProjectSetup() {
+		return {
+			priority: 0,
+			processor: async () => {
+				const projects = dispatcher_collectPermissionsProjects.dispatchModule();
+				projects.reduce((issues, project) => {
+					return project.packages.reduce((issues, _package) => {
+						return issues;
+					}, issues);
+				}, [] as string[]);
 
-		// Create All Projects
-		await this.createPermissionProjects(projects);
-		// Create all AppConfigs
-		await this.createPermissionsKeys(projects);
-		//Assign Super Admin if necessary
-		await this.assignSuperAdmin();
+				// Create All Projects
+				await this.createPermissionProjects(projects);
+				// Create all AppConfigs
+				await this.createPermissionsKeys(projects);
+				//Assign Super Admin if necessary
+				await this.assignSuperAdmin();
 
-		// This stage updates the rtdb's config- which is why it's last. Changing the rtdb's config kills the server.
-		const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
-		await this.createSystemServiceAccount(serviceAccounts);
+				// This stage updates the rtdb's config- which is why it's last. Changing the rtdb's config kills the server.
+				const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
+				await this.createSystemServiceAccount(serviceAccounts);
+			}
+		};
 	};
 
 	public async createPermissionProjects(projects: DefaultDef_Project[]) {

@@ -17,12 +17,12 @@ export class ModuleBE_AppConfigDB_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: PreDB<DB_AppConfig>, originalDbInstance: DBProto_AppConfig['dbType'], transaction?: FirebaseFirestore.Transaction): Promise<void> {
-		this.logInfo('############## Pre Manipulation ##############');
-		this.logInfo(dbInstance);
+		this.logVerbose('############## Pre Manipulation ##############');
+		this.logVerbose(dbInstance);
 		const appKey = this.keyMap[dbInstance.key];
 		dbInstance.data = await appKey.dataManipulator(dbInstance.data);
-		this.logInfo('############## Post Manipulation ##############');
-		this.logInfo(dbInstance);
+		this.logVerbose('############## Post Manipulation ##############');
+		this.logVerbose(dbInstance);
 	}
 
 	public createDefaults = async (logger: Logger = this) => {

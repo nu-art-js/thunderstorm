@@ -22,27 +22,32 @@ export class ModuleBE_PermissionUserDB_Class
 		super(DBDef_PermissionUser);
 	}
 
-	async __performProjectSetup() {
-		const accounts = await ModuleBE_AccountDB.query.where({});
-		const permissionsUser = await this.query.all(accounts.map(dbObjectToId));
+	__performProjectSetup() {
+		return {
+			priority: 4,
+			processor: async () => {
+				const accounts = await ModuleBE_AccountDB.query.where({});
+				const permissionsUser = await this.query.all(accounts.map(dbObjectToId));
 
-		const usersToUpsert: DB_PermissionUser[] = [];
-		const usersToDelete: DB_PermissionUser[] = [];
-		permissionsUser.forEach((user, index) => {
-			if (exists(user)) {
-				if (!exists(accounts.find(account => account._id === user._id)))
-					usersToDelete.push(user);
-				return;
+				const usersToUpsert: DB_PermissionUser[] = [];
+				const usersToDelete: DB_PermissionUser[] = [];
+				permissionsUser.forEach((user, index) => {
+					if (exists(user)) {
+						if (!exists(accounts.find(account => account._id === user._id)))
+							usersToDelete.push(user);
+						return;
+					}
+
+					usersToUpsert.push({
+						_id: accounts[index]._id,
+						groups: [] as User_Group[],
+					} as DB_PermissionUser);
+				});
+
+				await this.set.all(usersToUpsert);
+				await this.delete.all(usersToDelete);
 			}
-
-			usersToUpsert.push({
-				_id: accounts[index]._id,
-				groups: [] as User_Group[],
-			} as DB_PermissionUser);
-		});
-
-		await this.set.all(usersToUpsert);
-		await this.delete.all(usersToDelete);
+		};
 	}
 
 	async __onUserLogin(account: UI_Account, transaction: Transaction) {
