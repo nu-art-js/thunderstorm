@@ -52,9 +52,9 @@ export const Permissions_abTest = (seed: UniqueId, namespace: string, permutatio
 export const generatePermissionKeys = <Key extends string | number | symbol>(accessLevels: PreDBAccessLevel[], keyByLevelMapper: TypedMap<string>, domainId: UniqueId): { [key in Key]: PermissionKey_BE<string> } => {
 	return accessLevels.reduce((mapper, currentAccessLevel) => {
 		// declare default
-		const key = keyByLevelMapper[currentAccessLevel.name] as Key;
+		const key = keyByLevelMapper[currentAccessLevel.name];
 		// update acc mapper
-		mapper[key] = new PermissionKey_BE(key as string, () => defaultValueResolverV2(domainId, currentAccessLevel.name));
+		mapper[currentAccessLevel.name as Key] = new PermissionKey_BE(key, () => defaultValueResolverV2(domainId, currentAccessLevel.name));
 
 		return mapper;
 	}, {} as { [key in Key]: PermissionKey_BE<string> });
