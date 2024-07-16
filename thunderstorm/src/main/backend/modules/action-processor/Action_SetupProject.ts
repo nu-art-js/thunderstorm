@@ -1,5 +1,5 @@
 import {ActionDeclaration} from './types';
-import {_keys, Dispatcher, Logger} from '@nu-art/ts-common';
+import {_keys, Dispatcher, Logger, StaticLogger} from '@nu-art/ts-common';
 
 
 export type SetupProjectPromise = { priority: number, processor: () => Promise<void> };
@@ -23,6 +23,7 @@ const Action_SetupProject = async (logger: Logger) => {
 
 	const priorities = _keys(promiseMap).sort(); // Start with priority 0, as most important
 	for (const priorityKey of priorities) {
+		StaticLogger.logInfoBold(`Running SetupProject[${priorityKey}]`);
 		await Promise.all(promiseMap[priorityKey].processors.map(async processor => processor()));
 	}
 
