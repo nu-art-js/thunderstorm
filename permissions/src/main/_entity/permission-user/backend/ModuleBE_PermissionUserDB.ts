@@ -1,38 +1,13 @@
 import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {
-	DB_PermissionUser,
-	DBDef_PermissionUser,
-	DBProto_PermissionUser,
-	Request_AssignPermissions,
-	User_Group
-} from './shared';
+import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from './shared';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
-import {
-	_keys,
-	ApiException,
-	asOptionalArray,
-	DB_BaseObject,
-	dbObjectToId,
-	exists,
-	filterDuplicates,
-	filterInstances,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_keys, ApiException, asOptionalArray, DB_BaseObject, dbObjectToId, exists, filterDuplicates, filterInstances, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
-import {
-	MemKey_AccountId,
-	ModuleBE_AccountDB,
-	ModuleBE_SessionDB,
-	OnNewUserRegistered,
-	OnUserLogin
-} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account';
 import {MemKey_UserPermissions} from '../../../backend/consts';
-import {
-	CollectionActionType,
-	PostWriteProcessingData
-} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
@@ -41,33 +16,38 @@ export class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDB<DBProto_PermissionUser, Config>
 	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup {
 
-	private defaultPermissionGroups?: User_Group[];
+	private defaultPermissionGroups?: () => Promise<User_Group[]>;
 
 	constructor() {
 		super(DBDef_PermissionUser);
 	}
 
-	async __performProjectSetup() {
-		const accounts = await ModuleBE_AccountDB.query.where({});
-		const permissionsUser = await this.query.all(accounts.map(dbObjectToId));
+	__performProjectSetup() {
+		return {
+			priority: 4,
+			processor: async () => {
+				const accounts = await ModuleBE_AccountDB.query.where({});
+				const permissionsUser = await this.query.all(accounts.map(dbObjectToId));
 
-		const usersToUpsert: DB_PermissionUser[] = [];
-		const usersToDelete: DB_PermissionUser[] = [];
-		permissionsUser.forEach((user, index) => {
-			if (exists(user)) {
-				if (!exists(accounts.find(account => account._id === user._id)))
-					usersToDelete.push(user);
-				return;
+				const usersToUpsert: DB_PermissionUser[] = [];
+				const usersToDelete: DB_PermissionUser[] = [];
+				permissionsUser.forEach((user, index) => {
+					if (exists(user)) {
+						if (!exists(accounts.find(account => account._id === user._id)))
+							usersToDelete.push(user);
+						return;
+					}
+
+					usersToUpsert.push({
+						_id: accounts[index]._id,
+						groups: [] as User_Group[],
+					} as DB_PermissionUser);
+				});
+
+				await this.set.all(usersToUpsert);
+				await this.delete.all(usersToDelete);
 			}
-
-			usersToUpsert.push({
-				_id: accounts[index]._id,
-				groups: [] as User_Group[],
-			} as DB_PermissionUser);
-		});
-
-		await this.set.all(usersToUpsert);
-		await this.delete.all(usersToDelete);
+		};
 	}
 
 	async __onUserLogin(account: UI_Account, transaction: Transaction) {
@@ -95,7 +75,7 @@ export class ModuleBE_PermissionUserDB_Class
 	// 		});
 	// }
 
-	protected async preWriteProcessing(instance: DB_PermissionUser, t?: Transaction): Promise<void> {
+	protected async preWriteProcessing(instance: DB_PermissionUser, originalDbInstance: DBProto_PermissionUser['dbType'], t?: Transaction): Promise<void> {
 		instance._auditorId = MemKey_AccountId.get();
 		instance.__groupIds = filterDuplicates(instance.groups.map(group => group.groupId) || []);
 
@@ -122,21 +102,22 @@ export class ModuleBE_PermissionUserDB_Class
 		await ModuleBE_SessionDB.session.invalidate(accountIdToInvalidate);
 	}
 
-	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
+	insertIfNotExist = async (uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) => {
 		const create = async (transaction?: Transaction) => {
-			const permissionGroups = this.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(this.defaultPermissionGroups.map(item => item.groupId))) : [];
-			this.logInfo(`Received ${this.defaultPermissionGroups?.length} groups to assign, ${permissionGroups.length} of which exist`);
+			const defaultPermissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? await ModuleBE_PermissionUserDB.defaultPermissionGroups() : [];
+			const permissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId))) : [];
+			this.logInfo(`Received ${defaultPermissionGroups.length} groups to assign, ${permissionGroups.length} of which exist`);
 			const permissionsUserToCreate = {
 				_id: uiAccount._id,
 				groups: permissionGroups.map(group => ({groupId: group._id})),
 				_auditorId: MemKey_AccountId.get()
 			};
 
-			return this.create.item(permissionsUserToCreate, transaction);
+			return ModuleBE_PermissionUserDB.create.item(permissionsUserToCreate, transaction);
 		};
 
-		return this.collection.uniqueGetOrCreate({_id: uiAccount._id}, create, transaction);
-	}
+		return ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: uiAccount._id}, create, transaction);
+	};
 
 	async assignPermissions(body: Request_AssignPermissions) {
 		if (!body.targetAccountIds.length)
@@ -190,8 +171,8 @@ export class ModuleBE_PermissionUserDB_Class
 		await this.set.multi(usersToUpdate);
 	}
 
-	public setDefaultPermissionGroups = (groups: User_Group[]) => {
-		this.defaultPermissionGroups = groups;
+	public setDefaultPermissionGroups = (groupsGetter: () => Promise<User_Group[]>) => {
+		this.defaultPermissionGroups = groupsGetter;
 	};
 
 	public clearDefaultPermissionGroups = () => {

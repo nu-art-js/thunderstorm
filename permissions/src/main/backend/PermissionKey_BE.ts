@@ -13,7 +13,7 @@ export class PermissionKey_BE<K extends string>
 	};
 
 	static buildData = async (data: DB_PermissionKeyData): Promise<DB_PermissionKeyData> => {
-		ModuleBE_AppConfigDB.logInfo('**************** Building Data ****************');
+		ModuleBE_AppConfigDB.logVerbose('**************** Building Data ****************');
 		const accessLevels = filterInstances(await ModuleBE_PermissionAccessLevelDB.query.all(data.accessLevelIds));
 		const _data: DB_PermissionKeyData = {
 			type: 'permission-key',
@@ -23,8 +23,8 @@ export class PermissionKey_BE<K extends string>
 				return acc;
 			}, {} as TypedMap<number>)
 		};
-		ModuleBE_AppConfigDB.logInfo('**************** Data ****************');
-		ModuleBE_AppConfigDB.logInfo(_data);
+		ModuleBE_AppConfigDB.logVerbose('**************** Data ****************');
+		ModuleBE_AppConfigDB.logVerbose(_data);
 		return _data;
 	};
 
