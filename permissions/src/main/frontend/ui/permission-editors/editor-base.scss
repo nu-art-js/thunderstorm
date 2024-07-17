@@ -7,12 +7,8 @@
   .ts-input {
     width: 250px;
     max-width: unset;
-    height: 40px;
     min-height: unset;
-    border: 2px solid styles.gray(1);
     background: white;
-    border-radius: 8px;
-    font-size: 14px;
 
     &::placeholder {
       font-size: 12px;
@@ -29,7 +25,6 @@
     }
 
     .ts-dropdown__header {
-      border: 2px solid styles.gray(1);
       border-radius: 8px;
       position: relative;
       align-items: center;

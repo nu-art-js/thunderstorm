@@ -20,7 +20,7 @@ export class ItemEditor_DefaultFilter<Proto extends DBProto<any>>
 	render() {
 		return <LL_H_C className={'item-editor__default-filter'}>
 			<TS_Input
-				className={'margin__bottom'} placeholder={'Type to Filter'} type={'text'}
+				placeholder={'Type to Filter'} type={'text'}
 				onChange={value => {
 					this.props.onFilterChanged((item) => this.state.filter.filterItem(item, value));
 				}}/>
