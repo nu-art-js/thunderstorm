@@ -24,6 +24,7 @@ export type DB_PermissionAPI = DB_Object & AuditableV2 & {
 	accessLevelIds?: string[],
 	deprecated?: boolean,
 	onlyForApplication?: boolean
-	_accessLevels?: { [k: UniqueId]: number }
+	_accessLevels?: DomainToLevelValueMap
 }
 
+export type DomainToLevelValueMap = { [domainId: UniqueId]: number };

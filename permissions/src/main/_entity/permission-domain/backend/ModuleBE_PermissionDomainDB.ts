@@ -3,8 +3,8 @@ import {DB_PermissionDomain, DBDef_PermissionDomain, DBProto_PermissionDomain} f
 import {ApiException} from '@nu-art/ts-common';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
-import { ModuleBE_PermissionAccessLevelDB } from '../../permission-access-level/backend/ModuleBE_PermissionAccessLevelDB';
-import { ModuleBE_PermissionProjectDB } from '../../permission-project/backend/ModuleBE_PermissionProjectDB';
+import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend/ModuleBE_PermissionAccessLevelDB';
+import {ModuleBE_PermissionProjectDB} from '../../permission-project/backend/ModuleBE_PermissionProjectDB';
 
 type Config = DBApiConfigV3<DBProto_PermissionDomain> & {}
 
@@ -26,7 +26,7 @@ export class ModuleBE_PermissionDomainDB_Class
 		return [{namespace: item.namespace, projectId: item.projectId}];
 	}
 
-	protected async preWriteProcessing(dbInstance: DB_PermissionDomain, t?: Transaction) {
+	protected async preWriteProcessing(dbInstance: DB_PermissionDomain, originalDbInstance: DBProto_PermissionDomain['dbType'], t?: Transaction) {
 		await ModuleBE_PermissionProjectDB.query.uniqueAssert(dbInstance.projectId, t);
 		dbInstance._auditorId = MemKey_AccountId.get();
 	}

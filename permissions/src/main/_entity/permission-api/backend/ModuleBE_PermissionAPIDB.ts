@@ -17,7 +17,7 @@ export class ModuleBE_PermissionAPIDB_Class
 		super(DBDef_PermissionAPI);
 	}
 
-	protected async preWriteProcessing(instance: DB_PermissionAPI, t?: Transaction) {
+	protected async preWriteProcessing(instance: DB_PermissionAPI, originalDbInstance: DBProto_PermissionAPI['dbType'], t?: Transaction) {
 		await ModuleBE_PermissionProjectDB.query.uniqueAssert(instance.projectId);
 		instance._auditorId = MemKey_AccountId.get();
 		const accessLevelIds = new Set<UniqueId>();

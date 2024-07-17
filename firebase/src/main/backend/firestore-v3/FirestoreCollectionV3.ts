@@ -48,11 +48,7 @@ import {
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
 import {Transaction} from 'firebase-admin/firestore';
@@ -76,7 +72,7 @@ export type PostWriteProcessingData<Proto extends DBProto<any>> = {
 export type CollectionActionType = 'create' | 'set' | 'update' | 'delete'
 export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
 	canDeleteItems: (dbItems: Proto['dbType'][], transaction?: Transaction) => Promise<void>,
-	preWriteProcessing?: (dbInstance: Proto['dbType'], transaction?: Transaction) => Promise<void>,
+	preWriteProcessing?: (dbInstance: Proto['dbType'], originalDbInstance?: Proto['dbType'], transaction?: Transaction) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Proto['dbType']>) => FirestoreQuery<Proto['dbType']>,
 	postWriteProcessing?: (data: PostWriteProcessingData<Proto>, actionType: CollectionActionType, transaction?: Transaction) => Promise<void>,
 	upgradeInstances: (instances: Proto['dbType'][]) => Promise<any>
@@ -111,14 +107,19 @@ export class FirestoreBulkException
 const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']] | Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'] => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
 		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
-	else if (typeof dbDef.modifiablePropsValidator === 'function' && typeof dbDef.generatedPropsValidator === 'function')
-		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
-	else {
-		if (typeof dbDef.modifiablePropsValidator === 'function')
-			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)] as Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'];
 
-		return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator)] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
-	}
+	if (typeof dbDef.modifiablePropsValidator === 'function' && typeof dbDef.generatedPropsValidator === 'function')
+		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
+
+	if (typeof dbDef.modifiablePropsValidator === 'function')
+		return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => {
+			const partialInstance = keepPartialObject(instance, _keys(dbDef.generatedPropsValidator));
+			return tsValidateResult(partialInstance, dbDef.generatedPropsValidator);
+		}] as Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'];
+
+	return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => {
+		return tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator);
+	}] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 };
 
 /**
@@ -265,20 +266,21 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	// ############################## Set ##############################
 	private _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType, performUpgrade = true) => {
+		//Get all items
 		const docs = this.doc.allItems(items);
 		const dbItems = await this.getAll(docs);
-
+		//Prepare all items
 		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
 			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction, performUpgrade) : await docs[i].prepareForSet(items[i] as Proto['dbType'], _dbItem!, transaction, performUpgrade);
 		}));
 		this.assertNoDuplicatedIds(preparedItems, 'set.all');
-
+		//Write all items
 		if (transaction)
 			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
 			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
-
+		//postWriteProcessing if provided
 		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems}, 'set');
 		return preparedItems;
 	};
@@ -413,6 +415,12 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	});
 
 	// ############################## Multi Write ##############################
+	/**
+	 * @param writer Type of BulkWriter - can be Bulk writer or Batch writer
+	 * @param doc
+	 * @param operation create/update/set/delete
+	 * @param item - mandatory for everything but delete
+	 */
 	private addToMultiWrite = <Op extends MultiWriteOperation>(writer: BulkWriter | WriteBatch, doc: DocWrapperV3<Proto>, operation: Op, item?: MultiWriteItem<Op, Proto['dbType']>) => {
 		switch (operation) {
 			case 'create':
@@ -459,6 +467,11 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			throw new FirestoreBulkException(errors);
 	};
 
+	/**
+	 * @param docs docs to write to
+	 * @param operation create/update/set/delete
+	 * @param items mandatory for everything but delete
+	 */
 	private batchWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV3<Proto>[], operation: Op, items?: MultiWriteItem<Op, Proto['dbType']>[]) => {
 		for (let batchIndex = 0; batchIndex < docs.length; batchIndex += maxBatch) {
 			const batch = this.wrapper.firestore.batch();

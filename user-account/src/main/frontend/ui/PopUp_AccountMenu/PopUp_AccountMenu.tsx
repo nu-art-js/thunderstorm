@@ -4,7 +4,8 @@ import {
 	ComponentSync,
 	getElementCenterPos,
 	Grid,
-	LL_H_C, LL_V_C,
+	LL_H_C,
+	LL_V_C,
 	LL_V_L,
 	ModuleFE_MouseInteractivity,
 	ModuleFE_Thunderstorm,
@@ -183,7 +184,7 @@ export class PopUp_AccountMenu
 		const accountDisplay = this.props.accountDisplayModifier?.(account) ?? account.displayName ?? account.email;
 		return <>
 			<LL_H_C className={'account-menu__header'}>
-				<Component_AccountThumbnail accountId={account._id} acronymComposer={this.props.acronymComposer}/>
+				<Component_AccountThumbnail accountId={() => account._id} acronymComposer={this.props.acronymComposer}/>
 				<div className={'account-menu__header__display-name'}>{accountDisplay}</div>
 			</LL_H_C>
 			{this.renderSeparatorBar()}

@@ -80,7 +80,7 @@ export class Component_FocusedEntityRef
 				const account = ModuleFE_Account.cache.unique(id);
 				return <Show key={id}>
 					<Show.If condition={!!account}>
-						<Component_AccountThumbnail accountId={id}/>
+						<Component_AccountThumbnail accountId={() => id}/>
 					</Show.If>
 					<Show.Else>
 						<div>Bug</div>
