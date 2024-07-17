@@ -294,6 +294,7 @@ export class PhaseRunner
 					break;
 			} catch (e: any) {
 				this.logError(`Error running phase: ${phase.name}`, e);
+				throw e;
 			}
 		}
 		this.killed = false;

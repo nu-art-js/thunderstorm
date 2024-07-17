@@ -77,22 +77,22 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 		const predicate = this.props.filter ?? (() => true);
 		const items = sortedItems.filter(predicate);
 
-		return <LL_V_L className="items-list match_height margin__inline">
+		return <LL_V_L className="items-list match_height">
 			{items.map(item =>
 				<div key={item._id}
-					 onContextMenu={(e) => this.openItemMenu(e, item)}
-					 className={_className('match_width', 'list-item', item._id === this.props.selected?._id && 'list-item__selected')}
-					 onClick={(e) => {
-						 if (e.metaKey) {
-							 if (e.shiftKey)
-								 this.logInfo(`item: ${item._id}`, item);
-							 else
-								 this.logInfo(`item: ${item._id}`);
-							 return;
-						 }
+						 onContextMenu={(e) => this.openItemMenu(e, item)}
+						 className={_className('match_width', 'list-item', item._id === this.props.selected?._id && 'list-item__selected')}
+						 onClick={(e) => {
+							 if (e.metaKey) {
+								 if (e.shiftKey)
+									 this.logInfo(`item: ${item._id}`, item);
+								 else
+									 this.logInfo(`item: ${item._id}`);
+								 return;
+							 }
 
-						 this.props.onSelected(item);
-					 }}>
+							 this.props.onSelected(item);
+						 }}>
 					{this.props.itemRenderer(item)}
 				</div>)}
 		</LL_V_L>;

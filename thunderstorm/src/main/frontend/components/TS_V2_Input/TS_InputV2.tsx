@@ -22,7 +22,7 @@
 import * as React from 'react';
 import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
-import './TS_InputV2.scss';
+import '../TS_Input/TS_Input.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
 import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types';
 import {TS_Object} from '@nu-art/ts-common';
@@ -306,7 +306,7 @@ export class TS_InputV2
 	};
 
 	render() {
-		const {onAccept,allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
+		const {onAccept, allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
 
 		return <input
 			{...props}

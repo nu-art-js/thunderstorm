@@ -42,6 +42,7 @@ export type Props_ItemsEditor<Proto extends DBProto<any>> = {
 	id?: string,
 	contextMenuActions: MenuAction<Proto>[]
 	hideAddItem: boolean
+	className?: string
 };
 
 /**
@@ -57,7 +58,7 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 	extends ProtoComponent<CProto, Props_ItemsEditor<Proto> & P, State_ItemsEditor<Proto> & S> {
 
 	static _defaultProps: ProtoDef_Selection['props'] = {
-		keys: ['selected']
+		keys: ['selected'],
 	};
 
 	constructor(p: InferProps<Page_ItemsEditor<Proto, CProto, P, S>>) {
@@ -117,7 +118,7 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 		const Editor: Props_ItemsEditor<Proto>['EditorRenderer'] = this.props.EditorRenderer;
 		const sort = this.props.sort || ((item: DB_Object) => item.__created);
 		return <FrameLayout id={this.props.id} className="editor-page">
-			<LL_H_T className="editor-content match_parent">
+			<LL_H_T className={_className(this.props.className??"editor-content","match_parent")}>
 				<LL_V_L className="items-editor__list">
 					<LL_V_L className={'items-editor__list-header-content'}>
 						<div className={'items-editor__list-header'}>
