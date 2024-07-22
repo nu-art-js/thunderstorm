@@ -325,7 +325,7 @@ export function lastElement<T>(array: T[] | undefined) {
 }
 
 export function firstElement<T>(array?: T[]) {
-	return array?.[1];
+	return array?.[0];
 }
 
 export function arrayIncludesAny<T>(arr1: T[], arr2: T[]): boolean {
@@ -348,4 +348,14 @@ export function clearArrayInstance<T extends any[]>(arr: T): void {
  */
 export function arrayIncludesAll<T>(arr1: T[], arr2: T[]): boolean {
 	return arr2.every(item => arr1.includes(item));
+}
+
+export function getMax<T>(arr: T[], mapper: (item: T) => number = (item) => item as number): T | undefined {
+	const sorted = sortArray(arr, mapper, true);
+	return sorted[0];
+}
+
+export function getMin<T>(arr: T[], mapper: (item: T) => number = (item) => item as number): T | undefined {
+	const sorted = sortArray(arr, mapper);
+	return sorted[0];
 }

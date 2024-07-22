@@ -1,13 +1,29 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, MemKey_ServerApi, ModuleBE_BaseDB, Storm,} from '@nu-art/thunderstorm/backend';
 import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from './shared';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
-import {_keys, ApiException, asOptionalArray, DB_BaseObject, dbObjectToId, exists, filterDuplicates, filterInstances, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	ApiException,
+	asOptionalArray,
+	DB_BaseObject,
+	dbObjectToId,
+	exists,
+	filterDuplicates,
+	filterInstances,
+	filterKeys,
+	flatArray,
+	merge,
+	TS_Object,
+	TypedMap,
+	Year
+} from '@nu-art/ts-common';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
 import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account';
 import {MemKey_UserPermissions} from '../../../backend/consts';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
@@ -46,6 +62,10 @@ export class ModuleBE_PermissionUserDB_Class
 
 				await this.set.all(usersToUpsert);
 				await this.delete.all(usersToDelete);
+
+				// This stage updates the rtdb's config- which is why it's last. Changing the rtdb's config kills the server.
+				const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
+				await this.createSystemServiceAccount(serviceAccounts);
 			}
 		};
 	}
@@ -178,6 +198,74 @@ export class ModuleBE_PermissionUserDB_Class
 	public clearDefaultPermissionGroups = () => {
 		delete this.defaultPermissionGroups;
 	};
+
+	/**
+	 * The system requires to perform action, which in other cases can also be done by a human.
+	 * This requires system features to identify as a bot user, or "Service Account"
+	 *
+	 * @param serviceAccounts - List of Accounts to create
+	 * @private
+	 */
+	private async createSystemServiceAccount(serviceAccounts: DefaultDef_ServiceAccount[]) {
+		this.logInfoBold('Creating Service Accounts: ', serviceAccounts);
+
+		// @ts-ignore
+		const tokenCreator = ModuleBE_AccountDB.token.create;
+		// @ts-ignore
+		const invalidateAccount = ModuleBE_AccountDB.token.invalidateAll;
+
+		const envConfigRef = Storm.getInstance().getGlobalEnvConfigRef();
+		const updatedConfig: TS_Object = {};
+
+		//Run over all service accounts
+		for (const serviceAccount of serviceAccounts) {
+			// Create account if it doesn't already exist
+			const accountsToRequest = filterKeys({
+				type: 'service',
+				email: serviceAccount.email,
+				description: serviceAccount.description
+			});
+			let account;
+			//Get or create service account
+			try {
+				account = await ModuleBE_AccountDB.impl.querySafeAccount({email: serviceAccount.email});
+			} catch (e) {
+				this.logInfo('NOTICE: querySafeAccount failed, creating accounts');
+				account = await ModuleBE_AccountDB.account.create(accountsToRequest);
+			}
+
+			// Assign permissions groups to service account
+			const permissionsUser = await ModuleBE_PermissionUserDB.query.uniqueAssert({_id: account._id});
+			permissionsUser.groups = serviceAccount.groupIds?.map(groupId => ({groupId})) || [];
+			await ModuleBE_PermissionUserDB.set.item(permissionsUser);
+
+			//Service accounts are only allowed to have one session... but this isn't the defined place to be a cop about it
+			const sessions = await ModuleBE_AccountDB.account.getSessions(account);
+			//If we have a valid session(not expired) we use its JWT instead of creating a new one
+			const validSession = sessions.sessions.find(_session => !ModuleBE_SessionDB.session.isExpired(_session));
+			this.logError(serviceAccount.ttl);
+			const token = validSession?.sessionIdJwt ? {token: validSession?.sessionIdJwt} : await tokenCreator({
+				accountId: account._id,
+				ttl: serviceAccount.ttl ?? Year
+			});
+
+			updatedConfig[serviceAccount.moduleName] = {
+				serviceAccount: filterKeys({
+					token,
+					description: serviceAccount.description,
+					accountId: account._id,
+					email: account.email
+				})
+			};
+		}
+
+		if (_keys(updatedConfig).length > 0)
+			MemKey_ServerApi.get().addPostCallAction(async () => {
+				const currentConfig = await envConfigRef.get({});
+				await envConfigRef.set(merge(currentConfig, updatedConfig));
+				this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
+			});
+	}
 }
 
 export const ModuleBE_PermissionUserDB = new ModuleBE_PermissionUserDB_Class();
