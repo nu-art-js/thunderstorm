@@ -48,7 +48,11 @@ import {
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
 import {Transaction} from 'firebase-admin/firestore';
@@ -205,7 +209,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		uniqueAssert: async (_id: Proto['uniqueParam'], transaction?: Transaction): Promise<Proto['dbType']> => {
 			const resultItem = await this.query.unique(_id, transaction);
 			if (!resultItem)
-				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${_id}`);
+				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${__stringify(_id)}`);
 
 			return resultItem;
 		},
