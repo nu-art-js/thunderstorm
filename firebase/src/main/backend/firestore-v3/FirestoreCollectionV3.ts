@@ -48,11 +48,7 @@ import {
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
 import {Transaction} from 'firebase-admin/firestore';
