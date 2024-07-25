@@ -26,8 +26,10 @@ import {
 	arrayToMap,
 	currentTimeMillis,
 	DB_Object,
+	dispatch_onApplicationException,
 	exists,
 	filterDuplicates,
+	filterInstances,
 	LogLevel,
 	Module,
 	PreDB,
@@ -124,11 +126,13 @@ export class ModuleBE_SyncManager_Class
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 
 		const permissibleModules: (ModuleBE_BaseDB<any>)[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbKey)));
-		this.logVerbose(`Modules found: ${__stringify(permissibleModules.map(_module => _module.dbDef.dbKey))}`);
+		const modulesAllowed = filterInstances(permissibleModules.map(_module => _module.dbDef.dbKey));
+		this.logVerbose(`Modules found: ${__stringify(modulesAllowed)}`);
+		this.logVerbose(`Modules not found: ${frontendCollectionNames.filter(collectionName => modulesAllowed.includes(collectionName))}`);
 
 		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: (ModuleBE_BaseDB<any>)) => item.dbDef.dbKey);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
-		const upToDateSyncData = await this.getOrCreateSyncData(body);
+		const upToDateSyncData = await this.getOrCreateSyncData();
 
 		// For each module, create the response, which says what type of sync it needs: none, delta or full.
 		await Promise.all(body.modules.map(async syncRequest => {
@@ -187,8 +191,11 @@ export class ModuleBE_SyncManager_Class
 		};
 	};
 
-	public getOrCreateSyncData = async (body: Request_SmartSync) => {
+	public getOrCreateSyncData = async () => {
 		const rtdbSyncData = await this.syncData.get({});
+
+		const dbModuleDbKeys: string[] = filterInstances(this.dbModules.map(module => module.dbDef.dbKey));
+		this.logVerbose(`BE DB Modules: ${__stringify(dbModuleDbKeys)}`);
 
 		const missingModules = this.dbModules.filter(dbModule => {
 			const dbBE_SyncData = rtdbSyncData[dbModule.dbDef.dbKey];
@@ -203,12 +210,13 @@ export class ModuleBE_SyncManager_Class
 		});
 
 		if (missingModules.length) {
-			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.dbDef.dbKey));
+			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.dbDef.dbKey).sort());
 			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'desc'}]};
 			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
 				try {
 					return (await missingModule.query.custom(query))[0] as DB_Object;
 				} catch (e: any) {
+					dispatch_onApplicationException.dispatchModule(e, this);
 					this.logError(e);
 				}
 			})));
