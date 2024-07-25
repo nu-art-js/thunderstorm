@@ -207,13 +207,13 @@ export class ModuleBE_SyncManager_Class
 			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'desc'}]};
 			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
 				try {
-					return await missingModule.query.custom(query);
-				} catch (e) {
-					return [];
+					return (await missingModule.query.custom(query))[0] as DB_Object;
+				} catch (e: any) {
+					this.logError(e);
 				}
 			})));
 
-			newestItems.forEach((item, index) => rtdbSyncData[missingModules[index].dbDef.dbKey] = {lastUpdated: item[0]?.__updated || 0});
+			newestItems.forEach((item, index) => rtdbSyncData[missingModules[index].dbDef.dbKey] = {lastUpdated: item?.__updated || 0});
 			await this.syncData.set(rtdbSyncData);
 		}
 
