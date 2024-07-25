@@ -18,3 +18,4 @@
 export * from './module-pack';
 export * from './_entity';
 export * from './_enum';
+export * from './SlackReporter';
