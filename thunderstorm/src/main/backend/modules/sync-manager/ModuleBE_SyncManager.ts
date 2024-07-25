@@ -214,7 +214,7 @@ export class ModuleBE_SyncManager_Class
 			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'desc'}]};
 			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
 				try {
-					return (await missingModule.query.custom(query))[0] as DB_Object;
+					return (await missingModule.query.unManipulatedQuery(query))[0] as DB_Object;
 				} catch (e: any) {
 					dispatch_onApplicationException.dispatchModule(e, this);
 					this.logError(e);
