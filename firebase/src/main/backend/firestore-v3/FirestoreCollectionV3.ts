@@ -29,7 +29,7 @@ import {
 	DBDef_V3,
 	dbIdLength,
 	dbObjectToId,
-	DBProto,
+	DBProto, deepClone,
 	DefaultDBVersion,
 	Exception,
 	exists,
@@ -48,11 +48,7 @@ import {
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
 import {Transaction} from 'firebase-admin/firestore';
@@ -195,8 +191,9 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	private _customQuery = async (tsQuery: FirestoreQuery<Proto['dbType']>, canManipulateQuery: boolean, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Proto['dbType']>[]> => {
 		if (canManipulateQuery)
-			tsQuery = this.hooks?.manipulateQuery?.(tsQuery) ?? tsQuery;
+			tsQuery = this.hooks?.manipulateQuery?.(deepClone(tsQuery)) ?? tsQuery;
 
+		this.logDebug(this.dbDef.dbKey, tsQuery);
 		const firestoreQuery = FirestoreInterfaceV3.buildQuery<Proto>(this, tsQuery);
 		if (transaction)
 			return (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<Proto['dbType']>[];
