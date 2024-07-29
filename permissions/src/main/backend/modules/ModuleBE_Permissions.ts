@@ -26,6 +26,7 @@ import {
 	DB_PermissionAccessLevel,
 	DB_PermissionAPI,
 	DB_PermissionDomain,
+	DB_PermissionGroup,
 	DB_PermissionProject,
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB,
@@ -142,15 +143,21 @@ class ModuleBE_Permissions_Class
 	// }
 
 	async __collectSessionData(data: SessionCollectionParam): Promise<SessionData_Permissions> {
-		return await this.getUserPermissionMap(data);
+		const permissionUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(data.accountId);
+		const userGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(permissionUser.groups.map(g => g.groupId)));
+		const permissionMap = await this.getUserPermissionMap(userGroups);
+
+		return {
+			key: 'permissions', value: {
+				domainToValueMap: permissionMap,
+				roles: userGroups.map(group => group.label),
+			}
+		};
 	}
 
-	public getUserPermissionMap = async (data: SessionCollectionParam): Promise<SessionData_Permissions> => {
-		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({_id: data.accountId});
+	public getUserPermissionMap = async (userGroups: DB_PermissionGroup[]): Promise<TypedMap<number>> => {
 		const permissionMap: TypedMap<number> = {};
-		const groupIds = user.groups.map(g => g.groupId);
-		const groups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(groupIds));
-		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
+		const levelMaps = filterInstances(userGroups.map(i => i._levelsMap));
 		levelMaps.forEach(levelMap => {
 			_keys(levelMap).forEach(domainId => {
 				if (!permissionMap[domainId])
@@ -167,7 +174,7 @@ class ModuleBE_Permissions_Class
 			if (!permissionMap[domain._id])
 				permissionMap[domain._id] = DefaultAccessLevel_NoAccess.value; //"fill in the gaps" - All domains that are not defined for the user, are NoAccess by default.
 		});
-		return {key: 'permissions', value: permissionMap};
+		return permissionMap;
 	};
 
 	toggleStrictMode = async () => {

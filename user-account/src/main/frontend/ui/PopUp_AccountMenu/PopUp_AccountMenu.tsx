@@ -20,6 +20,8 @@ import {ModuleFE_Account} from '../../../_entity/account/frontend/ModuleFE_Accou
 import {Component_AccountThumbnail} from '../Component_AccountThumbnail/Component_AccountThumbnail';
 import './PopUp_AccountMenu.scss';
 import {Component_ChangePassword} from '../Component_ChangePassword/Component_ChangePassword';
+import {ModuleFE_Utils} from '@nu-art/thunderstorm/frontend/modules/ModuleFE_Utils/ModuleFE_Utils';
+import {RendererKey_AccountMenu_SubHeader} from '../../consts';
 
 
 type ModalProps = {
@@ -169,7 +171,6 @@ export class PopUp_AccountMenu
 			{this.renderCustomPage()}
 		</>;
 	};
-
 	private renderSeparatorBar = (style?: React.CSSProperties) => {
 		return <span className={'account-menu__separator'} style={style}/>;
 	};
@@ -182,11 +183,14 @@ export class PopUp_AccountMenu
 			return;
 
 		const accountDisplay = this.props.accountDisplayModifier?.(account) ?? account.displayName ?? account.email;
+		const AdditionalHeaderRenderer: React.ComponentType = ModuleFE_Utils.getRenderer(RendererKey_AccountMenu_SubHeader, {account: account});
+
 		return <>
 			<LL_H_C className={'account-menu__header'}>
 				<Component_AccountThumbnail accountId={() => account._id} acronymComposer={this.props.acronymComposer}/>
 				<div className={'account-menu__header__display-name'}>{accountDisplay}</div>
 			</LL_H_C>
+			{AdditionalHeaderRenderer && <AdditionalHeaderRenderer/>}
 			{this.renderSeparatorBar()}
 		</>;
 	};
