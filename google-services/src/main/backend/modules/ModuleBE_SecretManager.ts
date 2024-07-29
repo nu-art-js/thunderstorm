@@ -58,7 +58,7 @@ export class ModuleBE_SecretManager_Class
 			this.logVerbose(`Secret exists: ${secret.name}`);
 			return secret;
 		} catch (err: any) {
-			if (err.code !== 5) {
+			if (err.code !== 5) { // error 5 means secret does not exist, so we continue on to create it
 				this.logError('Failed to get secret', err);
 				throw err;
 			}
