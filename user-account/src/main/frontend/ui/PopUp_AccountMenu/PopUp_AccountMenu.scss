@@ -62,6 +62,21 @@
       }
     }
 
+    .container_role-names {
+      max-height: 200px;
+      @include styles.customScrollbar('vertical');
+      padding: 4px;
+      width: 100%;
+
+      .role-name {
+        font: {
+          size: 12px;
+          weight: 550;
+        }
+        color: styles.dark-blue(1);
+      }
+    }
+
     .account-menu__body {
       width: 100%;
       padding: 10px;

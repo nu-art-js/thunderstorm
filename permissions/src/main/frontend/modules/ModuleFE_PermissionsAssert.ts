@@ -18,10 +18,12 @@
  */
 
 import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
-import {apiWithQuery,} from '@nu-art/thunderstorm/frontend';
+import {apiWithQuery, ModuleFE_Utils,} from '@nu-art/thunderstorm/frontend';
 import {ApiDef_Permissions} from '../..';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts';
+import {RendererKey_AccountMenu_SubHeader} from '@nu-art/user-account/frontend/consts';
+import {Renderer_RoleNames} from '../ui/Renderer_RoleNames';
 
 
 export type PermissionsModuleFEConfig = {
@@ -59,6 +61,12 @@ export class ModuleFE_PermissionsAssert_Class
 		};
 	}
 
+	protected init() {
+		super.init();
+
+		ModuleFE_Utils.registerRenderer(RendererKey_AccountMenu_SubHeader, Renderer_RoleNames);
+	}
+
 	getAccessLevelByKeyString(key: string) {
 		return this.getAccessLevel(this.getPermissionKey(key));
 	}
@@ -71,7 +79,7 @@ export class ModuleFE_PermissionsAssert_Class
 		if (keyData.accessLevelIds.length === 0)
 			return AccessLevel.NoAccessLevelsDefined;
 
-		const userAccessLevels = SessionKey_Permissions_FE.get();
+		const userAccessLevels = SessionKey_Permissions_FE.get().domainToValueMap;
 		try {
 			const canAccess = _keys(keyData._accessLevels).reduce((hasAccess, domainId) => {
 				return hasAccess && userAccessLevels[domainId] >= keyData._accessLevels[domainId];
