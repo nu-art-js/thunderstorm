@@ -3,9 +3,10 @@ import {DBProto_PermissionProject} from '../../permission-project/shared';
 import {DBProto_PermissionAccessLevel} from '../../permission-access-level/shared';
 
 type VersionTypes_PermissionAPI = {
-	'1.0.0': DB_PermissionAPI
+	'1.0.0': DB_PermissionAPI,
+	'1.0.1': DB_PermissionAPI,
 }
-type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PermissionAPI>;
+type Versions = VersionsDeclaration<['1.0.1', '1.0.0'], VersionTypes_PermissionAPI>;
 type Dependencies = {
 	projectId: DBProto_PermissionProject;
 	accessLevelIds: DBProto_PermissionAccessLevel;
