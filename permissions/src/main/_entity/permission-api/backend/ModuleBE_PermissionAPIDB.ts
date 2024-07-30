@@ -15,6 +15,9 @@ export class ModuleBE_PermissionAPIDB_Class
 
 	constructor() {
 		super(DBDef_PermissionAPI);
+
+		this.registerVersionUpgradeProcessor('1.0.0', async instances => {
+		}); // adjustment made in pre-write requires us to do this in order to upgrade the data
 	}
 
 	protected async preWriteProcessing(instance: DB_PermissionAPI, originalDbInstance: DBProto_PermissionAPI['dbType'], t?: Transaction) {
@@ -48,6 +51,10 @@ export class ModuleBE_PermissionAPIDB_Class
 		} else {
 			instance._accessLevels = {};
 		}
+
+		// clean '/' from api path start
+		if (instance.path.startsWith('/'))
+			instance.path = instance.path.substring(1);
 	}
 
 	registerApis(projectId: string, routes: string[]) {
