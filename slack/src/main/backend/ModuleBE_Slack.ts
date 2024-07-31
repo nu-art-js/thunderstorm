@@ -21,25 +21,19 @@
  * Created by AlanBen on 29/08/2019.
  */
 
-import {
-	currentTimeMillis,
-	generateHex,
-	ImplementationMissingException,
-	md5,
-	Minute,
-	Module,
-	PartialProperties
-} from '@nu-art/ts-common';
+import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
 import {
 	ChatPostMessageArguments,
 	FilesUploadArguments,
 	WebAPICallResult,
 	WebClient,
-	WebClientOptions
+	WebClientOptions,
 } from '@slack/web-api';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {ApiDef_Slack} from '../shared';
+import {ApiDef_Slack, PreSendSlackStructuredMessage} from '../shared';
 import {Stream} from 'stream';
+import {postSlackMessageErrorHandler} from './utils';
+import { HttpCodes } from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 interface ChatPostMessageResult
@@ -58,7 +52,6 @@ export type ConfigType_ModuleBE_Slack = {
 	slackConfig?: Partial<WebClientOptions>
 };
 
-export type PreSendSlackStructuredMessage = PartialProperties<ChatPostMessageArguments, 'channel' | 'text'>
 
 type _SlackMessage = {
 	text: string
@@ -98,6 +91,10 @@ export class ModuleBE_Slack_Class
 			createBodyServerApi(ApiDef_Slack.vv1.postMessage, async (request): Promise<void> => {
 				await this.postMessage(request.message, request.channel);
 			}),
+			createBodyServerApi(ApiDef_Slack.vv1.postStructuredMessage, async (request) => {
+				return {threadPointer: await this.postStructuredMessage(request.message, request.thread)};
+			}),
+			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file,request.name, request.thread))
 		]);
 	}
 
@@ -142,18 +139,22 @@ export class ModuleBE_Slack_Class
 	}
 
 	private async postMessageImpl(message: ChatPostMessageArguments, threadPointer?: ThreadPointer): Promise<ThreadPointer> {
-		if (threadPointer) {
-			message.thread_ts = threadPointer.ts;
-			message.channel = threadPointer.channel;
+		try{
+			if (threadPointer) {
+				message.thread_ts = threadPointer.ts;
+				message.channel = threadPointer.channel;
+			}
+			this.logDebug(`Sending message in ${threadPointer ? 'thread' : 'channel'}`, message);
+			const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
+
+			//Add message to map
+			this.messageMap[md5(message.text)] = currentTimeMillis();
+
+			this.logDebug(`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);
+			return {ts: res.ts, channel: res.channel};
+		}catch (err){
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(postSlackMessageErrorHandler(err))
 		}
-		this.logDebug(`Sending message in ${threadPointer ? 'thread' : 'channel'}`, message);
-		const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
-
-		//Add message to map
-		this.messageMap[md5(message.text)] = currentTimeMillis();
-
-		this.logDebug(`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);
-		return {ts: res.ts, channel: res.channel};
 	}
 
 	public uploadFile = async (file: Buffer | Stream, name: string, tp?: ThreadPointer) => {
