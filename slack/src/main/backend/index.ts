@@ -19,5 +19,4 @@
 
 export * from './ModuleBE_Slack';
 export * from './Slack_ServerApiError';
-export * from './composers-and-builders';
-export * from './SlackBuilder';
+export * from './SlackBuilderBE';
