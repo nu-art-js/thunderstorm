@@ -35,6 +35,7 @@ import {
 	ModuleBE_PermissionProjectDB,
 	ModuleBE_PermissionUserDB
 } from '../_entity';
+import {trimStartingForwardSlash} from '@nu-art/thunderstorm/shared/route-tools';
 
 
 export interface CollectPermissionsProjects {
@@ -339,7 +340,7 @@ class ModuleBE_Permissions_Class
 
 				apis.push(...(domain.customApis || []).map(api => ({
 					projectId: project._id,
-					path: api.path,
+					path: trimStartingForwardSlash(api.path),
 					_auditorId,
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));

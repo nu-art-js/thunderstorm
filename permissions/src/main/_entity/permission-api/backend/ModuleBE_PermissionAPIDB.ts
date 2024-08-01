@@ -6,6 +6,7 @@ import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionProjectDB} from '../../permission-project/backend/ModuleBE_PermissionProjectDB';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {trimStartingForwardSlash} from '@nu-art/thunderstorm/shared/route-tools';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionAPI> & {}
@@ -22,6 +23,10 @@ export class ModuleBE_PermissionAPIDB_Class
 
 	protected async preWriteProcessing(instance: DB_PermissionAPI, originalDbInstance: DBProto_PermissionAPI['dbType'], t?: Transaction) {
 		await ModuleBE_PermissionProjectDB.query.uniqueAssert(instance.projectId);
+
+		// clean '/' from api path start
+		instance.path = trimStartingForwardSlash(instance.path);
+		// set who created this
 		instance._auditorId = MemKey_AccountId.get();
 		const accessLevelIds = new Set<UniqueId>();
 		const duplicateAccessLevelIds = new Set<UniqueId>();
@@ -51,10 +56,6 @@ export class ModuleBE_PermissionAPIDB_Class
 		} else {
 			instance._accessLevels = {};
 		}
-
-		// clean '/' from api path start
-		if (instance.path.startsWith('/'))
-			instance.path = instance.path.substring(1);
 	}
 
 	registerApis(projectId: string, routes: string[]) {
