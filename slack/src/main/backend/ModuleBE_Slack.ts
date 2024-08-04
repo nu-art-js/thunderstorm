@@ -22,18 +22,12 @@
  */
 
 import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
-import {
-	ChatPostMessageArguments,
-	FilesUploadArguments,
-	WebAPICallResult,
-	WebClient,
-	WebClientOptions,
-} from '@slack/web-api';
+import {ChatPostMessageArguments, FilesUploadArguments, WebAPICallResult, WebClient, WebClientOptions,} from '@slack/web-api';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_Slack, PreSendSlackStructuredMessage} from '../shared';
 import {Stream} from 'stream';
 import {postSlackMessageErrorHandler} from './utils';
-import { HttpCodes } from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 interface ChatPostMessageResult
@@ -94,7 +88,7 @@ export class ModuleBE_Slack_Class
 			createBodyServerApi(ApiDef_Slack.vv1.postStructuredMessage, async (request) => {
 				return {threadPointer: await this.postStructuredMessage(request.message, request.thread)};
 			}),
-			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file,request.name, request.thread))
+			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file, request.name, request.thread))
 		]);
 	}
 
@@ -139,7 +133,7 @@ export class ModuleBE_Slack_Class
 	}
 
 	private async postMessageImpl(message: ChatPostMessageArguments, threadPointer?: ThreadPointer): Promise<ThreadPointer> {
-		try{
+		try {
 			if (threadPointer) {
 				message.thread_ts = threadPointer.ts;
 				message.channel = threadPointer.channel;
@@ -152,8 +146,8 @@ export class ModuleBE_Slack_Class
 
 			this.logDebug(`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);
 			return {ts: res.ts, channel: res.channel};
-		}catch (err){
-			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(postSlackMessageErrorHandler(err))
+		} catch (err) {
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(postSlackMessageErrorHandler(err, message.channel));
 		}
 	}
 
