@@ -13,6 +13,7 @@ import {PermissionDBGroup} from '../../shared';
 
 const Validator_ModifiableProps: DBProto_PermissionGroup['modifiablePropsValidator'] = {
 	label: validateGroupLabel,
+	uiLabel: tsValidateString(),
 	projectId: tsValidateOptionalId,
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
 };

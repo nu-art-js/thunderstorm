@@ -20,7 +20,8 @@ export type DBProto_PermissionGroup = DBProto<Proto>;
 export type UI_PermissionGroup = DBProto_PermissionGroup['uiType'];
 export type DB_PermissionGroup = DB_Object & AuditableV2 & {
 	projectId?: string
-	label: string,
+	label: string, // name, refactor into 'key'
+	uiLabel:string, // name of the group to show in UI
 	accessLevelIds: string[],
 	_levelsMap?: TypedMap<number>, // [DomainId]: AccessLevel.value
 }

@@ -23,6 +23,7 @@ export type Base_AccessLevel = {
 }
 
 export type DB_PermissionAccessLevel = DB_Object & Base_AccessLevel & AuditableV2 & {
-	name: string
+	name: string // name, refactor into 'key'
+	uiLabel:string // name of the group to show in UI
 }
 

@@ -5,6 +5,7 @@ import {PermissionDBGroup} from '../../shared';
 const Validator_ModifiableProps: DBProto_PermissionAccessLevel['modifiablePropsValidator'] = {
 	domainId: tsValidateUniqueId,
 	name: tsValidateStringWithDashes,
+	uiLabel: tsValidateString(),
 	value: tsValidateIsInRange([[0, 1000]]),
 };
 

@@ -64,6 +64,7 @@ export type DefaultDef_Domain = {
 export type DefaultDef_AccessLevel = {
 	_id: string
 	name: string
+	uiLabel:string
 	value: number
 }
 
@@ -75,6 +76,7 @@ export type PreDBAccessLevel = {
 export type DefaultDef_Group = {
 	_id: string
 	name: string
+	uiLabel:string
 	accessLevels: { [domainName: string]: string } // access level name
 };
 

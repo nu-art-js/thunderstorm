@@ -49,6 +49,7 @@ const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
 export const PermissionGroup_Permissions_SuperAdmin: DefaultDef_Group = {
 	_id: GroupId_SuperAdmin,
 	name: 'Super Admin',
+	uiLabel: 'Super Admin',
 	accessLevels: {
 		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Admin.name,
 		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Admin.name,
@@ -60,6 +61,7 @@ export const PermissionGroup_Permissions_SuperAdmin: DefaultDef_Group = {
 export const PermissionGroup_Permissions_Viewer: DefaultDef_Group = {
 	_id: '8c38d3bd2d76bbc37b5281f481c0bc1b',
 	name: 'Permissions Viewer',
+	uiLabel: 'Permissions Viewer',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
 		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
@@ -70,6 +72,7 @@ export const PermissionGroup_Permissions_Viewer: DefaultDef_Group = {
 export const PermissionGroup_Permissions_Editor: DefaultDef_Group = {
 	_id: '1524909cae174d0052b76a469b339218',
 	name: 'Permissions Editor',
+	uiLabel: 'Permissions Editor',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
 		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
@@ -80,6 +83,7 @@ export const PermissionGroup_Permissions_Editor: DefaultDef_Group = {
 export const PermissionGroup_Account_Manager: DefaultDef_Group = {
 	_id: '6bb5feb12d0712ecee77f7f44188ec79',
 	name: 'Accounts Manager',
+	uiLabel: 'Accounts Manager',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Write.name,
 	}
@@ -88,6 +92,7 @@ export const PermissionGroup_Account_Manager: DefaultDef_Group = {
 export const PermissionGroup_Account_Admin: DefaultDef_Group = {
 	_id: '761a84bdde3f9be3fde9c50402a60401',
 	name: 'Accounts Admin',
+	uiLabel: 'Accounts Admin',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
 	}
@@ -96,6 +101,7 @@ export const PermissionGroup_Account_Admin: DefaultDef_Group = {
 export const PermissionGroup_Account_Viewer: DefaultDef_Group = {
 	_id: '7343853a980149ec94f967ac7ff4ccc3',
 	name: 'Accounts Viewer',
+	uiLabel: 'Accounts Viewer',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
 	}
@@ -275,6 +281,7 @@ class ModuleBE_Permissions_Class
 					domainId: map_nameToDbDomain[domain.namespace]._id,
 					value: level.value,
 					name: level.name,
+					uiLabel: level.name,
 					_auditorId
 				};
 			});
@@ -310,6 +317,7 @@ class ModuleBE_Permissions_Class
 					_id: group._id,
 					_auditorId,
 					label: group.name,
+					uiLabel: group.name,
 					accessLevelIds: _keys(group.accessLevels)
 						.map(key => {
 							const domainsMapNameToDbDomainElement = map_nameToDbDomain[key];
