@@ -5,6 +5,7 @@ import {PermissionDBGroup} from '../../shared';
 const Validator_ModifiableProps: DBProto_PermissionAccessLevel['modifiablePropsValidator'] = {
 	domainId: tsValidateUniqueId,
 	name: tsValidateStringWithDashes,
+	uiLabel: tsValidateString(),
 	value: tsValidateIsInRange([[0, 1000]]),
 };
 
@@ -15,7 +16,7 @@ const Validator_GeneratedProps: DBProto_PermissionAccessLevel['generatedPropsVal
 export const DBDef_PermissionAccessLevel: DBDef_V3<DBProto_PermissionAccessLevel> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
-	versions: ['1.0.0'],
+	versions: ['1.0.1', '1.0.0'],
 	dbKey: 'permissions--level',
 	entityName: 'PermissionAccessLevel',
 	frontend: {
