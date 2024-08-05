@@ -157,7 +157,7 @@ class ModuleBE_Permissions_Class
 		return {
 			key: 'permissions', value: {
 				domainToValueMap: permissionMap,
-				roles: userGroups.map(group => group.label),
+				roles: userGroups.map(group => ({key: group.label, uiLabel: group.uiLabel})),
 			}
 		};
 	}
