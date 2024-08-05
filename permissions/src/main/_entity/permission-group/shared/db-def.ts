@@ -18,7 +18,7 @@ const Validator_GeneratedProps: DBProto_PermissionGroup['generatedPropsValidator
 export const DBDef_PermissionGroup: DBDef_V3<DBProto_PermissionGroup> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
-	versions: ['1.0.0'],
+	versions: ['1.0.1', '1.0.0'],
 	dbKey: 'permissions--group',
 	entityName: 'PermissionGroup',
 	frontend: {

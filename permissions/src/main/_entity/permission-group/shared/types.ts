@@ -4,8 +4,9 @@ import {DBProto_PermissionAccessLevel} from '../../permission-access-level/share
 
 type VersionTypes_PermissionGroup = {
 	'1.0.0': DB_PermissionGroup
+	'1.0.1': DB_PermissionGroup
 }
-type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PermissionGroup>;
+type Versions = VersionsDeclaration<['1.0.1', '1.0.0'], VersionTypes_PermissionGroup>;
 type Dependencies = {
 	projectId: DBProto_PermissionProject;
 	accessLevelIds: DBProto_PermissionAccessLevel;
@@ -22,6 +23,13 @@ export type DB_PermissionGroup = DB_Object & AuditableV2 & {
 	projectId?: string
 	label: string, // name, refactor into 'key'
 	uiLabel: string, // name of the group to show in UI
+	accessLevelIds: string[],
+	_levelsMap?: TypedMap<number>, // [DomainId]: AccessLevel.value
+}
+
+export type DB_PermissionGroup_1_0_0 = DB_Object & AuditableV2 & {
+	projectId?: string
+	label: string, // name, refactor into 'key'
 	accessLevelIds: string[],
 	_levelsMap?: TypedMap<number>, // [DomainId]: AccessLevel.value
 }

@@ -1,5 +1,5 @@
 import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from './shared';
+import {DB_PermissionAccessLevel, DB_PermissionAccessLevel_1_0_0, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from './shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates} from '@nu-art/ts-common';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
@@ -18,6 +18,7 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 
 	constructor() {
 		super(DBDef_PermissionAccessLevel);
+		this.registerVersionUpgradeProcessor('1.0.0', this.upgrade_100_101);
 	}
 
 	protected internalFilter(item: DB_PermissionAccessLevel): Clause_Where<DB_PermissionAccessLevel>[] {
@@ -60,6 +61,10 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 		if (groups.length || apis.length)
 			throw new ApiException(403, 'You trying delete access level that associated with users/groups/apis, you need delete the associations first');
 	}
+
+	private upgrade_100_101 = async (items: DB_PermissionAccessLevel_1_0_0[]) => {
+		items.forEach(accessLevel => (accessLevel as DB_PermissionAccessLevel).uiLabel = accessLevel.name);
+	};
 }
 
 export const ModuleBE_PermissionAccessLevelDB = new ModuleBE_PermissionAccessLevelDB_Class();
