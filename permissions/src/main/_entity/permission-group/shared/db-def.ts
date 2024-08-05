@@ -1,12 +1,4 @@
-import {
-	DBDef_V3,
-	tsValidateArray,
-	tsValidateDynamicObject,
-	tsValidateNumber,
-	tsValidateOptionalId,
-	tsValidateString,
-	tsValidateUniqueId
-} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateArray, tsValidateDynamicObject, tsValidateNumber, tsValidateOptionalId, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
 import {DBProto_PermissionGroup} from './types';
 import {validateGroupLabel} from '../../../shared/validators';
 import {PermissionDBGroup} from '../../shared';
