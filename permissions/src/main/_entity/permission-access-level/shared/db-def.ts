@@ -16,7 +16,7 @@ const Validator_GeneratedProps: DBProto_PermissionAccessLevel['generatedPropsVal
 export const DBDef_PermissionAccessLevel: DBDef_V3<DBProto_PermissionAccessLevel> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
-	versions: ['1.0.0'],
+	versions: ['1.0.1', '1.0.0'],
 	dbKey: 'permissions--level',
 	entityName: 'PermissionAccessLevel',
 	frontend: {

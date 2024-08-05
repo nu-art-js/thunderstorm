@@ -1,5 +1,5 @@
 import {DBApiConfigV3, ModuleBE_ActionProcessor, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionGroup, DBDef_PermissionGroup, DBProto_PermissionGroup} from './shared';
+import {DB_PermissionGroup, DB_PermissionGroup_1_0_0, DBDef_PermissionGroup, DBProto_PermissionGroup} from './shared';
 import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend';
 import {Transaction} from 'firebase-admin/firestore';
@@ -22,6 +22,7 @@ export class ModuleBE_PermissionGroupDB_Class
 			description: 'Clears all permission groups that aren\'t in use',
 			processor: this.clearUnused
 		}, this);
+		this.registerVersionUpgradeProcessor('1.0.0', this.upgrade_100_101);
 	}
 
 	protected async preWriteProcessing(instance: DB_PermissionGroup, originalDbInstance: DBProto_PermissionGroup['dbType'], t?: Transaction) {
@@ -70,6 +71,10 @@ export class ModuleBE_PermissionGroupDB_Class
 		report += `Cleared ${unusedGroups.length} groups: ${unusedGroups.map(group => group.label).join(',\n')}`;
 		await this.delete.allItems(unusedGroups);
 		await new SlackReporter(report).sendReportToChannel();
+	};
+
+	private upgrade_100_101 = async (items: DB_PermissionGroup_1_0_0[]) => {
+		items.forEach(group => (group as DB_PermissionGroup).uiLabel = group.label);
 	};
 }
 
