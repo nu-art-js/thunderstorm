@@ -40,6 +40,7 @@ const PermissionsGroupId_ProactivePushMessanger = '7f2c8925a6fdd2bcb9be3c1c0932d
 const _PermissionsGroup_ProactivePushMessanger: DefaultDef_Group = {
 	_id: PermissionsGroupId_ProactivePushMessanger,
 	name: 'Push Messanger',
+	uiLabel: 'Push Messenger',
 	accessLevels: {
 		[PermissionsDomain_PushMessages.namespace]: DefaultAccessLevel_Tester.name,
 	}

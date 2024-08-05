@@ -2,16 +2,16 @@
  * Receives slack error and returns a human-readable error message
  * @param error The error received from the api call
  */
-export const postSlackMessageErrorHandler = (error: any) => {
+export const postSlackMessageErrorHandler = (error: any, channel?: string) => {
 	const prefix = 'Slack error! ';
 	if (error.data && error.data.error) {
 		switch (error.data.error) {
 			case 'channel_not_found':
-				return `${prefix}The specified channel does not exist or is not accessible by your access token. Please double check defined channel in config and adjust if needed`;
+				return `${prefix}The specified channel (Channel '${channel}') does not exist or is not accessible by your access token. Please double check defined channel in config and adjust if needed`;
 			case 'not_in_channel':
-				return `${prefix}The bot or user is not a member of the specified channel.`;
+				return `${prefix}The bot or user is not a member of the specified channel. (Channel '${channel}')`;
 			case 'is_archived':
-				return `${prefix}The channel has been archived and cannot be written to.`;
+				return `${prefix}The channel has been archived and cannot be written to. (Channel '${channel}')`;
 			case 'msg_too_long':
 				return `${prefix}The message text exceeds the maximum allowed length.`;
 			case 'no_text':
@@ -29,11 +29,11 @@ export const postSlackMessageErrorHandler = (error: any) => {
 			case 'token_revoked':
 				return `${prefix}The token has been revoked.`;
 			case 'no_permission':
-				return `${prefix}The token does not have the necessary permission to post messages in the specified channel.`;
+				return `${prefix}The token does not have the necessary permission to post messages in the specified channel. (Channel '${channel}')`;
 			case 'user_is_bot':
 				return `${prefix}The user associated with the token is a bot, which cannot post messages.`;
 			case 'team_access_not_granted':
-				return `${prefix}The application has not been granted access to post messages in the specified team.`;
+				return `${prefix}The application has not been granted access to post messages in the specified team. (Channel '${channel}')`;
 			default:
 				return `${prefix}An unexpected error occurred: ${error.data.error}`;
 		}
