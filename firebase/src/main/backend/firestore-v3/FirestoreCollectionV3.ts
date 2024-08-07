@@ -29,7 +29,8 @@ import {
 	DBDef_V3,
 	dbIdLength,
 	dbObjectToId,
-	DBProto, deepClone,
+	DBProto,
+	deepClone,
 	DefaultDBVersion,
 	Exception,
 	exists,
@@ -217,7 +218,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
 
 			if (thisShouldBeOnlyOne.length > 1)
-				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbKey}`);
+				throw new BadImplementationException(`Too many results (${thisShouldBeOnlyOne.length}) in collection (${this.dbDef.dbKey}) for query: ${__stringify(query)}`);
 
 			return thisShouldBeOnlyOne[0];
 		},
