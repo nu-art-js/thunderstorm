@@ -87,6 +87,7 @@ export const dispatch_onPreLogout = new Dispatcher<OnPreLogout, '__onPreLogout'>
 type Config = {
 	canRegister: boolean
 	passwordAssertion?: PasswordAssertionConfig
+	ignorePasswordAssertion?: boolean
 }
 
 export class ModuleBE_AccountDB_Class
@@ -119,7 +120,7 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
 			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
 			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail),
-			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({config: this.config.passwordAssertion}))
+			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({config: this.config.ignorePasswordAssertion ? undefined : this.config.passwordAssertion}))
 		]);
 	}
 
