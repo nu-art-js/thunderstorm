@@ -1,0 +1,30 @@
+.ts-button-v2 {
+  background: #b5b5b5;
+  color: white;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  //background animation
+  transition: background 300ms ease-out, color 300ms ease-out;
+
+  &.disabled {
+    cursor: not-allowed;
+    background: #cfcfcf;
+  }
+
+  &.action-in-progress {
+    cursor: progress;
+  }
+
+  &:not(.disabled, .action-in-progress):hover {
+    background: #8e8e8e;
+  }
+
+  &:not(.disabled, .action-in-progress):active {
+    background: #b5b5b5;
+  }
+}
