@@ -54,7 +54,7 @@ export class ModuleFE_Window_Class
 	}
 
 	private onWindowResized = () => {
-		dispatch_WindowResized.dispatchUI();
+		dispatch_WindowResized.dispatchAll();
 	};
 
 	private onWindowReceivedFocus = () => {
