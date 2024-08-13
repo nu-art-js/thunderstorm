@@ -1,7 +1,7 @@
 //TODO: move this thing to Thunderstorm post PR
 import * as React from 'react';
 import './TS_ButtonV2.scss';
-import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {LinearLayoutProps} from '../Layouts';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
@@ -11,6 +11,7 @@ type Props = LinearLayoutProps & {
 	disabled?: boolean;
 	variant?: string;
 	loaderOverride?: ResolvableContent<React.ReactNode>
+	actionInProgress?: boolean
 }
 
 type State = {
@@ -26,8 +27,16 @@ type State = {
 export class TS_ButtonV2
 	extends ComponentSync<Props, State> {
 
+	shouldComponentUpdate(): boolean {
+		return true;
+	}
+
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
 		state.disabled = nextProps.disabled;
+
+		if (exists(nextProps.actionInProgress))
+			state.actionInProgress = nextProps.actionInProgress;
+
 		return state;
 	}
 
@@ -52,14 +61,15 @@ export class TS_ButtonV2
 				this.logError(error);
 				throw error;
 			} finally {
-				this.setState({actionInProgress: false});
+				if (!this.props.actionInProgress)
+					this.setState({actionInProgress: false});
 			}
 		});
 	};
 
 	private prepareProps = () => {
-		const {variant, ...restOfProps} = this.props;
-		const actionInProgress = this.state.actionInProgress;
+		const {variant, actionInProgress, ...restOfProps} = this.props;
+		const _actionInProgress = this.state.actionInProgress;
 		const currentProps: any = {...restOfProps};
 
 		//add on click
@@ -70,7 +80,7 @@ export class TS_ButtonV2
 			currentProps['data-variant'] = variant;
 
 		// get updated class name
-		currentProps.className = _className('ts-button-v2', this.props.className, this.state.disabled && 'disabled', actionInProgress && 'action-in-progress');
+		currentProps.className = _className('ts-button-v2', this.props.className, this.state.disabled && 'disabled', _actionInProgress && 'action-in-progress');
 
 		return currentProps;
 	};
@@ -82,3 +92,4 @@ export class TS_ButtonV2
 		</div>;
 	}
 }
+

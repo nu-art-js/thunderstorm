@@ -48,6 +48,7 @@ import {
 	Header_SessionId,
 	MemKey_AccountEmail,
 	MemKey_AccountId,
+	MemKey_AccountType,
 	ModuleBE_SessionDB,
 	SessionCollectionParam,
 	SessionKey_Account_BE,
@@ -98,6 +99,8 @@ export class ModuleBE_AccountDB_Class
 		const account = SessionKey_Account_BE.get();
 		MemKey_AccountEmail.set(account.email!);
 		MemKey_AccountId.set(account._id);
+		MemKey_AccountType.set(account.type);
+
 	};
 
 	constructor() {
