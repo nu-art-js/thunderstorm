@@ -187,13 +187,13 @@ export class TS_TextAreaV2
 	};
 
 	render() {
-		const {onAccept, error, trim, saveEvent, forceAcceptKeys, focus, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, focus, innerRef, ...props} = this.props;
 
 		return <textarea
 			{...props}
 			{...convertToHTMLDataAttributes(this.props.error, 'error')}
 			autoFocus={focus}
-			ref={props.innerRef}
+			ref={innerRef}
 			onBlur={(event) => {
 				const value = event.target.value;
 				this.setState({value});
