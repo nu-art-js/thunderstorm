@@ -8,6 +8,7 @@ import {DialogKey, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialo
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
 import {LL_V_L} from '../Layouts';
 import {_className, stopPropagation} from '../../utils/tools';
+import {TS_ButtonV2} from '../TS_ButtonV2/TS_ButtonV2';
 
 
 /**
@@ -23,6 +24,7 @@ export type DialogButton = {
 	associatedKeys?: string[];
 	disabled?: boolean;
 	renderer?: (button: DialogButton, index: number, ref?: React.RefObject<any>) => React.ReactNode;
+	variant?: string;
 }
 
 export type DialogButtons = {
@@ -142,7 +144,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	private dialogHeader = (headerContent: React.ReactNode | undefined) => {
 		return headerContent && <div className={'ts-dialog__header'}>
 			{headerContent}
-		</div>;
+        </div>;
 	};
 
 	protected renderHeader = (): React.ReactNode | undefined => {
@@ -154,7 +156,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	private dialogBody = (mainContent: React.ReactNode | undefined) => {
 		return mainContent && <div className={'ts-dialog__main'}>
 			{mainContent}
-		</div>;
+        </div>;
 	};
 
 	protected renderBody = (): React.ReactNode | undefined => {
@@ -170,7 +172,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		return <div className={'ts-dialog__buttons'}>
 			{buttons.left && <div className={'ts-dialog__buttons__left'}>{this._buttonsCreator(buttons.left)}</div>}
 			{buttons.center &&
-				<div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
+                <div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
 			{buttons.right && <div className={'ts-dialog__buttons__right'}>{this._buttonsCreator(buttons.right)}</div>}
 		</div>;
 	};
@@ -205,8 +207,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 
 		return <TS_ErrorBoundary error={this.state.error} onClick={() => this.closeDialog(true)}>
 			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1}
-							onKeyDown={this.dialogKeyEventHandler}
-							onContextMenu={stopPropagation}>
+					onKeyDown={this.dialogKeyEventHandler}
+					onContextMenu={stopPropagation}>
 				{this.dialogHeader(headerContent)}
 				{this.dialogBody(mainContent)}
 				{this.dialogButtons(buttons)}
@@ -234,6 +236,17 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 			disabled={button.disabled}
 			key={`button-${index}`}
 		>{button.content}</TS_Button>;
+	};
+
+	static buttonV2 = (button: DialogButton, index: number, ref?: React.RefObject<any>) => {
+		return <TS_ButtonV2
+			ref={ref}
+			className={button.className}
+			onClick={button.onClick}
+			disabled={button.disabled}
+			key={`button-${index}`}
+			variant={button.variant}
+		>{button.content}</TS_ButtonV2>;
 	};
 
 	static Button_Cancel = {
