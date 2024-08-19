@@ -1,10 +1,10 @@
 @use '@nu-art/ts-styles' as styles;
 
 %main-button-design {
-  @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));
   width: 95%;
   height: 30px;
   margin: 0 auto;
+  @include styles.mouseInteractiveBackground(styles.dark-blue(2), styles.dark-blue(1));
 }
 
 #pop-up__account-menu {
@@ -69,12 +69,13 @@
       grid-template-columns: 1fr 1fr;
 
       .ts-button, .ts-busy-button {
-        @include styles.mouse-interactive-text(styles.dark-blue(2), white);
-        @include styles.mouse-interactive-background(white, styles.dark-blue(2));
         margin: 0;
         height: 30px;
         background: transparent;
         border: 2px solid styles.dark-blue(2);
+
+        @include styles.mouseInteractiveText(styles.dark-blue(2), white);
+        @include styles.mouseInteractiveBackground(white, styles.dark-blue(2));
       }
     }
 
@@ -106,8 +107,6 @@
     padding: 10px 0;
 
     .account-menu__custom-page__back-button {
-      @include styles.mouse-interactive-background(white, styles.dark-blue(2));
-      @include styles.mouse-interactive-text(styles.dark-blue(2), white);
       transition: background 100ms, color 100ms;
       cursor: pointer;
       padding: 4px 10px;
@@ -116,6 +115,9 @@
       font: {
         size: 14px;
       }
+
+      @include styles.mouseInteractiveBackground(white, styles.dark-blue(2));
+      @include styles.mouseInteractiveText(styles.dark-blue(2), white);
     }
 
     &:not(.show) {

@@ -25,9 +25,9 @@
   }
 
   .ts-busy-button {
-    @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));
     padding: 8px 16px;
     margin: 0;
+    @include styles.mouseInteractiveBackground(styles.dark-blue(2), styles.dark-blue(1));
 
     &.ts-busy-button__disabled {
       background: styles.dark-blue(2);

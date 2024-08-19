@@ -84,7 +84,8 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 		updatedDBItem.__created = dbItem.__created;
 
 		this.collection.dbDef.lockKeys?.forEach(lockedKey => {
-			updatedDBItem[lockedKey] = dbItem[lockedKey];
+			if (exists(dbItem[lockedKey]))
+				updatedDBItem[lockedKey] = dbItem[lockedKey];
 		});
 
 		updatedDBItem.__updated = currentTimeMillis();

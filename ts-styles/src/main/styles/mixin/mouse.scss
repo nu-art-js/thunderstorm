@@ -1,0 +1,100 @@
+@use "../colors" as colors;
+
+@mixin mouseInteractiveBackground($background, $hoverBackground: $background, $activeBackground: $hoverBackground) {
+  & {
+    background: $background;
+    cursor: pointer;
+  }
+
+  &:hover {
+    background: $hoverBackground;
+  }
+
+  &:active {
+    background: $activeBackground;
+  }
+}
+
+@mixin mouseInteractiveBorder($border, $hoverBorder: $border, $activeBorder: $hoverBorder) {
+  & {
+    border: $border;
+    cursor: pointer;
+  }
+
+  &:hover {
+    border: $hoverBorder;
+  }
+
+  &:active {
+    border: $activeBorder;
+  }
+}
+
+@mixin mouseInteractiveColor($color, $hoverColor:$color,$activeColor:$hoverColor) {
+  & {
+    color: $color;
+    cursor: pointer;
+  }
+
+  &:hover {
+    color: $hoverColor;
+  }
+  &:active {
+    color: $activeColor
+  }
+}
+
+// Sets color for vector elements based on mouse interaction
+//
+// Will work on any vector element that doesn't have a corresponding "data-no-{rule}" attribute.
+// To avoid coloring the fill of the element set data-no-fill=true attribute
+// To avoid coloring the stroke of the element set data-no-stroke=true attribute
+//
+// @param $color - base background
+// @param $hoverColor - background when mouse hover
+// @param $activeColor - background when mouse click
+//
+@mixin mouseInteractiveIcon($color,$hoverColor:$color,$activeColor:$hoverColor,$transition: 0) {
+  $rules: fill, stroke;
+
+  @if $transition != 0 {
+    $transitionRules: '';
+    @each $rule in $rules {
+      $i: index($rules, $rule);
+      $transitionRules: $transitionRules + #{$rule $transition};
+      @if $i != length($rules) {
+        $transitionRules: $transitionRules + ', ';
+      }
+    }
+    *:not(g) {
+      transition: #{$transitionRules};
+    }
+  }
+
+  & {
+    cursor: pointer;
+  }
+
+  @each $rule in $rules {
+    @include colors.setIconProp($rule, $color);
+    &:hover {
+      @include colors.setIconProp($rule, $hoverColor)
+    }
+    &:active {
+      @include colors.setIconProp($rule, $activeColor)
+    }
+  }
+}
+
+@mixin mouseInteractiveText($color, $hoverColor:$color, $activeColor:$hoverColor) {
+  & {
+    color: $color;
+  }
+
+  &:hover {
+    color: $hoverColor;
+  }
+  &:active {
+    color: $activeColor;
+  }
+}

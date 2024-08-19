@@ -6,8 +6,8 @@ import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_Button} from '../TS_Button';
 import {DialogKey, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
-import {LL_V_L} from '../Layouts';
 import {_className, stopPropagation} from '../../utils/tools';
+import {LL_V_L} from '../Layouts';
 
 
 /**
@@ -206,6 +206,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		return <TS_ErrorBoundary error={this.state.error} onClick={() => this.closeDialog(true)}>
 			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1}
 							onKeyDown={this.dialogKeyEventHandler}
+							onClick={stopPropagation}
 							onContextMenu={stopPropagation}>
 				{this.dialogHeader(headerContent)}
 				{this.dialogBody(mainContent)}

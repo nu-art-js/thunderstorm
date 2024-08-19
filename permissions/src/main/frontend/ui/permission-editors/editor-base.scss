@@ -89,11 +89,11 @@
       color: white;
       display: grid;
       place-content: center;
+      flex-shrink: 0;
       font: {
         size: 18px;
         weight: bold;
       }
-      flex-shrink: 0;
     }
 
     .item-list__filter {
@@ -118,11 +118,11 @@
     }
 
     .item-list__list {
-      @include styles.customScrollbar('vertical', true);
       height: 0;
       flex-grow: 1;
       width: 100%;
       gap: 2px;
+      @include styles.customScrollbar('vertical', true);
 
       .item-list__list-item {
         width: 100%;
@@ -204,14 +204,14 @@
         &.delete .icon--wrapper {
           width: 32px;
           height: 32px;
-          @include styles.mouse-interactive-icon(styles.red(4), styles.red(3), styles.red(2));
+          @include styles.mouseInteractiveIcon(styles.red(4), styles.red(3), styles.red(2));
           @include styles.set-svg-color-transition();
         }
 
         &.save .icon--wrapper {
           width: 24px;
           height: 24px;
-          @include styles.mouse-interactive-icon(styles.green(4), styles.green(3), styles.green(2));
+          @include styles.mouseInteractiveIcon(styles.green(4), styles.green(3), styles.green(2));
         }
       }
     }
@@ -253,7 +253,6 @@
       text-align: center;
 
       .icon--wrapper {
-        @include styles.mouse-interactive-icon(white);
         background: styles.red(4);
         position: absolute;
         top: 0;
@@ -264,6 +263,7 @@
         transform: translateX(100%);
         transition: transform 200ms ease-out;
         cursor: pointer;
+        @include styles.mouseInteractiveIcon(white);
       }
 
       &:hover {

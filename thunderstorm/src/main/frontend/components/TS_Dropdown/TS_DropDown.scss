@@ -21,7 +21,6 @@
 @use "../../styles/declaration/basic" as *;
 
 .ts-dropdown {
-  @extend %match_parent;
   position: relative;
   isolation: isolate;
   z-index: 0;
@@ -39,9 +38,6 @@
 
     .ts-input {
       @extend %match_height;
-      width: 0;
-      flex-grow: 1;
-      min-height: unset;
       background-color: transparent;
       border: none;
       padding-block: 0;
@@ -51,10 +47,10 @@
       }
     }
 
+
     .ts-dropdown__placeholder,
     .ts-dropdown__selected {
       @extend %match_height;
-      width: 0;
       flex-grow: 1;
       font-size: 16px;
       display: flex;

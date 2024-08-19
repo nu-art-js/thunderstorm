@@ -360,6 +360,15 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	};
 
 	upgradeCollection = async (force = false) => {
+		return this.processCollection(async (instances)=>{
+			const instancesToSave: Proto['dbType'][] = await this.upgradeInstances(instances, force);
+
+			// @ts-ignore
+			await this.collection.upgradeInstances(instancesToSave);
+		})
+	};
+
+	processCollection = async (processInstances:(instances:Proto['dbType'][]) => Promise<void>) => {
 		let docs: DocWrapperV3<Proto>[];
 		const itemsCount = this.config.chunksSize;
 
@@ -375,11 +384,8 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			});
 
 			const instances = docs.map(d => d.data!);
-			this.logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) ${this.dbDef.entityName}s ....`);
-			const instancesToSave: Proto['dbType'][] = await this.upgradeInstances(instances, force);
-
-			// @ts-ignore
-			await this.collection.upgradeInstances(instancesToSave);
+			this.logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
+			await processInstances(instances)
 
 			if (toDelete.length > 0) {
 				this.logWarning(`Need to delete docs: ${toDelete.length} ${this.dbDef.entityName}s ....`);

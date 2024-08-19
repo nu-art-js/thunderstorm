@@ -79,10 +79,22 @@ export abstract class TS_EditableItemComponentProto<Proto extends DBProto<any>, 
 	}
 
 	protected renderProp(label: string, render: ReactNode, className?: string) {
+		return this.renderPropVertical(label, render, className);
+	}
+
+	protected renderPropVertical(label: string, render: ReactNode, className?: string) {
 		return (
 			<TS_PropRenderer.Vertical label={label} className={className}>
 				{render}
 			</TS_PropRenderer.Vertical>
+		);
+	}
+
+	protected renderPropHorizontal(label: string, render: ReactNode, className?: string) {
+		return (
+			<TS_PropRenderer.Horizontal label={label} className={className}>
+				{render}
+			</TS_PropRenderer.Horizontal>
 		);
 	}
 
