@@ -17,9 +17,9 @@
  */
 
 
-
 import {BadImplementationException} from '../core/exceptions/exceptions';
-
+import {tsValidateResult} from '../validator/validator-core';
+import {tsValidateVersion} from '../validator/validators';
 
 /**
  *
@@ -32,13 +32,13 @@ import {BadImplementationException} from '../core/exceptions/exceptions';
  */
 export function compareVersions(firstVersion: string, secondVersion: string) {
 	if (!firstVersion)
-		throw new BadImplementationException("First version is undefined");
+		throw new BadImplementationException('First version is undefined');
 
 	if (!secondVersion)
-		throw new BadImplementationException("Second version is undefined");
+		throw new BadImplementationException('Second version is undefined');
 
-	const firstVersionAsArray = firstVersion.split("\.");
-	const secondVersionAsArray = secondVersion.split("\.");
+	const firstVersionAsArray = firstVersion.split('\.');
+	const secondVersionAsArray = secondVersion.split('\.');
 	for (let i = 0; i < firstVersionAsArray.length; i++) {
 		const secondVal = +secondVersionAsArray[i];
 		const firstVal = +firstVersionAsArray[i];
@@ -53,4 +53,12 @@ export function compareVersions(firstVersion: string, secondVersion: string) {
 	}
 
 	return 0;
+}
+
+/**
+ * Expects a version of XXX.YYY.ZZZ and nothing else
+ * @param version
+ */
+export function validateVersion(version: string) {
+	return tsValidateResult(version, tsValidateVersion);
 }
