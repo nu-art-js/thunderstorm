@@ -125,14 +125,14 @@
         &.delete .icon--wrapper {
           width: 32px;
           height: 32px;
-          @include styles.mouse-interactive-icon(styles.red(4), styles.red(3), styles.red(2));
+          @include styles.mouseInteractiveIcon(styles.red(4), styles.red(3), styles.red(2));
           @include styles.set-svg-color-transition();
         }
 
         &.save .icon--wrapper {
           width: 24px;
           height: 24px;
-          @include styles.mouse-interactive-icon(styles.green(4), styles.green(3), styles.green(2));
+          @include styles.mouseInteractiveIcon(styles.green(4), styles.green(3), styles.green(2));
         }
       }
     }

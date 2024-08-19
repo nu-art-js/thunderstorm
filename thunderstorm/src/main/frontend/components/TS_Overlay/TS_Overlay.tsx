@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import './TS_Overlay.scss';
-import {stopPropagation, _className} from '../../utils/tools';
+import {_className} from '../../utils/tools';
 
 
 type Props = React.PropsWithChildren<{
@@ -38,7 +38,12 @@ export class TS_Overlay
 		if (!this.props.showOverlay)
 			return this.props.children;
 
-		const overlayChild = <div className="ts-overlay__child" onClick={stopPropagation}>{this.props.children}</div>;
+		const overlayChild = <div
+			className="ts-overlay__child"
+			onClick={this.props.onClickOverlay}
+			onContextMenu={this.props.onClickOverlay}
+		>{this.props.children}</div>;
+
 		return <>
 			<div
 				className={_className('ts-overlay', this.props.className)}

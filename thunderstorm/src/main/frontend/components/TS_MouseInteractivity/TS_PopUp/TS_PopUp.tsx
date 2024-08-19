@@ -38,7 +38,7 @@ export class TS_PopUp
 				stopPropagation(e);
 				this.setState({open: false});
 			}}>
-			<div className="ts-popup__content" id={model.id} ref={this.ref}>
+			<div className="ts-popup__content" id={model.id} ref={this.ref} onClick={stopPropagation} onContextMenu={stopPropagation}>
 				{resolveContent(model.content, () => this.forceUpdate())}
 			</div>
 		</TS_Overlay>;

@@ -40,6 +40,7 @@ export type Props_ItemsEditor<Proto extends DBProto<any>> = {
 	itemRenderer: (item: Proto['uiType']) => JSX.Element,
 	actions: MenuAction<Proto>[]
 	id?: string,
+	onSelectedItemChanged?: (editable?: EditableItem<Proto['uiType']>) => void
 	contextMenuActions: MenuAction<Proto>[]
 	hideAddItem: boolean
 	className?: string
@@ -82,6 +83,8 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']) [this.props.module.dbDef.dbKey];
 		if (!exists(selectedId)) {
 			state.editable = this.createEditableItem({} as Proto['uiType']);
+
+			this.props.onSelectedItemChanged?.(state.editable)
 			return state;
 		}
 
@@ -89,10 +92,13 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 		if (!exists(item)) {
 			this.logError(`Could not find item ${this.props.module.dbDef.dbKey} with id ${selectedId}`);
 			this.onSelected();
+			this.props.onSelectedItemChanged?.()
 			return state;
 		}
 
 		state.editable = this.createEditableItem(item);
+		this.props.onSelectedItemChanged?.(state.editable)
+
 		state.filter ??= () => true;
 		return state;
 	}
@@ -118,7 +124,7 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 		const Editor: Props_ItemsEditor<Proto>['EditorRenderer'] = this.props.EditorRenderer;
 		const sort = this.props.sort || ((item: DB_Object) => item.__created);
 		return <FrameLayout id={this.props.id} className="editor-page">
-			<LL_H_T className={_className(this.props.className??"editor-content","match_parent")}>
+			<LL_H_T className={_className(this.props.className ?? 'editor-content', 'match_parent')}>
 				<LL_V_L className="items-editor__list">
 					<LL_V_L className={'items-editor__list-header-content'}>
 						<div className={'items-editor__list-header'}>
@@ -140,7 +146,9 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 						onSelected={this.onSelected.bind(this)}/>
 					{this.renderAddNewItem()}
 				</LL_V_L>
-				<div className="item-editor"><Editor item={this.state.editable?.item}/></div>
+				<div className="item-editor">
+					<Editor item={this.state.editable?.item}/>
+				</div>
 			</LL_H_T>
 		</FrameLayout>;
 	}

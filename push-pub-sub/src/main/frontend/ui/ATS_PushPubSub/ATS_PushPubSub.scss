@@ -30,9 +30,9 @@
   }
 
   .notification-icon {
-    @include styles.color-svg(white);
     width: 40px;
     height: 40px;
+    @include styles.color-svg(white);
 
     &.notification-enabled {
       @include styles.color-svg(green);

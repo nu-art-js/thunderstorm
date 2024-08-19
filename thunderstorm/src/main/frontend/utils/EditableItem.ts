@@ -120,8 +120,8 @@ export class EditableItem<T>
 		return this;
 	}
 
-	setSaveAction(saveAction: Editable_SaveAction<T>) {
-		this.saveAction = saveAction;
+	setSaveAction(saveAction?: Editable_SaveAction<T>) {
+		this.saveAction = saveAction ?? this.saveAction;
 		return this;
 	}
 

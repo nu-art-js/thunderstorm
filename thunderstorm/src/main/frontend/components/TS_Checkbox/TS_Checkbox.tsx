@@ -20,20 +20,37 @@
  */
 
 import * as React from 'react';
+import {HTMLProps} from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
 import './TS_Checkbox.scss';
+import {ComponentProps_Error} from '../types';
+import {SubsetKeys, TS_Object} from '@nu-art/ts-common';
+import {UIProps_EditableItem} from '../../utils/EditableItem';
 
 
-export type Props_Checkbox = React.PropsWithChildren<{
-	id?: string
+type TemplatingProps_TS_Checkbox =
+	ComponentProps_Error
+	& Omit<HTMLProps<HTMLDivElement>, 'ref'>
+	& {
 	disabled?: boolean
 	rounded?: boolean
 	checked?: boolean
-	onCheck?: (checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void
-	className?: string;
 	icon?: React.ReactNode;
+}
+
+export type Props_Checkbox = TemplatingProps_TS_Checkbox & React.PropsWithChildren<{
+	id?: string
+	onCheck?: (checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void
 }>;
+
+export type EditableItemProps_TS_Checkbox<T extends TS_Object & { [k in K]?: any }, K extends SubsetKeys<keyof T, T, boolean | undefined>> =
+	Omit<Props_Checkbox, 'checked'>
+	& UIProps_EditableItem<T, K, boolean | undefined>
+	& {
+	checked?: boolean,
+	onCheck?: (value: boolean, e: React.MouseEvent<HTMLDivElement>) => void,
+}
 
 type State_Checkbox = {
 	checked: boolean
@@ -54,6 +71,12 @@ type State_Checkbox = {
  */
 export class TS_Checkbox
 	extends ComponentSync<Props_Checkbox, State_Checkbox> {
+
+	static readonly editable = (templateProps: TemplatingProps_TS_Checkbox) => {
+		return <T extends TS_Object & { [k in K]?: any }, K extends SubsetKeys<keyof T, T, boolean | undefined>>(props: EditableItemProps_TS_Checkbox<T, K>) => {
+			return <TS_Checkbox {...templateProps} {...props}/>;
+		};
+	};
 
 	constructor(p: Props_Checkbox) {
 		super(p);

@@ -27,14 +27,16 @@
     }
   }
 
-  @if $direction == 'vertical' {
-    overflow-y: auto;
-    //noinspection ALL
-    @supports (overflow-y: overlay) {
-      overflow-y: overlay;
-    }
-    &::-webkit-scrollbar {
-      width: 9px;
+  & {
+    @if $direction == 'vertical' {
+      overflow-y: auto;
+      //noinspection ALL
+      @supports (overflow-y: overlay) {
+        overflow-y: overlay;
+      }
+      &::-webkit-scrollbar {
+        width: 9px;
+      }
     }
   }
 

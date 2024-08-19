@@ -13,11 +13,15 @@ export function removeDBObjectKeys<T extends DB_Object>(instance: T): OmitDBObje
 	return deleteKeysObject(instance, KeysOfDB_Object);
 }
 
+export function removeDBObjectKeysFromInstance<T extends DB_Object>(instance: T): OmitDBObject<T> {
+	return deleteKeysObject(instance, KeysOfDB_Object, true);
+}
+
 /**
  * Returns a cloned object with the keys removed.
  */
-export function deleteKeysObject<T extends TS_Object, Ks extends keyof T>(instance: T, keysToRemove: Ks[]): Omit<T, Ks> {
-	const _instance = deepClone(instance);
+export function deleteKeysObject<T extends TS_Object, Ks extends keyof T>(instance: T, keysToRemove: Ks[], keepInstance = false): Omit<T, Ks> {
+	const _instance = keepInstance ? instance : deepClone(instance);
 	keysToRemove.forEach(key => delete _instance[key]);
 	return _instance;
 }

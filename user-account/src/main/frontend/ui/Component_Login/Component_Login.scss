@@ -45,14 +45,14 @@
       color: styles.red(3);
 
       .icon--wrapper {
-        @include styles.mouse-interactive-icon(styles.red(3));
+        @include styles.mouseInteractiveIcon(styles.red(3));
       }
 
       &.valid {
         color: styles.green(2);
 
         .icon--wrapper {
-          @include styles.mouse-interactive-icon(styles.green(2));
+          @include styles.mouseInteractiveIcon(styles.green(2));
         }
       }
     }

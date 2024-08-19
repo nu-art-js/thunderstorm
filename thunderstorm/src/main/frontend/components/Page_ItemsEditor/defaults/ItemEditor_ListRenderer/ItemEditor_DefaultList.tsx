@@ -50,7 +50,7 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 
 	private openItemMenu = (e: React.MouseEvent<HTMLDivElement>, item: Proto['dbType']) => {
 		const menuActions = this.props.contextMenuItems;
-		if (!menuActions.length)
+		if (!menuActions?.length)
 			return;
 
 		const model: Model_PopUp = {
