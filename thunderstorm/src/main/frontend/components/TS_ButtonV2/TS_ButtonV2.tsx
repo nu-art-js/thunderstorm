@@ -40,7 +40,7 @@ export class TS_ButtonV2
 		return state;
 	}
 
-	private handleAction = (e: React.MouseEvent<HTMLDivElement>) => {
+	private handleAction = async (e: React.MouseEvent<HTMLDivElement>) => {
 		// skip action if needed
 		if (this.state.disabled || this.state.actionInProgress)
 			return;
@@ -54,17 +54,21 @@ export class TS_ButtonV2
 		}
 
 		// in case the result is from type promise and needs to be awaited, await and handle errors
-		this.setState({actionInProgress: true}, async () => {
-			try {
-				await result;
-			} catch (error: any) {
-				this.logError(error);
-				throw error;
-			} finally {
-				if (!this.props.actionInProgress)
-					this.setState({actionInProgress: false});
+		// @ts-ignore - prevents race conditions
+		this.state.actionInProgress = true;
+		this.forceUpdate();
+		try {
+			await result;
+		} catch (error: any) {
+			this.logError(error);
+			throw error;
+		} finally {
+			if (!this.props.actionInProgress) {
+				// @ts-ignore - prevents race conditions
+				this.state.actionInProgress = false;
+				this.forceUpdate();
 			}
-		});
+		}
 	};
 
 	private prepareProps = () => {
@@ -88,7 +92,7 @@ export class TS_ButtonV2
 	render() {
 		return <div {...this.prepareProps()}>
 			{this.state.actionInProgress ? resolveContent(this.props.loaderOverride ??
-                <TS_ButtonLoader/>) : this.props.children}
+				<TS_ButtonLoader/>) : this.props.children}
 		</div>;
 	}
 }
