@@ -24,6 +24,7 @@
   }
 
   .separator {
+    flex-shrink: 0;
     background: black;
     transition: 300ms opacity ease-out;
 
