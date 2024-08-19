@@ -338,6 +338,17 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		return itemsToReturn;
 	};
 
+	protected _deleteUnManipulatedQuery = async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+		if (!exists(query) || compare(query, _EmptyQuery))
+			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
+
+		const docsToBeDeleted = await this.doc.unManipulatedQuery(query, transaction);
+		// Because we query for docs, these docs and their data must exist in Firestore.
+		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!); // Data must exist here.
+		await this._deleteAll(docsToBeDeleted, transaction, multiWriteType);
+		return itemsToReturn;
+	};
+
 	protected _deleteAll = async (docsToBeDeleted: DocWrapperV3<Proto>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		const dbItems = filterInstances(await this.getAll(docsToBeDeleted, transaction));
 		const itemsToCheck = dbItems.filter((item, index) => docsToBeDeleted[index].ref.id == item._id);
@@ -399,6 +410,20 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			}
 
 			return await this._deleteQuery(query, transaction);
+		},
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
+			if (!transaction) {
+				//query all docs and then delete in chunks
+				if (!exists(query) || compare(query, _EmptyQuery))
+					throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
+
+				const docs = await this.doc.unManipulatedQuery(query, transaction);
+				const items = docs.map(doc => doc.data!); // Data must exist here.
+				await this.runTransactionInChunks(docs, (chunk, t) => this._deleteAll(chunk, t));
+				return items;
+			}
+
+			return await this._deleteUnManipulatedQuery(query, transaction);
 		},
 		where: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
 			return this.delete.query({where}, transaction);
