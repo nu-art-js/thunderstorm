@@ -102,6 +102,7 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 			{(index !== 0) && <div className={separatorClassName}/>}
 			<TS_ButtonV2
 				className={buttonClassName}
+				id={`button-${button.key}`}
 				onClick={e => this.handleClick(e, button.key)}
 				disabled={disableButtons}
 			>

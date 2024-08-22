@@ -30,6 +30,29 @@ export const scrollIntoView = (_child: React.RefObject<HTMLElement> | HTMLElemen
 	}
 };
 
+export const scrollIntoView_Horizontal = (_child: React.RefObject<HTMLElement> | HTMLElement, _container: React.RefObject<HTMLElement> | HTMLElement, scrollBehavior: ScrollBehavior = 'smooth') => {
+	const child = extractElement(_child);
+	const container = extractElement(_container);
+	if (!child || !container)
+		throw new BadImplementationException('Got no elements');
+
+	const childRect = child.getBoundingClientRect();
+	const containerRect = container.getBoundingClientRect();
+
+	const inView = (childRect.left >= containerRect.left) && (childRect.right <= containerRect.left + container.clientWidth);
+	if (!inView) {
+		const scrollLeft = childRect.left - containerRect.left;
+		const scrollRight = childRect.right - containerRect.right;
+		let scroll = container.scrollLeft;
+		if (Math.abs(scrollLeft) < Math.abs(scrollRight))
+			scroll += scrollLeft - 35;
+		else
+			scroll += scrollRight;
+
+		container.scroll({left: scroll, behavior: scrollBehavior});
+	}
+};
+
 export const scrollToTop = (_child: React.RefObject<HTMLElement> | HTMLElement, _container: React.RefObject<HTMLElement> | HTMLElement, scrollBehavior: ScrollBehavior = 'smooth', offset: number = 0) => {
 	const child = extractElement(_child);
 	const container = extractElement(_container);
