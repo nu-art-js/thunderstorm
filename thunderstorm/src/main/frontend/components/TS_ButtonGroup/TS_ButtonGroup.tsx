@@ -17,6 +17,7 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 			state.selectedKey ??= nextProps.defaultButtonKey;
 		}
 		state.buttons = nextProps.buttons;
+		state.className = nextProps.className;
 		return state;
 	}
 
@@ -101,6 +102,7 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 			{(index !== 0) && <div className={separatorClassName}/>}
 			<TS_ButtonV2
 				className={buttonClassName}
+				id={`button-${button.key}`}
 				onClick={e => this.handleClick(e, button.key)}
 				disabled={disableButtons}
 			>
@@ -110,7 +112,7 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 	};
 
 	render() {
-		const className = _className('ts-button-group', this.props.direction);
+		const className = _className('ts-button-group', this.props.direction, this.state.className);
 		return <div className={className}>
 			{
 				this.props.buttons.map((button, index) => this.renderButton(button, index))
