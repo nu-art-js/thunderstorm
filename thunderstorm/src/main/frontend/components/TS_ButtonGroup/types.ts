@@ -43,6 +43,7 @@ export type ButtonGroup_Props<ButtonKey extends string> = {
 
 export type ButtonGroup_State<ButtonKey extends string> = {
 	selectedKey?: ButtonKey; // the currently selected item in group
+	className?: string;
 	actionInProgress?: boolean;
 	buttons: ButtonGroupItems<ButtonKey, boolean>;
 }
