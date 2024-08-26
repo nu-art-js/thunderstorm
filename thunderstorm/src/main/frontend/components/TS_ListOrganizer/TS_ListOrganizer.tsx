@@ -63,12 +63,14 @@ export class TS_ListOrganizer<T>
 	//######################### Logic #########################
 
 	onDragStart = (e: React.DragEvent<HTMLElement>, rowIndex: number) => {
+		e.stopPropagation();
 		this.draggedItemIndex = rowIndex;
 		this.activeDrag = true;
 		this.forceUpdate();
 	};
 
 	onDragOver = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
+		e.stopPropagation();
 		if (rowIndex === this.lockRowIndex)
 			return;
 
@@ -85,6 +87,7 @@ export class TS_ListOrganizer<T>
 	};
 
 	onDragEnd = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+		e.stopPropagation();
 		this.draggedItemIndex = undefined;
 		this.lockRowIndex = undefined;
 		this.activeDrag = undefined;
@@ -92,6 +95,7 @@ export class TS_ListOrganizer<T>
 	};
 
 	onDragLeave = (e: React.MouseEvent<HTMLElement, MouseEvent>, rowIndex: number) => {
+		e.stopPropagation();
 		if (!this.activeDrag)
 			return;
 
