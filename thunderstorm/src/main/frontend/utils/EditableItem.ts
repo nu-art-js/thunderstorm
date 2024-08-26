@@ -440,7 +440,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 	private readonly module: ModuleFE_BaseApi<Proto>;
 	// @ts-ignore
-	private readonly onError?: (err: Error) => any | Promise<any>;
+	private readonly onError?: (item: Partial<Proto['uiType']>, err: Error) => any | Promise<any>;
 	// @ts-ignore
 	private debounceInstance?: AwaitedDebounceInstance<[void], Proto['uiType']>;
 	private debounceTimeout: number = 2 * Second;
@@ -454,7 +454,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @param onError The function to be called when an error occurs.
 	 * @param debounceInstance Debounce instance from previous editable item
 	 */
-	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_BaseApi<Proto>, onError?: (err: Error) => any | Promise<any>, debounceInstance?: AwaitedDebounceInstance<any, any>) {
+	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_BaseApi<Proto>, onError?: (item: Partial<Proto['uiType']>, err: Error) => any | Promise<any>, debounceInstance?: AwaitedDebounceInstance<any, any>) {
 		super(item, EditableDBItemV3.save(module, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
 
 		this.module = module;
@@ -465,12 +465,16 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		this.preformAutoSave.bind(this);
 	}
 
-	private static save<Proto extends DBProto<any>>(module: ModuleFE_BaseApi<Proto>, onError?: (err: Error) => any | Promise<any>) {
+	private static save<Proto extends DBProto<any>>(module: ModuleFE_BaseApi<Proto>, onError?: (item: Partial<Proto['uiType']>, err: Error) => any | Promise<any>) {
 		return async (_item: Proto['uiType']) => {
 			try {
 				return await module.v1.upsert(_item).executeSync();
 			} catch (e: any) {
-				await onError?.(e);
+				if (onError) {
+					await onError?.(_item, e);
+					return _item;
+				}
+
 				throw e;
 			}
 		};
@@ -505,13 +509,13 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		return new Promise((resolve, reject) => {
 			if (!this.debounceInstance)
 				this.debounceInstance = awaitedDebounce({
-					func: async () => {
-						this.logDebug('Debounce triggered');
-						return await super.preformAutoSave();
-					},
-					timeout: this.debounceTimeout,
-					fallbackTimeout: 5 * Second
-				});
+					                                        func: async () => {
+						                                        this.logDebug('Debounce triggered');
+						                                        return await super.preformAutoSave();
+					                                        },
+					                                        timeout: this.debounceTimeout,
+					                                        fallbackTimeout: 5 * Second
+				                                        });
 
 			this.debounceInstance().then(dbItem => {
 				if (!dbItem)
@@ -572,10 +576,10 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 		this.logInfo('Validation error while saving');
 		this.setValidationResults({
-			autoSave: this._autoSave,
-			editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
-			results: validationException.result as InvalidResult<Proto['dbType']>
-		});
+			                          autoSave: this._autoSave,
+			                          editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
+			                          results: validationException.result as InvalidResult<Proto['dbType']>
+		                          });
 
 		// while getting new errors (for now) we need to call on change in order to replace the editable item instance.. (this will change)
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);

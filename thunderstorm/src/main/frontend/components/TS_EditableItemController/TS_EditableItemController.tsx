@@ -11,7 +11,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 
 export type TemplatingProps_EditableItemController<Proto extends DBProto<any>, EditorProps extends object = object> = {
 	module: ModuleFE_BaseApi<Proto>,
-	onError?: (err: Error) => any | Promise<any>
+	onError?: (item: Partial<Proto['uiType']>, err: Error) => any | Promise<any>
 	onSave?: (err: Proto['uiType']) => any | Promise<any>
 	autoSave?: ResolvableContent<boolean, [Readonly<Proto['uiType']>]>
 	saveAction?: Editable_SaveAction<Proto['uiType']>
