@@ -15,7 +15,7 @@ export type Props_Filter<Proto extends DBProto<any>> = {
 export class ItemEditor_DefaultFilter<Proto extends DBProto<any>>
 	extends React.Component<Props_Filter<Proto>, { filter: Filter<Proto['uiType']> }> {
 
-	state = {filter: new Filter(this.props.mapper)};
+	state = {filter: new Filter(this.props.mapper).setRegexp(false)};
 
 	render() {
 		return <LL_H_C className={'item-editor__default-filter'}>

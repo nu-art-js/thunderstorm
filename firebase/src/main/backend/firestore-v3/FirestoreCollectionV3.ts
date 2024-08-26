@@ -286,7 +286,12 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	};
 
 	set = Object.freeze({
-		item: async (preDBItem: Proto['uiType'], transaction?: Transaction) => await this.doc.item(preDBItem).set(preDBItem, transaction),
+		item: async (preDBItem: Proto['uiType'], transaction?: Transaction) => {
+			if(!preDBItem._id)
+				await this.hooks?.preWriteProcessing?.(preDBItem, undefined, transaction);
+
+			return await this.doc.item(preDBItem).set(preDBItem, transaction);
+		},
 		all: (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction) => {
 			if (transaction)
 				return this._setAll(items, transaction);
