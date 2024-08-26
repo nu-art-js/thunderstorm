@@ -1,10 +1,11 @@
 import {UnitPhaseImplementor} from '../types';
 import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
-import {Phase_Install, Phase_Watch} from '../../phase';
+import {Phase_GenerateDocs, Phase_Install, Phase_Watch} from '../../phase';
 import {RuntimeParams} from '../../../core/params/params';
-import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
+import {AbsolutePath, StringMap, TypedMap} from '@nu-art/ts-common/utils/types';
 import {
-	_keys,
+	__stringify,
+	_keys, BadImplementationException,
 	clearArrayInstance,
 	MUSTNeverHappenException,
 	Promise_all_sequentially,
@@ -19,6 +20,11 @@ import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../firebase-un
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
 import {PNPM} from '@nu-art/commando/shell/services/pnpm';
+import {glob} from 'glob';
+import {extractApiPaths, OpenAPIPaths} from '../tools/generate-docs';
+import * as fs from 'fs';
+import {promises as _fs} from 'fs';
+import {MemKey_DefaultFiles} from '../../../defaults/consts';
 
 
 type Unit_TypescriptProject_Config = Unit_Typescript_Config & { globalPackages?: StringMap; };
@@ -27,9 +33,18 @@ type Unit_TypescriptProject_RuntimeConfig = Unit_Typescript_RuntimeConfig & {};
 
 type PathDeclaration = { pathToPackage: AbsolutePath, paths: string[], unit: Unit_TypescriptLib };
 
+type APIDefinitions = {
+	openapi: string
+	components: TypedMap<any>
+	info: { title: string, version: string }
+	paths: OpenAPIPaths,
+	tags: { name: string, description?: string }[],
+	'x-tagGroups': { name: string, tags: string[] }[]
+};
+
 export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config, RTC extends Unit_TypescriptProject_RuntimeConfig = Unit_TypescriptProject_RuntimeConfig>
 	extends Unit_Typescript<C, RTC>
-	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch]> {
+	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch, Phase_GenerateDocs]> {
 	private watchDebounce!: VoidFunction;
 
 	private readonly suffixesToWatch: string[] = [
@@ -211,6 +226,89 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 		await this.initWatch();
 	}
 
+	private async resolveDocsTemplate() {
+		const destinationPath = `${this.runtime.pathTo.pkg}/.api_docs`;
+		const defaultFiles = MemKey_DefaultFiles.get();
+
+		if (!defaultFiles.apiDocs) throw new BadImplementationException('cannot resolve templates for api docs if not defined');
+
+		// if exists fail fast
+		if (fs.existsSync(destinationPath))
+			return;
+
+		await _fs.mkdir(destinationPath, {recursive: true});
+		await this.allocateCommando()
+			.append(`cp -r ${defaultFiles.apiDocs.all} ${destinationPath}`)
+			.execute();
+	}
+
+	private async generateApiDocs(): Promise<APIDefinitions> {
+		const projectLibs = MemKey_PhaseRunner.get()
+			.getUnits()
+			.filter(unit => unit.isInstanceOf(Unit_TypescriptLib)) as Unit_TypescriptLib[];
+
+		return projectLibs.reduce((apiMapper, lib) => {
+				const packageName = lib.config.label;
+				const allApiDefs = glob.sync([
+					`${lib.runtime.pathTo.pkg}/src/main/_entity/**/api-def.ts`,
+					`${lib.runtime.pathTo.pkg}/src/main/shared/**/api-def.ts`,
+					`${lib.runtime.pathTo.pkg}/src/main/shared/**/apis.ts`,
+					`${lib.runtime.pathTo.pkg}/src/main/_entity/**/apis.ts`,
+				]);
+
+				apiMapper.paths = {
+					...apiMapper.paths,
+					...Object.assign({}, ...allApiDefs.map((defFile) => {
+							const moduleDefParts = defFile.split('/');
+							const apiModule = moduleDefParts[moduleDefParts.length - 3].trim();
+							const tagName = `${packageName}.${apiModule}`;
+
+							// update tags api
+							if (!apiMapper.tags) apiMapper.tags = [];
+							if (!apiMapper.tags.find(tag => tag.name === tagName)) apiMapper.tags.push({name: tagName}); // push only if not exists
+
+							//update tag groups
+							if (!apiMapper['x-tagGroups']) apiMapper['x-tagGroups'] = [];
+
+							const groupIndex = apiMapper['x-tagGroups'].findIndex(group => group.name === packageName);
+
+							if (groupIndex !== -1) {
+								if (!apiMapper['x-tagGroups'][groupIndex].tags.includes(tagName))
+									apiMapper['x-tagGroups'][groupIndex].tags.push(tagName);
+							} else
+								apiMapper['x-tagGroups'].push({name: packageName, tags: [tagName]});
+
+							const apis = extractApiPaths(defFile);
+							this.logInfo(apis.components);
+
+							// update api tag
+							_keys(apis.paths).forEach(api => {
+								const method = _keys(apis.paths[api])[0];
+								apis.paths[api][method].tags = [tagName];
+							});
+
+							//update components
+							if (!apiMapper.components) apiMapper.components = {schemas: {}};
+
+							apiMapper.components.schemas = {
+								...apiMapper.components.schemas,
+								...apis.components.schemas
+							};
+
+							return apis.paths;
+						})
+					)
+				};
+
+				return apiMapper;
+			},
+			{
+				info: {title: 'API Documentation', version: '1.0.0'},// Adjust to real data when possible
+				openapi: '3.0.0'
+			} as Partial<APIDefinitions>
+		) as APIDefinitions;
+	}
+
 	//######################### Phase Implementation #########################
 
 	async install() {
@@ -222,4 +320,15 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 		await this.watchImpl();
 	}
 
+	async generateDocs() {
+		//handle docs templates
+		await this.resolveDocsTemplate();
+
+		//get docsMapper
+		const docsMapper = await this.generateApiDocs();
+
+		//write new json
+		const destinationPath = `${this.runtime.pathTo.pkg}/.api_docs`;
+		await _fs.writeFile(`${destinationPath}/openapi.json`, __stringify(docsMapper, true));
+	}
 }

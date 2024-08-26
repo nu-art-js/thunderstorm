@@ -2,6 +2,7 @@ import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 const CONST_FirebaseConfig = `${__dirname}/.firebase_config`;
 const CONST_BackendProxy = `${__dirname}/backend-proxy`;
+const CONST_ApiDocs = `${__dirname}/.api_docs`;
 
 export const Const_FirebaseConfigKeys = [
 	'databaseRules',
@@ -11,9 +12,12 @@ export const Const_FirebaseConfigKeys = [
 ] as const;
 
 export type ProjectConfig_DefaultFileRoutes = {
-	firebaseConfig?: {[k in typeof Const_FirebaseConfigKeys[number]]?:string};
+	firebaseConfig?: { [k in typeof Const_FirebaseConfigKeys[number]]?: string };
 	backend?: {
 		proxy?: string;
+	},
+	apiDocs?: {
+		all: string,
 	}
 }
 
@@ -33,6 +37,9 @@ export const Default_Files: ProjectConfig_DefaultFileRoutes = {
 	},
 	backend: {
 		proxy: `${CONST_BackendProxy}/proxy._ts`
+	},
+	apiDocs: {
+		all: `${CONST_ApiDocs}/*` // for all files
 	}
 };
 

@@ -52,12 +52,23 @@ export const phase_Debug: Phase<'printDebug'> = {
 	filter: () => RuntimeParams.debug,
 };
 
+export type Phase_GenerateDocs = typeof phase_generateDocs;
+export const phaseKey_GenerateDocs = 'generate-docs';
+export const phase_generateDocs: Phase<'generateDocs'> = {
+	key: phaseKey_GenerateDocs,
+	name: 'generateDocs',
+	method: 'generateDocs',
+	filter: () => RuntimeParams.generateDocs,
+	terminateAfterPhase: true,
+};
+
 export const phases_Terminating: Phase<string>[] = [
 	phase_Help,
 	phase_PrintDependencyTree,
 	phase_CheckCyclicImports,
 	phase_PrintEnv,
-	phase_Debug
+	phase_Debug,
+	phase_generateDocs
 ];
 
 //######################### Build Phases #########################
