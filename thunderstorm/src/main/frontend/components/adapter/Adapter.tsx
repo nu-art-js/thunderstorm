@@ -64,7 +64,7 @@ export type NestedListData<I> = I | NestedListItem<I>;
 export type TreeData<I> = { [k: string]: I | TreeData<I> }
 
 // the moment we want to have a TREE of a single item of type T
-type TreeItem<TreeMap> = { [K in keyof TreeMap]: { type: K; item: TreeMap[K], _children?: TreeItem<TreeMap>[] } }[keyof TreeMap];
+type TreeItem<TreeMap> = { [K in keyof TreeMap]: { type: K; item: TreeMap[K], _children?: TreeItem<TreeMap>[], alwaysExpanded?: boolean } }[keyof TreeMap];
 
 export type TreeType<TreeMap> = {
 	map: TreeMap
@@ -142,7 +142,7 @@ export class BaseAdapter<T = any> {
 		if (!obj[this.childrenKey])
 			return {data: obj, deltaPath: ''};
 
-		const objElement: any = {...obj[this.childrenKey], type: obj.type, item: obj.item, _isParent: true, length: obj[this.childrenKey].length};
+		const objElement: any = {...obj[this.childrenKey], type: obj.type, item: obj.item, _isParent: true, length: obj[this.childrenKey].length, alwaysExpanded: obj.alwaysExpanded};
 		return {data: objElement, deltaPath: this.childrenKey || ''};
 	};
 
