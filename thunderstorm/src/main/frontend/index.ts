@@ -88,6 +88,11 @@ export * from './components/AwaitModules/AwaitModules';
 export * from './components/AwaitSync/AwaitSync';
 export * from './components/Show';
 export * from './components/TS_EditableItemComponent/TS_EditableItemComponent';
+export * from './components/TS_ButtonV2/TS_ButtonV2';
+export * from './components/TS_ButtonGroup';
+
+export * from './components/GenericRenderer/Component_GenericRenderer';
+export * from './modules/ModuleFE_Utils/ModuleFE_Utils';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';

@@ -1,7 +1,20 @@
 {
   "rules": {
     ".read": false,
-    ".write": false
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
   }
 }
-  

@@ -42,7 +42,10 @@ import {OnAssetUploaded} from './ModuleBE_BucketListener';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage';
 import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '../../shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages';
-import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {
+	CollectionActionType,
+	PostWriteProcessingData
+} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
@@ -112,7 +115,7 @@ export class ModuleBE_AssetsDB_Class
 	mimeTypeValidator: TypedMap<FileValidator> = {};
 	fileValidator: TypedMap<FileTypeValidation> = {};
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_Assets>, transaction?: Transaction): Promise<void> {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_Assets>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
 		const deletedItems = data.deleted;
 		if (exists(deletedItems))
 			await ModuleBE_AssetsDeleted.create.all(asArray(deletedItems), transaction);

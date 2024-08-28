@@ -1,5 +1,5 @@
 import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB';
-import {DBDef_AppConfig, DBProto_AppConfig, DB_AppConfig} from './shared';
+import {DB_AppConfig, DBDef_AppConfig, DBProto_AppConfig} from './shared';
 import {_keys, ApiException, Logger, PreDB, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 
 type InferType<T> = T extends AppConfigKey_BE<infer ValueType> ? ValueType : never;
@@ -16,20 +16,21 @@ export class ModuleBE_AppConfigDB_Class
 		super(DBDef_AppConfig);
 	}
 
-	protected async preWriteProcessing(dbInstance: PreDB<DB_AppConfig>, transaction?: FirebaseFirestore.Transaction): Promise<void> {
-		this.logInfo('############## Pre Manipulation ##############');
-		this.logInfo(dbInstance);
+	protected async preWriteProcessing(dbInstance: PreDB<DB_AppConfig>, originalDbInstance: DBProto_AppConfig['dbType'], transaction?: FirebaseFirestore.Transaction): Promise<void> {
+		this.logVerbose('############## Pre Manipulation ##############');
+		this.logVerbose(dbInstance);
 		const appKey = this.keyMap[dbInstance.key];
 		dbInstance.data = await appKey.dataManipulator(dbInstance.data);
-		this.logInfo('############## Post Manipulation ##############');
-		this.logInfo(dbInstance);
+		this.logVerbose('############## Post Manipulation ##############');
+		this.logVerbose(dbInstance);
 	}
 
 	public createDefaults = async (logger: Logger = this) => {
 		const keys = _keys(this.keyMap);
 		for (const key of keys) {
-			const config = await this.getAppKey(this.keyMap[key]);
-			this.logInfo(`Set App-Config default value for '${key}'`, config);
+			await this.getAppKey(this.keyMap[key]);
+			// const config = await this.getAppKey(this.keyMap[key]);
+			// this.logInfo(`Set App-Config default value for '${key}'`, config);
 		}
 	};
 

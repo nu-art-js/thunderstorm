@@ -33,8 +33,11 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "react": "$REACT_PKG_VERSION",
+    "react-dom": "$REACT_DOM_PKG_VERSION",
+    "react-router-dom": "$REACT_ROUTER_DOM_PKG_VERSION",
     "@slack/web-api": "^5.1.0",
     "@slack/events-api": "^2.3.0",
     "firebase": "$FIREBASE_PKG_VERSION",
@@ -44,5 +47,11 @@
     "google-auth-library": "^6.0.6",
     "moment": "$MOMENT_PKG_VERSION",
     "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/react": "$REACT_TYPES_VERSION",
+    "@types/react-dom": "$REACT_DOM_TYPES_VERSION",
+    "@types/react-router": "$REACT_ROUTER_TYPES_VERSION",
+    "@types/react-router-dom": "$REACT_ROUTER_DOM_TYPES_VERSION"
   }
 }

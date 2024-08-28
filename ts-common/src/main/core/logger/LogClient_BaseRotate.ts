@@ -17,12 +17,10 @@
  * limitations under the License.
  */
 
-import {LogClient} from "./LogClient";
-import {
-	LogLevel,
-	LogParam
-} from "./types";
-import {_logger_convertLogParamsToStrings} from "./utils";
+import {LogClient} from './LogClient';
+import {LogLevel, LogParam} from './types';
+import {_logger_convertLogParamsToStrings, _logger_indentNewLineBy} from './utils';
+
 
 type LogRotateListener = () => void
 
@@ -45,13 +43,18 @@ export abstract class LogClient_BaseRotate
 	}
 
 	protected logMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]): void {
-		const toLogAsString = _logger_convertLogParamsToStrings(toLog);
+		const log = this.processLogMessage(level, bold, prefix, toLog);
+
 		this.rotate();
-		for (const paramAsString of toLogAsString) {
-			const log = paramAsString + "\n";
-			this.printLogMessage(log);
-			this.bufferSize += log.length;
-		}
+
+		const finalLog = log + '\n';
+		this.printLogMessage(finalLog);
+		this.bufferSize += finalLog.length;
+	}
+
+	protected processLogMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]) {
+		const paramsAsStrings = _logger_convertLogParamsToStrings(toLog);
+		return _logger_indentNewLineBy(prefix, paramsAsStrings.join(' '));
 	}
 
 	setRotationListener(rotationListener: LogRotateListener) {

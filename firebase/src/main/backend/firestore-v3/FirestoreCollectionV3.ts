@@ -30,6 +30,7 @@ import {
 	dbIdLength,
 	dbObjectToId,
 	DBProto,
+	deepClone,
 	DefaultDBVersion,
 	Exception,
 	exists,
@@ -48,11 +49,7 @@ import {
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
 import {Transaction} from 'firebase-admin/firestore';
@@ -73,12 +70,12 @@ export type PostWriteProcessingData<Proto extends DBProto<any>> = {
 	updated?: Proto['dbType'] | Proto['dbType'][];
 	deleted?: Proto['dbType'] | Proto['dbType'][] | null;
 };
-
+export type CollectionActionType = 'create' | 'set' | 'update' | 'delete'
 export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
 	canDeleteItems: (dbItems: Proto['dbType'][], transaction?: Transaction) => Promise<void>,
-	preWriteProcessing?: (dbInstance: Proto['dbType'], transaction?: Transaction) => Promise<void>,
+	preWriteProcessing?: (dbInstance: Proto['dbType'], originalDbInstance?: Proto['dbType'], transaction?: Transaction) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Proto['dbType']>) => FirestoreQuery<Proto['dbType']>,
-	postWriteProcessing?: (data: PostWriteProcessingData<Proto>, transaction?: Transaction) => Promise<void>,
+	postWriteProcessing?: (data: PostWriteProcessingData<Proto>, actionType: CollectionActionType, transaction?: Transaction) => Promise<void>,
 	upgradeInstances: (instances: Proto['dbType'][]) => Promise<any>
 }
 
@@ -104,17 +101,26 @@ export class FirestoreBulkException
 	}
 }
 
+/**
+ * If one of the validators is a function, returns an array of functions.
+ * If both validators are objects, returns a merged object.
+ */
 const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']] | Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'] => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
 		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
-	else if (typeof dbDef.modifiablePropsValidator === 'function' && typeof dbDef.generatedPropsValidator === 'function')
-		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
-	else {
-		if (typeof dbDef.modifiablePropsValidator === 'function')
-			return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.generatedPropsValidator)), dbDef.generatedPropsValidator)] as Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'];
 
-		return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator)] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
-	}
+	if (typeof dbDef.modifiablePropsValidator === 'function' && typeof dbDef.generatedPropsValidator === 'function')
+		return [dbDef.modifiablePropsValidator, dbDef.generatedPropsValidator] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
+
+	if (typeof dbDef.modifiablePropsValidator === 'function')
+		return [dbDef.modifiablePropsValidator, <T extends Proto['dbType']>(instance: T) => {
+			const partialInstance = keepPartialObject(instance, _keys(dbDef.generatedPropsValidator));
+			return tsValidateResult(partialInstance, dbDef.generatedPropsValidator);
+		}] as Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'];
+
+	return [dbDef.generatedPropsValidator, <T extends Proto['dbType']>(instance: T) => {
+		return tsValidateResult(keepPartialObject(instance, _keys(dbDef.modifiablePropsValidator)), dbDef.modifiablePropsValidator);
+	}] as [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']];
 };
 
 /**
@@ -169,8 +175,11 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			return preDBItems.map(preDBItem => this.doc.item(preDBItem));
 		},
 		query: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction) => {
-			return (await this._customQuery(query, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
-		}
+			return (await this._customQuery(query, true, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
+		},
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction) => {
+			return (await this._customQuery(query, false, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
+		},
 	});
 
 	// ############################## Query ##############################
@@ -181,8 +190,11 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		return (await (transaction ?? this.wrapper.firestore).getAll(...docs.map(_doc => _doc.ref))).map(_snapshot => _snapshot.data() as Proto['dbType'] | undefined);
 	};
 
-	private _customQuery = async (tsQuery: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Proto['dbType']>[]> => {
-		tsQuery = this.hooks?.manipulateQuery?.(tsQuery) ?? tsQuery;
+	private _customQuery = async (tsQuery: FirestoreQuery<Proto['dbType']>, canManipulateQuery: boolean, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Proto['dbType']>[]> => {
+		if (canManipulateQuery)
+			tsQuery = this.hooks?.manipulateQuery?.(deepClone(tsQuery)) ?? tsQuery;
+
+		this.logDebug(this.dbDef.dbKey, tsQuery);
 		const firestoreQuery = FirestoreInterfaceV3.buildQuery<Proto>(this, tsQuery);
 		if (transaction)
 			return (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<Proto['dbType']>[];
@@ -195,7 +207,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		uniqueAssert: async (_id: Proto['uniqueParam'], transaction?: Transaction): Promise<Proto['dbType']> => {
 			const resultItem = await this.query.unique(_id, transaction);
 			if (!resultItem)
-				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${_id}`);
+				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${__stringify(_id)}`);
 
 			return resultItem;
 		},
@@ -206,16 +218,19 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
 
 			if (thisShouldBeOnlyOne.length > 1)
-				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbKey}`);
+				throw new BadImplementationException(`Too many results (${thisShouldBeOnlyOne.length}) in collection (${this.dbDef.dbKey}) for query: ${__stringify(query)}`);
 
 			return thisShouldBeOnlyOne[0];
 		},
 		all: async (_ids: (Proto['uniqueParam'])[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
 		custom: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
+			return (await this._customQuery(query, true, transaction)).map(snapshot => snapshot.data());
 		},
 		where: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
 			return this.query.custom({where}, transaction);
+		},
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
+			return (await this._customQuery(query, false, transaction)).map(snapshot => snapshot.data());
 		},
 	});
 
@@ -241,7 +256,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		else
 			await this.multiWrite(multiWriteType, docs, 'create', dbItems);
 
-		await this.hooks?.postWriteProcessing?.({updated: dbItems});
+		await this.hooks?.postWriteProcessing?.({updated: dbItems}, 'create');
 		return dbItems;
 	};
 
@@ -253,21 +268,22 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	// ############################## Set ##############################
 	private _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType, performUpgrade = true) => {
+		//Get all items
 		const docs = this.doc.allItems(items);
 		const dbItems = await this.getAll(docs);
-
+		//Prepare all items
 		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
 			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction, performUpgrade) : await docs[i].prepareForSet(items[i] as Proto['dbType'], _dbItem!, transaction, performUpgrade);
 		}));
 		this.assertNoDuplicatedIds(preparedItems, 'set.all');
-
+		//Write all items
 		if (transaction)
 			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
 			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
-
-		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems});
+		//postWriteProcessing if provided
+		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems}, 'set');
 		return preparedItems;
 	};
 
@@ -298,7 +314,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		const toUpdate: UpdateObject<Proto['dbType']>[] = await Promise.all(docs.map(async (_doc, i) => await _doc.prepareForUpdate(updateData[i])));
 		await this.multiWrite(multiWriteType, docs, 'update', toUpdate);
 		const dbItems = await this.getAll(docs) as Proto['dbType'][];
-		await this.hooks?.postWriteProcessing?.({updated: dbItems});
+		await this.hooks?.postWriteProcessing?.({updated: dbItems}, 'update');
 		return dbItems;
 	};
 
@@ -322,6 +338,17 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		return itemsToReturn;
 	};
 
+	protected _deleteUnManipulatedQuery = async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+		if (!exists(query) || compare(query, _EmptyQuery))
+			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
+
+		const docsToBeDeleted = await this.doc.unManipulatedQuery(query, transaction);
+		// Because we query for docs, these docs and their data must exist in Firestore.
+		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!); // Data must exist here.
+		await this._deleteAll(docsToBeDeleted, transaction, multiWriteType);
+		return itemsToReturn;
+	};
+
 	protected _deleteAll = async (docsToBeDeleted: DocWrapperV3<Proto>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		const dbItems = filterInstances(await this.getAll(docsToBeDeleted, transaction));
 		const itemsToCheck = dbItems.filter((item, index) => docsToBeDeleted[index].ref.id == item._id);
@@ -336,7 +363,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		else
 			await this.multiWrite(multiWriteType, docsToBeDeleted, 'delete');
 
-		await this.hooks?.postWriteProcessing?.({deleted: dbItems}, transaction);
+		await this.hooks?.postWriteProcessing?.({deleted: dbItems}, 'delete', transaction);
 		return dbItems;
 	};
 
@@ -345,7 +372,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		const bulk = this.wrapper.firestore.bulkWriter();
 		refs.forEach(_ref => bulk.delete(_ref));
 		// deleted: null means that the whole collection has been deleted
-		await this.hooks?.postWriteProcessing?.({deleted: null});
+		await this.hooks?.postWriteProcessing?.({deleted: null}, 'delete');
 		await bulk.close();
 	};
 
@@ -384,6 +411,20 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 			return await this._deleteQuery(query, transaction);
 		},
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
+			if (!transaction) {
+				//query all docs and then delete in chunks
+				if (!exists(query) || compare(query, _EmptyQuery))
+					throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
+
+				const docs = await this.doc.unManipulatedQuery(query, transaction);
+				const items = docs.map(doc => doc.data!); // Data must exist here.
+				await this.runTransactionInChunks(docs, (chunk, t) => this._deleteAll(chunk, t));
+				return items;
+			}
+
+			return await this._deleteUnManipulatedQuery(query, transaction);
+		},
 		where: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
 			return this.delete.query({where}, transaction);
 		},
@@ -401,6 +442,12 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	});
 
 	// ############################## Multi Write ##############################
+	/**
+	 * @param writer Type of BulkWriter - can be Bulk writer or Batch writer
+	 * @param doc
+	 * @param operation create/update/set/delete
+	 * @param item - mandatory for everything but delete
+	 */
 	private addToMultiWrite = <Op extends MultiWriteOperation>(writer: BulkWriter | WriteBatch, doc: DocWrapperV3<Proto>, operation: Op, item?: MultiWriteItem<Op, Proto['dbType']>) => {
 		switch (operation) {
 			case 'create':
@@ -447,6 +494,11 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			throw new FirestoreBulkException(errors);
 	};
 
+	/**
+	 * @param docs docs to write to
+	 * @param operation create/update/set/delete
+	 * @param items mandatory for everything but delete
+	 */
 	private batchWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV3<Proto>[], operation: Op, items?: MultiWriteItem<Op, Proto['dbType']>[]) => {
 		for (let batchIndex = 0; batchIndex < docs.length; batchIndex += maxBatch) {
 			const batch = this.wrapper.firestore.batch();

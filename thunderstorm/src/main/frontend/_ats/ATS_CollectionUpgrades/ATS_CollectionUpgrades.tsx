@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {__stringify, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
+import {__stringify, filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_CollectionUpgrades.scss';
 import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools';
 import {genericNotificationAction} from '../../components/TS_Notifications';
@@ -26,9 +26,9 @@ export class ATS_CollectionUpgrades
 	};
 
 	protected deriveStateFromProps(nextProps: {}, state: State) {
-		state.upgradableModules ??= sortArray(RuntimeModules().filter((module: ModuleFE_BaseApi<any>) => {
+		state.upgradableModules ??= sortArray(filterDuplicates(RuntimeModules().filter((module: ModuleFE_BaseApi<any>) => {
 			return !!module.getCollectionName;
-		}), item => item.getCollectionName());
+		}), (module: ModuleFE_BaseApi<any>) => module.getCollectionName()), item => item.getCollectionName());
 
 		return state;
 	}

@@ -1,11 +1,6 @@
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions/shared/types';
 import {ApiDef_Assets, ApiDef_AssetUploader} from '../../shared';
-import {
-	DefaultAccessLevel_Admin,
-	DefaultAccessLevel_Delete,
-	DefaultAccessLevel_Read,
-	DefaultAccessLevel_Write
-} from '@nu-art/permissions/shared/consts';
+import {DefaultAccessLevel_Admin, DefaultAccessLevel_Delete, DefaultAccessLevel_Read, DefaultAccessLevel_Write} from '@nu-art/permissions/shared/consts';
 import {Domain_Developer} from '@nu-art/permissions/backend/permissions';
 import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI';
 
@@ -42,6 +37,7 @@ const PermissionsGroupId_AssetsManager = '3f5037358fba0ae1199047f2fa8add94';
 const _PermissionsGroup_AssetsViewer: DefaultDef_Group = {
 	_id: PermissionsGroupId_AssetsViewer,
 	name: 'Assets Viewer',
+	uiLabel: 'Assets Viewer',
 	accessLevels: {
 		[PermissionsDomain_AssetsManager.namespace]: DefaultAccessLevel_Read.name,
 	}
@@ -50,6 +46,7 @@ const _PermissionsGroup_AssetsViewer: DefaultDef_Group = {
 const _PermissionsGroup_AssetsManager: DefaultDef_Group = {
 	_id: PermissionsGroupId_AssetsManager,
 	name: 'Assets Manager',
+	uiLabel: 'Assets Manager',
 	accessLevels: {
 		[PermissionsDomain_AssetsManager.namespace]: DefaultAccessLevel_Delete.name,
 	}
