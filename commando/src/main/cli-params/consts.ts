@@ -1,4 +1,4 @@
-import {TypedMap} from '@nu-art/ts-common';
+import {TypedMap} from '@thunder-storm/common';
 import {CliParam} from './types';
 
 

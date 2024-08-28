@@ -1,8 +1,8 @@
 import * as React from 'react';
 import './PDF_Renderer.scss';
 import {ModuleFE_PDF, PDF_File} from '../modules/ModuleFE_PDF';
-import {ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
-import {_logger_logException} from '@nu-art/ts-common';
+import {ComponentAsync, TS_Loader} from '@thunder-storm/core/frontend';
+import {_logger_logException} from '@thunder-storm/common';
 
 
 type State = {

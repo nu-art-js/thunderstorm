@@ -19,7 +19,7 @@
 import * as React from 'react';
 import {
 	Example_NewProps, TS_TextArea, TS_TextAreaProps,
-} from '@nu-art/thunderstorm/frontend';
+} from '@thunder-storm/core/frontend';
 
 
 type TestType = {

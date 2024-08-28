@@ -18,7 +18,7 @@
  */
 
 import {ModulePackBE_Permissions, ModulePackBE_Permissions} from '../src/main/backend';
-import {StormTester} from '@nu-art/thunderstorm/backend-test';
+import {StormTester} from '@thunder-storm/core/backend-test';
 import {__scenario} from '@nu-art/testelot';
 import {createTwoAccessLevels} from './tests/create-project';
 import {
@@ -55,8 +55,8 @@ import {
 	tryDeleteDomainAssociatedWithAccessLevel
 } from './tests/permissions-manage';
 import {permissionsAssertDoesCustomFieldsSatisfiesTests, permissionsAssertIsLevelsMatchTests} from './tests/permissions-assert';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {AccountModule} from '@nu-art/user-account/backend';
+import {ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
+import {AccountModule} from '@thunder-storm/user-account/backend';
 import {assignUserPermissionsTests} from './tests/assign-permissions';
 import {
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered,

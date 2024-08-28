@@ -1,4 +1,4 @@
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey} from '@thunder-storm/common/mem-storage/MemStorage';
 
 const CONST_FirebaseConfig = `${__dirname}/.firebase_config`;
 const CONST_BackendProxy = `${__dirname}/backend-proxy`;

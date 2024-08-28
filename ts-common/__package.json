@@ -1,5 +1,5 @@
 {
-  "name": "@nu-art/ts-common",
+  "name": "@thunder-storm/common",
   "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "js and ts infra",
   "keywords": [

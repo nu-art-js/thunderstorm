@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {ImplementationMissingException, Module} from '@thunder-storm/common';
 import {people_v1} from 'googleapis';
 import {ModuleBE_Auth} from './ModuleBE_Auth';
 

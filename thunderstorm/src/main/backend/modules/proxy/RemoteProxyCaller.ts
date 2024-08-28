@@ -18,12 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, ApiException, composeUrl, ImplementationMissingException, Module,} from '@nu-art/ts-common';
+import {__stringify, ApiException, composeUrl, ImplementationMissingException, Module,} from '@thunder-storm/common';
 // noinspection TypeScriptPreferShortImport
 import {BodyApi, QueryApi} from '../../../shared/types';
 import {promisifyRequest} from '../../utils/promisify-request';
 import {RequestOptions} from '../../../backend';
-import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
+import {ApiErrorResponse} from '@thunder-storm/common/core/exceptions/types';
 import { HeaderKey_ContentType } from '../../shared';
 
 

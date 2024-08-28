@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {Module} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery} from '@nu-art/thunderstorm/frontend';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {Module} from '@thunder-storm/common';
+import {apiWithBody, apiWithQuery} from '@thunder-storm/core/frontend';
+import {ApiDefCaller} from '@thunder-storm/core';
 import {ApiDef_AdminBugReport, ApiStruct_AdminBugReport, DB_BugReport, ReportLogFile} from '../../shared/api';
 
 

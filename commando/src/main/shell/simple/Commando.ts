@@ -1,4 +1,4 @@
-import {Constructor, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {Constructor, ThisShouldNotHappenException} from '@thunder-storm/common';
 import {SimpleShell} from './SimpleShell';
 import {BaseCommando} from '../core/BaseCommando';
 import {CliError} from '../core/CliError';

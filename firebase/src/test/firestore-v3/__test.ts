@@ -1,4 +1,4 @@
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
 import {TestSuite_FirestoreV3_Create} from './create/create';
 import {TestSuite_FirestoreV3_CreateAll} from './create/create-all';
 import {TestSuite_FirestoreV3_Delete} from './delete/delete';

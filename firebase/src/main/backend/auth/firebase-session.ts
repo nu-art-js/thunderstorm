@@ -19,7 +19,7 @@
 /**
  * Created by tacb0ss on 25/08/2018.
  */
-import {Logger} from '@nu-art/ts-common';
+import {Logger} from '@thunder-storm/common';
 import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE';
 import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE';
 import {StorageWrapperBE} from '../storage/StorageWrapperBE';

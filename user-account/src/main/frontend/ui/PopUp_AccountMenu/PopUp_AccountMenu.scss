@@ -1,4 +1,4 @@
-@use '@nu-art/ts-styles' as styles;
+@use '@thunder-storm/styles' as styles;
 
 %main-button-design {
   @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));

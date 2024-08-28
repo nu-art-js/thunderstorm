@@ -1,4 +1,4 @@
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {StorageKey} from './ModuleFE_LocalStorage';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser

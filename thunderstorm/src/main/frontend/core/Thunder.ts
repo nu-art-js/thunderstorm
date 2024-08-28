@@ -28,7 +28,7 @@ import {
 	ModuleManager,
 	Promise_all_sequentially,
 	removeItemFromArray
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {ThunderDispatcher} from './thunder-dispatcher';
 
 import '../styles/impl/basic.scss';

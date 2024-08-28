@@ -1,5 +1,5 @@
 import {promises as fs} from 'fs';
-import {Logger, LogLevel} from '@nu-art/ts-common';
+import {Logger, LogLevel} from '@thunder-storm/common';
 import {convertToFullPath} from '../tools';
 import {Commando_PNPM} from '../plugins/pnpm';
 

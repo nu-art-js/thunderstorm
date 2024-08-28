@@ -1,4 +1,4 @@
-import {currentTimeMillis, CustomException} from '@nu-art/ts-common';
+import {currentTimeMillis, CustomException} from '@thunder-storm/common';
 import {ModuleBE_Firebase} from '../ModuleBE_Firebase';
 
 

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@thunder-storm/core';
 
 
 export type CommonBodyReq = {

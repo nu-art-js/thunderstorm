@@ -22,7 +22,7 @@
 import {ServerApi} from '../server-api';
 import * as fs from 'fs';
 import * as express from 'express';
-import {asArray, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
+import {asArray, MUSTNeverHappenException, StaticLogger} from '@thunder-storm/common';
 import {ServerApi_Middleware} from '../../../utils/types';
 
 

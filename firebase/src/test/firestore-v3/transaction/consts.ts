@@ -1,6 +1,6 @@
 import {CollectionTest, firestore, id_inner1, id_inner2, id_inner3, id_inner4, id_outer1, innerQueryCollection, outerQueryCollection} from '../_core/consts';
 import {expect} from 'chai';
-import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
+import {compare, currentTimeMillis, exists, filterInstances} from '@thunder-storm/common';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';
 import {DBProto_Type_Complex} from '../../_entity/type-complex/shared';
 

@@ -1,5 +1,5 @@
-// import {Dialog_Builder} from '@nu-art/thunderstorm/frontend/modules/dialog/ModuleFE_Dialog';
-// import {ComponentSync} from '@nu-art/thunderstorm/frontend/core/ComponentSync';
+// import {Dialog_Builder} from '@thunder-storm/core/frontend/modules/dialog/ModuleFE_Dialog';
+// import {ComponentSync} from '@thunder-storm/core/frontend/core/ComponentSync';
 // import * as React from 'react';
 //
 //

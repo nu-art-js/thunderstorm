@@ -21,7 +21,7 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_ErrorBoundary.scss';
-import {Logger} from '@nu-art/ts-common';
+import {Logger} from '@thunder-storm/common';
 import {BaseComponent} from '../../core/ComponentBase';
 
 

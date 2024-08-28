@@ -1,5 +1,5 @@
-import {Module} from '@nu-art/ts-common';
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend';
+import {Module} from '@thunder-storm/common';
+import {createApisForDBModuleV3} from '@thunder-storm/core/backend';
 import {ModuleBE_AccountDB} from './ModuleBE_AccountDB';
 import {ModuleBE_SAML} from './ModuleBE_SAML';
 

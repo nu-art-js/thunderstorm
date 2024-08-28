@@ -1,4 +1,4 @@
-import {DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@thunder-storm/common';
 
 type VersionTypes_DeletedDoc = { '1.0.0': DB_DeletedDoc }
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_DeletedDoc>;

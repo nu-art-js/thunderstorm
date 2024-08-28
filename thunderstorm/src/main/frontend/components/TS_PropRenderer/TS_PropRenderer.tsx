@@ -2,7 +2,7 @@ import './TS_PropRenderer.scss';
 import * as React from 'react';
 import {LinearLayoutProps, LL_H_B, LL_H_C, LL_H_T, LL_V_L} from '../Layouts';
 import {_className} from '../../utils/tools';
-import {resolveContent} from '@nu-art/ts-common';
+import {resolveContent} from '@thunder-storm/common';
 
 export type PropRenderer_BaseProps = React.PropsWithChildren<{
 	label: React.ReactNode | (() => React.ReactNode),

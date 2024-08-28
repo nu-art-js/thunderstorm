@@ -1,8 +1,8 @@
-import {addRoutes, createBodyServerApi, ModuleBE_BaseApi_Class} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, ModuleBE_BaseApi_Class} from '@thunder-storm/core/backend';
 import {ModuleBE_AssetsDB} from './ModuleBE_AssetsDB';
 import {ApiDef_Assets, DBProto_Assets} from '../../shared';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage';
-import {DB_BaseObject} from '@nu-art/ts-common';
+import {DB_BaseObject} from '@thunder-storm/common';
 
 
 export class ModuleBE_AssetsAPI_Class

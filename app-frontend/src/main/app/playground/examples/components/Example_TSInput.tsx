@@ -21,7 +21,7 @@ import {
 	Example_NewProps,
 	TS_Input,
 	TS_InputProps
-} from "@nu-art/thunderstorm/frontend";
+} from "@thunder-storm/core/frontend";
 
 type TestType = {
 	prop1?: string,

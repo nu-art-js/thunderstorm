@@ -1,4 +1,4 @@
-import {DB_Object, TypedMap} from '@nu-art/ts-common';
+import {DB_Object, TypedMap} from '@thunder-storm/common';
 
 export type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
 export type SyncDataFirebaseState = TypedMap<LastUpdated>

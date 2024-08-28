@@ -18,11 +18,11 @@
 
 import * as React from 'react';
 import {ReactNode} from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend/core/ComponentSync';
+import {ComponentSync} from '@thunder-storm/core/frontend/core/ComponentSync';
 import {ScaleLinear, scaleLinear} from 'd3-scale';
 import AxisLeft from './Example_AxisX';
 import AxisBottom from './Example_AxisBottom.';
-import {deepClone} from '@nu-art/ts-common';
+import {deepClone} from '@thunder-storm/common';
 
 
 export type Coordinates = {

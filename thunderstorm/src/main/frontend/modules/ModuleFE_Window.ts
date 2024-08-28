@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Module,} from '@nu-art/ts-common';
+import {Module,} from '@thunder-storm/common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 

@@ -9,7 +9,7 @@ import {
 	writeTestInput5,
 	WriteTests
 } from '../_core/consts';
-import {BadImplementationException} from '@nu-art/ts-common';
+import {BadImplementationException} from '@thunder-storm/common';
 import {expect} from 'chai';
 
 export const writeToFilesTests: WriteTests['testcases'] = [

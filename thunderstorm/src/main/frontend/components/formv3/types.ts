@@ -1,4 +1,4 @@
-import {ValidatorTypeResolver} from '@nu-art/ts-common';
+import {ValidatorTypeResolver} from '@thunder-storm/common';
 import * as React from 'react';
 
 

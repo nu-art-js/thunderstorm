@@ -1,4 +1,4 @@
-import {FunctionKeys, ParamResolver, removeItemFromArray} from '@nu-art/ts-common';
+import {FunctionKeys, ParamResolver, removeItemFromArray} from '@thunder-storm/common';
 import {Phase} from '../phase/types';
 import {BaseUnit} from '../unit/core';
 

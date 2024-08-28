@@ -38,7 +38,7 @@ import {
 	TypedMap,
 	ValidationException,
 	ValidatorTypeResolver
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 
 import {Stream} from 'stream';
 import {parse} from 'url';
@@ -55,7 +55,7 @@ import {
 	MemKey_HttpRequestUrl,
 	MemKey_HttpResponse
 } from './consts';
-import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey, MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
 import {
 	ApiDef,
 	BodyApi,

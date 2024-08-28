@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, _keys, BadImplementationException, Dispatcher, Minute, Module, Queue} from '@nu-art/ts-common';
+import {__stringify, _keys, BadImplementationException, Dispatcher, Minute, Module, Queue} from '@thunder-storm/common';
 import {
 	ApiDef,
 	ApiDefCaller,
@@ -24,7 +24,7 @@ import {
 	HeaderKey_ContentType,
 	TS_Progress,
 	TypedApi
-} from '@nu-art/thunderstorm';
+} from '@thunder-storm/core';
 
 import {
 	ApiDef_UploadFile,

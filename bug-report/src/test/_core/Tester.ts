@@ -20,7 +20,7 @@
 import {
 	ImplementationMissingException,
 	ModuleManager
-} from "@nu-art/ts-common";
+} from "@thunder-storm/common";
 import {
 	__scenario,
 	Reporter,

@@ -1,4 +1,4 @@
-import {ResolvableContent} from '@nu-art/ts-common';
+import {ResolvableContent} from '@thunder-storm/common';
 import * as React from 'react';
 
 export type ButtonGroupItem_Controlled<K extends string> = {

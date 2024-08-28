@@ -1,4 +1,4 @@
-import {_keys, generateArray, tsValidateRegexp, tsValidateResult, tsValidateString, tsValidateStringMinLength, Validator} from '@nu-art/ts-common';
+import {_keys, generateArray, tsValidateRegexp, tsValidateResult, tsValidateString, tsValidateStringMinLength, Validator} from '@thunder-storm/common';
 import {
 	PasswordAssertionConfig,
 	PasswordAssertionType,

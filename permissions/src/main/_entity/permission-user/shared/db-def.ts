@@ -1,4 +1,4 @@
-import {DBDef_V3, tsValidateArray, tsValidateString, tsValidateStringAndNumbersWithDashes} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateArray, tsValidateString, tsValidateStringAndNumbersWithDashes} from '@thunder-storm/common';
 import {DBProto_PermissionUser} from './types';
 import {PermissionDBGroup} from '../../shared';
 

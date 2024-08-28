@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {merge, Module, TS_Object} from '@nu-art/ts-common';
+import {merge, Module, TS_Object} from '@thunder-storm/common';
 
 
 export interface StorageKeyEvent {

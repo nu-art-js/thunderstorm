@@ -17,8 +17,8 @@
  */
 
 import * as React from 'react';
-import {Adapter, BaseNodeRenderer, NodeRendererProps, SimpleTreeAdapter, TS_Tree,} from '@nu-art/thunderstorm/frontend';
-import {__stringify} from '@nu-art/ts-common';
+import {Adapter, BaseNodeRenderer, NodeRendererProps, SimpleTreeAdapter, TS_Tree,} from '@thunder-storm/core/frontend';
+import {__stringify} from '@thunder-storm/common';
 
 
 type State = { focused?: string, actionMessage: string };

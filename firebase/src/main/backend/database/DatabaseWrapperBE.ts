@@ -18,7 +18,7 @@
 
 // import {FirestoreCollection} from "./FirestoreCollection";
 import {Firebase_DB} from './types';
-import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-art/ts-common';
+import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@thunder-storm/common';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getDatabase, Reference} from 'firebase-admin/database';

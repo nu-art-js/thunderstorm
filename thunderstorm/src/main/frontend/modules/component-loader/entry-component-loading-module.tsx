@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 // noinspection TypeScriptPreferShortImport
 import {ModuleFE_XHR} from '../http/ModuleFE_XHR';
 import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory';

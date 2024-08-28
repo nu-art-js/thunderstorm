@@ -20,7 +20,7 @@ import {
 	Firebase_PubSubFunction,
 	FirebaseEventContext,
 	TopicMessage
-} from "@nu-art/firebase/backend-functions";
+} from "@thunder-storm/firebase/backend-functions";
 
 type MyType = any;
 

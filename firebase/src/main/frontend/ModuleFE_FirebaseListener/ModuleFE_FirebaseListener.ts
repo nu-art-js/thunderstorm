@@ -18,7 +18,7 @@ import {
 	ImplementationMissingException,
 	Logger,
 	Module
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import 'firebase/database';
 
 

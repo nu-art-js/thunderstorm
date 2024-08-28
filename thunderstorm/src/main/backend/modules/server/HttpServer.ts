@@ -27,12 +27,12 @@
 import {Server} from 'http';
 import {Socket} from 'net';
 import * as fs from 'fs';
-import {addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
+import {addItemToArray, LogLevel, Module} from '@thunder-storm/common';
 import express from 'express';
 
 import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from '../../utils/types';
 import {DefaultApiErrorMessageComposer} from './server-errors';
-import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase/backend';
+import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@thunder-storm/firebase/backend';
 import {ServerApi} from './server-api';
 import compression from 'compression';
 

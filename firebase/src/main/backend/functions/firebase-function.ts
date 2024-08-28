@@ -18,7 +18,7 @@
 import {EventContext, RuntimeOptions} from 'firebase-functions';
 
 import {Express, Request, Response} from 'express';
-import {addItemToArray, StringMap} from '@nu-art/ts-common';
+import {addItemToArray, StringMap} from '@thunder-storm/common';
 import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
 import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
 

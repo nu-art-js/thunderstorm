@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './TS_EditableItemControllerProto.scss';
-import {asArray, BadImplementationException, DB_Object, DBProto, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {asArray, BadImplementationException, DB_Object, DBProto, deepClone, exists, ResolvableContent, resolveContent} from '@thunder-storm/common';
 import {EditableDBItemV3} from '../../utils/EditableItem';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';

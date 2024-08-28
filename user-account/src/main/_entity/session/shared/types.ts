@@ -1,4 +1,4 @@
-import {DB_Object, DBProto, Proto_DB_Object, TypedKeyValue, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DBProto, Proto_DB_Object, TypedKeyValue, UniqueId, VersionsDeclaration} from '@thunder-storm/common';
 
 type VersionTypes = { '1.0.0': DB_Session };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes>

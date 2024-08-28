@@ -22,7 +22,7 @@
 // 	DialogButton_Cancel,
 // 	DialogButton_Submit,
 // 	ModuleFE_Dialog,
-// } from "@nu-art/thunderstorm/frontend";
+// } from "@thunder-storm/core/frontend";
 //
 // export const noButton = () => {
 // 	new Dialog_Builder("No Buttons!")

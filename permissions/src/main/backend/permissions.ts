@@ -1,12 +1,12 @@
 import {ApiDef_Permissions,} from '../shared';
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '../shared/types';
 import {DefaultAccessLevel_Admin, DefaultAccessLevel_Delete, DefaultAccessLevel_NoAccess, DefaultAccessLevel_Read, DefaultAccessLevel_Write,} from '../shared/consts';
-import {ApiDef_Account, DBDef_Accounts} from '@nu-art/user-account';
+import {ApiDef_Account, DBDef_Accounts} from '@thunder-storm/user-account';
 import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE';
 import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys';
-import {ApiDef_UpgradeCollection} from '@nu-art/thunderstorm/shared/upgrade-collection';
-import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor';
-import {ApiDef_SyncEnv} from '@nu-art/thunderstorm';
+import {ApiDef_UpgradeCollection} from '@thunder-storm/core/shared/upgrade-collection';
+import {ApiDef_ActionProcessing} from '@thunder-storm/core/shared/action-processor';
+import {ApiDef_SyncEnv} from '@thunder-storm/core';
 import {DBDef_PermissionAccessLevel, DBDef_PermissionAPI, DBDef_PermissionDomain, DBDef_PermissionGroup, DBDef_PermissionProject, DBDef_PermissionUser} from './_entity';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});

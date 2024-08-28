@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, Logger, TS_Object} from '@nu-art/ts-common';
+import {BadImplementationException, Logger, TS_Object} from '@thunder-storm/common';
 import {FirebaseType_DB} from './types';
 import {getDatabase, onValue, ref, remove, set, update} from 'firebase/database';
 import {FirebaseApp} from 'firebase/app';

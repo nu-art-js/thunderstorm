@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {addItemToArray, BeLogged, LogClient_MemBuffer, LogLevel, LogLevelOrdinal, Module} from '@nu-art/ts-common';
-import {apiWithBody} from '@nu-art/thunderstorm/frontend';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {addItemToArray, BeLogged, LogClient_MemBuffer, LogLevel, LogLevelOrdinal, Module} from '@thunder-storm/common';
+import {apiWithBody} from '@thunder-storm/core/frontend';
+import {ApiDefCaller} from '@thunder-storm/core';
 import {ApiDef_BugReport, ApiStruct_BugReport} from '../../shared/api';
 import {TicketDetails} from '../../backend';
 

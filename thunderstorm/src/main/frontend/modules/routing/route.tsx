@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {composeUrl, RouteParams} from '@nu-art/ts-common';
+import {composeUrl, RouteParams} from '@thunder-storm/common';
 import * as React from 'react';
 import {Link, NavLink, Route} from 'react-router-dom';
 import {ReactEntryComponentInjector} from '../component-loader/ReactEntryComponentInjector';

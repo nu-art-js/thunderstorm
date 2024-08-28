@@ -1,6 +1,6 @@
 import {Change, CloudFunction, EventContext} from 'firebase-functions';
 import {DataSnapshot} from 'firebase/database';
-import {deepClone} from '@nu-art/ts-common';
+import {deepClone} from '@thunder-storm/common';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

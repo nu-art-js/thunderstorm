@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 import {ModuleBE_LiveDocs} from '../_main';
-import {assert, auditBy} from '@nu-art/ts-common';
+import {assert, auditBy} from '@thunder-storm/common';
 import {cleanup} from './_core';
-import {ApiException} from '@nu-art/thunderstorm/backend';
+import {ApiException} from '@thunder-storm/core/backend';
 
 
 export function getNoneExistingDoc() {

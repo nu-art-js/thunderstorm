@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ElementType, HTMLAttributes} from 'react';
-import {_keys} from '@nu-art/ts-common';
+import {_keys} from '@thunder-storm/common';
 
 import FilterURL, {ReactComponent as Filter} from './svgs/icon__filter.svg';
 import SearchURL, {ReactComponent as Search} from './svgs/icon__search.svg';

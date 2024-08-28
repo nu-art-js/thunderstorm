@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import {ModuleBE_PushPubSub} from "@nu-art/push-pub-sub/backend";
-import {FirestoreFunctionModule} from "@nu-art/firebase/backend-functions";
+import {FirestoreFunctionModule} from "@thunder-storm/firebase/backend-functions";
 
 export class CollectionChangedListener_Class
 	extends FirestoreFunctionModule<object>{

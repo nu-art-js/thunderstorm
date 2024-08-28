@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DBProto} from '@nu-art/ts-common';
+import {DBProto} from '@thunder-storm/common';
 import {ModuleFE_BaseApi} from '../../../../modules/db-api-gen/ModuleFE_BaseApi';
 import {LL_V_L} from '../../../Layouts';
 import {_className} from '../../../../utils/tools';

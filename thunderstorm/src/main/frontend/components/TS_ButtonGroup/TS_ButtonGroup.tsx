@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {ThisShouldNotHappenException} from '@thunder-storm/common';
 import './TS_ButtonGroup.scss';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';

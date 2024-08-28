@@ -1,4 +1,4 @@
-import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@thunder-storm/common';
 
 type VersionTypes_ShortUrl = { '1.0.0': DB_ShortUrl }
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_ShortUrl>;

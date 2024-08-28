@@ -19,7 +19,7 @@
 
 import * as React from 'react';
 import {ICONS} from '@app/common/frontend/icons';
-import {BaseNodeRenderer,} from '@nu-art/thunderstorm/frontend';
+import {BaseNodeRenderer,} from '@thunder-storm/core/frontend';
 import { Plague} from './consts';
 import {Playground_DropdownSingleAndMulti} from './Example_Dropdown_SingleAndMulti';
 import {Playground_DropdownMultiType} from './Example_Dropdown_MultiType';

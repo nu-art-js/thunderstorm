@@ -1,5 +1,5 @@
 import {DBProto_ShortUrl} from './types';
-import {DBDef_V3, tsValidateGeneralUrl, tsValidateShortUrl, tsValidateString} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateGeneralUrl, tsValidateShortUrl, tsValidateString} from '@thunder-storm/common';
 
 
 const Validator_ModifiableProps: DBProto_ShortUrl['modifiablePropsValidator'] = {

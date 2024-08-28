@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './ATS_ActionProcessor.scss';
-import {_keys, TypedMap} from '@nu-art/ts-common';
+import {_keys, TypedMap} from '@thunder-storm/common';
 import {Dialog_ActionProcessorConfirmation} from '../dialogs';
 import {ActionMetaData} from '../../../shared/action-processor';
 import {ComponentAsync} from '../../core/ComponentAsync';

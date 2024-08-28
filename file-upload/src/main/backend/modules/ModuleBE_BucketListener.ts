@@ -17,13 +17,13 @@
  */
 
 import {EventContext} from 'firebase-functions';
-import {BadImplementationException, Dispatcher} from '@nu-art/ts-common';
+import {BadImplementationException, Dispatcher} from '@thunder-storm/common';
 import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {ModuleBE_StorageListener} from '@nu-art/firebase/backend';
+import {MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
+import {ModuleBE_StorageListener} from '@thunder-storm/firebase/backend';
 import {PermissionsGroup_PushMessanger} from '@nu-art/push-pub-sub/backend/core/permissions';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
-import {DefaultDef_ServiceAccount, RequiresServiceAccount, ServiceAccountCredentials} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
+import {MemKey_AccountId} from '@thunder-storm/user-account/backend';
+import {DefaultDef_ServiceAccount, RequiresServiceAccount, ServiceAccountCredentials} from '@thunder-storm/core/backend/modules/_tdb/service-accounts';
 
 
 export interface OnAssetUploaded {

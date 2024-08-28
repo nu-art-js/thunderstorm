@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {logicalXOR} from '@nu-art/ts-common';
+import {logicalXOR} from '@thunder-storm/common';
 import {Coordinates, Model_ToolTip} from '../../../component-modules/mouse-interactivity/types';
 import {ComponentSync} from '../../../core/ComponentSync';
 

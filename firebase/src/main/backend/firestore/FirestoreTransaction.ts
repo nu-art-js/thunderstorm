@@ -18,7 +18,7 @@
 
 import {FirestoreType_DocumentSnapshot} from './types';
 import {DocWrapper, FirestoreCollection,} from './FirestoreCollection';
-import {BadImplementationException, merge, Subset, TS_Object} from '@nu-art/ts-common';
+import {BadImplementationException, merge, Subset, TS_Object} from '@thunder-storm/common';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreInterface} from './FirestoreInterface';
 import {Transaction} from 'firebase-admin/firestore';

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ModuleFE_Routing} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Routing} from '@thunder-storm/core/frontend';
 import {Page_Playground} from './playground/Page_Playground';
 import {Parent} from './Parent';
 import {Child2} from './Child2';

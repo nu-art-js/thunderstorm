@@ -1,9 +1,9 @@
-import {_keys, currentTimeMillis, DB_Object, DBProto, exists, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DB_Object, DBProto, exists, MUSTNeverHappenException, UniqueId} from '@thunder-storm/common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
 import {assertUniqueId, CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from './FirestoreCollectionV3';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@thunder-storm/common/core/exceptions/http-codes';
 import {addDeletedToTransaction} from './consts';
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;

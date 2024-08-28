@@ -1,6 +1,6 @@
-import {BaseCliParam} from '@nu-art/commando/cli-params/types';
-import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
-import {exists} from '@nu-art/ts-common';
+import {BaseCliParam} from '@thunder-storm/commando/cli-params/types';
+import {CLIParamsResolver} from '@thunder-storm/commando/cli-params/CLIParamsResolver';
+import {exists} from '@thunder-storm/common';
 
 //util regex function
 const regexTemplate = (regexp: string | undefined) => exists(regexp) ? `.*${regexp}.*` : '.*';

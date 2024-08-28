@@ -1,6 +1,6 @@
 import {Adapter} from '../../components/adapter/Adapter';
 import * as React from 'react';
-import {ResolvableContent} from '@nu-art/ts-common';
+import {ResolvableContent} from '@thunder-storm/common';
 
 export type MouseInteractivityType = 'pop-up' | 'tool-tip';
 

@@ -1,4 +1,4 @@
-import {StringMap} from '@nu-art/ts-common';
+import {StringMap} from '@thunder-storm/common';
 import { Package, RuntimePackage } from './package';
 
 export type ProjectConfig = {

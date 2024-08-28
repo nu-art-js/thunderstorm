@@ -17,7 +17,7 @@
  */
 
 import {FilterKeys, ModuleBE_Firebase} from '../../_main';
-import {DBDef_V3, DBProto} from '@nu-art/ts-common';
+import {DBDef_V3, DBProto} from '@thunder-storm/common';
 
 
 export class FirestoreCollectionV3_Tester<Proto extends DBProto<any>> {

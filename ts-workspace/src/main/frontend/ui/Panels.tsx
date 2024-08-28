@@ -6,8 +6,8 @@ import {
 	ComponentSync,
 	SmartComponent,
 	State_SmartComponent
-} from '@nu-art/thunderstorm/frontend';
-import {compare, resolveContent} from '@nu-art/ts-common';
+} from '@thunder-storm/core/frontend';
+import {compare, resolveContent} from '@thunder-storm/common';
 
 
 export abstract class PanelBaseSync<Config, State = {}, Props = {}>

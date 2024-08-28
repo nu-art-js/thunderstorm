@@ -28,7 +28,7 @@ import {
 	MulticastMessage,
 	MessagingTopicManagementResponse,
 } from 'firebase-admin/messaging';
-import {TypedMap} from '@nu-art/ts-common';
+import {TypedMap} from '@thunder-storm/common';
 
 
 type BaseMessage = {

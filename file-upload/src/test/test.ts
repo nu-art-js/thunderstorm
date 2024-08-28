@@ -18,11 +18,11 @@
  */
 
 import {__custom, __scenario} from '@nu-art/testelot';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
 import {MyTester} from './core';
-import {AxiosHttpModule} from '@nu-art/thunderstorm/frontend/modules/http/AxiosHttpModule';
-import {HttpMethod} from '@nu-art/thunderstorm';
-import {StaticLogger} from '@nu-art/ts-common';
+import {AxiosHttpModule} from '@thunder-storm/core/frontend/modules/http/AxiosHttpModule';
+import {HttpMethod} from '@thunder-storm/core';
+import {StaticLogger} from '@thunder-storm/common';
 
 
 AxiosHttpModule.setDefaultConfig({origin: 'sjdfojds'});

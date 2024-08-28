@@ -1,4 +1,4 @@
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ModuleFE_Thunderstorm} from '../modules/ModuleFE_Thunderstorm';
 import {ModuleFE_XHR} from '../modules/http/ModuleFE_XHR';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';

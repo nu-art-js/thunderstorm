@@ -20,7 +20,7 @@
  */
 
 import request, {Response} from 'request';
-import {__stringify, ApiException} from '@nu-art/ts-common';
+import {__stringify, ApiException} from '@thunder-storm/common';
 import {RequestOptions} from '../../backend';
 
 

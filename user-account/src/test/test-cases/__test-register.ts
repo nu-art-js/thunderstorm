@@ -1,11 +1,11 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {Exception, generateHex} from '@nu-art/ts-common';
+import {TestSuite} from '@thunder-storm/common/testing/types';
+import {Exception, generateHex} from '@thunder-storm/common';
 import {expect} from 'chai';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
 import {Account_RegisterAccount, PasswordAssertionConfig} from '../../main';
 import {ModuleBE_AccountDB} from '../../main/backend';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
-import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
+import {MemKey_HttpResponse} from '@thunder-storm/core/backend/modules/server/consts';
 
 
 export type registerAccountInput = {

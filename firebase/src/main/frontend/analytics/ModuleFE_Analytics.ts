@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {ImplementationMissingException, Module} from '@thunder-storm/common';
 import {ModuleFE_Firebase} from '../ModuleFE_Firebase';
 import {AnalyticsWrapperFE} from './AnalyticsWrapperFE';
 

@@ -1,5 +1,5 @@
 import {exec, ExecOptions} from 'child_process';
-import {Logger} from '@nu-art/ts-common';
+import {Logger} from '@thunder-storm/common';
 import {CliError} from '../core/CliError';
 
 

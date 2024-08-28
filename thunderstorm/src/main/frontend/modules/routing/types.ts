@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {QueryParams} from '../../shared';
-import {ResolvableContent} from '@nu-art/ts-common';
+import {ResolvableContent} from '@thunder-storm/common';
 import {ModuleFE_BaseDB} from '../db-api-gen/ModuleFE_BaseDB';
 import {AwaitModule_LoaderProps} from '../../components/AwaitModules/AwaitModules';
 

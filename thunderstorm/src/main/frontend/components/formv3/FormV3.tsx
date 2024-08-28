@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {ComponentType} from 'react';
-import {_keys} from '@nu-art/ts-common';
+import {_keys} from '@thunder-storm/common';
 import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_PropRenderer} from '../TS_PropRenderer';

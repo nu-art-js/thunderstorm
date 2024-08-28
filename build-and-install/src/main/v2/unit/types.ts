@@ -1,4 +1,4 @@
-import {AsyncVoidFunction} from '@nu-art/ts-common';
+import {AsyncVoidFunction} from '@thunder-storm/common';
 import {Phase} from '../phase';
 import {BaseUnit} from './core';
 

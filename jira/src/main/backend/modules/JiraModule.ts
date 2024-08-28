@@ -23,9 +23,9 @@ import {
 	ImplementationMissingException,
 	Module,
 	TypedMap
-} from '@nu-art/ts-common';
-import {promisifyRequest} from '@nu-art/thunderstorm/backend';
-import {HeaderKey_ContentType, HttpMethod} from '@nu-art/thunderstorm';
+} from '@thunder-storm/common';
+import {promisifyRequest} from '@thunder-storm/core/backend';
+import {HeaderKey_ContentType, HttpMethod} from '@thunder-storm/core';
 import {CoreOptions, Headers, Response, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils';
 import {JiraVersion, JiraVersion_Create} from '../../shared/version';

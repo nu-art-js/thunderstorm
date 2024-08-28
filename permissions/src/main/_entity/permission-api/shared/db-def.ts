@@ -6,7 +6,7 @@ import {
 	tsValidateNumber,
 	tsValidateString,
 	tsValidateUniqueId
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {DBProto_PermissionAPI} from './types';
 import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../../shared/validators';
 import {PermissionDBGroup} from '../../shared';

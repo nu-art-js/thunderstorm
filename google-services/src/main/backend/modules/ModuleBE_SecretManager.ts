@@ -1,4 +1,4 @@
-import {__stringify, BadImplementationException, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {__stringify, BadImplementationException, Module, MUSTNeverHappenException} from '@thunder-storm/common';
 import {SecretManagerServiceClient, v1} from '@google-cloud/secret-manager';
 import {google} from '@google-cloud/secret-manager/build/protos/protos';
 

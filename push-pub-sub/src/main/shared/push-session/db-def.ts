@@ -1,4 +1,4 @@
-import {convertUpperCamelCase, DBDef_V3, tsValidateString, tsValidateTimestamp, tsValidateUniqueId} from '@nu-art/ts-common';
+import {convertUpperCamelCase, DBDef_V3, tsValidateString, tsValidateTimestamp, tsValidateUniqueId} from '@thunder-storm/common';
 import {DBProto_PushSession} from './types';
 import {PushPubSubDBGroup} from '../shared';
 

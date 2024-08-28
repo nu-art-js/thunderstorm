@@ -1,4 +1,4 @@
-import {ModuleBE_FirebaseScheduler} from '@nu-art/firebase/backend';
+import {ModuleBE_FirebaseScheduler} from '@thunder-storm/firebase/backend';
 import {ModuleBE_BackupDocDB} from './ModuleBE_BackupDocDB';
 
 

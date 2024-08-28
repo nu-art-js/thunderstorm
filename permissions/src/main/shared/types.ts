@@ -1,4 +1,4 @@
-import {TypedKeyValue, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {TypedKeyValue, TypedMap, UniqueId} from '@thunder-storm/common';
 import {PermissionKey_BE} from '../backend/PermissionKey_BE';
 import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject, DB_PermissionUser, DomainToLevelValueMap} from './_entity';
 

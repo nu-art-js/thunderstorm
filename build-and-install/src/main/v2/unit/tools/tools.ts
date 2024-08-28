@@ -1,4 +1,4 @@
-import {__stringify} from '@nu-art/ts-common';
+import {__stringify} from '@thunder-storm/common';
 import {PackageJson} from '../../../core/types';
 
 

@@ -2,7 +2,7 @@
  * Created by tacb0ss on 07/05/2018.
  */
 
-import {ImplementationMissingException, Module, NotImplementedYetException} from '@nu-art/ts-common';
+import {ImplementationMissingException, Module, NotImplementedYetException} from '@thunder-storm/common';
 import {GoogleAuth, JWT, JWTInput,} from 'google-auth-library';
 import {JWTOptions} from 'google-auth-library/build/src/auth/jwtclient';
 import {OAuth2ClientOptions} from 'google-auth-library/build/src/auth/oauth2client';

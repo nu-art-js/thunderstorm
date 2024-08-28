@@ -1,8 +1,8 @@
 import {Phase_Install} from '../../phase';
 import {UnitPhaseImplementor} from '../types';
 import {BaseUnit, BaseUnit_Config, BaseUnit_RuntimeConfig} from './BaseUnit';
-import {convertToFullPath} from '@nu-art/commando/shell/tools';
-import {Commando_Python3} from '@nu-art/commando/shell/plugins/python';
+import {convertToFullPath} from '@thunder-storm/commando/shell/tools';
+import {Commando_Python3} from '@thunder-storm/commando/shell/plugins/python';
 
 
 export type Unit_Python_Config = BaseUnit_Config & {

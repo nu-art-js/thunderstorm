@@ -21,7 +21,7 @@
 // noinspection TypeScriptPreferShortImport
 import {ApiDef, TypedApi} from './types';
 
-import {BadImplementationException, Module,} from '@nu-art/ts-common';
+import {BadImplementationException, Module,} from '@thunder-storm/common';
 import {BaseHttpRequest} from './BaseHttpRequest';
 import {HttpException} from './request-types';
 

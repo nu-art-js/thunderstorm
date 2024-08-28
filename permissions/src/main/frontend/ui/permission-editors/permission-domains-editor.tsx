@@ -6,7 +6,7 @@ import {
 	TS_PropRenderer,
 	TS_Route,
 	TS_Table
-} from '@nu-art/thunderstorm/frontend';
+} from '@thunder-storm/core/frontend';
 import {
 	BadImplementationException,
 	capitalizeFirstLetter,
@@ -14,8 +14,8 @@ import {
 	PreDB,
 	sortArray,
 	StaticLogger
-} from '@nu-art/ts-common';
-import {TS_Icons} from '@nu-art/ts-styles';
+} from '@thunder-storm/common';
+import {TS_Icons} from '@thunder-storm/styles';
 import {
 	DB_PermissionAccessLevel,
 	DB_PermissionDomain,
@@ -28,12 +28,12 @@ import {
 import {Component_BasePermissionItemEditor} from './editor-base';
 import {DropDownCaret, Input_Number_Blur, Input_Text_Blur} from './components';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
-import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
+import {Page_ItemsEditor} from '@thunder-storm/core/frontend/components/Page_ItemsEditor';
+import {InferProps} from '@thunder-storm/core/frontend/utils/types';
 import {
 	Props_EditableItemControllerProto,
 	TS_EditableItemControllerProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
+} from '@thunder-storm/core/frontend/components/TS_EditableItemControllerProto';
 
 
 class Component_EditDomain

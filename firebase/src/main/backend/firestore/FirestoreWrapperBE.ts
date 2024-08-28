@@ -21,7 +21,7 @@ import {FirestoreType, FirestoreType_Collection,} from './types';
 import {FilterKeys} from '../../shared/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {DB_Object, TS_Object} from '@nu-art/ts-common';
+import {DB_Object, TS_Object} from '@thunder-storm/common';
 import {getFirestore} from 'firebase-admin/firestore';
 
 

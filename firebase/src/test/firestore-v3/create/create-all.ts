@@ -1,5 +1,5 @@
 import {duplicateObjectToCreate, firestore, testInstance2} from '../_core/consts';
-import {asArray, deepClone} from '@nu-art/ts-common';
+import {asArray, deepClone} from '@thunder-storm/common';
 import {CreateTest, createTestCases} from './consts';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';

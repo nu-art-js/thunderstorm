@@ -18,7 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ApiException, ImplementationMissingException, Module, TS_Object} from '@nu-art/ts-common';
+import {ApiException, ImplementationMissingException, Module, TS_Object} from '@thunder-storm/common';
 
 import {ServerApi} from '../server/server-api';
 import {ServerApi_Middleware} from '../../utils/types';

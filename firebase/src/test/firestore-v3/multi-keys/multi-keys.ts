@@ -1,8 +1,8 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
 import {firestore, validateDBObject} from '../_core/consts';
-import {TestSuite} from '@nu-art/ts-common/test-index';
-import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
+import {TestSuite} from '@thunder-storm/common/test-index';
+import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@thunder-storm/common';
 import {composeDbObjectUniqueId} from '../../../main';
 import {DB_Type_MultiKey, DBProto_Type_MultiKey} from '../../_entity/type-multi-key/shared';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';

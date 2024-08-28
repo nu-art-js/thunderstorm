@@ -1,6 +1,6 @@
-import {DBApiConfigV3, MemKey_ServerApi, ModuleBE_BaseDB, Storm,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, MemKey_ServerApi, ModuleBE_BaseDB, Storm,} from '@thunder-storm/core/backend';
 import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from './shared';
-import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
+import {PerformProjectSetup} from '@thunder-storm/core/backend/modules/action-processor/Action_SetupProject';
 import {
 	_keys,
 	ApiException,
@@ -16,14 +16,14 @@ import {
 	TS_Object,
 	TypedMap,
 	Year
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
-import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@thunder-storm/user-account/backend';
 import {Transaction} from 'firebase-admin/firestore';
-import {UI_Account} from '@nu-art/user-account';
+import {UI_Account} from '@thunder-storm/user-account';
 import {MemKey_UserPermissions} from '../../../backend/consts';
-import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
+import {CollectionActionType, PostWriteProcessingData} from '@thunder-storm/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@thunder-storm/core/backend/modules/_tdb/service-accounts';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionUser> & {}

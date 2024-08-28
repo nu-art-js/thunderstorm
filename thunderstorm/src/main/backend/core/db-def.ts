@@ -1,4 +1,4 @@
-import {Const_UniqueKeys, Day, DBDef_V3, DBProto, Hour} from '@nu-art/ts-common';
+import {Const_UniqueKeys, Day, DBDef_V3, DBProto, Hour} from '@thunder-storm/common';
 
 
 export type DBApiBEConfig<Proto extends DBProto<any>> = {

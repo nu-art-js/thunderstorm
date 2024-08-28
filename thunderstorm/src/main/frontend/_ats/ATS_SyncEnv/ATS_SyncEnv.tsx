@@ -8,7 +8,7 @@ import {
 	tsValidateUniqueId,
 	TypedMap,
 	UniqueId
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {AppToolsScreen, ATS_Fullstack, TS_AppTools} from '../../components/TS_AppTools';
 import {genericNotificationAction} from '../../components/TS_Notifications';
 import {ModuleFE_SyncEnvV2} from '../../modules/sync-env/ModuleFE_SyncEnvV2';

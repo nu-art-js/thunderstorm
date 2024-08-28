@@ -23,7 +23,7 @@ import {ReactNode} from 'react';
 import './TS_ListOrganizer.scss';
 import {LL_V_L} from '../Layouts';
 import {ComponentSync} from '../../core/ComponentSync';
-import {exists, swapInArrayByIndex} from '@nu-art/ts-common';
+import {exists, swapInArrayByIndex} from '@thunder-storm/common';
 
 
 type State<T> = {

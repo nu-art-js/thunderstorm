@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {MandatoryKeys, RequireOptionals, TS_Object, UniqueId} from '@nu-art/ts-common';
-import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {MandatoryKeys, RequireOptionals, TS_Object, UniqueId} from '@thunder-storm/common';
+import {ResponseError} from '@thunder-storm/common/core/exceptions/types';
 
 
 /**

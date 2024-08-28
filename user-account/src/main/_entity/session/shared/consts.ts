@@ -1,4 +1,4 @@
-import {HeaderKey_SessionId} from '@nu-art/thunderstorm';
+import {HeaderKey_SessionId} from '@thunder-storm/core';
 
 export const accountGroupName = 'account';
 export const QueryParam_Email = 'userEmail';

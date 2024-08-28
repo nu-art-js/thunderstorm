@@ -33,7 +33,7 @@ import {
 	removeItemFromArray,
 	RuntimeModules,
 	Second
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {apiWithBody} from '../../core/typed-api';
 import {
 	ApiStruct_SyncManager,
@@ -51,9 +51,9 @@ import {
 } from '../../../shared/sync-manager/types';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {ModuleFE_FirebaseListener, RefListenerFE} from '@thunder-storm/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
-import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
+import {QueueV2} from '@thunder-storm/common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
 import {ApiDefCaller, BodyApi, HttpMethod} from '../../../shared/types';

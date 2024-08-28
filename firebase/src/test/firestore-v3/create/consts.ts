@@ -1,5 +1,5 @@
-import {compare, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {compare, PreDB, removeDBObjectKeys} from '@thunder-storm/common';
+import {TestSuite} from '@thunder-storm/common/testing/types';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts';
 import {_EmptyQuery} from '../../../main';

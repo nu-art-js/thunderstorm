@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_keys, Module, TypedMap} from '@nu-art/ts-common';
+import {_keys, Module, TypedMap} from '@thunder-storm/common';
 
 
 export  type Language = {

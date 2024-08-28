@@ -1,5 +1,5 @@
-import {compare, exists, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {compare, exists, removeDBObjectKeys, sortArray} from '@thunder-storm/common';
+import {TestSuite} from '@thunder-storm/common/testing/types';
 import {expect} from 'chai';
 import {
 	CollectionTest,

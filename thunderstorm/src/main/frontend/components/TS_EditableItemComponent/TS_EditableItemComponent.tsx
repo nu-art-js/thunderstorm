@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ReactNode} from 'react';
 import {EditableItem} from '../../utils/EditableItem';
 import {TS_PropRenderer} from '../TS_PropRenderer';
-import {DBProto} from '@nu-art/ts-common';
+import {DBProto} from '@thunder-storm/common';
 import {Controller, Props_Controller} from '../../core/Controller';
 import {InferProps, InferState} from '../../utils/types';
 

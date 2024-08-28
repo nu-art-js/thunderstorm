@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_DragAndDrop.scss';
 import {LL_V_L, LL_VH_C} from '../Layouts';
-import {asArray} from '@nu-art/ts-common';
+import {asArray} from '@thunder-storm/common';
 import {_className} from '../../utils/tools';
 
 

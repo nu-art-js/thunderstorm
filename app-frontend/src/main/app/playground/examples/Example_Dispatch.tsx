@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {ComponentSync, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, ThunderDispatcher} from '@thunder-storm/core/frontend';
 import * as React from 'react';
 import {ExampleModule} from '@modules/ExampleModule';
-import {Second} from '@nu-art/ts-common';
+import {Second} from '@thunder-storm/common';
 import {Test} from '@modules/TestModule';
 import {TestDispatch} from '@app/app-shared';
 

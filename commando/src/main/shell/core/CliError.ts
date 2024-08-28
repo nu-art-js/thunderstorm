@@ -1,4 +1,4 @@
-import {CustomException} from '@nu-art/ts-common';
+import {CustomException} from '@thunder-storm/common';
 import {ExecException} from 'child_process';
 
 

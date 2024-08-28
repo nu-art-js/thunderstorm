@@ -8,8 +8,8 @@ import {
 	MUSTNeverHappenException,
 	RuntimeModules,
 	TypedMap
-} from '@nu-art/ts-common';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+} from '@thunder-storm/common';
+import {ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {

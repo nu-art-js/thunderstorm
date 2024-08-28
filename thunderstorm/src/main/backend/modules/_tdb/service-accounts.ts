@@ -1,4 +1,4 @@
-import {Dispatcher, UniqueId} from '@nu-art/ts-common';
+import {Dispatcher, UniqueId} from '@thunder-storm/common';
 
 
 export type ServiceAccountCredentials = {

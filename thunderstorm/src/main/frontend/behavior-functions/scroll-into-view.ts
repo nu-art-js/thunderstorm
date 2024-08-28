@@ -1,4 +1,4 @@
-import {BadImplementationException} from '@nu-art/ts-common';
+import {BadImplementationException} from '@thunder-storm/common';
 import * as React from 'react';
 
 type ScrollBehavior = 'smooth' | 'auto'

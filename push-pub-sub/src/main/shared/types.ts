@@ -1,4 +1,4 @@
-import {DB_Object} from '@nu-art/ts-common';
+import {DB_Object} from '@thunder-storm/common';
 
 
 export type FilterProps = { [prop: string]: string | number };

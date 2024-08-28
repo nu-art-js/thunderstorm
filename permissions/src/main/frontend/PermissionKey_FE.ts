@@ -1,5 +1,5 @@
-import {AppConfigKey_FE, ModuleFE_AppConfig} from '@nu-art/thunderstorm/frontend';
-import {_keys, TypedKeyValue} from '@nu-art/ts-common';
+import {AppConfigKey_FE, ModuleFE_AppConfig} from '@thunder-storm/core/frontend';
+import {_keys, TypedKeyValue} from '@thunder-storm/common';
 import {DB_PermissionKeyData, PermissionKey, UI_PermissionKeyData} from '../shared/types';
 import {AccessLevel, ModuleFE_PermissionsAssert} from './modules/ModuleFE_PermissionsAssert';
 

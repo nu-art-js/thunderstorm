@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-import {FirestoreQuery} from '@nu-art/firebase';
-import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB} from '@nu-art/ts-common';
+import {FirestoreQuery} from '@thunder-storm/firebase';
+import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB} from '@thunder-storm/common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi, QueryParams} from '../types';
-import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {ResponseError} from '@thunder-storm/common/core/exceptions/types';
 
 
 /**

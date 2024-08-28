@@ -14,10 +14,10 @@ import {
 	TS_DropDown,
 	TS_Input,
 	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
-import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, UniqueId, Year} from '@nu-art/ts-common';
+} from '@thunder-storm/core/frontend';
+import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, UniqueId, Year} from '@thunder-storm/common';
 import './Component_AccountEditor.scss';
-import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_Icons} from '@thunder-storm/styles';
 import {ModuleFE_Account, SessionKeyFE_SessionData} from '../_entity';
 
 

@@ -1,8 +1,8 @@
 import {expect} from 'chai';
 import {ModuleBE_Slack, Slack_ServerApiError, SlackMessage} from '../../main';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {CustomException, ServerErrorSeverity, BadImplementationException, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {ApiException} from '@nu-art/thunderstorm/backend';
+import {TestSuite} from '@thunder-storm/common/testing/types';
+import {CustomException, ServerErrorSeverity, BadImplementationException, ThisShouldNotHappenException} from '@thunder-storm/common';
+import {ApiException} from '@thunder-storm/core/backend';
 
 
 const TestCase_SlackMessage: TestSuite<string, string> ['testcases'] = [

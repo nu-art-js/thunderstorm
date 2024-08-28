@@ -17,12 +17,12 @@
  */
 
 import * as React from 'react';
-import {_keys} from '@nu-art/ts-common';
+import {_keys} from '@thunder-storm/common';
 import {Account_Login, AccountEmail, AccountPassword} from '../../../shared';
 import './Component_Login.scss';
-import {ComponentSync, LL_V_C, ModuleFE_Toaster, TS_BusyButton, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_V_C, ModuleFE_Toaster, TS_BusyButton, TS_PropRenderer} from '@thunder-storm/core/frontend';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity';
-import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
+import {TS_InputV2} from '@thunder-storm/core/frontend/components/TS_V2_Input';
 
 type State<T> = {
 	data: Partial<T>

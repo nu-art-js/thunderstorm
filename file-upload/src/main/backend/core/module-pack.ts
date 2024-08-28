@@ -23,7 +23,7 @@ import {ModuleBE_BucketListener} from '../modules/ModuleBE_BucketListener';
 import {ModulePackBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {ModuleBE_AssetUploader} from '../modules/ModuleBE_AssetUploader';
 import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI';
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend';
+import {createApisForDBModuleV3} from '@thunder-storm/core/backend';
 import {ModuleBE_AssetsStorage} from '../modules/ModuleBE_AssetsStorage';
 import {ModuleBE_AssetsDeleted} from '../modules/ModuleBE_AssetsDeleted';
 

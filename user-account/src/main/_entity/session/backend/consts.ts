@@ -1,9 +1,9 @@
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {BadImplementationException, ImplementationMissingException, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
+import {MemKey} from '@thunder-storm/common/mem-storage/MemStorage';
+import {BadImplementationException, ImplementationMissingException, TS_Object, TypedKeyValue} from '@thunder-storm/common';
 import {_SessionKey_Session, DB_Session} from '../shared';
-import {HeaderKey} from '@nu-art/thunderstorm/backend';
+import {HeaderKey} from '@thunder-storm/core/backend';
 import {_SessionKey_Account} from '../../account/shared';
-import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
+import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@thunder-storm/core/shared/headers';
 
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountId = new MemKey<string>('accounts--id', true);

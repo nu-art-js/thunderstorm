@@ -1,7 +1,7 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {BadImplementationException, compare} from '@nu-art/ts-common';
+import {TestSuite} from '@thunder-storm/common/testing/types';
+import {BadImplementationException, compare} from '@thunder-storm/common';
 import {expect} from 'chai';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
 import {BaseCliParam, CliParams} from '../../main/cli-params/types';
 import {CLIParamsResolver} from '../../main/cli-params/CLIParamsResolver';
 

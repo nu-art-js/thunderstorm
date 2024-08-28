@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {generateHex, Module} from '@nu-art/ts-common';
+import {generateHex, Module} from '@thunder-storm/common';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {TS_Tree} from '../../components/TS_Tree';
 import {Model_Menu, Model_PopUp, Model_ToolTip, MouseInteractivityType, PopUpListener, ToolTipListener} from './types';

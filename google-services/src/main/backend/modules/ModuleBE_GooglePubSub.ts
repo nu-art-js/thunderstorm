@@ -1,4 +1,4 @@
-import {Module} from "@nu-art/ts-common";
+import {Module} from "@thunder-storm/common";
 import {PubSub} from "@google-cloud/pubsub";
 import {PublishOptions} from "@google-cloud/pubsub/build/src/topic";
 import {ModuleBE_Auth} from "./ModuleBE_Auth";

@@ -1,4 +1,4 @@
-import {Constructor} from '@nu-art/ts-common';
+import {Constructor} from '@thunder-storm/common';
 
 
 /**

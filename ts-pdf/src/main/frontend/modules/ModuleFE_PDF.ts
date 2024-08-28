@@ -1,5 +1,5 @@
 import {CSSProperties} from "react";
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfjsworker = require('pdfjs-dist/build/pdf.worker.entry');

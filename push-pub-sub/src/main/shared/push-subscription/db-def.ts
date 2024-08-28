@@ -7,7 +7,7 @@ import {
 	tsValidateNumber,
 	tsValidateResult,
 	tsValidateString
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {DBProto_PushSubscription} from './types';
 import {PushPubSubDBGroup} from '../shared';
 

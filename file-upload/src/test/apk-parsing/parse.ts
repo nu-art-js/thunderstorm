@@ -22,12 +22,12 @@ import {__custom} from '@nu-art/testelot';
 import {
 	FileWrapper,
 	ModuleBE_Firebase
-} from '@nu-art/firebase/backend';
+} from '@thunder-storm/firebase/backend';
 import {
 	assert,
 	BadImplementationException,
 	StaticLogger
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {read} from "fs";
 
 

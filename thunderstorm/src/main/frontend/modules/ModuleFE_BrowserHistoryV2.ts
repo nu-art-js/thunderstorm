@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {_keys, compare, merge, Module, Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
+import {_keys, compare, merge, Module, Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives} from '@thunder-storm/common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {gzip, ungzip} from 'pako';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';

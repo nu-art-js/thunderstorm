@@ -1,6 +1,6 @@
 import {BaseCommando} from '../../main/core/commando/BaseCommando';
 import {Commando_Basic} from '../../main/shell/plugins/basic';
-import {BeLogged, LogClient_Terminal} from '@nu-art/ts-common';
+import {BeLogged, LogClient_Terminal} from '@thunder-storm/common';
 import {CommandoInteractive} from '../../main/core/commando/CommandoInteractive';
 
 

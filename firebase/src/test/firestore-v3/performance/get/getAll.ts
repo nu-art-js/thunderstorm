@@ -1,6 +1,6 @@
 import {firestore, testInstance1} from '../../_core/consts';
-import {TestSuite} from '@nu-art/ts-common/test-index';
-import {DBDef_V3, deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
+import {TestSuite} from '@thunder-storm/common/test-index';
+import {DBDef_V3, deepClone, tsValidateMustExist, UniqueId} from '@thunder-storm/common';
 import {expect} from 'chai';
 import {DBProto_Type} from '../../../_entity/type/shared';
 import {FirestoreCollectionV3} from '../../../../main/backend/firestore-v3/FirestoreCollectionV3';

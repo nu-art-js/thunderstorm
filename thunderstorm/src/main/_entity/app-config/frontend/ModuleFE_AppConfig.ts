@@ -3,7 +3,7 @@ import {apiWithQuery} from '../../../frontend/core/typed-api';
 import {ModuleFE_BaseApi} from '../../../frontend/modules/db-api-gen/ModuleFE_BaseApi';
 import {ApiDefCaller} from '../../../shared/types';
 import {ApiDef_AppConfig, ApiStruct_AppConfig, DBDef_AppConfig, DBProto_AppConfig, DB_AppConfig} from './shared';
-import {BadImplementationException, cloneObj, TypedKeyValue} from '@nu-art/ts-common';
+import {BadImplementationException, cloneObj, TypedKeyValue} from '@thunder-storm/common';
 
 export type DispatcherType_AppConfig = DispatcherDef<DBProto_AppConfig, `__onAppConfigsUpdated`>;
 

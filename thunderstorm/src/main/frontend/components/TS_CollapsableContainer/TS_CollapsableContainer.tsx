@@ -1,4 +1,4 @@
-import {TypedMap} from '@nu-art/ts-common';
+import {TypedMap} from '@thunder-storm/common';
 import * as React from 'react';
 import './TS_CollapsableContainer.scss';
 import {ReactNode} from 'react';

@@ -1,5 +1,5 @@
 import {BaseHttpRequest} from './BaseHttpRequest';
-import {Dispatcher} from '@nu-art/ts-common';
+import {Dispatcher} from '@thunder-storm/common';
 
 
 export interface OnAuthRequiredListener {

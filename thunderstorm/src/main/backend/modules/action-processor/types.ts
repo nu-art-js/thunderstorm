@@ -1,4 +1,4 @@
-import {Logger, ResolvableContent} from '@nu-art/ts-common';
+import {Logger, ResolvableContent} from '@thunder-storm/common';
 
 
 export type ActionProcessor = (logger: Logger, data?: any) => Promise<void>;

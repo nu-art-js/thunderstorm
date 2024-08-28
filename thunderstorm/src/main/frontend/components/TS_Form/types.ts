@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ValidatorTypeResolver} from '@nu-art/ts-common';
+import {ValidatorTypeResolver} from '@thunder-storm/common';
 
 export type TS_Form_RendererProps<V, T extends object = any> = {
 	onChange: (value?: V) => void;

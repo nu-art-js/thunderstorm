@@ -1,4 +1,4 @@
-import {ResolvableContent} from '@nu-art/ts-common';
+import {ResolvableContent} from '@thunder-storm/common';
 import * as React from 'react';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {TS_Route} from '../../modules/routing';

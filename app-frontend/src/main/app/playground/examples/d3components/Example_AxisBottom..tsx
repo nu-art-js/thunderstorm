@@ -19,7 +19,7 @@
 
 import * as React from 'react';
 import {ReactNode} from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync} from '@thunder-storm/core/frontend';
 import {ScaleLinear} from 'd3-scale';
 
 type Props = {

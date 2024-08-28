@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@thunder-storm/common';
 import {
 	Bucket,
 	CreateReadStreamOptions,

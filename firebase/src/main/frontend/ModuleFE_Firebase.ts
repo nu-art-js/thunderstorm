@@ -20,7 +20,7 @@
  * Created by tacb0ss on 25/08/2018.
  */
 
-import {__stringify, BadImplementationException, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {__stringify, BadImplementationException, ImplementationMissingException, Module} from '@thunder-storm/common';
 import {FirebaseConfig} from '..';
 import {FirebaseSessionFE} from './auth/FirebaseSessionFE';
 import {SwFirebaseSessionFE} from './auth/SwFirebaseSessionFE';

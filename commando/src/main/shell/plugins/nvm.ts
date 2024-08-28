@@ -2,7 +2,7 @@ import {BaseCommando} from '../core/BaseCommando';
 import {Commando_Programming} from './programming';
 import {MergeClass} from '../core/class-merger';
 import {Commando_Basic} from './basic';
-import {Exception, filterDuplicates} from '@nu-art/ts-common';
+import {Exception, filterDuplicates} from '@thunder-storm/common';
 import {removeAnsiCodes} from '../tools';
 
 

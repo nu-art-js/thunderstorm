@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, ReactNode} from 'react';
-import {SubsetKeys} from '@nu-art/ts-common';
+import {SubsetKeys} from '@thunder-storm/common';
 import './TS_MultiSelect.scss';
 import {EditableItem} from '../../utils/EditableItem';
 import {LL_H_C, LL_V_L} from '../Layouts';

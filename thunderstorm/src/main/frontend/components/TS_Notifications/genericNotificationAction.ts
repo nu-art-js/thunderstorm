@@ -1,4 +1,4 @@
-import {Second, StaticLogger} from '@nu-art/ts-common';
+import {Second, StaticLogger} from '@thunder-storm/common';
 import {ModuleFE_Notifications, UI_Notification} from '../../component-modules/ModuleFE_Notifications';
 
 

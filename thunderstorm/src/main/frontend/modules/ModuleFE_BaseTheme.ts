@@ -1,4 +1,4 @@
-import {_keys, Module} from '@nu-art/ts-common';
+import {_keys, Module} from '@thunder-storm/common';
 import {StorageKey} from './ModuleFE_LocalStorage';
 
 

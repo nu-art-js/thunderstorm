@@ -2,7 +2,7 @@ import {BaseCommando} from '../core/BaseCommando';
 import {Commando_Programming} from './programming';
 import {MergeClass} from '../core/class-merger';
 import {Commando_Basic} from './basic';
-import {Exception} from '@nu-art/ts-common';
+import {Exception} from '@thunder-storm/common';
 
 
 const Super = MergeClass(BaseCommando, Commando_Programming, Commando_Basic);

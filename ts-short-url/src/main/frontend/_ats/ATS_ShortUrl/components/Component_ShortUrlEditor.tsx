@@ -3,7 +3,7 @@ import './Component_ShortUrlEditor.scss';
 import {
 	EditableRef,
 	TS_EditableItemComponentProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
+} from '@thunder-storm/core/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
 import {DBProto_ShortUrl, UI_ShortUrl} from '../../../../_entity/short-url/shared';
 import {
 	LL_H_C,
@@ -11,15 +11,15 @@ import {
 	TS_BusyButton,
 	TS_Card,
 	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
-import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
-import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
-import {TS_Icons} from '@nu-art/ts-styles';
+} from '@thunder-storm/core/frontend';
+import {InferProps, InferState} from '@thunder-storm/core/frontend/utils/types';
+import {TS_InputV2} from '@thunder-storm/core/frontend/components/TS_V2_Input';
+import {TS_Icons} from '@thunder-storm/styles';
 import {
 	TS_EditableItemStatus
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemStatus/TS_EditableItemStatus';
+} from '@thunder-storm/core/frontend/components/TS_EditableItemStatus/TS_EditableItemStatus';
 import {ModuleFE_ShortUrl} from '../../../../_entity/short-url/frontend';
-import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
+import {TS_TextAreaV2} from '@thunder-storm/core/frontend/components/TS_V2_TextArea';
 
 
 type Props = EditableRef<UI_ShortUrl> & { deleteCallback?: VoidFunction }

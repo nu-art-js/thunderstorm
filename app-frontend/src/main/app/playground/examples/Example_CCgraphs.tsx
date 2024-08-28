@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend/core/ComponentSync';
+import {ComponentSync} from '@thunder-storm/core/frontend/core/ComponentSync';
 import Example_LineGraph, {D3ChartData} from './d3components/Example_LineGraph';
 import Example_TableGraph, {TableData} from './d3components/Example_TableGraph';
 

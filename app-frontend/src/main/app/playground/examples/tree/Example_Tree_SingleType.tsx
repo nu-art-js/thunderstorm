@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {Adapter, SimpleTreeAdapter, ModuleFE_Toaster, TS_Tree} from '@nu-art/thunderstorm/frontend';
-import {__stringify, deepClone} from '@nu-art/ts-common';
+import {Adapter, SimpleTreeAdapter, ModuleFE_Toaster, TS_Tree} from '@thunder-storm/core/frontend';
+import {__stringify, deepClone} from '@thunder-storm/common';
 
 type Type = {
 	label: string | number

@@ -1,11 +1,11 @@
 import '../_core/init';
 import {Account_CreateAccount, MemKey_AccountEmail, ModuleBE_AccountDB} from '../../main/backend';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@thunder-storm/common/testing/types';
 import {expect} from 'chai';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
 import {Request_RegisterAccount} from '../../main';
-import {PartialProperties, generateHex} from '@nu-art/ts-common';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {PartialProperties, generateHex} from '@thunder-storm/common';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
 
 
 export type createInput = {

@@ -17,8 +17,8 @@
 //  */
 //
 // import * as React from "react";
-// import {ComponentSync} from "@nu-art/thunderstorm/frontend";
-// import {_keys} from "@nu-art/ts-common";
+// import {ComponentSync} from "@thunder-storm/core/frontend";
+// import {_keys} from "@thunder-storm/common";
 // import {
 // 	KeyboardListener,
 // 	KeyboardListenerComponentProps

@@ -1,4 +1,4 @@
-import {_values, md5, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {_values, md5, TypedMap, UniqueId} from '@thunder-storm/common';
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package, PreDBAccessLevel} from '../../shared/types';
 import {CreateDefaultAccessLevels, DefaultAccessLevel_NoAccess, DefaultAccessLevel_Read,} from '../../shared/consts';
 import {defaultValueResolverV2, PermissionKey_BE} from '../PermissionKey_BE';

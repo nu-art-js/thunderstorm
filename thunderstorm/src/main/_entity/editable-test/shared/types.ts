@@ -1,4 +1,4 @@
-import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@thunder-storm/common';
 
 type VersionTypes_EditableTest = {
 	'1.0.0': DB_EditableTest

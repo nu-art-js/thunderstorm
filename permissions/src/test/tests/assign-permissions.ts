@@ -1,7 +1,7 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {BadImplementationException, dbObjectToId, filterInstances, reduceToMap, UniqueId} from '@nu-art/ts-common';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account/backend';
+import {TestSuite} from '@thunder-storm/common/testing/types';
+import {BadImplementationException, dbObjectToId, filterInstances, reduceToMap, UniqueId} from '@thunder-storm/common';
+import {MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
+import {MemKey_AccountId, ModuleBE_AccountDB} from '@thunder-storm/user-account/backend';
 import {
 	Failed_Log,
 	permissionTestCleanup,
@@ -28,7 +28,7 @@ import {expect} from 'chai';
 
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';
-import {_EmptyQuery} from '@nu-art/firebase';
+import {_EmptyQuery} from '@thunder-storm/firebase';
 
 
 type AssignPermissionsSetup = {

@@ -9,7 +9,7 @@ import {
 	tsValidateNumber,
 	tsValidateRegexp,
 	tsValidateString
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {AssetDBGroup, DBProto_Assets, DBProto_AssetsDeleted, DBProto_AssetsTemp} from './types';
 
 

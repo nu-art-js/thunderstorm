@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Clause_Where, Conflict, DB_EntityDependencyV2, EntityDependencyError, FirestoreQuery,} from '@nu-art/firebase';
+import {Clause_Where, Conflict, DB_EntityDependencyV2, EntityDependencyError, FirestoreQuery,} from '@thunder-storm/firebase';
 import {
 	_keys,
 	_values,
@@ -40,16 +40,16 @@ import {
 	Module,
 	TypedMap,
 	UniqueId
-} from '@nu-art/ts-common';
-import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+} from '@thunder-storm/common';
+import {ModuleBE_Firebase,} from '@thunder-storm/firebase/backend';
+import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@thunder-storm/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
-import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
+import {DocWrapperV3} from '@thunder-storm/firebase/backend/firestore-v3/DocWrapperV3';
 import {Response_DBSync} from '../../../shared/sync-manager/types';
-import {CanDeleteDBEntitiesProto} from '@nu-art/firebase/backend/firestore-v3/types';
+import {CanDeleteDBEntitiesProto} from '@thunder-storm/firebase/backend/firestore-v3/types';
 import {Transaction} from 'firebase-admin/firestore';
-import {canDeleteDispatcherV3, MemKey_DeletedDocs} from '@nu-art/firebase/backend/firestore-v3/consts';
+import {canDeleteDispatcherV3, MemKey_DeletedDocs} from '@thunder-storm/firebase/backend/firestore-v3/consts';
 
 
 export type BaseDBApiConfigV3 = {

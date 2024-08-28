@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {generateHex, Module} from '@nu-art/ts-common';
+import {generateHex, Module} from '@thunder-storm/common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 

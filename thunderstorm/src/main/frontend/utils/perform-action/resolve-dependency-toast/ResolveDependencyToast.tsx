@@ -1,4 +1,4 @@
-import {UniqueId} from '@nu-art/ts-common';
+import {UniqueId} from '@thunder-storm/common';
 import * as React from 'react';
 import {dispatch_onDeleteConflicts} from '../notification-dispatchers';
 import './ResolveDependencyToast.scss';

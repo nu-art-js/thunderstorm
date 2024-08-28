@@ -2,7 +2,7 @@ import {
 	asArray,
 	exists,
 	filterDuplicates,
-	StaticLogger} from '@nu-art/ts-common';
+	StaticLogger} from '@thunder-storm/common';
 import {BaseCliParam, CliParam, CliParams} from './types';
 import {DefaultProcessorsMapper} from './consts';
 

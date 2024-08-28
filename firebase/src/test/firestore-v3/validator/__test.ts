@@ -1,4 +1,4 @@
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
 import {TestSuite_FirestoreV3_Validator} from './validator';
 
 describe('Firestore v3 - Validator', () => {

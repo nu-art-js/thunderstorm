@@ -1,9 +1,9 @@
-import {BadImplementationException, TypedKeyValue} from '@nu-art/ts-common';
-import {StorageKey} from '@nu-art/thunderstorm/frontend';
+import {BadImplementationException, TypedKeyValue} from '@thunder-storm/common';
+import {StorageKey} from '@thunder-storm/core/frontend';
 import {ModuleFE_Account} from './ModuleFE_Account';
 import {_SessionKey_Session} from '../../session/shared';
 import {_SessionKey_Account} from '../shared';
-import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
+import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@thunder-storm/core/shared/headers';
 
 export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	private readonly key: Binder['key'];

@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {AppToolsScreen, ATS_3rd_Party, ComponentSync, LL_H_C, LL_H_T, LL_V_L, TS_BusyButton} from '@nu-art/thunderstorm/frontend';
-import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
+import {AppToolsScreen, ATS_3rd_Party, ComponentSync, LL_H_C, LL_H_T, LL_V_L, TS_BusyButton} from '@thunder-storm/core/frontend';
+import {TS_TextAreaV2} from '@thunder-storm/core/frontend/components/TS_V2_TextArea';
 import {ModuleFE_OpenAI} from '../modules/ModuleFE_OpenAI';
-import {__stringify} from '@nu-art/ts-common';
+import {__stringify} from '@thunder-storm/common';
 
 
 type ATS_OpenAI_Props = {

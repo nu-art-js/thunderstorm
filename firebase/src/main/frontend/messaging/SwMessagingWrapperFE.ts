@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Logger} from '@nu-art/ts-common';
+import {Logger} from '@thunder-storm/common';
 import {FirebaseType_Messaging} from './types';
 import {onBackgroundMessage} from 'firebase/messaging/sw';
 

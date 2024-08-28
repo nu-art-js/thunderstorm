@@ -1,5 +1,5 @@
-import {Module} from '@nu-art/ts-common/core/module';
-import {MUSTNeverHappenException} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common/core/module';
+import {MUSTNeverHappenException} from '@thunder-storm/common';
 import {ServerApi} from './server/server-api';
 
 

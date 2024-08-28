@@ -22,9 +22,9 @@
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
 import {ApiDef, BaseHttpModule_Class, BaseHttpRequest, TypedApi} from '../../../shared';
-import {BadImplementationException, composeUrl, StaticLogger, StringMap,} from '@nu-art/ts-common';
+import {BadImplementationException, composeUrl, StaticLogger, StringMap,} from '@thunder-storm/common';
 import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
-import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@thunder-storm/common/core/exceptions/types';
 
 
 export class AxiosHttpModule_Class

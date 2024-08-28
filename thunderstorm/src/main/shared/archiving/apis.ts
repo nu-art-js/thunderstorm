@@ -1,4 +1,4 @@
-import {DB_Object, UniqueId} from '@nu-art/ts-common';
+import {DB_Object, UniqueId} from '@thunder-storm/common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
 
 export type RequestBody_HardDeleteUnique = {

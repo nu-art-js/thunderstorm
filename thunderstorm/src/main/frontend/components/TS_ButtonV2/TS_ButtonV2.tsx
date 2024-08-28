@@ -1,7 +1,7 @@
 //TODO: move this thing to Thunderstorm post PR
 import * as React from 'react';
 import './TS_ButtonV2.scss';
-import {exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {exists, ResolvableContent, resolveContent} from '@thunder-storm/common';
 import {LinearLayoutProps} from '../Layouts';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';

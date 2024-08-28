@@ -19,7 +19,7 @@ importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js')
 importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
 import {initializeApp} from 'firebase/app';
 import {getMessaging, onBackgroundMessage} from 'firebase/messaging/sw';
-import {BeLogged, LogClient_Browser, Logger, LogLevel} from '@nu-art/ts-common';
+import {BeLogged, LogClient_Browser, Logger, LogLevel} from '@thunder-storm/common';
 
 
 export class FCMServiceWorker

@@ -1,4 +1,4 @@
-import {DBDef_V3, tsValidateString} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateString} from '@thunder-storm/common';
 import {DBProto_PermissionProject} from './types';
 import {validateProjectName} from '../../../shared/validators';
 import {PermissionDBGroup} from '../../shared';

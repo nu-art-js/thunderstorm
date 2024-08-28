@@ -21,7 +21,7 @@
 
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
-import {_className, BaseAsyncState, ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {_className, BaseAsyncState, ComponentSync} from '@thunder-storm/core/frontend';
 import * as React from 'react';
 import './TS_Workspace.scss';
 import {Props_BaseWorkspace} from './types';

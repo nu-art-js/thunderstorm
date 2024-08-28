@@ -25,7 +25,7 @@ import {TS_Overlay} from '../TS_Overlay';
 import {stopPropagation} from '../../utils/tools';
 import {Dialog_Model, DialogKey, DialogListener, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
 import './TS_DialogOverlay.scss';
-import {removeFromArray} from '@nu-art/ts-common';
+import {removeFromArray} from '@thunder-storm/common';
 
 
 type Props = {}

@@ -1,5 +1,5 @@
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
-import {Minute} from '@nu-art/ts-common';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@thunder-storm/core';
+import {Minute} from '@thunder-storm/common';
 import {GPT_Model} from './types';
 
 

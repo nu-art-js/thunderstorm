@@ -1,4 +1,4 @@
-import {DBDef_V3, tsValidateMustExist, tsValidateString} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateMustExist, tsValidateString} from '@thunder-storm/common';
 import {DBProto_AppConfig} from './types';
 
 

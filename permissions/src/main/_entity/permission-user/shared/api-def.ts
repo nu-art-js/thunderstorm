@@ -1,4 +1,4 @@
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@thunder-storm/core';
 
 //Assign Permissions
 export type Request_AssignPermissions = {

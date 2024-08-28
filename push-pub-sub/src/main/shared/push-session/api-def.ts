@@ -1,4 +1,4 @@
-import {ApiDefResolver} from '@nu-art/thunderstorm';
+import {ApiDefResolver} from '@thunder-storm/core';
 
 export type ApiStruct_PushSession = {
 	_v1: {}

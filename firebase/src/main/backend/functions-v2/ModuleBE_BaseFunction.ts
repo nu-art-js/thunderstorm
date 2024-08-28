@@ -1,4 +1,4 @@
-import {addItemToArray, dispatch_onApplicationNotification, Module, ServerErrorSeverity} from '@nu-art/ts-common';
+import {addItemToArray, dispatch_onApplicationNotification, Module, ServerErrorSeverity} from '@thunder-storm/common';
 import {FirebaseFunctionInterface} from '../functions/firebase-function';
 
 export abstract class ModuleBE_BaseFunction<Config = any>

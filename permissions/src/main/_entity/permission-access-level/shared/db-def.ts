@@ -1,4 +1,4 @@
-import {DBDef_V3, tsValidateIsInRange, tsValidateString, tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateIsInRange, tsValidateString, tsValidateStringWithDashes, tsValidateUniqueId} from '@thunder-storm/common';
 import {DBProto_PermissionAccessLevel} from './types';
 import {PermissionDBGroup} from '../../shared';
 

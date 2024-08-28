@@ -18,9 +18,9 @@
 
 import {__custom, __scenario} from '@nu-art/testelot';
 import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub';
-import {assert, compare, currentTimeMillis, generateHex, Hour} from '@nu-art/ts-common';
+import {assert, compare, currentTimeMillis, generateHex, Hour} from '@thunder-storm/common';
 import {DB_PushSubscription, DB_PushSession, Request_PushRegister} from '../main';
-import {FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
+import {FirestoreCollection, FirestoreTransaction} from '@thunder-storm/firebase/backend';
 
 
 const arrayOf2 = Array(2).fill(0);

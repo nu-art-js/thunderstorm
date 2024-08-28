@@ -1,4 +1,4 @@
-import {DBProto, UniqueId} from '@nu-art/ts-common';
+import {DBProto, UniqueId} from '@thunder-storm/common';
 import * as React from 'react';
 import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2} from '../TS_MultiSelect';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';

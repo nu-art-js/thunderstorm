@@ -1,4 +1,4 @@
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import * as Papa from 'papaparse';
 import {LocalFile, ParseResult} from 'papaparse';
 

@@ -1,5 +1,5 @@
 import {ApiDefResolver, HttpMethod} from '../types';
-import {Second} from '@nu-art/ts-common';
+import {Second} from '@thunder-storm/common';
 import {ApiStruct_SyncManager} from './types';
 
 

@@ -1,4 +1,4 @@
-import {DBDef_V3, tsValidateString} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateString} from '@thunder-storm/common';
 import {DBProto_EditableTest} from './types';
 
 

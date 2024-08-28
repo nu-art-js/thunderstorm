@@ -1,11 +1,11 @@
 import * as React from 'react';
 import './ATS_AccountEditor.scss';
-import {_className, AppToolsScreen, ComponentSync, LL_H_C, LL_V_L, TS_BusyButton, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {_className, AppToolsScreen, ComponentSync, LL_H_C, LL_V_L, TS_BusyButton, TS_PropRenderer} from '@thunder-storm/core/frontend';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
 import {DB_Account, DBProto_Account} from '../../../shared';
-import {generateUUID} from '@nu-art/ts-common';
+import {generateUUID} from '@thunder-storm/common';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@thunder-storm/core/frontend/core/db-api-gen/types';
 
 
 type Props = {}

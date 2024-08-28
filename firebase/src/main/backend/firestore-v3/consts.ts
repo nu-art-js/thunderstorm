@@ -1,6 +1,6 @@
-import {Dispatcher, UniqueId} from '@nu-art/ts-common';
+import {Dispatcher, UniqueId} from '@thunder-storm/common';
 import {CanDeleteDBEntitiesProto} from './types';
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey} from '@thunder-storm/common/mem-storage/MemStorage';
 import {PotentialDependenciesToDelete} from '../../shared/types';
 
 export const canDeleteDispatcherV3 = new Dispatcher<CanDeleteDBEntitiesProto, '__canDeleteEntitiesProto'>('__canDeleteEntitiesProto');

@@ -1,5 +1,5 @@
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
-import {addItemToArray} from '@nu-art/ts-common';
+import {addItemToArray} from '@thunder-storm/common';
 import express, {Express, Response} from 'express';
 import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
 import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';

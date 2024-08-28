@@ -1,4 +1,4 @@
-import {TypedMap, UniqueId} from '@nu-art/ts-common';
+import {TypedMap, UniqueId} from '@thunder-storm/common';
 
 type TabId_Map<T> = TypedMap<T>
 type DeviceId_Map<T> = TypedMap<T>;

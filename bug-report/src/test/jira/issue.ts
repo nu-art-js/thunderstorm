@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */le} from '../../main/frontend/modules/JiraModule';
-import {assert, generateHex, StaticLogger, StringMap} from '@nu-art/ts-common';
+import {assert, generateHex, StaticLogger, StringMap} from '@thunder-storm/common';
 
 
 const JSZip = require('jszip');

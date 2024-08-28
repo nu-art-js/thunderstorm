@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {PermissionsComponent} from '@nu-art/permissions/frontend';
+import {PermissionsComponent} from '@thunder-storm/permissions/frontend';
 
 
 export class Example_PermissionsComponent_Renderer

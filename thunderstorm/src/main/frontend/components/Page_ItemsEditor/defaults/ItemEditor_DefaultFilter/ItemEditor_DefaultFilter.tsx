@@ -1,10 +1,10 @@
 import * as React from 'react';
 import './ItemEditor_DefaultFilter.scss';
-import {DBProto, Filter} from '@nu-art/ts-common';
+import {DBProto, Filter} from '@thunder-storm/common';
 import {ItemEditor_FilterType, ItemEditor_MapperType} from '../../types';
 import {TS_Input} from '../../../TS_Input';
 import {LL_H_C} from '../../../Layouts';
-import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_Icons} from '@thunder-storm/styles';
 
 
 export type Props_Filter<Proto extends DBProto<any>> = {

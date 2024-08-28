@@ -17,7 +17,7 @@
  */
 
 import {FirebaseSession} from './firebase-session';
-import {Logger} from '@nu-art/ts-common';
+import {Logger} from '@thunder-storm/common';
 
 /**
  * base wrapper

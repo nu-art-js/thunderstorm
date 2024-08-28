@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {_keys, filterInstances, isErrorOfType, ValidationException} from '@nu-art/ts-common';
+import {_keys, filterInstances, isErrorOfType, ValidationException} from '@thunder-storm/common';
 
 
 export const isDependencyError = (e: any): boolean => {

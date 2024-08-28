@@ -19,9 +19,9 @@
  * limitations under the License.
  */
 
-import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
+import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@thunder-storm/common';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
-import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
+import {_EmptyQuery, FirestoreQuery} from '@thunder-storm/firebase';
 import {DBApiDefGeneratorIDBV3} from '../../../shared';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';

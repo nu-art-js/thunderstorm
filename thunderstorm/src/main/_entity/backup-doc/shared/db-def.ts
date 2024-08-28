@@ -1,4 +1,4 @@
-import {DBDef_V3, tsValidateArray, tsValidateNumber, tsValidateString, tsValidateTimestamp} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateArray, tsValidateNumber, tsValidateString, tsValidateTimestamp} from '@thunder-storm/common';
 import {DBProto_BackupDoc} from './types';
 
 

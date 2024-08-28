@@ -21,7 +21,7 @@ import * as fs from "fs";
 import {
 	ImplementationMissingException,
 	ModuleManager
-} from "@nu-art/ts-common";
+} from "@thunder-storm/common";
 import {
 	__scenario,
 	Reporter,
@@ -30,7 +30,7 @@ import {
 import {
 	ModuleBE_Firebase,
 	ModuleBE_Firebase_Class
-} from "@nu-art/firebase/backend";
+} from "@thunder-storm/firebase/backend";
 
 export class Tester
 	extends ModuleManager {

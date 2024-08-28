@@ -1,4 +1,4 @@
-import {__stringify, dispatch_onApplicationNotification, ServerErrorSeverity, TS_Object} from '@nu-art/ts-common';
+import {__stringify, dispatch_onApplicationNotification, ServerErrorSeverity, TS_Object} from '@thunder-storm/common';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
 import {CloudFunction} from 'firebase-functions';
 import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';

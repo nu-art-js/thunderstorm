@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {TS_Object} from '@nu-art/ts-common';
+import {TS_Object} from '@thunder-storm/common';
 import {HTMLProps} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_Table.scss';

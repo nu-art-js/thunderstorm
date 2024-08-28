@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
-import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {ResolvableContent, resolveContent} from '@thunder-storm/common';
 import {ModuleFE_SyncManager, PermissibleModulesUpdated} from '../../modules/sync-manager/ModuleFE_SyncManager';
 import './AwaitSync.scss';
 

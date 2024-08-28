@@ -20,8 +20,8 @@
 // import * as React from 'react';
 // import {CSSProperties} from 'react';
 // import {BugReportModule} from '../modules/BugReportModule';
-// import {ModuleFE_Dialog, ModuleFE_Toaster, TS_Input, TS_TextArea} from '@nu-art/thunderstorm/frontend';
-// import {generateHex} from '@nu-art/ts-common';
+// import {ModuleFE_Dialog, ModuleFE_Toaster, TS_Input, TS_TextArea} from '@thunder-storm/core/frontend';
+// import {generateHex} from '@thunder-storm/common';
 // import {Platform_Jira, Platform_Slack} from '../../shared/api';
 //
 // type Props = {

@@ -21,7 +21,7 @@
 
 import * as express from 'express';
 import {CoreOptions, UriOptions} from 'request';
-import {ApiException} from '@nu-art/ts-common';
+import {ApiException} from '@thunder-storm/common';
 
 
 export type Express = express.Express

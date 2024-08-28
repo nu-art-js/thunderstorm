@@ -1,4 +1,4 @@
-import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {ResponseError} from '@thunder-storm/common/core/exceptions/types';
 
 export const PasswordAssertionType_MinLength = 'min-length';
 export const PasswordAssertionType_MaxLength = 'max-length';

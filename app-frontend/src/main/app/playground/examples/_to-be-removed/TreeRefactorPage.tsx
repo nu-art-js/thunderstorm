@@ -23,7 +23,7 @@ import {Playground_DropdownSingleType} from '../components/dropdown/Example_Drop
 import {Playground_Tree_Data} from '../keyboard-listener/Example_Tree_Data';
 import {Playground_Tree_Basic} from '../keyboard-listener/Example_Tree_Basic';
 import {Playground_Tree_MultiType} from '../keyboard-listener/Example_Tree_MultiType';
-import {LL_H_T} from '@nu-art/thunderstorm/frontend';
+import {LL_H_T} from '@thunder-storm/core/frontend';
 
 const TreeRefactorPage_Renderer = () => (<>
 	<div className="ll_v_l" style={{width: '100%', height: '100%'}}>

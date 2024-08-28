@@ -1,4 +1,4 @@
-import {_keys, EmptyObject, exists, reduceToMap, TypedMap} from '@nu-art/ts-common';
+import {_keys, EmptyObject, exists, reduceToMap, TypedMap} from '@thunder-storm/common';
 import {EditableItem} from '../utils/EditableItem';
 import {openContent} from '../component-modules/mouse-interactivity';
 

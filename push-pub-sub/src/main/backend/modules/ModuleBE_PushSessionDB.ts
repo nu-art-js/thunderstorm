@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@thunder-storm/core/backend';
 import {DBDef_PushSession, DBProto_PushSession} from '../../shared/push-session';
 
 

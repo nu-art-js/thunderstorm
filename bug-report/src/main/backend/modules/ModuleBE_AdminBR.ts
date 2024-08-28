@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ApiDef_AdminBugReport, DB_BugReport, Paths} from '../../shared/api';
 
-import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@thunder-storm/firebase/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@thunder-storm/core/backend';
 
 
 type Config = {

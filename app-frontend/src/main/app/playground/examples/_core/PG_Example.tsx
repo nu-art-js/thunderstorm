@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {LL_V_C, TS_ErrorBoundary} from '@nu-art/thunderstorm/frontend';
+import {LL_V_C, TS_ErrorBoundary} from '@thunder-storm/core/frontend';
 
 
 export class PG_Example
