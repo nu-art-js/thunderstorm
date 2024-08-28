@@ -18,6 +18,7 @@ type Binder_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, ExpectedTy
 export type DynamicProps_TS_MultiSelect_V2<EnclosingItem, Prop extends keyof EnclosingItem> = {
 	editable: EditableItem<EnclosingItem>,
 	prop: Prop
+	disabled?: boolean;
 }
 
 export type StaticProps_TS_MultiSelect_V2<ItemType> = {
@@ -27,7 +28,7 @@ export type StaticProps_TS_MultiSelect_V2<ItemType> = {
 	itemFilter?: (item: ItemType) => boolean; // for the selection dropdown
 	sort?: (items: ItemType[]) => ItemType[];
 	// mandatory
-	itemRenderer: (item?: ItemType, onDelete?: () => Promise<void>) => ReactNode
+	itemRenderer: (item?: ItemType, onDelete?: () => Promise<void>, disabled?: boolean) => ReactNode
 	selectionRenderer: React.ComponentType<MultiSelect_Selector<ItemType>>,
 }
 
@@ -84,11 +85,11 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 
 						await editableProp.removeArrayItem(index);
 						this.forceUpdate();
-					})}
+					}, this.props.disabled)}
 				</LL_H_C>;
 			})}
-			{/*dropdown*/}
-			{SelectionRenderer({
+			{/*dropdown - only render if not disabled*/}
+			{!this.props.disabled && SelectionRenderer({
 				className: 'ts-multi-select__selector',
 				onSelected: addInnerItem,
 				existingItems: existingItems,
@@ -97,5 +98,3 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 		</Wrapper>;
 	}
 }
-
-

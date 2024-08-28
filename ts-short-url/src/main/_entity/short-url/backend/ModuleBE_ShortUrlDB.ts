@@ -33,7 +33,7 @@ export class ModuleBE_ShortUrlDB_Class
 		};
 	};
 
-	protected async preWriteProcessing(dbInstance: DBProto_ShortUrl['uiType'], transaction?: FirebaseFirestore.Transaction) {
+	protected async preWriteProcessing(dbInstance: DBProto_ShortUrl['uiType'], originalDbInstance: DBProto_ShortUrl['dbType'], transaction?: FirebaseFirestore.Transaction) {
 		if (!dbInstance._shortUrl)
 			dbInstance._shortUrl = generateShortURL();
 	}

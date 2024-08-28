@@ -22,4 +22,5 @@ const main = async () => {
 	await processConfig(configPath).catch(console.error);
 };
 
+
 main();

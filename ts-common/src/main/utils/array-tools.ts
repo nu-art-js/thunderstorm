@@ -325,11 +325,20 @@ export function lastElement<T>(array: T[] | undefined) {
 }
 
 export function firstElement<T>(array?: T[]) {
-	return array?.[1];
+	return array?.[0];
 }
 
 export function arrayIncludesAny<T>(arr1: T[], arr2: T[]): boolean {
 	return arr1.some(item => arr2.includes(item));
+}
+
+/**
+ * Clear array instance and keep the same instance so save memory
+ * This function will take any array and clear it's content completely while keeping the same instance to save memory
+ * @param arr - Any array
+ */
+export function clearArrayInstance<T extends any[]>(arr: T): void {
+	arr.length = 0;
 }
 
 /**
@@ -339,4 +348,14 @@ export function arrayIncludesAny<T>(arr1: T[], arr2: T[]): boolean {
  */
 export function arrayIncludesAll<T>(arr1: T[], arr2: T[]): boolean {
 	return arr2.every(item => arr1.includes(item));
+}
+
+export function getMax<T>(arr: T[], mapper: (item: T) => number = (item) => item as number): T | undefined {
+	const sorted = sortArray(arr, mapper, true);
+	return sorted[0];
+}
+
+export function getMin<T>(arr: T[], mapper: (item: T) => number = (item) => item as number): T | undefined {
+	const sorted = sortArray(arr, mapper);
+	return sorted[0];
 }

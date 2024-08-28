@@ -1,6 +1,6 @@
 import {TypedKeyValue, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {PermissionKey_BE} from '../backend/PermissionKey_BE';
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject, DB_PermissionUser} from './_entity';
+import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject, DB_PermissionUser, DomainToLevelValueMap} from './_entity';
 
 
 export type PermissionTypes = {
@@ -11,11 +11,16 @@ export type PermissionTypes = {
 	PermissionUser: DB_PermissionUser;
 }
 
-export type SessionData_Permissions = TypedKeyValue<'permissions', TypedMap<number>>
+export type SessionData_Permissions_Value = {
+	domainToValueMap: TypedMap<number>
+	roles: { key: string, uiLabel: string }[]
+};
+
+export type SessionData_Permissions = TypedKeyValue<'permissions', SessionData_Permissions_Value>
 
 export type UI_PermissionKeyData = {
 	accessLevelIds: UniqueId[];
-	_accessLevels?: { [domainId: UniqueId]: number }
+	_accessLevels?: DomainToLevelValueMap
 }
 
 export const Const_PermissionKeyType = 'permission-key';
@@ -23,7 +28,7 @@ export type PermissionKeyType = typeof Const_PermissionKeyType;
 export type DB_PermissionKeyData = {
 	type: PermissionKeyType
 	accessLevelIds: UniqueId[];
-	_accessLevels: { [domainId: UniqueId]: number }
+	_accessLevels: DomainToLevelValueMap
 }
 
 export type DefaultDef_Api = {
@@ -59,11 +64,20 @@ export type DefaultDef_Domain = {
 export type DefaultDef_AccessLevel = {
 	_id: string
 	name: string
+	uiLabel: string
 	value: number
 }
+
+export type PreDBAccessLevel = {
+	name: string,
+	value: number
+};
 
 export type DefaultDef_Group = {
 	_id: string
 	name: string
+	uiLabel: string
 	accessLevels: { [domainName: string]: string } // access level name
 };
+
+export type PermissionKey = string

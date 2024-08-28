@@ -27,6 +27,7 @@ import {BaseComponent} from '../../core/ComponentBase';
 
 type State = {
 	error?: Error,
+	controlled?: boolean;
 	errorInfo?: React.ErrorInfo
 }
 
@@ -54,7 +55,11 @@ export class TS_ErrorBoundary
 	 * @param state
 	 */
 	static getDerivedStateFromProps(props: Props, state: State) {
-		state.error = props.error ?? state.error;
+		//Check if the boundary is controlled (gets the error from outside)
+		if (!state.controlled)
+			state.controlled = !!props.error;
+
+		state.error = state.controlled ? props.error : state.error;
 		return state;
 	}
 

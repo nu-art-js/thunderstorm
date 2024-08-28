@@ -34,6 +34,7 @@ export const Permissions_Messaging: DefaultDef_Package = {
 export const PermissionGroups_Messaging_Viewer: DefaultDef_Group = {
 	_id: 'e6bfc302f7ac81b8c61c97c4e0983b0f',
 	name: `${Domain_Messaging.namespace}/Read`,
+	uiLabel: `${Domain_Messaging.namespace}/Read`,
 	accessLevels: {
 		[Domain_Messaging.namespace]: DefaultAccessLevel_Read.name,
 	},
@@ -42,6 +43,7 @@ export const PermissionGroups_Messaging_Viewer: DefaultDef_Group = {
 export const PermissionGroups_Messaging_Editor: DefaultDef_Group = {
 	_id: 'd9505032de4ae9f1036525676d689e1f',
 	name: `${Domain_Messaging.namespace}/Editor`,
+	uiLabel: `${Domain_Messaging.namespace}/Editor`,
 	accessLevels: {
 		[Domain_Messaging.namespace]: DefaultAccessLevel_Write.name,
 	},
@@ -50,6 +52,7 @@ export const PermissionGroups_Messaging_Editor: DefaultDef_Group = {
 export const PermissionGroups_Messaging_Delete: DefaultDef_Group = {
 	_id: 'e0550d1113874a31e2e3223f258e1340',
 	name: `${Domain_Messaging.namespace}/Delete`,
+	uiLabel: `${Domain_Messaging.namespace}/Delete`,
 	accessLevels: {
 		[Domain_Messaging.namespace]: DefaultAccessLevel_Delete.name,
 	},
@@ -58,6 +61,7 @@ export const PermissionGroups_Messaging_Delete: DefaultDef_Group = {
 export const PermissionGroups_Messaging_Admin: DefaultDef_Group = {
 	_id: '89ebc208e794028ebbbf9ea91c508603',
 	name: `${Domain_Messaging.namespace}/Admin`,
+	uiLabel: `${Domain_Messaging.namespace}/Admin`,
 	accessLevels: {
 		[Domain_Messaging.namespace]: DefaultAccessLevel_Admin.name,
 	},

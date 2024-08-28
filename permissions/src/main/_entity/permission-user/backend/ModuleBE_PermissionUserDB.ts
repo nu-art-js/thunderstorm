@@ -1,13 +1,29 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, MemKey_ServerApi, ModuleBE_BaseDB, Storm,} from '@nu-art/thunderstorm/backend';
 import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from './shared';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
-import {_keys, ApiException, asOptionalArray, DB_BaseObject, dbObjectToId, exists, filterDuplicates, filterInstances, TypedMap} from '@nu-art/ts-common';
-import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import {
+	_keys,
+	ApiException,
+	asOptionalArray,
+	DB_BaseObject,
+	dbObjectToId,
+	exists,
+	filterDuplicates,
+	filterInstances,
+	filterKeys,
+	flatArray,
+	merge,
+	TS_Object,
+	TypedMap,
+	Year
+} from '@nu-art/ts-common';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
 import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account';
 import {MemKey_UserPermissions} from '../../../backend/consts';
+import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
@@ -16,33 +32,42 @@ export class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDB<DBProto_PermissionUser, Config>
 	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup {
 
-	private defaultPermissionGroups?: User_Group[];
+	private defaultPermissionGroups?: () => Promise<User_Group[]>;
 
 	constructor() {
 		super(DBDef_PermissionUser);
 	}
 
-	async __performProjectSetup() {
-		const accounts = await ModuleBE_AccountDB.query.where({});
-		const permissionsUser = await this.query.all(accounts.map(dbObjectToId));
+	__performProjectSetup() {
+		return {
+			priority: 4,
+			processor: async () => {
+				const accounts = await ModuleBE_AccountDB.query.where({});
+				const permissionsUser = await this.query.all(accounts.map(dbObjectToId));
 
-		const usersToUpsert: DB_PermissionUser[] = [];
-		const usersToDelete: DB_PermissionUser[] = [];
-		permissionsUser.forEach((user, index) => {
-			if (exists(user)) {
-				if (!exists(accounts.find(account => account._id === user._id)))
-					usersToDelete.push(user);
-				return;
+				const usersToUpsert: DB_PermissionUser[] = [];
+				const usersToDelete: DB_PermissionUser[] = [];
+				permissionsUser.forEach((user, index) => {
+					if (exists(user)) {
+						if (!exists(accounts.find(account => account._id === user._id)))
+							usersToDelete.push(user);
+						return;
+					}
+
+					usersToUpsert.push({
+						_id: accounts[index]._id,
+						groups: [] as User_Group[],
+					} as DB_PermissionUser);
+				});
+
+				await this.set.all(usersToUpsert);
+				await this.delete.all(usersToDelete);
+
+				// This stage updates the rtdb's config- which is why it's last. Changing the rtdb's config kills the server.
+				const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
+				await this.createSystemServiceAccount(serviceAccounts);
 			}
-
-			usersToUpsert.push({
-				_id: accounts[index]._id,
-				groups: [] as User_Group[],
-			} as DB_PermissionUser);
-		});
-
-		await this.set.all(usersToUpsert);
-		await this.delete.all(usersToDelete);
+		};
 	}
 
 	async __onUserLogin(account: UI_Account, transaction: Transaction) {
@@ -70,7 +95,7 @@ export class ModuleBE_PermissionUserDB_Class
 	// 		});
 	// }
 
-	protected async preWriteProcessing(instance: DB_PermissionUser, t?: Transaction): Promise<void> {
+	protected async preWriteProcessing(instance: DB_PermissionUser, originalDbInstance: DBProto_PermissionUser['dbType'], t?: Transaction): Promise<void> {
 		instance._auditorId = MemKey_AccountId.get();
 		instance.__groupIds = filterDuplicates(instance.groups.map(group => group.groupId) || []);
 
@@ -88,7 +113,7 @@ export class ModuleBE_PermissionUserDB_Class
 		//todo check for duplications in data
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionUser>) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_PermissionUser>, actionType: CollectionActionType) {
 		const deleted = asOptionalArray(data.deleted) ?? [];
 		const updated = asOptionalArray(data.updated) ?? [];
 		const beforeIds = (asOptionalArray(data.before) ?? []).map(before => before?._id);
@@ -97,19 +122,22 @@ export class ModuleBE_PermissionUserDB_Class
 		await ModuleBE_SessionDB.session.invalidate(accountIdToInvalidate);
 	}
 
-	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
-		const permissionsUserToCreate = {
-			_id: uiAccount._id,
-			groups: this.defaultPermissionGroups ?? [],
-			_auditorId: MemKey_AccountId.get()
-		};
-
+	insertIfNotExist = async (uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) => {
 		const create = async (transaction?: Transaction) => {
-			return this.create.item(permissionsUserToCreate, transaction);
+			const defaultPermissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? await ModuleBE_PermissionUserDB.defaultPermissionGroups() : [];
+			const permissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId))) : [];
+			this.logInfo(`Received ${defaultPermissionGroups.length} groups to assign, ${permissionGroups.length} of which exist`);
+			const permissionsUserToCreate = {
+				_id: uiAccount._id,
+				groups: permissionGroups.map(group => ({groupId: group._id})),
+				_auditorId: MemKey_AccountId.get()
+			};
+
+			return ModuleBE_PermissionUserDB.create.item(permissionsUserToCreate, transaction);
 		};
 
-		return this.collection.uniqueGetOrCreate({_id: uiAccount._id}, create, transaction);
-	}
+		return ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: uiAccount._id}, create, transaction);
+	};
 
 	async assignPermissions(body: Request_AssignPermissions) {
 		if (!body.targetAccountIds.length)
@@ -163,13 +191,81 @@ export class ModuleBE_PermissionUserDB_Class
 		await this.set.multi(usersToUpdate);
 	}
 
-	public setDefaultPermissionGroups = (groups: User_Group[]) => {
-		this.defaultPermissionGroups = groups;
+	public setDefaultPermissionGroups = (groupsGetter: () => Promise<User_Group[]>) => {
+		this.defaultPermissionGroups = groupsGetter;
 	};
 
 	public clearDefaultPermissionGroups = () => {
 		delete this.defaultPermissionGroups;
 	};
+
+	/**
+	 * The system requires to perform action, which in other cases can also be done by a human.
+	 * This requires system features to identify as a bot user, or "Service Account"
+	 *
+	 * @param serviceAccounts - List of Accounts to create
+	 * @private
+	 */
+	private async createSystemServiceAccount(serviceAccounts: DefaultDef_ServiceAccount[]) {
+		this.logInfoBold('Creating Service Accounts: ', serviceAccounts);
+
+		// @ts-ignore
+		const tokenCreator = ModuleBE_AccountDB.token.create;
+		// @ts-ignore
+		const invalidateAccount = ModuleBE_AccountDB.token.invalidateAll;
+
+		const envConfigRef = Storm.getInstance().getGlobalEnvConfigRef();
+		const updatedConfig: TS_Object = {};
+
+		//Run over all service accounts
+		for (const serviceAccount of serviceAccounts) {
+			// Create account if it doesn't already exist
+			const accountsToRequest = filterKeys({
+				type: 'service',
+				email: serviceAccount.email,
+				description: serviceAccount.description
+			});
+			let account;
+			//Get or create service account
+			try {
+				account = await ModuleBE_AccountDB.impl.querySafeAccount({email: serviceAccount.email});
+			} catch (e) {
+				this.logInfo('NOTICE: querySafeAccount failed, creating accounts');
+				account = await ModuleBE_AccountDB.account.create(accountsToRequest);
+			}
+
+			// Assign permissions groups to service account
+			const permissionsUser = await ModuleBE_PermissionUserDB.query.uniqueAssert({_id: account._id});
+			permissionsUser.groups = serviceAccount.groupIds?.map(groupId => ({groupId})) || [];
+			await ModuleBE_PermissionUserDB.set.item(permissionsUser);
+
+			//Service accounts are only allowed to have one session... but this isn't the defined place to be a cop about it
+			const sessions = await ModuleBE_AccountDB.account.getSessions(account);
+			//If we have a valid session(not expired) we use its JWT instead of creating a new one
+			const validSession = sessions.sessions.find(_session => !ModuleBE_SessionDB.session.isExpired(_session));
+			this.logError(serviceAccount.ttl);
+			const token = validSession?.sessionIdJwt ? {token: validSession?.sessionIdJwt} : await tokenCreator({
+				accountId: account._id,
+				ttl: serviceAccount.ttl ?? Year
+			});
+
+			updatedConfig[serviceAccount.moduleName] = {
+				serviceAccount: filterKeys({
+					token,
+					description: serviceAccount.description,
+					accountId: account._id,
+					email: account.email
+				})
+			};
+		}
+
+		if (_keys(updatedConfig).length > 0)
+			MemKey_ServerApi.get().addPostCallAction(async () => {
+				const currentConfig = await envConfigRef.get({});
+				await envConfigRef.set(merge(currentConfig, updatedConfig));
+				this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
+			});
+	}
 }
 
 export const ModuleBE_PermissionUserDB = new ModuleBE_PermissionUserDB_Class();

@@ -20,7 +20,7 @@ import {
 	LogLevel,
 	LogParam,
 	LogPrefixComposer
-} from "./types";
+} from './types';
 
 export type LogFilter = (level: LogLevel, tag: string) => boolean;
 
@@ -51,7 +51,9 @@ export abstract class LogClient {
 export const _logger_timezoneOffset: number = new Date().getTimezoneOffset() * 60000; //offset in milliseconds
 export const _logger_finalDate: Date = new Date();
 
-export function _logger_getPrefix(level: LogLevel) {
+export const _logger_logPrefixes = ['---', '-V-', '-D-', '-I-', '-W-', '-E-'] as const;
+
+export function _logger_getPrefix(level: LogLevel): typeof _logger_logPrefixes[number] {
 	switch (level) {
 		case LogLevel.Verbose:
 			return '-V-';

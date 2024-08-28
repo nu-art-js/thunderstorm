@@ -11,6 +11,8 @@ export class ModuleFE_Slack_Class
 		super();
 		this.vv1 = {
 			postMessage: apiWithBody(ApiDef_Slack.vv1.postMessage),
+			postStructuredMessage: apiWithBody(ApiDef_Slack.vv1.postStructuredMessage),
+			postFiles: apiWithBody(ApiDef_Slack.vv1.postFiles),
 		};
 	}
 }

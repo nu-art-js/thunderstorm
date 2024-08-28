@@ -1,17 +1,18 @@
 import '../_core/init';
-import {MemKey_AccountEmail, ModuleBE_AccountDB} from '../../main/backend';
+import {Account_CreateAccount, MemKey_AccountEmail, ModuleBE_AccountDB} from '../../main/backend';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {Request_CreateAccount, Request_RegisterAccount} from '../../main';
-import {PartialProperties} from '@nu-art/ts-common';
+import {Request_RegisterAccount} from '../../main';
+import {PartialProperties, generateHex} from '@nu-art/ts-common';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
 
 export type createInput = {
-	createCredentials: PartialProperties<Request_RegisterAccount, 'password' | 'passwordCheck'>
+	createCredentials: PartialProperties<Account_CreateAccount['request'], 'password' | 'passwordCheck'>
 }
 
+const deviceId = generateHex(32);
 type CreateAccountTest = TestSuite<createInput, boolean>;
 
 const TestCases_FB_Create: CreateAccountTest['testcases'] = [

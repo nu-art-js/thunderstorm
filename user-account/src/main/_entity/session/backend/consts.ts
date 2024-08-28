@@ -7,6 +7,7 @@ import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@nu-art/
 
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
+export const MemKey_AccountType = new MemKey<string>('accounts--type', true);
 export const MemKey_SessionData = new MemKey<TS_Object>('session-data', true);
 export const MemKey_SessionObject = new MemKey<DB_Session>('session-object', true);
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId, 403);

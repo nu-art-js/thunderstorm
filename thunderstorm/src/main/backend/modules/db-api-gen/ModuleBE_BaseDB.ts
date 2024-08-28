@@ -42,7 +42,7 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
@@ -124,17 +124,17 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 
 			conflictPromises.push(batchActionParallel(itemIdsToDelete,
 				10, async ids => {
-					let query = undefined;
+					let where = undefined;
 					if (dependencies[key].fieldType === 'string')
-						query = {[key]: {$in: ids}};
+						where = {[key]: {$in: ids}};
 
 					if (dependencies[key].fieldType === 'string[]')
-						query = {[key]: {$aca: ids}};
+						where = {[key]: {$aca: ids}};
 
-					if (query === undefined)
+					if (where === undefined)
 						throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
 
-					return this.query.where(query as Clause_Where<Proto['dbType']>, transaction);
+					return this.query.unManipulatedQuery({where: where as Clause_Where<Proto['dbType']>}, transaction);
 				}));
 		});
 
@@ -268,8 +268,8 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		return {toUpdate: items, toDelete: deletedItems};
 	};
 
-	private _preWriteProcessing = async (dbItem: Proto['uiType'], transaction?: Transaction, upgrade = true) => {
-		await this.preWriteProcessing(dbItem, transaction);
+	private _preWriteProcessing = async (dbItem: Proto['uiType'], originalDbInstance: Proto['dbType'], transaction?: Transaction, upgrade = true) => {
+		await this.preWriteProcessing(dbItem, originalDbInstance, transaction);
 	};
 
 	/**
@@ -277,11 +277,12 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 *
 	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
+	 * @param originalDbInstance - The DB instance fetched from remote firestore.
 	 */
-	protected async preWriteProcessing(dbInstance: Proto['uiType'], transaction?: Transaction) {
+	protected async preWriteProcessing(dbInstance: Proto['uiType'], originalDbInstance: Proto['dbType'], transaction?: Transaction) {
 	}
 
-	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>, transaction?: Transaction) => {
+	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>, actionType: CollectionActionType, transaction?: Transaction) => {
 		const now = currentTimeMillis();
 
 		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
@@ -298,14 +299,16 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
 			await ModuleBE_SyncManager.setOldestDeleted(this.dbDef.dbKey, now);
 
-		await this.postWriteProcessing(data, transaction);
+		await this.postWriteProcessing(data, actionType, transaction);
 	};
 
 	/**
 	 * Override this method to customize processing that should be done after create, set, update or delete.
 	 * @param data
+	 * @param actionType create/set/update/delete
+	 * @param transaction
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>, transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>, actionType: CollectionActionType, transaction?: Transaction) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<Proto['dbType']>): FirestoreQuery<Proto['dbType']> {
@@ -353,7 +356,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 * Check if the collection has at least one item without the latest version. Version[0] is the latest version.
 	 */
 	public isCollectionUpToDate = async () => {
-		return (await this.query.custom({limit: 1, where: {_v: {$neq: this.dbDef.versions[0]}}})).length === 0;
+		return (await this.query.unManipulatedQuery({limit: 1, where: {_v: {$neq: this.dbDef.versions[0]}}})).length === 0;
 	};
 
 	upgradeCollection = async (force = false) => {
@@ -364,7 +367,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			limit: {page: 0, itemsCount},
 		};
 
-		while ((docs = await this.collection.doc.query(query)).length > 0) {
+		while ((docs = await this.collection.doc.unManipulatedQuery(query)).length > 0) {
 
 			// this is old Backward compatible from before the assertion of unique ids where the doc ref is the _id of the doc
 			const toDelete = docs.filter(doc => {
@@ -405,7 +408,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 				this.logVerbose(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
 				this.logVerbose(`No upgrade processor for: ${versionTransition}`);
 			} else {
-				this.logInfo(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
+				this.logVerbose(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
 				await upgradeProcessor?.(instancesToUpgrade);
 				instancesToSave.push(...instancesToUpgrade);
 			}

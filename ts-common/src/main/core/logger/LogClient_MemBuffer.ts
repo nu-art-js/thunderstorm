@@ -17,20 +17,71 @@
  * limitations under the License.
  */
 
-import {LogClient_BaseRotate} from "./LogClient_BaseRotate";
+import {LogClient_BaseRotate} from './LogClient_BaseRotate';
+import {LogLevel, LogParam} from './types';
+import {_logger_convertLogParamsToStrings, _logger_indentNewLineBy} from './utils';
+import {NoColor} from './LogClient_Terminal';
 
+
+function getColor(level: LogLevel, bold = false): string {
+	let color;
+	switch (level) {
+		case LogLevel.Verbose:
+			color = '\x1b[90m';
+			break;
+
+		case LogLevel.Debug:
+			color = '\x1b[34m';
+			break;
+
+		case LogLevel.Info:
+			color = '\x1b[32m';
+			break;
+
+		case LogLevel.Warning:
+			color = '\x1b[33m';
+			break;
+
+		case LogLevel.Error:
+			color = '\x1b[31m';
+			break;
+	}
+	return color + (bold ? '\x1b[1m' : '');
+}
 
 export class LogClient_MemBuffer
 	extends LogClient_BaseRotate {
-
-	readonly buffers: string[] = [""];
+	private keepNaturalColors = false;
+	readonly buffers: string[] = [''];
+	private onLogAppended?: VoidFunction;
+	private logTransformer?: (log: string) => string;
 
 	constructor(name: string, maxBuffers = 10, maxBufferSize = 1024 * 1024) {
 		super(name, maxBuffers, maxBufferSize);
 	}
 
+	setLogTransformer(logTransformer: (log: string) => string) {
+		this.logTransformer = logTransformer;
+	}
+
+	setLogAppendedListener(onLogAppended: VoidFunction) {
+		this.onLogAppended = onLogAppended;
+	}
+
+	protected processLogMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]) {
+		const color = getColor(level, bold);
+		let log = _logger_convertLogParamsToStrings(toLog).join(' ');
+		const linePrefix = `${color}${prefix}${this.keepNaturalColors ? NoColor : ''}`;
+
+		if (this.logTransformer)
+			log = this.logTransformer(log);
+
+		return _logger_indentNewLineBy(linePrefix, log);
+	}
+
 	protected printLogMessage(log: string) {
 		this.buffers[0] += log;
+		this.onLogAppended?.();
 	}
 
 	protected cleanup(): void {
@@ -41,6 +92,10 @@ export class LogClient_MemBuffer
 	}
 
 	protected prepare(): void {
-		this.buffers[0] = "";
+		this.buffers[0] = '';
+	}
+
+	public keepLogsNaturalColors(keepNaturalColors = true) {
+		this.keepNaturalColors = keepNaturalColors;
 	}
 }

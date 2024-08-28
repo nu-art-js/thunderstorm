@@ -64,7 +64,7 @@ export class StorageModule_Class
 		if (!storageKey)
 			return this.logVerbose(`no StorageKey for '${key}'`);
 
-		this.logInfo(`Storage key '${key}' was updated`, e.oldValue, e.newValue);
+		this.logDebug(`Storage key '${key}' was updated`, e.oldValue, e.newValue);
 
 		// @ts-ignore
 		await storageKey._onChange?.();
@@ -82,11 +82,17 @@ export class StorageModule_Class
 
 		this.cache[key] = value;
 		this.getStorage(persist).setItem(key, JSON.stringify(value));
+
+		// @ts-ignore
+		this.allKeys[key]._onChange?.();
 	}
 
 	delete(key: string, persist: boolean = true) {
 		this.clearCache(key);
 		this.getStorage(persist).removeItem(key);
+
+		// @ts-ignore
+		this.allKeys[key]._onChange?.();
 	}
 
 	clearCache(key: string) {

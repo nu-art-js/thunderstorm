@@ -206,6 +206,11 @@ export class EditableItem<T>
 		return this.autoSave(hasChanges);
 	}
 
+	/**
+	 * Equivalent to array.push
+	 * @param value
+	 * @param index
+	 */
 	updateArrayAt(value: ArrayType<T>, index: number = (this.item as unknown as any[]).length) {
 		this.logVerbose(`updateArrayAt(${index}):`, value as any);
 

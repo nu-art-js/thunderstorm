@@ -1,37 +1,7 @@
-import {
-	_keys,
-	arrayToMap,
-	Dispatcher,
-	filterInstances,
-	flatArray,
-	merge,
-	Module,
-	MUSTNeverHappenException,
-	PreDB,
-	reduceToMap,
-	RuntimeModules,
-	TS_Object,
-	TypedMap,
-	Year,
-} from '@nu-art/ts-common';
-import {
-	addRoutes,
-	createQueryServerApi,
-	MemKey_ServerApi,
-	ModuleBE_AppConfigDB,
-	ModuleBE_BaseApi_Class,
-	Storm
-} from '@nu-art/thunderstorm/backend';
-import {
-	ApiDef_Permissions,
-} from '../../shared';
-import {
-	CollectSessionData,
-	MemKey_AccountId,
-	ModuleBE_AccountDB,
-	ModuleBE_SessionDB,
-	SessionCollectionParam
-} from '@nu-art/user-account/backend';
+import {_keys, arrayToMap, Dispatcher, filterInstances, flatArray, Module, MUSTNeverHappenException, PreDB, reduceToMap, RuntimeModules, TypedMap,} from '@nu-art/ts-common';
+import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm/backend';
+import {ApiDef_Permissions,} from '../../shared';
+import {CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB, SessionCollectionParam} from '@nu-art/user-account/backend';
 import {DefaultDef_Group, DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {
 	Domain_AccountManagement,
@@ -51,15 +21,12 @@ import {
 } from '../../shared/consts';
 import {ApiModule} from '@nu-art/thunderstorm';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {
-	DefaultDef_ServiceAccount,
-	dispatcher_collectServiceAccounts
-} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
 import {
 	DB_PermissionAccessLevel,
 	DB_PermissionAPI,
 	DB_PermissionDomain,
+	DB_PermissionGroup,
 	DB_PermissionProject,
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB,
@@ -68,6 +35,7 @@ import {
 	ModuleBE_PermissionProjectDB,
 	ModuleBE_PermissionUserDB
 } from '../_entity';
+import {trimStartingForwardSlash} from '@nu-art/thunderstorm/shared/route-tools';
 
 
 export interface CollectPermissionsProjects {
@@ -81,6 +49,7 @@ const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
 export const PermissionGroup_Permissions_SuperAdmin: DefaultDef_Group = {
 	_id: GroupId_SuperAdmin,
 	name: 'Super Admin',
+	uiLabel: 'Super Admin',
 	accessLevels: {
 		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Admin.name,
 		[Domain_PermissionsAssign.namespace]: DefaultAccessLevel_Admin.name,
@@ -92,6 +61,7 @@ export const PermissionGroup_Permissions_SuperAdmin: DefaultDef_Group = {
 export const PermissionGroup_Permissions_Viewer: DefaultDef_Group = {
 	_id: '8c38d3bd2d76bbc37b5281f481c0bc1b',
 	name: 'Permissions Viewer',
+	uiLabel: 'Permissions Viewer',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
 		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
@@ -102,6 +72,7 @@ export const PermissionGroup_Permissions_Viewer: DefaultDef_Group = {
 export const PermissionGroup_Permissions_Editor: DefaultDef_Group = {
 	_id: '1524909cae174d0052b76a469b339218',
 	name: 'Permissions Editor',
+	uiLabel: 'Permissions Editor',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
 		[Domain_PermissionsDefine.namespace]: DefaultAccessLevel_Read.name,
@@ -112,6 +83,7 @@ export const PermissionGroup_Permissions_Editor: DefaultDef_Group = {
 export const PermissionGroup_Account_Manager: DefaultDef_Group = {
 	_id: '6bb5feb12d0712ecee77f7f44188ec79',
 	name: 'Accounts Manager',
+	uiLabel: 'Accounts Manager',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Write.name,
 	}
@@ -120,6 +92,7 @@ export const PermissionGroup_Account_Manager: DefaultDef_Group = {
 export const PermissionGroup_Account_Admin: DefaultDef_Group = {
 	_id: '761a84bdde3f9be3fde9c50402a60401',
 	name: 'Accounts Admin',
+	uiLabel: 'Accounts Admin',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Admin.name,
 	}
@@ -128,6 +101,7 @@ export const PermissionGroup_Account_Admin: DefaultDef_Group = {
 export const PermissionGroup_Account_Viewer: DefaultDef_Group = {
 	_id: '7343853a980149ec94f967ac7ff4ccc3',
 	name: 'Accounts Viewer',
+	uiLabel: 'Accounts Viewer',
 	accessLevels: {
 		[Domain_AccountManagement.namespace]: DefaultAccessLevel_Read.name,
 	}
@@ -166,7 +140,7 @@ class ModuleBE_Permissions_Class
 
 		addRoutes([
 			createQueryServerApi(ApiDef_Permissions.v1.toggleStrictMode, this.toggleStrictMode),
-			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.__performProjectSetup),
+			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.__performProjectSetup().processor),
 			// createBodyServerApi(ApiDef_Permissions.v1.connectDomainToRoutes, this.connectDomainToRoutes)
 		]);
 	}
@@ -176,11 +150,21 @@ class ModuleBE_Permissions_Class
 	// }
 
 	async __collectSessionData(data: SessionCollectionParam): Promise<SessionData_Permissions> {
-		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({_id: data.accountId});
+		const permissionUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(data.accountId);
+		const userGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(permissionUser.groups.map(g => g.groupId)));
+		const permissionMap = await this.getUserPermissionMap(userGroups);
+
+		return {
+			key: 'permissions', value: {
+				domainToValueMap: permissionMap,
+				roles: userGroups.map(group => ({key: group.label, uiLabel: group.uiLabel})),
+			}
+		};
+	}
+
+	public getUserPermissionMap = async (userGroups: DB_PermissionGroup[]): Promise<TypedMap<number>> => {
 		const permissionMap: TypedMap<number> = {};
-		const groupIds = user.groups.map(g => g.groupId);
-		const groups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(groupIds));
-		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
+		const levelMaps = filterInstances(userGroups.map(i => i._levelsMap));
 		levelMaps.forEach(levelMap => {
 			_keys(levelMap).forEach(domainId => {
 				if (!permissionMap[domainId])
@@ -197,8 +181,8 @@ class ModuleBE_Permissions_Class
 			if (!permissionMap[domain._id])
 				permissionMap[domain._id] = DefaultAccessLevel_NoAccess.value; //"fill in the gaps" - All domains that are not defined for the user, are NoAccess by default.
 		});
-		return {key: 'permissions', value: permissionMap};
-	}
+		return permissionMap;
+	};
 
 	toggleStrictMode = async () => {
 		MemKey_ServerApi.get().addPostCallAction(async () => {
@@ -209,32 +193,41 @@ class ModuleBE_Permissions_Class
 		});
 	};
 
-	__performProjectSetup = async (): Promise<void> => {
-		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
-		const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
+	__performProjectSetup() {
+		return {
+			priority: 0,
+			processor: async () => {
+				const projects = dispatcher_collectPermissionsProjects.dispatchModule();
+				projects.reduce((issues, project) => {
+					return project.packages.reduce((issues, _package) => {
+						return issues;
+					}, issues);
+				}, [] as string[]);
 
-		projects.reduce((issues, project) => {
-			return project.packages.reduce((issues, _package) => {
-				return issues;
-			}, issues);
-		}, [] as string[]);
-		// Create All Projects
+				// Create All Projects
+				await this.createPermissionProjects(projects);
+				// Create all AppConfigs
+				await this.createPermissionsKeys(projects);
+				//Assign Super Admin if necessary
+				await this.assignSuperAdmin();
+			}
+		};
+	};
+
+	public async createPermissionProjects(projects: DefaultDef_Project[]) {
 		const map_nameToDBProject: TypedMap<DB_PermissionProject> = await this.createProjects(projects);
 		const map_nameToDbDomain: TypedMap<DB_PermissionDomain> = await this.createDomains(projects, map_nameToDBProject);
 		const domainNameToLevelNameToDBAccessLevel: TypedMap<TypedMap<DB_PermissionAccessLevel>> = await this.createAccessLevels(projects, map_nameToDbDomain);
 		await this.createGroups(projects, map_nameToDbDomain, domainNameToLevelNameToDBAccessLevel);
 		await this.createApis(projects, domainNameToLevelNameToDBAccessLevel);
-		await this.createPermissionsKeys(projects);
-		await this.assignSuperAdmin();
-		await this.createSystemServiceAccount(serviceAccounts);
-	};
+	}
 
 	/**
 	 * Creates All the DB_PermissionProject
 	 *
 	 * @param projects - predefined permissions projects
 	 */
-	private async createProjects(projects: DefaultDef_Project[]) {
+	public async createProjects(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating Projects');
 		const _auditorId = MemKey_AccountId.get();
 		const preDBProjects = await ModuleBE_PermissionProjectDB.set.all(projects.map(project => ({
@@ -288,6 +281,7 @@ class ModuleBE_Permissions_Class
 					domainId: map_nameToDbDomain[domain.namespace]._id,
 					value: level.value,
 					name: level.name,
+					uiLabel: level.name,
 					_auditorId
 				};
 			});
@@ -323,6 +317,7 @@ class ModuleBE_Permissions_Class
 					_id: group._id,
 					_auditorId,
 					label: group.name,
+					uiLabel: group.name,
 					accessLevelIds: _keys(group.accessLevels)
 						.map(key => {
 							const domainsMapNameToDbDomainElement = map_nameToDbDomain[key];
@@ -353,7 +348,7 @@ class ModuleBE_Permissions_Class
 
 				apis.push(...(domain.customApis || []).map(api => ({
 					projectId: project._id,
-					path: api.path,
+					path: trimStartingForwardSlash(api.path),
 					_auditorId,
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
@@ -407,7 +402,12 @@ class ModuleBE_Permissions_Class
 	private async createPermissionsKeys(projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating App Config');
 		// const permissionKeysToCreate: PermissionKey_BE<any>[] = filterInstances(flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.permissionKeys)))));
-		await ModuleBE_AppConfigDB.createDefaults(this);
+		try {
+			await ModuleBE_AppConfigDB.createDefaults(this);
+			this.logInfoBold('Created Permission Key defaults.');
+		} catch (e: any) {
+			this.logErrorBold('Failed creating Permission Key defaults.', e);
+		}
 		this.logInfoBold('Created App Config');
 	}
 
@@ -432,52 +432,6 @@ class ModuleBE_Permissions_Class
 		await ModuleBE_SessionDB.session.rotate();
 		this.logInfoBold('Assigned SuperAdmin permissions');
 	};
-
-	/**
-	 * The system requires to perform action, which in other cases can also be done by a human.
-	 * This requires system features to identify as a bot user, or "Service Account"
-	 *
-	 * @param serviceAccounts - List of Accounts to create
-	 * @private
-	 */
-	private async createSystemServiceAccount(serviceAccounts: DefaultDef_ServiceAccount[]) {
-		this.logInfoBold('Creating Service Accounts: ', serviceAccounts);
-
-		// @ts-ignore
-		const tokenCreator = ModuleBE_AccountDB.token.create;
-		// @ts-ignore
-		const invalidateAccount = ModuleBE_AccountDB.token.invalidateAll;
-
-		const envConfigRef = Storm.getInstance().getGlobalEnvConfigRef();
-		const updatedConfig: TS_Object = {};
-		for (const serviceAccount of serviceAccounts) {
-			// Create account if it doesn't already exist
-			const accountsToRequest = {type: 'service', email: serviceAccount.email};
-			let account;
-			try {
-				account = await ModuleBE_AccountDB.impl.querySafeAccount({email: serviceAccount.email});
-			} catch (e) {
-				account = await ModuleBE_AccountDB.account.create(accountsToRequest);
-			}
-
-			// Assign permissions groups to service account
-			const permissionsUser = await ModuleBE_PermissionUserDB.query.uniqueAssert({_id: account._id});
-			permissionsUser.groups = serviceAccount.groupIds?.map(groupId => ({groupId})) || [];
-			await ModuleBE_PermissionUserDB.set.item(permissionsUser);
-
-			// Invalidate previous sessions
-			await invalidateAccount({accountId: account._id});
-			const token = await tokenCreator({accountId: account._id, ttl: 100 * Year});
-			updatedConfig[serviceAccount.moduleName] = {serviceAccount: {token, accountId: account._id}};
-		}
-
-		if (_keys(updatedConfig).length > 0)
-			MemKey_ServerApi.get().addPostCallAction(async () => {
-				const currentConfig = await envConfigRef.get({});
-				await envConfigRef.set(merge(currentConfig, updatedConfig));
-				this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
-			});
-	}
 }
 
 export const ModuleBE_Permissions = new ModuleBE_Permissions_Class();

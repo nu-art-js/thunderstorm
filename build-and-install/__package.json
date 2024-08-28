@@ -32,10 +32,14 @@
   },
   "dependencies": {
     "chokidar": "^3.6.0",
-    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
-    "@nu-art/commando": "$THUNDERSTORM_SDK_VERSION"
+    "neo-blessed": "^0.2.0",
+    "blessed": "^0.1.81",
+    "glob": "^10.3.14",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/commando": "$THUNDERSTORM_DEPENDENCY_VERSION"
   },
   "devDependencies": {
-    "@types/node": "^18.0.0"
+    "@types/node": "^18.0.0",
+    "@types/blessed": "^0.1.25"
   }
 }

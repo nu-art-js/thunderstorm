@@ -1,5 +1,5 @@
-import * as express from 'express';
-import * as request from 'request';
+import express from 'express';
+import request from 'request';
 import * as fs from 'fs';
 
 
@@ -10,26 +10,32 @@ _express.all('*', (req, res) => {
 	const qMark = req.originalUrl.indexOf('?');
 	const query = qMark > 1 ? req.originalUrl.substring(qMark) : '';
 	const path = req.path;
-	let url = `http://127.0.0.1:SERVER_PORT/shopify-manager-tool-dev/us-central1/api${path}${query}`;
+	let url = `http://127.0.0.1:SERVER_PORT/PROJECT_ID/us-central1/api${path}${query}`;
 	if (path.startsWith('/emulatorDownload') || path.startsWith('/emulatorUpload'))
-		url = `http://127.0.0.1:SERVER_PORT/shopify-manager-tool-dev/us-central1${path}${query}`;
+		url = `http://127.0.0.1:SERVER_PORT/PROJECT_ID/us-central1${path}${query}`;
 
 	console.log(`PROXY ${counter} - [${req.method}] ${url}`);
+
+	const handleError = (error: any) => {
+	    if(!error)
+	        return;
+		console.log(`ERROR calling: ${url}`, error);
+	};
 
 	try {
 		let reqContent;
 		if (req.method === 'POST') {
-			reqContent = request.post({uri: url, body: req.body});
+			reqContent = request.post({uri: url, body: req.body}, handleError);
 		} else if (req.method === 'PUT') {
-			reqContent = request.put({uri: url, body: req.body});
+			reqContent = request.put({uri: url, body: req.body}, handleError);
 		} else if (req.method === 'GET') {
-			reqContent = request.get(url);
+			reqContent = request.get(url, handleError);
 		} else if (req.method === 'DELETE') {
-			reqContent = request.delete(url);
+			reqContent = request.delete(url, handleError);
 		} else if (req.method === 'HEAD') {
-			reqContent = request.head(url);
+			reqContent = request.head(url, handleError);
 		} else {
-			reqContent = request(url);
+			reqContent = request(url, handleError);
 		}
 
 		req.pipe(reqContent).pipe(res, {end: true});
@@ -60,5 +66,5 @@ const options = {
 	requestCert: false,
 };
 
-require('https').createServer(options, _express).listen(8008);
+require('https').createServer(options, _express).listen(PROXY_PORT);
 console.log('SSL proxy started!!!');

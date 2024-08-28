@@ -33,26 +33,14 @@ import {
 	TypedKeyValue,
 	TypedMap
 } from '@nu-art/ts-common';
-import {
-	addRoutes,
-	createBodyServerApi,
-	ModuleBE_BaseApi_Class,
-	ModuleBE_BaseDB,
-	ModuleBE_SyncManager,
-	ServerApi_Middleware
-} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, ModuleBE_BaseApi_Class, ModuleBE_BaseDB, ModuleBE_SyncManager, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
 import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {ApiDef_PermissionsAssert, Request_AssertApiForUser} from '../../shared';
-import {
-	MemKey_HttpRequestBody,
-	MemKey_HttpRequestMethod,
-	MemKey_HttpRequestQuery,
-	MemKey_HttpRequestUrl
-} from '@nu-art/thunderstorm/backend/modules/server/consts';
+import {MemKey_HttpRequestBody, MemKey_HttpRequestMethod, MemKey_HttpRequestQuery, MemKey_HttpRequestUrl} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts';
 import {PermissionKey_BE} from '../PermissionKey_BE';
-import {Base_AccessLevel, DB_PermissionAccessLevel, DB_PermissionAPI, ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity';
+import {Base_AccessLevel, DB_PermissionAccessLevel, DB_PermissionAPI, DomainToLevelValueMap, ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -92,7 +80,7 @@ export class ModuleBE_PermissionsAssert_Class
 		try {
 			MemKey_UserPermissions.get();
 		} catch (err) {
-			MemKey_UserPermissions.set(SessionKey_Permissions_BE.get());
+			MemKey_UserPermissions.set(SessionKey_Permissions_BE.get().domainToValueMap);
 		}
 	};
 
@@ -139,7 +127,7 @@ export class ModuleBE_PermissionsAssert_Class
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
-		ModuleBE_SyncManager.setModuleFilter(async (dbModules: ( ModuleBE_BaseDB<any>)[]) => {
+		ModuleBE_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDB<any>)[]) => {
 			// return dbModules;
 			//Filter out any module we don't have permission to sync
 			const userPermissions = MemKey_UserPermissions.get();
@@ -219,13 +207,18 @@ export class ModuleBE_PermissionsAssert_Class
 			throw new ApiException(403, `No permissions configuration specified for api: ${projectId ? `${projectId}--` : ''}${path}`);
 		}
 
-		_keys(apiDetails.dbApi._accessLevels!).forEach(domainId => {
+		//_accessLevels is a map[domain id <> access level numeric value]
+		this.assertUserPassesAccessLevels(apiDetails.dbApi._accessLevels!, userPermissions);
+	}
+
+	public assertUserPassesAccessLevels(domainToLevelValueMap: DomainToLevelValueMap, userPermissions: TypedMap<number>) {
+		_keys(domainToLevelValueMap).forEach(domainId => {
 			const userDomainPermission = userPermissions[domainId];
 			if (!exists(userDomainPermission))
 				throw new ApiException(403, 'Missing Access For This Domain');
 
-			if (userDomainPermission < apiDetails.dbApi._accessLevels![domainId]) {
-				this.logErrorBold(`for domain - userAccessLevel <> expectedAccessLevel: "${domainId}" ${(userDomainPermission ?? 0)} <> ${apiDetails.dbApi._accessLevels![domainId]}`);
+			if (userDomainPermission < domainToLevelValueMap[domainId]) {
+				this.logErrorBold(`for domain - userAccessLevel <> expectedAccessLevel: "${domainId}" ${(userDomainPermission ?? 0)} <> ${domainToLevelValueMap[domainId]}`);
 				throw new ApiException(403, 'Action Forbidden');
 			}
 		});

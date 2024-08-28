@@ -48,6 +48,7 @@ import {
 	Header_SessionId,
 	MemKey_AccountEmail,
 	MemKey_AccountId,
+	MemKey_AccountType,
 	ModuleBE_SessionDB,
 	SessionCollectionParam,
 	SessionKey_Account_BE,
@@ -87,6 +88,7 @@ export const dispatch_onPreLogout = new Dispatcher<OnPreLogout, '__onPreLogout'>
 type Config = {
 	canRegister: boolean
 	passwordAssertion?: PasswordAssertionConfig
+	ignorePasswordAssertion?: boolean
 }
 
 export class ModuleBE_AccountDB_Class
@@ -97,6 +99,8 @@ export class ModuleBE_AccountDB_Class
 		const account = SessionKey_Account_BE.get();
 		MemKey_AccountEmail.set(account.email!);
 		MemKey_AccountId.set(account._id);
+		MemKey_AccountType.set(account.type);
+
 	};
 
 	constructor() {
@@ -119,14 +123,14 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
 			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
 			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail),
-			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({config: this.config.passwordAssertion}))
+			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({config: this.config.ignorePasswordAssertion ? undefined : this.config.passwordAssertion}))
 		]);
 	}
 
 	manipulateQuery(query: FirestoreQuery<DB_Account>): FirestoreQuery<DB_Account> {
 		return {
 			...query,
-			select: ['__created', '_v', '__updated', 'email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']
+			select: ['__created', '_v', '__updated', 'email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId', 'description']
 		};
 	}
 
@@ -145,7 +149,7 @@ export class ModuleBE_AccountDB_Class
 		};
 	}
 
-	protected async preWriteProcessing(dbInstance: UI_Account, transaction?: Transaction): Promise<void> {
+	protected async preWriteProcessing(dbInstance: UI_Account, originalDbInstance: DBProto_Account['dbType'], transaction?: Transaction): Promise<void> {
 		try {
 			dbInstance._auditorId = MemKey_AccountId.get();
 		} catch (e) {
@@ -225,7 +229,10 @@ export class ModuleBE_AccountDB_Class
 
 			this.impl.fixEmail(accountWithPassword);
 			this.impl.assertPasswordCheck(accountWithPassword);
-			const spicedAccount = this.impl.spiceAccount(accountWithPassword);
+			const spicedAccount = this.impl.spiceAccount({
+				email: accountWithPassword.email,
+				password: accountWithPassword.password
+			});
 			const dbSafeAccount = await this.runTransaction(async transaction => {
 				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
 				await this.impl.setAccountMemKeys(dbSafeAccount);
@@ -431,12 +438,12 @@ export class ModuleBE_AccountDB_Class
 			if (account.type !== 'service')
 				throw new BadImplementationException('Can not generate a token for a non service account');
 
-			const content = {accountId, deviceId: accountId, label};
+			const content = {accountId, deviceId: accountId, label, ttl};
 			const {sessionId} = await ModuleBE_SessionDB.session.createCustom(content, (sessionData) => {
 				SessionKey_Session_BE.get(sessionData).expiration = currentTimeMillis() + ttl;
 				return sessionData;
 			});
-
+			// sessionId here is the JWT that is created and placed inside DB_Session.sessionIdJWT
 			return {token: sessionId};
 		},
 		invalidate: async (token: string) => await ModuleBE_SessionDB.delete.where({sessionId: token}),
