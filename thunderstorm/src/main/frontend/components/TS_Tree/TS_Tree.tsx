@@ -218,8 +218,8 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const data = adjustedNode.data;
 
 		let filteredKeys: any[] = [];
-
-		let expanded = !!this.props.checkExpanded(this.state.expanded, nodePath);
+		const alwaysExpanded: boolean = typeof _data === 'object' && _data.alwaysExpanded;
+		let expanded = alwaysExpanded || !!this.props.checkExpanded(this.state.expanded, nodePath);
 		if (nodePath.endsWith('_children/'))
 			expanded = true;
 
@@ -229,7 +229,6 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			renderChildren = false;
 
 		if (renderChildren)
-
 			filteredKeys = this.state.adapter.getFilteredChildren(_data);
 
 		const nodeRefResolver = this.nodeResolver(nodePath, renderChildren, filteredKeys);
