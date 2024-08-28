@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import {StormTester} from '@nu-art/thunderstorm/backend-test';
+import {StormTester} from '@thunder-storm/core/backend-test';
 import {__scenario} from '@nu-art/testelot';
 import {add_Get_Update_Undo_Redo_Doc, getNoneExistingDoc} from './tests/live-doc';
 import {ModulePack_Backend_LiveDocs} from './_main';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
 
 
 export const mainScenario = __scenario('Live-docs testing');

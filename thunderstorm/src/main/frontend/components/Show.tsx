@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {BadImplementationException, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {BadImplementationException, ResolvableContent, resolveContent} from '@thunder-storm/common';
 
 type Props_ShowIf = {
 	children: React.ReactNode;

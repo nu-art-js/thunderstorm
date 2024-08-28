@@ -1,4 +1,4 @@
-import {Logger} from '@nu-art/ts-common';
+import {Logger} from '@thunder-storm/common';
 
 
 export type ActionProcessor = (logger: Logger, data?: any) => Promise<void>;

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {__stringify, filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
+import {__stringify, filterDuplicates, Minute, RuntimeModules, sortArray} from '@thunder-storm/common';
 import './ATS_CollectionUpgrades.scss';
 import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools';
 import {genericNotificationAction} from '../../components/TS_Notifications';

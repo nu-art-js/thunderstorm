@@ -20,7 +20,7 @@
  */
 
 import {ApiDef, ApiDefResolver, HttpMethod, QueryApi} from './types';
-import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {ResponseError} from '@thunder-storm/common/core/exceptions/types';
 
 
 export const HeaderKey_AppVersion = 'x-app-version';

@@ -1,4 +1,4 @@
-import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@thunder-storm/common';
 
 type VersionTypes_Message = {
 	'1.0.0': DB_Message

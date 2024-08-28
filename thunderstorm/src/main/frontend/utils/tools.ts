@@ -20,7 +20,7 @@
  */
 
 import {Browser} from '../../shared/consts';
-import {BadImplementationException, filterInstances, ImplementationMissingException} from '@nu-art/ts-common';
+import {BadImplementationException, filterInstances, ImplementationMissingException} from '@thunder-storm/common';
 import * as React from 'react';
 import {DependencyList, Dispatch, EffectCallback, SetStateAction} from 'react';
 

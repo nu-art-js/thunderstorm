@@ -1,7 +1,7 @@
-import {__stringify, BadImplementationException, Module, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';
+import {__stringify, BadImplementationException, Module, ThisShouldNotHappenException, TypedMap} from '@thunder-storm/common';
 
 import {OpenAI} from 'openai';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi} from '@thunder-storm/core/backend';
 import {ApiDef_OpenAI, Request_ChatGPT} from '../../shared/api-def';
 
 

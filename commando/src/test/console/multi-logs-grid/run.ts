@@ -1,5 +1,5 @@
 import {TestConsole_MultiLogsGrid} from './TestConsole_MultiLogsGrid';
-import {LogClient_MemBuffer} from '@nu-art/ts-common';
+import {LogClient_MemBuffer} from '@thunder-storm/common';
 
 
 function generateLogs(index: number): string[] {

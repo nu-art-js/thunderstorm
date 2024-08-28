@@ -25,7 +25,7 @@ import {_className} from '../../utils/tools';
 import './TS_InputV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
 import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types';
-import {TS_Object} from '@nu-art/ts-common';
+import {TS_Object} from '@thunder-storm/common';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';

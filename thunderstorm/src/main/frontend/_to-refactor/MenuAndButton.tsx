@@ -22,7 +22,7 @@
 // import * as React from 'react';
 // import {CSSProperties, ReactNode} from 'react';
 // import {MenuBuilder, PopUp_Model_Content, PopUpListener, resolveRealPosition} from '../component-modules/mouse-interactivity/ModuleFE_PopUp';
-// import {BadImplementationException} from '@nu-art/ts-common';
+// import {BadImplementationException} from '@thunder-storm/common';
 // import {Adapter} from '../components/adapter/Adapter';
 //
 // type Props = {

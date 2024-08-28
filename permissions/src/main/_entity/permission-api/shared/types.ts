@@ -1,4 +1,4 @@
-import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@thunder-storm/common';
 import {DBProto_PermissionProject} from '../../permission-project/shared';
 import {DBProto_PermissionAccessLevel} from '../../permission-access-level/shared';
 

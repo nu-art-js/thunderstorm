@@ -3,7 +3,7 @@ import './TS_PopUp.scss';
 import {TS_Overlay} from '../../TS_Overlay';
 import {OnWindowResized} from '../../../modules/ModuleFE_Window';
 import {_className, stopPropagation} from '../../../utils/tools';
-import {resolveContent} from '@nu-art/ts-common';
+import {resolveContent} from '@thunder-storm/common';
 import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity';
 import {
 	Model_PopUp,

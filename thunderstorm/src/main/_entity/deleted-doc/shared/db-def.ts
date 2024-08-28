@@ -1,4 +1,4 @@
-import {DBDef_V3, tsValidateMustExist} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateMustExist} from '@thunder-storm/common';
 import {DBProto_DeletedDoc} from './types';
 
 

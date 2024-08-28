@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './TS_Dialog.scss';
-import {_values, BadImplementationException, filterInstances, flatArray, TS_Object, TypedMap} from '@nu-art/ts-common';
+import {_values, BadImplementationException, filterInstances, flatArray, TS_Object, TypedMap} from '@thunder-storm/common';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_Button} from '../TS_Button';

@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Dispatcher, FunctionKeys, LogLevel, ParamResolver, ReturnTypeResolver} from '@nu-art/ts-common';
+import {Dispatcher, FunctionKeys, LogLevel, ParamResolver, ReturnTypeResolver} from '@thunder-storm/common';
 
 // type ValidKeyResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? K : never
 export class ThunderDispatcher<T,

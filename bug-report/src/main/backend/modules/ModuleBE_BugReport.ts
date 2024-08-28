@@ -25,14 +25,14 @@ import {
 	generateHex,
 	Module,
 	padNumber
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 
-import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
+import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@thunder-storm/firebase/backend';
 
 import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
 
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {addRoutes, createBodyServerApi} from '@thunder-storm/core/backend';
+import {MemKey_AccountId} from '@thunder-storm/user-account/backend';
 import JSZip from 'jszip';
 
 export type TicketDetails = {

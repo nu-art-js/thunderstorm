@@ -1,4 +1,4 @@
-import {Primitive, TypeOfTypeAsString} from '@nu-art/ts-common';
+import {Primitive, TypeOfTypeAsString} from '@thunder-storm/common';
 
 
 export type CliParams<T extends BaseCliParam<string, any>[]> = {

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AppToolsScreen, ATS_Frontend, ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ATS_Frontend, ComponentSync} from '@thunder-storm/core/frontend';
 import {Component_DependencyViewer} from '../../dependency-viewer/Component_DependencyViewer';
 
 

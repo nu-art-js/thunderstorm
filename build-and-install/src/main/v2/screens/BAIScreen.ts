@@ -1,6 +1,6 @@
-import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, AsyncVoidFunction, BeLogged, LogClient_MemBuffer, LogLevel} from '@nu-art/ts-common';
+import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, AsyncVoidFunction, BeLogged, LogClient_MemBuffer, LogLevel} from '@thunder-storm/common';
 import {dispatcher_PhaseChange, dispatcher_UnitChange, dispatcher_UnitStatusChange} from '../phase-runner/PhaseRunnerDispatcher';
-import {ConsoleScreen} from '@nu-art/commando/console/ConsoleScreen';
+import {ConsoleScreen} from '@thunder-storm/commando/console/ConsoleScreen';
 
 
 export abstract class BAIScreen<State extends {} = {}>

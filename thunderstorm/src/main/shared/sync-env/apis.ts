@@ -1,4 +1,4 @@
-import {Minute, UniqueId} from '@nu-art/ts-common';
+import {Minute, UniqueId} from '@thunder-storm/common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
 import {BackupMetaData} from '../../_entity/backup-doc/shared';
 

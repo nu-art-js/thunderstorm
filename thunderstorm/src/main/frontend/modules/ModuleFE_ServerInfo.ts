@@ -1,4 +1,4 @@
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ApiCallerRouter, ApiDef_ServerInfo, ApiDefCaller, ApiStruct_ServerInfo, QueryApi, Response_ServerInfo} from '../../shared';
 import {apiWithQuery} from '../core/typed-api';
 

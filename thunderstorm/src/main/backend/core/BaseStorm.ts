@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {merge, Module, ModuleManager, TS_Object} from '@nu-art/ts-common';
-import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {merge, Module, ModuleManager, TS_Object} from '@thunder-storm/common';
+import {DatabaseWrapperBE, ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
 
 
 export abstract class BaseStorm

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AppToolsScreen, ComponentSync, LL_V_L} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ComponentSync, LL_V_L} from '@thunder-storm/core/frontend';
 import {PermissionKeysEditor} from './subEditors/permission-keys-editor';
 import {ModuleFE_PermissionAccessLevel} from '../../_entity';
 

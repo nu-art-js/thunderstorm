@@ -1,4 +1,4 @@
-import {AbsolutePath} from '@nu-art/ts-common';
+import {AbsolutePath} from '@thunder-storm/common';
 import * as  path from 'path';
 
 

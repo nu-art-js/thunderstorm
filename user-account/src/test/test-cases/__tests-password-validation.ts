@@ -1,6 +1,6 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@thunder-storm/common/testing/types';
 import {expect} from 'chai';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../main';
 
 

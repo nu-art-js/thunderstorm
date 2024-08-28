@@ -1,6 +1,6 @@
 import {CloudFunction, EventContext, RuntimeOptions} from 'firebase-functions';
 import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
-import {__stringify, dispatch_onApplicationNotification, ServerErrorSeverity} from '@nu-art/ts-common';
+import {__stringify, dispatch_onApplicationNotification, ServerErrorSeverity} from '@thunder-storm/common';
 import {BucketConfigs} from '../functions/firebase-function';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
 

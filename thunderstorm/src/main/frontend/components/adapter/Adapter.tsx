@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {ComponentType} from 'react';
-import {_keys, BadImplementationException, TS_Object,} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, TS_Object,} from '@thunder-storm/common';
 import {SimpleTreeNodeRenderer} from '../TS_Tree/SimpleTreeNodeRenderer';
 import {_BaseNodeRenderer, NodeRendererProps,} from './BaseRenderer';
 import {_className} from '../../utils/tools';

@@ -33,8 +33,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/core": "$THUNDERSTORM_DEPENDENCY_VERSION",
     "openai": "^4.12.4",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",

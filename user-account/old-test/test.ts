@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import {StormTester} from '@nu-art/thunderstorm/backend-test';
+import {StormTester} from '@thunder-storm/core/backend-test';
 import {createUser, testBadSessionID, testLoginWithWrongPass, testLoginWithWrongUser, testSuccessfulLogin} from './tests/create-user';
 import {ModuleBE_Account} from './_main';
 import {__scenario} from '@nu-art/testelot';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
 
 
 export const mainScenario = __scenario('login');

@@ -1,4 +1,4 @@
-import {DBIndex, DBProto} from '@nu-art/ts-common';
+import {DBIndex, DBProto} from '@thunder-storm/common';
 
 
 export type ReduceFunction_V3<ItemType, ReturnType> = (

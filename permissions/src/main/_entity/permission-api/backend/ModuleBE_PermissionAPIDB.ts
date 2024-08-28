@@ -1,12 +1,12 @@
-import {DBApiConfigV3, ModuleBE_BaseDB, ServerApi,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB, ServerApi,} from '@thunder-storm/core/backend';
 import {DB_PermissionAPI, DBDef_PermissionAPI, DBProto_PermissionAPI} from '../shared';
-import {dbObjectToId, filterInstances, PreDB, UniqueId} from '@nu-art/ts-common';
+import {dbObjectToId, filterInstances, PreDB, UniqueId} from '@thunder-storm/common';
 import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend/ModuleBE_PermissionAccessLevelDB';
 import {Transaction} from 'firebase-admin/firestore';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {MemKey_AccountId} from '@thunder-storm/user-account/backend';
 import {ModuleBE_PermissionProjectDB} from '../../permission-project/backend/ModuleBE_PermissionProjectDB';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {trimStartingForwardSlash} from '@nu-art/thunderstorm/shared/route-tools';
+import {HttpCodes} from '@thunder-storm/common/core/exceptions/http-codes';
+import {trimStartingForwardSlash} from '@thunder-storm/core/shared/route-tools';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionAPI> & {}

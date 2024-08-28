@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {ModuleFE_Toaster, TS_ErrorBoundary, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
-import {MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
+import {ModuleFE_Toaster, TS_ErrorBoundary, TS_PropRenderer, TS_Route} from '@thunder-storm/core/frontend';
+import {MUSTNeverHappenException, StaticLogger} from '@thunder-storm/common';
 import {MultiSelect} from '../ui-props';
-import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_Icons} from '@thunder-storm/styles';
 import {
 	DB_PermissionGroup,
 	DBProto_PermissionGroup,
@@ -13,12 +13,12 @@ import {
 import {Component_BasePermissionItemEditor} from './editor-base';
 import {Input_Text_Blur} from './components';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
-import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
+import {Page_ItemsEditor} from '@thunder-storm/core/frontend/components/Page_ItemsEditor';
+import {InferProps} from '@thunder-storm/core/frontend/utils/types';
 import {
 	Props_EditableItemControllerProto,
 	TS_EditableItemControllerProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
+} from '@thunder-storm/core/frontend/components/TS_EditableItemControllerProto';
 
 class Component_EditGroup
 	extends Component_BasePermissionItemEditor<DBProto_PermissionGroup> {

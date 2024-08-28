@@ -39,8 +39,8 @@ import {
 	tsValidateResult,
 	TypedMap,
 	ValidationException
-} from '@nu-art/ts-common';
-import {composeDbObjectUniqueId} from '@nu-art/firebase';
+} from '@thunder-storm/common';
+import {composeDbObjectUniqueId} from '@thunder-storm/firebase';
 import {OnClearWebsiteData} from '../clearWebsiteDataDispatcher';
 import {DBApiFEConfig, getModuleFEConfigV3} from '../../core/db-api-gen/db-def';
 import {

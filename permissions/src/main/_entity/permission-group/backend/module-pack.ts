@@ -1,4 +1,4 @@
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend';
+import {createApisForDBModuleV3} from '@thunder-storm/core/backend';
 import {ModuleBE_PermissionGroupDB} from './ModuleBE_PermissionGroupDB';
 
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {ImplementationMissingException, Module} from '@thunder-storm/common';
 import {IssueType, JiraIssueText, JiraModule, JiraProject, LabelType} from '@nu-art/jira/backend';
 import {Platform_Jira, ReportLogFile, Request_BugReport} from '../..';
 import {TicketDetails} from './ModuleBE_BugReport';

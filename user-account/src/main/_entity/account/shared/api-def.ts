@@ -1,6 +1,6 @@
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@thunder-storm/core';
 import {DB_Session, PasswordAssertionConfig} from '../../../shared';
-import {DB_BaseObject, Minute, UniqueId} from '@nu-art/ts-common';
+import {DB_BaseObject, Minute, UniqueId} from '@thunder-storm/common';
 import {AccountType, DB_Account, UI_Account} from './types';
 import {QueryParam_RedirectUrl} from '../../session/shared/consts';
 

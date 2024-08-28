@@ -1,7 +1,7 @@
 import {ComponentSync} from './ComponentSync';
 import {TS_Route} from '../modules/routing/types';
 import * as React from 'react';
-import {generateUUID} from '@nu-art/ts-common';
+import {generateUUID} from '@thunder-storm/common';
 import {Thunder} from './Thunder';
 import {stopPropagation} from '../utils/tools';
 import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2';

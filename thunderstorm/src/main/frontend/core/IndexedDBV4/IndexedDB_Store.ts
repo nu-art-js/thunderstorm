@@ -1,4 +1,4 @@
-import {DBProto, IndexKeys, Logger, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {DBProto, IndexKeys, Logger, MUSTNeverHappenException} from '@thunder-storm/common';
 import {DBConfigV3, IndexDb_Query_V3, ReduceFunction_V3} from './types';
 
 

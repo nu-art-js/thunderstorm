@@ -17,8 +17,8 @@
  */
 
 import * as React from 'react';
-import {Component_Form, ComponentSync, FormProps, ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend';
-import {deepClone, TS_Object, tsValidateObject} from '@nu-art/ts-common';
+import {Component_Form, ComponentSync, FormProps, ModuleFE_Toaster} from '@thunder-storm/core/frontend';
+import {deepClone, TS_Object, tsValidateObject} from '@thunder-storm/common';
 
 
 type State<T extends TS_Object> = {

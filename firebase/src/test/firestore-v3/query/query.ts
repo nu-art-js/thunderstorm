@@ -1,6 +1,6 @@
 import {queryAllTestCases, queryComplexTestCases, QueryTest, queryTestCases, queryWithPagination} from './consts';
 import {CollectionTest, firestore, prepareCollectionTest} from '../_core/consts';
-import {DBDef_V3, deepClone, tsValidateMustExist} from '@nu-art/ts-common';
+import {DBDef_V3, deepClone, tsValidateMustExist} from '@thunder-storm/common';
 import {DBProto_Type} from '../_entity';
 
 const dbDef: DBDef_V3<DBProto_Type> = {

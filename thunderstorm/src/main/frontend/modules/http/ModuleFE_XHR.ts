@@ -21,12 +21,12 @@
 // noinspection TypeScriptPreferShortImport
 import {ApiDef, TypedApi} from '../../../shared/types';
 
-import {BadImplementationException, composeUrl} from '@nu-art/ts-common';
+import {BadImplementationException, composeUrl} from '@thunder-storm/common';
 // noinspection TypeScriptPreferShortImport
 import {BaseHttpModule_Class, BaseHttpRequest, HttpException} from '../../../shared';
 // noinspection TypeScriptPreferShortImport
 import {gzipSync} from 'zlib';
-import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@thunder-storm/common/core/exceptions/types';
 
 
 export class ModuleFE_XHR_Class

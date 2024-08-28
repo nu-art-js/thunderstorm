@@ -25,7 +25,7 @@
 // Perhaps we may need to change this especially if it should be able to
 // be used as a standalone package.
 import {createClient} from 'slack/.old/redis';
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 
 type ConfigType = { port: number, host: string };
 

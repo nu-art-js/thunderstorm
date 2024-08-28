@@ -2,7 +2,7 @@ import {UnitPhaseImplementor} from '../types';
 import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
 import {Phase_Install, Phase_Watch} from '../../phase';
 import {RuntimeParams} from '../../../core/params/params';
-import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
+import {AbsolutePath, StringMap} from '@thunder-storm/common/utils/types';
 import {
 	_keys,
 	clearArrayInstance,
@@ -10,15 +10,15 @@ import {
 	Promise_all_sequentially,
 	queuedDebounce,
 	Second
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
 import * as chokidar from 'chokidar';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchReady} from '../runner-dispatchers';
 import {Unit_TypescriptLib} from './Unit_TypescriptLib';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../firebase-units';
-import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
-import {PNPM} from '@nu-art/commando/shell/services/pnpm';
+import {Commando_NVM} from '@thunder-storm/commando/shell/plugins/nvm';
+import {Commando_PNPM} from '@thunder-storm/commando/shell/plugins/pnpm';
+import {PNPM} from '@thunder-storm/commando/shell/services/pnpm';
 
 
 type Unit_TypescriptProject_Config = Unit_Typescript_Config & { globalPackages?: StringMap; };

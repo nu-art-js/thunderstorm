@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-import {BaseHttpRequest} from '@nu-art/thunderstorm';
-import {Auditable, DB_Object, TS_Object} from '@nu-art/ts-common';
+import {BaseHttpRequest} from '@thunder-storm/core';
+import {Auditable, DB_Object, TS_Object} from '@thunder-storm/common';
 import {FileStatus} from '../types';
 
 

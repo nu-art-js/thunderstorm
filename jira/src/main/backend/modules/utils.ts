@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {_keys} from "@nu-art/ts-common";
+import {_keys} from "@thunder-storm/common";
 import {
 	JiraQuery,
 	QueryItemWithOperator

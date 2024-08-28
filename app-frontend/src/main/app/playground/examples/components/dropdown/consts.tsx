@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BaseNodeRenderer, TreeItem, TreeRendererMap} from '@nu-art/thunderstorm/frontend';
+import {BaseNodeRenderer, TreeItem, TreeRendererMap} from '@thunder-storm/core/frontend';
 import * as React from 'react';
 
 

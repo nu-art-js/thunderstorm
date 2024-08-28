@@ -1,4 +1,4 @@
-import {Logger, md5, sortArray} from '@nu-art/ts-common';
+import {Logger, md5, sortArray} from '@thunder-storm/common';
 import {DBConfigV3} from './types';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 

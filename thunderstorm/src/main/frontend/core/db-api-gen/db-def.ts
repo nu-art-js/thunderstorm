@@ -1,4 +1,4 @@
-import {Const_UniqueKey, DBDef_V3, DBProto, DefaultDBVersion} from '@nu-art/ts-common';
+import {Const_UniqueKey, DBDef_V3, DBProto, DefaultDBVersion} from '@thunder-storm/common';
 import {DBConfigV3} from '../IndexedDBV4/types';
 
 export type DBApiFEConfig<Proto extends DBProto<any>> = {

@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ApiException, Dispatcher, Module, randomObject} from '@nu-art/ts-common';
+import {ApiException, Dispatcher, Module, randomObject} from '@thunder-storm/common';
 import {ApiDef_Examples, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
-import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {addRoutes, createBodyServerApi, createQueryServerApi,} from '@nu-art/thunderstorm/backend';
+import {FirestoreCollection, ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi,} from '@thunder-storm/core/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 
 

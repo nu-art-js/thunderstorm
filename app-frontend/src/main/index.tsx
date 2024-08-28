@@ -20,14 +20,14 @@
 import './res/styles/styles.scss';
 
 import {App} from './app/App';
-import {ModuleFE_ForceUpgrade, Thunder} from '@nu-art/thunderstorm/frontend';
-import {ModulePack_Frontend_LiveDocs} from '@nu-art/live-docs/frontend';
+import {ModuleFE_ForceUpgrade, Thunder} from '@thunder-storm/core/frontend';
+import {ModulePack_Frontend_LiveDocs} from '@thunder-storm/live-docs/frontend';
 import {ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Frontend_PushPubSub} from '@nu-art/push-pub-sub/frontend';
 import {ModuleFE_BugReport} from '@nu-art/bug-report/frontend';
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ModulePack_Frontend_Uploader} from '@nu-art/file-upload/frontend';
-import {ModuleFE_Permissions} from '@nu-art/permissions/frontend';
+import {ModuleFE_Permissions} from '@thunder-storm/permissions/frontend';
 
 
 const modules: Module[] = [

@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {Adapter, ComponentSync, LL_V_C, NodeRendererProps, TreeNode, TS_Tree,} from '@nu-art/thunderstorm/frontend';
+import {Adapter, ComponentSync, LL_V_C, NodeRendererProps, TreeNode, TS_Tree,} from '@thunder-storm/core/frontend';
 
 
 type State = { focused?: string, actionMessage: string };

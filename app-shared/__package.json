@@ -24,7 +24,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION"
+    "@thunder-storm/core": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/common": "$THUNDERSTORM_DEPENDENCY_VERSION"
   }
 }

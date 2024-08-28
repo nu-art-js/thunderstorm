@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {ComponentSync, LL_H_C, Show} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_H_C, Show} from '@thunder-storm/core/frontend';
 import {FocusData_Map, FocusedEntity} from '../../shared';
-import {compare, filterDuplicates, UniqueId} from '@nu-art/ts-common';
+import {compare, filterDuplicates, UniqueId} from '@thunder-storm/common';
 import {ModuleFE_FocusedObject, OnFocusedDataReceived} from '../modules/ModuleFE_FocusedObject';
-import {Component_AccountThumbnail, ModuleFE_Account} from '@nu-art/user-account/frontend';
+import {Component_AccountThumbnail, ModuleFE_Account} from '@thunder-storm/user-account/frontend';
 import './Component_FocusedEntityRef.scss';
 
 type Props = {

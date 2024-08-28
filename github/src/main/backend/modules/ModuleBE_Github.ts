@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {BadImplementationException, Exception, Module} from '@nu-art/ts-common';
+import {BadImplementationException, Exception, Module} from '@thunder-storm/common';
 import * as jwt from 'jsonwebtoken';
 import {Octokit, RestEndpointMethodTypes} from '@octokit/rest';
 import {OctokitResponse, ReposGetContentResponseData} from '@octokit/types';
 import * as path from 'path';
-import {promisifyRequest} from '@nu-art/thunderstorm/backend';
+import {promisifyRequest} from '@thunder-storm/core/backend';
 
 
 type Config = {

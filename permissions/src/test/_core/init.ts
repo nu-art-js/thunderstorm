@@ -1,10 +1,10 @@
-import {generateHex, ModuleManager} from '@nu-art/ts-common';
-import {ModuleBE_Auth} from '@nu-art/google-services/backend';
-import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase/backend';
-import {ModuleBE_APIs, Storm} from '@nu-art/thunderstorm/backend';
-import {RouteResolver_Dummy} from '@nu-art/thunderstorm/backend/modules/server/route-resolvers/RouteResolver_Dummy';
+import {generateHex, ModuleManager} from '@thunder-storm/common';
+import {ModuleBE_Auth} from '@thunder-storm/google-services/backend';
+import {FIREBASE_DEFAULT_PROJECT_ID} from '@thunder-storm/firebase/backend';
+import {ModuleBE_APIs, Storm} from '@thunder-storm/core/backend';
+import {RouteResolver_Dummy} from '@thunder-storm/core/backend/modules/server/route-resolvers/RouteResolver_Dummy';
 import {ModuleBE_PermissionsAssert} from '../../main/backend';
-import {ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account/backend';
+import {ModuleBE_AccountDB, ModuleBE_SessionDB} from '@thunder-storm/user-account/backend';
 import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';

@@ -1,4 +1,4 @@
-import {DBProto} from '@nu-art/ts-common';
+import {DBProto} from '@thunder-storm/common';
 
 
 export type ItemEditor_FilterType<Proto extends DBProto<any>> = (item: Proto['uiType']) => boolean

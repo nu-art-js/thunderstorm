@@ -1,5 +1,5 @@
 // BaseComponent.MinLogLevel = LogLevel.Debug;
-import {LogClient_MemBuffer, LogLevel} from '@nu-art/ts-common';
+import {LogClient_MemBuffer, LogLevel} from '@thunder-storm/common';
 
 
 type OverrideConsoleMethods = 'log' | 'debug' | 'info' | 'warn' | 'error' | 'trace'

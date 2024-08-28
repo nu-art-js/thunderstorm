@@ -26,7 +26,7 @@ import {
 	SubsetKeys,
 	ValidationException,
 	WhoCallThisException
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {ModuleFE_BaseApi} from '../modules/db-api-gen/ModuleFE_BaseApi';
 
 

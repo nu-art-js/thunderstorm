@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-import {Form, Form_FieldProps, FormRenderer, ModuleFE_Toaster, TS_Input} from '@nu-art/thunderstorm/frontend';
+import {Form, Form_FieldProps, FormRenderer, ModuleFE_Toaster, TS_Input} from '@thunder-storm/core/frontend';
 import * as React from 'react';
-import {Request_CreateAccount} from '@nu-art/user-account/shared/api';
+import {Request_CreateAccount} from '@thunder-storm/user-account/shared/api';
 import {COLORS} from '@res/colors';
 import {ICONS} from '@app/common/frontend/icons';
 import {renderForm} from '../../themes/forms';
-import {__stringify} from '@nu-art/ts-common';
+import {__stringify} from '@thunder-storm/common';
 
 
 const renderer = (icon: React.ReactNode, props: Form_FieldProps<Request_CreateAccount, any>) => {

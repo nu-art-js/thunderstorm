@@ -1,4 +1,4 @@
-import {DBProto, TypedMap} from '@nu-art/ts-common';
+import {DBProto, TypedMap} from '@thunder-storm/common';
 import {IndexedDB_Database} from './IndexedDB_Database';
 import {DBConfigV3} from './types';
 import {IndexedDB_Store} from './IndexedDB_Store';

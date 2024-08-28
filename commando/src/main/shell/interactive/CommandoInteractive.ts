@@ -1,4 +1,4 @@
-import {Constructor, generateHex, LogLevel} from '@nu-art/ts-common';
+import {Constructor, generateHex, LogLevel} from '@thunder-storm/common';
 import {InteractiveShell} from './InteractiveShell';
 import {LogTypes} from '../types';
 import {BaseCommando} from '../core/BaseCommando';

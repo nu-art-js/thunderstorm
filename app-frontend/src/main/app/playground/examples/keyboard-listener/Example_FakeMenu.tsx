@@ -27,8 +27,8 @@
 // 	NodeRendererProps,
 // 	TreeRenderer,
 // 	AdapterBuilder,
-// } from "@nu-art/thunderstorm/frontend";
-// import {__stringify} from "@nu-art/ts-common";
+// } from "@thunder-storm/core/frontend";
+// import {__stringify} from "@thunder-storm/common";
 //
 //
 // export class Example_FakeMenu

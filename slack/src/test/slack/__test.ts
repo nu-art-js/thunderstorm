@@ -1,7 +1,7 @@
 import {TestSuite_SlackServerAPIError} from './slack';
 import {ConfigType_ModuleBE_Slack, ModuleBE_Slack} from '../../main';
-import {ModuleManagerTester, testSuiteTester} from '@nu-art/ts-common/testing/consts';
-import {Second} from '@nu-art/ts-common';
+import {ModuleManagerTester, testSuiteTester} from '@thunder-storm/common/testing/consts';
+import {Second} from '@thunder-storm/common';
 
 
 const config: ConfigType_ModuleBE_Slack = {

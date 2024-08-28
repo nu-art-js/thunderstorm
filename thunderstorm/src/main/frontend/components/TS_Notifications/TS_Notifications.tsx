@@ -6,7 +6,7 @@ import {
 } from '../../component-modules/ModuleFE_Notifications';
 import * as React from 'react';
 import {LL_H_C, LL_V_L} from '../Layouts';
-import {formatTimestamp} from '@nu-art/ts-common';
+import {formatTimestamp} from '@thunder-storm/common';
 import './TS_Notifications.scss';
 import {TS_ComponentTransition} from '../TS_ComponentTransition';
 import {_className, stopPropagation} from '../../utils/tools';

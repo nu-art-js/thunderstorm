@@ -35,7 +35,7 @@ import {
 	LogParam,
 	sortArray,
 	TimerHandler
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {Thunder} from './Thunder';
 
 

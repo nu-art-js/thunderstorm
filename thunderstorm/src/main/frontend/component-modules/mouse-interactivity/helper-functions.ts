@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ModuleFE_MouseInteractivity} from './ModuleFE_MouseInteractivity';
 import {Adapter} from '../../components/adapter/Adapter';
 import {Coordinates, Model_Menu, Model_PopUp, Model_ToolTip, mouseInteractivity_ToolTip} from './types';
-import {generateHex, ResolvableContent} from '@nu-art/ts-common';
+import {generateHex, ResolvableContent} from '@thunder-storm/common';
 import {stopPropagation} from '../../utils/tools';
 
 // ######################### General Helpers #########################

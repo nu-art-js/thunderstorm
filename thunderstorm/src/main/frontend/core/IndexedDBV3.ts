@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DBIndex, DBProto, IndexKeys, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
+import {DBIndex, DBProto, IndexKeys, MUSTNeverHappenException, StaticLogger} from '@thunder-storm/common';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
 const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;

@@ -1,7 +1,7 @@
-import {ModuleBE_ExpressFunction_V2} from '@nu-art/firebase/backend';
+import {ModuleBE_ExpressFunction_V2} from '@thunder-storm/firebase/backend';
 import {Express, Response} from 'express';
-import {tsValidateResult, tsValidateShortUrl} from '@nu-art/ts-common';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {tsValidateResult, tsValidateShortUrl} from '@thunder-storm/common';
+import {HttpCodes} from '@thunder-storm/common/core/exceptions/http-codes';
 import {ModuleBE_ShortUrlDB} from '../../_entity/short-url/backend';
 import {HttpsFunction} from 'firebase-functions/v2/https';
 

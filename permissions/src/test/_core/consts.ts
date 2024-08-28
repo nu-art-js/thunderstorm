@@ -5,10 +5,10 @@ import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/Modu
 import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
-import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account/backend';
+import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@thunder-storm/common';
+import {MemKey_AccountId, ModuleBE_AccountDB} from '@thunder-storm/user-account/backend';
 import {Test_Project, Test_Setup} from './types';
-import {UI_Account} from '@nu-art/user-account';
+import {UI_Account} from '@thunder-storm/user-account';
 
 export const permissionTestCleanup = async () => {
 	await ModuleBE_AccountDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();

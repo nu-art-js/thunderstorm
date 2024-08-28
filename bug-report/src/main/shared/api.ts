@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {Auditable, DB_Object} from '@nu-art/ts-common';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@thunder-storm/core';
+import {Auditable, DB_Object} from '@thunder-storm/common';
 import {TicketDetails} from '../backend/modules/ModuleBE_BugReport';
 
 

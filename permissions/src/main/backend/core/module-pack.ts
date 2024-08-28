@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
 import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
 import {

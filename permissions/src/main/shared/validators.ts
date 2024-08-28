@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {tsValidateRegexp, tsValidateUniqueId} from '@nu-art/ts-common';
+import {tsValidateRegexp, tsValidateUniqueId} from '@thunder-storm/common';
 
 
 export const validateProjectId = tsValidateUniqueId;

@@ -1,4 +1,4 @@
-import {Logger, LogLevel, removeItemFromArray} from '@nu-art/ts-common';
+import {Logger, LogLevel, removeItemFromArray} from '@thunder-storm/common';
 import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 import {LogTypes} from '../types';
 

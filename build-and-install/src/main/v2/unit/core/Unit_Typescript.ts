@@ -7,13 +7,13 @@ import {
 	BadImplementationException,
 	ImplementationMissingException,
 	RelativePath
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import {Phase_CopyPackageJSON} from '../../phase';
 import {UnitPhaseImplementor} from '../types';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {convertToFullPath} from '@nu-art/commando/shell/tools';
+import {convertToFullPath} from '@thunder-storm/commando/shell/tools';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../tools/tools';
 
 

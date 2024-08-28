@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@thunder-storm/core';
 import {BaseSubscriptionData, PushMessage, Request_PushRegister} from './types';
 
 

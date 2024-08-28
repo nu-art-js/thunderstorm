@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-import {__stringify, Module, Second} from '@nu-art/ts-common';
+import {__stringify, Module, Second} from '@thunder-storm/common';
 
-import {apiWithBody, apiWithQuery, ModuleFE_Toaster, ThunderDispatcher, ModuleFE_XHR} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ModuleFE_Toaster, ThunderDispatcher, ModuleFE_XHR} from '@thunder-storm/core/frontend';
 import {ApiStruct_Examples, CommonBodyReq, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
-import {ApiDef, ApiDefCaller, ApiErrorResponse, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDef, ApiDefCaller, ApiErrorResponse, HttpMethod, QueryApi} from '@thunder-storm/core';
 import {Test} from '@modules/TestModule';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
-import {ModuleFE_Firebase} from '@nu-art/firebase/frontend';
+import {ModuleFE_Firebase} from '@thunder-storm/firebase/frontend';
 import {DB_Notifications} from '@nu-art/push-pub-sub';
 import {ApiDef_Examples} from '@app/app-shared/shared';
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {TS_Object} from '@nu-art/ts-common';
+import {TS_Object} from '@thunder-storm/common';
 import {FirestoreQuery} from '../../_main';
 
 

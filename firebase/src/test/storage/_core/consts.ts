@@ -1,6 +1,6 @@
 import {BucketWrapper, ModuleBE_Firebase} from '../../../main/backend';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {BadImplementationException} from '@nu-art/ts-common';
+import {TestSuite} from '@thunder-storm/common/testing/types';
+import {BadImplementationException} from '@thunder-storm/common';
 import '../../firestore-v3/_core/consts';
 
 export const storage = ModuleBE_Firebase.createAdminSession().getStorage();

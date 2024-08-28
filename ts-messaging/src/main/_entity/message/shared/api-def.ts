@@ -1,4 +1,4 @@
-import {ApiDefResolver, BodyApi, QueryApi, HttpMethod} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, QueryApi, HttpMethod} from '@thunder-storm/core';
 import {DBDef_message} from './db-def';
 
 

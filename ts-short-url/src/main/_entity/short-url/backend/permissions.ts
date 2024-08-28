@@ -1,7 +1,7 @@
 import {DomainNamespace_ShortUrl, PermissionKey_ShortUrlEdit, PermissionKey_ShortUrlView} from '../shared/consts';
-import {DefaultDef_Package} from '@nu-art/permissions/shared/types';
-import {DefaultAccessLevel_Read, DefaultAccessLevel_Write, DuplicateDefaultAccessLevels} from '@nu-art/permissions/shared/consts';
-import {defaultValueResolver, PermissionKey_BE} from '@nu-art/permissions/backend/PermissionKey_BE';
+import {DefaultDef_Package} from '@thunder-storm/permissions/shared/types';
+import {DefaultAccessLevel_Read, DefaultAccessLevel_Write, DuplicateDefaultAccessLevels} from '@thunder-storm/permissions/shared/consts';
+import {defaultValueResolver, PermissionKey_BE} from '@thunder-storm/permissions/backend/PermissionKey_BE';
 import {ModuleBE_ShortUrlDB} from './ModuleBE_ShortUrlDB';
 
 export const Domain_ShortUrl = Object.freeze({

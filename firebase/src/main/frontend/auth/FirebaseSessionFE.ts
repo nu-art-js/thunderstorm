@@ -20,7 +20,7 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import {Logger, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {Logger, ThisShouldNotHappenException} from '@thunder-storm/common';
 import {FirebaseConfig} from '../../index';
 import {MessagingWrapperFE} from '../messaging/MessagingWrapperFE';
 import {AnalyticsWrapperFE} from '../analytics/AnalyticsWrapperFE';

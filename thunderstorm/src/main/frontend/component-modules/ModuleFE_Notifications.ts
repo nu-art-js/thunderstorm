@@ -1,4 +1,4 @@
-import {addItemToArrayAtIndex, currentTimeMillis, DB_Object, generateHex, Module, removeFromArrayByIndex} from '@nu-art/ts-common';
+import {addItemToArrayAtIndex, currentTimeMillis, DB_Object, generateHex, Module, removeFromArrayByIndex} from '@thunder-storm/common';
 import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 

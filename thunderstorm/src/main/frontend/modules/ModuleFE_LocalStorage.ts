@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {_keys, exists, merge, Module, TS_Object, TypedMap} from '@nu-art/ts-common';
+import {_keys, exists, merge, Module, TS_Object, TypedMap} from '@thunder-storm/common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 

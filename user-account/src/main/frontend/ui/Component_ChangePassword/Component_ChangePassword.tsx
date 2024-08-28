@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {ComponentSync, LL_V_L, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {ComponentSync, LL_V_L, TS_BusyButton, TS_Input, TS_PropRenderer} from '@thunder-storm/core/frontend';
+import {ThisShouldNotHappenException} from '@thunder-storm/common';
 import {ModuleFE_Account, SessionKeyFE_Account} from '../../_entity';
 
 type Props = {

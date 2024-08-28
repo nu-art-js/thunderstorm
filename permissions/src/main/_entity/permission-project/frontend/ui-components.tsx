@@ -1,9 +1,9 @@
-import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend';
+import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@thunder-storm/core/frontend';
 import * as React from 'react';
 import {DBProto_PermissionProject} from '../shared';
 import {ModuleFE_PermissionProject} from './ModuleFE_PermissionProject';
-import {DBItemDropDownMultiSelector} from '@nu-art/thunderstorm/frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector';
-import {TS_Icons} from '@nu-art/ts-styles';
+import {DBItemDropDownMultiSelector} from '@thunder-storm/core/frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector';
+import {TS_Icons} from '@thunder-storm/styles';
 
 
 const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_PermissionProject> = {

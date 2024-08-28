@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CustomException, ErrorMessage, Module, ServerErrorSeverity, ServerErrorSeverity_Ordinal} from '@nu-art/ts-common';
+import {CustomException, ErrorMessage, Module, ServerErrorSeverity, ServerErrorSeverity_Ordinal} from '@thunder-storm/common';
 import {ModuleBE_Slack, ThreadPointer} from './ModuleBE_Slack';
 
 type Config = {

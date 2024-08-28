@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@nu-art/ts-common';
+import {_EmptyQuery, FirestoreQuery} from '@thunder-storm/firebase';
+import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@thunder-storm/common';
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
 import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException,  TypedApi} from '../../shared';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';

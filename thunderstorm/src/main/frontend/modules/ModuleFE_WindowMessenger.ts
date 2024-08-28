@@ -1,4 +1,4 @@
-import {Logger, Module, removeItemFromArray, TypedMap} from '@nu-art/ts-common';
+import {Logger, Module, removeItemFromArray, TypedMap} from '@thunder-storm/common';
 
 
 export const Key_UndefinedMessage = 'undefined-message';

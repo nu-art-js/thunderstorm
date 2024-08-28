@@ -1,5 +1,5 @@
-import {ApiDefResolver, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {DB_BaseObject, Minute} from '@nu-art/ts-common';
+import {ApiDefResolver, HttpMethod, QueryApi} from '@thunder-storm/core';
+import {DB_BaseObject, Minute} from '@thunder-storm/common';
 
 
 export type RequestType_ShortUrl = {};

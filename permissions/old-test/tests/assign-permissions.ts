@@ -19,7 +19,7 @@
 
 import {__custom, __scenario, ContextKey, TestException} from '@nu-art/testelot';
 import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1} from './_core';
-import {compare, generateHex, StringMap} from '@nu-art/ts-common';
+import {compare, generateHex, StringMap} from '@thunder-storm/common';
 import {
     AssignAppPermissions,
     ModuleBE_PermissionAccessLevel,

@@ -1,4 +1,4 @@
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ModuleBE_BackupDocDB} from './ModuleBE_BackupDocDB';
 import {ModuleBE_BackupScheduler} from './ModuleBE_BackupScheduler';
 

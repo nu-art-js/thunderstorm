@@ -1,5 +1,5 @@
-import {Logger} from '@nu-art/ts-common';
-import {ModuleBE_Slack} from '@nu-art/slack/backend';
+import {Logger} from '@thunder-storm/common';
+import {ModuleBE_Slack} from '@thunder-storm/slack/backend';
 import {MemKey_AccountEmail} from '../_entity/session/backend';
 
 export class SlackReporter extends Logger {

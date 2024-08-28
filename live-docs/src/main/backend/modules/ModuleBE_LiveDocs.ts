@@ -23,7 +23,7 @@ import {
 	BadImplementationException,
 	Module,
 	removeItemFromArray
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 
 import {
 	DB_Document,
@@ -33,9 +33,9 @@ import {
 	Request_UpdateDocument,
 } from '../../shared/types';
 
-import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {FirestoreCollection, ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
 
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@thunder-storm/core/backend';
 import {ApiDef_LiveDoc} from '../../shared/api';
 
 

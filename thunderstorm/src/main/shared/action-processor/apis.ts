@@ -1,5 +1,5 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
-import {Minute} from '@nu-art/ts-common';
+import {Minute} from '@thunder-storm/common';
 
 
 export type Request_ActionToProcess = { key: string, data?: any };

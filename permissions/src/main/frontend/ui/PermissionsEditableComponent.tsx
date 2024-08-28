@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {PermissionsComponent, Props_PermissionComponent} from './PermissionsComponent';
-import {_className} from '@nu-art/thunderstorm/frontend';
-import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {_className} from '@thunder-storm/core/frontend';
+import {ResolvableContent, resolveContent} from '@thunder-storm/common';
 
 type Props = Props_PermissionComponent & {
 	forceLock?: boolean;

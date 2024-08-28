@@ -26,11 +26,11 @@ import {_className} from '../../utils/tools';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
 import {TS_Route} from '../../modules/routing/types';
 import {TS_NavLink} from '../../modules/routing/ModuleFE_RoutingV2';
-import {md5, sortArray, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';
+import {md5, sortArray, ThisShouldNotHappenException, TypedMap} from '@thunder-storm/common';
 import {Outlet} from 'react-router-dom';
 import {TS_AppTools_Default} from './TS_AppTools_Default';
 import {AppToolsScreen} from './types';
-import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_Icons} from '@thunder-storm/styles';
 import {TS_CollapsableContainer} from '../TS_CollapsableContainer';
 
 

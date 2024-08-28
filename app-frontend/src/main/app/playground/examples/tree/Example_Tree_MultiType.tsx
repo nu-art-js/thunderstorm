@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {Adapter, AdapterBuilder, NodeRendererProps, ModuleFE_Toaster, TS_Tree} from '@nu-art/thunderstorm/frontend';
-import {__stringify} from '@nu-art/ts-common';
+import {Adapter, AdapterBuilder, NodeRendererProps, ModuleFE_Toaster, TS_Tree} from '@thunder-storm/core/frontend';
+import {__stringify} from '@thunder-storm/common';
 
 export class Example_Tree_MultiType_Renderer
 	extends Component<{}> {

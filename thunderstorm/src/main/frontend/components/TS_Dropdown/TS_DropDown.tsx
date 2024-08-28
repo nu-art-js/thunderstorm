@@ -29,7 +29,7 @@ import {
 	ResolvableContent,
 	resolveContent,
     voidFunction
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';

@@ -1,4 +1,4 @@
-import {UniqueId} from "@nu-art/ts-common";
+import {UniqueId} from "@thunder-storm/common";
 import { ThunderDispatcher } from "../../core/thunder-dispatcher";
 
 export interface OnDeleteConflicts {

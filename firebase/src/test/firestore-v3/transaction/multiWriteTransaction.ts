@@ -1,5 +1,5 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
+import {TestSuite} from '@thunder-storm/common/testing/types';
+import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@thunder-storm/common';
 import {firestore, testInstance1} from '../_core/consts';
 import {expect} from 'chai';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';

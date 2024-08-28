@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {TS_BusyButton} from '@nu-art/thunderstorm/frontend';
-import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_BusyButton} from '@thunder-storm/core/frontend';
+import {TS_Icons} from '@thunder-storm/styles';
 import './Component_GoogleSAMLLogin.scss';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity';
-import {MUSTNeverHappenException} from '@nu-art/ts-common';
+import {MUSTNeverHappenException} from '@thunder-storm/common';
 
 type Props = {
 	text?: string;

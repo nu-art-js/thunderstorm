@@ -48,7 +48,7 @@ import {
 	UniqueId,
 	ValidationException,
 	ValidatorTypeResolver
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
@@ -58,7 +58,7 @@ import {firestore} from 'firebase-admin';
 import {DocWrapperV3, UpdateObject} from './DocWrapperV3';
 import {composeDbObjectUniqueId} from '../../shared/utils';
 import {_EmptyQuery, maxBatch} from '../../shared/consts';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@thunder-storm/common/core/exceptions/http-codes';
 import {addDeletedToTransaction} from './consts';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;

@@ -6,7 +6,7 @@ import {
     Proto_DB_Object,
     TypedKeyValue,
     VersionsDeclaration
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 
 export const AccountType_User: AccountType = 'user';
 export const AccountType_Service: AccountType = 'service';

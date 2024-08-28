@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {functionThatReturnsTrue} from '@nu-art/ts-common';
+import {functionThatReturnsTrue} from '@thunder-storm/common';
 import {ActionMetaData} from '../../../../shared/action-processor';
 import {ComponentSync} from '../../../core/ComponentSync';
-import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_Icons} from '@thunder-storm/styles';
 import './Dialog_ActionProcessorConfirmation.scss';
 import {ModuleFE_Dialog} from '../../../component-modules/ModuleFE_Dialog';
 import {LL_H_C, LL_V_L} from '../../../components/Layouts';

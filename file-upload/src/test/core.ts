@@ -22,8 +22,8 @@ import {AppTester} from "@nu-art/testelot";
 import {
 	ModuleBE_Firebase,
 	ModuleBE_Firebase_Class
-} from "@nu-art/firebase/backend";
-import {ImplementationMissingException} from "@nu-art/ts-common";
+} from "@thunder-storm/firebase/backend";
+import {ImplementationMissingException} from "@thunder-storm/common";
 
 export class MyTester
 	extends AppTester {

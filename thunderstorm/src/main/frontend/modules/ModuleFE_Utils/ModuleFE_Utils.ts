@@ -1,4 +1,4 @@
-import {DB_Object, DBProto, Module} from '@nu-art/ts-common';
+import {DB_Object, DBProto, Module} from '@thunder-storm/common';
 import React from 'react';
 
 type Config = {};

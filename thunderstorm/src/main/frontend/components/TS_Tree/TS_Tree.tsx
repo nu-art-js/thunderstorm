@@ -27,7 +27,7 @@ import {_className} from '../../utils/tools';
 import './TS_Tree.scss';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TreeNodeExpandState} from './types';
-import {_keys} from '@nu-art/ts-common';
+import {_keys} from '@thunder-storm/common';
 
 
 export type Props_Tree = {

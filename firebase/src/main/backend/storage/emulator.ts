@@ -2,7 +2,7 @@ import {Response} from 'express';
 import {onRequest} from 'firebase-functions/v2/https';
 import {LocalRequest} from '../functions/firebase-function';
 import {ModuleBE_Firebase} from '../ModuleBE_Firebase';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@thunder-storm/common/core/exceptions/http-codes';
 
 
 export const firebaseStorageEmulatorProxy = {

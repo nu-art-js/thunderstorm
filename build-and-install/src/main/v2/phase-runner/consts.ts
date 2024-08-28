@@ -1,4 +1,4 @@
-import { MemKey } from '@nu-art/ts-common/mem-storage/MemStorage';
+import { MemKey } from '@thunder-storm/common/mem-storage/MemStorage';
 import {PhaseRunner} from './PhaseRunner';
 
 export const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';

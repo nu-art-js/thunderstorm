@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
-import {apiWithQuery, ModuleFE_Utils,} from '@nu-art/thunderstorm/frontend';
+import {_keys, BadImplementationException, exists, Module, TypedMap} from '@thunder-storm/common';
+import {apiWithQuery, ModuleFE_Utils,} from '@thunder-storm/core/frontend';
 import {ApiDef_Permissions} from '../..';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts';
-import {RendererKey_AccountMenu_SubHeader} from '@nu-art/user-account/frontend/consts';
+import {RendererKey_AccountMenu_SubHeader} from '@thunder-storm/user-account/frontend/consts';
 import {Renderer_RoleNames} from '../ui/Renderer_RoleNames';
 
 

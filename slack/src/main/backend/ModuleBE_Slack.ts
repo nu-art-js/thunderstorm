@@ -21,13 +21,13 @@
  * Created by AlanBen on 29/08/2019.
  */
 
-import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
+import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module} from '@thunder-storm/common';
 import {ChatPostMessageArguments, FilesUploadArguments, WebAPICallResult, WebClient, WebClientOptions,} from '@slack/web-api';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi} from '@thunder-storm/core/backend';
 import {ApiDef_Slack, PreSendSlackStructuredMessage} from '../shared';
 import {Stream} from 'stream';
 import {postSlackMessageErrorHandler} from './utils';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@thunder-storm/common/core/exceptions/http-codes';
 
 
 interface ChatPostMessageResult

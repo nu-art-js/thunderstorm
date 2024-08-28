@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {currentTimeMillis, generateHex, StaticLogger, StringMap} from '@nu-art/ts-common';
+import {currentTimeMillis, generateHex, StaticLogger, StringMap} from '@thunder-storm/common';
 import {
 	DB_PermissionGroup,
 	ModuleBE_PermissionAccessLevel,
@@ -28,10 +28,10 @@ import {
 	ModuleBE_PermissionUserDB,
 	User_Group
 } from '../_main';
-import {FirestoreTransaction} from '@nu-art/firebase/backend';
+import {FirestoreTransaction} from '@thunder-storm/firebase/backend';
 import {cleanup} from './_core';
 import {__custom, __scenario} from '@nu-art/testelot';
-import {ApiException} from '@nu-art/thunderstorm/backend';
+import {ApiException} from '@thunder-storm/core/backend';
 
 
 function makeAlphaBetIdForTestOnly(length: number) {

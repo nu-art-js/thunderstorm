@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-import {AdapterBuilder, LL_V_C, TreeItem, TS_DropDown} from '@nu-art/thunderstorm/frontend';
+import {AdapterBuilder, LL_V_C, TreeItem, TS_DropDown} from '@thunder-storm/core/frontend';
 import * as React from 'react';
 import {ICONS} from '@app/common/frontend/icons';
 import {flatPlaguesWithTitles, Plague, RendererMap_Plague} from './consts';
-import {Filter} from '@nu-art/ts-common';
+import {Filter} from '@thunder-storm/common';
 
 
 export class Example_Dropdown_MultiType

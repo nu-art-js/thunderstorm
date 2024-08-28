@@ -19,12 +19,12 @@
  * limitations under the License.
  */
 
-import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
-import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
+import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@thunder-storm/common';
+import {Firebase_ExpressFunction} from '@thunder-storm/firebase/backend-functions';
 import {BaseStorm} from './BaseStorm';
 import {HttpRoute, RouteResolver} from '../modules/server/route-resolvers';
 import {HttpServer} from '../modules/server/HttpServer';
-import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
 import {ServerApi} from '../modules/server/server-api';
 
 

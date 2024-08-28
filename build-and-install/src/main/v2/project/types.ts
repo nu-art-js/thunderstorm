@@ -1,4 +1,4 @@
-import {StringMap} from '@nu-art/ts-common';
+import {StringMap} from '@thunder-storm/common';
 import {ProjectConfig_DefaultFileRoutes} from '../../defaults/consts';
 
 export type ProjectConfigV2 = {

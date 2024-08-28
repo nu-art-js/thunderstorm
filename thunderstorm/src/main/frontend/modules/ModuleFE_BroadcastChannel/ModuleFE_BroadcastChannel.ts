@@ -1,4 +1,4 @@
-import {__stringify, Logger, Module, TypedMap} from '@nu-art/ts-common';
+import {__stringify, Logger, Module, TypedMap} from '@thunder-storm/common';
 import {Message} from '../ModuleFE_WindowMessenger';
 
 

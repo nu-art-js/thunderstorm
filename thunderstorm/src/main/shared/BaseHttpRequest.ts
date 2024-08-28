@@ -28,13 +28,13 @@ import {
 	Logger,
 	Minute,
 	ModuleManager
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {HttpMethod, TypedApi} from './types';
 import {HttpException, TS_Progress} from './request-types';
-import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
+import {ApiErrorResponse} from '@thunder-storm/common/core/exceptions/types';
 import {dispatcher_onAuthRequired} from './no-auth-listener';
 import {DefaultHttpServerConfig} from './consts';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@thunder-storm/common/core/exceptions/http-codes';
 
 
 export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> {

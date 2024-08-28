@@ -25,8 +25,8 @@ import {
 	LL_V_C,
 	TS_BusyButton,
 	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
-import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
+} from '@thunder-storm/core/frontend';
+import {_keys, addItemToArray, filterInstances} from '@thunder-storm/common';
 import {
 	Account_RegisterAccount,
 	AccountEmail,
@@ -43,8 +43,8 @@ import {
 	Request_RegisterAccount
 } from '../../shared';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../_entity';
-import {TS_Icons} from '@nu-art/ts-styles';
-import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
+import {TS_Icons} from '@thunder-storm/styles';
+import {TS_InputV2} from '@thunder-storm/core/frontend/components/TS_V2_Input';
 
 type State<T> = {
 	data: Partial<T>

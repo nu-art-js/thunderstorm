@@ -21,7 +21,7 @@
 import * as React from 'react';
 import './TS_ToolTip.scss';
 import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity';
-import {resolveContent} from '@nu-art/ts-common';
+import {resolveContent} from '@thunder-storm/common';
 import {
 	Model_ToolTip,
 	mouseInteractivity_ToolTip,

@@ -1,4 +1,4 @@
-import {LL_V_L} from '@nu-art/thunderstorm/frontend';
+import {LL_V_L} from '@thunder-storm/core/frontend';
 import {SessionKey_Permissions_FE} from '../consts';
 import * as React from 'react';
 

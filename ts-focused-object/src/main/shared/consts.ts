@@ -1,4 +1,4 @@
-import {Minute} from '@nu-art/ts-common';
+import {Minute} from '@thunder-storm/common';
 
 export const DefaultTTL_FocusedObject = 10 * Minute;
 

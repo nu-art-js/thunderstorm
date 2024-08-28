@@ -1,4 +1,4 @@
-import {Logger, mergeObject, ResolvableContent} from '@nu-art/ts-common';
+import {Logger, mergeObject, ResolvableContent} from '@thunder-storm/common';
 import {BlessedWidget, BlessedWidgetOptions, BlessedWidgetsType, createBlessedWidget} from './types';
 import {Widgets} from 'blessed';
 import INodeOptions = Widgets.INodeOptions;

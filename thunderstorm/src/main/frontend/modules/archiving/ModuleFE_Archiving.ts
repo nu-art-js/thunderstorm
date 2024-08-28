@@ -1,4 +1,4 @@
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ApiDef_Archiving, ApiDefCaller, ApiStruct_Archiving} from '../../../shared';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
 

@@ -9,7 +9,7 @@ import {
 	tsValidateUniqueId,
 	tsValidateValue,
 	ValidatorTypeResolver
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {
 	BaseMessage,
 	DB_Message,

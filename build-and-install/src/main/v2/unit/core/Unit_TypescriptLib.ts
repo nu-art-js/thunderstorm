@@ -1,7 +1,7 @@
 import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {BadImplementationException, LogLevel} from '@nu-art/ts-common';
+import {BadImplementationException, LogLevel} from '@thunder-storm/common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../phase-runner/RunnerParams';
 import {UnitPhaseImplementor} from '../types';
 import {
@@ -15,9 +15,9 @@ import {
 import {CONST_PackageJSON} from '../../../core/consts';
 import {RuntimeParams} from '../../../core/params/params';
 import {dispatcher_WatchReady, OnWatchReady} from '../runner-dispatchers';
-import {CommandoException} from '@nu-art/commando/shell/core/CliError';
-import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
+import {CommandoException} from '@thunder-storm/commando/shell/core/CliError';
+import {Commando_NVM} from '@thunder-storm/commando/shell/plugins/nvm';
+import {Commando_Basic} from '@thunder-storm/commando/shell/plugins/basic';
 
 
 export type Unit_TypescriptLib_Config = Unit_Typescript_Config & {

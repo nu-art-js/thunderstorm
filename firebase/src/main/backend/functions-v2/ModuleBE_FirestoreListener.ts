@@ -1,4 +1,4 @@
-import {deepClone, TS_Object} from '@nu-art/ts-common';
+import {deepClone, TS_Object} from '@thunder-storm/common';
 import {Change, CloudFunction, EventContext} from 'firebase-functions';
 import {DataSnapshot} from 'firebase/database';
 import {DocumentSnapshot} from 'firebase/firestore';

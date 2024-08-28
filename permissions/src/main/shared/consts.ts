@@ -1,4 +1,4 @@
-import {md5} from '@nu-art/ts-common';
+import {md5} from '@thunder-storm/common';
 import {DefaultDef_AccessLevel, PermissionKey, PreDBAccessLevel} from './types';
 
 

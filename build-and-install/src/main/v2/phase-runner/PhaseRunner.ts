@@ -20,13 +20,13 @@ import {
 	sortArray, StaticLogger,
 	StringMap,
 	TypedMap
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
 import {Phase, Phase_Debug, Phase_Help, Phase_PrintEnv} from '../phase';
 import {Unit, UnitPhaseImplementor} from '../unit/types';
 import {BaseUnit, Unit_TypescriptProject} from '../unit/core';
 import {AllBaiParams, RuntimeParams} from '../../core/params/params';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
 import fs, {promises as _fs} from 'fs';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
@@ -38,12 +38,12 @@ import {
 	RunningStatus
 } from '../../defaults/consts';
 import {dispatcher_PhaseChange, dispatcher_UnitChange} from './PhaseRunnerDispatcher';
-import {convertToFullPath} from '@nu-art/commando/shell/tools';
-import {BaseCliParam} from '@nu-art/commando/cli-params/types';
+import {convertToFullPath} from '@thunder-storm/commando/shell/tools';
+import {BaseCliParam} from '@thunder-storm/commando/cli-params/types';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
 import {BAIScreenManager, MemKey_BAIScreenManager} from '../screens/BAIScreenManager';
 import {MemKey_PhaseRunner} from './consts';
-import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
+import {Commando_Basic} from '@thunder-storm/commando/shell/plugins/basic';
 
 
 const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';

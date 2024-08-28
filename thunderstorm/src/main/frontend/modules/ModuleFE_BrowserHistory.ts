@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {_keys, composeQueryParams, exists, Module,} from '@nu-art/ts-common';
+import {_keys, composeQueryParams, exists, Module,} from '@thunder-storm/common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {QueryParams} from '../../shared';
 

@@ -1,4 +1,4 @@
-import {DBProto} from '@nu-art/ts-common';
+import {DBProto} from '@thunder-storm/common';
 import {DB_EntityDependencyV2} from '../../shared/types';
 import {Transaction} from 'firebase-admin/firestore';
 

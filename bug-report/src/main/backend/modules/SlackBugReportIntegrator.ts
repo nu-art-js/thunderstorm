@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-import {generateHex, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {generateHex, ImplementationMissingException, Module} from '@thunder-storm/common';
 import {Platform_Slack, ReportLogFile, Request_BugReport} from '../..';
 import {TicketDetails} from './ModuleBE_BugReport';
-import {ModuleBE_Slack} from '@nu-art/slack/backend';
+import {ModuleBE_Slack} from '@thunder-storm/slack/backend';
 
 type Config = {
 	channel: string

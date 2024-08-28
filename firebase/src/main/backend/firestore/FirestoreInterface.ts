@@ -19,7 +19,7 @@
 import {ComparatorMap, FirestoreQuery, QueryComparator} from '../..';
 import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from './types';
 import {FirestoreCollection} from './FirestoreCollection';
-import {__stringify, BadImplementationException, ImplementationMissingException, StaticLogger, TS_Object} from '@nu-art/ts-common';
+import {__stringify, BadImplementationException, ImplementationMissingException, StaticLogger, TS_Object} from '@thunder-storm/common';
 import {Query} from 'firebase-admin/firestore';
 
 

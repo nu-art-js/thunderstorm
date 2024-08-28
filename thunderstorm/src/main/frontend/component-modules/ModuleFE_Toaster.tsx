@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {Module, Second} from '@nu-art/ts-common';
+import {Module, Second} from '@thunder-storm/common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import { TS_Toast } from '../components/TS_Toaster/TS_Toast';
 

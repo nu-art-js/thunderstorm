@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import {Module} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery, ToastBuilder} from '@nu-art/thunderstorm/frontend';
+import {Module} from '@thunder-storm/common';
+import {apiWithBody, apiWithQuery, ToastBuilder} from '@thunder-storm/core/frontend';
 import {DB_Document, LiveDocReqParams} from '../../shared/types';
 import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '../../shared/api';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {ApiDefCaller} from '@thunder-storm/core';
 import {DefaultLiveDocEditor} from '../utils';
 
 

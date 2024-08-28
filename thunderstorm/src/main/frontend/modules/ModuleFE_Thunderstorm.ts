@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, Module, TypedKeyValue, TypedMap, _keys} from '@nu-art/ts-common';
+import {BadImplementationException, Module, TypedKeyValue, TypedMap, _keys} from '@thunder-storm/common';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {composeURL} from './ModuleFE_BrowserHistory';
 import {HttpMethod, QueryApi, QueryParams} from '../../shared/types';

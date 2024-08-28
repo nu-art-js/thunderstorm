@@ -1,4 +1,4 @@
-import {DBDef_V3, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateString, tsValidateUniqueId} from '@thunder-storm/common';
 import {DBProto_Topic} from './types';
 import {MessagingDBGroup} from '../../shared';
 

@@ -26,7 +26,7 @@ import {
 	compareVersions,
 	ImplementationMissingException,
 	Module
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 
 import {
 	ApiDef_ForceUpgrade,

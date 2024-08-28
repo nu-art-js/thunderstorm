@@ -1,4 +1,4 @@
-import {DBProto} from '@nu-art/ts-common';
+import {DBProto} from '@thunder-storm/common';
 import {ThunderDispatcher} from '../thunder-dispatcher';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 

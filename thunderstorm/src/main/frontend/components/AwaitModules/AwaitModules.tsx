@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
-import {exists, ResolvableContent, resolveContent, RuntimeModules} from '@nu-art/ts-common';
+import {exists, ResolvableContent, resolveContent, RuntimeModules} from '@thunder-storm/common';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import './AwaitModules.scss';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';

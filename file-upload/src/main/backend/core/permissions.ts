@@ -1,7 +1,7 @@
-import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions/shared/types';
+import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '@thunder-storm/permissions/shared/types';
 import {ApiDef_Assets, ApiDef_AssetUploader} from '../../shared';
-import {DefaultAccessLevel_Admin, DefaultAccessLevel_Delete, DefaultAccessLevel_Read, DefaultAccessLevel_Write} from '@nu-art/permissions/shared/consts';
-import {Domain_Developer} from '@nu-art/permissions/backend/permissions';
+import {DefaultAccessLevel_Admin, DefaultAccessLevel_Delete, DefaultAccessLevel_Read, DefaultAccessLevel_Write} from '@thunder-storm/permissions/shared/consts';
+import {Domain_Developer} from '@thunder-storm/permissions/backend/permissions';
 import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI';
 
 

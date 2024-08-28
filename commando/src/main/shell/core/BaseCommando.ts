@@ -1,4 +1,4 @@
-import {Constructor, ImplementationMissingException} from '@nu-art/ts-common';
+import {Constructor, ImplementationMissingException} from '@thunder-storm/common';
 import {CommandBuilder} from './CommandBuilder';
 import {CreateMergedInstance} from './class-merger';
 

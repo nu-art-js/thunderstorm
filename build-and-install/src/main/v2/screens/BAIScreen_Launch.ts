@@ -12,7 +12,7 @@ import {
 	maxSubstring,
 	MB, Second,
 	WhoCallThisException
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {phase_Launch} from '../phase';
 
 

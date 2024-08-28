@@ -1,9 +1,9 @@
-import {Module, RuntimeVersion} from '@nu-art/ts-common';
+import {Module, RuntimeVersion} from '@thunder-storm/common';
 import {createQueryServerApi} from '../core/typed-api';
 import {ApiDef_ServerInfo, Response_ServerInfo} from '../../shared';
 import {addRoutes} from './ModuleBE_APIs';
 import {Storm} from '../core/Storm';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
 
 
 type Config = Response_ServerInfo

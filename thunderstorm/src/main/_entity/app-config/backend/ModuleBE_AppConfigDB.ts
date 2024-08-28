@@ -1,6 +1,6 @@
 import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB';
 import {DB_AppConfig, DBDef_AppConfig, DBProto_AppConfig} from './shared';
-import {_keys, ApiException, Logger, PreDB, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
+import {_keys, ApiException, Logger, PreDB, TypedKeyValue, TypedMap} from '@thunder-storm/common';
 
 type InferType<T> = T extends AppConfigKey_BE<infer ValueType> ? ValueType : never;
 type Config = DBApiConfigV3<DBProto_AppConfig> & {}

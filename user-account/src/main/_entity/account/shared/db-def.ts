@@ -5,7 +5,7 @@ import {
 	tsValidateString,
 	tsValidateValue,
 	tsValidator_nonMandatoryString
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {_accountTypes, DBProto_Account} from './types';
 import {accountGroupName} from '../../session/shared/consts';
 

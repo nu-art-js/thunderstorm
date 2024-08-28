@@ -1,7 +1,7 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@thunder-storm/core/backend';
 import {DBDef_message, DBProto_Message} from '../shared';
-import {getAuditorId, ModuleBE_AccountDB} from '@nu-art/user-account/backend';
-import {arrayToMap} from '@nu-art/ts-common';
+import {getAuditorId, ModuleBE_AccountDB} from '@thunder-storm/user-account/backend';
+import {arrayToMap} from '@thunder-storm/common';
 
 
 type Config = DBApiConfigV3<DBProto_Message> & {}

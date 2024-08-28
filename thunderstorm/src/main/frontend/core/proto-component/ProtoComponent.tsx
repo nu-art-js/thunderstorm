@@ -1,5 +1,5 @@
 import {ComponentSync} from '../ComponentSync';
-import {BadImplementationException, compare, deepClone} from '@nu-art/ts-common';
+import {BadImplementationException, compare, deepClone} from '@thunder-storm/common';
 import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2} from '../../modules/ModuleFE_BrowserHistoryV2';
 import {ProtoComponentDef} from './types';
 

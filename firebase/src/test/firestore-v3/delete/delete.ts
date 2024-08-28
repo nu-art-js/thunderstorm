@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts';
-import {TestSuite} from '@nu-art/ts-common/test-index';
+import {TestSuite} from '@thunder-storm/common/test-index';
 import {
 	asArray,
 	compare,
@@ -13,7 +13,7 @@ import {
 	removeDBObjectKeys,
 	sortArray,
 	tsValidateMustExist
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {_EmptyQuery} from '../../../main';
 import {DB_Type, DBProto_Type} from '../_entity';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';

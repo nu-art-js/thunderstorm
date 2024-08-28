@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {BeLogged, Logger, padNumber} from '@nu-art/ts-common';
+import {BeLogged, Logger, padNumber} from '@thunder-storm/common';
 import {LogClient_File} from '../../main/frontend/utils/LogClient_File';
 
 

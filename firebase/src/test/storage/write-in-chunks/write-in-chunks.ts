@@ -7,7 +7,7 @@ import {
     tsValidateNumber,
     tsValidateString,
     ValidatorTypeResolver
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import * as Stream from 'stream';
 import {END_OF_STREAM} from '../../../main/backend';
 import {_EmptyQuery} from '../../../main';

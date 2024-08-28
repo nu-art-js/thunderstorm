@@ -1,4 +1,4 @@
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
 import {TestSuite_Storage_Write} from './write-to-files/write-to-files';
 import {TestSuite_GetAdminBucket} from './bucket-utils/getMainBucket';
 import {TestSuite_GetOrCreateBucket} from './bucket-utils/getOrCreateBucket';

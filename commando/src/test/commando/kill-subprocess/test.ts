@@ -1,4 +1,4 @@
-import {BeLogged, LogClient_Terminal, sleep} from '@nu-art/ts-common';
+import {BeLogged, LogClient_Terminal, sleep} from '@thunder-storm/common';
 import {CommandoCLIKeyValueListener, CommandoCLIListener, CommandoInteractive} from '../../../main/core/cli';
 import {Commando_Basic} from '../../../main/shell/plugins/basic';
 

@@ -1,4 +1,4 @@
-import {sleep} from '@nu-art/ts-common';
+import {sleep} from '@thunder-storm/common';
 
 
 const execute = async () => {

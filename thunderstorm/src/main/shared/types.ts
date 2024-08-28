@@ -20,8 +20,8 @@
  */
 
 import {BaseHttpRequest} from './BaseHttpRequest';
-import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
-import {DBDef_V3} from '@nu-art/ts-common';
+import {ResponseError} from '@thunder-storm/common/core/exceptions/types';
+import {DBDef_V3} from '@thunder-storm/common';
 
 
 export enum HttpMethod {

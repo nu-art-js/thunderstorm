@@ -17,7 +17,7 @@
  */
 
 
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ModulePackFE_AccountDB} from './_entity';
 
 export const ModulePackFE_Accounts: Module[] = [

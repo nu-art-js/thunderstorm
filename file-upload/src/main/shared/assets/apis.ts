@@ -1,8 +1,8 @@
-import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@thunder-storm/core';
 import {DB_Asset} from './types1';
-import {DB_BaseObject} from '@nu-art/ts-common';
+import {DB_BaseObject} from '@thunder-storm/common';
 import {UI_Asset} from './types';
-import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {ResponseError} from '@thunder-storm/common/core/exceptions/types';
 import {FileStatus} from '../types';
 
 

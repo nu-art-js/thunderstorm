@@ -27,12 +27,12 @@
     "build": "tsc -b -f"
   },
   "dependencies": {
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-styles": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/permissions": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/user-account": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/core": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/styles": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/permissions": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/user-account": "$THUNDERSTORM_DEPENDENCY_VERSION",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "moment": "$MOMENT_PKG_VERSION",

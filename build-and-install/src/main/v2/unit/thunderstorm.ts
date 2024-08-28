@@ -1,6 +1,6 @@
 import {BaseUnit, Unit_TypescriptLib} from './core';
 import {RuntimeParams} from '../../core/params/params';
-import {RelativePath} from '@nu-art/ts-common';
+import {RelativePath} from '@thunder-storm/common';
 
 export const Unit_TSCommon = new Unit_TypescriptLib({
 	key: 'ts-common',

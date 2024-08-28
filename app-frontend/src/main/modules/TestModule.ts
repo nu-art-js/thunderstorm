@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Module} from "@nu-art/ts-common";
+import {Module} from "@thunder-storm/common";
 import {dispatchAll} from "@modules/ExampleModule";
 import {TestDispatch} from "@app/app-shared";
 

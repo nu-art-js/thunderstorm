@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-import {EntityDependencyError, FirestoreQuery} from '@nu-art/firebase';
-import {DB_BaseObject, DBDef_V3, DBProto, IndexKeys, Metadata} from '@nu-art/ts-common';
+import {EntityDependencyError, FirestoreQuery} from '@thunder-storm/firebase';
+import {DB_BaseObject, DBDef_V3, DBProto, IndexKeys, Metadata} from '@thunder-storm/common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
-import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {ResponseError} from '@thunder-storm/common/core/exceptions/types';
 
 
 /**

@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {TS_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {TS_Object, ValidatorTypeResolver} from '@thunder-storm/common';
 
 
 export type InputField<T, K extends keyof T = keyof T> = {

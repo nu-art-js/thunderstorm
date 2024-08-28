@@ -18,10 +18,10 @@
  */
 
 import * as React from 'react';
-import {ComponentSync,} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync,} from '@thunder-storm/core/frontend';
 import {DB_BugReport} from '../../shared/api';
-import {__stringify} from '@nu-art/ts-common';
-import {OnRequestListener} from '@nu-art/thunderstorm';
+import {__stringify} from '@thunder-storm/common';
+import {OnRequestListener} from '@thunder-storm/core';
 import {ModuleFE_BugReportAdmin, RequestKey_GetLog} from '../modules/ModuleFE_BugReportAdmin';
 
 

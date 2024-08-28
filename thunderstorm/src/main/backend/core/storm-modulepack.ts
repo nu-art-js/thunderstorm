@@ -1,4 +1,4 @@
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ModuleBE_UpgradeCollection} from '../modules/upgrade-collection/ModuleBE_UpgradeCollection';
 import {ModuleBE_SyncManager} from '../modules/sync-manager/ModuleBE_SyncManager';
 import {ModuleBE_APIs} from '../modules/ModuleBE_APIs';

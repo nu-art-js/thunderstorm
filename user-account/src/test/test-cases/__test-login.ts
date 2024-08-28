@@ -1,11 +1,11 @@
 import {Account_Login, Request_RegisterAccount} from '../../main';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@thunder-storm/common/testing/types';
 import {ModuleBE_AccountDB} from '../../main/backend';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
 import {expect} from 'chai';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
-import {generateHex} from '@nu-art/ts-common';
-import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
+import {generateHex} from '@thunder-storm/common';
+import {MemKey_HttpResponse} from '@thunder-storm/core/backend/modules/server/consts';
 
 
 export type loginInput = {

@@ -10,8 +10,8 @@ import {
 	Hour, Proto_DB_Object,
 	removeDBObjectKeys,
 	RuntimeModules
-} from '@nu-art/ts-common';
-import {ModuleBE_FirestoreListener} from '@nu-art/firebase/backend';
+} from '@thunder-storm/common';
+import {ModuleBE_FirestoreListener} from '@thunder-storm/firebase/backend';
 import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
@@ -22,7 +22,7 @@ import {
 	RequestQuery_DeleteAll,
 	RequestQuery_GetHistory
 } from '../../../shared';
-import {_EmptyQuery} from '@nu-art/firebase';
+import {_EmptyQuery} from '@thunder-storm/firebase';
 
 
 type Params = { collectionName: string, docId: string }

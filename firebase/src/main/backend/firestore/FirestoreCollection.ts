@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, batchAction, exists, generateHex, StaticLogger, Subset, TS_Object} from '@nu-art/ts-common';
+import {BadImplementationException, batchAction, exists, generateHex, StaticLogger, Subset, TS_Object} from '@thunder-storm/common';
 import {FirestoreType_Collection, FirestoreType_DocumentSnapshot} from './types';
 import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBE} from './FirestoreWrapperBE';

@@ -1,4 +1,4 @@
-import {DB_Object, DBProto, PreDB, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DBProto, PreDB, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@thunder-storm/common';
 import {FB_ArrayType} from '../../../firestore-v3/_core/types';
 
 type VersionTypes_Type_Complex = { '1.0.0': DB_Type }

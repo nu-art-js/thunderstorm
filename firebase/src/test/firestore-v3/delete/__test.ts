@@ -1,4 +1,4 @@
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
 import {TestSuite_FirestoreV3_Delete} from './delete';
 
 describe('Firestore v3 - Delete', () => {

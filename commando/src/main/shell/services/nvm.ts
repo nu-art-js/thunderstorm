@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import * as path from 'path';
-import {Logger, LogLevel} from '@nu-art/ts-common';
+import {Logger, LogLevel} from '@thunder-storm/common';
 import {Commando_NVM} from '../plugins/nvm';
 
 

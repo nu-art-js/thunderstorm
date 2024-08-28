@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {DBProto, LogLevel, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {DBProto, LogLevel, ResolvableContent, resolveContent} from '@thunder-storm/common';
 import {OnSyncStatusChangedListener} from '../core/db-api-gen/types';
 import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB';
 import {TS_Loader} from '../components/TS_Loader';

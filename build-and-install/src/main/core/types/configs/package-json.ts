@@ -1,4 +1,4 @@
-import {StringMap} from '@nu-art/ts-common';
+import {StringMap} from '@thunder-storm/common';
 import {JSONVersion} from '../core';
 
 export type PackageJson = JSONVersion & {

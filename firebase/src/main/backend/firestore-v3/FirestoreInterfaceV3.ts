@@ -25,7 +25,7 @@ import {
 	DBProto,
 	ImplementationMissingException,
 	StaticLogger
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {Query} from 'firebase-admin/firestore';
 
 

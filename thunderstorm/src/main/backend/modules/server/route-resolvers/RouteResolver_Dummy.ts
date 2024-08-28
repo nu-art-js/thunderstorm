@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Logger, LogLevel} from '@nu-art/ts-common';
+import {Logger, LogLevel} from '@thunder-storm/common';
 
 
 export class RouteResolver_Dummy

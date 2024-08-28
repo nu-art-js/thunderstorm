@@ -1,4 +1,4 @@
-import {BadImplementationException, LogClient_MemBuffer, exists, removeItemFromArray, BeLogged} from '@nu-art/ts-common';
+import {BadImplementationException, LogClient_MemBuffer, exists, removeItemFromArray, BeLogged} from '@thunder-storm/common';
 import {ConsoleScreen} from '../../../main/console/ConsoleScreen';
 import {BlessedWidget} from '../../../main/console/types';
 

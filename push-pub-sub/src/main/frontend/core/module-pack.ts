@@ -17,7 +17,7 @@
  */
 
 import {ModuleFE_PushPubSub} from '../modules/ModuleFE_PushPubSub';
-import {ModuleFE_Firebase} from '@nu-art/firebase/frontend';
+import {ModuleFE_Firebase} from '@thunder-storm/firebase/frontend';
 import {ModuleFE_PushSubscription} from '../modules/ModuleFE_PushSubscription';
 
 

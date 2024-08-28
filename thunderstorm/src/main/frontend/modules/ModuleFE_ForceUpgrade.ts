@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Dispatcher, Module} from '@nu-art/ts-common';
+import {Dispatcher, Module} from '@thunder-storm/common';
 import {ModuleFE_XHR} from './http/ModuleFE_XHR';
 import {
 	ApiDef,

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {ICONS} from '@app/common/frontend/icons';
-import {Adapter, BaseNodeRenderer, ComponentSync, LL_V_C, SimpleListAdapter, TS_Checkbox, TS_DropDown} from '@nu-art/thunderstorm/frontend';
+import {Adapter, BaseNodeRenderer, ComponentSync, LL_V_C, SimpleListAdapter, TS_Checkbox, TS_DropDown} from '@thunder-storm/core/frontend';
 import {Plague, plagues} from './consts';
-import {Filter} from '@nu-art/ts-common';
+import {Filter} from '@thunder-storm/common';
 
 
 type State = {

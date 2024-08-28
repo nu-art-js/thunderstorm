@@ -20,7 +20,7 @@
  */
 
 import {MemKey_HttpRequestBody, MemKey_HttpRequestHeaders, MemKey_HttpRequestQuery, MemKey_HttpRequestUrl} from './consts';
-import {__stringify, _keys, ApiException, isErrorOfType, StaticLogger, StringMap} from '@nu-art/ts-common';
+import {__stringify, _keys, ApiException, isErrorOfType, StaticLogger, StringMap} from '@thunder-storm/common';
 import {HttpErrorHandler} from '../../utils/types';
 
 

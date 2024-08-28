@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {ComponentSync, LL_V_L, TS_Button} from '@nu-art/thunderstorm/frontend';
-import {dbObjectToId} from '@nu-art/ts-common';
+import {ComponentSync, LL_V_L, TS_Button} from '@thunder-storm/core/frontend';
+import {dbObjectToId} from '@thunder-storm/common';
 import {Permissions_DropDown} from '../../ui-props';
-import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_Icons} from '@thunder-storm/styles';
 import {PermissionKey_FE} from '../../../PermissionKey_FE';
 import {DB_PermissionAccessLevel, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain} from '../../../_entity';
 

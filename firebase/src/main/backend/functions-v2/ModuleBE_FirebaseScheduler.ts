@@ -1,7 +1,7 @@
 import {Change, CloudFunction, RuntimeOptions} from 'firebase-functions';
 import {DataSnapshot} from 'firebase/database';
-import {addItemToArray, ImplementationMissingException, merge} from '@nu-art/ts-common';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {addItemToArray, ImplementationMissingException, merge} from '@thunder-storm/common';
+import {MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

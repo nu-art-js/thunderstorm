@@ -1,4 +1,4 @@
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey} from '@thunder-storm/common/mem-storage/MemStorage';
 import {ProjectConfigV2} from '../project/types';
 
 export const MemKey_ProjectConfig = new MemKey<ProjectConfigV2>('project-config');

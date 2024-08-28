@@ -18,9 +18,9 @@
  */
 
 import {ModuleBase_AssetUploader, UploaderConfig,} from '../../shared/modules/ModuleBase_AssetUploader';
-import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule} from '@nu-art/thunderstorm/backend';
+import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule} from '@thunder-storm/core/backend';
 import {ApiDef_AssetUploader, TempSignedUrl, UI_Asset} from '../shared';
-import {ApiDef, BaseHttpRequest, TypedApi} from '@nu-art/thunderstorm';
+import {ApiDef, BaseHttpRequest, TypedApi} from '@thunder-storm/core';
 
 
 export type ServerFilesToUpload = UI_Asset & {

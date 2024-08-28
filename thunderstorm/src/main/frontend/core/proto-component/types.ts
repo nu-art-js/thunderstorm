@@ -1,4 +1,4 @@
-import {Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives, SubsetObjectByKeys} from '@nu-art/ts-common';
+import {Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives, SubsetObjectByKeys} from '@thunder-storm/common';
 
 
 /**

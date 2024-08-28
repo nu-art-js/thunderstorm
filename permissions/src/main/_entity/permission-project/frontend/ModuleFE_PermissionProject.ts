@@ -1,6 +1,6 @@
-import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {ModuleFE_BaseApi} from '@thunder-storm/core/frontend';
+import {ApiDefCaller} from '@thunder-storm/core';
+import {DispatcherDef, ThunderDispatcherV3} from '@thunder-storm/core/frontend/core/db-api-gen/types';
 import {ApiStruct_PermissionProject, DBDef_PermissionProject, DBProto_PermissionProject} from '../shared';
 
 

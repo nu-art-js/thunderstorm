@@ -1,7 +1,7 @@
 import {
 	Logger,
 	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
+} from "@thunder-storm/common";
 import {dialogflow_v2} from "googleapis";
 import {ModuleBE_Auth} from "./ModuleBE_Auth";
 import {GCPScope} from "./consts";

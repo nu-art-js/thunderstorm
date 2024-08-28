@@ -2,7 +2,7 @@ import {
 	ComponentSync,
 	SimpleListAdapter,
 	TS_DropDown,
-} from '@nu-art/thunderstorm/frontend';
+} from '@thunder-storm/core/frontend';
 import {PanelConfig, TS_HorizontalWorkspace, TS_VerticalWorkspace, TS_Workspace} from '@nu-art/ts-workspace/frontend';
 import * as React from 'react';
 

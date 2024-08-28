@@ -20,7 +20,7 @@
  */
 
 import {MemKey_HttpRequest} from './consts';
-import {ApiException} from '@nu-art/ts-common';
+import {ApiException} from '@thunder-storm/common';
 
 
 export class HeaderKey {

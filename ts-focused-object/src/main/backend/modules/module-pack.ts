@@ -1,4 +1,4 @@
-import {Module} from '@nu-art/ts-common';
+import {Module} from '@thunder-storm/common';
 import {ModuleBE_FocusedObject} from './ModuleBE_FocusedObject';
 
 export const ModulePack_FocusedObjectBE: Module[] = [

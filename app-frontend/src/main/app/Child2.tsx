@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ComponentSync, ModuleFE_Routing} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, ModuleFE_Routing} from '@thunder-storm/core/frontend';
 import {Parent} from './Parent';
 
 export class Child2

@@ -19,9 +19,9 @@
  * limitations under the License.
  */
 
-import {currentTimeMillis, Dispatcher} from '@nu-art/ts-common';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
-import {ModuleBE_FirebaseScheduler} from '@nu-art/firebase/backend';
+import {currentTimeMillis, Dispatcher} from '@thunder-storm/common';
+import {ModuleBE_Firebase} from '@thunder-storm/firebase/backend/ModuleBE_Firebase';
+import {ModuleBE_FirebaseScheduler} from '@thunder-storm/firebase/backend';
 import {ActDetailsDoc} from '../shared';
 
 export type CleanupDetails = {

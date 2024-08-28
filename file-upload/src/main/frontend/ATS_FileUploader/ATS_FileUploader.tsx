@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {FirebaseAnalyticsModule} from '@nu-art/firebase/frontend';
-// import {TS_Icons} from '@nu-art/ts-styles';
+import {FirebaseAnalyticsModule} from '@thunder-storm/firebase/frontend';
+// import {TS_Icons} from '@thunder-storm/styles';
 import {
 	AppToolsScreen,
 	ATS_Fullstack, ComponentSync,
@@ -9,10 +9,10 @@ import {
 	LL_V_L,
 	openContent,
 	TS_DragAndDrop
-} from '@nu-art/thunderstorm/frontend';
+} from '@thunder-storm/core/frontend';
 import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
 import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
-import {ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';
+import {ResolvableContent, resolveContent, sortArray} from '@thunder-storm/common';
 
 
 type Props = {

@@ -1,4 +1,4 @@
-import {UI_Account} from '@nu-art/user-account';
+import {UI_Account} from '@thunder-storm/user-account';
 
 
 export type Test_Api = { path: string, accessLevels: { domainName: string, levelName: string }[] };

@@ -1,5 +1,5 @@
 import {duplicateObjectToCreate, firestore} from '../_core/consts';
-import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
+import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@thunder-storm/common';
 import * as chaiAsPromised from 'chai-as-promised';
 import {CreateTest, createTestCases} from './consts';
 import {expect} from 'chai';

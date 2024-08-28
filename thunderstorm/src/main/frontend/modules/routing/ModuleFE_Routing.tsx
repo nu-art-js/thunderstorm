@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_keys, addItemToArray, BadImplementationException, composeQueryParams, Module, RouteParams} from '@nu-art/ts-common';
+import {_keys, addItemToArray, BadImplementationException, composeQueryParams, Module, RouteParams} from '@thunder-storm/common';
 import * as React from 'react';
 import {defaultLinkNode, defaultNavLinkNode, defaultRouteNode, RoutePath} from './route';
 import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory';

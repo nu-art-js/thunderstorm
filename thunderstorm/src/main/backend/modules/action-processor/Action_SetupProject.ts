@@ -1,5 +1,5 @@
 import {ActionDeclaration} from './types';
-import {_keys, Dispatcher, Logger, StaticLogger} from '@nu-art/ts-common';
+import {_keys, Dispatcher, Logger, StaticLogger} from '@thunder-storm/common';
 
 
 export type SetupProjectPromise = { priority: number, processor: () => Promise<void> };

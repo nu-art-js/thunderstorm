@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
-import {CustomException} from '@nu-art/ts-common';
+import {ApiErrorResponse, ResponseError} from '@thunder-storm/common/core/exceptions/types';
+import {CustomException} from '@thunder-storm/common';
 
 
 export class HttpException<E extends ResponseError = ResponseError>

@@ -5,7 +5,7 @@ import {
 	tsValidateString,
 	tsValidateTimestamp,
 	tsValidateUniqueId
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {accountGroupName} from './consts';
 import {DBProto_Session} from './types';
 

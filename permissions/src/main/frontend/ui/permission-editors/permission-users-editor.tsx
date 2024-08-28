@@ -1,16 +1,16 @@
 import * as React from 'react';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
+import {ModuleFE_Account} from '@thunder-storm/user-account/frontend';
 import {DB_PermissionUser, DBProto_PermissionUser, ModuleFE_PermissionUser} from '../../_entity';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
-import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
+import {Page_ItemsEditor} from '@thunder-storm/core/frontend/components/Page_ItemsEditor';
+import {TS_PropRenderer, TS_Route} from '@thunder-storm/core/frontend';
 import {MultiSelect} from '../ui-props';
 import {Component_BasePermissionItemEditor} from './editor-base';
-import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
+import {InferProps} from '@thunder-storm/core/frontend/utils/types';
 import {
 	Props_EditableItemControllerProto,
 	TS_EditableItemControllerProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
-import {EditableRef} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
+} from '@thunder-storm/core/frontend/components/TS_EditableItemControllerProto';
+import {EditableRef} from '@thunder-storm/core/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
 
 
 class Component_EditAccount

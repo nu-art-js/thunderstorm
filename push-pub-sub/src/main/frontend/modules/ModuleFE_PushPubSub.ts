@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {apiWithBody, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, ThisShouldNotHappenException} from '@thunder-storm/common';
+import {apiWithBody, StorageKey, ThunderDispatcher} from '@thunder-storm/core/frontend';
 import {
 	ApiDef_PushMessages,
 	ApiStruct_PushMessages,
@@ -27,8 +27,8 @@ import {
 	PushMessage_PayloadWrapper,
 	Request_PushRegister
 } from '../../index';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {MessagingWrapperFE, ModuleFE_Firebase} from '@nu-art/firebase/frontend';
+import {ApiDefCaller} from '@thunder-storm/core';
+import {MessagingWrapperFE, ModuleFE_Firebase} from '@thunder-storm/firebase/frontend';
 
 
 export const Command_SwToApp = 'SwToApp';

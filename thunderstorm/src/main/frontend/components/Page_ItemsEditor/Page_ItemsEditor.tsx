@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {asArray, DB_Object, dbObjectToId, DBProto, exists, sortArray, UniqueId} from '@nu-art/ts-common';
+import {asArray, DB_Object, dbObjectToId, DBProto, exists, sortArray, UniqueId} from '@thunder-storm/common';
 import {FrameLayout} from '../FrameLayout';
 import {TS_Route} from '../../modules/routing';
 import {LL_H_C, LL_H_T, LL_V_L} from '../Layouts';
@@ -10,7 +10,7 @@ import {ItemEditor_DefaultList, Props_ListRenderer} from './defaults/ItemEditor_
 import {ItemEditor_FilterType, ItemEditor_MapperType, ItemEditor_SortType} from './types';
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
-import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_Icons} from '@thunder-storm/styles';
 import {ModuleFE_MouseInteractivity, mouseInteractivity_PopUp, openContent} from '../../component-modules/mouse-interactivity';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
 import {_className} from '../../utils/tools';

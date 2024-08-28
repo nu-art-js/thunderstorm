@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {ComponentSync, ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
-import {_keys, filterDuplicates, RuntimeModules, TypedMap} from '@nu-art/ts-common';
-import {DBModuleType} from '@nu-art/thunderstorm';
+import {ComponentSync, ModuleFE_BaseApi} from '@thunder-storm/core/frontend';
+import {_keys, filterDuplicates, RuntimeModules, TypedMap} from '@thunder-storm/common';
+import {DBModuleType} from '@thunder-storm/core';
 import {graphviz} from 'd3-graphviz';
 import {Digraph, Edge, Node, Subgraph, toDot} from 'ts-graphviz';
 

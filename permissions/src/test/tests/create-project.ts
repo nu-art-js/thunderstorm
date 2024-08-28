@@ -1,8 +1,8 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {AssertionException, reduceToMap, UniqueId} from '@nu-art/ts-common';
+import {TestSuite} from '@thunder-storm/common/testing/types';
+import {AssertionException, reduceToMap, UniqueId} from '@thunder-storm/common';
 import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../../main/backend';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
 import {
 	Failed_Log,
 	permissionTestCleanup,
@@ -20,7 +20,7 @@ import {
 } from '../_core/consts';
 import {expect} from 'chai';
 import {Test_Setup} from '../_core/types';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {MemKey_AccountId} from '@thunder-storm/user-account/backend';
 
 type CreatePermissionsSetup = {
 	setup: Test_Setup,

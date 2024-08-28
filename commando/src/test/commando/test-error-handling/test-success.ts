@@ -1,6 +1,6 @@
 import {Commando, CommandoInteractive} from '../../../main/core/cli';
 import {Commando_Basic} from '../../../main/shell/plugins/basic';
-import {BeLogged, generateHex, LogClient_Terminal} from '@nu-art/ts-common';
+import {BeLogged, generateHex, LogClient_Terminal} from '@thunder-storm/common';
 import {Commando_Git} from '../../../main/shell/plugins/git';
 
 

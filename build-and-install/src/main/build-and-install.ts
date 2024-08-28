@@ -1,4 +1,4 @@
-import {DebugFlag, LogLevel, RelativePath} from '@nu-art/ts-common';
+import {DebugFlag, LogLevel, RelativePath} from '@thunder-storm/common';
 import {RuntimeParams} from './core/params/params';
 import {PhaseRunner} from './v2/phase-runner/PhaseRunner';
 import {allTSUnits} from './v2/unit/thunderstorm';

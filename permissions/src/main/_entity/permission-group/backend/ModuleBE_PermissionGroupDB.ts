@@ -1,12 +1,12 @@
-import {DBApiConfigV3, ModuleBE_ActionProcessor, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_ActionProcessor, ModuleBE_BaseDB,} from '@thunder-storm/core/backend';
 import {DB_PermissionGroup, DB_PermissionGroup_1_0_0, DBDef_PermissionGroup, DBProto_PermissionGroup} from './shared';
-import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, reduceToMap, TypedMap} from '@nu-art/ts-common';
+import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, reduceToMap, TypedMap} from '@thunder-storm/common';
 import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend';
 import {Transaction} from 'firebase-admin/firestore';
-import {MemKey_AccountId, ModuleBE_SessionDB, SlackReporter} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_SessionDB, SlackReporter} from '@thunder-storm/user-account/backend';
 import {ModuleBE_PermissionUserDB} from '../../permission-user/backend';
-import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {_EmptyQuery} from '@nu-art/firebase';
+import {CollectionActionType, PostWriteProcessingData} from '@thunder-storm/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {_EmptyQuery} from '@thunder-storm/firebase';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionGroup> & {}

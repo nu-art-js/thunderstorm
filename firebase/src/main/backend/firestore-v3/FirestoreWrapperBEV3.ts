@@ -20,7 +20,7 @@ import {FirestoreCollectionHooks, FirestoreCollectionV3,} from './FirestoreColle
 import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {DBDef_V3, DBProto, Promise_all_sequentially} from '@nu-art/ts-common';
+import {DBDef_V3, DBProto, Promise_all_sequentially} from '@thunder-storm/common';
 import {DocumentReference, getFirestore, Transaction,} from 'firebase-admin/firestore';
 
 

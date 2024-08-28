@@ -10,8 +10,8 @@ import {
 	readFileContent,
 	StorageKey,
 	ThunderDispatcher
-} from '@nu-art/thunderstorm/frontend';
-import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
+} from '@thunder-storm/core/frontend';
+import {ApiDefCaller, BaseHttpRequest} from '@thunder-storm/core';
 import {ungzip} from 'pako';
 import {
 	cloneObj,
@@ -23,9 +23,9 @@ import {
 	generateHex,
 	KB,
 	TS_Object
-} from '@nu-art/ts-common';
-import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
-import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
+} from '@thunder-storm/common';
+import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@thunder-storm/core/shared/headers';
+import {OnAuthRequiredListener} from '@thunder-storm/core/shared/no-auth-listener';
 import {
 	Account_ChangeThumbnail,
 	Account_GetPasswordAssertionConfig,
@@ -48,7 +48,7 @@ import {
 	StorageKey_TabId
 } from './consts';
 import {PasswordAssertionConfig} from '../../_enum';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@thunder-storm/core/frontend/core/db-api-gen/types';
 import {jwtDecode} from 'jwt-decode';
 
 

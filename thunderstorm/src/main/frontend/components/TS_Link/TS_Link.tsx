@@ -22,7 +22,7 @@ import * as React from 'react';
 import {ModuleFE_Thunderstorm, UrlTarget} from '../../modules/ModuleFE_Thunderstorm';
 import './TS_Link.scss';
 import {_className, stopPropagation} from '../../utils/tools';
-import {TypedMap} from '@nu-art/ts-common';
+import {TypedMap} from '@thunder-storm/common';
 
 
 type Props = React.PropsWithChildren<{

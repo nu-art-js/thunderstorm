@@ -1,7 +1,7 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {tsValidateEmail, tsValidateResult} from '@nu-art/ts-common';
+import {TestSuite} from '@thunder-storm/common/testing/types';
+import {tsValidateEmail, tsValidateResult} from '@thunder-storm/common';
 import {expect} from 'chai';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@thunder-storm/common/testing/consts';
 
 
 type EmailValidationSuite = TestSuite<string, boolean>

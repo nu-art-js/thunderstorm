@@ -9,11 +9,11 @@ import {
 	TS_AppTools,
 	TS_Button,
 	TS_NavLink
-} from '@nu-art/thunderstorm/frontend';
+} from '@thunder-storm/core/frontend';
 import './ATS_Permissions.scss';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
-import {arrayIncludesAny, timeout} from '@nu-art/ts-common';
+import {ModuleFE_Account} from '@thunder-storm/user-account/frontend';
+import {arrayIncludesAny, timeout} from '@thunder-storm/common';
 import {SessionKey_StrictMode_FE} from '../../consts';
 import {ModuleFE_PermissionAccessLevel} from '../../../_entity/permission-access-level/frontend';
 import {ModuleFE_PermissionAPI} from '../../../_entity/permission-api/frontend';

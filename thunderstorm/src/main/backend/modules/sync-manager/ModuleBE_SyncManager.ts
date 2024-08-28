@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {_EmptyQuery, FirestoreQuery} from '@thunder-storm/firebase';
+import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@thunder-storm/firebase/backend';
 import {
 	__stringify,
 	arrayToMap,
@@ -37,7 +37,7 @@ import {
 	Second,
 	TypedMap,
 	UniqueId
-} from '@nu-art/ts-common';
+} from '@thunder-storm/common';
 import {firestore} from 'firebase-admin';
 import {createBodyServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
@@ -57,7 +57,7 @@ import {
 import {DBDef_DeletedDoc, DBProto_DeletedDoc, HttpMethod} from '../../../shared';
 import {OnSyncEnvCompleted} from '../sync-env/ModuleBE_SyncEnv';
 import {OnModuleCleanupV2} from '../../_entity';
-import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {FirestoreCollectionV3} from '@thunder-storm/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import Transaction = firestore.Transaction;
 
 

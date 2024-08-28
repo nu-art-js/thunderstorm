@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@thunder-storm/core';
 import {DB_Document, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument} from './types';
 
 

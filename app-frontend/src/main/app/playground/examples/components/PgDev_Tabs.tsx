@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AppPage, Tab, TS_Tabs} from '@nu-art/thunderstorm/frontend';
+import {AppPage, Tab, TS_Tabs} from '@thunder-storm/core/frontend';
 
 const tabs: Tab[] = [
 	{
