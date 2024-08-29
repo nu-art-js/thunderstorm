@@ -18,7 +18,8 @@ import {
 import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ModuleFE_Account, SessionKeyFE_SessionData} from '../_entity';
+import {ModuleFE_Account} from '../_entity';
+import {jwtDecode} from 'jwt-decode';
 
 
 type Props = {
@@ -205,12 +206,15 @@ export class Component_AccountEditor
 				<div className={'grid-title'}>Device Id</div>
 				<div className={'grid-title'}></div>
 				{this.state.sessions.map(session => {
-					const createdAt = DateTimeFormat_yyyyMMDDTHHmmss.format(session.timestamp);
 					try {
-						// @ts-ignore
-						const sessionData = ModuleFE_Account.decode(session.sessionIdJwt);
-						SessionKeyFE_SessionData.get(sessionData).expiration;
-						const validTill = DateTimeFormat_yyyyMMDDTHHmmss.format(SessionKeyFE_SessionData.get(sessionData).expiration);
+						const decodedJwt = jwtDecode<{
+							sessionData: string,
+							exp: number,
+							iat: number
+						}>(session.sessionIdJwt);
+
+						const createdAt = DateTimeFormat_yyyyMMDDTHHmmss.format(decodedJwt.iat * 1000);
+						const validTill = DateTimeFormat_yyyyMMDDTHHmmss.format(decodedJwt.exp * 1000);
 						return <React.Fragment key={session._id}>
 							<LL_H_C className={'grid-cell'}>{session.label ?? 'No Label'}</LL_H_C>
 							<LL_H_C className={'grid-cell'}>{`${createdAt}`}</LL_H_C>
