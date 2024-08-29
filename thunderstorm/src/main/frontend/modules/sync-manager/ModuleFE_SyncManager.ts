@@ -26,10 +26,12 @@ import {
 	exists,
 	filterDuplicates,
 	flatArray,
+	generateHex,
 	LogLevel,
 	Module,
 	MUSTNeverHappenException,
 	reduceToMap,
+	removeFromArrayByIndex,
 	removeItemFromArray,
 	RuntimeModules,
 	Second
@@ -59,6 +61,7 @@ import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_Con
 import {ApiDefCaller, BodyApi, HttpMethod} from '../../../shared/types';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ModuleSyncType} from '../db-api-gen/types';
+import {BaseHttpRequest} from '../../../shared';
 
 
 export interface PermissibleModulesUpdated {
@@ -72,7 +75,7 @@ const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleMo
 export class ModuleFE_SyncManager_Class
 	extends Module
 	implements ApiDefCaller<ApiStruct_SyncManager>, OnConnectivityChange {
-	
+
 	async __onConnectivityChange() {
 		if (ModuleFE_ConnectivityModule.isConnected()) {
 			this.logInfo(`Browser gained network connectivity- initiating smartSync.`);
@@ -86,11 +89,12 @@ export class ModuleFE_SyncManager_Class
 
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
 	private syncedModules: SyncDbData[] = [];
-	private readonly currentlySyncingModules: Module[] = [];
+	private readonly currentlySyncingModules: { module: ModuleFE_BaseApi<any>, syncId: string, request?: BaseHttpRequest<any> }[] = [];
 	private syncFirebaseListener?: RefListenerFE<SyncDataFirebaseState>;
 	private outOfSyncCollections: Set<string> = new Set<string>();
 	private syncing?: boolean;
 	private pendingSync?: boolean;
+	private cancelledSyncs: string[] = [];
 
 	private syncDebouncer?: VoidFunction;
 	private syncQueue: QueueV2<NoNeedToSyncModule | DeltaSyncModule | FullSyncModule>;
@@ -118,7 +122,18 @@ export class ModuleFE_SyncManager_Class
 
 	public getPermissibleModuleNames = () => this.syncedModules.map(moduleSyncData => moduleSyncData.dbKey);
 
-	public getCurrentlySyncingModules = () => [...this.currentlySyncingModules];
+	public getCurrentlySyncingModules = () => this.currentlySyncingModules.map(module => module.module);
+
+	public cancelSync = () => {
+		this.cancelledSyncs = this.currentlySyncingModules.map(module => {
+			module.request?.abort();
+			return module.syncId;
+		});
+		this.currentlySyncingModules.splice(0, this.currentlySyncingModules.length);
+		this.syncing = false;
+		this.pendingSync = false;
+		this.syncQueue.cancelAll();
+	};
 
 	// ######################### Smart Sync #########################
 
@@ -238,7 +253,7 @@ export class ModuleFE_SyncManager_Class
 		if (rtModule.getDataStatus() === DataStatus.ContainsData)
 			return;
 
-		this.currentlySyncingModules.push(rtModule);
+		this.currentlySyncingModules.push({module: rtModule, syncId: this.generateSyncRequestId()});
 
 		this.logVerbose(`Performing NoSyncOperation for module ${rtModule.getName()}`);
 		this.logVerbose(`No sync for: ${rtModule.dbDef.dbKey}, Already UpToDate.`);
@@ -251,7 +266,8 @@ export class ModuleFE_SyncManager_Class
 		} catch (e: any) {
 			this.logError(e);
 		} finally {
-			removeItemFromArray(this.currentlySyncingModules, rtModule);
+			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);
+			removeFromArrayByIndex(this.currentlySyncingModules, indexOfModuleToRemove);
 		}
 	};
 
@@ -262,7 +278,7 @@ export class ModuleFE_SyncManager_Class
 
 		this.logDebug(`Performing DeltaSyncOperation for module ${rtModule.getName()}`);
 		try {
-			this.currentlySyncingModules.push(rtModule);
+			this.currentlySyncingModules.push({module: rtModule, syncId: this.generateSyncRequestId()});
 			rtModule.logVerbose(`Firing event (DataStatus.UpdatingData): ${rtModule.dbDef.dbKey}`);
 			rtModule.setDataStatus(DataStatus.UpdatingData);
 			if (data.items.toUpdate.length)
@@ -278,7 +294,8 @@ export class ModuleFE_SyncManager_Class
 		} catch (e: any) {
 			this.logError(e);
 		} finally {
-			removeItemFromArray(this.currentlySyncingModules, rtModule);
+			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);
+			removeFromArrayByIndex(this.currentlySyncingModules, indexOfModuleToRemove);
 		}
 	};
 
@@ -288,7 +305,8 @@ export class ModuleFE_SyncManager_Class
 			throw new MUSTNeverHappenException(`Trying perform DeltaSync without an existing rtModule: ${data.dbKey}`);
 
 		this.logDebug(`Performing FullSyncOperation for module ${rtModule.getName()}`);
-		this.currentlySyncingModules.push(rtModule);
+		const syncId = this.generateSyncRequestId();
+		this.currentlySyncingModules.push({module: rtModule, syncId: syncId});
 		try {
 			// if the backend have decided module collection needs a full sync, we need to clean local idb and cache
 			rtModule.logVerbose(`Cleaning IDB: ${rtModule.dbDef.dbKey}`);
@@ -298,9 +316,33 @@ export class ModuleFE_SyncManager_Class
 
 			// for full sync go fetch all db items
 			rtModule.logVerbose(`Syncing: ${rtModule.dbDef.dbKey}`);
-			const allItems = await rtModule.v1.query({where: {}}).executeSync();
+			let allItems;
+			try {
+				if (this.cancelledSyncs.includes(syncId)) {
+					this.removeFromCancelledSyncs(syncId);
+					return;
+				}
+
+				const baseHttpRequest = rtModule.v1.query({where: {}});
+
+				const indexOfModuleToUpdate = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);
+				this.currentlySyncingModules[indexOfModuleToUpdate].request = baseHttpRequest;
+
+				allItems = await baseHttpRequest.executeSync();
+			} catch (e: any) {
+				if (this.cancelledSyncs.includes(syncId)) {
+					this.removeFromCancelledSyncs(syncId);
+					return;
+				}
+
+				throw e;
+			}
 
 			rtModule.logVerbose(`Updating IDB: ${rtModule.dbDef.dbKey}`);
+			if (this.cancelledSyncs.includes(syncId)) {
+				this.removeFromCancelledSyncs(syncId);
+				return;
+			}
 			await rtModule.IDB.syncIndexDb(allItems);
 			rtModule.IDB.setLastUpdated(data.lastUpdated);
 			rtModule.logVerbose(`Updating Cache: ${rtModule.dbDef.dbKey}`);
@@ -324,8 +366,21 @@ export class ModuleFE_SyncManager_Class
 			this.logError(`Error while syncing ${rtModule.dbDef.dbKey}`, e);
 			throw e;
 		} finally {
-			removeItemFromArray(this.currentlySyncingModules, rtModule);
+			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);
+			removeFromArrayByIndex(this.currentlySyncingModules, indexOfModuleToRemove);
 		}
+	};
+
+	private generateSyncRequestId = () => {
+		return generateHex(12);
+	};
+
+	private removeFromCancelledSyncs = (syncId: string) => {
+		if (!syncId) {
+			this.logError(`ID ${syncId} doesn't exist in cancelledSyncs, redundant attempt to remove it.`);
+			return;
+		}
+		removeItemFromArray(this.cancelledSyncs, syncId);
 	};
 
 	// ######################### Listening #########################
@@ -338,6 +393,7 @@ export class ModuleFE_SyncManager_Class
 	}
 
 	public stopListening() {
+		this.logDebug(`Stop listening on ${Default_SyncManagerNodePath}`);
 		this.syncFirebaseListener?.stopListening();
 		this.syncFirebaseListener = undefined;
 		delete this.syncDebouncer;
