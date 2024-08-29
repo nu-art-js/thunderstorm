@@ -1,6 +1,6 @@
 {
-  "name": "@thunder-storm/jira",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "name": "@nu-art/jira",
+  "version": "0.300.0",
   "description": "Jira api Module",
   "keywords": [
     "TacB0sS",
@@ -22,20 +22,20 @@
   "main": "index.js",
   "types": "index.d.ts",
   "dependencies": {
-    "@thunder-storm/core": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@thunder-storm/common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@thunder-storm/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "@thunder-storm/core": "workspace:*",
+    "@thunder-storm/common": "workspace:*",
+    "@thunder-storm/firebase": "workspace:*",
+    "firebase-admin": "11.9.0",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",
-    "express": "$EXPRESS_PKG_VERSION",
+    "express": "^4.18.2",
     "module-alias": "^2.2.0",
-    "moment": "$MOMENT_PKG_VERSION",
+    "moment": "^2.29.4",
     "request": "^2.88.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.2",
-    "@types/express": "$EXPRESS_TYPES_VERSION",
+    "@types/express": "^4.17.17",
     "@types/js-base64": "^2.3.1",
     "@types/request": "^2.48.3",
     "@types/saml2-js": "^1.6.8"

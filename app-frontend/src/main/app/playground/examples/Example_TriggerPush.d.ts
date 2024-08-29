@@ -1,6 +1,6 @@
 /// <reference types="react" />
 import { ComponentSync } from '@thunder-storm/core/frontend';
-import { DB_Notifications } from '@nu-art/push-pub-sub/shared/types';
+import { DB_Notifications } from '@thunder-storm/push-pub-sub/shared/types';
 export type State = {
     notifications: DB_Notifications[];
 };

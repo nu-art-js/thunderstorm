@@ -20,7 +20,7 @@ import * as React from 'react';
 import {ExampleModule, RequestKey_GetApi, RequestKey_PostApi,} from '@modules/ExampleModule';
 import {ComponentSync, ModuleFE_ForceUpgrade} from '@thunder-storm/core/frontend';
 import {LiveDoc} from '@thunder-storm/live-docs/frontend';
-import {AdminBR} from '@nu-art/bug-report/frontend';
+import {AdminBR} from '@thunder-storm/bug-report/frontend';
 import {OnRequestListener} from '@thunder-storm/core';
 
 export class Hello_Renderer

@@ -1,0 +1,63 @@
+{
+  "name": "@thunder-storm/firebase",
+  "version": "0.300.0",
+  "description": "Storm - Express & Typescript based backend framework",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "storm",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/firebase",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/firebase/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/firebase.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "run-tests": "firebase emulators:exec \"npm run test\"",
+    "test": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files '**/*.ts' src/test/firestore-v2/__test.ts",
+    "rtv2": "firebase emulators:exec \"npm run test-v2\"",
+    "test-v2": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files '**/*.ts' src/test/firestore-v2/__test.ts"
+  },
+  "dependencies": {
+    "@thunder-storm/common": "workspace:*",
+    "@thunder-storm/google-services": "workspace:*",
+    "@google-cloud/common": "^3.0.0",
+    "@google-cloud/storage": "^5.0.0",
+    "@google-cloud/firestore": "^4.8.1",
+    "express": "^4.18.2",
+    "firebase": "^10.7.1",
+    "firebase-admin": "11.9.0",
+    "firebase-functions": "4.4.1",
+    "google-auth-library": "^6.0.6",
+    "fs": "0.0.1-security",
+    "ws": "^8.13.0",
+    "http-proxy": "1.18.1",
+    "url": "0.11.3"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.0.1",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/http-proxy": "1.17.14",
+    "teeny-request": "~7.2.0",
+    "@types/ws": "^8.5.5"
+  }
+}

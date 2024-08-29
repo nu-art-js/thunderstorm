@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
-import {ModulePackFE_PushPubSub} from '@nu-art/push-pub-sub/frontend';
+import {ModulePackFE_PushPubSub} from '@thunder-storm/push-pub-sub/frontend';
 import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
 
 

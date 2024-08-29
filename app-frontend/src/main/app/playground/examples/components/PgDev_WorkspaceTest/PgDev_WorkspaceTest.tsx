@@ -3,7 +3,7 @@ import {
 	SimpleListAdapter,
 	TS_DropDown,
 } from '@thunder-storm/core/frontend';
-import {PanelConfig, TS_HorizontalWorkspace, TS_VerticalWorkspace, TS_Workspace} from '@nu-art/ts-workspace/frontend';
+import {PanelConfig, TS_HorizontalWorkspace, TS_VerticalWorkspace, TS_Workspace} from '@thunder-storm/workspace/frontend';
 import * as React from 'react';
 
 const leftPanel = (props: {}) => <div

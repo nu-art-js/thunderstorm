@@ -1,14 +1,12 @@
 {
-  "name": "@thunder-storm/schema-to-types",
-  "version": "$THUNDERSTORM_SDK_VERSION",
-  "description": "schema-to-types - Express & Typescript based backend framework",
+  "name": "@thunder-storm/build-and-install",
+  "version": "0.300.0",
+  "description": "",
   "keywords": [
     "TacB0sS",
     "infra",
     "nu-art",
-    "thunderstorm",
-    "typescript",
-    "schema-to-types"
+    "commando"
   ],
   "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {
@@ -33,6 +31,15 @@
     "build": "tsc"
   },
   "dependencies": {
-    "json-schema-to-typescript": "^13.1.1"
+    "chokidar": "^3.6.0",
+    "neo-blessed": "^0.2.0",
+    "blessed": "^0.1.81",
+    "glob": "^10.3.14",
+    "@thunder-storm/common": "workspace:*",
+    "@thunder-storm/commando": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/blessed": "^0.1.25"
   }
 }

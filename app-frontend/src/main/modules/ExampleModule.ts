@@ -22,9 +22,9 @@ import {apiWithBody, apiWithQuery, ModuleFE_Toaster, ThunderDispatcher, ModuleFE
 import {ApiStruct_Examples, CommonBodyReq, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
 import {ApiDef, ApiDefCaller, ApiErrorResponse, HttpMethod, QueryApi} from '@thunder-storm/core';
 import {Test} from '@modules/TestModule';
-import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
+import {OnPushMessageReceived} from '@thunder-storm/push-pub-sub/frontend';
 import {ModuleFE_Firebase} from '@thunder-storm/firebase/frontend';
-import {DB_Notifications} from '@nu-art/push-pub-sub';
+import {DB_Notifications} from '@thunder-storm/push-pub-sub';
 import {ApiDef_Examples} from '@app/app-shared/shared';
 
 

@@ -21,7 +21,7 @@ import {BadImplementationException, Dispatcher} from '@thunder-storm/common';
 import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
 import {MemStorage} from '@thunder-storm/common/mem-storage/MemStorage';
 import {ModuleBE_StorageListener} from '@thunder-storm/firebase/backend';
-import {PermissionsGroup_PushMessanger} from '@nu-art/push-pub-sub/backend/core/permissions';
+import {PermissionsGroup_PushMessanger} from '@thunder-storm/push-pub-sub/backend/core/permissions';
 import {MemKey_AccountId} from '@thunder-storm/user-account/backend';
 import {DefaultDef_ServiceAccount, RequiresServiceAccount, ServiceAccountCredentials} from '@thunder-storm/core/backend/modules/_tdb/service-accounts';
 

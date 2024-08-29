@@ -19,8 +19,8 @@
 import {apiWithBody, apiWithQuery, ModuleFE_XHR, ThunderDispatcher} from '@thunder-storm/core/frontend';
 import {ApiDef_AssetUploader, ApiStruct_AssetUploader, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '../../shared';
 import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader';
-import {BaseSubscriptionData, PushMessage_Payload} from '@nu-art/push-pub-sub';
-import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub/frontend/modules/ModuleFE_PushPubSub';
+import {BaseSubscriptionData, PushMessage_Payload} from '@thunder-storm/push-pub-sub';
+import {ModuleFE_PushPubSub} from '@thunder-storm/push-pub-sub/frontend/modules/ModuleFE_PushPubSub';
 import {ApiDef, ApiDefCaller, BaseHttpRequest, TypedApi} from '@thunder-storm/core';
 import {generateHex} from '@thunder-storm/common';
 import {PushMessage_FileUploaded} from '../../shared/assets/messages';

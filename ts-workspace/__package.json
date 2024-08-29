@@ -1,5 +1,5 @@
 {
-  "name": "@nu-art/ts-workspace",
+  "name": "@thunder-storm/workspace",
   "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "TS Workspace",
   "keywords": [

@@ -1,6 +1,6 @@
 {
-  "name": "@thunder-storm/file-upload",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "name": "@nu-art/file-upload",
+  "version": "0.300.0",
   "description": "File Uploader - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",
@@ -33,29 +33,29 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@thunder-storm/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@thunder-storm/styles": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@thunder-storm/push-pub-sub": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@thunder-storm/permissions": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@thunder-storm/user-account": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@thunder-storm/core": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@thunder-storm/common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@thunder-storm/firebase": "workspace:*",
+    "@thunder-storm/styles": "workspace:*",
+    "@nu-art/push-pub-sub": "workspace:*",
+    "@thunder-storm/permissions": "workspace:*",
+    "@thunder-storm/user-account": "workspace:*",
+    "@thunder-storm/core": "workspace:*",
+    "@thunder-storm/common": "workspace:*",
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.14.5",
     "@google-cloud/firestore": "^5.0.0",
-    "react": "$REACT_PKG_VERSION",
+    "react": "^18.2.0",
     "jszip": "^3.2.2",
-    "express": "$EXPRESS_PKG_VERSION",
-    "firebase": "$FIREBASE_PKG_VERSION",
-    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
-    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
+    "express": "^4.18.2",
+    "firebase": "^10.7.1",
+    "firebase-admin": "11.9.0",
+    "firebase-functions": "4.4.1",
     "fs": "0.0.1-security",
     "google-auth-library": "^6.0.6",
     "file-type": "^16.3.0"
   },
   "devDependencies": {
-    "@types/react": "$REACT_TYPES_VERSION",
+    "@types/react": "^18.0.29",
     "@types/compression": "^1.0.1",
-    "@types/express": "$EXPRESS_TYPES_VERSION"
+    "@types/express": "^4.17.17"
   }
 }

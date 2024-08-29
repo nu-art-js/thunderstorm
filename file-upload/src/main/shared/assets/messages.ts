@@ -1,4 +1,4 @@
-import {PushMessage} from '@nu-art/push-pub-sub';
+import {PushMessage} from '@thunder-storm/push-pub-sub';
 import {DB_Asset} from './types1';
 
 

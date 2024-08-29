@@ -1,0 +1,52 @@
+{
+  "name": "@thunder-storm/common",
+  "version": "0.300.0",
+  "description": "js and ts infra",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "ts-common",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/ts-common",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/ts-common/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/ts-common.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typedocs": "typedoc --options typedoc.json",
+    "run-tests": "ts-mocha --timeout 50000 -p src/test/tsconfig.json src/test/run-all-tests.ts"
+  },
+  "dependencies": {
+    "fast-csv": "^4.3.6",
+    "export-to-csv": "0.2.1",
+    "moment": "^2.29.4",
+    "node-forge": "^1.2.1",
+    "uuid": "^9.0.0",
+    "csv-parser": "^2.3.3",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/minimatch": "^5.1.2",
+    "@types/node-forge": "^1.0.0"
+  },
+  "_moduleAliases": {
+    "@main": "dist/main/ts",
+    "@test": "dist/test/ts"
+  }
+}

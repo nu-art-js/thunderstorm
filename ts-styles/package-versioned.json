@@ -1,0 +1,28 @@
+{
+  "name": "@thunder-storm/styles",
+  "version": "0.300.0",
+  "author": "nu-art",
+  "description": "Styles by Cipher",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "license": "ISC",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@thunder-storm/common": "workspace:*",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.29"
+  },
+  "contributors": [
+    {
+      "name": "cipher_il",
+      "url": "https://www.npmjs.com/~cipher_il"
+    }
+  ]
+}

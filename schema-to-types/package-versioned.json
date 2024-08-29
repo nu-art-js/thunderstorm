@@ -1,6 +1,6 @@
 {
-  "name": "@thunder-storm/schema-to-types",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "name": "@nu-art/schema-to-types",
+  "version": "0.300.0",
   "description": "schema-to-types - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",

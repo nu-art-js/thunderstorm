@@ -1,4 +1,4 @@
-import {PushKey_BE} from '@nu-art/push-pub-sub/backend';
+import {PushKey_BE} from '@thunder-storm/push-pub-sub/backend';
 import {PushMessage_FileUploaded} from '../../shared/assets/messages';
 
 

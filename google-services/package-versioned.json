@@ -1,0 +1,47 @@
+{
+  "name": "@thunder-storm/google-services",
+  "version": "0.300.0",
+  "description": "google-services",
+  "keywords": [
+    "TacB0sS",
+    "create account",
+    "express",
+    "infra",
+    "login",
+    "nu-art",
+    "permissions",
+    "saml",
+    "thunderstorm",
+    "typescript",
+    "user-account"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@thunder-storm/common": "workspace:*",
+    "@google-cloud/pubsub": "3.3.0",
+    "@google-cloud/secret-manager": "^5.5.0",
+    "google-auth-library": "^6.0.6",
+    "googleapis": "^55.0.0"
+  },
+  "devDependencies": {
+    "@google-cloud/resource-manager": "^3.0.0"
+  }
+}

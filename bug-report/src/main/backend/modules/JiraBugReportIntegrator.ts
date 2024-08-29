@@ -17,7 +17,7 @@
  */
 
 import {ImplementationMissingException, Module} from '@thunder-storm/common';
-import {IssueType, JiraIssueText, JiraModule, JiraProject, LabelType} from '@nu-art/jira/backend';
+import {IssueType, JiraIssueText, JiraModule, JiraProject, LabelType} from '@thunder-storm/jira/backend';
 import {Platform_Jira, ReportLogFile, Request_BugReport} from '../..';
 import {TicketDetails} from './ModuleBE_BugReport';
 

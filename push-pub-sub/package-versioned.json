@@ -1,0 +1,44 @@
+{
+  "name": "@nu-art/push-pub-sub",
+  "version": "0.300.0",
+  "description": "push-pub-sub",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "push-pub-sub",
+    "thunderstorm",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/push-pub-sub.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc -b -f"
+  },
+  "dependencies": {
+    "@thunder-storm/core": "workspace:*",
+    "@thunder-storm/styles": "workspace:*",
+    "@thunder-storm/permissions": "workspace:*",
+    "@thunder-storm/common": "workspace:*",
+    "@thunder-storm/firebase": "workspace:*",
+    "@thunder-storm/user-account": "workspace:*",
+    "firebase": "^10.7.1",
+    "firebase-admin": "11.9.0",
+    "moment": "^2.29.4",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.29"
+  }
+}

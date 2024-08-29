@@ -23,10 +23,10 @@ import {App} from './app/App';
 import {ModuleFE_ForceUpgrade, Thunder} from '@thunder-storm/core/frontend';
 import {ModulePack_Frontend_LiveDocs} from '@thunder-storm/live-docs/frontend';
 import {ExampleModule} from '@modules/ExampleModule';
-import {ModulePack_Frontend_PushPubSub} from '@nu-art/push-pub-sub/frontend';
-import {ModuleFE_BugReport} from '@nu-art/bug-report/frontend';
+import {ModulePack_Frontend_PushPubSub} from '@thunder-storm/push-pub-sub/frontend';
+import {ModuleFE_BugReport} from '@thunder-storm/bug-report/frontend';
 import {Module} from '@thunder-storm/common';
-import {ModulePack_Frontend_Uploader} from '@nu-art/file-upload/frontend';
+import {ModulePack_Frontend_Uploader} from '@thunder-storm/file-upload/frontend';
 import {ModuleFE_Permissions} from '@thunder-storm/permissions/frontend';
 
 

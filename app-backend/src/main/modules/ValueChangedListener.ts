@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import {FirebaseFunctionModule,} from "@thunder-storm/firebase/backend-functions";
-import {ModuleBE_PushPubSub} from "@nu-art/push-pub-sub/backend";
+import {ModuleBE_PushPubSub} from "@thunder-storm/push-pub-sub/backend";
 
 export class ValueChangedListener_Class
 	extends FirebaseFunctionModule {

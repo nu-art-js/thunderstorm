@@ -1,14 +1,14 @@
 {
-  "name": "@thunder-storm/ts-openai",
-  "version": "$THUNDERSTORM_SDK_VERSION",
-  "description": "ts-openai - Express & Typescript based backend framework",
+  "name": "@thunder-storm/messaging",
+  "version": "0.300.0",
+  "description": "ts-messaging - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",
     "infra",
     "nu-art",
     "thunderstorm",
     "typescript",
-    "ts-openai"
+    "ts-messaging"
   ],
   "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {
@@ -33,16 +33,17 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@thunder-storm/common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@thunder-storm/core": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "openai": "^4.12.4",
-    "firebase": "$FIREBASE_PKG_VERSION",
-    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
-    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
-    "react": "$REACT_PKG_VERSION"
+    "@thunder-storm/common": "workspace:*",
+    "@thunder-storm/core": "workspace:*",
+    "@thunder-storm/user-account": "workspace:*",
+    "@thunder-storm/permissions": "workspace:*",
+    "firebase": "^10.7.1",
+    "firebase-admin": "11.9.0",
+    "firebase-functions": "4.4.1",
+    "react": "^18.2.0"
   },
   "devDependencies": {
-    "@types/react": "$REACT_TYPES_VERSION",
+    "@types/react": "^18.0.29",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1"
   }

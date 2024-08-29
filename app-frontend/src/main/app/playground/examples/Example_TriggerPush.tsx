@@ -20,8 +20,8 @@ import * as React from 'react';
 import {ComponentSync} from '@thunder-storm/core/frontend';
 import {_setTimeout, Second} from '@thunder-storm/common';
 import {ExampleModule} from '@modules/ExampleModule';
-import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub/frontend';
-import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub/shared/types';
+import {ModuleFE_PushPubSub} from '@thunder-storm/push-pub-sub/frontend';
+import {BaseSubscriptionData, DB_Notifications} from '@thunder-storm/push-pub-sub/shared/types';
 
 export type State = {
 	notifications: DB_Notifications[]

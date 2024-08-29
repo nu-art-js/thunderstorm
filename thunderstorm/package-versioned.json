@@ -1,0 +1,86 @@
+{
+  "name": "@thunder-storm/core",
+  "version": "0.300.0",
+  "description": "Thunderstorm",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@thunder-storm/firebase": "workspace:*",
+    "@thunder-storm/common": "workspace:*",
+    "@thunder-storm/styles": "workspace:*",
+    "firebase": "^10.7.1",
+    "firebase-admin": "11.9.0",
+    "firebase-functions": "4.4.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.9.0",
+    "abort-controller": "^3.0.0",
+    "util": "^0.12.4",
+    "axios": "^0.21.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "express": "^4.18.2",
+    "request": "^2.88.0",
+    "stream-browserify": "^3.0.0",
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
+    "csstype": "^3.0.0",
+    "history": "^4.9.0",
+    "moment": "^2.29.4",
+    "qs": "^6.6.0",
+    "react-window": "^1.8.8",
+    "react-virtualized-auto-sizer": "^1.0.12",
+    "pako": "^2.1.0",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/papaparse": "^5.3.14",
+    "@types/pako": "^2.0.0",
+    "@types/react": "^18.0.29",
+    "@types/react-dom": "^18.0.11",
+    "@types/react-router": "^5.1.20",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/compression": "^1.7.0",
+    "@types/express": "^4.17.17",
+    "@types/history": "^4.7.2",
+    "@types/request": "^2.48.1",
+    "@types/chrome": "^0.0.202",
+    "@types/react-window": "^1.8.5",
+    "@types/react-virtualized-auto-sizer": "^1.0.1"
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "@nu-art/push-pub-sub",
+  "name": "@thunder-storm/push-pub-sub",
   "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "push-pub-sub",
   "keywords": [

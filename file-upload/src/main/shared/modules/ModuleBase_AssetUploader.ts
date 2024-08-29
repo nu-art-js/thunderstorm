@@ -36,8 +36,8 @@ import {
 	TempSignedUrl,
 	UI_Asset
 } from '../../shared';
-import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
-import {PushMessage_Payload} from '@nu-art/push-pub-sub';
+import {OnPushMessageReceived} from '@thunder-storm/push-pub-sub/frontend';
+import {PushMessage_Payload} from '@thunder-storm/push-pub-sub';
 import {PushMessage_FileUploaded} from '../assets/messages';
 
 
