@@ -1,4 +1,12 @@
-import {DBDef_V3, tsValidateArray, tsValidateBoolean, tsValidateDynamicObject, tsValidateNumber, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
+import {
+	DBDef_V3,
+	tsValidateArray,
+	tsValidateBoolean,
+	tsValidateDynamicObject,
+	tsValidateNumber,
+	tsValidateString,
+	tsValidateUniqueId
+} from '@nu-art/ts-common';
 import {DBProto_PermissionAPI} from './types';
 import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../../shared/validators';
 import {PermissionDBGroup} from '../../shared';
@@ -20,7 +28,7 @@ const Validator_GeneratedProps: DBProto_PermissionAPI['generatedPropsValidator']
 export const DBDef_PermissionAPI: DBDef_V3<DBProto_PermissionAPI> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
-	versions: ['1.0.0'],
+	versions: ['1.0.1', '1.0.0'],
 	dbKey: 'permissions--api',
 	frontend: {
 		group: PermissionDBGroup,

@@ -41,7 +41,7 @@ export const DuplicateDefaultAccessLevels = (seed: string): DefaultDef_AccessLev
 };
 
 export const CreateDefaultAccessLevels = (seed: string, accessLevels: PreDBAccessLevel[]): DefaultDef_AccessLevel[] => {
-	return accessLevels.map(level => ({...level, _id: md5(`${seed}${level.name}`)}));
+	return accessLevels.map(level => ({...level, _id: md5(`${seed}${level.name}`), uiLabel: level.name}));
 };
 
 const generateDefaultKeyName = (namespace: string, accessLevelName: string) => {

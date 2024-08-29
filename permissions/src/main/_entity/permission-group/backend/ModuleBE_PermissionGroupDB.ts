@@ -1,11 +1,12 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionGroup, DBDef_PermissionGroup, DBProto_PermissionGroup} from './shared';
+import {DBApiConfigV3, ModuleBE_ActionProcessor, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
+import {DB_PermissionGroup, DB_PermissionGroup_1_0_0, DBDef_PermissionGroup, DBProto_PermissionGroup} from './shared';
 import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend';
 import {Transaction} from 'firebase-admin/firestore';
-import {MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_SessionDB, SlackReporter} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionUserDB} from '../../permission-user/backend';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {_EmptyQuery} from '@nu-art/firebase';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionGroup> & {}
@@ -15,6 +16,13 @@ export class ModuleBE_PermissionGroupDB_Class
 
 	constructor() {
 		super(DBDef_PermissionGroup);
+		ModuleBE_ActionProcessor.registerAction({
+			key: 'clear-unused-permission-groups',
+			group: 'Permissions',
+			description: 'Clears all permission groups that aren\'t in use',
+			processor: this.clearUnused
+		}, this);
+		this.registerVersionUpgradeProcessor('1.0.0', this.upgrade_100_101);
 	}
 
 	protected async preWriteProcessing(instance: DB_PermissionGroup, originalDbInstance: DBProto_PermissionGroup['dbType'], t?: Transaction) {
@@ -53,6 +61,21 @@ export class ModuleBE_PermissionGroupDB_Class
 		const users = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionUserDB.query.custom({where: {__groupIds: {$aca: ids}}}));
 		await ModuleBE_SessionDB.session.invalidate(filterDuplicates(users.map(i => i._id)));
 	}
+
+	private clearUnused = async () => {
+		let report = 'Report for refactor action *Clean Unused Permission Groups*:\n\n';
+		const allPermissionUsers = await ModuleBE_PermissionUserDB.query.custom(_EmptyQuery);
+		const allGroups = await this.query.custom(_EmptyQuery);
+		const usedGroupIds = allPermissionUsers.map(user => user.__groupIds ?? []).flat();
+		const unusedGroups = allGroups.filter(group => !usedGroupIds.includes(group._id));
+		report += `Cleared ${unusedGroups.length} groups: ${unusedGroups.map(group => group.label).join(',\n')}`;
+		await this.delete.allItems(unusedGroups);
+		await new SlackReporter(report).sendReportToChannel();
+	};
+
+	private upgrade_100_101 = async (items: DB_PermissionGroup_1_0_0[]) => {
+		items.forEach(group => (group as DB_PermissionGroup).uiLabel = group.label);
+	};
 }
 
 export const ModuleBE_PermissionGroupDB = new ModuleBE_PermissionGroupDB_Class();

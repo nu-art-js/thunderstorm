@@ -1,0 +1,59 @@
+@mixin ButtonGroupElement($direction, $selectedBorderRadius) {
+  .ts-button-v2 {
+    background: transparent;
+    color: #000;
+    transition: 300ms background ease-out, 300ms color ease-out;
+    border-radius: 0;
+    height: 100%;
+
+    &.selected {
+      border-radius: $selectedBorderRadius;
+      background: gray;
+      color: white;
+
+      + .separator {
+        opacity: 0;
+      }
+    }
+
+    &.disabled {
+      background: #cdcdcd;
+      color: #c2c2c2;
+      cursor: not-allowed;
+    }
+  }
+
+  .separator {
+    flex-shrink: 0;
+    background: black;
+    transition: 300ms opacity ease-out;
+
+    @if ($direction == 'horizontal') {
+      height: 100%;
+      width: 2px;
+    }
+
+    @if ($direction == 'vertical') {
+      width: 100%;
+      height: 2px;
+    }
+
+    &.invisible {
+      opacity: 0;
+    }
+  }
+}
+
+.ts-button-group {
+  display: flex;
+
+  &.horizontal {
+    height: 32px;
+    @include ButtonGroupElement('horizontal', 2px);
+  }
+
+  &.vertical {
+    flex-direction: column;
+    @include ButtonGroupElement('vertical', 2px);
+  }
+}

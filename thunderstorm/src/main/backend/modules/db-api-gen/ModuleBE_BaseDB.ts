@@ -356,7 +356,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 * Check if the collection has at least one item without the latest version. Version[0] is the latest version.
 	 */
 	public isCollectionUpToDate = async () => {
-		return (await this.query.custom({limit: 1, where: {_v: {$neq: this.dbDef.versions[0]}}})).length === 0;
+		return (await this.query.unManipulatedQuery({limit: 1, where: {_v: {$neq: this.dbDef.versions[0]}}})).length === 0;
 	};
 
 	upgradeCollection = async (force = false) => {
@@ -376,7 +376,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			limit: {page: 0, itemsCount},
 		};
 
-		while ((docs = await this.collection.doc.query(query)).length > 0) {
+		while ((docs = await this.collection.doc.unManipulatedQuery(query)).length > 0) {
 
 			// this is old Backward compatible from before the assertion of unique ids where the doc ref is the _id of the doc
 			const toDelete = docs.filter(doc => {
