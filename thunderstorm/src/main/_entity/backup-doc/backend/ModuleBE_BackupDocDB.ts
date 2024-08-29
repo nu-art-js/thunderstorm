@@ -1,6 +1,5 @@
 import {
 	__stringify,
-	_keys,
 	_logger_logException,
 	ApiException,
 	BadImplementationException,
@@ -408,7 +407,7 @@ class DBModuleReader
 
 		const dbKey = module.dbDef.dbKey;
 		try {
-			const items = await module.query.custom({
+			const items = await module.query.unManipulatedQuery({
 				..._EmptyQuery,
 				limit: {page: this.page, itemsCount: this.pageSize},
 			});

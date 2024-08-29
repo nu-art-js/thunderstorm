@@ -73,7 +73,7 @@ export function merge(original: any, override: any) {
 		return typeof override === 'object' ? filterKeys(override) : override;
 
 	if (typeof original !== typeof override || (typeof original === 'object' && typeof override === 'object' && Array.isArray(original) !== Array.isArray(override)))
-		throw new BadImplementationException(`trying to merge object of different types!! \\n Original: ${JSON.stringify(original)}\\n Override: ${JSON.stringify(override)}`);
+		throw new BadImplementationException(`trying to merge object of different types!! \n Original: ${JSON.stringify(original)}\n Override: ${JSON.stringify(override)}`);
 
 	if (Array.isArray(original) && Array.isArray(override))
 		return mergeArray(original, override);

@@ -80,7 +80,7 @@ export class ModuleBE_PermissionsAssert_Class
 		try {
 			MemKey_UserPermissions.get();
 		} catch (err) {
-			MemKey_UserPermissions.set(SessionKey_Permissions_BE.get());
+			MemKey_UserPermissions.set(SessionKey_Permissions_BE.get().domainToValueMap);
 		}
 	};
 

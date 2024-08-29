@@ -6,6 +6,7 @@ import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionProjectDB} from '../../permission-project/backend/ModuleBE_PermissionProjectDB';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {trimStartingForwardSlash} from '@nu-art/thunderstorm/shared/route-tools';
 
 
 type Config = DBApiConfigV3<DBProto_PermissionAPI> & {}
@@ -15,10 +16,17 @@ export class ModuleBE_PermissionAPIDB_Class
 
 	constructor() {
 		super(DBDef_PermissionAPI);
+
+		this.registerVersionUpgradeProcessor('1.0.0', async instances => {
+		}); // adjustment made in pre-write requires us to do this in order to upgrade the data
 	}
 
 	protected async preWriteProcessing(instance: DB_PermissionAPI, originalDbInstance: DBProto_PermissionAPI['dbType'], t?: Transaction) {
 		await ModuleBE_PermissionProjectDB.query.uniqueAssert(instance.projectId);
+
+		// clean '/' from api path start
+		instance.path = trimStartingForwardSlash(instance.path);
+		// set who created this
 		instance._auditorId = MemKey_AccountId.get();
 		const accessLevelIds = new Set<UniqueId>();
 		const duplicateAccessLevelIds = new Set<UniqueId>();

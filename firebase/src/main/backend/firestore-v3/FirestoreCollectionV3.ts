@@ -30,6 +30,7 @@ import {
 	dbIdLength,
 	dbObjectToId,
 	DBProto,
+	deepClone,
 	DefaultDBVersion,
 	Exception,
 	exists,
@@ -191,8 +192,9 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	private _customQuery = async (tsQuery: FirestoreQuery<Proto['dbType']>, canManipulateQuery: boolean, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Proto['dbType']>[]> => {
 		if (canManipulateQuery)
-			tsQuery = this.hooks?.manipulateQuery?.(tsQuery) ?? tsQuery;
+			tsQuery = this.hooks?.manipulateQuery?.(deepClone(tsQuery)) ?? tsQuery;
 
+		this.logDebug(this.dbDef.dbKey, tsQuery);
 		const firestoreQuery = FirestoreInterfaceV3.buildQuery<Proto>(this, tsQuery);
 		if (transaction)
 			return (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<Proto['dbType']>[];
@@ -205,7 +207,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		uniqueAssert: async (_id: Proto['uniqueParam'], transaction?: Transaction): Promise<Proto['dbType']> => {
 			const resultItem = await this.query.unique(_id, transaction);
 			if (!resultItem)
-				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${_id}`);
+				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${__stringify(_id)}`);
 
 			return resultItem;
 		},
@@ -216,7 +218,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
 
 			if (thisShouldBeOnlyOne.length > 1)
-				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbKey}`);
+				throw new BadImplementationException(`Too many results (${thisShouldBeOnlyOne.length}) in collection (${this.dbDef.dbKey}) for query: ${__stringify(query)}`);
 
 			return thisShouldBeOnlyOne[0];
 		},
@@ -341,6 +343,17 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		return itemsToReturn;
 	};
 
+	protected _deleteUnManipulatedQuery = async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+		if (!exists(query) || compare(query, _EmptyQuery))
+			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
+
+		const docsToBeDeleted = await this.doc.unManipulatedQuery(query, transaction);
+		// Because we query for docs, these docs and their data must exist in Firestore.
+		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!); // Data must exist here.
+		await this._deleteAll(docsToBeDeleted, transaction, multiWriteType);
+		return itemsToReturn;
+	};
+
 	protected _deleteAll = async (docsToBeDeleted: DocWrapperV3<Proto>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		const dbItems = filterInstances(await this.getAll(docsToBeDeleted, transaction));
 		const itemsToCheck = dbItems.filter((item, index) => docsToBeDeleted[index].ref.id == item._id);
@@ -402,6 +415,20 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			}
 
 			return await this._deleteQuery(query, transaction);
+		},
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
+			if (!transaction) {
+				//query all docs and then delete in chunks
+				if (!exists(query) || compare(query, _EmptyQuery))
+					throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
+
+				const docs = await this.doc.unManipulatedQuery(query, transaction);
+				const items = docs.map(doc => doc.data!); // Data must exist here.
+				await this.runTransactionInChunks(docs, (chunk, t) => this._deleteAll(chunk, t));
+				return items;
+			}
+
+			return await this._deleteUnManipulatedQuery(query, transaction);
 		},
 		where: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
 			return this.delete.query({where}, transaction);

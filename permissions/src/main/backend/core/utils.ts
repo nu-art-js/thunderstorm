@@ -26,6 +26,7 @@ export const Permissions_abTest = (seed: UniqueId, namespace: string, permutatio
 		const group: DefaultDef_Group = {
 			_id: md5(`${domain._id}/${name}`),
 			name,
+			uiLabel: name,
 			accessLevels: {
 				[domain._id]: DefaultAccessLevel_Read.name,
 			}
@@ -92,6 +93,7 @@ export const generateDomainDefaults = <Key extends string | number | symbol>(key
 		groups: accessLevels.map(accessLevel => ({
 			_id: md5(`${key}/${accessLevel.name}`),
 			name: `${namespace}/${accessLevel.name}`,
+			uiLabel: `${namespace}/${accessLevel.name}`,
 			accessLevels: {
 				[namespace]: accessLevel.name
 			}

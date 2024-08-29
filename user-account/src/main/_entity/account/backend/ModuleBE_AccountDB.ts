@@ -48,6 +48,7 @@ import {
 	Header_SessionId,
 	MemKey_AccountEmail,
 	MemKey_AccountId,
+	MemKey_AccountType,
 	ModuleBE_SessionDB,
 	SessionCollectionParam,
 	SessionKey_Account_BE,
@@ -87,6 +88,7 @@ export const dispatch_onPreLogout = new Dispatcher<OnPreLogout, '__onPreLogout'>
 type Config = {
 	canRegister: boolean
 	passwordAssertion?: PasswordAssertionConfig
+	ignorePasswordAssertion?: boolean
 }
 
 export class ModuleBE_AccountDB_Class
@@ -97,6 +99,8 @@ export class ModuleBE_AccountDB_Class
 		const account = SessionKey_Account_BE.get();
 		MemKey_AccountEmail.set(account.email!);
 		MemKey_AccountId.set(account._id);
+		MemKey_AccountType.set(account.type);
+
 	};
 
 	constructor() {
@@ -119,7 +123,7 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
 			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
 			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail),
-			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({config: this.config.passwordAssertion}))
+			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({config: this.config.ignorePasswordAssertion ? undefined : this.config.passwordAssertion}))
 		]);
 	}
 
