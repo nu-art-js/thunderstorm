@@ -6,6 +6,7 @@ import {
 	EditableRef,
 	TS_EditableItemComponentProto
 } from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
+import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
 
 //Editors refactor WIP
 
@@ -20,6 +21,12 @@ export abstract class Component_BasePermissionItemEditor<
 	Proto extends DBProto<any>,
 	Props extends ItemEditor_Props<Proto> = ItemEditor_Props<Proto>,
 	State extends ItemEditor_State<Proto> = ItemEditor_State<Proto>> extends TS_EditableItemComponentProto<Proto, Props, State> {
+
+	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
+		super.deriveStateFromProps(nextProps, state);
+		state.editable.setOnChanged(async () => this.forceUpdate());
+		return state;
+	}
 
 	abstract editorContent: () => React.ReactNode;
 
