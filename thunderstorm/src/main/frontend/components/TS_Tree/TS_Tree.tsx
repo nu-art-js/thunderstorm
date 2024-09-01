@@ -27,7 +27,7 @@ import {_className} from '../../utils/tools';
 import './TS_Tree.scss';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TreeNodeExpandState} from './types';
-import {_keys} from '@nu-art/ts-common';
+import {_keys, exists} from '@nu-art/ts-common';
 
 
 export type Props_Tree = {
@@ -42,7 +42,8 @@ export type Props_Tree = {
 	selectedItem?: any
 	isSelected?: (item: any) => boolean
 	selectedPath?: string
-	adapter: Adapter
+	adapter: Adapter;
+	startTreeOpen?: boolean;
 
 	//Scroll Props
 	containerRef?: React.RefObject<any>;
@@ -84,7 +85,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	protected deriveStateFromProps(nextProps: P) {
 		return {
 			adapter: nextProps.adapter,
-			expanded: nextProps.expanded || this.state?.expanded || {'/': true},
+			expanded: nextProps.expanded ?? this.state?.expanded ?? {'/': nextProps.startTreeOpen ?? true},
 			isSelected: nextProps.isSelected,
 			selected: {
 				path: nextProps.selectedPath,
@@ -186,9 +187,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 
 		const treeExpandedState = this.state.expanded;
 		const currentExpandState = treeExpandedState[path];
-		let newExpandState = currentExpandState === undefined;
-		if (forceExpandState !== undefined)
-			newExpandState = forceExpandState ? forceExpandState : false;
+		const newExpandState = exists(forceExpandState) ? forceExpandState : !currentExpandState;
 
 		if (newExpandState)
 			treeExpandedState[path] = newExpandState;
