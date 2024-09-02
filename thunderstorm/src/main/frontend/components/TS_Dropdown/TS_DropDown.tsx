@@ -517,7 +517,7 @@ export class TS_DropDown<ItemType>
 	};
 
 	private renderSelectedOrFilterInput = (): React.ReactNode => {
-		if (!this.state.open || !this.props.filter) {
+		if (!this.state.open || (!this.props.filter && typeof this.props.adapter !== 'function')) {
 			return this.renderSelectedItem(this.state.selected);
 		}
 

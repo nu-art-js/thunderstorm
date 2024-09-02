@@ -31,6 +31,7 @@ export class QueueV2<ItemType, OutputType = any>
 
 	private allowedParallelOperationsCount = 1;
 	private runningOperationsCount = 0;
+	private cancelled: boolean = false;
 	private queue: Readonly<QueueItem<ItemType, OutputType>>[] = [];
 	private onQueueEmpty?: () => void;
 	private finalResolve?: (value?: unknown) => void;
@@ -77,6 +78,7 @@ export class QueueV2<ItemType, OutputType = any>
 	}
 
 	private ignore = () => {
+		this.cancelled = false;
 	};
 
 	execute = () => {
@@ -93,11 +95,21 @@ export class QueueV2<ItemType, OutputType = any>
 			this.queue = sortArray(this.queue, (queueItem) => sorter(queueItem.item));
 
 		for (let i = 0; this.runningOperationsCount < this.allowedParallelOperationsCount && i < this.queue.length; i++) {
+			if (this.cancelled) {
+				this.cancelled = false;
+				return;
+			}
 			const toExecute = this.queue[0];
 			removeItemFromArray(this.queue, toExecute);
 
 			this.runningOperationsCount++;
 			new Promise<void>((resolve, reject) => {
+				if (this.cancelled) {
+					this.cancelled = false;
+					this.runningOperationsCount = 0;
+					return;
+				}
+
 				this.runner(toExecute.item).then(output => {
 					toExecute.onCompleted?.(output);
 					this.runningOperationsCount--;
@@ -118,6 +130,8 @@ export class QueueV2<ItemType, OutputType = any>
 			}).then(this.execute)
 				.catch(this.ignore);
 		}
+		if (this.cancelled)
+			this.cancelled = false;
 	};
 
 	async executeSync() {
@@ -126,4 +140,10 @@ export class QueueV2<ItemType, OutputType = any>
 			this.execute();
 		});
 	}
+
+	public cancelAll = () => {
+		if (this.runningOperationsCount > 0)
+			this.cancelled = true;
+		this.queue = [];
+	};
 }
