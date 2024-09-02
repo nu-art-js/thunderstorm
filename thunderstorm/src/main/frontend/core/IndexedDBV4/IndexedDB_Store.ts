@@ -99,7 +99,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 	}
 
 	public async upsertAll(values: Proto['dbType'][], _store?: IDBObjectStore) {
-		const store = (await this.getStore(true, _store));
+		const store = await this.getStore(true, _store);
 		for (const value of values) {
 			await this.upsert(value, store);
 		}
