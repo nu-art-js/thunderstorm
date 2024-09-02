@@ -49,7 +49,7 @@ export class ModuleFE_FocusedObject_Class
 		const status = ModuleFE_Account.getLoggedStatus();
 		if (status === LoggedStatus.LOGGED_OUT)
 			this.onUserLoggedOut();
-	};
+	}
 
 	constructor() {
 		super();

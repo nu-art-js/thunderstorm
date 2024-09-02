@@ -24,9 +24,12 @@ import {KeyboardEvent} from 'react';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_TextArea.scss';
 import {_className} from '../../utils/tools';
+import {getComputedStyleProperty} from '../utils';
 
 
-export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement>
+export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement> & {
+	resizeWithText?: boolean;
+}
 
 export class TS_TextArea<Key extends string>
 	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
@@ -58,8 +61,38 @@ export class TS_TextArea<Key extends string>
 		this.props.onKeyDown?.(ev);
 	};
 
+	resizeWithText = () => {
+		const el = this.ref as HTMLTextAreaElement;
+		if (!el)
+			return;
+
+		const currentHeight = el.offsetHeight;
+
+		if (el.scrollHeight > currentHeight) { //Can increase height
+			const newHeight = el.scrollHeight + 5;
+			el.style.height = `${newHeight}px`;
+		} else { //Check if height needs to be decreased
+			const borderWidthTop = Number(getComputedStyleProperty(el, 'border-top-width')?.replace('px', ''));
+			const borderWidthBottom = Number(getComputedStyleProperty(el, 'border-bottom-width')?.replace('px', ''));
+			const borderWidth = borderWidthTop + borderWidthBottom;
+			el.style.height = '1px';
+			const scrollHeight = el.scrollHeight;
+			const heightDiff = currentHeight - scrollHeight;
+			const newHeight = heightDiff <= borderWidth + 1 ? currentHeight : scrollHeight + borderWidth + 1;
+			console.log(scrollHeight, heightDiff, newHeight);
+			el.style.height = `${newHeight}px`;
+		}
+	};
+
+
+	_changeValue = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+		this.changeValue(e);
+		if (this.props.resizeWithText)
+			this.resizeWithText();
+	};
+
 	render() {
-		const {onAccept, focus, enable, ...props} = this.props;
+		const {onAccept, focus, enable, resizeWithText, ...props} = this.props;
 
 		return <textarea
 			{...props}
@@ -84,7 +117,7 @@ export class TS_TextArea<Key extends string>
 			style={this.props.style}
 			value={this.state.value}
 			placeholder={this.props.placeholder}
-			onChange={this.changeValue}
+			onChange={this._changeValue}
 			onKeyDown={this.props.onKeyDown || this.onKeyDown}
 			autoComplete={this.props.autoComplete ? 'on' : 'off'}
 			spellCheck={this.props.spellCheck}
