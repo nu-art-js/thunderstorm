@@ -3,8 +3,14 @@ import {ReactNode} from 'react';
 import {EditableItem} from '../../utils/EditableItem';
 import {TS_PropRenderer} from '../TS_PropRenderer';
 import {DBProto} from '@nu-art/ts-common';
-import {Controller, Props_Controller} from '../../core/Controller';
-import {InferProps, InferState} from '../../utils/types';
+import {
+	Controller,
+	Props_Controller
+} from '../../core/Controller';
+import {
+	InferProps,
+	InferState
+} from '../../utils/types';
 
 
 export type EditableRef<Item> = { editable: EditableItem<Item> };
@@ -54,8 +60,7 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
 export abstract class TS_EditableItemComponentProto<Proto extends DBProto<any>, P = {}, S = {},
 	UI_Type extends Proto['uiType'] = Proto['uiType'],
 	Props extends P & EditableRef<UI_Type> & Props_Controller = P & EditableRef<UI_Type> & Props_Controller,
-	State extends S & _State<UI_Type> = S & _State<UI_Type>,
->
+	State extends S & _State<UI_Type> = S & _State<UI_Type>, >
 	extends Controller<Props, State> {
 
 	shouldReDeriveState(nextProps: Readonly<InferProps<this>>): boolean {

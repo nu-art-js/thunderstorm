@@ -1,5 +1,15 @@
-import {Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives, SubsetObjectByKeys} from '@nu-art/ts-common';
+import {
+	Primitive,
+	RecursiveArrayOfPrimitives,
+	RecursiveObjectOfPrimitives,
+	SubsetObjectByKeys
+} from '@nu-art/ts-common';
 
+
+export type ProtoComponentDefV2<
+	ParamTypes extends { [K in ParamKeys]: Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives },
+	ParamKeys extends keyof ParamTypes = keyof ParamTypes,
+> = ParamKeys extends string ? ProtoComponentDef<ParamKeys, ParamTypes> : never
 
 /**
  * A Definition type for the [ProtoComponent]{@link ProtoComponent}, this type takes 2 arguments:</br>
