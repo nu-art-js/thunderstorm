@@ -66,7 +66,7 @@ export class IndexedDB_Database
 			await this.open();
 			return this.db.transaction(config.name, write ? 'readwrite' : 'readonly').objectStore(config.name);
 		} catch (err: any) {
-			this.logError(`Failed to get store ${config.name}`);
+			this.logError(`Failed to get store for collection '${config.name}'`);
 			throw err;
 		}
 	}
@@ -127,6 +127,7 @@ export class IndexedDB_Database
 			};
 
 			request.onerror = () => {
+				this.logErrorBold(`Received error when tried to open IDB store for collection ${this.dbName}`);
 				reject(new Error(`Error opening IDB - ${this.dbName}`));
 				delete this.openPromise;
 			};
