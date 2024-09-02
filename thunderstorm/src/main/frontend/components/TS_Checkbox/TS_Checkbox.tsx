@@ -25,7 +25,10 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
 import './TS_Checkbox.scss';
 import {ComponentProps_Error} from '../types';
-import {SubsetKeys, TS_Object} from '@nu-art/ts-common';
+import {
+	SubsetKeys,
+	TS_Object
+} from '@nu-art/ts-common';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
 
 
@@ -74,7 +77,8 @@ export class TS_Checkbox
 
 	static readonly editable = (templateProps: TemplatingProps_TS_Checkbox) => {
 		return <T extends TS_Object & { [k in K]?: any }, K extends SubsetKeys<keyof T, T, boolean | undefined>>(props: EditableItemProps_TS_Checkbox<T, K>) => {
-			return <TS_Checkbox {...templateProps} {...props}/>;
+			const checked = props.editable.get(props.prop);
+			return <TS_Checkbox {...templateProps} {...props} checked={checked} onCheck={checked => props.editable.updateObj({[props.prop]: checked} as T)}/>;
 		};
 	};
 

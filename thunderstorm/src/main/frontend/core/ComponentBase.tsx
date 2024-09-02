@@ -62,7 +62,7 @@ export abstract class BaseComponent<P = any, State = any>
 			throw new ImplementationMissingException('Every UI Component must have a render function. Did you forget to add a render function?');
 		this.render = () => {
 			this.logVerbose('Rendering', this.state);
-			return __render()
+			return __render();
 		};
 
 		const __componentDidMount = this.componentDidMount?.bind(this);
@@ -105,7 +105,7 @@ export abstract class BaseComponent<P = any, State = any>
 
 	protected abstract _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined;
 
-	protected reDeriveState = (state?: Partial<State>) => {
+	public reDeriveState = (state?: Partial<State>) => {
 		this.logVerbose('reDeriveState called..');
 
 		this._deriveStateFromProps(this.props, {...this.state, ...state});
