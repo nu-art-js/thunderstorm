@@ -22,7 +22,7 @@ import {exists} from './tools';
 import {BadImplementationException} from '../core/exceptions/exceptions';
 
 
-export function mergeObject(original: any, override: any) {
+export function mergeObject(original: any, override: any, unsafe: boolean = false) {
 	if (original === override) {
 		return override;
 	}
@@ -32,7 +32,7 @@ export function mergeObject(original: any, override: any) {
 
 	const returnValue = deepClone(original);
 	return Object.keys(override).reduce((obj, key) => {
-		obj[key] = merge(original[key], override[key]);
+		obj[key] = merge(original[key], override[key], unsafe);
 
 		if (obj[key] === undefined)
 			delete obj[key];
@@ -65,21 +65,21 @@ export function mergeArray(original: any[], override: any[]) {
 	return override;
 }
 
-export function merge(original: any, override: any) {
+export function merge(original: any, override: any, unsafe: boolean = false) {
 	if (!exists(override))
 		return undefined;
 
 	if (!exists(original))
 		return typeof override === 'object' ? filterKeys(override) : override;
 
-	if (typeof original !== typeof override || (typeof original === 'object' && typeof override === 'object' && Array.isArray(original) !== Array.isArray(override)))
+	if (((typeof original !== typeof override) && !unsafe) || (typeof original === 'object' && typeof override === 'object' && Array.isArray(original) !== Array.isArray(override)))
 		throw new BadImplementationException(`trying to merge object of different types!! \n Original: ${JSON.stringify(original)}\n Override: ${JSON.stringify(override)}`);
 
 	if (Array.isArray(original) && Array.isArray(override))
 		return mergeArray(original, override);
 
 	if (typeof original === 'object' && typeof override === 'object' && !Array.isArray(original) && !Array.isArray(override))
-		return mergeObject(original || {}, override);
+		return mergeObject(original || {}, override, unsafe);
 
 	return override;
 }
