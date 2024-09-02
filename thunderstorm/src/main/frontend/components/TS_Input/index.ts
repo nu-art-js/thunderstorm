@@ -22,3 +22,6 @@
 export * from './TS_BaseInput';
 export * from './TS_TextArea';
 export * from './TS_Input';
+
+//Export ATS
+export * from './ATS_TextArea';
