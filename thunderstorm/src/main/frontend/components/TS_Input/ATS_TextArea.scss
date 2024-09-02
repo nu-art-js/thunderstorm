@@ -1,0 +1,24 @@
+.ats__ts-text-area {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  gap: 20px;
+
+  .app-tools-page__page__header {
+    margin: 0 !important;
+    padding-top: 0;
+  }
+
+  .ats__ts-text-area__content {
+    gap: 20px;
+    align-items: flex-start;
+
+    .ts-textarea {
+      scrollbar-gutter: stable;
+      width: 300px;
+      min-height: 200px;
+      max-height: 300px;
+      resize: none;
+    }
+  }
+}
