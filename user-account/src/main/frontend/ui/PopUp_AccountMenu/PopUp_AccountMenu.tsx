@@ -48,6 +48,8 @@ export type PopUp_AccountMenu_Action_ContentFunction = (account: DB_Account, lea
 
 export type PopUp_AccountMenu_Action = {
 	label: string;
+	className?: string;
+	id?: string;
 } & (
 	{ type: 'page', pageKey: string, content: PopUp_AccountMenu_Action_ContentFunction }
 	| { type: 'action', closePopUp?: boolean, action: () => (Promise<void> | void) }
@@ -202,7 +204,10 @@ export class PopUp_AccountMenu
 
 		return <Grid className={'account-menu__body'}>
 			{this.state.menuActions?.map((menuAction, i) => {
-				return <TS_Button key={i} onClick={() => this.onActionClick(menuAction)}>{menuAction.label}</TS_Button>;
+				return <TS_Button key={i}
+								  id={menuAction.id}
+								  className={_className(menuAction.className)}
+								  onClick={() => this.onActionClick(menuAction)}>{menuAction.label}</TS_Button>;
 			})}
 		</Grid>;
 	};
