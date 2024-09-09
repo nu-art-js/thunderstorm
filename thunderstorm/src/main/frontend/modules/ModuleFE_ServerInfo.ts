@@ -85,8 +85,7 @@ class ModuleFE_ServerInfo_Class
 			// clean data caches
 			// await ModuleFE_StorageCleaner.cleanAll();
 			// hard refresh page
-			// window.location = window.location;
-			window.location.href = window.location.href + '?cacheBust=' + new Date().getTime();
+			window.location.assign(window.location.href);
 			window.location.reload();
 		},
 		updateIfNewVersion: async () => {
