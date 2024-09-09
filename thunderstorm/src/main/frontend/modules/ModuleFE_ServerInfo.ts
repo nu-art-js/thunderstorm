@@ -4,7 +4,6 @@ import {ApiDef_ServerInfo, ApiStruct_ServerInfo, Response_ServerInfo} from '../.
 import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, QueryApi, ServerInfoFirebaseState} from '../../shared';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {StorageKey} from './ModuleFE_LocalStorage';
-import {ModuleFE_StorageCleaner} from './ModuleFE_StorageCleaner';
 import {DataSnapshot} from 'firebase/database';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
@@ -84,10 +83,10 @@ class ModuleFE_ServerInfo_Class
 		},
 		updateToNewVersion: async () => {
 			// clean data caches
-			await ModuleFE_StorageCleaner.cleanAll();
+			// await ModuleFE_StorageCleaner.cleanAll();
 			// hard refresh page
 			// window.location = window.location;
-			window.location.href = window.location.pathname + '?cacheBust=' + new Date().getTime();
+			window.location.href = window.location.href + '?cacheBust=' + new Date().getTime();
 			window.location.reload();
 		},
 		updateIfNewVersion: async () => {
