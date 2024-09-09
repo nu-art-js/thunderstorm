@@ -49,9 +49,9 @@
       }
 
       .items-list {
-        @include styles.customScrollbar('vertical', true);
         width: 300px;
         gap: 2px;
+        @include styles.customScrollbar('vertical', true);
 
         .list-item {
           cursor: pointer;

@@ -123,11 +123,11 @@
     }
 
     .item-list__list {
-      @include styles.customScrollbar('vertical', true);
       height: 0;
       flex-grow: 1;
       width: 100%;
       gap: 2px;
+      @include styles.customScrollbar('vertical', true);
 
       .item-list__list-item {
         width: 100%;
@@ -258,7 +258,6 @@
       text-align: center;
 
       .icon--wrapper {
-        @include styles.mouse-interactive-icon(white);
         background: styles.red(4);
         position: absolute;
         top: 0;
@@ -269,6 +268,7 @@
         transform: translateX(100%);
         transition: transform 200ms ease-out;
         cursor: pointer;
+        @include styles.mouse-interactive-icon(white);
       }
 
       &:hover {
