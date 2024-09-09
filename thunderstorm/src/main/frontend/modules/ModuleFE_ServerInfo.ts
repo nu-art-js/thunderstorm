@@ -81,7 +81,7 @@ class ModuleFE_ServerInfo_Class
 
 			return true;
 		},
-		updateToNewVersion: async () => {
+		updateToNewVersion: () => {
 			// clean data caches
 			// await ModuleFE_StorageCleaner.cleanAll();
 			// hard refresh page
@@ -93,7 +93,7 @@ class ModuleFE_ServerInfo_Class
 			if (!this.Version.shouldUpdateVersion())
 				return;
 
-			await this.Version.updateToNewVersion();
+			this.Version.updateToNewVersion();
 		},
 	};
 
