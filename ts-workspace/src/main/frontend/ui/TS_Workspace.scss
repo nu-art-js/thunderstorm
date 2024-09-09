@@ -39,10 +39,12 @@
     }
   }
   @if $dir == 'vertical' {
+    flex-direction: column;
+
     & > .ts-workspace__separator {
       @include separator($dir);
     }
-    flex-direction: column;
+
     & > .ts-workspace__panel {
       width: 100%;
       display: flex;

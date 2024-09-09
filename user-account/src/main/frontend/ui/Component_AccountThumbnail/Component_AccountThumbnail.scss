@@ -42,9 +42,10 @@
     justify-content: center;
 
     .icon--wrapper {
-      @include tsStyles.color-svg(white);
       width: 50%;
       height: 50%;
+
+      @include tsStyles.color-svg(white);
     }
   }
 
