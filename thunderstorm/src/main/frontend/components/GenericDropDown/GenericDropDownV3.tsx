@@ -27,6 +27,8 @@ type BaseInfraProps_TS_GenericDropDownV3<T> = ComponentProps_Error & {
 	limitItems?: number;
 	itemResolver?: () => T[]
 	innerRef?: React.RefObject<any>;
+	tabIndex?: number;
+	id?: string
 	queryFilter?: (item: T) => boolean
 	sortBy?: ((keyof T) | ((item: T) => string | number))[];
 }
@@ -152,7 +154,9 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 
 	render() {
 		return <TS_DropDown<T>
+			id={this.props.id}
 			innerRef={this.props.innerRef}
+			tabIndex={this.props.tabIndex}
 			error={this.state.error}
 			className={this.props.className}
 			placeholder={this.props.placeholder || 'Choose one'}
