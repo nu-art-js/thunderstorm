@@ -103,7 +103,6 @@
       overflow: hidden;
 
       .icon--wrapper {
-        @include styles.mouse-interactive-icon(white);
         background: styles.red(4);
         position: absolute;
         top: 0;
@@ -114,6 +113,7 @@
         transform: translateX(100%);
         transition: transform 200ms ease-out;
         cursor: pointer;
+        @include styles.mouse-interactive-icon(white);
       }
 
       &:hover {
@@ -131,10 +131,10 @@
 }
 
 #db-def-list {
-  @include styles.customScrollbar('vertical');
   display: flex;
   flex-direction: column;
   max-height: 200px;
+  @include styles.customScrollbar('vertical');
 
   .db-def-list__item {
     height: 30px;

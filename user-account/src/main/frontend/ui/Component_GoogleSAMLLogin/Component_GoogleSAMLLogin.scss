@@ -2,12 +2,12 @@
 
 .ts-account__saml-button.ts-busy-button,
 .ts-account__saml-button.ts-button {
-  @include styles.mouse-interactive-background(transparent);
   height: 40px;
   width: 100%;
   margin: 0;
   gap: 16px;
   border: 2px solid #006fab;
+  @include styles.mouse-interactive-background(transparent);
 
   .ts-account__saml-button__text {
     color: #006fab;

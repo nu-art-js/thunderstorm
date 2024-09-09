@@ -5,11 +5,11 @@
   height: 100%;
 
   .action-groups {
-    @include styles.customScrollbar('vertical', true);
     height: calc(100% - 56px);
     width: 100%;
     gap: 16px;
     padding: 0 16px;
+    @include styles.customScrollbar('vertical', true);
 
     .action-group {
       width: 100%;

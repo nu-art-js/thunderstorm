@@ -21,6 +21,8 @@
       overflow: auto;
 
       .users-list {
+          cursor: pointer;
+          padding: 10px;
 
         .row {
           &.selected {
@@ -31,16 +33,15 @@
             border-bottom: 1px solid styles.gray(6);
           }
 
-          cursor: pointer;
-          padding: 10px;
         }
       }
     }
 
     .user-utils {
       .icon--wrapper {
-        @include styles.color-svg(var(--prop-renderer__label-color));
         cursor: pointer;
+
+        @include styles.color-svg(var(--prop-renderer__label-color));
       }
     }
 
