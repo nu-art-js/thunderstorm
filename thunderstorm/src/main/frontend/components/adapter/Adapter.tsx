@@ -39,6 +39,7 @@ export type TreeNode = {
 	propKey: string
 	item: any
 	adapter: Adapter
+	path: string
 	expandToggler: (e: React.MouseEvent, expand?: boolean) => void
 	expandFromNode: (exapnd?: boolean) => void;
 	expanded: boolean,

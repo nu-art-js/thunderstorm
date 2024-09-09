@@ -41,6 +41,7 @@ export type Props_Tree = {
 	treeContainerStyle?: CSSProperties
 	selectedItem?: any
 	isSelected?: (item: any) => boolean
+	indexTreeNodes?: boolean
 	selectedPath?: string
 	adapter: Adapter;
 	startTreeOpen?: boolean;
@@ -268,6 +269,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const node: TreeNode = {
 			adapter: this.state.adapter,
 			propKey: key,
+			path,
 			item,
 			expandToggler: isParent ? this.toggleExpandState : ignoreToggler,
 			expandFromNode: expand => this.expandOrCollapse(path, expand),
@@ -278,8 +280,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			return null;
 
 		const className = _className('ts-tree__node', isParent && 'ts-tree__parent-node', isSelected && 'ts-tree__selected-node', `depth-${level}`);
-		return <div tabIndex={1} data-path={path} className={className} ref={nodeRefResolver} onClick={this.onNodeClicked}
-								onContextMenu={this.onContextMenuClicked}>
+		return <div tabIndex={this.props.indexTreeNodes ? 1 : undefined} data-path={path} className={className}
+					ref={nodeRefResolver}
+					onClick={this.onNodeClicked}
+					onContextMenu={this.onContextMenuClicked}>
 			<TreeNodeRenderer item={item} node={node}/>
 		</div>;
 	}
