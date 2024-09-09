@@ -87,7 +87,7 @@ class ModuleFE_ServerInfo_Class
 			await ModuleFE_StorageCleaner.cleanAll();
 			// hard refresh page
 			// window.location = window.location;
-			window.location.href = 'bah';//window.location.pathname + '?cacheBust=' + new Date().getTime();
+			window.location.href = window.location.pathname + '?cacheBust=' + new Date().getTime();
 			window.location.reload();
 		},
 		updateIfNewVersion: async () => {
