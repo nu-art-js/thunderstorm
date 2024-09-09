@@ -27,8 +27,6 @@ export class ModuleBE_ServerInfo_Class
 				version: RuntimeVersion(),
 				bucketName: bucket.getBucketName()
 			});
-
-			await this.writeServerInfo();
 		});
 
 		addRoutes([
