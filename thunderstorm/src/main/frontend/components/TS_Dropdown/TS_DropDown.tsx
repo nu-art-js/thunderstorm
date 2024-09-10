@@ -52,6 +52,7 @@ type State<ItemType> = ComponentProps_Error & {
 	treeContainerRef: React.RefObject<HTMLDivElement>;
 	focusedItem?: ItemType;
 	className?: string;
+	hidePlaceholderOnOpen?: boolean;
 	treeResizeObserver: ResizeObserver;
 }
 
@@ -96,6 +97,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & ComponentProps_Error & {
 	renderSearch?: (dropDown: TS_DropDown<ItemType>) => React.ReactNode;
 	limitItems?: number;
 	unselectLabel?: string,
+	hidePlaceholderOnOpen?: boolean;
 	onContextMenu?: (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => void;
 }
 
@@ -166,7 +168,7 @@ export class TS_DropDown<ItemType>
 			onChange={(filterText) => dropDown.reDeriveState({filterText})}
 			focus={true}
 			style={{width: '100%'}}
-			placeholder={dropDown.props.placeholder || ''}
+			placeholder={dropDown.props.placeholder && !dropDown.state.hidePlaceholderOnOpen ? dropDown.props.placeholder : ''}
 			// onAccept={(value, ev) => {
 			// 	const filterText = dropDown.state.filterText;
 			// 	if (filterText) {
@@ -199,6 +201,7 @@ export class TS_DropDown<ItemType>
 		nextState.treeContainerRef = state?.treeContainerRef ?? React.createRef();
 		nextState.className = nextProps.className;
 		nextState.treeResizeObserver ??= new ResizeObserver(() => debounce(() => this.onTreeResize(), 5));
+		nextState.hidePlaceholderOnOpen = nextProps.hidePlaceholderOnOpen;
 
 		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText) || nextProps.queryFilter) {
 			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText, nextProps.queryFilter);
@@ -210,6 +213,7 @@ export class TS_DropDown<ItemType>
 			error: nextState.error,
 			adapter: nextState.adapter,
 			selected: nextState.selected,
+			hidePlaceholderOnOpen: nextState.hidePlaceholderOnOpen,
 			hover: state?.hover,
 			filterText: state?.filterText,
 			dropDownRef: nextState.dropDownRef,
