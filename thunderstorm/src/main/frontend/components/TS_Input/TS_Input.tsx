@@ -94,6 +94,7 @@ export class TS_Input<Key extends string = string>
 				props.onBlur?.(value, event);
 			}}
 			name={props.name || props.id}
+			placeholder={this.state.placeholder}
 			className={_className('ts-input', props.disabled ? 'disabled' : undefined, props.className)}
 			value={this.state.value}
 			onChange={this.changeValue}
