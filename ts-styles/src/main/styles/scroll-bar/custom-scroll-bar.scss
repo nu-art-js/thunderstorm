@@ -19,7 +19,9 @@
 
     //Direction Diff
     @if $direction == 'horizontal' {
+      & {
       overflow-x: auto;
+    }
       //noinspection ALL
       @supports (overflow-x: overlay) {
         overflow-x: overlay;
@@ -30,7 +32,9 @@
     }
 
     @if $direction == 'vertical' {
+      & {
       overflow-y: auto;
+    }
       //noinspection ALL
       @supports (overflow-y: overlay) {
         overflow-y: overlay;
@@ -41,7 +45,9 @@
     }
 
     @if $direction == 'both' {
+      & {
       overflow: auto;
+    }
       //noinspection ALL
       @supports (overflow: overlay) {
         overflow: overlay;
