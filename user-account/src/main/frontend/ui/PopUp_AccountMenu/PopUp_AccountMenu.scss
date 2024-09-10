@@ -64,9 +64,10 @@
 
     .container_role-names {
       max-height: 200px;
-      @include styles.customScrollbar('vertical');
       padding: 4px;
       width: 100%;
+
+      @include styles.customScrollbar('vertical');
 
       .role-name {
         font: {
@@ -156,9 +157,10 @@
       }
 
       .ts-busy-button {
-        @extend %main-button-design;
         margin-top: auto;
         width: 100%;
+
+        @extend %main-button-design;
       }
     }
   }

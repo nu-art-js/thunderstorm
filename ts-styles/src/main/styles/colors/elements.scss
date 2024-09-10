@@ -5,7 +5,9 @@
 /// @param $bga - background when mouse click
 ///
 @mixin mouse-interactive-background($bg, $bg-h: $bg ,$bg-a: $bg-h) {
-  background: $bg;
+  & {
+    background: $bg;
+  }
   &:hover {
     background: $bg-h;
   }
@@ -15,7 +17,9 @@
 }
 
 @mixin mouse-interactive-text($c,$c-h: $c,$c-a:$c-h) {
-  color: $c;
+  & {
+    color: $c;
+  }
   &:hover {
     color: $c-h;
   }
