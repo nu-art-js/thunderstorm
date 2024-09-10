@@ -35,7 +35,7 @@ export class TS_TextArea<Key extends string>
 	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
 
 	componentDidMount() {
-		if (this.state.value)
+		if (this.state.value && this.props.resizeWithText)
 			this.resizeWithText();
 	}
 
