@@ -23,7 +23,6 @@ import * as React from 'react';
 import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 
 
-
 export type InputType = 'text' | 'number' | 'password';
 
 export type TS_BaseInputProps<Key, Element> = Omit<HTMLProps<Element>, 'onChange' | 'onBlur'> & {
@@ -50,6 +49,7 @@ type InputState = {
 	name?: string,
 	initialValue?: string
 	value?: string
+	placeholder?: string
 }
 
 export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInputProps<Key, Input>, Input = HTMLInputElement | HTMLTextAreaElement>
@@ -75,7 +75,8 @@ export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInpu
 			id: props.id,
 			name: props.name,
 			initialValue: props.value,
-			value: props.value || ''
+			value: props.value || '',
+			placeholder: props.placeholder
 		};
 	}
 
