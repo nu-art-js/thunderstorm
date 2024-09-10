@@ -18,8 +18,9 @@
 
 
 import {Module} from '@nu-art/ts-common';
-import {ModulePackFE_AccountDB} from './_entity';
+import {ModulePackFE_AccountDB, ModulePackFE_LoginAttemptDB} from './_entity';
 
 export const ModulePackFE_Accounts: Module[] = [
 	...ModulePackFE_AccountDB,
+	...ModulePackFE_LoginAttemptDB
 ];
