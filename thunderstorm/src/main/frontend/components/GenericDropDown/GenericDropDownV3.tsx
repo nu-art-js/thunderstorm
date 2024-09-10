@@ -26,6 +26,7 @@ type BaseInfraProps_TS_GenericDropDownV3<T> = ComponentProps_Error & {
 	caret?: { open: React.ReactNode, close: React.ReactNode }
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
 	limitItems?: number;
+	hidePlaceholderOnOpen?: boolean;
 	itemResolver?: () => T[]
 	innerRef?: React.RefObject<any>;
 	tabIndex?: number;
@@ -174,6 +175,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 			boundingParentSelector={this.props.boundingParentSelector}
 			renderSearch={this.props.renderSearch}
 			limitItems={this.props.limitItems}
+			hidePlaceholderOnOpen={this.props.hidePlaceholderOnOpen}
 			unselectLabel={this.props.unselectLabel}
 			canUnselect={this.props.canUnselect as (typeof this.props.canUnselect extends true ? true : false | undefined)}
 			disabled={this.props.disabled}
