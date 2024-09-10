@@ -11,6 +11,7 @@ import {
 	TS_EditableItemControllerProto
 } from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
 import {EditableRef} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
+import {sortArray} from '@nu-art/ts-common';
 
 
 class Component_EditAccount
@@ -62,7 +63,7 @@ export class PermissionUsersEditor
 		keys: ['selected'],
 		module: ModuleFE_PermissionUser,
 		mapper: (user) => [ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'],
-		sort: (user) => ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found',
+		sort: (items) => sortArray(items, (user) => ModuleFE_Account.cache.unique(user._id)?.email),
 		itemRenderer: (user) => <>{ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'}</>,
 		EditorRenderer: Controller_EditAccount as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionUser>>>,
 		hideAddItem: true,

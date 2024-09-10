@@ -35,7 +35,15 @@
   border: 1px solid black;
   border-radius: 4px;
 
+  &[data-error-level="error"] {
+    background: #ffe7e7;
+  }
+
   &:focus-visible {
     outline: 1px solid #3ca0c6;
+  }
+
+  &.no-resize {
+    resize: none;
   }
 }

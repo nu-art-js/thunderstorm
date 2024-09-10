@@ -11,6 +11,7 @@ import {
 	Props_EditableItemControllerProto,
 	TS_EditableItemControllerProto
 } from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
+import {sortArray} from '@nu-art/ts-common';
 
 class Component_EditProject
 	extends Component_BasePermissionItemEditor<DBProto_PermissionProject> {
@@ -63,7 +64,7 @@ export class PermissionProjectsEditor
 		id: 'permission-projects-editor',
 		module: ModuleFE_PermissionProject,
 		mapper: project => [project.name ?? 'Not Found'],
-		sort: project => project.name ?? 'Not Found',
+		sort: (items) => sortArray(items, 'name'),
 		itemRenderer: project => <>{project.name ?? 'Not Found'}</>,
 		EditorRenderer: Controller_ProjectEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionProject>>>,
 		hideAddItem: true,

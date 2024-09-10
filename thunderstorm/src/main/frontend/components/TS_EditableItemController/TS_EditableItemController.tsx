@@ -1,7 +1,19 @@
 import * as React from 'react';
 import './TS_EditableItemController.scss';
-import {asArray, BadImplementationException, DB_Object, DBProto, deepClone, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {Editable_SaveAction, EditableDBItemV3} from '../../utils/EditableItem';
+import {
+	asArray,
+	BadImplementationException,
+	DB_Object,
+	DBProto,
+	deepClone,
+	exists,
+	ResolvableContent,
+	resolveContent
+} from '@nu-art/ts-common';
+import {
+	Editable_SaveAction,
+	EditableDBItemV3
+} from '../../utils/EditableItem';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {Props_ItemsEditor} from '../Page_ItemsEditor';
@@ -72,12 +84,14 @@ export class TS_EditableItemController<Proto extends DBProto<any>,
 			throw new BadImplementationException('in order to use this component to create an item you need to provide a createInitialInstance callback');
 
 		_state.editable = new EditableDBItemV3(item, nextProps.module, nextProps.onError)
-			.setSaveAction(nextProps.saveAction)
 			.setOnChanged(async editable => {
 				this.setState({editable});
 			})
 			.setAutoSave(resolveContent(nextProps.autoSave || TS_EditableItemController.DefaultAutoSave, item) || false)
 			.setOnSaveCompleted(this.props.onSave);
+
+		if (nextProps.saveAction)
+			_state.editable.setSaveAction(nextProps.saveAction);
 		return _state;
 	}
 

@@ -1,6 +1,15 @@
 import * as React from 'react';
-import {ModuleFE_Toaster, TS_ErrorBoundary, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
-import {MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
+import {
+	ModuleFE_Toaster,
+	TS_ErrorBoundary,
+	TS_PropRenderer,
+	TS_Route
+} from '@nu-art/thunderstorm/frontend';
+import {
+	MUSTNeverHappenException,
+	sortArray,
+	StaticLogger
+} from '@nu-art/ts-common';
 import {MultiSelect} from '../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {
@@ -19,6 +28,7 @@ import {
 	Props_EditableItemControllerProto,
 	TS_EditableItemControllerProto
 } from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
+import {Fragment} from 'react';
 
 class Component_EditGroup
 	extends Component_BasePermissionItemEditor<DBProto_PermissionGroup> {
@@ -46,10 +56,10 @@ class Component_EditGroup
 						if (!domain)
 							throw new MUSTNeverHappenException(`Could not find domain with id ${level.domainId}`);
 
-						return <div key={levelId} className={'domain-level-list__item'}>
+						return <Fragment key={levelId}>
 							<TS_Icons.x.component onClick={onDelete}/>
 							{`${domain.namespace}: ${level.name} (${level.value})`}
-						</div>;
+						</Fragment>;
 					}}/>
 			</TS_PropRenderer.Vertical>
 		</TS_ErrorBoundary>;
@@ -101,7 +111,7 @@ export class PermissionGroupsEditor
 		keys: ['selected'],
 		module: ModuleFE_PermissionGroup,
 		mapper: group => [group.label ?? 'Not Found'],
-		sort: group => group.label ?? 'Not Found',
+		sort: (items) => sortArray(items, 'label'),
 		itemRenderer: group => <>{group.label ?? 'Not Found'}</>,
 		EditorRenderer: Controller_EditGroup as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionGroup>>>,
 		route: this.Route,
