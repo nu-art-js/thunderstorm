@@ -85,10 +85,8 @@
     flex-wrap: wrap;
     gap: 8px;
 
-    .domain-level-list__item {
+    .ts-multi-select__list-value {
       position: relative;
-      border: 1px solid black;
-      border-radius: 4px;
       height: 50px;
       max-width: 150px;
       padding: 8px;

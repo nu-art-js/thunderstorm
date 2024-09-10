@@ -44,6 +44,7 @@ type InputState = {
 	name?: string,
 	initialValue?: string
 	value?: string
+	focused?: boolean
 }
 
 export type InputType = 'text' | 'number' | 'password' | 'time';
@@ -79,7 +80,6 @@ export type TemplatingProps_TS_InputV2 = TypeProps_TS_Input & BaseInfraProps_TS_
 
 export type Props_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & TypeProps_TS_Input & {
 	value?: string
-	clearOnCompletions?: boolean
 	onChange?: (value: string, id: string) => void
 	onAccept?: (value: string, event: KeyboardEvent<HTMLInputElement>) => Promise<any> | any
 	onBlur?: (value: string, event: React.FocusEvent<HTMLInputElement>) => void
@@ -261,17 +261,18 @@ export class TS_InputV2
 		saveEvent: ['accept']
 	};
 
-	protected ref?: HTMLInputElement;
+	inputRef: React.RefObject<HTMLInputElement>;
 
 	constructor(props: Props_TS_InputV2) {
 		super(props);
 
+		this.inputRef = React.createRef();
 		this.state = TS_InputV2.getInitialState(props);
 	}
 
 	static getDerivedStateFromProps(props: Props_TS_InputV2, state: InputState) {
 		if (props.id === state.id && state.name === props.name && state.initialValue === props.value)
-			return {value: state.value};
+			return {value: state.value, focused: state.focused};
 
 		return TS_InputV2.getInitialState(props);
 	}
@@ -305,7 +306,6 @@ export class TS_InputV2
 				if (this.props.onAccept) {
 					if (value !== this.props.value || this.props.allowAccept) {
 						await this.props.onAccept(value, ev);
-						this.setState({value: this.props.clearOnCompletions ? '' : value});
 					}
 					ev.stopPropagation();
 				}
@@ -321,7 +321,6 @@ export class TS_InputV2
 			if (this.props.onAccept) {
 				if (value !== this.props.value || this.props.allowAccept) {
 					await this.props.onAccept(value, ev);
-					this.setState({value: this.props.clearOnCompletions ? '' : value});
 				}
 				ev.stopPropagation();
 			}
@@ -329,19 +328,38 @@ export class TS_InputV2
 		this.props.onKeyDown?.(ev);
 	};
 
+	componentDidMount() {
+		console.log(`REFOCUS!!!`);
+		if (!this.inputRef.current)
+			return console.log(`CAN'T REFOCUS!!! - no REF: ${this.state.value}`);
+
+		if (this.props.innerRef) {
+			// @ts-ignore
+			props.innerRef.current = ref;
+		}
+
+		if (this.state.focused) {
+			console.log(`REFOCUS!!! - value: ${this.state.value}`);
+			this.inputRef.current.focus();
+		}
+	}
+
 	render() {
-		const {onAccept, allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, clearOnCompletions, ...props} = this.props;
+		const {onAccept, allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
 
 		return <input
 			{...props}
 			{...convertToHTMLDataAttributes(this.props.error, 'error')}
 			{...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
 			autoFocus={focus}
-			ref={props.innerRef}
+			ref={this.inputRef}
 			onBlur={(event) => {
 				const value = event.target.value;
-				this.setState({value});
+				this.setState({value, focused: false});
 				props.onBlur?.(value, event);
+			}}
+			onFocus={(event) => {
+				this.setState({focused: true});
 			}}
 			name={props.name || props.id}
 			className={_className('ts-input', props.className)}

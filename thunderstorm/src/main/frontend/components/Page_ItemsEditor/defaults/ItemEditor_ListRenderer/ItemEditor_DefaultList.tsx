@@ -1,11 +1,14 @@
 import * as React from 'react';
-import {DBProto} from '@nu-art/ts-common';
+import {
+	DBProto,
+	sortArray
+} from '@nu-art/ts-common';
 import {ModuleFE_BaseApi} from '../../../../modules/db-api-gen/ModuleFE_BaseApi';
 import {_className} from '../../../../utils/tools';
 import './ItemEditor_DefaultList.scss';
 import {
-	ItemEditor_FilterType,
-	ItemEditor_SortType
+	ItemEditor_CustomSort,
+	ItemEditor_FilterType
 } from '../../types';
 import {ComponentSync} from '../../../../core/ComponentSync';
 import {ApiCallerEventType} from '../../../../core/db-api-gen/types';
@@ -28,7 +31,7 @@ export type Props_ListRenderer<Proto extends DBProto<any>> = {
 	selected?: Partial<Proto['uiType']>
 	filter: ItemEditor_FilterType<Proto>,
 	onSelected: (item: Proto['uiType']) => void
-	sort: ItemEditor_SortType<Proto>,
+	sort: ItemEditor_CustomSort<Proto>,
 	itemRenderer: (item: Proto['uiType']) => JSX.Element,
 	contextMenuItems: MenuAction<Proto>[]
 };
@@ -37,7 +40,7 @@ type State = {}
 export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 	extends ComponentSync<Props_ListRenderer<Proto>, State> {
 
-	private listContainerRef?: HTMLDivElement
+	private listContainerRef?: HTMLDivElement;
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
 		if (nextProps === this.props || nextProps.module !== this.props.module) {
@@ -84,9 +87,9 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 	};
 
 	render() {
-		const sortedItems = this.props.module.cache.sort(this.props.sort);
-		const predicate = this.props.filter ?? (() => true);
-		const items = sortedItems.filter(predicate);
+		const filteredItems = this.props.module.cache.filter(this.props.filter ?? (() => true));
+		const sort = this.props.sort || ((items) => sortArray(items, i => i.__createdAt));
+		const items = sort(filteredItems);
 
 		const itemsToRender = items.map(item => {
 			return <div
@@ -101,7 +104,6 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 							this.logInfo(`item: ${item._id}`);
 						return;
 					}
-
 					this.props.onSelected(item);
 				}}>
 				{this.props.itemRenderer(item)}

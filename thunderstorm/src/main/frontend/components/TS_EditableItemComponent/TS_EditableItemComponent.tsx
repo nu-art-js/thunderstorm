@@ -78,7 +78,7 @@ export abstract class TS_EditableItemComponentProto<Proto extends DBProto<any>, 
 	}
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
-		state.editable = nextProps.editable;
+		state.editable = nextProps.editable.setOnChanged(async () => this.forceUpdate()).setOnError(async () => this.forceUpdate());
 		state.tag = nextProps.editable.tag;
 		return state;
 	}

@@ -1,4 +1,6 @@
-import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, filterKeys, md5, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
+import {
+	__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, exists, filterInstances, filterKeys, md5, TS_Object, TypedKeyValue
+} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
 import {DBApiConfigV3, ModuleBE_BaseDB, Storm} from '@nu-art/thunderstorm/backend';
@@ -75,10 +77,10 @@ export class ModuleBE_SessionDB_Class
 	constructor() {
 		super(DBDef_Session);
 		this.setDefaultConfig({
-			sessionTTLms: Day,
-			rotationFactor: 0.5,
-			accountSessionIdSigner_SecretName: Const_Default_AccountSessionId_SecretName
-		});
+			                      sessionTTLms: Day,
+			                      rotationFactor: 0.5,
+			                      accountSessionIdSigner_SecretName: Const_Default_AccountSessionId_SecretName
+		                      });
 	}
 
 	async __collectSessionData(data: SessionCollectionParam) {
@@ -147,14 +149,14 @@ export class ModuleBE_SessionDB_Class
 			const jwt = await this.sessionData.createJWT(sessionData.encoded, JWTExpiry);
 
 			const session = filterKeys({
-				accountId: content.accountId,
-				deviceId: content.deviceId,
-				prevSession: content.prevSession ?? [],
-				label: content.label,
-				sessionId: md5(jwt), // The sessionId JWT string is way to long to query by. We save an md5(32 chars) instead in sessionId and previousSessions.
-				sessionIdJwt: jwt,
-				timestamp: currentTimeMillis(),
-			}, ['prevSession', 'label'],);
+				                           accountId: content.accountId,
+				                           deviceId: content.deviceId,
+				                           prevSession: content.prevSession ?? [],
+				                           label: content.label,
+				                           sessionId: md5(jwt), // The sessionId JWT string is way to long to query by. We save an md5(32 chars) instead in sessionId and previousSessions.
+				                           sessionIdJwt: jwt,
+				                           timestamp: currentTimeMillis(),
+			                           }, ['prevSession', 'label'],);
 
 			await this.set.item(session, transaction);
 			return {sessionId: jwt, sessionData: sessionData.raw};
@@ -178,7 +180,7 @@ export class ModuleBE_SessionDB_Class
 			if (_accountIds.length > 0) {
 				const sessions = await batchActionParallel(_accountIds, 10, async ids => await this.query.custom({where: {accountId: {$in: ids}}}));
 
-				const newSessions = (await this.runTransaction(t => {
+				const newSessions = filterInstances(await this.runTransaction(t => {
 					return Promise.all(sessions.map(async session => {
 						return this.session.rotate(session, t);
 					}));
@@ -199,6 +201,13 @@ export class ModuleBE_SessionDB_Class
 		},
 		rotate: async (dbSession: DB_Session = MemKey_SessionObject.get(), transaction?: Transaction) => {
 			this.logInfo(`Rotating sessionId for Account: ${dbSession.accountId}`);
+
+			if (!exists(dbSession.sessionIdJwt))
+				return;
+
+			if (!exists(dbSession.deviceId))
+				return;
+
 			const content: PreDBSessionContent = {
 				accountId: dbSession.accountId,
 				deviceId: dbSession.deviceId,
@@ -206,10 +215,11 @@ export class ModuleBE_SessionDB_Class
 				label: 'user-auth-session'
 			};
 
-			if (SessionKey_Account_BE.get(this.sessionData.decodeJWT(dbSession.sessionIdJwt)).type === 'service') {
-				const decodedJwt = jwt.decode(dbSession.sessionIdJwt) as { exp: number };
-				content.ttl = (decodedJwt.exp * 1000) - currentTimeMillis(); // jwt expiry is in seconds, and we usually work in milliseconds so this is required to keep consistency
-			}
+			if (exists(dbSession.sessionIdJwt))
+				if (SessionKey_Account_BE.get(this.sessionData.decodeJWT(dbSession.sessionIdJwt)).type === 'service') {
+					const decodedJwt = jwt.decode(dbSession.sessionIdJwt) as { exp: number };
+					content.ttl = (decodedJwt.exp * 1000) - currentTimeMillis(); // jwt expiry is in seconds, and we usually work in milliseconds so this is required to keep consistency
+				}
 
 			return await this.session.create(content, transaction);
 		},
