@@ -84,6 +84,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & ComponentProps_Error & {
 	queryFilter?: (item: ItemType) => boolean
 	tabIndex?: number;
 	innerRef?: React.RefObject<any>;
+	id?: string
 
 	inputEventHandler?: (state: State<ItemType>, e: React.KeyboardEvent) => State<ItemType>
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
@@ -156,7 +157,6 @@ export class TS_DropDown<ItemType>
 		};
 	};
 
-	private node?: HTMLDivElement;
 
 	static defaultRenderSearch = (dropDown: TS_DropDown<any>) =>
 		<TS_Input
@@ -288,11 +288,18 @@ export class TS_DropDown<ItemType>
 			() => this.props.onSelected(item as (typeof this.props.canUnselect extends true ? ItemType | undefined : ItemType)));
 	};
 
-	private inputKeyEventHandler = (e: React.KeyboardEvent) => {
+	private inputKeyEventHandler = (e: React.KeyboardEvent, disableIfOpen: boolean = false) => {
+		if (disableIfOpen) return;
+
 		if (this.props.inputEventHandler)
 			return this.setState(() => {
 				return this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
 			});
+
+		if (!this.state.open) {
+			if (e.key === 'Enter' || e.key === 'ArrowDown') this.setState({open: true});
+			return;
+		}
 
 		if (e.key === 'Enter') {
 			e.persist();
@@ -386,12 +393,13 @@ export class TS_DropDown<ItemType>
 		);
 		return (
 			<div className={className}
-					 ref={this.state.dropDownRef}
-					 tabIndex={this.props.tabIndex}
-					 onFocus={this.addKeyboardListener}
-					 onBlur={this.removeKeyboardListener}
-					 {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
-					 {...convertToHTMLDataAttributes(this.state.error, 'error')}
+				 id={this.props.id}
+				 ref={this.state.dropDownRef}
+				 tabIndex={this.props.tabIndex}
+				 onFocus={this.addKeyboardListener}
+				 onBlur={this.removeKeyboardListener}
+				 {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
+				 {...convertToHTMLDataAttributes(this.state.error, 'error')}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
@@ -472,7 +480,7 @@ export class TS_DropDown<ItemType>
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'}
-																			onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
+                                            onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
@@ -527,7 +535,7 @@ export class TS_DropDown<ItemType>
 		if (!onKeyboardEventListener)
 			return;
 
-		this.node?.addEventListener('keydown', this.keyboardEventHandler);
+		this.state.dropDownRef.current?.addEventListener('keydown', this.keyboardEventHandler);
 	};
 
 	private removeKeyboardListener = () => {
@@ -535,8 +543,8 @@ export class TS_DropDown<ItemType>
 		if (!onKeyboardEventListener)
 			return;
 
-		this.node?.removeEventListener('keydown', this.keyboardEventHandler);
+		this.state.dropDownRef.current?.removeEventListener('keydown', this.keyboardEventHandler);
 	};
 
-	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.inputKeyEventHandler(e as unknown as React.KeyboardEvent);
+	keyboardEventHandler = (e: KeyboardEvent) => this.state.dropDownRef.current && this.inputKeyEventHandler(e as unknown as React.KeyboardEvent, this.state.open);
 }
