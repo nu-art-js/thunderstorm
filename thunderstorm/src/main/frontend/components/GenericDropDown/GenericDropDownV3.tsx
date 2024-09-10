@@ -15,6 +15,7 @@ type Props_CanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => 
 })
 
 type BaseInfraProps_TS_GenericDropDownV3<T> = ComponentProps_Error & {
+	dropdownRef?: React.RefObject<any>
 	className?: string
 	style?: CSSProperties
 	placeholder?: string;
@@ -28,6 +29,7 @@ type BaseInfraProps_TS_GenericDropDownV3<T> = ComponentProps_Error & {
 	itemResolver?: () => T[]
 	innerRef?: React.RefObject<any>;
 	tabIndex?: number;
+	unselectLabel?: string
 	id?: string
 	queryFilter?: (item: T) => boolean
 	sortBy?: ((keyof T) | ((item: T) => string | number))[];
@@ -154,6 +156,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 
 	render() {
 		return <TS_DropDown<T>
+			ref={this.props.dropdownRef} // allow interacting with the TS_Input interface itself and not the html element inside
 			id={this.props.id}
 			innerRef={this.props.innerRef}
 			tabIndex={this.props.tabIndex}
@@ -171,6 +174,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 			boundingParentSelector={this.props.boundingParentSelector}
 			renderSearch={this.props.renderSearch}
 			limitItems={this.props.limitItems}
+			unselectLabel={this.props.unselectLabel}
 			canUnselect={this.props.canUnselect as (typeof this.props.canUnselect extends true ? true : false | undefined)}
 			disabled={this.props.disabled}
 		/>;

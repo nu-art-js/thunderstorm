@@ -95,6 +95,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & ComponentProps_Error & {
 	boundingParentSelector?: string;
 	renderSearch?: (dropDown: TS_DropDown<ItemType>) => React.ReactNode;
 	limitItems?: number;
+	unselectLabel?: string,
 	onContextMenu?: (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => void;
 }
 
@@ -480,7 +481,7 @@ export class TS_DropDown<ItemType>
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'}
-                                            onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
+                                            onClick={(e) => this.onSelected(undefined, e)}>{this.props.unselectLabel ? this.props.unselectLabel : 'Unselect'}</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
