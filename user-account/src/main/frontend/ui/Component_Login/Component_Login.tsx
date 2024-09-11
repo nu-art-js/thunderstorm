@@ -17,16 +17,25 @@
  */
 
 import * as React from 'react';
-import {_keys} from '@nu-art/ts-common';
-import {Account_Login, AccountEmail, AccountPassword} from '../../../shared';
+import {_keys, exists} from '@nu-art/ts-common';
+import {Account_Login, AccountEmail, AccountPassword, ErrorType_LoginBlocked} from '../../../shared';
 import './Component_Login.scss';
-import {ComponentSync, LL_V_C, ModuleFE_Toaster, TS_BusyButton, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {
+	ComponentSync,
+	LL_H_C,
+	LL_V_C,
+	ModuleFE_Toaster,
+	TS_BusyButton,
+	TS_PropRenderer
+} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity';
 import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
+import {Component_LoginBlocked} from '../Component_LoginBlocked/Component_LoginBlocked';
 
 type State<T> = {
 	data: Partial<T>
 	errorMessages?: string[];
+	blockedUntil?: number;
 	submitting: boolean
 }
 
@@ -72,6 +81,25 @@ export class Component_Login
 		</ul>;
 	};
 
+	private renderLoginBlocked = () => {
+		if (!exists(this.state.blockedUntil)) return;
+
+		return <Component_LoginBlocked
+			hide={() => this.setState({blockedUntil: undefined})}
+			blockedUntil={this.state.blockedUntil}
+		/>;
+	};
+
+	private errorRenderer = () => {
+		if (!this.state.errorMessages && !this.state.blockedUntil)
+			return;
+
+		if (this.state.blockedUntil)
+			return this.renderLoginBlocked();
+
+		return this.renderErrorMessages();
+	};
+
 	render() {
 		const data = this.state.data;
 		return <LL_V_C className="ts-account__authenticate">
@@ -93,17 +121,21 @@ export class Component_Login
 					</TS_PropRenderer.Vertical>;
 				}
 			)}
-			{this.renderErrorMessages()}
-			<TS_BusyButton onClick={this.loginClicked}
-						   isBusy={this.state.submitting}
-						   className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
+			<LL_H_C className={'ts-account__error-container'}>
+				{this.errorRenderer()}
+			</LL_H_C>
+			<TS_BusyButton
+				disabled={exists(this.state.blockedUntil)}
+				onClick={this.loginClicked}
+				isBusy={this.state.submitting}
+				className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
 		</LL_V_C>;
 	}
 
 	private onValueChanged = (value: string, id: keyof Account_Login['request'], isAccept: boolean = false) => {
 		const data = {...this.state.data};
 		data[id] = value;
-		this.setState({data, errorMessages: undefined}, () => {
+		this.setState({data, errorMessages: undefined, blockedUntil: undefined}, () => {
 			if (!isAccept)
 				return;
 
@@ -133,18 +165,21 @@ export class Component_Login
 	};
 
 	private loginClicked = async () => {
-		if (!this.canSubmit())
+		if (!this.canSubmit() || exists(this.state.blockedUntil))
 			return;
 
 		try {
-			// this.logWarning('Login network begins');
 			await ModuleFE_Account._v1.login({
 				...this.state.data,
 				deviceId: StorageKey_DeviceId.get()
 			} as Account_Login['request']).executeSync();
-			// this.logWarning('Logged in');
-		} catch (err) {
-			// this.logWarning('Failed login network');
+		} catch (err: any) {
+			if (err.errorResponse.error?.type === ErrorType_LoginBlocked)
+				return this.setState({
+					blockedUntil: err.errorResponse.error.data.blockedUntil,
+					errorMessages: undefined
+				});
+
 			this.setState({errorMessages: ['Email or password incorrect']});
 		}
 	};
