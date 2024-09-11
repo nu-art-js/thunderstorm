@@ -1,4 +1,4 @@
-import {__stringify, compareVersions, Module, RuntimeVersion} from '@nu-art/ts-common';
+import {compareVersions, Module, RuntimeVersion} from '@nu-art/ts-common';
 import {apiWithQuery} from '../core/typed-api';
 import {ApiDef_ServerInfo, ApiStruct_ServerInfo, Response_ServerInfo} from '../../shared/server-info/api';
 import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, QueryApi, ServerInfoFirebaseState} from '../../shared';
@@ -46,9 +46,7 @@ class ModuleFE_ServerInfo_Class
 	}
 
 	private onServerInfoDataChanged = async (snapshot: DataSnapshot) => {
-		this.logInfo(`Received ServerInfo!!!!!!!!!!!!!!!!!`);
 		const rtdbServerInfoData = snapshot.val() as ServerInfoFirebaseState | undefined;
-		this.logInfo(`The received ServerInfo: ${__stringify(rtdbServerInfoData)}`);
 		if (!rtdbServerInfoData) {
 			this.logInfo(`Did not receive any ServerInfo via firebase listener`);
 			return;
@@ -80,20 +78,7 @@ class ModuleFE_ServerInfo_Class
 				return false;
 
 			return true;
-		},
-		updateToNewVersion: () => {
-			// clean data caches
-			// await ModuleFE_StorageCleaner.cleanAll();
-			// hard refresh page
-			window.location.assign(window.location.href);
-			window.location.reload();
-		},
-		updateIfNewVersion: async () => {
-			if (!this.Version.shouldUpdateVersion())
-				return;
-
-			this.Version.updateToNewVersion();
-		},
+		}
 	};
 
 }
