@@ -11,7 +11,7 @@
       background: gray;
       color: white;
 
-      + .separator {
+      &:not(.disabled) + .separator {
         opacity: 0;
       }
     }
