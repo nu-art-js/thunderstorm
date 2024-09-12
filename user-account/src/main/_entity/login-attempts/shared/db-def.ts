@@ -1,4 +1,10 @@
-import {DBDef_V3, tsValidateIpAddress, tsValidateUniqueId, tsValidateValue} from '@nu-art/ts-common';
+import {
+	DBDef_V3,
+	tsValidateIpAddress,
+	tsValidateOptionalId,
+	tsValidateUniqueId,
+	tsValidateValue
+} from '@nu-art/ts-common';
 import {DBProto_LoginAttempt, LoginStatus_Failed, LoginStatus_Success} from './types';
 
 
@@ -7,7 +13,7 @@ const Validator_ModifiableProps: DBProto_LoginAttempt['modifiablePropsValidator'
 	status: tsValidateValue([LoginStatus_Success, LoginStatus_Failed]),
 	metadata: {
 		ipAddress: tsValidateIpAddress(false),
-		deviceId: tsValidateUniqueId
+		deviceId: tsValidateOptionalId
 	}
 };
 
