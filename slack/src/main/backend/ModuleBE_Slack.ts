@@ -44,6 +44,8 @@ export type ConfigType_ModuleBE_Slack = {
 	defaultChannel: string
 	throttlingTime?: number
 	slackConfig?: Partial<WebClientOptions>
+	unfurl_links?: boolean
+	unfurl_media?: boolean
 };
 
 
@@ -68,6 +70,7 @@ export class ModuleBE_Slack_Class
 
 	constructor() {
 		super('slack');
+		this.setDefaultConfig({unfurl_links: false, unfurl_media: false});
 	}
 
 	protected init(): void {
@@ -139,8 +142,8 @@ export class ModuleBE_Slack_Class
 				message.channel = threadPointer.channel;
 			}
 
-			message.unfurl_links = false;
-			message.unfurl_media = false;
+			message.unfurl_links = this.config.unfurl_links;
+			message.unfurl_media = this.config.unfurl_media;
 
 			this.logDebug(`Sending message in ${threadPointer ? 'thread' : 'channel'}`, message);
 			const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
