@@ -26,8 +26,14 @@
     margin-block: 4px;
   }
 
-  .ts-account__action-button {
-    margin-top: 16px;
+  .ts-account__error-container {
+    justify-content: center;
+    align-items: center;
+    min-height: 22px;
+
+    .ts-account__error-messages {
+      margin-block: 0;
+    }
   }
 
   .ts-account__authenticate__password-rules {
