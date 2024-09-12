@@ -284,3 +284,18 @@ export const tsValidator_stringOrNumber = (mandatory = true) => {
 		return 'Input is not string or number.';
 	}, mandatory) as ValidatorTypeResolver<string | number>;
 };
+
+export const tsValidateIpAddress = (mandatory = true): Validator<string> => {
+	return [tsValidateExists(mandatory), (input?: string) => {
+		if (!input && mandatory)
+			return 'no input provided for validation of mandatory prop';
+
+		if (tsValidateResult(input, tsValidateRegexp(/(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])/)))
+			return;
+
+		if (tsValidateResult(input, tsValidateRegexp(/((([0-9a-fA-F]){1,4})\:){7}([0-9a-fA-F]){1,4}/)))
+			return;
+
+		return `Invalid input ${input}, not an ip address`;
+	}];
+};
