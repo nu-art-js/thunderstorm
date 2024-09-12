@@ -48,7 +48,7 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 	}
 
 	__onUserLogin(account: SafeDB_Account) {
-		return this.isAccountLoginBlocked(account._id);
+		return this.onLoginSuccessful(account._id);
 	}
 
 	//######################### Public Logic #########################
@@ -87,7 +87,7 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 	 * or if block time elapsed
 	 * @param accountId The account that successfully logged in
 	 */
-	private isAccountLoginBlocked = async (accountId: UniqueId) => {
+	private onLoginSuccessful = async (accountId: UniqueId) => {
 		const loginAttempt = await this.getExistingLoginAttempt(accountId);
 
 		// fail fast if there's no login attempts document
