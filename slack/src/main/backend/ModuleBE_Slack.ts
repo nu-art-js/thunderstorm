@@ -82,14 +82,14 @@ export class ModuleBE_Slack_Class
 			});
 
 		addRoutes([
-			createBodyServerApi(ApiDef_Slack.vv1.postMessage, async (request): Promise<void> => {
-				await this.postMessage(request.message, request.channel);
-			}),
-			createBodyServerApi(ApiDef_Slack.vv1.postStructuredMessage, async (request) => {
-				return {threadPointer: await this.postStructuredMessage(request.message, request.thread)};
-			}),
-			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file, request.name, request.thread))
-		]);
+			          createBodyServerApi(ApiDef_Slack.vv1.postMessage, async (request): Promise<void> => {
+				          await this.postMessage(request.message, request.channel);
+			          }),
+			          createBodyServerApi(ApiDef_Slack.vv1.postStructuredMessage, async (request) => {
+				          return {threadPointer: await this.postStructuredMessage(request.message, request.thread)};
+			          }),
+			          createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file, request.name, request.thread))
+		          ]);
 	}
 
 	public async postMessage(text: string, channel?: string, thread?: ThreadPointer) {
@@ -138,12 +138,15 @@ export class ModuleBE_Slack_Class
 				message.thread_ts = threadPointer.ts;
 				message.channel = threadPointer.channel;
 			}
+
+			message.unfurl_links = false;
+			message.unfurl_media = false;
+
 			this.logDebug(`Sending message in ${threadPointer ? 'thread' : 'channel'}`, message);
 			const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
 
 			//Add message to map
 			this.messageMap[md5(message.text)] = currentTimeMillis();
-
 			this.logDebug(`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);
 			return {ts: res.ts, channel: res.channel};
 		} catch (err) {
@@ -153,11 +156,12 @@ export class ModuleBE_Slack_Class
 
 	public uploadFile = async (file: Buffer | Stream, name: string, tp?: ThreadPointer) => {
 		const channel = tp?.channel || this.config.defaultChannel;
-		return await this.web.files.upload({
+		const fileUploadBlob = {
 			channels: channel,
 			file: file,
 			filename: name,
-		});
+		};
+		return await this.web.files.upload(fileUploadBlob);
 	};
 
 	public async getUserIdByEmail(email: string): Promise<string | undefined> {
