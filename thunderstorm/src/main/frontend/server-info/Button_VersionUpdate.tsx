@@ -5,6 +5,7 @@ import './Button_VersionUpdate.scss';
 
 export type Props = {
 	updateVersion?: () => void // in case someone would like a customized updateVersion process
+	buttonContent?: React.JSX.Element
 }
 
 export class Button_VersionUpdate
@@ -30,8 +31,8 @@ export class Button_VersionUpdate
 		if (!shouldUpdateVersion)
 			return <></>;
 
-		return <div className={'version-update-message'} onClick={() => this.updateVersion()}>
-			{`Version ${newVersion} available. Click to update`}
-		</div>;
+		const ButtonContent = this.props.buttonContent ? this.props.buttonContent : `Version ${newVersion} available. Click to update`;
+
+		return <div className={'version-update-message'} onClick={() => this.updateVersion()}>{ButtonContent}</div>;
 	}
 }
