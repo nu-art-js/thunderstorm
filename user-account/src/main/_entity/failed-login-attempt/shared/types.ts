@@ -1,4 +1,4 @@
-import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
 
 type VersionTypes_FailedLoginAttempt = { '1.0.0': DB_FailedLoginAttempt }
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_FailedLoginAttempt>;
@@ -11,5 +11,7 @@ export type DBProto_FailedLoginAttempt = DBProto<Proto>;
 export type UI_FailedLoginAttempt = DBProto_FailedLoginAttempt['uiType'];
 
 export type DB_FailedLoginAttempt = DB_Object & {
+	accountId: UniqueId;
 	count: number;
+	loginSuccessfulAt?: number
 }

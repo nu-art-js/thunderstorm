@@ -1,10 +1,12 @@
-import {DBDef_V3, tsValidateNumber} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateNumber, tsValidateUniqueId} from '@nu-art/ts-common';
 import {DBProto_FailedLoginAttempt} from './types';
 import {accountGroupName} from '../../session/shared';
 
 
 const Validator_ModifiableProps: DBProto_FailedLoginAttempt['modifiablePropsValidator'] = {
-	count: tsValidateNumber()
+	count: tsValidateNumber(),
+	accountId: tsValidateUniqueId,
+	loginSuccessfulAt: tsValidateNumber(false)
 };
 
 const Validator_GeneratedProps: DBProto_FailedLoginAttempt['generatedPropsValidator'] = {};

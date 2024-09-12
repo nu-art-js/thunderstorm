@@ -8,7 +8,7 @@ import {
 } from '../shared';
 import {
 	ApiException,
-	currentTimeMillis,
+	currentTimeMillis, exists,
 	Format_HHmmss_DDMMYYYY,
 	formatTimestamp,
 	Minute,
@@ -16,11 +16,15 @@ import {
 } from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import {dispatch_OnLoginFailed} from '../../login-attempts/backend/dispatchers';
+import {OnUserLogin} from '../../account/backend';
+import {SafeDB_Account} from '../../account/shared';
 
 
 type Config = DBApiConfigV3<DBProto_FailedLoginAttempt> & {
 	loginBlockedTTL: number;
-	maxLoginAttempts: number
+	maxLoginAttempts: number;
+	documentTTL: number;
 }
 
 type LoginBlockedErrorBody = ResponseError<typeof ErrorType_LoginBlocked, {
@@ -32,14 +36,19 @@ type LoginBlockedErrorBody = ResponseError<typeof ErrorType_LoginBlocked, {
  * Default login blocked timer is 5 minutes
  */
 export class ModuleBE_FailedLoginAttemptDB_Class
-	extends ModuleBE_BaseDB<DBProto_FailedLoginAttempt, Config> {
+	extends ModuleBE_BaseDB<DBProto_FailedLoginAttempt, Config> implements OnUserLogin {
 
 	constructor() {
 		super(DBDef_FailedLoginAttempt);
 		this.setDefaultConfig({
 			loginBlockedTTL: 5 * Minute, // default login block is 5 minutes
-			maxLoginAttempts: DefaultMaxLoginAttempts
+			maxLoginAttempts: DefaultMaxLoginAttempts,
+			documentTTL: 3 * Minute
 		});
+	}
+
+	__onUserLogin(account: SafeDB_Account) {
+		return this.isAccountLoginBlocked(account._id);
 	}
 
 	//######################### Public Logic #########################
@@ -50,74 +59,90 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 	 * @param accountId The account that failed login.
 	 */
 	public updateFailedLoginAttempt = async (accountId: UniqueId) => {
-		const existingLoginAttempt = await this.query.unique(accountId);
+		// Fetch the existing attempt
+		const existingLoginAttempt = await this.getExistingLoginAttempt(accountId);
 
-		// if the account doesn't have pre existing document create new.
-		if (!existingLoginAttempt)
+		if (!existingLoginAttempt) {
 			return this.createNewLoginAttempt(accountId);
-
-		//if the login is already blocked handled blocked login
-		if (existingLoginAttempt.count === this.config.maxLoginAttempts) {
-
-			// if the login is still blocked throw an error
-			if (this.validateLoginBlock(existingLoginAttempt))
-				return this.handleBlockedLogin(existingLoginAttempt);
-
-			// otherwise start a new count by setting the counter to 0 and continuing the update process
-			existingLoginAttempt.count = 0;
 		}
 
-		// update the counter
-		existingLoginAttempt.count++;
+		// Check if the login is already blocked
+		if (this.isLoginBlocked(existingLoginAttempt)) {
+			return this.handleBlockedLogin(existingLoginAttempt);
+		}
 
-		//update the doc
-		const updatedDoc = await this.set.item(existingLoginAttempt);
+		// Check if TTL has expired
+		if (this.isTTLExpired(existingLoginAttempt) || exists(existingLoginAttempt.loginSuccessfulAt)) {
+			return this.createNewLoginAttempt(accountId);
+		}
 
-		// check if login is blocked after the update, if so, handle blocked login
-		if (updatedDoc.count === this.config.maxLoginAttempts)
-			return this.handleBlockedLogin(updatedDoc);
+		// Update the failed login attempt
+		return this.incrementLoginAttempt(existingLoginAttempt);
 	};
+
+	//######################### Internal Logic #########################
 
 	/**
 	 * After a successful login attempt use this function to validate if user isn't blocked
 	 * or if block time elapsed
 	 * @param accountId The account that successfully logged in
 	 */
-	public validateLoginAttempt = async (accountId: UniqueId) => {
-		const loginAttempt = await this.query.unique(accountId);
+	private isAccountLoginBlocked = async (accountId: UniqueId) => {
+		const loginAttempt = await this.getExistingLoginAttempt(accountId);
 
 		// fail fast if there's no login attempts document
 		if (!loginAttempt)
 			return;
 
-		// clean login attempt doc if login is successful and not blocked
-		if (loginAttempt.count < this.config.maxLoginAttempts)
-			return this.clearLoginAttempt(accountId);
+		// update login timestamp if login is successful and not blocked
+		if (loginAttempt.count < this.config.maxLoginAttempts) {
+			loginAttempt.loginSuccessfulAt = currentTimeMillis();
+			return this.set.item(loginAttempt);
+		}
 
 		// if the login is still blocked throw blocked error
-		if (this.validateLoginBlock(loginAttempt))
+		if (this.assertLoginBlock(loginAttempt))
 			return this.handleBlockedLogin(loginAttempt);
-
-		// clean blocked login if blocked time elapsed
-		return this.clearLoginAttempt(accountId);
 	};
 
-	//######################### Internal Logic #########################
+	// Separate functions to improve logic separation
+	private getExistingLoginAttempt = async (accountId: UniqueId) => {
+		return (await this.query.custom({
+			where: {accountId},
+			limit: 1,
+			orderBy: [{key: '__created', order: 'desc'}]
+		}))[0];
+	};
 
-	private validateLoginBlock = (loginAttempt: DB_FailedLoginAttempt) => {
+	private isLoginBlocked = (loginAttempt: DB_FailedLoginAttempt) => {
+		return loginAttempt.count >= this.config.maxLoginAttempts && this.assertLoginBlock(loginAttempt);
+	};
+
+	private isTTLExpired = (loginAttempt: DB_FailedLoginAttempt) => {
+		return loginAttempt.__created + this.config.documentTTL < currentTimeMillis();
+	};
+
+	private incrementLoginAttempt = async (loginAttempt: DB_FailedLoginAttempt) => {
+		loginAttempt.count++;
+		const updatedDoc = await this.set.item(loginAttempt);
+		await dispatch_OnLoginFailed.dispatchModuleAsync(loginAttempt.accountId);
+
+		if (updatedDoc.count >= this.config.maxLoginAttempts) {
+			return this.handleBlockedLogin(updatedDoc);
+		}
+	};
+
+	private assertLoginBlock = (loginAttempt: DB_FailedLoginAttempt) => {
 		const blockedUntil = loginAttempt.__updated + this.config.loginBlockedTTL;
 		return currentTimeMillis() < blockedUntil;
 	};
 
-	private clearLoginAttempt = (accountId: UniqueId) => {
-		return this.delete.unique(accountId);
-	};
-
 	private createNewLoginAttempt = async (accountId: UniqueId) => {
-		return this.set.item({
-			_id: accountId,
+
+		return Promise.all([this.set.item({
+			accountId: accountId,
 			count: 1
-		});
+		}), dispatch_OnLoginFailed.dispatchModuleAsync(accountId)]);
 	};
 
 	private handleBlockedLogin = (blockedLogin: DB_FailedLoginAttempt) => {

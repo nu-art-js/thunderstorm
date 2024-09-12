@@ -55,8 +55,8 @@ import {
 	SessionKey_Session_BE
 } from '../../session/backend';
 import {HeaderKey_SessionId} from '@nu-art/thunderstorm/shared/headers';
-import Transaction = firestore.Transaction;
 import {ModuleBE_FailedLoginAttemptDB} from '../../failed-login-attempt/backend';
+import Transaction = firestore.Transaction;
 
 
 type BaseAccount = {
@@ -259,9 +259,6 @@ export class ModuleBE_AccountDB_Class
 				await this.impl.onAccountLogin(safeAccount, transaction);
 				return safeAccount;
 			});
-
-			// validate if the account is allowed to login
-			await ModuleBE_FailedLoginAttemptDB.validateLoginAttempt(safeAccount._id);
 
 			const content = {
 				accountId: safeAccount._id,

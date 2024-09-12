@@ -81,7 +81,7 @@ export class Component_Login
 		</ul>;
 	};
 
-	private renderLoginBlocked = () => {
+	private renderAccountBlockedTimer = () => {
 		if (!exists(this.state.blockedUntil)) return;
 
 		return <Component_LoginBlocked
@@ -95,7 +95,7 @@ export class Component_Login
 			return;
 
 		if (this.state.blockedUntil)
-			return this.renderLoginBlocked();
+			return this.renderAccountBlockedTimer();
 
 		return this.renderErrorMessages();
 	};
