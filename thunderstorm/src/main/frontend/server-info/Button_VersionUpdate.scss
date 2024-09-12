@@ -1,0 +1,17 @@
+@use '@nu-art/ts-styles' as styles;
+
+.version-update-message {
+  opacity: 1;
+  animation: fadeInOut 6s infinite; // 6 seconds total (4s visible, 1s fade out, 1s fade in)
+  cursor: pointer;
+  font: {
+    size: 16px;
+    weight: 650;
+  }
+  color: white;
+
+  &:hover {
+    color: styles.gray(3);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+}
