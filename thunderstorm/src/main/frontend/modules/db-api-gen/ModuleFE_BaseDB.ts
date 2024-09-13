@@ -241,7 +241,6 @@ class IDBCache<Proto extends DBProto<any>>
 		this.lastVersion = new StorageKey<string>('last-version--' + dbKey);
 		const onOpenedCallback = () => {
 			const previousVersion = this.lastVersion.get();
-			this.lastVersion.set(currentVersion);
 
 			this.storeWrapper.exists().then(exists => {
 				if (!exists) {
@@ -250,13 +249,18 @@ class IDBCache<Proto extends DBProto<any>>
 				}
 			});
 
-			if (!previousVersion || previousVersion === currentVersion)
+			if (!previousVersion || previousVersion === currentVersion) {
+				this.lastVersion.set(currentVersion);
 				return;
+			}
 
 			this.lastSync.delete();
 			this.logInfo(`Cleaning up & Sync...`);
 			this.clear()
-			    .then(() => this.logInfo(`Cleaning up & Sync: Completed`))
+			    .then(() => {
+				    this.lastVersion.set(currentVersion);
+				    this.logInfo(`Cleaning up & Sync: Completed`);
+			    })
 			    .catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 		};
 		this.storeWrapper = ModuleFE_IDBManager.register(dbConfig, onOpenedCallback);

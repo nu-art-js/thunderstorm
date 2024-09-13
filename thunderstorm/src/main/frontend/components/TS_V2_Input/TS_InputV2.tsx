@@ -333,10 +333,10 @@ export class TS_InputV2
 		if (!this.inputRef.current)
 			return console.log(`CAN'T REFOCUS!!! - no REF: ${this.state.value}`);
 
-		if (this.props.innerRef) {
-			// @ts-ignore
-			props.innerRef.current = ref;
-		}
+		// if (this.props.innerRef) {
+		// 	// @ts-ignore
+		// 	this.props.innerRef.current = ref;
+		// }
 
 		if (this.state.focused) {
 			console.log(`REFOCUS!!! - value: ${this.state.value}`);

@@ -28,7 +28,10 @@ import './TS_Input.scss';
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
 
-export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, HTMLInputElement> & { trim?: boolean, forceAcceptKeys?: MetaKeys[] }
+export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, HTMLInputElement> & {
+	trim?: boolean,
+	forceAcceptKeys?: MetaKeys[]
+}
 
 /**
  * A better way to capture user input
@@ -79,18 +82,19 @@ export class TS_Input<Key extends string = string>
 	};
 
 	render() {
-		const {onAccept, trim, forceAcceptKeys, focus, ...props} = this.props;
+		const {onAccept, innerRef, trim, forceAcceptKeys, focus, ...props} = this.props;
 
 		return <input
 			{...props}
 			autoFocus={focus}
-			ref={props.innerRef}
+			ref={innerRef}
 			onBlur={(event) => {
 				const value = event.target.value;
 				this.setState({value});
 				props.onBlur?.(value, event);
 			}}
 			name={props.name || props.id}
+			placeholder={this.state.placeholder}
 			className={_className('ts-input', props.disabled ? 'disabled' : undefined, props.className)}
 			value={this.state.value}
 			onChange={this.changeValue}
