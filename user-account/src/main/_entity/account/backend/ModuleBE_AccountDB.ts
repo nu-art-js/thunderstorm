@@ -55,6 +55,7 @@ import {
 	SessionKey_Session_BE
 } from '../../session/backend';
 import {HeaderKey_SessionId} from '@nu-art/thunderstorm/shared/headers';
+import {ModuleBE_FailedLoginAttemptDB} from '../../failed-login-attempt/backend';
 import Transaction = firestore.Transaction;
 
 
@@ -415,8 +416,10 @@ export class ModuleBE_AccountDB_Class
 			if (!safeAccount.salt || !safeAccount.saltedPassword)
 				throw new ApiException(401, 'Account was never logged in using username and password, probably logged using SAML');
 
-			if (hashPasswordWithSalt(safeAccount.salt, password) !== safeAccount.saltedPassword)
+			if (hashPasswordWithSalt(safeAccount.salt, password) !== safeAccount.saltedPassword) {
+				await ModuleBE_FailedLoginAttemptDB.updateFailedLoginAttempt(safeAccount._id); // first update login attempt
 				throw new ApiException(401, 'Wrong username or password.');
+			}
 		}
 	};
 
