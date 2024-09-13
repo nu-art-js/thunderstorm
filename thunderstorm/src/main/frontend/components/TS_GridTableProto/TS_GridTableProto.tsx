@@ -53,12 +53,12 @@ export class TS_GridTableProto<Proto extends DBProto<any>, EditorProps extends o
 		      } = this.props;
 
 		const resolvedItems = (sorter ?? DefaultSorter)(resolveContent(items));
-		const ItemController = (item: Proto['uiType']) => {
+		const ItemController = (item: Proto['uiType'], index: number) => {
 			return <TS_EditableItemController<Proto, EditorProps>
 				module={module}
 				editor={editor}
 				autoSave={autoSave}
-				editorProps={editorProps}
+				editorProps={{...editorProps, index} as EditorProps}
 				onError={onError}
 				key={item._id}
 				item={item}/>;
@@ -78,9 +78,9 @@ export class TS_GridTableProto<Proto extends DBProto<any>, EditorProps extends o
 
 		return <Grid className={_className('ts-grid-table', className)} {...props}>
 			{Header && resolveContent(Header)}
-			{resolvedItems.map((item) => {
+			{resolvedItems.map((item, i) => {
 				return <Fragment key={item._id}>
-					{resolveContent(ItemController, item)}
+					{resolveContent(ItemController, item, i)}
 				</Fragment>;
 			})}
 			{NewItemController && resolveContent(NewItemController, resolvedItems.length)}

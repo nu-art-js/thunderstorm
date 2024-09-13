@@ -34,6 +34,11 @@ export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement> 
 export class TS_TextArea<Key extends string>
 	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
 
+	componentDidMount() {
+		if (this.state.value && this.props.resizeWithText)
+			this.resizeWithText();
+	}
+
 	onKeyDown = (ev: KeyboardEvent<HTMLTextAreaElement>) => {
 		if (!(ev.shiftKey || ev.altKey)) {
 			if (ev.ctrlKey || ev.metaKey) {
@@ -79,7 +84,6 @@ export class TS_TextArea<Key extends string>
 			const scrollHeight = el.scrollHeight;
 			const heightDiff = currentHeight - scrollHeight;
 			const newHeight = heightDiff <= borderWidth + 1 ? currentHeight : scrollHeight + borderWidth + 1;
-			console.log(scrollHeight, heightDiff, newHeight);
 			el.style.height = `${newHeight}px`;
 		}
 	};
