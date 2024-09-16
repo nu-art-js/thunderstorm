@@ -15,21 +15,27 @@
     border-radius: 4px;
   }
 
-  //Direction Diff
-  @if $direction == 'horizontal' {
-    overflow-x: auto;
-    //noinspection ALL
-    @supports (overflow-x: overlay) {
-      overflow-x: overlay;
-    }
-    &::-webkit-scrollbar {
-      height: 12px;
-    }
-  }
-
   & {
+
+    //Direction Diff
+    @if $direction == 'horizontal' {
+      & {
+      overflow-x: auto;
+    }
+      //noinspection ALL
+      @supports (overflow-x: overlay) {
+        overflow-x: overlay;
+      }
+      &::-webkit-scrollbar {
+        height: 12px;
+      }
+    }
+
+    & {
     @if $direction == 'vertical' {
+      & {
       overflow-y: auto;
+    }
       //noinspection ALL
       @supports (overflow-y: overlay) {
         overflow-y: overlay;
@@ -40,28 +46,31 @@
     }
   }
 
-  @if $direction == 'both' {
-    overflow: auto;
-    //noinspection ALL
-    @supports (overflow: overlay) {
-      overflow: overlay;
+    @if $direction == 'both' {
+      & {
+      overflow: auto;
     }
-    &::-webkit-scrollbar {
-      width: 9px;
-      height: 12px;
-    }
-  }
-
-  @if $showOnlyOnHover {
-    &::-webkit-scrollbar,
-    &::-webkit-scrollbar-thumb {
-      visibility: hidden;
+      //noinspection ALL
+      @supports (overflow: overlay) {
+        overflow: overlay;
+      }
+      &::-webkit-scrollbar {
+        width: 9px;
+        height: 12px;
+      }
     }
 
-    &:hover {
+    @if $showOnlyOnHover {
       &::-webkit-scrollbar,
       &::-webkit-scrollbar-thumb {
-        visibility: visible;
+        visibility: hidden;
+      }
+
+      &:hover {
+        &::-webkit-scrollbar,
+        &::-webkit-scrollbar-thumb {
+          visibility: visible;
+        }
       }
     }
   }

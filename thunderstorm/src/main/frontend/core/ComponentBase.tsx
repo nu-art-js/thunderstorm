@@ -44,7 +44,7 @@ let instances = 0;
 export abstract class BaseComponent<P = any, State = any>
 	extends React.Component<P, State> {
 
-	static MinLogLevel = LogLevel.Verbose;
+	static MinLogLevel = LogLevel.Info;
 
 	protected readonly logger: Logger;
 	private timeoutMap: { [k: string]: number } = {};

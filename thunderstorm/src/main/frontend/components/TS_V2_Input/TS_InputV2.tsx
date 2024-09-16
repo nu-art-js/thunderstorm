@@ -329,7 +329,7 @@ export class TS_InputV2
 	};
 
 	componentDidMount() {
-		console.log(`REFOCUS!!!`);
+		// console.log(`REFOCUS!!!`);
 		if (!this.inputRef.current)
 			return console.log(`CAN'T REFOCUS!!! - no REF: ${this.state.value}`);
 
