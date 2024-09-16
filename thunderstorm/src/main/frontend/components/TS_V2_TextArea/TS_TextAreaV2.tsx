@@ -235,13 +235,12 @@ export class TS_TextAreaV2
 			const scrollHeight = el.scrollHeight;
 			const heightDiff = currentHeight - scrollHeight;
 			const newHeight = heightDiff <= borderWidth + 1 ? currentHeight : scrollHeight + borderWidth + 1;
-			console.log(scrollHeight, heightDiff, newHeight);
 			el.style.height = `${newHeight}px`;
 		}
 	};
 
 	render() {
-		const {onAccept, error, trim, saveEvent, forceAcceptKeys, focus, innerRef, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, ...props} = this.props;
 
 		return <textarea
 			{...props}
