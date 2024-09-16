@@ -2,6 +2,7 @@ import React from 'react';
 import {ComponentSync} from '../core/ComponentSync';
 import {ModuleFE_ServerInfo, OnServerInfoUpdatedListener} from './ModuleFE_ServerInfo';
 import './Button_VersionUpdate.scss';
+import {currentTimeMillis} from '@nu-art/ts-common';
 
 export type Props = {
 	updateVersion?: () => void // in case someone would like a customized updateVersion process
@@ -22,7 +23,11 @@ export class Button_VersionUpdate
 			return;
 		}
 
-		window.location.reload();
+		// window.location.reload();
+		// window.location.replace(window.location.href);
+		const url = new URL(window.location.href);
+		url.searchParams.set('update', currentTimeMillis() + '');
+		window.location.assign(url.toString());
 	};
 
 	render(): React.JSX.Element {
