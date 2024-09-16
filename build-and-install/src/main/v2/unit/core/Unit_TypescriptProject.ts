@@ -30,7 +30,7 @@ type PathDeclaration = { pathToPackage: AbsolutePath, paths: string[], unit: Uni
 export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config, RTC extends Unit_TypescriptProject_RuntimeConfig = Unit_TypescriptProject_RuntimeConfig>
 	extends Unit_Typescript<C, RTC>
 	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch]> {
-	private watchDebounce!: VoidFunction;
+	private watchDebounce!: () => void;
 
 	private readonly suffixesToWatch: string[] = [
 		'ts',
@@ -58,8 +58,8 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 			}, [] as string[]);
 		this.logInfo(`Installing Global Packages: ${packages.join(' ')}`);
 		await this.allocateCommando(Commando_NVM)
-			.append(`npm i -g ${packages.join(' ')}`)
-			.execute();
+		          .append(`npm i -g ${packages.join(' ')}`)
+		          .execute();
 	}
 
 	private async installPackages() {
@@ -84,8 +84,8 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 		// Using phase runner instance to resolve all project libs to watch
 		const cantBeInstanceOf = [Unit_FirebaseHostingApp, Unit_FirebaseFunctionsApp];
 		const projectLibs = MemKey_PhaseRunner.get()
-			.getUnits()
-			.filter(unit => unit.isInstanceOf(Unit_TypescriptLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_TypescriptLib[];
+		                                      .getUnits()
+		                                      .filter(unit => unit.isInstanceOf(Unit_TypescriptLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_TypescriptLib[];
 
 		//return all paths to watch
 		return projectLibs.map(lib => {

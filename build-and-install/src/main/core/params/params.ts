@@ -260,6 +260,15 @@ export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
 	description: 'Will print the parameters the script is running with'
 };
 
+export const BaiParam_DebugLifecycle: BaseCliParam<'debugLifecycle', boolean> = {
+	keys: ['--debug-lifecycle', '-dl'],
+	keyName: 'debugLifecycle',
+	group: 'Other',
+	type: 'boolean',
+
+	description: 'Will only print the run config and die'
+};
+
 export const BaiParam_Verbose: BaseCliParam<'verbose', boolean> = {
 	keys: ['--verbose', '-d'],
 	keyName: 'verbose',
@@ -368,7 +377,8 @@ export const AllBaiParams = [
 	BaiParam_AllLogs,
 	BaiParam_CloseScreenOnExit,
 	BaiParam_EncounterManager,
-	BaiParam_EncounterManagerListen, BaiParam_UsePackage
+	BaiParam_EncounterManagerListen, BaiParam_UsePackage,
+	BaiParam_DebugLifecycle
 ];
 
 const params = CLIParamsResolver.create(...AllBaiParams).resolveParamValue();
