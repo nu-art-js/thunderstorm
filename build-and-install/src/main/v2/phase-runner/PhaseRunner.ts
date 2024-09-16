@@ -1,25 +1,7 @@
 import {
-	__stringify,
-	_keys,
-	AbsolutePath,
-	addItemToArrayAtIndex,
-	arrayIncludesAny,
-	asArray,
-	BadImplementationException,
-	deepClone,
-	exists,
-	filterInstances,
-	flatArray,
-	ImplementationMissingException,
-	LogLevel,
-	merge,
-	MUSTNeverHappenException,
-	reduceToMap,
-	RelativePath,
-	removeItemFromArray,
-	sortArray, StaticLogger,
-	StringMap,
-	TypedMap
+	__stringify, _keys, AbsolutePath, addItemToArrayAtIndex, arrayIncludesAny, asArray, BadImplementationException, deepClone, exists, flatArray,
+	ImplementationMissingException, LogLevel, merge, MUSTNeverHappenException, Promise_all_sequentially, reduceToMap, RelativePath, removeItemFromArray,
+	sortArray, StaticLogger, StringMap, TypedMap
 } from '@nu-art/ts-common';
 import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
 import {Phase, Phase_Debug, Phase_Help, Phase_PrintEnv} from '../phase';
@@ -30,14 +12,8 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import fs, {promises as _fs} from 'fs';
 import {ProjectConfigV2} from '../project/types';
 import {allTSUnits} from '../unit/thunderstorm';
-import {
-	Default_Files,
-	Default_OutputFiles,
-	MemKey_DefaultFiles,
-	ProjectConfig_DefaultFileRoutes,
-	RunningStatus
-} from '../../defaults/consts';
-import {dispatcher_PhaseChange, dispatcher_UnitChange} from './PhaseRunnerDispatcher';
+import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes, RunningStatus} from '../../defaults/consts';
+import {dispatcher_UnitChange} from './PhaseRunnerDispatcher';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
@@ -230,10 +206,13 @@ export class PhaseRunner
 				const nonDependantUnits = units.filter(unit => {
 					return !arrayIncludesAny(unit.runtime.unitDependencyNames, allDependencies);
 				});
+
 				//Remove gathered units from the list of units to resolve
 				nonDependantUnits.forEach(unit => removeItemFromArray(units, unit));
+
 				//Add resolved unit names to the array
 				resolvedUnitNames.push(...nonDependantUnits.map(unit => unit.runtime.dependencyName));
+
 				//Add resolved units as a layer in the dependency tree
 				dependencyTree.push(nonDependantUnits);
 				continue;
@@ -247,18 +226,16 @@ export class PhaseRunner
 
 			//Remove gathered units from the list of units to resolve
 			resolvingUnits.forEach(unit => removeItemFromArray(units, unit));
+
 			//Add resolved unit names to the array
 			resolvedUnitNames.push(...resolvingUnits.map(unit => unit.runtime.dependencyName));
+
 			//Add resolved units as a layer in the dependency tree
 			dependencyTree.push(resolvingUnits);
 		}
 
 		this.unitDependencyTree = dependencyTree;
-		const toPrint = dependencyTree.map(row => row.map(unit => unit.config.label));
-		this.logDebug('Unit Dependency Tree:', toPrint);
 	}
-
-	//######################### Internal Logic #########################
 
 	private phaseFilters: { [K in PhaseRunnerMode]: (phase: Phase<string>) => (boolean | Promise<boolean>) } = {
 		[PhaseRunnerMode_Normal]: async (phase) => {
@@ -285,18 +262,63 @@ export class PhaseRunner
 	};
 
 	private async executeImpl() {
-		for (const phase of this.phases) {
-			try {
-				const phaseDidRun = await this.executePhase(phase);
+		const phasesBlocks: Phase<string>[][] = [];
+		let phasesBlock: Phase<string>[] = [];
+		let lastPhase;
 
-				//If phase is terminating
-				if (phaseDidRun && phase.terminateAfterPhase)
-					break;
+
+		for (const phase of this.phases) {
+			if (lastPhase?.terminateAfterPhase)
+				continue;
+
+			try {
+				const willExecutePhase = await this.phaseFilter(phase);
+				if (!willExecutePhase) {
+					this.logDebug(`Will not execute phase: ${phase.name}, did not pass filter`);
+					lastPhase = undefined;
+					continue;
+				}
+
+				lastPhase = phase;
+				this.logInfo(`Will execute phase: ${phase.name}`);
+				if (phase.breakPhases) {
+					phasesBlocks.push(phasesBlock);
+					phasesBlocks.push([phase]);
+					phasesBlock = [];
+					continue;
+				}
+
+				phasesBlock.push(phase);
+
+				// await this.executePhase(phase);
 			} catch (e: any) {
 				this.logError(`Error running phase: ${phase.name}`, e);
 			}
 		}
+
+		if (phasesBlock.length)
+			phasesBlocks.push(phasesBlock);
+
+		const executionQueue = phasesBlocks.map((_phasesBlock, index) => {
+			return async () => {
+				return Promise_all_sequentially(this.unitDependencyTree.map(unitGroup => () => {
+					return Promise.all(unitGroup.map(unit => Promise_all_sequentially(_phasesBlock.map(phase => () => this.executePhaseTest(phase, unit, index)))));
+				}));
+			};
+		});
+
+		await Promise_all_sequentially(executionQueue);
 		this.killed = false;
+	}
+
+	async executePhaseTest<P extends Phase<string>>(phase: P, unit: BaseUnit, index: number) {
+		if (!RuntimeParams.dryRun)
+			return (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]?.();
+
+		if (!(await this.willUnitRunForPhase(phase, unit)))
+			unit.logVerbose(`will NOT run phase #${index}: ${phase.name}`);
+		else
+			unit.logWarning(`running phase #${index}: ${phase.name}`);
 	}
 
 	//######################### Unit Logic #########################
@@ -318,113 +340,33 @@ export class PhaseRunner
 		dispatcher_UnitChange.dispatch(this.units);
 	}
 
-	private async getUnitsForPhase<P extends Phase<string>>(phase: P) {
-		return filterInstances(await Promise.all(this.unitDependencyTree.map(async row => {
-			const filteredRow = await Promise.all(row.map(async unit => {
-				// Unit filter did not pass
-				if (exists(unit.config.filter) && !unit.config.filter())
-					return null;
+	private willUnitRunForPhase = async <P extends Phase<string>>(phase: P, unit: BaseUnit) => {
+		// Unit filter did not pass
+		if (exists(unit.config.filter) && !unit.config.filter())
+			return false;
 
-				// Unit doesn't implement the phase method
-				if (!exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]))
-					return null;
+		// Unit doesn't implement the phase method
+		if (!exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]))
+			return false;
 
-				// If phase implements unit filter and unit doesn't pass
-				if (exists(phase.unitFilter) && !(await phase.unitFilter(unit)))
-					return null;
+		// If phase implements unit filter and unit doesn't pass
+		if (exists(phase.unitFilter) && !(await phase.unitFilter(unit)))
+			return false;
 
-				return unit;
-			}));
-			return filterInstances(filteredRow);
-		})).then(rows => rows.filter(row => row.length)));
-	}
+		return true;
+	};
+
+	// private async getUnitsForPhase<P extends Phase<string>>(phase: P) {
+	// 	return filterInstances(await Promise.all(this.unitDependencyTree.map(async row => {
+	// 		const filteredRow = await Promise.all(row.filter((unit) => this.willUnitRunForPhase(phase, unit)));
+	// 		return filterInstances(filteredRow);
+	// 	})).then(rows => rows.filter(row => row.length)));
+	// }
 
 	public getUnits() {
 		return this.units;
 	}
 
-	//######################### Phase Logic #########################
-
-	/**
-	 * Determines whether to run the phase.</br>
-	 * returns true if phase ran, false otherwise
-	 * @param phase
-	 * @private
-	 */
-	private async executePhase<P extends Phase<string>>(phase: P): Promise<boolean> {
-		const willExecutePhase = await this.phaseFilter(phase);
-		if (!willExecutePhase) {
-			this.logDebug(`Will not execute phase: ${phase.name}, did not pass filter`);
-			return false;
-		}
-
-		const units = await this.getUnitsForPhase(phase);
-		if (!units.length) {
-			this.logDebug(`Will not execute phase: ${phase.name}, no units to execute`);
-			return false;
-		}
-
-		this.logDebug(`Executing phase: ${phase.name}`);
-		dispatcher_PhaseChange.dispatch(phase);
-
-		const phaseIndex = this.phases.indexOf(phase);
-		let runningPhaseIndex = this.phases.findIndex(phase => phase.key === this.runningStatus.phaseKey);
-		const inContinueMode = this.phaseFilter === this.phaseFilters[PhaseRunnerMode_Continue];
-
-		//Run all units at the same time
-		if (!phase.runUnitsInDependency) {
-			//The current phase is (or is after) the running status phase
-			if (phaseIndex >= runningPhaseIndex) {
-				this.runningStatus = {phaseKey: phase.key, packageDependencyIndex: 0};
-				await this.setRunningStatus();
-				//Return to normal mode, if in continue
-				if (inContinueMode)
-					this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
-			}
-			const unitsToRun = flatArray(units);
-			await Promise.all(unitsToRun.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]()));
-			if (this.killed)
-				return true;
-
-			return true;
-		}
-
-		//Run units according to dependency tree
-		for (const row of units) {
-			if (this.killed)
-				break;
-
-			const index = units.indexOf(row);
-			const runningStatusRowIndex = this.runningStatus.packageDependencyIndex ?? 0;
-
-			//Skip running status holds a larger index for the same phase
-			if ((phaseIndex === runningPhaseIndex) && index < runningStatusRowIndex)
-				continue;
-
-			// this.logDebug(`Phase Index ${phaseIndex}, Row Index ${index}`);
-			// this.logDebug(`RunningStatus Phase Index: ${runningPhaseIndex}, RunningStatus Row Index: ${runningStatusRowIndex}`);
-
-			if (phaseIndex > runningPhaseIndex) {
-				//Index of the current phase is larger, update the running status
-				this.runningStatus = {phaseKey: phase.key, packageDependencyIndex: 0};
-				runningPhaseIndex = phaseIndex;
-				await this.setRunningStatus();
-				//Return to normal mode, if in continue
-				if (inContinueMode)
-					this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
-			} else if (phaseIndex === runningPhaseIndex && index >= runningStatusRowIndex) {
-				//Index of the row is larger for the same phase, update running status
-				this.runningStatus = {phaseKey: phase.key, packageDependencyIndex: index};
-				await this.setRunningStatus();
-				//Return to normal mode, if in continue
-				if (inContinueMode)
-					this.phaseFilter = this.phaseFilters[PhaseRunnerMode_Normal];
-			}
-			await Promise.all(row.map(unit => (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]()));
-		}
-
-		return true;
-	}
 
 	/**
 	 * Will add a phase to the start of the phase array.
@@ -522,23 +464,31 @@ export class PhaseRunner
 
 	public async execute() {
 		return new MemStorage().init(async () => {
-			try {
-				process.on('SIGINT', () => {
-					this.killRunner();
-				});
+			process.on('SIGINT', () => {
+				this.killRunner();
+			});
 
-				await this.init();
-				await this.buildUnitDependencyTree();
+			try {
+				try {
+					await this.init();
+				} catch (e: any) {
+					this.logError('Error initializing Runner', e);
+					throw e;
+				}
+
+				try {
+					await this.buildUnitDependencyTree();
+				} catch (e: any) {
+					this.logError('Error building execution Tree', e);
+					throw e;
+				}
+
 				await this.executeImpl();
 				this.killed = true;
 
 				this.logInfo('Completed successfully');
 				StaticLogger.logInfo('-----------', '---------------------------------- Process Completed successfully ----------------------------------');
-				if (RuntimeParams.closeOnExit)
-					process.exit(0);
-
-			} catch (error: any) {
-				// this.logError('Finished with Errors: ', error);
+			} finally {
 				if (RuntimeParams.closeOnExit)
 					process.exit(1);
 			}
@@ -596,11 +546,11 @@ export class PhaseRunner
 
 	async printEnv() {
 		await this.allocateCommando(Commando_Basic)
-			.append('npm -g list typescript eslint firebase-tools sort-package-json --depth=0')
-			.append('echo "npm version:"; npm -v')
-			.append('echo "node version:"; node -v')
-			.append('echo "base version:"; bash --version')
-			.execute();
+		          .append('npm -g list typescript eslint firebase-tools sort-package-json --depth=0')
+		          .append('echo "npm version:"; npm -v')
+		          .append('echo "node version:"; node -v')
+		          .append('echo "base version:"; bash --version')
+		          .execute();
 	}
 
 	async printDebug() {
@@ -611,5 +561,8 @@ export class PhaseRunner
 
 		const dependencyTree = this.unitDependencyTree.map(row => row.map(unit => unit.config.label));
 		this.logInfo('Unit Dependencies Tree:', dependencyTree);
+		this.logInfo('Phases:', this.phases.map(phase => phase.name));
+		if (RuntimeParams.debugLifecycle)
+			process.exit(0);
 	}
 }
