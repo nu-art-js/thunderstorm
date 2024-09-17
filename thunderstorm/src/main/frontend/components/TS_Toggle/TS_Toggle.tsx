@@ -2,10 +2,10 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
 import './TS_Toggle.scss';
-import {voidFunction} from '@nu-art/ts-common';
+import {generateHex, voidFunction} from '@nu-art/ts-common';
 
 type Props = {
-	id: string; // to make sure it's unique
+	id?: string; // to make sure it's unique
 	checked: boolean;
 	onCheck: (status: boolean) => void;
 
@@ -16,6 +16,7 @@ type Props = {
 }
 
 type State = {
+	id: string
 	checked: boolean;
 	disabled?: boolean;
 }
@@ -26,6 +27,7 @@ export class TS_Toggle
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
 		state.checked = nextProps.checked;
 		state.disabled = nextProps.disabled;
+		state.id ??= nextProps.id ?? generateHex(4);
 		return state;
 	}
 
@@ -44,7 +46,7 @@ export class TS_Toggle
 		const sliderClassName = _className('ts-toggle__slider', this.state.disabled && 'disabled', this.props.sliderClassName);
 
 		return <div
-			id={this.props.id}
+			id={this.state.id}
 			onClick={this.updateCheckedStatus}
 			className={containerClassName}
 		>
@@ -54,7 +56,7 @@ export class TS_Toggle
 				type={'checkbox'}
 				checked={this.state.checked}
 			/>
-			<label htmlFor={this.props.id} className={sliderClassName}/>
+			<label htmlFor={this.state.id} className={sliderClassName}/>
 		</div>;
 	}
 }
