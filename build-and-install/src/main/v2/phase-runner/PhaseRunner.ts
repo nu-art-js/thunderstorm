@@ -320,13 +320,13 @@ export class PhaseRunner
 	}
 
 	async executePhaseTest<P extends Phase<string>>(phase: P, unit: BaseUnit, index: number) {
+		if (!RuntimeParams.dryRun)
+			return (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]?.();
+
 		if (!(await this.willUnitRunForPhase(phase, unit)))
 			unit.logWarning(`will NOT run phase #${index}: ${phase.name}`);
 		else
 			unit.logWarning(`running phase #${index}: ${phase.name}`);
-
-		if (!RuntimeParams.dryRun)
-			return (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]?.();
 	}
 
 	//######################### Unit Logic #########################
