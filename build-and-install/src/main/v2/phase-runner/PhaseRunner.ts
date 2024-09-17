@@ -87,9 +87,9 @@ export class PhaseRunner
 		if (this.projectConfig) {
 			const projectParams = this.prepareProjectParams();
 			MemKey_ProjectConfig.set({
-				...this.projectConfig,
-				params: projectParams,
-			});
+				                         ...this.projectConfig,
+				                         params: projectParams,
+			                         });
 		}
 
 		if (this.defaultFileRoutes)
@@ -114,9 +114,9 @@ export class PhaseRunner
 		//Set Project Params
 		const projectParams = this.prepareProjectParams();
 		MemKey_ProjectConfig.set({
-			...this.projectConfig,
-			params: projectParams,
-		});
+			                         ...this.projectConfig,
+			                         params: projectParams,
+		                         });
 
 		//Set Default File Routes
 		this.defaultFileRoutes = this.prepareDefaultFileRouts();
@@ -266,13 +266,19 @@ export class PhaseRunner
 		let phasesBlock: Phase<string>[] = [];
 		let lastPhase;
 
-
+		const reversedPhases = [...this.phases].reverse();
 		for (const phase of this.phases) {
 			if (lastPhase?.terminateAfterPhase)
 				continue;
 
 			try {
-				const willExecutePhase = await this.phaseFilter(phase);
+				let willExecutePhase = await this.phaseFilter(phase);
+				for (const _phase of reversedPhases) {
+					if (await this.phaseFilter(_phase) && _phase.dependencyPhaseKeys?.includes(phase.key)) {
+						willExecutePhase = true;
+					}
+				}
+
 				if (!willExecutePhase) {
 					this.logDebug(`Will not execute phase: ${phase.name}, did not pass filter`);
 					lastPhase = undefined;
@@ -299,6 +305,8 @@ export class PhaseRunner
 		if (phasesBlock.length)
 			phasesBlocks.push(phasesBlock);
 
+		if (RuntimeParams.debug)
+			this.logDebug('phasesBlock: ', phasesBlock);
 		const executionQueue = phasesBlocks.map((_phasesBlock, index) => {
 			return async () => {
 				return Promise_all_sequentially(this.unitDependencyTree.map(unitGroup => () => {
@@ -316,7 +324,7 @@ export class PhaseRunner
 			return (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]?.();
 
 		if (!(await this.willUnitRunForPhase(phase, unit)))
-			unit.logVerbose(`will NOT run phase #${index}: ${phase.name}`);
+			unit.logWarning(`will NOT run phase #${index}: ${phase.name}`);
 		else
 			unit.logWarning(`running phase #${index}: ${phase.name}`);
 	}
