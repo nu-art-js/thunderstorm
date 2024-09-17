@@ -134,6 +134,7 @@ export const phase_Watch: Phase<'watch'> = {
 	key: phaseKey_Watch,
 	name: 'Watch',
 	method: 'watch',
+	breakPhases: true,
 	filter: () => RuntimeParams.watch,
 };
 
