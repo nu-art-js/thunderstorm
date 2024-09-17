@@ -24,7 +24,12 @@ import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_TextAreaV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
-import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
+import {
+	ComponentProps_Error,
+	convertToHTMLDataAttributes,
+	resolveEditableError
+} from '../types';
+import {getComputedStyleProperty} from '../utils';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
@@ -40,6 +45,7 @@ type BaseInfraProps_TS_TextAreaV2 = {
 	forceAcceptKeys?: MetaKeys[]
 	className?: string
 	style?: CSSProperties
+	resizeWithText?: boolean;
 	trim?: boolean,
 	autoComplete?: string
 	spellCheck?: boolean
@@ -95,7 +101,10 @@ export class TS_TextAreaV2
 			let onBlur;
 			let onAccept;
 
-			const saveEventHandler = (value: string) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value});
+			const saveEventHandler = (value: string) => {
+				return props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value});
+			};
+
 			if (_saveEvents!.includes('change'))
 				onChange = saveEventHandler;
 
@@ -150,18 +159,47 @@ export class TS_TextAreaV2
 		const value = event.target.value;
 		this.setState({value});
 		this.props.onChange?.(value, event.target.id);
+
+		if (this.props.resizeWithText)
+			this.resizeWithText();
 	};
 
 	onKeyDown = (ev: KeyboardEvent<HTMLTextAreaElement>) => {
 		let value = ev.currentTarget.value;
-		if (!(ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)) {
-			if (ev.key === 'Enter') {
-				ev.persist();
-				if (this.props.trim)
-					value = value.trim();
+		const textarea = ev.currentTarget;
 
+		if (ev.key === 'Escape' && this.props.onCancel) {
+			this.props.onCancel();
+			ev.stopPropagation();
+		}
+
+		if (ev.shiftKey || ev.altKey) {
+			if (ev.key === 'Enter') {
+				ev.preventDefault(); // Prevent default behavior of Enter
+
+				let cursorPos = value.indexOf('\n', textarea.selectionStart);
+				if (cursorPos === -1)
+					cursorPos = value.length;
+
+				const beforeCursor = value.substring(0, cursorPos);
+				const afterCursor = value.substring(cursorPos);
+
+				// Insert a new line at the current cursor position
+				textarea.value = beforeCursor + '\n' + afterCursor;
+
+				// Set the cursor position after the inserted new line
+				textarea.selectionStart = textarea.selectionEnd = cursorPos + 1;
+				if (this.props.resizeWithText)
+					this.resizeWithText();
+			}
+		}
+
+		if (ev.ctrlKey || ev.metaKey) {
+			if (ev.key === 'Enter') {
 				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
 				ev.target.blur();
+				if (this.props.trim)
+					value = value.trim();
 
 				if (this.props.onAccept) {
 					if (value !== this.props.value)
@@ -169,38 +207,65 @@ export class TS_TextAreaV2
 					ev.stopPropagation();
 				}
 			}
-
-			if (ev.key === 'Escape' && this.props.onCancel) {
-				this.props.onCancel();
-				ev.stopPropagation();
-			}
+			return;
 		}
 
-		if (ev.key === 'Enter' && this.props.forceAcceptKeys?.find(key => ev[key]))
-			if (this.props.onAccept) {
-				if (value !== this.props.value)
-					this.props.onAccept(value, ev);
-				ev.stopPropagation();
-			}
-
+		// I assume we need to persist this even if we call an external callback
+		ev.persist();
 		this.props.onKeyDown?.(ev);
 	};
 
+	resizeWithText = () => {
+		const el = this.ref as HTMLTextAreaElement;
+		if (!el)
+			return;
+
+		const currentHeight = el.offsetHeight;
+
+		if (el.scrollHeight > currentHeight) { //Can increase height
+			const newHeight = el.scrollHeight + 5;
+			el.style.height = `${newHeight}px`;
+		} else { //Check if height needs to be decreased
+			const borderWidthTop = Number(getComputedStyleProperty(el, 'border-top-width')?.replace('px', ''));
+			const borderWidthBottom = Number(getComputedStyleProperty(el, 'border-bottom-width')?.replace('px', ''));
+			const borderWidth = borderWidthTop + borderWidthBottom;
+			el.style.height = '1px';
+			const scrollHeight = el.scrollHeight;
+			const heightDiff = currentHeight - scrollHeight;
+			const newHeight = heightDiff <= borderWidth + 1 ? currentHeight : scrollHeight + borderWidth + 1;
+			el.style.height = `${newHeight}px`;
+		}
+	};
+
 	render() {
-		const {onAccept, error, trim, saveEvent, forceAcceptKeys, focus, innerRef, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, focus, innerRef, resizeWithText, ...props} = this.props;
 
 		return <textarea
 			{...props}
 			{...convertToHTMLDataAttributes(this.props.error, 'error')}
+			ref={input => {
+				if (this.ref || !input)
+					return;
+
+				this.ref = input;
+				if (innerRef) {
+					// @ts-ignore
+					innerRef.current = input;
+				}
+
+				if (this.props.resizeWithText)
+					this.resizeWithText();
+
+				this.props.focus && this.ref.focus();
+			}}
 			autoFocus={focus}
-			ref={innerRef}
 			onBlur={(event) => {
 				const value = event.target.value;
 				this.setState({value});
 				props.onBlur?.(value, event);
 			}}
 			name={props.name || props.id}
-			className={_className('ts-textarea', props.className)}
+			className={_className('ts-textarea', props.className, this.props.resizeWithText && 'no-resize')}
 			value={this.state.value}
 			onChange={this.changeValue}
 			onKeyDown={this.onKeyDown}
