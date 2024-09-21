@@ -67,7 +67,7 @@ export class TS_EditableItemControllerProto<Proto extends DBProto<any>,
 		if (!(params[0] === 'update' && params[1]._id === itemId))
 			return;
 
-		this.state.editable?.updateItem(deepClone(asArray(params[1]))[0]);
+		this.state.editable?.setConflictingItem(deepClone(asArray(params[1]))[0]);
 	};
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
