@@ -1,0 +1,56 @@
+.ts-toggle {
+  height: 20px;
+  width: 40px;
+
+  .ts-toggle__slider {
+    position: relative;
+
+    &:before,
+    &:after {
+      cursor: pointer;
+      bottom: 0;
+      content: '';
+      display: inline-block;
+      margin: auto;
+    }
+
+    /* ellipse */
+    &:before {
+      box-shadow: 2px 2px 4px 0 #E0E0E05F inset;
+      transition: background-color 300ms ease-out;
+      background-color: #fff;
+      border-radius: 50px;
+      top: 0;
+      height: 20px;
+      width: 40px;
+    }
+
+    /* circle */
+    &:after {
+      background-color: #e0e0e0;
+      border-radius: 50%;
+      position: absolute;
+      top: -10px;
+      height: 15px;
+      left: 2px;
+      transition: all 300ms ease-out;
+      width: 15px;
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  .ts-toggle__checkbox {
+    display: none;
+
+    &:checked ~ .ts-toggle__slider:before {
+      background-color: #fff;
+    }
+
+    &:checked ~ .ts-toggle__slider:after {
+      transform: translateX(20px);
+    }
+  }
+}

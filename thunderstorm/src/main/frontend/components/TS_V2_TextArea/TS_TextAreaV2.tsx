@@ -106,7 +106,10 @@ export class TS_TextAreaV2
 			let onBlur;
 			let onAccept;
 
-			const saveEventHandler = (value: string) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value});
+			const saveEventHandler = (value: string) => {
+				return props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value});
+			};
+
 			if (_saveEvents!.includes('change'))
 				onChange = saveEventHandler;
 
@@ -240,7 +243,7 @@ export class TS_TextAreaV2
 	};
 
 	render() {
-		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, resizeWithText, ...props} = this.props;
 
 		return <textarea
 			{...props}
