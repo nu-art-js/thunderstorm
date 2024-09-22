@@ -110,19 +110,29 @@ export const awaitedDebounce = <Args extends any[], ReturnValue = any>(params: D
 	};
 
 	return (...args: Args) => {
-		return new Promise<ReturnValue>((resolve) => {
+		return new Promise<ReturnValue>((resolve, reject) => {
 			const timeout = params.timeout ?? 500;
 			_clearTimeout('timer');
 			timers.timer = setTimeout(async () => {
-				_clearTimeouts();
-				resolve(await params.func(...args));
+				try {
+					_clearTimeouts();
+					const result = await params.func(...args);
+					resolve(result);
+				} catch (err: any) {
+					reject(err);
+				}
 			}, timeout);
 
 			if (!timers.fallbackTimer) {
 				const fallbackTimeout = params.fallbackTimeout ?? 1000;
 				timers.fallbackTimer = setTimeout(async () => {
-					_clearTimeouts();
-					resolve(await params.func(...args));
+					try {
+						_clearTimeouts();
+						const result = await params.func(...args);
+						resolve(result);
+					} catch (err: any) {
+						reject(err);
+					}
 				}, fallbackTimeout);
 			}
 		});
