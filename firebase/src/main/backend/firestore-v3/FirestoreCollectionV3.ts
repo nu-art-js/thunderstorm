@@ -537,7 +537,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		if (index === -1)
 			throw HttpCodes._4XX.BAD_REQUEST('Invalid Object Version', `Provided item with version(${version}) which doesn't exist for collection '${this.dbDef.dbKey} (${__stringify(this.dbDef.versions)})' `);
 
-		return index !== versions.length - 1;
+		return index !== 0;
 	};
 
 	validateItem(dbItem: Proto['dbType']) {
