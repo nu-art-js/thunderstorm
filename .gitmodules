@@ -1,0 +1,3 @@
+[submodule "dev-tools"]
+	path = dev-tools
+	url = git@github.com:quai-md/dev-tools.git
