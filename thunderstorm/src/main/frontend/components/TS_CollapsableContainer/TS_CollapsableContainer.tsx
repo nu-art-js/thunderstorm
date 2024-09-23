@@ -23,6 +23,7 @@ type Props = {
 	onMouseLeave?: (e: React.MouseEvent) => void;
 	onMouseOver?: (e: React.MouseEvent) => void;
 	onHeaderRightClick?: (e: React.MouseEvent) => void;
+	innerRef?: React.RefObject<HTMLDivElement>;
 }
 
 type State = {
@@ -135,6 +136,7 @@ export class TS_CollapsableContainer
 			onMouseOver={this.props.onMouseOver}
 			onMouseEnter={this.props.onMouseEnter}
 			onMouseLeave={this.props.onMouseLeave}
+			innerRef={this.props.innerRef}
 		>
 			{this.renderHeader()}
 			{this.renderContainer()}
