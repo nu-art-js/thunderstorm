@@ -1,8 +1,0 @@
-[submodule "dev-tools"]
-	path = dev-tools 
-	url = git@github.com:nu-art/dev-tools.git 
-	branch = master
-
-[submodule "_wiki"]
-	path = _wiki
-	url = git@github.com:nu-art-js/thunderstorm.wiki.git
