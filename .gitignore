@@ -26,3 +26,4 @@ pnpm-workspace.yaml
 *.iml
 **/.DS_Store
 neural
+.gitmodules
