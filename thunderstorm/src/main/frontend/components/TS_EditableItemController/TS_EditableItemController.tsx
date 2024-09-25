@@ -1,19 +1,7 @@
 import * as React from 'react';
 import './TS_EditableItemController.scss';
-import {
-	asArray,
-	BadImplementationException,
-	DB_Object,
-	DBProto,
-	deepClone,
-	exists,
-	ResolvableContent,
-	resolveContent
-} from '@nu-art/ts-common';
-import {
-	Editable_SaveAction,
-	EditableDBItemV3
-} from '../../utils/EditableItem';
+import {BadImplementationException, DB_Object, DBProto, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {Editable_SaveAction, EditableDBItemV3} from '../../utils/EditableItem';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {Props_ItemsEditor} from '../Page_ItemsEditor';
@@ -64,14 +52,15 @@ export class TS_EditableItemController<Proto extends DBProto<any>,
 	}
 
 	private __onItemUpdated = (...params: ApiCallerEventType<Proto>): void => {
-		if (!this.props.item)
+		const itemId = this.state.editable.get('_id');
+		if (!itemId)
 			return;
 
-		const id = typeof this.props.item === 'string' ? this.props.item : this.props.item._id;
-		if (!(params[0] === 'update' && params[1]._id === id))
+		let updatedItem;
+		if (!(params[0] === 'upsert-all' && (updatedItem = params[1].find(item => item._id === itemId))))
 			return;
 
-		this.state.editable?.updateItem(deepClone(asArray(params[1]))[0]);
+		this.state.editable?.setConflictingItem(updatedItem);
 	};
 
 	protected deriveStateFromProps(nextProps: Props & Props_ItemsEditor<Proto>, state?: Partial<EditableRef<Proto['uiType']>>): (EditableRef<Proto['uiType']>) {

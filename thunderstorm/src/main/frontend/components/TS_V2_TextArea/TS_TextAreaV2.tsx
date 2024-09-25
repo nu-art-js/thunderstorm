@@ -243,7 +243,7 @@ export class TS_TextAreaV2
 	};
 
 	render() {
-		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, resizeWithText, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, ...props} = this.props;
 
 		return <textarea
 			{...props}

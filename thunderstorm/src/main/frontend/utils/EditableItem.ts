@@ -4,7 +4,6 @@ import {
 	removeFromArrayByIndex, removeItemFromArray, ResolvableContent, resolveContent, Second, SubsetKeys, ValidationException, WhoCallThisException
 } from '@nu-art/ts-common';
 import {ModuleFE_BaseApi} from '../modules/db-api-gen/ModuleFE_BaseApi';
-import {delete} from 'request';
 
 
 export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, ItemType, Prop extends AssetValueType<EnclosingItem, K, ItemType> = AssetValueType<EnclosingItem, K, ItemType>> = {
@@ -162,15 +161,17 @@ export class EditableItem<T>
 		return this;
 	}
 
-	setConflictingItem(conflictingItem: T) {
-		if (this.hasConflicts(conflictingItem)) {
+	setConflictingItem(conflictingItem?: T) {
+
+		if (exists(conflictingItem) && this.hasConflicts(conflictingItem)) {
 			this.conflictingItem = conflictingItem;
 			this.callOnChange();
 			return;
 		}
 
 		delete this.conflictingItem;
-		this.updateItem(conflictingItem);
+		if (exists(conflictingItem))
+			this.updateItem(conflictingItem);
 	}
 
 	protected hasConflicts(conflictingItem: T) {
@@ -444,7 +445,7 @@ export class EditableItem<T>
 			.setAutoSave(true);
 
 		if (exists(this.conflictingItem))
-			editableProp.setConflictingItem(this.conflictingItem[key]);
+			editableProp.setConflictingItem(this.conflictingItem?.[key] as NonNullable<T[K]>);
 
 		this.logVerbose(`editing prop => ${editableProp.tag} - ${String(key)}`);
 		return editableProp;
