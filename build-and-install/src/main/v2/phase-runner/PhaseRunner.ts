@@ -496,7 +496,9 @@ export class PhaseRunner
 
 				this.logInfo('Completed successfully');
 				StaticLogger.logInfo('-----------', '---------------------------------- Process Completed successfully ----------------------------------');
-			} finally {
+				if (RuntimeParams.closeOnExit)
+					process.exit(0);
+			} catch (e) {
 				if (RuntimeParams.closeOnExit)
 					process.exit(1);
 			}
