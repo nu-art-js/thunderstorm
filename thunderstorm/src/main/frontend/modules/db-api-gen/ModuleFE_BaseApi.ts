@@ -22,7 +22,7 @@
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
-import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException,  TypedApi} from '../../shared';
+import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException, TypedApi} from '../../shared';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
@@ -57,8 +57,8 @@ export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config exten
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
-		const upsert = apiWithBody(apiDef.v1.upsert, async (item, orginal) => {
-			const toRet = await this.onEntryUpdated(item, orginal);
+		const upsert = apiWithBody(apiDef.v1.upsert, async (item, original) => {
+			const toRet = await this.onEntryUpdated(item, JSON.parse(original as unknown as string));
 			this.IDB.setLastUpdated(item.__updated);
 			return toRet;
 		});
