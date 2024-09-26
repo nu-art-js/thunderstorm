@@ -35,7 +35,10 @@ const TS_PropRenderer_Horizontal = (props: Props_PropRendererHorizontal) => {
 	}
 
 	return <_LinearComponent {..._props} className={className}>
-		<div className={'ts-prop-renderer__label'}>{resolveContent(label)}</div>
+		<div className={'ts-prop-renderer__label'}>
+			{resolveContent(label)}
+			{props.error && <div className={'ts-prop-renderer__error'}>{props.error}</div>}
+		</div>
 		{props.children}
 	</_LinearComponent>;
 };
@@ -44,7 +47,10 @@ const TS_PropRenderer_Vertical = (props: Props_PropRenderer) => {
 	const className = _className('ts-prop-renderer vertical', props.disabled && 'disabled', props.className);
 	const {label, error, ..._props} = props;
 	return <LL_V_L {..._props} className={className}>
-		<div className={'ts-prop-renderer__label'}>{resolveContent(label)}</div>
+		<div className={'ts-prop-renderer__label'}>
+			{resolveContent(label)}
+			{props.error && <div className={'ts-prop-renderer__error'}>{props.error}</div>}
+		</div>
 		{props.children}
 	</LL_V_L>;
 };
