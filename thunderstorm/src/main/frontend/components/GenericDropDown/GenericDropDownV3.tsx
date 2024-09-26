@@ -170,6 +170,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 			selected={this.state.selected}
 			onNoMatchingSelectionForString={this.props.onNoMatchingSelectionForString}
 			onSelected={this.props.onSelected}
+			noOptionsRenderer={this.props.noOptionsRenderer}
 			caret={this.props.caret}
 			selectedItemRenderer={this.props.selectedItemRenderer}
 			boundingParentSelector={this.props.boundingParentSelector}
