@@ -75,6 +75,7 @@ export type Phase_CopyPackageJSON = typeof phase_CopyPackageJSON;
 export const phaseKey_CopyPackageJSON = 'copy-package-json';
 export const phase_CopyPackageJSON: Phase<'copyPackageJson'> = {
 	key: phaseKey_CopyPackageJSON,
+	unitFilter: (unit) => 'copyPackageJson' in unit,
 	name: 'Copy Package JSON',
 	method: 'copyPackageJson',
 };
