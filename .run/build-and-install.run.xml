@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="build-and-install" type="NodeJSConfigurationType" application-parameters="-bai -nb --launch" path-to-node="$USER_HOME$/.nvm/versions/node/v18.15.0/bin/node" node-parameters="--require ts-node/register" path-to-js-file="_thunderstorm/build-and-install/src/main/build-and-install.ts" working-dir="$PROJECT_DIR$">
+  <configuration default="false" name="build-and-install" type="NodeJSConfigurationType" application-parameters="-bai --debug -th --set-env=migration -df -db -up=app-km-frontend -up=app-km-backend -up=root -al -cox" path-to-node="$USER_HOME$/.nvm/versions/node/v18.15.0/bin/node" node-parameters="--require ts-node/register" path-to-js-file="_thunderstorm/build-and-install/src/main/build-and-install.ts" working-dir="$PROJECT_DIR$">
     <method v="2" />
   </configuration>
 </component>
