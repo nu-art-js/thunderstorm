@@ -36,7 +36,7 @@ export type Props_Tree = {
 	onNodeClicked?: (path: string, item: any) => void;
 	onContextMenuClicked?: (e: React.MouseEvent, path: string, item: any) => void;
 	expanded?: TreeNodeExpandState
-	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
+	checkExpanded: (expanded: TreeNodeExpandState, path: string, nodeData: any) => boolean | undefined
 	className?: string
 	treeContainerStyle?: CSSProperties
 	selectedItem?: any
@@ -219,7 +219,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 
 		let filteredKeys: any[] = [];
 		const alwaysExpanded: boolean = typeof _data === 'object' && _data.alwaysExpanded;
-		let expanded = alwaysExpanded || !!this.props.checkExpanded(this.state.expanded, nodePath);
+		let expanded = alwaysExpanded || !!this.props.checkExpanded(this.state.expanded, nodePath, data);
 		if (nodePath.endsWith('_children/'))
 			expanded = true;
 
