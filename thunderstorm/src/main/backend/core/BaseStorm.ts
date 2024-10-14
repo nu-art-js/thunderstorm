@@ -35,7 +35,7 @@ export abstract class BaseStorm
 		return this;
 	}
 
-	getEnvironment() {
+	public getEnvironment(): string {
 		return this.envKey;
 	}
 

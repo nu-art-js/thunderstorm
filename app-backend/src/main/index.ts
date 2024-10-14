@@ -64,7 +64,7 @@ const _exports = new Storm()
 	.addModulePack(ModulePackBE_Permissions)
 	.addModulePack(ModulePack_Backend_Uploader)
 	.addModulePack(modules)
-	.setInitialRouteResolver(new RouteResolver_ModulePath(HttpServer.express, __dirname))
+	.setInitialRouteResolver(new RouteResolver_ModulePath(HttpServer.getExpress(), __dirname))
 	.setEnvironment(Environment.name)
 	.setVersion(version.version)
 	.build();

@@ -1,5 +1,5 @@
 import {ComponentSync} from '../ComponentSync';
-import {BadImplementationException, compare, deepClone} from '@nu-art/ts-common';
+import {BadImplementationException, compare} from '@nu-art/ts-common';
 import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2} from '../../modules/ModuleFE_BrowserHistoryV2';
 import {ProtoComponentDef} from './types';
 
@@ -34,7 +34,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 		const hasChanges = !compare(queryParams, previousResultsObject);
 		this.logDebug(`Query params has changes: ${hasChanges}`, previousResultsObject, queryParams);
 		if (hasChanges) {
-			this.reDeriveState({previousResultsObject: deepClone(queryParams)} as State);
+			this.reDeriveState({previousResultsObject: queryParams} as State);
 		}
 	};
 
@@ -62,6 +62,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * @param value
 	 */
 	setQueryParam<K extends Def['queryParamKeys'] = Def['queryParamKeys']>(key: K, value: Def['queryParamDef'][K]) {
+		this.logDebug(this.constructor.name);
 		ModuleFE_BrowserHistoryV2.set(key, value);
 	}
 

@@ -83,7 +83,10 @@ export class ModuleFE_BrowserHistoryV2_Class
 
 	private encode(state = this.state): any {
 		this.state = Object.freeze(state);
+		const start = performance.now();
+		this.logDebug(`${this.constructor.name} start: ${0}`);
 		window.location.hash = window.btoa(new Uint8Array(gzip(JSON.stringify(this.state))).reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
+		this.logDebug(`${this.constructor.name}   end: ${performance.now() - start}`);
 		dispatcher_urlParamsChangedV2.dispatchUI();
 	}
 

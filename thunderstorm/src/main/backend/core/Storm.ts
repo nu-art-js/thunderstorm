@@ -70,7 +70,7 @@ export class Storm
 			return b;
 		});
 
-		this.functions = [new Firebase_ExpressFunction(HttpServer.express), ...modulesAsFunction];
+		this.functions = [new Firebase_ExpressFunction(HttpServer.getExpress()), ...modulesAsFunction];
 
 		this.startServerImpl(onStarted)
 			.then(() => this.logInfo('Server Started!!'))
