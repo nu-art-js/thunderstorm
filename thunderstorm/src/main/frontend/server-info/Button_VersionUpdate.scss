@@ -1,0 +1,29 @@
+@use '@nu-art/ts-styles' as styles;
+
+@keyframes fadeInOut {
+  0%, 66.67% {
+    opacity: 1; // 4s visible
+  }
+  83.33% {
+    opacity: 0; // 1s fade out
+  }
+  100% {
+    opacity: 1; // 1s fade in
+  }
+}
+
+.version-update-message {
+  opacity: 1;
+  animation: fadeInOut 6s infinite; // 6 seconds total (4s visible, 1s fade out, 1s fade in)
+  cursor: pointer;
+  font: {
+    size: 16px;
+    weight: 650;
+  }
+  color: white;
+
+  &:hover {
+    color: styles.gray(3);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+}

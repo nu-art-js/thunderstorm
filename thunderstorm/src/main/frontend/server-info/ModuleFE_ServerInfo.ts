@@ -3,9 +3,9 @@ import {apiWithQuery} from '../core/typed-api';
 import {ApiDef_ServerInfo, ApiStruct_ServerInfo, Response_ServerInfo} from '../../shared/server-info/api';
 import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, QueryApi, ServerInfoFirebaseState} from '../../shared';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-import {StorageKey} from './ModuleFE_LocalStorage';
 import {DataSnapshot} from 'firebase/database';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 
 export const StorageKey_ServerVersion = new StorageKey<string>('server-version');
 
