@@ -84,7 +84,7 @@ export * from './components/TS_ReadMore';
 export * from './components/AwaitModules/AwaitModules';
 export * from './components/AwaitSync/AwaitSync';
 export * from './components/Show';
-export * from './components/TS_EditableItemComponent/TS_EditableItemComponent';
+export * from './components/TS_EditableContent/TS_EditableContent';
 export * from './components/TS_ButtonV2/TS_ButtonV2';
 export * from './components/TS_ButtonGroup';
 export * from './components/TS_Toggle';

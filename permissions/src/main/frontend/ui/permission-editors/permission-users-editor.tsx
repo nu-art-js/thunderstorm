@@ -10,7 +10,7 @@ import {
 	Props_EditableItemControllerProto,
 	TS_EditableItemControllerProto
 } from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
-import {EditableRef} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
+import {EditableRef} from '@nu-art/thunderstorm/frontend/components/TS_EditableContent/TS_EditableContent';
 import {sortArray} from '@nu-art/ts-common';
 
 

@@ -2,8 +2,8 @@ import * as React from 'react';
 import './Component_ShortUrlEditor.scss';
 import {
 	EditableRef,
-	TS_EditableItemComponentProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
+	TS_EditableContent
+} from '@nu-art/thunderstorm/frontend/components/TS_EditableContent/TS_EditableContent';
 import {DBProto_ShortUrl, UI_ShortUrl} from '../../../../_entity/short-url/shared';
 import {
 	LL_H_C,
@@ -35,7 +35,7 @@ const TextArea = TS_TextAreaV2.editable({
 });
 
 export class Component_ShortUrlEditor
-	extends TS_EditableItemComponentProto<DBProto_ShortUrl, Props, State> {
+	extends TS_EditableContent<DBProto_ShortUrl, Props, State> {
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
 		state = super.deriveStateFromProps(nextProps, state);

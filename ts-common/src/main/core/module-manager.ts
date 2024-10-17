@@ -121,9 +121,10 @@ export class ModuleManager
 			// @ts-ignore
 			module.setManager(this);
 
-			if (this.config)
+			const moduleConfig = this.config[module.getName()];
+			if (this.config && exists(moduleConfig))
 				// @ts-ignore
-				module.setConfig(this.config[module.getName()]);
+				module.setConfig(moduleConfig);
 		});
 
 		this.modules.forEach((module: Module) => {

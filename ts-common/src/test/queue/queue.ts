@@ -1,5 +1,5 @@
 import {TestSuite} from '../../main/testing/types';
-import {debounce, filterDuplicates, sleep} from '../../main';
+import {debounce, filterDuplicates, generateArray, sleep} from '../../main';
 import {QueueItem, QueueV2} from '../../main/utils/queue-v2';
 
 
@@ -11,14 +11,22 @@ type Input<T = any> = {
 }
 
 const TestCases_Queue: TestSuite<Input, any> ['testcases'] = [
+	// {
+	// 	description: 'queue',
+	// 	result: {},
+	// 	input: {
+	// 		items: [4, 1, 3, 2, 5],
+	// 		parallel: 2,
+	// 		sort: (item: number) => item,
+	// 		filter: items => filterDuplicates(items, item => item.item)
+	// 	}
+	// },
 	{
 		description: 'queue',
 		result: {},
 		input: {
-			items: [4, 1, 3, 2, 5],
-			parallel: 2,
-			sort: (item: number) => item,
-			filter: items => filterDuplicates(items, item => item.item)
+			items: generateArray(200, () => 0.5),
+			parallel: 30,
 		}
 	},
 ];
@@ -33,14 +41,16 @@ export const TestSuite_Queue: TestSuite<Input, any> = {
 			await sleep(item * 1000);
 			console.log(`Item: ${item} - End`);
 		}).setParallelCount(testCase.input.parallel ?? 1)
-			.setSorter(testCase.input.sort)
-			.setFilter(testCase.input.filter);
+		  .setSorter(testCase.input.sort)
+		  .setFilter(testCase.input.filter);
 		console.log('adding items');
 		testCase.input.items.forEach(item => queue.addItemImpl(item));
 		sleep(2000).then(() => {
 			console.log('adding again');
 			testCase.input.items.forEach(item => queue.addItemImpl(item));
 		});
+		console.log('------- Started');
 		await queue.executeSync();
+		console.log('------- Ended');
 	}
 };

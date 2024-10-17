@@ -3,19 +3,7 @@ import {__stringify, BadImplementationException, Module, ThisShouldNotHappenExce
 import {OpenAI} from 'openai';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_OpenAI, Request_ChatGPT} from '../../shared/api-def';
-
-
-type GPT_Model = 'gpt-4'
-	| 'gpt-4-0314'
-	| 'gpt-4-0613'
-	| 'gpt-4-32k'
-	| 'gpt-4-32k-0314'
-	| 'gpt-4-32k-0613'
-	| 'gpt-3.5-turbo'
-	| 'gpt-3.5-turbo-16k'
-	| 'gpt-3.5-turbo-0301'
-	| 'gpt-3.5-turbo-0613'
-	| 'gpt-3.5-turbo-16k-0613'
+import {GPT_Model} from '../../shared/types';
 
 type Config = {
 	directives: TypedMap<{
@@ -25,18 +13,9 @@ type Config = {
 	defaultModel: GPT_Model
 	apiKey: string
 	orgId?: string
-// config here
 }
 
-// const config: Config = {
-// 	directives: {
-// 		'address-resolver': 'You are a Typescript address resolving assistant, you return a JSON with the following props: city, streetName, houseNumber, entrance (single letter), floor, apartmentNumber, country and additionalInfo. The JSON props must remain in english whereas the values need to be translated to valid addresses in Hebrew. unavailable props should be omitted from the JSON\'s props',
-// 	},
-// 	defaultModel: 'gpt-4',
-// 	apiKey: 'YourAPI-Key',
-// 	orgId: 'YourORG-Id'
-// };
-type Request_PredefiedDirective = {
+export type Request_PredefinedDirective = {
 	directiveKey: string,
 	message: string
 	model?: GPT_Model
@@ -55,7 +34,7 @@ export class ModuleBE_OpenAI_Class
 		const apiKey = this.config.apiKey;
 		const organization = this.config.orgId;
 		const opts = {apiKey, organization};
-		this.logInfo(opts);
+		this.logDebug(opts);
 		this.openai = new OpenAI(opts);
 
 		addRoutes([
@@ -65,7 +44,7 @@ export class ModuleBE_OpenAI_Class
 
 	test = async (query: Request_ChatGPT) => this.simpleQuery(query);
 
-	predefinedQuery = async (query: Request_PredefiedDirective) => {
+	predefinedQuery = async (query: Request_PredefinedDirective) => {
 		const directive = this.config.directives[query.directiveKey];
 		if (!directive)
 			throw new BadImplementationException(`Missing instruction for directive: ${query.directiveKey}`);

@@ -13,11 +13,12 @@ export class ModuleManagerTester
 }
 
 export function testSuite_RunTest<Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>, testCase: TestModel<Input, ExpectedResult>) {
-	it(testCase.description, () => testSuit.processor(testCase));
+	it(testCase.description, () => testSuit.processor(testCase)).timeout(testSuit.timeout || 5000);
 }
 
 export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>, ...testcases: TestSuite<Input, ExpectedResult>['testcases']) => {
 	describe(testSuit.label, () => {
+
 		//Run pre-process
 		if (testSuit.preProcessor) {
 			it(`${testSuit.label} - Preprocessing`, testSuit.preProcessor);
@@ -26,7 +27,7 @@ export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input
 		(testcases.length > 0 ? testcases : testSuit.testcases).forEach(testCase => {
 			new MemStorage().init(async () => testSuite_RunTest(testSuit, testCase));
 		});
-	}).timeout(testSuit.timeout || 5000);
+	});
 };
 
 export const expectFailAsync = async (action: () => Promise<void>) => {
