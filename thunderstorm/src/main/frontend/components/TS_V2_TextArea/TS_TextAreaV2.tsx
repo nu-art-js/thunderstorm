@@ -242,6 +242,16 @@ export class TS_TextAreaV2
 		}
 	};
 
+	componentDidMount() {
+		if (this.props.resizeWithText)
+			this.resizeWithText();
+	}
+
+	componentDidUpdate() {
+		if (this.props.resizeWithText)
+			this.resizeWithText();
+	}
+
 	render() {
 		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, ...props} = this.props;
 

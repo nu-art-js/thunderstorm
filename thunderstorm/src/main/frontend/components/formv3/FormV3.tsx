@@ -25,7 +25,7 @@ import {_keys} from '@nu-art/ts-common';
 import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_PropRenderer} from '../TS_PropRenderer';
-import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
+import {EditableRef} from '../TS_EditableContent/TS_EditableContent';
 
 
 export type Props_FormV3<T> = {

@@ -4,6 +4,7 @@ import {
 	removeFromArrayByIndex, removeItemFromArray, ResolvableContent, resolveContent, Second, SubsetKeys, ValidationException, WhoCallThisException
 } from '@nu-art/ts-common';
 import {ModuleFE_BaseApi} from '../modules/db-api-gen/ModuleFE_BaseApi';
+import {HttpException} from '../../shared';
 
 
 export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, ItemType, Prop extends AssetValueType<EnclosingItem, K, ItemType> = AssetValueType<EnclosingItem, K, ItemType>> = {
@@ -29,6 +30,7 @@ export type Editable_OnChange<T> = (editable: EditableItem<T>) => Promise<void>;
 export const EditableItemStatus_Saving = 'saving';
 export const EditableItemStatus_SavedWithErrors = 'saved-with-errors';
 export const EditableItemStatus_FailedValidation = 'failed-validation';
+export const EditableItemStatus_ErrorSaving = 'error-saving';
 export const EditableItemStatus_UnsavedChanges = 'unsaved-changes';
 export const EditableItemStatus_Creating = 'creating';
 export const EditableItemStatus_Saved = 'saved';
@@ -38,6 +40,7 @@ const EditableItemStatuses = [
 	EditableItemStatus_Saving,
 	EditableItemStatus_SavedWithErrors,
 	EditableItemStatus_FailedValidation,
+	EditableItemStatus_ErrorSaving,
 	EditableItemStatus_UnsavedChanges,
 	EditableItemStatus_Creating,
 	EditableItemStatus_Saved,
@@ -73,7 +76,7 @@ export class EditableItem<T>
 
 	protected _autoSave: boolean = EditableItem.AUTO_SAVE;
 	protected _isSaving: boolean = false;
-
+	protected saveError?: Error;
 	protected onSaveCompleted?: (item: T) => any;
 	protected onChanged?: Editable_OnChange<T>;
 	private deleteAction!: Editable_DeleteAction<T>;
@@ -109,9 +112,11 @@ export class EditableItem<T>
 				this.updateItemImpl(response);
 				this.callOnChange();
 				this.onSaveCompleted?.(response);
+				delete this.saveError;
 
 				return response;
 			} catch (err: any) {
+				this.saveError = err;
 				if (!this.onError)
 					throw err;
 
@@ -199,8 +204,11 @@ export class EditableItem<T>
 		if (this.isSaving())
 			return this.setStatus(EditableItemStatus_Saving);
 
-		if (this.hasErrors())
+		if (this.hasValidationError())
 			return this.setStatus(EditableItemStatus_FailedValidation);
+
+		if (this.saveError)
+			return this.setStatus(EditableItemStatus_ErrorSaving);
 
 		if (this.hasChanges()) {
 			return this.setStatus(EditableItemStatus_UnsavedChanges);
@@ -347,7 +355,7 @@ export class EditableItem<T>
 			return error;
 	}
 
-	hasErrors = () => !!this.validationResults;
+	hasValidationError = () => !!this.validationResults;
 
 	protected setValidationResults(ValidationResults?: ValidationErrors<T>) {
 		this.validationResults = ValidationResults;
@@ -594,11 +602,14 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		if (this.isSaving())
 			return this.setStatus(EditableItemStatus_Saving);
 
-		if (this.hasErrors() && !this.hasChanges() && this.get('_id'))
+		if (this.hasValidationError() && !this.hasChanges() && this.get('_id'))
 			return this.setStatus(EditableItemStatus_SavedWithErrors);
 
-		if (this.hasErrors())
+		if (this.hasValidationError())
 			return this.setStatus(EditableItemStatus_FailedValidation);
+
+		if (this.saveError)
+			return this.setStatus(exports.EditableItemStatus_ErrorSaving);
 
 		if (this.hasChanges()) {
 			return this.setStatus(EditableItemStatus_UnsavedChanges);

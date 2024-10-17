@@ -14,7 +14,7 @@ import {EditableDBItemV3} from '../../utils/EditableItem';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {ProtoDef_Selection} from '../Page_ItemsEditor';
-import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
+import {EditableRef} from '../TS_EditableContent/TS_EditableContent';
 import {ProtoComponent} from '../../core/proto-component';
 import {
 	InferProps,
@@ -37,7 +37,7 @@ export type Props_EditableItemControllerProto<Proto extends DBProto<any>, Editor
 /**
  * Item_EditorController class handles the editing of a specific db item
  * and encapsulate logic to load the item from the local cache and uses the EditableItem to
- * and TS_EditableItemComponent for rendering and editing the db item.
+ * and TS_EditableContent for rendering and editing the db item.
  *
  * @template Proto - The database prototype def to be edited
  * @template Props - The Props this class component takes

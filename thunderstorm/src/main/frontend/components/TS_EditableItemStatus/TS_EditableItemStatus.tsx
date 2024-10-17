@@ -1,7 +1,8 @@
 import * as React from 'react';
-import {TS_EditableItemComponent} from '../TS_EditableItemComponent/TS_EditableItemComponent';
+import {TS_EditableContent} from '../TS_EditableContent/TS_EditableContent';
 import {
-	EditableItem_Status, EditableItemStatus_Creating, EditableItemStatus_FailedValidation, EditableItemStatus_Saved, EditableItemStatus_SavedWithErrors,
+	EditableItem_Status, EditableItemStatus_Creating, EditableItemStatus_ErrorSaving, EditableItemStatus_FailedValidation, EditableItemStatus_Saved,
+	EditableItemStatus_SavedWithErrors,
 	EditableItemStatus_Saving, EditableItemStatus_Unknown, EditableItemStatus_UnsavedChanges, EditableItemStatusListener
 } from '../../utils/EditableItem';
 import {InferProps, InferState} from '../../utils/types';
@@ -15,7 +16,7 @@ type State = {
 }
 
 export class TS_EditableItemStatus
-	extends TS_EditableItemComponent<any, Props, State>
+	extends TS_EditableContent<any, Props, State>
 	implements EditableItemStatusListener {
 
 	static defaultProps: Props = {
@@ -23,6 +24,7 @@ export class TS_EditableItemStatus
 			[EditableItemStatus_Saving]: 'Saving...',
 			[EditableItemStatus_SavedWithErrors]: 'Saved With Errors',
 			[EditableItemStatus_FailedValidation]: 'Validation Error',
+			[EditableItemStatus_ErrorSaving]: 'Saving Failed',
 			[EditableItemStatus_UnsavedChanges]: 'Unsaved Changes',
 			[EditableItemStatus_Creating]: 'Creating New',
 			[EditableItemStatus_Saved]: 'Saved',

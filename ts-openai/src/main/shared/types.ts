@@ -1,4 +1,5 @@
-export type GPT_Model = 'gpt-4'
+export type GPT_Model =
+	| 'gpt-4'
 	| 'gpt-4-0314'
 	| 'gpt-4-0613'
 	| 'gpt-4-32k'
