@@ -28,9 +28,13 @@ export class ModuleBE_AppConfigDB_Class
 	public createDefaults = async (logger: Logger = this) => {
 		const keys = _keys(this.keyMap);
 		for (const key of keys) {
-			await this.getAppKey(this.keyMap[key]);
-			// const config = await this.getAppKey(this.keyMap[key]);
-			// this.logInfo(`Set App-Config default value for '${key}'`, config);
+			try {
+				await this.getAppKey(this.keyMap[key]);
+				// const config = await this.getAppKey(this.keyMap[key]);
+				// this.logInfo(`Set App-Config default value for '${key}'`, config);
+			} catch (err: any) {
+				logger.logError(`Failed to create app-config for key ${key}`, err);
+			}
 		}
 	};
 
@@ -50,12 +54,12 @@ export class ModuleBE_AppConfigDB_Class
 		this.keyMap[appConfigKey.key] = appConfigKey;
 	}
 
-	getAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K): Promise<InferType<K>> => {
+	getAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K, logger: Logger = this): Promise<InferType<K>> => {
 		try {
 			const config = await this.query.uniqueCustom({where: {key: appConfigKey.key}});
 			return config?.data as InferType<K>;
 		} catch (e) {
-			const data = await appConfigKey.resolver();
+			const data = await appConfigKey.resolver(logger);
 			await this.setAppKey(appConfigKey, data);
 			return data;
 		}
@@ -82,10 +86,10 @@ export const ModuleBE_AppConfigDB = new ModuleBE_AppConfigDB_Class();
 //TODO: Add validation by key
 export class AppConfigKey_BE<Binder extends TypedKeyValue<string | number | object, any>> {
 	readonly key: Binder['key'];
-	readonly resolver: () => Promise<Binder['value']>;
+	readonly resolver: (logger: Logger) => Promise<Binder['value']>;
 	readonly dataManipulator: (data: Binder['value']) => Promise<Binder['value']> = (data) => data;
 
-	constructor(key: Binder['key'], resolver: () => Promise<Binder['value']>, dataManipulator?: (data: Binder['value']) => Promise<Binder['value']>) {
+	constructor(key: Binder['key'], resolver: (logger: Logger) => Promise<Binder['value']>, dataManipulator?: (data: Binder['value']) => Promise<Binder['value']>) {
 		this.key = key;
 		this.resolver = resolver;
 		if (dataManipulator)
