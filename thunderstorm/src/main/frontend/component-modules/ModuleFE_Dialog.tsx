@@ -26,10 +26,10 @@ import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 export type Dialog_Model = DialogKey & {
 	content: React.ReactNode,
-	closeOverlayOnClick: () => boolean,
+	closeOverlayOnClick?: () => boolean,
 }
 
-export type DialogKey = { dialogKey: string };
+export type DialogKey = { dialogKey?: string };
 
 export interface DialogListener {
 	__showDialog(dialogModel?: Dialog_Model): void;
@@ -65,8 +65,12 @@ export class ModuleFE_Dialog_Class
 		dispatch_closeDialog.dispatchUI(dialogKey);
 	};
 
-	public show = (content: React.ReactNode, closeOverlayOnClick = defaultCloseCallback, dialogKey = generateHex(8)) => {
-		dispatch_showDialog.dispatchUI({dialogKey, content, closeOverlayOnClick});
+	public show = (model: Dialog_Model) => {
+		dispatch_showDialog.dispatchUI({
+			content: model.content,
+			closeOverlayOnClick: model.closeOverlayOnClick ?? defaultCloseCallback,
+			dialogKey: model.dialogKey ?? generateHex(8),
+		});
 	};
 }
 
