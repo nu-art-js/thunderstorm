@@ -77,7 +77,7 @@ export class TS_DialogOverlay
 	private onOverlayClicked = (e: React.MouseEvent) => {
 		stopPropagation(e);
 		//Exit if click should not close this current dialog
-		if (!this.state.models[0].closeOverlayOnClick())
+		if (!this.state.models[0].closeOverlayOnClick!())
 			return;
 
 		//Close there is only one dialog

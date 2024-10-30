@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import './TS_Overlay.scss';
-import {stopPropagation, _className} from '../../utils/tools';
+import {_className, stopPropagation} from '../../utils/tools';
 
 
 type Props = React.PropsWithChildren<{
