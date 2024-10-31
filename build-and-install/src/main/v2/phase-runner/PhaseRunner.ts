@@ -105,7 +105,7 @@ export class PhaseRunner
 		this.projectConfig ??= await this.loadProject();
 
 		//Filter specific units
-		this.filterUnits();
+		// this.filterUnits();
 
 		this.logDebug('Runtime params:', RuntimeParams);
 
@@ -135,26 +135,25 @@ export class PhaseRunner
 		}));
 	}
 
-	private filterUnits() {
-		const useUnits = RuntimeParams.usePackage;
-		if (!useUnits || !useUnits.length)
-			return;
-
-		const unitsToRemove: BaseUnit[] = [];
-		for (const unit of this.units) {
-			if (unit === this)
-				continue;
-
-			if (!useUnits.includes(unit.config.key))
-				unitsToRemove.push(unit);
-		}
-
-		if (!unitsToRemove.length)
-			return;
-
-		unitsToRemove.forEach(unit => removeItemFromArray(this.units, unit));
-		dispatcher_UnitChange.dispatch(this.units);
-	}
+	// private filterUnits() {
+	// 	const useUnits = RuntimeParams.usePackage;
+	// 	if (!useUnits || !useUnits.length)
+	// 		return;
+	//
+	// 	const unitsToRemove: BaseUnit[] = [];
+	// 	for (const unit of this.units) {
+	// 		if (unit === this)
+	// 			continue;
+	//
+	// 		if (!useUnits.includes(unit.config.key))
+	// 			unitsToRemove.push(unit);
+	// 	}
+	//
+	// 	if (!unitsToRemove.length)
+	// 		return;
+	//
+	// 	unitsToRemove.forEach(unit => removeItemFromArray(this.units, unit));
+	// }
 
 	private async loadProject() {
 		if (!fs.existsSync(this.projectPath))
@@ -286,7 +285,7 @@ export class PhaseRunner
 				}
 
 				lastPhase = phase;
-				this.logInfo(`Will execute phase: ${phase.name}`);
+				this.logVerbose(`Will execute phase: ${phase.name}`);
 				if (phase.breakPhases) {
 					phasesBlocks.push(phasesBlock);
 					phasesBlocks.push([phase]);
@@ -307,10 +306,13 @@ export class PhaseRunner
 
 		if (RuntimeParams.debug)
 			this.logDebug('phasesBlock: ', phasesBlock);
+
 		const executionQueue = phasesBlocks.map((_phasesBlock, index) => {
+			this.logDebug(`Executing phases #${index}: ${_phasesBlock.map(p => p.name).join(', ')}`);
+
 			return async () => {
 				return Promise_all_sequentially(this.unitDependencyTree.map(unitGroup => () => {
-					return Promise.all(unitGroup.map(unit => Promise_all_sequentially(_phasesBlock.map(phase => () => this.executePhaseTest(phase, unit, index)))));
+					return Promise.all(unitGroup.map(unit => Promise_all_sequentially(_phasesBlock.map(phase => () => this.executePhase(phase, unit, index)))));
 				}));
 			};
 		});
@@ -319,15 +321,47 @@ export class PhaseRunner
 		this.killed = false;
 	}
 
-	async executePhaseTest<P extends Phase<string>>(phase: P, unit: BaseUnit, index: number) {
+	async executePhase<P extends Phase<string>>(phase: P, unit: BaseUnit, index: number) {
 		if (!RuntimeParams.dryRun)
-			return (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]?.();
+			return this.executePhaseImpl(phase, unit, index);
 
+		return this.executePhaseDryRun(phase, unit, index);
+	}
+
+	private async executePhaseImpl<P extends Phase<string>>(phase: P, unit: BaseUnit, index: number) {
+		if (!await this.willUnitRunForPhase(phase, unit))
+			return;
+
+		unit.logDebug(`Running phase #${index}: ${phase.name}`);
+		return (unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]?.();
+	}
+
+	private async executePhaseDryRun<P extends Phase<string>>(phase: P, unit: BaseUnit, index: number) {
 		if (!(await this.willUnitRunForPhase(phase, unit)))
 			unit.logWarning(`will NOT run phase #${index}: ${phase.name}`);
 		else
-			unit.logWarning(`running phase #${index}: ${phase.name}`);
+			unit.logWarning(`Running phase #${index}: ${phase.name}`);
 	}
+
+	private willUnitRunForPhase = async <P extends Phase<string>>(phase: P, unit: BaseUnit) => {
+		// Unit doesn't implement the phase method
+		if (!exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]))
+			return false;
+
+		// If phase implements unit filter whether unit doesn't pass
+		if (exists(phase.unitFilter))
+			return (await phase.unitFilter(unit));
+
+		// Runtime input is stronger than the unit default filter
+		if (RuntimeParams.usePackage)
+			return (RuntimeParams.usePackage?.includes(unit.config.key) || RuntimeParams.usePackage?.includes(unit.config.label));
+
+		// Unit filter itself
+		if (exists(unit.config.filter) && !await unit.config.filter())
+			return false;
+
+		return true;
+	};
 
 	//######################### Unit Logic #########################
 
@@ -347,29 +381,6 @@ export class PhaseRunner
 		});
 		dispatcher_UnitChange.dispatch(this.units);
 	}
-
-	private willUnitRunForPhase = async <P extends Phase<string>>(phase: P, unit: BaseUnit) => {
-		// Unit filter did not pass
-		if (exists(unit.config.filter) && !unit.config.filter())
-			return false;
-
-		// Unit doesn't implement the phase method
-		if (!exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]))
-			return false;
-
-		// If phase implements unit filter and unit doesn't pass
-		if (exists(phase.unitFilter) && !(await phase.unitFilter(unit)))
-			return false;
-
-		return true;
-	};
-
-	// private async getUnitsForPhase<P extends Phase<string>>(phase: P) {
-	// 	return filterInstances(await Promise.all(this.unitDependencyTree.map(async row => {
-	// 		const filteredRow = await Promise.all(row.filter((unit) => this.willUnitRunForPhase(phase, unit)));
-	// 		return filterInstances(filteredRow);
-	// 	})).then(rows => rows.filter(row => row.length)));
-	// }
 
 	public getUnits() {
 		return this.units;
@@ -567,11 +578,11 @@ export class PhaseRunner
 		this.logDebug('Runner Params:', MemKey_RunnerParams.get());
 		this.logDebug('Project Config:', MemKey_ProjectConfig.get());
 		this.logDebug('Default File Routes:', MemKey_DefaultFiles.get());
+		this.logDebug('All Phases:', this.phases.map(phase => phase.name));
 		this.logDebug('Filtered Units:', this.units.map(unit => unit.config.label));
 
 		const dependencyTree = this.unitDependencyTree.map(row => row.map(unit => unit.config.label));
 		this.logInfo('Unit Dependencies Tree:', dependencyTree);
-		this.logInfo('Phases:', this.phases.map(phase => phase.name));
 		if (RuntimeParams.debugLifecycle)
 			process.exit(0);
 	}
