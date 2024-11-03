@@ -1,4 +1,4 @@
-import {compareVersions, Module, RuntimeVersion} from '@nu-art/ts-common';
+import {compareVersions, exists, Module, ModuleManager, RuntimeVersion} from '@nu-art/ts-common';
 import {apiWithQuery} from '../core/typed-api';
 import {ApiDef_ServerInfo, ApiStruct_ServerInfo, Response_ServerInfo} from '../../shared/server-info/api';
 import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, QueryApi, ServerInfoFirebaseState} from '../../shared';
@@ -47,10 +47,11 @@ class ModuleFE_ServerInfo_Class
 
 	private onServerInfoDataChanged = async (snapshot: DataSnapshot) => {
 		const rtdbServerInfoData = snapshot.val() as ServerInfoFirebaseState | undefined;
-		if (!rtdbServerInfoData) {
-			this.logInfo(`Did not receive any ServerInfo via firebase listener`);
-			return;
-		}
+		if (!rtdbServerInfoData)
+			return this.logInfo(`Did not receive any ServerInfo via firebase listener`);
+
+		if (!exists(ModuleManager.instance.version))
+			ModuleManager.instance.setVersion(rtdbServerInfoData.version);
 
 		StorageKey_ServerVersion.set(rtdbServerInfoData.version);
 		dispatch_OnServerInfoUpdated.dispatchAll();
