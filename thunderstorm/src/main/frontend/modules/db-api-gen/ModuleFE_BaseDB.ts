@@ -339,6 +339,10 @@ class IDBCache<Proto extends DBProto<any>>
 		await this.storeWrapper.upsertAll(toUpdate);
 		await this.storeWrapper.deleteAll(toDelete as Proto['dbType'][]);
 	}
+
+	async count(): Promise<number> {
+		return await this.storeWrapper.count();
+	}
 }
 
 class MemCache<Proto extends DBProto<any>> {
