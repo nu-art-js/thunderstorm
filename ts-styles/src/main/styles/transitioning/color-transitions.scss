@@ -9,7 +9,7 @@
 @function svg-color-transition($time:200 , $style: ease-out) {
   $transitions: ();
   @each $rule in consts.$svg-prop-rules {
-    $transitions: append($transitions, $rule #{$time}ms $style, comma);
+    $transitions: list.append($transitions, $rule #{$time}ms $style, comma);
   }
 
   @return $transitions;
