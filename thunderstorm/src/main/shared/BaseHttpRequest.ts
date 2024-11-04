@@ -25,7 +25,7 @@ import {
 	BadImplementationException,
 	exists,
 	isErrorOfType,
-	Logger,
+	Logger, MimeType_json,
 	Minute,
 	ModuleManager
 } from '@nu-art/ts-common';
@@ -202,7 +202,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	setBodyAsJson(bodyObject: API['B'], compress?: boolean) {
-		this.setHeader('content-type', 'application/json');
+		this.setHeader('content-type', MimeType_json);
 		this.setBody(this.prepareJsonBody(bodyObject), compress);
 		return this;
 	}
