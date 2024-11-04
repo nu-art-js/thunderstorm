@@ -348,7 +348,7 @@ export class PhaseRunner
 
 		// Unit doesn't implement the phase method
 		if (!exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>])) {
-			if (!RuntimeParams.dryRun && RuntimeParams.debug)
+			if (RuntimeParams.dryRun && RuntimeParams.debug)
 				unit.logErrorBold(`Unit does not support phase: ${phase.name}`);
 			return false;
 		}
@@ -356,7 +356,7 @@ export class PhaseRunner
 		// If phase implements unit filter whether unit doesn't pass
 		if (exists(phase.unitFilter)) {
 			runForPhase = await phase.unitFilter(unit);
-			if (!RuntimeParams.dryRun && RuntimeParams.debug)
+			if (RuntimeParams.dryRun && RuntimeParams.debug)
 				unit.logErrorBold(`Unit passed phase filter with -> ${runForPhase}: ${phase.name}`);
 
 			return runForPhase;
@@ -365,7 +365,7 @@ export class PhaseRunner
 		// Runtime input is stronger than the unit default filter
 		if (RuntimeParams.usePackage) {
 			runForPhase = RuntimeParams.usePackage?.includes(unit.config.key) || RuntimeParams.usePackage?.includes(unit.config.label);
-			if (!RuntimeParams.dryRun && RuntimeParams.debug)
+			if (RuntimeParams.dryRun && RuntimeParams.debug)
 				unit.logErrorBold(`Unit is in usePackage -> ${runForPhase}: ${phase.name}`);
 
 			return runForPhase;
@@ -373,13 +373,13 @@ export class PhaseRunner
 
 		// Unit filter itself
 		if (exists(unit.config.filter) && !await unit.config.filter()) {
-			if (!RuntimeParams.dryRun && RuntimeParams.debug)
+			if (RuntimeParams.dryRun && RuntimeParams.debug)
 				unit.logErrorBold(`Unit is filtered itself out for phase: ${phase.name}`);
 
 			return false;
 		}
 
-		if (!RuntimeParams.dryRun && RuntimeParams.debug)
+		if (RuntimeParams.dryRun && RuntimeParams.debug)
 			unit.logErrorBold(`Unit is fallback to run for phase: ${phase.name}`);
 		return runForPhase;
 	};
