@@ -340,27 +340,48 @@ export class PhaseRunner
 		if (!(await this.willUnitRunForPhase(phase, unit)))
 			unit.logWarning(`will NOT run phase #${index}: ${phase.name}`);
 		else
-			unit.logWarning(`Running phase #${index}: ${phase.name}`);
+			unit.logError(`Running phase #${index}: ${phase.name}`);
 	}
 
 	private willUnitRunForPhase = async <P extends Phase<string>>(phase: P, unit: BaseUnit) => {
+		let runForPhase: boolean = true;
+
 		// Unit doesn't implement the phase method
-		if (!exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>]))
+		if (!exists((unit as Unit<any>)[phase.method as keyof UnitPhaseImplementor<[P]>])) {
+			if (!RuntimeParams.dryRun && RuntimeParams.debug)
+				unit.logVerbose(`Unit does not support phase: ${phase.name}`);
 			return false;
+		}
 
 		// If phase implements unit filter whether unit doesn't pass
-		if (exists(phase.unitFilter))
-			return (await phase.unitFilter(unit));
+		if (exists(phase.unitFilter)) {
+			runForPhase = await phase.unitFilter(unit);
+			if (!RuntimeParams.dryRun && RuntimeParams.debug)
+				unit.logVerbose(`Unit passed phase filter with -> ${runForPhase}: ${phase.name}`);
+
+			return runForPhase;
+		}
 
 		// Runtime input is stronger than the unit default filter
-		if (RuntimeParams.usePackage)
-			return (RuntimeParams.usePackage?.includes(unit.config.key) || RuntimeParams.usePackage?.includes(unit.config.label));
+		if (RuntimeParams.usePackage) {
+			runForPhase = RuntimeParams.usePackage?.includes(unit.config.key) || RuntimeParams.usePackage?.includes(unit.config.label);
+			if (!RuntimeParams.dryRun && RuntimeParams.debug)
+				unit.logVerbose(`Unit is in usePackage -> ${runForPhase}: ${phase.name}`);
+
+			return runForPhase;
+		}
 
 		// Unit filter itself
-		if (exists(unit.config.filter) && !await unit.config.filter())
-			return false;
+		if (exists(unit.config.filter) && !await unit.config.filter()) {
+			if (!RuntimeParams.dryRun && RuntimeParams.debug)
+				unit.logVerbose(`Unit is filtered itself out for phase: ${phase.name}`);
 
-		return true;
+			return false;
+		}
+
+		if (!RuntimeParams.dryRun && RuntimeParams.debug)
+			unit.logVerbose(`Unit is fallback to run for phase: ${phase.name}`);
+		return runForPhase;
 	};
 
 	//######################### Unit Logic #########################
