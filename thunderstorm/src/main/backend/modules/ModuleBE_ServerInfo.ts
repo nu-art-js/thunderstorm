@@ -2,16 +2,16 @@ import {Module, RuntimeVersion} from '@nu-art/ts-common';
 import {createQueryServerApi} from '../core/typed-api';
 import {addRoutes} from './ModuleBE_APIs';
 import {Storm} from '../core/Storm';
-import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {ApiDef_ServerInfo, Default_ServerInfoNodePath, Response_ServerInfo, ServerInfoFirebaseState} from '../../shared';
+import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ApiDef_ServerInfo, BasicServerInfo, Const_ERROR, Const_OK, Default_ServerInfoNodePath, Response_ServerInfo, ServerInfoFirebaseState} from '../../shared';
+import {ModuleBE_SyncManager} from './sync-manager/ModuleBE_SyncManager';
 
 
-type Config = Response_ServerInfo
+type Config = BasicServerInfo
 
 export class ModuleBE_ServerInfo_Class
 	extends Module<Config> {
 
-	private database!: DatabaseWrapperBE;
 	private serverInfoData!: FirebaseRef<ServerInfoFirebaseState>;
 
 	constructor() {
@@ -30,15 +30,55 @@ export class ModuleBE_ServerInfo_Class
 		});
 
 		addRoutes([
-			createQueryServerApi(ApiDef_ServerInfo.v1.getServerInfo, async () => this.config),
-			createQueryServerApi(ApiDef_ServerInfo.v1.updateServerInfo, async () => this.writeServerInfo())
+			createQueryServerApi(ApiDef_ServerInfo.v1.getServerInfo, this.getServerInfo),
+			createQueryServerApi(ApiDef_ServerInfo.v1.updateServerInfoState, async () => this.writeServerInfoState())
 		]);
 
-		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
-		this.serverInfoData = this.database.ref<ServerInfoFirebaseState>(Default_ServerInfoNodePath);
+		this.serverInfoData = ModuleBE_Firebase.createAdminSession().getDatabase().ref<ServerInfoFirebaseState>(Default_ServerInfoNodePath);
 	}
 
-	private writeServerInfo = async () => {
+	private getServerInfo = async () => {
+		const firestoreResponse = await this.pingFirestore();
+		const firebaseRTDBResponse = await this.pingFirebaseRTDB();
+		const response: Response_ServerInfo = {
+			environment: this.config.environment,
+			version: this.config.version,
+			bucketName: this.config.bucketName,
+			status: {
+				firestore: firestoreResponse,
+				firebase: firebaseRTDBResponse
+			}
+		};
+		return response;
+	};
+
+	/**
+	 * Perform a "ping" to the environment's default Firebase project's Firestore
+	 */
+	pingFirestore = async () => {
+		try {
+			await ModuleBE_SyncManager.collection.query.custom({where: {}, limit: 1});
+			return Const_OK;
+		} catch (e: any) {
+			this.logError(e);
+			return Const_ERROR;
+		}
+	};
+
+	/**
+	 * Perform a "ping" to the environment's default Firebase project's RTDB
+	 */
+	pingFirebaseRTDB = async () => {
+		try {
+			await this.serverInfoData.get();
+			return Const_OK;
+		} catch (e: any) {
+			this.logError(e);
+			return Const_ERROR;
+		}
+	};
+
+	private writeServerInfoState = async () => {
 		await this.serverInfoData.set({
 			environment: this.config.environment!,
 			version: this.config.version!,
