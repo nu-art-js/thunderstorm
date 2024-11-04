@@ -1,7 +1,7 @@
 import {compareVersions, Module, RuntimeVersion} from '@nu-art/ts-common';
 import {apiWithQuery} from '../core/typed-api';
-import {ApiDef_ServerInfo, ApiStruct_ServerInfo, Response_ServerInfo} from '../../shared/server-info/api';
-import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, QueryApi, ServerInfoFirebaseState} from '../../shared';
+import {ApiDef_ServerInfo, ApiStruct_ServerInfo} from '../../shared/server-info/api';
+import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, ServerInfoFirebaseState} from '../../shared';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
@@ -20,7 +20,7 @@ class ModuleFE_ServerInfo_Class
 	extends Module
 	implements ApiDefCaller<ApiStruct_ServerInfo> {
 
-	v1: ApiCallerRouter<{ getServerInfo: QueryApi<Response_ServerInfo>; updateServerInfo: QueryApi<void>; }>;
+	v1: ApiCallerRouter<ApiStruct_ServerInfo>['v1'];
 	private serverInfoFirebaseListener?: RefListenerFE<ServerInfoFirebaseState>;
 
 	constructor() {
@@ -29,7 +29,7 @@ class ModuleFE_ServerInfo_Class
 			getServerInfo: apiWithQuery(ApiDef_ServerInfo.v1.getServerInfo),
 
 			// @ts-ignore // to be used only by Jenkins
-			updateServerInfo: undefined,
+			updateServerInfoState: undefined,
 		};
 	}
 

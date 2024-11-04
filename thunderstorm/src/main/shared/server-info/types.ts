@@ -1,5 +1,7 @@
-export type ServerInfoFirebaseState = {
-	environment: string,
-	version: string,
-	bucketName: string,
+export type BasicServerInfo = {
+	version: string
+	environment: string
+	bucketName: string
 }
+
+export type ServerInfoFirebaseState = BasicServerInfo
