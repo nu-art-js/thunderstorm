@@ -18,7 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, ApiException, composeUrl, ImplementationMissingException, Module,} from '@nu-art/ts-common';
+import {__stringify, ApiException, composeUrl, ImplementationMissingException, MimeType_json, Module,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
 import {BodyApi, QueryApi} from '../../../shared/types';
 import {promisifyRequest} from '../../utils/promisify-request';
@@ -81,7 +81,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,
-				[HeaderKey_ContentType]: 'application/json',
+				[HeaderKey_ContentType]: MimeType_json,
 				[this.config.secretHeaderName]: this.config.secret,
 				[this.config.proxyHeaderName]: this.config.proxyId,
 			},
