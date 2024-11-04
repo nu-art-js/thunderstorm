@@ -18,3 +18,6 @@ export const versionStringToNumeric = (version: string): number => {
 		return result;
 	}, 0);
 };
+
+export const Const_OK = 'OK';
+export const Const_ERROR = 'ERROR';
