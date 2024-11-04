@@ -1,23 +1,12 @@
 import * as React from 'react';
 import './Component_ShortUrlEditor.scss';
-import {
-	EditableRef,
-	TS_EditableItemComponentProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
+import {EditableRef, TS_EditableItemComponentProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
 import {DBProto_ShortUrl, UI_ShortUrl} from '../../../../_entity/short-url/shared';
-import {
-	LL_H_C,
-	ModuleFE_Thunderstorm,
-	TS_BusyButton,
-	TS_Card,
-	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
+import {LL_H_C, ModuleFE_Thunderstorm, TS_BusyButton, TS_Card, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
 import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {
-	TS_EditableItemStatus
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemStatus/TS_EditableItemStatus';
+import {TS_EditableItemStatus} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemStatus/TS_EditableItemStatus';
 import {ModuleFE_ShortUrl} from '../../../../_entity/short-url/frontend';
 import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
 
@@ -55,18 +44,24 @@ export class Component_ShortUrlEditor
 					this.props.deleteCallback?.();
 				}}/>
 			</LL_H_C>
-			<TS_PropRenderer.Vertical label={'Title'}>
-				<StringEditableInput
-					editable={this.state.editable}
-					prop={'title'}
-					onChange={value => {
-						if (value.length)
-							return this.state.editable.updateObj({title: value});
+			<LL_H_C>
 
-						return this.state.editable.updateObj({title: undefined});
-					}}
-				/>
-			</TS_PropRenderer.Vertical>
+				<TS_PropRenderer.Vertical label={'Title'}>
+					<StringEditableInput
+						editable={this.state.editable}
+						prop={'title'}
+						onChange={value => {
+							if (value.length)
+								return this.state.editable.updateObj({title: value});
+
+							return this.state.editable.updateObj({title: undefined});
+						}}
+					/>
+				</TS_PropRenderer.Vertical>
+				<TS_PropRenderer.Vertical label={'Short Url'}>
+					<div>{this.state.editable.item._shortUrl}</div>
+				</TS_PropRenderer.Vertical>
+			</LL_H_C>
 			<TS_PropRenderer.Vertical label={'Full Url'}>
 				<TextArea
 					editable={this.state.editable}
@@ -99,7 +94,7 @@ export class Component_ShortUrlEditor
 						const {shortUrl} = await ModuleFE_ShortUrl._v1.getShortUrl({_id: _id!}).executeSync();
 						await ModuleFE_Thunderstorm.copyToClipboard(shortUrl);
 					}}>
-					Copy To Clipboard
+					Copy ShortUrl To Clipboard
 				</TS_BusyButton>
 				<TS_BusyButton onClick={async () => {
 					await this.state.editable.save();

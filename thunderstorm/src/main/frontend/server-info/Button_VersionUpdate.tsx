@@ -17,7 +17,7 @@ export class Button_VersionUpdate
 		this.forceUpdate();
 	};
 
-	private updateVersion = async () => {
+	protected updateVersion = async () => {
 		if (this.props.updateVersion) {
 			this.props.updateVersion();
 			return;
@@ -28,14 +28,21 @@ export class Button_VersionUpdate
 		window.location.assign(url.toString());
 	};
 
+	protected getLatestVersion(){
+		return ModuleFE_ServerInfo.Version.getLatestVersion();
+	}
+
+	protected getButtonToRender() {
+		const ButtonContent = this.props.buttonContent ? this.props.buttonContent : `Version ${this.getLatestVersion()} available. Click to update`;
+
+		return <div className={'version-update-message'} onClick={() => this.updateVersion()}>{ButtonContent}</div>;
+	}
+
 	render(): React.JSX.Element {
 		const shouldUpdateVersion: boolean = ModuleFE_ServerInfo.Version.shouldUpdateVersion();
-		const newVersion: string = ModuleFE_ServerInfo.Version.getLatestVersion();
 		if (!shouldUpdateVersion)
 			return <></>;
 
-		const ButtonContent = this.props.buttonContent ? this.props.buttonContent : `Version ${newVersion} available. Click to update`;
-
-		return <div className={'version-update-message'} onClick={() => this.updateVersion()}>{ButtonContent}</div>;
+		return this.getButtonToRender();
 	}
 }

@@ -38,6 +38,7 @@ export const MimeType_GROUP_zip = [
 ];
 
 export const MimeType_rar = 'application/zip';
+export const MimeType_json = 'application/json';
 export const MimeType_rar_compressed = 'application/zip';
 export const MimeType_rar_octetStream = 'application/octet-stream';
 
