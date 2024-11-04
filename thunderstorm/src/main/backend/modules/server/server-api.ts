@@ -31,7 +31,7 @@ import {
 	dispatch_onApplicationException,
 	isErrorOfType,
 	Logger,
-	LogLevel,
+	LogLevel, MimeType_json,
 	MUSTNeverHappenException,
 	Promise_all_sequentially,
 	tsValidate,
@@ -449,7 +449,7 @@ export class ApiResponse {
 
 	private _json(responseCode: number, response?: object | string, _headers?: any) {
 		const headers = mergeHeaders(this.headers, _headers) || {};
-		headers['content-type'] = 'application/json';
+		headers['content-type'] = MimeType_json;
 
 		this.end(responseCode, response, headers);
 	}
