@@ -359,11 +359,7 @@ export class PhaseRunner
 			if (RuntimeParams.dryRun && RuntimeParams.debug)
 				unit.logErrorBold(`Unit passed phase filter with -> ${runForPhase}: ${phase.name}`);
 
-			if (!runForPhase)
-				return runForPhase;
-
-			if (!RuntimeParams.usePackage)
-				return runForPhase;
+			return runForPhase;
 		}
 
 		// Runtime input is stronger than the unit default filter
