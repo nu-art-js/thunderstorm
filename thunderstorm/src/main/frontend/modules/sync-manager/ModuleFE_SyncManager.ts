@@ -386,7 +386,11 @@ export class ModuleFE_SyncManager_Class
 	// ######################### Listening #########################
 
 	public startListening() {
-		// Hardcoded path for now per Adam's request, should be const somewhere.
+		if (this.syncFirebaseListener) {
+			this.logWarning(`Trying to start listening on --- ${Default_SyncManagerNodePath} --- but the listener already exists.`);
+			return;
+		}
+
 		this.syncFirebaseListener = ModuleFE_FirebaseListener
 			.createListener(Default_SyncManagerNodePath)
 			.startListening(this.onSyncDataChanged);

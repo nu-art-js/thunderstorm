@@ -34,6 +34,11 @@ class ModuleFE_ServerInfo_Class
 	}
 
 	public startListening() {
+		if (this.serverInfoFirebaseListener) {
+			this.logWarning(`Trying to start listening on --- ${Default_ServerInfoNodePath} --- but the listener already exists.`);
+			return;
+		}
+
 		this.serverInfoFirebaseListener = ModuleFE_FirebaseListener
 			.createListener(Default_ServerInfoNodePath)
 			.startListening(this.onServerInfoDataChanged);
