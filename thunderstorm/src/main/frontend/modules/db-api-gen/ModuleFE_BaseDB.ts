@@ -38,7 +38,8 @@ import {
 	sortArray,
 	tsValidateResult,
 	TypedMap,
-	ValidationException
+	ValidationException,
+	voidFunction
 } from '@nu-art/ts-common';
 import {composeDbObjectUniqueId} from '@nu-art/firebase';
 import {OnClearWebsiteData} from '../clearWebsiteDataDispatcher';
@@ -95,15 +96,23 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	}
 
 	protected init() {
-		this.IDB.onLastUpdateListener(async (after, before) => {
-			if (!exists(after) || after === before)
-				return;
-
-			await this.cache.load();
-			this.defaultDispatcher.dispatchAll('update', {} as Proto['dbType']);
-			this.OnDataStatusChanged();
-		});
+		this.attachOnLastSyncUpdatedListener();
 	}
+
+	public attachOnLastSyncUpdatedListener = () => {
+		this.IDB.onLastUpdateListener(this.onLastSyncUpdatedListener);
+	};
+	public detachOnLastSyncUpdatedListener = () => {
+		this.IDB.onLastUpdateListener(voidFunction);
+	};
+	private onLastSyncUpdatedListener = async (after?: number, before?: number) => {
+		if (!exists(after) || after === before)
+			return;
+
+		await this.cache.load();
+		this.defaultDispatcher.dispatchAll('update', {} as Proto['dbType']);
+		this.OnDataStatusChanged();
+	};
 
 	setDataStatus(status: DataStatus) {
 		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
