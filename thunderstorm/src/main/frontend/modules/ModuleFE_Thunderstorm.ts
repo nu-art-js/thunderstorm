@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, Module, TypedKeyValue, TypedMap, _keys} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, Module, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {composeURL} from './ModuleFE_BrowserHistory';
 import {HttpMethod, QueryApi, QueryParams} from '../../shared/types';
@@ -130,6 +130,7 @@ class ModuleFE_Thunderstorm_Class
 	}
 
 	async clearWebsiteData() {
+		this.logInfo('Cleaning IDB called.');
 		return await dispatch_onClearWebsiteData.dispatchModuleAsync();
 	}
 
