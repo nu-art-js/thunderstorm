@@ -1,4 +1,4 @@
-import {compareVersions, exists, Module, ModuleManager, RuntimeVersion} from '@nu-art/ts-common';
+import {compareVersions, currentTimeMillis, exists, Module, ModuleManager, RuntimeVersion} from '@nu-art/ts-common';
 import {apiWithQuery} from '../core/typed-api';
 import {ApiDef_ServerInfo, ApiStruct_ServerInfo} from '../../shared/server-info/api';
 import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, ServerInfoFirebaseState} from '../../shared';
@@ -80,13 +80,17 @@ class ModuleFE_ServerInfo_Class
 		shouldUpdateVersion: (): boolean => {
 			const lastVersion = this.Version.getLatestVersion();
 			const codeVersion = this.Version.getAppVersion();
-			if (compareVersions(codeVersion, lastVersion) !== 1)
-				return false;
-
-			return true;
+			return compareVersions(codeVersion, lastVersion) === 1;
 		}
 	};
 
+	public Update = {
+		updateAndRefreshPage: () => { // Causes html to reload and also changed file names to be fetched
+			const url = new URL(window.location.href);
+			url.searchParams.set('update', currentTimeMillis() + '');
+			window.location.assign(url.toString());
+		}
+	};
 }
 
 export const ModuleFE_ServerInfo = new ModuleFE_ServerInfo_Class();
