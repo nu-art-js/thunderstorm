@@ -49,7 +49,7 @@ export class ModuleFE_SyncManager_CSV_Class
 						for (const moduleKey of _keys(modules)) {
 							const items = itemsToSync.filter(item => item.dbKey === moduleKey);
 							const module = modules[moduleKey];
-							this.logInfo(`Syncing ${items.length} items to ${moduleKey}`);
+							// this.logInfo(`Syncing ${items.length} items to ${moduleKey}`);
 							await module.IDB.syncIndexDb(items.map(item => item.document));
 							await module.cache.load();
 							module.setDataStatus(DataStatus.ContainsData);
