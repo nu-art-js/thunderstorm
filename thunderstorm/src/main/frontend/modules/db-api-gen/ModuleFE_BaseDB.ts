@@ -224,6 +224,10 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		this.cache.onEntriesDeleted(toDelete);
 		this.dispatchMulti(EventType_Query, toUpdate);
 	};
+
+	protected setCacheFilter = (filter: (item: Readonly<Proto['dbType']>) => boolean) => {
+		this.cache.setCacheFilter(filter);
+	};
 }
 
 class IDBCache<Proto extends DBProto<any>>
@@ -368,8 +372,12 @@ class MemCache<Proto extends DBProto<any>> {
 	constructor(module: ModuleFE_BaseDB<Proto, any>, keys: (keyof Proto['dbType'])[]) {
 		this.module = module;
 		this.keys = keys;
-		this.clear();
+		this.clear(); // initiate an empty array
 	}
+
+	setCacheFilter = (filter: (item: Readonly<Proto['dbType']>) => boolean) => {
+		this.cacheFilter = filter;
+	};
 
 	forEach = (processor: (item: Readonly<Proto['dbType']>) => void) => {
 		this._array.forEach(processor);
