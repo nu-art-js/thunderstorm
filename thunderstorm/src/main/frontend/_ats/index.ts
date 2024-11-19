@@ -3,3 +3,4 @@ export * from './ATS_CollectionUpgrades/ATS_CollectionUpgrades';
 export * from './ATS_SyncEnv/ATS_SyncEnv';
 export * from './ATS_SyncEnv/ATS_SyncEnv';
 export * from './ATS_ProtoComponent/ATS_ProtoComponent';
+export * from './ATS_IDBCacheComparison/Component_CollectionGrid';
