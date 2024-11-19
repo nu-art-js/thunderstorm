@@ -388,7 +388,8 @@ class MemCache<Proto extends DBProto<any>> {
 	};
 
 	load = async (cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean) => {
-		this.module.logDebug(`${this.module.getName()} cache is loading`);
+		const moduleName = this.module.getName();
+		this.module.logDebug(`${moduleName} cache is loading`);
 		let allItems;
 		this.cacheFilter = cacheFilter;
 		if (this.cacheFilter)
@@ -401,7 +402,7 @@ class MemCache<Proto extends DBProto<any>> {
 		this.setCache(frozenItems);
 
 		this.loaded = true;
-		this.module.logDebug(`${this.module.getName()} cache finished loading, count: ${this.all().length}`);
+		this.module.logDebug(`${moduleName} cache finished loading, count: ${this.all().length}`);
 	};
 
 	unique = (_key?: Proto['uniqueParam']): Readonly<Proto['dbType']> | undefined => {
