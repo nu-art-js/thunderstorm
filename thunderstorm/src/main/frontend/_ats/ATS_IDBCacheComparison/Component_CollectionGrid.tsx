@@ -1,4 +1,4 @@
-import {compare, sortArray, TypedMap} from '@nu-art/ts-common';
+import {compare, filterInstances, sortArray, TypedMap} from '@nu-art/ts-common';
 import {ComponentSync} from '../../core/ComponentSync';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import * as React from 'react';
@@ -52,7 +52,14 @@ export class Component_CollectionGrid
 	};
 
 	private getSortedDBKeys = () => {
-		const keys = this.state.modules.map(module => module.dbDef.dbKey);
+		const keys = filterInstances(this.state.modules.map(module => {
+			const dbKey = module.dbDef?.dbKey;
+			if (!dbKey) {
+				this.logWarning(`Skipping ${module.getName()}, because it has no dbKey`);
+				return;
+			}
+			return dbKey;
+		}));
 		//Sort alphabetically
 		sortArray(keys);
 
