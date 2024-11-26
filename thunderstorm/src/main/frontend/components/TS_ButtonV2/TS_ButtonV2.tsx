@@ -72,7 +72,7 @@ export class TS_ButtonV2
 	};
 
 	private prepareProps = () => {
-		const {variant, actionInProgress, ...restOfProps} = this.props;
+		const {variant, actionInProgress, loaderOverride, ...restOfProps} = this.props;
 		const _actionInProgress = this.state.actionInProgress;
 		const currentProps: any = {...restOfProps};
 
