@@ -110,7 +110,7 @@ class ModuleFE_RoutingV2_Class
 
 		//Awaiting both modules and sync
 		if (shouldAwaitModules && shouldAwaitSync) {
-			if (route.Component.prototype.render) {
+			if (route.Component.prototype?.render) {
 				const Component = route.Component as ComponentClass;
 				return () => <AwaitSync customLoader={route.awaitSyncLoader}>
 					<AwaitModules modules={route.modulesToAwait!}
@@ -127,7 +127,7 @@ class ModuleFE_RoutingV2_Class
 		//Awaiting only modules
 		if (shouldAwaitModules && !shouldAwaitSync) {
 			//route.Component is a class component
-			if (route.Component.prototype.render) {
+			if (route.Component.prototype?.render) {
 				const Component = route.Component as ComponentClass;
 				return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitModulesLoader}><Component/></AwaitModules>;
 			}

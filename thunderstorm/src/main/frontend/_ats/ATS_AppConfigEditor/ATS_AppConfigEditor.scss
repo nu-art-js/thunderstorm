@@ -1,0 +1,118 @@
+@use '@nu-art/ts-styles/styles' as styles;
+@use '@nu-art/ts-styles/styles/palette' as pl;
+
+#ats__app-config-editor {
+  width: 100%;
+  height: 100%;
+
+  .app-tools-page__page__header {
+    margin: 0;
+    padding: 0 20px;
+    height: 50px;
+    width: 100%;
+    line-height: 50px;
+    flex-shrink: 0;
+  }
+
+  .app-config-editor__main {
+    width: 100%;
+    height: 0;
+    flex-grow: 1;
+
+    .app-config-editor__config-list {
+      height: 100%;
+      width: 20%;
+      border-right: 2px solid black;
+      overflow-y: overlay;
+
+      .app-config-editor__config-list__config {
+        padding: 0 20px;
+        width: 100%;
+        height: 30px;
+        line-height: 30px;
+        flex-shrink: 0;
+        cursor: pointer;
+
+        @include styles.text-ellipsis;
+
+        &:not(:last-child) {
+          border-bottom: 1px solid black;
+        }
+
+        &.selected {
+          background: pl.gray(3);
+          color: white;
+        }
+      }
+    }
+
+    .app-config-editor__editor {
+      width: 80%;
+      height: 100%;
+
+      .app-config-editor__editor__title {
+        height: 50px;
+        width: 100%;
+        line-height: 50px;
+        flex-shrink: 0;
+        border-bottom: 1px solid black;
+        padding: 0 20px;
+        font: {
+          size: 20px;
+          weight: bold;
+        }
+      }
+
+      .app-config-editor__editor__views {
+        padding: 20px;
+        height: 0;
+        flex-grow: 1;
+        width: 100%;
+        gap: 20px;
+
+        .ts-json-viewer {
+          width: 0;
+          flex-grow: 1;
+        }
+
+        .app-config-editor__editors {
+          height: 100%;
+          width: 0;
+          flex-grow: 1;
+          gap: 20px;
+
+          .ts-textarea {
+            height: 0;
+            width: 100%;
+            flex: 1;
+            resize: none;
+          }
+
+          .ts-json-viewer {
+            height: 0;
+            width: 100%;
+            flex: 1;
+          }
+
+          .app-config-editor__error {
+            height: 0;
+            width: 100%;
+            flex: 1;
+            background: white;
+            border: 2px solid black;
+            border-radius: 10px;
+            margin: 0;
+            padding: 10px;
+          }
+
+          .ts-busy-button {
+            height: 40px;
+            flex-shrink: 0;
+            width: 100%;
+            margin: 0;
+          }
+        }
+      }
+    }
+  }
+}
