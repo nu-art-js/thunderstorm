@@ -290,6 +290,7 @@ export class ModuleFE_SyncManager_Class
 			rtModule.IDB.setLastUpdated(data.lastUpdated);
 
 			this.logDebug(`Delta Sync Completed: ${rtModule.dbDef.dbKey}`);
+			await rtModule.cache.load();
 			rtModule.setDataStatus(DataStatus.ContainsData);
 		} catch (e: any) {
 			this.logError(e);
