@@ -81,7 +81,7 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
 
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType) {
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType, customMemCacheCreator?: (_config: DBApiFEConfig<Proto>, _this: ModuleFE_BaseDB<Proto, any>) => MemCache<Proto>) {
 		super();
 		this.syncType = syncType;
 		this.defaultDispatcher = defaultDispatcher;
@@ -91,7 +91,7 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		//Set Statuses
 		this.dataStatus = DataStatus.NoData;
 		this.setDefaultConfig(config as Config);
-		this.cache = new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
+		this.cache = customMemCacheCreator ? customMemCacheCreator(config, this) : new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
 		this.IDB = new IDBCache<Proto>(this.config.dbConfig, this.config.key);
 	}
 
@@ -358,16 +358,16 @@ class IDBCache<Proto extends DBProto<any>>
 	}
 }
 
-class MemCache<Proto extends DBProto<any>> {
+export class MemCache<Proto extends DBProto<any>> {
 
-	private readonly module: ModuleFE_BaseDB<Proto>;
+	protected readonly module: ModuleFE_BaseDB<Proto>;
 	private readonly keys: (keyof Proto['dbType'])[];
 	loaded: boolean = false;
 
 	_map!: Readonly<TypedMap<Readonly<Proto['dbType']>>>;
 	_array!: Readonly<Readonly<Proto['dbType']>[]>;
 
-	private cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean;
+	protected cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean;
 
 	constructor(module: ModuleFE_BaseDB<Proto, any>, keys: (keyof Proto['dbType'])[]) {
 		this.module = module;
@@ -387,7 +387,7 @@ class MemCache<Proto extends DBProto<any>> {
 		this.setCache([]);
 	};
 
-	load = async (cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean) => {
+	async load(cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean) {
 		const moduleName = this.module.getName();
 		this.module.logDebug(`${moduleName} cache is loading`);
 		let allItems;
@@ -403,7 +403,7 @@ class MemCache<Proto extends DBProto<any>> {
 
 		this.loaded = true;
 		this.module.logDebug(`${moduleName} cache finished loading, count: ${this.all().length}`);
-	};
+	}
 
 	unique = (_key?: Proto['uniqueParam']): Readonly<Proto['dbType']> | undefined => {
 		if (_key === undefined)
@@ -464,7 +464,7 @@ class MemCache<Proto extends DBProto<any>> {
 		this.setCache(toCache);
 	}
 
-	private setCache(cacheArray: Readonly<Proto['dbType']>[]) {
+	protected setCache(cacheArray: Readonly<Proto['dbType']>[]) {
 		this._map = Object.freeze({...arrayToMap(cacheArray as Readonly<DB_Object>[], dbObjectToId)});
 		this._array = Object.freeze(cacheArray);
 	}

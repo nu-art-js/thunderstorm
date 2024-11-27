@@ -21,8 +21,8 @@
 
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@nu-art/ts-common';
-import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
-import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException,  TypedApi} from '../../shared';
+import {MemCache, ModuleFE_BaseDB} from './ModuleFE_BaseDB';
+import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException, TypedApi} from '../../shared';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
@@ -50,8 +50,8 @@ export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config exten
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['v1'];
 	private operations: TypedMap<Operation> = {};
 
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string) {
-		super(dbDef, defaultDispatcher, ModuleSyncType.APISync);
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string, customMemCacheCreator?: (_config: DBApiFEConfig<Proto>, _this: ModuleFE_BaseDB<Proto, any>) => MemCache<Proto>) {
+		super(dbDef, defaultDispatcher, ModuleSyncType.APISync, customMemCacheCreator);
 
 		const apiDef = this.resolveApiDef(dbDef, version);
 
