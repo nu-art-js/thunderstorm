@@ -251,6 +251,10 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		return await Promise.all(keys.map(key => this.delete(key)));
 	}
 
+	/**
+	 * Delete by the uniqueKey of this collection - usually _id.
+	 * Pass the _id of the item to delete.
+	 */
 	public async delete(key: (IndexKeys<Proto['dbType'], keyof Proto['dbType']> | Proto['dbType'])): Promise<Proto['dbType']> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
 		const store = await this.getStore(true);
