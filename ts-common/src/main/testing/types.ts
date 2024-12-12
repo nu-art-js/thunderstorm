@@ -16,13 +16,15 @@
  * limitations under the License.
  */
 
+import {ResolvableContent} from '../utils/types';
+
 export type Types<Input, Result> = {
 	expected?: Result;
 	input: Input;
 }
 
 export type TestModel<Input, ExpectedResult> = {
-	description: string
+	description: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
 	result: ExpectedResult,
 	input: Input,
 }
