@@ -62,7 +62,7 @@ import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
 import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store';
 import {DBConfigV3} from '../../core/IndexedDBV4/types';
 import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
-import {ModuleSyncType} from './types';
+import {CustomMemCreators, ModuleSyncType} from './types';
 import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
 
 
@@ -81,7 +81,7 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
 
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType, customMemCacheCreator?: (_config: DBApiFEConfig<Proto>, _this: ModuleFE_BaseDB<Proto, any>) => MemCache<Proto>) {
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType, customMemCreators?: CustomMemCreators<Proto>) {
 		super();
 		this.syncType = syncType;
 		this.defaultDispatcher = defaultDispatcher;
@@ -91,8 +91,8 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		//Set Statuses
 		this.dataStatus = DataStatus.NoData;
 		this.setDefaultConfig(config as Config);
-		this.cache = customMemCacheCreator ? customMemCacheCreator(config, this) : new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
-		this.IDB = new IDBCache<Proto>(this.config.dbConfig, this.config.key);
+		this.cache = customMemCreators?.memCache ? customMemCreators?.memCache(config, this) : new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
+		this.IDB = customMemCreators?.idbCache ? customMemCreators?.idbCache(this.config.dbConfig, this.config.key) : new IDBCache<Proto>(this.config.dbConfig, this.config.key);
 	}
 
 	protected init() {
@@ -230,11 +230,11 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	};
 }
 
-class IDBCache<Proto extends DBProto<any>>
+export class IDBCache<Proto extends DBProto<any>>
 	extends Logger {
 
 	readonly storeWrapper: IndexedDB_Store<Proto>;
-	protected readonly lastSync: StorageKey<number>;
+	protected lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
 
 	constructor(dbConfig: DBConfigV3<Proto>, dbKey: string) {
@@ -264,6 +264,10 @@ class IDBCache<Proto extends DBProto<any>>
 				.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 		};
 		this.storeWrapper = ModuleFE_IDBManager.register(dbConfig, onOpenedCallback);
+	}
+
+	protected setLastSyncTimestampStorageKey(newLastSyncStorageKey: StorageKey<number>) {
+		this.lastSync = newLastSyncStorageKey;
 	}
 
 	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
