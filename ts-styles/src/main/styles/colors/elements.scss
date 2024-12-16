@@ -27,3 +27,15 @@
     color: $c-a;
   }
 }
+
+@mixin mouse-interactive-border-color($c, $ch: $c, $ca: $ch) {
+  & {
+    border-color: $c;
+  }
+  &:hover {
+    border-color: $ch;
+  }
+  &:active {
+    border-color: $ca;
+  }
+}
