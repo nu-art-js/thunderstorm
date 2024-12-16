@@ -1,4 +1,14 @@
-import {asArray, BadImplementationException, CustomException, Logger, ServerErrorSeverity} from '@nu-art/ts-common';
+import {
+	__stringify,
+	asArray,
+	BadImplementationException,
+	currentTimeMillis,
+	CustomException,
+	formatTimestamp,
+	generateHex,
+	Logger,
+	ServerErrorSeverity
+} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {SlackBlock, SlackFile, ThreadPointer} from './types';
 
@@ -144,14 +154,43 @@ export abstract class BaseSlackBuilder
 	 * Then will send all files and replys in a thread of the original message
 	 */
 	send = async () => {
+		this.convertLongSectionBlocks();
 		const tp = await this.sendMessage();
 		if (!tp)
 			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(
 				'Error while sending slack message',
 				'Did not get thread pointer from sending slack message'
 			);
-		await this.sendFiles(tp);
 		await this.sendReplies(tp);
+		await this.sendFiles(tp);
+	};
+
+	// ######################## Internal logic ########################
+
+	private convertLongSectionBlocks = () => {
+		const convertBlock = (block: SlackBlock) => {
+			if (block.type !== 'section')
+				return;
+
+			//@ts-ignore - text does exist on the block at this point
+			const text = block.text.text;
+			if (text.length < 3000)
+				return;
+
+			//Convert the text into a file
+			const fileName = `${formatTimestamp('DD/MM/YYYY_HH:mm', currentTimeMillis())}_${generateHex(8)}`;
+			const buffer = Buffer.from(__stringify(text, true), 'utf-8');
+			this.addFiles({
+				title: fileName,
+				fileName: fileName,
+				file: buffer
+			});
+
+			// @ts-ignore
+			block.text.text = `Message was too long, converted to file "${fileName}"`;
+		};
+		this.blocks.forEach(convertBlock);
+		this.replies.forEach(reply => reply.forEach(convertBlock));
 	};
 
 	// ######################## Abstract Logic Logic ########################
