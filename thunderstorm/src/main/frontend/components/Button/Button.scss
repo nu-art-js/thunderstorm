@@ -1,0 +1,91 @@
+@use '@nu-art/ts-styles' as styles;
+
+.ts-button-v3 {
+  ///Reset css attributes
+  all: unset;
+
+  //Dimension attributes
+  min-height: 35px;
+  min-width: 90px;
+  padding: 5px 10px;
+
+  //Display attributes
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  //General appearance attributes
+  transition: color 300ms ease-out,
+  background 300ms ease-out,
+  border 300ms ease-out;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  font: {
+    size: 14px;
+    weight: bold;
+    family: inherit;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  ///Variant overwrites
+  &[data-variant='primary'] {
+    color: white;
+
+    &:enabled {
+      @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));
+      @include styles.mouse-interactive-border-color(styles.dark-blue(2), styles.dark-blue(1));
+    }
+
+    &:disabled {
+      @include styles.mouse-interactive-background(styles.dark-blue(2));
+      @include styles.mouse-interactive-border-color(styles.dark-blue(2));
+    }
+  }
+
+  &[data-variant='secondary'] {
+    color: styles.black(1);
+
+    &:enabled {
+      @include styles.mouse-interactive-background(styles.gray(7), styles.gray(6));
+      @include styles.mouse-interactive-border-color(styles.gray(7), styles.gray(6));
+    }
+
+    &:disabled {
+      @include styles.mouse-interactive-background(styles.gray(7));
+      @include styles.mouse-interactive-border-color(styles.gray(7));
+    }
+  }
+
+  &[data-variant='tertiary'] {
+    color: styles.black(1);
+
+    &:enabled {
+      @include styles.mouse-interactive-background(transparent, styles.gray(6));
+      @include styles.mouse-interactive-border-color(styles.gray(7), styles.gray(6));
+    }
+
+    &:disabled {
+      @include styles.mouse-interactive-background(transparent);
+      @include styles.mouse-interactive-border-color(styles.gray(7));
+    }
+  }
+
+  &[data-variant='text'] {
+    color: styles.black(1);
+
+    &:enabled {
+      @include styles.mouse-interactive-background(transparent, styles.gray(7));
+    }
+
+    &:disabled {
+      @include styles.mouse-interactive-background(transparent);
+    }
+  }
+}

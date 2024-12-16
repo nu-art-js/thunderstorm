@@ -133,6 +133,9 @@ export * from './modules/sync-manager/ModuleFE_SyncManager';
 export * from './modules/sync-manager/ModuleFE_SyncManager_CSV';
 export * from './utils/tools';
 
+//ATS Groups
+export * from './components/ats-group';
+
 export * from './utils/EditableItem';
 export * from './utils/perform-action';
 
