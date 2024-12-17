@@ -22,12 +22,19 @@
  */
 
 import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
-import {ChatPostMessageArguments, FilesUploadArguments, WebAPICallResult, WebClient, WebClientOptions,} from '@slack/web-api';
+import {
+	ChatPostMessageArguments,
+	FilesUploadArguments,
+	WebAPICallResult,
+	WebClient,
+	WebClientOptions,
+} from '@slack/web-api';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_Slack, PreSendSlackStructuredMessage} from '../shared';
 import {Stream} from 'stream';
 import {postSlackMessageErrorHandler} from './utils';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {SlackBuilderBE} from './SlackBuilderBE';
 
 
 interface ChatPostMessageResult
@@ -85,14 +92,18 @@ export class ModuleBE_Slack_Class
 			});
 
 		addRoutes([
-			          createBodyServerApi(ApiDef_Slack.vv1.postMessage, async (request): Promise<void> => {
-				          await this.postMessage(request.message, request.channel);
-			          }),
-			          createBodyServerApi(ApiDef_Slack.vv1.postStructuredMessage, async (request) => {
-				          return {threadPointer: await this.postStructuredMessage(request.message, request.thread)};
-			          }),
-			          createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file, request.name, request.thread))
-		          ]);
+			createBodyServerApi(ApiDef_Slack.vv1.postMessage, async (request): Promise<void> => {
+				await this.postMessage(request.message, request.channel);
+			}),
+			createBodyServerApi(ApiDef_Slack.vv1.postStructuredMessage, async (request) => {
+				return {threadPointer: await this.postStructuredMessage(request.message, request.thread)};
+			}),
+			createBodyServerApi(ApiDef_Slack.vv1.sendFEMessage, async (request) => {
+				const slackMessage = new SlackBuilderBE(request.channel, request.messageBlocks, request.messageReplies);
+				await slackMessage.send();
+			}),
+			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file, request.name, request.thread))
+		]);
 	}
 
 	public async postMessage(text: string, channel?: string, thread?: ThreadPointer) {
