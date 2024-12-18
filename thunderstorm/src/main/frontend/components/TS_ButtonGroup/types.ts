@@ -11,7 +11,7 @@ export type ButtonGroupItem_Controlled<K extends string> = {
 export type ButtonGroupItem_NonControlled<K extends string> = ButtonGroupItem_Controlled<K> & {
 	//If the group is controlled, then a general clickCallback is passed in the props, if not controlled each button
 	//must supply a click callback
-	onClick: (e: React.MouseEvent<HTMLDivElement>) => (Promise<void> | void);
+	onClick: (e: React.MouseEvent<HTMLButtonElement>) => (Promise<void> | void);
 };
 
 export type ButtonGroupItem<K extends string, Controlled extends boolean> = Controlled extends true
