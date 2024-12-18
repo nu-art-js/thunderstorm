@@ -123,5 +123,4 @@ export class Button
 }
 
 export const TS_Button = Button;
-export const TS_ButtonV2 = Button;
 export const TS_BusyButton = Button;
