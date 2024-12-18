@@ -95,6 +95,7 @@ export class ModuleFE_SyncManager_Class
 	private syncing?: boolean;
 	private pendingSync?: boolean;
 	private cancelledSyncs: string[] = [];
+	private cleanIDBOnFullSync: boolean = true;
 
 	private syncDebouncer?: VoidFunction;
 	private syncQueue: QueueV2<NoNeedToSyncModule | DeltaSyncModule | FullSyncModule>;
@@ -119,6 +120,10 @@ export class ModuleFE_SyncManager_Class
 	}
 
 	// ######################### Public Methods #########################
+
+	public setShouldCleanIDBOnFullSync = (cleanIDBOnFullSync: boolean) => {
+		this.cleanIDBOnFullSync = cleanIDBOnFullSync;
+	};
 
 	public getPermissibleModuleNames = () => this.syncedModules.map(moduleSyncData => moduleSyncData.dbKey);
 
@@ -310,8 +315,10 @@ export class ModuleFE_SyncManager_Class
 		this.currentlySyncingModules.push({module: rtModule, syncId: syncId});
 		try {
 			// if the backend have decided module collection needs a full sync, we need to clean local idb and cache
-			rtModule.logVerbose(`Cleaning IDB: ${rtModule.dbDef.dbKey}`);
-			await rtModule.IDB.clear(); // Also sets the module's data status to NoData.
+			if (this.cleanIDBOnFullSync) {
+				rtModule.logVerbose(`Cleaning IDB: ${rtModule.dbDef.dbKey}`);
+				await rtModule.IDB.clear(); // Also sets the module's data status to NoData.
+			}
 			rtModule.logVerbose(`Cleaning Cache: ${rtModule.dbDef.dbKey}`);
 			rtModule.cache.clear();
 

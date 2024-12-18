@@ -75,7 +75,7 @@ export class Component_CollectionGrid
 
 	render() {
 		const dbKeys = this.getSortedDBKeys();
-		return <Grid className={'collections-grid'}>
+		return <Grid className={'collections-grid'} onClick={() => this.refreshCountMaps()}>
 			{this.renderHeaders()}
 			{dbKeys.map(this.renderDataForKey)}
 		</Grid>;
