@@ -17,15 +17,7 @@
  */
 
 import * as React from 'react';
-import {
-	_className,
-	ComponentSync,
-	Grid,
-	LL_H_C,
-	LL_V_C,
-	TS_BusyButton,
-	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
+import {_className, Button, ComponentSync, Grid, LL_H_C, LL_V_C, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
 import {
 	Account_RegisterAccount,
@@ -207,12 +199,12 @@ export class Component_Register
 				}
 			)}
 			{this.renderErrorMessages()}
-			<TS_BusyButton
+			<Button
 				onClick={this.registerClicked}
-				isBusy={this.state.submitting}
+				actionInProgress={this.state.submitting}
 				className={`clickable ts-account__action-button`}
 				disabled={!!this.state.passwordFailureReport}
-			>Register</TS_BusyButton>
+			>Register</Button>
 		</LL_V_C>;
 	}
 

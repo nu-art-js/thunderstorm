@@ -1,17 +1,18 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
-import {exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {TS_ButtonLoader} from '../TS_ButtonLoader';
+import {ResolvableContent, exists, resolveContent} from '@nu-art/ts-common';
 import './Button.scss';
 import {_className} from '../../utils/tools';
+import {LL_H_C} from '../Layouts';
 
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'text';
-type ButtonProps = Omit<React.HTMLProps<HTMLButtonElement>, 'type'>;
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'text' | 'dangerous';
+type ButtonProps = Omit<React.HTMLProps<HTMLButtonElement>, 'type' | 'ref'>;
 
 type Props = ButtonProps & {
-	actionInProgress?: boolean;
 	loader?: ResolvableContent<React.ReactNode>;
 	variant?: ButtonVariant | string;
+	innerRef?: React.RefObject<HTMLButtonElement>;
+	actionInProgress?: boolean;
 };
 
 type State = {
@@ -48,10 +49,11 @@ export class Button
 
 	private getProps = () => {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const {actionInProgress, loader, variant, ...rest} = this.props;
+		const {loader, variant, innerRef, ...rest} = this.props;
 		const props = rest as any;
 		props.className = this.getClassName();
 		props.disabled = this.state.disabled;
+		props.ref = innerRef;
 		props['data-variant'] = variant ?? 'tertiary';
 		return props as React.HTMLProps<HTMLButtonElement>;
 	};
@@ -65,22 +67,28 @@ export class Button
 		const result = this.props.onClick?.(e) as Promise<void> | void;
 
 		// if result is not a promise return
-		if (!(result instanceof Promise)) {
+		if (!(result instanceof Promise))
 			return;
-		}
+
+		const controlledInProgress = exists(this.props.actionInProgress);
 
 		// in case the result is from type promise and needs to be awaited, await and handle errors
-		// @ts-ignore - prevents race conditions
-		this.state.actionInProgress = true;
-		this.forceUpdate();
+		if (!controlledInProgress) {
+			// @ts-ignore - prevents race conditions
+			// noinspection JSConstantReassignment
+			this.state.actionInProgress = true;
+			this.forceUpdate();
+		}
+
 		try {
 			await result;
 		} catch (error: any) {
 			this.logError(error);
 			throw error;
 		} finally {
-			if (!this.props.actionInProgress) {
+			if (!controlledInProgress) {
 				// @ts-ignore - prevents race conditions
+				// noinspection JSConstantReassignment
 				this.state.actionInProgress = false;
 				this.forceUpdate();
 			}
@@ -94,18 +102,26 @@ export class Button
 			{...this.getProps()}
 			type={'button'}
 			onClick={this.handleAction}
-		>{this.renderContent()}</button>;
+		>
+			{this.renderContent()}
+			{this.renderLoader()}
+		</button>;
 	}
 
 	private renderContent = () => {
-		if (!this.state.actionInProgress)
-			return this.props.children;
+		return <LL_H_C className={'ts-button-v3__content'}>
+			{this.props.children}
+		</LL_H_C>;
+	};
 
+	private renderLoader = () => {
 		if (this.props.loader)
 			return resolveContent(this.props.loader);
 
-		return <TS_ButtonLoader/>;
+		return <div className={'ts-button-v3__loader'}/>;
 	};
 }
 
 export const TS_Button = Button;
+export const TS_ButtonV2 = Button;
+export const TS_BusyButton = Button;
