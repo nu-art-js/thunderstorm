@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync, LL_V_L, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {ModuleFE_Account, SessionKeyFE_Account} from '../../_entity';
 
@@ -79,7 +79,7 @@ export class Component_ChangePassword
 				<TS_Input type={'password'} value={this.state.newPasswordCheck}
 									onChange={val => this.setState({newPasswordCheck: val})}/>
 			</TS_PropRenderer.Vertical>
-			<TS_BusyButton onClick={this.submitNewPassword}>Submit</TS_BusyButton>
+			<Button variant={'primary'} onClick={this.submitNewPassword}>Submit</Button>
 		</LL_V_L>;
 	}
 }

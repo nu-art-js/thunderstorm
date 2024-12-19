@@ -2,7 +2,7 @@ import * as React from 'react';
 import './Component_ShortUrlEditor.scss';
 import {EditableRef, TS_EditableItemComponentProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
 import {DBProto_ShortUrl, UI_ShortUrl} from '../../../../_entity/short-url/shared';
-import {LL_H_C, ModuleFE_Thunderstorm, TS_BusyButton, TS_Card, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {Button, LL_H_C, ModuleFE_Thunderstorm, TS_Card, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
 import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 import {TS_Icons} from '@nu-art/ts-styles';
@@ -88,17 +88,20 @@ export class Component_ShortUrlEditor
 				/>
 			</TS_PropRenderer.Vertical>
 			<LL_H_C className={'buttons-container'}>
-				<TS_BusyButton
+				<Button
+					variant={'tertiary'}
 					disabled={!_id}
 					onClick={async () => {
 						const {shortUrl} = await ModuleFE_ShortUrl._v1.getShortUrl({_id: _id!}).executeSync();
 						await ModuleFE_Thunderstorm.copyToClipboard(shortUrl);
 					}}>
-					Copy ShortUrl To Clipboard
-				</TS_BusyButton>
-				<TS_BusyButton onClick={async () => {
-					await this.state.editable.save();
-				}}>Save</TS_BusyButton>
+					Copy ShortUrl To Clipboard</Button>
+				<Button
+					variant={'primary'}
+					onClick={async () => {
+						await this.state.editable.save();
+					}}
+				>Save</Button>
 			</LL_H_C>
 		</TS_Card>;
 	}
