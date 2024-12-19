@@ -10,8 +10,6 @@ import {
 	LL_H_T,
 	LL_V_L,
 	ModuleFE_Toaster,
-	TS_BusyButton,
-	TS_Button,
 	TS_Input,
 	TS_PropRenderer,
 	TS_Table
@@ -192,8 +190,8 @@ export class ATS_PushPubSub
 		return <LL_V_L className="panel">
 			<LL_H_C className="panel-header match_width flex__justify-center">
 				{title}
-				<TS_Button onClick={addNewRow}>Add</TS_Button>
-				<TS_BusyButton onClick={action}>Send</TS_BusyButton>
+				<Button variant={'secondary'} onClick={addNewRow}>Add</Button>
+				<Button variant={'primary'} onClick={action}>Send</Button>
 			</LL_H_C>
 			<LL_V_L className="panel-content v-gap__n">
 				<TS_PropRenderer.Vertical label={'Key'}>

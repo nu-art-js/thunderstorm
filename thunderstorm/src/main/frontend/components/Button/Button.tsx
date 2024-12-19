@@ -5,12 +5,13 @@ import './Button.scss';
 import {_className} from '../../utils/tools';
 import {LL_H_C} from '../Layouts';
 
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'text' | 'dangerous';
+//(string & {}) preserves the literals in autocomplete and allows any other string to be entered
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'text' | 'dangerous' | (string & {});
 type ButtonProps = Omit<React.HTMLProps<HTMLButtonElement>, 'type' | 'ref'>;
 
 type Props = ButtonProps & {
 	loader?: ResolvableContent<React.ReactNode>;
-	variant?: ButtonVariant | string;
+	variant?: ButtonVariant;
 	innerRef?: React.RefObject<HTMLButtonElement>;
 	actionInProgress?: boolean;
 };
@@ -20,6 +21,17 @@ type State = {
 	disabled: boolean;
 };
 
+/**
+ * Thunderstorm Button component, this component is the de-facto button in our system.</br>
+ * This button handles both sync and async actions, and can be autonomous or controlled.</br>
+ *
+ * @property variant - the variant of the button, will be added to the button element as a "data-variant" attribute.
+ * this component comes with 5 default variants ('primary' | 'secondary' | 'tertiary' | 'text' | 'dangerous'), but will accept any string, just make sure to add your own design for it!
+ *
+ * @property loader - When an async action is fired, the button renders a loader. this property is an overwrite for the loader renderer.
+ *
+ * @property actionInProgress - If given, the button becomes controlled and will only show a loader if true is passed from the outside.
+ */
 export class Button
 	extends ComponentSync<Props, State> {
 
@@ -48,9 +60,12 @@ export class Button
 	};
 
 	private getProps = () => {
+		//Clean out non-html properties from the props
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const {loader, variant, innerRef, ...rest} = this.props;
 		const props = rest as any;
+
+		//Align props from other sources
 		props.className = this.getClassName();
 		props.disabled = this.state.disabled;
 		props.ref = innerRef;
@@ -123,4 +138,3 @@ export class Button
 }
 
 export const TS_Button = Button;
-export const TS_BusyButton = Button;

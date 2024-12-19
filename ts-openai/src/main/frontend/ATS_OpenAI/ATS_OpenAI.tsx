@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AppToolsScreen, ATS_3rd_Party, ComponentSync, LL_H_C, LL_H_T, LL_V_L, TS_BusyButton} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ATS_3rd_Party, Button, ComponentSync, LL_H_C, LL_H_T, LL_V_L} from '@nu-art/thunderstorm/frontend';
 import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
 import {ModuleFE_OpenAI} from '../modules/ModuleFE_OpenAI';
 import {__stringify} from '@nu-art/ts-common';
@@ -59,16 +59,20 @@ export class ATS_OpenAI
 		return <LL_H_T>
 			<LL_V_L>
 				App dev screen for OpenAI
-				<TS_BusyButton onClick={this.sendRequest}>Test</TS_BusyButton>
+				<Button onClick={this.sendRequest}>Test</Button>
 			</LL_V_L>
 			<LL_V_L>
-				<TS_TextAreaV2 className={'ts-textarea'}
-											 style={{width: 1008, height: 200, marginBottom: 8, fontFamily: 'monospace', fontSize: 15}} value={this.state.directive}
-											 onChange={(value) => this.setState({directive: value})}/>
+				<TS_TextAreaV2
+					className={'ts-textarea'}
+					style={{width: 1008, height: 200, marginBottom: 8, fontFamily: 'monospace', fontSize: 15}}
+					value={this.state.directive}
+					onChange={(value) => this.setState({directive: value})}/>
 				<LL_H_C>
-					<TS_TextAreaV2 className={'ts-textarea'}
-												 style={{width: 500, height: 500, marginRight: 8, fontFamily: 'monospace', fontSize: 15}} value={this.state.input}
-												 onChange={(value) => this.setState({input: value})}/>
+					<TS_TextAreaV2
+						className={'ts-textarea'}
+						style={{width: 500, height: 500, marginRight: 8, fontFamily: 'monospace', fontSize: 15}}
+						value={this.state.input}
+						onChange={(value) => this.setState({input: value})}/>
 					<TS_TextAreaV2 className={'ts-textarea'} style={{width: 500, height: 500, fontFamily: 'monospace', fontSize: 15}} disabled value={value}/>
 				</LL_H_C>
 			</LL_V_L>
