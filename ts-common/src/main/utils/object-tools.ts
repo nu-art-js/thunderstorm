@@ -19,6 +19,8 @@
 import {DotNotation, TS_Object} from './types';
 import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
 import {asArray} from './array-tools';
+import {merge} from './merge-tools';
+import {exists} from './tools';
 
 export function getDotNotatedValue<T extends object>(key: DotNotation<T>, dotNotatedObject: T) {
 	const pathParts = key.split('.');
@@ -152,4 +154,68 @@ export function filterKeys<T extends TS_Object = TS_Object>(obj: T, keys: keyof 
 	});
 
 	return obj;
+}
+
+
+export type ScrubConfig = {
+	emptyObjects: boolean,
+	emptyArrays: boolean,
+	emptyStrings: boolean,
+	returnCopy: boolean;
+}
+
+const defaultScrubConfig: ScrubConfig = {
+	emptyObjects: false,
+	emptyArrays: false,
+	emptyStrings: false,
+	returnCopy: true
+};
+
+export function scrub<T>(item: T, config: Partial<ScrubConfig> = {}): T | undefined {
+	config = merge(defaultScrubConfig, config);
+	return scrubImpl(item, config as ScrubConfig);
+}
+
+function scrubImpl<T>(item: T, config: ScrubConfig): T | undefined {
+	//Quick exit if item does not exist
+	if (!exists(item))
+		return;
+
+	//Item is a boolean - always return it
+	if (typeof item === 'boolean' || typeof item === 'number')
+		return item;
+
+	//Item is a string
+	if (typeof item === 'string') {
+		//return undefined if the item is an empty string and we are scrubbing those
+		return (!item.length && config.emptyStrings) ? undefined : item;
+	}
+
+	//Item is an object
+	if (typeof item === 'object') {
+		if (Array.isArray(item)) { //ITEM IS AN ARRAY
+			const arr = config.returnCopy ? cloneArr(item) : item;
+			//Scrub each value in the array
+			arr.forEach((val, i) => arr[i] = scrubImpl(val, config));
+			//Remove any item that returned as undefined
+			const filtered = arr.filter(item => !!item);
+			filtered.forEach((val, i) => arr[i] = val);
+			arr.length = filtered.length;
+			//Return undefined if scrubbing empty arrays
+			return (arr.length === 0 && config.emptyArrays) ? undefined : arr as T;
+		} else { //ITEM IS AN OBJECT
+			const obj = (config.returnCopy ? cloneObj(item as object) : item) as T;
+			const keys = _keys(obj as object) as (keyof T)[];
+			//Scrub each property on the object
+			keys.forEach(key => {
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				obj[key] = scrubImpl(obj[key], config)!;
+				if (!exists(obj[key]))
+					delete obj[key];
+			});
+
+			//Return undefined if scrubbing empty objects
+			return (_keys(obj as object).length === 0 && config.emptyObjects) ? undefined : obj;
+		}
+	}
 }
