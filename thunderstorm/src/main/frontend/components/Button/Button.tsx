@@ -73,6 +73,15 @@ export class Button
 		return props as React.HTMLProps<HTMLButtonElement>;
 	};
 
+	private resultIsPromise = (result: any): boolean => {
+		//Reliable for any result that is a native promise
+		if (result instanceof Promise)
+			return true;
+
+		//Reliable for "thenable" objects, any non-native promise copying results
+		return (typeof result === 'object' && typeof result.then === 'function');
+	};
+
 	private handleAction = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		// skip action if needed
 		if (this.state.disabled || this.state.actionInProgress)
@@ -82,7 +91,7 @@ export class Button
 		const result = this.props.onClick?.(e) as Promise<void> | void;
 
 		// if result is not a promise return
-		if (!(result instanceof Promise))
+		if (!this.resultIsPromise(result))
 			return;
 
 		const controlledInProgress = exists(this.props.actionInProgress);
@@ -136,5 +145,3 @@ export class Button
 		return <div className={'ts-button-v3__loader'}/>;
 	};
 }
-
-export const TS_Button = Button;
