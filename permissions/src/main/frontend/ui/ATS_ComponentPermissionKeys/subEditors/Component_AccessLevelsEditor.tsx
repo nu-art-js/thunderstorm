@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync, LL_V_L, TS_Button} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_V_L, Button} from '@nu-art/thunderstorm/frontend';
 import {dbObjectToId} from '@nu-art/ts-common';
 import {Permissions_DropDown} from '../../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
@@ -24,11 +24,11 @@ export class Component_AccessLevelsEditor
 
 	private renderTag(level: DB_PermissionAccessLevel) {
 		return <div className={'level'} key={level._id}>
-			<TS_Button onClick={async () => {
+			<Button variant={'dangerous'} onClick={async () => {
 				const levels = this.state.levels.filter(i => i._id !== level._id);
 				await this.props.permissionKey.set({accessLevelIds: levels.map(dbObjectToId)});
 				this.reDeriveState();
-			}}><TS_Icons.x.component/></TS_Button>
+			}}><TS_Icons.x.component/></Button>
 			<span>{level.name}</span>
 		</div>;
 	}
