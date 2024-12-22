@@ -198,13 +198,9 @@ function scrubImpl<T>(item: T, config: ScrubConfig): T | undefined {
 			//Scrub each value in the array
 			arr.forEach((val, i) => arr[i] = scrubImpl(val, config));
 			//Remove any item that returned as undefined
-			let i = 0;
-			while (i < arr.length) {
-				if (!exists(arr[i]))
-					arr.splice(i, 1);
-				else
-					i++;
-			}
+			const filtered = arr.filter(item => !!item);
+			filtered.forEach((val, i) => arr[i] = val);
+			arr.length = filtered.length;
 			//Return undefined if scrubbing empty arrays
 			return (arr.length === 0 && config.emptyArrays) ? undefined : arr as T;
 		} else { //ITEM IS AN OBJECT
