@@ -34,7 +34,6 @@ import {
 	Module,
 	PreDB,
 	RuntimeModules,
-	Second,
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
@@ -47,17 +46,16 @@ import {
 	FullSyncModule,
 	LastUpdated,
 	NoNeedToSyncModule,
-	Request_SmartSync,
-	Response_SmartSync,
 	SmartSync_DeltaSync,
 	SmartSync_FullSync,
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState
 } from '../../../shared/sync-manager/types';
-import {DBDef_DeletedDoc, DBProto_DeletedDoc, HttpMethod} from '../../../shared';
+import {DBDef_DeletedDoc, DBProto_DeletedDoc} from '../../../shared';
 import {OnSyncEnvCompleted} from '../sync-env/ModuleBE_SyncEnv';
 import {OnModuleCleanupV2} from '../../_entity';
 import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {ApiDef_SyncManager, SyncManagerAPI_SmartSync} from '../../../shared/sync-manager/apis';
 import Transaction = firestore.Transaction;
 
 
@@ -95,11 +93,7 @@ export class ModuleBE_SyncManager_Class
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
-		this.smartSyncApi = createBodyServerApi({
-			method: HttpMethod.POST,
-			path: 'v3/db-api/smart-sync',
-			timeout: 60 * Second
-		}, this.calculateSmartSync);
+		this.smartSyncApi = createBodyServerApi(ApiDef_SyncManager.v1.smartSync, this.calculateSmartSync);
 
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
@@ -121,7 +115,7 @@ export class ModuleBE_SyncManager_Class
 		addRoutes([this.smartSyncApi]);
 	}
 
-	private calculateSmartSync = async (body: Request_SmartSync): Promise<Response_SmartSync> => {
+	private calculateSmartSync = async (body: SyncManagerAPI_SmartSync['request']): Promise<SyncManagerAPI_SmartSync['response']> => {
 		const frontendCollectionNames = body.modules.map(item => item.dbKey);
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 
