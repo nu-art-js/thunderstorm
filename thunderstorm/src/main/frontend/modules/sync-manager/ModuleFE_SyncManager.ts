@@ -33,18 +33,14 @@ import {
 	reduceToMap,
 	removeFromArrayByIndex,
 	removeItemFromArray,
-	RuntimeModules,
-	Second
+	RuntimeModules
 } from '@nu-art/ts-common';
 import {apiWithBody} from '../../core/typed-api';
 import {
-	ApiStruct_SyncManager,
 	DeltaSyncModule,
 	FullSyncModule,
 	LastUpdated,
 	NoNeedToSyncModule,
-	Request_SmartSync,
-	Response_SmartSync,
 	SmartSync_DeltaSync,
 	SmartSync_FullSync,
 	SmartSync_UpToDateSync,
@@ -58,10 +54,10 @@ import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
-import {ApiDefCaller, BodyApi, HttpMethod} from '../../../shared/types';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ModuleSyncType} from '../db-api-gen/types';
 import {BaseHttpRequest} from '../../../shared';
+import {ApiDef_SyncManager, SyncManagerAPI_SmartSync} from '../../../shared/sync-manager/apis';
 
 
 export interface PermissibleModulesUpdated {
@@ -74,7 +70,7 @@ const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleMo
 
 export class ModuleFE_SyncManager_Class
 	extends Module
-	implements ApiDefCaller<ApiStruct_SyncManager>, OnConnectivityChange {
+	implements OnConnectivityChange {
 
 	async __onConnectivityChange() {
 		if (ModuleFE_ConnectivityModule.isConnected()) {
@@ -118,6 +114,7 @@ export class ModuleFE_SyncManager_Class
 			.setOnQueueEmpty(this.clearSyncingStatus);
 		this.setMinLevel(LogLevel.Debug);
 	}
+
 
 	// ######################### Public Methods #########################
 
@@ -163,16 +160,12 @@ export class ModuleFE_SyncManager_Class
 		}
 
 		this.syncing = true;
-		const request: Request_SmartSync = {
+		const request: SyncManagerAPI_SmartSync['request'] = {
 			modules: this.getLocalSyncData()
 		};
 
 		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
-		await apiWithBody<BodyApi<Response_SmartSync, Request_SmartSync>>({
-			method: HttpMethod.POST,
-			path: 'v3/db-api/smart-sync',
-			timeout: 60 * Second
-		}, this.onSmartSyncCompleted)(request).executeSync();
+		await apiWithBody(ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
 
 		// //If queue is empty
 		// if (!this.syncQueue.getLength())
@@ -214,7 +207,7 @@ export class ModuleFE_SyncManager_Class
 	/**
 	 * Perform no sync, delta sync and full sync on modules. Intention is to get all modules to DataStatus "ContainsData".
 	 */
-	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
+	public onSmartSyncCompleted = async (response: SyncManagerAPI_SmartSync['response']) => {
 		this.logInfo(`onSmartSyncCompleted (${response.modules.length})`, response);
 		const currentSyncedModulesLength = this.syncedModules.length;
 		this.syncedModules = response.modules.map(item => ({dbKey: item.dbKey, lastUpdated: item.lastUpdated}));
