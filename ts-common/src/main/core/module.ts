@@ -27,7 +27,6 @@ import {Logger} from './logger/Logger';
 import {LogLevel} from './logger/types';
 import {ValidatorTypeResolver} from '../validator/validator-core';
 import {_clearTimeout, _setTimeout, TimerHandler} from '../utils/date-time-tools';
-import {RecursivePartial} from '../utils/types';
 
 
 export abstract class Module<Config = any,
@@ -87,7 +86,7 @@ export abstract class Module<Config = any,
 		this.configValidator = validator;
 	}
 
-	public setDefaultConfig(config: RecursivePartial<ModuleConfig>) {
+	public setDefaultConfig(config: Partial<ModuleConfig>) {
 		// @ts-ignore
 		this.config = merge(this.config, config);
 	}
