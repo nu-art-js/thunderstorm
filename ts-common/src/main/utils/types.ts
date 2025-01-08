@@ -139,6 +139,8 @@ export type DB_Object = DB_BaseObject & {
 
 export type UniqueId = string;
 
+export type DBPointer = { dbKey: string; id: UniqueId };
+
 export type PreDB<T extends DB_Object, K extends keyof T = never> = PartialProperties<T, keyof DB_Object | K>;
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
 
