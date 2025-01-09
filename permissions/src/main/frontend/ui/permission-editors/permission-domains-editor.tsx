@@ -72,7 +72,7 @@ class Component_EditDomain
 
 		editable.set(prop, value);
 		editable.validate();
-		if (editable.hasErrors())
+		if (editable.hasValidationError())
 			return;
 
 		await editable.save();
