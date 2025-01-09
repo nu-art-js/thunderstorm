@@ -4,6 +4,7 @@ import {EditableItem} from '../../utils/EditableItem';
 import {TS_PropRenderer} from '../TS_PropRenderer';
 import {DBProto} from '@nu-art/ts-common';
 import {Controller, Props_Controller} from '../../core/Controller';
+import {InferState} from '../../utils/types';
 
 
 export type EditableRef<Item> = { editable: EditableItem<Item> };
@@ -13,7 +14,7 @@ type _State<Item> = EditableRef<Item> & {
 
 type ProtoType<Opt> = Opt extends DBProto<any> ? Opt['uiType'] : Opt;
 
-export abstract class TS_EditableContent<Opt, ItemType = ProtoType<Opt>, P = {}, S = {},
+export abstract class TS_EditableContent<Opt, P = {}, S = {}, ItemType = ProtoType<Opt>,
 	Props extends P & EditableRef<ItemType> & Props_Controller = P & EditableRef<ItemType> & Props_Controller,
 	State extends S & _State<ItemType> = S & _State<ItemType>>
 	extends Controller<Props, State> {
@@ -35,10 +36,11 @@ export abstract class TS_EditableContent<Opt, ItemType = ProtoType<Opt>, P = {},
 		return super.shouldComponentUpdate(nextProps, nextState, nextContext);
 	}
 
-	protected deriveStateFromProps(nextProps: Props, state: State): State {
+
+	protected deriveStateFromProps(nextProps: Props, state: State): InferState<this> {
 		state.editable = nextProps.editable;
 		state.tag = nextProps.editable.tag;
-		return state;
+		return state as InferState<this>;
 	}
 
 	protected renderProp(label: string, render: ReactNode, className?: string) {

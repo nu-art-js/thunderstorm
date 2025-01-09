@@ -26,13 +26,13 @@ type Props = EditableRef<UI_ShortUrl> & { deleteCallback?: VoidFunction }
 type State = EditableRef<UI_ShortUrl>
 
 const StringEditableInput = TS_InputV2.editable({
-	type: 'text',
-	saveEvent: ['blur', 'accept']
-});
+	                                                type: 'text',
+	                                                saveEvent: ['blur', 'accept']
+                                                });
 
 const TextArea = TS_TextAreaV2.editable({
-	saveEvent: ['blur', 'accept']
-});
+	                                        saveEvent: ['blur', 'accept']
+                                        });
 
 export class Component_ShortUrlEditor
 	extends TS_EditableContent<DBProto_ShortUrl, Props, State> {
