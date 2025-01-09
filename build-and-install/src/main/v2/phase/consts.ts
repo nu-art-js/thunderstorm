@@ -85,6 +85,7 @@ export const phase_Install: Phase<'install'> = {
 	key: phaseKey_Install,
 	name: 'Install',
 	method: 'install',
+	breakPhases: true,
 	filter: () => RuntimeParams.install || RuntimeParams.installPackages || RuntimeParams.installGlobals,
 };
 
@@ -133,6 +134,7 @@ export const phase_Watch: Phase<'watch'> = {
 	key: phaseKey_Watch,
 	name: 'Watch',
 	method: 'watch',
+	breakPhases: true,
 	filter: () => RuntimeParams.watch,
 };
 
