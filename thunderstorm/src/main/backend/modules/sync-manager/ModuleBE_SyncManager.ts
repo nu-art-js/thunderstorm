@@ -20,7 +20,7 @@
  */
 
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {
 	__stringify,
 	arrayToMap,
@@ -33,6 +33,8 @@ import {
 	LogLevel,
 	Module,
 	PreDB,
+	ResolvableContent,
+	resolveContent,
 	RuntimeModules,
 	TypedMap,
 	UniqueId
@@ -86,9 +88,8 @@ export class ModuleBE_SyncManager_Class
 
 	private database!: DatabaseWrapperBE;
 	private dbModules!: (ModuleBE_BaseDB<any>)[];
-	private syncData!: FirebaseRef<SyncDataFirebaseState>;
-	private deletedCount!: FirebaseRef<number>;
 	public smartSyncApi;
+	private resolvableFirebaseBasePath: ResolvableContent<string> = `/state/${this.getName()}`;
 
 	constructor() {
 		super();
@@ -99,7 +100,7 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	async __onSyncEnvCompleted(env: string, baseUrl: string, requiredHeaders: TypedMap<string>) {
-		await this.database.delete(`/state/${this.getName()}/syncData`);
+		await this.database.delete(resolveContent(this.resolvableFirebaseBasePath));
 	}
 
 	init() {
@@ -110,8 +111,6 @@ export class ModuleBE_SyncManager_Class
 			ModuleBE_BaseDBV2: boolean
 		}).ModuleBE_BaseDBV2));
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
-		this.syncData = this.database.ref<SyncDataFirebaseState>(`/state/${this.getName()}/syncData`);
-		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
 		addRoutes([this.smartSyncApi]);
 	}
 
@@ -186,7 +185,9 @@ export class ModuleBE_SyncManager_Class
 	};
 
 	public getOrCreateSyncData = async () => {
-		const rtdbSyncData = await this.syncData.get({});
+		this.logVerbose('Current node path', `${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
+		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
+		const rtdbSyncData = await syncDataRef.get({});
 
 		const dbModuleDbKeys: string[] = filterInstances(this.dbModules.map(module => module.dbDef.dbKey));
 		this.logVerbose(`BE DB Modules: ${__stringify(dbModuleDbKeys)}`);
@@ -216,7 +217,7 @@ export class ModuleBE_SyncManager_Class
 			})));
 
 			newestItems.forEach((item, index) => rtdbSyncData[missingModules[index].dbDef.dbKey] = {lastUpdated: item?.__updated || 0});
-			await this.syncData.set(rtdbSyncData);
+			await syncDataRef.set(rtdbSyncData);
 		}
 
 		return rtdbSyncData;
@@ -246,9 +247,10 @@ export class ModuleBE_SyncManager_Class
 		const now = currentTimeMillis();
 		toInsert.forEach(item => item.__updated = now);
 		await this.collection.create.all(toInsert, transaction);
-		let deletedCount = await this.deletedCount.get(0);
+		const deletedCountRef = this.database.ref<number>(`${resolveContent(this.resolvableFirebaseBasePath)}/deletedCount`);
+		let deletedCount = await deletedCountRef.get(0);
 		deletedCount += items.length;
-		await this.deletedCount.set(deletedCount);
+		await deletedCountRef.set(deletedCount);
 	}
 
 	async queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>): Promise<DeletedDBItem[]> {
@@ -266,10 +268,11 @@ export class ModuleBE_SyncManager_Class
 		if (!this.config.retainDeletedCount)
 			return this.logWarning('Will not run cleanup of deleted values:\n  No "retainDeletedCount" was specified in config..');
 
-		let deletedCount = await this.deletedCount.get();
+		const deletedCountRef = this.database.ref<number>(`${resolveContent(this.resolvableFirebaseBasePath)}/deletedCount`);
+		let deletedCount = await deletedCountRef.get();
 		if (deletedCount === undefined) {
 			deletedCount = (await this.collection.query.custom(_EmptyQuery)).length;
-			await this.deletedCount.set(deletedCount);
+			await deletedCountRef.set(deletedCount);
 		}
 
 		const toDeleteCount = deletedCount - this.config.retainDeletedCount;
@@ -289,7 +292,7 @@ export class ModuleBE_SyncManager_Class
 			newDeletedCount = (await this.collection.query.custom(_EmptyQuery)).length;
 		}
 
-		await this.deletedCount.set(newDeletedCount);
+		await deletedCountRef.set(newDeletedCount);
 		const map = deleted.map(item => item.__collectionName);
 		const keys = filterDuplicates(map);
 
@@ -301,20 +304,29 @@ export class ModuleBE_SyncManager_Class
 	};
 
 	public getFullSyncData = async () => {
-		return (await this.syncData.get({}));
+		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
+		return (await syncDataRef.get({}));
 	};
 
 	async setLastUpdated(collectionName: string, lastUpdated: number) {
-		return this.database.patch<LastUpdated>(`/state/${this.getName()}/syncData/${collectionName}`, {lastUpdated});
+		return this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData/${collectionName}`, {lastUpdated});
 	}
 
 	async setOldestDeleted(collectionName: string, oldestDeleted: number) {
-		return this.database.patch<LastUpdated>(`/state/${this.getName()}/syncData/${collectionName}`, {oldestDeleted});
+		return this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/deletedCount/${collectionName}`, {oldestDeleted});
 	}
 
 	setModuleFilter = (filter: (modules: (ModuleBE_BaseDB<any>)[]) => Promise<(ModuleBE_BaseDB<any>)[]>) => {
 		const previousFilter = this.filterModules;
 		this.filterModules = async modules => filter(await previousFilter(modules));
+	};
+
+	/**
+	 * Set function that allows to set a custom resolver for the rtdb node path
+	 * @param resolvablePath The resolver for the node path
+	 */
+	setResolvablePath = (resolvablePath: ResolvableContent<string>) => {
+		this.resolvableFirebaseBasePath = resolvablePath;
 	};
 
 	private filterModules = async (modules: (ModuleBE_BaseDB<any>)[]) => {
