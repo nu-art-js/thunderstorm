@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-import moment from 'moment';
 import {utc} from 'moment';
 import {AuditBy, Timestamp} from './types';
 
@@ -139,7 +138,7 @@ export const DateTimeFormat_yyyyMMDD = DateTimeFormat('YYYY-MM-DD');
 export const DateTimeFormat_DDMMYYYY = DateTimeFormat('DD/MM/YYYY');
 
 export function isSameDay(date1: Date, date2: Date): boolean {
-	return moment(date1).isSame(date2, 'day');
+	return utc(date1).isSame(date2, 'day');
 }
 
 export function deltaDays(d1: Date | number, d2: Date | number): number {

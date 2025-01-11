@@ -16,7 +16,7 @@ export abstract class BaseSlackBuilder
 	protected text: string = 'Monitor Message'; //default value, need to double-check that;
 	protected channel: string;
 
-	protected constructor(channel?: string) {
+	protected constructor(channel?: string, blocks?: SlackBlock[], replies?: SlackBlock[][]) {
 		super('BaseSlackBuilder');
 
 		// if module provided config is not of default slack channel
@@ -25,6 +25,12 @@ export abstract class BaseSlackBuilder
 		}
 
 		this.channel = channel;
+
+		if (replies)
+			this.replies = replies;
+
+		if (blocks)
+			this.blocks = blocks;
 	}
 
 	// ######################## Static Templates ########################
@@ -144,14 +150,17 @@ export abstract class BaseSlackBuilder
 	 * Then will send all files and replys in a thread of the original message
 	 */
 	send = async () => {
+		if (!this.sendMessage)
+			throw new BadImplementationException('cannot send a message without implementing this function');
+
 		const tp = await this.sendMessage();
 		if (!tp)
 			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(
 				'Error while sending slack message',
 				'Did not get thread pointer from sending slack message'
 			);
-		await this.sendFiles(tp);
-		await this.sendReplies(tp);
+		await this.sendReplies?.(tp);
+		await this.sendFiles?.(tp);
 	};
 
 	// ######################## Abstract Logic Logic ########################
@@ -159,17 +168,17 @@ export abstract class BaseSlackBuilder
 	 * Abstract function, implement according to needs in each class.
 	 * This function will handle sending of the main message made out of blocks
 	 */
-	protected abstract sendMessage: () => Promise<ThreadPointer | undefined>;
+	protected abstract sendMessage: (() => Promise<ThreadPointer | undefined>) | undefined;
 
 	/**
 	 * Abstract function, implement according to needs in each class.
 	 * This function will handle sending files to slack in a thread of the original message
 	 */
-	protected abstract sendFiles: (tp: ThreadPointer) => Promise<void>;
+	protected abstract sendFiles: ((tp: ThreadPointer) => Promise<void>) | undefined;
 
 	/**
 	 * Abstract function, implement according to needs in each class.
 	 * This function will handle sending all replys in the thread of the original message
 	 */
-	protected abstract sendReplies: (tp: ThreadPointer) => Promise<void>;
+	protected abstract sendReplies: ((tp: ThreadPointer) => Promise<void>) | undefined;
 }

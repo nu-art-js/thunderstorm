@@ -1,11 +1,11 @@
-import {compareVersions, Module, RuntimeVersion} from '@nu-art/ts-common';
+import {compareVersions, currentTimeMillis, exists, Module, ModuleManager, RuntimeVersion} from '@nu-art/ts-common';
 import {apiWithQuery} from '../core/typed-api';
-import {ApiDef_ServerInfo, ApiStruct_ServerInfo, Response_ServerInfo} from '../../shared/server-info/api';
-import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, QueryApi, ServerInfoFirebaseState} from '../../shared';
+import {ApiDef_ServerInfo, ApiStruct_ServerInfo} from '../../shared/server-info/api';
+import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, ServerInfoFirebaseState} from '../../shared';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-import {StorageKey} from './ModuleFE_LocalStorage';
 import {DataSnapshot} from 'firebase/database';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 
 export const StorageKey_ServerVersion = new StorageKey<string>('server-version');
 
@@ -20,7 +20,7 @@ class ModuleFE_ServerInfo_Class
 	extends Module
 	implements ApiDefCaller<ApiStruct_ServerInfo> {
 
-	v1: ApiCallerRouter<{ getServerInfo: QueryApi<Response_ServerInfo>; updateServerInfo: QueryApi<void>; }>;
+	v1: ApiCallerRouter<ApiStruct_ServerInfo>['v1'];
 	private serverInfoFirebaseListener?: RefListenerFE<ServerInfoFirebaseState>;
 
 	constructor() {
@@ -29,11 +29,16 @@ class ModuleFE_ServerInfo_Class
 			getServerInfo: apiWithQuery(ApiDef_ServerInfo.v1.getServerInfo),
 
 			// @ts-ignore // to be used only by Jenkins
-			updateServerInfo: undefined,
+			updateServerInfoState: undefined,
 		};
 	}
 
 	public startListening() {
+		if (this.serverInfoFirebaseListener) {
+			this.logWarning(`Trying to start listening on --- ${Default_ServerInfoNodePath} --- but the listener already exists.`);
+			return;
+		}
+
 		this.serverInfoFirebaseListener = ModuleFE_FirebaseListener
 			.createListener(Default_ServerInfoNodePath)
 			.startListening(this.onServerInfoDataChanged);
@@ -47,10 +52,11 @@ class ModuleFE_ServerInfo_Class
 
 	private onServerInfoDataChanged = async (snapshot: DataSnapshot) => {
 		const rtdbServerInfoData = snapshot.val() as ServerInfoFirebaseState | undefined;
-		if (!rtdbServerInfoData) {
-			this.logInfo(`Did not receive any ServerInfo via firebase listener`);
-			return;
-		}
+		if (!rtdbServerInfoData)
+			return this.logInfo(`Did not receive any ServerInfo via firebase listener`);
+
+		if (!exists(ModuleManager.instance.version))
+			ModuleManager.instance.setVersion(rtdbServerInfoData.version);
 
 		StorageKey_ServerVersion.set(rtdbServerInfoData.version);
 		dispatch_OnServerInfoUpdated.dispatchAll();
@@ -74,13 +80,17 @@ class ModuleFE_ServerInfo_Class
 		shouldUpdateVersion: (): boolean => {
 			const lastVersion = this.Version.getLatestVersion();
 			const codeVersion = this.Version.getAppVersion();
-			if (compareVersions(codeVersion, lastVersion) !== 1)
-				return false;
-
-			return true;
+			return compareVersions(codeVersion, lastVersion) === 1;
 		}
 	};
 
+	public Update = {
+		updateAndRefreshPage: () => { // Causes html to reload and also changed file names to be fetched
+			const url = new URL(window.location.href);
+			url.searchParams.set('update', currentTimeMillis() + '');
+			window.location.assign(url.toString());
+		}
+	};
 }
 
 export const ModuleFE_ServerInfo = new ModuleFE_ServerInfo_Class();

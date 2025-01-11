@@ -71,7 +71,7 @@ export class IndexedDB_Database
 		}
 	}
 
-	storeExists = async (storeName: string) => {
+	storeExists = async (storeName: string): Promise<boolean> => {
 		await this.open();
 		return this.db.objectStoreNames.contains(storeName);
 	};

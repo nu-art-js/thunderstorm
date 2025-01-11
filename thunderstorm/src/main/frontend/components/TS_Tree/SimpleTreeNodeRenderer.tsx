@@ -65,6 +65,6 @@ export class SimpleNodeRenderer
 		else
 			label = '';
 
-		return ('propKey' || 'root') + label;
+		return ('propKey') + label;
 	}
 }

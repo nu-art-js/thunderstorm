@@ -68,17 +68,27 @@ export class HttpServer_Class
 
 	private static readonly expressMiddleware: ExpressRequestHandler[] = [];
 	errorMessageComposer: HttpErrorHandler = DefaultApiErrorMessageComposer();
-	readonly express: Express;
+	readonly express!: Express;
 	private server!: Server;
 	private socketId: number = 0;
 
 	constructor() {
 		super('http-server');
-		this.express = express();
+		// this.express = express();
+	}
+
+	getExpress():Express {
+		if (this.express)
+			return this.express;
+
+		// Originally Express was created in the constructor, and this class is a singleton module, meaning Express is created in the import part of the file that starts Storm.
+		// Express now is initialized during the builder of Storm, instead of the import stage of the file.
+		// @ts-ignore
+		return this.express! = express();
 	}
 
 	getExpressFunction() {
-		return new Firebase_ExpressFunction(HttpServer.express);
+		return new Firebase_ExpressFunction(this.getExpress());
 	}
 
 	setErrorMessageComposer(errorMessageComposer: HttpErrorHandler) {
