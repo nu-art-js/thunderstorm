@@ -62,7 +62,7 @@
     "@types/saml2-js": "^1.6.8"
   },
   "engines": {
-    "node": "18"
+    "node": "22"
   },
   "_moduleAliases": {
     "@consts": "dist/consts",

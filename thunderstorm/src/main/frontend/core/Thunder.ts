@@ -126,4 +126,8 @@ export class Thunder
 		this.preBuildActions.push(func);
 		return this;
 	};
+
+	public getEnvironment(): string {
+		return Thunder.getInstance().getConfig().label;
+	}
 }

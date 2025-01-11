@@ -42,7 +42,7 @@ class TS_EditableText_Base
 	// ######################## Life Cycle ########################
 
 	protected deriveStateFromProps(nextProps: Props) {
-		const state = {...this.state} || {} as State;
+		const state = {...this.state} as State;
 		state.original = nextProps.text;
 		state.text ||= nextProps.text;
 		state.isEditing = nextProps.editMode ?? false;

@@ -16,43 +16,32 @@
  * limitations under the License.
  */
 
-import {
-	FirebaseType_BatchResponse,
-	FirebaseType_Message,
-	FirebaseType_PushMessages,
-	FirebaseType_SubscriptionResponse,
-	FirebaseType_TopicResponse
-} from './types';
+import {FirebaseType_BatchResponse, FirebaseType_SubscriptionResponse,} from './types';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {FirebaseSession} from '../auth/firebase-session';
-import {StringMap} from '@nu-art/ts-common';
-import {getMessaging} from 'firebase-admin/messaging';
+import {Message, MulticastMessage, getMessaging, Messaging} from 'firebase-admin/messaging';
 
 
 export class PushMessagesWrapperBE
 	extends FirebaseBaseWrapper {
 
-	private readonly messaging: FirebaseType_PushMessages;
+	private readonly messaging: Messaging;
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
 		this.messaging = getMessaging(firebaseSession.app);
 	}
 
-	async send(message: FirebaseType_Message, dryRun?: boolean): Promise<string> {
+	async send(message: Message, dryRun?: boolean): Promise<string> {
 		return this.messaging.send(message, dryRun);
 	}
 
-	async sendAll(messages: FirebaseType_Message[]): Promise<FirebaseType_BatchResponse> {
-		return this.messaging.sendEach(messages);
+	async sendAll(messages: Message[], dryRun?: boolean): Promise<FirebaseType_BatchResponse> {
+		return this.messaging.sendEach(messages, dryRun);
 	}
 
-	async sendMultiCast(tokens: string[], data: StringMap): Promise<FirebaseType_BatchResponse> {
-		return this.messaging.sendEachForMulticast({data, tokens});
-	}
-
-	async sendToTopic(topic: string, data: StringMap, dryRun?: boolean): Promise<FirebaseType_TopicResponse> {
-		return this.messaging.sendToTopic(topic, {data}, {dryRun});
+	async sendMultiCast(messages: MulticastMessage, dryRun?: boolean): Promise<FirebaseType_BatchResponse> {
+		return this.messaging.sendEachForMulticast(messages, dryRun);
 	}
 
 	async subscribeToTopic(tokens: string[], topic: string): Promise<FirebaseType_SubscriptionResponse> {

@@ -351,4 +351,3 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		});
 	}
 }
-
