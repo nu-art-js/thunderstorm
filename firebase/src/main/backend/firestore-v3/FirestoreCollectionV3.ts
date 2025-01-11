@@ -594,7 +594,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
  * If the collection has unique keys, assert they exist, and use them to generate the _id.
  * In the case an _id already exists, verify it is not different from the uniqueKeys-generated _id.
  */
-export const assertUniqueId = <Proto extends DBProto<any>>(item: Proto['dbType'], keys: Proto['uniqueKeys']) => {
+export const assertUniqueId = <Proto extends DBProto<any>>(item: Proto['dbType'], keys: Proto['uniqueKeys']): string => {
 	// If there are no specific uniqueKeys, generate a random _id.
 	if (compare(keys, Const_UniqueKeys as Proto['uniqueKeys']))
 		return item._id ?? generateHex(dbIdLength);

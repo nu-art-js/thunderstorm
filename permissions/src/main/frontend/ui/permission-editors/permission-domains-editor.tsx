@@ -205,9 +205,9 @@ export class PermissionDomainsEditor
 	static defaultProps: Partial<InferProps<PermissionDomainsEditor>> = {
 		keys: ['selected'],
 		module: ModuleFE_PermissionDomain,
-		mapper: domain => [`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'],
-		sort: (items) => sortArray(items, domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'),
-		itemRenderer: domain => <>{`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'}</>,
+		mapper: domain => [`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`],
+		sort: (items) => sortArray(items, domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`),
+		itemRenderer: domain => <>{`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`}</>,
 		EditorRenderer: Controller_DomainsEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionDomain>>>,
 		route: this.Route,
 		contextMenuActions: [

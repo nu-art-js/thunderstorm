@@ -248,4 +248,3 @@ export class BAIScreen_UnitList
 	}
 }
 
-// /Users/tacb0ss/.nvm/versions/node/v18.15.0/bin/ts-node -P /Users/tacb0ss/dev/quai/test/quai-web/_thunderstorm/commando/src/test/tsconfig.json /Users/tacb0ss/dev/quai/test/quai-web/_thunderstorm/commando/src/test/console/controlled-scroll/run.ts

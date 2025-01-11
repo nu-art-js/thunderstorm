@@ -26,7 +26,7 @@ import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGenerato
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {apiWithBody, apiWithQuery} from '../../core/typed-api';
-import {ModuleSyncType} from './types';
+import {CustomMemCreators, ModuleSyncType} from './types';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -50,8 +50,8 @@ export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config exten
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['v1'];
 	private operations: TypedMap<Operation> = {};
 
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string) {
-		super(dbDef, defaultDispatcher, ModuleSyncType.APISync);
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string, customMemCreators?: CustomMemCreators<Proto>) {
+		super(dbDef, defaultDispatcher, ModuleSyncType.APISync, customMemCreators);
 
 		const apiDef = this.resolveApiDef(dbDef, version);
 

@@ -32,7 +32,7 @@ export class TS_SimpleDialog
 	}
 
 	static show(props: Props_SimpleDialog) {
-		ModuleFE_Dialog.show(<TS_SimpleDialog {...props}/>);
+		ModuleFE_Dialog.show({content: <TS_SimpleDialog {...props}/>});
 	}
 
 	protected renderHeader = (): React.ReactNode => this.props.title;

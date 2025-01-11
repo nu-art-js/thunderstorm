@@ -14,7 +14,7 @@
   "devDependencies": {
     "typedoc": "^0.23.28",
     "typescript": "$TYPESCRIPT_PKG_VERSION",
-    "eslint": "^8.36.0",
+    "eslint": "$ES_LINT_VERSION",
     "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
@@ -30,6 +30,6 @@
     "@types/mime": "^3.0.0"
   },
   "engines": {
-    "node": "18"
+    "node": "22"
   }
 }

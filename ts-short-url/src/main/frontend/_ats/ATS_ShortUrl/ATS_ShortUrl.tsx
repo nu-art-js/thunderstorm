@@ -1,14 +1,6 @@
 import * as React from 'react';
 import './ATS_ShortUrl.scss';
-import {
-	AppToolsScreen,
-	ATS_Fullstack,
-	ComponentSync,
-	LL_H_C,
-	LL_V_L,
-	TS_AppTools,
-	TS_Button
-} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ATS_Fullstack, ComponentSync, LL_H_C, LL_V_L, TS_AppTools, TS_Button} from '@nu-art/thunderstorm/frontend';
 import {DispatcherType_ShortUrl, ModuleFE_ShortUrl} from '../../../_entity/short-url/frontend';
 import {DBProto_ShortUrl} from '../../../_entity/short-url/shared';
 import {Component_ShortUrlEditor} from './components/Component_ShortUrlEditor';
@@ -44,7 +36,7 @@ export class ATS_ShortUrl
 			</LL_H_C>
 			<LL_V_L className={'url-cards'}>
 				<Card_ShortUrl key={`new-short-url-${ModuleFE_ShortUrl.cache.allMutable().length}`}/>
-				{sortArray(ModuleFE_ShortUrl.cache.allMutable(), item => item.__created)
+				{sortArray(ModuleFE_ShortUrl.cache.allMutable(), item => item.title + item._shortUrl)
 					.map(shortUrl => <Card_ShortUrl editorProps={{deleteCallback: () => this.forceUpdate()}}
 													key={shortUrl._id} item={shortUrl}/>)}
 			</LL_V_L>

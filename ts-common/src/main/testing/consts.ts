@@ -1,7 +1,7 @@
 import {TestModel, TestSuite} from './types';
 import {expect} from 'chai';
 import {ModuleManager} from '../core/module-manager';
-import {voidFunction} from '../utils/tools';
+import {resolveContent, voidFunction} from '../utils/tools';
 import {MemStorage} from '../mem-storage/MemStorage';
 
 
@@ -13,7 +13,7 @@ export class ModuleManagerTester
 }
 
 export function testSuite_RunTest<Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>, testCase: TestModel<Input, ExpectedResult>) {
-	it(testCase.description, () => testSuit.processor(testCase)).timeout(testSuit.timeout || 5000);
+	it(resolveContent(testCase.description, testCase), () => testSuit.processor(testCase)).timeout(testSuit.timeout || 5000);
 }
 
 export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>, ...testcases: TestSuite<Input, ExpectedResult>['testcases']) => {

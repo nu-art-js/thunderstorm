@@ -31,6 +31,23 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 
 	exists = async () => this.storeExistsResolver(this.config);
 
+	count = async (): Promise<number> => {
+		const store = await this.getStore();
+
+		return await new Promise((resolve, reject) => {
+			const countRequest = store.count();
+
+			countRequest.onsuccess = () => {
+				resolve(countRequest.result);
+			};
+
+			countRequest.onerror = () => {
+				this.logError(`Failed getting count of idb store ${this.config.name}`);
+				resolve(-1);
+			};
+		});
+	};
+
 	// ######################## Cursor Interaction ########################
 
 	private getCursor = async (query?: IndexDb_Query_V3): Promise<IDBRequest<IDBCursorWithValue | null>> => {
@@ -49,7 +66,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 	};
 
 	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: Proto['dbType']) => void,
-													 endCallback: () => void, limiterCallback?: () => boolean) => {
+							 endCallback: () => void, limiterCallback?: () => boolean) => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 
@@ -219,7 +236,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 	// ######################### Data deletion functions #########################
 
 	public async clearStore(): Promise<void> {
-		if(!(await this.exists()))
+		if (!(await this.exists()))
 			return;
 
 		const store = await this.getStore(true);
@@ -234,6 +251,10 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		return await Promise.all(keys.map(key => this.delete(key)));
 	}
 
+	/**
+	 * Delete by the uniqueKey of this collection - usually _id.
+	 * Pass the _id of the item to delete.
+	 */
 	public async delete(key: (IndexKeys<Proto['dbType'], keyof Proto['dbType']> | Proto['dbType'])): Promise<Proto['dbType']> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
 		const store = await this.getStore(true);

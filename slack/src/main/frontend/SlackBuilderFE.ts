@@ -1,4 +1,4 @@
-import {BaseSlackBuilder, ThreadPointer} from '../shared';
+import {BaseSlackBuilder} from '../shared';
 import {ModuleFE_Slack} from './ModuleFE_Slack';
 
 /**
@@ -11,34 +11,17 @@ export class SlackBuilderFE
 		super(channel);
 	}
 
-	protected sendMessage: () => Promise<ThreadPointer | undefined> = async () => {
-		return (await ModuleFE_Slack.vv1.postStructuredMessage({
-			message: {
-				channel: this.channel,
-				blocks: this.blocks,
-			}
-		}).executeSync()).threadPointer;
+	send = async () => {
+		await ModuleFE_Slack.vv1.sendFEMessage({
+			channel: this.channel,
+			messageBlocks: this.blocks,
+			messageReplies: this.replies,
+		}).executeSync();
 	};
 
-	protected sendFiles: (tp: ThreadPointer) => Promise<void> = async (threadPointer) => {
-		await Promise.all(this.files.map(async file => {
-			const response = await ModuleFE_Slack.vv1.postFiles({
-				file: file.file,
-				name: file.fileName,
-				thread: threadPointer
-			}).executeSync();
-			if (!response.ok)
-				return this.logError(response.error);
-		}));
-	};
+	protected sendMessage = undefined;
 
-	protected sendReplies: (tp: ThreadPointer) => Promise<void> = async (threadPointer) => {
-		for (const reply of this.replies) {
-			await ModuleFE_Slack.vv1.postStructuredMessage({
-				message: {
-					blocks: reply
-				}, thread: threadPointer
-			}).executeSync();
-		}
-	};
+	protected sendFiles = undefined;
+
+	protected sendReplies = undefined;
 }
