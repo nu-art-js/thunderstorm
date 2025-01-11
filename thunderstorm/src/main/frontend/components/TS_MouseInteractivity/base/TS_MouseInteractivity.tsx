@@ -72,7 +72,7 @@ export class TS_MouseInteractivity
 		const rect = current.getBoundingClientRect();
 		const offset = {x: 0, y: 0};
 		const xAxisAnchor = this.state.model!.xAxisAnchor ?? 'left';
-		const yAxisAnchor = this.state.model!.xAxisAnchor ?? 'top';
+		const yAxisAnchor = this.state.model!.yAxisAnchor ?? 'top';
 
 		//Fix vertical axis if only one side is overflowing
 		if (logicalXOR(distances.bottom < this.minimumMargin, distances.top < this.minimumMargin)) {

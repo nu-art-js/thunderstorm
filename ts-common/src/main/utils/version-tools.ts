@@ -37,6 +37,16 @@ export function compareVersions(firstVersion: string, secondVersion: string) {
 	if (!secondVersion)
 		throw new BadImplementationException('Second version is undefined');
 
+	const extractedFirstVersion = firstVersion.match(/\d+\.\d+\.\d+/)?.[0];
+	if (!extractedFirstVersion)
+		throw new BadImplementationException(`Unable to extract calculable version from '${firstVersion}'`);
+	firstVersion = extractedFirstVersion;
+
+	const extractedSecondVersion = secondVersion.match(/\d+\.\d+\.\d+/)?.[0];
+	if (!extractedSecondVersion)
+		throw new BadImplementationException(`Unable to extract calculable version from '${secondVersion}'`);
+	secondVersion = extractedSecondVersion;
+
 	const firstVersionAsArray = firstVersion.split('\.');
 	const secondVersionAsArray = secondVersion.split('\.');
 	for (let i = 0; i < firstVersionAsArray.length; i++) {

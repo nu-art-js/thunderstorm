@@ -56,6 +56,7 @@ const modulesInterface = {
 };
 export const RuntimeModules = () => ModuleManager.instance.modules;
 export const RuntimeVersion = () => ModuleManager.instance.version;
+export const RuntimeEnvironment = () => ModuleManager.instance.getEnvironment();
 
 export class ModuleManager
 	extends Logger {
@@ -147,5 +148,9 @@ export class ModuleManager
 
 	build() {
 		this.init();
+	}
+
+	public getEnvironment(): string {
+		return '';
 	}
 }

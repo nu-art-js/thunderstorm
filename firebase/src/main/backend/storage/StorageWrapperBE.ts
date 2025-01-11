@@ -17,20 +17,14 @@
  */
 
 import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {
-	Bucket,
-	CreateReadStreamOptions,
-	CreateWriteStreamOptions,
-	File,
-	GetSignedUrlConfig,
-	MakeFilePublicResponse,
-} from '@google-cloud/storage';
-import {Firebase_CopyResponse, FirebaseType_Metadata, FirebaseType_Storage, ReturnType_Metadata} from './types';
+import {Bucket, CreateReadStreamOptions, CreateWriteStreamOptions, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
+import {Firebase_CopyResponse, FirebaseType_Storage} from './types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getStorage} from 'firebase-admin/storage';
 import {Response} from 'teeny-request';
 import {Writable} from 'stream';
+import {FileMetadata} from '@google-cloud/storage/build/cjs/src/file';
 
 
 export const END_OF_STREAM = {END_OF_STREAM: 'END_OF_STREAM'};
@@ -125,9 +119,9 @@ export class BucketWrapper {
 			};
 
 			this.bucket.getFiles({
-				prefix: folder,
-				autoPaginate: false
-			}, callback);
+				                     prefix: folder,
+				                     autoPaginate: false
+			                     }, callback);
 		});
 	}
 }
@@ -242,9 +236,9 @@ export class FileWrapper {
 				.file
 				.createReadStream()
 				.pipe(destinationFile
-					.createWriteStream()
-					.on('error', reject)
-					.on('finish', () => resolve([destinationFile, undefined]))
+					      .createWriteStream()
+					      .on('error', reject)
+					      .on('finish', () => resolve([destinationFile, undefined]))
 				)
 				.on('error', reject);
 		});
@@ -310,15 +304,11 @@ export class FileWrapper {
 		return this.file.makePublic();
 	}
 
-	async setMetadata(metadata: FirebaseType_Metadata, options?: object): Promise<FirebaseType_Metadata> {
-		return (await this.file.setMetadata({metadata}, options))[0];
+	async setMetadata(metadata: FileMetadata, options?: object): Promise<FileMetadata> {
+		return (await this.file.setMetadata(metadata, options))[0];
 	}
 
-	async getMetadata(options?: object): Promise<ReturnType_Metadata> {
+	async getMetadata(options?: object): Promise<FileMetadata> {
 		return (await this.file.getMetadata(options))[0];
-	}
-
-	async getDefaultMetadata(): Promise<ReturnType_Metadata> {
-		return (await this.file.get())[0];
 	}
 }

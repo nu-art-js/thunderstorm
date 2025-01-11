@@ -13,6 +13,7 @@ export class ModuleFE_Slack_Class
 			postMessage: apiWithBody(ApiDef_Slack.vv1.postMessage),
 			postStructuredMessage: apiWithBody(ApiDef_Slack.vv1.postStructuredMessage),
 			postFiles: apiWithBody(ApiDef_Slack.vv1.postFiles),
+			sendFEMessage: apiWithBody(ApiDef_Slack.vv1.sendFEMessage),
 		};
 	}
 }

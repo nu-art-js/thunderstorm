@@ -117,9 +117,12 @@ export class RefListenerFE<Value = any>
 		this.logInfo('Starting to listen...');
 		const refQuery = this.getQuery();
 		try {
-			this.toUnsubscribeFunction = onValue(refQuery, (snapshot) => {
-				onValueChangedListener(snapshot);
-			});
+			this.toUnsubscribeFunction = onValue(refQuery,
+				(snapshot) => {
+					onValueChangedListener(snapshot);
+				}, error => {
+					this.logError('Failed receiving value with error', error);
+				});
 		} catch (e: any) {
 			this.logWarning(`Failed listening on node data, check if your rtdb rules permit reading this node '${this.nodePath}'`);
 			throw e;

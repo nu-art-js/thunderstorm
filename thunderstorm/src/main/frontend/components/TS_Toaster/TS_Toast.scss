@@ -18,6 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use 'sass:color';
 
 $percentage: 30%;
 @mixin box-shadow-color($color) {
@@ -57,22 +58,22 @@ $percentage: 30%;
 
   &.info {
     border-color: #49addb;
-    @include box-shadow-color(darken(#49addb, $percentage));
+    @include box-shadow-color(color.scale(#49addb, $lightness: -$percentage));
   }
 
   &.success {
     border-color: #14a44c;
-    @include box-shadow-color(darken(#14a44c, $percentage));
+    @include box-shadow-color(color.scale(#14a44c, $lightness: -$percentage));
   }
 
   &.warning {
     border-color: #ffad42;
-    @include box-shadow-color(darken(#ffad42, $percentage));
+    @include box-shadow-color(color.scale(#ffad42, $lightness: -$percentage));
   }
 
   &.error {
     border-color: #bd1d12;
-    @include box-shadow-color(darken(#bd1d12, $percentage));
+    @include box-shadow-color(color.scale(#bd1d12, $lightness: -$percentage));
   }
 }
 
