@@ -64,7 +64,7 @@ export class TS_AppTools
 		this.headerTail = headerTail;
 		this.onMountCallback = onMountCallback;
 		return this.Route = {
-			path: 'app-tools',
+			path,
 			key: 'app-tools',
 			Component: this,
 			children: [
