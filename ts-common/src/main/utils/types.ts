@@ -139,10 +139,12 @@ export type DB_Object = DB_BaseObject & {
 
 export type UniqueId = string;
 
+export type DBPointer = { dbKey: string; id: UniqueId };
+
 export type PreDB<T extends DB_Object, K extends keyof T = never> = PartialProperties<T, keyof DB_Object | K>;
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
 
-export type IndexKeys<T extends Object, Ks extends keyof T> = { [K in Ks]: T[K] };
+export type IndexKeys<T extends Object, Ks extends keyof T> = { [K in Ks]?: T[K] }; // {_id:'all bases belong to us'} || {label: 'all items with this label'}
 export type UniqueParam<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey> =
 	UniqueId
 	| IndexKeys<Type, Ks>;
@@ -327,5 +329,5 @@ declare const brand: unique symbol;
 //Type to brand a type with uniqueness
 export type Brand<T, Brand extends string> = T & { [brand]: Brand }
 
-export type RelativePath = Brand<string,'RelativePath'>;
-export type AbsolutePath = Brand<string,'AbsolutePath'>;
+export type RelativePath = Brand<string, 'RelativePath'>;
+export type AbsolutePath = Brand<string, 'AbsolutePath'>;

@@ -35,7 +35,7 @@ export abstract class BaseStorm
 		return this;
 	}
 
-	getEnvironment() {
+	public getEnvironment(): string {
 		return this.envKey;
 	}
 
@@ -45,6 +45,7 @@ export abstract class BaseStorm
 
 	protected resolveConfig = async () => {
 		const database: DatabaseWrapperBE = ModuleBE_Firebase.createAdminSession().getDatabase();
+		this.logWarning(`LOADING RTDB FROM: ${database.getUrl()}`);
 		let initialized = 0;
 
 		const listener = (resolve: (value: unknown) => void) => (snapshot: any) => {
@@ -65,9 +66,9 @@ export abstract class BaseStorm
 			database.listen(`/_config/${this.envKey}`, listener(resolve));
 		});
 		const [
-			defaultConfig,
-			overrideConfig
-		] = await Promise.all(
+			      defaultConfig,
+			      overrideConfig
+		      ] = await Promise.all(
 			[
 				defaultPromise,
 				envPromise

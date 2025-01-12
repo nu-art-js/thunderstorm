@@ -20,7 +20,10 @@ export class Dialog_ActionProcessorConfirmation
 	// ######################### Static #########################
 
 	static show(action: ActionMetaData, onExecute: () => (void | Promise<void>)) {
-		ModuleFE_Dialog.show(<Dialog_ActionProcessorConfirmation action={action} onExecute={onExecute}/>, functionThatReturnsTrue);
+		ModuleFE_Dialog.show({
+			content: <Dialog_ActionProcessorConfirmation action={action} onExecute={onExecute}/>,
+			closeOverlayOnClick: functionThatReturnsTrue
+		});
 	}
 
 	// ######################### Life Cycle #########################

@@ -1,9 +1,7 @@
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
 import {addItemToArray} from '@nu-art/ts-common';
-import express, {Express, Response} from 'express';
-import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
-import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
-import {LocalRequest} from '../functions/firebase-function';
+import express, {Express} from 'express';
+import {HttpsOptions, HttpsFunction, onRequest} from 'firebase-functions/v2/https';
 import {WebSocket} from 'ws';
 
 
@@ -20,7 +18,7 @@ export class ModuleBE_ExpressFunction_V2
 			return this.function;
 		const _express = express();
 		const realFunction = this.createFunction(_express);
-		return this.function = onRequest(this.config.options, (req: LocalRequest, res: Response) => {
+		return this.function = onRequest(this.config.options, (req, res) => {
 			if (this.isReady) { // @ts-ignore
 				return realFunction(req, res);
 			}
@@ -34,7 +32,7 @@ export class ModuleBE_ExpressFunction_V2
 	};
 
 	protected createFunction(_express: Express) {
-		return onRequest(this.config.options, _express as (request: LocalRequest, response: Response) => void | Promise<void>);
+		return onRequest(this.config.options, _express);
 	}
 }
 

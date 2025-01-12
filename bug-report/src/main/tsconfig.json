@@ -3,7 +3,6 @@
     "target": "es2017",
     "jsx": "react",
     "lib": [
-      "es5",
       "es6",
       "es7",
       "dom"

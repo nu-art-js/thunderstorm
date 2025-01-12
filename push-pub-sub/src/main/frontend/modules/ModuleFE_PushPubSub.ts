@@ -16,8 +16,20 @@
  * limitations under the License.
  */
 
-import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {apiWithBody, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {
+	addItemToArray,
+	compare,
+	generateHex,
+	ImplementationMissingException,
+	Module,
+	removeFromArray,
+	ThisShouldNotHappenException
+} from '@nu-art/ts-common';
+import {
+	apiWithBody,
+	StorageKey,
+	ThunderDispatcher
+} from '@nu-art/thunderstorm/frontend';
 import {
 	ApiDef_PushMessages,
 	ApiStruct_PushMessages,
@@ -28,7 +40,7 @@ import {
 	Request_PushRegister
 } from '../../index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {MessagingWrapperFE, ModuleFE_Firebase} from '@nu-art/firebase/frontend';
+import {MessagingWrapperFE} from '@nu-art/firebase/frontend';
 
 
 export const Command_SwToApp = 'SwToApp';
@@ -111,55 +123,57 @@ export class ModuleFE_PushPubSub_Class
 		if (!this.config?.publicKeyBase64)
 			throw new ImplementationMissingException(`ModuleFE_PushPubSub config is missing the publicKeyBase64`);
 
-		this.initApp();
+		// this.initApp();
 	}
 
 	getPushSessionId() {
 		return this.pushSessionId;
 	}
 
+	// @ts-ignore
 	private registerServiceWorker = async () => {
 		if (!('serviceWorker' in navigator)) {
 			this.logWarning('serviceWorker property is missing in navigator');
 			return undefined;
 		}
 
-		const registration = await navigator.serviceWorker.register(`/${this.config.swFileName || 'pubsub-sw.js'}`);
-		await registration.update();
-		navigator.serviceWorker.oncontrollerchange = () => {
-			this.logDebug('This page is now controlled by:', this.getControllingServiceWorker());
-		};
+		// const registration = await navigator.serviceWorker.register(`/${this.config.swFileName || 'pubsub-sw.js'}`);
+		// await registration.update();
+		// navigator.serviceWorker.oncontrollerchange = () => {
+		// 	this.logDebug('This page is now controlled by:', this.getControllingServiceWorker());
+		// };
+		//
+		// navigator.serviceWorker.onmessage = (event: MessageEvent) => {
+		// 	this.processMessageFromSw(event.data);
+		// };
 
-		navigator.serviceWorker.onmessage = (event: MessageEvent) => {
-			this.processMessageFromSw(event.data);
-		};
-
-		return registration;
+		// return registration;
 	};
 
-	initApp = () => {
-		this.runAsync('Initializing Firebase SDK and registering SW', async () => {
-			const registration = await this.registerServiceWorker();
-			const session = await ModuleFE_Firebase.createSession();
+	// initApp = () => {
+	// 	this.runAsync('Initializing Firebase SDK and registering SW', async () => {
+	// 		const registration = await this.registerServiceWorker();
+	// 		const session = await ModuleFE_Firebase.createSession();
+	//
+	// 		this.messaging = session.getMessaging();
+	// 		this.messaging.onMessage((payload) => {
+	// 			if (!payload.data)
+	// 				return this.logInfo('No data passed to the message handler, I got this', payload);
+	//
+	// 			this.processMessage(payload.data as PushMessage_PayloadWrapper);
+	// 		});
+	//
+	// 		this.logDebug('Getting new Token');
+	// 		await this.getToken({vapidKey: this.config?.publicKeyBase64, serviceWorkerRegistration: registration});
+	// 		this.logDebug('GOT new Token');
+	//
+	// 		if (this.getControllingServiceWorker()) {
+	// 			this.logDebug(`This page is currently controlled by: `, this.getControllingServiceWorker());
+	// 		}
+	// 	});
+	// };
 
-			this.messaging = session.getMessaging();
-			this.messaging.onMessage((payload) => {
-				if (!payload.data)
-					return this.logInfo('No data passed to the message handler, I got this', payload);
-
-				this.processMessage(payload.data as PushMessage_PayloadWrapper);
-			});
-
-			this.logDebug('Getting new Token');
-			await this.getToken({vapidKey: this.config?.publicKeyBase64, serviceWorkerRegistration: registration});
-			this.logDebug('GOT new Token');
-
-			if (this.getControllingServiceWorker()) {
-				this.logDebug(`This page is currently controlled by: `, this.getControllingServiceWorker());
-			}
-		});
-	};
-
+	// @ts-ignore
 	private getControllingServiceWorker() {
 		return navigator.serviceWorker.controller;
 	}
@@ -191,6 +205,7 @@ export class ModuleFE_PushPubSub_Class
 		this.logVerbose('new token received: ' + this.firebaseToken);
 	};
 	hasToken = () => !!this.firebaseToken;
+	// @ts-ignore
 	private processMessageFromSw = (data: any) => {
 		this.logDebug('Got message from service worker: ', data);
 		if (!data.command || !data.message || data.command !== Command_SwToApp)

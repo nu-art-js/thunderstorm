@@ -20,7 +20,12 @@
  */
 
 import * as React from 'react';
-import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
+import {
+	ChangeEvent,
+	CSSProperties,
+	HTMLProps,
+	KeyboardEvent
+} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_TextAreaV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
@@ -237,8 +242,18 @@ export class TS_TextAreaV2
 		}
 	};
 
+	componentDidMount() {
+		if (this.props.resizeWithText)
+			this.resizeWithText();
+	}
+
+	componentDidUpdate() {
+		if (this.props.resizeWithText)
+			this.resizeWithText();
+	}
+
 	render() {
-		const {onAccept, error, trim, saveEvent, forceAcceptKeys, focus, innerRef, resizeWithText, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, ...props} = this.props;
 
 		return <textarea
 			{...props}

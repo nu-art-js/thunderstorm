@@ -57,12 +57,14 @@ export class TS_AppTools
 	static Route: TS_Route;
 	static screens: AppToolsScreen[];
 	static headerTail?: () => React.ReactNode;
+	static onMountCallback?: () => void;
 
-	static createRoute(screens: AppToolsScreen[], path = 'app-tools', headerTail?: () => React.ReactNode): TS_Route {
+	static createRoute(screens: AppToolsScreen[], path = 'app-tools', headerTail?: () => React.ReactNode, onMountCallback?: () => void): TS_Route {
 		this.screens = screens;
 		this.headerTail = headerTail;
+		this.onMountCallback = onMountCallback;
 		return this.Route = {
-			path: 'app-tools',
+			path,
 			key: 'app-tools',
 			Component: this,
 			children: [
@@ -93,6 +95,10 @@ export class TS_AppTools
 			navbarCollapse: collapse?.navbarCollapse ?? false,
 			groups: collapse?.groups ?? {},
 		};
+	}
+
+	componentDidMount() {
+		TS_AppTools.onMountCallback?.();
 	}
 
 	// ######################### Logic #########################

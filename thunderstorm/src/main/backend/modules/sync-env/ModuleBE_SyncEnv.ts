@@ -136,7 +136,7 @@ class ModuleBE_SyncEnv_Class
 		}
 
 		this.logInfoBold('Received API call Fetch From Env!');
-		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
+		this.logInfo(`Origin env: ${body.env}, backupId: ${body.backupId}`);
 		let startTime = undefined; // required for log
 		let endTime = undefined; // required for log
 

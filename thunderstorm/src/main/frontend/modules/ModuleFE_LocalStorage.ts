@@ -66,8 +66,14 @@ export class StorageModule_Class
 
 		this.logDebug(`Storage key '${key}' was updated`, e.oldValue, e.newValue);
 
-		// @ts-ignore
-		await storageKey._onChange?.();
+		try {
+			// @ts-ignore
+			await storageKey._onChange?.();
+		} catch (e: any) {
+			this.logError(`Error while handling change event for storage key: ${storageKey.key}`);
+			this.logError(e);
+			throw e;
+		}
 
 		const dispatcher = new ThunderDispatcher<OnStorageKeyChangedListener, '__onStorageKeyEvent'>('__onStorageKeyEvent');
 		dispatcher.dispatchModule(e);

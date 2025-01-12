@@ -3,19 +3,10 @@ import {DB_Object, TypedMap} from '@nu-art/ts-common';
 export type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
 export type SyncDataFirebaseState = TypedMap<LastUpdated>
 export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], toDelete: DB_Object[] };
-export type ApiStruct_SyncManager = {}
 export type SyncDbData = {
 	dbKey: string,
 	lastUpdated: number
 };
-
-export type Request_SmartSync = {
-	modules: SyncDbData[]
-}
-
-export type Response_SmartSync = {
-	modules: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[]
-}
 
 export const SmartSync_UpToDateSync = 'up-to-date' as const;
 export const SmartSync_DeltaSync = 'delta-sync' as const;

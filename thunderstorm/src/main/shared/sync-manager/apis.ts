@@ -1,16 +1,24 @@
-import {ApiDefResolver, HttpMethod} from '../types';
-import {Second} from '@nu-art/ts-common';
-import {ApiStruct_SyncManager} from './types';
+import {ApiDefResolver, BodyApi, HttpMethod} from '../types';
+import {Minute} from '@nu-art/ts-common';
+import {DeltaSyncModule, FullSyncModule, NoNeedToSyncModule, SyncDbData} from './types';
 
+export type SyncManagerAPI_SmartSync = {
+	request: {
+		modules: SyncDbData[]
+	}
+	response: {
+		modules: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[]
+	}
+}
+
+export type ApiStruct_SyncManager = {
+	v1: {
+		smartSync: BodyApi<SyncManagerAPI_SmartSync['response'], SyncManagerAPI_SmartSync['request']>
+	}
+}
 
 export const ApiDef_SyncManager: ApiDefResolver<ApiStruct_SyncManager> = {
 	v1: {
-		checkSync: {method: HttpMethod.GET, path: 'v1/db-api/sync-all'},
-	}
-};
-
-export const ApiDef_SyncManagerV2: ApiDefResolver<ApiStruct_SyncManager> = {
-	v1: {
-		checkSync: {method: HttpMethod.GET, path: 'v2/db-api/sync-all-v2', timeout: 60 * Second},
+		smartSync: {method: HttpMethod.POST, path: 'v1/db-api/smart-sync', timeout: Minute},
 	}
 };

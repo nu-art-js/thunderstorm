@@ -1,4 +1,4 @@
-import {DB_Object, DBProto, Filter, ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';
+import {_values, DB_Object, DBPointer, DBProto, Filter, ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {CSSProperties} from 'react';
 import {TS_DropDown} from '../TS_Dropdown';
@@ -67,6 +67,30 @@ export type TemplatingProps_TS_GenericDropDown<Proto extends DBProto<any>, T ext
 	selectedItemRenderer?: (selected: T) => React.ReactNode
 }
 
+export type GenericDropDown_DBPointer_Item<Proto extends DBProto<any>> = { dbKey: Proto['dbKey'], item: Proto['dbType'] };
+export type TemplatingProps_TS_GenericDropDown_DBPointer<Proto extends DBProto<any>, T extends GenericDropDown_DBPointer_Item<Proto> = GenericDropDown_DBPointer_Item<Proto>> =
+	Omit<BaseInfraProps_TS_GenericDropDownV3<T>, 'mapper'>
+	& {
+	placeholder: string;
+	selectedItemRenderer?: (selected: T) => React.ReactNode
+	pointerProps: {
+		[P in Proto as P['dbKey']]: {
+			module: ModuleFE_BaseApi<P>;
+			mapper: (item: GenericDropDown_DBPointer_Item<P>) => string[];
+			renderer: (item: GenericDropDown_DBPointer_Item<P>) => React.ReactElement;
+		}
+	}
+}
+
+type EditableItemProps_GenericDropDownV3_DBPointer<T> =
+	BaseAppLevelProps_TS_GenericDropDownV3<T>
+	& UIProps_EditableItem<any, any, DBPointer>
+	& {
+	onSelected?: (selected: T | undefined, superOnSelected: (selected?: T) => Promise<void>) => void
+	canUnselect?: boolean
+}
+	& ComponentProps_Error
+
 type Props_TS_GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
 	TemplatingProps_TS_GenericDropDown<T> &
 	BaseAppLevelProps_TS_GenericDropDownV3<T> &
@@ -113,7 +137,55 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 	static readonly prepare = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
 		return {
 			editable: this.prepareEditable(mandatoryProps),
-			selectable: this.prepareSelectable(mandatoryProps)
+			selectable: this.prepareSelectable(mandatoryProps),
+		};
+	};
+
+	static readonly prepareSelectable_DBPointers = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto>>) => {
+		const _mandatoryProps = resolveContent(mandatoryProps);
+		return (props: AppLevelProps_TS_GenericDropDownV3<GenericDropDown_DBPointer_Item<Proto>>) =>
+			<GenericDropDownV3
+				{..._mandatoryProps}
+				{...props}
+				itemResolver={() => {
+					const modules = _values(_mandatoryProps.pointerProps).map(val => val.module);
+					return modules.map(module => module.cache.all().map(dbItem => ({dbKey: module.dbDef.dbKey, item: dbItem}))).flat();
+				}}
+				renderer={(item: GenericDropDown_DBPointer_Item<Proto>) => _mandatoryProps.pointerProps[item.dbKey].renderer(item)}
+				mapper={(item: GenericDropDown_DBPointer_Item<Proto>) => _mandatoryProps.pointerProps[item.dbKey].mapper(item)}
+				// @ts-ignore
+				module={undefined}
+			/>;
+	};
+	static readonly prepareEditable_DBPointers = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto>>) => {
+		return (props: EditableItemProps_GenericDropDownV3_DBPointer<GenericDropDown_DBPointer_Item<Proto>>) => {
+			const _mandatoryProps = resolveContent(mandatoryProps);
+			const {editable, prop, ...restProps} = props;
+
+			const onSelected = async (item: Proto['dbType']) => {
+				await editable.updateObj({[prop]: item._id});
+			};
+
+			return <GenericDropDownV3
+				error={resolveEditableError(props)}
+				{..._mandatoryProps}
+				{...restProps}
+				onSelected={async item => {
+					if (props.onSelected)
+						return props.onSelected(item, onSelected);
+
+					return onSelected(item);
+				}}
+				selected={editable.item[prop]}
+				// @ts-ignore
+				module={undefined}
+			/>;
+		};
+	};
+	static readonly prepare_DBPointers = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto>>) => {
+		return {
+			editable: this.prepareEditable_DBPointers(mandatoryProps),
+			selectable: this.prepareSelectable_DBPointers(mandatoryProps),
 		};
 	};
 
