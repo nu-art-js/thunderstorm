@@ -65,7 +65,7 @@ export class TS_DialogOverlay
 					{this.state.models.map((model, i) => {
 						if (i === this.state.models.length - 1)
 							//This model content is wrapped in a div to keep the React hierarchy. if you remove it, the model stack won't work.
-							return <div key={i}>{model.content}</div>;
+							return <div key={i} onClick={stopPropagation} onContextMenu={stopPropagation}>{model.content}</div>;
 
 						return <div key={i} style={{display: 'none', height: 0}}>{model.content}</div>;
 					})}
@@ -77,7 +77,7 @@ export class TS_DialogOverlay
 	private onOverlayClicked = (e: React.MouseEvent) => {
 		stopPropagation(e);
 		//Exit if click should not close this current dialog
-		if (!this.state.models[0].closeOverlayOnClick())
+		if (!this.state.models[0].closeOverlayOnClick!())
 			return;
 
 		//Close there is only one dialog

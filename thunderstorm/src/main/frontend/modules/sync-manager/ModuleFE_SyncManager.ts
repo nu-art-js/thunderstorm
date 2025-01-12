@@ -33,18 +33,16 @@ import {
 	reduceToMap,
 	removeFromArrayByIndex,
 	removeItemFromArray,
-	RuntimeModules,
-	Second
+	ResolvableContent,
+	resolveContent,
+	RuntimeModules
 } from '@nu-art/ts-common';
 import {apiWithBody} from '../../core/typed-api';
 import {
-	ApiStruct_SyncManager,
 	DeltaSyncModule,
 	FullSyncModule,
 	LastUpdated,
 	NoNeedToSyncModule,
-	Request_SmartSync,
-	Response_SmartSync,
 	SmartSync_DeltaSync,
 	SmartSync_FullSync,
 	SmartSync_UpToDateSync,
@@ -53,28 +51,31 @@ import {
 } from '../../../shared/sync-manager/types';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {
+	ModuleFE_FirebaseListener,
+	RefListenerFE
+} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
-import {ApiDefCaller, BodyApi, HttpMethod} from '../../../shared/types';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
 import {ModuleSyncType} from '../db-api-gen/types';
 import {BaseHttpRequest} from '../../../shared';
+import {ApiDef_SyncManager, SyncManagerAPI_SmartSync} from '../../../shared/sync-manager/apis';
 
 
 export interface PermissibleModulesUpdated {
 	__onPermissibleModulesUpdated: () => void;
 }
 
-const Default_SyncManagerNodePath = '/state/ModuleBE_SyncManager/syncData'; // Hardcoded path for now per Adam's request, should be const somewhere.
+export const Default_SyncManagerNodePath = '/state/ModuleBE_SyncManager/syncData'; // Hardcoded path for now per Adam's request, should be const somewhere.
 
 const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleModulesUpdated, '__onPermissibleModulesUpdated'>('__onPermissibleModulesUpdated');
 
 export class ModuleFE_SyncManager_Class
 	extends Module
-	implements ApiDefCaller<ApiStruct_SyncManager>, OnConnectivityChange {
+	implements OnConnectivityChange {
 
 	async __onConnectivityChange() {
 		if (ModuleFE_ConnectivityModule.isConnected()) {
@@ -89,12 +90,19 @@ export class ModuleFE_SyncManager_Class
 
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
 	private syncedModules: SyncDbData[] = [];
-	private readonly currentlySyncingModules: { module: ModuleFE_BaseApi<any>, syncId: string, request?: BaseHttpRequest<any> }[] = [];
+	private readonly currentlySyncingModules: {
+		module: ModuleFE_BaseApi<any>,
+		syncId: string,
+		request?: BaseHttpRequest<any>
+	}[] = [];
 	private syncFirebaseListener?: RefListenerFE<SyncDataFirebaseState>;
 	private outOfSyncCollections: Set<string> = new Set<string>();
 	private syncing?: boolean;
 	private pendingSync?: boolean;
 	private cancelledSyncs: string[] = [];
+	private cleanIDBOnFullSync: boolean = true;
+	private syncManagerNodePath: ResolvableContent<string> = Default_SyncManagerNodePath;
+	private smartSyncApiUrl: ResolvableContent<string | undefined>;
 
 	private syncDebouncer?: VoidFunction;
 	private syncQueue: QueueV2<NoNeedToSyncModule | DeltaSyncModule | FullSyncModule>;
@@ -118,7 +126,12 @@ export class ModuleFE_SyncManager_Class
 		this.setMinLevel(LogLevel.Debug);
 	}
 
+
 	// ######################### Public Methods #########################
+
+	public setShouldCleanIDBOnFullSync = (cleanIDBOnFullSync: boolean) => {
+		this.cleanIDBOnFullSync = cleanIDBOnFullSync;
+	};
 
 	public getPermissibleModuleNames = () => this.syncedModules.map(moduleSyncData => moduleSyncData.dbKey);
 
@@ -158,17 +171,17 @@ export class ModuleFE_SyncManager_Class
 		}
 
 		this.syncing = true;
-		const request: Request_SmartSync = {
+		const request: SyncManagerAPI_SmartSync['request'] = {
 			modules: this.getLocalSyncData()
 		};
 
-		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
-		await apiWithBody<BodyApi<Response_SmartSync, Request_SmartSync>>({
-			method: HttpMethod.POST,
-			path: 'v3/db-api/smart-sync',
-			timeout: 60 * Second
-		}, this.onSmartSyncCompleted)(request).executeSync();
+		// if the module have a custom base url for this api apply it to the api def keeping the original path
+		const customBase = resolveContent(this.smartSyncApiUrl);
+		if (customBase)
+			ApiDef_SyncManager.v1.smartSync.fullUrl = customBase;
 
+		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
+		await apiWithBody(ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
 		// //If queue is empty
 		// if (!this.syncQueue.getLength())
 		// 	await this.clearSyncingStatus();
@@ -209,7 +222,7 @@ export class ModuleFE_SyncManager_Class
 	/**
 	 * Perform no sync, delta sync and full sync on modules. Intention is to get all modules to DataStatus "ContainsData".
 	 */
-	public onSmartSyncCompleted = async (response: Response_SmartSync) => {
+	public onSmartSyncCompleted = async (response: SyncManagerAPI_SmartSync['response']) => {
 		this.logInfo(`onSmartSyncCompleted (${response.modules.length})`, response);
 		const currentSyncedModulesLength = this.syncedModules.length;
 		this.syncedModules = response.modules.map(item => ({dbKey: item.dbKey, lastUpdated: item.lastUpdated}));
@@ -290,6 +303,7 @@ export class ModuleFE_SyncManager_Class
 			rtModule.IDB.setLastUpdated(data.lastUpdated);
 
 			this.logDebug(`Delta Sync Completed: ${rtModule.dbDef.dbKey}`);
+			await rtModule.cache.load();
 			rtModule.setDataStatus(DataStatus.ContainsData);
 		} catch (e: any) {
 			this.logError(e);
@@ -309,8 +323,10 @@ export class ModuleFE_SyncManager_Class
 		this.currentlySyncingModules.push({module: rtModule, syncId: syncId});
 		try {
 			// if the backend have decided module collection needs a full sync, we need to clean local idb and cache
-			rtModule.logVerbose(`Cleaning IDB: ${rtModule.dbDef.dbKey}`);
-			await rtModule.IDB.clear(); // Also sets the module's data status to NoData.
+			if (this.cleanIDBOnFullSync) {
+				rtModule.logVerbose(`Cleaning IDB: ${rtModule.dbDef.dbKey}`);
+				await rtModule.IDB.clear(); // Also sets the module's data status to NoData.
+			}
 			rtModule.logVerbose(`Cleaning Cache: ${rtModule.dbDef.dbKey}`);
 			rtModule.cache.clear();
 
@@ -386,14 +402,20 @@ export class ModuleFE_SyncManager_Class
 	// ######################### Listening #########################
 
 	public startListening() {
-		// Hardcoded path for now per Adam's request, should be const somewhere.
+		const nodePath = resolveContent(this.syncManagerNodePath);
+
+		if (this.syncFirebaseListener) {
+			this.logWarning(`Trying to start listening on --- ${nodePath} --- but the listener already exists.`);
+			return;
+		}
+
 		this.syncFirebaseListener = ModuleFE_FirebaseListener
-			.createListener(Default_SyncManagerNodePath)
+			.createListener(nodePath)
 			.startListening(this.onSyncDataChanged);
 	}
 
 	public stopListening() {
-		this.logDebug(`Stop listening on ${Default_SyncManagerNodePath}`);
+		this.logDebug(`Stop listening on ${resolveContent(this.syncManagerNodePath)}`);
 		this.syncFirebaseListener?.stopListening();
 		this.syncFirebaseListener = undefined;
 		delete this.syncDebouncer;
@@ -440,6 +462,12 @@ export class ModuleFE_SyncManager_Class
 		// If there are changes, call sync
 		return await this.debounceSyncImpl();
 	};
+
+	// ######################### setNodeContext #########################
+
+	public setNodeContext = (nodeContextResolver: ResolvableContent<string>) => this.syncManagerNodePath = nodeContextResolver;
+
+	public setSmartSyncUrl = (baseUrlResolver: ResolvableContent<string | undefined>) => this.smartSyncApiUrl = baseUrlResolver;
 }
 
 export const ModuleFE_SyncManager = new ModuleFE_SyncManager_Class();

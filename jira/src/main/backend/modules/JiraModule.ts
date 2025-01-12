@@ -20,7 +20,7 @@ import {
 	ApiException,
 	BadImplementationException,
 	composeUrl,
-	ImplementationMissingException,
+	ImplementationMissingException, MimeType_json,
 	Module,
 	TypedMap
 } from '@nu-art/ts-common';
@@ -160,8 +160,8 @@ export class ModuleBE_Jira_Class
 			headers['X-Atlassian-Token'] = 'no-check';
 			headers[HeaderKey_ContentType] = 'multipart/form-data';
 		} else {
-			headers.Accept = 'application/json';
-			headers[HeaderKey_ContentType] = 'application/json';
+			headers.Accept = MimeType_json;
+			headers[HeaderKey_ContentType] = MimeType_json;
 		}
 
 		return headers;

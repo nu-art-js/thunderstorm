@@ -125,6 +125,9 @@ export const phase_Compile: Phase<'compile'> = {
 	name: 'Compile',
 	method: 'compile',
 	filter: () => !RuntimeParams.noBuild,
+	unitFilter: (unit) => {
+		return !RuntimeParams.noBuild;
+	},
 	runUnitsInDependency: true,
 	dependencyPhaseKeys: [phaseKey_CopyPackageJSON, phaseKey_PreCompile],
 };
@@ -160,6 +163,9 @@ export const phase_Launch: Phase<'launch'> = {
 	method: 'launch',
 	filter: () => !!RuntimeParams.launch,
 	dependencyPhaseKeys: [phaseKey_ResolveConfigs],
+	unitFilter:(unit) => {
+		return !!unit.config.key.match(new RegExp(RuntimeParams.launch))?.[0];
+	},
 };
 
 export const phases_Launch: Phase<string>[] = [
@@ -176,6 +182,9 @@ export const phase_DeployFrontend: Phase<'deployFrontend'> = {
 	method: 'deployFrontend',
 	breakPhases: true,
 	filter: () => !!RuntimeParams.deployFrontend,
+	unitFilter: (unit) => {
+		return !!unit.config.key.match(new RegExp(RuntimeParams.deployFrontend))?.[0];
+	},
 	dependencyPhaseKeys: [phaseKey_Compile],
 };
 
@@ -188,6 +197,9 @@ export const phase_DeployBackend: Phase<'deployBackend'> = {
 	filter: () => !!RuntimeParams.deployBackend,
 	breakPhases: true,
 	dependencyPhaseKeys: [phaseKey_Compile],
+	unitFilter: (unit) => {
+		return !!unit.config.key.match(new RegExp(RuntimeParams.deployBackend))?.[0];
+	}
 };
 
 export const phases_Deploy: Phase<string>[] = [phase_DeployFrontend, phase_DeployBackend];

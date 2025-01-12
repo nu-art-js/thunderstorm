@@ -45,6 +45,7 @@ export const Unit_BAI = new Unit_TypescriptLib({
 export const Unit_Firebase = new Unit_TypescriptLib({
 	key: 'firebase',
 	label: 'TS/firebase',
+	customTSConfig:true,
 	pathToPackage: '_thunderstorm/firebase' as RelativePath,
 	output: 'dist',
 	filter: () => RuntimeParams.runWithThunderstorm,

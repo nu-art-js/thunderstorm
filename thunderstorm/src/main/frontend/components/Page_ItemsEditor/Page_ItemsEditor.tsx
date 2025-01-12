@@ -1,21 +1,55 @@
 import * as React from 'react';
-import {asArray, DB_Object, dbObjectToId, DBProto, exists, sortArray, UniqueId} from '@nu-art/ts-common';
+import {
+	asArray,
+	dbObjectToId,
+	DBProto,
+	exists,
+	UniqueId
+} from '@nu-art/ts-common';
 import {FrameLayout} from '../FrameLayout';
 import {TS_Route} from '../../modules/routing';
-import {LL_H_C, LL_H_T, LL_V_L} from '../Layouts';
+import {
+	LL_H_C,
+	LL_H_T,
+	LL_V_L
+} from '../Layouts';
 import './Page_ItemsEditor.scss';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem';
-import {ItemEditor_DefaultList, Props_ListRenderer} from './defaults/ItemEditor_ListRenderer';
-import {ItemEditor_FilterType, ItemEditor_MapperType, ItemEditor_SortType} from './types';
-import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter';
+import {
+	EditableDBItemV3,
+	EditableItem
+} from '../../utils/EditableItem';
+import {
+	ItemEditor_DefaultList,
+	Props_ListRenderer
+} from './defaults/ItemEditor_ListRenderer';
+import {
+	ItemEditor_CustomSort,
+	ItemEditor_FilterType,
+	ItemEditor_MapperType
+} from './types';
+import {
+	ItemEditor_DefaultFilter,
+	Props_Filter
+} from './defaults/ItemEditor_DefaultFilter';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ModuleFE_MouseInteractivity, mouseInteractivity_PopUp, openContent} from '../../component-modules/mouse-interactivity';
+import {
+	ModuleFE_MouseInteractivity,
+	mouseInteractivity_PopUp,
+	openContent
+} from '../../component-modules/mouse-interactivity';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
 import {_className} from '../../utils/tools';
-import {InferProps, InferState} from '../../utils/types';
-import {ProtoComponent, ProtoComponentDef, SuperProto} from '../../core/proto-component';
+import {
+	InferProps,
+	InferState
+} from '../../utils/types';
+import {
+	ProtoComponent,
+	ProtoComponentDef,
+	SuperProto
+} from '../../core/proto-component';
 import {Props_EditableItemControllerProto} from '../TS_EditableItemControllerProto';
 import {ModuleFE_BrowserHistoryV2} from '../../modules/ModuleFE_BrowserHistoryV2';
 
@@ -35,13 +69,15 @@ export type Props_ItemsEditor<Proto extends DBProto<any>> = {
 	Filter?: React.ComponentType<Props_Filter<Proto>>
 	module: ModuleFE_BaseApi<Proto>,
 	route: TS_Route<{ _id: string }>,
-	sort: ItemEditor_SortType<Proto>,
+	sort: ItemEditor_CustomSort<Proto>,
 	mapper: ItemEditor_MapperType<Proto>
 	itemRenderer: (item: Proto['uiType']) => JSX.Element,
 	actions: MenuAction<Proto>[]
 	id?: string,
+	onSelectedItemChanged?: (editable?: EditableItem<Proto['uiType']>) => void
 	contextMenuActions: MenuAction<Proto>[]
 	hideAddItem: boolean
+	className?: string
 };
 
 /**
@@ -57,7 +93,7 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 	extends ProtoComponent<CProto, Props_ItemsEditor<Proto> & P, State_ItemsEditor<Proto> & S> {
 
 	static _defaultProps: ProtoDef_Selection['props'] = {
-		keys: ['selected']
+		keys: ['selected'],
 	};
 
 	constructor(p: InferProps<Page_ItemsEditor<Proto, CProto, P, S>>) {
@@ -67,7 +103,7 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 	componentDidMount() {
 		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected'])[this.props.module.dbDef.dbKey];
 		if (!selectedId)
-			this.onSelected(sortArray(this.props.module.cache.allMutable(), this.props.sort)[0]);
+			this.onSelected(this.props.sort(this.props.module.cache.allMutable())[0]);
 	}
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
@@ -81,6 +117,8 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']) [this.props.module.dbDef.dbKey];
 		if (!exists(selectedId)) {
 			state.editable = this.createEditableItem({} as Proto['uiType']);
+
+			this.props.onSelectedItemChanged?.(state.editable);
 			return state;
 		}
 
@@ -88,10 +126,13 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 		if (!exists(item)) {
 			this.logError(`Could not find item ${this.props.module.dbDef.dbKey} with id ${selectedId}`);
 			this.onSelected();
+			this.props.onSelectedItemChanged?.();
 			return state;
 		}
 
 		state.editable = this.createEditableItem(item);
+		this.props.onSelectedItemChanged?.(state.editable);
+
 		state.filter ??= () => true;
 		return state;
 	}
@@ -108,16 +149,18 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 	};
 
 	private createEditableItem(item: Partial<Proto['uiType']>) {
-		return new EditableDBItemV3<Proto>({...item}, this.props.module, this.onSelected.bind(this)).setAutoSave(true);
+		return new EditableDBItemV3<Proto>({...item}, this.props.module)
+			.setOnSaveCompleted(this.onSelected.bind(this))
+			.setAutoSave(true);
 	}
 
 	render() {
 		const List = this.props.ListRenderer || ItemEditor_DefaultList;
 		const Filter: Props_ItemsEditor<Proto>['Filter'] = this.props.Filter || ItemEditor_DefaultFilter;
 		const Editor: Props_ItemsEditor<Proto>['EditorRenderer'] = this.props.EditorRenderer;
-		const sort = this.props.sort || ((item: DB_Object) => item.__created);
+		const sort = this.props.sort;
 		return <FrameLayout id={this.props.id} className="editor-page">
-			<LL_H_T className="editor-content match_parent">
+			<LL_H_T className={_className(this.props.className ?? 'editor-content', 'match_parent')}>
 				<LL_V_L className="items-editor__list">
 					<LL_V_L className={'items-editor__list-header-content'}>
 						<div className={'items-editor__list-header'}>
@@ -139,7 +182,9 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 						onSelected={this.onSelected.bind(this)}/>
 					{this.renderAddNewItem()}
 				</LL_V_L>
-				<div className="item-editor"><Editor item={this.state.editable?.item}/></div>
+				<div className="item-editor">
+					<Editor item={this.state.editable?.item}/>
+				</div>
 			</LL_H_T>
 		</FrameLayout>;
 	}

@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es2022",
     "jsx": "react",
     "lib": [
-      "es5",
-      "es6",
-      "es7",
+      "es2022",
       "dom"
     ],
     "declaration": true,
@@ -19,5 +17,5 @@
     "strict": true
   },
   "esModuleInterop": true,
-  "module": "ES2020"
+  "module": "ES2023"
 }

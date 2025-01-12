@@ -73,6 +73,7 @@ export const HttpCodes = {
 		UNAVAILABLE_FOR_LEGAL_REASONS: createGeneralError(451),
 
 		//custom
+		ENTITY_MISSING: createGeneralError(459),
 		ENTITY_ALREADY_EXISTS: createGeneralError(460),
 		ENTITY_IS_OUTDATED: createGeneralError(461),
 		INTERNAL_MISMATCH: createGeneralError(462),

@@ -16,38 +16,8 @@
  * limitations under the License.
  */
 
-import {
-	Notification,
-	AndroidConfig,
-	WebpushConfig,
-	ApnsConfig,
-	FcmOptions,
-	Messaging,
-	BatchResponse,
-	MessagingTopicResponse,
-	MulticastMessage,
-	MessagingTopicManagementResponse,
-} from 'firebase-admin/messaging';
-import {TypedMap} from '@nu-art/ts-common';
+import {BatchResponse, MessagingTopicManagementResponse,} from 'firebase-admin/messaging';
 
 
-type BaseMessage = {
-	data?: TypedMap<string>;
-	notification?: Notification;
-	android?: AndroidConfig;
-	webpush?: WebpushConfig;
-	apns?: ApnsConfig;
-	fcmOptions?: FcmOptions;
-};
-
-type TokenMessage = BaseMessage & {
-	token: string;
-}
-
-export type FirebaseType_PushMessages = Messaging;
-// export type FirebaseType_Message = Message;
-export type FirebaseType_Message = TokenMessage
 export type FirebaseType_BatchResponse = BatchResponse
-export type FirebaseType_TopicResponse = MessagingTopicResponse;
-export type FirebaseType_MulticastMessage = MulticastMessage;
 export type FirebaseType_SubscriptionResponse = MessagingTopicManagementResponse;

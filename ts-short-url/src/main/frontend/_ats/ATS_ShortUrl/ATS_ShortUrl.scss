@@ -20,6 +20,8 @@
   }
 
   .url-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(650px, 1fr));
     padding-top: 10px;
     width: 100%;
     gap: 15px;

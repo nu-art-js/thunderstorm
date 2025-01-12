@@ -39,7 +39,7 @@
     "@nu-art/commando": "$THUNDERSTORM_DEPENDENCY_VERSION"
   },
   "devDependencies": {
-    "@types/node": "^18.0.0",
+    "@types/node": "$NODE_TYPES_VERSION",
     "@types/blessed": "^0.1.25"
   }
 }

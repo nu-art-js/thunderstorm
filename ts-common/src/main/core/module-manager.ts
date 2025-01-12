@@ -56,6 +56,7 @@ const modulesInterface = {
 };
 export const RuntimeModules = () => ModuleManager.instance.modules;
 export const RuntimeVersion = () => ModuleManager.instance.version;
+export const RuntimeEnvironment = () => ModuleManager.instance.getEnvironment();
 
 export class ModuleManager
 	extends Logger {
@@ -121,9 +122,10 @@ export class ModuleManager
 			// @ts-ignore
 			module.setManager(this);
 
-			if (this.config)
+			const moduleConfig = this.config[module.getName()];
+			if (this.config && exists(moduleConfig))
 				// @ts-ignore
-				module.setConfig(this.config[module.getName()]);
+				module.setConfig(moduleConfig);
 		});
 
 		this.modules.forEach((module: Module) => {
@@ -146,5 +148,9 @@ export class ModuleManager
 
 	build() {
 		this.init();
+	}
+
+	public getEnvironment(): string {
+		return '';
 	}
 }

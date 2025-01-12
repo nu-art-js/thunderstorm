@@ -15,12 +15,12 @@ export type Props_Filter<Proto extends DBProto<any>> = {
 export class ItemEditor_DefaultFilter<Proto extends DBProto<any>>
 	extends React.Component<Props_Filter<Proto>, { filter: Filter<Proto['uiType']> }> {
 
-	state = {filter: new Filter(this.props.mapper)};
+	state = {filter: new Filter(this.props.mapper).setRegexp(false)};
 
 	render() {
 		return <LL_H_C className={'item-editor__default-filter'}>
 			<TS_Input
-				className={'margin__bottom'} placeholder={'Type to Filter'} type={'text'}
+				placeholder={'Type to Filter'} type={'text'}
 				onChange={value => {
 					this.props.onFilterChanged((item) => this.state.filter.filterItem(item, value));
 				}}/>

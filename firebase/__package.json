@@ -39,9 +39,9 @@
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
     "@nu-art/google-services": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@google-cloud/common": "^3.0.0",
-    "@google-cloud/storage": "^5.0.0",
-    "@google-cloud/firestore": "^4.8.1",
+    "@google-cloud/common": "$GOOGLE_CLOUD_COMMON",
+    "@google-cloud/storage": "$GOOGLE_CLOUD_STORAGE",
+    "@google-cloud/firestore": "$GOOGLE_CLOUD_FIRESTORE",
     "express": "$EXPRESS_PKG_VERSION",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",

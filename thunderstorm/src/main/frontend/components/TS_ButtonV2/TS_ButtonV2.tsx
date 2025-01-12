@@ -1,7 +1,7 @@
 //TODO: move this thing to Thunderstorm post PR
 import * as React from 'react';
 import './TS_ButtonV2.scss';
-import {exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {exists, isPromise, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {LinearLayoutProps} from '../Layouts';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
@@ -13,6 +13,7 @@ type Props = LinearLayoutProps & {
 	loaderOverride?: ResolvableContent<React.ReactNode>
 	actionInProgress?: boolean
 }
+
 
 type State = {
 	actionInProgress: boolean;
@@ -49,7 +50,7 @@ export class TS_ButtonV2
 		const result = this.props.onClick?.(e) as Promise<void> | void;
 
 		// if result is not a promise return
-		if (!(result instanceof Promise)) {
+		if (!isPromise(result)) {
 			return;
 		}
 
@@ -72,7 +73,7 @@ export class TS_ButtonV2
 	};
 
 	private prepareProps = () => {
-		const {variant, actionInProgress, ...restOfProps} = this.props;
+		const {variant, actionInProgress, loaderOverride, ...restOfProps} = this.props;
 		const _actionInProgress = this.state.actionInProgress;
 		const currentProps: any = {...restOfProps};
 

@@ -102,7 +102,7 @@ export abstract class Module<Config = any,
 	// @ts-ignore
 	private setConfig(config: ModuleConfig): void {
 		// @ts-ignore
-		this.config = this.config ? merge(this.config, config || {}) : config;
+		this.config = this.config ? merge(this.config, config) : config;
 		this.config.minLogLevel && this.setMinLevel(this.config.minLogLevel);
 	}
 

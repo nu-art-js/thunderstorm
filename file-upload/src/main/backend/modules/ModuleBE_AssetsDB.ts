@@ -17,23 +17,10 @@
  * limitations under the License.
  */
 import {
-	ApiException,
-	asArray,
-	BadImplementationException,
-	currentTimeMillis,
-	Day,
-	exists,
-	filterInstances,
-	generateHex,
-	Hour,
-	ImplementationMissingException,
-	MB,
-	Minute,
-	MUSTNeverHappenException,
-	ThisShouldNotHappenException,
-	TypedMap
+	ApiException, asArray, BadImplementationException, currentTimeMillis, Day, exists, filterInstances, generateHex, Hour, ImplementationMissingException, MB,
+	Minute, MUSTNeverHappenException, ThisShouldNotHappenException, TypedMap
 } from '@nu-art/ts-common';
-import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction} from '@nu-art/firebase/backend';
+import {FileWrapper, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDB, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
@@ -42,12 +29,10 @@ import {OnAssetUploaded} from './ModuleBE_BucketListener';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage';
 import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '../../shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages';
-import {
-	CollectionActionType,
-	PostWriteProcessingData
-} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted';
 import {firestore} from 'firebase-admin';
+import {FileMetadata} from '@google-cloud/storage/build/cjs/src/file';
 import Transaction = firestore.Transaction;
 
 
@@ -91,11 +76,12 @@ export const DefaultMimetypeValidator = async (file: FileWrapper, doc: DB_Asset)
 };
 
 export type FileValidator = (file: FileWrapper, doc: DB_Asset) => Promise<FileTypeResult | undefined>;
-export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseType_Metadata, minSizeInBytes: number = 0, maxSizeInBytes: number = MB) => {
-	if (!metadata.size)
+export const fileSizeValidator = async (file: FileWrapper, metadata: FileMetadata, minSizeInBytes: number = 0, maxSizeInBytes: number = MB) => {
+	const fileSize = +(metadata.size ?? 0);
+	if (!fileSize)
 		throw new ThisShouldNotHappenException(`could not resolve metadata.size for file: ${file.path}`);
 
-	return metadata.size >= minSizeInBytes && metadata.size <= maxSizeInBytes;
+	return fileSize >= minSizeInBytes && fileSize <= maxSizeInBytes;
 };
 
 export class ModuleBE_AssetsDB_Class
@@ -105,11 +91,11 @@ export class ModuleBE_AssetsDB_Class
 	constructor() {
 		super(DBDef_Assets);
 		this.setDefaultConfig({
-			...this.config,
-			storagePath: 'assets',
-			pathRegexp: '^assets/.*',
-			authKey: 'file-uploader'
-		});
+			                      ...this.config,
+			                      storagePath: 'assets',
+			                      pathRegexp: '^assets/.*',
+			                      authKey: 'file-uploader'
+		                      });
 	}
 
 	mimeTypeValidator: TypedMap<FileValidator> = {};
@@ -124,8 +110,8 @@ export class ModuleBE_AssetsDB_Class
 	init() {
 		super.init();
 		addRoutes([
-			createBodyServerApi(ApiDef_AssetUploader.vv1.getUploadUrl, this.getUrl)
-		]);
+			          createBodyServerApi(ApiDef_AssetUploader.vv1.getUploadUrl, this.getUrl)
+		          ]);
 
 		this.registerVersionUpgradeProcessor('1.0.1', async (assets) => {
 			assets.forEach(asset => {
@@ -288,7 +274,7 @@ export class ModuleBE_AssetsDB_Class
 
 		const file = await ModuleBE_AssetsStorage.getFile(dbTempAsset);
 		try {
-			const metadata = (await file.getDefaultMetadata()).metadata;
+			const metadata = (await file.getMetadata());
 			if (!metadata)
 				return this.notifyFrontend(FileStatus.ErrorRetrievingMetadata, dbTempAsset);
 

@@ -26,7 +26,11 @@ import {
 	ModuleFE_PermissionProject
 } from '../../_entity';
 import {Component_BasePermissionItemEditor} from './editor-base';
-import {DropDownCaret, Input_Number_Blur, Input_Text_Blur} from './components';
+import {
+	DropDownCaret,
+	Input_Number_Blur,
+	Input_Text_Blur
+} from './components';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
 import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
@@ -68,7 +72,7 @@ class Component_EditDomain
 
 		editable.set(prop, value);
 		editable.validate();
-		if (editable.hasErrors())
+		if (editable.hasValidationError())
 			return;
 
 		await editable.save();
@@ -201,9 +205,9 @@ export class PermissionDomainsEditor
 	static defaultProps: Partial<InferProps<PermissionDomainsEditor>> = {
 		keys: ['selected'],
 		module: ModuleFE_PermissionDomain,
-		mapper: domain => [`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'],
-		sort: domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found',
-		itemRenderer: domain => <>{`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}` ?? 'Not Found'}</>,
+		mapper: domain => [`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`],
+		sort: (items) => sortArray(items, domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`),
+		itemRenderer: domain => <>{`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`}</>,
 		EditorRenderer: Controller_DomainsEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionDomain>>>,
 		route: this.Route,
 		contextMenuActions: [

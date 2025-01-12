@@ -1,7 +1,10 @@
 import * as React from 'react';
 import {DB_PermissionAPI, DBProto_PermissionAPI, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionAPI, ModuleFE_PermissionDomain} from '../../../_entity';
 import {Component_BasePermissionItemEditor} from '../editor-base';
-import {UniqueId} from '@nu-art/ts-common';
+import {
+	sortArray,
+	UniqueId
+} from '@nu-art/ts-common';
 import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
 import {MultiSelect} from '../../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
@@ -76,7 +79,7 @@ export class PermissionAPIEditor
 		keys: ['selected'],
 		module: ModuleFE_PermissionAPI,
 		mapper: api => [api.path],
-		sort: api => api.path,
+		sort: (items) => sortArray(items, 'path'),
 		id: 'api-permission-editor',
 		itemRenderer: api => <>{api.path}</>,
 		EditorRenderer: (props) => <Controller_ApiEditor {...props}/>,

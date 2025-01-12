@@ -38,11 +38,15 @@ import {
 	sortArray,
 	tsValidateResult,
 	TypedMap,
-	ValidationException
+	ValidationException,
+	voidFunction
 } from '@nu-art/ts-common';
 import {composeDbObjectUniqueId} from '@nu-art/firebase';
 import {OnClearWebsiteData} from '../clearWebsiteDataDispatcher';
-import {DBApiFEConfig, getModuleFEConfigV3} from '../../core/db-api-gen/db-def';
+import {
+	DBApiFEConfig,
+	getModuleFEConfigV3
+} from '../../core/db-api-gen/db-def';
 import {
 	DataStatus,
 	EventType_Create,
@@ -57,12 +61,18 @@ import {
 } from '../../core/db-api-gen/consts';
 import {StorageKey} from '../ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
+import {
+	IndexDb_Query,
+	ReduceFunction
+} from '../../core/IndexedDB';
 import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store';
 import {DBConfigV3} from '../../core/IndexedDBV4/types';
 import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
-import {ModuleSyncType} from './types';
-import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
+import {CustomMemCreators, ModuleSyncType} from './types';
+import {
+	MultiApiEvent,
+	SingleApiEvent
+} from '../../core/db-api-gen/types';
 
 
 export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfig<Proto> = DBApiFEConfig<Proto>>
@@ -80,7 +90,7 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
 
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType) {
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType, customMemCreators?: CustomMemCreators<Proto>) {
 		super();
 		this.syncType = syncType;
 		this.defaultDispatcher = defaultDispatcher;
@@ -90,20 +100,28 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		//Set Statuses
 		this.dataStatus = DataStatus.NoData;
 		this.setDefaultConfig(config as Config);
-		this.cache = new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
-		this.IDB = new IDBCache<Proto>(this.config.dbConfig, this.config.key);
+		this.cache = customMemCreators?.memCache ? customMemCreators?.memCache(config, this) : new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
+		this.IDB = customMemCreators?.idbCache ? customMemCreators?.idbCache(this.config.dbConfig, this.config.key) : new IDBCache<Proto>(this.config.dbConfig, this.config.key);
 	}
 
 	protected init() {
-		this.IDB.onLastUpdateListener(async (after, before) => {
-			if (!exists(after) || after === before)
-				return;
-
-			await this.cache.load();
-			this.defaultDispatcher.dispatchAll('update', {} as Proto['dbType']);
-			this.OnDataStatusChanged();
-		});
+		this.attachOnLastSyncUpdatedListener();
 	}
+
+	public attachOnLastSyncUpdatedListener = () => {
+		this.IDB.onLastUpdateListener(this.onLastSyncUpdatedListener);
+	};
+	public detachOnLastSyncUpdatedListener = () => {
+		this.IDB.onLastUpdateListener(voidFunction);
+	};
+	private onLastSyncUpdatedListener = async (after?: number, before?: number) => {
+		if (!exists(after) || after === before)
+			return;
+
+		await this.cache.load();
+		this.defaultDispatcher.dispatchAll('update', {} as Proto['dbType']);
+		this.OnDataStatusChanged();
+	};
 
 	setDataStatus(status: DataStatus) {
 		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
@@ -160,6 +178,12 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		await this.IDB.syncIndexDb(items);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(items);
+
+		// update the collection last updated
+		const lastUpdated = items.reduce((toRet, current) => Math.max(toRet, current.__updated), 0);
+		if (!this.IDB.getLastSync() && lastUpdated !== 0 || lastUpdated)
+			this.IDB.setLastUpdated(lastUpdated);
+
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
@@ -200,6 +224,12 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		await this.IDB.syncIndexDb([item]);
 		// @ts-ignore
 		this.cache.onEntriesUpdated([item]);
+
+		// set last updated if needed
+		const lastUpdated = (item as DB_Object).__updated;
+		if (!this.IDB.getLastSync() && lastUpdated !== 0 || lastUpdated)
+			this.IDB.setLastUpdated(lastUpdated);
+
 		this.dispatchSingle(event, item);
 	}
 
@@ -215,13 +245,17 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		this.cache.onEntriesDeleted(toDelete);
 		this.dispatchMulti(EventType_Query, toUpdate);
 	};
+
+	protected setCacheFilter = (filter: (item: Readonly<Proto['dbType']>) => boolean) => {
+		this.cache.setCacheFilter(filter);
+	};
 }
 
-class IDBCache<Proto extends DBProto<any>>
+export class IDBCache<Proto extends DBProto<any>>
 	extends Logger {
 
 	readonly storeWrapper: IndexedDB_Store<Proto>;
-	protected readonly lastSync: StorageKey<number>;
+	protected lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
 
 	constructor(dbConfig: DBConfigV3<Proto>, dbKey: string) {
@@ -232,7 +266,6 @@ class IDBCache<Proto extends DBProto<any>>
 		this.lastVersion = new StorageKey<string>('last-version--' + dbKey);
 		const onOpenedCallback = () => {
 			const previousVersion = this.lastVersion.get();
-			this.lastVersion.set(currentVersion);
 
 			this.storeWrapper.exists().then(exists => {
 				if (!exists) {
@@ -241,16 +274,25 @@ class IDBCache<Proto extends DBProto<any>>
 				}
 			});
 
-			if (!previousVersion || previousVersion === currentVersion)
+			if (!previousVersion || previousVersion === currentVersion) {
+				this.lastVersion.set(currentVersion);
 				return;
+			}
 
 			this.lastSync.delete();
 			this.logInfo(`Cleaning up & Sync...`);
 			this.clear()
-				.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
-				.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
+			    .then(() => {
+				    this.lastVersion.set(currentVersion);
+				    this.logInfo(`Cleaning up & Sync: Completed`);
+			    })
+			    .catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 		};
 		this.storeWrapper = ModuleFE_IDBManager.register(dbConfig, onOpenedCallback);
+	}
+
+	protected setLastSyncTimestampStorageKey(newLastSyncStorageKey: StorageKey<number>) {
+		this.lastSync = newLastSyncStorageKey;
 	}
 
 	onLastUpdateListener(onChangeListener: (after?: number, before?: number) => Promise<void>) {
@@ -274,9 +316,9 @@ class IDBCache<Proto extends DBProto<any>>
 	};
 
 	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<Proto['dbType'][]> => (await this.storeWrapper.query({
-		query,
-		indexKey
-	})) || [];
+		                                                                                                                                               query,
+		                                                                                                                                               indexKey
+	                                                                                                                                               })) || [];
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns all the items that pass the filter
@@ -339,24 +381,32 @@ class IDBCache<Proto extends DBProto<any>>
 		await this.storeWrapper.upsertAll(toUpdate);
 		await this.storeWrapper.deleteAll(toDelete as Proto['dbType'][]);
 	}
+
+	async count(): Promise<number> {
+		return await this.storeWrapper.count();
+	}
 }
 
-class MemCache<Proto extends DBProto<any>> {
+export class MemCache<Proto extends DBProto<any>> {
 
-	private readonly module: ModuleFE_BaseDB<Proto>;
+	protected readonly module: ModuleFE_BaseDB<Proto>;
 	private readonly keys: (keyof Proto['dbType'])[];
 	loaded: boolean = false;
 
 	_map!: Readonly<TypedMap<Readonly<Proto['dbType']>>>;
 	_array!: Readonly<Readonly<Proto['dbType']>[]>;
 
-	private cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean;
+	protected cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean;
 
 	constructor(module: ModuleFE_BaseDB<Proto, any>, keys: (keyof Proto['dbType'])[]) {
 		this.module = module;
 		this.keys = keys;
-		this.clear();
+		this.clear(); // initiate an empty array
 	}
+
+	setCacheFilter = (filter: (item: Readonly<Proto['dbType']>) => boolean) => {
+		this.cacheFilter = filter;
+	};
 
 	forEach = (processor: (item: Readonly<Proto['dbType']>) => void) => {
 		this._array.forEach(processor);
@@ -366,8 +416,9 @@ class MemCache<Proto extends DBProto<any>> {
 		this.setCache([]);
 	};
 
-	load = async (cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean) => {
-		this.module.logDebug(`${this.module.getName()} cache is loading`);
+	async load(cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean) {
+		const moduleName = this.module.getName();
+		this.module.logDebug(`${moduleName} cache is loading`);
 		let allItems;
 		this.cacheFilter = cacheFilter;
 		if (this.cacheFilter)
@@ -380,7 +431,15 @@ class MemCache<Proto extends DBProto<any>> {
 		this.setCache(frozenItems);
 
 		this.loaded = true;
-		this.module.logDebug(`${this.module.getName()} cache finished loading, count: ${this.all().length}`);
+		this.module.logDebug(`${moduleName} cache finished loading, count: ${this.all().length}`);
+	}
+
+	uniqueAssert = (_key?: Proto['uniqueParam']): Readonly<Proto['dbType']> => {
+		const item = this.unique(_key);
+		if (!item)
+			throw new BadImplementationException(`Missing expected item for keys: ${JSON.stringify(_key)}`);
+
+		return item;
 	};
 
 	unique = (_key?: Proto['uniqueParam']): Readonly<Proto['dbType']> | undefined => {
@@ -442,7 +501,7 @@ class MemCache<Proto extends DBProto<any>> {
 		this.setCache(toCache);
 	}
 
-	private setCache(cacheArray: Readonly<Proto['dbType']>[]) {
+	protected setCache(cacheArray: Readonly<Proto['dbType']>[]) {
 		this._map = Object.freeze({...arrayToMap(cacheArray as Readonly<DB_Object>[], dbObjectToId)});
 		this._array = Object.freeze(cacheArray);
 	}

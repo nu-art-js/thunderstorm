@@ -113,6 +113,7 @@ export type Props_DropDown<ItemType> =
 export type MandatoryProps_TS_DropDown<ItemType> = Dropdown_Props<ItemType>
 
 type BasePartialProps_DropDown<T> = {
+	className?: string;
 	inputValue?: string;
 	placeholder?: string;
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
@@ -398,13 +399,13 @@ export class TS_DropDown<ItemType>
 		);
 		return (
 			<div className={className}
-				 id={this.props.id}
-				 ref={this.state.dropDownRef}
-				 tabIndex={this.props.tabIndex}
-				 onFocus={this.addKeyboardListener}
-				 onBlur={this.removeKeyboardListener}
-				 {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
-				 {...convertToHTMLDataAttributes(this.state.error, 'error')}
+					 id={this.props.id}
+					 ref={this.state.dropDownRef}
+					 tabIndex={this.props.tabIndex}
+					 onFocus={this.addKeyboardListener}
+					 onBlur={this.removeKeyboardListener}
+					 {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
+					 {...convertToHTMLDataAttributes(this.state.error, 'error')}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
@@ -415,9 +416,13 @@ export class TS_DropDown<ItemType>
 	}
 
 	private renderHeader = () => {
+		const className = _className(
+			'ts-dropdown__header',
+			this.props.disabled ? 'disabled' : undefined)
+
 		return (
 			<div
-				className="ts-dropdown__header"
+				className={className}
 				onClick={(e) => {
 					stopPropagation(e);
 					if (this.props.disabled) {
@@ -485,7 +490,7 @@ export class TS_DropDown<ItemType>
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'}
-                                            onClick={(e) => this.onSelected(undefined, e)}>{this.props.unselectLabel ? this.props.unselectLabel : 'Unselect'}</div>}
+																			onClick={(e) => this.onSelected(undefined, e)}>{this.props.unselectLabel ? this.props.unselectLabel : 'Unselect'}</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
