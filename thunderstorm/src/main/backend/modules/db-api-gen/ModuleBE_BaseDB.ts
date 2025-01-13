@@ -123,7 +123,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 				return;
 
 			conflictPromises.push(batchActionParallel(itemIdsToDelete,
-				10, async ids => {
+			                                          10, async ids => {
 					let where = undefined;
 					if (dependencies[key].fieldType === 'string')
 						where = {[key]: {$in: ids}};
@@ -326,9 +326,9 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		const dependencies = await this.collectDependencies(dbItems, transaction);
 		if (dependencies)
 			throw new ApiException<EntityDependencyError>(422, 'entity has dependencies').setErrorBody({
-				type: 'has-dependencies',
-				data: dependencies
-			});
+				                                                                                           type: 'has-dependencies',
+				                                                                                           data: dependencies
+			                                                                                           });
 	}
 
 	async collectDependencies(dbInstances: Proto['dbType'][], transaction?: Transaction): Promise<DB_EntityDependencyV2[] | undefined> {
