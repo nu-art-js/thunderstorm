@@ -353,7 +353,7 @@ function mergeHeaders(headers?: TypedMap<string>, _headers?: TypedMap<string>) {
 	if (!headers && !_headers)
 		return;
 
-	return {...headers || {}, ..._headers || {}};
+	return {...headers ?? {}, ..._headers ?? {}};
 }
 
 export class ApiResponse {
@@ -372,7 +372,7 @@ export class ApiResponse {
 	}
 
 	addHeader(key: string, value: string) {
-		(this.headers || (this.headers = {}))[key] = `${this.headers[key]};${value}`;
+		(this.headers || (this.headers = {}))[key] = `${this.headers[key] ? `${this.headers[key]};` : ''}${value}`;
 	}
 
 	public isConsumed(): boolean {
