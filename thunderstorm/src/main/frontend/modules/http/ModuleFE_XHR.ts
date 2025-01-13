@@ -57,7 +57,7 @@ export class ModuleFE_XHR_Class
 			request.setUrl(apiDef.fullUrl);
 		else
 			request
-				.setOrigin(this.origin)
+				.setOrigin(apiDef.baseUrl ?? this.origin)
 				.setRelativeUrl(apiDef.path);
 
 		return request;
