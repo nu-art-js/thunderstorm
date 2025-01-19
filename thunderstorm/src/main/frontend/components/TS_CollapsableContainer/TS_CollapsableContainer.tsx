@@ -21,6 +21,7 @@ type Props = {
 	flipHeaderOrder?: boolean
 	onMouseEnter?: (e: React.MouseEvent) => void;
 	onMouseLeave?: (e: React.MouseEvent) => void;
+	initialCollapsed?: boolean;
 	onMouseOver?: (e: React.MouseEvent) => void;
 	onHeaderRightClick?: (e: React.MouseEvent) => void;
 	innerRef?: React.RefObject<HTMLDivElement>;
@@ -39,7 +40,7 @@ export class TS_CollapsableContainer
 
 	protected deriveStateFromProps(nextProps: Props): State {
 		const state: State = this.state ? {...this.state} : {} as State;
-		state.collapsed = nextProps.collapsed ?? this.state?.collapsed ?? true;
+		state.collapsed = nextProps.collapsed ?? this.state?.collapsed ?? (nextProps.initialCollapsed ?? true);
 		state.contentRef ??= React.createRef();
 		state.containerRef ??= React.createRef();
 		return state;
@@ -121,7 +122,8 @@ export class TS_CollapsableContainer
 	renderContainer() {
 		const className = _className('ts-collapsable-container__container', this.isCollapsed() ? 'collapsed' : undefined);
 		return <div className={className} ref={this.state.containerRef}>
-			<div ref={this.state.contentRef} className={'ts-collapsable-container__container-wrapper'} style={{width: '100%'}}>
+			<div ref={this.state.contentRef} className={'ts-collapsable-container__container-wrapper'}
+				 style={{width: '100%'}}>
 				{(typeof this.props.containerRenderer === 'function' ? this.props.containerRenderer() : this.props.containerRenderer)}
 			</div>
 		</div>;
