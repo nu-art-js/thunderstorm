@@ -127,7 +127,7 @@ export abstract class Module<Config = any,
 		// ignorance is bliss
 	}
 
-	protected validate(): void {
+	protected validateConfig(): void {
 		// ignorance is bliss
 	}
 }

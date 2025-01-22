@@ -551,7 +551,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 */
 	validate() {
 		try {
-			this.module.validateImpl(this.item);
+			this.module.validateItem(this.item);
 			this.setValidationResults(undefined);
 			return this.item as Proto['preDbType'];
 		} catch (e: any) {

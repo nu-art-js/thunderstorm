@@ -186,7 +186,11 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		return this.onEntryUpdatedImpl(EventType_Patch, item, updateIDBLastSynced);
 	};
 
-	public validateImpl(_instance: Partial<Proto['uiType']>) {
+	public validateItem(_instance: Partial<Proto['uiType']>) {
+		this.validateItemImpl(_instance, this.validator);
+	}
+
+	public validateItemImpl(_instance: Partial<Proto['uiType']>, validator: Proto['modifiablePropsValidator']) {
 		let _generatedProps = this.dbDef.generatedProps;
 		if (!_generatedProps) {
 			if (typeof this.dbDef.generatedPropsValidator !== 'object')
@@ -196,14 +200,14 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		}
 
 		const instance = deleteKeysObject(_instance as Proto['dbType'], [...KeysOfDB_Object, ..._generatedProps]);
-		const results = tsValidateResult(instance, this.validator);
+		const results = tsValidateResult(instance, validator);
 		if (results) {
 			this.onValidationError(instance, results as InvalidResult<Proto['uiType']>);
 		}
 	}
 
 	protected validateInternal(_instance: Partial<Proto['uiType']>) {
-		this.validateImpl(_instance);
+		this.validateItem(_instance);
 	}
 
 	protected onValidationError(instance: Proto['uiType'], results: InvalidResult<Proto['dbType']>) {
@@ -272,8 +276,8 @@ export class IDBCache<Proto extends DBProto<any>>
 			this.lastSync.delete();
 			this.logInfo(`Cleaning up & Sync...`);
 			this.clear()
-				.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
-				.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
+			    .then(() => this.logInfo(`Cleaning up & Sync: Completed`))
+			    .catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 		};
 		this.storeWrapper = ModuleFE_IDBManager.register(dbConfig, onOpenedCallback);
 	}
@@ -303,9 +307,9 @@ export class IDBCache<Proto extends DBProto<any>>
 	};
 
 	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<Proto['dbType'][]> => (await this.storeWrapper.query({
-		query,
-		indexKey
-	})) || [];
+		                                                                                                                                               query,
+		                                                                                                                                               indexKey
+	                                                                                                                                               })) || [];
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns all the items that pass the filter

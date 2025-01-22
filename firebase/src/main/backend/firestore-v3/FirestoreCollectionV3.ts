@@ -540,7 +540,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		return index !== 0;
 	};
 
-	validateItem(dbItem: Proto['dbType']) {
+	async validateItem(dbItem: Proto['dbType']) {
 		const results = tsValidateResult(dbItem, this.validator as ValidatorTypeResolver<Proto['dbType']>);
 		if (results) {
 			this.onValidationError(dbItem, results as InvalidResult<Proto['dbType']>);

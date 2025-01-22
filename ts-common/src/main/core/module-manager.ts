@@ -139,7 +139,7 @@ export class ModuleManager
 		});
 
 		// @ts-ignore
-		this.modules.forEach(module => module.validate());
+		this.modules.forEach(module => module.validateConfig());
 
 		this.logInfo(`---------  INITIALIZED  ---------`);
 		return this;

@@ -95,7 +95,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 
 		updatedDBItem._v = this.collection.getVersion();
 		await this.collection.hooks?.preWriteProcessing?.(updatedDBItem, dbItem, transaction);
-		this.collection.validateItem(updatedDBItem);
+		await this.collection.validateItem(updatedDBItem);
 		return updatedDBItem;
 	};
 
