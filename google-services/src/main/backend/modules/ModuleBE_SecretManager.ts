@@ -1,8 +1,11 @@
 import {__stringify, BadImplementationException, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {SecretManagerServiceClient, v1} from '@google-cloud/secret-manager';
 import {google} from '@google-cloud/secret-manager/build/protos/protos';
+import {AuthObject, ModuleBE_Auth} from './ModuleBE_Auth';
 
-type Config = {}
+type Config = {
+	authKey: string
+}
 
 type SecretUpsertProps = {
 	//Path to secret, i.e. "projects/{parent}"
@@ -15,16 +18,26 @@ type SecretUpsertProps = {
 
 export class ModuleBE_SecretManager_Class
 	extends Module<Config> {
-	private secretManagerClient: v1.SecretManagerServiceClient;
 
 	constructor() {
 		super();
-		this.secretManagerClient = new SecretManagerServiceClient();
 	}
 
-	public async getSecret(secretName: string) {
+	protected init() {
+		this.secretManager();
+	}
+
+	private secretManager(authKey = this.config.authKey) {
+		let auth: AuthObject | undefined;
+		if (authKey)
+			auth = ModuleBE_Auth.getAuth(authKey, []);
+
+		return new SecretManagerServiceClient(auth);
+	}
+
+	public async getSecret(secretName: string, authKey = this.config.authKey) {
 		try {
-			const [version] = await this.secretManagerClient.accessSecretVersion({
+			const [version] = await this.secretManager(authKey).accessSecretVersion({
 				name: secretName
 			});
 
@@ -39,21 +52,22 @@ export class ModuleBE_SecretManager_Class
 		}
 	}
 
-	public async upsertSecret(props: SecretUpsertProps): Promise<string> {
-		const secret = await this.getOrCreateSecret(props.parent, props.name);
+	public async upsertSecret(props: SecretUpsertProps, authKey = this.config.authKey): Promise<string> {
+		const secretManager = this.secretManager(authKey);
+		const secret = await this.getOrCreateSecret(secretManager, props.parent, props.name);
 		if (!secret.name)
 			throw new BadImplementationException(`Got string with no name on it for ${__stringify(props)}`);
 
-		await this.updateSecret(secret, props.data);
+		await this.updateSecret(secretManager, secret, props.data);
 		return secret.name;
 	}
 
 	//######################### Inner Logic #########################
 
-	private getOrCreateSecret = async (parent: string, name: string): Promise<google.cloud.secretmanager.v1.ISecret> => {
+	private getOrCreateSecret = async (secretManager: v1.SecretManagerServiceClient, parent: string, name: string): Promise<google.cloud.secretmanager.v1.ISecret> => {
 		try {
 			const pathToSecret = `projects/${parent}/secrets/${name}`;
-			const [secret] = await this.secretManagerClient.getSecret({name: pathToSecret});
+			const [secret] = await secretManager.getSecret({name: pathToSecret});
 			//Secret exists, return it
 			this.logVerbose(`Secret exists: ${secret.name}`);
 			return secret;
@@ -63,7 +77,7 @@ export class ModuleBE_SecretManager_Class
 				throw err;
 			}
 			//Secret did not exist, create and return it
-			const [secret] = await this.secretManagerClient.createSecret({
+			const [secret] = await secretManager.createSecret({
 				parent: `projects/${parent}`,
 				secretId: name,
 				secret: {
@@ -78,9 +92,9 @@ export class ModuleBE_SecretManager_Class
 		}
 	};
 
-	private updateSecret = async (secret: google.cloud.secretmanager.v1.ISecret, data: string): Promise<void> => {
+	private updateSecret = async (secretManager: v1.SecretManagerServiceClient, secret: google.cloud.secretmanager.v1.ISecret, data: string): Promise<void> => {
 		try {
-			const [version] = await this.secretManagerClient.addSecretVersion({
+			const [version] = await secretManager.addSecretVersion({
 				parent: secret.name,
 				payload: {
 					data: Buffer.from(data, 'utf-8')

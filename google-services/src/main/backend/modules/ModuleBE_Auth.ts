@@ -17,6 +17,10 @@ type AuthModuleConfig = {
 type Version = 'v1' | 'v2' | 'v3' | 'v4'
 export type JWT_Input = JWTInput
 
+export type AuthObject<T extends Version = 'v2'> = {
+	auth: GoogleAuth; version: T
+};
+
 export class ModuleBE_Auth_Class
 	extends Module<AuthModuleConfig> {
 	constructor() {
@@ -24,7 +28,7 @@ export class ModuleBE_Auth_Class
 		this.setDefaultConfig({auth: {}});
 	}
 
-	getAuth<T extends Version = 'v2'>(authKey: string, scopes: string[], version: T = 'v2' as T, clientOptions?: JWTOptions | OAuth2ClientOptions | UserRefreshClientOptions) {
+	getAuth<T extends Version = 'v2'>(authKey: string, scopes: string[], version: T = 'v2' as T, clientOptions?: JWTOptions | OAuth2ClientOptions | UserRefreshClientOptions): AuthObject<T> {
 		const authConfig = this.getAuthConfig(authKey);
 
 		let opts;
