@@ -174,12 +174,10 @@ export class FileWrapper {
 		};
 
 		if (this.isEmulator) {
-			const signedUrl = `${(FileWrapper.emulatorStorageProxy)}/emulatorDownload?path=${encodeURIComponent(this.path)}`;
-
 			return {
 				fileName: this.path,
-				signedUrl: signedUrl,
-				publicUrl: signedUrl
+				signedUrl: this.file.publicUrl(), // this works for read operations locally
+				publicUrl: this.file.publicUrl()
 			};
 		}
 
