@@ -46,6 +46,8 @@ type ValidationErrors<T> = {
 
 export type Editable_SaveAction<T> = (item: T) => Promise<T>;
 
+export type Editable_PreSaveAction<T> = (item: T) => void;
+
 export type Editable_DeleteAction<T> = (item: T) => Promise<void>;
 
 export type Editable_OnChange<T> = (editable: EditableItem<T>) => Promise<void>;
@@ -89,8 +91,8 @@ export class EditableItem<T>
 		this.saveAction = async (item) => {
 			// update ui and make sure it called the on change
 			this._isSaving = true;
+			this.preSaveAction?.(item);
 			this.callOnChange();
-
 			try {
 				const response = await saveAction(item);
 
@@ -103,7 +105,8 @@ export class EditableItem<T>
 				return response;
 			} catch (err: any) {
 				this._isSaving = false;
-				throw err;
+				this.handleValidationError(err as Error);
+				return item;
 			}
 		};
 		this.deleteAction = deleteAction;
@@ -112,6 +115,7 @@ export class EditableItem<T>
 
 	protected onSaveCompleted?: (item: T) => any;
 	protected onChanged?: Editable_OnChange<T>;
+	protected preSaveAction?: Editable_PreSaveAction<T>;
 	protected saveAction: Editable_SaveAction<T>;
 	protected deleteAction: Editable_DeleteAction<T>;
 
@@ -120,8 +124,17 @@ export class EditableItem<T>
 		return this;
 	}
 
+	protected handleValidationError(err: Error) {
+		throw err;
+	}
+
 	setSaveAction(saveAction: Editable_SaveAction<T>) {
 		this.saveAction = saveAction;
+		return this;
+	}
+
+	setPreSaveAction(preSaveAction: Editable_PreSaveAction<T>) {
+		this.preSaveAction = preSaveAction;
 		return this;
 	}
 
@@ -570,7 +583,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		this.validate();
 	}
 
-	private handleValidationError(e: Error) {
+	protected handleValidationError(e: Error) {
 		const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
 		if (!validationException)
 			throw e;
@@ -585,6 +598,5 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		// while getting new errors (for now) we need to call on change in order to replace the editable item instance.. (this will change)
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
 		this.onChanged?.(this);
-
 	}
 }
