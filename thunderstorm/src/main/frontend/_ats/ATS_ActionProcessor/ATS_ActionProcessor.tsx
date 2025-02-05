@@ -8,8 +8,7 @@ import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppT
 import {ModuleFE_ActionProcessor} from '../../modules/action-processor/ModuleFE_ActionProcessor';
 import {genericNotificationAction} from '../../components/TS_Notifications';
 import {LL_H_C, LL_V_L} from '../../components/Layouts';
-import {TS_BusyButton} from '../../components/TS_BusyButton';
-
+import {Button} from '../../components/Button/Button';
 
 type State = {
 	actions: ActionMetaData[];
@@ -47,13 +46,13 @@ export class ATS_ActionProcessor
 	private renderButtons(actionGroup: ActionMetaData[]) {
 		return <LL_H_C className={'action-group__buttons'}>
 			{actionGroup.map(action => {
-				return <TS_BusyButton
+				return <Button
 					key={action.key}
 					onClick={() => this.onButtonClick(action)}
 					disabled={this.state.actionsInProgress.includes(action.key)}
 				>
 					{action.key.replace(/-/g, ' ')}
-				</TS_BusyButton>;
+				</Button>;
 			})}
 		</LL_H_C>;
 	}
