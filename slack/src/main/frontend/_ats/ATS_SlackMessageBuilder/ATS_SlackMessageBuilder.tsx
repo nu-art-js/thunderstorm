@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {AppToolsScreen, ComponentSync, Button} from '@nu-art/thunderstorm/frontend';
 import {SlackBuilderFE} from '../../SlackBuilderFE';
-import {ServerErrorSeverity} from '@nu-art/ts-common';
+import {generateHex, ServerErrorSeverity} from '@nu-art/ts-common';
 
 export class ATS_SlackMessageBuilder
 	extends ComponentSync {
@@ -19,6 +19,7 @@ export class ATS_SlackMessageBuilder
 		const feMessageBuilder = new SlackBuilderFE(this.testChannel);
 		return feMessageBuilder
 			.addBlocks(SlackBuilderFE.TextSectionWithTitle('*Test title*', 'this message sent from FE!'))
+			.addBlocks(SlackBuilderFE.TextSectionWithTitle('*Ultra long message*', generateHex(5000)))
 			.addBlocks(SlackBuilderFE.Divider())
 			.addBlocks(SlackBuilderFE.TextSection(`${SlackBuilderFE.SeverityEmoji(ServerErrorSeverity.Debug)} more text`))
 			.send();

@@ -18,10 +18,7 @@
 
 import {LogClient} from './LogClient';
 import {removeItemFromArray} from '../../utils/array-tools';
-import {
-	LogLevel,
-	LogParam
-} from './types';
+import {LogLevel, LogParam} from './types';
 
 
 class BeLogged_Class {
@@ -53,7 +50,7 @@ class BeLogged_Class {
 
 	private logImpl(tag: string, level: LogLevel, bold: boolean, toLog: LogParam[]): void {
 		for (const client of this.clients) {
-			client.log(tag, level, bold, toLog);
+			client.log(tag, level, bold, [...toLog]);
 		}
 	}
 

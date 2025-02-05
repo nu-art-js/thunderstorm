@@ -27,6 +27,7 @@ import {ThunderDispatcher} from '../core/thunder-dispatcher';
 export type Dialog_Model = DialogKey & {
 	content: React.ReactNode,
 	closeOverlayOnClick?: () => boolean,
+	overlayClass?: string;
 }
 
 export type DialogKey = { dialogKey?: string };
@@ -70,6 +71,7 @@ export class ModuleFE_Dialog_Class
 			content: model.content,
 			closeOverlayOnClick: model.closeOverlayOnClick ?? defaultCloseCallback,
 			dialogKey: model.dialogKey ?? generateHex(8),
+			overlayClass: model.overlayClass,
 		});
 	};
 }
