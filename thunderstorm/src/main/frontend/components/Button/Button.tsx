@@ -14,6 +14,7 @@ type Props = ButtonProps & {
 	variant?: ButtonVariant;
 	innerRef?: React.RefObject<HTMLButtonElement>;
 	actionInProgress?: boolean;
+	onDisabledClick?: (e: React.MouseEvent<HTMLButtonElement>) => any;
 };
 
 type State = {
@@ -62,7 +63,7 @@ export class Button
 	private getProps = () => {
 		//Clean out non-html properties from the props
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const {loader, variant, innerRef, ...rest} = this.props;
+		const {loader, variant, innerRef, onDisabledClick, ...rest} = this.props;
 		const props = rest as any;
 
 		//Align props from other sources
@@ -84,8 +85,11 @@ export class Button
 
 	private handleAction = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		// skip action if needed
-		if (this.state.disabled || this.state.actionInProgress)
+		if (this.state.actionInProgress)
 			return;
+
+		if (this.state.disabled)
+			return this.props.onDisabledClick?.(e);
 
 		// call the action, the response can be both promise or sync void
 		const result = this.props.onClick?.(e) as Promise<void> | void;
