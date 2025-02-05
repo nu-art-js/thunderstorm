@@ -59,9 +59,10 @@ export class TS_DialogOverlay
 		if (!this.state.models.length)
 			return '';
 
+		const lastModel = this.state.models[this.state.models.length - 1];
 		return (
 			<div className="ts-dialog__overlay">
-				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
+				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked} className={lastModel.overlayClass}>
 					{this.state.models.map((model, i) => {
 						if (i === this.state.models.length - 1)
 							//This model content is wrapped in a div to keep the React hierarchy. if you remove it, the model stack won't work.

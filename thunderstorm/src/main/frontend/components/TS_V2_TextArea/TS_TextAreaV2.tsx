@@ -61,7 +61,7 @@ type BaseAppLevelProps_TS_TextAreaV2 =
 	name?: string
 	focus?: boolean
 	innerRef?: React.RefObject<HTMLTextAreaElement>;
-	onCancel?: () => void
+	onCancel?: () => void;
 }
 
 export type TemplatingProps_TS_TextAreaV2 = BaseInfraProps_TS_TextAreaV2
@@ -73,10 +73,10 @@ export type Props_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & {
 	onBlur?: (value: string, event: React.FocusEvent<HTMLTextAreaElement>) => void
 }
 
-export type NativeProps_TS_TextAreaV2 = Props_TS_TextAreaV2
+export type NativeProps_TS_TextAreaV2 = Props_TS_TextAreaV2 & { componentRef?: React.RefObject<TS_TextAreaV2>; }
 export type EditableItemProps_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2
 	& UIProps_EditableItem<any, any, string>
-	& { onChange?: (value: string) => void, }
+	& { onChange?: (value: string) => void, componentRef?: React.RefObject<TS_TextAreaV2>; }
 
 /**
  * A better way to capture user input
@@ -90,12 +90,15 @@ export class TS_TextAreaV2
 	extends React.Component<Props_TS_TextAreaV2, InputState> {
 
 	static readonly editableString = (mandatoryProps: TemplatingProps_TS_TextAreaV2) => {
-		return (props: NativeProps_TS_TextAreaV2) => <TS_TextAreaV2 {...mandatoryProps} {...props}/>;
+		return (props: NativeProps_TS_TextAreaV2) => {
+			const {componentRef, ...rest} = props;
+			return <TS_TextAreaV2 {...mandatoryProps} ref={componentRef} {...rest}/>;
+		};
 	};
 
 	static readonly editable = (templateProps: TemplatingProps_TS_TextAreaV2) => {
 		return (props: EditableItemProps_TS_TextAreaV2) => {
-			const {editable, prop, saveEvent, ...rest} = props;
+			const {editable, prop, saveEvent, componentRef, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
@@ -118,6 +121,7 @@ export class TS_TextAreaV2
 				{...templateProps}
 				{...rest}
 				error={resolveEditableError(props)}
+				ref={componentRef}
 				onChange={onChange}
 				onBlur={onBlur}
 				onAccept={onAccept}

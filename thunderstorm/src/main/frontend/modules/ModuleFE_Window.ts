@@ -58,11 +58,11 @@ export class ModuleFE_Window_Class
 	};
 
 	private onWindowReceivedFocus = () => {
-		dispatch_WindowReceivedFocus.dispatchUI();
+		dispatch_WindowReceivedFocus.dispatchAll();
 	};
 
 	private onWindowLostFocus = () => {
-		dispatch_WindowLostFocus.dispatchUI();
+		dispatch_WindowLostFocus.dispatchAll();
 	};
 }
 

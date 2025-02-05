@@ -165,19 +165,25 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
-	public onEntriesUpdated = async (items: Proto['dbType'][]): Promise<void> => {
+	public onEntriesUpdated = async (items: Proto['dbType'][], updateIDBLastSynced: boolean = true): Promise<void> => {
 		await this.IDB.syncIndexDb(items);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(items);
+
+		// update the collection last updated
+		const lastUpdated = items.reduce((toRet, current) => Math.max(toRet, current.__updated), 0);
+		if ((!this.IDB.getLastSync() && lastUpdated !== 0 || lastUpdated) && updateIDBLastSynced)
+			this.IDB.setLastUpdated(lastUpdated);
+
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
-	public onEntryUpdated = async (item: Proto['dbType'], original: Proto['uiType']): Promise<void> => {
-		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
+	public onEntryUpdated = async (item: Proto['dbType'], original: Proto['uiType'], updateIDBLastSynced: boolean = true): Promise<void> => {
+		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item, updateIDBLastSynced);
 	};
 
-	protected onEntryPatched = async (item: Proto['dbType']): Promise<void> => {
-		return this.onEntryUpdatedImpl(EventType_Patch, item);
+	protected onEntryPatched = async (item: Proto['dbType'], updateIDBLastSynced: boolean = true): Promise<void> => {
+		return this.onEntryUpdatedImpl(EventType_Patch, item, updateIDBLastSynced);
 	};
 
 	public validateImpl(_instance: Partial<Proto['uiType']>) {
@@ -205,10 +211,16 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		throw new ValidationException('Error validating object', instance, results);
 	}
 
-	private async onEntryUpdatedImpl(event: SingleApiEvent, item: Proto['dbType']): Promise<void> {
+	private async onEntryUpdatedImpl(event: SingleApiEvent, item: Proto['dbType'], updateIDBLastSynced: boolean = true): Promise<void> {
 		await this.IDB.syncIndexDb([item]);
 		// @ts-ignore
 		this.cache.onEntriesUpdated([item]);
+
+		// set last updated if needed
+		const lastUpdated = (item as DB_Object).__updated;
+		if ((!this.IDB.getLastSync() && lastUpdated !== 0 || lastUpdated) && updateIDBLastSynced)
+			this.IDB.setLastUpdated(lastUpdated);
+
 		this.dispatchSingle(event, item);
 	}
 
