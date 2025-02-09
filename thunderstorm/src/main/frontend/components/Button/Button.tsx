@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
-import {ResolvableContent, exists, resolveContent} from '@nu-art/ts-common';
+import {ResolvableContent, exists, isPromise, resolveContent} from '@nu-art/ts-common';
 import './Button.scss';
 import {_className} from '../../utils/tools';
 import {LL_H_C} from '../Layouts';
@@ -74,15 +74,6 @@ export class Button
 		return props as React.HTMLProps<HTMLButtonElement>;
 	};
 
-	private resultIsPromise = (result: any): boolean => {
-		//Reliable for any result that is a native promise
-		if (result instanceof Promise)
-			return true;
-
-		//Reliable for "thenable" objects, any non-native promise copying results
-		return (typeof result === 'object' && typeof result.then === 'function');
-	};
-
 	private handleAction = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		// skip action if needed
 		if (this.state.actionInProgress)
@@ -95,7 +86,7 @@ export class Button
 		const result = this.props.onClick?.(e) as Promise<void> | void;
 
 		// if result is not a promise return
-		if (!this.resultIsPromise(result))
+		if (!isPromise(result))
 			return;
 
 		const controlledInProgress = exists(this.props.actionInProgress);
