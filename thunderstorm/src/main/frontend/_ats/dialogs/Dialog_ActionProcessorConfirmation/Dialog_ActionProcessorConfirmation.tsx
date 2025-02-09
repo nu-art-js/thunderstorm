@@ -6,8 +6,7 @@ import {TS_Icons} from '@nu-art/ts-styles';
 import './Dialog_ActionProcessorConfirmation.scss';
 import {ModuleFE_Dialog} from '../../../component-modules/ModuleFE_Dialog';
 import {LL_H_C, LL_V_L} from '../../../components/Layouts';
-import {TS_Button} from '../../../components/TS_Button';
-
+import { Button } from '../../../components/Button/Button';
 
 type Props = {
 	action: ActionMetaData
@@ -62,8 +61,8 @@ export class Dialog_ActionProcessorConfirmation
 
 	private renderButtons = () => {
 		return <LL_H_C className={'dialog__buttons'}>
-			<TS_Button onClick={this.closeDialog}>Cancel</TS_Button>
-			<TS_Button onClick={this.executeAction}>Execute</TS_Button>
+			<Button onClick={this.closeDialog}>Cancel</Button>
+			<Button onClick={this.executeAction}>Execute</Button>
 		</LL_H_C>;
 	};
 

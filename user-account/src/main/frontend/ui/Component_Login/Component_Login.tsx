@@ -17,17 +17,10 @@
  */
 
 import * as React from 'react';
-import {_keys, exists} from '@nu-art/ts-common';
+import {_keys, exists, formatTimestamp} from '@nu-art/ts-common';
 import {Account_Login, AccountEmail, AccountPassword, ErrorType_LoginBlocked} from '../../../shared';
 import './Component_Login.scss';
-import {
-	ComponentSync,
-	LL_H_C,
-	LL_V_C,
-	ModuleFE_Toaster,
-	TS_BusyButton,
-	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
+import {Button, ComponentSync, LL_H_C, LL_V_C, ModuleFE_Toaster, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity';
 import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 import {Component_LoginBlocked} from '../Component_LoginBlocked/Component_LoginBlocked';
@@ -65,9 +58,103 @@ const form: Form<AccountEmail & AccountPassword> = {
 export class Component_Login
 	extends ComponentSync<Props, State<Account_Login['request']>> {
 
+	//######################### Life Cycle #########################
+
 	protected deriveStateFromProps(nextProps: Props, state: State<Account_Login['request']>) {
 		state.data ??= {};
 		return state;
+	}
+
+	//######################### Logic #########################
+
+	private loginDataValid = () => {
+		const data: Partial<Account_Login['request']> = this.state.data;
+		const errors = _keys(form).map(key => {
+			const field = form[key];
+			return data[key] ? undefined : `  * missing ${field.label}`;
+		}).filter(error => !!error);
+
+		if (errors.length > 0) {
+			ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
+			return false;
+		}
+
+		return true;
+	};
+
+	private login = async () => {
+		//Fail fast if already submitted login
+		if (this.state.submitting)
+			return;
+
+		//Fail fast if login is blocked
+		if (exists(this.state.blockedUntil))
+			return;
+
+		//Fail fast if login data is not valid
+		if (!this.loginDataValid())
+			return;
+
+		this.setState({submitting: true, errorMessages: undefined}, async () => {
+			try {
+				await ModuleFE_Account._v1.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Account_Login['request'])
+					.executeSync();
+				this.setState({submitting: false});
+			} catch (err: any) {
+				if (err.errorResponse.error?.type === ErrorType_LoginBlocked) {
+					const blockedUntil = err.errorResponse.error.data.blockedUntil;
+					return this.setState({
+						blockedUntil: blockedUntil,
+						errorMessages: [`Login blocked until ${formatTimestamp('DD/MM/YYYY HH:mm', blockedUntil)}`],
+					});
+				}
+				this.setState({errorMessages: ['Email or password incorrect']});
+			}
+		});
+	};
+
+	private onValueChanged = (value: string, id: keyof Account_Login['request'], isAccept: boolean = false) => {
+		const data = {...this.state.data};
+		data[id] = value;
+		this.setState({data, errorMessages: undefined}, () => {
+			if (isAccept)
+				this.login();
+		});
+	};
+
+	//######################### Render #########################
+
+	render() {
+		const data = this.state.data;
+		return <LL_V_C className="ts-account__authenticate">
+			{_keys(form).map((key, i) => {
+					const field = form[key];
+					return <TS_PropRenderer.Vertical label={field.label} key={i}>
+						<TS_InputV2
+							id={key}
+							value={data[key]}
+							type={field.type}
+							allowAccept={true}
+							onChange={(value) => {
+								this.onValueChanged(value, key as keyof Account_Login['request']);
+							}}
+							onAccept={(value) => {
+								this.onValueChanged(value, key as keyof Account_Login['request'], true);
+							}}
+						/>
+					</TS_PropRenderer.Vertical>;
+				}
+			)}
+			<LL_H_C className={'ts-account__error-container'}>
+				{this.errorRenderer()}
+			</LL_H_C>
+			<Button
+				className={`clickable ts-account__action-button`}
+				actionInProgress={this.state.submitting}
+				disabled={exists(this.state.blockedUntil)}
+				onClick={this.login}
+			>Login</Button>
+		</LL_V_C>;
 	}
 
 	private renderErrorMessages = () => {
@@ -98,89 +185,5 @@ export class Component_Login
 			return this.renderAccountBlockedTimer();
 
 		return this.renderErrorMessages();
-	};
-
-	render() {
-		const data = this.state.data;
-		return <LL_V_C className="ts-account__authenticate">
-			{_keys(form).map((key, i) => {
-					const field = form[key];
-					return <TS_PropRenderer.Vertical label={field.label} key={i}>
-						<TS_InputV2
-							id={key}
-							value={data[key]}
-							type={field.type}
-							allowAccept={true}
-							onChange={(value) => {
-								this.onValueChanged(value, key as keyof Account_Login['request']);
-							}}
-							onAccept={(value) => {
-								this.onValueChanged(value, key as keyof Account_Login['request'], true);
-							}}
-						/>
-					</TS_PropRenderer.Vertical>;
-				}
-			)}
-			<LL_H_C className={'ts-account__error-container'}>
-				{this.errorRenderer()}
-			</LL_H_C>
-			<TS_BusyButton
-				disabled={exists(this.state.blockedUntil)}
-				onClick={this.loginClicked}
-				isBusy={this.state.submitting}
-				className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
-		</LL_V_C>;
-	}
-
-	private onValueChanged = (value: string, id: keyof Account_Login['request'], isAccept: boolean = false) => {
-		const data = {...this.state.data};
-		data[id] = value;
-		this.setState({data, errorMessages: undefined, blockedUntil: undefined}, () => {
-			if (!isAccept)
-				return;
-
-			if (!this.canSubmit())
-				return;
-
-			this.setState({submitting: true}, async () => {
-				await this.loginClicked();
-				this.setState({submitting: false});
-			});
-		});
-	};
-
-	private canSubmit = () => {
-		const data: Partial<Account_Login['request']> = this.state.data;
-		const errors = _keys(form).map(key => {
-			const field = form[key];
-			return data[key] ? undefined : `  * missing ${field.label}`;
-		}).filter(error => !!error);
-
-		if (errors.length > 0) {
-			ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
-			return false;
-		}
-
-		return true;
-	};
-
-	private loginClicked = async () => {
-		if (!this.canSubmit() || exists(this.state.blockedUntil))
-			return;
-
-		try {
-			await ModuleFE_Account._v1.login({
-				...this.state.data,
-				deviceId: StorageKey_DeviceId.get()
-			} as Account_Login['request']).executeSync();
-		} catch (err: any) {
-			if (err.errorResponse.error?.type === ErrorType_LoginBlocked)
-				return this.setState({
-					blockedUntil: err.errorResponse.error.data.blockedUntil,
-					errorMessages: undefined
-				});
-
-			this.setState({errorMessages: ['Email or password incorrect']});
-		}
 	};
 }

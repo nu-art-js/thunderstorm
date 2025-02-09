@@ -31,7 +31,6 @@ export class TS_SimpleDialog
 			right: [{
 				content: 'Delete',
 				associatedKeys: ['enter'],
-				renderer: TS_Dialog.busyButton,
 				onClick: async () => {
 					await this.props.action();
 					this.closeDialog();

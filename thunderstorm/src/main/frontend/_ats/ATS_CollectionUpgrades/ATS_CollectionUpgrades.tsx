@@ -4,11 +4,11 @@ import './ATS_CollectionUpgrades.scss';
 import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools';
 import {genericNotificationAction} from '../../components/TS_Notifications';
 import {LL_H_C} from '../../components/Layouts';
-import {TS_BusyButton} from '../../components/TS_BusyButton';
 import {ModuleFE_UpgradeCollection} from '../../modules/upgrade-collection/ModuleFE_UpgradeCollection';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {ComponentSync} from '../../core/ComponentSync';
+import {Button} from '../../components/Button/Button';
 
 
 type State = {
@@ -54,18 +54,15 @@ export class ATS_CollectionUpgrades
 
 	render() {
 		return <div className={'collection-upgrades-page'}>
-			<TS_BusyButton
-				key={'upgrade-all-test'}
-				onClick={() => this.upgradeAll()}
-			>Upgrade All</TS_BusyButton>
+			<Button key={'upgrade-all-test'} onClick={() => this.upgradeAll()}>Upgrade All</Button>
 			{TS_AppTools.renderPageHeader('Collection Upgrades - To force upgrade click + ⌘/ctrl')}
 			<LL_H_C className={'buttons-container'}>
 				{(this.state.upgradableModules || []).map(module => {
 					const name = module.getCollectionName().replace(/-/g, ' ');
-					return <TS_BusyButton
+					return <Button
 						key={name + module.cache.all().length}
 						onClick={(e) => this.upgradeCollection(name, module, e)}
-					>{name} ({module.cache.all().length})</TS_BusyButton>;
+					>{name} ({module.cache.all().length})</Button>;
 				})}
 			</LL_H_C>
 		</div>;
