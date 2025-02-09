@@ -54,7 +54,7 @@ export class Button
 
 	private getClassName = () => {
 		return _className(
-			'ts-button-v3',
+			'ts-button',
 			this.props.className,
 			this.state.actionInProgress && 'action-in-progress',
 		);
@@ -137,7 +137,7 @@ export class Button
 	}
 
 	private renderContent = () => {
-		return <LL_H_C className={'ts-button-v3__content'}>
+		return <LL_H_C className={'ts-button__content'}>
 			{this.props.children}
 		</LL_H_C>;
 	};
@@ -146,6 +146,6 @@ export class Button
 		if (this.props.loader)
 			return resolveContent(this.props.loader);
 
-		return <div className={'ts-button-v3__loader'}/>;
+		return <div className={'ts-button__loader'}/>;
 	};
 }
