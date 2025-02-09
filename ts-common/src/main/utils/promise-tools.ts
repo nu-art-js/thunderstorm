@@ -16,5 +16,5 @@ export const promiseWrapper = <T>(callback: PromiseCallbackFunction<T>) => {
  * @param obj The function call to validate
  */
 export const isPromise = <T = any>(obj: any): obj is Promise<T> => {
-	return !!obj && typeof obj.then === 'function' && typeof obj.catch === 'function';
+	return obj instanceof Promise || (!!obj && (typeof obj.then === 'function' && typeof obj.catch === 'function'));
 };

@@ -42,7 +42,6 @@ export class TS_SimpleDialog
 			right: [{
 				content: this.props.actionButtonProps.label,
 				associatedKeys: ['enter'],
-				renderer: TS_Dialog.busyButton,
 				onClick: async () => {
 					await this.props.actionButtonProps.action();
 					this.closeDialog();

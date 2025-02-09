@@ -3,9 +3,9 @@ import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 import './TS_ButtonGroup.scss';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
-import {TS_ButtonV2} from '../TS_ButtonV2/TS_ButtonV2';
 import {InferProps, InferState} from '../../utils/types';
 import {ButtonGroup_Props, ButtonGroup_Props_Controlled, ButtonGroup_State, ButtonGroupItem, ButtonGroupItem_NonControlled} from './types';
+import {Button} from '../Button/Button';
 
 export class TS_ButtonGroup<ButtonKey extends string = string>
 	extends ComponentSync<ButtonGroup_Props<ButtonKey>, ButtonGroup_State<ButtonKey>> {
@@ -23,7 +23,7 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 
 	//################################### Logic ###################################
 
-	private handleClick = async (e: React.MouseEvent<HTMLDivElement>, buttonKey: ButtonKey) => {
+	private handleClick = async (e: React.MouseEvent<HTMLButtonElement>, buttonKey: ButtonKey) => {
 		if (this.state.actionInProgress || this.state.selectedKey === buttonKey)
 			return;
 
@@ -33,7 +33,7 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 		return this.handleClick_NonControlled(e, buttonKey);
 	};
 
-	private handleClick_Controlled = async (e: React.MouseEvent<HTMLDivElement>, buttonKey: ButtonKey) => {
+	private handleClick_Controlled = async (e: React.MouseEvent<HTMLButtonElement>, buttonKey: ButtonKey) => {
 		const result = (this.props as ButtonGroup_Props_Controlled<ButtonKey>).clickCallback(buttonKey);
 		//Sync operation - just return
 		if (!(result instanceof Promise))
@@ -60,7 +60,7 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 		});
 	};
 
-	private handleClick_NonControlled = async (e: React.MouseEvent<HTMLDivElement>, buttonKey: ButtonKey) => {
+	private handleClick_NonControlled = async (e: React.MouseEvent<HTMLButtonElement>, buttonKey: ButtonKey) => {
 		const button = this.state.buttons.find(button => button.key === buttonKey) as ButtonGroupItem_NonControlled<ButtonKey>;
 		if (!button)
 			throw new ThisShouldNotHappenException(`Got to handle click with button key ${buttonKey}, but no button with this key exists in the state`);
@@ -100,14 +100,15 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 
 		return <React.Fragment key={button.key}>
 			{(index !== 0) && <div className={separatorClassName}/>}
-			<TS_ButtonV2
+			<Button
+				variant={'button-group-button'}
 				className={buttonClassName}
 				id={`button-${button.key}`}
 				onClick={e => this.handleClick(e, button.key)}
 				disabled={disableButtons}
 			>
 				{button.label}
-			</TS_ButtonV2>
+			</Button>
 		</React.Fragment>;
 	};
 

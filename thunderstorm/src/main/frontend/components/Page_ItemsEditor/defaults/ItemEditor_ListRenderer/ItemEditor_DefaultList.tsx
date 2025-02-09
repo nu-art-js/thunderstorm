@@ -13,8 +13,7 @@ import {
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp
 } from '../../../../component-modules/mouse-interactivity';
-import {TS_BusyButton} from '../../../TS_BusyButton';
-
+import {Button} from '../../../Button/Button';
 
 export type Props_ListRenderer<Proto extends DBProto<any>> = {
 	module: ModuleFE_BaseApi<Proto>,
@@ -59,13 +58,13 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 			modalPos: {x: 1, y: 1},
 			content: () => <>
 				{menuActions.map((action, index) => {
-					return <TS_BusyButton
+					return <Button
 						key={index}
 						onClick={async () => {
 							const shouldClose = await action.action(item) ?? false;
 							if (shouldClose)
 								ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
-						}}>{action.label}</TS_BusyButton>;
+						}}>{action.label}</Button>;
 				})}
 			</>
 		};
@@ -80,19 +79,19 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 		return <LL_V_L className="items-list match_height margin__inline">
 			{items.map(item =>
 				<div key={item._id}
-					 onContextMenu={(e) => this.openItemMenu(e, item)}
-					 className={_className('match_width', 'list-item', item._id === this.props.selected?._id && 'list-item__selected')}
-					 onClick={(e) => {
-						 if (e.metaKey) {
-							 if (e.shiftKey)
-								 this.logInfo(`item: ${item._id}`, item);
-							 else
-								 this.logInfo(`item: ${item._id}`);
-							 return;
-						 }
+						 onContextMenu={(e) => this.openItemMenu(e, item)}
+						 className={_className('match_width', 'list-item', item._id === this.props.selected?._id && 'list-item__selected')}
+						 onClick={(e) => {
+							 if (e.metaKey) {
+								 if (e.shiftKey)
+									 this.logInfo(`item: ${item._id}`, item);
+								 else
+									 this.logInfo(`item: ${item._id}`);
+								 return;
+							 }
 
-						 this.props.onSelected(item);
-					 }}>
+							 this.props.onSelected(item);
+						 }}>
 					{this.props.itemRenderer(item)}
 				</div>)}
 		</LL_V_L>;

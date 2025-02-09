@@ -7,7 +7,7 @@ import {
 	LL_H_C,
 	LL_V_L, ModuleFE_RoutingV2,
 	TS_AppTools,
-	TS_Button,
+	Button,
 	TS_NavLink
 } from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
@@ -80,11 +80,12 @@ export class ATS_Permissions
 		return <LL_V_L id={'dev-page__permissions'}>
 			<LL_H_C className="match_width flex__space-between">{TS_AppTools.renderPageHeader('Permissions Editor')}
 				<LL_H_C>
-					<TS_Button
+					<Button
+						variant={'secondary'}
 						disabled={this.state.creatingPermissions}
 						className={'item-list__add-button'}
 						onClick={this.toggleStrictMode}>{SessionKey_StrictMode_FE.get() ? 'Disable' : 'Enable'} Strict
-						Mode</TS_Button>
+						Mode</Button>
 				</LL_H_C>
 			</LL_H_C>
 			<LL_H_C className={'links-container'}>

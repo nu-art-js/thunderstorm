@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AppToolsScreen, ComponentSync, TS_Button} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ComponentSync, Button} from '@nu-art/thunderstorm/frontend';
 import {SlackBuilderFE} from '../../SlackBuilderFE';
 import {generateHex, ServerErrorSeverity} from '@nu-art/ts-common';
 
@@ -27,7 +27,7 @@ export class ATS_SlackMessageBuilder
 
 	render() {
 		return <>
-			<TS_Button onClick={this.sendMessage}>send message</TS_Button>
+			<Button variant={'primary'} onClick={this.sendMessage}>send message</Button>
 		</>;
 	}
 }

@@ -7,8 +7,8 @@ import {TS_PropRenderer} from '../../components/TS_PropRenderer';
 import {TS_DropDown} from '../../components/TS_Dropdown';
 import {SimpleListAdapter} from '../../components/adapter/Adapter';
 import {ProtoComponent, ProtoComponentDef} from '../../core/proto-component';
-import {TS_Button} from '../../components/TS_Button';
 import {ComponentSync} from '../../core/ComponentSync';
+import { Button } from '../../components/Button/Button';
 
 
 type Keys = 'selectedNumber' | 'selectedExampleId';
@@ -87,7 +87,7 @@ export class ATS_ProtoComponent
 					this.setQueryParam('selectedNumber', number);
 				}}
 			/>
-			<TS_Button onClick={() => this.deleteQueryParam('selectedNumber')}>Clear Selected Number</TS_Button>
+			<Button onClick={() => this.deleteQueryParam('selectedNumber')}>Clear Selected Number</Button>
 		</TS_PropRenderer.Vertical>;
 	};
 
@@ -102,7 +102,7 @@ export class ATS_ProtoComponent
 					onSelected={selected => {
 						this.setQueryParam('selectedExampleId', selected.id);
 					}}/>
-				<TS_Button onClick={() => this.deleteQueryParam('selectedExampleId')}>Clear Selected Example</TS_Button>
+				<Button onClick={() => this.deleteQueryParam('selectedExampleId')}>Clear Selected Example</Button>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical label={'Selected Example Data'}>
 				<div>id: {selected?.id ?? '-'}</div>
@@ -114,7 +114,7 @@ export class ATS_ProtoComponent
 
 	render() {
 		return <LL_V_L id={'ats-proto-component'}>
-			<TS_Button onClick={this.selectRandomData}>Select Random Data</TS_Button>
+			<Button onClick={this.selectRandomData}>Select Random Data</Button>
 			{this.renderNumberDropDown()}
 			{this.renderExampleDropDown()}
 		</LL_V_L>;
