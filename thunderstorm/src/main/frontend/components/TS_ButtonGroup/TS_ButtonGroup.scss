@@ -1,6 +1,6 @@
 @mixin ButtonGroupElement($direction, $selectedBorderRadius) {
-  .ts-button-v3 {
-    --ts-button-v3--content-color: white;
+  .ts-button {
+    --ts-button--content-color: white;
     background: transparent;
     border-radius: 0;
     height: 100%;
@@ -16,7 +16,7 @@
     }
 
     &:disabled {
-      --ts-button-v3--content-color: #c2c2c2;
+      --ts-button--content-color: #c2c2c2;
       background: #cdcdcd;
       cursor: not-allowed;
     }

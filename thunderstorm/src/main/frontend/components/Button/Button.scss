@@ -1,6 +1,6 @@
 @use '@nu-art/ts-styles' as styles;
 
-.ts-button-v3 {
+.ts-button {
   ///Reset css attributes
   all: unset;
 
@@ -21,7 +21,7 @@
   overflow: hidden;
 
   //Inner Content
-  .ts-button-v3__loader {
+  .ts-button__loader {
     $mask: conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box;
 
     width: 25px;
@@ -32,7 +32,7 @@
     top: 50%;
     left: 50%;
     translate: -50% 100%;
-    background: var(--ts-button-v3--content-color);
+    background: var(--ts-button--content-color);
     -webkit-mask: $mask;
     mask: $mask;
     -webkit-mask-composite: source-out;
@@ -48,11 +48,11 @@
     }
   }
 
-  .ts-button-v3__content {
+  .ts-button__content {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    color: var(--ts-button-v3--content-color);
+    color: var(--ts-button--content-color);
     opacity: 1;
     font: {
       size: 14px;
@@ -69,19 +69,19 @@
   }
 
   &.action-in-progress {
-    .ts-button-v3__loader {
+    .ts-button__loader {
       opacity: 1;
       translate: -50% -50%;
     }
 
-    .ts-button-v3__content {
+    .ts-button__content {
       opacity: 0;
     }
   }
 
   ///Variant Overwrites
   &[data-variant='primary'] {
-    --ts-button-v3--content-color: #fff;
+    --ts-button--content-color: #fff;
 
     &:enabled {
       @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));
@@ -95,7 +95,7 @@
   }
 
   &[data-variant='secondary'] {
-    --ts-button-v3--content-color: #{styles.black(2)};
+    --ts-button--content-color: #{styles.black(2)};
 
     &:enabled {
       @include styles.mouse-interactive-background(styles.gray(7), styles.gray(6));
@@ -109,7 +109,7 @@
   }
 
   &[data-variant='tertiary'] {
-    --ts-button-v3--content-color: #{styles.black(2)};
+    --ts-button--content-color: #{styles.black(2)};
 
     &:enabled {
       @include styles.mouse-interactive-background(transparent, styles.gray(6));
@@ -123,7 +123,7 @@
   }
 
   &[data-variant='text'] {
-    --ts-button-v3--content-color: #{styles.black(2)};
+    --ts-button--content-color: #{styles.black(2)};
 
     &:enabled {
       @include styles.mouse-interactive-background(transparent, styles.gray(7));
@@ -135,7 +135,7 @@
   }
 
   &[data-variant='dangerous'] {
-    --ts-button-v3--content-color: #fff;
+    --ts-button--content-color: #fff;
 
     &:enabled {
       @include styles.mouse-interactive-background(styles.red(2), styles.red(1));
