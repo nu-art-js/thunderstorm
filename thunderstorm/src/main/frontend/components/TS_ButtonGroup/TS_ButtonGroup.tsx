@@ -101,7 +101,7 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 		return <React.Fragment key={button.key}>
 			{(index !== 0) && <div className={separatorClassName}/>}
 			<Button
-				variant={'text'}
+				variant={'button-group-button'}
 				className={buttonClassName}
 				id={`button-${button.key}`}
 				onClick={e => this.handleClick(e, button.key)}
