@@ -63,7 +63,7 @@ export class Button
 	private getProps = () => {
 		//Clean out non-html properties from the props
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const {loader, variant, innerRef, onDisabledClick, ...rest} = this.props;
+		const {loader, variant, innerRef, onDisabledClick, actionInProgress, ...rest} = this.props;
 		const props = rest as any;
 
 		//Align props from other sources
