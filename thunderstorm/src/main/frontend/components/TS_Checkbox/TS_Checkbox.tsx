@@ -38,6 +38,7 @@ export type Props_Checkbox = React.PropsWithChildren<{
 type State_Checkbox = {
 	checked: boolean
 	disabled?: boolean;
+	className?: string;
 }
 
 /**
@@ -62,6 +63,7 @@ export class TS_Checkbox
 	protected deriveStateFromProps(nextProps: Props_Checkbox, state: State_Checkbox) {
 		state.checked = nextProps.checked ?? false;
 		state.disabled = nextProps.disabled;
+		state.className = nextProps.className;
 		return state;
 	}
 
@@ -79,7 +81,7 @@ export class TS_Checkbox
 		const className = _className('ts-checkbox__button', disabledClass, checkedClass, roundedClass);
 		const innerClassName = _className('ts-checkbox__button__inner', disabledClass, checkedClass, roundedClass);
 
-		return <div className={_className('ts-checkbox', this.props.className, this.state.disabled && 'ts-checkbox__disabled')} onClick={this.onCheckboxClick}>
+		return <div className={_className('ts-checkbox', this.state.className, this.state.disabled && 'ts-checkbox__disabled')} onClick={this.onCheckboxClick}>
 			<div
 				id={this.props.id}
 				className={className}>

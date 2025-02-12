@@ -1,0 +1,33 @@
+.ts-checkbox-group {
+  gap: 6px;
+  margin: 30px;
+
+  .ts-checkbox-group__parent {
+    align-items: center;
+    padding-left: 10px;
+
+    &.ts-checkbox-group__partial {
+      .ts-checkbox__button {
+        border: 1px solid #0054F7;
+        position: relative;
+      }
+
+      .ts-checkbox__button::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 70%;
+        height: 2px;
+        background-color: #0054F7;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+
+  .ts-checkbox-group__children {
+    padding-left: 20px;
+    gap: 4px;
+  }
+}
+
