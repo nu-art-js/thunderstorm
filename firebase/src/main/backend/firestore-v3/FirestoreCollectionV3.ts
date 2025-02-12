@@ -273,7 +273,9 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		const dbItems = await this.getAll(docs);
 		//Prepare all items
 		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
-			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction, performUpgrade) : await docs[i].prepareForSet(items[i] as Proto['dbType'], _dbItem!, transaction, performUpgrade);
+			return !exists(_dbItem)
+				? await docs[i].prepareForCreate(items[i], transaction, performUpgrade)
+				: await docs[i].prepareForSet(items[i] as Proto['dbType'], _dbItem!, transaction, performUpgrade);
 		}));
 		this.assertNoDuplicatedIds(preparedItems, 'set.all');
 		//Write all items
@@ -283,7 +285,8 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
 		//postWriteProcessing if provided
-		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems}, 'set');
+		if (preparedItems.length) //Only call postWriteProcessing if we actually set items
+			await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems}, 'set');
 		return preparedItems;
 	};
 
