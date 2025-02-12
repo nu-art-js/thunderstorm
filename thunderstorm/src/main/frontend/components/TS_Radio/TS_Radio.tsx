@@ -4,16 +4,17 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {_className, stopPropagation} from '../../utils/tools';
 
 type Props<ItemType> = {
-	values: ItemType[];
-	groupName: string;
-	checked?: ItemType;
-	disabled?: boolean;
-	className?: string;
-	labelRenderer?: (value: ItemType) => React.ReactNode
-} & (
-	{ canUnselect: true; onCheck?: (value?: ItemType, prevValue?: ItemType) => void }
-	| { canUnselect?: false; onCheck?: (value: ItemType, prevValue?: ItemType) => void }
-	)
+												 values: ItemType[];
+												 groupName: string;
+												 checked?: ItemType;
+												 disabled?: boolean;
+												 className?: string;
+												 innerRef?: React.RefObject<HTMLDivElement>;
+												 labelRenderer?: (value: ItemType) => React.ReactNode
+											 } & (
+												 { canUnselect: true; onCheck?: (value?: ItemType, prevValue?: ItemType) => void }
+												 | { canUnselect?: false; onCheck?: (value: ItemType, prevValue?: ItemType) => void }
+												 )
 
 type State<ItemType> = {
 	checked?: ItemType;
@@ -77,7 +78,7 @@ export class TS_Radio<ItemType>
 
 	render() {
 		const className = _className('ts-radio', this.state?.disabled ? 'disabled' : undefined, this.props.className);
-		return <div className={className}>
+		return <div className={className} ref={this.props.innerRef}>
 			{this.props.values.map(value => {
 				return this.renderRadioOption(value);
 			})}
