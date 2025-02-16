@@ -6,7 +6,6 @@
 
   .ts-label__content {
     width: 100%;
-    z-index: 1;
   }
 
   &.truncate-active {
@@ -16,6 +15,24 @@
   }
 
   &.tooltip-active {
+    //Tooltip arrow
+    &::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translateX(-50%) translateY(11px);
+      border-width: 6px;
+      border-style: solid;
+      border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    //Tooltip content
     &::after {
       content: attr(data-tooltip);
       position: absolute;
@@ -32,20 +49,6 @@
       visibility: hidden;
       transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
       pointer-events: none;
-    }
-
-    &::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: 100%;
-      transform: translateX(-50%) translateY(11px);
-      border-width: 6px;
-      border-style: solid;
-      border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
       z-index: 2;
     }
 
