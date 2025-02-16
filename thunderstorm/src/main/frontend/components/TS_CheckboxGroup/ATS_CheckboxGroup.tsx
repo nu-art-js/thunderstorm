@@ -4,11 +4,15 @@ import {LL_V_L} from '../Layouts';
 import {AppToolsScreen, TS_AppTools} from '../TS_AppTools';
 import * as React from 'react';
 import './ATS_CheckboxGroup.scss';
-import  {TS_CheckboxGroup} from "./TS_CheckboxGroup";
+import {TS_CheckboxGroup} from "./TS_CheckboxGroup";
+import {voidFunction} from "@nu-art/ts-common";
 
 type Props = {};
 
-type State = {};
+type State = {
+    selectedIdsGroup: string[],
+    selectedIdsSomeDisabled: string[],
+};
 
 export class ATS_CheckboxGroup
     extends ComponentSync<Props, State> {
@@ -20,6 +24,21 @@ export class ATS_CheckboxGroup
         renderer: this,
     };
 
+    protected deriveStateFromProps(nextProps: Props, state: State) {
+        state.selectedIdsGroup ??= [];
+        state.selectedIdsSomeDisabled ??= [];
+
+        return state;
+    }
+
+    //######################### Logic #########################
+    private onChangeGroup = (selectedIds: string[]) => {
+        this.setState({selectedIdsGroup: selectedIds});
+    }
+
+    private onChangeSomeDisabledGroup = (selectedIds: string[]) => {
+        this.setState({selectedIdsSomeDisabled: selectedIds});
+    }
     //######################### Render #########################
 
     render() {
@@ -46,7 +65,10 @@ export class ATS_CheckboxGroup
                 label: 'third',
             }];
 
-        return <TS_CheckboxGroup parent={{id: 'father', label: 'all'}} options={options} />;
+        return <TS_CheckboxGroup
+            parent={{id: 'father', label: 'all'}}
+            options={options} onChange={this.onChangeGroup}
+            selectedIds={this.state.selectedIdsGroup} />;
     };
 
     private render_PartialDisabledCheckboxGroup = () => {
@@ -70,7 +92,11 @@ export class ATS_CheckboxGroup
                 label: 'Not Disabled 2',
             }];
 
-        return <TS_CheckboxGroup parent={{id: 'father', label: 'All'}} options={options} />;
+        return <TS_CheckboxGroup
+            parent={{id: 'father', label: 'All'}}
+            options={options}
+            onChange={this.onChangeSomeDisabledGroup}
+            selectedIds={this.state.selectedIdsSomeDisabled}/>;
     };
 
     private render_DisabledParent = () => {
@@ -88,6 +114,10 @@ export class ATS_CheckboxGroup
                 label: 'Not Disabled 3',
             }];
 
-        return <TS_CheckboxGroup parent={{id: 'father', label: 'Disabled Father', disabled: true}} options={options} />;
+        return <TS_CheckboxGroup
+            parent={{id: 'father', label: 'Disabled Father', disabled: true}}
+            options={options}
+            onChange={voidFunction}
+            selectedIds={[]}/>;
     };
 }
