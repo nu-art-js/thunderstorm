@@ -15,14 +15,14 @@ type CheckboxOption = {
 export type Props_CheckboxGroup = {
     parent: CheckboxOption;
     options: CheckboxOption[];
+    selectedIds: string[];
+    onChange: (selectedIds: string[]) => void;
     id?: string;
     className?: string;
-    selectedIds?: string[];
-    onChange?: (selectedIds: string[]) => void;
 };
 
 type State_CheckboxGroup = {
-    selectedIds: Set<string>;
+    selectedIds: string[];
     parent: CheckboxOption;
     options: CheckboxOption[];
     allSelected: boolean;
@@ -40,11 +40,13 @@ export class TS_CheckboxGroup extends ComponentSync<Props_CheckboxGroup, State_C
     }
 
     protected deriveStateFromProps(nextProps: Props_CheckboxGroup, state: State_CheckboxGroup) {
-        state.selectedIds = new Set(nextProps.selectedIds || []);
-        state.allSelected = nextProps.selectedIds?.length === nextProps.options.length ?? false;
+        state.selectedIds = nextProps.selectedIds;
         state.options = nextProps.options;
         if (!state.options.length)
             throw new BadImplementationException('cannot have checkbox group without options');
+
+        state.allSelected = state.selectedIds.length === state.options.length ?? false;
+        state.someSelected = !state.allSelected && state.selectedIds.length > 0;
 
         state.parent = nextProps.parent;
         state.className = nextProps.className;
@@ -56,30 +58,16 @@ export class TS_CheckboxGroup extends ComponentSync<Props_CheckboxGroup, State_C
         const { options, allSelected, selectedIds } = this.state;
 
         const selectableOptions = options.filter(option => !option.disabled);
-        const newSelectedIds = allSelected || selectableOptions.length === selectedIds.size ? new Set<string>() : new Set(selectableOptions.map(option => option.id));
+        const newSelectedIds = allSelected || selectableOptions.length === selectedIds.length ? new Set<string>() : new Set(selectableOptions.map(option => option.id));
 
-        this.setState({
-            selectedIds: newSelectedIds,
-            allSelected: newSelectedIds.size === options.length,
-            someSelected: newSelectedIds.size > 0 && !allSelected
-        });
-        this.props.onChange?.([...newSelectedIds]);
+        this.props.onChange([...newSelectedIds]);
     };
 
     private onClickCheckbox = (id: string) => {
-        const { options } = this.state;
-
         const newSelectedIds = new Set(this.state.selectedIds);
-        this.state.selectedIds.has(id) ? newSelectedIds.delete(id) : newSelectedIds.add(id);
+        newSelectedIds.has(id) ? newSelectedIds.delete(id) : newSelectedIds.add(id);
 
-        const allSelected = newSelectedIds.size === options.length;
-        this.setState({
-            selectedIds: newSelectedIds,
-            someSelected: newSelectedIds.size > 0 && newSelectedIds.size < options.length,
-            allSelected
-        });
-
-        this.props.onChange?.([...newSelectedIds]);
+        this.props.onChange([...newSelectedIds]);
     };
 
     render() {
@@ -98,7 +86,7 @@ export class TS_CheckboxGroup extends ComponentSync<Props_CheckboxGroup, State_C
                     {options.map(option => (
                         <TS_Checkbox
                             key={option.id}
-                            checked={selectedIds.has(option.id)}
+                            checked={selectedIds.includes(option.id)}
                             disabled={option.disabled || parent.disabled}
                             onCheck={() => this.onClickCheckbox(option.id)}>
                             {option.label}
