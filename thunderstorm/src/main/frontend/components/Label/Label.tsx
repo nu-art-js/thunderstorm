@@ -75,7 +75,11 @@ export class Label
 
 	render() {
 		const className = _className('ts-label', this.state.className);
-		return <div ref={this.labelRef} className={className} data-tooltip={this.state.tooltip}>
+		return <div
+			ref={this.labelRef}
+			className={className}
+			data-tooltip={this.state.tooltip}
+		>
 			<div className={'ts-label__content'}>{this.props.children}</div>
 		</div>;
 	}
