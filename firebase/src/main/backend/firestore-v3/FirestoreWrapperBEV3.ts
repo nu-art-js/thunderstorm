@@ -65,15 +65,30 @@ export class FirestoreWrapperBEV3
 			const originGet = transaction.get.bind(transaction);
 			const originGetAll = transaction.getAll.bind(transaction);
 
-			const updateTransactionUpdates = <T extends DB_Object>(data: T, exists: boolean = true) => {
-				transactionUpdates[data._id] = {
-					id: data._id,
+			const getMockDocumentSnapshot = <T extends DB_Object>(data: T, _id: UniqueId, exists = true) => {
+				return {
+					id: _id,
 					ref: {} as any, // Mock DocumentReference
 					exists,
 					data: () => (exists ? data : undefined),
 					get: (fieldPath: string) => (data as any)[fieldPath],
 					metadata: {} as any, // Mock metadata
 				} as unknown as DocumentSnapshot<T>;
+			};
+
+			const updateTransactionUpdates = async <T extends DB_Object>(data: T | DocumentReference<T>, exists: boolean = true) => {
+				let _data: DB_Object;
+				let _id: UniqueId;
+
+				if (data instanceof DocumentReference) {
+					_id = data.id;
+					_data = (await data.get()).data() as DB_Object;
+				} else {
+					_id = data._id;
+					_data = data;
+				}
+
+				transactionUpdates[_id] = getMockDocumentSnapshot(_data, _id, exists);
 			};
 
 			transaction.set = <T>(documentRef: FirebaseFirestore.DocumentReference<T>, data: FirebaseFirestore.WithFieldValue<T>) => {
@@ -89,6 +104,8 @@ export class FirestoreWrapperBEV3
 			};
 
 			transaction.delete = (documentRef: DocumentReference<any>, precondition?: FirebaseFirestore.Precondition) => {
+				// update deletions
+				updateTransactionUpdates(documentRef, false);
 				writeActions.push(() => originDelete(documentRef, precondition));
 				return transaction;
 			};
