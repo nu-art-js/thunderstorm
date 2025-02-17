@@ -21,11 +21,15 @@ import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {DB_Object, DBDef_V3, DBProto, Promise_all_sequentially, UniqueId} from '@nu-art/ts-common';
-import {DocumentReference, getFirestore, Query, QueryDocumentSnapshot, Transaction,} from 'firebase-admin/firestore';
-import {DocumentSnapshot} from 'firebase/firestore';
-import {AggregateQuery} from '@google-cloud/firestore';
-import firebase from 'firebase/compat';
-import QuerySnapshot = firebase.firestore.QuerySnapshot;
+import {
+	DocumentReference,
+	DocumentSnapshot,
+	getFirestore,
+	Query,
+	QueryDocumentSnapshot,
+	QuerySnapshot,
+	Transaction,
+} from 'firebase-admin/firestore';
 
 
 export class FirestoreWrapperBEV3
@@ -90,12 +94,12 @@ export class FirestoreWrapperBEV3
 			};
 
 			// @ts-ignore
-			transaction.get = async (args: Query<any> | DocumentReference<any> | AggregateQuery<any>) => {
+			transaction.get = async (args: Query<any> | DocumentReference<any>) => {
 				// @ts-ignore
 				const doc: FirebaseFirestore.QuerySnapshot<any> | FirebaseFirestore.DocumentSnapshot<any> = await originGet(args);
 
 				// handle doc snapshot
-				if (doc instanceof FirebaseFirestore.DocumentSnapshot) {
+				if (doc instanceof DocumentSnapshot) {
 					const document: any | undefined = doc.data();
 
 					if (!document)
@@ -109,12 +113,14 @@ export class FirestoreWrapperBEV3
 					const docs = doc.docs;
 
 					// @ts-ignore
-					doc.docs = docs.map(doc => {
-						const _doc = doc.data();
-						if (!_doc) return doc;
+					return {
+						docs: docs.map(doc => {
+							const _doc = doc.data();
+							if (!_doc) return doc;
 
-						return transactionUpdates[(_doc as DB_Object)._id] ?? doc;
-					}) as QueryDocumentSnapshot<any>[];
+							return transactionUpdates[(_doc as DB_Object)._id] ?? doc;
+						}) as QueryDocumentSnapshot<any>[]
+					};
 				}
 
 				return doc;
