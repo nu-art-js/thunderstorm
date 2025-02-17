@@ -42,7 +42,11 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
+import {
+	CollectionActionType,
+	FirestoreCollectionV3,
+	PostWriteProcessingData
+} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
@@ -123,7 +127,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 				return;
 
 			conflictPromises.push(batchActionParallel(itemIdsToDelete,
-			                                          10, async ids => {
+				10, async ids => {
 					let where = undefined;
 					if (dependencies[key].fieldType === 'string')
 						where = {[key]: {$in: ids}};
@@ -149,7 +153,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 
 	protected checkConflicts<T extends DBProto<any>>(conflictItems: Proto['dbType'][], transaction: FirebaseFirestore.Transaction | undefined, dependencies: Proto['dependencies'], toDeleteDbName: T['dbKey'], itemIdsToDelete: string[], result: DB_EntityDependencyV2) {
 		//All gathered objects that contain the targets' ids
-		conflictItems = filterDuplicates(conflictItems, item => item._id);
+		conflictItems = filterDuplicates(filterInstances(conflictItems), item => item._id);
 		//The MemKey_DeletedDocs object associated with this transaction
 		//Use it to filter out conflictItems that were 'deleted earlier' in the transaction
 		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
@@ -326,9 +330,9 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		const dependencies = await this.collectDependencies(dbItems, transaction);
 		if (dependencies)
 			throw new ApiException<EntityDependencyError>(422, 'entity has dependencies').setErrorBody({
-				                                                                                           type: 'has-dependencies',
-				                                                                                           data: dependencies
-			                                                                                           });
+				type: 'has-dependencies',
+				data: dependencies
+			});
 	}
 
 	async collectDependencies(dbInstances: Proto['dbType'][], transaction?: Transaction): Promise<DB_EntityDependencyV2[] | undefined> {
@@ -356,7 +360,10 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 * Check if the collection has at least one item without the latest version. Version[0] is the latest version.
 	 */
 	public isCollectionUpToDate = async () => {
-		return (await this.query.unManipulatedQuery({limit: 1, where: {_v: {$neq: this.dbDef.versions[0]}}})).length === 0;
+		return (await this.query.unManipulatedQuery({
+			limit: 1,
+			where: {_v: {$neq: this.dbDef.versions[0]}}
+		})).length === 0;
 	};
 
 	upgradeCollection = async (force = false) => {
