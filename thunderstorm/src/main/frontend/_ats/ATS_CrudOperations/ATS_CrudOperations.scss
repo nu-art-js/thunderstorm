@@ -1,0 +1,18 @@
+.ats-crud-operations-container {
+  gap: 50px;
+
+  .ats-crud-operations-container__selection {
+    width: 400px;
+    margin: 10px;
+    gap: 40px;
+
+    .ats-crud-operations-container__selection__text-area {
+      height: 100px;
+    }
+  }
+
+  .ats-crud-operations-container__results {
+    width: 400px;
+    height: 100px;
+  }
+}
