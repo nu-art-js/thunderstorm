@@ -1,18 +1,29 @@
 .ats-crud-operations-container {
   gap: 50px;
+  height: 700px;
 
   .ats-crud-operations-container__selection {
     width: 400px;
-    margin: 10px;
-    gap: 40px;
+    margin: 30px;
+    gap: 50px;
 
-    .ats-crud-operations-container__selection__text-area {
-      height: 100px;
+    .ats-crud-operations-container__selection__input {
+      height: 400px;
+      resize: none;
+    }
+
+    .ats-crud-operations-container__selection__execute {
+      //height: 50px;
+      padding-bottom: 10px;
+      align-self: flex-end;
     }
   }
 
   .ats-crud-operations-container__results {
     width: 400px;
-    height: 100px;
+    height: 100%;
+    margin-top: 30px;
+    align-self: flex-start;
+    resize: none;
   }
 }
