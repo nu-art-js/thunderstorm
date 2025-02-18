@@ -62,7 +62,7 @@ export class ATS_CrudOperations
 
     //######################### Logic #########################
     private onDBModuleSelected = (module: ModuleFE_BaseApi<any, any>) => {
-        this.setState({dbModuleToRequest: module});
+        this.setState({dbModuleToRequest: module, selectedAction: undefined});
     }
 
     private onDBActionSelected = (action: Action) => {
@@ -79,7 +79,9 @@ export class ATS_CrudOperations
             return ModuleFE_Toaster.toastError('Cannot Execute without all fields');
         }
 
-        // selectedAction.action(dbModuleToRequest, input)
+        const response = selectedAction.action(dbModuleToRequest, JSON.parse(input));
+        console.log(response);
+        this.setState({result: JSON.stringify(response)})
     }
 
     //######################### Render #########################
@@ -97,14 +99,14 @@ export class ATS_CrudOperations
                 />
                 <TS_TextArea
                     type={'text'}
-                    resizeWithText
                     placeholder={'Enter input'}
                     disabled={false}
                     value={input}
                     onChange={this.onChangeInput}
-                    className={'ats-crud-operations-container__selection__text-area'}
+                    className={'ats-crud-operations-container__selection__input'}
                 />
                 <Button
+                    className={'ats-crud-operations-container__selection__execute'}
                     disabled={!(dbModuleToRequest && selectedAction && input)}
                     onClick={this.onClickExecute}
                     variant={'primary'}>Execute</Button>
@@ -112,7 +114,6 @@ export class ATS_CrudOperations
             <TS_TextArea
                 className={'ats-crud-operations-container__results'}
                 type={'text'}
-                resizeWithText
                 value={result}
                 placeholder={'Results'}
                 disabled
