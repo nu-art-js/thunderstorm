@@ -122,36 +122,29 @@ export class ATS_CrudOperations
         </LL_H_C>
     }
 
+    private renderResult = (item: any) =>
+        (<TS_TextArea
+            className={'ats-crud-operations-container__result'}
+            type={'text'}
+            value={JSON.stringify(item, null, 2)}
+            placeholder={'Results'}
+            disabled
+            style={{fontFamily: 'monospace', fontSize: 15}}
+        />)
+
+
     private renderResults = () => {
         const result = this.state.result;
 
         if (result && Array.isArray(result)) {
-            console.log("this is the result ", result, "is array ", Array.isArray(result), result && Array.isArray(result), "map: ", result.map(res => res._id));
             return (
                 <LL_V_L className={'ats-crud-operations-container__results'}>
-                    {result.map((item) => {
-                        return <TS_TextArea
-                            className={'ats-crud-operations-container__result'}
-                            type={'text'}
-                            value={JSON.stringify(item, null, 2)}
-                            placeholder={'Results'}
-                            disabled
-                            style={{fontFamily: 'monospace', fontSize: 15}}
-                        />
-                    })}
+                    {result.map((item) => this.renderResult(item))}
                 </LL_V_L>
             )
         }
 
-        return (
-            <TS_TextArea
-                className={'ats-crud-operations-container__result'}
-                type={'text'}
-                value={JSON.stringify(result, null, 2)}
-                placeholder={'Results'}
-                disabled
-                style={{fontFamily: 'monospace', fontSize: 15}}
-        />)
+        return this.renderResult(result);
 
     }
 }
