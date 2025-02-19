@@ -84,10 +84,9 @@ export class ATS_CrudOperations
 
         try {
             const response = await selectedAction.action(dbModuleToRequest, JSON.parse(input)).executeSync();
-            console.log("response", response);
             this.setState({result: JSON.stringify(response)})
-        } catch (e) {
-            this.setState({result: `error occurred`});
+        } catch (e: any) {
+            this.setState({result: `error occurred: ${e.message}`});
         }
     }
 
