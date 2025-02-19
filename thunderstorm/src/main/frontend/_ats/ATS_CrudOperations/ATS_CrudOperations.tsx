@@ -12,25 +12,27 @@ import {FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject} from "@nu-art/ts-common";
 import {TS_TextArea} from "../../components/TS_Input";
 import {Button} from "../../components/Button/Button";
-import { ModuleFE_Toaster } from '../../component-modules/ModuleFE_Toaster';
+import {ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster';
+import {BaseHttpRequest} from "../../../shared";
 
 type Action = {
     label: string;
-    action: (dbModule:  ModuleFE_BaseApi<any, any>, input: string) => void;
+    action: (dbModule: ModuleFE_BaseApi<any, any>, input: string) => BaseHttpRequest<any>;
 }
 
 const ACTIONS: Action[] = [
     {
         label: 'upsert',
-        action: (dbModule, input) => dbModule.v1.upsert(input).execute()
+        action: (dbModule, input) => dbModule.v1.upsert(input)
     },
     {
         label: 'query',
-        action: (dbModule, input) => dbModule.v1.query(input as unknown as FirestoreQuery<any>).execute()
+        action: (dbModule, input) => dbModule.v1.query(input as unknown as FirestoreQuery<any>)
+
     },
     {
         label: 'delete',
-        action: (dbModule, input) => dbModule.v1.delete(input as unknown as DB_BaseObject).execute()
+        action: (dbModule, input) => dbModule.v1.delete(input as unknown as DB_BaseObject)
     }
 ];
 
@@ -53,6 +55,7 @@ export class ATS_CrudOperations
     };
 
     protected deriveStateFromProps(nextProps: {}, state: State) {
+        state.input = '{}';
         return state;
     }
 
@@ -73,15 +76,19 @@ export class ATS_CrudOperations
         this.setState({input: value});
     }
 
-    private onClickExecute = () => {
+    private onClickExecute = async () => {
         const {selectedAction, input, dbModuleToRequest} = this.state;
         if (!dbModuleToRequest || !selectedAction || !input) {
             return ModuleFE_Toaster.toastError('Cannot Execute without all fields');
         }
 
-        const response = selectedAction.action(dbModuleToRequest, JSON.parse(input));
-        console.log(response);
-        this.setState({result: JSON.stringify(response)})
+        try {
+            const response = await selectedAction.action(dbModuleToRequest, JSON.parse(input)).executeSync();
+            console.log("response", response);
+            this.setState({result: JSON.stringify(response)})
+        } catch (e) {
+            this.setState({result: `error occurred`});
+        }
     }
 
     //######################### Render #########################
@@ -98,12 +105,12 @@ export class ATS_CrudOperations
                     onSelected={this.onDBActionSelected}
                 />
                 <TS_TextArea
+                    className={'ats-crud-operations-container__selection__input'}
                     type={'text'}
                     placeholder={'Enter input'}
                     disabled={false}
                     value={input}
                     onChange={this.onChangeInput}
-                    className={'ats-crud-operations-container__selection__input'}
                 />
                 <Button
                     className={'ats-crud-operations-container__selection__execute'}
