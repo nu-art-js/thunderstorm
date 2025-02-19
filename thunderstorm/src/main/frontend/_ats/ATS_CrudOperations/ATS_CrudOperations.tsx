@@ -47,7 +47,7 @@ export class ATS_CrudOperations
     extends ComponentSync<{}, State> {
     //######################### Life Cycle #########################
 
-    static Screen: AppToolsScreen = {
+    static screen: AppToolsScreen = {
         name: 'Crud Operations',
         key: 'crud-operations',
         renderer: this,
