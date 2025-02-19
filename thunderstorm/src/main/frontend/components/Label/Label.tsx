@@ -5,13 +5,16 @@ import './Label.scss';
 import {OnWindowResized} from '../../modules/ModuleFE_Window';
 
 type Props = React.PropsWithChildren<{
-	tooltip?: string;
+	tooltip?: string; //The content that will appear in the tooltip
 	className?: string;
+	containerSelector?: string; //A container for the tooltip direction calculation
+	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }>;
 
 type State = {
 	tooltip: string;
 	className?: string;
+	containerSelector?: string;
 };
 
 export class Label
@@ -21,6 +24,7 @@ export class Label
 	private readonly labelRef = React.createRef<HTMLDivElement>();
 	private readonly activeTruncationClass = 'truncate-active';
 	private readonly activeTooltipClass = 'tooltip-active';
+	private readonly invertTooltipClass = 'invert-tooltip';
 
 	// ######################## Life Cycle ########################
 
@@ -31,6 +35,7 @@ export class Label
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
 		state.tooltip = nextProps.tooltip ?? '';
 		state.className = nextProps.className;
+		state.containerSelector = nextProps.containerSelector;
 		return state;
 	}
 
@@ -70,8 +75,29 @@ export class Label
 			el.classList.add(this.activeTooltipClass);
 	};
 
-	// ######################## Render ########################
+	private checkTooltipDir = () => {
+		const el = this.labelRef.current;
+		if (!el || !this.state.containerSelector)
+			return;
 
+		const container = el.closest(this.state.containerSelector);
+		if (!container)
+			return;
+
+		const containerTop = container.getBoundingClientRect().top;
+		const labelRect = el.getBoundingClientRect();
+		const distance = labelRect.top - containerTop;
+		//Should be inverted
+		if (distance <= labelRect.height * 2.5) {
+			if (!el.classList.contains(this.invertTooltipClass))
+				el.classList.add(this.invertTooltipClass);
+		} else { //Should not be inverted
+			if (el.classList.contains(this.invertTooltipClass))
+				el.classList.remove(this.invertTooltipClass);
+		}
+	};
+
+	// ######################## Render ########################
 
 	render() {
 		const className = _className('ts-label', this.state.className);
@@ -79,6 +105,8 @@ export class Label
 			ref={this.labelRef}
 			className={className}
 			data-tooltip={this.state.tooltip}
+			onMouseEnter={this.checkTooltipDir}
+			onClick={this.props.onClick}
 		>
 			<div className={'ts-label__content'}>{this.props.children}</div>
 		</div>;
