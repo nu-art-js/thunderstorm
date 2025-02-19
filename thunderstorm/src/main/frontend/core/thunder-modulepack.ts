@@ -13,9 +13,11 @@ import {ModuleFE_UpgradeCollection} from '../modules/upgrade-collection/ModuleFE
 import {ModuleFE_SyncManager} from '../modules/sync-manager/ModuleFE_SyncManager';
 import {ModuleFE_WindowMessenger} from '../modules/ModuleFE_WindowMessenger';
 import {ModulePackFE_AppConfigDB} from '../_entity';
+import {ModuleFE_Print} from '../modules/ModuleFE_Print';
 
 export const ModulePack_ThunderstormFE: Module[] = [
 	ModuleFE_Thunderstorm,
+	ModuleFE_Print,
 	ModuleFE_XHR,
 	ModuleFE_SyncManager,
 

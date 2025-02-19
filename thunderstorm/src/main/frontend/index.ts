@@ -91,6 +91,7 @@ export * from './components/TS_EditableItemComponent/TS_EditableItemComponent';
 export * from './components/TS_ButtonGroup';
 export * from './components/TS_Toggle';
 export * from './components/TS_JSONViewer/TS_JSONViewer';
+export * from './components/Label/Label';
 
 export * from './components/GenericRenderer/Component_GenericRenderer';
 export * from './modules/ModuleFE_Utils/ModuleFE_Utils';
@@ -121,6 +122,7 @@ export * from './modules/ModuleFE_WindowMessenger';
 export * from './modules/ModuleFE_Locale';
 export * from './modules/ModuleFE_LocalStorage';
 export * from './modules/ModuleFE_Thunderstorm';
+export * from './modules/ModuleFE_Print';
 export * from './modules/clearWebsiteDataDispatcher';
 export * from './modules/ModuleFE_BaseTheme';
 export * from './modules/routing';
