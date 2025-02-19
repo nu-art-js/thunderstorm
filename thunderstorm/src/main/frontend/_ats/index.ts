@@ -6,3 +6,4 @@ export * from './ATS_ProtoComponent/ATS_ProtoComponent';
 export * from './ATS_IDBCacheComparison/Component_CollectionGrid';
 export * from './ATS_IDBCacheComparison/Dialog_IDBCacheComparison';
 export * from './ATS_AppConfigEditor/ATS_AppConfigEditor';
+export * from './ATS_CrudOperations/ATS_CrudOperations';
