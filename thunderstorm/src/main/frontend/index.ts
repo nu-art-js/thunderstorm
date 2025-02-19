@@ -122,6 +122,7 @@ export * from './modules/ModuleFE_WindowMessenger';
 export * from './modules/ModuleFE_Locale';
 export * from './modules/ModuleFE_LocalStorage';
 export * from './modules/ModuleFE_Thunderstorm';
+export * from './modules/ModuleFE_Print';
 export * from './modules/clearWebsiteDataDispatcher';
 export * from './modules/ModuleFE_BaseTheme';
 export * from './modules/routing';
