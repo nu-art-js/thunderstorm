@@ -40,7 +40,7 @@ type State = {
     dbModuleToRequest?: ModuleFE_BaseApi<any, any>;
     selectedAction?: Action;
     input?: string;
-    result?: string;
+    result?: string | Object | Object[];
 };
 
 export class ATS_CrudOperations
@@ -84,7 +84,7 @@ export class ATS_CrudOperations
 
         try {
             const response = await selectedAction.action(dbModuleToRequest, JSON.parse(input)).executeSync();
-            this.setState({result: JSON.stringify(response)})
+            this.setState({result: response})
         } catch (e: any) {
             this.setState({result: `error occurred: ${e.message}`});
         }
@@ -92,7 +92,7 @@ export class ATS_CrudOperations
 
     //######################### Render #########################
     render() {
-        const {dbModuleToRequest, selectedAction, input, result} = this.state;
+        const {dbModuleToRequest, selectedAction, input} = this.state;
 
         return <LL_H_C className={'ats-crud-operations-container'}>
             <LL_V_L className={'ats-crud-operations-container__selection'}>
@@ -110,6 +110,7 @@ export class ATS_CrudOperations
                     disabled={false}
                     value={input}
                     onChange={this.onChangeInput}
+                    style={{fontFamily: 'monospace', fontSize: 15}}
                 />
                 <Button
                     className={'ats-crud-operations-container__selection__execute'}
@@ -117,13 +118,40 @@ export class ATS_CrudOperations
                     onClick={this.onClickExecute}
                     variant={'primary'}>Execute</Button>
             </LL_V_L>
+            {this.renderResults()}
+        </LL_H_C>
+    }
+
+    private renderResults = () => {
+        const result = this.state.result;
+
+        if (result && Array.isArray(result)) {
+            console.log("this is the result ", result, "is array ", Array.isArray(result), result && Array.isArray(result), "map: ", result.map(res => res._id));
+            return (
+                <LL_V_L className={'ats-crud-operations-container__results'}>
+                    {result.map((item) => {
+                        return <TS_TextArea
+                            className={'ats-crud-operations-container__result'}
+                            type={'text'}
+                            value={JSON.stringify(item, null, 2)}
+                            placeholder={'Results'}
+                            disabled
+                            style={{fontFamily: 'monospace', fontSize: 15}}
+                        />
+                    })}
+                </LL_V_L>
+            )
+        }
+
+        return (
             <TS_TextArea
-                className={'ats-crud-operations-container__results'}
+                className={'ats-crud-operations-container__result'}
                 type={'text'}
-                value={result}
+                value={JSON.stringify(result, null, 2)}
                 placeholder={'Results'}
                 disabled
-            />
-        </LL_H_C>
+                style={{fontFamily: 'monospace', fontSize: 15}}
+        />)
+
     }
 }
