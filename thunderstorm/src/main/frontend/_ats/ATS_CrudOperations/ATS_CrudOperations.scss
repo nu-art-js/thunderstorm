@@ -17,11 +17,26 @@
     }
   }
 
-  .ats-crud-operations-container__results {
-    width: 400px;
-    height: 100%;
+  .ats-crud-operations-container__result {
+    width: 450px;
+    height: 200px;
     margin-top: 20px;
     align-self: flex-start;
     resize: none;
+    overflow-y: auto;
   }
+
+  .ats-crud-operations-container__results {
+    width: 400px;
+    max-height: 650px;
+    align-self: flex-start;
+    gap: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .ats-crud-operations-container__results .ats-crud-operations-container__result {
+    height: 200px;
+  }
+
 }
