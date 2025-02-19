@@ -2,7 +2,6 @@
 
 .ts-label {
   position: relative;
-  isolation: isolate;
 
   .ts-label__content {
     width: 100%;
@@ -21,7 +20,7 @@
       position: absolute;
       left: 50%;
       bottom: 100%;
-      transform: translateX(-50%) translateY(11px);
+      transform: translateX(-50%) translateY(10px);
       border-width: 6px;
       border-style: solid;
       border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
@@ -56,13 +55,38 @@
       &::before {
         opacity: 1;
         visibility: visible;
-        transform: translateX(-50%) translateY(6px);
+        transform: translateX(-50%) translateY(5px);
       }
 
       &::after {
         opacity: 1;
         visibility: visible;
         transform: translateX(-50%) translateY(-5px);
+      }
+    }
+  }
+
+  &.invert-tooltip {
+    &::before {
+      bottom: unset;
+      top: 100%;
+      transform: translateX(-50%) translateY(-10px);
+      border-color: transparent transparent rgba(0, 0, 0, 0.85) transparent;
+    }
+
+    &::after {
+      bottom: unset;
+      top: 100%;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    &:hover {
+      &::before {
+        transform: translateX(-50%) translateY(-5px);
+      }
+
+      &::after {
+        transform: translateX(-50%) translateY(5px);
       }
     }
   }
