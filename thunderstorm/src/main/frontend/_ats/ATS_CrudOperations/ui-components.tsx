@@ -10,10 +10,19 @@ export const Props_DBModulesDropDown: ResolvableContent<MandatoryProps_TS_DropDo
         sortArray(
             filterDuplicates(
                 RuntimeModules().filter((module: ModuleFE_BaseApi<any>) => !!module.getCollectionName),
-                (module: ModuleFE_BaseApi<any>) => module.getCollectionName()),
-            item => item.getCollectionName()),
-        module => <>{`name: ${module.item.getCollectionName()} | key: ${module.item.getCollectionKey()}`}</>),
+                (module: ModuleFE_BaseApi<any>) => module.getCollectionName()
+            ),
+            item => item.getCollectionName()
+        ),
+        module => (
+            <div>
+                <div style={{ fontSize: '1.25em', fontWeight: 'bold' }}>{module.item.getCollectionName()}</div>
+                <div style={{ fontSize: '0.85em', color: '#666' }}>{module.item.getCollectionKey()}</div>
+            </div>
+        )
+    ),
     placeholder: 'DB Module'
 };
+
 
 export const DropDown_DBModules = TS_DropDown.prepare(Props_DBModulesDropDown);
