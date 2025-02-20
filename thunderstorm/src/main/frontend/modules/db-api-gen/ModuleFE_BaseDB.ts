@@ -120,8 +120,10 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 
 	/* Public */
 	async upgradeInstances(instances: Proto['dbType'][], force = false) {
-		if (!_keys(this.versionUpgrades).length)
-			return this.logVerbose(`No registered upgrade processors for this module ${this.dbDef.dbKey}`);
+		if (!_keys(this.versionUpgrades).length) {
+			this.logVerbose(`No registered upgrade processors for this module ${this.dbDef.dbKey}`);
+			return instances;
+		}
 
 		let instancesToSave: Proto['dbType'][] = [];
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
