@@ -3,6 +3,7 @@ import {filterDuplicates, ResolvableContent, RuntimeModules, sortArray} from '@n
 import {MandatoryProps_TS_DropDown, TS_DropDown} from '../../components/TS_Dropdown';
 import {SimpleListAdapter} from "../../components/adapter/Adapter";
 import {ModuleFE_BaseApi} from "../../modules/db-api-gen/ModuleFE_BaseApi";
+import {LL_V_L} from "../../components/Layouts";
 
 
 export const Props_DBModulesDropDown: ResolvableContent<MandatoryProps_TS_DropDown<ModuleFE_BaseApi<any>>> = {
@@ -15,10 +16,10 @@ export const Props_DBModulesDropDown: ResolvableContent<MandatoryProps_TS_DropDo
             item => item.getCollectionName()
         ),
         module => (
-            <div>
-                <div style={{ fontSize: '1.25em', fontWeight: 'bold' }}>{module.item.getCollectionName()}</div>
-                <div style={{ fontSize: '0.85em', color: '#666' }}>{module.item.getCollectionKey()}</div>
-            </div>
+            <LL_V_L>
+                <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{module.item.getCollectionName()}</div>
+                <div style={{ fontSize: '12px', color: '#666' }}>{module.item.getCollectionKey()}</div>
+            </LL_V_L>
         )
     ),
     placeholder: 'DB Module'
