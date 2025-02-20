@@ -398,9 +398,6 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	};
 
 	async upgradeInstances(instances: Proto['dbType'][], force = false) {
-		if (!_keys(this.versionUpgrades).length)
-			return this.logVerbose(`No registered upgrade processors for this module ${this.dbDef.dbKey}`);
-
 		let instancesToSave: Proto['dbType'][] = [];
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
 			const version = this.config.versions[i] as Proto['versions'][number];
