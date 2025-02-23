@@ -21,7 +21,16 @@
  * Created by AlanBen on 29/08/2019.
  */
 
-import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
+import {
+	ApiException,
+	currentTimeMillis,
+	generateHex,
+	ImplementationMissingException,
+	md5,
+	Minute,
+	Module,
+	ThisShouldNotHappenException
+} from '@nu-art/ts-common';
 import {
 	ChatPostMessageArguments,
 	FilesUploadArguments,
@@ -29,12 +38,13 @@ import {
 	WebClient,
 	WebClientOptions,
 } from '@slack/web-api';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, AxiosHttpModule, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_Slack, PreSendSlackStructuredMessage} from '../shared';
 import {Stream} from 'stream';
 import {postSlackMessageErrorHandler} from './utils';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {SlackBuilderBE} from './SlackBuilderBE';
+import { HttpMethod } from '@nu-art/thunderstorm';
 
 
 interface ChatPostMessageResult
@@ -102,7 +112,7 @@ export class ModuleBE_Slack_Class
 				const slackMessage = new SlackBuilderBE(request.channel, request.messageBlocks, request.messageReplies);
 				await slackMessage.send();
 			}),
-			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file, request.name, request.thread))
+			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile2(request.file, request.name, request.thread))
 		]);
 	}
 
@@ -132,7 +142,62 @@ export class ModuleBE_Slack_Class
 			message.channels = thread.channel;
 			message.thread_ts = thread.ts;
 		}
+		/*TODO: Instead of upload, should use files.getUploadURLExternal and then files.completeUploadExternal*/
 		return await this.web.files.upload(message);
+	}
+
+	public async postFile2(file: any, name: string, thread?: ThreadPointer) {
+		// Get a URL to upload
+		this.logErrorBold("HEY BEFOREEE");
+		const uploadUrlResponse = await this.web.apiCall('files.getUploadURLExternal', {
+			filename: name,
+			length: file.size,
+		});
+		this.logErrorBold("HEY AFTERRR ", uploadUrlResponse);
+
+		if (!uploadUrlResponse.ok || typeof uploadUrlResponse.upload_url !== 'string') {
+			throw new ThisShouldNotHappenException(`Failed to get upload URL: ${uploadUrlResponse.error}`);
+		}
+
+		const { upload_url, file_id } = uploadUrlResponse;
+
+		const formData = new FormData();
+		formData.append('file', file);
+
+		// const uploadResponse = await fetch(new URL(upload_url).toString(), {
+		// 	method: 'POST',
+		// 	body: formData,
+		// });
+
+		const uploadResponse = await AxiosHttpModule.createRequest({
+			fullUrl: new URL(upload_url).toString(),
+			path: '',
+			method: HttpMethod.POST
+		}).setResponseType('stream').executeSync();
+
+		if (!uploadResponse.ok) {
+			throw new ApiException(uploadResponse.status, `Failed to upload file to Slack: ${uploadResponse.statusText}`);
+		}
+
+		// Complete the upload
+		const completeResponse = await this.web.apiCall('files.completeUploadExternal', {
+			files: [{ id: file_id }],
+			channel_id: thread ? thread.channel : this.config.defaultChannel,
+			thread_ts: thread?.ts,
+		});
+
+		// 	await fetch(upload_url, {
+		// 		method: 'PUT',
+		// 		body: file,
+		// 		headers: { 'Content-Type': 'application/octet-stream' },
+		// 	});
+
+		if (!completeResponse.ok) {
+			this.logErrorBold(`Failed to complete upload: ${completeResponse.error}`)
+			throw new ApiException(uploadResponse.status, `Failed to complete upload: ${completeResponse.error}`);
+		}
+
+		return completeResponse;
 	}
 
 	public async postStructuredMessage(message: PreSendSlackStructuredMessage, thread?: ThreadPointer) {
