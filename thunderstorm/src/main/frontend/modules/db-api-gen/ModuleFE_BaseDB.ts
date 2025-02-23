@@ -141,6 +141,10 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		return this.config.dbConfig.name;
 	};
 
+	public getCollectionKey = () => {
+		return this.dbDef.dbKey;
+	};
+
 	private dispatchSingle = (event: SingleApiEvent, item: Proto['dbType']) => {
 		this.defaultDispatcher?.dispatchModule(event, item);
 		this.defaultDispatcher?.dispatchUI(event, item);
