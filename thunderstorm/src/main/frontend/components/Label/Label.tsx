@@ -5,14 +5,14 @@ import './Label.scss';
 import {OnWindowResized} from '../../modules/ModuleFE_Window';
 
 type Props = React.PropsWithChildren<{
-	tooltip?: string; //The content that will appear in the tooltip
+	tooltip?: React.ReactNode; //The content that will appear in the tooltip
 	className?: string;
 	containerSelector?: string; //A container for the tooltip direction calculation
 	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }>;
 
 type State = {
-	tooltip: string;
+	tooltip: React.ReactNode;
 	className?: string;
 	containerSelector?: string;
 };
