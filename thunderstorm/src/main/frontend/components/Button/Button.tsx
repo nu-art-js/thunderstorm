@@ -140,3 +140,5 @@ export class Button
 		return <div className={'ts-button__loader'}/>;
 	};
 }
+
+export const TS_Button = Button;

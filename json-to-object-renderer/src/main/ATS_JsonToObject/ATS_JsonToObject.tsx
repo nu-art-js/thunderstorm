@@ -1,0 +1,65 @@
+import * as React from 'react';
+import {AppToolsScreen, ComponentSync, EditableItem, LL_V_L, TS_Button, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
+import {Editor_JsonToObject} from '../Editor_JsonToObject';
+import {tsValidateString, ValidatorTypeResolver} from '@nu-art/ts-common';
+
+type ATS_JsonToObject_Props = {
+	//
+};
+type ATS_JsonToObject_State = {
+	editable: EditableItem<TestType>
+	freeText: boolean
+	//
+};
+
+type TestType = {
+	a: string
+	b: string
+	c: string
+}
+
+const validator: ValidatorTypeResolver<TestType> = {
+	a: tsValidateString(-1),
+	b: tsValidateString(-1),
+	c: tsValidateString(-1)
+};
+
+export class ATS_JsonToObject
+	extends ComponentSync<ATS_JsonToObject_Props, ATS_JsonToObject_State> {
+
+	static screen: AppToolsScreen = {name: `DevTool - JsonToObject`, renderer: this};
+
+	static defaultProps = {
+		modules: [],
+		pageTitle: () => this.screen.name
+	};
+
+	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
+		state.freeText ??= false;
+		state.editable ??= new EditableItem<TestType>({}, async (item) => {
+			console.log('Saving: ', item);
+			this.forceUpdate();
+			return item;
+		}, async (item) => console.log('Delete: ', item)).setAutoSave(true);
+		return state;
+	}
+
+	constructor(p: ATS_JsonToObject_Props) {
+		super(p);
+	}
+
+	render() {
+
+		return <LL_V_L>
+			<Editor_JsonToObject freeText={this.state.freeText} validator={validator} renderer={(editable) => {
+				const item = editable.item
+				return <LL_V_L>
+					<TS_PropRenderer.Vertical label={'property a'}>{item.a ?? 'no A'}</TS_PropRenderer.Vertical>
+					<TS_PropRenderer.Vertical label={'property b'}>{item.b ?? 'no B'}</TS_PropRenderer.Vertical>
+				</LL_V_L>;
+			}} editable={this.state.editable}/>
+			<TS_Button onClick={() => this.reDeriveState({freeText: !this.state.freeText})}>toggle</TS_Button>
+		</LL_V_L>;
+	}
+}
