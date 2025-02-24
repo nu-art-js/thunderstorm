@@ -21,15 +21,7 @@
  * Created by AlanBen on 29/08/2019.
  */
 
-import {
-	ApiException,
-	currentTimeMillis,
-	generateHex,
-	ImplementationMissingException,
-	md5,
-	Minute,
-	Module
-} from '@nu-art/ts-common';
+import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
 import {ChatPostMessageArguments, WebAPICallResult, WebClient, WebClientOptions,} from '@slack/web-api';
 import {addRoutes, AxiosHttpModule, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_Slack, PreSendSlackStructuredMessage} from '../shared';
@@ -137,16 +129,16 @@ export class ModuleBE_Slack_Class
 		const {upload_url, file_id} = uploadUrlResponse;
 
 		// Upload the file to the URL
-		const uploadResponse = await AxiosHttpModule.createRequest({
-			fullUrl: upload_url,
-			path: '',
-			method: HttpMethod.POST
-		})
-			.setBody(file)
-			.executeSync();
-
-		if (!uploadResponse) {
-			throw new ApiException(uploadResponse.status, `Failed to upload file to Slack: ${uploadResponse.statusText}`);
+		try {
+			await AxiosHttpModule.createRequest({
+				fullUrl: upload_url,
+				path: '',
+				method: HttpMethod.POST
+			})
+			    .setBody(file)
+			    .executeSync();
+		} catch (e: any) {
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(`Failed at uploading file to url: ${e.message}`);
 		}
 
 		// Complete the upload - post the file to slack message
