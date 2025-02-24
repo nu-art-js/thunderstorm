@@ -97,7 +97,7 @@ export class ModuleBE_Slack_Class
 				const slackMessage = new SlackBuilderBE(request.channel, request.messageBlocks, request.messageReplies);
 				await slackMessage.send();
 			}),
-			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile2(request.file, request.name, request.thread))
+			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file, request.name, request.thread))
 		]);
 	}
 
@@ -116,7 +116,7 @@ export class ModuleBE_Slack_Class
 		return await this.postMessageImpl(message as ChatPostMessageArguments, thread);
 	}
 
-	public async postFile2(file: any, name: string, thread?: ThreadPointer) {
+	public async postFile(file: any, name: string, thread?: ThreadPointer) {
 		// Get a URL to upload
 		const uploadUrlResponse = await this.web.files.getUploadURLExternal({
 			filename: name,
