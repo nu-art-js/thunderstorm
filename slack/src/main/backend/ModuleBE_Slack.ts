@@ -28,23 +28,16 @@ import {
 	ImplementationMissingException,
 	md5,
 	Minute,
-	Module,
-	ThisShouldNotHappenException
+	Module
 } from '@nu-art/ts-common';
-import {
-	ChatPostMessageArguments,
-	FilesUploadArguments,
-	WebAPICallResult,
-	WebClient,
-	WebClientOptions,
-} from '@slack/web-api';
+import {ChatPostMessageArguments, WebAPICallResult, WebClient, WebClientOptions,} from '@slack/web-api';
 import {addRoutes, AxiosHttpModule, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_Slack, PreSendSlackStructuredMessage} from '../shared';
 import {Stream} from 'stream';
 import {postSlackMessageErrorHandler} from './utils';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {SlackBuilderBE} from './SlackBuilderBE';
-import { HttpMethod } from '@nu-art/thunderstorm';
+import {HttpMethod} from '@nu-art/thunderstorm';
 
 
 interface ChatPostMessageResult
@@ -131,71 +124,40 @@ export class ModuleBE_Slack_Class
 		return await this.postMessageImpl(message as ChatPostMessageArguments, thread);
 	}
 
-	public async postFile(file: any, name: string, thread?: ThreadPointer) {
-		const message: FilesUploadArguments = {
-			file,
-			filename: name,
-			channels: this.config.defaultChannel,
-			filetype: 'auto'
-		};
-		if (thread) {
-			message.channels = thread.channel;
-			message.thread_ts = thread.ts;
-		}
-		/*TODO: Instead of upload, should use files.getUploadURLExternal and then files.completeUploadExternal*/
-		return await this.web.files.upload(message);
-	}
-
 	public async postFile2(file: any, name: string, thread?: ThreadPointer) {
 		// Get a URL to upload
-		this.logErrorBold("HEY BEFOREEE");
-		const uploadUrlResponse = await this.web.apiCall('files.getUploadURLExternal', {
+		const uploadUrlResponse = await this.web.files.getUploadURLExternal({
 			filename: name,
-			length: file.size,
+			length: file.length
 		});
-		this.logErrorBold("HEY AFTERRR ", uploadUrlResponse);
 
-		if (!uploadUrlResponse.ok || typeof uploadUrlResponse.upload_url !== 'string') {
-			throw new ThisShouldNotHappenException(`Failed to get upload URL: ${uploadUrlResponse.error}`);
-		}
+		if (!uploadUrlResponse.ok)
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(`Failed at getting a URL from slack: ${uploadUrlResponse.error!}`);
 
-		const { upload_url, file_id } = uploadUrlResponse;
+		const {upload_url, file_id} = uploadUrlResponse;
 
-		const formData = new FormData();
-		formData.append('file', file);
-
-		// const uploadResponse = await fetch(new URL(upload_url).toString(), {
-		// 	method: 'POST',
-		// 	body: formData,
-		// });
-
+		// Upload the file to the URL
 		const uploadResponse = await AxiosHttpModule.createRequest({
-			fullUrl: new URL(upload_url).toString(),
+			fullUrl: upload_url,
 			path: '',
 			method: HttpMethod.POST
-		}).setResponseType('stream').executeSync();
+		})
+			.setBody(file)
+			.executeSync();
 
-		if (!uploadResponse.ok) {
+		if (!uploadResponse) {
 			throw new ApiException(uploadResponse.status, `Failed to upload file to Slack: ${uploadResponse.statusText}`);
 		}
 
-		// Complete the upload
-		const completeResponse = await this.web.apiCall('files.completeUploadExternal', {
-			files: [{ id: file_id }],
+		// Complete the upload - post the file to slack message
+		const completeResponse = await this.web.files.completeUploadExternal({
+			files: [{id: file_id!}],
 			channel_id: thread ? thread.channel : this.config.defaultChannel,
 			thread_ts: thread?.ts,
 		});
 
-		// 	await fetch(upload_url, {
-		// 		method: 'PUT',
-		// 		body: file,
-		// 		headers: { 'Content-Type': 'application/octet-stream' },
-		// 	});
-
-		if (!completeResponse.ok) {
-			this.logErrorBold(`Failed to complete upload: ${completeResponse.error}`)
-			throw new ApiException(uploadResponse.status, `Failed to complete upload: ${completeResponse.error}`);
-		}
+		if (!completeResponse.ok)
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(`Failed at complete uploading: ${completeResponse.error!}`);
 
 		return completeResponse;
 	}
