@@ -1,0 +1,93 @@
+@use '@nu-art/ts-styles' as styles;
+
+.ts-label {
+  position: relative;
+
+  .ts-label__content {
+    width: 100%;
+  }
+
+  &.truncate-active {
+    .ts-label__content {
+      @include styles.text-ellipsis;
+    }
+  }
+
+  &.tooltip-active {
+    //Tooltip arrow
+    &::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translateX(-50%) translateY(10px);
+      border-width: 6px;
+      border-style: solid;
+      border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    //Tooltip content
+    &::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 8px 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    &:hover {
+      &::before {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(5px);
+      }
+
+      &::after {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(-5px);
+      }
+    }
+  }
+
+  &.invert-tooltip {
+    &::before {
+      bottom: unset;
+      top: 100%;
+      transform: translateX(-50%) translateY(-10px);
+      border-color: transparent transparent rgba(0, 0, 0, 0.85) transparent;
+    }
+
+    &::after {
+      bottom: unset;
+      top: 100%;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    &:hover {
+      &::before {
+        transform: translateX(-50%) translateY(-5px);
+      }
+
+      &::after {
+        transform: translateX(-50%) translateY(5px);
+      }
+    }
+  }
+}

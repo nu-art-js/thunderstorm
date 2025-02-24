@@ -167,7 +167,6 @@ export class TS_DropDown<ItemType>
 			value={dropDown.props.inputValue}
 			onChange={(filterText) => dropDown.reDeriveState({filterText})}
 			focus={true}
-			style={{width: '100%'}}
 			placeholder={dropDown.props.placeholder && !dropDown.state.hidePlaceholderOnOpen ? dropDown.props.placeholder : ''}
 			// onAccept={(value, ev) => {
 			// 	const filterText = dropDown.state.filterText;
