@@ -1,17 +1,19 @@
 import * as React from 'react';
 import {filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
-import './ATS_CheckUsage.scss';
-import {AppToolsScreen, ATS_Backend} from '../../components/TS_AppTools';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {ComponentSync} from '../../core/ComponentSync';
-import {Button} from '../../components/Button/Button';
-import {ModuleFE_CollectionActions} from '../../modules/ModuleFE_CollectionActions';
-import {TS_PropRenderer} from '../../components/TS_PropRenderer';
-import {TS_Input} from '../../components/TS_Input';
-import {SimpleListAdapter} from '../../components/adapter/Adapter';
-import {TS_DropDown} from '../../components/TS_Dropdown';
-import { LL_V_L } from '../../components/Layouts';
-
+import './ATS_ConflictResolution.scss';
+import {
+	ModuleFE_BaseApi,
+	ComponentSync,
+	AppToolsScreen,
+	ATS_Backend,
+	SimpleListAdapter,
+	LL_V_L,
+	TS_PropRenderer,
+	TS_DropDown,
+	TS_Input,
+	Button
+} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_CollectionActions} from '@nu-art/thunderstorm/frontend/modules/ModuleFE_CollectionActions';
 
 type State = {
 	upgradableModules: ModuleFE_BaseApi<any, any>[];
@@ -19,12 +21,12 @@ type State = {
 	itemId?: string
 };
 
-export class ATS_CheckUsage
+export class ATS_ConflictResolution
 	extends ComponentSync<{}, State> {
 
 	static screen: AppToolsScreen = {
-		name: 'Check Usage',
-		key: 'check-usage',
+		name: 'Conflict Resolution',
+		key: 'conflict-resolution',
 		renderer: this,
 		group: ATS_Backend,
 	};

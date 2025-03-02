@@ -54,6 +54,8 @@ import {Response_DBSync} from '../../../shared/sync-manager/types';
 import {CanDeleteDBEntitiesProto} from '@nu-art/firebase/backend/firestore-v3/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {canDeleteDispatcherV3, MemKey_DeletedDocs} from '@nu-art/firebase/backend/firestore-v3/consts';
+import {EntityDependencyCollection} from '../collection-actions/dispatcher';
+import {DBEntityDependencies} from '../../shared';
 
 
 export type BaseDBApiConfigV3 = {
@@ -72,7 +74,7 @@ const CONST_DefaultWriteChunkSize = 200;
 export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = any,
 	Config extends ConfigType & DBApiConfigV3<Proto> = ConfigType & DBApiConfigV3<Proto>>
 	extends Module<Config>
-	implements CanDeleteDBEntitiesProto {
+	implements CanDeleteDBEntitiesProto, EntityDependencyCollection {
 
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
@@ -103,6 +105,61 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		this.manipulateQuery.bind(this);
 		this.collectDependencies.bind(this);
 	}
+
+	__collectEntityDependencies = async <T extends DBProto<any>>(type: T['dbKey'], itemIds: string[], transaction?: Transaction): Promise<DBEntityDependencies | undefined> => {
+		//Assert this collection has dependencies fields to go over
+		const dependencyDefs = (this.dbDef.dependencies ?? {}) as Proto['dependencies'];
+		const dependencyDefKeys = _keys(dependencyDefs).filter(key => dependencyDefs[key].dbKey === type) as (keyof Proto['dependencies'])[];
+		if (!dependencyDefKeys.length)
+			return;
+
+		//Collect all conflicting item queries
+		const conflictItemQueries = dependencyDefKeys.reduce((acc, dependencyDefKey) => {
+			const dependencyDef = dependencyDefs[dependencyDefKey];
+			let whereClause: (ids: UniqueId[]) => Clause_Where<Proto['dbType']>;
+			switch (dependencyDef.fieldType) {
+				case 'string':
+					whereClause = ids => ({[dependencyDefKey]: {$in: ids}}) as Clause_Where<Proto['dbType']>;
+					break;
+				case 'string[]':
+					whereClause = ids => ({[dependencyDefKey]: {$aca: ids}}) as Clause_Where<Proto['dbType']>;
+					break;
+				default:
+					throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
+			}
+
+			acc.push(batchActionParallel(itemIds, 10, async ids => this.query.unManipulatedQuery({where: whereClause(ids)}, transaction)));
+			return acc;
+		}, [] as Promise<Proto['dbType'][]>[]);
+
+		if (!conflictItemQueries.length)
+			return;
+
+		//Get all conflicting items
+		let conflictingItems = filterDuplicates<Proto['dbType']>((await Promise.all(conflictItemQueries)).flat(), dbObjectToId);
+		//Filter out conflicting items that were already deleted in this transaction
+		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
+		if (ignoredInThisTransaction) {
+			//The key associated with this collection
+			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.dbKey];
+			//Filter out all ids of items which were already deleted in this transaction
+			conflictingItems = conflictingItems.filter(object => !ignoredForThisCollection?.has(object._id));
+		}
+		return {
+			dbKey: type,
+			dependencyMap: this.mapConflicts(conflictingItems, itemIds, dependencyDefKeys),
+		};
+	};
+
+	private mapConflicts = (conflictItems: Proto['dbType'][], conflictIds: UniqueId[], conflictFields: (keyof Proto['dependencies'])[]): DBEntityDependencies['dependencyMap'] => {
+		return conflictIds.reduce((acc, conflictId) => {
+			acc[conflictId] = {[this.dbDef.dbKey]: []};
+			const conflictingItems = conflictItems.filter(item => {
+
+			});
+			return acc;
+		}, {} as DBEntityDependencies['dependencyMap']);
+	};
 
 	/**
 	 * Check if the dbName in type exists in this proto's dependencies.
