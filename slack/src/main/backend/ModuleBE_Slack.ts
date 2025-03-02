@@ -137,27 +137,13 @@ export class ModuleBE_Slack_Class
 		const {upload_url, file_id} = uploadUrlResponse;
 
 		try {
-			// Upload the file to the URL
-			if (fileLength / (1024 * 1024) > 10) {
-				// file is too big - send multipart
-				await AxiosHttpModule.createRequest({
-					fullUrl: upload_url,
-					path: '',
-					method: HttpMethod.POST
-				})
-					.setBody(file)
-					.setHeader('Content-Type', 'multipart/form-data')
-					.executeSync();
-			}
-			else {
-				await AxiosHttpModule.createRequest({
-					fullUrl: upload_url,
-					path: '',
-					method: HttpMethod.POST
-				})
-					.setBody(file)
-					.executeSync();
-			}
+			await AxiosHttpModule.createRequest({
+				fullUrl: upload_url,
+				path: '',
+				method: HttpMethod.POST
+			})
+				.setBody(file)
+				.executeSync();
 		} catch (e: any) {
 			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(`Failed at uploading file to url: ${e.message}`);
 		}
