@@ -1,13 +1,26 @@
 import {ApiDef_Permissions,} from '../shared';
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '../shared/types';
-import {DefaultAccessLevel_Admin, DefaultAccessLevel_Delete, DefaultAccessLevel_NoAccess, DefaultAccessLevel_Read, DefaultAccessLevel_Write,} from '../shared/consts';
+import {
+	DefaultAccessLevel_Admin,
+	DefaultAccessLevel_Delete,
+	DefaultAccessLevel_NoAccess,
+	DefaultAccessLevel_Read,
+	DefaultAccessLevel_Write,
+} from '../shared/consts';
 import {ApiDef_Account, DBDef_Accounts} from '@nu-art/user-account';
 import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE';
 import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys';
-import {ApiDef_UpgradeCollection} from '@nu-art/thunderstorm/shared/upgrade-collection';
 import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor';
 import {ApiDef_SyncEnv} from '@nu-art/thunderstorm';
-import {DBDef_PermissionAccessLevel, DBDef_PermissionAPI, DBDef_PermissionDomain, DBDef_PermissionGroup, DBDef_PermissionProject, DBDef_PermissionUser} from './_entity';
+import {ApiDef_CollectionActions} from '@nu-art/thunderstorm/shared/collection-actions/api-def';
+import {
+	DBDef_PermissionAccessLevel,
+	DBDef_PermissionAPI,
+	DBDef_PermissionDomain,
+	DBDef_PermissionGroup,
+	DBDef_PermissionProject,
+	DBDef_PermissionUser
+} from './_entity';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
@@ -57,7 +70,7 @@ const _Domain_Developer: DefaultDef_Domain = {
 		PermissionKeyBE_DeveloperAdmin,
 	],
 	customApis: [
-		{path: ApiDef_UpgradeCollection.vv1.upgrade.path, accessLevel: DefaultAccessLevel_Delete.name},
+		{path: ApiDef_CollectionActions.upgrade.all.path, accessLevel: DefaultAccessLevel_Delete.name},
 		{path: ApiDef_ActionProcessing.vv1.list.path, accessLevel: DefaultAccessLevel_Read.name},
 		{path: ApiDef_ActionProcessing.vv1.execute.path, accessLevel: DefaultAccessLevel_Admin.name},
 

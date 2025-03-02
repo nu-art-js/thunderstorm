@@ -3,6 +3,7 @@ import {addRoutes} from './ModuleBE_APIs';
 import {createBodyServerApi} from '../core/typed-api';
 import {ApiDef_CollectionActions, CollectionActions_Check, CollectionActions_Upgrade} from '../../shared/collection-actions/api-def';
 import {ModuleBE_BaseDB} from './db-api-gen/ModuleBE_BaseDB';
+import {canDeleteDispatcherV3} from '@nu-art/firebase/backend/firestore-v3/consts';
 
 class ModuleBE_CollectionActions_Class
 	extends Module {
@@ -70,7 +71,11 @@ class ModuleBE_CollectionActions_Class
 	// ##################### API Callbacks - Check #####################
 
 	public check_Usage = async (req: CollectionActions_Check['usage']['request']): Promise<CollectionActions_Check['usage']['response']> => {
-
+		this.logInfo(`Checking usage for ${req.itemIds.length} items under the "${req.dbKey}" collection`);
+		const dependencies = await canDeleteDispatcherV3.dispatchModuleAsync(req.dbKey, req.itemIds);
+		const filtered = dependencies.filter(dependency => dependency.issues.length > 0);
+		this.logInfo(`Found ${filtered.length} dependency items`);
+		return {dependencies: filtered};
 	};
 }
 
