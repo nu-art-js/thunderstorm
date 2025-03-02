@@ -1,4 +1,6 @@
+import {UniqueId} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod} from '../types';
+import {DB_EntityDependencyV2} from '@nu-art/firebase';
 
 export type CollectionActions_Upgrade = {
 	//API to upgrade specific collections
@@ -20,8 +22,13 @@ export type CollectionActions_Upgrade = {
 
 export type CollectionActions_Check = {
 	usage: {
-		request: {};
-		response: void;
+		request: {
+			dbKey: string;
+			itemIds: UniqueId[];
+		};
+		response: {
+			dependencies: DB_EntityDependencyV2[];
+		};
 	}
 }
 
