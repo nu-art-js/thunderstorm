@@ -116,11 +116,19 @@ export class ModuleBE_Slack_Class
 		return await this.postMessageImpl(message as ChatPostMessageArguments, thread);
 	}
 
-	public async postFile(file: any, name: string, thread?: ThreadPointer) {
+	public async postFile(file: Buffer | Stream, name: string, thread?: ThreadPointer) {
+		let fileLength = 0;
+
+		if (file instanceof Buffer)
+			fileLength = file.length;
+
+		else if (file instanceof Stream)
+			file.on("data", (chunk) => (fileLength += chunk.length));
+
 		// Get a URL to upload
 		const uploadUrlResponse = await this.web.files.getUploadURLExternal({
 			filename: name,
-			length: file.length
+			length: fileLength
 		});
 
 		if (!uploadUrlResponse.ok)
@@ -128,15 +136,28 @@ export class ModuleBE_Slack_Class
 
 		const {upload_url, file_id} = uploadUrlResponse;
 
-		// Upload the file to the URL
 		try {
-			await AxiosHttpModule.createRequest({
-				fullUrl: upload_url,
-				path: '',
-				method: HttpMethod.POST
-			})
-			    .setBody(file)
-			    .executeSync();
+			// Upload the file to the URL
+			if (fileLength / (1024 * 1024) > 10) {
+				// file is too big - send multipart
+				await AxiosHttpModule.createRequest({
+					fullUrl: upload_url,
+					path: '',
+					method: HttpMethod.POST
+				})
+					.setBody(file)
+					.setHeader('Content-Type', 'multipart/form-data')
+					.executeSync();
+			}
+			else {
+				await AxiosHttpModule.createRequest({
+					fullUrl: upload_url,
+					path: '',
+					method: HttpMethod.POST
+				})
+					.setBody(file)
+					.executeSync();
+			}
 		} catch (e: any) {
 			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(`Failed at uploading file to url: ${e.message}`);
 		}
