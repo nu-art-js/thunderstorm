@@ -28,7 +28,7 @@ import {
 	dbObjectToId,
 	DBProto,
 	deleteKeysObject,
-	exists,
+	exists, filterDuplicates,
 	IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
@@ -93,11 +93,67 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 		this.setDefaultConfig(config as Config);
 		this.cache = customMemCreators?.memCache ? customMemCreators?.memCache(config, this) : new MemCache<Proto>(this, config.dbConfig.uniqueKeys);
 		this.IDB = customMemCreators?.idbCache ? customMemCreators?.idbCache(this.config.dbConfig, this.config.key) : new IDBCache<Proto>(this.config.dbConfig, this.config.key);
+		this.upgradeInstances.bind(this);
+		this.registerVersionUpgradeProcessor.bind(this);
 	}
 
 	protected init() {
 		this.attachOnLastSyncUpdatedListener();
 	}
+
+	/**
+	 * Upgrade processor functionality in the FE module will allow us to validate the items we cache in memory or
+	 * idb is up-to-date in case the data source is not coming directly from Storm managed backend (like the csv sync manager)
+	 */
+
+	/* Private */
+	private versionUpgrades: { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> } = {} as { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> };
+
+	/**
+	 * Upgrades the entity from the given version to the next one (to the same version if the given version is the latest)
+	 * @param version - The version we start from
+	 * @param processor
+	 */
+	registerVersionUpgradeProcessor<K extends Proto['versions']['versions'][number]>(version: K, processor: (items: Proto['versions']['types'][K][]) => Promise<void>) {
+		this.versionUpgrades[version] = processor;
+	}
+
+	/* Public */
+	async upgradeInstances(instances: Proto['dbType'][], force = false) {
+		if (!_keys(this.versionUpgrades).length) {
+			this.logVerbose(`No registered upgrade processors for this module ${this.dbDef.dbKey}`);
+			return instances;
+		}
+
+		let instancesToSave: Proto['dbType'][] = [];
+		for (let i = this.config.versions.length - 1; i >= 0; i--) {
+			const version = this.config.versions[i] as Proto['versions'][number];
+
+			const instancesToUpgrade = instances.filter(instance => instance._v === version);
+			const nextVersion = this.config.versions[i - 1] ?? version;
+			const versionTransition = `${version} => ${nextVersion}`;
+			if (instancesToUpgrade.length === 0) {
+				this.logVerbose(`No instances to upgrade from ${versionTransition}`);
+				continue;
+			}
+
+			const upgradeProcessor = this.versionUpgrades[version];
+			if (!upgradeProcessor) {
+				this.logVerbose(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
+				this.logVerbose(`No upgrade processor for: ${versionTransition}`);
+			} else {
+				this.logVerbose(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
+				await upgradeProcessor?.(instancesToUpgrade);
+				instancesToSave.push(...instancesToUpgrade);
+			}
+
+			instancesToSave = filterDuplicates(instancesToSave);
+			instancesToUpgrade.forEach(instance => instance._v = nextVersion);
+		}
+
+		return force ? instances : instancesToSave;
+	}
+
 
 	public attachOnLastSyncUpdatedListener = () => {
 		this.IDB.onLastUpdateListener(this.onLastSyncUpdatedListener);
