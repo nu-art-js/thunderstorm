@@ -20,8 +20,16 @@ import {FirestoreCollectionHooks, FirestoreCollectionV3,} from './FirestoreColle
 import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {DBDef_V3, DBProto, Promise_all_sequentially} from '@nu-art/ts-common';
-import {DocumentReference, getFirestore, Transaction,} from 'firebase-admin/firestore';
+import {DB_Object, DBDef_V3, DBProto, Promise_all_sequentially, UniqueId} from '@nu-art/ts-common';
+import {
+	DocumentReference,
+	DocumentSnapshot,
+	getFirestore,
+	Query,
+	QueryDocumentSnapshot,
+	QuerySnapshot,
+	Transaction,
+} from 'firebase-admin/firestore';
 
 
 export class FirestoreWrapperBEV3
@@ -42,6 +50,7 @@ export class FirestoreWrapperBEV3
 		const postTransactionActions: (() => Promise<any>)[] = [];
 		const toRet = await this.firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
 			const writeActions: (() => void)[] = [];
+			const transactionUpdates: { [id: UniqueId]: DocumentSnapshot<any> } = {};
 
 			// @ts-ignore
 			transaction.postTransaction = (action: () => Promise<any>) => {
@@ -53,20 +62,97 @@ export class FirestoreWrapperBEV3
 			const originSet = transaction.set.bind(transaction);
 			const originDelete = transaction.delete.bind(transaction);
 			const originCreate = transaction.create.bind(transaction);
+			const originGet = transaction.get.bind(transaction);
+			const originGetAll = transaction.getAll.bind(transaction);
+
+			const getMockDocumentSnapshot = <T extends DB_Object>(data: T, _id: UniqueId, exists = true) => {
+				return {
+					id: _id,
+					ref: {} as any, // Mock DocumentReference
+					exists,
+					data: () => (exists ? data : undefined),
+					get: (fieldPath: string) => (data as any)[fieldPath],
+					metadata: {} as any, // Mock metadata
+				} as unknown as DocumentSnapshot<T>;
+			};
+
+			const updateTransactionUpdates = async <T extends DB_Object>(data: T | DocumentReference<T>, exists: boolean = true) => {
+				let _data: DB_Object;
+				let _id: UniqueId;
+
+				if (data instanceof DocumentReference) {
+					_id = data.id;
+					_data = (await data.get()).data() as DB_Object;
+				} else {
+					_id = data._id;
+					_data = data;
+				}
+
+				transactionUpdates[_id] = getMockDocumentSnapshot(_data, _id, exists);
+			};
 
 			transaction.set = <T>(documentRef: FirebaseFirestore.DocumentReference<T>, data: FirebaseFirestore.WithFieldValue<T>) => {
+				updateTransactionUpdates(data as DB_Object);
 				writeActions.push(() => originSet(documentRef, data));
 				return transaction;
 			};
 
 			transaction.create = <T>(documentRef: FirebaseFirestore.DocumentReference<T>, data: FirebaseFirestore.WithFieldValue<T>) => {
+				updateTransactionUpdates(data as DB_Object);
 				writeActions.push(() => originCreate(documentRef, data));
 				return transaction;
 			};
 
 			transaction.delete = (documentRef: DocumentReference<any>, precondition?: FirebaseFirestore.Precondition) => {
+				// update deletions
+				updateTransactionUpdates(documentRef, false);
 				writeActions.push(() => originDelete(documentRef, precondition));
 				return transaction;
+			};
+
+			// @ts-ignore
+			transaction.get = async (args: Query<any> | DocumentReference<any>) => {
+				// @ts-ignore
+				const doc: FirebaseFirestore.QuerySnapshot<any> | FirebaseFirestore.DocumentSnapshot<any> = await originGet(args);
+
+				// handle doc snapshot
+				if (doc instanceof DocumentSnapshot) {
+					const document: any | undefined = doc.data();
+
+					if (!document)
+						return doc;
+
+					return transactionUpdates[document._id] ?? doc;
+				}
+
+				// handle query snapshot
+				if (doc instanceof QuerySnapshot<any>) {
+					const docs = doc.docs;
+
+					// @ts-ignore
+					return {
+						docs: docs.map(doc => {
+							const _doc = doc.data();
+							if (!_doc) return doc;
+
+							return transactionUpdates[(_doc as DB_Object)._id] ?? doc;
+						}) as QueryDocumentSnapshot<any>[]
+					};
+				}
+
+				return doc;
+			};
+
+			// @ts-ignore
+			transaction.getAll = async <T>(...documentRefsOrReadOptions: DocumentReference<T>[]) => {
+				const docs = await originGetAll(...documentRefsOrReadOptions);
+				return docs.map(doc => {
+					const _doc = doc.data();
+					if (!_doc)
+						return doc;
+
+					return transactionUpdates[(_doc as unknown as DB_Object)._id] ?? doc;
+				});
 			};
 
 			const toRet = await processor(transaction);
