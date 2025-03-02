@@ -116,19 +116,11 @@ export class ModuleBE_Slack_Class
 		return await this.postMessageImpl(message as ChatPostMessageArguments, thread);
 	}
 
-	public async postFile(file: Buffer | Stream, name: string, thread?: ThreadPointer) {
-		let fileLength = 0;
-
-		if (file instanceof Buffer)
-			fileLength = file.length;
-
-		else if (file instanceof Stream)
-			file.on("data", (chunk) => (fileLength += chunk.length));
-
+	public async postFile(file: Buffer, name: string, thread?: ThreadPointer) {
 		// Get a URL to upload
 		const uploadUrlResponse = await this.web.files.getUploadURLExternal({
 			filename: name,
-			length: fileLength
+			length: file.length
 		});
 
 		if (!uploadUrlResponse.ok)
