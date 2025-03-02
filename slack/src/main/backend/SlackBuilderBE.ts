@@ -49,7 +49,7 @@ export class SlackBuilderBE
 
 	protected sendFiles = async (tp: ThreadPointer) => {
 		await Promise.all(this.files.map(async file => {
-			const response = await ModuleBE_Slack.postFile(file.file, file.fileName, tp);
+			const response = await ModuleBE_Slack.postFile(file.file as Buffer, file.fileName, tp);
 			if (!response.ok)
 				return this.logError(response?.error);
 		}));
