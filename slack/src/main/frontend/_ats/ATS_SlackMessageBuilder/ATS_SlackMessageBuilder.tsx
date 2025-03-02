@@ -6,7 +6,7 @@ import {generateHex, ServerErrorSeverity} from '@nu-art/ts-common';
 export class ATS_SlackMessageBuilder
 	extends ComponentSync {
 
-	private readonly testChannel = 'tests-stav';
+	private readonly testChannel = '_harel-errors';
 
 	static screen: AppToolsScreen = {
 		name: 'Slack message tester',
