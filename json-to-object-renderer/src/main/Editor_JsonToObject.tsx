@@ -49,13 +49,14 @@ export class Editor_JsonToObject<T>
 					const {isValid} = this.validateItem(value);
 					return this.setState({isValid});
 				}}
-				onAccept={async (value) => {
+				onBlur={async (value) => {
 					const {isValid, item} = this.validateItem(value);
 					if (!isValid)
 						return this.setState({isValid, value});
 
 					await this.state.editable.updateObj(item);
-				}}/>
+				}}
+			/>
 			}
 		</>;
 	}
