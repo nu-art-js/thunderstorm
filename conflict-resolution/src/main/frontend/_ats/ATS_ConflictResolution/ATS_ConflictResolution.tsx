@@ -2,18 +2,19 @@ import * as React from 'react';
 import {filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_ConflictResolution.scss';
 import {
-	ModuleFE_BaseApi,
-	ComponentSync,
 	AppToolsScreen,
 	ATS_Backend,
-	SimpleListAdapter,
+	Button,
+	ComponentSync,
 	LL_V_L,
-	TS_PropRenderer,
+	ModuleFE_BaseApi,
+	SimpleListAdapter,
 	TS_DropDown,
 	TS_Input,
-	Button
+	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_CollectionActions} from '@nu-art/thunderstorm/frontend/modules/ModuleFE_CollectionActions';
+import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution';
 
 type State = {
 	upgradableModules: ModuleFE_BaseApi<any, any>[];
@@ -53,7 +54,8 @@ export class ATS_ConflictResolution
 			dbKey: dbKey,
 			itemIds: [itemId]
 		}).setTimeout(2 * Minute).executeSync();
-		this.logWarning(response);
+		if (response.dependencies)
+			ModuleFE_ConflictResolution.showDependencies(response.dependencies);
 	};
 
 	render() {

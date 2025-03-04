@@ -13,4 +13,6 @@ export type DBEntityDependencies = {
 	}
 }
 
-export type DBEntityDependencyError = ResponseError<'entity-has-dependencies', DBEntityDependencies>
+export const DBEntityDependencyErrorType = 'entity-has-dependencies';
+
+export type DBEntityDependencyError = ResponseError<typeof DBEntityDependencyErrorType, DBEntityDependencies>
