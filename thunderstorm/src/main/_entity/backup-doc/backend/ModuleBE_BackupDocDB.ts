@@ -34,8 +34,7 @@ import {MemKey_HttpRequestHeaders} from '../../../backend/modules/server/consts'
 import {ApiDef, HttpMethod, QueryApi} from '../../../shared';
 import {AxiosHttpModule} from '../../../backend';
 import {CSVModuleV3} from '@nu-art/ts-common/modules/CSVModuleV3';
-import {ModuleBE_CollectionActions} from '../../../backend/modules/ModuleBE_CollectionActions';
-
+import { ModuleBE_CollectionActions } from '../../../backend/modules/collection-actions/ModuleBE_CollectionActions';
 
 export interface OnModuleCleanupV2 {
 	__onCleanupInvokedV2: () => Promise<void>;

@@ -6,7 +6,7 @@ import {ModuleBE_ActionProcessor} from '../modules/action-processor/ModuleBE_Act
 import {ModuleBE_ServerInfo} from '../modules/ModuleBE_ServerInfo';
 import {ModulePackBE_AppConfigDB} from '../../_entity/app-config/backend';
 import {ModulePackBE_BackupDocDB} from '../../_entity/backup-doc/backend';
-import {ModuleBE_CollectionActions} from '../modules/ModuleBE_CollectionActions';
+import { ModuleBE_CollectionActions } from '../modules/collection-actions/ModuleBE_CollectionActions';
 
 export const ModulePack_ThunderstormBE: Module[] = [
 	ModuleBE_ServerInfo,
