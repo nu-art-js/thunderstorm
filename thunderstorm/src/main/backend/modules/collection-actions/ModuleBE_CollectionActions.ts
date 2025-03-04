@@ -74,9 +74,8 @@ class ModuleBE_CollectionActions_Class
 		this.logInfo(`Checking usage for ${req.itemIds.length} items under the "${req.dbKey}" collection`);
 		const dependencies = await dispatch_CollectEntityDependencies.dispatchModuleAsync(req.dbKey, req.itemIds);
 		const filtered = filterInstances(dependencies);
-		const merged = filtered.reduce((acc, dependecny) => merge(acc, dependecny));
+		const merged = filtered.reduce((acc, dependency) => merge(acc, dependency));
 		const dependenciesAmount = _keys(merged.dependencyMap).length;
-		this.logInfo(`Found ${dependenciesAmount} dependency items`);
 		return {dependencies: dependenciesAmount ? merged : undefined};
 	};
 }
