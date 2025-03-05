@@ -2,15 +2,16 @@
 
 #panel__conflict-resolution {
   width: 280px;
-  height: calc(100vh - 40px);
-  max-height: 150px;
+  height: 150px;
   position: fixed;
   background: #fff;
   border-radius: 10px;
   border: 2px solid styles.dark-blue(2);
   top: 20px;
   right: 20px;
-  transition: max-height 500ms ease-out, width 500ms ease-out;
+  transition: height 300ms ease-out,
+  width 300ms ease-out;
+  animation: slide-in 300ms ease-out forwards;
   overflow: hidden;
 
   .panel__conflict-resolution__header {
@@ -60,6 +61,15 @@
 
   &.expanded {
     width: 400px;
-    max-height: calc(100vh - 40px);
+    height: calc(100vh - 40px);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(150%);
+  }
+  to {
+    transform: translateX(0);
   }
 }
