@@ -1,5 +1,5 @@
 import {ModuleBE_Slack, ThreadPointer} from './ModuleBE_Slack';
-import {BaseSlackBuilder, SlackBlock} from '../shared';
+import {BaseSlackBuilder, PreSendSlackStructuredMessage, SlackBlock} from '../shared';
 import {__stringify, currentTimeMillis, formatTimestamp, generateHex} from '@nu-art/ts-common';
 
 export class SlackBuilderBE
@@ -43,15 +43,15 @@ export class SlackBuilderBE
 		this.convertLongSectionBlocks();
 		return ModuleBE_Slack.postStructuredMessage({
 			channel: this.channel,
-			blocks: this.blocks,
-		});
+			blocks: this.blocks
+		} as PreSendSlackStructuredMessage);
 	};
 
 	protected sendFiles = async (tp: ThreadPointer) => {
 		await Promise.all(this.files.map(async file => {
-			const response = await ModuleBE_Slack.postFile(file.file, file.fileName, tp);
+			const response = await ModuleBE_Slack.postFile(file.file as Buffer, file.fileName, tp);
 			if (!response.ok)
-				return this.logError(response.error);
+				return this.logError(response?.error);
 		}));
 	};
 
@@ -59,7 +59,7 @@ export class SlackBuilderBE
 		for (const reply of this.replies) {
 			await ModuleBE_Slack.postStructuredMessage({
 				blocks: reply
-			}, tp);
+			} as PreSendSlackStructuredMessage, tp);
 		}
 	};
 }
