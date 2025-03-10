@@ -80,10 +80,8 @@ type ApiDefCaller_Account = ApiDefCaller<{ _v1: ApiStruct_Account['_v1'] & ApiSt
 
 class ModuleFE_Account_Class
 	extends ModuleFE_BaseApi<DBProto_Account>
-	implements ApiDefCaller_Account, OnAuthRequiredListener, OnStorageKeyChangedListener, OnLoginStatusUpdated {
+	implements ApiDefCaller_Account, OnAuthRequiredListener, OnLoginStatusUpdated {
 
-	// @ts-ignore
-	private sessionData!: TS_Object;
 	readonly _v1: ApiDefCaller_Account['_v1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	accountId!: string;
