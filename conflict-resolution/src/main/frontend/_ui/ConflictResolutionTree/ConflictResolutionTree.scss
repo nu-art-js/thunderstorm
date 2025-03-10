@@ -8,6 +8,7 @@
 
     .ll_h_c {
       height: 100%;
+      width: 100%;
       font: inherit;
       gap: 8px;
       color: inherit;
@@ -26,11 +27,19 @@
       }
 
       .ts-label {
+        width: 0;
         height: 100%;
         flex-grow: 1;
 
         .ts-label__content {
           height: 100%;
+        }
+
+        &.tooltip-active {
+          &::after {
+            width: 80%;
+            white-space: pre-wrap;
+          }
         }
       }
     }
