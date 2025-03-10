@@ -1,0 +1,35 @@
+import * as React from 'react';
+import {ConflictResolutionTree_RendererMap, ConflictResolutionTree_RendererProps} from './types';
+import {ConflictResolutionItem} from '../../../shared';
+import {TypedMap} from '@nu-art/ts-common';
+
+const renderTreeNode_CheckedItem = (props: ConflictResolutionTree_RendererProps<'checkedItem'>, map: TypedMap<ConflictResolutionItem<any>>) => {
+	const crItem = map[props.item.dbKey];
+	if (!crItem)
+		return <>{props.item.itemId}</>;
+
+	return <>{crItem.renderer(props.item.item) ?? props.item.itemId}</>;
+};
+
+const renderTreeNode_ConflictingCollection = (props: ConflictResolutionTree_RendererProps<'conflictingCollection'>, map: TypedMap<ConflictResolutionItem<any>>) => {
+	const crItem = map[props.item.dbKey];
+	if (!crItem)
+		return <>{props.item.dbKey}</>;
+
+	return <>{crItem.collectionRenderer(props.item.dbKey)}</>;
+};
+
+const renderTreeNode_ConflictingItem = (props: ConflictResolutionTree_RendererProps<'conflictingItem'>, map: TypedMap<ConflictResolutionItem<any>>) => {
+	const crItem = map[props.item.dbKey];
+	if (!crItem)
+		return <>{props.item.itemId}</>;
+
+	return <>{crItem.renderer(props.item.item) ?? props.item.itemId}</>;
+};
+
+export const ConflictResolutionTreeRenderers = (map: TypedMap<ConflictResolutionItem<any>>): ConflictResolutionTree_RendererMap => ({
+	root: () => <></>,
+	checkedItem: (props) => renderTreeNode_CheckedItem(props, map),
+	conflictingCollection: (props) => renderTreeNode_ConflictingCollection(props, map),
+	conflictingItem: (props) => renderTreeNode_ConflictingItem(props, map),
+});
