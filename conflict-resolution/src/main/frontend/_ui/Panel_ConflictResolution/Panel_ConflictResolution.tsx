@@ -85,6 +85,8 @@ export class Panel_ConflictResolution
 	};
 
 	private render_Body_Expanded = () => {
-		return <ConflictResolutionTree dependencies={this.state.dependencies}/>;
+		return <div className={'panel__conflict-resolution__tree-wrapper'}>
+			<ConflictResolutionTree dependencies={this.state.dependencies}/>
+		</div>
 	};
 }

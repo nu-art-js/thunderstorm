@@ -4,6 +4,7 @@ import {Adapter, AdapterBuilder, ComponentSync, TS_Tree} from '@nu-art/thunderst
 import {calculateConflictResolutionTree} from './tree-calculation';
 import {ConflictResolutionTreeRenderers} from './tree-rendering';
 import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution';
+import './ConflictResolutionTree.scss';
 
 type Props = {
 	dependencies: DBEntityDependencies;
@@ -33,6 +34,6 @@ export class ConflictResolutionTree
 	}
 
 	render() {
-		return <TS_Tree adapter={this.state.treeAdapter}/>;
+		return <TS_Tree adapter={this.state.treeAdapter} className={'conflict-resolution-tree'}/>;
 	}
 }
