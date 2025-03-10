@@ -1,10 +1,11 @@
 import * as React from 'react';
-import {DBEntityDependencies, DBEntityDependencyResult} from '@nu-art/thunderstorm';
-import {Button, ComponentSync, LL_H_C, LL_V_L, ModuleFE_BaseDB, TS_CollapsableContainer} from '@nu-art/thunderstorm/frontend';
-import {RuntimeModules, UniqueId, _keys, _values, filterDuplicates, flatArray} from '@nu-art/ts-common';
+import {DBEntityDependencies} from '@nu-art/thunderstorm';
+import {Button, ComponentSync, LL_H_C, LL_V_L, ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend';
+import {_keys, _values, filterDuplicates, flatArray, RuntimeModules} from '@nu-art/ts-common';
 import {dispatch_ShowConflictResolution} from '../../_dispatchers';
 import {TS_Icons} from '@nu-art/ts-styles/icons';
 import './Panel_ConflictResolution.scss';
+import {ConflictResolutionTree} from '../ConflictResolutionTree/ConflictResolutionTree';
 
 type Props = {
 	dependencies: DBEntityDependencies
@@ -84,34 +85,6 @@ export class Panel_ConflictResolution
 	};
 
 	private render_Body_Expanded = () => {
-		const dependencyMap = this.state.dependencies.dependencyMap;
-		const entityIds = _keys(dependencyMap);
-		return <LL_V_L className={'panel__conflict-resolution__body-expanded'}>
-			{entityIds.map(entityId => {
-				const results = dependencyMap[entityId];
-				return <TS_CollapsableContainer
-					key={entityId}
-					headerRenderer={<>{entityId}</>}
-					containerRenderer={() => this.render_DependencyResult(results)}
-				/>;
-			})}
-		</LL_V_L>;
-	};
-
-	private render_DependencyResult = (result: DBEntityDependencyResult) => {
-		const dbKeys = _keys(result) as string[];
-		return <LL_V_L>
-			{dbKeys.map(dbKey => <TS_CollapsableContainer
-				key={dbKey}
-				headerRenderer={<>{dbKey}</>}
-				containerRenderer={() => this.render_DependencyResultItems(dbKey, result[dbKey])}
-			/>)}
-		</LL_V_L>;
-	};
-
-	private render_DependencyResultItems = (dbKey: string, ids: UniqueId[]) => {
-		return <LL_V_L>
-			{ids.map(id => <div key={id}>{id}</div>)}
-		</LL_V_L>;
+		return <ConflictResolutionTree dependencies={this.state.dependencies}/>;
 	};
 }

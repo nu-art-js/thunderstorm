@@ -1,6 +1,6 @@
 import {DBEntityDependencies, DBEntityDependencyErrorType} from '@nu-art/thunderstorm';
 import {ModuleFE_XHR} from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, Module} from '@nu-art/ts-common';
+import {BadImplementationException, Module, TypedMap, asArray} from '@nu-art/ts-common';
 import {dispatch_ShowConflictResolution} from '../_dispatchers';
 import {ConflictResolutionItem} from '../../shared/types';
 
@@ -21,16 +21,26 @@ class ModuleFE_ConflictResolution_Class
 		dispatch_ShowConflictResolution.dispatchUI(dependencies);
 	};
 
-	public registerConflictResolutionItem = (item: ConflictResolutionItem<any>) => {
-		const existing = this.conflictResolutionItems.find(_item => item.dbKey === _item.dbKey);
-		if (existing)
-			throw new BadImplementationException(`Conflict resolution item for dbKey ${item.dbKey} already registered!`);
+	public registerConflictResolutionItem = (items: ConflictResolutionItem<any> | ConflictResolutionItem<any>[]) => {
+		const toAdd = asArray(items);
+		toAdd.forEach(item => {
+			const existing = this.conflictResolutionItems.find(_item => item.dbKey === _item.dbKey);
+			if (existing)
+				throw new BadImplementationException(`Conflict resolution item for dbKey ${item.dbKey} already registered!`);
 
-		this.conflictResolutionItems.push(item);
+			this.conflictResolutionItems.push(item);
+		});
 	};
 
 	public getConflictResolutionItem = (dbKey: string) => {
 		return this.conflictResolutionItems.find(item => item.dbKey === dbKey);
+	};
+
+	public getConflictResolutionItemMap = () => {
+		return this.conflictResolutionItems.reduce((map, item) => {
+			map[item.dbKey] = item;
+			return map;
+		}, {} as TypedMap<ConflictResolutionItem<any>>);
 	};
 }
 
