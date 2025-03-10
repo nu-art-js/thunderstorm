@@ -1,5 +1,5 @@
-import {DBProto} from '@nu-art/ts-common';
 import * as React from 'react';
+import {DBProto} from '@nu-art/ts-common';
 
 export type ConflictResolutionItem<Proto extends DBProto<any>> = {
 	//Key of the DBEntity
