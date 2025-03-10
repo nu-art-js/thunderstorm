@@ -2,13 +2,19 @@ import * as React from 'react';
 import {ConflictResolutionTree_RendererMap, ConflictResolutionTree_RendererProps} from './types';
 import {ConflictResolutionItem} from '../../../shared';
 import {TypedMap} from '@nu-art/ts-common';
+import {Label, ModuleFE_Thunderstorm} from '@nu-art/thunderstorm/frontend';
 
 const renderTreeNode_CheckedItem = (props: ConflictResolutionTree_RendererProps<'checkedItem'>, map: TypedMap<ConflictResolutionItem<any>>) => {
 	const crItem = map[props.item.dbKey];
-	if (!crItem)
-		return <>{props.item.itemId}</>;
-
-	return <>{crItem.renderer(props.item.item) ?? props.item.itemId}</>;
+	let content: React.ReactNode;
+	if (!crItem || !props.item.item)
+		content = props.item.itemId;
+	else
+		content = crItem.renderer(props.item.item) ?? props.item.itemId;
+	return <Label
+		className={'conflict-resolution-tree__checked-item'}
+		tooltip={content}
+	>{content}</Label>;
 };
 
 const renderTreeNode_ConflictingCollection = (props: ConflictResolutionTree_RendererProps<'conflictingCollection'>, map: TypedMap<ConflictResolutionItem<any>>) => {
@@ -21,10 +27,16 @@ const renderTreeNode_ConflictingCollection = (props: ConflictResolutionTree_Rend
 
 const renderTreeNode_ConflictingItem = (props: ConflictResolutionTree_RendererProps<'conflictingItem'>, map: TypedMap<ConflictResolutionItem<any>>) => {
 	const crItem = map[props.item.dbKey];
-	if (!crItem)
-		return <>{props.item.itemId}</>;
-
-	return <>{crItem.renderer(props.item.item) ?? props.item.itemId}</>;
+	let content: React.ReactNode;
+	if (!crItem || !props.item.item)
+		content = props.item.itemId;
+	else
+		content = crItem.renderer(props.item.item) ?? props.item.itemId;
+	return <Label
+		className={'conflict-resolution-tree__conflicting-item'}
+		tooltip={content}
+		onClick={() => ModuleFE_Thunderstorm.copyToClipboard(props.item.itemId)}
+	>{content}</Label>;
 };
 
 export const ConflictResolutionTreeRenderers = (map: TypedMap<ConflictResolutionItem<any>>): ConflictResolutionTree_RendererMap => ({

@@ -49,18 +49,14 @@
     }
   }
 
-  .panel__conflict-resolution__body-expanded {
+  .panel__conflict-resolution__tree-wrapper {
     width: 100%;
     height: calc(100% - 30px);
     overflow-y: auto;
-
-    .ts-collapsable-container {
-      width: 100%;
-    }
   }
 
   &.expanded {
-    width: 400px;
+    width: 600px;
     height: calc(100vh - 40px);
   }
 }
