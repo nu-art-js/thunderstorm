@@ -58,6 +58,14 @@ export const Unit_Thunderstorm = new Unit_TypescriptLib({
 	filter: () => RuntimeParams.runWithThunderstorm,
 });
 
+export const Unit_ConflictResolution = new Unit_TypescriptLib({
+	key: 'conflict-resolution',
+	label: 'TS/Conflict Resolution',
+	pathToPackage: '_thunderstorm/conflict-resolution' as RelativePath,
+	output: 'dist',
+	filter: () => RuntimeParams.runWithThunderstorm,
+});
+
 export const Unit_TSPDF = new Unit_TypescriptLib({
 	key: 'ts-pdf',
 	label: 'TS/ts-pdf',
@@ -202,6 +210,7 @@ export const allTSUnits: BaseUnit[] = [
 	Unit_BAI,
 	Unit_Firebase,
 	Unit_Thunderstorm,
+	Unit_ConflictResolution,
 	Unit_TSPDF,
 	Unit_Slack,
 	Unit_LiveDocs,
