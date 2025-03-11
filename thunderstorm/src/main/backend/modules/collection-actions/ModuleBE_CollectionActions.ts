@@ -65,6 +65,7 @@ class ModuleBE_CollectionActions_Class
 
 	public upgrade_All = async (req: CollectionActions_Upgrade['all']['request']): Promise<CollectionActions_Upgrade['all']['response']> => {
 		this.logInfo('Upgrade - All');
+		//Call upgrade collections with no dbKey limit
 		await this.upgrade_Collections({dbKeys: [], force: req.force});
 	};
 
