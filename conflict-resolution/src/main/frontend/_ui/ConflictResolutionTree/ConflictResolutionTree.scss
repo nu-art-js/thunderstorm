@@ -1,0 +1,83 @@
+@use '@nu-art/ts-styles' as styles;
+
+.conflict-resolution-tree {
+  width: 100%;
+
+  .ts-tree__node {
+    padding: 0;
+
+    .ll_h_c {
+      height: 100%;
+      width: 100%;
+      font: inherit;
+      gap: 8px;
+      color: inherit;
+
+      .node-icon {
+        height: 20px;
+        width: 20px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font: {
+          size: 18px;
+          weight: normal;
+        }
+      }
+
+      .ts-label {
+        width: 0;
+        height: 100%;
+        flex-grow: 1;
+
+        .ts-label__content {
+          height: 100%;
+        }
+
+        &.tooltip-active {
+          &::after {
+            width: 80%;
+            white-space: pre-wrap;
+          }
+        }
+      }
+    }
+
+    //Checked Item
+    &.depth-0 {
+      height: 30px;
+      background: styles.dark-blue(3);
+      color: #fff;
+      font: {
+        size: 14px;
+        weight: bold;
+      }
+
+      //Add border to the children container when the node is opened
+      & + .ts-tree__children-container {
+        border-bottom: 2px solid styles.dark-blue(3);
+      }
+
+      .ts-label .ts-label__content {
+        line-height: 30px;
+      }
+    }
+
+    //Conflicting Collections
+    &.depth-1 {
+      height: 26px;
+      padding-left: 8px;
+    }
+
+    //Conflicting Items
+    &.depth-2 {
+      height: 22px;
+      padding-left: 16px;
+
+      .ts-label .ts-label__content {
+        line-height: 22px;
+      }
+    }
+  }
+}
