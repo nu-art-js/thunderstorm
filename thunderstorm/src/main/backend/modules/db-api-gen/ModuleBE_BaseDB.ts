@@ -289,6 +289,9 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	async collectDependencies(dbInstances: Proto['dbType'][], transaction?: Transaction): Promise<DBEntityDependencies | undefined> {
 		const dependencyResponses = await dispatch_CollectEntityDependencies.dispatchModuleAsync(this.dbDef.dbKey, dbInstances.map(dbObjectToId), transaction);
 		const filtered = filterInstances(dependencyResponses);
+		if (!filtered.length)
+			return undefined;
+
 		const merged = filtered.reduce((acc, dependency) => merge(acc, dependency));
 		return _keys(merged.dependencyMap).length ? merged : undefined;
 	}
