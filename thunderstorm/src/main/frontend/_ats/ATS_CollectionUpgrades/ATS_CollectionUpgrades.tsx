@@ -43,23 +43,18 @@ export class ATS_CollectionUpgrades
 				dbKeys: [module.dbDef.dbKey],
 				force: e.metaKey,
 			}).setTimeout(5 * Minute).executeSync();
-			// await ModuleFE_UpgradeCollection.vv1.upgrade({
-			// 	collectionsToUpgrade: [module.dbDef.dbKey],
-			// 	force: e.metaKey
-			// }).setTimeout(5 * Minute).executeSync();
 		}, `Upgrading ${collectionName}`);
 	};
 
 	private upgradeAll = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		await genericNotificationAction(async () => {
 			await ModuleFE_CollectionActions.upgrade.all({force: e.metaKey}).setTimeout(5 * Minute).executeSync();
-			// await ModuleFE_UpgradeCollection.vv1.upgradeAll({collectionsToUpgrade: collectionNames ?? []}).setTimeout(5 * Minute).executeSync();
 		}, `Upgrading all collections`);
 	};
 
 	render() {
 		return <div className={'collection-upgrades-page'}>
-			<Button key={'upgrade-all-test'} onClick={e => this.upgradeAll(e)}>Upgrade All</Button>
+			<Button onClick={e => this.upgradeAll(e)}>Upgrade All</Button>
 			{TS_AppTools.renderPageHeader('Collection Upgrades - To force upgrade click + ⌘/ctrl')}
 			<LL_H_C className={'buttons-container'}>
 				{(this.state.upgradableModules || []).map(module => {
