@@ -10,9 +10,9 @@ import {
 	ModuleFE_MouseInteractivity,
 	ModuleFE_Thunderstorm,
 	mouseInteractivity_PopUp,
-	TS_Button,
 	TS_ComponentTransition,
-	TS_ErrorBoundary
+	TS_ErrorBoundary,
+	Button
 } from '@nu-art/thunderstorm/frontend';
 import {ResolvableContent, resolveContent, RuntimeVersion, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {DB_Account} from '../../../shared';
@@ -204,10 +204,12 @@ export class PopUp_AccountMenu
 
 		return <Grid className={'account-menu__body'}>
 			{this.state.menuActions?.map((menuAction, i) => {
-				return <TS_Button key={i}
-								  id={menuAction.id}
-								  className={_className(menuAction.className)}
-								  onClick={() => this.onActionClick(menuAction)}>{menuAction.label}</TS_Button>;
+				return <Button
+					key={i}
+					variant={'secondary'}
+					id={menuAction.id}
+					className={_className(menuAction.className)}
+					onClick={() => this.onActionClick(menuAction)}>{menuAction.label}</Button>;
 			})}
 		</Grid>;
 	};
@@ -220,7 +222,7 @@ export class PopUp_AccountMenu
 		return <>
 			{this.renderSeparatorBar({marginTop: 'auto'})}
 			<LL_V_C className={'account-menu__footer'}>
-				<TS_Button onClick={this.logOut}>Log Out</TS_Button>
+				<Button variant={'primary'} onClick={this.logOut}>Log Out</Button>
 				<div className="version">{RuntimeVersion()}</div>
 			</LL_V_C>
 		</>;

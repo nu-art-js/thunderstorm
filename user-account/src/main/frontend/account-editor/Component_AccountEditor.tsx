@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Account_CreateAccount, AccountType, accountTypes, DB_Account, DB_Session} from '../../shared';
 import {
 	_className,
+	Button,
 	ComponentSync,
 	Grid,
 	LL_H_C,
@@ -10,7 +11,6 @@ import {
 	ModuleFE_Toaster,
 	performAction,
 	SimpleListAdapter,
-	TS_BusyButton,
 	TS_DropDown,
 	TS_Input,
 	TS_PropRenderer
@@ -116,23 +116,23 @@ export class Component_AccountEditor
 					<div>{this.state.user?.email}</div>
 				</TS_PropRenderer.Vertical>
 				{this.state.user?.type !== 'service' && <TS_PropRenderer.Vertical label={'Need To Set Password'}>
-                    <div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
-                </TS_PropRenderer.Vertical>}
+					<div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
+				</TS_PropRenderer.Vertical>}
 			</LL_H_C>;
 
 		return <LL_H_C className={'inputs-row'}>
 			<TS_PropRenderer.Vertical label={'Email'}>
 				<TS_Input type={'text'}
-						  placeholder={'Email'}
-						  value={this.state.email}
-						  onBlur={(email) => this.setState({email})}/>
+									placeholder={'Email'}
+									value={this.state.email}
+									onBlur={(email) => this.setState({email})}/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical disabled={!(this.state.type === 'user')} label={'Temporary Password'}>
 				<TS_Input disabled={!(this.state.type === 'user')}
-						  type={'password'}
-						  value={this.state.password}
-						  placeholder={'Temporary Password'}
-						  onBlur={(password) => this.setState({password})}/>
+									type={'password'}
+									value={this.state.password}
+									placeholder={'Temporary Password'}
+									onBlur={(password) => this.setState({password})}/>
 			</TS_PropRenderer.Vertical>
 		</LL_H_C>;
 	};
@@ -143,8 +143,8 @@ export class Component_AccountEditor
 
 		const disabled = !this.canCreate();
 		const className = _className(disabled && 'disabled');
-		return <TS_BusyButton className={className} disabled={disabled} onClick={this.addAccount}>Add
-			Account</TS_BusyButton>;
+		return <Button variant={'primary'} className={className} disabled={disabled} onClick={this.addAccount}>Add
+			Account</Button>;
 	};
 
 	private renderGenToken = () => {
@@ -174,22 +174,24 @@ export class Component_AccountEditor
 						onBlur={tokenLabel => this.setState({tokenLabel})}
 					/>
 				</TS_PropRenderer.Vertical>
-				<TS_BusyButton onClick={async () => {
-					try {
-						const token = await ModuleFE_Account._v1.createToken({
-							accountId: this.state.user!._id,
-							ttl: this.state.tokenTTL,
-							label: this.state.tokenLabel
-						})
-							.executeSync();
-						await ModuleFE_Thunderstorm.copyToClipboard(token.token);
-						ModuleFE_Toaster.toastSuccess('Token copied to clipboard');
-						this.reDeriveState();
-					} catch (e) {
-						ModuleFE_Toaster.toastError((e as Error).message);
-						this.logError(e as Error);
-					}
-				}}>Generate Token</TS_BusyButton>
+				<Button
+					variant={'primary'}
+					onClick={async () => {
+						try {
+							const token = await ModuleFE_Account._v1.createToken({
+								accountId: this.state.user!._id,
+								ttl: this.state.tokenTTL,
+								label: this.state.tokenLabel
+							})
+								.executeSync();
+							await ModuleFE_Thunderstorm.copyToClipboard(token.token);
+							ModuleFE_Toaster.toastSuccess('Token copied to clipboard');
+							this.reDeriveState();
+						} catch (e) {
+							ModuleFE_Toaster.toastError((e as Error).message);
+							this.logError(e as Error);
+						}
+					}}>Generate Token</Button>
 			</LL_H_C>
 		</TS_PropRenderer.Vertical>;
 	};

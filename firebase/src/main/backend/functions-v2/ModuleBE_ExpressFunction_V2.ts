@@ -5,8 +5,8 @@ import {HttpsOptions, HttpsFunction, onRequest} from 'firebase-functions/v2/http
 import {WebSocket} from 'ws';
 
 
-export class ModuleBE_ExpressFunction_V2
-	extends ModuleBE_BaseFunction<{ options: HttpsOptions }> {
+export class ModuleBE_ExpressFunction_V2<Config = {}>
+	extends ModuleBE_BaseFunction<{ options: HttpsOptions } & Config> {
 	private function!: HttpsFunction;
 
 	protected constructor(name: string = 'api') {

@@ -116,10 +116,10 @@ export abstract class Module<Config = any,
 		setTimeout(() => {
 			this.logDebug(`Running async: ${label}`);
 			new Promise(toCall)
-				.then(() => {
-					this.logDebug(`Async call completed: ${label}`);
-				})
-				.catch(reason => this.logError(`Async call error: ${label}`, reason));
+			.then(() => {
+				this.logDebug(`Async call completed: ${label}`);
+			})
+			.catch(reason => this.logError(`Async call error: ${label}`, reason));
 		}, 0);
 	};
 

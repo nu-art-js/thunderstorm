@@ -8,7 +8,7 @@ import {ModuleSyncType} from '../db-api-gen/types';
 import {Thunder} from '../../core/Thunder';
 import firebase from 'firebase/compat';
 import Error = firebase.auth.Error;
-import { HeaderKey_ContentType } from '../../shared';
+import {HeaderKey_ContentType} from '../../shared';
 
 
 export class ModuleFE_SyncManager_CSV_Class
@@ -49,8 +49,15 @@ export class ModuleFE_SyncManager_CSV_Class
 						for (const moduleKey of _keys(modules)) {
 							const items = itemsToSync.filter(item => item.dbKey === moduleKey);
 							const module = modules[moduleKey];
-							// this.logInfo(`Syncing ${items.length} items to ${moduleKey}`);
-							await module.IDB.syncIndexDb(items.map(item => item.document));
+
+							// Get all docs to upsert
+							const documents = items.map(i => i.document);
+
+							// Run upgrade processors on them from the module
+							await module.upgradeInstances(documents);
+
+							// Upsert items to the idb
+							await module.IDB.syncIndexDb(documents);
 							await module.cache.load();
 							module.setDataStatus(DataStatus.ContainsData);
 						}

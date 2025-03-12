@@ -18,7 +18,7 @@ import {
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp
 } from '../../../../component-modules/mouse-interactivity';
-import {TS_BusyButton} from '../../../TS_BusyButton';
+import {Button} from '../../../Button/Button';
 import {VirtualizedList} from '../../../TS_VirtualizedList';
 import {
 	InferProps,
@@ -73,13 +73,13 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 			modalPos: {x: 1, y: 1},
 			content: () => <>
 				{menuActions.map((action, index) => {
-					return <TS_BusyButton
+					return <Button
 						key={index}
 						onClick={async () => {
 							const shouldClose = await action.action(item) ?? false;
 							if (shouldClose)
 								ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
-						}}>{action.label}</TS_BusyButton>;
+						}}>{action.label}</Button>;
 				})}
 			</>
 		};

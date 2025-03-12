@@ -35,7 +35,7 @@ import {
 	removeItemFromArray,
 	ResolvableContent,
 	resolveContent,
-	RuntimeModules
+	RuntimeModules, Second
 } from '@nu-art/ts-common';
 import {apiWithBody} from '../../core/typed-api';
 import {
@@ -103,6 +103,11 @@ export class ModuleFE_SyncManager_Class
 	private cleanIDBOnFullSync: boolean = true;
 	private syncManagerNodePath: ResolvableContent<string> = Default_SyncManagerNodePath;
 	private smartSyncApiUrl: ResolvableContent<string | undefined>;
+	private currentSyncData!: SyncDataFirebaseState;
+	private _smartSyncCompleted?: (currentSyncData: SyncDataFirebaseState) => void;
+	private _onSyncDataChanged?: (syncData?: SyncDataFirebaseState) => void;
+	private _debounceTimeout: number = 2 * Second;
+	private _debounceMaxTimeout: number = 10 * Second;
 
 	private syncDebouncer?: VoidFunction;
 	private syncQueue: QueueV2<NoNeedToSyncModule | DeltaSyncModule | FullSyncModule>;
@@ -211,7 +216,7 @@ export class ModuleFE_SyncManager_Class
 			this.logDebug(`Collections out of sync:`, this.outOfSyncCollections);
 			this.outOfSyncCollections.clear();
 			await this.smartSync();
-		}, 2000, 10000);
+		}, this._debounceTimeout, this._debounceMaxTimeout);
 
 		this.logInfo('Performing Immediate Sync');
 		await this.smartSync();
@@ -224,6 +229,9 @@ export class ModuleFE_SyncManager_Class
 	 */
 	public onSmartSyncCompleted = async (response: SyncManagerAPI_SmartSync['response']) => {
 		this.logInfo(`onSmartSyncCompleted (${response.modules.length})`, response);
+
+		this._smartSyncCompleted?.(this.currentSyncData);
+
 		const currentSyncedModulesLength = this.syncedModules.length;
 		this.syncedModules = response.modules.map(item => ({dbKey: item.dbKey, lastUpdated: item.lastUpdated}));
 		response.modules.forEach(module => this.syncQueue.addItem(module));
@@ -427,8 +435,13 @@ export class ModuleFE_SyncManager_Class
 		// remoteSyncData is the data we received from the firebase listener, that just detected a change.
 		const rtdbSyncData = snapshot.val() as SyncDataFirebaseState | undefined;
 
+		// if exists trigger the external callback
+		this._onSyncDataChanged?.(rtdbSyncData);
+
 		if (!rtdbSyncData)
 			return await this.debounceSyncImpl();
+
+		this.currentSyncData = rtdbSyncData;
 
 		// localSyncData is the data we just collected from the IDB regarding all existing modules.
 		const localSyncData = reduceToMap<SyncDbData, LastUpdated>(this.getLocalSyncData(), data => data.dbKey, data => ({lastUpdated: data.lastUpdated}));
@@ -468,6 +481,14 @@ export class ModuleFE_SyncManager_Class
 	public setNodeContext = (nodeContextResolver: ResolvableContent<string>) => this.syncManagerNodePath = nodeContextResolver;
 
 	public setSmartSyncUrl = (baseUrlResolver: ResolvableContent<string | undefined>) => this.smartSyncApiUrl = baseUrlResolver;
+
+	public setOnSyncCompleted = (smartSyncCompleted: (syncData: SyncDataFirebaseState) => void) => this._smartSyncCompleted = smartSyncCompleted;
+
+	public setOnSyncDataChanged = (onSyncDataChanged: (syncData?: SyncDataFirebaseState) => void) => this._onSyncDataChanged = onSyncDataChanged;
+
+	public setDebounceTimeout = (debounceTimeout: number) => this._debounceTimeout = debounceTimeout;
+
+	public setDebounceMaxTimeout = (debounceTimeout: number) => this._debounceMaxTimeout = debounceTimeout;
 }
 
 export const ModuleFE_SyncManager = new ModuleFE_SyncManager_Class();

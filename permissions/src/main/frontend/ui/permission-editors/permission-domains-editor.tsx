@@ -1,20 +1,6 @@
 import * as React from 'react';
-import {
-	EditableDBItemV3,
-	ModuleFE_Toaster,
-	TS_BusyButton,
-	TS_PropRenderer,
-	TS_Route,
-	TS_Table
-} from '@nu-art/thunderstorm/frontend';
-import {
-	BadImplementationException,
-	capitalizeFirstLetter,
-	exists,
-	PreDB,
-	sortArray,
-	StaticLogger
-} from '@nu-art/ts-common';
+import {Button, EditableDBItemV3, ModuleFE_Toaster, TS_PropRenderer, TS_Route, TS_Table} from '@nu-art/thunderstorm/frontend';
+import {BadImplementationException, capitalizeFirstLetter, exists, PreDB, sortArray, StaticLogger} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {
 	DB_PermissionAccessLevel,
@@ -34,10 +20,7 @@ import {
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
 import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
-import {
-	Props_EditableItemControllerProto,
-	TS_EditableItemControllerProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
+import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
 
 
 class Component_EditDomain
@@ -171,12 +154,13 @@ class Component_EditDomain
 		if (!editable.item._id)
 			return;
 
-		return <TS_BusyButton
+		return <Button
+			variant={'dangerous'}
 			onClick={async () => await this.deleteLevel(editable)}
 			className={'action-button delete'}
 		>
 			<TS_Icons.bin.component/>
-		</TS_BusyButton>;
+		</Button>;
 	};
 }
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './ATS_ShortUrl.scss';
-import {AppToolsScreen, ATS_Fullstack, ComponentSync, LL_H_C, LL_V_L, TS_AppTools, TS_Button} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ATS_Fullstack, ComponentSync, LL_H_C, LL_V_L, TS_AppTools, Button} from '@nu-art/thunderstorm/frontend';
 import {DispatcherType_ShortUrl, ModuleFE_ShortUrl} from '../../../_entity/short-url/frontend';
 import {DBProto_ShortUrl} from '../../../_entity/short-url/shared';
 import {Component_ShortUrlEditor} from './components/Component_ShortUrlEditor';
@@ -32,7 +32,7 @@ export class ATS_ShortUrl
 		return <div className={'short-url'}>
 			<LL_H_C className={'page-title'}>
 				{TS_AppTools.renderPageHeader('Manage App Short Urls')}
-				<TS_Button onClick={voidFunction}>Add Short Url</TS_Button>
+				<Button variant={'primary'} onClick={voidFunction}>Add Short Url</Button>
 			</LL_H_C>
 			<LL_V_L className={'url-cards'}>
 				<Card_ShortUrl key={`new-short-url-${ModuleFE_ShortUrl.cache.allMutable().length}`}/>
