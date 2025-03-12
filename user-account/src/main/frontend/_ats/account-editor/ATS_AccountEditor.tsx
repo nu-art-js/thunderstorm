@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './ATS_AccountEditor.scss';
-import {_className, AppToolsScreen, ComponentSync, LL_H_C, LL_V_L, TS_BusyButton, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {_className, AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
 import {DB_Account, DBProto_Account} from '../../../shared';
 import {generateUUID} from '@nu-art/ts-common';
@@ -76,8 +76,7 @@ class Component_AccountList
 		return <LL_V_L className={'form-container account-list'}>
 			<LL_H_C className={'match_width'}>
 				<TS_PropRenderer.Horizontal className={'match_width'} label={'Accounts List'}>
-					<TS_BusyButton onClick={async () => this.props.setSelectedAccount()}>Create
-						Account</TS_BusyButton>
+					<Button variant={'primary'} onClick={async () => this.props.setSelectedAccount()}>Create Account</Button>
 				</TS_PropRenderer.Horizontal>
 			</LL_H_C>
 			<LL_V_L className={'match_width users-list'}>

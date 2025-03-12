@@ -21,10 +21,10 @@ import {Dispatcher} from './dispatcher';
 import {CustomException} from './exceptions/exceptions';
 
 export enum ServerErrorSeverity {
-	Debug = 'Debug',
-	Info = 'Info',
-	Warning = 'Warning',
-	Error = 'Error',
+	Debug    = 'Debug',
+	Info     = 'Info',
+	Warning  = 'Warning',
+	Error    = 'Error',
 	Critical = 'Critical',
 }
 

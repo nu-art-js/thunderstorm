@@ -2,10 +2,9 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_EditableText.scss';
 import {TS_Input, TS_TextArea} from '../TS_Input';
-import {TS_Button} from '../TS_Button';
 import {_className, stopPropagation, stringReplacer} from '../../utils/tools';
-import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_ReadMore} from '../TS_ReadMore';
+import { Button } from '../Button/Button';
 
 type Props = {
 	text: string;
@@ -122,12 +121,12 @@ class TS_EditableText_Base
 	};
 
 	protected renderButton = {
-		reset: () => <TS_Button className={'ts-editable-text__buttons__reset'} onClick={this.onResetChanges}>
-			{this.props.renderers?.resetButton || 'Reset'}</TS_Button>,
-		cancel: () => <TS_Button className={'ts-editable-text__buttons__cancel'} onClick={this.onCancelChanges}>
-			{this.props.renderers?.cancelButton || 'Cancel'}</TS_Button>,
-		accept: () => <TS_BusyButton className={'ts-editable-text__buttons__save'} onClick={this.onSubmitChanges}>
-			{this.props.renderers?.saveButton || 'Save'}</TS_BusyButton>
+		reset: () => <Button className={'ts-editable-text__buttons__reset'} onClick={this.onResetChanges}>
+			{this.props.renderers?.resetButton || 'Reset'}</Button>,
+		cancel: () => <Button className={'ts-editable-text__buttons__cancel'} onClick={this.onCancelChanges}>
+			{this.props.renderers?.cancelButton || 'Cancel'}</Button>,
+		accept: () => <Button className={'ts-editable-text__buttons__save'} onClick={this.onSubmitChanges}>
+			{this.props.renderers?.saveButton || 'Save'}</Button>
 	};
 }
 

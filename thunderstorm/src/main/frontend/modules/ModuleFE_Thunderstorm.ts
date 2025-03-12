@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_keys, BadImplementationException, Module, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {composeURL} from './ModuleFE_BrowserHistory';
 import {HttpMethod, QueryApi, QueryParams} from '../../shared/types';
@@ -58,64 +58,6 @@ class ModuleFE_Thunderstorm_Class
 
 	setAppName(appName: string) {
 		document.title = appName;
-	}
-
-	async printDiv(div: HTMLDivElement, bodyAttributes?: TypedKeyValue<string, string>[]) {
-		return new Promise<void>((resolve, reject) => {
-			const themeValue = document.body.getAttribute('theme');
-			if (themeValue)
-				(bodyAttributes || (bodyAttributes = [])).push({key: 'theme', value: themeValue});
-
-			//create, and remove iframe from body dynamically!!
-			const printingIFrame = document.createElement('iframe');
-			printingIFrame.style.width = '0';
-			printingIFrame.style.height = '0';
-			printingIFrame.style.position = 'absolute';
-			const body = document.getElementsByTagName('body')[0];
-			body?.appendChild(printingIFrame);
-			this._populatePrintFrame(printingIFrame, div, bodyAttributes);
-			printingIFrame.contentWindow?.addEventListener('afterprint', () => {
-				body.removeChild(printingIFrame);
-				resolve();
-			}, {once: true});
-		});
-	}
-
-	private _populatePrintFrame(printingIFrame: HTMLIFrameElement, div: HTMLDivElement, bodyAttributes?: TypedKeyValue<string, string>[]) {
-		const printingContentWindow = printingIFrame.contentWindow;
-		if (!printingContentWindow)
-			return this.logWarning('printingContentWindow is undefined');
-
-		//Populate the window document
-		printingContentWindow.document.documentElement.innerHTML = `
-        <html>
-            <head></head>
-            <body></body>
-        </html>`;
-
-
-		//Grab essential elements
-		const html = printingContentWindow.document.getElementsByTagName('html')?.[0];
-		const body: HTMLBodyElement | null = html.getElementsByTagName('body')?.[0];
-
-		//Add body attributes
-		bodyAttributes?.forEach(att => {
-			body.setAttribute(att.key, att.value);
-		});
-
-		//Clone and append the printed item to the body
-		const toAppend = div.cloneNode(true);
-		body.appendChild(toAppend);
-
-		//Copy head content from app to the iframe (for css and metas)
-		html.removeChild(html.getElementsByTagName('head')?.[0]);
-		html?.insertBefore(window.document.getElementsByTagName('head')?.[0]?.cloneNode(true), body);
-
-		//Close document for writing and call the print dialog
-		printingContentWindow.document.close();
-		printingContentWindow.focus();
-		setTimeout(async () => printingContentWindow.print(), 1500);
-		return body;
 	}
 
 	setChromeThemeColor(themeColor: string) {

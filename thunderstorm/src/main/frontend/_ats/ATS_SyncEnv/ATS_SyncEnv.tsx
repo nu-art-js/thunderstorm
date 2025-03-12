@@ -20,13 +20,13 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {Thunder} from '../../core/Thunder';
 import {TS_PropRenderer} from '../../components/TS_PropRenderer';
 import {SimpleListAdapter} from '../../components/adapter/Adapter';
-import {TS_BusyButton} from '../../components/TS_BusyButton';
 import {TS_DropDown} from '../../components/TS_Dropdown';
 import {_className} from '../../utils/tools';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
 import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager';
+import {Button} from '../../components/Button/Button';
 
 
 const Environments = ['prod', 'staging', 'dev', 'local'] as const;
@@ -135,9 +135,9 @@ export class ATS_SyncEnvironment
 					backupId: this.state.backupId!,
 					chunkSize: this.state.selectedChunkSize!,
 					selectedModules: Array.from(this.state.selectedModules),
-					cleanSync:this.state.cleanSync,
+					cleanSync: this.state.cleanSync,
 				}, 'selectedModules')).executeSync();
-			} catch (err:any) {
+			} catch (err: any) {
 				this.logError(err);
 			} finally {
 				ModuleFE_SyncManager.startListening();
@@ -298,13 +298,13 @@ export class ATS_SyncEnvironment
 	private renderOperations = () => {
 		return <TS_PropRenderer.Vertical label={'Operations'}>
 			<LL_H_C className={'sync-env-page__operations'}>
-				<TS_BusyButton onClick={this.createNewBackup}>Trigger Backup</TS_BusyButton>
-				<TS_BusyButton onClick={this.syncEnv} disabled={!this.canSync()}>Sync Environment</TS_BusyButton>
-				{Thunder.getInstance().getConfig().name?.toLowerCase() === this.state.selectedEnv && <TS_BusyButton
-                    onClick={this.syncFirebase}
-                    disabled={!this.canSync()}
-                    className={'deter-users-from-this-button'}
-                >Restore Firebase To Older Backup</TS_BusyButton>}
+				<Button onClick={this.createNewBackup}>Trigger Backup</Button>
+				<Button onClick={this.syncEnv} disabled={!this.canSync()}>Sync Environment</Button>
+				{Thunder.getInstance().getConfig().name?.toLowerCase() === this.state.selectedEnv && <Button
+					onClick={this.syncFirebase}
+					disabled={!this.canSync()}
+					className={'deter-users-from-this-button'}
+				>Restore Firebase To Older Backup</Button>}
 				<TS_Checkbox
 					checked={this.state.cleanSync}
 					onCheck={(value) => {
@@ -379,14 +379,16 @@ export class ATS_SyncEnvironment
 			<LL_H_C className={'collection-row'}>
 				<LL_H_C className={'backup-info'}>
 					{diffShow !== undefined &&
-                        <div className={_className(diffShow > 0 ? 'higher' : 'lower')}>
+						<div className={_className(diffShow > 0 ? 'higher' : 'lower')}>
 							{`${diffShow > 0 ? '+' : ''}${diffShow}`}</div>}
 					<div>{collectionMetadata?.numOfDocs !== undefined ? collectionMetadata?.numOfDocs : '--'}</div>
 					|
 					<div className={'left-row'}>{collectionMetadata?.version || '--'}</div>
 				</LL_H_C>
 				<div
-					style={{fontFamily: 'monospace'}}>{`${this.state.moduleList[moduleName].local ? 'L' : '-'}${this.state.moduleList[moduleName].remote ? 'R' : '-'}${this.state.moduleList[moduleName].backup ? 'B' : '-'}`}</div>
+					style={{fontFamily: 'monospace'}}>{`${this.state.moduleList[moduleName].local ? 'L' : '-'}${this.state.moduleList[moduleName].remote
+					? 'R'
+					: '-'}${this.state.moduleList[moduleName].backup ? 'B' : '-'}`}</div>
 			</LL_H_C>
 		</TS_PropRenderer.Horizontal>;
 	};

@@ -2,23 +2,27 @@ import * as React from 'react';
 import './TS_Radio.scss';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className, stopPropagation} from '../../utils/tools';
+import {Label} from '../Label/Label';
 
 type Props<ItemType> = {
-	values: ItemType[];
-	groupName: string;
-	checked?: ItemType;
-	disabled?: boolean;
-	className?: string;
-	labelRenderer?: (value: ItemType) => React.ReactNode
-} & (
-	{ canUnselect: true; onCheck?: (value?: ItemType, prevValue?: ItemType) => void }
-	| { canUnselect?: false; onCheck?: (value: ItemType, prevValue?: ItemType) => void }
-	)
+												 values: ItemType[];
+												 groupName: string;
+												 checked?: ItemType;
+												 disabled?: boolean;
+												 className?: string;
+												 innerRef?: React.RefObject<HTMLDivElement>;
+												 labelRenderer?: (value: ItemType) => React.ReactNode;
+												 labelTooltipContainerSelector?: string;
+											 } & (
+												 { canUnselect: true; onCheck?: (value?: ItemType, prevValue?: ItemType) => void }
+												 | { canUnselect?: false; onCheck?: (value: ItemType, prevValue?: ItemType) => void }
+												 )
 
 type State<ItemType> = {
 	checked?: ItemType;
 	disabled?: boolean;
 	values: ItemType[];
+	labelTooltipContainerSelector?: string;
 }
 
 export class TS_Radio<ItemType>
@@ -31,6 +35,7 @@ export class TS_Radio<ItemType>
 			values: nextProps.values,
 			checked: nextProps.checked || this.state?.checked || undefined,
 			disabled: nextProps.disabled,
+			labelTooltipContainerSelector: nextProps.labelTooltipContainerSelector
 		};
 	}
 
@@ -68,7 +73,8 @@ export class TS_Radio<ItemType>
 
 	private renderRadioLabel = (value: ItemType) => {
 		const renderer = this.props.labelRenderer ?? ((value: ItemType) => String(value));
-		return <span className={'ts-radio__label'}>{renderer(value)}</span>;
+		const label = renderer(value);
+		return <Label className={'ts-radio__label'} tooltip={label} containerSelector={this.state.labelTooltipContainerSelector}>{label}</Label>;
 	};
 
 	private renderRadioButton = (value: ItemType) => {
@@ -77,7 +83,7 @@ export class TS_Radio<ItemType>
 
 	render() {
 		const className = _className('ts-radio', this.state?.disabled ? 'disabled' : undefined, this.props.className);
-		return <div className={className}>
+		return <div className={className} ref={this.props.innerRef}>
 			{this.props.values.map(value => {
 				return this.renderRadioOption(value);
 			})}

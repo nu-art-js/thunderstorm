@@ -3,24 +3,18 @@ import {
 	_className,
 	AppToolsScreen,
 	ATS_Fullstack,
-	CellRenderer, ComponentSync,
+	Button,
+	CellRenderer,
+	ComponentSync,
 	LL_H_C,
 	LL_H_T,
 	LL_V_L,
 	ModuleFE_Toaster,
-	TS_BusyButton,
-	TS_Button,
 	TS_Input,
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {
-	__stringify,
-	DateTimeFormat_yyyyMMDDTHHmmss,
-	groupArrayBy,
-	removeFromArrayByIndex,
-	TS_Object,
-} from '@nu-art/ts-common';
+import {__stringify, DateTimeFormat_yyyyMMDDTHHmmss, groupArrayBy, removeFromArrayByIndex, TS_Object,} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_PushPubSub, OnPushMessageReceived} from '../../modules/ModuleFE_PushPubSub';
 import {PushMessage_Payload} from '../../../shared';
@@ -140,8 +134,8 @@ export class ATS_PushPubSub
 						await ModuleFE_PushPubSub.requestPermissions();
 					}
 				})}</div>
-				<TS_BusyButton onClick={ModuleFE_PushPubSub.deleteToken}>Delete Token</TS_BusyButton>
-				<TS_BusyButton onClick={ModuleFE_PushPubSub.getToken}>Generate Token</TS_BusyButton>
+				<Button onClick={ModuleFE_PushPubSub.deleteToken}>Delete Token</Button>
+				<Button onClick={async () => await ModuleFE_PushPubSub.getToken()}>Generate Token</Button>
 			</LL_H_C>
 			<LL_H_T className="panels-container h-gap__n match_width">
 				{this.renderPanel('Register', this.state.registerFilter, 'registerKey', this.subscribe)}
@@ -196,8 +190,8 @@ export class ATS_PushPubSub
 		return <LL_V_L className="panel">
 			<LL_H_C className="panel-header match_width flex__justify-center">
 				{title}
-				<TS_Button onClick={addNewRow}>Add</TS_Button>
-				<TS_BusyButton onClick={action}>Send</TS_BusyButton>
+				<Button variant={'secondary'} onClick={addNewRow}>Add</Button>
+				<Button variant={'primary'} onClick={action}>Send</Button>
 			</LL_H_C>
 			<LL_V_L className="panel-content v-gap__n">
 				<TS_PropRenderer.Vertical label={'Key'}>

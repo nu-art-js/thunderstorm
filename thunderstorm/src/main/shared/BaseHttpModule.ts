@@ -70,7 +70,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		this.defaultHeaders[key] = header;
 	}
 
-	protected getDefaultHeaders() {
+	getDefaultHeaders() {
 		return Object.keys(this.defaultHeaders).reduce((toRet, _key) => {
 			const defaultHeader = this.defaultHeaders[_key];
 			switch (typeof defaultHeader) {

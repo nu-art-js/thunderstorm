@@ -38,7 +38,9 @@ const assetExtensions = [
 	'jpg',
 	'jpeg',
 	'rules',
-	'_ts'
+	'_ts',
+	'gif',
+	'csv',
 ];
 
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config, RTC extends Unit_TypescriptLib_RuntimeConfig = Unit_TypescriptLib_RuntimeConfig>

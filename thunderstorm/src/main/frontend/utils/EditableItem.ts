@@ -23,6 +23,8 @@ type ValidationErrors<T> = {
 export type Editable_OnError<T> = (item: Partial<T>, err: Error) => any | Promise<any>;
 export type Editable_SaveAction<T> = (item: T) => Promise<T>;
 
+export type Editable_PreSaveAction<T> = (item: T) => void;
+
 export type Editable_DeleteAction<T> = (item: T) => Promise<void>;
 
 export type Editable_OnChange<T> = (editable: EditableItem<T>) => Promise<void>;
@@ -78,6 +80,7 @@ export class EditableItem<T>
 	protected saveError?: Error;
 	protected onSaveCompleted?: (item: T) => any;
 	protected onChanged?: Editable_OnChange<T>;
+	protected preSaveAction?: Editable_PreSaveAction<T>;
 	private deleteAction!: Editable_DeleteAction<T>;
 	private saveAction!: Editable_SaveAction<T>;
 	private onError?: Editable_OnError<T>;
@@ -102,8 +105,8 @@ export class EditableItem<T>
 			// update ui and make sure it called the on change
 			this._isSaving = true;
 			this.calculateState();
+			this.preSaveAction?.(item);
 			this.callOnChange();
-
 			try {
 				let response: T = await this.saveAction(item);
 				response = this.processResponse(response);
@@ -123,6 +126,7 @@ export class EditableItem<T>
 				return item;
 			} finally {
 				this._isSaving = false;
+				this.handleValidationError(err as Error);
 				this.calculateState(); // <== this results in has changes
 			}
 		};
@@ -150,6 +154,10 @@ export class EditableItem<T>
 		return this;
 	}
 
+	protected handleValidationError(err: Error) {
+		throw err;
+	}
+
 	setSaveAction(saveAction: Editable_SaveAction<T>) {
 		this.saveAction = saveAction;
 		return this;
@@ -157,6 +165,16 @@ export class EditableItem<T>
 
 	setDeleteAction(deleteAction: Editable_DeleteAction<T>) {
 		this.deleteAction = deleteAction;
+		return this;
+	}
+
+	setPreSaveAction(preSaveAction: Editable_PreSaveAction<T>) {
+		this.preSaveAction = preSaveAction;
+		return this;
+	}
+
+	setOnDelete(onDelete: (item: T) => Promise<any>) {
+		this.deleteAction = onDelete;
 		return this;
 	}
 
@@ -547,11 +565,11 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		this.processResponse.bind(this);
 
 		this.debounceInstance = queuedDebounce(async () => {
-			                                       this.logDebug('Debounce triggered');
-			                                       await this.internalSaveAction(this.item);
-		                                       },
-		                                       this.debounceTimeout,
-		                                       5 * Second);
+				this.logDebug('Debounce triggered');
+				await this.internalSaveAction(this.item);
+			},
+			this.debounceTimeout,
+			5 * Second);
 	}
 
 	async save(consumeError = true): Promise<Proto['dbType']> {
@@ -567,7 +585,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	protected processResponse(dbItem: Proto['dbType']): Proto['dbType'] {
 		// Changing the saving flag back to false and call onChange
 		const currentUIItem = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object,
-		                                                                           ...(this.module.dbDef.generatedProps ?? _keys(this.module.dbDef.generatedPropsValidator))]);
+																																							 ...(this.module.dbDef.generatedProps ?? _keys(this.module.dbDef.generatedPropsValidator))]);
 		return mergeObject(dbItem, currentUIItem);
 	}
 
@@ -590,9 +608,9 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 
 	protected hasConflicts(_conflictingItem: Proto['dbType']) {
 		const item = deleteKeysObject({...this.item} as Proto['dbType'], [...KeysOfDB_Object,
-		                                                                  ...(this.module.dbDef.generatedProps ?? _keys(this.module.dbDef.generatedPropsValidator))]);
+																																			...(this.module.dbDef.generatedProps ?? _keys(this.module.dbDef.generatedPropsValidator))]);
 		const conflictingItem = deleteKeysObject({..._conflictingItem} as Proto['dbType'], [...KeysOfDB_Object,
-		                                                                                    ...(this.module.dbDef.generatedProps ?? _keys(this.module.dbDef.generatedPropsValidator))]);
+																																												...(this.module.dbDef.generatedProps ?? _keys(this.module.dbDef.generatedPropsValidator))]);
 
 		return !compare(conflictingItem, item);
 	}
@@ -649,17 +667,17 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 		this.validate();
 	}
 
-	private handleValidationError(e: Error) {
+	protected handleValidationError(e: Error) {
 		const validationException = isErrorOfType(e, ValidationException<Proto['dbType']>);
 		if (!validationException)
 			throw e;
 
 		this.logInfo('Validation error while saving');
 		this.setValidationResults({
-			                          autoSave: this._autoSave,
-			                          editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
-			                          results: validationException.result as InvalidResult<Proto['dbType']>
-		                          });
+			autoSave: this._autoSave,
+			editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
+			results: validationException.result as InvalidResult<Proto['dbType']>
+		});
 
 		// while getting new errors (for now) we need to call on change in order to replace the editable item instance.. (this will change)
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);

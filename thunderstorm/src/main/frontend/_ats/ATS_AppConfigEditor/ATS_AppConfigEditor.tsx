@@ -8,7 +8,7 @@ import {_className} from '../../utils/tools';
 import './ATS_AppConfigEditor.scss';
 import {TS_JSONViewer} from '../../components/TS_JSONViewer/TS_JSONViewer';
 import {TS_TextArea} from '../../components/TS_Input';
-import {TS_BusyButton} from '../../components/TS_BusyButton';
+import { Button } from '../../components/Button/Button';
 
 type Props = {
 	appConfigFilter?: (appConfig: DB_AppConfig) => boolean;
@@ -135,7 +135,7 @@ export class ATS_AppConfigEditor
 			<TS_TextArea type={'text'} value={dataString} onChange={value => this.setState({dataString: value})}/>
 			{exists(dataObject) && <TS_JSONViewer item={dataObject}/>}
 			{exists(error) && <p className={'app-config-editor__error'}>{error.message}</p>}
-			<TS_BusyButton disabled={exists(error)} onClick={() => this.saveData(dataObject as { data: any })}>Save Data</TS_BusyButton>
+			<Button disabled={exists(error)} onClick={() => this.saveData(dataObject as { data: any })}>Save Data</Button>
 		</LL_V_L>;
 	};
 }

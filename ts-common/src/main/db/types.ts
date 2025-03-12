@@ -58,6 +58,7 @@ type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
 	[K in keyof D]: D[K] extends DBProto<any>
 		? {
 			dbKey: D[K]['dbKey'],
+			direction?: 'ref' | 'dep' // default is "dep"
 			fieldType: TypeOfTypeAsString<DotNotationValueType<T, K & string>>
 		}
 		: never
