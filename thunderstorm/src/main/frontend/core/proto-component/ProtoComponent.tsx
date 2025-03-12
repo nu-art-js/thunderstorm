@@ -62,7 +62,6 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	 * @param value
 	 */
 	setQueryParam<K extends Def['queryParamKeys'] = Def['queryParamKeys']>(key: K, value: Def['queryParamDef'][K]) {
-		this.logDebug(this.constructor.name);
 		ModuleFE_BrowserHistoryV2.set(key, value);
 	}
 
