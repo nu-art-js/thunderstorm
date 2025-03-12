@@ -1,31 +1,9 @@
 import * as React from 'react';
-import {
-	apiWithBody,
-	apiWithQuery,
-	getQueryParameter,
-	ModuleFE_BaseApi,
-	ModuleFE_BrowserHistory,
-	ModuleFE_XHR,
-	OnStorageKeyChangedListener,
-	readFileContent,
-	StorageKey,
-	ThunderDispatcher
-} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ModuleFE_BaseApi, ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
-import {ungzip} from 'pako';
-import {
-	cloneObj,
-	composeUrl,
-	currentTimeMillis,
-	DB_BaseObject,
-	Exception,
-	exists,
-	generateHex,
-	KB,
-	TS_Object
-} from '@nu-art/ts-common';
-import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
-import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
+import {cloneObj, composeUrl, DB_BaseObject, Exception, generateHex, KB, TS_Object} from '@nu-art/ts-common';
+import {HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
+import {dispatcher_onAuthRequired} from '@nu-art/thunderstorm/shared/no-auth-listener';
 import {
 	Account_ChangeThumbnail,
 	Account_GetPasswordAssertionConfig,
@@ -41,15 +19,10 @@ import {
 	SAML_Login,
 	UI_Account
 } from '../shared';
-import {
-	StorageKey_DeviceId,
-	StorageKey_SessionId,
-	StorageKey_SessionTimeoutTimestamp,
-	StorageKey_TabId
-} from './consts';
+import {StorageKey_DeviceId, StorageKey_SessionTimeoutTimestamp, StorageKey_TabId} from './consts';
 import {PasswordAssertionConfig} from '../../_enum';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {jwtDecode} from 'jwt-decode';
+import {ModuleFE_Session, OnSessionUpdated} from '../../session/frontend/ModuleFE_Session';
 
 
 export interface OnLoginStatusUpdated {
@@ -60,9 +33,6 @@ export interface OnAccountsUpdated {
 	__onAccountsUpdated: (...params: ApiCallerEventType<DBProto_Account>) => void;
 }
 
-export interface OnSessionUpdated {
-	__onSessionUpdated: VoidFunction;
-}
 
 export enum LoggedStatus {
 	VALIDATING,
@@ -73,17 +43,14 @@ export enum LoggedStatus {
 
 export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
 export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
-export const dispatch_onSessionUpdated = new ThunderDispatcher<OnSessionUpdated, '__onSessionUpdated'>('__onSessionUpdated');
 const StorageKey_PasswordAssertionConfig = new StorageKey<PasswordAssertionConfig | undefined>('account__password-assertion-config', false);
 
 type ApiDefCaller_Account = ApiDefCaller<{ _v1: ApiStruct_Account['_v1'] & ApiStruct_SAML['_v1'] }>;
 
 class ModuleFE_Account_Class
 	extends ModuleFE_BaseApi<DBProto_Account>
-	implements ApiDefCaller_Account, OnAuthRequiredListener, OnStorageKeyChangedListener, OnLoginStatusUpdated {
+	implements ApiDefCaller_Account, OnLoginStatusUpdated, OnSessionUpdated {
 
-	// @ts-ignore
-	private sessionData!: TS_Object;
 	readonly _v1: ApiDefCaller_Account['_v1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	accountId!: string;
@@ -94,21 +61,6 @@ class ModuleFE_Account_Class
 			this._v1.getPasswordAssertionConfig({}).executeSync();
 	}
 
-	__onAuthRequiredListener(request: BaseHttpRequest<any>) {
-		StorageKey_SessionId.delete();
-		StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
-		return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
-	}
-
-	__onStorageKeyEvent(event: StorageEvent) {
-		if (event.key === StorageKey_SessionId.key) {
-			const sessionData = StorageKey_SessionId.get();
-			if (sessionData)
-				this.sessionData = this.decode(sessionData);
-			else
-				this.sessionData = {};
-		}
-	}
 
 	constructor() {
 		super(DBDef_Accounts, dispatch_onAccountsUpdated);
@@ -147,39 +99,8 @@ class ModuleFE_Account_Class
 			StorageKey_TabId.set(defaultTabId);
 		}
 
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get()!);
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_DeviceId, () => defaultDeviceId!);
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, defaultTabId!);
-		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
-			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
-				return;
-
-			const responseHeader = request.getResponseHeader(HeaderKey_SessionId);
-			if (!responseHeader)
-				return;
-
-			const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
-			const oldSessionId = StorageKey_SessionId.get(sessionId);
-			if (oldSessionId !== sessionId)
-				dispatch_onSessionUpdated.dispatchAll();
-
-			StorageKey_SessionId.set(sessionId);
-			this.sessionData = this.decode(sessionId);
-			this.processSessionStatus(sessionId);
-		});
-
-		const sessionId = getQueryParameter(QueryParam_SessionId);
-		if (sessionId) {
-			StorageKey_SessionId.set(String(sessionId));
-			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_SessionId);
-		}
-
-		const _sessionId = StorageKey_SessionId.get();
-		if (_sessionId)
-			return this.processSessionStatus(_sessionId);
-
-		this.logDebug('logging out user.... ');
-		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	}
 
 	// ######################## Logic ########################
@@ -192,19 +113,14 @@ class ModuleFE_Account_Class
 
 	isStatus = (status: LoggedStatus) => this.status === status;
 
-	private processSessionStatus(sessionId: string) {
-		const now = currentTimeMillis();
-		try {
-			const sessionData = this.decode(sessionId);
-			if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
-				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
+	__onSessionUpdated() {
+		if (!ModuleFE_Session.hasSession())
+			return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 
-			this.accountId = sessionData.account._id;
-			this.sessionData = sessionData;
-			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
-		} catch (e: any) {
+		if (ModuleFE_Session.isSessionValid())
 			return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
-		}
+
+		return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	}
 
 	protected setLoggedStatus = (newStatus: LoggedStatus) => {
@@ -234,26 +150,12 @@ class ModuleFE_Account_Class
 		});
 	};
 
-	public getSessionId = (): string => {
-		return StorageKey_SessionId.get('');
-	};
-
-	private decode(sessionData: string) {
-		if (!sessionData.length)
-			return;
-
-		const decodedJWT = jwtDecode<{ sessionData: string }>(sessionData);
-		const base64Zip = decodedJWT.sessionData;
-		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(base64Zip), c => c.charCodeAt(0)))));
-	}
 
 	logout = async (url?: string) => {
 		await this._v1.logout({}).executeSync();
-		StorageKey_SessionId.delete();
+		dispatcher_onAuthRequired.dispatchModule(undefined);
 		if (url)
 			return window.location.href = url;
-
-		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	};
 
 	uploadAccountThumbnail = (e: React.MouseEvent, account: DB_Account) => {
