@@ -8,43 +8,39 @@ import './Editor_JsonToObject.scss';
 type Props<T> = {
 	validator: ValidatorTypeResolver<T>;
 	renderer: (item: EditableItem<T>) => ReactNode;
-	freeText: boolean
+	isFreeTextMode: boolean
 }
 
 type State<T> = {
-	freeText: boolean
+	isFreeTextMode: boolean
 	value: string
 	isValid: boolean
 }
 
-/*
-{
-	"a":"asdasd",
-	"b":"ksfdjfsdk",
-	"c":"kl;jkljl"
-}
- */
 export class Editor_JsonToObject<T>
 	extends TS_EditableItemComponent<T, Props<T>, State<T>> {
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, _state: InferState<this>): InferState<this> {
 		const state = super.deriveStateFromProps(nextProps, _state) as InferState<this>;
-		state.freeText = nextProps.freeText;
-		state.value = nextProps.editable.item ? __stringify(nextProps.editable.item, true) : '';
-		state.isValid = tsValidateResult(JSON.parse(state.value) as T, this.props.validator) === undefined;
+		state.isFreeTextMode = nextProps.isFreeTextMode;
+
+		const value = nextProps.editable.item ? __stringify(nextProps.editable.item, true) : '';
+		state.value = value;
+		state.isValid = this.validateItem(value).isValid;
 
 		return state;
 	}
 
 	render() {
+		const {isFreeTextMode, value, editable, isValid} = this.state;
 		return <>
-			{!this.state.freeText && this.props.renderer(this.state.editable)}
-			{this.state.freeText && <TS_TextAreaV2
+			{!isFreeTextMode && this.props.renderer(editable)}
+			{isFreeTextMode && <TS_TextAreaV2
 				className={'ts-json-to-object'}
-				resizeWithText={true}
-				data-valid={this.state.isValid}
+				resizeWithText
+				data-valid={isValid}
 				type="text"
-				value={this.state.value}
+				value={value}
 				onChange={async (value) => {
 					const {isValid} = this.validateItem(value);
 					return this.setState({isValid});
@@ -54,7 +50,7 @@ export class Editor_JsonToObject<T>
 					if (!isValid)
 						return this.setState({isValid, value});
 
-					await this.state.editable.updateObj(item);
+					await editable.updateObj(item);
 				}}
 			/>
 			}

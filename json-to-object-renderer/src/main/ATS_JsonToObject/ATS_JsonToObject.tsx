@@ -4,13 +4,10 @@ import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types'
 import {Editor_JsonToObject} from '../Editor_JsonToObject';
 import {tsValidateString, ValidatorTypeResolver} from '@nu-art/ts-common';
 
-type ATS_JsonToObject_Props = {
-	//
-};
+type ATS_JsonToObject_Props = {};
 type ATS_JsonToObject_State = {
 	editable: EditableItem<TestType>
 	freeText: boolean
-	//
 };
 
 type TestType = {
@@ -52,13 +49,18 @@ export class ATS_JsonToObject
 	render() {
 
 		return <LL_V_L>
-			<Editor_JsonToObject freeText={this.state.freeText} validator={validator} renderer={(editable) => {
-				const item = editable.item
-				return <LL_V_L>
-					<TS_PropRenderer.Vertical label={'property a'}>{item.a ?? 'no A'}</TS_PropRenderer.Vertical>
-					<TS_PropRenderer.Vertical label={'property b'}>{item.b ?? 'no B'}</TS_PropRenderer.Vertical>
-				</LL_V_L>;
-			}} editable={this.state.editable}/>
+			<Editor_JsonToObject
+				isFreeTextMode={this.state.freeText}
+				validator={validator}
+				editable={this.state.editable}
+				renderer={(editable) => {
+					const item = editable.item;
+					return <LL_V_L>
+						<TS_PropRenderer.Vertical label={'property a'}>{item.a ?? 'no A'}</TS_PropRenderer.Vertical>
+						<TS_PropRenderer.Vertical label={'property b'}>{item.b ?? 'no B'}</TS_PropRenderer.Vertical>
+					</LL_V_L>;
+				}}
+			/>
 			<TS_Button onClick={() => this.reDeriveState({freeText: !this.state.freeText})}>toggle</TS_Button>
 		</LL_V_L>;
 	}
