@@ -76,6 +76,7 @@ export const HttpCodes = {
 		ENTITY_ALREADY_EXISTS: createGeneralError(460),
 		ENTITY_IS_OUTDATED: createGeneralError(461),
 		INTERNAL_MISMATCH: createGeneralError(462),
+		ENTITY_DOESNT_EXISTS: createGeneralError(463),
 		OPERATION_FAILED: createGeneralError(490),
 	},
 	_5XX: {
@@ -97,6 +98,7 @@ export const HttpCodes = {
 		IMPLEMENTATION_MISSING: 561,
 		SHOULD_NOT_HAPPENED: 598,
 		MUST_NEVER_HAPPENED: 599,
+
 
 	},
 } as const;
