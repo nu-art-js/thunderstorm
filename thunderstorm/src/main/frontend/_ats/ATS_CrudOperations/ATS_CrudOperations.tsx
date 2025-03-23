@@ -99,7 +99,6 @@ export class ATS_CrudOperations
 				<DropDown_DBModules.selectable
 					selected={dbModuleToRequest}
 					onSelected={this.onDBModuleSelected}
-					mapper={module => [module.dbDef.dbKey, module.getCollectionName()]}
 				/>
 				<TS_DropDown
 					adapter={SimpleListAdapter(ACTIONS, action => <>{action.item.label}</>)}
