@@ -96,9 +96,11 @@ export class ATS_CrudOperations
 
 		return <LL_H_C className={'ats-crud-operations-container'}>
 			<LL_V_L className={'ats-crud-operations-container__selection'}>
-				<DropDown_DBModules.selectable selected={dbModuleToRequest}
-																			 onSelected={this.onDBModuleSelected}
-																			 mapper={module => [module.dbDef.dbKey, module.getCollectionName()]}/>
+				<DropDown_DBModules.selectable
+					selected={dbModuleToRequest}
+					onSelected={this.onDBModuleSelected}
+					mapper={module => [module.dbDef.dbKey, module.getCollectionName()]}
+				/>
 				<TS_DropDown
 					adapter={SimpleListAdapter(ACTIONS, action => <>{action.item.label}</>)}
 					selected={selectedAction}
