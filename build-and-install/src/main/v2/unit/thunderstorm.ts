@@ -58,7 +58,6 @@ export const Unit_Thunderstorm = new Unit_TypescriptLib({
 	filter: () => RuntimeParams.runWithThunderstorm,
 });
 
-
 export const Unit_TSPDF = new Unit_TypescriptLib({
 	key: 'ts-pdf',
 	label: 'TS/ts-pdf',
@@ -195,6 +194,14 @@ export const Unit_SchemaToTypes = new Unit_TypescriptLib({
 	filter: () => RuntimeParams.runWithThunderstorm,
 });
 
+export const Unit_JsonToObjectRenderer = new Unit_TypescriptLib({
+	key: 'json-to-object-renderer',
+	label: 'TS/json-to-object-renderer',
+	pathToPackage: '_thunderstorm/json-to-object-renderer' as RelativePath,
+	output: 'dist',
+	filter: () => RuntimeParams.runWithThunderstorm,
+});
+
 export const allTSUnits: BaseUnit[] = [
 	Unit_TSCommon,
 	Unit_TSStyles,
@@ -219,5 +226,6 @@ export const allTSUnits: BaseUnit[] = [
 	Unit_Github,
 	Unit_FileUpload,
 	Unit_TSOpenAI,
-	Unit_SchemaToTypes
+	Unit_SchemaToTypes,
+	Unit_JsonToObjectRenderer,
 ];

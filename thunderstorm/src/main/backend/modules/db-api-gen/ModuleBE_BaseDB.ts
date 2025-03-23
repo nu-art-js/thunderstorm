@@ -129,7 +129,8 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			return;
 
 		//Get all conflicting items
-		let conflictingItems = filterDuplicates<Proto['dbType']>((await Promise.all(conflictItemQueries)).flat(), dbObjectToId);
+		let conflictingItems = filterInstances((await Promise.all(conflictItemQueries)).flat());
+		conflictingItems = filterDuplicates<Proto['dbType']>(conflictingItems, dbObjectToId);
 		//Filter out conflicting items that were already deleted in this transaction
 		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
 		if (ignoredInThisTransaction) {

@@ -2,6 +2,7 @@ import * as React from 'react';
 import {HTMLProps} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_Printable.scss';
+import {Props} from '../../server-info';
 
 
 type Props = HTMLProps<HTMLDivElement> & {
@@ -12,6 +13,10 @@ type Props = HTMLProps<HTMLDivElement> & {
 export class TS_Printable
 	extends React.Component<Props> {
 	private ref!: HTMLDivElement;
+
+	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<{}>, nextContext: any): boolean {
+		return true;
+	}
 
 	render() {
 		const {printable, printOnly, ...props} = this.props;
