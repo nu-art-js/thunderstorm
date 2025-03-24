@@ -2,7 +2,6 @@ import * as React from 'react';
 import {HTMLProps} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_Printable.scss';
-import {Props} from '../../server-info';
 
 
 type Props = HTMLProps<HTMLDivElement> & {

@@ -117,7 +117,7 @@ class ModuleFE_Account_Class
 		if (!ModuleFE_Session.hasSession())
 			return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 
-		if (ModuleFE_Session.isSessionValid())
+		if (!ModuleFE_Session.isSessionValid())
 			return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
 		return this.setLoggedStatus(LoggedStatus.LOGGED_IN);

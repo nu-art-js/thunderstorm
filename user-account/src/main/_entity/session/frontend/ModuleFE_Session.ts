@@ -9,7 +9,7 @@ import {
 import {BadImplementationException, currentTimeMillis, exists, Module, TS_Object, TypedKeyValue} from "@nu-art/ts-common";
 import {jwtDecode} from "jwt-decode";
 import {ungzip} from "pako";
-import {BaseHttpRequest, HeaderKey_SessionId} from "@nu-art/thunderstorm";
+import {BaseHttpRequest, HeaderKey_SessionId, HeaderKey_SessionIdResponse} from "@nu-art/thunderstorm";
 import {OnAuthRequiredListener} from "@nu-art/thunderstorm/shared/no-auth-listener";
 import {StorageKey_SessionTimeoutTimestamp} from '../../account/frontend';
 import {QueryParam_SessionId} from '../shared';
@@ -20,7 +20,7 @@ export interface OnSessionUpdated {
 
 
 export const dispatch_onSessionUpdated = new ThunderDispatcher<OnSessionUpdated, '__onSessionUpdated'>('__onSessionUpdated');
-export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
+export const StorageKey_SessionId = new StorageKey<string | undefined>(`storage-${HeaderKey_SessionId}`);
 
 export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	private readonly key: Binder['key'];
@@ -62,7 +62,7 @@ class ModuleFE_Session_Class
 			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
 				return;
 
-			const responseHeader = request.getResponseHeader(HeaderKey_SessionId);
+			const responseHeader = request.getResponseHeader(HeaderKey_SessionIdResponse);
 			if (!responseHeader)
 				return;
 
@@ -76,10 +76,6 @@ class ModuleFE_Session_Class
 			StorageKey_SessionId.set(String(sessionId));
 		}
 	}
-
-	public getSessionId = (): string => {
-		return StorageKey_SessionId.get('');
-	};
 
 	__onStorageKeyEvent(event: StorageEvent) {
 		if (event.key !== StorageKey_SessionId.key)
