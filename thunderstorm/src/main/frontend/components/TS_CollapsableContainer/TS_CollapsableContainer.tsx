@@ -93,6 +93,11 @@ export class TS_CollapsableContainer
 		return this.props.collapsed !== undefined ? this.props.collapsed : this.state.collapsed;
 	}
 
+	public refreshContainerHeight = () => {
+		if (!this.state.collapsed)
+			this.setContainerHeight();
+	};
+
 	//######################### Render #########################
 
 	private renderCaret() {
