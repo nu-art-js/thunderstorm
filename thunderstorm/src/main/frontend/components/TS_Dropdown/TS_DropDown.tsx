@@ -116,7 +116,8 @@ type BasePartialProps_DropDown<T> = {
 	inputValue?: string;
 	placeholder?: string;
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
-	mapper?: (item: T) => string[]
+	// This is not usable, should be fixed
+	mapper?: (item: T) => string[];
 	renderer?: (item: T) => React.ReactElement
 	queryFilter?: (item: T) => boolean
 	disabled?: boolean
@@ -127,8 +128,8 @@ export type PartialProps_DropDown<T> =
 	& ComponentProps_Error
 	& (Props_CanUnselect<T> | Props_CanNotUnselect<T>)
 	& {
-	selected?: T;
-}
+		selected?: T;
+	}
 
 type EditableDropDownProps<ItemType, EditableType extends {} = any, ValueType extends EditableType[keyof EditableType] = EditableType[keyof EditableType]> =
 	BasePartialProps_DropDown<ItemType>
