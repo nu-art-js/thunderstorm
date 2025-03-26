@@ -8,7 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import {ModuleBE_SecretManager} from '@nu-art/google-services/backend/modules/ModuleBE_SecretManager';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {HeaderKey_SessionId} from '@nu-art/thunderstorm';
+import {HeaderKey_SessionIdResponse} from '@nu-art/thunderstorm';
 import Transaction = firestore.Transaction;
 
 
@@ -57,7 +57,7 @@ export class ModuleBE_SessionDB_Class
 				} catch (err: any) {
 					try {
 						dbSession = await ModuleBE_SessionDB.query.uniqueWhere({prevSession: {$ac: md5SessionId}}, transaction); //everytime we read into prevSessions, we read the md5 of the authorizationHeader
-						MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, dbSession.sessionIdJwt);
+						MemKey_HttpResponse.get().setHeader(HeaderKey_SessionIdResponse, dbSession.sessionIdJwt);
 					} catch (err: any) {
 						throw new ApiException(401, `Invalid session id: ${authorizationHeader}`, err);
 					}
@@ -187,7 +187,7 @@ export class ModuleBE_SessionDB_Class
 
 				const mySession = newSessions.find(session => SessionKey_Account_BE.get(session?.sessionData)._id === MemKey_AccountId.get());
 				if (mySession) {
-					MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, mySession.sessionId);
+					MemKey_HttpResponse.get().setHeader(HeaderKey_SessionIdResponse, mySession.sessionId);
 				}
 			}
 		},
