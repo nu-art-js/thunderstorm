@@ -5,22 +5,21 @@ import {
 	OnStorageKeyChangedListener,
 	StorageKey,
 	ThunderDispatcher
-} from "@nu-art/thunderstorm/frontend";
-import {BadImplementationException, currentTimeMillis, exists, Module, TS_Object, TypedKeyValue} from "@nu-art/ts-common";
-import {jwtDecode} from "jwt-decode";
-import {ungzip} from "pako";
-import {BaseHttpRequest, HeaderKey_SessionId, HeaderKey_SessionIdResponse} from "@nu-art/thunderstorm";
-import {OnAuthRequiredListener} from "@nu-art/thunderstorm/shared/no-auth-listener";
-import {StorageKey_SessionTimeoutTimestamp} from '../../account/frontend';
+} from '@nu-art/thunderstorm/frontend';
+import {BadImplementationException, currentTimeMillis, exists, Module, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
+import {jwtDecode} from 'jwt-decode';
+import {ungzip} from 'pako';
+import {BaseHttpRequest, HeaderKey_SessionId, HeaderKey_SessionIdResponse} from '@nu-art/thunderstorm';
+import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 import {QueryParam_SessionId} from '../shared';
 
 export interface OnSessionUpdated {
 	__onSessionUpdated: VoidFunction;
 }
 
-
 export const dispatch_onSessionUpdated = new ThunderDispatcher<OnSessionUpdated, '__onSessionUpdated'>('__onSessionUpdated');
 export const StorageKey_SessionId = new StorageKey<string | undefined>(`storage-${HeaderKey_SessionId}`);
+export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
 
 export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	private readonly key: Binder['key'];

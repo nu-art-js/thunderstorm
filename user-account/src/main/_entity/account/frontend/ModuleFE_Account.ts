@@ -19,7 +19,7 @@ import {
 	SAML_Login,
 	UI_Account
 } from '../shared';
-import {StorageKey_DeviceId, StorageKey_SessionTimeoutTimestamp, StorageKey_TabId} from './consts';
+import {StorageKey_DeviceId, StorageKey_TabId} from './consts';
 import {PasswordAssertionConfig} from '../../_enum';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {ModuleFE_Session, OnSessionUpdated} from '../../session/frontend/ModuleFE_Session';
@@ -52,7 +52,7 @@ class ModuleFE_Account_Class
 	implements ApiDefCaller_Account, OnLoginStatusUpdated, OnSessionUpdated {
 
 	readonly _v1: ApiDefCaller_Account['_v1'];
-	private status: LoggedStatus = LoggedStatus.VALIDATING;
+	private status: LoggedStatus = LoggedStatus.LOGGED_OUT;
 	accountId!: string;
 
 	__onLoginStatusUpdated() {
@@ -64,12 +64,19 @@ class ModuleFE_Account_Class
 
 	constructor() {
 		super(DBDef_Accounts, dispatch_onAccountsUpdated);
+		// const login = apiWithBody(ApiDef_Account._v1.login, this.setLoginInfo);
 		this._v1 = {
 			refreshSession: apiWithQuery(ApiDef_Account._v1.refreshSession),
 			registerAccount: apiWithBody(ApiDef_Account._v1.registerAccount, this.setLoginInfo),
 			createAccount: apiWithBody(ApiDef_Account._v1.createAccount, this.onAccountCreated),
 			changePassword: apiWithBody(ApiDef_Account._v1.changePassword, this.setLoginInfo),
 			login: apiWithBody(ApiDef_Account._v1.login, this.setLoginInfo),
+			// login: (account: Account_Login['request']) => {
+			//
+			// 	toUpsert = this.cleanUp(toUpsert);
+			// 	this.validateInternal(toUpsert);
+			// 	return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
+			// },
 			logout: apiWithQuery(ApiDef_Account._v1.logout),
 			createToken: apiWithBody(ApiDef_Account._v1.createToken),
 			setPassword: apiWithBody(ApiDef_Account._v1.setPassword, this.setLoginInfo),
@@ -129,8 +136,6 @@ class ModuleFE_Account_Class
 
 		const pervStatus = this.status;
 		this.status = newStatus;
-		if (newStatus === LoggedStatus.LOGGED_IN || newStatus === LoggedStatus.LOGGED_OUT)
-			StorageKey_SessionTimeoutTimestamp.delete();
 
 		this.logInfo(`Login status changes: ${LoggedStatus[pervStatus]} => ${LoggedStatus[newStatus]}`);
 		dispatch_onLoginStatusChanged.dispatchUI();
@@ -193,7 +198,6 @@ class ModuleFE_Account_Class
 
 	private setLoginInfo = async (response: Response_Auth, body: any, request: BaseHttpRequest<any>) => {
 		this.accountId = response._id;
-		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	};
 
 	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
