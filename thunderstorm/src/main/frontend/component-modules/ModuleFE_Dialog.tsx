@@ -20,12 +20,12 @@
  */
 
 import * as React from 'react';
-import {generateHex, Module} from '@nu-art/ts-common';
+import {generateHex, Module, ResolvableContent} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 
 export type Dialog_Model = DialogKey & {
-	content: React.ReactNode,
+	content: ResolvableContent<React.ReactNode, [VoidFunction]>;
 	closeOverlayOnClick?: () => boolean,
 	overlayClass?: string;
 }
