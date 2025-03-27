@@ -37,6 +37,17 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	}
 }
 
+type SessionDecoder = (sessionAsString: string) => TS_Object;
+export const zippedSessionContent: SessionDecoder = (sessionAsString: string) => {
+	const decodedJWT = jwtDecode<{ sessionData: string }>(sessionAsString);
+	const base64Zip = decodedJWT.sessionData;
+	return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(base64Zip), c => c.charCodeAt(0)))));
+};
+
+export const sessionContentJWT: SessionDecoder = (sessionAsString: string) => {
+	return jwtDecode<TS_Object>(sessionAsString);
+};
+
 
 class ModuleFE_Session_Class
 	extends Module
@@ -44,6 +55,7 @@ class ModuleFE_Session_Class
 
 	// @ts-ignore
 	private sessionData!: TS_Object;
+	sessionDecoder: SessionDecoder = zippedSessionContent;
 
 	init() {
 		StorageKey_SessionId.onChange(async (sessionAsString) => {
@@ -91,7 +103,7 @@ class ModuleFE_Session_Class
 	private onSessionUpdated(sessionAsString?: string) {
 		if (sessionAsString)
 			try {
-				this.sessionData = this.decode(sessionAsString);
+				this.sessionData = this.sessionDecoder(sessionAsString);
 			} catch (e: any) {
 				this.logError("Error decoding session data", e);
 			}
@@ -99,12 +111,6 @@ class ModuleFE_Session_Class
 			this.sessionData = {};
 
 		dispatch_onSessionUpdated.dispatchAll();
-	}
-
-	private decode(sessionData: string) {
-		const decodedJWT = jwtDecode<{ sessionData: string }>(sessionData);
-		const base64Zip = decodedJWT.sessionData;
-		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(base64Zip), c => c.charCodeAt(0)))));
 	}
 
 	public hasSession() {
