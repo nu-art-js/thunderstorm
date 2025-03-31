@@ -109,15 +109,15 @@ type State<T extends DB_Object> = ComponentProps_Error & {
 
 export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']>
 	extends ComponentSync<Props_TS_GenericDropDownV3<Proto>, State<T>> {
-	static readonly prepareEditable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
-		return (props: EditableItemProps_GenericDropDownV3<Proto['dbType']>) => {
+	static readonly prepareEditable = <Proto_ extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto_>>) => {
+		return (props: EditableItemProps_GenericDropDownV3<Proto_['dbType']>) => {
 			const {editable, prop, ...restProps} = props;
 
-			const onSelected = async (item: Proto['dbType']) => {
+			const onSelected = async (item: Proto_['dbType']) => {
 				await editable.updateObj({[prop]: item._id});
 			};
 
-			return <GenericDropDownV3<Proto>
+			return <GenericDropDownV3<Proto_>
 				error={resolveEditableError(props)}
 				{...resolveContent(mandatoryProps)}
 				{...restProps}
@@ -130,20 +130,20 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 				selected={editable.item[prop]}/>;
 		};
 	};
-	static readonly prepareSelectable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
-		return (props: AppLevelProps_TS_GenericDropDownV3<Proto['dbType']>) =>
-			<GenericDropDownV3<Proto> {...resolveContent(mandatoryProps)} {...props}/>;
+	static readonly prepareSelectable = <Proto_ extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto_>>) => {
+		return (props: AppLevelProps_TS_GenericDropDownV3<Proto_['dbType']>) =>
+			<GenericDropDownV3<Proto_> {...resolveContent(mandatoryProps)} {...props}/>;
 	};
-	static readonly prepare = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto>>) => {
+	static readonly prepare = <Proto_ extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Proto_>>) => {
 		return {
 			editable: this.prepareEditable(mandatoryProps),
 			selectable: this.prepareSelectable(mandatoryProps),
 		};
 	};
 
-	static readonly prepareSelectable_DBPointers = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto>>) => {
+	static readonly prepareSelectable_DBPointers = <Proto_ extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto_>>) => {
 		const _mandatoryProps = resolveContent(mandatoryProps);
-		return (props: AppLevelProps_TS_GenericDropDownV3<GenericDropDown_DBPointer_Item<Proto>>) =>
+		return (props: AppLevelProps_TS_GenericDropDownV3<GenericDropDown_DBPointer_Item<Proto_>>) =>
 			<GenericDropDownV3
 				{..._mandatoryProps}
 				{...props}
@@ -151,18 +151,18 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 					const modules = _values(_mandatoryProps.pointerProps).map(val => val.module);
 					return modules.map(module => module.cache.all().map(dbItem => ({dbKey: module.dbDef.dbKey, item: dbItem}))).flat();
 				}}
-				renderer={(item: GenericDropDown_DBPointer_Item<Proto>) => _mandatoryProps.pointerProps[item.dbKey].renderer(item)}
-				mapper={(item: GenericDropDown_DBPointer_Item<Proto>) => _mandatoryProps.pointerProps[item.dbKey].mapper(item)}
+				renderer={(item: GenericDropDown_DBPointer_Item<Proto_>) => _mandatoryProps.pointerProps[item.dbKey].renderer(item)}
+				mapper={(item: GenericDropDown_DBPointer_Item<Proto_>) => _mandatoryProps.pointerProps[item.dbKey].mapper(item)}
 				// @ts-ignore
 				module={undefined}
 			/>;
 	};
-	static readonly prepareEditable_DBPointers = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto>>) => {
-		return (props: EditableItemProps_GenericDropDownV3_DBPointer<GenericDropDown_DBPointer_Item<Proto>>) => {
+	static readonly prepareEditable_DBPointers = <Proto_ extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto_>>) => {
+		return (props: EditableItemProps_GenericDropDownV3_DBPointer<GenericDropDown_DBPointer_Item<Proto_>>) => {
 			const _mandatoryProps = resolveContent(mandatoryProps);
 			const {editable, prop, ...restProps} = props;
 
-			const onSelected = async (item: Proto['dbType']) => {
+			const onSelected = async (item: Proto_['dbType']) => {
 				await editable.updateObj({[prop]: item._id});
 			};
 
@@ -182,7 +182,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 			/>;
 		};
 	};
-	static readonly prepare_DBPointers = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto>>) => {
+	static readonly prepare_DBPointers = <Proto_ extends DBProto<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto_>>) => {
 		return {
 			editable: this.prepareEditable_DBPointers(mandatoryProps),
 			selectable: this.prepareSelectable_DBPointers(mandatoryProps),

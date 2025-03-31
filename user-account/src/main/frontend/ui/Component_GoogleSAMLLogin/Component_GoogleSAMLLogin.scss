@@ -2,25 +2,30 @@
 
 .ts-account__saml-button.ts-busy-button,
 .ts-account__saml-button.ts-button {
-  height: 40px;
-  width: 100%;
-  margin: 0;
-  gap: 16px;
-  border: 2px solid #006fab;
-  @include styles.mouseInteractiveBackground(transparent);
 
-  .ts-account__saml-button__text {
-    color: #006fab;
-  }
+  &[data-variant="primary"] {
+    height: 40px;
+    width: 100%;
+    margin: 0;
+    gap: 16px;
+    border: 2px solid #006fab;
+    @include styles.mouseInteractiveBackground(transparent);
+    @include styles.mouseInteractiveBorder(styles.dark-blue(2), styles.dark-blue(1));
 
-  .ts-account__saml-button__icon {
-    width: 20px;
-    height: 20px;
-  }
+    .ts-account__saml-button__text {
+      color: #006fab;
+    }
 
-  .ts-button-loader {
-    & > div {
-      background: #006fab;
+    .ts-account__saml-button__icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .ts-button-loader {
+      & > div {
+        background: #006fab;
+      }
     }
   }
+
 }

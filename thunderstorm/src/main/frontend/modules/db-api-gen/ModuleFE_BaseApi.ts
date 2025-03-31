@@ -42,7 +42,7 @@ type Operation = {
 	pending?: Pending
 }
 
-export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config extends {} = {}, Config extends _Config & DBApiFEConfig<Proto> = _Config & DBApiFEConfig<Proto>>
+export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config extends object = object, Config extends _Config & DBApiFEConfig<Proto> = _Config & DBApiFEConfig<Proto>>
 	extends ModuleFE_BaseDB<Proto, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>> {
 
@@ -62,7 +62,7 @@ export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config exten
 			this.IDB.setLastUpdated(item.__updated);
 			return toRet;
 		});
-		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
+		const patch = apiWithBody(apiDef.v1.patch, (items) => this.onEntryPatched(items));
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore

@@ -29,7 +29,7 @@ export type MultiSelectDropDownPropsV3<Proto extends DBProto<any>> = {
 export class DBItemDropDownMultiSelector<Proto extends DBProto<any>>
 	extends ComponentSync<Props<Proto>> {
 
-	static selector = <Proto extends DBProto<any>>(uiSelector: UISelector<Proto>) => {
+	static selector = <Proto_ extends DBProto<any>>(uiSelector: UISelector<Proto_>) => {
 		return (selector: MultiSelect_Selector<string>) => <DBItemDropDownMultiSelector
 			selector={selector}
 			uiSelector={uiSelector}
@@ -37,13 +37,14 @@ export class DBItemDropDownMultiSelector<Proto extends DBProto<any>>
 		/>;
 	};
 
-	static propsV3 = <Proto extends DBProto<any>>(props: MultiSelectDropDownPropsV3<Proto>): StaticProps_TS_MultiSelect_V2<string> => {
+	static propsV3 = <Proto_ extends DBProto<any>>(props: MultiSelectDropDownPropsV3<Proto_>): StaticProps_TS_MultiSelect_V2<string> => {
 		return {
 			itemRenderer: (itemId, onDelete?: () => Promise<void>, disabled?: boolean) => {
 				const dbItem = props.module.cache.unique(itemId);
 				return props.itemRenderer(dbItem, onDelete, disabled);
 			},
 			selectionRenderer: DBItemDropDownMultiSelector.selector(props.uiSelector),
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			selectionFilter: (item) => true,
 		};
 	};
@@ -63,7 +64,7 @@ export class DBItemDropDownMultiSelector<Proto extends DBProto<any>>
 		/>;
 	}
 
-	protected deriveStateFromProps(nextProps: Props<Proto>, state: Partial<{}> | undefined) {
+	protected deriveStateFromProps(nextProps: Props<Proto>, state: Partial<object> | undefined) {
 		return {onSelected: nextProps.selector.onSelected};
 	}
 }
@@ -95,7 +96,7 @@ export type MultiSelectDropDownProps_DBPointer<Proto extends DBProto<any>> = {
 export class DBItemDropDownMultiSelector_DBPointer<Proto extends DBProto<any>>
 	extends ComponentSync<Props_DBPointer<Proto>> {
 
-	static selector = <Proto extends DBProto<any>>(uiSelector: UISelector_DBPointer<Proto>) => {
+	static selector = <Proto_ extends DBProto<any>>(uiSelector: UISelector_DBPointer<Proto_>) => {
 		return (selector: MultiSelect_Selector<DBPointer>) => <DBItemDropDownMultiSelector_DBPointer
 			selector={selector}
 			uiSelector={uiSelector}
@@ -107,13 +108,13 @@ export class DBItemDropDownMultiSelector_DBPointer<Proto extends DBProto<any>>
 		return <>{!disabled && <TS_Icons.x.component onClick={onDelete}/>}{'N/A'}</>;
 	};
 
-	static props = <Proto extends DBProto<any>>(props: MultiSelectDropDownProps_DBPointer<Proto>): StaticProps_TS_MultiSelect_V2<DBPointer> => {
+	static props = <Proto_ extends DBProto<any>>(props: MultiSelectDropDownProps_DBPointer<Proto_>): StaticProps_TS_MultiSelect_V2<DBPointer> => {
 		return {
 			itemRenderer: (item, onDelete, disabled) => {
 				if (!item)
 					return DBItemDropDownMultiSelector_DBPointer.defaultItemRenderer(onDelete, disabled);
 
-				const itemRenderer = props.pointerProps[item.dbKey as Proto['dbKey']].renderer;
+				const itemRenderer = props.pointerProps[item.dbKey as Proto_['dbKey']].renderer;
 				return itemRenderer(item, onDelete, disabled);
 			},
 			selectionRenderer: DBItemDropDownMultiSelector_DBPointer.selector(props.uiSelector),
