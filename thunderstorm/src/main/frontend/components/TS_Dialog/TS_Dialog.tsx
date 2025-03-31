@@ -206,7 +206,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		return <TS_ErrorBoundary error={this.state.error} onClick={() => this.closeDialog(true)}>
 			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1}
 							onKeyDown={this.dialogKeyEventHandler}
-					onClick={stopPropagation}
+							onClick={stopPropagation}
 							onContextMenu={stopPropagation}>
 				{this.dialogHeader(headerContent)}
 				{this.dialogBody(mainContent)}

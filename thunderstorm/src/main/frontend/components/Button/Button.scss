@@ -84,13 +84,13 @@
     --ts-button--content-color: #fff;
 
     &:enabled {
-      @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));
-      @include styles.mouse-interactive-border-color(styles.dark-blue(2), styles.dark-blue(1));
+      @include styles.mouseInteractiveBackground(styles.dark-blue(2), styles.dark-blue(1));
+      @include styles.mouseInteractiveBorder(styles.dark-blue(2), styles.dark-blue(1));
     }
 
     &:disabled {
-      @include styles.mouse-interactive-background(styles.dark-blue(2));
-      @include styles.mouse-interactive-border-color(styles.dark-blue(2));
+      @include styles.mouseInteractiveBackground(styles.dark-blue(2));
+      @include styles.mouseInteractiveBorder(styles.dark-blue(2));
     }
   }
 
@@ -98,13 +98,13 @@
     --ts-button--content-color: #{styles.black(2)};
 
     &:enabled {
-      @include styles.mouse-interactive-background(styles.gray(7), styles.gray(6));
-      @include styles.mouse-interactive-border-color(styles.gray(7), styles.gray(6));
+      @include styles.mouseInteractiveBackground(styles.gray(7), styles.gray(6));
+      @include styles.mouseInteractiveBorder(styles.gray(7), styles.gray(6));
     }
 
     &:disabled {
-      @include styles.mouse-interactive-background(styles.gray(7));
-      @include styles.mouse-interactive-border-color(styles.gray(7));
+      @include styles.mouseInteractiveBackground(styles.gray(7));
+      @include styles.mouseInteractiveBorder(styles.gray(7));
     }
   }
 
@@ -112,13 +112,13 @@
     --ts-button--content-color: #{styles.black(2)};
 
     &:enabled {
-      @include styles.mouse-interactive-background(transparent, styles.gray(6));
-      @include styles.mouse-interactive-border-color(styles.gray(7), styles.gray(6));
+      @include styles.mouseInteractiveBackground(transparent, styles.gray(6));
+      @include styles.mouseInteractiveBorder(styles.gray(7), styles.gray(6));
     }
 
     &:disabled {
-      @include styles.mouse-interactive-background(transparent);
-      @include styles.mouse-interactive-border-color(styles.gray(7));
+      @include styles.mouseInteractiveBackground(transparent);
+      @include styles.mouseInteractiveBorder(styles.gray(7));
     }
   }
 
@@ -126,11 +126,11 @@
     --ts-button--content-color: #{styles.black(2)};
 
     &:enabled {
-      @include styles.mouse-interactive-background(transparent, styles.gray(7));
+      @include styles.mouseInteractiveBackground(transparent, styles.gray(7));
     }
 
     &:disabled {
-      @include styles.mouse-interactive-background(transparent);
+      @include styles.mouseInteractiveBackground(transparent);
     }
   }
 
@@ -138,13 +138,13 @@
     --ts-button--content-color: #fff;
 
     &:enabled {
-      @include styles.mouse-interactive-background(styles.red(2), styles.red(1));
-      @include styles.mouse-interactive-border-color(styles.red(2), styles.red(1));
+      @include styles.mouseInteractiveBackground(styles.red(2), styles.red(1));
+      @include styles.mouseInteractiveBorder(styles.red(2), styles.red(1));
     }
 
     &:disabled {
-      @include styles.mouse-interactive-background(styles.red(2));
-      @include styles.mouse-interactive-border-color(styles.red(2));
+      @include styles.mouseInteractiveBackground(styles.red(2));
+      @include styles.mouseInteractiveBorder(styles.red(2));
     }
   }
 }

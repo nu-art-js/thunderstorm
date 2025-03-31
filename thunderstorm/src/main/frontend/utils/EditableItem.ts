@@ -119,6 +119,9 @@ export class EditableItem<T>
 				return response;
 			} catch (err: any) {
 				this.saveError = err;
+				// is this really needed?? from quai fork
+				// this.handleValidationError(err as Error);
+
 				if (!this.onError)
 					throw err;
 
@@ -126,7 +129,6 @@ export class EditableItem<T>
 				return item;
 			} finally {
 				this._isSaving = false;
-				this.handleValidationError(err as Error);
 				this.calculateState(); // <== this results in has changes
 			}
 		};
