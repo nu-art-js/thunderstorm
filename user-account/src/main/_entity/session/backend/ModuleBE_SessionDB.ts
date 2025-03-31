@@ -45,7 +45,6 @@ export class ModuleBE_SessionDB_Class
 			const decodedJwt = await this.sessionData.isValidJWT(authorizationHeader) as { sessionData: string };
 			const sessionData = this.sessionData.decode(decodedJwt.sessionData);
 
-
 			//Get the existing dbSession for this authorizationHeader, there is one, even in previousSessions
 			const md5SessionId = md5(authorizationHeader); // We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
 			const dbSession = await this.runTransaction(async transaction => {
