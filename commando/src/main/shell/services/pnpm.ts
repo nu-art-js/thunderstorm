@@ -7,7 +7,7 @@ import {Commando_PNPM} from '../plugins/pnpm';
 export class Cli_PNPM
 	extends Logger {
 
-	private _expectedVersion = '9.1.0';
+	private _expectedVersion = '10.7.0';
 	private _homeEnvVar = 'PNPM_HOME';
 
 	constructor() {
