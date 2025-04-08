@@ -28,12 +28,15 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 		this.key = key;
 	}
 
-	// @ts-ignore
-	get(sessionData = ModuleFE_Session.sessionData): Binder['value'] {
-		if (!(this.key in sessionData))
+	get(): Binder['value'];
+	get(defaultValue: Binder['value']): Binder['value'];
+	get(defaultValue?: Binder['value']): Binder['value'] {
+		// @ts-ignore
+		const sessionData = ModuleFE_Session.sessionData;
+		if (!(this.key in sessionData) && !exists(defaultValue))
 			throw new BadImplementationException(`Couldn't find key "${this.key}" in session data`);
 
-		return sessionData[this.key] as Binder['value'];
+		return sessionData[this.key] as Binder['value'] ?? defaultValue;
 	}
 }
 
@@ -65,7 +68,7 @@ class ModuleFE_Session_Class
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => {
 			const sessionJWT = StorageKey_SessionId.get();
 			if (!sessionJWT)
-				return "";
+				return '';
 
 			return `Bearer ${sessionJWT}`;
 		});
@@ -105,7 +108,7 @@ class ModuleFE_Session_Class
 			try {
 				this.sessionData = this.sessionDecoder(sessionAsString);
 			} catch (e: any) {
-				this.logError("Error decoding session data", e);
+				this.logError('Error decoding session data', e);
 			}
 		else
 			this.sessionData = {};
@@ -138,7 +141,7 @@ class ModuleFE_Session_Class
 			return decodedJWT.exp > currentTime;
 		} catch (error: any) {
 			// Log any errors during decoding and consider the session invalid.
-			this.logError("Error validating session token", error);
+			this.logError('Error validating session token', error);
 			return false;
 		}
 	}
