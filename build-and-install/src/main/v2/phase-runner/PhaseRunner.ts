@@ -1,7 +1,27 @@
 import {
-	__stringify, _keys, AbsolutePath, addItemToArrayAtIndex, arrayIncludesAny, asArray, BadImplementationException, deepClone, exists, flatArray,
-	ImplementationMissingException, LogLevel, merge, MUSTNeverHappenException, Promise_all_sequentially, reduceToMap, RelativePath, removeItemFromArray,
-	sortArray, StaticLogger, StringMap, TypedMap
+	__stringify,
+	_keys,
+	AbsolutePath,
+	addItemToArrayAtIndex,
+	arrayIncludesAny,
+	asArray,
+	BadImplementationException, BeLogged,
+	deepClone,
+	exists,
+	flatArray,
+	ImplementationMissingException,
+	LogClient_Terminal,
+	LogLevel,
+	merge,
+	MUSTNeverHappenException,
+	Promise_all_sequentially,
+	reduceToMap,
+	RelativePath,
+	removeItemFromArray,
+	sortArray,
+	StaticLogger,
+	StringMap,
+	TypedMap
 } from '@nu-art/ts-common';
 import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
 import {Phase, Phase_Debug, Phase_Help, Phase_PrintEnv} from '../phase';
@@ -17,7 +37,6 @@ import {dispatcher_UnitChange} from './PhaseRunnerDispatcher';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
-import {BAIScreenManager, MemKey_BAIScreenManager} from '../screens/BAIScreenManager';
 import {MemKey_PhaseRunner} from './consts';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 
@@ -50,17 +69,17 @@ export class PhaseRunner
 	private killCounter: number = 0;
 	private static KILL_THRESHOLD = 5;
 	public static instance: PhaseRunner;
-	private readonly screenManager: BAIScreenManager;
 	private defaultFileRoutes!: ProjectConfig_DefaultFileRoutes;
 
 	constructor(projectPath: RelativePath) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
+		BeLogged.addClient(LogClient_Terminal);
+
 		if (exists(PhaseRunner.instance))
 			throw new MUSTNeverHappenException('phase runner instance must be unique');
 		Error.stackTraceLimit = 50;
 
 		this.addToClassStack(PhaseRunner);
-		this.screenManager = new BAIScreenManager();
 		this.phases = [];
 		this.units = [this];
 		this.projectPath = convertToFullPath(projectPath);
@@ -70,14 +89,13 @@ export class PhaseRunner
 		if (RuntimeParams.debug)
 			this.setMinLevel(LogLevel.Debug);
 		if (RuntimeParams.verbose)
-			this.setMinLevel(LogLevel.Debug);
+			this.setMinLevel(LogLevel.Verbose);
 	}
 
 	//######################### Initialization #########################
 
 	protected async init() {
 		MemKey_PhaseRunner.set(this);
-		MemKey_BAIScreenManager.set(this.screenManager);
 		const runnerParams: RunnerParams = {
 			rootPath: process.cwd(),
 			configPath: process.cwd() + '/.config',
@@ -87,9 +105,9 @@ export class PhaseRunner
 		if (this.projectConfig) {
 			const projectParams = this.prepareProjectParams();
 			MemKey_ProjectConfig.set({
-				                         ...this.projectConfig,
-				                         params: projectParams,
-			                         });
+				...this.projectConfig,
+				params: projectParams,
+			});
 		}
 
 		if (this.defaultFileRoutes)
@@ -114,9 +132,9 @@ export class PhaseRunner
 		//Set Project Params
 		const projectParams = this.prepareProjectParams();
 		MemKey_ProjectConfig.set({
-			                         ...this.projectConfig,
-			                         params: projectParams,
-		                         });
+			...this.projectConfig,
+			params: projectParams,
+		});
 
 		//Set Default File Routes
 		this.defaultFileRoutes = this.prepareDefaultFileRouts();
@@ -135,35 +153,15 @@ export class PhaseRunner
 		}));
 	}
 
-	// private filterUnits() {
-	// 	const useUnits = RuntimeParams.usePackage;
-	// 	if (!useUnits || !useUnits.length)
-	// 		return;
-	//
-	// 	const unitsToRemove: BaseUnit[] = [];
-	// 	for (const unit of this.units) {
-	// 		if (unit === this)
-	// 			continue;
-	//
-	// 		if (!useUnits.includes(unit.config.key))
-	// 			unitsToRemove.push(unit);
-	// 	}
-	//
-	// 	if (!unitsToRemove.length)
-	// 		return;
-	//
-	// 	unitsToRemove.forEach(unit => removeItemFromArray(this.units, unit));
-	// }
-
 	private async loadProject() {
 		if (!fs.existsSync(this.projectPath))
 			throw new ImplementationMissingException(`Missing project config file, could not find in path: ${this.projectPath}`);
+		const projectConfigCB1 = (await import (this.projectPath)).default as (runner: PhaseRunner) => Promise<ProjectConfigV2>;
 
-		const projectConfigCB = require(this.projectPath).default as () => Promise<ProjectConfigV2>;
-		if (typeof projectConfigCB !== 'function')
+		if (typeof projectConfigCB1 !== 'function')
 			throw new BadImplementationException('Config file must be an asynchronous function returning a ProjectConfigV2 object');
 
-		return projectConfigCB();
+		return new MemStorage().init(() => projectConfigCB1(this), true);
 	}
 
 	private prepareProjectParams(): StringMap {
@@ -524,7 +522,12 @@ export class PhaseRunner
 					throw e;
 				}
 
-				await this.executeImpl();
+				try {
+					await this.executeImpl();
+				} catch (e: any) {
+					this.logError('Error Executing Runner', e);
+					throw e;
+				}
 				this.killed = true;
 
 				this.logInfo('Completed successfully');
@@ -589,11 +592,11 @@ export class PhaseRunner
 
 	async printEnv() {
 		await this.allocateCommando(Commando_Basic)
-		          .append('npm -g list typescript eslint firebase-tools sort-package-json --depth=0')
-		          .append('echo "npm version:"; npm -v')
-		          .append('echo "node version:"; node -v')
-		          .append('echo "base version:"; bash --version')
-		          .execute();
+			.append('npm -g list typescript eslint firebase-tools sort-package-json --depth=0')
+			.append('echo "npm version:"; npm -v')
+			.append('echo "node version:"; node -v')
+			.append('echo "base version:"; bash --version')
+			.execute();
 	}
 
 	async printDebug() {

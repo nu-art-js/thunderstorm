@@ -2,22 +2,49 @@ import {__stringify, exists} from '../utils/tools';
 import {BadImplementationException} from '../core/exceptions/exceptions';
 
 import {AsyncLocalStorage} from 'async_hooks';
-import {generateHex} from '../utils/random-tools';
 import {ValidationException} from '../validator/validator-core';
 
 
 const asyncLocalStorage = new AsyncLocalStorage<MemStorage>();
 
 export class MemStorage {
-	private readonly cache: any = {__myId: generateHex(4)};
+	private readonly cache: any = {};
 
 	constructor() {
-		// console.log(`---- ${this.cache.__myId} created`);
-
 	}
 
-	async init<R>(makeItContext: () => Promise<R>) {
-		return asyncLocalStorage.run(this, makeItContext);
+	static getStore() {
+		return asyncLocalStorage.getStore();
+	}
+
+	async init<R>(makeItContext: () => Promise<R>, mergeFromEnclosingStorage = false): Promise<R> {
+		let isSameContext = false;
+
+		const enclosingContextStorage = MemStorage.getStore();
+
+		const response = await asyncLocalStorage.run(this, async () => {
+			const currentStorage = MemStorage.getStore()!;
+
+			if (currentStorage === enclosingContextStorage) {
+				isSameContext = true;
+				return;
+			}
+
+			if (mergeFromEnclosingStorage) {
+				if (!enclosingContextStorage)
+					throw new BadImplementationException('Trying to merge from enclosing storage, but no enclosing storage found!');
+
+				for (const key in enclosingContextStorage.cache) {
+					currentStorage.cache[key] = enclosingContextStorage.cache[key];
+				}
+			}
+			return makeItContext();
+		});
+
+		if (isSameContext)
+			return makeItContext();
+
+		return response as R;
 	}
 
 	initSync<R>(makeItContext: () => R) {
@@ -25,7 +52,6 @@ export class MemStorage {
 	}
 
 	private set = <T>(key: MemKey<T>, value: T): T => {
-		// console.log(`-- ${this.cache.__myId} set: ${key.key} -> `, value);
 		const currentValue = this.cache[key.key];
 		if (exists(currentValue) && key.unique && value !== currentValue) {
 			throw new BadImplementationException(`Unique storage key is being overridden for key: ${key.key}
