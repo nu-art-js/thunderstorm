@@ -33,6 +33,11 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	get(defaultValue?: Binder['value']): Binder['value'] {
 		// @ts-ignore
 		const sessionData = ModuleFE_Session.sessionData;
+
+		// means that we don't have a session yet
+		if (!sessionData)
+			return;
+
 		if (!(this.key in sessionData) && !exists(defaultValue))
 			throw new BadImplementationException(`Couldn't find key "${this.key}" in session data`);
 
