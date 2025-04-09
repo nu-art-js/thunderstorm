@@ -1,12 +1,9 @@
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {BAIScreen} from './BAIScreen';
 import {BeLogged, LogClient_Terminal, removeFromArrayByIndex} from '@nu-art/ts-common';
 import {Phase} from '../phase';
 import {dispatcher_PhaseChange, PhaseRunner_OnPhaseChange} from '../phase-runner/PhaseRunnerDispatcher';
 import {MemKey_PhaseRunner} from '../phase-runner/consts';
 
-
-export const MemKey_BAIScreenManager = new MemKey<BAIScreenManager>('bai-screen-manager');
 
 type BAIScreenConditions = {
 	startOnPhase?: Phase<string>;

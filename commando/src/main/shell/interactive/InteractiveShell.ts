@@ -23,7 +23,11 @@ export class InteractiveShell
 		super();
 		this.shell = spawn('/bin/bash', {
 			detached: true,  // This is important to make the process a session leader
-			shell: true
+			shell: true,
+			env: {
+				...process.env,
+				NODE_OPTIONS: ''   // Remove any --inspect flags
+			}
 		});
 
 		this.alive = true;

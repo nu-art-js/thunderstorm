@@ -17,10 +17,8 @@ export class MemStorage {
 		return asyncLocalStorage.getStore();
 	}
 
-	async init<R>(makeItContext: () => Promise<R>, mergeFromEnclosingStorage = false): Promise<R> {
+	async init<R>(makeItContext: () => Promise<R>, enclosingContextStorage?: MemStorage): Promise<R> {
 		let isSameContext = false;
-
-		const enclosingContextStorage = MemStorage.getStore();
 
 		const response = await asyncLocalStorage.run(this, async () => {
 			const currentStorage = MemStorage.getStore()!;
@@ -30,14 +28,11 @@ export class MemStorage {
 				return;
 			}
 
-			if (mergeFromEnclosingStorage) {
-				if (!enclosingContextStorage)
-					throw new BadImplementationException('Trying to merge from enclosing storage, but no enclosing storage found!');
-
+			if (enclosingContextStorage)
 				for (const key in enclosingContextStorage.cache) {
 					currentStorage.cache[key] = enclosingContextStorage.cache[key];
 				}
-			}
+
 			return makeItContext();
 		});
 

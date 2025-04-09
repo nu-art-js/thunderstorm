@@ -70,6 +70,7 @@ export class PhaseRunner
 	private static KILL_THRESHOLD = 5;
 	public static instance: PhaseRunner;
 	private defaultFileRoutes!: ProjectConfig_DefaultFileRoutes;
+	private projectConfigResolver: (runner: MemStorage) => Promise<ProjectConfigV2>;
 
 	constructor(projectPath: RelativePath) {
 		super({label: 'Phase Runner', key: 'phase-runner'});
@@ -90,6 +91,14 @@ export class PhaseRunner
 			this.setMinLevel(LogLevel.Debug);
 		if (RuntimeParams.verbose)
 			this.setMinLevel(LogLevel.Verbose);
+
+		if (!fs.existsSync(this.projectPath))
+			throw new ImplementationMissingException(`Missing project config file, could not find in path: ${this.projectPath}`);
+
+		this.projectConfigResolver = require(this.projectPath).default as (runner: MemStorage) => Promise<ProjectConfigV2>;
+
+		if (typeof this.projectConfigResolver !== 'function')
+			throw new BadImplementationException('Config file must be an asynchronous function returning a ProjectConfigV2 object');
 	}
 
 	//######################### Initialization #########################
@@ -154,14 +163,7 @@ export class PhaseRunner
 	}
 
 	private async loadProject() {
-		if (!fs.existsSync(this.projectPath))
-			throw new ImplementationMissingException(`Missing project config file, could not find in path: ${this.projectPath}`);
-		const projectConfigCB1 = (await import (this.projectPath)).default as (runner: PhaseRunner) => Promise<ProjectConfigV2>;
-
-		if (typeof projectConfigCB1 !== 'function')
-			throw new BadImplementationException('Config file must be an asynchronous function returning a ProjectConfigV2 object');
-
-		return new MemStorage().init(() => projectConfigCB1(this), true);
+		return this.projectConfigResolver(MemStorage.getStore()!);
 	}
 
 	private prepareProjectParams(): StringMap {
