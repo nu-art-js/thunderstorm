@@ -15,7 +15,7 @@
     "noUnusedLocals": true,
     "module": "commonjs",
     "sourceMap": true,
-    "sourceRoot": "/Users/tacb0ss/dev/nu-art/beamz/_thunderstorm/bug-report/src/main",
+    "sourceRoot": "/Users/itayleybovich/dev/nu-art/beamz/_thunderstorm/bug-report/src/main",
     "strict": true
   },
   "esModuleInterop": true,
