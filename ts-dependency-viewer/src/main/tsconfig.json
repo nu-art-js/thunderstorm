@@ -15,7 +15,7 @@
     "noUnusedLocals": true,
     "module": "commonjs",
     "sourceMap": true,
-    "sourceRoot": "/Users/tacb0ss/dev/nu-art/beamz/_thunderstorm/ts-dependency-viewer/src/main",
+    "sourceRoot": "/Users/itayleybovich/dev/nu-art/beamz/_thunderstorm/ts-dependency-viewer/src/main",
     "strict": true
   },
   "esModuleInterop": true,
