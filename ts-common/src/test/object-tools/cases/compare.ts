@@ -5,7 +5,6 @@ type Input<T = any> = {
 	one: any
 	two: any
 }
-const emptyObj = {};
 
 const TestCase_compare: TestSuite<Input, any> ['testcases'] = [
 	{
