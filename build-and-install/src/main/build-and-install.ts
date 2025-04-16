@@ -1,15 +1,11 @@
 import {DebugFlag, LogLevel, RelativePath} from '@nu-art/ts-common';
 import {RuntimeParams} from './core/params/params';
 import {PhaseRunner} from './v2/phase-runner/PhaseRunner';
-import {allTSUnits} from './v2/unit/thunderstorm';
 
 
 DebugFlag.DefaultLogLevel = RuntimeParams.debug ? LogLevel.Debug : LogLevel.Info;
 
 const runner = new PhaseRunner('./.config/project-config2.ts' as RelativePath);
-
-if (RuntimeParams.runWithThunderstorm)
-	runner.registerUnits(allTSUnits);
 
 runner
 	.execute()

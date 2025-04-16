@@ -4,8 +4,8 @@ import {
 	AbsolutePath,
 	addItemToArrayAtIndex,
 	arrayIncludesAny,
-	asArray,
-	BadImplementationException, BeLogged,
+	BadImplementationException,
+	BeLogged,
 	deepClone,
 	exists,
 	flatArray,
@@ -18,7 +18,6 @@ import {
 	reduceToMap,
 	RelativePath,
 	removeItemFromArray,
-	sortArray,
 	StaticLogger,
 	StringMap,
 	TypedMap
@@ -26,14 +25,12 @@ import {
 import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
 import {Phase, Phase_Debug, Phase_Help, Phase_PrintEnv} from '../phase';
 import {Unit, UnitPhaseImplementor} from '../unit/types';
-import {BaseUnit, Unit_TypescriptProject} from '../unit/core';
+import {BaseUnit} from '../unit/core';
 import {AllBaiParams, RuntimeParams} from '../../core/params/params';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import fs, {promises as _fs} from 'fs';
 import {ProjectConfigV2} from '../project/types';
-import {allTSUnits} from '../unit/thunderstorm';
 import {Default_Files, Default_OutputFiles, MemKey_DefaultFiles, ProjectConfig_DefaultFileRoutes, RunningStatus} from '../../defaults/consts';
-import {dispatcher_UnitChange} from './PhaseRunnerDispatcher';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {PhaseRunnerMode, PhaseRunnerMode_Continue, PhaseRunnerMode_Normal} from './types';
@@ -385,24 +382,6 @@ export class PhaseRunner
 		return runForPhase;
 	};
 
-	//######################### Unit Logic #########################
-
-	public registerUnits(units: BaseUnit | BaseUnit[]) {
-		this.units.push(...asArray(units));
-		sortArray(this.units, unit => {
-			//Phase runner is first
-			if (unit === this)
-				return 0;
-
-			//Second priority for project units
-			if (unit instanceof Unit_TypescriptProject)
-				return 1;
-
-			//TS units after project units, but before the rest
-			return allTSUnits.includes(unit) ? 2 : 3;
-		});
-		dispatcher_UnitChange.dispatch(this.units);
-	}
 
 	public getUnits() {
 		return this.units;

@@ -62,7 +62,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	protected async init(setInitialized: boolean = true) {
 		await super.init(false);
 		dispatcher_WatchReady.addListener(this);
-		this.runtime.pathTo.output = this.runtime.pathTo.pkg + `/${this.config.output}`;
+		this.runtime.pathTo.output = this.config.fullPath + `/${this.config.output}`;
 		if (setInitialized)
 			this.setStatus('Initialized');
 	}
@@ -70,7 +70,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	//######################### Internal Logic #########################
 
 	protected async resolveTSConfig() {
-		const pathToUnitTSConfig = `${this.runtime.pathTo.pkg}/src/main/tsconfig.json`;
+		const pathToUnitTSConfig = `${this.config.fullPath}/src/main/tsconfig.json`;
 		// const pathToProjectTSConfig = '';
 
 		//If set to use a custom ts config
@@ -94,7 +94,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			throw new BadImplementationException(`Project is missing a tsconfig.json file in path ${pathToProjectConfig}`);
 
 		let content = await _fs.readFile(pathToProjectTSConfig, {encoding: 'utf-8'});
-		content = content.replace('SOURCE_ROOT', `${this.runtime.pathTo.pkg}/src/main`);
+		content = content.replace('SOURCE_ROOT', `${this.config.fullPath}/src/main`);
 		await _fs.writeFile(pathToUnitTSConfig, content, {encoding: 'utf-8'});
 	}
 
@@ -111,11 +111,11 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	protected async compileImpl() {
-		const pathToCompile = `${this.runtime.pathTo.pkg}/src/main`;
+		const pathToCompile = `${this.config.fullPath}/src/main`;
 		const pathToTSConfig = `${pathToCompile}/tsconfig.json`;
 
 		const commando = this.allocateCommando(Commando_NVM, Commando_Basic)
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.runtime.pathTo.output}"`)
 			.setLogLevelFilter((log, std) => {
 				return LogLevel.Error;
@@ -135,7 +135,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`)
 			.join(' -o -name ')} \\) | cpio -pdmuv "${this.runtime.pathTo.output}" > /dev/null 2>&1`;
 		await this.allocateCommando(Commando_Basic)
-			.cd(`${this.runtime.pathTo.pkg}/src/main`)
+			.cd(`${this.config.fullPath}/src/main`)
 			// .setStdErrorValidator(stderr => {
 			// 	return !stderr.match(/\d+\sblock/);
 			// })
@@ -196,12 +196,12 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	//######################### Phase Implementations #########################
 
 	async preCompile() {
-		if (!fs.existsSync(`${this.config.pathToPackage}/prebuild.sh`))
+		if (!fs.existsSync(`${this.config.fullPath}/prebuild.sh`))
 			return;
 
 		this.setStatus('Pre-Compile');
 		await this.allocateCommando(Commando_Basic)
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.append('bash prebuild.sh')
 			.execute();
 	}
@@ -231,7 +231,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const CONST_RunningRoot = process.cwd();
 		this.logDebug(`Generating Dependency Tree - ${this.config.label}`);
 		await this.allocateCommando(Commando_Basic)
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.append(`mkdir -p ${CONST_RunningRoot}/.trash/dependencies`)
 			.append(`pnpm list --depth 1000 > "${CONST_RunningRoot}/.trash/dependencies/${this.config.key}.txt"`)
 			.execute();
@@ -240,7 +240,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	async checkCyclicImports() {
 		this.logDebug(`Checking Cyclic Imports - ${this.config.label}`);
 		await this.allocateCommando(Commando_Basic)
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			// .setStdErrorValidator(stderr => {
 			// 	return !stderr.includes('Finding files') && !stderr.includes('Image created');
 			// })
@@ -251,7 +251,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	async lint() {
 		const pathToProjectESLint = `${MemKey_RunnerParams.get()[RunnerParamKey_ConfigPath]}/eslint.config.cjs`;
-		const pathToLint = `${this.runtime.pathTo.pkg}src/main`;
+		const pathToLint = `${this.config.fullPath}src/main`;
 		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ');
 
 		await this.allocateCommando(Commando_NVM)

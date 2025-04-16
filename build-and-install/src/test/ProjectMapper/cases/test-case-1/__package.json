@@ -1,0 +1,19 @@
+{
+  "name": "test-case-1",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "Test case 1 - root ts"
+  }
+}

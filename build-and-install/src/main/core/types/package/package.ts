@@ -5,7 +5,12 @@ export const PackageType_FirebaseHostingAndFunctionApp = 'firebase-app' as const
 export const PackageType_FirebaseFunctionsApp = 'firebase-functions-app' as const;
 export const PackageType_Sourceless = 'sourceless' as const;
 export const PackageType_Python = 'python' as const;
-export const PackageTypes = [PackageType_InfraLib, PackageType_ProjectLib, PackageType_FirebaseHostingApp, PackageType_FirebaseFunctionsApp, PackageType_Sourceless, PackageType_Python] as const;
+export const PackageTypes = [PackageType_InfraLib,
+														 PackageType_ProjectLib,
+														 PackageType_FirebaseHostingApp,
+														 PackageType_FirebaseFunctionsApp,
+														 PackageType_Sourceless,
+														 PackageType_Python] as const;
 export const PackageTypesWithOutput = [PackageType_InfraLib, PackageType_ProjectLib, PackageType_FirebaseHostingApp, PackageType_FirebaseFunctionsApp];
 export type PackageType = typeof PackageTypes[number];
 
@@ -39,28 +44,23 @@ export type FirebaseEnvConfig<Env extends string> = {
 	}
 }
 
+type FirebaseHostingConfig = {
+	public: string
+	rewrites: {
+		source: string
+		destination: string
+	}[]
+};
 export type FirebasePackageConfig<Env extends string = string> = {
 	envs: FirebaseEnvConfig<Env>[];
 	name: string
-
-	debugPort: number,
-	basePort: number,
-	hostingPort?: number,
 	pathToFirebaseConfig: string
-	ssl?: {
-		pathToKey: string
-		pathToCertificate: string
-	}
+
+	hostingPort?: number,
 	functions?: {
 		ignore: string[]
 	},
-	hosting?: {
-		public: string
-		rewrites: {
-			source: string
-			destination: string
-		}[]
-	}
+	hosting?: FirebaseHostingConfig
 }
 export type Package_Base = {
 	name: string

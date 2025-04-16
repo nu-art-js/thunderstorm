@@ -1,0 +1,1 @@
+# Test project with root package.json and ts lib
