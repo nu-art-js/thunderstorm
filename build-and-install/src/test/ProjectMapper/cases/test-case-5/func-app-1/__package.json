@@ -1,0 +1,21 @@
+{
+  "name": "test-case-5--function-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "basePort": 1,
+    "debugPort": 2,
+    "type": "firebase-function",
+    "label": "Test case 5 - function-1",
+    "envs": {
+      "local": {
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}

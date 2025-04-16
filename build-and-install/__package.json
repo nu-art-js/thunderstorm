@@ -28,7 +28,8 @@
     "**/*"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "plop": "npm run plop --prefix ../.."
   },
   "dependencies": {
     "chokidar": "^3.6.0",

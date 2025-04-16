@@ -1,7 +1,7 @@
 import {testSuiteTester} from '../../main/testing/consts';
-import {TestSuite_CompareVersion} from './cases/compare-version';
+import {TestSuite_testSuiteName} from './cases/testSuiteName';
 
 
-describe('Compare Versions', () => {
-	testSuiteTester(TestSuite_CompareVersion);
+describe('testSuiteName', () => {
+	testSuiteTester(TestSuite_testSuiteName);
 });

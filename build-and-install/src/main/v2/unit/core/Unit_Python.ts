@@ -6,7 +6,7 @@ import {Commando_Python3} from '@nu-art/commando/shell/plugins/python';
 
 
 export type Unit_Python_Config = BaseUnit_Config & {
-	pathToPackage: string
+	fullPath: string
 }
 
 export type Unit_Python_RuntimeConfig = BaseUnit_RuntimeConfig & {
@@ -25,7 +25,7 @@ export class Unit_Python<C extends Unit_Python_Config = Unit_Python_Config, RTC 
 	protected async init() {
 		await super.init();
 		this.runtime.pathTo = {
-			pkg: convertToFullPath(this.config.pathToPackage),
+			pkg: convertToFullPath(this.config.fullPath),
 		};
 	}
 
@@ -33,7 +33,7 @@ export class Unit_Python<C extends Unit_Python_Config = Unit_Python_Config, RTC 
 
 	async install() {
 		const commando = await this.allocateCommando(Commando_Python3)
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.installVenv();
 
 		await commando.sourceVenv().installRequirements();

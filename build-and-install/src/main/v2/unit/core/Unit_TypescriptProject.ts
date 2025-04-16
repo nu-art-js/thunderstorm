@@ -21,11 +21,14 @@ import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
 import {PNPM} from '@nu-art/commando/shell/services/pnpm';
 
 
-type Unit_TypescriptProject_Config = Unit_Typescript_Config & { globalPackages?: StringMap; };
+type Unit_TypescriptProject_Config = Unit_Typescript_Config & {
+	globalPackages?: StringMap;
+	isRoot: true
+};
 
 type Unit_TypescriptProject_RuntimeConfig = Unit_Typescript_RuntimeConfig & {};
 
-type PathDeclaration = { pathToPackage: AbsolutePath, paths: string[], unit: Unit_TypescriptLib };
+type PathDeclaration = { fullPath: string, paths: string[], unit: Unit_TypescriptLib };
 
 export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config, RTC extends Unit_TypescriptProject_RuntimeConfig = Unit_TypescriptProject_RuntimeConfig>
 	extends Unit_Typescript<C, RTC>
@@ -58,8 +61,8 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 			}, [] as string[]);
 		this.logInfo(`Installing Global Packages: ${packages.join(' ')}`);
 		await this.allocateCommando(Commando_NVM)
-		          .append(`npm i -g ${packages.join(' ')}`)
-		          .execute();
+			.append(`npm i -g ${packages.join(' ')}`)
+			.execute();
 	}
 
 	private async installPackages() {
@@ -69,7 +72,7 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 		this.setStatus('Installing packages', 'start');
 		const runner = MemKey_PhaseRunner.get();
 		const units = runner.getUnits().filter(unit => unit instanceof Unit_Typescript) as Unit_Typescript[];
-		const packages = units.map(unit => unit.config.pathToPackage);
+		const packages = units.map(unit => unit.config.fullPath);
 		await PNPM.createWorkspace(packages);
 		await PNPM.installPackages(this.allocateCommando(Commando_NVM, Commando_PNPM));
 		this.setStatus('Installed packages', 'end');
@@ -84,16 +87,16 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 		// Using phase runner instance to resolve all project libs to watch
 		const cantBeInstanceOf = [Unit_FirebaseHostingApp, Unit_FirebaseFunctionsApp];
 		const projectLibs = MemKey_PhaseRunner.get()
-		                                      .getUnits()
-		                                      .filter(unit => unit.isInstanceOf(Unit_TypescriptLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_TypescriptLib[];
+			.getUnits()
+			.filter(unit => unit.isInstanceOf(Unit_TypescriptLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_TypescriptLib[];
 
 		//return all paths to watch
 		return projectLibs.map(lib => {
-			const sourceFolder = `${lib.runtime.pathTo.pkg}/src/main`;
+			const sourceFolder = `${lib.config.fullPath}/src/main`;
 			return {
 				paths: this.suffixesToWatch.map(suffix => `${sourceFolder}/**/*.${suffix}`),
 				unit: lib,
-				pathToPackage: lib.runtime.pathTo.pkg
+				fullPath: lib.config.fullPath
 			};
 		});
 	}
@@ -200,7 +203,7 @@ export class Unit_TypescriptProject<C extends Unit_TypescriptProject_Config = Un
 	}
 
 	private findUnit = (pathDeclarations: PathDeclaration[], currentPath: AbsolutePath): Unit_TypescriptLib => {
-		const unitToReturn = pathDeclarations.find(declaration => currentPath.startsWith(`${declaration.pathToPackage}/`))?.unit;
+		const unitToReturn = pathDeclarations.find(declaration => currentPath.startsWith(`${declaration.fullPath}/`))?.unit;
 		if (!unitToReturn)
 			throw new MUSTNeverHappenException(`current path doesnt match any declared unit, current path: ${currentPath}`);
 

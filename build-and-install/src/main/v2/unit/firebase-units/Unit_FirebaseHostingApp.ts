@@ -3,7 +3,7 @@ import {FirebasePackageConfig} from '../../../core/types';
 import {UnitPhaseImplementor} from '../types';
 import {Phase_DeployFrontend, Phase_Launch, Phase_ResolveConfigs} from '../../phase';
 import {RuntimeParams} from '../../../core/params/params';
-import {BadImplementationException, ImplementationMissingException, LogLevel} from '@nu-art/ts-common';
+import {BadImplementationException, ImplementationMissingException, LogLevel, TypedMap} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
@@ -11,10 +11,29 @@ import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {dispatcher_WatchReady} from '../runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
+import {UnitConfigJSON_Node} from '../../phase-runner/ProjectMapper/resolvers/core';
 
+
+export type FirebaseHostingConfig = {
+	public: string
+	rewrites: {
+		source: string
+		destination: string
+	}[]
+};
+
+export type FirebaseHosting_EnvConfig = { configUrl: string, projectId: string, isLocal?: boolean };
+export type UnitConfigJSON_FirebaseHosting = UnitConfigJSON_Node & {
+	hostingPort?: number,
+	hostingConfig?: FirebaseHostingConfig
+	envs: TypedMap<FirebaseHosting_EnvConfig>
+};
 
 export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
-	firebaseConfig: FirebasePackageConfig;
+	firebaseConfig?: FirebasePackageConfig;
+	hostingPort: number
+	hostingConfig?: FirebaseHostingConfig
+	envs: TypedMap<FirebaseHosting_EnvConfig>
 	sources?: string[];
 };
 
@@ -23,6 +42,11 @@ const CONST_VersionApp = 'version-app.json';
 export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
+
+	static DefaultConfig_FirebaseHosting = {
+		hostingPort: 8100,
+		output: 'dist',
+	};
 
 	constructor(config: Unit_FirebaseHostingApp<C>['config']) {
 		super(config);
@@ -33,7 +57,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		await super.init(setInitialized);
 
 		dispatcher_WatchReady.removeListener(this);
-		if (!this.config.firebaseConfig.hostingPort)
+		if (!this.config.hostingPort)
 			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
 	}
 
@@ -72,7 +96,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	private getEnvConfig() {
 		const env = RuntimeParams.environment;
-		const envConfig = this.config.firebaseConfig.envs.find(_env => _env.env === env);
+		const envConfig = this.config.envs[env];
 		if (!envConfig)
 			throw new ImplementationMissingException(`Missing EnvConfig for env ${env} in unit ${this.config.label}`);
 
@@ -82,51 +106,29 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	private async resolveHostingRC() {
 		const envConfig = this.getEnvConfig();
 		const rcConfig = {projects: {default: envConfig.projectId}};
-		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseRC}`;
+		const targetPath = `${this.config.fullPath}/${CONST_FirebaseRC}`;
 		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveHostingJSON() {
 		const envConfig = this.getEnvConfig();
-		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
+		const targetPath = `${this.config.fullPath}/${CONST_FirebaseJSON}`;
 		let fileContent: any;
 
 		if (envConfig.isLocal)
 			fileContent = {};
 		else
-			fileContent = {hosting: this.config.firebaseConfig.hosting};
+			fileContent = {hosting: this.config.hostingConfig};
 
 		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveHostingRuntimeConfig() {
-		const envConfig = this.getEnvConfig();
-
-		const emulatorConfig = {
-			hostname: 'localhost',
-			port: this.config.firebaseConfig.basePort + 2,
+		const envConfig = {
+			configUrl: this.getEnvConfig().configUrl,
 		};
-
-		const feConfig = {
-			label: envConfig.env.toLowerCase(),
-			ModuleFE_Thunderstorm: {
-				appName: `${this.config.key} - (${envConfig.env})`
-			},
-			ModuleFE_XHR: {
-				origin: envConfig.isLocal ? `https://localhost:${this.config.firebaseConfig.basePort}` : envConfig.backend.url,
-				timeout: envConfig.backend.timeout || 30000,
-				compress: envConfig.backend.compress || false,
-				minLogLevel: envConfig.backend.minLogLevel || false,
-			},
-			ModuleFE_FirebaseListener: {
-				emulatorConfig: envConfig.isLocal ? emulatorConfig : undefined,
-				firebaseConfig: envConfig.firebase.listener?.config
-			},
-			...envConfig.otherConfig
-		};
-
-		const targetPath = convertToFullPath(`${this.config.pathToPackage}/src/main/config.ts`);
-		const fileContent = `export const config = ${JSON.stringify(feConfig, null, 2)};`;
+		const targetPath = convertToFullPath(`${this.config.fullPath}/src/main/config.ts`);
+		const fileContent = `export const config = ${JSON.stringify(envConfig, null, 2)};`;
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
@@ -134,7 +136,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	protected async compileImpl() {
 		const commando = this.allocateCommando(Commando_NVM, Commando_Basic).applyNVM()
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.append(`ENV=${RuntimeParams.environment} npm run build`);
 
 		await this.executeAsyncCommando(commando);
@@ -143,7 +145,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//Webpack bundles files into the output automatically!
-		const targetPath = `${this.runtime.pathTo.pkg}/src/main/${CONST_VersionApp}`;
+		const targetPath = `${this.config.fullPath}/src/main/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
@@ -154,12 +156,12 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	private async runApp() {
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.setLogLevelFilter((log, type) => {
 				if (log.toLowerCase().includes('<i>'))
 					return LogLevel.Info;
 			})
-			.append(`array=($(lsof -ti:${[this.config.firebaseConfig.hostingPort].join(',')}))`)
+			.append(`array=($(lsof -ti:${[this.config.hostingPort].join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')
 			.append('npm run start');
@@ -172,7 +174,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	private async deployImpl() {
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.append(`firebase --debug deploy --only hosting`);
 
 		return this.executeAsyncCommando(commando);

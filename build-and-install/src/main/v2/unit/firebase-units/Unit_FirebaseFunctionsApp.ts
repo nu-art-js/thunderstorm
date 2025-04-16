@@ -5,7 +5,7 @@ import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../
 import {promises as _fs} from 'fs';
 import {RuntimeParams} from '../../../core/params/params';
 import {FirebasePackageConfig, PackageJson} from '../../../core/types';
-import {_keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep} from '@nu-art/ts-common';
+import {_keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, TypedMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
 import {MemKey_PhaseRunner} from '../../phase-runner/consts';
@@ -15,17 +15,33 @@ import {firebaseFunctionEmulator_ErrorStrings, firebaseFunctionEmulator_WarningS
 
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
-	firebaseConfig: FirebasePackageConfig;
+	firebaseConfig?: FirebasePackageConfig;
+	pathToFirebaseConfig: string,
+	envs: TypedMap<{ defaultConfig: string, envConfig: string, projectId: string, isLocal?: boolean }>
+	ignore?: string[],
+	debugPort: number,
+	basePort: number,
+	sslKey: string
+	sslCert: string
 	sources?: string[];
 };
 
 const CONST_VersionApp = 'version-app.json';
+
 
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]>, OnUnitWatchCompiled {
 
 	static staggerCount: number = 0;
+	static DefaultConfig_FirebaseFunction = {
+		pathToFirebaseConfig: '.firebase_config',
+		debugPort: 8100,
+		basePort: 8102,
+		sslKey: '.ssl/key.pem',
+		sslCert: '.ssl/cert.pem',
+		output: 'dist',
+	};
 
 	readonly emulatorLogStrings = {
 		error: firebaseFunctionEmulator_ErrorStrings,
@@ -115,7 +131,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private getEnvConfig() {
 		const env = RuntimeParams.environment;
-		const envConfig = this.config.firebaseConfig.envs.find(_env => _env.env === env);
+		const envConfig = this.config.envs[env];
 		if (!envConfig)
 			throw new ImplementationMissingException(`Missing EnvConfig for env ${env} in unit ${this.config.label}`);
 
@@ -125,30 +141,30 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	private async resolveFunctionsRC() {
 		const envConfig = this.getEnvConfig();
 		const rcConfig = {projects: {default: envConfig.projectId}};
-		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseRC}`;
+		const targetPath = `${this.config.fullPath}/${CONST_FirebaseRC}`;
 		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
 	}
 
 	private async resolveProxyFile() {
 		const envConfig = this.getEnvConfig();
 		const defaultFiles = MemKey_DefaultFiles.get();
-		const targetPath = `${this.runtime.pathTo.pkg}/src/main/proxy.ts`;
+		const targetPath = `${this.config.fullPath}/src/main/proxy.ts`;
 		const path = defaultFiles?.backend?.proxy;
 		if (!path)
 			return;
 
 		let fileContent = await _fs.readFile(path, {encoding: 'utf-8'});
 		fileContent = fileContent.replace(/PROJECT_ID/g, `${envConfig.projectId}`);
-		fileContent = fileContent.replace(/PROXY_PORT/g, `${this.config.firebaseConfig.basePort}`);
-		fileContent = fileContent.replace(/SERVER_PORT/g, `${this.config.firebaseConfig.basePort + 1}`);
-		fileContent = fileContent.replace(/PATH_TO_SSL_KEY/g, `${this.config.firebaseConfig.ssl?.pathToKey}`);
-		fileContent = fileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${this.config.firebaseConfig.ssl?.pathToCertificate}`);
+		fileContent = fileContent.replace(/PROXY_PORT/g, `${this.config.basePort}`);
+		fileContent = fileContent.replace(/SERVER_PORT/g, `${this.config.basePort + 1}`);
+		fileContent = fileContent.replace(/PATH_TO_SSL_KEY/g, `${this.config.sslKey}`);
+		fileContent = fileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${this.config.sslCert}`);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
 	private async resolveConfigDir() {
 		//Create the dir if it doesn't exist
-		const pathToFirebaseConfigFolder = `${this.runtime.pathTo.pkg}/${this.config.firebaseConfig.pathToFirebaseConfig}`;
+		const pathToFirebaseConfigFolder = `${this.config.fullPath}/${this.config.pathToFirebaseConfig}`;
 		try {
 			await _fs.access(pathToFirebaseConfigFolder);
 		} catch (e: any) {
@@ -180,26 +196,26 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async resolveFunctionsJSON() {
 		const envConfig = this.getEnvConfig();
-		const targetPath = `${this.runtime.pathTo.pkg}/${CONST_FirebaseJSON}`;
+		const targetPath = `${this.config.fullPath}/${CONST_FirebaseJSON}`;
 		let fileContent;
 		if (envConfig.isLocal) {
-			const port = this.config.firebaseConfig.basePort;
+			const port = this.config.basePort;
 			fileContent = {
 				database: {
-					rules: `${this.config.firebaseConfig.pathToFirebaseConfig}/database.rules.json`
+					rules: `${this.config.pathToFirebaseConfig}/database.rules.json`
 				},
 				firestore: {
-					rules: `${this.config.firebaseConfig.pathToFirebaseConfig}/firestore.rules`,
-					indexes: `${this.config.firebaseConfig.pathToFirebaseConfig}/firestore.indexes.json`
+					rules: `${this.config.pathToFirebaseConfig}/firestore.rules`,
+					indexes: `${this.config.pathToFirebaseConfig}/firestore.indexes.json`
 				},
 				storage: {
-					rules: `${this.config.firebaseConfig.pathToFirebaseConfig}/storage.rules`
+					rules: `${this.config.pathToFirebaseConfig}/storage.rules`
 				},
 				remoteconfig: {
-					template: `${this.config.firebaseConfig.pathToFirebaseConfig}/remoteconfig.template.json`
+					template: `${this.config.pathToFirebaseConfig}/remoteconfig.template.json`
 				},
 				functions: {
-					ignore: this.config.firebaseConfig.functions?.ignore,
+					ignore: this.config.ignore,
 					source: '.',
 					predeploy: [
 						'echo "Thunderstorm - Local environment is not deployable... Aborting..." && exit 2'
@@ -223,8 +239,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		} else {
 			fileContent = {
 				functions: {
-					source: this.config.output.replace(`${this.config.pathToPackage}/`, ''),
-					ignore: this.config.firebaseConfig.functions?.ignore
+					source: this.config.output.replace(`${this.config.fullPath}/`, ''),
+					ignore: this.config.ignore,
 				}
 			};
 		}
@@ -234,8 +250,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async resolveFunctionsRuntimeConfig() {
 		const envConfig = this.getEnvConfig();
-		const targetPath = `${this.runtime.pathTo.pkg}/src/main/config.ts`;
-		const beConfig = {name: envConfig.env};
+		const targetPath = `${this.config.fullPath}/src/main/config.ts`;
+		const beConfig = {
+			name: RuntimeParams.environment,
+			defaultConfig: envConfig.defaultConfig,
+			envConfig: envConfig.envConfig,
+		};
 		const fileContent = `${envConfig.isLocal ? '// @ts-ignore\nprocess.env[\'NODE_TLS_REJECT_UNAUTHORIZED\'] = 0;\n' : ''}
 		export const Environment = ${JSON.stringify(beConfig)};`;
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
@@ -246,7 +266,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//copyAssetsToOutput will move the file to output
-		const targetPath = `${this.runtime.pathTo.pkg}/src/main/${CONST_VersionApp}`;
+		const targetPath = `${this.config.fullPath}/src/main/${CONST_VersionApp}`;
 		const appVersion = MemKey_ProjectConfig.get().projectVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
@@ -304,7 +324,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async releasePorts() {
 		const commando = this.allocateCommando(Commando_NVM).applyNVM();
-		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.firebaseConfig.basePort + i}`);
+		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.basePort + i}`);
 
 		await commando.setUID(this.config.key)
 			.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
@@ -317,7 +337,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await this.resolveProxyFile();
 
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.append('ts-node src/main/proxy.ts');
 
 		await this.executeAsyncCommando(commando);
@@ -327,7 +347,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	private async runEmulator() {
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.setLogLevelFilter((log, type) => {
 				if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
 					return LogLevel.Error;
@@ -336,7 +356,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 					return LogLevel.Warning;
 			})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'))
-			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`);
+			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend
+				? `--inspect-functions ${this.config.debugPort}`
+				: ''}`);
 
 		await this.executeAsyncCommando(commando);
 		this.logWarning('EMULATORS TERMINATED');
@@ -350,7 +372,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			.ls()
 			.cat('package.json')
 			.cat('index.js')
-			.cd(this.runtime.pathTo.pkg)
+			.cd(this.config.fullPath)
 			.append(`firebase --debug deploy --only functions --force`);
 
 		return this.executeAsyncCommando(commando);
