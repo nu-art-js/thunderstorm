@@ -8,7 +8,7 @@ import {UnitMapper} from './resolvers/core';
  *
  * A lib will have rules to infer it, mainly from the package.json but also from existing files in the context of the node lib
  */
-export class ProjectMapper
+export class UnitsMapper
 	extends Logger {
 
 	private rules: UnitMapper<BaseUnit<any>>[] = [];

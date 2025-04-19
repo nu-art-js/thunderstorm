@@ -29,9 +29,9 @@ export const tsValidateDynamicObject = <T extends object>(valuesValidator: Valid
 							if (_valRes && _keyRes)
 								res[key as keyof T] = `Key: ${_keyRes}}\nValue: ${_valRes}` as InvalidResult<T[keyof T]>;
 							else if (_valRes)
-								res[key as keyof T] = 'Value: ' + _valRes as InvalidResult<T[keyof T]>;
+								res[key as keyof T] = 'Value: ' + __stringify(_valRes, true) as InvalidResult<T[keyof T]>;
 							else if (_keyRes)
-								res[key as keyof T] = 'Key: ' + _keyRes as InvalidResult<T[keyof T]>;
+								res[key as keyof T] = 'Key: ' + __stringify(_keyRes, true) as InvalidResult<T[keyof T]>;
 
 							return res;
 						}, {});

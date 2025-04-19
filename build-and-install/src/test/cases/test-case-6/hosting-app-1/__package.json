@@ -1,0 +1,21 @@
+{
+  "name": "test-case-6--hosting-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "servingPort": 1,
+    "type": "firebase-hosting",
+    "label": "Test case 6 - hosting-1",
+    "envs": {
+      "local": {
+        "configUrl": "https://localhost:xxx:/path/to/config.json",
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}

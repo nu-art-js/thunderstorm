@@ -24,14 +24,14 @@ export type FirebaseHostingConfig = {
 
 export type FirebaseHosting_EnvConfig = { configUrl: string, projectId: string, isLocal?: boolean };
 export type UnitConfigJSON_FirebaseHosting = UnitConfigJSON_Node & {
-	hostingPort?: number,
+	servingPort?: number,
 	hostingConfig?: FirebaseHostingConfig
 	envs: TypedMap<FirebaseHosting_EnvConfig>
 };
 
 export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig?: FirebasePackageConfig;
-	hostingPort: number
+	servingPort: number
 	hostingConfig?: FirebaseHostingConfig
 	envs: TypedMap<FirebaseHosting_EnvConfig>
 	sources?: string[];
@@ -44,7 +44,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
 
 	static DefaultConfig_FirebaseHosting = {
-		hostingPort: 8100,
+		servingPort: 8100,
 		output: 'dist',
 	};
 
@@ -57,7 +57,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		await super.init(setInitialized);
 
 		dispatcher_WatchReady.removeListener(this);
-		if (!this.config.hostingPort)
+		if (!this.config.servingPort)
 			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
 	}
 
@@ -161,7 +161,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 				if (log.toLowerCase().includes('<i>'))
 					return LogLevel.Info;
 			})
-			.append(`array=($(lsof -ti:${[this.config.hostingPort].join(',')}))`)
+			.append(`array=($(lsof -ti:${[this.config.servingPort].join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
 			.append('echo ')
 			.append('npm run start');
