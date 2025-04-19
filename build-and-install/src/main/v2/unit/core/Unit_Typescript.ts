@@ -65,7 +65,8 @@ export class Unit_Typescript<C extends Unit_Typescript_Config = Unit_Typescript_
 	 */
 	private async populatePackageJson() {
 		if (!this.packageJson.template)
-			await this.loadTemplatePackageJSON();
+			throw new BadImplementationException(`Missing template package.json for unit ${this.config.label}`);
+
 		PackageJsonTargetKeys.forEach(key => this.packageJson[key] = this.convertTemplatePackageJSON(key, this.packageJson.template));
 	}
 

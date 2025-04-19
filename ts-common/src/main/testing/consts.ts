@@ -3,6 +3,10 @@ import {expect} from 'chai';
 import {ModuleManager} from '../core/module-manager';
 import {resolveContent, voidFunction} from '../utils/tools';
 import {MemStorage} from '../mem-storage/MemStorage';
+import chaiAsPromised from 'chai-as-promised';
+import chai from 'chai';
+
+chai.use(chaiAsPromised);
 
 
 export class ModuleManagerTester

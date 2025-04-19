@@ -56,7 +56,7 @@ export type FirebasePackageConfig<Env extends string = string> = {
 	name: string
 	pathToFirebaseConfig: string
 
-	hostingPort?: number,
+	servingPort?: number,
 	functions?: {
 		ignore: string[]
 	},

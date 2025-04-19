@@ -24,10 +24,14 @@ export type Types<Input, Result> = {
 }
 
 export type TestModel<Input, ExpectedResult> = {
-	description: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
-	result: ExpectedResult,
-	input: Input,
-}
+																								 description: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
+																								 input: Input,
+																							 } & ({ result: ExpectedResult, } |
+																										{
+																											error:
+																												{ expected: string | RegExp, message?: string } |
+																												{ constructor: Error | Function, expected: string | RegExp, message?: string },
+																										})
 
 export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, ExpectedResult>) => void | Promise<void>;
 

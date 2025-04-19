@@ -1,0 +1,14 @@
+{
+  "name": "test-case-6--lib-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "Test case 6 - lib-1 ts"
+  }
+}

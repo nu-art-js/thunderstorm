@@ -5,7 +5,7 @@ import {
 	tsValidateAnyString,
 	tsValidateBoolean,
 	tsValidateDynamicObject,
-	tsValidateExists,
+	tsValidateOptional,
 	tsValidateOptionalAnyNumber,
 	tsValidateValue,
 	TypedMap
@@ -23,9 +23,9 @@ export class UnitMapper_FirebaseHosting_Class
 
 	static tsValidator_FirebaseHosting = {
 		type: tsValidateValue(['firebase-hosting']),
-		hostingPort: tsValidateOptionalAnyNumber,
+		servingPort: tsValidateOptionalAnyNumber,
 		envs: tsValidateDynamicObject<TypedMap<FirebaseHosting_EnvConfig>>(valuesValidator, tsValidateAnyString),
-		hostingConfig: tsValidateExists(),
+		hostingConfig: tsValidateOptional,
 		...UnitMapper_Node.tsValidator_Node,
 	};
 
