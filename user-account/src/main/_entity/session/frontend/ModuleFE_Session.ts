@@ -1,12 +1,12 @@
 import {
-	getQueryParameter,
-	ModuleFE_BrowserHistory,
-	ModuleFE_XHR,
-	OnStorageKeyChangedListener,
-	StorageKey,
-	ThunderDispatcher
+    getQueryParameter,
+    ModuleFE_BrowserHistory,
+    ModuleFE_XHR,
+    OnStorageKeyChangedListener,
+    StorageKey,
+    ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, currentTimeMillis, exists, Module, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
+import {BadImplementationException, currentTimeMillis, exists, Module, ResolvableContent, resolveContent, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {jwtDecode} from 'jwt-decode';
 import {ungzip} from 'pako';
 import {BaseHttpRequest, HeaderKey_SessionId, HeaderKey_SessionIdResponse} from '@nu-art/thunderstorm';
@@ -14,142 +14,152 @@ import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listen
 import {QueryParam_SessionId} from '../shared';
 
 export interface OnSessionUpdated {
-	__onSessionUpdated: VoidFunction;
+    __onSessionUpdated: VoidFunction;
 }
 
 export const dispatch_onSessionUpdated = new ThunderDispatcher<OnSessionUpdated, '__onSessionUpdated'>('__onSessionUpdated');
-export const StorageKey_SessionId = new StorageKey<string | undefined>(`storage-${HeaderKey_SessionId}`);
 export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
 
 export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
-	private readonly key: Binder['key'];
+    private readonly key: Binder['key'];
 
-	constructor(key: Binder['key']) {
-		this.key = key;
-	}
+    constructor(key: Binder['key']) {
+        this.key = key;
+    }
 
-	get(): Binder['value'];
-	get(defaultValue: Binder['value']): Binder['value'];
-	get(defaultValue?: Binder['value']): Binder['value'] {
-		// @ts-ignore
-		const sessionData = ModuleFE_Session.sessionData;
+    get(): Binder['value'];
+    get(defaultValue: Binder['value']): Binder['value'];
+    get(defaultValue?: Binder['value']): Binder['value'] {
+        // @ts-ignore
+        const sessionData = ModuleFE_Session.sessionData;
 
-		// means that we don't have a session yet
-		if (!sessionData)
-			return;
+        // means that we don't have a session yet
+        if (!sessionData)
+            return;
 
-		if (!(this.key in sessionData) && !exists(defaultValue))
-			throw new BadImplementationException(`Couldn't find key "${this.key}" in session data`);
+        if (!(this.key in sessionData) && !exists(defaultValue))
+            throw new BadImplementationException(`Couldn't find key "${this.key}" in session data`);
 
-		return sessionData[this.key] as Binder['value'] ?? defaultValue;
-	}
+        return sessionData[this.key] as Binder['value'] ?? defaultValue;
+    }
 }
 
 type SessionDecoder = (sessionAsString: string) => TS_Object;
 export const zippedSessionContent: SessionDecoder = (sessionAsString: string) => {
-	const decodedJWT = jwtDecode<{ sessionData: string }>(sessionAsString);
-	const base64Zip = decodedJWT.sessionData;
-	return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(base64Zip), c => c.charCodeAt(0)))));
+    const decodedJWT = jwtDecode<{ sessionData: string }>(sessionAsString);
+    const base64Zip = decodedJWT.sessionData;
+    return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(base64Zip), c => c.charCodeAt(0)))));
 };
 
 export const sessionContentJWT: SessionDecoder = (sessionAsString: string) => {
-	return jwtDecode<TS_Object>(sessionAsString);
+    return jwtDecode<TS_Object>(sessionAsString);
 };
 
 
 class ModuleFE_Session_Class
-	extends Module
-	implements OnStorageKeyChangedListener, OnAuthRequiredListener {
+    extends Module
+    implements OnStorageKeyChangedListener, OnAuthRequiredListener {
 
-	// @ts-ignore
-	private sessionData!: TS_Object;
-	sessionDecoder: SessionDecoder = zippedSessionContent;
 
-	init() {
-		StorageKey_SessionId.onChange(async (sessionAsString) => {
-			this.onSessionUpdated(sessionAsString);
-		});
+    // @ts-ignore
+    private sessionData!: TS_Object;
+    sessionDecoder: SessionDecoder = zippedSessionContent;
+    private sessionKey: ResolvableContent<string> = "session-jwt"
+    private StorageKey_SessionId = () => new StorageKey<string | undefined>(resolveContent(this.sessionKey));
 
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => {
-			const sessionJWT = StorageKey_SessionId.get();
-			if (!sessionJWT)
-				return '';
+    init() {
+        this.StorageKey_SessionId().onChange(async (sessionAsString) => {
+            this.onSessionUpdated(sessionAsString);
+        });
 
-			return `Bearer ${sessionJWT}`;
-		});
-		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
-			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
-				return;
+        ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => {
+            const sessionJWT = this.StorageKey_SessionId().get();
+            if (!sessionJWT)
+                return '';
 
-			const responseHeader = request.getResponseHeader(HeaderKey_SessionIdResponse);
-			if (!responseHeader)
-				return;
+            return `Bearer ${sessionJWT}`;
+        });
+        ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
+            if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
+                return;
 
-			const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
-			StorageKey_SessionId.set(sessionId);
-		});
+            const responseHeader = request.getResponseHeader(HeaderKey_SessionIdResponse);
+            if (!responseHeader)
+                return;
 
-		const sessionId = getQueryParameter(QueryParam_SessionId);
-		if (sessionId) {
-			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_SessionId);
-			StorageKey_SessionId.set(String(sessionId));
-		}
-	}
+            const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
+            this.StorageKey_SessionId().set(sessionId);
+        });
 
-	__onStorageKeyEvent(event: StorageEvent) {
-		if (event.key !== StorageKey_SessionId.key)
-			return;
+        let sessionId = getQueryParameter(QueryParam_SessionId);
+        if (sessionId)
+            ModuleFE_BrowserHistory.removeQueryParam(QueryParam_SessionId);
+        else
+            sessionId = this.StorageKey_SessionId().get();
 
-		this.onSessionUpdated(StorageKey_SessionId.get());
-	}
+        if (sessionId)
+            this.StorageKey_SessionId().set(sessionId);
 
-	__onAuthRequiredListener(request: BaseHttpRequest<any>) {
-		StorageKey_SessionId.delete();
-		StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
-	}
+    }
 
-	private onSessionUpdated(sessionAsString?: string) {
-		if (sessionAsString)
-			try {
-				this.sessionData = this.sessionDecoder(sessionAsString);
-			} catch (e: any) {
-				this.logError('Error decoding session data', e);
-			}
-		else
-			this.sessionData = {};
+    setSessionKey(sessionKey: ResolvableContent<string>) {
+        this.sessionKey = sessionKey;
+    }
 
-		dispatch_onSessionUpdated.dispatchAll();
-	}
+    __onStorageKeyEvent(event: StorageEvent) {
+        if (event.key !== this.StorageKey_SessionId().key)
+            return;
 
-	public hasSession() {
-		return !!StorageKey_SessionId.get();
-	}
+        this.onSessionUpdated(this.StorageKey_SessionId().get());
+    }
 
-	public isSessionValid() {
-		const sessionToken = StorageKey_SessionId.get();
-		if (!sessionToken)
-			return false;
+    __onAuthRequiredListener(request: BaseHttpRequest<any>) {
+        this.StorageKey_SessionId().delete();
+        StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
+    }
 
-		try {
-			// Decode the JWT token to access its payload.
-			// Here we expect an optional 'exp' claim (expiration time in seconds).
-			const decodedJWT = jwtDecode<{ exp?: number }>(sessionToken);
+    private onSessionUpdated(sessionAsString?: string) {
+        if (sessionAsString)
+            try {
+                this.sessionData = this.sessionDecoder(sessionAsString);
+            } catch (e: any) {
+                this.logError('Error decoding session data', e);
+            }
+        else
+            this.sessionData = {};
 
-			// If the expiration time is not present, consider the session invalid.
-			if (!exists(decodedJWT.exp))
-				return false;
+        dispatch_onSessionUpdated.dispatchAll();
+    }
 
-			// Get the current time in seconds.
-			const currentTime = currentTimeMillis() / 1000;
+    public hasSession() {
+        return !!this.StorageKey_SessionId().get();
+    }
 
-			// Return true if the token's expiration time is in the future.
-			return decodedJWT.exp > currentTime;
-		} catch (error: any) {
-			// Log any errors during decoding and consider the session invalid.
-			this.logError('Error validating session token', error);
-			return false;
-		}
-	}
+    public isSessionValid() {
+        const sessionToken = this.StorageKey_SessionId().get();
+        if (!sessionToken)
+            return false;
+
+        try {
+            // Decode the JWT token to access its payload.
+            // Here we expect an optional 'exp' claim (expiration time in seconds).
+            const decodedJWT = jwtDecode<{ exp?: number }>(sessionToken);
+
+            // If the expiration time is not present, consider the session invalid.
+            if (!exists(decodedJWT.exp))
+                return false;
+
+            // Get the current time in seconds.
+            const currentTime = currentTimeMillis() / 1000;
+
+            // Return true if the token's expiration time is in the future.
+            return decodedJWT.exp > currentTime;
+        } catch (error: any) {
+            // Log any errors during decoding and consider the session invalid.
+            this.logError('Error validating session token', error);
+            return false;
+        }
+    }
 }
 
 export const ModuleFE_Session = new ModuleFE_Session_Class();
