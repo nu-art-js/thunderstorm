@@ -1,7 +1,7 @@
 import {Widgets} from 'blessed';
 import {PhaseRunner_OnPhaseChange, PhaseRunner_OnUnitsChange, PhaseRunner_OnUnitStatusChange} from '../phase-runner/PhaseRunnerDispatcher';
 import {Phase} from '../phase';
-import {BaseUnit} from '../unit/core';
+import {BaseUnit} from '../../v3/units';
 import {BAIScreen} from './BAIScreen';
 import {MemKey_PhaseRunner} from '../phase-runner/consts';
 import {PhaseRunner} from '../phase-runner/PhaseRunner';

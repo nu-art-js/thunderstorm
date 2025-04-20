@@ -1,5 +1,5 @@
 import {BAIScreen} from './BAIScreen';
-import {BaseUnit} from '../unit/core';
+import {BaseUnit} from '../../v3/units';
 import {MemKey_PhaseRunner} from '../phase-runner/consts';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../unit/firebase-units';
 import {Widgets} from 'blessed';

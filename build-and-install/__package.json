@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/build-and-install",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "",
   "keywords": [
     "TacB0sS",
@@ -36,8 +36,8 @@
     "neo-blessed": "^0.2.0",
     "blessed": "^0.1.81",
     "glob": "^10.3.14",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/commando": "$THUNDERSTORM_DEPENDENCY_VERSION"
+    "@nu-art/ts-common": "$THUNDERSTORM_VERSION",
+    "@nu-art/commando": "$THUNDERSTORM_VERSION"
   },
   "devDependencies": {
     "@types/node": "$NODE_TYPES_VERSION",

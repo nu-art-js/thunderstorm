@@ -1,4 +1,4 @@
-import {BaseUnit} from '../../unit/core';
+import {BaseUnit} from '../units';
 import {promises as fs} from 'fs';
 import {BadImplementationException, Logger} from '@nu-art/ts-common';
 import {UnitMapper} from './resolvers/core';

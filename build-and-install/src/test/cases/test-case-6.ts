@@ -2,7 +2,7 @@ import {
 	Unit_FirebaseFunctionsApp, Unit_FirebaseFunctionsApp_Config,
 	Unit_FirebaseHostingApp,
 	Unit_TypescriptLib,
-	Unit_TypescriptProject, UnitMapper_FirebaseFunction,
+	Unit_NodeProject, UnitMapper_FirebaseFunction,
 	UnitMapper_FirebaseHosting,
 	UnitMapper_NodeLib,
 	UnitMapper_NodeProject
@@ -15,7 +15,7 @@ export const TestCase6 = {
 		rules: [UnitMapper_NodeLib, UnitMapper_NodeProject, UnitMapper_FirebaseHosting, UnitMapper_FirebaseFunction]
 	},
 	result: [
-		new Unit_TypescriptProject({
+		new Unit_NodeProject({
 			key: 'test-case-6',
 			label: 'Test case 6 - root ts',
 			relativePath: '.',

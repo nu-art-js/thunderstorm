@@ -1,6 +1,6 @@
 import {AsyncVoidFunction} from '@nu-art/ts-common';
 import {Phase} from '../phase';
-import {BaseUnit} from './core';
+import {BaseUnit} from '../../v3/units';
 
 export type Unit<P extends Phase<string>[]> = BaseUnit & UnitPhaseImplementor<P>;
 

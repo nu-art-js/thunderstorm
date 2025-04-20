@@ -1,4 +1,4 @@
-import {BaseUnit} from '../unit/core';
+import {BaseUnit} from '../../v3/units';
 
 export type Phase<PhaseMethod extends string> = {
 	//Key identifier of the phase, Unique

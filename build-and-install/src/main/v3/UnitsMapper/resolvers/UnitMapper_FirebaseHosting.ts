@@ -1,5 +1,5 @@
 import {UnitMapper_Node, UnitMapper_NodeContext} from './core';
-import {FirebaseHosting_EnvConfig, Unit_FirebaseHostingApp, Unit_FirebaseHostingApp_Config, UnitConfigJSON_FirebaseHosting} from '../../../unit/firebase-units';
+import {FirebaseHosting_EnvConfig, Unit_FirebaseHostingApp, Unit_FirebaseHostingApp_Config, UnitConfigJSON_FirebaseHosting} from '../../../v2/unit/firebase-units';
 import {
 	_keys,
 	tsValidateAnyString,

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/commando",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "",
   "keywords": [
     "TacB0sS",
@@ -33,7 +33,7 @@
   "dependencies": {
     "neo-blessed": "^0.2.0",
     "blessed": "^0.1.81",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION"
+    "@nu-art/ts-common": "$THUNDERSTORM_VERSION"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
