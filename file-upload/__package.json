@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/file-upload",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "File Uploader - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",
@@ -33,13 +33,13 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-styles": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/push-pub-sub": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/permissions": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/user-account": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_VERSION",
+    "@nu-art/ts-styles": "$THUNDERSTORM_VERSION",
+    "@nu-art/push-pub-sub": "$THUNDERSTORM_VERSION",
+    "@nu-art/permissions": "$THUNDERSTORM_VERSION",
+    "@nu-art/user-account": "$THUNDERSTORM_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_VERSION",
     "@google-cloud/common": "$GOOGLE_CLOUD_COMMON",
     "@google-cloud/storage": "$GOOGLE_CLOUD_STORAGE",
     "@google-cloud/firestore": "$GOOGLE_CLOUD_FIRESTORE",

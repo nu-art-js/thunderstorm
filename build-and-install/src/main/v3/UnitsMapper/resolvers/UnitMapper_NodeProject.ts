@@ -1,10 +1,10 @@
-import {Unit_TypescriptProject} from '../../../unit/core';
+import {Unit_NodeProject} from '../../units';
 import {UnitMapper_Node, UnitMapper_NodeContext} from './core';
 import {tsValidateValue} from '@nu-art/ts-common';
 
 
 export class UnitMapper_NodeProject_Class
-	extends UnitMapper_Node<Unit_TypescriptProject> {
+	extends UnitMapper_Node<Unit_NodeProject> {
 
 	static tsValidator_NodeProject = {
 		type: tsValidateValue(['node-project']),
@@ -16,7 +16,7 @@ export class UnitMapper_NodeProject_Class
 	}
 
 	protected async resolveNodeUnit(context: UnitMapper_NodeContext) {
-		return new Unit_TypescriptProject({
+		return new Unit_NodeProject({
 			...context.baseConfig,
 			isRoot: true,
 		});

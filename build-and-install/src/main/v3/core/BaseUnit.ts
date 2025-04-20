@@ -15,8 +15,8 @@ import {
 	removeItemFromArray,
 	Second
 } from '@nu-art/ts-common';
-import {MemKey_RunnerParams, RunnerParamKey} from '../../phase-runner/RunnerParams';
-import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../phase-runner/PhaseRunnerDispatcher';
+import {MemKey_RunnerParams, RunnerParamKey} from '../../v2/phase-runner/RunnerParams';
+import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../v2/phase-runner/PhaseRunnerDispatcher';
 import {CommandoInteractive} from '@nu-art/commando/shell';
 import {BaseCommando} from '@nu-art/commando/shell/core/BaseCommando';
 import {MergeTypes} from '@nu-art/commando/shell/core/class-merger';

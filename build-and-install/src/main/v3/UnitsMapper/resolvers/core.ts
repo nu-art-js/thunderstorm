@@ -1,7 +1,7 @@
 import {promises as fs} from 'fs';
 import {TS_PackageJSON} from '../types';
 import {AbsolutePath, RelativePath, tsValidate, tsValidateAnyString, tsValidateResult, TypedMap, TypeValidator, ValidatorTypeResolver} from '@nu-art/ts-common';
-import {BaseUnit} from '../../../unit/core';
+import {BaseUnit} from '../../units';
 
 
 export type BaseUnitConfig = {

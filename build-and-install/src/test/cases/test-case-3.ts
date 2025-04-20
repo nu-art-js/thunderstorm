@@ -2,7 +2,7 @@ import {
 	UnitMapper_NodeLib,
 	UnitMapper_NodeProject,
 	Unit_TypescriptLib,
-	Unit_TypescriptProject
+	Unit_NodeProject
 } from '../_common';
 
 export const TestCase3 = {
@@ -12,7 +12,7 @@ export const TestCase3 = {
 		rules: [UnitMapper_NodeLib, UnitMapper_NodeProject]
 	},
 	result: [
-		new Unit_TypescriptProject({
+		new Unit_NodeProject({
 			key: 'test-case-3',
 			label: 'Test case 3 - root ts',
 			relativePath: '.',

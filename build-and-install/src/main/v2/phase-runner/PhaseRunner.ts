@@ -25,7 +25,7 @@ import {
 import {MemKey_ProjectConfig, MemKey_RunnerParams, RunnerParams} from './RunnerParams';
 import {Phase, Phase_Debug, Phase_Help, Phase_PrintEnv} from '../phase';
 import {Unit, UnitPhaseImplementor} from '../unit/types';
-import {BaseUnit} from '../unit/core';
+import {BaseUnit} from '../../v3/units';
 import {AllBaiParams, RuntimeParams} from '../../core/params/params';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import fs, {promises as _fs} from 'fs';
@@ -38,8 +38,8 @@ import {MemKey_PhaseRunner} from './consts';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 
 
-const CONST_ThunderstormVersionKey = 'THUNDERSTORM_SDK_VERSION';
-const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_DEPENDENCY_VERSION';
+const CONST_ThunderstormVersionKey = 'THUNDERSTORM_VERSION';
+const CONST_ThunderstormDependencyKey = 'THUNDERSTORM_VERSION';
 const CONST_ProjectVersionKey = 'APP_VERSION';
 const CONST_ProjectDependencyKey = 'APP_VERSION_DEPENDENCY';
 

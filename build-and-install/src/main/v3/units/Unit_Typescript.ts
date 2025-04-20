@@ -1,13 +1,13 @@
-import {BaseUnit, BaseUnit_Config, BaseUnit_RuntimeConfig} from './BaseUnit';
-import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../../core/consts';
-import {PackageJson} from '../../../core/types';
+import {BaseUnit, BaseUnit_Config, BaseUnit_RuntimeConfig} from '../core/BaseUnit';
+import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../core/consts';
+import {PackageJson} from '../../core/types';
 import {_keys, BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import * as fs from 'fs';
 import {promises as _fs} from 'fs';
-import {Phase_CopyPackageJSON} from '../../phase';
-import {UnitPhaseImplementor} from '../types';
-import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {convertPackageJSONTemplateToPackJSON_Value} from '../tools/tools';
+import {Phase_CopyPackageJSON} from '../../v2/phase';
+import {UnitPhaseImplementor} from '../../v2/unit/types';
+import {MemKey_ProjectConfig} from '../../v2/phase-runner/RunnerParams';
+import {convertPackageJSONTemplateToPackJSON_Value} from '../../v2/unit/tools/tools';
 
 
 const PackageJsonTargetKey_Template = 'template';

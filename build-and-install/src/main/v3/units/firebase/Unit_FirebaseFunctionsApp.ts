@@ -1,17 +1,17 @@
-import {BaseUnit, Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../core';
-import {UnitPhaseImplementor} from '../types';
-import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../phase';
+import {BaseUnit, Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
+import {UnitPhaseImplementor} from '../../../v2/unit/types';
+import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../../v2/phase';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
 import {promises as _fs} from 'fs';
 import {RuntimeParams} from '../../../core/params/params';
 import {FirebasePackageConfig, PackageJson} from '../../../core/types';
 import {_keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, TypedMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
-import {MemKey_ProjectConfig} from '../../phase-runner/RunnerParams';
-import {MemKey_PhaseRunner} from '../../phase-runner/consts';
-import {dispatcher_UnitWatchCompile, dispatcher_WatchReady, OnUnitWatchCompiled} from '../runner-dispatchers';
+import {MemKey_ProjectConfig} from '../../../v2/phase-runner/RunnerParams';
+import {MemKey_PhaseRunner} from '../../../v2/phase-runner/consts';
+import {dispatcher_UnitWatchCompile, dispatcher_WatchReady, OnUnitWatchCompiled} from '../../../v2/unit/runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {firebaseFunctionEmulator_ErrorStrings, firebaseFunctionEmulator_WarningStrings} from './consts';
+import {firebaseFunctionEmulator_ErrorStrings, firebaseFunctionEmulator_WarningStrings} from '../../../v2/unit/firebase-units/consts';
 
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
