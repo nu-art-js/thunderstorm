@@ -33,3 +33,11 @@ export const ModulePackBE_Accounts: Module[] = [
 	...ModulePackBE_FailedLoginAttemptDB,
 	ModuleBE_SecretManager
 ];
+
+export const ModulePackBE_Accounts_WOSAML: Module[] = [
+	...ModulePackBE_AccountDB,
+	...ModulePackBE_SessionDB,
+	...ModulePackBE_LoginAttemptDB,
+	...ModulePackBE_FailedLoginAttemptDB,
+	ModuleBE_SecretManager
+];
