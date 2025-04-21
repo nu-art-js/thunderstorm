@@ -12,3 +12,5 @@ build
 package-lock.json
 config.ts
 imports-*.svg
+
+src/main/tsconfig.json
