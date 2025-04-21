@@ -206,6 +206,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 					]
 				},
 				emulators: {
+					singleProjectMode: true,
 					functions: {port: port + 1},
 					database: {port: port + 2},
 					firestore: {
@@ -336,7 +337,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 					return LogLevel.Warning;
 			})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'))
-			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend ? `--inspect-functions ${this.config.firebaseConfig.debugPort}` : ''}`);
+			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend
+				? `--inspect-functions ${this.config.firebaseConfig.debugPort}`
+				: ''}`);
 
 		await this.executeAsyncCommando(commando);
 		this.logWarning('EMULATORS TERMINATED');
