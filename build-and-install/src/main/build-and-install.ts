@@ -6,7 +6,7 @@ import {allTSUnits} from './v2/unit/thunderstorm';
 
 DebugFlag.DefaultLogLevel = RuntimeParams.debug ? LogLevel.Debug : LogLevel.Info;
 
-const runner = new PhaseRunner('./.config/project-config2.ts' as RelativePath);
+const runner = new PhaseRunner('./.config/project-config.ts' as RelativePath);
 
 if (RuntimeParams.runWithThunderstorm)
 	runner.registerUnits(allTSUnits);
