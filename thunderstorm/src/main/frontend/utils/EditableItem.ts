@@ -1,7 +1,31 @@
 import {
-	_keys, ArrayType, AssetValueType, AwaitedDebounceInstance, compare, DBProto, deepClone, deleteKeysObject, exists, generateHex, InvalidResult,
-	InvalidResultObject, isErrorOfType, KeysOfDB_Object, Logger, LogLevel, mergeObject, MUSTNeverHappenException, queuedDebounce, RecursiveReadonly,
-	removeFromArrayByIndex, removeItemFromArray, ResolvableContent, resolveContent, Second, SubsetKeys, ValidationException, WhoCallThisException
+	_keys,
+	ArrayType,
+	AssetValueType,
+	AwaitedDebounceInstance,
+	compare,
+	DBProto,
+	deepClone,
+	deleteKeysObject,
+	exists,
+	generateHex,
+	InvalidResult,
+	InvalidResultObject,
+	isErrorOfType,
+	KeysOfDB_Object,
+	Logger,
+	mergeObject,
+	MUSTNeverHappenException,
+	queuedDebounce,
+	RecursiveReadonly,
+	removeFromArrayByIndex,
+	removeItemFromArray,
+	ResolvableContent,
+	resolveContent,
+	Second,
+	SubsetKeys,
+	ValidationException,
+	WhoCallThisException
 } from '@nu-art/ts-common';
 import {ModuleFE_BaseApi} from '../modules/db-api-gen/ModuleFE_BaseApi';
 
@@ -95,7 +119,7 @@ export class EditableItem<T>
 	constructor(item: Partial<T>) {
 		super();
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
-		this.setMinLevel(LogLevel.Verbose);
+		// this.setMinLevel(LogLevel.Verbose);
 		// @ts-ignore
 		if (!!item.__updated) {
 			// @ts-ignore
