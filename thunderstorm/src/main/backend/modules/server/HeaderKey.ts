@@ -34,8 +34,10 @@ export class HeaderKey {
 
 	get() {
 		const value = MemKey_HttpRequest.get().header(this.key);
-		if (!value)
+		if (!value) {
+			console.log("Http Request received headers", MemKey_HttpRequest.get().headers);
 			throw new ApiException(this.responseCode, `Missing expected header: ${this.key}`);
+		}
 
 		return value;
 	}
