@@ -1,20 +1,13 @@
-import {UnitPhaseImplementor} from '../../v2/unit/types';
-import {Unit_Typescript, Unit_Typescript_Config, Unit_Typescript_RuntimeConfig} from './Unit_Typescript';
-import {Phase_Install, Phase_Watch} from '../../v2/phase';
+import {UnitPhaseImplementor} from '../../types/types';
+import {Unit_NodePackage, Unit_Typescript_Config} from './Unit_NodePackage';
+import {Phase_Install, Phase_Watch} from '../../phase';
 import {RuntimeParams} from '../../core/params/params';
 import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
-import {
-	_keys,
-	clearArrayInstance,
-	MUSTNeverHappenException,
-	Promise_all_sequentially,
-	queuedDebounce,
-	Second
-} from '@nu-art/ts-common';
+import {_keys, clearArrayInstance, MUSTNeverHappenException, Promise_all_sequentially, queuedDebounce, Second} from '@nu-art/ts-common';
 import {MemKey_PhaseRunner} from '../../v2/phase-runner/consts';
 import * as chokidar from 'chokidar';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchReady} from '../../v2/unit/runner-dispatchers';
-import {Unit_TypescriptLib} from './Unit_TypescriptLib';
+import {Unit_NodeLib} from './Unit_NodeLib';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../../v2/unit/firebase-units';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
@@ -26,12 +19,10 @@ type Unit_TypescriptProject_Config = Unit_Typescript_Config & {
 	isRoot: true
 };
 
-type Unit_TypescriptProject_RuntimeConfig = Unit_Typescript_RuntimeConfig & {};
+type PathDeclaration = { fullPath: string, paths: string[], unit: Unit_NodeLib };
 
-type PathDeclaration = { fullPath: string, paths: string[], unit: Unit_TypescriptLib };
-
-export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config, RTC extends Unit_TypescriptProject_RuntimeConfig = Unit_TypescriptProject_RuntimeConfig>
-	extends Unit_Typescript<C, RTC>
+export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config>
+	extends Unit_NodePackage<C>
 	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch]> {
 	private watchDebounce!: () => void;
 
@@ -71,7 +62,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 		this.setStatus('Installing packages', 'start');
 		const runner = MemKey_PhaseRunner.get();
-		const units = runner.getUnits().filter(unit => unit instanceof Unit_Typescript) as Unit_Typescript[];
+		const units = runner.getUnits().filter(unit => unit instanceof Unit_NodePackage) as Unit_NodePackage[];
 		const packages = units.map(unit => unit.config.fullPath);
 		await PNPM.createWorkspace(packages);
 		await PNPM.installPackages(this.allocateCommando(Commando_NVM, Commando_PNPM));
@@ -88,7 +79,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		const cantBeInstanceOf = [Unit_FirebaseHostingApp, Unit_FirebaseFunctionsApp];
 		const projectLibs = MemKey_PhaseRunner.get()
 			.getUnits()
-			.filter(unit => unit.isInstanceOf(Unit_TypescriptLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_TypescriptLib[];
+			.filter(unit => unit.isInstanceOf(Unit_NodeLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_NodeLib[];
 
 		//return all paths to watch
 		return projectLibs.map(lib => {
@@ -114,8 +105,8 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		return new Promise<void>((resolve, error) => {
 			this.logInfo('Starting the watcher...');
 
-			const units: Set<Unit_TypescriptLib> = new Set();
-			const pathsToDelete: { path: string, unit: Unit_TypescriptLib }[] = [];
+			const units: Set<Unit_NodeLib> = new Set();
+			const pathsToDelete: { path: string, unit: Unit_NodeLib }[] = [];
 
 			const onUnitChange = (path: string) => {
 				const unit = this.findUnit(pathDeclarations, path as AbsolutePath);
@@ -202,7 +193,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		});
 	}
 
-	private findUnit = (pathDeclarations: PathDeclaration[], currentPath: AbsolutePath): Unit_TypescriptLib => {
+	private findUnit = (pathDeclarations: PathDeclaration[], currentPath: AbsolutePath): Unit_NodeLib => {
 		const unitToReturn = pathDeclarations.find(declaration => currentPath.startsWith(`${declaration.fullPath}/`))?.unit;
 		if (!unitToReturn)
 			throw new MUSTNeverHappenException(`current path doesnt match any declared unit, current path: ${currentPath}`);

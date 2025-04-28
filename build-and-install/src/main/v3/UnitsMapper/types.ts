@@ -19,6 +19,7 @@ export type TS_PackageJSON<T = any> = {
 	'types': string,
 	'scripts'?: StringMap,
 	'dependencies'?: StringMap,
+	'devDependencies'?: StringMap,
 	'_moduleAliases'?: StringMap,
 	unitConfig: T
 }
