@@ -17,7 +17,7 @@ import {
 	ApiDef_SyncEnv,
 	ApiModule,
 	DBModuleType,
-	HeaderKey_SessionId,
+	HeaderKey_Authorization,
 	HttpMethod,
 	QueryApi,
 	Request_FetchFirebaseBackup,
@@ -101,7 +101,7 @@ class ModuleBE_SyncEnv_Class
 		};
 
 		const url = remoteUrls[body.env];
-		const sessionId = MemKey_HttpRequest.get().headers[HeaderKey_SessionId];
+		const sessionId = MemKey_HttpRequest.get().headers[HeaderKey_Authorization];
 
 		const module = RuntimeModules().find<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbKey === body.moduleName);
 
@@ -110,7 +110,7 @@ class ModuleBE_SyncEnv_Class
 			.createRequest({...upsertAll, fullUrl: url + '/' + upsertAll.path, timeout: 5 * Minute})
 			.setBody(body.items)
 			.setUrlParams(body.items)
-			.addHeader(HeaderKey_SessionId, sessionId!)
+			.addHeader(HeaderKey_Authorization, sessionId!)
 			.executeSync(true);
 
 		console.log(response);

@@ -9,7 +9,7 @@ import {
 import {BadImplementationException, currentTimeMillis, exists, Module, ResolvableContent, resolveContent, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {jwtDecode} from 'jwt-decode';
 import {ungzip} from 'pako';
-import {BaseHttpRequest, HeaderKey_SessionId, HeaderKey_SessionIdResponse} from '@nu-art/thunderstorm';
+import {BaseHttpRequest, HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 import {QueryParam_SessionId} from '../shared';
 
@@ -71,7 +71,7 @@ class ModuleFE_Session_Class
 			this.onSessionUpdated(sessionAsString);
 		});
 
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => {
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_Authorization, () => {
 			const sessionJWT = this.StorageKey_SessionId.get();
 			if (!sessionJWT)
 				return '';
@@ -82,7 +82,7 @@ class ModuleFE_Session_Class
 			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
 				return;
 
-			const responseHeader = request.getResponseHeader(HeaderKey_SessionIdResponse);
+			const responseHeader = request.getResponseHeader(ResponseHeaderKey_JWTToken);
 			if (!responseHeader)
 				return;
 
