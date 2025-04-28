@@ -1,5 +1,5 @@
-export const HeaderKey_SessionId = 'Authorization';
-export const HeaderKey_SessionIdResponse = 'X-Auth-Token';
+export const HeaderKey_Authorization = 'Authorization';
+export const ResponseHeaderKey_JWTToken = 'X-Auth-Token';
 export const HeaderKey_TabId = 'tab-id';
 export const HeaderKey_DeviceId = 'device-id';
 export const HeaderKey_Application = 'x-application';

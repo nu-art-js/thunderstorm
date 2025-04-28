@@ -45,7 +45,7 @@ import {
 import {assertPasswordRules, PasswordAssertionConfig, PasswordAssertionResponseError} from '../../_enum';
 import {
 	CollectSessionData,
-	Header_SessionId,
+	Header_Authorization,
 	MemKey_AccountEmail,
 	MemKey_AccountId,
 	MemKey_AccountType,
@@ -54,7 +54,7 @@ import {
 	SessionKey_Account_BE,
 	SessionKey_Session_BE
 } from '../../session/backend';
-import {HeaderKey_SessionIdResponse} from '@nu-art/thunderstorm/shared/headers';
+import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm/shared/headers';
 import {ModuleBE_FailedLoginAttemptDB} from '../../failed-login-attempt/backend';
 import Transaction = firestore.Transaction;
 
@@ -266,7 +266,7 @@ export class ModuleBE_AccountDB_Class
 				label: 'password-login'
 			};
 			const session = await ModuleBE_SessionDB.session.create(content);
-			MemKey_HttpResponse.get().setHeader(HeaderKey_SessionIdResponse, session.sessionId);
+			MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, session.sessionId);
 			return safeAccount;
 		},
 		create: async (createAccountRequest: Account_CreateAccount['request']): Promise<Account_CreateAccount['response']> => {
@@ -338,7 +338,7 @@ export class ModuleBE_AccountDB_Class
 					label: 'password-change'
 				};
 				const newSession = await ModuleBE_SessionDB.session.create(content);
-				MemKey_HttpResponse.get().setHeader(HeaderKey_SessionIdResponse, newSession.sessionId);
+				MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, newSession.sessionId);
 
 				return makeAccountSafe(updatedAccount);
 			});
@@ -368,13 +368,13 @@ export class ModuleBE_AccountDB_Class
 					label: 'password-set'
 				};
 				const newSession = await ModuleBE_SessionDB.session.create(content);
-				MemKey_HttpResponse.get().setHeader(HeaderKey_SessionIdResponse, newSession.sessionId);
+				MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, newSession.sessionId);
 
 				return makeAccountSafe(updatedAccount);
 			});
 		},
 		logout: async () => {
-			const sessionId = Header_SessionId.get();
+			const sessionId = Header_Authorization.get();
 			if (!sessionId)
 				throw new ApiException(404, 'Missing sessionId');
 

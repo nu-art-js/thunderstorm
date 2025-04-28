@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {HeaderKey_SessionId} from './headers';
+import {HeaderKey_Authorization} from './headers';
 
 
 export const HeaderKey_Env = 'x-env';
@@ -31,7 +31,7 @@ export const DefaultHttpServerConfig = {
 	'bodyParserLimit': 200,
 	'cors': {
 		'headers': [
-			HeaderKey_SessionId,
+			HeaderKey_Authorization,
 			'x-browser-type',
 			'x-app-version'
 		],
@@ -40,7 +40,7 @@ export const DefaultHttpServerConfig = {
 			'POST'
 		],
 		'responseHeaders': [
-			HeaderKey_SessionId
+			HeaderKey_Authorization
 		]
 	},
 	'host': 'localhost'

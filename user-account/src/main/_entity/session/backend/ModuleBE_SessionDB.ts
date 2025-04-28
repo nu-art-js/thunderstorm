@@ -1,14 +1,14 @@
 import {__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, filterKeys, md5, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
-import {DBApiConfigV3, ModuleBE_BaseDB, Storm} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, HeaderKey, ModuleBE_BaseDB, Storm} from '@nu-art/thunderstorm/backend';
 import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_Session} from '../shared';
-import {Header_SessionId, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Account_BE, SessionKey_Session_BE} from './consts';
+import {Header_Authorization, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Account_BE, SessionKey_Session_BE} from './consts';
 import * as jwt from 'jsonwebtoken';
 import {ModuleBE_SecretManager} from '@nu-art/google-services/backend/modules/ModuleBE_SecretManager';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {HeaderKey_SessionIdResponse} from '@nu-art/thunderstorm';
+import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm';
 import Transaction = firestore.Transaction;
 
 
@@ -36,11 +36,17 @@ export class ModuleBE_SessionDB_Class
 	private sessionSigningPrivateKey: string | undefined;
 
 	readonly Middleware = async () => {
-		let authorizationHeader = Header_SessionId.get(); //jwt
-		if (typeof authorizationHeader !== 'string')
-			throw new ApiException(401, `Invalid session id: ${authorizationHeader}`);
+		let authorizationHeader: string;
+		try {
+			authorizationHeader = new HeaderKey('x-session-id', 403).get();
+		} catch (e) {
+			authorizationHeader = Header_Authorization.get(); //jwt
+			if (typeof authorizationHeader !== 'string')
+				throw new ApiException(401, `Invalid session id: ${authorizationHeader}`);
 
-		authorizationHeader = authorizationHeader.replace(/^bearer\s+/i, "")
+			authorizationHeader = authorizationHeader.replace(/^bearer\s+/i, '');
+		}
+
 		try {
 			const decodedJwt = await this.sessionData.isValidJWT(authorizationHeader) as { sessionData: string };
 			const sessionData = this.sessionData.decode(decodedJwt.sessionData);
@@ -56,7 +62,7 @@ export class ModuleBE_SessionDB_Class
 				} catch (err: any) {
 					try {
 						dbSession = await ModuleBE_SessionDB.query.uniqueWhere({prevSession: {$ac: md5SessionId}}, transaction); //everytime we read into prevSessions, we read the md5 of the authorizationHeader
-						MemKey_HttpResponse.get().setHeader(HeaderKey_SessionIdResponse, dbSession.sessionIdJwt);
+						MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, dbSession.sessionIdJwt);
 					} catch (err: any) {
 						throw new ApiException(401, `Invalid session id: ${authorizationHeader}`, err);
 					}
@@ -186,12 +192,12 @@ export class ModuleBE_SessionDB_Class
 
 				const mySession = newSessions.find(session => SessionKey_Account_BE.get(session?.sessionData)._id === MemKey_AccountId.get());
 				if (mySession) {
-					MemKey_HttpResponse.get().setHeader(HeaderKey_SessionIdResponse, mySession.sessionId);
+					MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, mySession.sessionId);
 				}
 			}
 		},
 		delete: async (transaction?: Transaction) => {
-			const sessionId = Header_SessionId.get();
+			const sessionId = Header_Authorization.get();
 			if (!sessionId)
 				throw new ApiException(404, 'Missing sessionId');
 
