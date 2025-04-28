@@ -5,56 +5,48 @@ import {
 	AsyncVoidFunction,
 	BeLogged,
 	Constructor,
-	currentTimeMillis,
 	exists,
-	Hour,
 	LogClient_MemBuffer,
 	Logger,
 	LogLevel,
-	Minute,
 	removeItemFromArray,
-	Second
+	TimeCounter,
+	timeCounter
 } from '@nu-art/ts-common';
-import {MemKey_RunnerParams, RunnerParamKey} from '../../v2/phase-runner/RunnerParams';
 import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../v2/phase-runner/PhaseRunnerDispatcher';
 import {CommandoInteractive} from '@nu-art/commando/shell';
 import {BaseCommando} from '@nu-art/commando/shell/core/BaseCommando';
 import {MergeTypes} from '@nu-art/commando/shell/core/class-merger';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
+import {BAI_Config} from '../../core/types';
 
 
 export type BaseUnit_Config = {
 	key: string;
 	label: string;
-	filter?: () => boolean | Promise<boolean>;
 }
 
-export type BaseUnit_RuntimeConfig = {
-	dependencyName: string;
-	unitDependencyNames: string[];
-}
-
-export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends BaseUnit_RuntimeConfig = BaseUnit_RuntimeConfig>
+export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 	extends Logger {
 
 	readonly config: Readonly<C>;
-	readonly runtime: RTC;
 	private unitStatus: string = 'Pending Initialization';
 	protected logger!: LogClient_MemBuffer;
 	private classStack: Set<string>;
 	private processTerminator: AsyncVoidFunction[] = [];
 	private timeCounter?: TimeCounter;
+	protected baiConfig!: Readonly<BAI_Config>;
 
 	constructor(config: C) {
 		super(config.key);
 		this.config = Object.freeze(config);
-		this.runtime = {
-			dependencyName: this.config.key,
-			unitDependencyNames: [] as string[],
-		} as RTC;
 		this.classStack = new Set<string>();
 		this.addToClassStack(BaseUnit);
 		this.initLogClient();
+	}
+
+	setProjectConfig(baiConfig: Readonly<BAI_Config>) {
+		this.baiConfig = baiConfig;
 	}
 
 	registerTerminatable(terminatable: AsyncVoidFunction) {
@@ -93,10 +85,6 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 	}
 
 	//######################### Internal Logic #########################
-
-	protected getRunnerParam(key: RunnerParamKey) {
-		return MemKey_RunnerParams.get({})[key];
-	}
 
 	private initLogClient() {
 		this.logger = new LogClient_MemBuffer(this.tag);
@@ -172,29 +160,3 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RTC extends B
 	}
 }
 
-type TimeCounter = { dt: () => number; format: (format: string) => string };
-
-function timeCounter() {
-	const started = currentTimeMillis();
-	return {
-		dt: () => currentTimeMillis() - started,
-		format: (format: string) => {
-			let dt = currentTimeMillis() - started;
-			const hours = Math.floor(dt / Hour);
-			dt -= hours * Hour;
-
-			const minutes = Math.floor(dt / Minute);
-			dt -= minutes * Minute;
-
-			const seconds = Math.floor(dt / Second);
-			dt -= seconds * Second;
-
-			const millis = dt;
-			return format
-				.replace('hh', String(hours).padStart(2, '0'))
-				.replace('mm', String(minutes).padStart(2, '0'))
-				.replace('ss', String(seconds).padStart(2, '0'))
-				.replace('zzz', String(millis).padStart(3, '0'));
-		}
-	};
-}

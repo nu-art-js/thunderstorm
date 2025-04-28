@@ -11,7 +11,7 @@ export const Const_FirebaseConfigKeys = [
 ] as const;
 
 export type ProjectConfig_DefaultFileRoutes = {
-	firebaseConfig?: {[k in typeof Const_FirebaseConfigKeys[number]]?:string};
+	firebaseConfig?: { [k in typeof Const_FirebaseConfigKeys[number]]?: string };
 	backend?: {
 		proxy?: string;
 	}
@@ -44,10 +44,3 @@ export const Default_OutputFiles = {
 };
 
 export const MemKey_DefaultFiles = new MemKey<typeof Default_Files>('default-files');
-
-export type RunningStatus = {
-	phaseKey: string,
-	packageDependencyIndex?: number
-};
-
-export const MemKey_RunningStatus = new MemKey<RunningStatus>('running-status');

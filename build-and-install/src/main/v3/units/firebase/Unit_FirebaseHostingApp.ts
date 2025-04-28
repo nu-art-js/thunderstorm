@@ -1,7 +1,7 @@
-import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
+import {Unit_NodeLib, Unit_TypescriptLib_Config} from '../index';
 import {FirebasePackageConfig} from '../../../core/types';
-import {UnitPhaseImplementor} from '../../../v2/unit/types';
-import {Phase_DeployFrontend, Phase_Launch, Phase_ResolveConfigs} from '../../../v2/phase';
+import {UnitPhaseImplementor} from '../../../types/types';
+import {Phase_DeployFrontend, Phase_Launch, Phase_ResolveConfigs} from '../../../phase';
 import {RuntimeParams} from '../../../core/params/params';
 import {BadImplementationException, ImplementationMissingException, LogLevel, TypedMap} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
@@ -40,7 +40,7 @@ export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
-	extends Unit_TypescriptLib<C>
+	extends Unit_NodeLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
 
 	static DefaultConfig_FirebaseHosting = {

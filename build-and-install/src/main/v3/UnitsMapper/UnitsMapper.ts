@@ -1,7 +1,8 @@
 import {BaseUnit} from '../units';
 import {promises as fs} from 'fs';
-import {BadImplementationException, Logger} from '@nu-art/ts-common';
+import {BadImplementationException, Logger, TypedMap} from '@nu-art/ts-common';
 import {UnitMapper} from './resolvers/core';
+import {ProjectUnit} from '../core/ProjectUnit';
 
 /**
  * This class will receive a path and will map the workspace packages and libs
@@ -51,5 +52,18 @@ export class UnitsMapper
 	addRules<T extends BaseUnit<any>>(...rules: UnitMapper<T>[]) {
 		this.rules.push(...rules);
 		return this;
+	}
+
+	assertUniqueKeys(units: ProjectUnit[]) {
+		const keyToUnit: TypedMap<ProjectUnit> = {};
+
+		for (const unit of units) {
+			const config = unit.config;
+			const existing = keyToUnit[config.key]?.config;
+			if (existing)
+				throw new BadImplementationException(`Duplicate unit key "${config.key}" found:\n- ${existing.relativePath}\n- ${config.relativePath}`);
+
+			keyToUnit[config.key] = unit;
+		}
 	}
 }

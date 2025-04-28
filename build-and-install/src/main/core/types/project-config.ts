@@ -1,5 +1,5 @@
-import {StringMap} from '@nu-art/ts-common';
-import { Package, RuntimePackage } from './package';
+import {StringMap, TypedMap} from '@nu-art/ts-common';
+import {Package, RuntimePackage} from './package';
 
 export type ProjectConfig = {
 	params: StringMap;
@@ -14,3 +14,19 @@ export type RuntimeProjectConfig = {
 };
 
 export type Constructor<T> = new (...args: any) => T
+
+export type BAI_Config = {
+	pathToProject: string
+	dependenciesVersions?: TypedMap<string>
+	files?: {
+		firebase?: {
+			databaseRules?: string
+			storageRules?: string
+			firestoreIndexesRules?: string
+			firestoreRules?: string
+		}
+		typescript?: {
+			tsConfig?: string
+		}
+	}
+}

@@ -2,12 +2,12 @@ import {expect} from 'chai';
 import {UnitsMapper, BaseUnit} from '../_common';
 import {Input, Result, TestSuite_UnitsMapper} from './types';
 import {sortArray} from '@nu-art/ts-common';
-import {TestCase1} from '../cases/test-case-1';
-import {TestCase2} from '../cases/test-case-2';
-import {TestCase3} from '../cases/test-case-3';
-import {TestCase4} from '../cases/test-case-4';
-import {TestCase5} from '../cases/test-case-5';
-import {TestCase6} from '../cases/test-case-6';
+import {TestCase1} from './cases/test-case-1';
+import {TestCase2} from './cases/test-case-2';
+import {TestCase3} from './cases/test-case-3';
+import {TestCase4} from './cases/test-case-4';
+import {TestCase5} from './cases/test-case-5';
+import {TestCase6} from './cases/test-case-6';
 
 
 const TestCase_UnitsMapper: TestSuite_UnitsMapper['testcases'] = [

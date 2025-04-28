@@ -1,6 +1,6 @@
-import {BaseUnit, Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
-import {UnitPhaseImplementor} from '../../../v2/unit/types';
-import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../../v2/phase';
+import {BaseUnit, Unit_NodeLib, Unit_TypescriptLib_Config} from '../index';
+import {UnitPhaseImplementor} from '../../../types/types';
+import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../../phase';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
 import {promises as _fs} from 'fs';
 import {RuntimeParams} from '../../../core/params/params';
@@ -30,7 +30,7 @@ const CONST_VersionApp = 'version-app.json';
 
 
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
-	extends Unit_TypescriptLib<C>
+	extends Unit_NodeLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]>, OnUnitWatchCompiled {
 
 	static staggerCount: number = 0;
@@ -49,7 +49,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	};
 
 	async __onUnitWatchCompiled(units: BaseUnit[]) {
-		if (units.some(unit => this.runtime.unitDependencyNames.includes(unit.runtime.dependencyName))) {
+		if (units.some(unit => _keys(this.config.dependencies).includes(unit.config.key))) {
 			this.setStatus('Compiling', 'start');
 			try {
 				await this.compileImpl();
@@ -276,7 +276,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		//Gather units that are dependencies of this unit
 		const dependencies = _keys(this.packageJson.root.dependencies ?? {}) as string[];
 		const runner = MemKey_PhaseRunner.get();
-		const tsLibUnits = runner.getUnits().filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
+		const tsLibUnits = runner.getUnits().filter(unit => unit instanceof Unit_NodeLib) as Unit_NodeLib[];
 		const dependencyUnits = tsLibUnits.filter(unit => {
 			const unitPJName = unit.packageJson.template.name;
 			return dependencies.includes(unitPJName);
@@ -302,8 +302,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		await Promise.all(dependencyUnits.map(async unit => {
 			//Copy dependency unit output into this units output/.dependency dir
-			const dependencyOutputPath = `${unit.runtime.pathTo.output}/`;
-			const targetPath = `${this.runtime.pathTo.output}/.dependencies/${unit.config.key}/`;
+			const dependencyOutputPath = `${unit.config.output}/`;
+			const targetPath = `${this.config.output}/.dependencies/${unit.config.key}/`;
 			const pjTargetPath = `${targetPath}/${CONST_PackageJSON}`;
 
 			await this.allocateCommando()
@@ -368,7 +368,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async deployImpl() {
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.runtime.pathTo.output)
+			.cd(this.config.output)
 			.ls()
 			.cat('package.json')
 			.cat('index.js')

@@ -244,14 +244,6 @@ export const BaiParam_DeployFrontend: BaseCliParam<'deployFrontend', string> = {
 	description: 'Will add the app frontend to the deploy list'
 };
 
-export const BaiParam_NoGit: BaseCliParam<'noGit', boolean> = {
-	keys: ['--no-git'],
-	keyName: 'noGit',
-	type: 'boolean',
-	group: 'Other',
-	description: '',
-};
-
 export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
 	keys: ['--debug', '-d'],
 	keyName: 'debug',
@@ -370,7 +362,6 @@ export const AllBaiParams = [
 	BaiParam_Deploy,
 	BaiParam_DeployBackend,
 	BaiParam_DeployFrontend,
-	BaiParam_NoGit, // TODO: to implement
 	BaiParam_Debug,
 	BaiParam_Verbose,
 	BaiParam_Publish, // TODO: to implement

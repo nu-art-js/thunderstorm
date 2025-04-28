@@ -1,10 +1,10 @@
-import {Unit_TypescriptLib} from '../../units';
+import {Unit_NodeLib} from '../../units';
 import {UnitMapper_Node, UnitMapper_NodeContext} from './core';
 import {BadImplementationException, tsValidateValue} from '@nu-art/ts-common';
 
 
 export class UnitMapper_NodeLib_Class
-	extends UnitMapper_Node<Unit_TypescriptLib> {
+	extends UnitMapper_Node<Unit_NodeLib> {
 
 	static tsValidator_NodeProject = {
 		type: tsValidateValue(['typescript-lib']),
@@ -20,7 +20,7 @@ export class UnitMapper_NodeLib_Class
 		if (!outputDir)
 			throw new BadImplementationException('package.json MUST specify \'publishConfig.directory\'');
 
-		return new Unit_TypescriptLib({
+		return new Unit_NodeLib({
 			...context.baseConfig,
 			output: outputDir,
 		});
