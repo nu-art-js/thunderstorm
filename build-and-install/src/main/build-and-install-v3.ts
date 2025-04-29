@@ -7,7 +7,7 @@ import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper';
 import {UnitsDependencyMapper} from './v3/UnitsDependencyMapper/UnitsDependencyMapper';
 import {FilesCache} from './v3/core/FilesCache';
 import {BAI_Config} from './core/types';
-import {Config_ProjectUnit, ProjectUnit} from './v3/core/ProjectUnit';
+import {Config_ProjectUnit, ProjectUnit} from './v3/units/ProjectUnit';
 import {PhaseManager} from './v3/PhaseManager';
 
 
@@ -65,7 +65,7 @@ export class BuildAndInstallV3
 				.map(units => units.map(unitKey => keyToUnitMap[unitKey]));
 
 			const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree);
-			const executionPlan = await phaseManager.calculateExecutionSteps(this.phases, unitDependencyTree);
+			const executionPlan = await phaseManager.calculateExecutionSteps();
 			process.on('SIGINT', async () => {
 				await phaseManager.break();
 			});
@@ -93,7 +93,7 @@ export class BuildAndInstallV3
 	}
 
 	private async loadProjectConfig() {
-		const baiConfig = await FilesCache.load.json<BAI_Config>(this.pathToProject);
+		const baiConfig = await FilesCache.load.json<BAI_Config>(`${this.pathToProject}/bai-config.json`);
 		if (!baiConfig)
 			throw new ImplementationMissingException('Missing project bai config file');
 

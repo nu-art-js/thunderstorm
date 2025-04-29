@@ -2,7 +2,7 @@ import {BaseUnit} from '../units';
 import {promises as fs} from 'fs';
 import {BadImplementationException, Logger, TypedMap} from '@nu-art/ts-common';
 import {UnitMapper} from './resolvers/core';
-import {ProjectUnit} from '../core/ProjectUnit';
+import {ProjectUnit} from '../units/ProjectUnit';
 
 /**
  * This class will receive a path and will map the workspace packages and libs

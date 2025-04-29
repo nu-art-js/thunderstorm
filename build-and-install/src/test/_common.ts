@@ -1,4 +1,4 @@
-export * from '../main/v3/core/BaseUnit';
+export * from '../main/v3/units/BaseUnit';
 export * from '../main/v3/phase';
 export * from '../main/v3/PhaseManager';
 

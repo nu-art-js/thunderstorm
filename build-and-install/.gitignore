@@ -15,3 +15,4 @@ imports-*.svg
 
 src/main/tsconfig.json
 build-and-install.txt
+file.txt

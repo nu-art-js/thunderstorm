@@ -1,13 +1,14 @@
 import {CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../core/consts';
 import {PackageJson} from '../../core/types';
-import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
+import {__stringify, BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import * as fs from 'fs';
-import {promises as _fs} from 'fs';
+import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
 import {Phase_CopyPackageJSON} from '../../phase';
 import {UnitPhaseImplementor} from '../../types/types';
 import {MemKey_ProjectConfig} from '../../v2/phase-runner/RunnerParams';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../../v2/unit/tools/tools';
-import {Config_ProjectUnit, ProjectUnit} from '../core/ProjectUnit';
+import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit';
+import {resolve} from 'path';
 
 
 const PackageJsonTargetKey_Template = 'template';
@@ -16,8 +17,7 @@ const PackageJsonTargetKey_Dist = 'dist';
 const PackageJsonTargetKeys = [PackageJsonTargetKey_Template, PackageJsonTargetKey_Root, PackageJsonTargetKey_Dist] as const;
 type PackageJsonTargetKey = typeof PackageJsonTargetKeys[number];
 
-export type Unit_Typescript_Config = Config_ProjectUnit & {
-};
+export type Unit_Typescript_Config = Config_ProjectUnit & {};
 
 
 export class Unit_NodePackage<C extends Unit_Typescript_Config = Unit_Typescript_Config>
@@ -140,4 +140,83 @@ export class Unit_NodePackage<C extends Unit_Typescript_Config = Unit_Typescript
 		await _fs.writeFile(targetPath, JSON.stringify(this.packageJson.root, null, 2), {encoding: 'utf-8'});
 		this.setStatus('PackageJSON resolved');
 	}
+
+
+	/**
+	 * Prepares the workspace for this project unit.
+	 * Ensures tsconfig.json files exist in the proper source folders,
+	 * and copies .eslintrc.json if necessary, handling fallback scenarios cleanly.
+	 */
+	async prepare(params: { baiDefaultsPath: string; projectRoot: string; unitRoot: string; }) {
+		const {baiDefaultsPath, projectRoot, unitRoot} = params;
+
+		this.logDebug(`Preparing workspace for unit: ${this.config.key}`);
+		this.logVerbose(`Parameters: baiDefaultsPath=${baiDefaultsPath}, projectRoot=${projectRoot}, unitRoot=${unitRoot}`);
+
+		// Handle source folder tsconfig setup
+		const srcFolder = resolve(unitRoot, 'src');
+		if (!existsSync(srcFolder))
+			return;
+
+		const entries = readdirSync(srcFolder);
+		for (const entry of entries) {
+			const entryPath = resolve(srcFolder, entry);
+			if (!statSync(entryPath).isDirectory()) {
+				this.logError(`Unexpected non-directory entry in src/: ${entry}`);
+				throw new BadImplementationException(`Non-directory entry under src folder\n ${__stringify({
+					unit: this.config.key,
+					invalidEntry: entry
+				})}`);
+			}
+
+			const tsConfigPath = resolve(entryPath, 'tsconfig.json');
+			if (existsSync(tsConfigPath)) {
+				this.logVerbose(`tsconfig.json already exists for source: ${entry}, skipping copy.`);
+				continue;
+			}
+
+			const defaultTsConfigTemplate = resolve(baiDefaultsPath, `tsconfig-${entry}.json`);
+			const projectDefaultTsConfig = resolve(projectRoot, 'defaults', 'tsconfig.json');
+
+			if (existsSync(defaultTsConfigTemplate)) {
+				this.logDebug(`Copying default tsconfig for source: ${entry}`);
+				copyFileSync(defaultTsConfigTemplate, tsConfigPath);
+				continue;
+			}
+
+			if (existsSync(projectDefaultTsConfig)) {
+				this.logDebug(`Copying project-level default tsconfig for source: ${entry}`);
+				copyFileSync(projectDefaultTsConfig, tsConfigPath);
+				continue;
+			}
+
+			this.logError(`Missing tsconfig templates for source folder: ${entry}`);
+			throw new ImplementationMissingException(`Missing tsconfig template for source folder: ${entry}\n${__stringify({
+				unit: this.config.key,
+				sourceFolder: entry,
+				checkedPaths: [defaultTsConfigTemplate, projectDefaultTsConfig]
+			})}`);
+		}
+
+		// Handle ESLint config setup
+		if (this.config.manageEslintConfig)
+			return;
+
+		const eslintConfigPath = resolve(unitRoot, '.eslintrc.json');
+		if (existsSync(eslintConfigPath))
+			return;
+
+		const defaultEslint = resolve(baiDefaultsPath, '.eslintrc.json');
+		if (!existsSync(defaultEslint)) {
+			this.logError(`Missing default eslint configuration at path: ${defaultEslint}`);
+			throw new BadImplementationException(`Missing default eslint configuration at ${defaultEslint}`, {
+				unit: this.config.key,
+				defaultPath: defaultEslint
+			});
+		}
+
+		this.logDebug(`Copying default eslint configuration for unit: ${this.config.key}`);
+		copyFileSync(defaultEslint, eslintConfigPath);
+	}
+
 }

@@ -1,8 +1,8 @@
 import {addItemToArray, filterAsync, Logger, removeItemFromArray} from '@nu-art/ts-common';
 import {RunningStatusHandler} from './RunningStatusHandler';
 import {Phase} from './phase';
-import {ProjectUnit} from './core/ProjectUnit';
-import {BaseUnit} from './core/BaseUnit';
+import {ProjectUnit} from './units/ProjectUnit';
+import {BaseUnit} from './units/BaseUnit';
 import {RuntimeParams} from '../core/params/params';
 import {PhaseAggregatedException} from '../core/exceptions/PhaseAggregatedException';
 
