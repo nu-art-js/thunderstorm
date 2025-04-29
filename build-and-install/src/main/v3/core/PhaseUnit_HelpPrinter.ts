@@ -1,4 +1,4 @@
-import {BaseUnit} from './BaseUnit';
+import {BaseUnit} from '../units/BaseUnit';
 import {_keys, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {AllBaiParams, RuntimeParams} from '../../core/params/params';

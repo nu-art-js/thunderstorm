@@ -26,7 +26,7 @@ export type BaseUnit_Config = {
 	label: string;
 }
 
-export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
+export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 	extends Logger {
 
 	readonly config: Readonly<C>;
@@ -37,7 +37,7 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 	private timeCounter?: TimeCounter;
 	protected baiConfig!: Readonly<BAI_Config>;
 
-	constructor(config: C) {
+	protected constructor(config: C) {
 		super(config.key);
 		this.config = Object.freeze(config);
 		this.classStack = new Set<string>();
@@ -125,8 +125,6 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 		dispatcher_UnitStatusChange.dispatch(this);
 	}
 
-	//######################### Class Stack Logic #########################
-
 	protected addToClassStack = (cls: Function) => {
 		this.classStack.add(cls.name);
 	};
@@ -134,8 +132,6 @@ export class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 	public isInstanceOf = (cls: Function) => {
 		return this.classStack.has(cls.name);
 	};
-
-	//######################### Public Functions #########################
 
 	public getStatus() {
 		return this.unitStatus;

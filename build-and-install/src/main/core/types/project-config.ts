@@ -27,6 +27,7 @@ export type BAI_Config = {
 		}
 		typescript?: {
 			tsConfig?: string
+			eslintConfig?: string
 		}
 	}
 }
