@@ -1,6 +1,6 @@
 import {Unit_NodeProject} from '../../units';
-import {UnitMapper_Node, UnitMapper_NodeContext} from './core';
 import {tsValidateValue} from '@nu-art/ts-common';
+import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
 
 
 export class UnitMapper_NodeProject_Class
@@ -18,6 +18,7 @@ export class UnitMapper_NodeProject_Class
 	protected async resolveNodeUnit(context: UnitMapper_NodeContext) {
 		return new Unit_NodeProject({
 			...context.baseConfig,
+			customESLintConfig: context.customESLintConfig,
 			isRoot: true,
 		});
 	}

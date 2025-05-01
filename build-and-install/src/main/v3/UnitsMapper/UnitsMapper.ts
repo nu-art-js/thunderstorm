@@ -1,8 +1,7 @@
-import {BaseUnit} from '../units';
+import {BaseUnit, ProjectUnit} from '../units';
 import {promises as fs} from 'fs';
 import {BadImplementationException, Logger, TypedMap} from '@nu-art/ts-common';
-import {UnitMapper} from './resolvers/core';
-import {ProjectUnit} from '../units/ProjectUnit';
+import {UnitMapper_Base} from './resolvers/UnitMapper_Base';
 
 /**
  * This class will receive a path and will map the workspace packages and libs
@@ -12,7 +11,7 @@ import {ProjectUnit} from '../units/ProjectUnit';
 export class UnitsMapper
 	extends Logger {
 
-	private rules: UnitMapper<BaseUnit<any>>[] = [];
+	private rules: UnitMapper_Base<BaseUnit<any>>[] = [];
 
 	/**
 	 * @param path - will always be a directory
@@ -49,7 +48,7 @@ export class UnitsMapper
 		return units;
 	}
 
-	addRules<T extends BaseUnit<any>>(...rules: UnitMapper<T>[]) {
+	addRules<T extends BaseUnit<any>>(...rules: UnitMapper_Base<T>[]) {
 		this.rules.push(...rules);
 		return this;
 	}

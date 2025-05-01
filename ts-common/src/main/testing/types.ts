@@ -38,7 +38,7 @@ export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, Expe
 export type TestSuite<Input, ExpectedResult> = {
 	preProcessor?: () => (void | Promise<void>);
 	processor: TestProcessor<Input, ExpectedResult>;
-	testcases: TestModel<Input, ExpectedResult>[];
+	testcases: ResolvableContent<TestModel<Input, ExpectedResult>>[];
 	label: string,
 	timeout?: number,
 }

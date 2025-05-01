@@ -16,6 +16,7 @@ export class ModuleManagerTester
 	}
 }
 
+
 export function testSuite_RunTest<Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>, testCase: TestModel<Input, ExpectedResult>) {
 	it(resolveContent(testCase.description, testCase), () => testSuit.processor(testCase)).timeout(testSuit.timeout || 5000);
 }
@@ -29,7 +30,7 @@ export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input
 		}
 
 		(testcases.length > 0 ? testcases : testSuit.testcases).forEach(testCase => {
-			new MemStorage().init(async () => testSuite_RunTest(testSuit, testCase));
+			new MemStorage().init(async () => testSuite_RunTest(testSuit, resolveContent(testCase)));
 		});
 	});
 };

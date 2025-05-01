@@ -1,5 +1,3 @@
-import {UnitMapper_Node, UnitMapper_NodeContext} from './core';
-import {FirebaseHosting_EnvConfig, Unit_FirebaseHostingApp, Unit_FirebaseHostingApp_Config, UnitConfigJSON_FirebaseHosting} from '../../../v2/unit/firebase-units';
 import {
 	_keys,
 	tsValidateAnyString,
@@ -10,6 +8,13 @@ import {
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
+import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
+import {
+	FirebaseHosting_EnvConfig,
+	Unit_FirebaseHostingApp,
+	Unit_FirebaseHostingApp_Config,
+	UnitConfigJSON_FirebaseHosting
+} from '../../units/firebase/Unit_FirebaseHostingApp';
 
 const valuesValidator = {
 	configUrl: tsValidateAnyString,
@@ -38,7 +43,7 @@ export class UnitMapper_FirebaseHosting_Class
 
 		const envsConfig = _keys(context.packageJson.unitConfig.envs).reduce((carry, env) => {
 			const envConfig = context.packageJson.unitConfig.envs[env];
-			carry[env] = {
+			carry[env as string] = {
 				configUrl: envConfig.configUrl,
 				projectId: envConfig.projectId,
 				isLocal: envConfig.isLocal ?? env === 'local'
@@ -52,6 +57,7 @@ export class UnitMapper_FirebaseHosting_Class
 			...Unit_FirebaseHostingApp.DefaultConfig_FirebaseHosting,
 			...unitConfig,
 			envs: envsConfig,
+			customESLintConfig: context.customESLintConfig,
 			output: outputDir ?? Unit_FirebaseHostingApp.DefaultConfig_FirebaseHosting.output,
 		});
 	}

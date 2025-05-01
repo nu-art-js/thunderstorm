@@ -12,16 +12,11 @@ import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {FilesCache} from '../core/FilesCache';
-import {Unit_Typescript_RuntimeConfig} from '@nu-art/build-and-install/v2/unit/core';
 
 
 export type Unit_TypescriptLib_Config = Unit_Typescript_Config & {
 	customTSConfig?: boolean;
 	output: string;
-};
-
-export type Unit_TypescriptLib_RuntimeConfig = Unit_Typescript_RuntimeConfig & {
-	pathTo: { pkg: string; output: string }
 };
 
 const extensionsToLint = ['ts', 'tsx'];

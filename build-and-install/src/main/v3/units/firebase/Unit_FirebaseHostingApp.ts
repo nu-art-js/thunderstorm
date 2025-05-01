@@ -11,7 +11,7 @@ import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {dispatcher_WatchReady} from '../../../v2/unit/runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
-import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/core';
+import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node';
 
 
 export type FirebaseHostingConfig = {

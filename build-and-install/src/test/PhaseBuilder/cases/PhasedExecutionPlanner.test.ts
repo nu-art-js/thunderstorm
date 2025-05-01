@@ -2,6 +2,7 @@ import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
 import {BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common';
 import {voidFunction} from '@nu-art/ts-common';
+import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
 //========================= TestSuite Definition =========================
 
@@ -108,3 +109,9 @@ function mockPhase(key: string, filter?: () => Promise<boolean>, unitFilter?: (u
 		unitFilter,
 	} as Phase<any>;
 }
+
+
+describe('PhaseManager - calculateExecutionSteps', () => {
+	testSuiteTester(TestSuite_CalculateExecutionSteps);
+});
+
