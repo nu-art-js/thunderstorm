@@ -1,29 +1,34 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
 import {BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common';
+import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
-
+// test input type
 type Input = {
 	units: BaseUnit<any>[][];
 	phases: Phase<any>[];
 	scheduledSteps: ScheduledStep[];
 };
 
+// test output type
 type Output = void;
 
+// the tests, notice these can be a resolvable content, in order to keep bind consts between the input and the output
 export const TestSuite_MapStep: TestSuite<Input, Output> = {
 	label: 'PhaseManager - execute() Error Handling',
 	testcases: [
-		{
-			description: 'Error - Phase not found during mapStep()',
-			input: {
-				units: [[]],
-				phases: [],
-				scheduledSteps: [{phases: ['build'], units: []}],
-			},
-			error: {
-				expected: 'Phase \'build\' not found in PhaseManager.phases',
-			},
+		() => {
+			return {
+				description: 'Error - Phase not found during mapStep()',
+				input: {
+					units: [[]],
+					phases: [],
+					scheduledSteps: [{phases: ['build'], units: []}],
+				},
+				error: {
+					expected: 'Phase \'build\' not found in PhaseManager.phases',
+				},
+			};
 		},
 		{
 			description: 'Error - Unit not found during mapStep()',
@@ -37,6 +42,7 @@ export const TestSuite_MapStep: TestSuite<Input, Output> = {
 			},
 		}
 	],
+	// the actual test logic that will apply on the testcases above
 	processor: async (testCase) => {
 		const {units, phases, scheduledSteps} = testCase.input;
 		const manager = new PhaseManager('output-folder', phases, units);
@@ -50,7 +56,7 @@ export const TestSuite_MapStep: TestSuite<Input, Output> = {
 	}
 };
 
-
+// helper function to mock phases - dedicated for this test suite
 function mockPhase(key: string, filter?: () => Promise<boolean>, unitFilter?: (unit: BaseUnit<any>) => Promise<boolean>): Phase<any> {
 	return {
 		key,
@@ -60,3 +66,7 @@ function mockPhase(key: string, filter?: () => Promise<boolean>, unitFilter?: (u
 	} as Phase<any>;
 }
 
+// the mocha test launch
+describe('PhaseManager - mapStep', () => {
+	testSuiteTester(TestSuite_MapStep);
+});

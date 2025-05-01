@@ -21,7 +21,8 @@ export const TestCase4 = {
 			relativePath: '.',
 			fullPath: `${__dirname}/test-case-4`,
 			isRoot: true,
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		}),
 		new Unit_NodeLib({
 			key: 'test-case-4--lib-1',
@@ -29,7 +30,8 @@ export const TestCase4 = {
 			relativePath: './lib-1',
 			fullPath: `${__dirname}/test-case-4/lib-1`,
 			output: 'dist',
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		}),
 		new Unit_NodeLib({
 			key: 'test-case-4--lib-2',
@@ -37,7 +39,8 @@ export const TestCase4 = {
 			relativePath: './lib-2',
 			fullPath: `${__dirname}/test-case-4/lib-2`,
 			output: 'dist',
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		}),
 		new Unit_FirebaseFunctionsApp({
 			basePort: 1,
@@ -58,7 +61,8 @@ export const TestCase4 = {
 			pathToFirebaseConfig: '.firebase_config',
 			sslCert: '.ssl/cert.pem',
 			sslKey: '.ssl/key.pem',
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		} as Unit_FirebaseFunctionsApp_Config)
 	]
 };

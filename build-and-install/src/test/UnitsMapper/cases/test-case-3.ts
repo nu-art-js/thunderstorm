@@ -18,7 +18,8 @@ export const TestCase3 = {
 			relativePath: '.',
 			fullPath: `${__dirname}/test-case-3`,
 			isRoot: true,
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		}),
 		new Unit_NodeLib({
 			key: 'test-case-3--lib-1',
@@ -26,7 +27,8 @@ export const TestCase3 = {
 			relativePath: './lib-1',
 			fullPath: `${__dirname}/test-case-3/lib-1`,
 			output: 'dist',
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		}),
 		new Unit_NodeLib({
 			key: 'test-case-3--lib-2',
@@ -34,7 +36,8 @@ export const TestCase3 = {
 			relativePath: './lib-2',
 			fullPath: `${__dirname}/test-case-3/lib-2`,
 			output: 'dist',
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		})
 	]
 };

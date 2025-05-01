@@ -49,9 +49,11 @@ export const Tests_UnitsMapper: TestSuite_UnitsMapper = {
 			}
 		};
 
-// Call the comparison helper function
-		const output = await test(input);
-		if ('result' in testCase)
-			compareBaseUnits(output, testCase.result);
+		if ('error' in testCase) {
+			await expect(test(input)).to.be.rejectedWith(testCase.error.expected, testCase.error.message);
+			return;
+		}
+
+		compareBaseUnits(await test(input), testCase.result);
 	}
 };

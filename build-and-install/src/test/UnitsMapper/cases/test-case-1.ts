@@ -8,6 +8,7 @@ export const TestCase1 = {
 	},
 	result: [new Unit_NodeProject({
 		key: 'test-case-1',
+		customESLintConfig: false,
 		label: 'Test case 1 - root ts',
 		relativePath: '.',
 		fullPath: `${__dirname}/test-case-1`,

@@ -1,0 +1,4 @@
+# BAI-generated config files
+/src/main/tsconfig.json
+.eslintrc.json
+

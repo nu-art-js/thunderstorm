@@ -1,6 +1,6 @@
 import {Unit_NodeLib} from '../../units';
-import {UnitMapper_Node, UnitMapper_NodeContext} from './core';
 import {BadImplementationException, tsValidateValue} from '@nu-art/ts-common';
+import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
 
 
 export class UnitMapper_NodeLib_Class
@@ -22,6 +22,7 @@ export class UnitMapper_NodeLib_Class
 
 		return new Unit_NodeLib({
 			...context.baseConfig,
+			customESLintConfig: context.customESLintConfig,
 			output: outputDir,
 		});
 	}

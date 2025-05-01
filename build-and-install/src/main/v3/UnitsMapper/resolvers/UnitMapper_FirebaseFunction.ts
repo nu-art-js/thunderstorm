@@ -1,4 +1,3 @@
-import {UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './core';
 import {
 	_keys,
 	tsValidate_OptionalArray,
@@ -11,6 +10,7 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseFunctionsApp_Config} from '../../../v2/unit/firebase-units';
+import {UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
 
 
 type EnvConfig = {
@@ -56,7 +56,7 @@ export class UnitMapper_FirebaseFunction_Class
 
 		const envsConfig = _keys(context.packageJson.unitConfig.envs).reduce((carry, env) => {
 			const envConfig = context.packageJson.unitConfig.envs[env];
-			carry[env] = {
+			carry[env as string] = {
 				defaultConfig: envConfig.defaultConfig ?? 'default',
 				envConfig: envConfig.envConfig ?? env as string,
 				projectId: envConfig.projectId,
@@ -71,6 +71,7 @@ export class UnitMapper_FirebaseFunction_Class
 			...Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction,
 			...unitConfig,
 			envs: envsConfig,
+			customESLintConfig: context.customESLintConfig,
 			output: outputDir ?? Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction.output,
 		});
 	}

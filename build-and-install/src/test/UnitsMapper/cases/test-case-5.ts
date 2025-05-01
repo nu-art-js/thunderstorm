@@ -20,7 +20,8 @@ export const TestCase5 = {
 			relativePath: '.',
 			fullPath: `${__dirname}/test-case-5`,
 			isRoot: true,
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		}),
 		new Unit_NodeLib({
 			key: 'test-case-5--lib-1',
@@ -28,7 +29,8 @@ export const TestCase5 = {
 			relativePath: './lib-1',
 			fullPath: `${__dirname}/test-case-5/lib-1`,
 			output: 'dist',
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		}),
 		new Unit_NodeLib({
 			key: 'test-case-5--lib-2',
@@ -36,7 +38,8 @@ export const TestCase5 = {
 			relativePath: './lib-2',
 			fullPath: `${__dirname}/test-case-5/lib-2`,
 			output: 'dist',
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		}),
 		new Unit_FirebaseHostingApp({
 			servingPort: 1,
@@ -52,7 +55,8 @@ export const TestCase5 = {
 					projectId: 'beamz-dev',
 				}
 			},
-			dependencies: {}
+			dependencies: {},
+			customESLintConfig: false,
 		})
 	]
 };
