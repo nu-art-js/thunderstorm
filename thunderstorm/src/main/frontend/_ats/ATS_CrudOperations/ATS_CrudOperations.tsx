@@ -33,6 +33,10 @@ const ACTIONS: Action[] = [
 	{
 		label: 'delete',
 		action: (dbModule, input) => dbModule.v1.delete(input as unknown as DB_BaseObject)
+	},
+	{
+		label: 'delete query',
+		action: (dbModule, input) => dbModule.v1.deleteQuery(input as unknown as FirestoreQuery<any>)
 	}
 ];
 
