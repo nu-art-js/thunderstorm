@@ -58,6 +58,7 @@ export class UnitMapper_FirebaseHosting_Class
 			...unitConfig,
 			envs: envsConfig,
 			customESLintConfig: context.customESLintConfig,
+			customTSConfig: context.customTSConfig,
 			output: outputDir ?? Unit_FirebaseHostingApp.DefaultConfig_FirebaseHosting.output,
 		});
 	}
