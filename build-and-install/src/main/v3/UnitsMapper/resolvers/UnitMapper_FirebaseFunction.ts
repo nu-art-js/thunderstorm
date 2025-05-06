@@ -72,6 +72,7 @@ export class UnitMapper_FirebaseFunction_Class
 			...unitConfig,
 			envs: envsConfig,
 			customESLintConfig: context.customESLintConfig,
+			customTSConfig: context.customTSConfig,
 			output: outputDir ?? Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction.output,
 		});
 	}

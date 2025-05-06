@@ -89,6 +89,10 @@ export class Unit_NodeLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptL
 		if (!RuntimeParams.clean)
 			return;
 
+		await this.clearOutputDirImpl();
+	}
+
+	private async clearOutputDirImpl() {
 		//Return if output dir doesn't exist
 		if (!fs.existsSync(this.config.output))
 			return;
@@ -109,6 +113,7 @@ export class Unit_NodeLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptL
 			})
 			.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'));
 
+		this.logDebug(`Executing: ${commando.getCommand()}`);
 		await this.executeAsyncCommando(commando, (stdout, stderr, exitCode) => {
 			if (stderr.length)
 				this.logError(stderr);
@@ -116,6 +121,7 @@ export class Unit_NodeLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptL
 			if (exitCode > 0)
 				throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
 		});
+		this.logDebug(`Executed: ${commando.getCommand()}`);
 	}
 
 	protected async copyAssetsToOutput() {
@@ -196,8 +202,8 @@ export class Unit_NodeLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptL
 	async compile() {
 		try {
 			this.setStatus('Compiling', 'start');
-			await this.resolveTSConfig();
-			await this.clearOutputDir();
+			// await this.resolveTSConfig();
+			await this.clearOutputDirImpl();
 			await this.compileImpl();
 			await this.copyAssetsToOutput();
 			await this.copyPackageJSONToOutput();

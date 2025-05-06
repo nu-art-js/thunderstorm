@@ -19,6 +19,7 @@ export class UnitMapper_NodeProject_Class
 		return new Unit_NodeProject({
 			...context.baseConfig,
 			customESLintConfig: context.customESLintConfig,
+			customTSConfig: context.customTSConfig,
 			isRoot: true,
 		});
 	}

@@ -23,6 +23,7 @@ export class UnitMapper_NodeLib_Class
 		return new Unit_NodeLib({
 			...context.baseConfig,
 			customESLintConfig: context.customESLintConfig,
+			customTSConfig: context.customTSConfig,
 			output: outputDir,
 		});
 	}

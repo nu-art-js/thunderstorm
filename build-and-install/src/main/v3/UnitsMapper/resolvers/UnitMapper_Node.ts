@@ -17,6 +17,7 @@ import {BaseUnitConfig, UnitConfigJSON_Base, UnitMapper_Base} from './UnitMapper
 export type UnitConfigJSON_Node = UnitConfigJSON_Base & {
 	label: string
 	customESLintConfig?: boolean
+	customTSConfig?: boolean
 };
 
 export type UnitMapper_NodeContext<ConfigJSON extends UnitConfigJSON_Node = UnitConfigJSON_Node> = {
@@ -25,6 +26,7 @@ export type UnitMapper_NodeContext<ConfigJSON extends UnitConfigJSON_Node = Unit
 	packageJson: TS_PackageJSON<ConfigJSON>,
 	baseConfig: BaseUnitConfig
 	customESLintConfig: boolean
+	customTSConfig: boolean
 }
 
 export abstract class UnitMapper_Node<
@@ -34,7 +36,8 @@ export abstract class UnitMapper_Node<
 
 	static tsValidator_Node = {
 		label: tsValidateAnyString,
-		customESLintConfig: tsValidateBoolean(false)
+		customESLintConfig: tsValidateBoolean(false),
+		customTSConfig: tsValidateBoolean(false),
 	};
 
 	protected constructor(validator: TypeValidator<ConfigJSON>) {
@@ -60,7 +63,8 @@ export abstract class UnitMapper_Node<
 		};
 
 		const customESLintConfig = packageJson.unitConfig.customESLintConfig ?? false;
-		return this.resolveNodeUnit({path, root, packageJson, baseConfig, customESLintConfig});
+		const customTSConfig = packageJson.unitConfig.customTSConfig ?? false;
+		return this.resolveNodeUnit({path, root, packageJson, baseConfig, customESLintConfig, customTSConfig});
 	}
 
 	protected abstract resolveNodeUnit(nodeContext: UnitMapper_NodeContext<ConfigJSON>): Promise<T | undefined> ;

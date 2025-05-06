@@ -19,6 +19,7 @@ type PackageJsonTargetKey = typeof PackageJsonTargetKeys[number];
 
 export type Unit_Typescript_Config = Config_ProjectUnit & {
 	customESLintConfig: boolean;
+	customTSConfig: boolean;
 };
 
 
@@ -172,14 +173,14 @@ export class Unit_NodePackage<C extends Unit_Typescript_Config = Unit_Typescript
 			}
 
 			const tsConfigPath = resolve(entryPath, 'tsconfig.json');
-			if (this.config.customESLintConfig) {
+			if (this.config.customTSConfig) {
 				if (!existsSync(tsConfigPath))
 					throw new BadImplementationException(`Expected custom tsconfig in folder for source folder: ${entryPath}\n${__stringify({
 						unit: this.config.key,
 						sourceFolder: entry,
 					})}`);
 
-				this.logVerbose(`tsconfig.json already exists for source: ${entry}, skipping copy.`);
+				this.logVerbose(`tsconfig.json is defined custom for source: ${entry}, skipping copy.`);
 				continue;
 			}
 
@@ -207,12 +208,16 @@ export class Unit_NodePackage<C extends Unit_Typescript_Config = Unit_Typescript
 		}
 
 		// Handle ESLint config setup
-		if (this.config.customESLintConfig)
-			return;
-
 		const eslintConfigPath = resolve(this.config.fullPath, '.eslintrc.json');
-		if (existsSync(eslintConfigPath))
+		if (this.config.customESLintConfig) {
+			if (!existsSync(eslintConfigPath))
+				throw new BadImplementationException(`Expected custom eslint.rc\n${__stringify({
+					unit: this.config.key,
+				})}`);
+
+			this.logVerbose(`eslintrc.json is defined custom`);
 			return;
+		}
 
 		const defaultEslint = resolve(baiDefaultsPath, '.eslintrc.json');
 		if (!existsSync(defaultEslint)) {

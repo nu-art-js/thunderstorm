@@ -31,13 +31,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "neo-blessed": "^0.2.0",
-    "blessed": "^0.1.81",
     "@nu-art/ts-common": "$THUNDERSTORM_VERSION"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
-    "@types/node": "$NODE_TYPES_VERSION",
-    "@types/blessed": "^0.1.25"
+    "@types/node": "$NODE_TYPES_VERSION"
   }
 }
