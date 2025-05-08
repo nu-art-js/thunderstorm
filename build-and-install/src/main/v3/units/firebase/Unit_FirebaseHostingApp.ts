@@ -1,4 +1,4 @@
-import {Unit_NodeLib, Unit_TypescriptLib_Config} from '../index';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
 import {FirebasePackageConfig} from '../../../core/types';
 import {UnitPhaseImplementor} from '../../../types/types';
 import {Phase_DeployFrontend, Phase_Launch, Phase_ResolveConfigs} from '../../../phase';
@@ -40,7 +40,7 @@ export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
-	extends Unit_NodeLib<C>
+	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
 
 	static DefaultConfig_FirebaseHosting = {

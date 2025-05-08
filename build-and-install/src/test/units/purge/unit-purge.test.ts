@@ -2,7 +2,7 @@
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {Unit_NodeLib} from '../../_common';
+import {Unit_TypescriptLib, Unit_NodeProject, Unit_PackageJson} from '../../_common';
 import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {expect} from 'chai';
@@ -12,7 +12,7 @@ const pathToPackages = resolve(__dirname, './workspace/packages');
 const libName = 'lib-purge';
 const unitPath = resolve(pathToPackages, libName);
 
-const createTestUnit_NodeLib = () => new Unit_NodeLib({
+const createTestUnit_TypescriptLib = () => new Unit_TypescriptLib({
 	key: libName,
 	label: libName,
 	relativePath: `./${libName}`,
@@ -23,12 +23,29 @@ const createTestUnit_NodeLib = () => new Unit_NodeLib({
 	customESLintConfig: true,
 });
 
-type Input = string;
+const projectName = 'workspace';
+const pathToProject = resolve(__dirname, './workspace');
+const createTestUnit_NodeProject = () => new Unit_NodeProject({
+	key: projectName,
+	label: projectName,
+	relativePath: `.`,
+	fullPath: pathToProject,
+	dependencies: {},
+	isRoot: true,
+	globalPackages: {}
+});
+
+type Input = {
+	fixtures: string[]
+	units: Unit_PackageJson
+};
 type Output = () => void;
 
-const test = async (fixtureFile: Input): Promise<void> => {
-	setupWorkspace(resolve(__dirname, fixtureFile), unitPath);
-	const unit = createTestUnit_NodeLib();
+const test = async (setup: Input): Promise<void> => {
+	for (const fixture of setup.fixtures) {
+		setupWorkspace(resolve(__dirname, fixture), setup.units.config.fullPath);
+	}
+	const unit = setup.units;
 	await unit.purge();
 };
 
@@ -41,12 +58,33 @@ describe('Unit - Purge Phase', () => {
 		setupWorkspace(resolve(__dirname, './fixtures.txt'), resolve(__dirname, './fixtures'));
 	});
 
-	it('Removes node_modules and lock files if they exist', runTestCase({
-		input: './fixtures/workspace-purge-node-lib.txt',
-		result: async () => {
-			expect(existsSync(resolve(unitPath, 'node_modules'))).to.be.false;
-			expect(existsSync(resolve(unitPath, 'pnpm-lock.yaml'))).to.be.false;
-			expect(existsSync(resolve(unitPath, 'package-lock.json'))).to.be.false;
-		}
+	it('TypescriptLib - purge node_modules and dist', runTestCase(() => {
+		const libUnit = createTestUnit_TypescriptLib();
+		return {
+			input: {
+				fixtures: ['./fixtures/workspace-purge-node-lib.txt'],
+				units: libUnit,
+			},
+			result: async () => {
+				expect(existsSync(resolve(libUnit.config.fullPath, 'node_modules'))).to.be.false;
+				expect(existsSync(resolve(libUnit.config.fullPath, libUnit.config.output))).to.be.false;
+			}
+		};
+	}));
+
+	it('Project Unit - purge node_modules and and lock files', runTestCase(() => {
+		const projectUnit = createTestUnit_NodeProject();
+		return {
+			input: {
+				fixtures: ['./fixtures/workspace-purge-root-project.txt'],
+				units: projectUnit,
+			},
+			result: async () => {
+				expect(existsSync(resolve(projectUnit.config.fullPath, 'node_modules'))).to.be.false;
+				expect(existsSync(resolve(projectUnit.config.fullPath, 'pnpm-lock.yaml'))).to.be.false;
+				expect(existsSync(resolve(projectUnit.config.fullPath, 'pnpm-workspace.yaml'))).to.be.false;
+				expect(existsSync(resolve(projectUnit.config.fullPath, 'package-lock.json'))).to.be.false;
+			}
+		};
 	}));
 });

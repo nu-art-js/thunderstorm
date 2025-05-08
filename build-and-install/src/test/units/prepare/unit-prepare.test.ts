@@ -2,7 +2,7 @@
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {ProjectUnit, Unit_NodeLib} from '../../_common';
+import {ProjectUnit, Unit_TypescriptLib} from '../../_common';
 import {existsSync, mkdirSync, readFileSync, rmSync, writeFileSync} from 'fs';
 import {resolve} from 'path';
 import {expect} from 'chai';
@@ -94,7 +94,7 @@ const runTestCase = (testCase: TestCase_UnitPrepare, processor?: typeof defaultT
 
 describe('ProjectUnit - Prepare', () => {
 	it('Compiles with valid tsconfig and outputs JS to dist', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-1--lib-1',
 			label: 'Test case 1 - lib-1',
 			relativePath: `./${lib1.name}`,
@@ -127,7 +127,7 @@ describe('ProjectUnit - Prepare', () => {
 	});
 
 	it('Should fallback to project-level tsconfig.json when BAI default is missing', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-2--lib-1',
 			label: 'Test case 2 - lib-1 project fallback',
 			relativePath: `./${lib1.name}`,
@@ -158,7 +158,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Should fail when neither bai-default nor project-level tsconfig exists', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-3--lib-1',
 			label: 'Test case 3 - fail on missing defaults',
 			relativePath: `./${lib1.name}`,
@@ -188,7 +188,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Should override existing tsconfig.json and .eslintrc.json unless customESLintConfig = true', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-4--lib-1',
 			label: 'Test case 4 - override existing config files unless customESLintConfig=true',
 			relativePath: `./${lib1.name}`,
@@ -220,7 +220,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Should skip .eslintrc.json copy when customESLintConfig = true', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-5--lib-1',
 			label: 'Test case 5 - custom ESLint config skips default copy',
 			relativePath: `./${lib1.name}`,
@@ -252,7 +252,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Fails when customTSConfig=true and tsconfig.json is missing', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-6--lib-1',
 			label: 'Test case 6 - should fail if customTSConfig=true and tsconfig.json is missing',
 			relativePath: `./${lib1.name}`,
@@ -278,7 +278,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Should copy tsconfig.json into each source subfolder (main/test)', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-7--lib-1',
 			label: 'Test case 7 - tsconfig copied for each source folder',
 			relativePath: `./${lib1.name}`,
@@ -312,7 +312,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Fails when customESLintConfig=true but .eslintrc.json is missing', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-8--lib-1',
 			label: 'Test case 8 - fails if customESLintConfig=true and .eslintrc.json missing',
 			relativePath: `./${lib1.name}`,
@@ -342,7 +342,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Fails if either ESLint or TSConfig is missing when both are custom', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-9--lib-1',
 			label: 'Test case 9 - custom ESLint & TSConfig must exist',
 			relativePath: `./${lib1.name}`,
@@ -370,7 +370,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Should copy tsconfig only into test folder if main is missing', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-10', label: 'TSConfig copied only for test folder',
 			relativePath: `./${lib1.name}`, fullPath: lib1.path, output: 'dist', dependencies: {},
 			customESLintConfig: false, customTSConfig: false
@@ -398,7 +398,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Should use pre-existing tsconfig when customTSConfig = true', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-11', label: 'Custom TSConfig respected',
 			relativePath: `./${lib1.name}`, fullPath: lib1.path, output: 'dist', dependencies: {},
 			customESLintConfig: false, customTSConfig: true
@@ -420,7 +420,7 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Should use pre-existing .eslintrc.json when customESLintConfig = true', () => {
-		const unit = new Unit_NodeLib({
+		const unit = new Unit_TypescriptLib({
 			key: 'test-case-12', label: 'Custom ESLint respected',
 			relativePath: `./${lib1.name}`, fullPath: lib1.path, output: 'dist', dependencies: {},
 			customESLintConfig: true,
@@ -442,12 +442,12 @@ describe('ProjectUnit - Prepare', () => {
 		};
 	});
 	it('Should handle multiple units with mixed custom/default configs', () => {
-		const unit1 = new Unit_NodeLib({
+		const unit1 = new Unit_TypescriptLib({
 			key: 'test-case-13-lib1', label: 'Lib1',
 			relativePath: `./${lib1.name}`, fullPath: lib1.path, output: 'dist', dependencies: {},
 			customESLintConfig: false, customTSConfig: false
 		});
-		const unit2 = new Unit_NodeLib({
+		const unit2 = new Unit_TypescriptLib({
 			key: 'test-case-13-lib2', label: 'Lib2',
 			relativePath: './lib-2', fullPath: resolve(pathToPackages, 'lib-2'), output: 'dist', dependencies: {},
 			customESLintConfig: true, customTSConfig: true

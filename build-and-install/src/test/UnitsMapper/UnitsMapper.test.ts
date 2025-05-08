@@ -4,7 +4,7 @@ import {
 	Unit_FirebaseFunctionsApp,
 	Unit_FirebaseFunctionsApp_Config,
 	Unit_FirebaseHostingApp,
-	Unit_NodeLib,
+	Unit_TypescriptLib,
 	Unit_NodeProject,
 	UnitMapper_Base,
 	UnitMapper_FirebaseFunction,
@@ -97,7 +97,7 @@ describe('UnitsMapper', () => {
 				customESLintConfig: false,
 				customTSConfig: false,
 			}),
-			new Unit_NodeLib({
+			new Unit_TypescriptLib({
 				key: 'test-case-2--lib-1',
 				label: 'Test case 2 - lib-1 ts',
 				relativePath: './lib-1',
@@ -126,7 +126,7 @@ describe('UnitsMapper', () => {
 				customESLintConfig: false,
 				customTSConfig: false,
 			}),
-			new Unit_NodeLib({
+			new Unit_TypescriptLib({
 				key: 'test-case-3--lib-1',
 				label: 'Test case 3 - lib-1 ts',
 				relativePath: './lib-1',
@@ -136,7 +136,7 @@ describe('UnitsMapper', () => {
 				customESLintConfig: false,
 				customTSConfig: false,
 			}),
-			new Unit_NodeLib({
+			new Unit_TypescriptLib({
 				key: 'test-case-3--lib-2',
 				label: 'Test case 3 - lib-2 ts',
 				relativePath: './lib-2',
@@ -165,7 +165,7 @@ describe('UnitsMapper', () => {
 				customESLintConfig: false,
 				customTSConfig: false,
 			}),
-			new Unit_NodeLib({
+			new Unit_TypescriptLib({
 				key: 'test-case-4--lib-1',
 				label: 'Test case 4 - lib-1 ts',
 				relativePath: './lib-1',
@@ -175,7 +175,7 @@ describe('UnitsMapper', () => {
 				customESLintConfig: false,
 				customTSConfig: false,
 			}),
-			new Unit_NodeLib({
+			new Unit_TypescriptLib({
 				key: 'test-case-4--lib-2',
 				label: 'Test case 4 - lib-2 ts',
 				relativePath: './lib-2',
@@ -227,7 +227,7 @@ describe('UnitsMapper', () => {
 				customESLintConfig: false,
 				customTSConfig: false,
 			}),
-			new Unit_NodeLib({
+			new Unit_TypescriptLib({
 				key: 'test-case-5--lib-1',
 				label: 'Test case 5 - lib-1 ts',
 				relativePath: './lib-1',
@@ -237,7 +237,7 @@ describe('UnitsMapper', () => {
 				customESLintConfig: false,
 				customTSConfig: false,
 			}),
-			new Unit_NodeLib({
+			new Unit_TypescriptLib({
 				key: 'test-case-5--lib-2',
 				label: 'Test case 5 - lib-2 ts',
 				relativePath: './lib-2',
@@ -284,7 +284,7 @@ describe('UnitsMapper', () => {
 				customESLintConfig: false,
 				customTSConfig: false,
 			}),
-			new Unit_NodeLib({
+			new Unit_TypescriptLib({
 				key: 'test-case-6--lib-1',
 				label: 'Test case 6 - lib-1 ts',
 				relativePath: './lib-1',
@@ -294,7 +294,7 @@ describe('UnitsMapper', () => {
 				customESLintConfig: false,
 				customTSConfig: false,
 			}),
-			new Unit_NodeLib({
+			new Unit_TypescriptLib({
 				key: 'test-case-6--lib-2',
 				label: 'Test case 6 - lib-2 ts',
 				relativePath: './lib-2',
