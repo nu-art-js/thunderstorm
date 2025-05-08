@@ -1,16 +1,28 @@
-import {expect} from 'chai';
 import {UnitDependentNode, UnitsDependencyMapper} from '../_common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 
 export type Input = { units: UnitDependentNode[], target: string[], exclude?: string[] };
 export type Result = string[];
 
 export type TestSuite_UnitsDependencyFilter = TestSuite<Input, Result>;
+export type TestCase_UnitsDependencyFilter = TestSuite_UnitsDependencyFilter['testcases'][number];
 
-const TestCase_UnitsDependencyFilter: TestSuite_UnitsDependencyFilter['testcases'] = [
-	{
-		description: 'filter for diamond graph (target = reports-service)',
+const test = async (input: Input): Promise<Result> => {
+	const filter = new UnitsDependencyMapper(input.units);
+	const pruned = filter.filterForTargets(input.target, input.exclude);
+	return pruned.map(unit => unit.key).sort();
+};
+
+const runTestCase = (testCase: TestCase_UnitsDependencyFilter, processor?: typeof defaultTestProcessor) => () => {
+	if ('result' in testCase)
+		testCase.result = testCase.result.sort();
+
+	return runSingleTestCase(test, testCase, processor);
+};
+
+describe('UnitsDependencyFilter', () => {
+	it('filter for diamond graph (target = reports-service)', runTestCase({
 		input: {
 			units: [
 				{key: 'shared-core', dependsOn: []},
@@ -21,9 +33,9 @@ const TestCase_UnitsDependencyFilter: TestSuite_UnitsDependencyFilter['testcases
 			target: ['reports-service']
 		},
 		result: ['shared-core', 'user-lib', 'analytics-lib', 'reports-service']
-	},
-	{
-		description: 'filter out one app from multi-app case',
+	}));
+
+	it('filter out one app from multi-app case', runTestCase({
 		input: {
 			units: [
 				{key: 'shared-lib', dependsOn: []},
@@ -33,9 +45,9 @@ const TestCase_UnitsDependencyFilter: TestSuite_UnitsDependencyFilter['testcases
 			target: ['dashboard-app']
 		},
 		result: ['shared-lib', 'dashboard-app']
-	},
-	{
-		description: 'filter multi-app tree (admin-app + public-app)',
+	}));
+
+	it('filter multi-app tree (admin-app + public-app)', runTestCase({
 		input: {
 			units: [
 				{key: 'lib-utils', dependsOn: []},
@@ -56,9 +68,9 @@ const TestCase_UnitsDependencyFilter: TestSuite_UnitsDependencyFilter['testcases
 			'lib-api',
 			'admin-app', 'public-app'
 		]
-	},
-	{
-		description: 'filter with exclusion (admin-app only, excluding lib-logging)',
+	}));
+
+	it('filter with exclusion (admin-app only, excluding lib-logging)', runTestCase({
 		input: {
 			units: [
 				{key: 'lib-utils', dependsOn: []},
@@ -80,54 +92,29 @@ const TestCase_UnitsDependencyFilter: TestSuite_UnitsDependencyFilter['testcases
 			'lib-api',
 			'admin-app'
 		]
-	},
-	{
-		description: 'deep tree with shared mid-tier libs (target = frontend-app)',
-		input: {
-			units: [
-				{key: 'core-utils', dependsOn: []},
-				{key: 'env-config', dependsOn: ['core-utils']},
-				{key: 'api-client', dependsOn: ['core-utils']},
-				{key: 'auth-lib', dependsOn: ['env-config']},
-				{key: 'data-processor', dependsOn: ['auth-lib', 'api-client']},
-				{key: 'ui-components', dependsOn: ['core-utils']},
-				{key: 'frontend-app', dependsOn: ['ui-components', 'api-client']},
-				{key: 'backend-app', dependsOn: ['data-processor']},
-			],
-			target: ['frontend-app']
-		},
-		result: [
-			'api-client',
-			'core-utils',
-			'frontend-app',
-			'ui-components'
-		]
-	}
-];
+	}));
 
-const test = async (input: Input): Promise<Result> => {
-	const filter = new UnitsDependencyMapper(input.units);
-	const pruned = filter.filterForTargets(input.target, input.exclude);
-	return pruned.map(unit => unit.key).sort();
-};
-
-export const Tests_UnitsDependencyFilter: TestSuite_UnitsDependencyFilter = {
-	label: 'UnitsDependencyFilter',
-	testcases: TestCase_UnitsDependencyFilter,
-	processor: async (testCase) => {
-		const input = testCase.input;
-
-		if ('error' in testCase) {
-			await expect(test(input)).to.be.rejectedWith(testCase.error.expected, testCase.error.message);
-			return;
+	it('deep tree with shared mid-tier libs (target = frontend-app)', runTestCase({
+			input: {
+				units: [
+					{key: 'core-utils', dependsOn: []},
+					{key: 'env-config', dependsOn: ['core-utils']},
+					{key: 'api-client', dependsOn: ['core-utils']},
+					{key: 'auth-lib', dependsOn: ['env-config']},
+					{key: 'data-processor', dependsOn: ['auth-lib', 'api-client']},
+					{key: 'ui-components', dependsOn: ['core-utils']},
+					{key: 'frontend-app', dependsOn: ['ui-components', 'api-client']},
+					{key: 'backend-app', dependsOn: ['data-processor']},
+				],
+				target: ['frontend-app']
+			},
+			result: [
+				'api-client',
+				'core-utils',
+				'frontend-app',
+				'ui-components'
+			]
 		}
-
-		const output = await test(input);
-		expect(output).to.deep.equal(testCase.result.sort());
-	}
-};
-
-describe('UnitsDependencyFilter', () => {
-	testSuiteTester(Tests_UnitsDependencyFilter);
+	));
 });
 

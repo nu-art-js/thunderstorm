@@ -337,10 +337,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await this.resolveProxyFile();
 
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.config.fullPath)
-			.append('ts-node src/main/proxy.ts');
+			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando);
+		await this.executeAsyncCommando(commando, 'ts-node src/main/proxy.ts');
 		this.logWarning('PROXY TERMINATED');
 	}
 
@@ -355,12 +354,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
 					return LogLevel.Warning;
 			})
-			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'))
-			.append(`firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend
-				? `--inspect-functions ${this.config.debugPort}`
-				: ''}`);
+			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'));
 
-		await this.executeAsyncCommando(commando);
+		await this.executeAsyncCommando(commando, `firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend
+			? `--inspect-functions ${this.config.debugPort}` : ''}`);
 		this.logWarning('EMULATORS TERMINATED');
 	}
 
@@ -372,10 +369,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			.ls()
 			.cat('package.json')
 			.cat('index.js')
-			.cd(this.config.fullPath)
-			.append(`firebase --debug deploy --only functions --force`);
+			.cd(this.config.fullPath);
 
-		return this.executeAsyncCommando(commando);
+		return this.executeAsyncCommando(commando, `firebase --debug deploy --only functions --force`);
 	}
 }
 

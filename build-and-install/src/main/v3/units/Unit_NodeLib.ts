@@ -107,21 +107,19 @@ export class Unit_NodeLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptL
 
 		const commando = this.allocateCommando(Commando_NVM, Commando_Basic)
 			.cd(this.config.fullPath)
-			.append(`tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.config.output}"`)
 			.setLogLevelFilter((log, std) => {
 				return LogLevel.Error;
 			})
 			.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'));
 
-		this.logDebug(`Executing: ${commando.getCommand()}`);
-		await this.executeAsyncCommando(commando, (stdout, stderr, exitCode) => {
-			if (stderr.length)
-				this.logError(stderr);
+		await this.executeAsyncCommando(commando, `tsc -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.config.output}"`,
+			(stdout, stderr, exitCode) => {
+				if (stderr.length)
+					this.logError(stderr);
 
-			if (exitCode > 0)
-				throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
-		});
-		this.logDebug(`Executed: ${commando.getCommand()}`);
+				if (exitCode > 0)
+					throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
+			});
 	}
 
 	protected async copyAssetsToOutput() {

@@ -9,6 +9,7 @@ import {LogClient_Terminal} from '../core/logger/LogClient_Terminal';
 import {DebugFlag} from '../core/debug-flags';
 import {LogLevel} from '../core/logger/types';
 import {StaticLogger} from '../core/logger/Logger';
+import {BadImplementationException} from '../core/exceptions/exceptions';
 
 chai.use(chaiAsPromised);
 BeLogged.addClient(LogClient_Terminal);
@@ -23,7 +24,7 @@ export class ModuleManagerTester
 
 
 export function testSuite_RunTest<Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>, testCase: TestModel<Input, ExpectedResult>) {
-	it(resolveContent(testCase.description, testCase), () => testSuit.processor(testCase)).timeout(testSuit.timeout || 5000);
+	it(resolveContent(resolveContent(testCase).description!, testCase), () => testSuit.processor(testCase)).timeout(testSuit.timeout || 5000);
 }
 
 export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>, ...testcases: TestSuite<Input, ExpectedResult>['testcases']) => {
@@ -46,6 +47,30 @@ export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input
 		});
 
 };
+
+export type TestCase_Error = { expected: string | RegExp, message?: string, constructor?: Error | Function };
+export type DefaultTestProcessor<Result = any, ExpectedResult = Result> = (promisedResult: Promise<Result>, expectedResult?: ((() => Promise<any>) | ExpectedResult), error?: TestCase_Error) => Promise<any>;
+export const defaultTestProcessor: DefaultTestProcessor = async (promisedResult, expectedResult, error) => {
+	if (!expectedResult && !error)
+		throw new BadImplementationException('MUST provide expectedResult or error');
+
+	if (error)
+		return expect(promisedResult).to.be.rejectedWith(error.expected);
+
+	if (typeof expectedResult === 'function')
+		return await (expectedResult as () => Promise<any>)();
+
+	expect(await promisedResult).to.deep.equal(expectedResult);
+};
+
+
+export const runSingleTestCase = async <Input, Result, ExpectedResult = Result>(test: (input: Input) => Promise<Result>, _testCase: TestModel<Input, ExpectedResult>, processor = defaultTestProcessor) => {
+	const testCase = resolveContent(_testCase);
+	const expectedResult = 'result' in testCase ? testCase.result : undefined;
+	const error = 'error' in testCase ? testCase.error : undefined;
+	await new MemStorage().init(async () => processor(test(testCase.input), expectedResult, error));
+};
+
 
 export const expectFailAsync = async (action: () => Promise<void>) => {
 	try {

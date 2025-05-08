@@ -1,8 +1,8 @@
-import {SimpleTestCommando} from '../../_common';
+import {SimpleTestCommando} from '../_common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 
-export type Input = (commando: SimpleTestCommando) => void;
-export type Result = {
+export type TestInput_CommandoBuilder = (commando: SimpleTestCommando) => void;
+export type TestResult_CommandoOutput = {
 	out?: string,
 	err?: string,
 	exitCode?: number,
@@ -19,7 +19,9 @@ export type Result_Raw = {
 	err: string[],
 };
 
-export const TestCases_CommandoExecution: TestSuite<Input, Result>['testcases'] = [
+export type TestSuite_CommandoExecution = TestSuite<TestInput_CommandoBuilder, TestResult_CommandoOutput>;
+export type TestCase_CommandoExecution = TestSuite_CommandoExecution['testcases'][number];
+export const TestCases_CommandoExecution: TestCase_CommandoExecution[] = [
 	{
 		description: 'echo command output',
 		input: (commando) => {

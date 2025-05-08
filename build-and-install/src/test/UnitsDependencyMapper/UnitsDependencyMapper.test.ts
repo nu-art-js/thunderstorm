@@ -1,51 +1,60 @@
-import {expect} from 'chai';
 import {UnitDependentNode, UnitsDependencyMapper} from '../_common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 
-export type Input = UnitDependentNode[];
-export type Result = string[][];
+type Input = UnitDependentNode[];
+type Result = string[][];
 
-export type TestSuite_UnitsDependencyMapper = TestSuite<Input, Result>;
+type TestSuite_UnitsDependencyMapper = TestSuite<Input, Result>;
+type TestCase_UnitsDependencyMapper = TestSuite_UnitsDependencyMapper['testcases'][number];
 
-const TestCase_UnitsDependencyMapper: TestSuite_UnitsDependencyMapper['testcases'] = [
-	{
-		description: 'linear chain',
+
+const test = async (input: Input): Promise<Result> => {
+	const unitsDependencyMapper = new UnitsDependencyMapper(input);
+	const buildDependencyTree = unitsDependencyMapper.buildDependencyTree();
+	unitsDependencyMapper.printGraph();
+	return buildDependencyTree;
+};
+
+const runTestCase = (testCase: TestCase_UnitsDependencyMapper, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
+
+describe('UnitsDependencyMapper', () => {
+	it('linear chain', runTestCase({
 		input: [
 			{key: 'source', dependsOn: []},
 			{key: 'processor', dependsOn: ['source']},
 			{key: 'consumer', dependsOn: ['processor']},
 		],
 		result: [['source'], ['processor'], ['consumer']],
-	},
-	{
-		description: 'fan-in',
+	}));
+
+	it('fan-in', runTestCase({
 		input: [
 			{key: 'aggregator', dependsOn: ['reader-a', 'reader-b']},
 			{key: 'reader-a', dependsOn: []},
 			{key: 'reader-b', dependsOn: []},
 		],
 		result: [['reader-a', 'reader-b'], ['aggregator']],
-	},
-	{
-		description: 'fan-out',
+	}));
+
+	it('fan-out', runTestCase({
 		input: [
 			{key: 'config', dependsOn: []},
 			{key: 'service-a', dependsOn: ['config']},
 			{key: 'service-b', dependsOn: ['config']},
 		],
 		result: [['config'], ['service-a', 'service-b']],
-	},
-	{
-		description: 'cyclic should throw',
+	}));
+
+	it('cyclic should throw', runTestCase({
 		input: [
 			{key: 'loop-a', dependsOn: ['loop-b']},
 			{key: 'loop-b', dependsOn: ['loop-a']},
 		],
 		error: {expected: /Cyclic/},
-	},
-	{
-		description: 'fanout with shared child',
+	}));
+
+	it('fanout with shared child', runTestCase({
 		input: [
 			{key: 'logger', dependsOn: ['utils']},
 			{key: 'utils', dependsOn: []},
@@ -53,9 +62,9 @@ const TestCase_UnitsDependencyMapper: TestSuite_UnitsDependencyMapper['testcases
 			{key: 'parser', dependsOn: ['utils']},
 		],
 		result: [['utils'], ['logger', 'parser'], ['controller']],
-	},
-	{
-		description: 'completely flat graph',
+	}));
+
+	it('completely flat graph', runTestCase({
 		input: [
 			{key: 'module-a', dependsOn: []},
 			{key: 'module-b', dependsOn: []},
@@ -63,9 +72,9 @@ const TestCase_UnitsDependencyMapper: TestSuite_UnitsDependencyMapper['testcases
 			{key: 'module-d', dependsOn: []},
 		],
 		result: [['module-a', 'module-b', 'module-c', 'module-d']],
-	},
-	{
-		description: 'deep linear chain',
+	}));
+
+	it('deep linear chain', runTestCase({
 		input: [
 			{key: 'step-1', dependsOn: []},
 			{key: 'step-2', dependsOn: ['step-1']},
@@ -74,9 +83,9 @@ const TestCase_UnitsDependencyMapper: TestSuite_UnitsDependencyMapper['testcases
 			{key: 'step-5', dependsOn: ['step-4']},
 		],
 		result: [['step-1'], ['step-2'], ['step-3'], ['step-4'], ['step-5']],
-	},
-	{
-		description: 'disconnected subgraphs',
+	}));
+
+	it('disconnected subgraphs', runTestCase({
 		input: [
 			{key: 'analytics-core', dependsOn: []},
 			{key: 'reporting-engine', dependsOn: ['analytics-core']},
@@ -84,9 +93,9 @@ const TestCase_UnitsDependencyMapper: TestSuite_UnitsDependencyMapper['testcases
 			{key: 'preview-module', dependsOn: ['image-loader']},
 		],
 		result: [['analytics-core', 'image-loader'], ['preview-module', 'reporting-engine']],
-	},
-	{
-		description: 'multiple roots and endpoints',
+	}));
+
+	it('multiple roots and endpoints', runTestCase({
 		input: [
 			{key: 'config-a', dependsOn: []},
 			{key: 'service-a', dependsOn: ['config-a']},
@@ -96,9 +105,9 @@ const TestCase_UnitsDependencyMapper: TestSuite_UnitsDependencyMapper['testcases
 			{key: 'frontend', dependsOn: ['gateway']},
 		],
 		result: [['config-a', 'config-b'], ['service-a', 'service-b'], ['gateway'], ['frontend']],
-	},
-	{
-		description: 'diamond dependency graph',
+	}));
+
+	it('diamond dependency graph', runTestCase({
 		input: [
 			{key: 'foundation', dependsOn: []},
 			{key: 'lib-a', dependsOn: ['foundation']},
@@ -106,9 +115,9 @@ const TestCase_UnitsDependencyMapper: TestSuite_UnitsDependencyMapper['testcases
 			{key: 'api-layer', dependsOn: ['lib-a', 'lib-b']},
 		],
 		result: [['foundation'], ['lib-a', 'lib-b'], ['api-layer']],
-	},
-	{
-		description: 'Complex case with 3 apps and 30+ libs with various dependency shapes',
+	}));
+
+	it('Complex case with 3 apps and 30+ libs with various dependency shapes', runTestCase({
 		input: [
 			{key: 'lib-utils', dependsOn: []},
 			{key: 'lib-auth', dependsOn: ['lib-utils']},
@@ -126,32 +135,5 @@ const TestCase_UnitsDependencyMapper: TestSuite_UnitsDependencyMapper['testcases
 			['lib-api'],
 			['admin-app', 'public-app', 'user-app']
 		]
-	}
-];
-
-const test = async (input: Input): Promise<Result> => {
-	const unitsDependencyMapper = new UnitsDependencyMapper(input);
-	const buildDependencyTree = unitsDependencyMapper.buildDependencyTree();
-	unitsDependencyMapper.printGraph();
-	return buildDependencyTree;
-};
-
-export const Tests_UnitsDependencyMapper: TestSuite_UnitsDependencyMapper = {
-	label: 'UnitsDependencyMapper',
-	testcases: TestCase_UnitsDependencyMapper,
-	processor: async (testCase) => {
-		const input = testCase.input;
-
-		if ('error' in testCase) {
-			await expect(test(input)).to.be.rejectedWith(testCase.error.expected, testCase.error.message);
-			return;
-		}
-
-		const output = await test(input);
-		expect(output).to.deep.equal(testCase.result);
-	}
-};
-
-describe('UnitsDependencyMapper', () => {
-	testSuiteTester(Tests_UnitsDependencyMapper);
+	}));
 });
