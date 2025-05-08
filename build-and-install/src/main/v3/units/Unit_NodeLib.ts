@@ -4,7 +4,7 @@ import {promises as _fs} from 'fs';
 import {BadImplementationException, ImplementationMissingException, LogLevel} from '@nu-art/ts-common';
 import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../v2/phase-runner/RunnerParams';
 import {UnitPhaseImplementor} from '../../types/types';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Purge} from '../../phase';
+import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree} from '../../phase';
 import {CONST_PackageJSON} from '../../core/consts';
 import {RuntimeParams} from '../../core/params/params';
 import {dispatcher_WatchReady, OnWatchReady} from '../../v2/unit/runner-dispatchers';
@@ -37,7 +37,7 @@ export class Unit_NodeLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptL
 	extends Unit_NodePackage<C>
 	implements UnitPhaseImplementor<[
 		Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports,
-		Phase_Purge, Phase_Lint,
+		Phase_Lint,
 	]>, OnWatchReady {
 
 	constructor(config: Unit_NodeLib<C>['config']) {
@@ -216,6 +216,7 @@ export class Unit_NodeLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptL
 
 	async purge() {
 		await _fs.rm(this.config.output, {recursive: true, force: true});
+		return super.purge();
 	}
 
 	async printDependencyTree() {
