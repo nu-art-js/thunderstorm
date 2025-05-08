@@ -62,13 +62,6 @@ export const BaiParam_Setup: BaseCliParam<'setup', boolean> = {
 	description: 'Setup local project for developer'
 };
 
-export const BaiParam_Install: BaseCliParam<'install', boolean> = {
-	keys: ['--install', '-i'],
-	keyName: 'install',
-	type: 'boolean',
-	group: 'Build',
-	description: 'Will run \'npm install\' in all project packages \nWill perform --link'
-};
 
 export const BaiParam_InstallPackages: BaseCliParam<'installPackages', boolean> = {
 	keys: ['--install-packages', '-ip'],
@@ -84,6 +77,15 @@ export const BaiParam_InstallGlobals: BaseCliParam<'installGlobals', boolean> = 
 	type: 'boolean',
 	group: 'Build',
 	description: 'Will install all global packages'
+};
+
+export const BaiParam_Install: BaseCliParam<'install', boolean> = {
+	keys: ['--install', '-i'],
+	keyName: 'install',
+	type: 'boolean',
+	group: 'Build',
+	dependencies: [{param: BaiParam_InstallPackages, value: true}, {param: BaiParam_InstallGlobals, value: true}],
+	description: 'Will run \'pnpm install\' on entire project and will install global packages'
 };
 
 export const BaiParam_Clean: BaseCliParam<'clean', boolean> = {

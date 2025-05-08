@@ -96,12 +96,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	private async clearOutputDirImpl() {
-		//Return if output dir doesn't exist
-		if (!fs.existsSync(this.config.output))
-			return;
-
-		await _fs.rm(this.config.output, {recursive: true, force: true});
-		await _fs.mkdir(this.config.output, {recursive: true});
+		await FileSystemUtils.folder.delete(this.config.output, false);
+		await FileSystemUtils.folder.create(this.config.output);
 	}
 
 	protected async compileImpl() {

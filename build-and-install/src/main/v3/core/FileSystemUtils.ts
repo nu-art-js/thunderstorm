@@ -14,17 +14,16 @@ async function assertFolder(path: string) {
 		throw new BadImplementationException(`Expected folder but found file or non-directory: ${path}`);
 }
 
-
-async function assertExists(path: string, mustExist: boolean, type: 'File' | 'Folder') {
-	async function exists(path: string): Promise<boolean> {
-		try {
-			await _fs.access(path);
-			return true;
-		} catch {
-			return false;
-		}
+async function exists(path: string): Promise<boolean> {
+	try {
+		await _fs.access(path);
+		return true;
+	} catch {
+		return false;
 	}
+}
 
+async function assertExists(path: string, mustExist: boolean, type: 'File' | 'Folder' | 'Symlink') {
 	const doesExist = await exists(path);
 	if (!doesExist) {
 		if (mustExist)
@@ -59,6 +58,30 @@ export const FileSystemUtils = {
 			await Promise.all(entries.map(entry =>
 				_fs.rm(resolve(pathToFolder, entry), {recursive: true, force: true})
 			));
+		},
+
+		create: async (pathToFolder: string) => {
+			if (await exists(pathToFolder))
+				return assertFolder(pathToFolder);
+			return _fs.mkdir(pathToFolder, {recursive: true});
+		}
+	},
+	symlink: {
+		create: async (targetPath: string, linkPath: string) => {
+			return _fs.symlink(targetPath, linkPath);
+		},
+
+		delete: async (pathToLink: string, mustExist = false) => {
+			if (!await assertExists(pathToLink, mustExist, 'Symlink'))
+				return;
+			const stat = await _fs.lstat(pathToLink);
+			if (!stat.isSymbolicLink())
+				throw new BadImplementationException(`Expected symlink but found something else: ${pathToLink}`);
+			return _fs.unlink(pathToLink);
+		},
+
+		read: async (pathToLink: string) => {
+			return _fs.readlink(pathToLink);
 		}
 	}
 };
