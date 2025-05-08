@@ -35,6 +35,7 @@ import {DefaultApiErrorMessageComposer} from './server-errors';
 import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase/backend';
 import {ServerApi} from './server-api';
 import compression from 'compression';
+import cors from 'cors'
 
 
 const ALL_Methods: string[] = [
@@ -62,6 +63,8 @@ type ConfigType = {
 	bodyParserLimit: number | string
 };
 
+export type CustomOrigin = (origin: string | undefined , callback: (err: Error | null, origin?: string) => void) => (boolean | Promise<boolean>);
+
 export class HttpServer_Class
 	extends Module<ConfigType>
 	implements TBR_ExpressFunctionInterface {
@@ -71,6 +74,7 @@ export class HttpServer_Class
 	readonly express!: Express;
 	private server!: Server;
 	private socketId: number = 0;
+	private customCorsOriginValidator: CustomOrigin | undefined;
 
 	constructor() {
 		super('http-server');
@@ -104,6 +108,10 @@ export class HttpServer_Class
 		return this.config.baseUrl;
 	}
 
+    setCustomCorsOriginValidator(validator: CustomOrigin) {
+        this.customCorsOriginValidator = validator;
+    }
+
 	protected async init() {
 		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
 		const baseUrl = this.config.baseUrl;
@@ -129,13 +137,14 @@ export class HttpServer_Class
 			this.express.use(middleware);
 		}
 
-		const cors = this.config.cors || {};
-		cors.headers = DefaultHeaders.reduce((toRet, item: string) => {
+
+		const _cors = this.config.cors || {};
+		_cors.headers = DefaultHeaders.reduce((toRet, item: string) => {
 			if (!toRet.includes(item))
 				addItemToArray(toRet, item);
 
 			return toRet;
-		}, cors.headers || []);
+		}, _cors.headers || []);
 
 		const resolveCorsOrigin = (origin?: string | string[]): string | undefined => {
 			let _origin: string;
@@ -147,28 +156,35 @@ export class HttpServer_Class
 			else
 				_origin = origin[0];
 
-			if (!cors.origins)
+			if (!_cors.origins)
 				return _origin;
 
-			if (cors.origins.indexOf(_origin.toLowerCase()) > -1)
-				return _origin;
+			for (const allowedOrigin of _cors.origins) {
+				if (allowedOrigin === _origin.toLowerCase() ||
+					(allowedOrigin.includes('*') && new RegExp(`^${allowedOrigin.replace(/\*/g, '.*')}$`).test(_origin.toLowerCase()))) {
+					return _origin;
+				}
+			}
 		};
 
-		this.express.all('*', (req: ExpressRequest, res: ExpressResponse, next: express.NextFunction) => {
-			let origin = req.headers.origin;
-			if (origin) {
-				origin = resolveCorsOrigin(origin);
-				if (!origin)
-					this.logWarning(`CORS issue!!!\n Origin: '${req.headers.origin}' does not exist in config: ${JSON.stringify(cors.origins)}`);
-			}
 
-			res.header('Access-Control-Allow-Origin', origin || 'N/A');
-			res.header('Access-Control-Allow-Methods', (cors.methods || ALL_Methods)?.join(','));
-			res.header('Access-Control-Allow-Headers', cors.headers?.join(','));
-			res.header('Access-Control-Expose-Headers', cors.responseHeaders?.join(','));
+		this.express.use(cors({
+			origin: async (origin: string | undefined , callback: (err: Error | null, origin?: string) => void) => {
+                const resolvedOrigin = resolveCorsOrigin(origin);
+                if (!resolvedOrigin)
+                   return callback(new Error(`CORS issue!!!\n Origin: '${origin}' does not exist in config: ${JSON.stringify(_cors.origins)}`), undefined);
 
-			next();
-		});
+                if(!(await this.customCorsOriginValidator?.(origin, callback))){
+                   return callback(new Error(`CORS issue!!!\n Origin: '${origin}' is not valid`), undefined);
+                }
+
+                callback(null, resolvedOrigin);
+			},
+			methods: _cors.methods || ALL_Methods,
+			allowedHeaders: _cors.headers,
+			exposedHeaders: _cors.responseHeaders,
+		}))
+
 		this.express.options('*', (req: ExpressRequest, res: ExpressResponse) => {
 			res.end();
 		});
