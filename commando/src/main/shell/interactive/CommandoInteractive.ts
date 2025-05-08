@@ -105,64 +105,66 @@ export class CommandoInteractive
 		let stdLogProcessor;
 		let onCloseListener;
 
-		const toRet = await new Promise<T>((resolve, reject) => {
-			const uniqueKey = generateHex(16);
-			const regexp = new RegExp(`${uniqueKey}=(\\d+)`);
+		try {
+			return await new Promise<T>((resolve, reject) => {
+				const uniqueKey = generateHex(16);
+				const regexp = new RegExp(`${uniqueKey}=(\\d+)`);
 
-			let _stderr = '';
-			let _stdout = '';
-			stdLogProcessor = (log: string, type: LogTypes) => {
-				if (type === 'err')
-					_stderr += `${log}\n`;
-				else
-					_stdout += `${log}\n`;
+				let _stderr = '';
+				let _stdout = '';
+				stdLogProcessor = (log: string, type: LogTypes) => {
+					if (type === 'err')
+						_stderr += `${log}\n`;
+					else
+						_stdout += `${log}\n`;
 
-				return true;
-			};
-
-			let uidCounter = 0;
-			let exitCode = -1;
-			logProcessor = (log: string, type: LogTypes) => {
-				if (!log.includes(uniqueKey))
 					return true;
+				};
 
-				const match = log.match(regexp);
-				if (!match)
+				let uidCounter = 0;
+				let exitCode = -1;
+				logProcessor = (log: string, type: LogTypes) => {
+					if (!log.includes(uniqueKey))
+						return true;
+
+					const match = log.match(regexp);
+					if (!match)
+						return false;
+
+					uidCounter++;
+					if (type === 'out')
+						exitCode = +(match![1]);
+
+					if (uidCounter !== 2)
+						return false;
+
+					try {
+						resolve(callback?.(_stdout, _stderr, +exitCode)!);
+					} catch (err: any) {
+						reject(err);
+					}
+
 					return false;
+				};
 
-				uidCounter++;
-				if (type === 'out')
-					exitCode = +(match![1]);
+				onCloseListener = (exitCode: number) => {
+					resolve(callback?.(_stdout, _stderr, exitCode)!);
+				};
 
-				if (uidCounter !== 2)
-					return false;
+				this.builder.append(`echo ${uniqueKey}=$? && echo ${uniqueKey}=$? 1>&2`);
+				const command = this.builder.reset();
 
-				try {
-					resolve(callback?.(_stdout, _stderr, +exitCode)!);
-				} catch (err: any) {
-					reject(err);
-				}
+				this.shell.addLogProcessor(logProcessor, 0);
+				this.shell.addLogProcessor(stdLogProcessor);
+				this.shell.addOnCloseListener(onCloseListener);
+				this.shell.execute(command);
+			});
+		} finally {
+			this.shell.removeLogProcessor(logProcessor!);
+			this.shell.removeLogProcessor(stdLogProcessor!);
+			this.shell.removeOnCloseListener(onCloseListener!);
+		}
 
-				return false;
-			};
-
-			onCloseListener = (exitCode: number) => {
-				resolve(callback?.(_stdout, _stderr, exitCode)!);
-			};
-
-			this.builder.append(`echo ${uniqueKey}=$? && echo ${uniqueKey}=$? 1>&2`);
-			const command = this.builder.reset();
-
-			this.shell.addLogProcessor(logProcessor, 0);
-			this.shell.addLogProcessor(stdLogProcessor);
-			this.shell.addOnCloseListener(onCloseListener);
-			this.shell.execute(command);
-		});
-
-		this.shell.removeLogProcessor(logProcessor!);
-		this.shell.removeLogProcessor(stdLogProcessor!);
-		this.shell.removeOnCloseListener(onCloseListener!);
-		return toRet;
 	}
 
 	/**

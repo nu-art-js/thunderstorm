@@ -1,0 +1,12 @@
+// file: ./workspace-purge-node-lib.txt
+//// file: ./node_modules/some-lib/index.js
+console.log('dummy node module');
+
+//// file: ./pnpm-lock.yaml
+lockfileVersion: 5.4
+
+//// file: ./package-lock.json
+{
+  "name": "dummy-lib",
+  "lockfileVersion": 2
+}

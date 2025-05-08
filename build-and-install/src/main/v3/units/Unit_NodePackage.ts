@@ -3,7 +3,7 @@ import {PackageJson} from '../../core/types';
 import {__stringify, BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
-import {Phase_CopyPackageJSON} from '../../phase';
+import {Phase_CopyPackageJSON, Phase_Purge} from '../../phase';
 import {UnitPhaseImplementor} from '../../types/types';
 import {MemKey_ProjectConfig} from '../../v2/phase-runner/RunnerParams';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../../v2/unit/tools/tools';
@@ -25,7 +25,7 @@ export type Unit_Typescript_Config = Config_ProjectUnit & {
 
 export class Unit_NodePackage<C extends Unit_Typescript_Config = Unit_Typescript_Config>
 	extends ProjectUnit<C>
-	implements UnitPhaseImplementor<[Phase_CopyPackageJSON]> {
+	implements UnitPhaseImplementor<[Phase_CopyPackageJSON, Phase_Purge]> {
 
 	readonly packageJson: { [k in PackageJsonTargetKey]: PackageJson } = {} as { [k in PackageJsonTargetKey]: PackageJson };
 
@@ -144,6 +144,9 @@ export class Unit_NodePackage<C extends Unit_Typescript_Config = Unit_Typescript
 		this.setStatus('PackageJSON resolved');
 	}
 
+	async purge() {
+		await _fs.rm(resolve(this.config.fullPath, 'node_modules'), {recursive: true, force: true});
+	}
 
 	/**
 	 * Prepares the workspace for this project unit.
