@@ -48,7 +48,6 @@ export class Cli_PNPM
 
 	isInstalled = () => !!process.env[this._homeEnvVar];
 	installPackages = async (commando: Commando_PNPM) => {
-
 		return await commando.installPackages();
 	};
 
@@ -65,18 +64,20 @@ export class Cli_PNPM
 	 * Each package is listed under the 'packages:' section in the file.
 	 *
 	 * @param listOfLibs An array of library names to include in the workspace.
-	 * @param pathToWorkspaceFile The filesystem path where the workspace file will be written.
+	 * @param pathToWorkspaceFolder The filesystem path where the workspace file will be written.
 	 * @example
 	 * await createWorkspace(['pack1', 'pack2'], './path/to/workspace.yaml');
 	 */
-	createWorkspace = async (listOfLibs: string[], pathToWorkspaceFile: string = convertToFullPath('./pnpm-workspace.yaml')): Promise<void> => {
+	createWorkspace = async (listOfLibs: string[], pathToWorkspaceFolder: string = process.cwd()): Promise<void> => {
 		try {
 			let workspace = 'packages:\n';
 			listOfLibs.forEach(lib => {
 				workspace += `  - '${lib}'\n`;
 			});
-			await fs.writeFile(pathToWorkspaceFile, workspace, 'utf8');
-			this.logDebug(`Workspace file created at ${pathToWorkspaceFile}`);
+
+			const pathToPnpmWorkspace = convertToFullPath('./pnpm-workspace.yaml', pathToWorkspaceFolder);
+			await fs.writeFile(pathToPnpmWorkspace, workspace, 'utf8');
+			this.logDebug(`Workspace file created at ${pathToPnpmWorkspace}`);
 		} catch (error: any) {
 			this.logError('Failed to create workspace file:', error);
 		}

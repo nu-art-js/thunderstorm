@@ -12,9 +12,9 @@ import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
 import {PNPM} from '@nu-art/commando/shell/services/pnpm';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
-import {promises as _fs} from 'fs';
 import {resolve} from 'path';
 import {FileSystemUtils} from '../core/FileSystemUtils';
+import {ProjectUnit} from './ProjectUnit';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
@@ -27,6 +27,8 @@ type PathDeclaration = { fullPath: string, paths: string[], unit: Unit_Typescrip
 export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config>
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch]> {
+
+	private innerUnits: Unit_PackageJson[] = [];
 	private watchDebounce!: () => void;
 
 	private readonly suffixesToWatch: string[] = [
@@ -42,17 +44,25 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		this.addToClassStack(Unit_NodeProject);
 	}
 
-	//######################### Internal Logic #########################
+	assignUnit(units: ProjectUnit[]) {
+		const validUnits = units
+			.filter(unit => unit.isInstanceOf(Unit_PackageJson))
+			.filter(unit => unit.config.fullPath.includes(this.config.fullPath)) as Unit_PackageJson[];
+
+		this.innerUnits.push(...validUnits);
+	}
 
 	private async installGlobals() {
-		if ((!RuntimeParams.install && !RuntimeParams.installGlobals) || !this.config.globalPackages)
+		let packages: string[] = _keys(this.config.globalPackages ?? {} as StringMap);
+		if ((!RuntimeParams.install && !RuntimeParams.installGlobals) || !packages.length)
 			return;
 
-		const packages = _keys(this.config.globalPackages)
+		packages = packages
 			.reduce((acc, pkg) => {
 				acc.push(`${pkg as string}@${this.config.globalPackages![pkg as string]}`);
 				return acc;
 			}, [] as string[]);
+
 		this.logInfo(`Installing Global Packages: ${packages.join(' ')}`);
 		await this.allocateCommando(Commando_NVM)
 			.append(`npm i -g ${packages.join(' ')}`)
@@ -64,11 +74,12 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 			return;
 
 		this.setStatus('Installing packages', 'start');
-		const runner = MemKey_PhaseRunner.get();
-		const units = runner.getUnits().filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
+		const units = this.innerUnits.filter(unit => unit.isInstanceOf(Unit_TypescriptLib)) as Unit_TypescriptLib[];
 		const packages = units.map(unit => unit.config.fullPath);
-		await PNPM.createWorkspace(packages);
-		await PNPM.installPackages(this.allocateCommando(Commando_NVM, Commando_PNPM));
+		await PNPM.createWorkspace(packages, this.config.fullPath);
+		const commando = this.allocateCommando(Commando_NVM, Commando_PNPM);
+		commando.cd(this.config.fullPath);
+		await PNPM.installPackages(commando);
 		this.setStatus('Installed packages', 'end');
 	}
 

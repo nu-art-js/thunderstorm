@@ -1,0 +1,33 @@
+// file: ./workspace-install-root-project.txt
+//// file: ./package.json
+{
+  "name": "workspace-install",
+  "version": "1.0.0",
+  "dependencies": {
+    "is-sorted": "^1.0.5"
+  }
+}
+
+// file: ./workspace-install-linked-package.txt
+//// file: ./package.json
+{
+  "name": "workspace-install",
+  "version": "1.0.0",
+  "dependencies": {
+    "lib-linked": "workspace:*"
+  }
+
+}
+
+//// file: ./packages/lib-linked/package.json
+{
+  "name": "lib-linked",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  }
+}
+
+//// file: ./packages/lib-linked/dist/index.js
+module.exports = { linked: true };

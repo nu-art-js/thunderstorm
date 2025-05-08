@@ -1,5 +1,3 @@
-// file: ./tests/phase-execution/purge-phase.test.ts
-
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {Unit_TypescriptLib, Unit_NodeProject, Unit_PackageJson} from '../../_common';
