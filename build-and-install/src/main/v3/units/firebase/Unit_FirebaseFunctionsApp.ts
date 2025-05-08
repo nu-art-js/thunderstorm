@@ -1,4 +1,4 @@
-import {BaseUnit, Unit_NodeLib, Unit_TypescriptLib_Config} from '../index';
+import {BaseUnit, Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
 import {UnitPhaseImplementor} from '../../../types/types';
 import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../../phase';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
@@ -30,7 +30,7 @@ const CONST_VersionApp = 'version-app.json';
 
 
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
-	extends Unit_NodeLib<C>
+	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]>, OnUnitWatchCompiled {
 
 	static staggerCount: number = 0;
@@ -276,7 +276,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		//Gather units that are dependencies of this unit
 		const dependencies = _keys(this.packageJson.root.dependencies ?? {}) as string[];
 		const runner = MemKey_PhaseRunner.get();
-		const tsLibUnits = runner.getUnits().filter(unit => unit instanceof Unit_NodeLib) as Unit_NodeLib[];
+		const tsLibUnits = runner.getUnits().filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
 		const dependencyUnits = tsLibUnits.filter(unit => {
 			const unitPJName = unit.packageJson.template.name;
 			return dependencies.includes(unitPJName);

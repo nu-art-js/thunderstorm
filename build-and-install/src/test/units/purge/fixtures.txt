@@ -5,8 +5,37 @@ console.log('dummy node module');
 //// file: ./pnpm-lock.yaml
 lockfileVersion: 5.4
 
-//// file: ./package-lock.json
+//// file: ./package.json
 {
-  "name": "dummy-lib",
-  "lockfileVersion": 2
+  "name": "lib-purge",
+  "version": "1.0.0"
 }
+
+//// file: ./dist/index.js
+console.log('compiled output');
+
+// file: ./bai-defaults/.eslintrc.json
+{ "root": true }
+
+// file: ./bai-defaults/tsconfig-main.json
+{ "compilerOptions": { "target": "ES2020" } }
+
+// file: ./bai-defaults/tsconfig-test.json
+{"compilerOptions": {"target": "ES2021"}}
+
+// file: ./workspace-purge-root-project.txt
+//// file: ./node_modules/some-lib/index.js
+console.log('dummy node module');
+
+//// file: ./pnpm-lock.yaml
+lockfileVersion: 5.4
+
+//// file: ./package.json
+{
+  "name": "lib-purge",
+  "version": "1.0.0"
+}
+
+//// file: ./pnpm-workspace.yaml
+packages:
+  - 'packages/*'

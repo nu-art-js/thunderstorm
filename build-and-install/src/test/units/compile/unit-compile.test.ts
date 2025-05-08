@@ -2,7 +2,7 @@
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {Unit_NodeLib} from '../../_common';
+import {Unit_TypescriptLib} from '../../_common';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
@@ -51,7 +51,7 @@ const test = async (setup: Input): Promise<void> => {
 		setupWorkspace(resolve(__dirname, fixture), libCompile.path);
 	}
 
-	const unit = new Unit_NodeLib({
+	const unit = new Unit_TypescriptLib({
 		key: libCompile.name,
 		label: libCompile.name,
 		relativePath: `./${libCompile.name}`,
