@@ -13,17 +13,7 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {
-	cloneObj,
-	composeUrl,
-	currentTimeMillis,
-	DB_BaseObject,
-	Exception,
-	exists,
-	generateHex,
-	KB,
-	TS_Object
-} from '@nu-art/ts-common';
+import {asArray, cloneObj, composeUrl, currentTimeMillis, DB_BaseObject, Exception, exists, generateHex, KB, TS_Object} from '@nu-art/ts-common';
 import {HeaderKey_DeviceId, HeaderKey_SessionId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 import {
@@ -41,12 +31,7 @@ import {
 	SAML_Login,
 	UI_Account
 } from '../shared';
-import {
-	StorageKey_DeviceId,
-	StorageKey_SessionId,
-	StorageKey_SessionTimeoutTimestamp,
-	StorageKey_TabId
-} from './consts';
+import {StorageKey_DeviceId, StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp, StorageKey_TabId} from './consts';
 import {PasswordAssertionConfig} from '../../_enum';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {jwtDecode} from 'jwt-decode';
@@ -190,7 +175,7 @@ class ModuleFE_Account_Class
 
 	getLoggedStatus = () => this.status;
 
-	isStatus = (status: LoggedStatus) => this.status === status;
+	isStatus = (status: LoggedStatus | LoggedStatus[]) => asArray(status).includes(this.status);
 
 	private processSessionStatus(sessionId: string) {
 		const now = currentTimeMillis();
