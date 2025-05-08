@@ -60,8 +60,6 @@ const testValidator: DefaultTestProcessor = async (promisedResult: Promise<Resul
 };
 
 describe('UnitsMapper', () => {
-
-
 	it('Project with root', runTestCase({
 		input: {
 			pathToProject: `${__dirname}/cases/test-case-1`,
@@ -69,8 +67,6 @@ describe('UnitsMapper', () => {
 		},
 		result: [new Unit_NodeProject({
 			key: 'test-case-1',
-			customTSConfig: false,
-			customESLintConfig: false,
 			label: 'Test case 1 - root ts',
 			relativePath: '.',
 			fullPath: `${__dirname}/cases/test-case-1`,
@@ -94,8 +90,6 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-2`,
 				isRoot: true,
 				dependencies: {},
-				customESLintConfig: false,
-				customTSConfig: false,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-2--lib-1',
@@ -123,8 +117,6 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-3`,
 				isRoot: true,
 				dependencies: {},
-				customESLintConfig: false,
-				customTSConfig: false,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-3--lib-1',
@@ -162,8 +154,6 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-4`,
 				isRoot: true,
 				dependencies: {},
-				customESLintConfig: false,
-				customTSConfig: false,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-4--lib-1',
@@ -224,8 +214,6 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-5`,
 				isRoot: true,
 				dependencies: {},
-				customESLintConfig: false,
-				customTSConfig: false,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-5--lib-1',
@@ -281,8 +269,6 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-6`,
 				isRoot: true,
 				dependencies: {},
-				customESLintConfig: false,
-				customTSConfig: false,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-6--lib-1',
