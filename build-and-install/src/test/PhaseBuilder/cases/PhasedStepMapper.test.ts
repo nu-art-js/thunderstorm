@@ -1,7 +1,6 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {expect} from 'chai';
-import {BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {TestModel} from '@nu-art/ts-common/testing/types';
+import {BaseUnit, ExecutionStep, Phase, PhaseManager, ScheduledStep} from '../../_common';
+import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 
 // test input type
 type Input = {
@@ -11,50 +10,42 @@ type Input = {
 };
 
 // test output type
-type Output = void;
+type Output = ExecutionStep;
+
+const test = async (input: Input) => {
+	const {units, phases, scheduledSteps} = input;
+	const manager = new PhaseManager('output-folder', phases, units);
+
+	return manager['mapStep'](scheduledSteps[0]);
+};
 
 // the tests, notice these can be a resolvable content, in order to keep bind consts between the input and the output
-export const TestSuite_MapStep: TestSuite<Input, Output> = {
-	label: 'PhaseManager - execute() Error Handling',
-	testcases: [
-		() => {
-			return {
-				description: 'Error - Phase not found during mapStep()',
-				input: {
-					units: [[]],
-					phases: [],
-					scheduledSteps: [{phases: ['build'], units: []}],
-				},
-				error: {
-					expected: 'Phase \'build\' not found in PhaseManager.phases',
-				},
-			};
+const cases: TestModel<Input, Output>[] = [
+	{
+		description: 'Error - Phase not found during mapStep()',
+		input: {
+			units: [[]],
+			phases: [],
+			scheduledSteps: [{phases: ['build'], units: []}],
 		},
-		{
-			description: 'Error - Unit not found during mapStep()',
-			input: {
-				units: [[]],
-				phases: [mockPhase('build')],
-				scheduledSteps: [{phases: ['build'], units: ['missing-unit']}],
-			},
-			error: {
-				expected: 'Unit \'missing-unit\' not found in PhaseManager.units',
-			},
-		}
-	],
-	// the actual test logic that will apply on the testcases above
-	processor: async (testCase) => {
-		const {units, phases, scheduledSteps} = testCase.input;
-		const manager = new PhaseManager('output-folder', phases, units);
-
-		if ('error' in testCase) {
-			expect(() => manager['mapStep'](scheduledSteps[0])).to.throw(testCase.error.expected, testCase.error.message);
-			return;
-		}
-
-		manager['mapStep'](scheduledSteps[0]);
+		error: {
+			expected: 'Phase \'build\' not found in PhaseManager.phases',
+		},
+	},
+	{
+		description: 'Error - Unit not found during mapStep()',
+		input: {
+			units: [[]],
+			phases: [mockPhase('build')],
+			scheduledSteps: [{phases: ['build'], units: ['missing-unit']}],
+		},
+		error: {
+			expected: 'Unit \'missing-unit\' not found in PhaseManager.units',
+		},
 	}
-};
+];
+
+const runTestCase = (testCase: TestModel<Input, Output>) => runSingleTestCase(test, testCase);
 
 // helper function to mock phases - dedicated for this test suite
 function mockPhase(key: string, filter?: () => Promise<boolean>, unitFilter?: (unit: BaseUnit<any>) => Promise<boolean>): Phase<any> {
@@ -68,5 +59,6 @@ function mockPhase(key: string, filter?: () => Promise<boolean>, unitFilter?: (u
 
 // the mocha test launch
 describe('PhaseManager - mapStep', () => {
-	testSuiteTester(TestSuite_MapStep);
+	it('Error - Phase not found during mapStep()', () => runTestCase(cases[0]));
+	it('Error - Unit not found during mapStep()', () => runTestCase(cases[1]));
 });

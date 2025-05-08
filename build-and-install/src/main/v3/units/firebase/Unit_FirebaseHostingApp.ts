@@ -136,10 +136,9 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	protected async compileImpl() {
 		const commando = this.allocateCommando(Commando_NVM, Commando_Basic).applyNVM()
-			.cd(this.config.fullPath)
-			.append(`ENV=${RuntimeParams.environment} npm run build`);
+			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando);
+		await this.executeAsyncCommando(commando, `ENV=${RuntimeParams.environment} npm run build`);
 	}
 
 	private async createAppVersionFile() {
@@ -163,10 +162,9 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 			})
 			.append(`array=($(lsof -ti:${[this.config.servingPort].join(',')}))`)
 			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-			.append('echo ')
-			.append('npm run start');
+			.append('echo ');
 
-		await this.executeAsyncCommando(commando);
+		await this.executeAsyncCommando(commando, 'npm run start');
 		this.logWarning('HOSTING TERMINATED');
 	}
 
@@ -174,9 +172,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	private async deployImpl() {
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.config.fullPath)
-			.append(`firebase --debug deploy --only hosting`);
+			.cd(this.config.fullPath);
 
-		return this.executeAsyncCommando(commando);
+		return this.executeAsyncCommando(commando, `firebase --debug deploy --only hosting`);
 	}
 }

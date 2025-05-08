@@ -4,6 +4,8 @@ import {LogTypes} from '../types';
 
 
 export type ShellLogProcessor = (log: string, std: LogTypes) => (Promise<boolean> | boolean);
+export type ShellPidListener = (pid: number) => (Promise<any> | any);
+
 
 const defaultLogLevelFilter = (log: string, std: LogTypes) => std === 'err' ? LogLevel.Error : LogLevel.Info;
 
@@ -95,8 +97,7 @@ export class InteractiveShell
 	 * @param {string} command - The command to execute.
 	 */
 	execute = (command: string) => {
-		if (this._debug)
-			this.logDebug(`executing: `, `"""\n${command}\n"""`);
+		this.logVerbose(`executing: `, `"""\n${command}\n"""`);
 
 		this.shell.stdin?.write(command + '\n', 'utf-8', (err?: Error | null) => {
 			if (err)

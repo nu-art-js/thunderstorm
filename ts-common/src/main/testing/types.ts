@@ -23,15 +23,16 @@ export type Types<Input, Result> = {
 	input: Input;
 }
 
-export type TestModel<Input, ExpectedResult> = {
-																								 description: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
-																								 input: Input,
-																							 } & ({ result: ExpectedResult, } |
-																										{
-																											error:
-																												{ expected: string | RegExp, message?: string } |
-																												{ constructor: Error | Function, expected: string | RegExp, message?: string },
-																										})
+export type TestModel<Input, ExpectedResult> = ResolvableContent<
+	{
+		description?: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
+		input: Input,
+	} &
+	({ result: ExpectedResult } |
+	 {
+		 error: { expected: string | RegExp, message?: string, constructor?: Error | Function }
+	 })
+>
 
 export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, ExpectedResult>) => void | Promise<void>;
 
@@ -39,7 +40,7 @@ export type TestSuite<Input, ExpectedResult> = {
 	before?: () => (void | Promise<void>);
 	processor: TestProcessor<Input, ExpectedResult>;
 	after?: () => (void | Promise<void>);
-	testcases: ResolvableContent<TestModel<Input, ExpectedResult>>[];
+	testcases: TestModel<Input, ExpectedResult>[];
 	label: string,
 	timeout?: number,
 }

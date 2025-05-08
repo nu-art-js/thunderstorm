@@ -1,19 +1,33 @@
 // New canvas: Reverse filter
 // Motivation: From a changed lib, find all apps (and intermediate libs) that depend on it
 
-import {expect} from 'chai';
 import {UnitDependentNode, UnitsDependencyMapper} from '../_common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 
 export type ReverseFilterInput = { units: UnitDependentNode[], changed: string[] };
 export type ReverseFilterResult = string[];
 
 export type TestSuite_UnitsReverseDependency = TestSuite<ReverseFilterInput, ReverseFilterResult>;
+export type TestCase_UnitsReverseDependency = TestSuite_UnitsReverseDependency['testcases'][number];
 
-const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcases'] = [
-	{
-		description: 'single leaf change (lib-auth)',
+const test = async (input: ReverseFilterInput): Promise<ReverseFilterResult> => {
+	const mapper = new UnitsDependencyMapper(input.units);
+	const result = mapper.getReverseDependencies(input.changed);
+	return result.map(unit => unit.key).sort();
+};
+
+const runTestCase = (testCase: TestCase_UnitsReverseDependency, processor?: typeof defaultTestProcessor) => {
+	if ('result' in testCase)
+		testCase.result = testCase.result.sort();
+
+	return () => runSingleTestCase(test, testCase, processor);
+};
+
+
+describe('UnitsReverseDependency', () => {
+
+	it('single leaf change (lib-auth)', runTestCase({
 		input: {
 			units: [
 				{key: 'lib-utils', dependsOn: []},
@@ -24,9 +38,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 			changed: ['lib-auth']
 		},
 		result: ['lib-auth', 'lib-api', 'admin-app']
-	},
-	{
-		description: 'mid graph change (lib-utils)',
+	}));
+
+	it('mid graph change (lib-utils)', runTestCase({
 		input: {
 			units: [
 				{key: 'lib-utils', dependsOn: []},
@@ -38,9 +52,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 			changed: ['lib-utils']
 		},
 		result: ['lib-utils', 'lib-auth', 'lib-api', 'admin-app', 'public-app']
-	},
-	{
-		description: 'multiple changed nodes (lib-auth and lib-api)',
+	}));
+
+	it('multiple changed nodes (lib-auth and lib-api)', runTestCase({
 		input: {
 			units: [
 				{key: 'lib-core', dependsOn: []},
@@ -52,9 +66,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 			changed: ['lib-auth', 'lib-api']
 		},
 		result: ['lib-auth', 'lib-api', 'integration-service', 'gateway-app']
-	},
-	{
-		description: 'changed lib not referenced anywhere',
+	}));
+
+	it('changed lib not referenced anywhere', runTestCase({
 		input: {
 			units: [
 				{key: 'lib-unused', dependsOn: []},
@@ -63,9 +77,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 			changed: ['lib-unused']
 		},
 		result: ['lib-unused']
-	},
-	{
-		description: 'deep nested chain (change = core-utils)',
+	}));
+
+	it('deep nested chain (change = core-utils)', runTestCase({
 		input: {
 			units: [
 				{key: 'core-utils', dependsOn: []},
@@ -77,9 +91,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 			changed: ['core-utils']
 		},
 		result: ['core-utils', 'env-config', 'auth-lib', 'data-layer', 'frontend-app']
-	},
-	{
-		description: 'change propagates through shared lib to multiple apps',
+	}));
+
+	it('change propagates through shared lib to multiple apps', runTestCase({
 		input: {
 			units: [
 				{key: 'core-utils', dependsOn: []},
@@ -91,9 +105,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 			changed: ['core-utils']
 		},
 		result: ['core-utils', 'shared-lib', 'admin-ui', 'user-ui', 'user-service']
-	},
-	{
-		description: 'isolated subgraphs with targeted change',
+	}));
+
+	it('isolated subgraphs with targeted change', runTestCase({
 		input: {
 			units: [
 				{key: 'auth-core', dependsOn: []},
@@ -105,9 +119,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 			changed: ['auth-core']
 		},
 		result: ['auth-core', 'auth-service']
-	},
-	{
-		description: 'fan-out to many services from one shared lib',
+	}));
+
+	it('fan-out to many services from one shared lib', runTestCase({
 		input: {
 			units: [
 				{key: 'shared-logger', dependsOn: []},
@@ -119,9 +133,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 			changed: ['shared-logger']
 		},
 		result: ['shared-logger', 'auth-service', 'payment-service', 'notification-service', 'dashboard-app']
-	},
-	{
-		description: 'changed node not found in graph',
+	}));
+
+	it('changed node not found in graph', runTestCase({
 		input: {
 			units: [
 				{key: 'app-a', dependsOn: []},
@@ -132,9 +146,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 		error: {
 			expected: 'Unknown unit: non-existent-lib',
 		}
-	},
-	{
-		description: 'changed node filtered out by structure (no downstream)',
+	}));
+
+	it('changed node filtered out by structure (no downstream)', runTestCase({
 		input: {
 			units: [
 				{key: 'app-x', dependsOn: []},
@@ -143,9 +157,9 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 			changed: ['lib-unused']
 		},
 		result: ['lib-unused']
-	},
-	{
-		description: 'changed node partially matches graph (only one found)',
+	}));
+
+	it('changed node partially matches graph (only one found)', runTestCase({
 		input: {
 			units: [
 				{key: 'lib-core', dependsOn: []},
@@ -157,46 +171,20 @@ const TestCase_UnitsReverseDependency: TestSuite_UnitsReverseDependency['testcas
 		error: {
 			expected: 'Unknown unit: ghost-lib',
 		}
-	},
-	{
-		description: 'all changed nodes are valid but disconnected',
-		input: {
-			units: [
-				{key: 'core-a', dependsOn: []},
-				{key: 'core-b', dependsOn: []},
-				{key: 'app-a', dependsOn: ['core-a']},
-				{key: 'app-b', dependsOn: ['core-b']},
-			],
-			changed: ['core-a', 'core-b']
-		},
-		result: ['core-a', 'core-b', 'app-a', 'app-b']
-	}
-];
+	}));
 
-
-const test = async (input: ReverseFilterInput): Promise<ReverseFilterResult> => {
-	const mapper = new UnitsDependencyMapper(input.units);
-	const result = mapper.getReverseDependencies(input.changed);
-	return result.map(unit => unit.key).sort();
-};
-
-export const Tests_UnitsReverseDependency: TestSuite_UnitsReverseDependency = {
-	label: 'UnitsReverseDependency',
-	testcases: TestCase_UnitsReverseDependency,
-	processor: async (testCase) => {
-		const input = testCase.input;
-
-		if ('error' in testCase) {
-			await expect(test(input)).to.be.rejectedWith(testCase.error.expected, testCase.error.message);
-			return;
+	it('all changed nodes are valid but disconnected', runTestCase({
+			input: {
+				units: [
+					{key: 'core-a', dependsOn: []},
+					{key: 'core-b', dependsOn: []},
+					{key: 'app-a', dependsOn: ['core-a']},
+					{key: 'app-b', dependsOn: ['core-b']},
+				],
+				changed: ['core-a', 'core-b']
+			},
+			result: ['core-a', 'core-b', 'app-a', 'app-b']
 		}
-
-		const output = await test(input);
-		expect(output).to.deep.equal(testCase.result.sort());
-	}
-};
-
-describe('UnitsReverseDependency', () => {
-	testSuiteTester(Tests_UnitsReverseDependency);
+	));
 });
 

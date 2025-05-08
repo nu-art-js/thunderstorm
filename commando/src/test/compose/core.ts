@@ -3,7 +3,7 @@
 import {expect} from 'chai';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
-import {Commando_Basic, CommandoInteractive, SimpleTestCommando} from '../../_common';
+import {Commando_Basic, CommandoInteractive, SimpleTestCommando} from '../_common';
 
 type Input = (commando: SimpleTestCommando) => void;
 type Result = string;

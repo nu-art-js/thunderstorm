@@ -1,5 +1,5 @@
 import {Constructor, generateHex, LogLevel} from '@nu-art/ts-common';
-import {InteractiveShell, ShellLogProcessor} from './InteractiveShell';
+import {InteractiveShell, ShellLogProcessor, ShellPidListener} from './InteractiveShell';
 import {LogTypes} from '../types';
 import {BaseCommando} from '../core/BaseCommando';
 
@@ -109,7 +109,6 @@ export class CommandoInteractive
 			const uniqueKey = generateHex(16);
 			const regexp = new RegExp(`${uniqueKey}=(\\d+)`);
 
-
 			let _stderr = '';
 			let _stdout = '';
 			stdLogProcessor = (log: string, type: LogTypes) => {
@@ -202,7 +201,7 @@ export class CommandoInteractive
 		return this;
 	}
 
-	appendAsync(command: string, pidListener?: (pid: number) => (Promise<void> | void)) {
+	appendAsync(command: string, pidListener?: ShellPidListener) {
 		const pidUniqueKey = generateHex(16);
 		const regexp = new RegExp(`${pidUniqueKey}=(\\d+)`);
 

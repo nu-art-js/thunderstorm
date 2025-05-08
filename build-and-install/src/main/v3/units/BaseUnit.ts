@@ -17,6 +17,7 @@ import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../v2/phas
 import {CommandoInteractive} from '@nu-art/commando/shell';
 import {BaseCommando} from '@nu-art/commando/shell/core/BaseCommando';
 import {MergeTypes} from '@nu-art/commando/shell/core/class-merger';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {BAI_Config} from '../../core/types';
 
@@ -58,18 +59,18 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 	}
 
 	allocateCommando<T extends Constructor<any>[]>(...plugins: T): MergeTypes<[...T]> & CommandoInteractive & BaseCommando & Commando_Basic {
-		const commando = CommandoInteractive.create(...plugins, Commando_Basic) as unknown as MergeTypes<[...T]> & CommandoInteractive & BaseCommando & Commando_Basic;
-		commando.setUID(this.config.key);
-		return commando;
+		return CommandoPool.allocateCommando(this.config.key, ...plugins);
 	}
 
-	async executeAsyncCommando<T>(commando: CommandoInteractive, callback?: (stdout: string, stderr: string, exitCode: number) => T) {
+	async executeAsyncCommando<T>(commando: CommandoInteractive, command: string, callback?: (stdout: string, stderr: string, exitCode: number) => T) {
 		let pid: number;
 
-		const terminatable = () => commando.gracefullyKill(pid);
+		const terminatable = () => commando.killSubprocess(pid);
 		try {
 			this.registerTerminatable(terminatable);
-			return await commando.executeAsync(_pid => pid = _pid, callback);
+			return await commando
+				.appendAsync(command, _pid => pid = _pid)
+				.execute(callback);
 		} finally {
 			this.unregisterTerminatable(terminatable);
 		}

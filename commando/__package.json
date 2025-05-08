@@ -34,7 +34,5 @@
     "@nu-art/ts-common": "$THUNDERSTORM_VERSION"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.6",
-    "@types/node": "$NODE_TYPES_VERSION"
   }
 }
