@@ -15,4 +15,5 @@ export * from '../main/v3/UnitsMapper/resolvers/UnitMapper_FirebaseFunction';
 export * from '../main/v3/UnitsMapper/resolvers/UnitMapper_FirebaseHosting';
 export * from '../main/v3/UnitsDependencyMapper/UnitsDependencyMapper';
 
-
+export * from '../main/core/params/params';
+export * from '../main/v3/core/FileSystemUtils';

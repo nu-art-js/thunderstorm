@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
 import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel} from '@nu-art/ts-common';
-import {MemKey_RunnerParams, RunnerParamKey_ConfigPath} from '../../v2/phase-runner/RunnerParams';
 import {UnitPhaseImplementor} from '../../types/types';
 import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree} from '../../phase';
 import {CONST_PackageJSON} from '../../core/consts';
@@ -11,7 +10,7 @@ import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {FilesCache} from '../core/FilesCache';
-import {resolve} from 'path';
+import {resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
 import {FileSystemUtils} from '../core/FileSystemUtils';
 
@@ -241,13 +240,21 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	async lint() {
-		const pathToProjectESLint = `${MemKey_RunnerParams.get()[RunnerParamKey_ConfigPath]}/eslint.config.cjs`;
-		const pathToLint = `${this.config.fullPath}src/main`;
+		// need to move the copy of the default eslint rules to here
+
+		const pathToLint = pathResolve(this.config.fullPath, `src/main`);
 		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ');
 
-		await this.allocateCommando(Commando_NVM)
-			.append(`eslint --config ${pathToProjectESLint} ${extensions} ${pathToLint}`)
-			.execute();
+		return new Promise<void>(async (resolve, reject) => {
+			this.allocateCommando(Commando_NVM)
+				.append(`eslint --config ${pathResolve(this.config.fullPath, 'eslintrc.cjs')} ${extensions} ${pathToLint}`)
+				.execute((stdout, stderr, exitCode) => {
+					if (exitCode > 0)
+						return reject(new CommandoException(`Error linting`, stdout, stderr, exitCode));
+
+					resolve();
+				});
+		});
 	}
 
 
@@ -263,13 +270,13 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		this.logVerbose(`Parameters: baiDefaultsPath=${baiDefaultsPath}, projectRoot=${projectRoot}`);
 
 		// Handle source folder tsconfig setup
-		const srcFolder = resolve(this.config.fullPath, 'src');
+		const srcFolder = pathResolve(this.config.fullPath, 'src');
 		if (!existsSync(srcFolder))
 			return;
 
 		const entries = readdirSync(srcFolder);
 		for (const entry of entries) {
-			const entryPath = resolve(srcFolder, entry);
+			const entryPath = pathResolve(srcFolder, entry);
 			if (!statSync(entryPath).isDirectory()) {
 				this.logError(`Unexpected non-directory entry in src/: ${entry}`);
 				throw new BadImplementationException(`Non-directory entry under src folder\n ${__stringify({
@@ -278,7 +285,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				})}`);
 			}
 
-			const tsConfigPath = resolve(entryPath, 'tsconfig.json');
+			const tsConfigPath = pathResolve(entryPath, 'tsconfig.json');
 			if (this.config.customTSConfig) {
 				if (!existsSync(tsConfigPath))
 					throw new BadImplementationException(`Expected custom tsconfig in folder for source folder: ${entryPath}\n${__stringify({
@@ -290,8 +297,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				continue;
 			}
 
-			const defaultTsConfigTemplate = resolve(baiDefaultsPath, `tsconfig-${entry}.json`);
-			const projectDefaultTsConfig = resolve(projectRoot, 'defaults', 'tsconfig.json');
+			const defaultTsConfigTemplate = pathResolve(baiDefaultsPath, `tsconfig-${entry}.json`);
+			const projectDefaultTsConfig = pathResolve(projectRoot, 'defaults', 'tsconfig.json');
 
 			if (existsSync(projectDefaultTsConfig)) {
 				this.logDebug(`Copying project-level default tsconfig for source: ${entry}`);
@@ -314,7 +321,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		}
 
 		// Handle ESLint config setup
-		const eslintConfigPath = resolve(this.config.fullPath, '.eslintrc.json');
+		const eslintConfigPath = pathResolve(this.config.fullPath, '.eslintrc.json');
 		if (this.config.customESLintConfig) {
 			if (!existsSync(eslintConfigPath))
 				throw new BadImplementationException(`Expected custom eslint.rc\n${__stringify({
@@ -325,7 +332,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			return;
 		}
 
-		const defaultEslint = resolve(baiDefaultsPath, '.eslintrc.json');
+		const defaultEslint = pathResolve(baiDefaultsPath, '.eslintrc.json');
 		if (!existsSync(defaultEslint)) {
 			this.logError(`Missing default eslint configuration at path: ${defaultEslint}`);
 			throw new BadImplementationException(`Missing default eslint configuration at ${defaultEslint}\n${__stringify({
