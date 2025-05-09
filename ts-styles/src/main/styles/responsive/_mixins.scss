@@ -1,0 +1,49 @@
+@use 'breakpoints' as *;
+@use 'sass:map';
+
+@mixin responsive($breakpoint) {
+  $value: map.get($breakpoints, $breakpoint);
+  @if $value != null {
+    @media (min-width: $value) {
+      @content;
+    }
+  } @else {
+    @warn "No value found for `#{$breakpoint}` in $breakpoints map.";
+  }
+}
+
+@mixin responsive-max($breakpoint) {
+  $value: map.get($breakpoints, $breakpoint);
+  @if $value != null {
+    @media (max-width: $value) {
+      @content;
+    }
+  } @else {
+    @warn "No value found for `#{$breakpoint}` in $breakpoints map.";
+  }
+}
+
+@mixin show-breakpoints {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 12px;
+    padding: 2px 6px;
+    z-index: 9999;
+    font-family: monospace;
+    pointer-events: none;
+  }
+
+  @each $key, $value in $breakpoints {
+    @include responsive($key) {
+      &::after {
+        content: "Breakpoint: #{$key} (#{$value})";
+      }
+    }
+  }
+}
