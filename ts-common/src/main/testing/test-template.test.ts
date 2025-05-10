@@ -1,7 +1,7 @@
-import {TestSuite} from '_thunderstorm/ts-common/dist/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '_thunderstorm/ts-common/dist/testing/consts';
-
 // test input type - will have the parameters that actually makes a test case unique, its content depends on the test performed
+import {TestSuite} from './types';
+import {defaultTestProcessor, runSingleTestCase} from './consts';
+
 type Input = { inputA: string, inputB: number, inputC: any };
 
 // test expected output type - (which may be a function - for complex logic checks)

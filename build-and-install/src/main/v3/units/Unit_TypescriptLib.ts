@@ -94,7 +94,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	private async clearOutputDirImpl() {
-		await FileSystemUtils.folder.delete(this.config.output, false);
+		await FileSystemUtils.folder.empty(this.config.output, false);
 		await FileSystemUtils.folder.create(this.config.output);
 	}
 
@@ -144,13 +144,11 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	public async watchCompile() {
 		try {
 			this.setStatus('Compiling', 'start');
-
-			// perform all watch actions
-			await this.compileImpl();
-			await this.copyAssetsToOutput();
+			await this.compile();
 			this.setStatus(`Compiled and Watching`, 'end');
 		} catch (e: any) {
 			this.setStatus(`Watching with error`, e);
+			throw e;
 		}
 	}
 
