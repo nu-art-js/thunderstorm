@@ -8,6 +8,7 @@ import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
 import {DebugFlag, LogLevel} from '@nu-art/ts-common';
 import {setupWorkspace} from '@nu-art/ts-common/testing/workspace-creator';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 
 DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 const pathToPackages = resolve(__dirname, './workspace/packages');
@@ -123,4 +124,8 @@ describe('Unit_NodeLib - Compile Phase', () => {
 			expected: 'Error compiling'
 		}
 	}));
+
+	after(async () => {
+		await CommandoPool.killAll();
+	});
 });

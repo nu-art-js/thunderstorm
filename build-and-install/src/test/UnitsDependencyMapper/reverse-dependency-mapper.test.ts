@@ -25,7 +25,7 @@ const runTestCase = (testCase: TestCase_UnitsReverseDependency, processor?: type
 };
 
 
-describe('UnitsReverseDependency', () => {
+describe('Units Reverse Dependency MApper', () => {
 
 	it('single leaf change (lib-auth)', runTestCase({
 		input: {

@@ -21,7 +21,7 @@ const runTestCase = (testCase: TestCase_UnitsDependencyFilter, processor?: typeo
 	return runSingleTestCase(test, testCase, processor);
 };
 
-describe('UnitsDependencyFilter', () => {
+describe('Units Dependency Filter', () => {
 	it('filter for diamond graph (target = reports-service)', runTestCase({
 		input: {
 			units: [

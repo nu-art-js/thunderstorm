@@ -1,5 +1,5 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '_thunderstorm/ts-common/dist/testing/types';
+import {defaultTestProcessor, runSingleTestCase} from '_thunderstorm/ts-common/dist/testing/consts';
 
 // test input type - will have the parameters that actually makes a test case unique, its content depends on the test performed
 type Input = { inputA: string, inputB: number, inputC: any };
