@@ -9,8 +9,8 @@ import {
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
-import {Unit_FirebaseFunctionsApp, Unit_FirebaseFunctionsApp_Config} from '../../../v2/unit/firebase-units';
 import {UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
+import {Unit_FirebaseFunctionsApp, Unit_FirebaseFunctionsApp_Config} from '../../units/firebase/Unit_FirebaseFunctionsApp';
 
 
 type EnvConfig = {

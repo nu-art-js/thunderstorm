@@ -13,19 +13,26 @@ import {
 	TimeCounter,
 	timeCounter
 } from '@nu-art/ts-common';
-import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../v2/phase-runner/PhaseRunnerDispatcher';
+import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../old/PhaseRunnerDispatcher';
 import {CommandoInteractive} from '@nu-art/commando/shell';
 import {BaseCommando} from '@nu-art/commando/shell/core/BaseCommando';
 import {MergeTypes} from '@nu-art/commando/shell/core/class-merger';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {BAI_Config} from '../../core/types';
+import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper';
 
 
 export type BaseUnit_Config = {
 	key: string;
 	label: string;
 }
+
+type UnitRuntimeContext = {
+	baiConfig: Readonly<BAI_Config>,
+	unitsMapper: UnitsDependencyMapper,
+	unitsResolver: <Class extends BaseUnit>(keys: string[], className: Constructor<Class>) => Class[]
+};
 
 export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 	extends Logger {
@@ -36,7 +43,7 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 	private classStack: Set<string>;
 	private processTerminator: AsyncVoidFunction[] = [];
 	private timeCounter?: TimeCounter;
-	protected baiConfig!: Readonly<BAI_Config>;
+	protected runtimeContext!: UnitRuntimeContext;
 
 	protected constructor(config: C) {
 		super(config.key);
@@ -46,8 +53,8 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 		this.initLogClient();
 	}
 
-	setProjectConfig(baiConfig: Readonly<BAI_Config>) {
-		this.baiConfig = baiConfig;
+	setupRuntimeContext(runtimeContext: UnitRuntimeContext) {
+		this.runtimeContext = runtimeContext;
 	}
 
 	registerTerminatable(terminatable: AsyncVoidFunction) {

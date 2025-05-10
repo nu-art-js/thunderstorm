@@ -178,4 +178,80 @@ export class UnitsDependencyMapper {
 
 		return [...this.map.values()].filter(node => visited.has(node.key));
 	}
+
+	public getTransitiveDependencies(key: string): string[] {
+		const visited = new Set<string>();
+		const stack = [key];
+
+		while (stack.length > 0) {
+			const current = stack.pop()!;
+			if (visited.has(current)) continue;
+			visited.add(current);
+			const node = this.map.get(current);
+			if (!node)
+				throw new Error(`Unit '${current}' not found in dependency map.`);
+			stack.push(...node.dependsOn);
+		}
+
+		visited.delete(key);
+		return [...visited];
+	}
+
+	public detectCycles(): string[][] {
+		const visited = new Set<string>();
+		const inStack = new Set<string>();
+		const cycles: string[][] = [];
+
+		const visit = (key: string, path: string[]): void => {
+			if (inStack.has(key)) {
+				const cycleStart = path.indexOf(key);
+				cycles.push(path.slice(cycleStart).concat(key));
+				return;
+			}
+			if (visited.has(key)) return;
+
+			visited.add(key);
+			inStack.add(key);
+			const node = this.map.get(key);
+			if (node)
+				for (const dep of node.dependsOn)
+					visit(dep, path.concat(key));
+			inStack.delete(key);
+		};
+
+		for (const key of this.map.keys())
+			visit(key, []);
+
+		return cycles;
+	}
+
+	public isReachable(from: string, to: string): boolean {
+		const visited = new Set<string>();
+		const stack = [from];
+
+		while (stack.length > 0) {
+			const key = stack.pop()!;
+			if (key === to) return true;
+			if (visited.has(key)) continue;
+			visited.add(key);
+			const node = this.map.get(key);
+			if (node)
+				stack.push(...node.dependsOn);
+		}
+
+		return false;
+	}
+
+	public getRoots(): string[] {
+		const allKeys = new Set(this.map.keys());
+		const dependedUpon = new Set<string>();
+		for (const node of this.map.values())
+			for (const dep of node.dependsOn)
+				dependedUpon.add(dep);
+		return [...allKeys].filter(k => !dependedUpon.has(k)).sort();
+	}
+
+	public getLeaves(): string[] {
+		return [...this.map.values()].filter(node => node.dependsOn.length === 0).map(node => node.key).sort();
+	}
 }

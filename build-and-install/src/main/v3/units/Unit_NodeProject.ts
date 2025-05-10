@@ -3,11 +3,9 @@ import {Phase_Install, Phase_Watch} from '../../phase';
 import {RuntimeParams} from '../../core/params/params';
 import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
 import {_keys, clearArrayInstance, MUSTNeverHappenException, Promise_all_sequentially, queuedDebounce, Second} from '@nu-art/ts-common';
-import {MemKey_PhaseRunner} from '../../v2/phase-runner/consts';
 import * as chokidar from 'chokidar';
-import {dispatcher_UnitWatchCompile, dispatcher_WatchReady} from '../../v2/unit/runner-dispatchers';
+import {dispatcher_UnitWatchCompile, dispatcher_WatchReady} from '../../old/runner-dispatchers';
 import {Unit_TypescriptLib} from './Unit_TypescriptLib';
-import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../../v2/unit/firebase-units';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
 import {PNPM} from '@nu-art/commando/shell/services/pnpm';
@@ -15,6 +13,8 @@ import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
 import {resolve} from 'path';
 import {FileSystemUtils} from '../core/FileSystemUtils';
 import {ProjectUnit} from './ProjectUnit';
+import {Unit_FirebaseHostingApp} from './firebase/Unit_FirebaseHostingApp';
+import {Unit_FirebaseFunctionsApp} from './firebase/Unit_FirebaseFunctionsApp';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
@@ -91,9 +91,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 	private prepareWatchPaths(): PathDeclaration[] {
 		// Using phase runner instance to resolve all project libs to watch
 		const cantBeInstanceOf = [Unit_FirebaseHostingApp, Unit_FirebaseFunctionsApp];
-		const projectLibs = MemKey_PhaseRunner.get()
-			.getUnits()
-			.filter(unit => unit.isInstanceOf(Unit_TypescriptLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_TypescriptLib[];
+		const projectLibs = this.innerUnits.filter(unit => unit.isInstanceOf(Unit_TypescriptLib) && cantBeInstanceOf.every(_instance => !unit.isInstanceOf(_instance))) as Unit_TypescriptLib[];
 
 		//return all paths to watch
 		return projectLibs.map(lib => {

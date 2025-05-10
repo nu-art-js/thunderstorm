@@ -7,12 +7,16 @@ import {RuntimeParams} from '../../../core/params/params';
 import {FirebasePackageConfig, PackageJson} from '../../../core/types';
 import {_keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, TypedMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
-import {MemKey_ProjectConfig} from '../../../v2/phase-runner/RunnerParams';
-import {MemKey_PhaseRunner} from '../../../v2/phase-runner/consts';
-import {dispatcher_UnitWatchCompile, dispatcher_WatchReady, OnUnitWatchCompiled} from '../../../v2/unit/runner-dispatchers';
+import {dispatcher_UnitWatchCompile, dispatcher_WatchReady, OnUnitWatchCompiled} from '../../../old/runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {firebaseFunctionEmulator_ErrorStrings, firebaseFunctionEmulator_WarningStrings} from '../../../v2/unit/firebase-units/consts';
 
+export const firebaseFunctionEmulator_ErrorStrings: string[] = [
+	'functions: Failed',
+];
+
+export const firebaseFunctionEmulator_WarningStrings: string[] = [
+	'⚠',
+];
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig?: FirebasePackageConfig;
@@ -26,7 +30,7 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	sources?: string[];
 };
 
-const CONST_VersionApp = 'version-app.json';
+// const CONST_VersionApp = 'version-app.json';
 
 
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
@@ -172,7 +176,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		}
 
 		//Fill config dir with relevant files for each file that doesn't exist
-		const defaultFiles = MemKey_ProjectConfig.get().defaultFileRoutes;
+		const defaultFiles = this.runtimeContext.baiConfig.files?.firebase;
 		if (!defaultFiles) {
 			this.logError('No defaultFileRoutes in project config');
 			return;
@@ -183,7 +187,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				try {
 					await _fs.access(pathToConfigFile);
 				} catch (e: any) {
-					const path = defaultFiles.firebaseConfig?.[firebaseConfigKey];
+					const path = defaultFiles[firebaseConfigKey];
 					if (!path)
 						return;
 
@@ -266,22 +270,16 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//copyAssetsToOutput will move the file to output
-		const targetPath = `${this.config.fullPath}/src/main/${CONST_VersionApp}`;
-		const appVersion = MemKey_ProjectConfig.get().projectVersion;
-		const fileContent = JSON.stringify({version: appVersion}, null, 2);
-		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
+		// const targetPath = `${this.config.fullPath}/src/main/${CONST_VersionApp}`;
+		// const appVersion = MemKey_ProjectConfig.get().projectVersion;
+		// const fileContent = JSON.stringify({version: appVersion}, null, 2);
+		// await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
 	private async createDependenciesDir() {
 		//Gather units that are dependencies of this unit
-		const dependencies = _keys(this.packageJson.root.dependencies ?? {}) as string[];
-		const runner = MemKey_PhaseRunner.get();
-		const tsLibUnits = runner.getUnits().filter(unit => unit instanceof Unit_TypescriptLib) as Unit_TypescriptLib[];
-		const dependencyUnits = tsLibUnits.filter(unit => {
-			const unitPJName = unit.packageJson.template.name;
-			return dependencies.includes(unitPJName);
-		});
-
+		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies(this.config.key);
+		const dependencyUnits = this.runtimeContext.unitsResolver<Unit_TypescriptLib>(unitKeys, Unit_TypescriptLib);
 		if (!dependencyUnits.length)
 			return;
 

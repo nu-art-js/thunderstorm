@@ -8,7 +8,7 @@ import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {MemKey_ProjectConfig} from '../../../v2/phase-runner/RunnerParams';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
-import {dispatcher_WatchReady} from '../../../v2/unit/runner-dispatchers';
+import {dispatcher_WatchReady} from '../../../old/runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node';

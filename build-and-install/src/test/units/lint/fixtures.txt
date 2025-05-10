@@ -1,49 +1,114 @@
 // file: ./fixtures/workspace-lint-valid-lib.txt
-//// file: ./src/main/index.ts
-export const isValid = true;
+//// file: ./lib-lint/src/main/index.ts
+const isValid = true;
 
-//// file: ./tsconfig.json
+//// file: ./lib-lint/src/main/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
     "moduleResolution": "node"
-  }
+  },
+  "include": ["./**/*.ts"]
 }
 
 
-// file: ./workspace/pnpm-workspace.yaml
+//// file: ./pnpm-workspace.yaml
 packages:
   - 'packages/lib-lint'
 
-// file: ./workspace/package.json
+//// file: ./package.json
 {
   "name": "lib-lint",
   "version": "1.0.0",
   "dependencies":{
     "typescript": "latest",
+    "eslint": "^9.26.0",
+    "typescript-eslint": "latest",
     "@typescript-eslint/parser": "latest",
     "@typescript-eslint/eslint-plugin": "latest"
   }
 }
 
-// file: ./workspace/eslint.config.js
-import tseslint from 'typescript-eslint';
+//// file: ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
 
 export default [
-  ...tseslint.config({
-    tsconfigPath: './tsconfig.json',
-  }),
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
+      parser,
       parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
         ecmaVersion: 'latest',
         sourceType: 'module',
       },
     },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
     rules: {
+      ...plugin.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
   },
 ];
 
+
+// file: ./fixtures/workspace-lint-invalid-lib.txt
+//// file: ./lib-lint/src/main/index.ts
+const unused = true;
+
+//// file: ./lib-lint/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  },
+  "include": ["./**/*.ts"]
+}
+
+
+//// file: ./pnpm-workspace.yaml
+packages:
+  - 'packages/lib-lint'
+
+//// file: ./package.json
+{
+  "name": "lib-lint",
+  "version": "1.0.0",
+  "dependencies":{
+    "typescript": "latest",
+    "eslint": "^9.26.0",
+    "typescript-eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest"
+  }
+}
+
+//// file: ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];

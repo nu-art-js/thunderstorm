@@ -1,5 +1,5 @@
 import {__stringify} from '@nu-art/ts-common';
-import {PackageJson} from '../../../core/types';
+import {PackageJson} from '../core/types';
 
 
 export function convertPackageJSONTemplateToPackJSON_Value(template: PackageJson, value: (value: string, key?: string) => string): PackageJson {

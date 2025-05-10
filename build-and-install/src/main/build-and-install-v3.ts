@@ -105,7 +105,7 @@ export class BuildAndInstallV3
 		const unitsMapper = new UnitsMapper();
 		const units = await unitsMapper.resolveUnits(this.pathToProject);
 		units.forEach(unit => {
-			unit.setProjectConfig(baiConfig);
+			unit.setupRuntimeContext(baiConfig);
 			this.logDebug(`unit (${unit.constructor.name}): ${unit.config.key}`);
 			this.logVerbose(unit.config);
 		});

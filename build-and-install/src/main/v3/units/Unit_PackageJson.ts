@@ -6,7 +6,7 @@ import {promises as _fs} from 'fs';
 import {Phase_CopyPackageJSON, Phase_Purge} from '../../phase';
 import {UnitPhaseImplementor} from '../../types/types';
 import {MemKey_ProjectConfig} from '../../v2/phase-runner/RunnerParams';
-import {convertPackageJSONTemplateToPackJSON_Value} from '../../v2/unit/tools/tools';
+import {convertPackageJSONTemplateToPackJSON_Value} from '../../old/tools';
 import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit';
 import {resolve} from 'path';
 import {FileSystemUtils} from '../core/FileSystemUtils';
@@ -21,7 +21,7 @@ type PackageJsonTargetKey = typeof PackageJsonTargetKeys[number];
 export type Unit_PackageJson_Config = Config_ProjectUnit & {};
 
 
-export abstract class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJson_Config>
+export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJson_Config>
 	extends ProjectUnit<C>
 	implements UnitPhaseImplementor<[Phase_CopyPackageJSON, Phase_Purge]> {
 

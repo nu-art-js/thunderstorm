@@ -18,7 +18,7 @@ const test = async (input: Input): Promise<Result> => {
 
 const runTestCase = (testCase: TestCase_UnitsDependencyMapper, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 
-describe('UnitsDependencyMapper', () => {
+describe('Units Dependency Mapper', () => {
 	it('linear chain', runTestCase({
 		input: [
 			{key: 'source', dependsOn: []},

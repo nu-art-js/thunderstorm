@@ -5,7 +5,7 @@ import {UnitPhaseImplementor} from '../../types/types';
 import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree} from '../../phase';
 import {CONST_PackageJSON} from '../../core/consts';
 import {RuntimeParams} from '../../core/params/params';
-import {dispatcher_WatchReady, OnWatchReady} from '../../v2/unit/runner-dispatchers';
+import {dispatcher_WatchReady, OnWatchReady} from '../../old/runner-dispatchers';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
@@ -21,7 +21,6 @@ export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
 	output: string;
 };
 
-const extensionsToLint = ['ts', 'tsx'];
 const assetExtensions = [
 	'json',
 	'scss',
@@ -75,7 +74,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 
 		//Make sure a project ts config file exists
-		const pathToProjectTSConfig = this.baiConfig.files?.typescript?.tsConfig;
+		const pathToProjectTSConfig = this.runtimeContext.baiConfig.files?.typescript?.tsConfig;
 		if (!pathToProjectTSConfig)
 			throw new ImplementationMissingException(`Project config is missing the default tsConfig file, add it to the bai-config.json`);
 
@@ -243,14 +242,16 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		// need to move the copy of the default eslint rules to here
 
 		const pathToLint = pathResolve(this.config.fullPath, `src/main`);
-		const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ');
+		// const extensions = extensionsToLint.map(ext => `--ext ${ext}`).join(' ');
 
 		return new Promise<void>(async (resolve, reject) => {
 			this.allocateCommando(Commando_NVM)
-				.append(`eslint --config ${pathResolve(this.config.fullPath, 'eslintrc.cjs')} ${extensions} ${pathToLint}`)
+				.cd('/Users/tacb0ss/dev/nu-art/beamz/_thunderstorm/build-and-install/src/test/units/lint/temp/workspace')
+				.pwd()
+				.append(`./node_modules/.bin/eslint --debug ${pathToLint}`)
 				.execute((stdout, stderr, exitCode) => {
 					if (exitCode > 0)
-						return reject(new CommandoException(`Error linting`, stdout, stderr, exitCode));
+						return reject(new CommandoException(`Linting failed`, stdout, stderr, exitCode));
 
 					resolve();
 				});
