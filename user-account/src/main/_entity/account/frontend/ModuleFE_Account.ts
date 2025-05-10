@@ -272,6 +272,13 @@ class ModuleFE_Account_Class
 
 	public getPasswordAssertionConfig = () => StorageKey_PasswordAssertionConfig.get();
 
+	public getCurrentlyLoggedAccount = () => {
+		if (!this.accountId)
+			return;
+
+		return this.cache.unique(this.accountId);
+	};
+
 	// ######################## API Callbacks ########################
 
 	private setLoginInfo = async (response: Response_Auth, body: any, request: BaseHttpRequest<any>) => {
