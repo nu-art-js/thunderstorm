@@ -1,0 +1,98 @@
+// file: ./fixtures/workspace-demo-project.txt
+//// file: ./pnpm-workspace.yaml
+packages:
+  - './lib-a'
+  - './lib-b'
+  - './lib-c'
+  - './lib-d'
+  - './lib-e'
+
+//// file: ./package.json
+{
+  "name": "demo-project",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest"
+  }
+}
+
+//// file: ./lib-a/src/main/index.ts
+export const libA = () => 'libA';
+
+//// file: ./lib-a/src/test/test.test.ts
+import {libA} from '../main';
+describe('libA', () => {
+  it('should return libA', () => {
+    if (libA() !== 'libA') throw new Error('libA failed');
+  });
+});
+
+//// file: ./lib-b/src/main/index.ts
+import {libA} from '@demo/lib-a';
+export const libB = () => libA() + 'B';
+
+//// file: ./lib-c/src/main/index.ts
+import {libB} from '@demo/lib-b';
+export const libC = () => libB() + 'C';
+
+//// file: ./lib-d/src/main/index.ts
+export const libD = () => 'libD';
+
+//// file: ./lib-e/src/main/index.ts
+import {libC} from '@demo/lib-c';
+import {libD} from '@demo/lib-d';
+export const libE = () => libC() + libD();
+
+//// file: ./lib-e/src/test/test.test.ts
+import {libE} from '../main';
+describe('libE', () => {
+  it('should return libABCDE', () => {
+    if (libE() !== 'libABCD') throw new Error('libE failed');
+  });
+});
+
+//// file: ./lib-a/package.json
+{
+  "name": "@demo/lib-a",
+  "version": "1.0.0"
+}
+
+//// file: ./lib-b/package.json
+{
+  "name": "@demo/lib-b",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-a": "1.0.0"
+  }
+}
+
+//// file: ./lib-c/package.json
+{
+  "name": "@demo/lib-c",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-b": "1.0.0"
+  }
+}
+
+//// file: ./lib-d/package.json
+{
+  "name": "@demo/lib-d",
+  "version": "1.0.0"
+}
+
+//// file: ./lib-e/package.json
+{
+  "name": "@demo/lib-e",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-c": "1.0.0",
+    "@demo/lib-d": "1.0.0"
+  }
+}

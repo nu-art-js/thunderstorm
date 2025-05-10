@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
 import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../../types/types';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree} from '../../phase';
+import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Test} from '../../phase';
 import {CONST_PackageJSON} from '../../core/consts';
 import {RuntimeParams} from '../../core/params/params';
 import {dispatcher_WatchReady, OnWatchReady} from '../../old/runner-dispatchers';
@@ -10,7 +10,7 @@ import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {FilesCache} from '../core/FilesCache';
-import {resolve as pathResolve} from 'path';
+import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
 import {FileSystemUtils} from '../core/FileSystemUtils';
 
@@ -38,7 +38,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[
 		Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports,
-		Phase_Lint,
+		Phase_Lint, Phase_Test
 	]>, OnWatchReady {
 
 	constructor(config: Unit_TypescriptLib<C>['config']) {
@@ -214,6 +214,25 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	async purge() {
 		await FileSystemUtils.folder.delete(this.config.output);
 		return super.purge();
+	}
+
+	async runTests() {
+		if (!RuntimeParams.test)
+			return;
+
+		this.setStatus('Running tests', 'start');
+		const command = resolve(this.runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
+		const testCommand = `${command} "src/test/**/*.test.ts" --require ts-node/register`;
+		await this.allocateCommando(Commando_NVM)
+			.cd(this.config.fullPath)
+			.append(testCommand)
+			.execute((stdout, stderr, exitCode) => {
+				if (exitCode !== 0)
+					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
+			});
+
+		this.setStatus('Tests passed', 'end');
+
 	}
 
 	async printDependencyTree() {

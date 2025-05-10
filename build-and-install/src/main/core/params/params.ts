@@ -177,13 +177,12 @@ export const BaiParam_Watch: BaseCliParam<'watch', boolean> = {
 	description: 'will build and listen for changes in the libraries'
 };
 
-export const BaiParam_Test: BaseCliParam<'test', string> = {
+export const BaiParam_Test: BaseCliParam<'test', boolean> = {
 	keys: ['--test', '-t'],
 	keyName: 'test',
-	type: 'string',
+	type: 'boolean',
 	group: 'Test',
-	description: 'Run the tests in all the project packages\naccepts test label to run optionally. default will be empty string',
-	process: regexTemplate,
+	description: 'Run the tests in all the project packages',
 };
 
 export const BaiParam_Launch: BaseCliParam<'launch', string> = {
