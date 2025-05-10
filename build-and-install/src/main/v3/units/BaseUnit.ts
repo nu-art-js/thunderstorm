@@ -28,13 +28,13 @@ export type BaseUnit_Config = {
 	label: string;
 }
 
-type UnitRuntimeContext = {
+export type UnitRuntimeContext = {
 	baiConfig: Readonly<BAI_Config>,
 	unitsMapper: UnitsDependencyMapper,
-	unitsResolver: <Class extends BaseUnit>(keys: string[], className: Constructor<Class>) => Class[]
+	unitsResolver: <Class extends BaseUnit>(keys: string[], className: Constructor<Class>) => Class[],
 };
 
-export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
+export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_Context extends UnitRuntimeContext = UnitRuntimeContext>
 	extends Logger {
 
 	readonly config: Readonly<C>;
@@ -43,7 +43,7 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 	private classStack: Set<string>;
 	private processTerminator: AsyncVoidFunction[] = [];
 	private timeCounter?: TimeCounter;
-	protected runtimeContext!: UnitRuntimeContext;
+	protected runtimeContext!: RT_Context;
 
 	protected constructor(config: C) {
 		super(config.key);
@@ -53,7 +53,7 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config>
 		this.initLogClient();
 	}
 
-	setupRuntimeContext(runtimeContext: UnitRuntimeContext) {
+	setupRuntimeContext(runtimeContext: RT_Context) {
 		this.runtimeContext = runtimeContext;
 	}
 

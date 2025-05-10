@@ -125,11 +125,19 @@ export const phase_Compile: Phase<'compile'> = {
 	name: 'Compile',
 	method: 'compile',
 	filter: () => !RuntimeParams.noBuild,
-	unitFilter: (unit) => {
-		return !RuntimeParams.noBuild;
-	},
 	runUnitsInDependency: true,
 	dependencyPhaseKeys: [phaseKey_CopyPackageJSON, phaseKey_PreCompile],
+};
+
+export type Phase_Test = typeof phase_Test;
+export const phaseKey_Test = 'runTests';
+export const phase_Test: Phase<'runTests'> = {
+	key: phaseKey_Test,
+	name: 'Test',
+	method: 'runTests',
+	filter: () => !RuntimeParams.test,
+	runUnitsInDependency: true,
+	dependencyPhaseKeys: [phaseKey_Compile],
 };
 
 export type Phase_Watch = typeof phase_Watch;
@@ -163,7 +171,7 @@ export const phase_Launch: Phase<'launch'> = {
 	method: 'launch',
 	filter: () => !!RuntimeParams.launch,
 	dependencyPhaseKeys: [phaseKey_ResolveConfigs],
-	unitFilter:(unit) => {
+	unitFilter: (unit) => {
 		return !!unit.config.key.match(new RegExp(RuntimeParams.launch))?.[0];
 	},
 };

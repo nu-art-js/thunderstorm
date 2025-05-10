@@ -1,0 +1,74 @@
+// file: ./fixtures/workspace-test-pass.txt
+//// file: ./src/main/index.ts
+export const add = (a: number, b: number) => a + b;
+
+//// file: ./lib-test/src/test/test.test.ts
+const add = (a: number, b: number) => a + b;
+describe('add()', () => {
+  it('adds numbers', () => {
+    if (add(1, 2) !== 3)
+      throw new Error('Test failed');
+  });
+});
+
+//// file: ./lib-test/src/test/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  },
+  "include": ["./**/*.ts"]
+}
+
+//// file: ./package.json
+{
+  "name": "lib-test",
+  "version": "1.0.0",
+  "dependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest"
+  }
+}
+
+//// file: ./pnpm-workspace.yaml
+packages:
+  - 'packages/lib-test'
+
+
+// file: ./fixtures/workspace-test-fail.txt
+//// file: ./src/main/index.ts
+export const add = (a: number, b: number) => a + b;
+
+//// file: ./lib-test/src/test/test.test.ts
+const add = (a: number, b: number) => a + b;
+describe('add()', () => {
+  it('fails on purpose', () => {
+    if (add(1, 2) !== 4)
+      throw new Error('Intentional failure');
+  });
+});
+
+//// file: ./lib-test/src/test/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  },
+  "include": ["./**/*.ts"]
+}
+
+//// file: ./package.json
+{
+  "name": "lib-test",
+  "version": "1.0.0",
+  "dependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest"
+  }
+}
+
+//// file: ./pnpm-workspace.yaml
+packages:
+  - 'packages/lib-test'
