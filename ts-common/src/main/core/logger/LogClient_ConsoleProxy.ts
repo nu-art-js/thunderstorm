@@ -12,11 +12,12 @@ export type LogToStream = {
 	timestamp: string,
 };
 
-export abstract class LogClient_ConsoleProxy extends LogClient {
+export abstract class LogClient_ConsoleProxy
+	extends LogClient {
 	private buffers: LogToStream[];
 	private readonly maxBuffers: number = 50;
-	private readonly flushLogsDebounced: () => void;
-	private readonly originalConsoleError: any;
+	private readonly flushLogsDebounced!: () => void;
+	private readonly originalConsoleError!: any;
 	private activeRequest: boolean;
 	private errorLogTimeout?: NodeJS.Timeout;
 
@@ -25,16 +26,25 @@ export abstract class LogClient_ConsoleProxy extends LogClient {
 
 	constructor() {
 		super();
-		this.flushLogsDebounced = debounce(this.flushLogs.bind(this), Minute, 2 * Minute);
 		this.buffers = [];
 		this.activeRequest = false;
 
 		// pipe console.error to this log client
+	}
+
+	init() {
+		super.init();
+		// @ts-ignore
 		this.originalConsoleError = console.error;
+
 		console.error = (...args: any[]) => {
 			this.originalConsoleError(...args);
 			this.logMessage.bind(this)(LogLevel.Error, false, `${new Date().toISOString()} ${_logger_getPrefix(LogLevel.Error)} unhandled error`, args);
 		};
+
+		const flushLogsDebounced = debounce(this.flushLogs.bind(this), Minute, 2 * Minute);
+		// @ts-ignore
+		this.flushLogsDebounced = flushLogsDebounced;
 	}
 
 	protected logMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]) {
