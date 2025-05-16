@@ -1,0 +1,11 @@
+// file: ./bai-defaults/.eslintrc.json
+
+{ "root": true }
+
+// file: ./bai-defaults/tsconfig-main.json
+
+{ "compilerOptions": { "target": "ES2020" } }
+
+// file: ./bai-defaults/tsconfig-test.json
+
+{"compilerOptions": {"target": "ES2021"}}

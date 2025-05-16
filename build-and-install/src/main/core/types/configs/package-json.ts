@@ -14,5 +14,6 @@ export type PackageJson = JSONVersion & {
 	'types': string,
 	'scripts'?: StringMap,
 	'dependencies'?: StringMap,
+	'devDependencies'?: StringMap,
 	'_moduleAliases'?: StringMap
 }

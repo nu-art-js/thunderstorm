@@ -71,15 +71,6 @@ export const phase_Purge: Phase<'purge'> = {
 	filter: () => RuntimeParams.purge,
 };
 
-export type Phase_CopyPackageJSON = typeof phase_CopyPackageJSON;
-export const phaseKey_CopyPackageJSON = 'copy-package-json';
-export const phase_CopyPackageJSON: Phase<'copyPackageJson'> = {
-	key: phaseKey_CopyPackageJSON,
-	unitFilter: (unit) => 'copyPackageJson' in unit,
-	name: 'Copy Package JSON',
-	method: 'copyPackageJson',
-};
-
 export type Phase_Install = typeof phase_Install;
 export const phaseKey_Install = 'install';
 export const phase_Install: Phase<'install'> = {
@@ -108,15 +99,6 @@ export const phase_Lint: Phase<'lint'> = {
 	filter: () => RuntimeParams.lint,
 };
 
-export type Phase_PreCompile = typeof phase_PreCompile;
-export const phaseKey_PreCompile = 'pre-compile';
-export const phase_PreCompile: Phase<'preCompile'> = {
-	key: phaseKey_PreCompile,
-	name: 'Pre Compile',
-	method: 'preCompile',
-	filter: () => !RuntimeParams.noBuild,
-	runUnitsInDependency: true,
-};
 
 export type Phase_Compile = typeof phase_Compile;
 export const phaseKey_Compile = 'compile';
@@ -126,7 +108,6 @@ export const phase_Compile: Phase<'compile'> = {
 	method: 'compile',
 	filter: () => !RuntimeParams.noBuild,
 	runUnitsInDependency: true,
-	dependencyPhaseKeys: [phaseKey_CopyPackageJSON, phaseKey_PreCompile],
 };
 
 export type Phase_Test = typeof phase_Test;
@@ -152,11 +133,9 @@ export const phase_Watch: Phase<'watch'> = {
 
 export const phases_Build: Phase<string>[] = [
 	phase_Purge,
-	phase_CopyPackageJSON,
 	phase_Install,
 	phase_ResolveConfigs,
 	phase_Lint,
-	phase_PreCompile,
 	phase_Compile,
 	phase_Watch
 ];

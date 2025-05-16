@@ -2,8 +2,18 @@ import {UnitPhaseImplementor} from '../../types/types';
 import {Phase_Install, Phase_Watch} from '../../phase';
 import {RuntimeParams} from '../../core/params/params';
 import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
-import {_keys, clearArrayInstance, MUSTNeverHappenException, Promise_all_sequentially, queuedDebounce, Second} from '@nu-art/ts-common';
+import {
+	_keys,
+	arrayToMap,
+	BadImplementationException,
+	clearArrayInstance,
+	MUSTNeverHappenException,
+	Promise_all_sequentially,
+	queuedDebounce,
+	Second
+} from '@nu-art/ts-common';
 import * as chokidar from 'chokidar';
+import {FSWatcher} from 'chokidar';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchReady} from '../../old/runner-dispatchers';
 import {Unit_TypescriptLib} from './Unit_TypescriptLib';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
@@ -12,9 +22,12 @@ import {PNPM} from '@nu-art/commando/shell/services/pnpm';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
 import {resolve} from 'path';
 import {FileSystemUtils} from '../core/FileSystemUtils';
-import {ProjectUnit} from './ProjectUnit';
+import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit';
 import {Unit_FirebaseHostingApp} from './firebase/Unit_FirebaseHostingApp';
 import {Unit_FirebaseFunctionsApp} from './firebase/Unit_FirebaseFunctionsApp';
+import {PhaseManager} from '../PhaseManager';
+import {phase_Compile} from '../phase';
+import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
@@ -28,7 +41,8 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch]> {
 
-	private innerUnits: Unit_PackageJson[] = [];
+	private watcher?: FSWatcher;
+	readonly innerUnits: Unit_PackageJson[] = [];
 	private watchDebounce!: () => void;
 
 	private readonly suffixesToWatch: string[] = [
@@ -39,9 +53,17 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		'svg'
 	];
 
+
 	constructor(config: Unit_NodeProject<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_NodeProject);
+	}
+
+	protected deriveDistDependencies() {
+		return this.innerUnits.reduce((dependencies, unit) => {
+			dependencies[unit.config.key] = this.runtimeContext.baiConfig.thunderstormVersion;
+			return dependencies;
+		}, super.deriveDistDependencies());
 	}
 
 	assignUnit(units: ProjectUnit[]) {
@@ -50,6 +72,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 			.filter(unit => unit.config.fullPath.includes(this.config.fullPath)) as Unit_PackageJson[];
 
 		this.innerUnits.push(...validUnits);
+		Object.freeze(this.innerUnits);
 	}
 
 	private async installGlobals() {
@@ -75,7 +98,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 		this.setStatus('Installing packages', 'start');
 		const units = this.innerUnits.filter(unit => unit.isInstanceOf(Unit_TypescriptLib)) as Unit_TypescriptLib[];
-		const packages = units.map(unit => unit.config.fullPath);
+		const packages = units.map(unit => unit.config.relativePath);
 		await PNPM.createWorkspace(packages, this.config.fullPath);
 		const commando = this.allocateCommando(Commando_NVM, Commando_PNPM);
 		commando.cd(this.config.fullPath);
@@ -104,14 +127,33 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		});
 	}
 
-	/**
-	 * Init watch events and attach default watch callback with correct params to each of them
-	 * @private
-	 */
-	private initWatch() {
+	async stopWatch() {
+		return this.watcher?.close();
+	}
+
+	private findUnit = (pathDeclarations: PathDeclaration[], currentPath: AbsolutePath): Unit_TypescriptLib => {
+		const unitToReturn = pathDeclarations.find(declaration => currentPath.startsWith(`${declaration.fullPath}/`))?.unit;
+		if (!unitToReturn)
+			throw new MUSTNeverHappenException(`current path doesnt match any declared unit, current path: ${currentPath}`);
+
+		return unitToReturn;
+	};
+
+	//######################### Phase Implementation #########################
+
+	async install() {
+		await this.installGlobals();
+		await this.installPackages();
+	}
+
+	async watch() {
+		if (this.watcher)
+			throw new BadImplementationException('Watcher already initialized, MUST call stopWatch() before calling watch()');
+
 		const pathDeclarations = this.prepareWatchPaths();
+		this.logVerbose('listening on paths:', pathDeclarations);
 		const paths = pathDeclarations.flatMap(path => path.paths);
-		const watcher = chokidar.watch(paths);
+		this.watcher = chokidar.watch(paths);
 
 		// set all events to watch and handle them
 		return new Promise<void>((resolve, error) => {
@@ -132,6 +174,15 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 				return unit;
 			};
 
+			const keyToInnerUnitMap = arrayToMap(this.innerUnits, u => u.config.key);
+			const unitsMapper = new UnitsDependencyMapper(this.innerUnits.map(unit => {
+				const config: Readonly<Config_ProjectUnit> = unit.config;
+				return ({
+					key: config.key,
+					dependsOn: _keys(config.dependencies)
+				});
+			}));
+
 			// set the debounce event
 			this.watchDebounce = queuedDebounce(async () => {
 				const _pathsToDelete = [...pathsToDelete];
@@ -146,16 +197,26 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					return async () => path.unit.removeSpecificFileFromDist(path.path);
 				}));
 
-				// fire all compile events
-				await Promise_all_sequentially(unitsToCompile.map(unit => {
-					return async () => unit.watchCompile();
-				}));
+				// // fire all compile events
+				// await Promise_all_sequentially(unitsToCompile.map(unit => {
+				// 	return async () => unit.watchCompile();
+				// }));
 
+				const libsToCompile = unitsMapper.getReverseDependencies(unitsToCompile.map(u => u.config.key),);
+				const phaseManager = new PhaseManager(this.config.fullPath, [phase_Compile], unitsMapper.buildDependencyTree(libsToCompile).map(units => units.map(unitKey => keyToInnerUnitMap[unitKey])));
+				const executionPlan = await phaseManager.calculateExecutionSteps();
+				process.on('SIGINT', async () => {
+					await phaseManager.break();
+				});
+
+				await phaseManager.execute(executionPlan);
+
+				this.logInfo('Completed successfully');
 				//dispatch post debounce event to parent
 				await dispatcher_UnitWatchCompile.dispatchAsync(unitsToCompile);
 			}, 2 * Second, 10 * Second);
 
-			watcher
+			this.watcher!
 				.on('error', (error) => {
 					this.logError('Error while watching', error);
 				})
@@ -163,7 +224,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					this.logInfo('Watching...');
 					dispatcher_WatchReady.dispatch();
 
-					watcher
+					this.watcher!
 						.on('add', (path) => {
 							onUnitChange(path);
 
@@ -197,35 +258,12 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 				});
 
 			const terminatable = async () => {
-				await watcher.close();
+				await this.watcher?.close();
 				this.unregisterTerminatable(terminatable);
 			};
 
 			this.registerTerminatable(terminatable);
 		});
-	}
-
-	private findUnit = (pathDeclarations: PathDeclaration[], currentPath: AbsolutePath): Unit_TypescriptLib => {
-		const unitToReturn = pathDeclarations.find(declaration => currentPath.startsWith(`${declaration.fullPath}/`))?.unit;
-		if (!unitToReturn)
-			throw new MUSTNeverHappenException(`current path doesnt match any declared unit, current path: ${currentPath}`);
-
-		return unitToReturn;
-	};
-
-	private async watchImpl() {
-		await this.initWatch();
-	}
-
-	//######################### Phase Implementation #########################
-
-	async install() {
-		await this.installGlobals();
-		await this.installPackages();
-	}
-
-	async watch() {
-		await this.watchImpl();
 	}
 
 	async purge() {

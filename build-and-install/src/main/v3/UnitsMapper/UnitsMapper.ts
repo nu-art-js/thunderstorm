@@ -19,8 +19,9 @@ export class UnitsMapper
 	 * @param units - The project units derived from the file system
 	 */
 	async resolveUnits(path: string, projectRoot = path, units = [] as BaseUnit<any>[]) {
+		let unit;
 		for (const rule of this.rules) {
-			const unit = await rule.resolveUnit(path, projectRoot);
+			unit = await rule.resolveUnit(path, projectRoot);
 			if (!unit)
 				continue;
 

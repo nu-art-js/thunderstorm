@@ -3,7 +3,7 @@ import {RunningStatusHandler} from './RunningStatusHandler';
 import {Phase} from './phase';
 import {ProjectUnit} from './units/ProjectUnit';
 import {BaseUnit} from './units/BaseUnit';
-import {RuntimeParams} from '../core/params/params';
+import {BaiParams, RuntimeParams} from '../core/params/params';
 import {PhaseAggregatedException} from '../core/exceptions/PhaseAggregatedException';
 
 export type ScheduledStep = {
@@ -23,12 +23,14 @@ export class PhaseManager
 	private readonly units: BaseUnit[][];
 	private runningUnits: BaseUnit[] = [];
 	private killed = false;
+	private runtimeParams: BaiParams
 
-	constructor(outputFolder: string, phases: Phase<any>[], units: BaseUnit[][]) {
+	constructor(outputFolder: string, phases: Phase<any>[], units: BaseUnit[][],runtimeParams: BaiParams) {
 		super();
 		this.outputFolder = outputFolder;
 		this.phases = phases;
 		this.units = units;
+		this.runtimeParams = runtimeParams;
 	}
 
 	//######################### Initialization #########################

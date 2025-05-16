@@ -2,7 +2,7 @@
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {ProjectUnit_RuntimeContext, RuntimeParams, Unit_TypescriptLib} from '../../_common';
+import {FileSystemUtils, ProjectUnit_RuntimeContext, RuntimeParams, Unit_TypescriptLib} from '../../_common';
 import {resolve} from 'path';
 import {expect} from 'chai';
 import {setupWorkspace} from '@nu-art/ts-common/testing/workspace-creator';
@@ -75,6 +75,7 @@ describe('TypescriptLib - Test Phase', () => {
 
 	after(async () => {
 		RuntimeParams.test = false;
+		await FileSystemUtils.folder.delete(pathToTemp);
 		await CommandoPool.killAll();
 	});
 });

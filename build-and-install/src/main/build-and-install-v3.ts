@@ -1,46 +1,51 @@
-import {_keys, _values, arrayToMap, BeLogged, DebugFlag, ImplementationMissingException, LogClient_Terminal, Logger, LogLevel} from '@nu-art/ts-common';
-import {RuntimeParams} from './core/params/params';
+import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, LogClient_Terminal, Logger, LogLevel} from '@nu-art/ts-common';
+import {AllBaiParams, BaiParams} from './core/params/params';
 import {Phase} from './phase';
-import {phases_Build, phases_Deploy, phases_Launch, phases_Terminating} from './v3/phase';
-import fs from 'fs';
+import {phases_Build, phases_Deploy, phases_Launch} from './v3/phase';
 import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper';
-import {UnitsDependencyMapper} from './v3/UnitsDependencyMapper/UnitsDependencyMapper';
+import {UnitDependentNode, UnitsDependencyMapper} from './v3/UnitsDependencyMapper/UnitsDependencyMapper';
 import {FilesCache} from './v3/core/FilesCache';
 import {BAI_Config} from './core/types';
-import {Config_ProjectUnit, ProjectUnit} from './v3/units/ProjectUnit';
+import {Config_ProjectUnit, ProjectUnit, ProjectUnit_RuntimeContext} from './v3/units/ProjectUnit';
 import {PhaseManager} from './v3/PhaseManager';
-
-
-DebugFlag.DefaultLogLevel = RuntimeParams.debug ? LogLevel.Debug : LogLevel.Info;
+import {BaseUnit, Unit_NodeProject} from './v3/units';
+import {resolve} from 'path';
+import {CONST_BaiConfig, CONST_NodeModules} from './core/consts';
+import {FileSystemUtils} from './v3/core/FileSystemUtils';
+import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
+import {UnitMapper_NodeLib, UnitMapper_NodeProject} from './v3/UnitsMapper/resolvers';
 
 
 const DefaultPhases = [
-	...phases_Terminating,
 	...phases_Build,
 	...phases_Launch,
 	...phases_Deploy,
 ];
 
-export class BuildAndInstallV3
+export class BuildAndInstall
 	extends Logger {
 
 	private phases: Phase<string>[] = DefaultPhases;
 	private pathToProject: string;
+	private allUnits: BaseUnit<any>[] = [];
+	readonly nodeProjectUnit!: Unit_NodeProject;
+	readonly runtimeParams: BaiParams = CLIParamsResolver.create(...AllBaiParams).resolveParamValue();
+	readonly projectUnits: ProjectUnit[] = [];
 
 	constructor(pathToProject: string = process.env.INIT_CWD ?? process.cwd()) {
 		super();
 		BeLogged.addClient(LogClient_Terminal);
-		this.logDebug('Runtime params:', RuntimeParams);
 
-		this.setMinLevel(LogLevel.Info);
-		if (RuntimeParams.debug)
-			this.setMinLevel(LogLevel.Debug);
-		if (RuntimeParams.verbose)
-			this.setMinLevel(LogLevel.Verbose);
 
-		if (!fs.existsSync(pathToProject))
-			throw new ImplementationMissingException(`Missing project config file, could not find in path: ${pathToProject}`);
+		DebugFlag.DefaultLogLevel = LogLevel.Info;
+		if (this.runtimeParams.debug)
+			DebugFlag.DefaultLogLevel = LogLevel.Debug;
 
+		if (this.runtimeParams.verbose)
+			DebugFlag.DefaultLogLevel = LogLevel.Verbose;
+
+		this.setMinLevel(DebugFlag.DefaultLogLevel);
+		this.logDebug('Runtime params:', this.runtimeParams);
 		this.pathToProject = pathToProject;
 	}
 
@@ -48,68 +53,90 @@ export class BuildAndInstallV3
 		this.phases = phases;
 	}
 
-	run() {
-		(async () => {
-			const baiConfig = await this.loadProjectConfig();
-			const keyToUnitMap = await this.resolveUnits(baiConfig);
-			const projectUnits: ProjectUnit[] = _values(keyToUnitMap).filter(unit => unit.isInstanceOf(ProjectUnit));
-
-			const unitDependencyTree: ProjectUnit[][] = new UnitsDependencyMapper(projectUnits.map(unit => {
-				const config: Readonly<Config_ProjectUnit> = unit.config;
-				return ({
-					key: config.key,
-					dependsOn: _keys(config.dependencies)
-				});
-			}))
-				.buildDependencyTree()
-				.map(units => units.map(unitKey => keyToUnitMap[unitKey]));
-
-			const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree);
-			const executionPlan = await phaseManager.calculateExecutionSteps();
-			process.on('SIGINT', async () => {
-				await phaseManager.break();
-			});
-
-			await phaseManager.execute(executionPlan);
-
-			this.logInfo('Completed successfully');
-			this.logInfo('---------------------------------- Process Completed successfully ----------------------------------');
-			if (RuntimeParams.closeOnExit)
-				process.exit(0);
-
-		})()
-			.then(() => {
-				process.on('SIGINT', () => {
-					console.log('completed');
-					return process.exit(0);
-				});
-			})
-			.catch(err => {
-				process.on('SIGINT', () => {
-					console.log('Failed with error: ', err);
-					return process.exit(1);
-				});
-			});
+	async build() {
+		this.projectUnits.push(...(await this.resolveUnits()));
+		Object.freeze(this.projectUnits);
 	}
 
-	private async loadProjectConfig() {
-		const baiConfig = await FilesCache.load.json<BAI_Config>(`${this.pathToProject}/bai-config.json`);
-		if (!baiConfig)
-			throw new ImplementationMissingException('Missing project bai config file');
+	async run() {
+		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
+		const unitDependencyTree: ProjectUnit[][] = new UnitsDependencyMapper(this.projectUnits.map(unit => {
+			const config: Readonly<Config_ProjectUnit> = unit.config;
+			return ({
+				key: config.key,
+				dependsOn: _keys(config.dependencies)
+			});
+		}))
+			.buildDependencyTree()
+			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
 
-		baiConfig.pathToProject = this.pathToProject;
-		return baiConfig;
-	}
-
-	private async resolveUnits(baiConfig: BAI_Config) {
-		const unitsMapper = new UnitsMapper();
-		const units = await unitsMapper.resolveUnits(this.pathToProject);
-		units.forEach(unit => {
-			unit.setupRuntimeContext(baiConfig);
-			this.logDebug(`unit (${unit.constructor.name}): ${unit.config.key}`);
-			this.logVerbose(unit.config);
+		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
+		const executionPlan = await phaseManager.calculateExecutionSteps();
+		process.on('SIGINT', async () => {
+			await phaseManager.break();
 		});
-		return arrayToMap(units, unit => unit.config.key);
+
+		await phaseManager.execute(executionPlan);
+
+		this.logInfo('Completed successfully');
+		this.logInfo('---------------------------------- Process Completed successfully ----------------------------------');
+	}
+
+	private async resolveUnits() {
+		this.logVerbose(`Resolving units from: ${this.pathToProject}`);
+		this.allUnits = await new UnitsMapper()
+			.addRules(UnitMapper_NodeLib)
+			.addRules(UnitMapper_NodeProject)
+			.resolveUnits(this.pathToProject);
+		Object.freeze(this.allUnits);
+
+		this.logDebug('Units found:', this.allUnits.map(unit => `${unit.constructor?.['name']}: ${unit.config.key}`).join('\n'));
+		const unitKeyToUnitMap = arrayToMap(this.allUnits, unit => unit.config.key);
+
+		this.logVerbose(`Initializing units...`);
+		await Promise.all(this.allUnits.map(u => u.init()));
+
+		const allProjectUnits = this.allUnits.filter(unit => unit.isInstanceOf(ProjectUnit)) as ProjectUnit[];
+		const nodeProjectUnit = allProjectUnits.find(unit => unit.isInstanceOf(Unit_NodeProject)) as Unit_NodeProject;
+		// @ts-ignore
+		this.nodeProjectUnit = nodeProjectUnit;
+
+		this.nodeProjectUnit.assignUnit(allProjectUnits);
+		this.logDebug(`Parent unit: ${this.nodeProjectUnit.config.key}`);
+		this.logDebug(`Child units: ${allProjectUnits.map(unit => unit.config.key).join(', ')}`);
+
+		const pathToBaiConfig = resolve(this.nodeProjectUnit.config.fullPath, CONST_BaiConfig);
+		this.logVerbose(`Loading BAI-Config from: ${pathToBaiConfig}`);
+		const baiConfig = await FilesCache.load.json<BAI_Config>(pathToBaiConfig);
+		this.logDebug('Loaded BAI-Config', baiConfig);
+
+		const unitsDependencies: UnitDependentNode[] = allProjectUnits.map(unit => ({key: unit.config.key, dependsOn: _keys(unit.config.dependencies)}));
+		this.logDebug('Units dependencies:', unitsDependencies);
+
+
+		const runtimeContext: ProjectUnit_RuntimeContext = ({
+			parentUnit: this.nodeProjectUnit,
+			childUnits: allProjectUnits,
+			baiConfig,
+			runtimeParams: this.runtimeParams,
+			unitsMapper: new UnitsDependencyMapper(unitsDependencies),
+			unitsResolver: <UnitType>(keys: string[], className: Constructor<UnitType>): UnitType[] => {
+				return keys.map(key => unitKeyToUnitMap[key]).filter(unit => unit.isInstanceOf(className)) as UnitType[];
+			},
+		});
+
+		allProjectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));
+		await Promise.all(allProjectUnits.map(u => u.prepare()));
+		this.logVerbose('Units found:', this.allUnits);
+
+		if (!(await FileSystemUtils.file.exists(resolve(this.nodeProjectUnit.config.fullPath, CONST_NodeModules)))) {
+			this.logInfo(`root project is missing ${CONST_NodeModules} folder. Enabling install...`);
+			this.runtimeParams.install = true;
+			this.runtimeParams.installGlobals = true;
+			this.runtimeParams.installPackages = true;
+		}
+
+		return allProjectUnits;
 	}
 }
 

@@ -21,6 +21,7 @@ import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {BAI_Config} from '../../core/types';
 import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper';
+import {RuntimeParams} from '../../core/params/params';
 
 
 export type BaseUnit_Config = {
@@ -32,6 +33,7 @@ export type UnitRuntimeContext = {
 	baiConfig: Readonly<BAI_Config>,
 	unitsMapper: UnitsDependencyMapper,
 	unitsResolver: <Class extends BaseUnit>(keys: string[], className: Constructor<Class>) => Class[],
+	runtimeParams: typeof RuntimeParams
 };
 
 export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_Context extends UnitRuntimeContext = UnitRuntimeContext>
@@ -83,7 +85,7 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 		}
 	}
 
-	protected async init(setInitialized: boolean = true) {
+	public async init(setInitialized: boolean = true) {
 		this.setStatus('Initializing');
 		//Register the unit to PhaseRunnerEvent dispatcher
 		dispatcher_PhaseChange.addListener(this);
@@ -161,6 +163,9 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 
 	public getLogs() {
 		return this.logger.buffers[0];
+	}
+
+	async prepare() {
 	}
 }
 

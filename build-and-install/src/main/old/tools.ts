@@ -1,17 +1,13 @@
-import {__stringify} from '@nu-art/ts-common';
-import {PackageJson} from '../core/types';
+import {_keys, deepClone, StringMap} from '@nu-art/ts-common';
+import {TS_PackageJSON} from '../v3/UnitsMapper/types';
 
 
-export function convertPackageJSONTemplateToPackJSON_Value(template: PackageJson, value: (value: string, key?: string) => string): PackageJson {
-	let workspacePackageJsonAsString = __stringify(template, true);
-	let match = null;
-	do {
-		match = workspacePackageJsonAsString.match(/"(.*?)": ?"\$([A-Za-z0-9_]+?)"/);
-		if (match?.[0])
-			workspacePackageJsonAsString = workspacePackageJsonAsString.replace(new RegExp(`\\$${match[2]}`), value(match[2], match[1]));
-	} while (match);
+export function convertPackageJSONTemplateToPackJSON_Value(template: Readonly<TS_PackageJSON>, value: (value: string) => string): TS_PackageJSON {
+	const packageJson = deepClone(template);
+	packageJson.dependencies = (_keys(packageJson.dependencies ?? {}) as string[])?.reduce((dependencies, dependencyKey: string) => {
+		dependencies[dependencyKey] = value(dependencyKey) ?? packageJson.dependencies![dependencyKey];
+		return dependencies;
+	}, {} as StringMap);
 
-	const packageJson = JSON.parse(workspacePackageJsonAsString) as PackageJson;
-
-	return packageJson;
+	return Object.freeze(packageJson);
 }

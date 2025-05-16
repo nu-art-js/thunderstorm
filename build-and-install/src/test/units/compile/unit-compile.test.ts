@@ -1,16 +1,17 @@
 // file: ./tests/phase-execution/compile-phase.test.ts
+import {DebugFlag, LogLevel} from '@nu-art/ts-common';
+
+DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {Unit_TypescriptLib} from '../../_common';
+import {ProjectUnit_RuntimeContext, Unit_TypescriptLib} from '../../_common';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
-import {DebugFlag, LogLevel} from '@nu-art/ts-common';
 import {setupWorkspace} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 
-DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 const libName = 'lib-compile';
 const pathToTemp = resolve(__dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');
@@ -18,15 +19,18 @@ const pathToWorkspace = resolve(pathToTemp, './workspace');
 
 const libCompile = mapLibFileSystem(libName);
 
-const packageJsonDist = {name: libName, version: '1.0.0'};
 
 function mapLibFileSystem(libName: string) {
 	const path = resolve(pathToWorkspace, libName);
 	const srcMain = resolve(path, 'src/main');
 	const srcTest = resolve(path, 'src/test');
 
+	const packageJsonDist = {name: libName, version: '1.0.0'};
 	return {
 		name: libName,
+		packageJson: {
+			dist: packageJsonDist
+		},
 		path,
 		eslint: resolve(path, '.eslintrc.json'),
 		main: {
@@ -68,7 +72,10 @@ const test = async (setup: Input): Promise<void> => {
 	});
 
 	unit.setMinLevel(LogLevel.Verbose);
-	(unit as any).packageJson = {dist: packageJsonDist};
+	(unit as any).packageJson = {dist: libCompile.packageJson.dist};
+
+	const runtimeContext = {parentUnit: {config: {fullPath: pathToWorkspace}}} as unknown as ProjectUnit_RuntimeContext;
+	unit.setupRuntimeContext(runtimeContext);
 
 	if (setup.compileWatch)
 		await unit.watchCompile();
@@ -112,8 +119,7 @@ describe('Unit_NodeLib - Compile Phase', () => {
 		input: {fixtures: ['./workspace-compile-valid.txt']},
 		result: async () => {
 			const pkg = readDistPackageJSON();
-			expect(pkg.name).to.equal(packageJsonDist.name);
-			expect(pkg.version).to.equal(packageJsonDist.version);
+			expect(pkg).to.deep.equal(libCompile.packageJson.dist);
 		}
 	}));
 
@@ -169,6 +175,7 @@ describe('Unit_NodeLib - Compile Phase', () => {
 
 
 	after(async () => {
+		// await FileSystemUtils.folder.delete(pathToTemp);
 		await CommandoPool.killAll();
 	});
 });

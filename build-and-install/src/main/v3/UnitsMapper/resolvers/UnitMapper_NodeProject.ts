@@ -19,6 +19,7 @@ export class UnitMapper_NodeProject_Class
 		return new Unit_NodeProject({
 			...context.baseConfig,
 			isRoot: true,
+			packageJson: context.packageJson,
 		});
 	}
 }
