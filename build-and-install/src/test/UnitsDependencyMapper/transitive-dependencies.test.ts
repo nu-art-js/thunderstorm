@@ -10,7 +10,7 @@ export type TestCase_GetTransitiveDependencies = TestSuite_GetTransitiveDependen
 
 const test = async (input: Input): Promise<Result> => {
 	const mapper = new UnitsDependencyMapper(input.units);
-	return mapper.getTransitiveDependencies(input.target).sort();
+	return mapper.getTransitiveDependencies([input.target]).sort();
 };
 
 const runTestCase = (testCase: TestCase_GetTransitiveDependencies, processor?: typeof defaultTestProcessor) => () => {

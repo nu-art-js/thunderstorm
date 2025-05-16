@@ -1,4 +1,4 @@
-import {BaseCliParam} from '@nu-art/commando/cli-params/types';
+import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
 import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {exists} from '@nu-art/ts-common';
 
@@ -373,5 +373,4 @@ export const AllBaiParams = [
 	BaiParam_DebugLifecycle
 ];
 
-const params = CLIParamsResolver.create(...AllBaiParams).resolveParamValue();
-export const RuntimeParams = params;
+export type BaiParams = CliParams<typeof AllBaiParams>;

@@ -1,14 +1,15 @@
 import {BaseUnit, Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
 import {UnitPhaseImplementor} from '../../../types/types';
 import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../../phase';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
+import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {promises as _fs} from 'fs';
 import {RuntimeParams} from '../../../core/params/params';
-import {FirebasePackageConfig, PackageJson} from '../../../core/types';
-import {_keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, TypedMap} from '@nu-art/ts-common';
+import {FirebasePackageConfig} from '../../../core/types';
+import {_keys, _logger_logPrefixes, ImplementationMissingException, LogLevel, Second, sleep, TypedMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
 import {dispatcher_UnitWatchCompile, dispatcher_WatchReady, OnUnitWatchCompiled} from '../../../old/runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
+import {FileSystemUtils} from '../../core/FileSystemUtils';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',
@@ -80,7 +81,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		});
 	}
 
-	protected async init(setInitialized: boolean = true): Promise<void> {
+	async init(setInitialized: boolean = true): Promise<void> {
 		await super.init(false);
 
 		// only sign on listeners when the unit is being initialized
@@ -100,21 +101,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await this.resolveFunctionsJSON();
 	}
 
-	async compile() {
-		this.setStatus('Compiling', 'start');
-		try {
-			await this.resolveTSConfig();
-			await this.clearOutputDir();
-			await this.createAppVersionFile();
-			await this.compileImpl();
-			await this.copyAssetsToOutput();
-			await this.createDependenciesDir();
-			await this.copyPackageJSONToOutput();
-			this.setStatus('Compiled', 'end');
-		} catch (e: any) {
-			this.setErrorStatus('Compilation Error', e);
-			throw e;
-		}
+	async postCompile() {
+		await this.createAppVersionFile();
+		await this.createDependenciesDir();
 	}
 
 	async launch() {
@@ -276,46 +265,30 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		// await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
+	protected deriveDistDependencies() {
+		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies([this.config.key]);
+		const dependencyUnits = this.runtimeContext.unitsResolver<Unit_TypescriptLib>(unitKeys, Unit_TypescriptLib);
+
+		return dependencyUnits.reduce((dependencies, unit) => {
+			dependencies[unit.config.key] = `file:.dependencies/${unit.config.key}`;
+			return dependencies;
+		}, super.deriveDistDependencies());
+	}
+
 	private async createDependenciesDir() {
 		//Gather units that are dependencies of this unit
-		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies(this.config.key);
+		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies([this.config.key]);
 		const dependencyUnits = this.runtimeContext.unitsResolver<Unit_TypescriptLib>(unitKeys, Unit_TypescriptLib);
-		if (!dependencyUnits.length)
-			return;
-
-		const packageJsonConverter = (pj: PackageJson): PackageJson => {
-			const finalPJ = deepClone(pj);
-			finalPJ.dependencies ??= {};
-			_keys(finalPJ.dependencies).reduce((acc, packageName) => {
-				const unit = dependencyUnits.find(unit => unit.packageJson.template.name === packageName);
-				if (!unit)
-					return acc;
-
-				acc[packageName] = `file:.dependencies/${unit.config.key}`;
-				return acc;
-			}, finalPJ.dependencies);
-
-			return finalPJ;
-		};
-
 		await Promise.all(dependencyUnits.map(async unit => {
 			//Copy dependency unit output into this units output/.dependency dir
 			const dependencyOutputPath = `${unit.config.output}/`;
 			const targetPath = `${this.config.output}/.dependencies/${unit.config.key}/`;
-			const pjTargetPath = `${targetPath}/${CONST_PackageJSON}`;
+			await FileSystemUtils.folder.create(targetPath);
 
 			await this.allocateCommando()
-				.append(`mkdir -p ${targetPath}`)
 				.append(`rsync -a --delete ${dependencyOutputPath} ${targetPath}`)
 				.execute();
-
-			//Copy units dependency package into newly created dir
-			const dependencyPJ = packageJsonConverter(unit.packageJson.dist);
-			const fileContent = JSON.stringify(dependencyPJ, null, 2);
-			await _fs.writeFile(pjTargetPath, fileContent, {encoding: 'utf-8'});
 		}));
-
-		this.packageJson.dist = packageJsonConverter(this.packageJson.dist);
 	}
 
 	//######################### Launch Logic #########################

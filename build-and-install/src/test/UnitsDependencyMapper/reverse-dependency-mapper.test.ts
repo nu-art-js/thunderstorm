@@ -14,7 +14,7 @@ export type TestCase_UnitsReverseDependency = TestSuite_UnitsReverseDependency['
 const test = async (input: ReverseFilterInput): Promise<ReverseFilterResult> => {
 	const mapper = new UnitsDependencyMapper(input.units);
 	const result = mapper.getReverseDependencies(input.changed);
-	return result.map(unit => unit.key).sort();
+	return result.sort();
 };
 
 const runTestCase = (testCase: TestCase_UnitsReverseDependency, processor?: typeof defaultTestProcessor) => {

@@ -16,7 +16,8 @@ export type RuntimeProjectConfig = {
 export type Constructor<T> = new (...args: any) => T
 
 export type BAI_Config = {
-	pathToProject: string
+	thunderstormVersion: string
+	appVersion: string
 	dependenciesVersions?: TypedMap<string>
 	files?: {
 		firebase?: {
@@ -26,7 +27,7 @@ export type BAI_Config = {
 			firestoreRules?: string
 		}
 		typescript?: {
-			tsConfig?: string
+			tsConfig?: StringMap
 			eslintConfig?: string
 		}
 	}

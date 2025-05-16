@@ -13,9 +13,8 @@ export class UnitsDependencyMapper {
 			this.map.set(unit.key, {key: unit.key, dependsOn: unit.dependsOn});
 	}
 
-	public buildDependencyTree(): string[][] {
+	public buildDependencyTree(allKeys = [...this.map.keys()]): string[][] {
 		const map = this.map;
-		const allKeys = [...map.keys()];
 		const dependentsMap = new Map<string, Set<string>>();
 		const referencedKeys = new Set<string>();
 
@@ -149,7 +148,7 @@ export class UnitsDependencyMapper {
 		}
 	}
 
-	public getReverseDependencies(changedKeys: string[], strict = true): UnitDependentNode[] {
+	public getReverseDependencies(changedKeys: string[], strict = true): string[] {
 		const dependentsMap = new Map<string, Set<string>>();
 		for (const [key, node] of this.map.entries()) {
 			for (const dep of node.dependsOn) {
@@ -176,16 +175,17 @@ export class UnitsDependencyMapper {
 				stack.push(...dependents);
 		}
 
-		return [...this.map.values()].filter(node => visited.has(node.key));
+		return Array.from(visited);
 	}
 
-	public getTransitiveDependencies(key: string): string[] {
+	public getTransitiveDependencies(key: string[]): string[] {
 		const visited = new Set<string>();
-		const stack = [key];
+		const stack = [...key];
 
 		while (stack.length > 0) {
 			const current = stack.pop()!;
-			if (visited.has(current)) continue;
+			if (visited.has(current))
+				continue;
 			visited.add(current);
 			const node = this.map.get(current);
 			if (!node)
@@ -193,7 +193,7 @@ export class UnitsDependencyMapper {
 			stack.push(...node.dependsOn);
 		}
 
-		visited.delete(key);
+		key.forEach(_key => visited.delete(_key));
 		return [...visited];
 	}
 

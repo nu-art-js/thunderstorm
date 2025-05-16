@@ -25,6 +25,7 @@ export class UnitMapper_NodeLib_Class
 			customESLintConfig: context.customESLintConfig,
 			customTSConfig: context.customTSConfig,
 			output: outputDir,
+			packageJson: context.packageJson,
 		});
 	}
 }

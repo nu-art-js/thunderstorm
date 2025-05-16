@@ -60,6 +60,7 @@ export class UnitMapper_FirebaseHosting_Class
 			customESLintConfig: context.customESLintConfig,
 			customTSConfig: context.customTSConfig,
 			output: outputDir ?? Unit_FirebaseHostingApp.DefaultConfig_FirebaseHosting.output,
+			packageJson: context.packageJson,
 		});
 	}
 }

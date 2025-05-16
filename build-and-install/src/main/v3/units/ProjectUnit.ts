@@ -9,7 +9,7 @@ export type Config_ProjectUnit = BaseUnit_Config & {
 }
 
 export type ProjectUnit_RuntimeContext = UnitRuntimeContext & {
-	parentUnit: ProjectUnit
+	parentUnit: ProjectUnit<any>
 	childUnits: ProjectUnit[]
 }
 
@@ -23,13 +23,5 @@ export abstract class ProjectUnit<C extends Config_ProjectUnit = Config_ProjectU
 	constructor(config: C) {
 		super(config);
 		this.addToClassStack(ProjectUnit);
-	}
-
-	/**
-	 * Prepares the workspace for this project unit.
-	 * Ensures tsconfig.json files exist in the proper source folders,
-	 * and copies .eslintrc.json if necessary, handling fallback scenarios cleanly.
-	 */
-	async prepare(params: { baiDefaultsPath: string; projectRoot: string; }) {
 	}
 }

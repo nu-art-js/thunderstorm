@@ -35,11 +35,21 @@ async function assertExists(path: string, mustExist: boolean, type: 'File' | 'Fo
 
 export const FileSystemUtils = {
 	file: {
+		exists: async (pathToFile: string) => {
+			return await exists(pathToFile);
+		},
 		delete: async (pathToFile: string, mustExist = false) => {
 			if (!await assertExists(pathToFile, mustExist, 'File'))
 				return;
 			await assertFile(pathToFile);
 			return _fs.rm(pathToFile);
+		},
+		write: async (pathToFile: string, content: string) => {
+			return _fs.writeFile(pathToFile, content, 'utf-8');
+		},
+		read: async (pathToFile: string) => {
+			await assertFile(pathToFile);
+			return _fs.readFile(pathToFile, 'utf-8');
 		}
 	},
 	folder: {

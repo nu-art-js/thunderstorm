@@ -12,6 +12,7 @@ import {dispatcher_WatchReady} from '../../../old/runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node';
+import {resolve} from 'path';
 
 
 export type FirebaseHostingConfig = {
@@ -53,7 +54,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		this.addToClassStack(Unit_FirebaseHostingApp);
 	}
 
-	protected async init(setInitialized: boolean = true): Promise<void> {
+	async init(setInitialized: boolean = true): Promise<void> {
 		await super.init(setInitialized);
 
 		dispatcher_WatchReady.removeListener(this);
@@ -72,7 +73,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	async compile() {
 		this.setStatus('Compiling', 'start');
 		try {
-			await this.resolveTSConfig();
+			await this.resolveTSConfig(resolve(this.config.fullPath, './src/main'), 'main');
 			await this.clearOutputDir();
 			await this.createAppVersionFile();
 			await this.compileImpl();

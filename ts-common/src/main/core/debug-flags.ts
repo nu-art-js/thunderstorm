@@ -21,7 +21,8 @@ import {LogLevel, LogLevelOrdinal} from './logger/types';
 
 
 export class DebugFlag {
-	public static DefaultLogLevel = LogLevel.Info;
+
+	public static DefaultLogLevel = LogLevel.Verbose;
 	private readonly key: string;
 	private minLogLevel: LogLevel;
 

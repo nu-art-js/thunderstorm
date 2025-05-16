@@ -12,6 +12,7 @@ import {
 import {BaseUnit} from '../../units';
 import {FilesCache} from '../../core/FilesCache';
 import {BaseUnitConfig, UnitConfigJSON_Base, UnitMapper_Base} from './UnitMapper_Base';
+import {FileSystemUtils} from '../../core/FileSystemUtils';
 
 
 export type UnitConfigJSON_Node = UnitConfigJSON_Base & {
@@ -45,7 +46,11 @@ export abstract class UnitMapper_Node<
 	}
 
 	public async resolveUnit(path: string, root: string): Promise<T | undefined> {
-		const packageJson = await FilesCache.load.json<TS_PackageJSON<ConfigJSON>>(`${path}/__package.json`);
+		const pathToFile = `${path}/__package.json`;
+		if (!await FileSystemUtils.file.exists(pathToFile))
+			return;
+
+		const packageJson = await FilesCache.load.json<TS_PackageJSON<ConfigJSON>>(pathToFile);
 		if (!packageJson)
 			return;
 
