@@ -14,6 +14,8 @@ import {TS_TextArea} from '../../components/TS_Input';
 import {Button} from '../../components/Button/Button';
 import {ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster';
 import {BaseHttpRequest} from '../../../shared';
+import {ModuleFE_Thunderstorm} from '../../modules/ModuleFE_Thunderstorm';
+import {TS_Icons} from '@nu-art/ts-styles';
 
 type Action = {
 	label: string;
@@ -96,7 +98,7 @@ export class ATS_CrudOperations
 
 	//######################### Render #########################
 	render() {
-		const {dbModuleToRequest, selectedAction, input} = this.state;
+		const {dbModuleToRequest, selectedAction, input, result} = this.state;
 
 		return <LL_H_C className={'ats-crud-operations-container'}>
 			<LL_V_L className={'ats-crud-operations-container__selection'}>
@@ -111,6 +113,7 @@ export class ATS_CrudOperations
 					onSelected={this.onDBActionSelected}
 				/>
 				<TS_TextArea
+					key={'crud-operations-query'}
 					className={'ats-crud-operations-container__selection__input'}
 					type={'text'}
 					placeholder={'Enter input'}
@@ -119,11 +122,20 @@ export class ATS_CrudOperations
 					onChange={this.onChangeInput}
 					style={{fontFamily: 'monospace', fontSize: 15}}
 				/>
-				<Button
-					className={'ats-crud-operations-container__selection__execute'}
-					disabled={!(dbModuleToRequest && selectedAction && input)}
-					onClick={this.onClickExecute}
-					variant={'primary'}>Execute</Button>
+				<LL_H_C className={'ats-crud-operations-container__selection__buttons'}>
+					<Button
+						className={'ats-crud-operations-container__selection__execute'}
+						disabled={!(dbModuleToRequest && selectedAction && input)}
+						onClick={this.onClickExecute}
+						variant={'primary'}>Execute</Button>
+					<TS_Icons.copy.component onClick={async () => {
+						if (!result)
+							return;
+						const copyObject = JSON.stringify(result, null, 2);
+						await ModuleFE_Thunderstorm.copyToClipboard(copyObject);
+					}}/>
+				</LL_H_C>
+
 			</LL_V_L>
 			{this.renderResults()}
 		</LL_H_C>;
@@ -131,6 +143,7 @@ export class ATS_CrudOperations
 
 	private renderResult = (item: any) =>
 		(<TS_TextArea
+			key={item?._id}
 			className={'ats-crud-operations-container__result'}
 			type={'text'}
 			value={JSON.stringify(item, null, 2)}
@@ -152,6 +165,5 @@ export class ATS_CrudOperations
 		}
 
 		return this.renderResult(result);
-
 	};
-}
+};
