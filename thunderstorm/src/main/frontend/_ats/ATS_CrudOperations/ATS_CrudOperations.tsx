@@ -128,13 +128,11 @@ export class ATS_CrudOperations
 						disabled={!(dbModuleToRequest && selectedAction && input)}
 						onClick={this.onClickExecute}
 						variant={'primary'}>Execute</Button>
-					<TS_Icons.copy.component onClick={() => {
-						let copyObject = result ?? '';
-						if (Array.isArray(result))
-							copyObject = result.map(item => JSON.stringify(result, null, 2));
-						else if (typeof result !== 'string')
-							copyObject = JSON.stringify(result, null, 2);
-						result && ModuleFE_Thunderstorm.copyToClipboard(copyObject.toString());
+					<TS_Icons.copy.component onClick={async () => {
+						if (!result)
+							return;
+						const copyObject = JSON.stringify(result, null, 2);
+						await ModuleFE_Thunderstorm.copyToClipboard(copyObject);
 					}}/>
 				</LL_H_C>
 
