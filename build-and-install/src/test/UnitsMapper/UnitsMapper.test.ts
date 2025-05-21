@@ -73,7 +73,8 @@ describe('UnitsMapper', () => {
 			isRoot: true,
 			dependencies: {
 				'typescript': 'latest'
-			}
+			},
+			packageJson: {} as any,
 		})]
 	}, testValidator));
 
@@ -90,6 +91,7 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-2`,
 				isRoot: true,
 				dependencies: {},
+				packageJson: {} as any,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-2--lib-1',
@@ -100,6 +102,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			})
 		]
 	}, testValidator));
@@ -117,6 +120,7 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-3`,
 				isRoot: true,
 				dependencies: {},
+				packageJson: {} as any,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-3--lib-1',
@@ -127,6 +131,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-3--lib-2',
@@ -137,6 +142,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			})
 		]
 	}, testValidator));
@@ -154,6 +160,7 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-4`,
 				isRoot: true,
 				dependencies: {},
+				packageJson: {} as any,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-4--lib-1',
@@ -164,6 +171,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-4--lib-2',
@@ -174,6 +182,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			}),
 			new Unit_FirebaseFunctionsApp({
 				basePort: 1,
@@ -197,6 +206,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			} as Unit_FirebaseFunctionsApp_Config)
 		]
 	}, testValidator));
@@ -214,6 +224,7 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-5`,
 				isRoot: true,
 				dependencies: {},
+				packageJson: {} as any,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-5--lib-1',
@@ -224,6 +235,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-5--lib-2',
@@ -234,6 +246,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			}),
 			new Unit_FirebaseHostingApp({
 				servingPort: 1,
@@ -252,6 +265,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			})
 		]
 	}, testValidator));
@@ -269,6 +283,7 @@ describe('UnitsMapper', () => {
 				fullPath: `${__dirname}/cases/test-case-6`,
 				isRoot: true,
 				dependencies: {},
+				packageJson: {} as any,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-6--lib-1',
@@ -279,6 +294,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			}),
 			new Unit_TypescriptLib({
 				key: 'test-case-6--lib-2',
@@ -289,6 +305,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			}),
 			new Unit_FirebaseFunctionsApp({
 				basePort: 1,
@@ -312,6 +329,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			} as Unit_FirebaseFunctionsApp_Config),
 			new Unit_FirebaseHostingApp({
 				servingPort: 1,
@@ -330,6 +348,7 @@ describe('UnitsMapper', () => {
 				dependencies: {},
 				customESLintConfig: false,
 				customTSConfig: false,
+				packageJson: {} as any,
 			}),
 
 		]

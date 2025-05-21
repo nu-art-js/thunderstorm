@@ -1,7 +1,6 @@
 import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, LogClient_Terminal, Logger, LogLevel} from '@nu-art/ts-common';
 import {AllBaiParams, BaiParams} from './core/params/params';
-import {Phase} from './phase';
-import {phases_Build, phases_Deploy, phases_Launch} from './v3/phase';
+import {Phase, phases_Build, phases_Deploy, phases_Launch} from './v3/phase';
 import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper';
 import {UnitDependentNode, UnitsDependencyMapper} from './v3/UnitsDependencyMapper/UnitsDependencyMapper';
 import {FilesCache} from './v3/core/FilesCache';
@@ -37,7 +36,6 @@ export class BuildAndInstall
 		BeLogged.addClient(LogClient_Terminal);
 
 
-		DebugFlag.DefaultLogLevel = LogLevel.Info;
 		if (this.runtimeParams.debug)
 			DebugFlag.DefaultLogLevel = LogLevel.Debug;
 
@@ -98,11 +96,13 @@ export class BuildAndInstall
 
 		const allProjectUnits = this.allUnits.filter(unit => unit.isInstanceOf(ProjectUnit)) as ProjectUnit[];
 		const nodeProjectUnit = allProjectUnits.find(unit => unit.isInstanceOf(Unit_NodeProject)) as Unit_NodeProject;
+
 		// @ts-ignore
-		this.nodeProjectUnit = nodeProjectUnit;
+		this['nodeProjectUnit'] = nodeProjectUnit;
 
 		this.nodeProjectUnit.assignUnit(allProjectUnits);
 		this.logDebug(`Parent unit: ${this.nodeProjectUnit.config.key}`);
+
 		this.logDebug(`Child units: ${allProjectUnits.map(unit => unit.config.key).join(', ')}`);
 
 		const pathToBaiConfig = resolve(this.nodeProjectUnit.config.fullPath, CONST_BaiConfig);
@@ -127,7 +127,7 @@ export class BuildAndInstall
 
 		allProjectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));
 		await Promise.all(allProjectUnits.map(u => u.prepare()));
-		this.logVerbose('Units found:', this.allUnits);
+		// this.logVerbose('Units found:', this.allUnits);
 
 		if (!(await FileSystemUtils.file.exists(resolve(this.nodeProjectUnit.config.fullPath, CONST_NodeModules)))) {
 			this.logInfo(`root project is missing ${CONST_NodeModules} folder. Enabling install...`);

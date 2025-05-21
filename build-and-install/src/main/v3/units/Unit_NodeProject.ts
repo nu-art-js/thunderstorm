@@ -1,20 +1,8 @@
-import {UnitPhaseImplementor} from '../../types/types';
-import {Phase_Install, Phase_Watch} from '../../phase';
-import {RuntimeParams} from '../../core/params/params';
+import {UnitPhaseImplementor} from '../core/types';
 import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
-import {
-	_keys,
-	arrayToMap,
-	BadImplementationException,
-	clearArrayInstance,
-	MUSTNeverHappenException,
-	Promise_all_sequentially,
-	queuedDebounce,
-	Second
-} from '@nu-art/ts-common';
+import {_keys, arrayToMap, BadImplementationException, MUSTNeverHappenException, Promise_all_sequentially, queuedDebounce, Second} from '@nu-art/ts-common';
 import * as chokidar from 'chokidar';
 import {FSWatcher} from 'chokidar';
-import {dispatcher_UnitWatchCompile, dispatcher_WatchReady} from '../../old/runner-dispatchers';
 import {Unit_TypescriptLib} from './Unit_TypescriptLib';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
@@ -26,7 +14,7 @@ import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit';
 import {Unit_FirebaseHostingApp} from './firebase/Unit_FirebaseHostingApp';
 import {Unit_FirebaseFunctionsApp} from './firebase/Unit_FirebaseFunctionsApp';
 import {PhaseManager} from '../PhaseManager';
-import {phase_Compile} from '../phase';
+import {phase_Compile, Phase_Install, Phase_Watch} from '../phase';
 import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper';
 
 
@@ -77,7 +65,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 	private async installGlobals() {
 		let packages: string[] = _keys(this.config.globalPackages ?? {} as StringMap);
-		if ((!RuntimeParams.install && !RuntimeParams.installGlobals) || !packages.length)
+		if ((!this.runtimeContext.runtimeParams.install && !this.runtimeContext.runtimeParams.installGlobals) || !packages.length)
 			return;
 
 		packages = packages
@@ -92,8 +80,8 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 			.execute();
 	}
 
-	private async installPackages() {
-		if (!RuntimeParams.install && !RuntimeParams.installPackages)
+	async installPackages() {
+		if (!this.runtimeContext.runtimeParams.install && !this.runtimeContext.runtimeParams.installPackages)
 			return;
 
 		this.setStatus('Installing packages', 'start');
@@ -146,12 +134,15 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		await this.installPackages();
 	}
 
-	async watch() {
+	async watch(timeout = 2 * Second, maxTimeout = 10 * Second) {
 		if (this.watcher)
 			throw new BadImplementationException('Watcher already initialized, MUST call stopWatch() before calling watch()');
 
 		const pathDeclarations = this.prepareWatchPaths();
-		this.logVerbose('listening on paths:', pathDeclarations);
+		pathDeclarations.forEach(declaration => {
+			this.logVerbose('listening unit:', declaration.unit.config.key);
+			declaration.unit.logVerbose('listening paths:', declaration.paths.join('\n'));
+		});
 		const paths = pathDeclarations.flatMap(path => path.paths);
 		this.watcher = chokidar.watch(paths);
 
@@ -164,6 +155,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 			const onUnitChange = (path: string) => {
 				const unit = this.findUnit(pathDeclarations, path as AbsolutePath);
+				unit.logDebug(`intercepted change on path: ${path}`);
 
 				// @ts-ignore - FIXME: should be a better way
 				unit.setStatus('Dirty');
@@ -189,7 +181,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 				const unitsToCompile = Array.from(units.values());
 
 				// clear values in order to start collecting values for next debounce
-				clearArrayInstance(pathsToDelete);
+				pathsToDelete.length = 0;
 				units.clear();
 
 				// fire all delete events
@@ -197,24 +189,19 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					return async () => path.unit.removeSpecificFileFromDist(path.path);
 				}));
 
-				// // fire all compile events
-				// await Promise_all_sequentially(unitsToCompile.map(unit => {
-				// 	return async () => unit.watchCompile();
-				// }));
-
 				const libsToCompile = unitsMapper.getReverseDependencies(unitsToCompile.map(u => u.config.key),);
-				const phaseManager = new PhaseManager(this.config.fullPath, [phase_Compile], unitsMapper.buildDependencyTree(libsToCompile).map(units => units.map(unitKey => keyToInnerUnitMap[unitKey])));
+				const phaseManager = new PhaseManager(this.config.fullPath, [phase_Compile], unitsMapper.buildDependencyTree(libsToCompile).map(units => units.map(unitKey => keyToInnerUnitMap[unitKey])), this.runtimeContext.runtimeParams);
 				const executionPlan = await phaseManager.calculateExecutionSteps();
-				process.on('SIGINT', async () => {
+				const listener = async () => {
 					await phaseManager.break();
-				});
+				};
 
+				process.on('SIGINT', listener);
 				await phaseManager.execute(executionPlan);
+				process.off('SIGINT', listener);
 
 				this.logInfo('Completed successfully');
-				//dispatch post debounce event to parent
-				await dispatcher_UnitWatchCompile.dispatchAsync(unitsToCompile);
-			}, 2 * Second, 10 * Second);
+			}, timeout, maxTimeout);
 
 			this.watcher!
 				.on('error', (error) => {
@@ -222,7 +209,9 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 				})
 				.on('ready', () => {
 					this.logInfo('Watching...');
-					dispatcher_WatchReady.dispatch();
+					for (const unit of this.innerUnits)
+						// @ts-ignore
+						unit.setStatus('Watching...');
 
 					this.watcher!
 						.on('add', (path) => {

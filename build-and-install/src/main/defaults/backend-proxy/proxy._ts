@@ -19,7 +19,9 @@ _express.all('*', (req, res) => {
 	const handleError = (error: any) => {
 	    if(!error)
 	        return;
+
 		console.log(`ERROR calling: ${url}`, error);
+        res.status(503).end();
 	};
 
 	try {
@@ -42,7 +44,7 @@ _express.all('*', (req, res) => {
 		console.log(`PROXY ${counter} - END`);
 	} catch (e) {
 		console.log(`ERROR calling: ${url}`, e);
-		res.end(500);
+		res.status(500).end();
 	}
 });
 

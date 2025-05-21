@@ -1,9 +1,8 @@
 import {addItemToArray, filterAsync, Logger, removeItemFromArray} from '@nu-art/ts-common';
 import {RunningStatusHandler} from './RunningStatusHandler';
 import {Phase} from './phase';
-import {ProjectUnit} from './units/ProjectUnit';
-import {BaseUnit} from './units/BaseUnit';
-import {BaiParams, RuntimeParams} from '../core/params/params';
+import {BaseUnit, ProjectUnit} from './units';
+import {BaiParams} from '../core/params/params';
 import {PhaseAggregatedException} from '../core/exceptions/PhaseAggregatedException';
 
 export type ScheduledStep = {
@@ -23,9 +22,9 @@ export class PhaseManager
 	private readonly units: BaseUnit[][];
 	private runningUnits: BaseUnit[] = [];
 	private killed = false;
-	private runtimeParams: BaiParams
+	private runtimeParams: BaiParams;
 
-	constructor(outputFolder: string, phases: Phase<any>[], units: BaseUnit[][],runtimeParams: BaiParams) {
+	constructor(outputFolder: string, phases: Phase<any>[], units: BaseUnit[][], runtimeParams: BaiParams) {
 		super();
 		this.outputFolder = outputFolder;
 		this.phases = phases;
@@ -39,7 +38,7 @@ export class PhaseManager
 		const steps: ScheduledStep[] = [];
 
 		for (const phase of this.phases) {
-			if (phase.filter && !(await phase.filter()))
+			if (phase.filter && !(await phase.filter(this.runtimeParams)))
 				continue;
 
 			for (const layer of this.units) {
@@ -65,7 +64,7 @@ export class PhaseManager
 		let startIndex = 0;
 		const runningStatus = new RunningStatusHandler(this.outputFolder, _steps);
 
-		if (RuntimeParams.continue)
+		if (this.runtimeParams.continue)
 			startIndex = await runningStatus.load();
 		else
 			await runningStatus.init();
@@ -87,7 +86,7 @@ export class PhaseManager
 						if (this.killed)
 							break;
 
-						if (RuntimeParams.dryRun) {
+						if (this.runtimeParams.dryRun) {
 							this.logInfo(`[${phase.key}] - ${unit.config.key}`);
 							continue;
 						}

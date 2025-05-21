@@ -1,5 +1,4 @@
 import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
-import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {exists} from '@nu-art/ts-common';
 
 //util regex function

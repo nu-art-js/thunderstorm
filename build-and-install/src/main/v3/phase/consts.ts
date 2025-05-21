@@ -9,7 +9,7 @@ export const phase_PrintDependencyTree: Phase<'printDependencyTree'> = {
 	key: phaseKey_PrintDependencyTree,
 	name: 'Print Dependency Tree',
 	method: 'printDependencyTree',
-	filter: () => RuntimeParams.dependencyTree,
+	filter: (baiParams) => baiParams.dependencyTree,
 	terminateAfterPhase: true,
 };
 
@@ -19,7 +19,7 @@ export const phase_CheckCyclicImports: Phase<'checkCyclicImports'> = {
 	key: phaseKey_CheckCyclicImports,
 	name: 'Check Cyclic Imports',
 	method: 'checkCyclicImports',
-	filter: () => RuntimeParams.checkCyclicImports,
+	filter: (baiParams) => baiParams.checkCyclicImports,
 	terminateAfterPhase: true,
 };
 
@@ -36,7 +36,7 @@ export const phase_Purge: Phase<'purge'> = {
 	key: phaseKey_Purge,
 	name: 'Purge',
 	method: 'purge',
-	filter: () => RuntimeParams.purge,
+	filter: (baiParams) => baiParams.purge,
 };
 
 // export type Phase_CopyPackageJSON = typeof phase_CopyPackageJSON;
@@ -55,16 +55,7 @@ export const phase_Install: Phase<'install'> = {
 	name: 'Install',
 	method: 'install',
 	breakPhases: true,
-	filter: () => RuntimeParams.install || RuntimeParams.installPackages || RuntimeParams.installGlobals,
-};
-
-// resolve the unit's specific config, e.g. firebase hosting/function config
-export type Phase_ResolveConfigs = typeof phase_ResolveConfigs;
-export const phaseKey_ResolveConfigs = 'resolve-configs';
-export const phase_ResolveConfigs: Phase<'resolveConfigs'> = {
-	key: phaseKey_ResolveConfigs,
-	name: 'Resolve Configs',
-	method: 'resolveConfigs',
+	filter: (baiParams) => baiParams.install || baiParams.installPackages || baiParams.installGlobals,
 };
 
 export type Phase_Lint = typeof phase_Lint;
@@ -73,16 +64,7 @@ export const phase_Lint: Phase<'lint'> = {
 	key: phaseKey_Lint,
 	name: 'Lint',
 	method: 'lint',
-	filter: () => RuntimeParams.lint,
-};
-
-export type Phase_PreCompile = typeof phase_PreCompile;
-export const phaseKey_PreCompile = 'pre-compile';
-export const phase_PreCompile: Phase<'preCompile'> = {
-	key: phaseKey_PreCompile,
-	name: 'Pre Compile',
-	method: 'preCompile',
-	filter: () => !RuntimeParams.noBuild,
+	filter: (baiParams) => baiParams.lint,
 };
 
 export type Phase_Compile = typeof phase_Compile;
@@ -91,7 +73,27 @@ export const phase_Compile: Phase<'compile'> = {
 	key: phaseKey_Compile,
 	name: 'Compile',
 	method: 'compile',
-	filter: () => !RuntimeParams.noBuild,
+	filter: (baiParams) => !baiParams.noBuild,
+};
+
+export type Phase_PreCompile = typeof phase_PreCompile;
+export const phaseKey_PreCompile = 'preCompile';
+export const phase_PreCompile: Phase<'preCompile'> = {
+	key: phaseKey_PreCompile,
+	name: 'PreCompile',
+	method: 'preCompile',
+	filter: (baiParams) => !baiParams.noBuild,
+};
+
+export type Phase_Test = typeof phase_Test;
+export const phaseKey_Test = 'runTests';
+export const phase_Test: Phase<'runTests'> = {
+	key: phaseKey_Test,
+	name: 'Test',
+	method: 'runTests',
+	filter: (baiParams) => baiParams.test,
+	runUnitsInDependency: true,
+	dependencyPhaseKeys: [phaseKey_Compile],
 };
 
 export type Phase_Watch = typeof phase_Watch;
@@ -101,13 +103,12 @@ export const phase_Watch: Phase<'watch'> = {
 	name: 'Watch',
 	method: 'watch',
 	breakPhases: true,
-	filter: () => RuntimeParams.watch,
+	filter: (baiParams) => baiParams.watch,
 };
 
 export const phases_Build: Phase<string>[] = [
 	phase_Purge,
 	phase_Install,
-	phase_ResolveConfigs,
 	phase_Lint,
 	phase_PreCompile,
 	phase_Compile,
@@ -122,7 +123,7 @@ export const phase_Launch: Phase<'launch'> = {
 	key: phaseKey_Launch,
 	name: 'Launch',
 	method: 'launch',
-	filter: () => !!RuntimeParams.launch,
+	filter: (baiParams) => !!baiParams.launch,
 };
 
 export const phases_Launch: Phase<string>[] = [
@@ -138,7 +139,7 @@ export const phase_DeployFrontend: Phase<'deployFrontend'> = {
 	name: 'Deploy Frontend',
 	method: 'deployFrontend',
 	breakPhases: true,
-	filter: () => !!RuntimeParams.deployFrontend,
+	filter: (baiParams) => !!baiParams.deployFrontend,
 };
 
 export type Phase_DeployBackend = typeof phase_DeployBackend;
@@ -147,7 +148,7 @@ export const phase_DeployBackend: Phase<'deployBackend'> = {
 	key: phaseKey_DeployBackend,
 	name: 'Deploy Backend',
 	method: 'deployBackend',
-	filter: () => !!RuntimeParams.deployBackend,
+	filter: (baiParams) => !!baiParams.deployBackend,
 	breakPhases: true,
 };
 

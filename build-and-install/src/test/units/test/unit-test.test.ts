@@ -2,50 +2,28 @@
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, ProjectUnit_RuntimeContext, RuntimeParams, Unit_TypescriptLib} from '../../_common';
+import {FileSystemUtils, Unit_TypescriptLib} from '../../_common';
 import {resolve} from 'path';
 import {expect} from 'chai';
-import {setupWorkspace} from '@nu-art/ts-common/testing/workspace-creator';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
-import {execSync} from 'node:child_process';
+import {BuildAndInstall} from '../../../main/build-and-install-v3';
 
-const libName = 'lib-test';
 const pathToTemp = resolve(__dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');
 const pathToWorkspace = resolve(pathToTemp, './workspace');
-const unitPath = resolve(pathToWorkspace, libName);
-
-const createTestUnit_TypescriptLib = () => new Unit_TypescriptLib({
-	key: libName,
-	label: libName,
-	relativePath: `./${libName}`,
-	fullPath: unitPath,
-	output: resolve(unitPath, 'dist'),
-	dependencies: {},
-	customTSConfig: true,
-	customESLintConfig: true
-});
+const fixtureTemplateExtractor = new TestWorkspaceCreator(__dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
 type Input = { fixtures: string[] };
 type Output = () => void;
 
 const test = async (setup: Input): Promise<void> => {
-	const unit = createTestUnit_TypescriptLib();
-	const runtimeContext = {parentUnit: {config: {fullPath: pathToWorkspace}}} as ProjectUnit_RuntimeContext;
-	unit.setupRuntimeContext(runtimeContext);
-	for (const fixture of setup.fixtures)
-		setupWorkspace(resolve(pathToFixtures, fixture), pathToWorkspace);
+	const buildAndInstall = new BuildAndInstall(pathToWorkspace);
+	await buildAndInstall.build();
 
-	try {
-		let output = execSync('pnpm install', {stdio: 'pipe', cwd: pathToWorkspace});
-		console.log(output.toString());
-	} catch (error: any) {
-		console.error('Command failed:', error.message);
-		console.error('stdout:', error.stdout?.toString());
-		console.error('stderr:', error.stderr?.toString());
-		throw error;
-	}
-
+	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-test');
+	const unit = buildAndInstall.projectUnits.find(unit => unit.config.key == '@demo/lib-test') as Unit_TypescriptLib;
 	await unit.runTests();
 };
 
@@ -54,9 +32,16 @@ type TestCase_TestPhase = TestSuite_TestPhase['testcases'][number];
 const runTestCase = (testCase: TestCase_TestPhase) => () => runSingleTestCase(test, testCase);
 
 describe('TypescriptLib - Test Phase', () => {
-	before(() => {
-		setupWorkspace(resolve(__dirname, './fixtures.txt'), pathToTemp);
-		RuntimeParams.test = true;
+	before(async function () {
+		this.timeout(20000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		workspaceCreator.setupWorkspace(['workspace.txt']);
+		workspaceCreator.setupWorkspace(['project-lib-test.txt'], 'lib-test');
+
+		const buildAndInstall = new BuildAndInstall(pathToWorkspace);
+		await buildAndInstall.build();
+		await buildAndInstall.nodeProjectUnit?.install();
 	});
 
 	it('Should pass generated test suite', runTestCase({
@@ -74,8 +59,7 @@ describe('TypescriptLib - Test Phase', () => {
 	})).timeout(15000);
 
 	after(async () => {
-		RuntimeParams.test = false;
-		await FileSystemUtils.folder.delete(pathToTemp);
+		// await FileSystemUtils.folder.delete(pathToTemp);
 		await CommandoPool.killAll();
 	});
 });

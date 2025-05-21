@@ -1,32 +1,21 @@
-// file: ./workspace-purge-node-lib.txt
-//// file: ./node_modules/some-lib/index.js
-console.log('dummy node module');
-
-//// file: ./pnpm-lock.yaml
-lockfileVersion: 5.4
-
-//// file: ./package.json
+// file: ./lib-purge.txt
+//// file: ./__package.json
 {
   "name": "lib-purge",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "dependencies": {
+    "is-sorted": "^1.0.5"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-purge",
+      "customTSConfig": true
+    }
 }
 
 //// file: ./dist/index.js
 console.log('compiled output');
-
-// file: ./workspace-purge-root-project.txt
-//// file: ./node_modules/some-lib/index.js
-console.log('dummy node module');
-
-//// file: ./pnpm-lock.yaml
-lockfileVersion: 5.4
-
-//// file: ./package.json
-{
-  "name": "lib-purge",
-  "version": "1.0.0"
-}
-
-//// file: ./pnpm-workspace.yaml
-packages:
-  - 'packages/*'

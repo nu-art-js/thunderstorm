@@ -1,6 +1,6 @@
 import {AsyncVoidFunction} from '@nu-art/ts-common';
+import {BaseUnit} from '../units';
 import {Phase} from '../phase';
-import {BaseUnit} from '../v3/units';
 
 export type Unit<P extends Phase<string>[]> = BaseUnit & UnitPhaseImplementor<P>;
 
@@ -14,3 +14,10 @@ export type RunningStatus = {
 	phaseKey: string,
 	unitsLayerIndex?: number
 };
+
+
+export const WatchEvent_Add: WatchEventType = 'add';
+export const WatchEvent_Update: WatchEventType = 'update';
+export const WatchEvent_RemoveDir: WatchEventType = 'remove_dir';
+export const WatchEvent_RemoveFile: WatchEventType = 'remove_file';
+export const WatchEvent_Ready: WatchEventType = 'ready';

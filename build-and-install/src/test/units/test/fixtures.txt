@@ -1,17 +1,5 @@
-// file: ./fixtures/workspace-test-pass.txt
-//// file: ./src/main/index.ts
-export const add = (a: number, b: number) => a + b;
-
-//// file: ./lib-test/src/test/test.test.ts
-const add = (a: number, b: number) => a + b;
-describe('add()', () => {
-  it('adds numbers', () => {
-    if (add(1, 2) !== 3)
-      throw new Error('Test failed');
-  });
-});
-
-//// file: ./lib-test/src/test/tsconfig.json
+// file: ./project-lib-test.txt
+//// file: ./src/test/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -20,27 +8,25 @@ describe('add()', () => {
   "include": ["./**/*.ts"]
 }
 
-//// file: ./package.json
+//// file: ./__package.json
 {
-  "name": "lib-test",
+  "name": "@demo/lib-test",
   "version": "1.0.0",
-  "dependencies": {
-    "typescript": "latest",
-    "ts-node": "latest",
-    "mocha": "latest"
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-test"
   }
 }
 
-//// file: ./pnpm-workspace.yaml
-packages:
-  - 'packages/lib-test'
-
-
-// file: ./fixtures/workspace-test-fail.txt
 //// file: ./src/main/index.ts
 export const add = (a: number, b: number) => a + b;
 
-//// file: ./lib-test/src/test/test.test.ts
+// file: ./workspace-test-fail.txt
+//// file: ./src/test/test.test.ts
 const add = (a: number, b: number) => a + b;
 describe('add()', () => {
   it('fails on purpose', () => {
@@ -49,26 +35,12 @@ describe('add()', () => {
   });
 });
 
-//// file: ./lib-test/src/test/tsconfig.json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "moduleResolution": "node"
-  },
-  "include": ["./**/*.ts"]
-}
-
-//// file: ./package.json
-{
-  "name": "lib-test",
-  "version": "1.0.0",
-  "dependencies": {
-    "typescript": "latest",
-    "ts-node": "latest",
-    "mocha": "latest"
-  }
-}
-
-//// file: ./pnpm-workspace.yaml
-packages:
-  - 'packages/lib-test'
+// file: ./workspace-test-pass.txt
+//// file: ./src/test/test.test.ts
+const add = (a: number, b: number) => a + b;
+describe('add()', () => {
+  it('adds numbers', () => {
+    if (add(1, 2) !== 3)
+      throw new Error('Test failed');
+  });
+});

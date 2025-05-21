@@ -8,15 +8,15 @@ export type TS_UnitConfig = TS_Object & {
 
 export type TS_PackageJSON<T = any> = {
 	'name': string,
-	'description': string,
+	'description'?: string,
 	'publishConfig'?: {
 		'directory': string,
 		'linkDirectory': boolean
 	},
 	'license'?: 'Apache-2.0' | string,
 	'author'?: string,
-	'main': string,
-	'types': string,
+	'main'?: string,
+	'types'?: string,
 	'scripts'?: StringMap,
 	'dependencies'?: StringMap,
 	'devDependencies'?: StringMap,

@@ -1,7 +1,7 @@
 import {ImplementationMissingException, TypedMap} from '@nu-art/ts-common';
 import {promises as fs} from 'fs';
 
-const cachedFiles: TypedMap<any> = {};
+let cachedFiles: TypedMap<any> = {};
 
 const readFile = async (path: string): Promise<string> => {
 	try {
@@ -21,6 +21,7 @@ const readFile = async (path: string): Promise<string> => {
 
 
 export const FilesCache = {
+	clear: () => cachedFiles = {},
 	load: {
 		json: async <T>(pathToFile: string): Promise<T> => {
 			const json = cachedFiles[pathToFile];

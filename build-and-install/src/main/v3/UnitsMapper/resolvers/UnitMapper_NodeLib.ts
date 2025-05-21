@@ -1,6 +1,7 @@
 import {Unit_TypescriptLib} from '../../units';
 import {BadImplementationException, tsValidateValue} from '@nu-art/ts-common';
 import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
+import {resolve} from 'path';
 
 
 export class UnitMapper_NodeLib_Class
@@ -24,7 +25,7 @@ export class UnitMapper_NodeLib_Class
 			...context.baseConfig,
 			customESLintConfig: context.customESLintConfig,
 			customTSConfig: context.customTSConfig,
-			output: outputDir,
+			output: resolve(context.baseConfig.fullPath, outputDir),
 			packageJson: context.packageJson,
 		});
 	}

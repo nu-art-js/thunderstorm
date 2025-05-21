@@ -1,12 +1,12 @@
 import {CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
 import {__stringify} from '@nu-art/ts-common';
-import {Phase_Purge} from '../../phase';
-import {UnitPhaseImplementor} from '../../types/types';
+import {UnitPhaseImplementor} from '../core/types';
 import {convertPackageJSONTemplateToPackJSON_Value} from '../../old/tools';
 import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit';
 import {resolve} from 'path';
 import {FileSystemUtils} from '../core/FileSystemUtils';
 import {TS_PackageJSON} from '../UnitsMapper/types';
+import {Phase_Purge} from '../phase';
 
 
 export type Unit_PackageJson_Config = Config_ProjectUnit & { packageJson: TS_PackageJSON; };

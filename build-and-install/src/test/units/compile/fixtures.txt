@@ -1,5 +1,5 @@
 // file: ./workspace-compile-valid.txt
-//// file: ./lib-compile/src/main/tsconfig.json
+//// file: ./src/main/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -7,22 +7,23 @@
   }
 }
 
-//// file: ./lib-compile/src/main/index.ts
+
+//// file: ./src/main/index.ts
 export const x = 5;
 
 // file: ./workspace-compile-invalid-tsconfig.txt
-//// file: ./lib-compile/src/main/tsconfig.json
+//// file: ./src/main/tsconfig.json
 { invalid-json
 
-//// file: ./lib-compile/src/main/index.ts
+//// file: ./src/main/index.ts
 export const x = 5;
 
 // file: ./workspace-compile-missing-tsconfig.txt
-//// file: ./lib-compile/src/main/index.ts
+//// file: ./src/main/index.ts
 export const x = 5;
 
 // file: ./workspace-compile-with-asset.txt
-//// file: ./lib-compile/src/main/tsconfig.json
+//// file: ./src/main/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -30,15 +31,15 @@ export const x = 5;
   }
 }
 
-//// file: ./lib-compile/src/main/index.ts
+//// file: ./src/main/index.ts
 export const x = 5;
 
-//// file: ./lib-compile/src/main/file.svg
+//// file: ./src/main/file.svg
 <svg></svg>
 
 
 // file: ./workspace-compile-invalid-source.txt
-//// file: ./lib-compile/src/main/tsconfig.json
+//// file: ./src/main/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -46,5 +47,39 @@ export const x = 5;
   }
 }
 
-//// file: ./lib-compile/src/main/index.ts
+//// file: ./src/main/index.ts
 export const = 5;
+
+
+
+// file: ./lib-compile.txt
+//// file: ./__package.json
+{
+  "name": "lib-compile",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-compile",
+      "customTSConfig": true
+    }
+}
+
+// file: ./lib-compile--fail.txt
+//// file: ./__package.json
+
+{
+  "name": "lib-compile",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-compile"
+    }
+}

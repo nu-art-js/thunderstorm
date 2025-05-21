@@ -1,18 +1,16 @@
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
 import {FirebasePackageConfig} from '../../../core/types';
-import {UnitPhaseImplementor} from '../../../types/types';
-import {Phase_DeployFrontend, Phase_Launch, Phase_ResolveConfigs} from '../../../phase';
-import {RuntimeParams} from '../../../core/params/params';
+import {UnitPhaseImplementor} from '../../core/types';
 import {BadImplementationException, ImplementationMissingException, LogLevel, TypedMap} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
-import {MemKey_ProjectConfig} from '../../../v2/phase-runner/RunnerParams';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {dispatcher_WatchReady} from '../../../old/runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node';
 import {resolve} from 'path';
+import {Phase_DeployFrontend, Phase_Launch} from '../../phase';
 
 
 export type FirebaseHostingConfig = {
@@ -42,7 +40,7 @@ const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployFrontend]> {
+	implements UnitPhaseImplementor<[Phase_Launch, Phase_DeployFrontend]> {
 
 	static DefaultConfig_FirebaseHosting = {
 		servingPort: 8100,
@@ -96,7 +94,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	//######################### ResolveConfig Logic #########################
 
 	private getEnvConfig() {
-		const env = RuntimeParams.environment;
+		const env = this.runtimeContext.runtimeParams.environment;
 		const envConfig = this.config.envs[env];
 		if (!envConfig)
 			throw new ImplementationMissingException(`Missing EnvConfig for env ${env} in unit ${this.config.label}`);
@@ -139,14 +137,14 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		const commando = this.allocateCommando(Commando_NVM, Commando_Basic).applyNVM()
 			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando, `ENV=${RuntimeParams.environment} npm run build`);
+		await this.executeAsyncCommando(commando, `ENV=${this.runtimeContext.runtimeParams.environment} npm run build`);
 	}
 
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//Webpack bundles files into the output automatically!
 		const targetPath = `${this.config.fullPath}/src/main/${CONST_VersionApp}`;
-		const appVersion = MemKey_ProjectConfig.get().projectVersion;
+		const appVersion = this.runtimeContext.baiConfig.appVersion;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
