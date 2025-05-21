@@ -1,8 +1,5 @@
-// file: ./fixtures/workspace-lint-valid-lib.txt
-//// file: ./lib-lint/src/main/index.ts
-const isValid = true;
-
-//// file: ./lib-lint/src/main/tsconfig.json
+// file: ./project-lib-lint.txt
+//// file: ./src/main/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -11,23 +8,24 @@ const isValid = true;
   "include": ["./**/*.ts"]
 }
 
-
-//// file: ./pnpm-workspace.yaml
-packages:
-  - 'packages/lib-lint'
-
-//// file: ./package.json
+//// file: ./__package.json
 {
   "name": "lib-lint",
   "version": "1.0.0",
-  "dependencies":{
-    "typescript": "latest",
-    "eslint": "^9.26.0",
-    "typescript-eslint": "latest",
-    "@typescript-eslint/parser": "latest",
-    "@typescript-eslint/eslint-plugin": "latest"
-  }
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-lint",
+      "customTSConfig": true
+    }
 }
+
+// file: ./project-lib-lint--valid.txt
+//// file: ./lib-lint/src/main/index.ts
+const isValid = true;
 
 //// file: ./eslint.config.mjs
 import parser from '@typescript-eslint/parser';
@@ -56,36 +54,9 @@ export default [
 ];
 
 
-// file: ./fixtures/workspace-lint-invalid-lib.txt
+// file: ./project-lib-lint--invalid.txt
 //// file: ./lib-lint/src/main/index.ts
 const unused = true;
-
-//// file: ./lib-lint/src/main/tsconfig.json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "moduleResolution": "node"
-  },
-  "include": ["./**/*.ts"]
-}
-
-
-//// file: ./pnpm-workspace.yaml
-packages:
-  - 'packages/lib-lint'
-
-//// file: ./package.json
-{
-  "name": "lib-lint",
-  "version": "1.0.0",
-  "dependencies":{
-    "typescript": "latest",
-    "eslint": "^9.26.0",
-    "typescript-eslint": "latest",
-    "@typescript-eslint/parser": "latest",
-    "@typescript-eslint/eslint-plugin": "latest"
-  }
-}
 
 //// file: ./eslint.config.mjs
 import parser from '@typescript-eslint/parser';

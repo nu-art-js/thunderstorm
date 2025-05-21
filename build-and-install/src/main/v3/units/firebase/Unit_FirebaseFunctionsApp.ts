@@ -1,15 +1,13 @@
-import {BaseUnit, Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
-import {UnitPhaseImplementor} from '../../../types/types';
-import {Phase_DeployBackend, Phase_Launch, Phase_ResolveConfigs} from '../../../phase';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
+import {UnitPhaseImplementor} from '../../core/types';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {promises as _fs} from 'fs';
-import {RuntimeParams} from '../../../core/params/params';
 import {FirebasePackageConfig} from '../../../core/types';
-import {_keys, _logger_logPrefixes, ImplementationMissingException, LogLevel, Second, sleep, TypedMap} from '@nu-art/ts-common';
+import {_logger_logPrefixes, ImplementationMissingException, LogLevel, Second, sleep, TypedMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
-import {dispatcher_UnitWatchCompile, dispatcher_WatchReady, OnUnitWatchCompiled} from '../../../old/runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {FileSystemUtils} from '../../core/FileSystemUtils';
+import {Phase_DeployBackend, Phase_Launch} from '../../phase';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',
@@ -36,7 +34,7 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_ResolveConfigs, Phase_Launch, Phase_DeployBackend]>, OnUnitWatchCompiled {
+	implements UnitPhaseImplementor<[Phase_Launch, Phase_DeployBackend]> {
 
 	static staggerCount: number = 0;
 	static DefaultConfig_FirebaseFunction = {
@@ -53,22 +51,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		warning: firebaseFunctionEmulator_WarningStrings,
 	};
 
-	async __onUnitWatchCompiled(units: BaseUnit[]) {
-		if (units.some(unit => _keys(this.config.dependencies).includes(unit.config.key))) {
-			this.setStatus('Compiling', 'start');
-			try {
-				await this.compileImpl();
-				await this.copyAssetsToOutput();
-				await this.createDependenciesDir();
-				this.setStatus('Compiled', 'end');
-			} catch (e: any) {
-				this.setErrorStatus('Compilation Error', e);
-				this.logError(e);
-				// throw e;
-			}
-		}
-	}
-
 	constructor(config: Unit_FirebaseFunctionsApp<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_FirebaseFunctionsApp);
@@ -79,17 +61,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 			return log.substring(log.indexOf(prefix) + prefix.length);
 		});
-	}
-
-	async init(setInitialized: boolean = true): Promise<void> {
-		await super.init(false);
-
-		// only sign on listeners when the unit is being initialized
-		dispatcher_WatchReady.removeListener(this);
-		dispatcher_UnitWatchCompile.addListener(this);
-
-		if (setInitialized)
-			this.setStatus('Initialized');
 	}
 
 	//######################### Phase Implementations #########################
@@ -123,7 +94,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	//######################### ResolveConfig Logic #########################
 
 	private getEnvConfig() {
-		const env = RuntimeParams.environment;
+		const env = this.runtimeContext.runtimeParams.environment;
 		const envConfig = this.config.envs[env];
 		if (!envConfig)
 			throw new ImplementationMissingException(`Missing EnvConfig for env ${env} in unit ${this.config.label}`);
@@ -245,7 +216,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const envConfig = this.getEnvConfig();
 		const targetPath = `${this.config.fullPath}/src/main/config.ts`;
 		const beConfig = {
-			name: RuntimeParams.environment,
+			name: this.runtimeContext.runtimeParams.environment,
 			defaultConfig: envConfig.defaultConfig,
 			envConfig: envConfig.envConfig,
 		};
@@ -327,7 +298,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'));
 
-		await this.executeAsyncCommando(commando, `firebase emulators:start --export-on-exit --import=.trash/data ${RuntimeParams.debugBackend
+		await this.executeAsyncCommando(commando, `firebase emulators:start --export-on-exit --import=.trash/data ${this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect-functions ${this.config.debugPort}` : ''}`);
 		this.logWarning('EMULATORS TERMINATED');
 	}

@@ -1,33 +1,39 @@
-// file: ./workspace-install-root-project.txt
-//// file: ./package.json
+// file: ./project-root--with-linked-package.txt
+//// file: ./__package.json
 {
-  "name": "workspace-install",
+  "name": "project-root",
   "version": "1.0.0",
-  "dependencies": {
-    "is-sorted": "^1.0.5"
-  }
-}
-
-// file: ./workspace-install-linked-package.txt
-//// file: ./package.json
-{
-  "name": "workspace-install",
-  "version": "1.0.0",
-  "dependencies": {
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0",
     "lib-linked": "workspace:*"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
   }
 
 }
 
-//// file: ./packages/lib-linked/package.json
+//// file: ./lib-linked/__package.json
 {
   "name": "lib-linked",
   "version": "1.0.0",
   "publishConfig": {
     "directory": "dist",
     "linkDirectory": true
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-linked"
   }
 }
 
-//// file: ./packages/lib-linked/dist/index.js
+//// file: ./lib-linked/dist/index.js
 module.exports = { linked: true };

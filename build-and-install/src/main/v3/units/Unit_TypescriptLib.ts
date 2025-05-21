@@ -1,17 +1,15 @@
 import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
 import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel} from '@nu-art/ts-common';
-import {UnitPhaseImplementor} from '../../types/types';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PrintDependencyTree, Phase_Test} from '../../phase';
+import {UnitPhaseImplementor} from '../core/types';
 import {CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
-import {RuntimeParams} from '../../core/params/params';
-import {dispatcher_WatchReady, OnWatchReady} from '../../old/runner-dispatchers';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
 import {FileSystemUtils} from '../core/FileSystemUtils';
+import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PrintDependencyTree, Phase_Test} from '../phase';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
@@ -35,28 +33,17 @@ const assetExtensions = [
 
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
-	implements UnitPhaseImplementor<[Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test]>, OnWatchReady {
+	implements UnitPhaseImplementor<[Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test]> {
 
 	constructor(config: Unit_TypescriptLib<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_TypescriptLib);
 	}
 
-	async __onWatchReady() {
-		return this.setStatus('Watching');
-	}
-
-	async init(setInitialized: boolean = true) {
-		await super.init(false);
-		dispatcher_WatchReady.addListener(this);
-		if (setInitialized)
-			this.setStatus('Initialized');
-	}
-
 	//######################### Internal Logic #########################
 
 	protected async clearOutputDir() {
-		if (!RuntimeParams.clean)
+		if (!this.runtimeContext.runtimeParams.clean)
 			return;
 
 		await this.clearOutputDirImpl();
@@ -152,6 +139,12 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 
 	protected async preCompile() {
+		const srcFolder = pathResolve(this.config.fullPath, 'src');
+		const entries = readdirSync(srcFolder);
+		for (const entry of entries) {
+			await this.resolveTSConfig(srcFolder, entry);
+		}
+
 		if (!fs.existsSync(`${this.config.fullPath}/prebuild.sh`))
 			return;
 
@@ -165,14 +158,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	async compile() {
 		try {
 			this.setStatus('Compiling', 'start');
-			await this.preCompile();
-
-			const srcFolder = pathResolve(this.config.fullPath, 'src');
-			const entries = readdirSync(srcFolder);
-			for (const entry of entries) {
-				await this.resolveTSConfig(srcFolder, entry);
-			}
-
 			await this.clearOutputDirImpl();
 			await this.compileImpl();
 			await this.copyAssetsToOutput();
@@ -183,7 +168,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		} catch (e: any) {
 			this.setErrorStatus('Compilation Error', e);
 
-			if (!RuntimeParams.watch)
+			if (!this.runtimeContext.runtimeParams.watch)
 				throw e;
 		}
 	}
@@ -204,9 +189,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	async runTests() {
-		if (!RuntimeParams.test)
-			return;
-
 		this.setStatus('Running tests', 'start');
 		const command = resolve(this.runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
 		const testCommand = `${command} "src/test/**/*.test.ts" --require ts-node/register`;
@@ -302,19 +284,13 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const entryPath = pathResolve(srcFolder, sourceFolderType);
 		if (!statSync(entryPath).isDirectory()) {
 			this.logError(`Unexpected non-directory entry in src/: ${sourceFolderType}`);
-			throw new BadImplementationException(`Non-directory entry under src folder\n ${__stringify({
-				unit: this.config.key,
-				invalidEntry: sourceFolderType
-			})}`);
+			throw new BadImplementationException(`Non-directory entry under src folder`);
 		}
 
 		const tsConfigPath = pathResolve(entryPath, 'tsconfig.json');
 		if (this.config.customTSConfig) {
 			if (!existsSync(tsConfigPath))
-				throw new BadImplementationException(`Expected custom tsconfig in folder for source folder: ${entryPath}\n${__stringify({
-					unit: this.config.key,
-					sourceFolder: sourceFolderType,
-				})}`);
+				throw new BadImplementationException(`Expected custom tsconfig in folder for source folder: ${entryPath}`);
 
 			this.logVerbose(`tsconfig.json is defined custom for source: ${sourceFolderType}, skipping copy.`);
 			return;
@@ -336,10 +312,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		// }
 
 		this.logError(`Missing tsconfig templates for source folder: ${sourceFolderType}`);
-		throw new ImplementationMissingException(`Missing tsconfig template for source folder: ${sourceFolderType}\n${__stringify({
-			unit: this.config.key,
-			sourceFolder: sourceFolderType,
-			checkedPaths: [/*defaultTsConfigTemplate,*/ projectDefaultTsConfig]
-		})}`);
+		throw new ImplementationMissingException(`Missing tsconfig template for source folder: ${sourceFolderType}`);
 	}
 }
