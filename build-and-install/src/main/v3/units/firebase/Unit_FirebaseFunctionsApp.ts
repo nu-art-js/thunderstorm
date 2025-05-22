@@ -186,6 +186,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 					]
 				},
 				emulators: {
+					singleProjectMode: true,
 					functions: {port: port + 1},
 					database: {port: port + 2},
 					firestore: {
