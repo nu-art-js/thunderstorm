@@ -5,11 +5,7 @@ import {OnWindowResized} from '../../../modules/ModuleFE_Window';
 import {_className, stopPropagation} from '../../../utils/tools';
 import {resolveContent} from '@nu-art/ts-common';
 import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity';
-import {
-	Model_PopUp,
-	mouseInteractivity_PopUp,
-	PopUpListener
-} from '../../../component-modules/mouse-interactivity/types';
+import {Model_PopUp, mouseInteractivity_PopUp, PopUpListener} from '../../../component-modules/mouse-interactivity/types';
 import {ModuleFE_MouseInteractivity} from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity';
 
 export class TS_PopUp
@@ -36,7 +32,7 @@ export class TS_PopUp
 			showOverlay={open}
 			onClickOverlay={(e) => {
 				stopPropagation(e);
-				this.setState({open: false});
+				ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
 			}}>
 			<div className="ts-popup__content" id={model.id} ref={this.ref} onClick={stopPropagation} onContextMenu={stopPropagation}>
 				{resolveContent(model.content, () => this.forceUpdate())}

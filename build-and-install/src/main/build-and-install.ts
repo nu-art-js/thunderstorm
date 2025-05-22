@@ -7,3 +7,17 @@ import {BuildAndInstall} from './build-and-install-v3';
 })()
 	.catch(console.error)
 	.then(() => process.exit(0));
+
+// .execute()
+// 	.then(() => {
+// 		process.on('SIGINT', () => {
+// 			console.log('completed');
+// 			return process.exit(0);
+// 		});
+// 	})
+// 	.catch(err => {
+// 		process.on('SIGINT', () => {
+// 			console.log('Failed with error: ', err);
+// 			return process.exit(1);
+// 		});
+// 	});
