@@ -33,6 +33,8 @@ const test = async (setup: Input): Promise<void> => {
 	FilesCache.clear();
 	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-compile');
 
+	buildAndInstall = new BuildAndInstall(pathToWorkspace);
+	await buildAndInstall.build();
 	unit = buildAndInstall.projectUnits.find(unit => unit.config.key == 'lib-compile') as Unit_TypescriptLib;
 
 	if (setup.compileWatch)
@@ -139,8 +141,11 @@ describe('Unit_NodeLib - Compile Phase', () => {
 	}));
 
 
-	after(async () => {
-		// await FileSystemUtils.folder.delete(pathToTemp);
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
 		await CommandoPool.killAll();
 	});
 });

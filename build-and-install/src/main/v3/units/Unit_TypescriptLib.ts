@@ -301,7 +301,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 		if (existsSync(projectDefaultTsConfig)) {
 			this.logDebug(`Copying project-level default tsconfig for source: ${sourceFolderType}`);
-			copyFileSync(projectDefaultTsConfig, tsConfigPath);
+			await FileSystemUtils.file.template.copy(projectDefaultTsConfig, tsConfigPath, {SOURCE_ROOT: entryPath});
+
 			return;
 		}
 

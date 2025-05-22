@@ -3,8 +3,8 @@ import {
 	AbsolutePath,
 	RelativePath,
 	tsValidate,
-	tsValidateAnyString,
 	tsValidateBoolean,
+	tsValidateOptionalAnyString,
 	tsValidateResult,
 	TypeValidator,
 	ValidatorTypeResolver
@@ -35,8 +35,9 @@ export abstract class UnitMapper_Node<
 	ConfigJSON extends UnitConfigJSON_Node = UnitConfigJSON_Node>
 	extends UnitMapper_Base<T, ConfigJSON> {
 
+	private static invalidPaths: string[] = [];
 	static tsValidator_Node = {
-		label: tsValidateAnyString,
+		label: tsValidateOptionalAnyString,
 		customESLintConfig: tsValidateBoolean(false),
 		customTSConfig: tsValidateBoolean(false),
 	};
@@ -46,6 +47,9 @@ export abstract class UnitMapper_Node<
 	}
 
 	public async resolveUnit(path: string, root: string): Promise<T | undefined> {
+		if (UnitMapper_Node.invalidPaths.includes(path))
+			return;
+
 		const pathToFile = `${path}/__package.json`;
 		if (!await FileSystemUtils.file.exists(pathToFile))
 			return;
@@ -53,6 +57,13 @@ export abstract class UnitMapper_Node<
 		const packageJson = await FilesCache.load.json<TS_PackageJSON<ConfigJSON>>(pathToFile);
 		if (!packageJson)
 			return;
+
+		if (!packageJson.unitConfig) {
+			this.logWarning(`Found a package.json without unitConfig at: ${pathToFile}`);
+			UnitMapper_Node.invalidPaths.push(path);
+			return;
+		}
+
 
 		if (tsValidateResult(packageJson.unitConfig.type, this.validator.type))
 			return; // not the expected type for this mapper
@@ -63,7 +74,7 @@ export abstract class UnitMapper_Node<
 			key: packageJson.name,
 			fullPath: path as AbsolutePath,
 			relativePath: path.replace(root, '.') as RelativePath,
-			label: packageJson.unitConfig.label,
+			label: packageJson.unitConfig.label ?? packageJson.name,
 			dependencies: {...packageJson.dependencies, ...packageJson.devDependencies},
 		};
 

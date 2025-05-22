@@ -1,1 +1,0 @@
-# Test project with only root package.json

@@ -1,6 +1,6 @@
 import {promises as _fs} from 'fs';
 import {resolve} from 'path';
-import {BadImplementationException} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, StringMap} from '@nu-art/ts-common';
 
 async function assertFile(path: string) {
 	const stat = await _fs.stat(path);
@@ -33,6 +33,7 @@ async function assertExists(path: string, mustExist: boolean, type: 'File' | 'Fo
 	return true;
 }
 
+const DEFAULT_TEMPLATE_PATTERN = (key: string | number) => new RegExp(`\{\{${key}\}\}`, 'g');
 export const FileSystemUtils = {
 	file: {
 		exists: async (pathToFile: string) => {
@@ -50,7 +51,33 @@ export const FileSystemUtils = {
 		read: async (pathToFile: string) => {
 			await assertFile(pathToFile);
 			return _fs.readFile(pathToFile, 'utf-8');
-		}
+		},
+		copy: async (sourcePath: string, targetPath: string) => {
+			await assertExists(targetPath, false, 'File');
+			await assertFile(sourcePath);
+			await FileSystemUtils.folder.create(resolve(targetPath, '..'));
+			return _fs.copyFile(sourcePath, targetPath);
+		},
+		template: {
+			read: async (pathToFile: string, params: StringMap, pattern = DEFAULT_TEMPLATE_PATTERN) => {
+				const content = await FileSystemUtils.file.read(pathToFile);
+				return FileSystemUtils.file.template.transform(content, params, pattern);
+			},
+			transform: (input: string, params: StringMap, pattern = DEFAULT_TEMPLATE_PATTERN) => {
+				return _keys(params).reduce((_input: string, key) => {
+					return _input.replace(pattern(key), params[key]);
+				}, input);
+			},
+			write: async (pathToFile: string, content: string, params: StringMap, pattern = DEFAULT_TEMPLATE_PATTERN) => {
+				const transformedContent = FileSystemUtils.file.template.transform(content, params, pattern);
+				return FileSystemUtils.file.write(pathToFile, transformedContent);
+			},
+			copy: async (sourcePath: string, targetPath: string, params: StringMap, pattern = DEFAULT_TEMPLATE_PATTERN) => {
+				const content = await FileSystemUtils.file.read(sourcePath);
+				const transformedContent = FileSystemUtils.file.template.transform(content, params, pattern);
+				return FileSystemUtils.file.write(targetPath, transformedContent);
+			}
+		},
 	},
 	folder: {
 		delete: async (pathToFolder: string, mustExist = false) => {

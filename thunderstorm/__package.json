@@ -82,5 +82,8 @@
     "@types/chrome": "^0.0.202",
     "@types/react-window": "^1.8.5",
     "@types/react-virtualized-auto-sizer": "^1.0.1"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }
