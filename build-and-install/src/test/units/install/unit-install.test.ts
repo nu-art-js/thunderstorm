@@ -90,9 +90,11 @@ describe('NodeProject - Install Phase (Global Packages)', () => {
 	})).timeout(10000);
 });
 
-after(async () => {
-	await FileSystemUtils.folder.delete(resolve(__dirname, './fixtures'));
-	await FileSystemUtils.folder.delete(resolve(__dirname, './workspace'));
+after(async function () {
+	const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+	if (allPassed)
+		await FileSystemUtils.folder.delete(pathToTemp);
+
 	await CommandoPool.killAll();
 });
 

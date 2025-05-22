@@ -65,5 +65,8 @@
     "@types/history": "^4.7.2",
     "@types/request": "^2.48.1",
     "@types/saml2-js": "^1.6.8"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

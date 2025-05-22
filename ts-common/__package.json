@@ -48,5 +48,8 @@
   "_moduleAliases": {
     "@main": "dist/main/ts",
     "@test": "dist/test/ts"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

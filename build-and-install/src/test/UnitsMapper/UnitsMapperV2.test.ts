@@ -1,0 +1,93 @@
+import {FileSystemUtils, Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp, Unit_NodeProject, Unit_TypescriptLib} from '../_common';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {resolve} from 'path';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
+import {BuildAndInstall} from '../../main/build-and-install-v3';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+
+const pathToTemp = resolve(__dirname, './temp');
+const pathToFixtures = resolve(pathToTemp, './fixtures');
+const pathToWorkspace = resolve(pathToTemp, './workspace');
+const fixtureTemplateExtractor = new TestWorkspaceCreator(__dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
+
+export type Input = {
+	fixtures: string[],
+}
+
+export type Result = {
+	key: string,
+	type: string,
+	relativePath: string,
+}[]
+export type TestSuite_UnitsMapper = TestSuite<Input, Result>;
+export type TestCase_UnitsMapper = TestSuite_UnitsMapper['testcases'][number];
+
+
+let buildAndInstall: BuildAndInstall;
+const test = async (input: Input): Promise<Result> => {
+	workspaceCreator.setupWorkspace(['workspace.txt', ...input.fixtures]);
+	buildAndInstall = new BuildAndInstall(pathToWorkspace);
+	await buildAndInstall.build();
+
+	return buildAndInstall.projectUnits.map(unit => {
+		return {
+			key: unit.config.key,
+			type: unit.constructor.name,
+			relativePath: unit.config.relativePath,
+		};
+	});
+};
+
+const runTestCase = (testCase: TestCase_UnitsMapper, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
+
+describe('UnitsMapper', () => {
+	before(async function () {
+		this.timeout(20000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../workspace-fixture.txt', 'fixtures.txt']);
+	});
+
+	it('Project with root, function app, hosting app and two ts lib', runTestCase({
+			input: {
+				fixtures: ['full-workspace.txt'],
+			},
+			result: [
+				{
+					type: Unit_NodeProject.name,
+					key: 'project-root',
+					relativePath: '.',
+				},
+				{
+					type: Unit_FirebaseFunctionsApp.name,
+					key: 'function-1',
+					relativePath: './func-app-1',
+				},
+				{
+					type: Unit_FirebaseHostingApp.name,
+					key: 'hosting-1',
+					relativePath: './hosting-app-1',
+				},
+				{
+					type: Unit_TypescriptLib.name,
+					key: 'lib-1',
+					relativePath: './lib-1',
+				},
+				{
+					type: Unit_TypescriptLib.name,
+					key: 'lib-2',
+					relativePath: './lib-2',
+				},
+			]
+		})
+	);
+
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
+		await CommandoPool.killAll();
+	});
+});

@@ -1,14 +1,16 @@
-import {sortArray} from '@nu-art/ts-common';
+import {Logger, sortArray} from '@nu-art/ts-common';
 
 export type UnitDependentNode = {
 	key: string;
 	dependsOn: string[];
 };
 
-export class UnitsDependencyMapper {
+export class UnitsDependencyMapper
+	extends Logger {
 	private readonly map: Map<string, UnitDependentNode> = new Map();
 
 	constructor(units: UnitDependentNode[]) {
+		super();
 		for (const unit of units)
 			this.map.set(unit.key, {key: unit.key, dependsOn: unit.dependsOn});
 	}
@@ -49,8 +51,11 @@ export class UnitsDependencyMapper {
 					nextLayer.push(key);
 			}
 
-			if (nextLayer.length === 0)
+			if (nextLayer.length === 0) {
+				this.logWarning(map);
+				this.logWarning(layers);
 				throw new Error('Cyclic or disconnected dependency detected');
+			}
 
 			nextLayer.sort();
 			layers.push(nextLayer);

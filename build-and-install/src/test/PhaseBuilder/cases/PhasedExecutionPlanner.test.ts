@@ -1,5 +1,5 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common';
+import {BaiParams, BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common';
 import {voidFunction} from '@nu-art/ts-common';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 
@@ -78,7 +78,7 @@ const cases: TestCase_CalcExecutionSteps[] = [
 
 function test(input: Input) {
 	const {units, phases} = input;
-	const manager = new PhaseManager('output-folder', phases, units);
+	const manager = new PhaseManager('output-folder', phases, units, {} as BaiParams);
 	return manager.calculateExecutionSteps();
 }
 

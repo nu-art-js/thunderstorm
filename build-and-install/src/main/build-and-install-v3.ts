@@ -12,7 +12,7 @@ import {resolve} from 'path';
 import {CONST_BaiConfig, CONST_NodeModules} from './core/consts';
 import {FileSystemUtils} from './v3/core/FileSystemUtils';
 import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
-import {UnitMapper_NodeLib, UnitMapper_NodeProject} from './v3/UnitsMapper/resolvers';
+import {UnitMapper_FirebaseFunction, UnitMapper_FirebaseHosting, UnitMapper_NodeLib, UnitMapper_NodeProject} from './v3/UnitsMapper/resolvers';
 
 
 const DefaultPhases = [
@@ -85,6 +85,8 @@ export class BuildAndInstall
 		this.allUnits = await new UnitsMapper()
 			.addRules(UnitMapper_NodeLib)
 			.addRules(UnitMapper_NodeProject)
+			.addRules(UnitMapper_FirebaseHosting)
+			.addRules(UnitMapper_FirebaseFunction)
 			.resolveUnits(this.pathToProject);
 		Object.freeze(this.allUnits);
 

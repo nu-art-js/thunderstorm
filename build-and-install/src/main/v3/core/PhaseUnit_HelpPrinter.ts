@@ -1,7 +1,7 @@
 import {BaseUnit} from '../units/BaseUnit';
 import {_keys, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
-import {AllBaiParams, RuntimeParams} from '../../core/params/params';
+import {AllBaiParams} from '../../core/params/params';
 import {UnitPhaseImplementor} from './types';
 import {Phase} from '../phase';
 
@@ -12,7 +12,7 @@ export const phase_Help: Phase<'printHelp'> = {
 	key: phaseKey_Help,
 	name: 'Help',
 	method: 'printHelp',
-	filter: () => RuntimeParams.help,
+	filter: (params) => params.help,
 	terminateAfterPhase: true,
 };
 

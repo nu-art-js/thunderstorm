@@ -43,5 +43,8 @@
   },
   "devDependencies": {
     "@google-cloud/resource-manager": "^3.0.0"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

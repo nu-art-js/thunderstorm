@@ -53,5 +53,8 @@
     "@types/react-dom": "$REACT_DOM_TYPES_VERSION",
     "@types/react-router": "$REACT_ROUTER_TYPES_VERSION",
     "@types/react-router-dom": "$REACT_ROUTER_DOM_TYPES_VERSION"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

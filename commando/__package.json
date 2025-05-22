@@ -33,6 +33,7 @@
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_VERSION"
   },
-  "devDependencies": {
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

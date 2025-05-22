@@ -147,8 +147,11 @@ describe('Phase Watch - 1 Lib', () => {
 	// 	}
 	// }));
 
-	after(async () => {
-		// await FileSystemUtils.folder.delete(pathToTemp);
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
 		await projectUnit.stopWatch();
 		await CommandoPool.killAll();
 	});

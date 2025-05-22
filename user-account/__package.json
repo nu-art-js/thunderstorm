@@ -63,5 +63,8 @@
     "@types/saml2-js": "^1.6.8",
     "@types/pako": "^2.0.0",
     "@types/jsonwebtoken": "^9.0.6"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }
