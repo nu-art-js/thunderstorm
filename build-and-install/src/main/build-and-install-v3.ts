@@ -43,7 +43,6 @@ export class BuildAndInstall
 		if (this.runtimeParams.verbose)
 			DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 
-		this.setMinLevel(DebugFlag.DefaultLogLevel);
 		this.logDebug('Runtime params:', this.runtimeParams);
 		this.pathToProject = pathToProject;
 	}

@@ -74,9 +74,10 @@ export class PhaseManager
 			if (this.killed)
 				break;
 
-			const step = this.mapStep(_steps[i]);
+			const scheduledStep = _steps[i];
+			const step = this.mapStep(scheduledStep);
 			this.logDebug(`Executing step #${i + 1}/${_steps.length}`);
-			this.logVerbose(_steps[i]);
+			this.logVerbose(scheduledStep);
 
 			const errors: Error[] = [];
 			let failedStep;
@@ -105,7 +106,7 @@ export class PhaseManager
 						} catch (error: any) {
 							this.logError(`Phase(${phase.name}) - Error - ${unit.config.key}`, error);
 							errors.push(error);
-							failedStep = step;
+							failedStep = scheduledStep;
 							this.killed = true;
 							break;
 						} finally {

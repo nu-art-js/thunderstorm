@@ -17,7 +17,6 @@ export class CommandoInteractive
 		const _commando = BaseCommando._create(CommandoInteractive, ...plugins);
 		const commando = _commando as typeof _commando & CommandoInteractive;
 		commando.shell = new InteractiveShell();
-		commando.shell.setMinLevel(LogLevel.Verbose);
 		return commando;
 	}
 

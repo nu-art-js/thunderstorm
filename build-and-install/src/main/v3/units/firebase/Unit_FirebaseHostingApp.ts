@@ -60,7 +60,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	}
 
 	async compile() {
-		await this.resolveTSConfig(resolve(this.config.fullPath, './src/main'), 'main');
+		await this.resolveTSConfig(resolve(this.config.fullPath, './src'), 'main');
 		await this.clearOutputDir();
 		await this.createAppVersionFile();
 		await this.compileImpl();
