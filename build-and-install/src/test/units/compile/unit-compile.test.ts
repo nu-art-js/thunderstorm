@@ -2,7 +2,7 @@
 import {DebugFlag, LogLevel} from '@nu-art/ts-common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, Unit_TypescriptLib} from '../../_common';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common';
 import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {expect} from 'chai';
@@ -57,7 +57,8 @@ describe('Unit_NodeLib - Compile Phase', () => {
 
 		buildAndInstall = new BuildAndInstall(pathToWorkspace);
 		await buildAndInstall.build();
-		await buildAndInstall.nodeProjectUnit?.install();
+		buildAndInstall.setPhases([phase_Prepare, phase_Install]);
+		await buildAndInstall.run();
 	});
 
 	it('Compile - Creates output folder if it does not exist', runTestCase({

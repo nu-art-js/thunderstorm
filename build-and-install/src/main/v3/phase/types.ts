@@ -18,7 +18,7 @@ export type Phase<PhaseMethod extends string> = {
 	//Should this phase be run taking into account the dependency tree
 	runUnitsInDependency?: boolean;
 	//Phases that are dependency of this phase and must run for this phase to work
-	dependencyPhaseKeys?: string[];
+	dependencyPhase?: Phase<string>[];
 
 	// should the operation break the phases sequence
 	breakPhases?: boolean;

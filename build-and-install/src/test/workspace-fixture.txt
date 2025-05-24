@@ -92,8 +92,12 @@ export default [
 
 //// file: ./bai-config.json
 {
-  "dependenciesVersions": {
-    "sort": "^0.0.3"
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
   },
   "files": {
     "firebase": {

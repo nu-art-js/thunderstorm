@@ -19,7 +19,7 @@ export class UnitsMapper
 	 * @param units - The project units derived from the file system
 	 */
 	async resolveUnits(path: string, projectRoot = path, units = [] as BaseUnit<any>[]) {
-		if (path.endsWith('/node_modules'))
+		if (path.endsWith('/node_modules') || path.match(/\/\.[\w -_]+$/))
 			return units;
 
 		let unit;

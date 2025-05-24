@@ -1,7 +1,8 @@
 import {TS_PackageJSON} from '../types';
 import {
-	AbsolutePath,
-	RelativePath,
+	_keys,
+	AbsolutePath, deepClone,
+	RelativePath, StringMap,
 	tsValidate,
 	tsValidateBoolean,
 	tsValidateOptionalAnyString,
@@ -54,7 +55,7 @@ export abstract class UnitMapper_Node<
 		if (!await FileSystemUtils.file.exists(pathToFile))
 			return;
 
-		const packageJson = await FilesCache.load.json<TS_PackageJSON<ConfigJSON>>(pathToFile);
+		let packageJson = await FilesCache.load.json<TS_PackageJSON<ConfigJSON>>(pathToFile);
 		if (!packageJson)
 			return;
 
@@ -68,14 +69,30 @@ export abstract class UnitMapper_Node<
 		if (tsValidateResult(packageJson.unitConfig.type, this.validator.type))
 			return; // not the expected type for this mapper
 
+		packageJson = deepClone(packageJson);
 		tsValidate(packageJson.unitConfig, this.validator as ValidatorTypeResolver<ConfigJSON>);
+		const dependencies = packageJson.dependencies;
+		if (dependencies)
+			packageJson.dependencies = _keys(dependencies).reduce<StringMap>((acc, key) => {
+				acc[key] = dependencies[key] === '?' ? `{{${key}}}` : dependencies[key];
+				return acc;
+			}, {});
+
+		const devDependencies = packageJson.devDependencies;
+		if (devDependencies)
+			packageJson.devDependencies = _keys(devDependencies).reduce<StringMap>((acc, key) => {
+				acc[key] = devDependencies[key] === '?' ? `{{${key}}}` : devDependencies[key];
+				return acc;
+			}, {});
+
+		Object.freeze(packageJson);
 
 		const baseConfig: BaseUnitConfig = {
 			key: packageJson.name,
 			fullPath: path as AbsolutePath,
 			relativePath: path.replace(root, '.') as RelativePath,
 			label: packageJson.unitConfig.label ?? packageJson.name,
-			dependencies: {...packageJson.dependencies, ...packageJson.devDependencies},
+			dependencies: {...dependencies, ...packageJson.devDependencies},
 		};
 
 		const customESLintConfig = packageJson.unitConfig.customESLintConfig ?? false;

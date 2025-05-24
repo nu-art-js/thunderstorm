@@ -2,7 +2,7 @@
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, Unit_TypescriptLib} from '../../_common';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common';
 import {resolve} from 'path';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
@@ -22,7 +22,7 @@ const test = async (setup: Input): Promise<void> => {
 	const buildAndInstall = new BuildAndInstall(pathToWorkspace);
 	await buildAndInstall.build();
 
-	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-test');
+	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-test', false);
 	const unit = buildAndInstall.projectUnits.find(unit => unit.config.key == '@demo/lib-test') as Unit_TypescriptLib;
 	await unit.runTests();
 };
@@ -41,7 +41,8 @@ describe('TypescriptLib - Test Phase', () => {
 
 		const buildAndInstall = new BuildAndInstall(pathToWorkspace);
 		await buildAndInstall.build();
-		await buildAndInstall.nodeProjectUnit?.install();
+		buildAndInstall.setPhases([phase_Prepare, phase_Install]);
+		await buildAndInstall.run();
 	});
 
 	it('Should pass generated test suite', runTestCase({

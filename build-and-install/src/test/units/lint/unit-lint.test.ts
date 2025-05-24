@@ -2,7 +2,7 @@
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, Unit_TypescriptLib} from '../../_common';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common';
 import {resolve} from 'path';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
@@ -45,7 +45,8 @@ describe('TypescriptLib - Lint Phase', () => {
 
 		buildAndInstall = new BuildAndInstall(pathToWorkspace);
 		await buildAndInstall.build();
-		await buildAndInstall.nodeProjectUnit?.install();
+		buildAndInstall.setPhases([phase_Prepare, phase_Install]);
+		await buildAndInstall.run();
 	});
 
 

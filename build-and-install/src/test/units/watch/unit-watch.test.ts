@@ -9,7 +9,7 @@ import '../../UnitsDependencyMapper/transitive-dependencies.test';
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, Unit_NodeProject, Unit_TypescriptLib} from '../../_common';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_NodeProject, Unit_TypescriptLib} from '../../_common';
 import {resolve} from 'path';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
@@ -84,7 +84,8 @@ describe('Phase Watch - 1 Lib', () => {
 
 		buildAndInstall = new BuildAndInstall(pathToWorkspace);
 		await buildAndInstall.build();
-		await buildAndInstall.nodeProjectUnit?.install();
+		buildAndInstall.setPhases([phase_Prepare, phase_Install]);
+		await buildAndInstall.run();
 	});
 
 	it('Should rebuild lib-e when its source is changed', runTestCase({

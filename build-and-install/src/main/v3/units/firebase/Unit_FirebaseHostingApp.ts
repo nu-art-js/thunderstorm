@@ -1,11 +1,10 @@
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
 import {FirebasePackageConfig} from '../../../core/types';
 import {UnitPhaseImplementor} from '../../core/types';
-import {BadImplementationException, ImplementationMissingException, LogLevel, TypedMap} from '@nu-art/ts-common';
+import {ImplementationMissingException, LogLevel, TypedMap} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {convertToFullPath} from '@nu-art/commando/shell/tools';
-import {dispatcher_WatchReady} from '../../../old/runner-dispatchers';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node';
@@ -50,14 +49,6 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	constructor(config: Unit_FirebaseHostingApp<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_FirebaseHostingApp);
-	}
-
-	async init(setInitialized: boolean = true): Promise<void> {
-		await super.init(setInitialized);
-
-		dispatcher_WatchReady.removeListener(this);
-		if (!this.config.servingPort)
-			throw new BadImplementationException(`Unit ${this.config.label} missing hosting port in firebaseConfig`);
 	}
 
 	//######################### Phase Implementations #########################
