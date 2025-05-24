@@ -1,6 +1,13 @@
 import {BuildAndInstall} from './build-and-install-v3';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 
 (async () => {
+	process.on('SIGINT', () => {
+		console.log('GOT KILL SIGNAL');
+		CommandoPool.killAll();
+		return process.exit(0);
+	});
+
 	const buildAndInstall = new BuildAndInstall();
 	await buildAndInstall.build();
 	await buildAndInstall.run();
@@ -10,10 +17,6 @@ import {BuildAndInstall} from './build-and-install-v3';
 
 // .execute()
 // 	.then(() => {
-// 		process.on('SIGINT', () => {
-// 			console.log('completed');
-// 			return process.exit(0);
-// 		});
 // 	})
 // 	.catch(err => {
 // 		process.on('SIGINT', () => {
