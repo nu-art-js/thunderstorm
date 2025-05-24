@@ -8,8 +8,8 @@ import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
-import {FileSystemUtils} from '../core/FileSystemUtils';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PrintDependencyTree, Phase_Test} from '../phase';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils';
+import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Test} from '../phase';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
@@ -33,7 +33,7 @@ const assetExtensions = [
 
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
-	implements UnitPhaseImplementor<[Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test]> {
+	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test]> {
 
 	constructor(config: Unit_TypescriptLib<C>['config']) {
 		super(config);
@@ -60,11 +60,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 		const commando = this.allocateCommando(Commando_NVM, Commando_Basic)
 			.cd(this.config.fullPath)
-			.append(`NODE_PATH=${this.runtimeContext.parentUnit.config.fullPath}/node_modules`)
-			.append('which tsc')
-			.append('which node')
-			.append('echo node: $(node -v)')
-			.append('echo tsc: $(tsc -v)')
 			.setLogLevelFilter((log, std) => {
 				return LogLevel.Error;
 			})
@@ -138,7 +133,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	//######################### Phase Implementations #########################
 
 
-	protected async preCompile() {
+	public async preCompile() {
 		const srcFolder = pathResolve(this.config.fullPath, 'src');
 		const entries = readdirSync(srcFolder);
 		for (const entry of entries) {
@@ -178,8 +173,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	protected async copyPackageJSONToOutput() {
 		const targetPath = resolve(this.config.output, CONST_PackageJSON);
-		const packageJson = this.convertPackageJsonForDist();
-		await FileSystemUtils.file.write(targetPath, __stringify(packageJson, true));
+		await FileSystemUtils.file.template.write(targetPath, __stringify(this.config.packageJson, true), this.deriveDistDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
 	}
 
 
@@ -302,7 +296,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		if (existsSync(projectDefaultTsConfig)) {
 			this.logDebug(`Copying project-level default tsconfig for source: ${sourceFolderType}`);
 			await FileSystemUtils.file.template.copy(projectDefaultTsConfig, tsConfigPath, {SOURCE_ROOT: entryPath});
-
 			return;
 		}
 

@@ -5,7 +5,7 @@ import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper';
 import {UnitDependentNode, UnitsDependencyMapper} from './v3/UnitsDependencyMapper/UnitsDependencyMapper';
 import {FilesCache} from './v3/core/FilesCache';
 import {BAI_Config} from './core/types';
-import {Config_ProjectUnit, ProjectUnit, ProjectUnit_RuntimeContext} from './v3/units/ProjectUnit';
+import {ProjectUnit, ProjectUnit_RuntimeContext} from './v3/units/ProjectUnit';
 import {PhaseManager} from './v3/PhaseManager';
 import {BaseUnit, Unit_NodeProject} from './v3/units';
 import {resolve} from 'path';
@@ -30,6 +30,7 @@ export class BuildAndInstall
 	readonly nodeProjectUnit!: Unit_NodeProject;
 	readonly runtimeParams: BaiParams = CLIParamsResolver.create(...AllBaiParams).resolveParamValue();
 	readonly projectUnits: ProjectUnit[] = [];
+	private unitsDependencyMapper!: UnitsDependencyMapper;
 
 	constructor(pathToProject: string = process.env.INIT_CWD ?? process.cwd()) {
 		super();
@@ -58,14 +59,7 @@ export class BuildAndInstall
 
 	async run() {
 		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
-		const unitDependencyTree: ProjectUnit[][] = new UnitsDependencyMapper(this.projectUnits.map(unit => {
-			const config: Readonly<Config_ProjectUnit> = unit.config;
-			return ({
-				key: config.key,
-				dependsOn: _keys(config.dependencies)
-			});
-		}))
-			.buildDependencyTree()
+		const unitDependencyTree: ProjectUnit[][] = this.unitsDependencyMapper.buildDependencyTree()
 			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
 
 		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
@@ -93,9 +87,6 @@ export class BuildAndInstall
 		this.logDebug('Units found:', this.allUnits.map(unit => `${unit.constructor?.['name']}: ${unit.config.key}`).join('\n'));
 		const unitKeyToUnitMap = arrayToMap(this.allUnits, unit => unit.config.key);
 
-		this.logVerbose(`Initializing units...`);
-		await Promise.all(this.allUnits.map(u => u.init()));
-
 		const allProjectUnits = this.allUnits.filter(unit => unit.isInstanceOf(ProjectUnit)) as ProjectUnit[];
 		const nodeProjectUnit = allProjectUnits.find(unit => unit.isInstanceOf(Unit_NodeProject)) as Unit_NodeProject;
 
@@ -104,7 +95,6 @@ export class BuildAndInstall
 
 		this.nodeProjectUnit.assignUnit(allProjectUnits);
 		this.logDebug(`Parent unit: ${this.nodeProjectUnit.config.key}`);
-
 		this.logDebug(`Child units: ${allProjectUnits.map(unit => unit.config.key).join(', ')}`);
 
 		const pathToBaiConfig = resolve(this.nodeProjectUnit.config.fullPath, CONST_BaiConfig);
@@ -112,24 +102,24 @@ export class BuildAndInstall
 		const baiConfig = await FilesCache.load.json<BAI_Config>(pathToBaiConfig);
 		this.logDebug('Loaded BAI-Config', baiConfig);
 
-		const unitsDependencies: UnitDependentNode[] = allProjectUnits.map(unit => ({key: unit.config.key, dependsOn: _keys(unit.config.dependencies)}));
-		this.logDebug('Units dependencies:', unitsDependencies);
+		const unitsDependencies: UnitDependentNode[] = allProjectUnits.map(unit => ({
+			key: unit.config.key,
+			dependsOn: _keys(unit.config.dependencies).filter(key => !!unitKeyToUnitMap[key]) as string[]
+		}));
 
-
+		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies);
 		const runtimeContext: ProjectUnit_RuntimeContext = ({
 			parentUnit: this.nodeProjectUnit,
 			childUnits: allProjectUnits,
 			baiConfig,
 			runtimeParams: this.runtimeParams,
-			unitsMapper: new UnitsDependencyMapper(unitsDependencies),
+			unitsMapper: this.unitsDependencyMapper,
 			unitsResolver: <UnitType>(keys: string[], className: Constructor<UnitType>): UnitType[] => {
 				return keys.map(key => unitKeyToUnitMap[key]).filter(unit => unit.isInstanceOf(className)) as UnitType[];
 			},
 		});
 
 		allProjectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));
-		await Promise.all(allProjectUnits.map(u => u.prepare()));
-		// this.logVerbose('Units found:', this.allUnits);
 
 		if (!(await FileSystemUtils.file.exists(resolve(this.nodeProjectUnit.config.fullPath, CONST_NodeModules)))) {
 			this.logInfo(`root project is missing ${CONST_NodeModules} folder. Enabling install...`);

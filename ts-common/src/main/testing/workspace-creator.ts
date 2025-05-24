@@ -19,19 +19,23 @@ export class TestWorkspaceCreator
 	}
 
 	setupWorkspace(fixtures: string[], relativePath = '', clean = true) {
+		if (clean)
+			this.clearWorkspace(relativePath);
+
 		for (const fixture of fixtures) {
-			this.extractFixture(resolve(this.pathToFixtures, fixture), relativePath, fixture === fixtures[0] && clean && relativePath === '');
+			this.extractFixture(resolve(this.pathToFixtures, fixture), relativePath);
 		}
 	}
 
-	extractFixture(pathToFixture: string, relativePathInWorkspace = '', clean = true) {
+	clearWorkspace(relativePathInWorkspace = '') {
+		const path = resolve(this.pathToWorkspace, relativePathInWorkspace);
+		this.logWarning(`Deleting folder: ${path}`);
+		rmSync(path, {recursive: true, force: true});
+	}
+
+	extractFixture(pathToFixture: string, relativePathInWorkspace = '') {
 		const content = readFileSync(pathToFixture, 'utf8');
 
-		if (clean) {
-			const path = resolve(this.pathToWorkspace, relativePathInWorkspace);
-			this.logWarning(`Deleting folder: ${path}`);
-			rmSync(path, {recursive: true, force: true});
-		}
 
 		const matches = [...content.matchAll(FILE_HEADER_REGEX)];
 		if (matches.length === 0) {

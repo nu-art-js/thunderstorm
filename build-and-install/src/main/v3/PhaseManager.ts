@@ -1,4 +1,4 @@
-import {addItemToArray, filterAsync, Logger, removeItemFromArray} from '@nu-art/ts-common';
+import {addItemToArray, filterAsync, Logger, removeItemFromArray, timeCounter} from '@nu-art/ts-common';
 import {RunningStatusHandler} from './RunningStatusHandler';
 import {Phase} from './phase';
 import {BaseUnit, ProjectUnit} from './units';
@@ -93,10 +93,17 @@ export class PhaseManager
 
 						addItemToArray(this.runningUnits, unit);
 
+						const dtCounter = timeCounter();
 						try {
+							this.logInfo(`Phase(${phase.name}) - Running - ${unit.config.key}`);
 							await (unit[phase.method as keyof BaseUnit] as Function).call(unit);
+							let operationDuration = '';
+							if (dtCounter.dt() > 1500)
+								operationDuration = ` (${dtCounter.format('mm:ss')})`;
+
+							this.logInfo(`Phase(${phase.name}) - Completed${operationDuration} - ${unit.config.key}`);
 						} catch (error: any) {
-							this.logError(`Error executing phase [${phase.key}] on unit [${unit.config.key}]`, error);
+							this.logError(`Phase(${phase.name}) - Error - ${unit.config.key}`, error);
 							errors.push(error);
 							failedStep = step;
 							this.killed = true;

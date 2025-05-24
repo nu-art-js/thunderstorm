@@ -18,7 +18,9 @@ export type Constructor<T> = new (...args: any) => T
 export type BAI_Config = {
 	thunderstormVersion: string
 	appVersion: string
-	dependenciesVersions?: TypedMap<string>
+	templateParams?: {
+		packageJson?: TypedMap<string>
+	}
 	files?: {
 		firebase?: {
 			databaseRules?: string

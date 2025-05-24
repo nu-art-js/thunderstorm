@@ -30,6 +30,7 @@ export const phase_CheckCyclicImports: Phase<'checkCyclicImports'> = {
 
 //######################### Build Phases #########################
 
+
 export type Phase_Purge = typeof phase_Purge;
 export const phaseKey_Purge = 'purge';
 export const phase_Purge: Phase<'purge'> = {
@@ -39,14 +40,13 @@ export const phase_Purge: Phase<'purge'> = {
 	filter: (baiParams) => baiParams.purge,
 };
 
-// export type Phase_CopyPackageJSON = typeof phase_CopyPackageJSON;
-// export const phaseKey_CopyPackageJSON = 'copy-package-json';
-// export const phase_CopyPackageJSON: Phase<'copyPackageJson'> = {
-// 	key: phaseKey_CopyPackageJSON,
-// 	unitFilter: (unit) => 'copyPackageJson' in unit,
-// 	name: 'Copy Package JSON',
-// 	method: 'copyPackageJson',
-// };
+export type Phase_Prepare = typeof phase_Prepare;
+export const phaseKey_Prepare = 'prepare';
+export const phase_Prepare: Phase<'prepare'> = {
+	key: phaseKey_Prepare,
+	name: 'Copy Package JSON',
+	method: 'prepare',
+};
 
 export type Phase_Install = typeof phase_Install;
 export const phaseKey_Install = 'install';
@@ -56,6 +56,7 @@ export const phase_Install: Phase<'install'> = {
 	method: 'install',
 	breakPhases: true,
 	filter: (baiParams) => baiParams.install || baiParams.installPackages || baiParams.installGlobals,
+	dependencyPhase: [phase_Prepare]
 };
 
 export type Phase_Lint = typeof phase_Lint;
@@ -67,15 +68,6 @@ export const phase_Lint: Phase<'lint'> = {
 	filter: (baiParams) => baiParams.lint,
 };
 
-export type Phase_Compile = typeof phase_Compile;
-export const phaseKey_Compile = 'compile';
-export const phase_Compile: Phase<'compile'> = {
-	key: phaseKey_Compile,
-	name: 'Compile',
-	method: 'compile',
-	filter: (baiParams) => !baiParams.noBuild,
-};
-
 export type Phase_PreCompile = typeof phase_PreCompile;
 export const phaseKey_PreCompile = 'preCompile';
 export const phase_PreCompile: Phase<'preCompile'> = {
@@ -85,6 +77,17 @@ export const phase_PreCompile: Phase<'preCompile'> = {
 	filter: (baiParams) => !baiParams.noBuild,
 };
 
+export type Phase_Compile = typeof phase_Compile;
+export const phaseKey_Compile = 'compile';
+export const phase_Compile: Phase<'compile'> = {
+	key: phaseKey_Compile,
+	name: 'Compile',
+	method: 'compile',
+	filter: (baiParams) => !baiParams.noBuild,
+	dependencyPhase: [phase_PreCompile]
+};
+
+
 export type Phase_Test = typeof phase_Test;
 export const phaseKey_Test = 'runTests';
 export const phase_Test: Phase<'runTests'> = {
@@ -93,7 +96,6 @@ export const phase_Test: Phase<'runTests'> = {
 	method: 'runTests',
 	filter: (baiParams) => baiParams.test,
 	runUnitsInDependency: true,
-	dependencyPhaseKeys: [phaseKey_Compile],
 };
 
 export type Phase_Watch = typeof phase_Watch;
@@ -108,6 +110,7 @@ export const phase_Watch: Phase<'watch'> = {
 
 export const phases_Build: Phase<string>[] = [
 	phase_Purge,
+	phase_Prepare,
 	phase_Install,
 	phase_Lint,
 	phase_PreCompile,

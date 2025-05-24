@@ -13,7 +13,7 @@ import {
 	TimeCounter,
 	timeCounter
 } from '@nu-art/ts-common';
-import {dispatcher_PhaseChange, dispatcher_UnitStatusChange} from '../../old/PhaseRunnerDispatcher';
+import {dispatcher_UnitStatusChange} from '../../old/PhaseRunnerDispatcher';
 import {CommandoInteractive} from '@nu-art/commando/shell';
 import {BaseCommando} from '@nu-art/commando/shell/core/BaseCommando';
 import {MergeTypes} from '@nu-art/commando/shell/core/class-merger';
@@ -85,15 +85,6 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 		}
 	}
 
-	public async init(setInitialized: boolean = true) {
-		this.setStatus('Initializing');
-		//Register the unit to PhaseRunnerEvent dispatcher
-		dispatcher_PhaseChange.addListener(this);
-		dispatcher_UnitStatusChange.addListener(this);
-		if (setInitialized)
-			this.setStatus('Initialized');
-	}
-
 	//######################### Internal Logic #########################
 
 	private initLogClient() {
@@ -125,7 +116,9 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 			if (!exists(this.timeCounter))
 				this.logError(`Got end status: '${status}' - while current status '${this.unitStatus}' was not a start`);
 			else {
-				operationDuration = ` (${this.timeCounter.format('mm:ss')})`;
+				const s = this.timeCounter.format('mm:ss');
+				if (s !== '00:00')
+					operationDuration = ` (${s})`;
 				delete this.timeCounter;
 			}
 
@@ -164,8 +157,4 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 	public getLogs() {
 		return this.logger.buffers[0];
 	}
-
-	async prepare() {
-	}
 }
-

@@ -1,4 +1,4 @@
-import {Logger, sortArray} from '@nu-art/ts-common';
+import {_keys, _values, Logger, sortArray, TypedMap} from '@nu-art/ts-common';
 
 export type UnitDependentNode = {
 	key: string;
@@ -7,34 +7,36 @@ export type UnitDependentNode = {
 
 export class UnitsDependencyMapper
 	extends Logger {
-	private readonly map: Map<string, UnitDependentNode> = new Map();
+	private readonly map: TypedMap<UnitDependentNode> = {};
 
 	constructor(units: UnitDependentNode[]) {
 		super();
 		for (const unit of units)
-			this.map.set(unit.key, {key: unit.key, dependsOn: unit.dependsOn});
+			this.map[unit.key] = {key: unit.key, dependsOn: unit.dependsOn};
 	}
 
-	public buildDependencyTree(allKeys = [...this.map.keys()]): string[][] {
+	public buildDependencyTree(allKeys = [..._keys(this.map)] as string[]): string[][] {
 		const map = this.map;
-		const dependentsMap = new Map<string, Set<string>>();
+		const dependentsMap: TypedMap<Set<string>> = {};
 		const referencedKeys = new Set<string>();
-
+		this.logVerbose(this.map);
 		// 1. Build reverse dependency graph
-		for (const [key, node] of map) {
+		for (const key of _keys(map) as string[]) {
+			const node = this.map[key];
 			for (const dep of node.dependsOn) {
-				if (!dependentsMap.has(dep))
-					dependentsMap.set(dep, new Set());
-				dependentsMap.get(dep)!.add(key);
+				let set = dependentsMap[dep];
+				if (!set)
+					dependentsMap[dep] = set = new Set();
+				set.add(key);
 				referencedKeys.add(dep);
 			}
 		}
 
 		// 2. Identify bottom layer (depends on no one)
-		const bottomLayer = allKeys.filter(key => map.get(key)!.dependsOn.length === 0);
+		const bottomLayer = allKeys.filter(key => map[key].dependsOn.length === 0);
 		// 3. Identify top layer (no one depends on them)
 		const topLayer = allKeys.filter(key =>
-			!dependentsMap.has(key) && !bottomLayer.includes(key)
+			!dependentsMap[key] && !bottomLayer.includes(key)
 		);
 
 		// 4. Build actual layers from bottom to top
@@ -44,7 +46,8 @@ export class UnitsDependencyMapper
 		while (resolved.size < allKeys.length - topLayer.length) {
 			const nextLayer: string[] = [];
 
-			for (const [key, node] of map.entries()) {
+			for (const key of _keys(this.map) as string[]) {
+				const node = this.map[key];
 				if (resolved.has(key) || topLayer.includes(key)) continue;
 
 				if (node.dependsOn.every(dep => resolved.has(dep)))
@@ -74,11 +77,13 @@ export class UnitsDependencyMapper
 
 		// key -> list of dependencies (sorted)
 		const dependsOnMap = new Map<string, string[]>();
-		for (const [key, node] of this.map.entries())
+		for (const key of _keys(this.map) as string[]) {
+			const node = this.map[key];
 			dependsOnMap.set(key, [...node.dependsOn].sort());
+		}
 
 		// Build reverse index to detect root nodes
-		const allKeys = [...this.map.keys()];
+		const allKeys = _keys(this.map) as string[];
 		const referencedKeys = new Set<string>();
 		for (const deps of dependsOnMap.values())
 			deps.forEach(dep => referencedKeys.add(dep));
@@ -118,7 +123,7 @@ export class UnitsDependencyMapper
 			const key = stack.pop()!;
 			if (visited.has(key) || toExclude.has(key)) continue;
 
-			const node = this.map.get(key);
+			const node = this.map[key];
 			if (!node)
 				throw new Error(`Unknown unit: ${key}`);
 
@@ -128,7 +133,7 @@ export class UnitsDependencyMapper
 		}
 
 		// Return only units that were visited and not excluded
-		return [...this.map.values()]
+		return [..._values(this.map)]
 			.filter(node => visited.has(node.key) && !toExclude.has(node.key));
 	}
 
@@ -155,7 +160,8 @@ export class UnitsDependencyMapper
 
 	public getReverseDependencies(changedKeys: string[], strict = true): string[] {
 		const dependentsMap = new Map<string, Set<string>>();
-		for (const [key, node] of this.map.entries()) {
+		for (const key of _keys(this.map) as string[]) {
+			const node = this.map[key];
 			for (const dep of node.dependsOn) {
 				if (!dependentsMap.has(dep))
 					dependentsMap.set(dep, new Set());
@@ -168,7 +174,7 @@ export class UnitsDependencyMapper
 
 		while (stack.length > 0) {
 			const key = stack.pop()!;
-			if (!this.map.has(key)) {
+			if (!this.map[key]) {
 				if (strict)
 					throw new Error(`Unknown unit: ${key}`);
 				continue;
@@ -191,8 +197,9 @@ export class UnitsDependencyMapper
 			const current = stack.pop()!;
 			if (visited.has(current))
 				continue;
+
 			visited.add(current);
-			const node = this.map.get(current);
+			const node = this.map[current];
 			if (!node)
 				throw new Error(`Unit '${current}' not found in dependency map.`);
 			stack.push(...node.dependsOn);
@@ -217,14 +224,14 @@ export class UnitsDependencyMapper
 
 			visited.add(key);
 			inStack.add(key);
-			const node = this.map.get(key);
+			const node = this.map[key];
 			if (node)
 				for (const dep of node.dependsOn)
 					visit(dep, path.concat(key));
 			inStack.delete(key);
 		};
 
-		for (const key of this.map.keys())
+		for (const key of _keys(this.map) as string[])
 			visit(key, []);
 
 		return cycles;
@@ -239,7 +246,7 @@ export class UnitsDependencyMapper
 			if (key === to) return true;
 			if (visited.has(key)) continue;
 			visited.add(key);
-			const node = this.map.get(key);
+			const node = this.map[key];
 			if (node)
 				stack.push(...node.dependsOn);
 		}
@@ -248,15 +255,15 @@ export class UnitsDependencyMapper
 	}
 
 	public getRoots(): string[] {
-		const allKeys = new Set(this.map.keys());
+		const allKeys = new Set(_keys(this.map) as string[]);
 		const dependedUpon = new Set<string>();
-		for (const node of this.map.values())
+		for (const node of _values(this.map))
 			for (const dep of node.dependsOn)
 				dependedUpon.add(dep);
 		return [...allKeys].filter(k => !dependedUpon.has(k)).sort();
 	}
 
 	public getLeaves(): string[] {
-		return [...this.map.values()].filter(node => node.dependsOn.length === 0).map(node => node.key).sort();
+		return _values(this.map).filter(node => node.dependsOn.length === 0).map(node => node.key).sort();
 	}
 }

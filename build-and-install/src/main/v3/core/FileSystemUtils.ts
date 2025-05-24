@@ -1,6 +1,6 @@
 import {promises as _fs} from 'fs';
 import {resolve} from 'path';
-import {_keys, BadImplementationException, StringMap} from '@nu-art/ts-common';
+import {BadImplementationException, exists, StringMap} from '@nu-art/ts-common';
 
 async function assertFile(path: string) {
 	const stat = await _fs.stat(path);
@@ -14,7 +14,7 @@ async function assertFolder(path: string) {
 		throw new BadImplementationException(`Expected folder but found file or non-directory: ${path}`);
 }
 
-async function exists(path: string): Promise<boolean> {
+async function fileExists(path: string): Promise<boolean> {
 	try {
 		await _fs.access(path);
 		return true;
@@ -24,7 +24,7 @@ async function exists(path: string): Promise<boolean> {
 }
 
 async function assertExists(path: string, mustExist: boolean, type: 'File' | 'Folder' | 'Symlink') {
-	const doesExist = await exists(path);
+	const doesExist = await fileExists(path);
 	if (!doesExist) {
 		if (mustExist)
 			throw new BadImplementationException(`${type} does not exist: ${path}`);
@@ -33,11 +33,16 @@ async function assertExists(path: string, mustExist: boolean, type: 'File' | 'Fo
 	return true;
 }
 
-const DEFAULT_TEMPLATE_PATTERN = (key: string | number) => new RegExp(`\{\{${key}\}\}`, 'g');
+
+const escapeRegExp = (string: string) => string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+
+export const DEFAULT_TEMPLATE_PATTERN = new RegExp(`\{\{([a-zA-Z]\\w{2,}?)\}\}`);
+export const DEFAULT_OLD_TEMPLATE_PATTERN = new RegExp(`(?<!\\\\)\\$([a-zA-Z]\\w{2,})`);
+
 export const FileSystemUtils = {
 	file: {
 		exists: async (pathToFile: string) => {
-			return await exists(pathToFile);
+			return await fileExists(pathToFile);
 		},
 		delete: async (pathToFile: string, mustExist = false) => {
 			if (!await assertExists(pathToFile, mustExist, 'File'))
@@ -64,9 +69,17 @@ export const FileSystemUtils = {
 				return FileSystemUtils.file.template.transform(content, params, pattern);
 			},
 			transform: (input: string, params: StringMap, pattern = DEFAULT_TEMPLATE_PATTERN) => {
-				return _keys(params).reduce((_input: string, key) => {
-					return _input.replace(pattern(key), params[key]);
-				}, input);
+				let match;
+				while (match = input.match(pattern)) {
+					const value = params[match[1]];
+					if (!exists(value))
+						throw new BadImplementationException(`Missing template param: ${match[1]}`);
+
+					const fullMatchRegex = new RegExp(escapeRegExp(match[0]), 'g');
+					input = input.replace(fullMatchRegex, value);
+				}
+
+				return input;
 			},
 			write: async (pathToFile: string, content: string, params: StringMap, pattern = DEFAULT_TEMPLATE_PATTERN) => {
 				const transformedContent = FileSystemUtils.file.template.transform(content, params, pattern);
@@ -98,7 +111,7 @@ export const FileSystemUtils = {
 		},
 
 		create: async (pathToFolder: string) => {
-			if (await exists(pathToFolder))
+			if (await fileExists(pathToFolder))
 				return assertFolder(pathToFolder);
 			return _fs.mkdir(pathToFolder, {recursive: true});
 		}

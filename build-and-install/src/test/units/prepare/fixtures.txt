@@ -1,0 +1,122 @@
+// file: ./lib-prepare--static.txt
+//// file: ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./lib-prepare--templated.txt
+//// file: ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "$app_version",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./lib-prepare--unknown-template.txt
+//// file: ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "$app_version_doesnt_exists",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./lib-prepare--repeated-template.txt
+//// file: ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "$app_version",
+  "description": "$app_version",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./lib-prepare--escaped-template.txt
+//// file: ./__package.json
+{
+  "name": "lib-prepare",
+  "description": "This should not be replaced: \\$escaped",
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./lib-prepare--numeric-template.txt
+//// file: ./__package.json
+{
+  "name": "lib-prepare",
+  "description": "$2024",
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./lib-prepare--short-template.txt
+//// file: ./__package.json
+{
+  "name": "lib-prepare",
+  "description": "$ab",
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./lib-prepare--escaped-shell-template.txt
+//// file: ./__package.json
+{
+  "name": "lib-prepare",
+  "scripts": {
+    "build": "webpack --env app.env=\\$SINGLE_ESCAPE \\\\$DOUBLE_ESCAPE"
+  },
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./lib-prepare--missing-package.txt
+//// file: ./src/main/index.ts
+export const y = 42;
