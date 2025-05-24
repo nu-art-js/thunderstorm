@@ -38,22 +38,13 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	//######################### Phase Implementations #########################
 
 	async prepare() {
-		this.setStatus('Resolving PackageJSON', 'start');
 		const targetPath = resolve(this.config.fullPath, CONST_PackageJSON);
-		try {
-			await FileSystemUtils.file.template.write(targetPath, __stringify(this.config.packageJson, true), this.deriveLibDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
-			this.setStatus('PackageJSON resolved', 'end');
-		} catch (e: any) {
-			this.setErrorStatus('PackageJSON resolved - ERROR', e);
-			throw e;
-		}
+		await FileSystemUtils.file.template.write(targetPath, __stringify(this.config.packageJson, true), this.deriveLibDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
 	}
 
 	async purge() {
-		this.setStatus('Purging', 'start');
 		await FileSystemUtils.file.delete(resolve(this.config.fullPath, CONST_PackageJSON));
 		await FileSystemUtils.folder.delete(resolve(this.config.fullPath, CONST_NodeModules));
-		this.setStatus('Purged', 'end');
 	}
 }
 

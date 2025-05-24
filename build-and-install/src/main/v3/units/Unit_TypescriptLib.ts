@@ -143,7 +143,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		if (!fs.existsSync(`${this.config.fullPath}/prebuild.sh`))
 			return;
 
-		this.setStatus('Pre-Compile');
 		await this.allocateCommando(Commando_Basic)
 			.cd(this.config.fullPath)
 			.append('bash prebuild.sh')
@@ -151,21 +150,12 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	async compile() {
-		try {
-			this.setStatus('Compiling', 'start');
-			await this.clearOutputDirImpl();
-			await this.compileImpl();
-			await this.copyAssetsToOutput();
-			await this.copyPackageJSONToOutput();
+		await this.clearOutputDirImpl();
+		await this.compileImpl();
+		await this.copyAssetsToOutput();
+		await this.copyPackageJSONToOutput();
 
-			await this.postCompile();
-			this.setStatus(`Compiled`, 'end');
-		} catch (e: any) {
-			this.setErrorStatus('Compilation Error', e);
-
-			if (!this.runtimeContext.runtimeParams.watch)
-				throw e;
-		}
+		await this.postCompile();
 	}
 
 	protected async postCompile() {
@@ -183,7 +173,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	async runTests() {
-		this.setStatus('Running tests', 'start');
 		const command = resolve(this.runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
 		const testCommand = `${command} "src/test/**/*.test.ts" --require ts-node/register`;
 		await this.allocateCommando(Commando_NVM)
@@ -193,9 +182,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				if (exitCode !== 0)
 					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
 			});
-
-		this.setStatus('Tests passed', 'end');
-
 	}
 
 	async printDependencyTree() {

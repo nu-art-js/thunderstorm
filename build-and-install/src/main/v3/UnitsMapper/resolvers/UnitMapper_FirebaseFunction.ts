@@ -11,6 +11,7 @@ import {
 } from '@nu-art/ts-common';
 import {UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseFunctionsApp_Config} from '../../units/firebase/Unit_FirebaseFunctionsApp';
+import {resolve} from 'path';
 
 
 type EnvConfig = {
@@ -73,7 +74,7 @@ export class UnitMapper_FirebaseFunction_Class
 			envs: envsConfig,
 			customESLintConfig: context.customESLintConfig,
 			customTSConfig: context.customTSConfig,
-			output: outputDir ?? Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction.output,
+			output: resolve(context.baseConfig.fullPath, outputDir ?? Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction.output),
 			packageJson: context.packageJson,
 		});
 	}

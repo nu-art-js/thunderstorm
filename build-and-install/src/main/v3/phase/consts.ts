@@ -44,7 +44,7 @@ export type Phase_Prepare = typeof phase_Prepare;
 export const phaseKey_Prepare = 'prepare';
 export const phase_Prepare: Phase<'prepare'> = {
 	key: phaseKey_Prepare,
-	name: 'Copy Package JSON',
+	name: 'Prepare',
 	method: 'prepare',
 };
 

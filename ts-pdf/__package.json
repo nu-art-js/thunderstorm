@@ -33,8 +33,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEP_VERSION",
     "react": "$REACT_PKG_VERSION",
     "pdf.js": "^0.1.0",
     "pdfjs-dist": "2.5.207"
