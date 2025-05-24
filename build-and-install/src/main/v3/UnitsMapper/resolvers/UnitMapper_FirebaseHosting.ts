@@ -15,6 +15,7 @@ import {
 	Unit_FirebaseHostingApp_Config,
 	UnitConfigJSON_FirebaseHosting
 } from '../../units/firebase/Unit_FirebaseHostingApp';
+import {resolve} from 'path';
 
 const valuesValidator = {
 	configUrl: tsValidateAnyString,
@@ -59,7 +60,7 @@ export class UnitMapper_FirebaseHosting_Class
 			envs: envsConfig,
 			customESLintConfig: context.customESLintConfig,
 			customTSConfig: context.customTSConfig,
-			output: outputDir ?? Unit_FirebaseHostingApp.DefaultConfig_FirebaseHosting.output,
+			output: resolve(context.baseConfig.fullPath, outputDir ?? Unit_FirebaseHostingApp.DefaultConfig_FirebaseHosting.output),
 			packageJson: context.packageJson,
 		});
 	}

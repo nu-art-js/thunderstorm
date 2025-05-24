@@ -13,7 +13,7 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
     "react": "$REACT_PKG_VERSION"
   },
   "devDependencies": {

@@ -22,9 +22,9 @@
   "main": "index.js",
   "types": "index.d.ts",
   "dependencies": {
-    "@nu-art/thunderstorm": "$THUNDERSTORM_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_VERSION",
-    "@nu-art/firebase": "$THUNDERSTORM_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_DEP_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",

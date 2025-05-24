@@ -22,8 +22,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "dependencies": {
-    "@nu-art/thunderstorm": "$THUNDERSTORM_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
     "@octokit/plugin-paginate-rest": "2.2.1",
     "@octokit/rest": "18.0.9",
     "@octokit/types": "^5.5.0",

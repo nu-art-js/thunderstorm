@@ -20,6 +20,7 @@ export type Result = {
 	key: string,
 	type: string,
 	relativePath: string,
+	outputPath: string | undefined,
 }[]
 export type TestSuite_UnitsMapper = TestSuite<Input, Result>;
 export type TestCase_UnitsMapper = TestSuite_UnitsMapper['testcases'][number];
@@ -36,6 +37,7 @@ const test = async (input: Input): Promise<Result> => {
 			key: unit.config.key,
 			type: unit.constructor.name,
 			relativePath: unit.config.relativePath,
+			outputPath: ('output' in unit.config ? unit.config.output : undefined) as string | undefined,
 		};
 	});
 };
@@ -58,26 +60,31 @@ describe('UnitsMapper', () => {
 					type: Unit_NodeProject.name,
 					key: 'project-root',
 					relativePath: '.',
+					outputPath: undefined
 				},
 				{
 					type: Unit_FirebaseFunctionsApp.name,
 					key: 'function-1',
 					relativePath: './func-app-1',
+					outputPath: resolve(pathToWorkspace, './func-app-1/dist')
 				},
 				{
 					type: Unit_FirebaseHostingApp.name,
 					key: 'hosting-1',
 					relativePath: './hosting-app-1',
+					outputPath: resolve(pathToWorkspace, './hosting-app-1/dist')
 				},
 				{
 					type: Unit_TypescriptLib.name,
 					key: 'lib-1',
 					relativePath: './lib-1',
+					outputPath: resolve(pathToWorkspace, './lib-1/dist')
 				},
 				{
 					type: Unit_TypescriptLib.name,
 					key: 'lib-2',
 					relativePath: './lib-2',
+					outputPath: resolve(pathToWorkspace, './lib-2/dist')
 				},
 			]
 		})
