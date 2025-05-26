@@ -14,5 +14,6 @@ config.ts
 imports-*.svg
 
 src/main/tsconfig.json
+src/test/tsconfig.json
 build-and-install.txt
 file.txt
