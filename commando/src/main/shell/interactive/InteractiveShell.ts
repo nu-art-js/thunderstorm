@@ -114,49 +114,78 @@ export class InteractiveShell
 		});
 	};
 
-	kill = async (signal: NodeJS.Signals = 'SIGINT') => {
-		if (!this.alive)
-			return;
-
-		return new Promise<void>((resolve, reject) => {
-			this.shell.on('exit', async (code, signal) => {
-				this.logWarning(`Process Killed with ${signal}${code ? `(${code})` : ''}`);
-				resolve();
-			});
-
-			this.shell.kill(signal);
-			this.logWarning(`KILLED SHELL WITH ${signal}`);
-		});
-	};
-
-	isAlive = (pid: number, signal: NodeJS.Signals = 'SIGINT') => {
+// Check if a given PID is alive
+	isAlive = (pid: number): boolean => {
 		try {
-			this.logError(`killing pid ${pid}`);
-			process.kill(pid, signal); // throws if not alive
+			process.kill(pid, 0); // Non-intrusive check
 			return true;
-		} catch (e: any) {
-			this.logWarning(`PID: ${pid} KILLED WITH ${signal}`, e);
+		} catch {
 			return false;
 		}
 	};
 
-	killSubprocess = async (pid: number, signal: NodeJS.Signals = 'SIGINT', waitTimeout = 10000, sampleInterval = 100) => {
-		if (!this.alive)
-			return;
-
+// Poll until a PID is no longer alive or timeout is hit
+	waitForExit = (pid: number, timeout = 10000, sampleInterval = 100): Promise<void> => {
 		const startTime = currentTimeMillis();
-		return new Promise<void>((resolve, reject) => {
+
+		return new Promise((resolve, reject) => {
 			const check = () => {
-				if (!this.isAlive(pid, signal))
+				if (!this.isAlive(pid))
 					return resolve();
 
-				if (currentTimeMillis() - startTime > waitTimeout)
-					return reject(new Error(`pid ${pid} did not exit after ${waitTimeout}ms`));
+				if (currentTimeMillis() - startTime > timeout) {
+					this.logWarning(`PID ${pid} did not exit in time. Sending 'SIGTERM'.`);
+					try {
+						process.kill(pid, 'SIGTERM');
+					} catch (e: any) {
+						this.logError(`Failed to send 'SIGTERM' to PID ${pid}`, e);
+					}
+
+					return reject(new Error(`PID ${pid} did not exit after ${timeout}ms`));
+				}
 
 				setTimeout(check, sampleInterval);
 			};
 			check();
 		});
+	};
+
+// Kill the main shell process (interactive shell)
+	kill = async (signal: NodeJS.Signals = 'SIGINT', timeout = 10000): Promise<void> => {
+		if (!this.alive)
+			return;
+
+		this.logWarning(`Sending ${signal} to shell PID: ${this.shell.pid}`);
+
+		try {
+			this.shell.kill(signal);
+		} catch (e: any) {
+			this.logError(`Failed to send ${signal} to shell`, e);
+			throw e;
+		}
+
+		await this.waitForExit(this.shell.pid!, timeout);
+		this.logWarning(`Shell process PID ${this.shell.pid} terminated`);
+	};
+
+// Kill a background subprocess PID without affecting the shell
+	killSubprocess = async (pid: number, signal: NodeJS.Signals = 'SIGINT', timeout = 10000): Promise<void> => {
+		if (!this.isAlive(pid)) {
+			this.logDebug(`Subprocess PID ${pid} already exited`);
+			return;
+		}
+
+		this.logWarning(`Sending ${signal} to subprocess PID: ${pid}`);
+
+		try {
+			process.kill(pid, signal);
+		} catch (e: any) {
+			this.logError(`Failed to send ${signal} to subprocess`, e);
+			throw e;
+		}
+
+		await this.waitForExit(pid, timeout);
+		this.logWarning(`Subprocess PID ${pid} terminated`);
 	};
 
 	/**

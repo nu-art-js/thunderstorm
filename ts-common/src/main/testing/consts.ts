@@ -1,7 +1,7 @@
 import {TestModel, TestSuite} from './types';
 import chai, {expect} from 'chai';
 import {ModuleManager} from '../core/module-manager';
-import {resolveContent, voidFunction} from '../utils/tools';
+import {exists, resolveContent, voidFunction} from '../utils/tools';
 import {MemStorage} from '../mem-storage/MemStorage';
 import chaiAsPromised from 'chai-as-promised';
 import {BeLogged} from '../core/logger/BeLogged';
@@ -51,7 +51,7 @@ export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input
 export type TestCase_Error = { expected: string | RegExp, message?: string, constructor?: Error | Function };
 export type DefaultTestProcessor<Result = any, ExpectedResult = Result> = (promisedResult: Promise<Result>, expectedResult?: ((() => Promise<any>) | ExpectedResult), error?: TestCase_Error) => Promise<any>;
 export const defaultTestProcessor: DefaultTestProcessor = async (promisedResult, expectedResult, error) => {
-	if (!expectedResult && !error)
+	if (!exists(expectedResult) && !exists(error))
 		throw new BadImplementationException('MUST provide expectedResult or error');
 
 	if (error)

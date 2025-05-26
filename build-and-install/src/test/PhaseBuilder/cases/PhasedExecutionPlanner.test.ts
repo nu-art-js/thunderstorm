@@ -69,7 +69,7 @@ const cases: TestCase_CalcExecutionSteps[] = [
 		description: 'Unit filter removing all units',
 		input: {
 			units: [[mockUnit('unit-1', ['build'])]],
-			phases: [mockPhase('build', undefined, async () => false)],
+			phases: [mockPhase('build', undefined)],
 		},
 		result: [],
 	},
@@ -94,12 +94,11 @@ function mockUnit(key: string, methods: string[]): BaseUnit<any> {
 	} as BaseUnit<any>;
 }
 
-function mockPhase(key: string, filter?: () => Promise<boolean>, unitFilter?: (unit: BaseUnit<any>) => Promise<boolean>): Phase<any> {
+function mockPhase(key: string, filter?: () => Promise<boolean>): Phase<any> {
 	return {
 		key,
 		method: key,
 		filter,
-		unitFilter,
 	} as Phase<any>;
 }
 

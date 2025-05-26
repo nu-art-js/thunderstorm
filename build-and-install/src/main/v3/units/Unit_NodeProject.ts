@@ -145,7 +145,6 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		});
 		const paths = pathDeclarations.flatMap(path => path.paths);
 		this.watcher = chokidar.watch(paths);
-
 		// set all events to watch and handle them
 		return new Promise<void>((resolve, error) => {
 			this.logInfo('Starting the watcher...');
@@ -171,7 +170,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 				const config: Readonly<Config_ProjectUnit> = unit.config;
 				return ({
 					key: config.key,
-					dependsOn: _keys(config.dependencies)
+					dependsOn: _keys(unit.config.dependencies).filter(key => !!keyToInnerUnitMap[key]) as string[]
 				});
 			}));
 
@@ -189,16 +188,31 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					return async () => path.unit.removeSpecificFileFromDist(path.path);
 				}));
 
-				const libsToCompile = unitsMapper.getReverseDependencies(unitsToCompile.map(u => u.config.key),);
-				const phaseManager = new PhaseManager(this.config.fullPath, [phase_Compile], unitsMapper.buildDependencyTree(libsToCompile).map(units => units.map(unitKey => keyToInnerUnitMap[unitKey])), this.runtimeContext.runtimeParams);
+				const libsToCompile = unitsMapper.getReverseDependencies(unitsToCompile.map(u => u.config.key));
+				const unitDependencyTree = unitsMapper.buildDependencyTree(libsToCompile)
+					.map(units => units.map(unitKey => keyToInnerUnitMap[unitKey]));
+
+				const phaseManager = new PhaseManager(this.config.fullPath, [phase_Compile], unitDependencyTree, {
+					...this.runtimeContext.runtimeParams,
+					noBuild: false
+				});
+				// @ts-ignore
+				phaseManager.setTag('PhaseManager-Watcher');
 				const executionPlan = await phaseManager.calculateExecutionSteps();
-				const listener = async () => {
+				const stopWatchCompileAction = async () => {
 					await phaseManager.break();
 				};
 
-				process.on('SIGINT', listener);
-				await phaseManager.execute(executionPlan);
-				process.off('SIGINT', listener);
+				process.on('SIGINT', stopWatchCompileAction);
+				try {
+					this.unregisterTerminatable(stopWatchAction);
+					await phaseManager.execute(executionPlan);
+				} catch (e: any) {
+					this.logError('Error while compiling', e);
+				} finally {
+					this.registerTerminatable(stopWatchAction);
+				}
+				process.off('SIGINT', stopWatchCompileAction);
 
 				this.logInfo('Completed successfully');
 			}, timeout, maxTimeout);
@@ -246,12 +260,12 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 						});
 				});
 
-			const terminatable = async () => {
+			const stopWatchAction = async () => {
 				await this.watcher?.close();
-				this.unregisterTerminatable(terminatable);
+				resolve();
 			};
 
-			this.registerTerminatable(terminatable);
+			this.registerTerminatable(stopWatchAction);
 		});
 	}
 

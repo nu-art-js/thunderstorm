@@ -1,5 +1,3 @@
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-
 const CONST_FirebaseConfig = `${__dirname}/.firebase_config`;
 const CONST_BackendProxy = `${__dirname}/backend-proxy`;
 
@@ -42,5 +40,3 @@ export const Default_OutputFiles = {
 	outputLogs: `${Default_OutputPath}/logs`,
 	runningStatus: `${Default_OutputPath}/running-status.json`
 };
-
-export const MemKey_DefaultFiles = new MemKey<typeof Default_Files>('default-files');

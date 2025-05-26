@@ -64,6 +64,7 @@ export class BuildAndInstall
 		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
 		const executionPlan = await phaseManager.calculateExecutionSteps();
 		process.on('SIGINT', async () => {
+			this.logWarning('\n\n\n---------------------------------- Process Interrupted ----------------------------------\n\n\n');
 			await phaseManager.break();
 		});
 
@@ -130,4 +131,3 @@ export class BuildAndInstall
 		return allProjectUnits;
 	}
 }
-

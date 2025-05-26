@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {DotNotation, TS_Object} from './types';
+import {DotNotation, TS_Object, TypedMap} from './types';
 import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
 import {asArray} from './array-tools';
 import {merge} from './merge-tools';
@@ -218,4 +218,12 @@ function scrubImpl<T>(item: T, config: ScrubConfig): T | undefined {
 			return (_keys(obj as object).length === 0 && config.emptyObjects) ? undefined : obj;
 		}
 	}
+}
+
+
+export function reduceObject<ACC, T extends TypedMap<any>>(object: T, acc: ACC, reducer: <K extends keyof T>(acc: ACC, key: K, value: T[K]) => ACC) {
+	return _keys(object).reduce((accumulator, key) => {
+		const typedKey = key as keyof T;
+		return reducer(accumulator, typedKey, object[typedKey]);
+	}, acc);
 }
