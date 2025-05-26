@@ -25,6 +25,8 @@ type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
 	debugPort?: number, basePort?: number
 	envs: TypedMap<EnvConfig>
 	ignore?: string[],
+	sslKey?: string
+	sslCert?: string
 };
 
 const valuesValidator = {
@@ -72,10 +74,12 @@ export class UnitMapper_FirebaseFunction_Class
 			...Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction,
 			...unitConfig,
 			envs: envsConfig,
+			packageJson: context.packageJson,
 			customESLintConfig: context.customESLintConfig,
 			customTSConfig: context.customTSConfig,
 			output: resolve(context.baseConfig.fullPath, outputDir ?? Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction.output),
-			packageJson: context.packageJson,
+			sslCert: resolve(context.baseConfig.fullPath, unitConfig.sslCert ?? Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction.sslCert),
+			sslKey: resolve(context.baseConfig.fullPath, unitConfig.sslKey ?? Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction.sslKey),
 		});
 	}
 }

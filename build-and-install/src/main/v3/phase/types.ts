@@ -1,5 +1,4 @@
 import {BaiParams} from '../../core/params/params';
-import {BaseUnit} from '../units';
 import {AsyncVoidFunction} from '@nu-art/ts-common';
 
 export type Phase<PhaseMethod extends string> = {
@@ -11,8 +10,6 @@ export type Phase<PhaseMethod extends string> = {
 	method: PhaseMethod
 	//Filter to determine if the phase will run
 	filter?: (params: BaiParams) => (Promise<boolean> | boolean);
-	//Filter units for this phase
-	unitFilter?: (unit: BaseUnit) => (Promise<boolean> | boolean)
 	//Should the runner terminate after the phase, only matters if the phase did run
 	terminateAfterPhase?: boolean;
 	//Should this phase be run taking into account the dependency tree

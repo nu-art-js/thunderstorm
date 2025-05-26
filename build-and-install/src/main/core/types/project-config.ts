@@ -32,5 +32,8 @@ export type BAI_Config = {
 			tsConfig?: StringMap
 			eslintConfig?: string
 		}
+		backend: {
+			proxy: string
+		}
 	}
 }

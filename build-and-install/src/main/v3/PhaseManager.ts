@@ -1,7 +1,7 @@
-import {addItemToArray, filterAsync, Logger, removeItemFromArray, timeCounter} from '@nu-art/ts-common';
+import {addItemToArray, filterDuplicates, flatArray, Logger, removeItemFromArray, timeCounter} from '@nu-art/ts-common';
 import {RunningStatusHandler} from './RunningStatusHandler';
 import {Phase} from './phase';
-import {BaseUnit, ProjectUnit} from './units';
+import {BaseUnit} from './units';
 import {BaiParams} from '../core/params/params';
 import {PhaseAggregatedException} from '../core/exceptions/PhaseAggregatedException';
 
@@ -23,6 +23,7 @@ export class PhaseManager
 	private runningUnits: BaseUnit[] = [];
 	private killed = false;
 	private runtimeParams: BaiParams;
+	private activeUnits: string[];
 
 	constructor(outputFolder: string, phases: Phase<any>[], units: BaseUnit[][], runtimeParams: BaiParams) {
 		super();
@@ -30,6 +31,14 @@ export class PhaseManager
 		this.phases = phases;
 		this.units = units;
 		this.runtimeParams = runtimeParams;
+		const allUnits = filterDuplicates(flatArray(units), u => u.config.key);
+		const usePackageKeys = this.runtimeParams.usePackage;
+		if (!usePackageKeys?.length)
+			this.activeUnits = allUnits.map(unit => unit.config.key);
+		else {
+			const regexMatchers = usePackageKeys.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
+			this.activeUnits = allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key);
+		}
 	}
 
 	//######################### Initialization #########################
@@ -42,10 +51,7 @@ export class PhaseManager
 				continue;
 
 			for (const layer of this.units) {
-				let eligibleUnits = layer.filter(u => phase.key in u);
-
-				if (phase.unitFilter)
-					eligibleUnits = (await filterAsync(eligibleUnits as BaseUnit[], phase.unitFilter) as ProjectUnit[]);
+				let eligibleUnits = layer.filter(u => phase.key in u && this.activeUnits.includes(u.config.key));
 
 				if (eligibleUnits.length === 0)
 					continue;
@@ -73,6 +79,7 @@ export class PhaseManager
 		for (let i = startIndex; i < _steps.length; i++) {
 			if (this.killed)
 				break;
+
 
 			const scheduledStep = _steps[i];
 			const step = this.mapStep(scheduledStep);
@@ -127,7 +134,7 @@ export class PhaseManager
 
 	break() {
 		this.killed = true;
-		return Promise.all(this.runningUnits.map(unit => unit.kill));
+		return Promise.all(this.runningUnits.map(unit => unit.kill()));
 	}
 
 	private mapStep(scheduledStep: ScheduledStep): ExecutionStep {

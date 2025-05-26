@@ -1,13 +1,14 @@
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
 import {UnitPhaseImplementor} from '../../core/types';
-import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
 import {promises as _fs} from 'fs';
 import {FirebasePackageConfig} from '../../../core/types';
-import {_logger_logPrefixes, ImplementationMissingException, LogLevel, Second, sleep, TypedMap} from '@nu-art/ts-common';
-import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, MemKey_DefaultFiles} from '../../../defaults/consts';
+import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep, TypedMap} from '@nu-art/ts-common';
+import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {FileSystemUtils} from '../../core/FileSystemUtils';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../../core/FileSystemUtils';
 import {Phase_DeployBackend, Phase_Launch} from '../../phase';
+import {resolve} from 'path';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',
@@ -26,6 +27,7 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	basePort: number,
 	sslKey: string
 	sslCert: string
+	pathToEmulatorData: string
 	sources?: string[];
 };
 
@@ -44,6 +46,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		sslKey: '.ssl/key.pem',
 		sslCert: '.ssl/cert.pem',
 		output: 'dist',
+		pathToEmulatorData: '.trash/data',
 	};
 
 	readonly emulatorLogStrings = {
@@ -65,6 +68,26 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	//######################### Phase Implementations #########################
 
+	protected async copyPackageJSONToOutput() {
+		const targetPath = resolve(this.config.output, CONST_PackageJSON);
+		const packageJson = deepClone(this.config.packageJson);
+		const distDependencies = this.deriveDistDependencies();
+		packageJson.main = 'index.js';
+		packageJson.types = 'index.d.ts';
+		if (packageJson.dependencies)
+			packageJson.dependencies = reduceObject(packageJson.dependencies, packageJson.dependencies, (acc, key, value) => {
+				acc[key] = distDependencies[key] ?? value;
+				return acc;
+			});
+		await FileSystemUtils.file.template.write(targetPath, __stringify(packageJson, true), this.deriveDistDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
+	}
+
+	async prepare() {
+		await super.prepare();
+		await FileSystemUtils.folder.create(resolve(this.config.fullPath, this.config.pathToEmulatorData));
+		await this.resolveConfigs();
+	}
+
 	async resolveConfigs() {
 		await this.resolveFunctionsRC();
 		await this.resolveConfigDir();
@@ -78,7 +101,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	async launch() {
-		this.setStatus('Launching');
 		await sleep(2 * Second * Unit_FirebaseFunctionsApp.staggerCount++);
 		await this.releasePorts();
 		await Promise.all([
@@ -111,19 +133,19 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async resolveProxyFile() {
 		const envConfig = this.getEnvConfig();
-		const defaultFiles = MemKey_DefaultFiles.get();
 		const targetPath = `${this.config.fullPath}/src/main/proxy.ts`;
-		const path = defaultFiles?.backend?.proxy;
+		const path = this.runtimeContext.baiConfig.files?.backend?.proxy;
 		if (!path)
 			return;
 
-		let fileContent = await _fs.readFile(path, {encoding: 'utf-8'});
-		fileContent = fileContent.replace(/PROJECT_ID/g, `${envConfig.projectId}`);
-		fileContent = fileContent.replace(/PROXY_PORT/g, `${this.config.basePort}`);
-		fileContent = fileContent.replace(/SERVER_PORT/g, `${this.config.basePort + 1}`);
-		fileContent = fileContent.replace(/PATH_TO_SSL_KEY/g, `${this.config.sslKey}`);
-		fileContent = fileContent.replace(/PATH_TO_SSL_CERTIFICATE/g, `${this.config.sslCert}`);
-		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
+		const params = {
+			PROJECT_ID: `${envConfig.projectId}`,
+			PROXY_PORT: `${this.config.basePort}`,
+			SERVER_PORT: `${this.config.basePort + 1}`,
+			PATH_TO_SSL_KEY: `${this.config.sslKey}`,
+			PATH_TO_SSL_CERTIFICATE: `${this.config.sslCert}`,
+		};
+		await FileSystemUtils.file.template.copy(path, targetPath, params);
 	}
 
 	private async resolveConfigDir() {
@@ -299,7 +321,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'));
 
-		await this.executeAsyncCommando(commando, `firebase emulators:start --export-on-exit --import=.trash/data ${this.runtimeContext.runtimeParams.debugBackend
+		await this.executeAsyncCommando(commando, `firebase emulators:start --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect-functions ${this.config.debugPort}` : ''}`);
 		this.logWarning('EMULATORS TERMINATED');
 	}
@@ -316,5 +338,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		return this.executeAsyncCommando(commando, `firebase --debug deploy --only functions --force`);
 	}
+
 }
 
