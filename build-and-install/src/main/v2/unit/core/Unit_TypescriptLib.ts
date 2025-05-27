@@ -82,20 +82,18 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			return;
 		}
 
-
 		//Copy project ts config file into the unit main folder
 		const pathToProjectConfig = this.getRunnerParam(RunnerParamKey_ConfigPath);
 		if (!pathToProjectConfig)
 			throw new BadImplementationException('Could not get config path from runner params');
 
 		//Make sure a project ts config file exists
-		const pathToProjectTSConfig = pathToProjectConfig + '/tsconfig2.json';
+		const pathToProjectTSConfig = pathToProjectConfig + '/tsconfig.json';
 		if (!fs.existsSync(pathToProjectTSConfig))
 			throw new BadImplementationException(`Project is missing a tsconfig.json file in path ${pathToProjectConfig}`);
 
-		let content = await _fs.readFile(pathToProjectTSConfig, {encoding: 'utf-8'});
-		content = content.replace('SOURCE_ROOT', `${this.runtime.pathTo.pkg}/src/main`);
-		await _fs.writeFile(pathToUnitTSConfig, content, {encoding: 'utf-8'});
+		//Copy the file into the unit
+		await _fs.copyFile(pathToProjectTSConfig, pathToUnitTSConfig);
 	}
 
 	protected async clearOutputDir() {
