@@ -33,7 +33,7 @@ export class TS_Radio<ItemType>
 	protected deriveStateFromProps(nextProps: Props<ItemType>): State<ItemType> {
 		return {
 			values: nextProps.values,
-			checked: nextProps.checked || this.state?.checked || undefined,
+			checked: nextProps.checked,
 			disabled: nextProps.disabled,
 			labelTooltipContainerSelector: nextProps.labelTooltipContainerSelector
 		};
