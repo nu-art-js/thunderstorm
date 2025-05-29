@@ -28,7 +28,7 @@ export class HeaderKey {
 	private readonly responseCode: number;
 
 	constructor(key: string, responseCode: number = 400) {
-		this.key = key;
+		this.key = key.toLowerCase();
 		this.responseCode = responseCode;
 	}
 

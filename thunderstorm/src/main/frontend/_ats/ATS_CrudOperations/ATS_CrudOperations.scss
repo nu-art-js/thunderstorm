@@ -12,8 +12,12 @@
       resize: none;
     }
 
-    .ats-crud-operations-container__selection__execute {
-      align-self: flex-end;
+    .ats-crud-operations-container__selection__buttons {
+      gap: 10px;
+
+      .ats-crud-operations-container__selection__execute {
+        align-self: flex-end;
+      }
     }
   }
 

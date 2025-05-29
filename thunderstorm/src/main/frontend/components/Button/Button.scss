@@ -60,6 +60,7 @@
       family: inherit;
     }
     transition: opacity 300ms ease-out;
+    pointer-events: none;
   }
 
   ///Status Overwrites

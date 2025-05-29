@@ -3,14 +3,14 @@ import {
 } from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
-import {DBApiConfigV3, ModuleBE_BaseDB, Storm} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, HeaderKey, ModuleBE_BaseDB, Storm} from '@nu-art/thunderstorm/backend';
 import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_Session} from '../shared';
-import {Header_SessionId, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Account_BE, SessionKey_Session_BE} from './consts';
+import {Header_Authorization, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Account_BE, SessionKey_Session_BE} from './consts';
 import * as jwt from 'jsonwebtoken';
 import {ModuleBE_SecretManager} from '@nu-art/google-services/backend/modules/ModuleBE_SecretManager';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {HeaderKey_SessionId} from '@nu-art/thunderstorm';
+import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm';
 import Transaction = firestore.Transaction;
 
 
@@ -38,17 +38,23 @@ export class ModuleBE_SessionDB_Class
 	private sessionSigningPrivateKey: string | undefined;
 
 	readonly Middleware = async () => {
-		const sessionIdFromRequest = Header_SessionId.get(); //jwt
-		if (typeof sessionIdFromRequest !== 'string')
-			throw new ApiException(401, `Invalid session id: ${sessionIdFromRequest}`);
+		let authorizationHeader: string;
+		try {
+			authorizationHeader = new HeaderKey('x-session-id', 403).get();
+		} catch (e) {
+			authorizationHeader = Header_Authorization.get(); //jwt
+			if (typeof authorizationHeader !== 'string')
+				throw new ApiException(401, `Invalid session id: ${authorizationHeader}`);
+
+			authorizationHeader = authorizationHeader.replace(/^bearer\s+/i, '');
+		}
 
 		try {
-			const decodedJwt = await this.sessionData.isValidJWT(sessionIdFromRequest) as { sessionData: string };
+			const decodedJwt = await this.sessionData.isValidJWT(authorizationHeader) as { sessionData: string };
 			const sessionData = this.sessionData.decode(decodedJwt.sessionData);
 
-
-			//Get the existing dbSession for this sessionIdFromRequest, there is one, even in previousSessions
-			const md5SessionId = md5(sessionIdFromRequest); // We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
+			//Get the existing dbSession for this authorizationHeader, there is one, even in previousSessions
+			const md5SessionId = md5(authorizationHeader); // We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
 			const dbSession = await this.runTransaction(async transaction => {
 				// If we find the dbSession - this means that the JWT was not modified, as we managed to find a md5 matching sessionId.
 				// This is how we verify the JWT was not tampered!!!!!!!!!
@@ -57,10 +63,10 @@ export class ModuleBE_SessionDB_Class
 					dbSession = await ModuleBE_SessionDB.query.uniqueWhere({sessionId: md5SessionId}, transaction);
 				} catch (err: any) {
 					try {
-						dbSession = await ModuleBE_SessionDB.query.uniqueWhere({prevSession: {$ac: md5SessionId}}, transaction); //everytime we read into prevSessions, we read the md5 of the sessionIdFromRequest
-						MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, dbSession.sessionIdJwt);
+						dbSession = await ModuleBE_SessionDB.query.uniqueWhere({prevSession: {$ac: md5SessionId}}, transaction); //everytime we read into prevSessions, we read the md5 of the authorizationHeader
+						MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, dbSession.sessionIdJwt);
 					} catch (err: any) {
-						throw new ApiException(401, `Invalid session id: ${sessionIdFromRequest}`, err);
+						throw new ApiException(401, `Invalid session id: ${authorizationHeader}`, err);
 					}
 				}
 				return dbSession;
@@ -69,7 +75,7 @@ export class ModuleBE_SessionDB_Class
 			MemKey_SessionObject.set(dbSession);
 			this.sessionData.setToMemKey(sessionData);
 		} catch (err: any) {
-			this.logErrorBold(sessionIdFromRequest);
+			this.logErrorBold(authorizationHeader);
 			throw HttpCodes._4XX.UNAUTHORIZED('JWT received in request is invalid', err);
 		}
 	};
@@ -97,7 +103,7 @@ export class ModuleBE_SessionDB_Class
 
 	private getPrivateKeyForSessionSigning = async (): Promise<string> => {
 		if (Storm.getInstance().getEnvironment() === 'local')
-			this.sessionSigningPrivateKey = 'f29a755ba5caaa2713cfa95adff14ca5f9fa8de3345141d426209f69660a5013'; // Local's private key for JWT signing
+			this.sessionSigningPrivateKey = this.config.accountSessionIdSigner_SecretName; // Local's private key for JWT signing
 		else
 			this.sessionSigningPrivateKey = await ModuleBE_SecretManager.getSecret(this.config.accountSessionIdSigner_SecretName);
 
@@ -188,12 +194,12 @@ export class ModuleBE_SessionDB_Class
 
 				const mySession = newSessions.find(session => SessionKey_Account_BE.get(session?.sessionData)._id === MemKey_AccountId.get());
 				if (mySession) {
-					MemKey_HttpResponse.get().setHeader(HeaderKey_SessionId, mySession.sessionId);
+					MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, mySession.sessionId);
 				}
 			}
 		},
 		delete: async (transaction?: Transaction) => {
-			const sessionId = Header_SessionId.get();
+			const sessionId = Header_Authorization.get();
 			if (!sessionId)
 				throw new ApiException(404, 'Missing sessionId');
 
