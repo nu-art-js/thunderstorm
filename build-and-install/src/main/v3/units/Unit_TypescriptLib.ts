@@ -264,8 +264,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	protected async resolveTSConfig(srcFolder: string, sourceFolderType: string) {
 		const entryPath = pathResolve(srcFolder, sourceFolderType);
 		if (!statSync(entryPath).isDirectory()) {
-			this.logError(`Unexpected non-directory entry in src/: ${sourceFolderType}`);
-			throw new BadImplementationException(`Non-directory entry under src folder`);
+			return this.logError(`Unexpected non-directory entry in src/: ${sourceFolderType}`);
 		}
 
 		const tsConfigPath = pathResolve(entryPath, 'tsconfig.json');

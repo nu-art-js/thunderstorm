@@ -35,7 +35,7 @@ import {DefaultApiErrorMessageComposer} from './server-errors';
 import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase/backend';
 import {ServerApi} from './server-api';
 import compression from 'compression';
-import cors from 'cors'
+import cors from 'cors';
 
 
 const ALL_Methods: string[] = [
@@ -63,7 +63,7 @@ type ConfigType = {
 	bodyParserLimit: number | string
 };
 
-export type CustomOrigin = (origin: string | undefined , callback: (err: Error | null, origin?: string) => void) => (boolean | Promise<boolean>);
+export type CustomOrigin = (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => (boolean | Promise<boolean>);
 
 export class HttpServer_Class
 	extends Module<ConfigType>
@@ -81,7 +81,7 @@ export class HttpServer_Class
 		// this.express = express();
 	}
 
-	getExpress():Express {
+	getExpress(): Express {
 		if (this.express)
 			return this.express;
 
@@ -108,9 +108,9 @@ export class HttpServer_Class
 		return this.config.baseUrl;
 	}
 
-    setCustomCorsOriginValidator(validator: CustomOrigin) {
-        this.customCorsOriginValidator = validator;
-    }
+	setCustomCorsOriginValidator(validator: CustomOrigin) {
+		this.customCorsOriginValidator = validator;
+	}
 
 	protected async init() {
 		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
@@ -169,21 +169,24 @@ export class HttpServer_Class
 
 
 		this.express.use(cors({
-			origin: async (origin: string | undefined , callback: (err: Error | null, origin?: string) => void) => {
-                const resolvedOrigin = resolveCorsOrigin(origin);
-                if (!resolvedOrigin)
-                   return callback(new Error(`CORS issue!!!\n Origin: '${origin}' does not exist in config: ${JSON.stringify(_cors.origins)}`), undefined);
+			origin: async (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => {
+				if (!origin)
+					return callback(null);
 
-                if(!(await this.customCorsOriginValidator?.(origin, callback))){
-                   return callback(new Error(`CORS issue!!!\n Origin: '${origin}' is not valid`), undefined);
-                }
+				const resolvedOrigin = resolveCorsOrigin(origin);
+				if (!resolvedOrigin)
+					return callback(new Error(`CORS issue!!!\n Origin: '${origin}' does not exist in config: ${JSON.stringify(_cors.origins)}`), undefined);
 
-                callback(null, resolvedOrigin);
+				if (!(await this.customCorsOriginValidator?.(origin, callback))) {
+					return callback(new Error(`CORS issue!!!\n Origin: '${origin}' is not valid`), undefined);
+				}
+
+				callback(null, resolvedOrigin);
 			},
 			methods: _cors.methods || ALL_Methods,
 			allowedHeaders: _cors.headers,
 			exposedHeaders: _cors.responseHeaders,
-		}))
+		}));
 
 		this.express.options('*', (req: ExpressRequest, res: ExpressResponse) => {
 			res.end();

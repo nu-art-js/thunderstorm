@@ -1,6 +1,6 @@
 import {UnitPhaseImplementor} from '../core/types';
 import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
-import {_keys, arrayToMap, BadImplementationException, MUSTNeverHappenException, Promise_all_sequentially, queuedDebounce, Second} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, MUSTNeverHappenException, Promise_all_sequentially, queuedDebounce, Second} from '@nu-art/ts-common';
 import * as chokidar from 'chokidar';
 import {FSWatcher} from 'chokidar';
 import {Unit_TypescriptLib} from './Unit_TypescriptLib';
@@ -10,12 +10,11 @@ import {PNPM} from '@nu-art/commando/shell/services/pnpm';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
 import {resolve} from 'path';
 import {FileSystemUtils} from '../core/FileSystemUtils';
-import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit';
+import {ProjectUnit} from './ProjectUnit';
 import {Unit_FirebaseHostingApp} from './firebase/Unit_FirebaseHostingApp';
 import {Unit_FirebaseFunctionsApp} from './firebase/Unit_FirebaseFunctionsApp';
 import {PhaseManager} from '../PhaseManager';
 import {phase_Compile, Phase_Install, Phase_Watch} from '../phase';
-import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
@@ -165,14 +164,14 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 				return unit;
 			};
 
-			const keyToInnerUnitMap = arrayToMap(this.innerUnits, u => u.config.key);
-			const unitsMapper = new UnitsDependencyMapper(this.innerUnits.map(unit => {
-				const config: Readonly<Config_ProjectUnit> = unit.config;
-				return ({
-					key: config.key,
-					dependsOn: _keys(unit.config.dependencies).filter(key => !!keyToInnerUnitMap[key]) as string[]
-				});
-			}));
+			// const keyToInnerUnitMap = arrayToMap(this.innerUnits, u => u.config.key);
+			// const unitsMapper = new UnitsDependencyMapper(this.innerUnits.map(unit => {
+			// 	const config: Readonly<Config_ProjectUnit> = unit.config;
+			// 	return ({
+			// 		key: config.key,
+			// 		dependsOn: _keys(unit.config.dependencies).filter(key => !!keyToInnerUnitMap[key]) as string[]
+			// 	});
+			// }));
 
 			// set the debounce event
 			this.watchDebounce = queuedDebounce(async () => {
@@ -188,11 +187,14 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					return async () => path.unit.removeSpecificFileFromDist(path.path);
 				}));
 
-				const libsToCompile = unitsMapper.getReverseDependencies(unitsToCompile.map(u => u.config.key));
-				const unitDependencyTree = unitsMapper.buildDependencyTree(libsToCompile)
-					.map(units => units.map(unitKey => keyToInnerUnitMap[unitKey]));
+				// const changedKeys = unitsToCompile.map(u => u.config.key);
+				// const libsToCompile = unitsMapper.getReverseDependencies(changedKeys);
+				// this.logDebug(`Change in libs (${changedKeys.join(' ,')}) => libs to compile (${libsToCompile.join(' ,')})`);
+				// const unitDependencyTree = unitsMapper.buildDependencyTree(libsToCompile)
+				// 	.map(units => units.map(unitKey => keyToInnerUnitMap[unitKey]));
+				// this.logDebug(`Change in libs (${changedKeys.join(' ,')}) => libs to compile (${libsToCompile.join(' ,')})`);
 
-				const phaseManager = new PhaseManager(this.config.fullPath, [phase_Compile], unitDependencyTree, {
+				const phaseManager = new PhaseManager(this.config.fullPath, [phase_Compile], [unitsToCompile], {
 					...this.runtimeContext.runtimeParams,
 					noBuild: false
 				});
