@@ -1,0 +1,20 @@
+@use '@nu-art/thunderstorm/styles' as tsStyles;
+
+.ts-json-to-object {
+  align-items: stretch;
+
+  .ts-textarea .ts-json-to-object{
+    height: unset;
+  }
+
+  .ts-textarea .ts-json-to-object {
+    &[data-valid=false] {
+      background-color: rgba(255, 175, 154, 0.26);
+    }
+
+    &[data-valid=true] {
+      background-color: rgba(175, 255, 154, 0.26);
+    }
+  }
+
+}

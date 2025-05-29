@@ -19,6 +19,7 @@ export type Response_FetchBackupMetadata = BackupMetaData & {
 }
 export type ApiStruct_SyncEnv = {
 	vv1: {
+		getLatestBackup: QueryApi<{ latestBackupId: string }>
 		syncToEnv: BodyApi<any, { env: 'dev' | 'prod', moduleName: string, items: any[] }>
 		syncFromEnvBackup: BodyApi<any, Request_FetchFromEnv>
 		createBackup: QueryApi<{ pathToBackup: string } | undefined>,
@@ -29,6 +30,7 @@ export type ApiStruct_SyncEnv = {
 
 export const ApiDef_SyncEnv: ApiDefResolver<ApiStruct_SyncEnv> = {
 	vv1: {
+		getLatestBackup: {method: HttpMethod.GET, path: 'v1/sync-env/get-last-backup-id'},
 		syncToEnv: {method: HttpMethod.POST, path: 'v1/sync-env/sync-to-env', timeout: 5 * Minute},
 		syncFromEnvBackup: {method: HttpMethod.POST, path: 'v1/sync-env/fetch-from-env-v2', timeout: 5 * Minute},
 		createBackup: {method: HttpMethod.GET, path: 'v1/sync-env/create-backup-v2', timeout: 5 * Minute},

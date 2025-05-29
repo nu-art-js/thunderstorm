@@ -30,6 +30,7 @@ class BeLogged_Class {
 		if (this.clients.indexOf(client) !== -1)
 			return;
 
+		client.init();
 		this.clients.push(client);
 	}
 
@@ -42,6 +43,7 @@ class BeLogged_Class {
 			return;
 
 		removeItemFromArray(this.clients, client);
+		client.stop();
 	}
 
 	public log(tag: string, level: LogLevel, bold: boolean, ...toLog: LogParam[]): void {
