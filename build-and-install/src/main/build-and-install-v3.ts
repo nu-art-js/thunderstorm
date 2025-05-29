@@ -79,12 +79,15 @@ export class BuildAndInstall
 
 	private async resolveUnits() {
 		this.logVerbose(`Resolving units from: ${this.pathToProject}`);
-		this.allUnits = await new UnitsMapper()
+		const unitsMapper = new UnitsMapper();
+		this.allUnits = await unitsMapper
 			.addRules(UnitMapper_NodeLib)
 			.addRules(UnitMapper_NodeProject)
 			.addRules(UnitMapper_FirebaseHosting)
 			.addRules(UnitMapper_FirebaseFunction)
+			.setRuntimeParams(this.runtimeParams)
 			.resolveUnits(this.pathToProject);
+
 		Object.freeze(this.allUnits);
 
 		this.logDebug('Units found:', this.allUnits.map(unit => `${unit.constructor?.['name']}: ${unit.config.key}`).join('\n'));

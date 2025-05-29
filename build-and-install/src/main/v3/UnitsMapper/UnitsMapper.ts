@@ -2,6 +2,7 @@ import {BaseUnit, ProjectUnit} from '../units';
 import {promises as fs} from 'fs';
 import {BadImplementationException, Logger, TypedMap} from '@nu-art/ts-common';
 import {UnitMapper_Base} from './resolvers/UnitMapper_Base';
+import {BaiParams} from '../../core/params/params';
 
 /**
  * This class will receive a path and will map the workspace packages and libs
@@ -54,6 +55,11 @@ export class UnitsMapper
 
 	addRules<T extends BaseUnit<any>>(...rules: UnitMapper_Base<T>[]) {
 		this.rules.push(...rules);
+		return this;
+	}
+
+	setRuntimeParams(runtimeParams: BaiParams) {
+		this.rules.forEach(rule => rule.setRuntimeParams(runtimeParams));
 		return this;
 	}
 

@@ -1,6 +1,7 @@
 import {AbsolutePath, Logger, RelativePath, StringMap, TypeValidator} from '@nu-art/ts-common';
 import {BaseUnit} from '../../units';
 import {BAI_Config} from '../../../core/types';
+import {BaiParams} from '../../../core/params/params';
 
 
 export type BaseUnitConfig = {
@@ -20,10 +21,15 @@ export abstract class UnitMapper_Base<
 
 	protected validator: TypeValidator<ConfigJSON>;
 	protected baiConfig!: BAI_Config;
+	protected runtimeParams!: BaiParams;
 
 	protected constructor(validator: TypeValidator<ConfigJSON>) {
 		super();
 		this.validator = validator;
+	}
+
+	setRuntimeParams(runtimeParams: BaiParams) {
+		this.runtimeParams = runtimeParams;
 	}
 
 	setConfig(config: BAI_Config) {
