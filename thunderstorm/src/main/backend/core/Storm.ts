@@ -41,12 +41,13 @@ export class Storm
 
 	constructor() {
 		super();
+		BeLogged.addClient(process.env.GCLOUD_PROJECT && process.env.FUNCTIONS_EMULATOR ? LogClient_Terminal : LogClient_Function);
+
 		this.addModulePack(modules);
 		this.setMinLevel(LogLevel.Info);
 	}
 
 	init() {
-		BeLogged.addClient(process.env.GCLOUD_PROJECT && process.env.FUNCTIONS_EMULATOR ? LogClient_Terminal : LogClient_Function);
 		ServerApi.isDebug = this.config.isDebug === true;
 
 		super.init();

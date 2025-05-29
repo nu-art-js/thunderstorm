@@ -27,6 +27,7 @@ export abstract class BaseStorm
 	extends ModuleManager {
 
 	protected envKey: string = 'dev';
+	protected rtdbPathToConfig: string = '_config';
 	private override: TS_Object = {};
 	readonly isDebug = false;
 
@@ -45,7 +46,7 @@ export abstract class BaseStorm
 
 	protected resolveConfig = async () => {
 		const database: DatabaseWrapperBE = ModuleBE_Firebase.createAdminSession().getDatabase();
-		this.logWarning(`LOADING RTDB FROM: ${database.getUrl()}`);
+		this.logError(`LOADING RTDB FROM: ${database.getUrl()}`);
 		let initialized = 0;
 
 		const listener = (resolve: (value: unknown) => void) => (snapshot: any) => {
@@ -60,15 +61,15 @@ export abstract class BaseStorm
 		};
 
 		const defaultPromise = new Promise((resolve) => {
-			database.listen(`/_config/default`, listener(resolve));
+			database.listen(`/${this.rtdbPathToConfig}/default`, listener(resolve));
 		});
 		const envPromise = new Promise((resolve) => {
-			database.listen(`/_config/${this.envKey}`, listener(resolve));
+			database.listen(`/${this.rtdbPathToConfig}/${this.envKey}`, listener(resolve));
 		});
 		const [
-			      defaultConfig,
-			      overrideConfig
-		      ] = await Promise.all(
+						defaultConfig,
+						overrideConfig
+					] = await Promise.all(
 			[
 				defaultPromise,
 				envPromise
@@ -80,11 +81,11 @@ export abstract class BaseStorm
 	};
 
 	getEnvConfigRef<Config>(module: Module<Config>) {
-		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<Config>(`/_config/${this.envKey}/${module.getName()}`);
+		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<Config>(`/${this.rtdbPathToConfig}/${this.envKey}/${module.getName()}`);
 	}
 
 	getGlobalEnvConfigRef() {
-		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<TS_Object>(`/_config/${this.envKey}`);
+		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<TS_Object>(`/${this.rtdbPathToConfig}/${this.envKey}`);
 	}
 
 }

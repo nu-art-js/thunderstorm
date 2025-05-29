@@ -43,6 +43,7 @@ export class BuildAndInstall
 		if (this.runtimeParams.verbose)
 			DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 
+		this.setMinLevel(DebugFlag.DefaultLogLevel);
 		this.logDebug('Runtime params:', this.runtimeParams);
 		this.pathToProject = pathToProject;
 	}
@@ -60,6 +61,8 @@ export class BuildAndInstall
 		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
 		const unitDependencyTree: ProjectUnit[][] = this.unitsDependencyMapper.buildDependencyTree()
 			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
+
+		this.logDebug('Unit Dependency Graph:', unitDependencyTree.map(units => units.map(unit => unit.config.key)));
 
 		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
 		const executionPlan = await phaseManager.calculateExecutionSteps();

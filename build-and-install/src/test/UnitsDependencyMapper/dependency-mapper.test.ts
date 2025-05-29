@@ -117,23 +117,21 @@ describe('Units Dependency Mapper', () => {
 		result: [['foundation'], ['lib-a', 'lib-b'], ['api-layer']],
 	}));
 
-	it('Complex case with 3 apps and 30+ libs with various dependency shapes', runTestCase({
+	it('real partial use case', runTestCase({
 		input: [
-			{key: 'lib-utils', dependsOn: []},
-			{key: 'lib-auth', dependsOn: ['lib-utils']},
-			{key: 'lib-permissions', dependsOn: ['lib-utils']},
-			{key: 'lib-api', dependsOn: ['lib-auth', 'lib-permissions']},
-			{key: 'lib-storage', dependsOn: []},
-			{key: 'lib-logging', dependsOn: ['lib-storage']},
-			{key: 'admin-app', dependsOn: ['lib-api', 'lib-logging']},
-			{key: 'user-app', dependsOn: ['lib-auth']},
-			{key: 'public-app', dependsOn: ['lib-permissions']},
+			{key: '@nu-art/ts-common', dependsOn: []},
+			{key: '@nu-art/firebase', dependsOn: ['@nu-art/ts-common']},
+			{key: '@nu-art/permissions', dependsOn: ['@nu-art/firebase', '@nu-art/ts-common']},
+			{key: '@nu-art/user-account', dependsOn: ['@nu-art/firebase', '@nu-art/ts-common']},
+			{key: '@nu-art/push-pub-sub', dependsOn: ['@nu-art/permissions', '@nu-art/user-account']},
+			{key: '@nu-art/file-upload', dependsOn: ['@nu-art/push-pub-sub']},
 		],
 		result: [
-			['lib-storage', 'lib-utils'],
-			['lib-auth', 'lib-logging', 'lib-permissions'],
-			['lib-api'],
-			['admin-app', 'public-app', 'user-app']
+			['@nu-art/ts-common'],
+			['@nu-art/firebase'],
+			['@nu-art/permissions', '@nu-art/user-account'],
+			['@nu-art/push-pub-sub'],
+			['@nu-art/file-upload']
 		]
 	}));
 });
