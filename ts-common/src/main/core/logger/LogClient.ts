@@ -35,6 +35,12 @@ export abstract class LogClient {
 		this.prefixComposer = logComposer;
 	}
 
+	init() {
+	}
+
+	stop() {
+	}
+
 	setFilter(filter: LogFilter) {
 		this.filter = filter;
 		return this;

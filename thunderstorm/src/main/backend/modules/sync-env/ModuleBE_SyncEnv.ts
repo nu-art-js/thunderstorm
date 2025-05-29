@@ -17,7 +17,7 @@ import {
 	ApiDef_SyncEnv,
 	ApiModule,
 	DBModuleType,
-	HeaderKey_SessionId,
+	HeaderKey_Authorization,
 	HttpMethod,
 	QueryApi,
 	Request_FetchFirebaseBackup,
@@ -34,6 +34,7 @@ import {ModuleBE_BackupDocDB} from '../../../_entity/backup-doc/backend';
 import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB';
 import {Transform, Writable} from 'stream';
 import {firestore} from 'firebase-admin';
+import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 type Config = {
@@ -66,6 +67,7 @@ class ModuleBE_SyncEnv_Class
 		addRoutes([
 			createBodyServerApi(ApiDef_SyncEnv.vv1.syncToEnv, this.pushToEnv),
 			createBodyServerApi(ApiDef_SyncEnv.vv1.syncFromEnvBackup, this.syncFromEnvBackup),
+			createQueryServerApi(ApiDef_SyncEnv.vv1.getLatestBackup, this.getLatestBackupId),
 			createQueryServerApi(ApiDef_SyncEnv.vv1.createBackup, this.createBackup),
 			createQueryServerApi(ApiDef_SyncEnv.vv1.fetchBackupMetadata, this.fetchBackupMetadata),
 			createQueryServerApi(ApiDef_SyncEnv.vv1.syncFirebaseFromBackup, this.syncFirebaseFromBackup),
@@ -99,7 +101,7 @@ class ModuleBE_SyncEnv_Class
 		};
 
 		const url = remoteUrls[body.env];
-		const sessionId = MemKey_HttpRequest.get().headers[HeaderKey_SessionId];
+		const sessionId = MemKey_HttpRequest.get().headers[HeaderKey_Authorization];
 
 		const module = RuntimeModules().find<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbKey === body.moduleName);
 
@@ -108,7 +110,7 @@ class ModuleBE_SyncEnv_Class
 			.createRequest({...upsertAll, fullUrl: url + '/' + upsertAll.path, timeout: 5 * Minute})
 			.setBody(body.items)
 			.setUrlParams(body.items)
-			.addHeader(HeaderKey_SessionId, sessionId!)
+			.addHeader(HeaderKey_Authorization, sessionId!)
 			.executeSync(true);
 
 		console.log(response);
@@ -118,22 +120,30 @@ class ModuleBE_SyncEnv_Class
 		return ModuleBE_BackupDocDB.initiateBackup(true);
 	};
 
+	getLatestBackupId = async () => {
+		const backups = await ModuleBE_BackupDocDB.collection.query.custom({orderBy: [{key: "__created", order: "desc"}], limit: 1});
+		const latestBackup = backups[0];
+		if (!latestBackup)
+			throw HttpCodes._4XX.ENTITY_DOESNT_EXISTS("No backup found");
+
+		const latestBackupId = latestBackup?._id;
+		return {latestBackupId: latestBackupId};
+	};
+
 	syncFromEnvBackup = async (body: Request_FetchFromEnv) => {
-		if (!this.config.allowSyncEnv) {
+		if (!this.config.allowSyncEnv)
 			throw new MUSTNeverHappenException(`SyncEnv is disabled on this env- to sync into this env, add 'allowSyncEnv: true'.`);
-		}
 
-		if (!this.config.allowCleanSync && body.cleanSync) { //CleanSync means deleting collections before syncing them
+		//CleanSync means deleting collections before syncing them
+		if (!this.config.allowCleanSync && body.cleanSync)
 			throw new MUSTNeverHappenException(`CleanSync is disabled on this env- to CleanSync into this env, add 'allowCleanSync: true'.`);
-		}
-		if (Storm.getInstance().getEnvironment().toLowerCase() === 'prod' && body.env.toLowerCase() !== 'prod') {
-			throw new MUSTNeverHappenException('MUST NEVER SYNC ENV THAT IS NOT PROD TO PROD!!');
-		}
 
-		if (this.config.allowedEnvsToSyncFrom && !this.config.allowedEnvsToSyncFrom.includes(body.env)) {
+		if (Storm.getInstance().getEnvironment().toLowerCase() === 'prod' && body.env.toLowerCase() !== 'prod')
+			throw new MUSTNeverHappenException('MUST NEVER SYNC ENV THAT IS NOT PROD TO PROD!!');
+
+		if (this.config.allowedEnvsToSyncFrom && !this.config.allowedEnvsToSyncFrom.includes(body.env))
 			throw new MUSTNeverHappenException(`Env ${Storm.getInstance().getEnvironment()
 				.toLowerCase()} doesn't have env ${body.env} in it's allowedEnvsToSyncFrom list.`);
-		}
 
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, backupId: ${body.backupId}`);
@@ -259,7 +269,7 @@ class CollectionBatchWriter
 		try {
 			const module = this.modules[chunk.dbKey];
 			if (!module) {
-				ModuleBE_SyncEnv.logWarning(`Could not get module for chunk with dbKey ${chunk.dbKey}`)
+				ModuleBE_SyncEnv.logWarning(`Could not get module for chunk with dbKey ${chunk.dbKey}`);
 				callback();
 			}
 

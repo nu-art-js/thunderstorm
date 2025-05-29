@@ -108,7 +108,7 @@ export class Component_Login
 						errorMessages: [`Login blocked until ${formatTimestamp('DD/MM/YYYY HH:mm', blockedUntil)}`],
 					});
 				}
-				this.setState({errorMessages: ['Email or password incorrect']});
+				this.setState({errorMessages: ['Email or password incorrect'],submitting: false});
 			}
 		});
 	};

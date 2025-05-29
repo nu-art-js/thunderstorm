@@ -25,7 +25,7 @@ import {TS_Overlay} from '../TS_Overlay';
 import {stopPropagation} from '../../utils/tools';
 import {Dialog_Model, DialogKey, DialogListener, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
 import './TS_DialogOverlay.scss';
-import {removeFromArray} from '@nu-art/ts-common';
+import {removeFromArray, resolveContent} from '@nu-art/ts-common';
 
 
 type Props = {}
@@ -64,11 +64,12 @@ export class TS_DialogOverlay
 			<div className="ts-dialog__overlay">
 				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked} className={lastModel.overlayClass}>
 					{this.state.models.map((model, i) => {
+						const content = resolveContent(model.content, () => this.forceUpdate());
 						if (i === this.state.models.length - 1)
 							//This model content is wrapped in a div to keep the React hierarchy. if you remove it, the model stack won't work.
-							return <div key={i} onClick={stopPropagation} onContextMenu={stopPropagation}>{model.content}</div>;
+							return <div key={i} onClick={stopPropagation} onContextMenu={stopPropagation}>{content}</div>;
 
-						return <div key={i} style={{display: 'none', height: 0}}>{model.content}</div>;
+						return <div key={i} style={{display: 'none', height: 0}}>{content}</div>;
 					})}
 				</TS_Overlay>
 			</div>
