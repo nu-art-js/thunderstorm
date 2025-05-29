@@ -24,10 +24,10 @@ import {
 	AsyncVoidFunction,
 	BeLogged,
 	ImplementationMissingException,
-	LogClient_BrowserGroups,
+	LogClient_BrowserGroups, merge,
 	ModuleManager,
 	Promise_all_sequentially,
-	removeItemFromArray
+	removeItemFromArray, TS_Object
 } from '@nu-art/ts-common';
 import {ThunderDispatcher} from './thunder-dispatcher';
 
@@ -37,6 +37,7 @@ import {ThunderAppWrapperProps} from './types';
 import * as RDC from 'react-dom/client';
 import {appWithJSX} from './AppWrapper';
 import {StorageKey} from '../modules/ModuleFE_LocalStorage';
+import axios from 'axios';
 
 export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();
 
@@ -53,6 +54,7 @@ export class Thunder
 		this._DEBUG_FLAG.enable(false);
 		// @ts-ignore
 		ThunderDispatcher.listenersResolver = () => this.listeners;
+		this.addPreBuildAction(this.fetchConfig.bind(this)); // add config resolver as a pre build action
 	}
 
 	static getInstance(): Thunder {
@@ -78,6 +80,21 @@ export class Thunder
 		RDC.createRoot(rootDiv).render(appJsx);
 
 		return this;
+	}
+
+	private async fetchConfig() {
+		if (!this.config.configLoaderUrl)
+			return;
+
+		try {
+			const config = await axios.get<TS_Object | undefined>(this.config.configLoaderUrl);
+			if (!config.data || typeof config.data !== 'object')
+				return this.logWarning('cannot merge config, received no data or a non-object data');
+
+			this.config = merge(this.config, config.data);
+		} catch (err: any) {
+			this.logError('failed loading config with error', err);
+		}
 	}
 
 	protected addUIListener(listener: any): void {

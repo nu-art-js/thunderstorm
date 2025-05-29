@@ -20,7 +20,7 @@ import {StorageKey} from '@nu-art/thunderstorm/frontend';
 import {_values, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
 import {PanelConfig} from '..';
 import {Workspace} from '../../shared/types';
-
+import {SessionKey_Account} from '@nu-art/user-account/_entity/account/frontend/consts';
 
 type Config = {
 	defaultConfigs: TypedMap<PanelConfig>,
@@ -32,20 +32,11 @@ export class ModuleFE_Workspace_Class
 
 	private workspacesToUpsert: TypedMap<any> = {};
 	private upsertRunnable: any;
-	private accountResolver!: () => string;
-
-	setAccountResolver(resolver: () => string) {
-		this.accountResolver = resolver;
-	}
-
-	private getCurrentAccountId = (): string => {
-		return this.accountResolver();
-	};
 
 	private assertLoggedInUser = (logActionString: 'get' | 'set' = 'get') => {
-		if (!this.getCurrentAccountId()) {
+		const accountId = SessionKey_Account.get()._id;
+		if (!accountId)
 			throw new BadImplementationException(`Trying to ${logActionString} workspace while not having user logged in, fix this`);
-		}
 	};
 
 	public getWorkspaceConfigByKey = (key: string): PanelConfig<any> => {

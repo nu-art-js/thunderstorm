@@ -13,6 +13,10 @@ export class TS_Printable
 	extends React.Component<Props> {
 	private ref!: HTMLDivElement;
 
+	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<{}>, nextContext: any): boolean {
+		return true;
+	}
+
 	render() {
 		const {printable, printOnly, ...props} = this.props;
 
