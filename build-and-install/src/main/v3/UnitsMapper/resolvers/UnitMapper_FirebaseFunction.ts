@@ -60,8 +60,8 @@ export class UnitMapper_FirebaseFunction_Class
 		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
 		const envUnitConfig = context.packageJson.unitConfig.envs[env];
 		const envConfig = {
-			defaultConfig: envUnitConfig.defaultConfig ?? 'default',
-			envConfig: envUnitConfig.envConfig ?? env as string,
+			defaultConfig: envUnitConfig.defaultConfig,
+			envConfig: envUnitConfig.envConfig,
 			projectId: envUnitConfig.projectId,
 			isLocal: envUnitConfig.isLocal ?? env === 'local'
 		};
