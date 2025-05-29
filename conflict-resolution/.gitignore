@@ -15,4 +15,5 @@ config.ts
 /_oldTest/
 imports-*.svg
 
+src/test/tsconfig.json
 src/main/tsconfig.json
