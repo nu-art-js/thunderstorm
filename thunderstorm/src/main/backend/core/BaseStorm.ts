@@ -22,22 +22,33 @@
 import {merge, Module, ModuleManager, TS_Object} from '@nu-art/ts-common';
 import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 
+export type StormConfig = {
+	envKey: string
+	pathToDefaultConfig: string
+	pathToEnvOverrideConfig: string
+}
 
 export abstract class BaseStorm
 	extends ModuleManager {
 
-	protected envKey: string = 'dev';
-	protected rtdbPathToConfig: string = '_config';
+	protected innerConfig: StormConfig;
 	private override: TS_Object = {};
 	readonly isDebug = false;
 
-	setEnvironment(envKey: string) {
-		this.envKey = envKey;
-		return this;
+	constructor(config: StormConfig | string) {
+		super();
+		if (typeof config === 'string')
+			this.innerConfig = {
+				envKey: config,
+				pathToDefaultConfig: `_config/default.json`,
+				pathToEnvOverrideConfig: `_config/${config}.json`,
+			};
+		else
+			this.innerConfig = config;
 	}
 
 	public getEnvironment(): string {
-		return this.envKey;
+		return this.innerConfig.envKey;
 	}
 
 	setOverride(override: TS_Object) {
@@ -61,10 +72,10 @@ export abstract class BaseStorm
 		};
 
 		const defaultPromise = new Promise((resolve) => {
-			database.listen(`/${this.rtdbPathToConfig}/default`, listener(resolve));
+			database.listen(`/${this.innerConfig.pathToDefaultConfig}`, listener(resolve));
 		});
 		const envPromise = new Promise((resolve) => {
-			database.listen(`/${this.rtdbPathToConfig}/${this.envKey}`, listener(resolve));
+			database.listen(`/${this.innerConfig.pathToEnvOverrideConfig}`, listener(resolve));
 		});
 		const [
 						defaultConfig,
@@ -81,11 +92,11 @@ export abstract class BaseStorm
 	};
 
 	getEnvConfigRef<Config>(module: Module<Config>) {
-		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<Config>(`/${this.rtdbPathToConfig}/${this.envKey}/${module.getName()}`);
+		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<Config>(`/${this.innerConfig.pathToEnvOverrideConfig}/${module.getName()}`);
 	}
 
 	getGlobalEnvConfigRef() {
-		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<TS_Object>(`/${this.rtdbPathToConfig}/${this.envKey}`);
+		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<TS_Object>(`/${this.innerConfig.pathToEnvOverrideConfig}`);
 	}
 
 }

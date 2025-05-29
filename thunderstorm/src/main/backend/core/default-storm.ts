@@ -23,6 +23,7 @@ import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {Module} from '@nu-art/ts-common';
 import {HttpServer} from '../modules/server/HttpServer';
 import {Storm} from './Storm';
+import {StormConfig} from './BaseStorm';
 
 
 const modules: Module[] = [
@@ -30,6 +31,6 @@ const modules: Module[] = [
 	ModuleBE_Firebase,
 ];
 
-export function createStorm() {
-	return new Storm().addModulePack(modules);
+export function createStorm(config: StormConfig | string) {
+	return new Storm(config).addModulePack(modules);
 }

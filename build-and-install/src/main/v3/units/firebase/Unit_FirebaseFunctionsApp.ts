@@ -3,7 +3,7 @@ import {UnitPhaseImplementor} from '../../core/types';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
 import {promises as _fs} from 'fs';
 import {FirebasePackageConfig} from '../../../core/types';
-import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep, TypedMap} from '@nu-art/ts-common';
+import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../../core/FileSystemUtils';
@@ -18,10 +18,11 @@ export const firebaseFunctionEmulator_WarningStrings: string[] = [
 	'⚠',
 ];
 
+type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean };
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig?: FirebasePackageConfig;
 	pathToFirebaseConfig: string,
-	envs: TypedMap<{ defaultConfig: string, envConfig: string, projectId: string, isLocal?: boolean }>
+	envConfig: EnvConfig
 	ignore?: string[],
 	debugPort: number,
 	basePort: number,
@@ -116,10 +117,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	//######################### ResolveConfig Logic #########################
 
 	private getEnvConfig() {
-		const env = this.runtimeContext.runtimeParams.environment;
-		const envConfig = this.config.envs[env];
+		const envConfig = this.config.envConfig;
 		if (!envConfig)
-			throw new ImplementationMissingException(`Missing EnvConfig for env ${env} in unit ${this.config.label}`);
+			throw new ImplementationMissingException(`Missing EnvConfig in unit ${this.config.key}`);
 
 		return envConfig;
 	}
@@ -238,13 +238,15 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	private async resolveFunctionsRuntimeConfig() {
 		const envConfig = this.getEnvConfig();
 		const targetPath = `${this.config.fullPath}/src/main/config.ts`;
+		const envKey = this.runtimeContext.runtimeParams.environment;
 		const beConfig = {
-			name: this.runtimeContext.runtimeParams.environment,
-			defaultConfig: envConfig.defaultConfig,
-			envConfig: envConfig.envConfig,
+			envKey,
+			pathToDefaultConfig: envConfig.defaultConfig ?? `/_config/default`,
+			pathToEnvOverrideConfig: envConfig.defaultConfig ?? `/_config/${envKey}`,
 		};
-		const fileContent = `${envConfig.isLocal ? '// @ts-ignore\nprocess.env[\'NODE_TLS_REJECT_UNAUTHORIZED\'] = 0;\n' : ''}
-		export const Environment = ${JSON.stringify(beConfig)};`;
+
+		const inLocalIgnoreTLS = `${envConfig.isLocal ? '// @ts-ignore\nprocess.env[\'NODE_TLS_REJECT_UNAUTHORIZED\'] = 0;\n\n' : ''}`;
+		const fileContent = `${inLocalIgnoreTLS}export const Environment = ${JSON.stringify(beConfig)};`;
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}
 
