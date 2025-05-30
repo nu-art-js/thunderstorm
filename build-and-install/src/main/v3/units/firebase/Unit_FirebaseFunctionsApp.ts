@@ -177,16 +177,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
 				const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
-				try {
-					await _fs.access(pathToConfigFile);
-				} catch (e: any) {
-					const path = defaultFiles[firebaseConfigKey];
-					if (!path)
-						return;
+				const path = defaultFiles[firebaseConfigKey];
+				if (!path)
+					return;
 
-					const defaultFileContent = await _fs.readFile(path, {encoding: 'utf-8'});
-					await _fs.writeFile(pathToConfigFile, defaultFileContent, {encoding: 'utf-8'});
-				}
+				const defaultFileContent = await _fs.readFile(path, {encoding: 'utf-8'});
+				await _fs.writeFile(pathToConfigFile, defaultFileContent, {encoding: 'utf-8'});
 			})
 		);
 	}
