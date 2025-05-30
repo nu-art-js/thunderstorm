@@ -88,19 +88,18 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			.execute();
 	}
 
+	public ignoreWatchFiles() {
+		return [`${this.config.fullPath}/.*?/tsconfig.json`];
+	}
+
 	/**
 	 * Watch compile actions, use this to perform all necessary compile actions for watch.
 	 * watch compile is a subset of the general watch action
 	 */
 	public async watchCompile() {
-		try {
-			this.setStatus('Compiling', 'start');
-			await this.compile();
-			this.setStatus(`Compiled and Watching`, 'end');
-		} catch (e: any) {
-			this.setStatus(`Watching with error`, e);
-			throw e;
-		}
+		await this.compileImpl();
+		await this.copyAssetsToOutput();
+		await this.copyPackageJSONToOutput();
 	}
 
 	/**

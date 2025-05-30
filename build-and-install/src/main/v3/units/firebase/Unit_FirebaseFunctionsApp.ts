@@ -126,7 +126,18 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async resolveFunctionsRC() {
 		const envConfig = this.getEnvConfig();
-		const rcConfig = {projects: {default: envConfig.projectId}};
+		const rcConfig = {
+			projects: {
+				default: envConfig.projectId
+			},
+			targets: {
+				[envConfig.projectId]: {
+					database: {
+						[envConfig.projectId]: [envConfig.projectId]
+					}
+				}
+			}
+		};
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseRC}`;
 		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
 	}
@@ -187,9 +198,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		if (envConfig.isLocal) {
 			const port = this.config.basePort;
 			fileContent = {
-				database: {
+				database: [{
+					target: this.config.envConfig.projectId,
 					rules: `${this.config.pathToFirebaseConfig}/database.rules.json`
-				},
+				}],
 				firestore: {
 					rules: `${this.config.pathToFirebaseConfig}/firestore.rules`,
 					indexes: `${this.config.pathToFirebaseConfig}/firestore.indexes.json`
@@ -323,7 +335,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'));
 
-		await this.executeAsyncCommando(commando, `firebase emulators:start --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend
+		await this.executeAsyncCommando(commando, `firebase emulators:start --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect-functions ${this.config.debugPort}` : ''}`);
 		this.logWarning('EMULATORS TERMINATED');
 	}

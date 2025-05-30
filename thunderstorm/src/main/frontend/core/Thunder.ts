@@ -41,6 +41,10 @@ import axios from 'axios';
 
 export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();
 
+export type ThunderConfig = {
+	configUrl: string
+}
+
 export class Thunder
 	extends ModuleManager {
 
@@ -48,13 +52,17 @@ export class Thunder
 	private renderFunc!: (props: ThunderAppWrapperProps) => React.ReactElement;
 	private props!: ThunderAppWrapperProps<any>;
 	private preBuildActions: AsyncVoidFunction[] = [];
+	readonly innerConfig: Readonly<ThunderConfig>;
 
-	constructor() {
+
+	constructor(config: ThunderConfig) {
 		super();
 		this._DEBUG_FLAG.enable(false);
 		// @ts-ignore
 		ThunderDispatcher.listenersResolver = () => this.listeners;
 		this.addPreBuildAction(this.fetchConfig.bind(this)); // add config resolver as a pre build action
+
+		this.innerConfig = Object.freeze(config);
 	}
 
 	static getInstance(): Thunder {
@@ -83,11 +91,8 @@ export class Thunder
 	}
 
 	private async fetchConfig() {
-		if (!this.config.configLoaderUrl)
-			return;
-
 		try {
-			const config = await axios.get<TS_Object | undefined>(this.config.configLoaderUrl);
+			const config = await axios.get<TS_Object | undefined>(this.innerConfig.configUrl);
 			if (!config.data || typeof config.data !== 'object')
 				return this.logWarning('cannot merge config, received no data or a non-object data');
 
