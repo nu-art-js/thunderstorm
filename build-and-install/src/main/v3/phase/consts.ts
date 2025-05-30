@@ -87,6 +87,15 @@ export const phase_Compile: Phase<'compile'> = {
 	dependencyPhase: [phase_PreCompile]
 };
 
+export type Phase_CompileWatch = typeof phase_CompileWatch;
+export const phaseKey_CompileWatch = 'watchCompile';
+export const phase_CompileWatch: Phase<'watchCompile'> = {
+	key: phaseKey_CompileWatch,
+	name: 'CompileWatch',
+	method: 'watchCompile',
+	filter: (baiParams) => !baiParams.noBuild,
+};
+
 
 export type Phase_Test = typeof phase_Test;
 export const phaseKey_Test = 'runTests';

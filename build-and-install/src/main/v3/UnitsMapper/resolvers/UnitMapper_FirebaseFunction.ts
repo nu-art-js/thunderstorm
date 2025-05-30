@@ -1,4 +1,5 @@
 import {
+	ImplementationMissingException,
 	tsValidate_OptionalArray,
 	tsValidateAnyString,
 	tsValidateBoolean,
@@ -59,6 +60,9 @@ export class UnitMapper_FirebaseFunction_Class
 
 		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
 		const envUnitConfig = context.packageJson.unitConfig.envs[env];
+		if (!envUnitConfig)
+			throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
+
 		const envConfig = {
 			defaultConfig: envUnitConfig.defaultConfig,
 			envConfig: envUnitConfig.envConfig,

@@ -61,7 +61,7 @@ export const RuntimeEnvironment = () => ModuleManager.instance.getEnvironment();
 export class ModuleManager
 	extends Logger {
 
-	protected config!: any;
+	protected config: any = {};
 	readonly modules = modulesInterface;
 	public static instance: ModuleManager;
 	readonly version?: string;

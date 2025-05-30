@@ -4,7 +4,6 @@ import {UnitPhaseImplementor} from '../../core/types';
 import {ImplementationMissingException, LogLevel, TypedMap} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
-import {convertToFullPath} from '@nu-art/commando/shell/tools';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node';
@@ -31,7 +30,7 @@ export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig?: FirebasePackageConfig;
 	servingPort: number
 	hostingConfig?: FirebaseHostingConfig
-	envs: TypedMap<FirebaseHosting_EnvConfig>
+	envConfig: FirebaseHosting_EnvConfig
 	sources?: string[];
 };
 
@@ -53,7 +52,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	//######################### Phase Implementations #########################
 
-	async resolveConfigs() {
+	async prepare() {
+		await super.prepare();
 		await this.resolveHostingRC();
 		await this.resolveHostingJSON();
 		await this.resolveHostingRuntimeConfig();
@@ -78,10 +78,9 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	//######################### ResolveConfig Logic #########################
 
 	private getEnvConfig() {
-		const env = this.runtimeContext.runtimeParams.environment;
-		const envConfig = this.config.envs[env];
+		const envConfig = this.config.envConfig;
 		if (!envConfig)
-			throw new ImplementationMissingException(`Missing EnvConfig for env ${env} in unit ${this.config.label}`);
+			throw new ImplementationMissingException(`Missing EnvConfig in unit ${this.config.label}`);
 
 		return envConfig;
 	}
@@ -110,7 +109,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		const envConfig = {
 			configUrl: this.getEnvConfig().configUrl,
 		};
-		const targetPath = convertToFullPath(`${this.config.fullPath}/src/main/config.ts`);
+		const targetPath = resolve(this.config.fullPath, `./src/main/config.ts`);
 		const fileContent = `export const config = ${JSON.stringify(envConfig, null, 2)};`;
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}

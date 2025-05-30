@@ -14,7 +14,7 @@ import {ProjectUnit} from './ProjectUnit';
 import {Unit_FirebaseHostingApp} from './firebase/Unit_FirebaseHostingApp';
 import {Unit_FirebaseFunctionsApp} from './firebase/Unit_FirebaseFunctionsApp';
 import {PhaseManager} from '../PhaseManager';
-import {phase_Compile, Phase_Install, Phase_Watch} from '../phase';
+import {phase_CompileWatch, Phase_Install, Phase_Watch} from '../phase';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
@@ -153,7 +153,9 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 			const onUnitChange = (path: string) => {
 				const unit = this.findUnit(pathDeclarations, path as AbsolutePath);
-				unit.logDebug(`intercepted change on path: ${path}`);
+				const filesToIgnore = unit.ignoreWatchFiles();
+				if (path.match(new RegExp(filesToIgnore.join('|'))))
+					return;
 
 				// @ts-ignore - FIXME: should be a better way
 				unit.setStatus('Dirty');
@@ -194,7 +196,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 				// 	.map(units => units.map(unitKey => keyToInnerUnitMap[unitKey]));
 				// this.logDebug(`Change in libs (${changedKeys.join(' ,')}) => libs to compile (${libsToCompile.join(' ,')})`);
 
-				const phaseManager = new PhaseManager(this.config.fullPath, [phase_Compile], [unitsToCompile], {
+				const phaseManager = new PhaseManager(this.config.fullPath, [phase_CompileWatch], [unitsToCompile], {
 					...this.runtimeContext.runtimeParams,
 					noBuild: false
 				});
@@ -244,6 +246,8 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 						})
 						.on('unlinkDir', (path) => {
 							const unit = onUnitChange(path);
+							if (!unit)
+								return;
 
 							//update paths to delete
 							pathsToDelete.push({path, unit});
@@ -253,6 +257,8 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 						})
 						.on('unlink', (path) => {
 							const unit = onUnitChange(path);
+							if (!unit)
+								return;
 
 							//update paths to delete
 							pathsToDelete.push({path, unit});

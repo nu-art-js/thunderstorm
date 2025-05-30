@@ -1,5 +1,5 @@
 import {
-	_keys,
+	ImplementationMissingException,
 	tsValidateAnyString,
 	tsValidateBoolean,
 	tsValidateDynamicObject,
@@ -9,13 +9,9 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
-import {
-	FirebaseHosting_EnvConfig,
-	Unit_FirebaseHostingApp,
-	Unit_FirebaseHostingApp_Config,
-	UnitConfigJSON_FirebaseHosting
-} from '../../units/firebase/Unit_FirebaseHostingApp';
+import {FirebaseHosting_EnvConfig, Unit_FirebaseHostingApp, UnitConfigJSON_FirebaseHosting} from '../../units/firebase/Unit_FirebaseHostingApp';
 import {resolve} from 'path';
+import {BaiParam_SetEnv} from '../../../core/params/params';
 
 const valuesValidator = {
 	configUrl: tsValidateAnyString,
@@ -41,23 +37,24 @@ export class UnitMapper_FirebaseHosting_Class
 
 	protected async resolveNodeUnit(context: UnitMapper_NodeContext<UnitConfigJSON_FirebaseHosting>) {
 		const outputDir = context.packageJson.publishConfig?.directory;
+		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
+		const envUnitConfig = context.packageJson.unitConfig.envs[env];
+		if (!envUnitConfig)
+			throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
 
-		const envsConfig = _keys(context.packageJson.unitConfig.envs).reduce((carry, env) => {
-			const envConfig = context.packageJson.unitConfig.envs[env];
-			carry[env as string] = {
-				configUrl: envConfig.configUrl,
-				projectId: envConfig.projectId,
-				isLocal: envConfig.isLocal ?? env === 'local'
-			};
-			return carry;
-		}, {} as Unit_FirebaseHostingApp_Config['envs']);
+		const envConfig = {
+			configUrl: envUnitConfig.configUrl,
+			projectId: envUnitConfig.projectId,
+			isLocal: envUnitConfig.isLocal ?? env === 'local'
+		};
+
 
 		const {type, ...unitConfig} = context.packageJson.unitConfig;
 		return new Unit_FirebaseHostingApp({
 			...context.baseConfig,
 			...Unit_FirebaseHostingApp.DefaultConfig_FirebaseHosting,
 			...unitConfig,
-			envs: envsConfig,
+			envConfig,
 			customESLintConfig: context.customESLintConfig,
 			customTSConfig: context.customTSConfig,
 			output: resolve(context.baseConfig.fullPath, outputDir ?? Unit_FirebaseHostingApp.DefaultConfig_FirebaseHosting.output),
