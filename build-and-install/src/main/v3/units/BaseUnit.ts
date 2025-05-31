@@ -34,6 +34,7 @@ export type UnitRuntimeContext = {
 	unitsMapper: UnitsDependencyMapper,
 	unitsResolver: <Class extends BaseUnit>(keys: string[], className: Constructor<Class>) => Class[],
 	runtimeParams: BaiParams
+	globalOutputFolder: string
 };
 
 export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_Context extends UnitRuntimeContext = UnitRuntimeContext>

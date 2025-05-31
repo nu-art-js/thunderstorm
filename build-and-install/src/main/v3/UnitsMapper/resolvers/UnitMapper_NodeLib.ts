@@ -21,8 +21,11 @@ export class UnitMapper_NodeLib_Class
 		if (!outputDir)
 			throw new BadImplementationException('package.json MUST specify \'publishConfig.directory\'');
 
+		const unitConfig = context.packageJson.unitConfig;
+
 		return new Unit_TypescriptLib({
 			...context.baseConfig,
+			hasSelfHotReload: unitConfig.hasSelfHotReload ?? false,
 			customESLintConfig: context.customESLintConfig,
 			customTSConfig: context.customTSConfig,
 			output: resolve(context.baseConfig.fullPath, outputDir),

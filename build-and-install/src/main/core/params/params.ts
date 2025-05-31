@@ -176,6 +176,14 @@ export const BaiParam_Watch: BaseCliParam<'watch', boolean> = {
 	description: 'will build and listen for changes in the libraries'
 };
 
+export const BaiParam_WatchBuildTree: BaseCliParam<'watchBuildTree', boolean> = {
+	keys: ['--watchBuildTree', '-wbt'],
+	keyName: 'watchBuildTree',
+	type: 'boolean',
+	group: 'Build',
+	description: 'Once watch triggers, will build the entire tree that depends on the libs that changed'
+};
+
 export const BaiParam_Test: BaseCliParam<'test', boolean> = {
 	keys: ['--test', '-t'],
 	keyName: 'test',
@@ -354,6 +362,7 @@ export const AllBaiParams = [
 	BaiParam_NoThunderstorm,
 	BaiParam_Lint,
 	BaiParam_Watch,
+	BaiParam_WatchBuildTree,
 	BaiParam_Test,// TODO: to implement
 	BaiParam_Launch,
 	BaiParam_LaunchFrontend,// TODO: to implement

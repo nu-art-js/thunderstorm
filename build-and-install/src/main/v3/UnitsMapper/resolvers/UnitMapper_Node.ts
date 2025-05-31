@@ -20,6 +20,7 @@ export type UnitConfigJSON_Node = UnitConfigJSON_Base & {
 	label: string
 	customESLintConfig?: boolean
 	customTSConfig?: boolean
+	hasSelfHotReload?: boolean
 };
 
 export type UnitMapper_NodeContext<ConfigJSON extends UnitConfigJSON_Node = UnitConfigJSON_Node> = {
@@ -41,6 +42,7 @@ export abstract class UnitMapper_Node<
 		label: tsValidateOptionalAnyString,
 		customESLintConfig: tsValidateBoolean(false),
 		customTSConfig: tsValidateBoolean(false),
+		hasSelfHotReload: tsValidateBoolean(false),
 	};
 
 	protected constructor(validator: TypeValidator<ConfigJSON>) {

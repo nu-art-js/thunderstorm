@@ -15,6 +15,7 @@ import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, P
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
 	customESLintConfig: boolean;
 	customTSConfig: boolean;
+	hasSelfHotReload: boolean
 	output: string;
 };
 
