@@ -1,4 +1,16 @@
-import {_keys, _values, Logger, sortArray, TypedMap} from '@nu-art/ts-common';
+import {
+	__stringify,
+	_keys,
+	_values,
+	BadImplementationException,
+	DateTimeFormat_yyyyMMDDTHHmmss, deepClone,
+	Logger,
+	reduceObject,
+	sortArray,
+	TypedMap
+} from '@nu-art/ts-common';
+import {FileSystemUtils} from '../core/FileSystemUtils';
+import {resolve} from 'path';
 
 export type UnitDependentNode = {
 	key: string;
@@ -8,21 +20,52 @@ export type UnitDependentNode = {
 export class UnitsDependencyMapper
 	extends Logger {
 	private readonly map: TypedMap<UnitDependentNode> = {};
+	private pathToOutputFolder?: string;
 
-	constructor(units: UnitDependentNode[]) {
+	constructor(units: UnitDependentNode[], pathToOutputFolder?: string) {
 		super();
+		this.pathToOutputFolder = pathToOutputFolder;
 		for (const unit of units)
-			this.map[unit.key] = {key: unit.key, dependsOn: unit.dependsOn};
+			this.map[unit.key] = unit;
+
+		for (const unit of units)
+			for (const dep of unit.dependsOn)
+				if (!this.map[dep])
+					throw new BadImplementationException(`Unknown key: ${dep}, in unit: ${unit.key}`);
 	}
 
-	public buildDependencyTree(allKeys = [..._keys(this.map)] as string[]): string[][] {
-		const map = this.map;
+	public async buildDependencyTree(participatingKeys = [..._keys(this.map)] as string[]): Promise<string[][]> {
+		this.logDebug('Building dependency tree for: ', participatingKeys.sort());
+		const dependentNodes = reduceObject(this.map, [] as UnitDependentNode[], (acc, key, value) => {
+			acc.push(value);
+			return acc;
+		});
+		this.logVerbose(dependentNodes);
+
+		const allKnownKeys = _keys(this.map) as string[];
+		const map = deepClone(this.map);
+		for (const key of participatingKeys) {
+			if (!map[key])
+				throw new BadImplementationException(`Unknown key: ${key}`);
+		}
+
+		const notParticipatingKeys = allKnownKeys.filter(key => !participatingKeys.includes(key));
+		for (const key of _keys(map) as string[]) {
+			if (notParticipatingKeys.includes(key)) {
+				delete map[key];
+				continue;
+			}
+
+			const node = map[key];
+			node.dependsOn = node.dependsOn.filter(dep => !notParticipatingKeys.includes(dep));
+		}
+
 		const dependentsMap: TypedMap<Set<string>> = {};
 		const referencedKeys = new Set<string>();
-		this.logVerbose(this.map);
+		this.logVerbose(map);
 		// 1. Build reverse dependency graph
 		for (const key of _keys(map) as string[]) {
-			const node = this.map[key];
+			const node = map[key];
 			for (const dep of node.dependsOn) {
 				let set = dependentsMap[dep];
 				if (!set)
@@ -33,21 +76,23 @@ export class UnitsDependencyMapper
 		}
 
 		// 2. Identify bottom layer (depends on no one)
-		const bottomLayer = allKeys.filter(key => map[key].dependsOn.length === 0);
+		const bottomLayer = (_keys(map) as string[]).filter(key => map[key].dependsOn.length === 0);
+
 		// 3. Identify top layer (no one depends on them)
-		const topLayer = allKeys.filter(key =>
-			!dependentsMap[key] && !bottomLayer.includes(key)
-		);
+		const topLayer = (_keys(map) as string[]).filter(key => !dependentsMap[key] && !bottomLayer.includes(key));
 
 		// 4. Build actual layers from bottom to top
 		const resolved = new Set<string>(bottomLayer);
-		const layers: string[][] = [sortArray(bottomLayer)];
 
-		while (resolved.size < allKeys.length - topLayer.length) {
+		const layers: string[][] = [];
+		if (bottomLayer.length > 0)
+			layers.push(sortArray(bottomLayer));
+
+		while (resolved.size < participatingKeys.length - topLayer.length) {
 			const nextLayer: string[] = [];
 
-			for (const key of _keys(this.map) as string[]) {
-				const node = this.map[key];
+			for (const key of _keys(map) as string[]) {
+				const node = map[key];
 				if (resolved.has(key) || topLayer.includes(key)) continue;
 
 				if (node.dependsOn.every(dep => resolved.has(dep)))
@@ -55,13 +100,14 @@ export class UnitsDependencyMapper
 			}
 
 			if (nextLayer.length === 0) {
+				this.logWarning(participatingKeys);
 				this.logWarning(map);
 				this.logWarning(layers);
 				throw new Error('Cyclic or disconnected dependency detected');
 			}
 
 			nextLayer.sort();
-			layers.push(nextLayer);
+			layers.push(sortArray(nextLayer));
 			nextLayer.forEach(k => resolved.add(k));
 		}
 
@@ -69,6 +115,14 @@ export class UnitsDependencyMapper
 		if (topLayer.length > 0)
 			layers.push(sortArray(topLayer));
 
+
+		if (this.pathToOutputFolder)
+			await FileSystemUtils.file.write(resolve(this.pathToOutputFolder, `./dependency-tree-calc-${DateTimeFormat_yyyyMMDDTHHmmss.format()}.json`), __stringify({
+				unitKeys: participatingKeys,
+				dependencies: dependentNodes,
+				output: layers,
+			}));
+		this.logDebug('Dependency tree:', layers);
 		return layers;
 	}
 

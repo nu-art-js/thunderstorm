@@ -59,10 +59,8 @@ export class BuildAndInstall
 
 	async run() {
 		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
-		const unitDependencyTree: ProjectUnit[][] = this.unitsDependencyMapper.buildDependencyTree()
+		const unitDependencyTree: ProjectUnit[][] = (await this.unitsDependencyMapper.buildDependencyTree())
 			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
-
-		this.logDebug('Unit Dependency Graph:', unitDependencyTree.map(units => units.map(unit => unit.config.key)));
 
 		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
 		const executionPlan = await phaseManager.calculateExecutionSteps();
@@ -113,7 +111,8 @@ export class BuildAndInstall
 			dependsOn: _keys(unit.config.dependencies).filter(key => !!unitKeyToUnitMap[key]) as string[]
 		}));
 
-		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies);
+		const globalOutputFolder = resolve(this.pathToProject, '.trash/output');
+		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies, globalOutputFolder);
 		const runtimeContext: ProjectUnit_RuntimeContext = ({
 			parentUnit: this.nodeProjectUnit,
 			childUnits: allProjectUnits,
@@ -123,6 +122,7 @@ export class BuildAndInstall
 			unitsResolver: <UnitType>(keys: string[], className: Constructor<UnitType>): UnitType[] => {
 				return keys.map(key => unitKeyToUnitMap[key]).filter(unit => unit.isInstanceOf(className)) as UnitType[];
 			},
+			globalOutputFolder,
 		});
 
 		allProjectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));
