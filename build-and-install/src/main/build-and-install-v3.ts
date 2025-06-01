@@ -17,14 +17,14 @@ import {UnitMapper_FirebaseFunction, UnitMapper_FirebaseHosting, UnitMapper_Node
 
 const DefaultPhases = [
 	...phases_Build,
-	...phases_Launch,
-	...phases_Deploy,
+	phases_Launch,
+	phases_Deploy,
 ];
 
 export class BuildAndInstall
 	extends Logger {
 
-	private phases: Phase<string>[] = DefaultPhases;
+	private phases: Phase<string>[][] = DefaultPhases;
 	private pathToProject: string;
 	private allUnits: BaseUnit<any>[] = [];
 	readonly nodeProjectUnit!: Unit_NodeProject;
@@ -48,7 +48,7 @@ export class BuildAndInstall
 		this.pathToProject = pathToProject;
 	}
 
-	setPhases(phases: Phase<string>[]) {
+	setPhases(phases: Phase<string>[][]) {
 		this.phases = phases;
 	}
 

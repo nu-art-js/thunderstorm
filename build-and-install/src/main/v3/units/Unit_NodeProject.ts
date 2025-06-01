@@ -204,7 +204,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 						.map(units => units.map(unitKey => keyToInnerUnitMap[unitKey]));
 				}
 
-				const phaseManager = new PhaseManager(this.config.fullPath, [phase_CompileWatch], unitDependencyTree, {
+				const phaseManager = new PhaseManager(this.config.fullPath, [[phase_CompileWatch]], unitDependencyTree, {
 					...this.runtimeContext.runtimeParams,
 					noBuild: false
 				});
