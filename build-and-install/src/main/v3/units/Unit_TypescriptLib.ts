@@ -174,6 +174,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	async runTests() {
 		const command = resolve(this.runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
+		if (!await FileSystemUtils.file.exists(resolve(this.config.fullPath, 'src/test')))
+			return this.logWarning('NO TESTS FOR PACKAGE!');
+
 		const testCommand = `${command} "src/test/**/*.test.ts" --require ts-node/register`;
 		await this.allocateCommando(Commando_NVM)
 			.cd(this.config.fullPath)
@@ -215,9 +218,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		this.resolveESLintConfig();
 		return new Promise<void>(async (resolve, reject) => {
 			this.allocateCommando(Commando_NVM)
-				.cd('/Users/tacb0ss/dev/nu-art/beamz/_thunderstorm/build-and-install/src/test/units/lint/temp/workspace')
+				.cd(this.runtimeContext.parentUnit.config.fullPath)
 				.pwd()
-				.append(`./node_modules/.bin/eslint --debug ${pathToLint}`)
+				.append(`./node_modules/.bin/eslint ${pathToLint}`)
 				.execute((stdout, stderr, exitCode) => {
 					if (exitCode > 0)
 						return reject(new CommandoException(`Linting failed`, stdout, stderr, exitCode));

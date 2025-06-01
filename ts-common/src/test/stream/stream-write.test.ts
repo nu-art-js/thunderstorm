@@ -1,8 +1,8 @@
 import {TestSuite} from '../../main/testing/types';
 import * as fs from 'fs';
 import {format} from 'fast-csv';
-import {StreamTest_Items, StreamTest_ToTransformed} from './test-files/test';
 import {runSingleTestCase} from '../../main/testing/consts';
+import {StreamTest_Items, StreamTest_ToTransformed} from './test-helper';
 
 export type Input = string;
 export type Result = undefined;

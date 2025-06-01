@@ -112,7 +112,6 @@ describe('merge', () => {
 				currentPhase: {
 					name: 'Zevel2',
 					method: 'zevel2',
-					runUnitsInDependency: true
 				}
 			}
 		},
@@ -120,7 +119,6 @@ describe('merge', () => {
 			currenPhase: {
 				name: 'Zevel2',
 				method: 'zevel2',
-				runUnitsInDependency: true,
 				filter: {}
 			}
 		}

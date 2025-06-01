@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import {parse} from 'fast-csv';
 import {expect} from 'chai';
-import {StreamTest_FromTransformed, StreamTest_Items, StreamTest_Type1} from './test-files/test';
 import {runSingleTestCase, TestSuite} from '../_main';
+import {StreamTest_FromTransformed, StreamTest_Items, StreamTest_Type1} from './test-helper';
 
 export type Input = string;
 export type Result = undefined;
