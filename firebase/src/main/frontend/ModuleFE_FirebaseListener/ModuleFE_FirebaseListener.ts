@@ -1,24 +1,6 @@
 import {FirebaseApp, initializeApp} from 'firebase/app';
-import {
-	connectDatabaseEmulator,
-	Database,
-	DataSnapshot,
-	get,
-	getDatabase,
-	onValue,
-	query,
-	ref,
-	Unsubscribe
-} from 'firebase/database';
-import {
-	__stringify,
-	_keys,
-	exists,
-	filterInstances,
-	ImplementationMissingException,
-	Logger,
-	Module
-} from '@nu-art/ts-common';
+import {connectDatabaseEmulator, Database, DataSnapshot, get, getDatabase, onValue, query, ref, Unsubscribe} from 'firebase/database';
+import {__stringify, _keys, exists, filterInstances, ImplementationMissingException, Logger, Module} from '@nu-art/ts-common';
 import 'firebase/database';
 
 
@@ -82,7 +64,7 @@ export class ModuleFE_FirebaseListener_Class
 	}
 
 	createListener(nodePath: string): RefListenerFE {
-		this.logInfo(`Creating listener for firebase rtdb node ${nodePath}`);
+		this.logDebug(`Creating listener for firebase rtdb node ${nodePath}`);
 		return new RefListenerFE(nodePath);
 	}
 }
@@ -114,7 +96,7 @@ export class RefListenerFE<Value = any>
 			this.logWarning('RefListener asked to listen mid-listening. Stopping to listen prior to re-listening');
 			this.stopListening();
 		}
-		this.logInfo('Starting to listen...');
+		this.logDebug('Starting to listen...');
 		const refQuery = this.getQuery();
 		try {
 			this.toUnsubscribeFunction = onValue(refQuery,
@@ -127,7 +109,7 @@ export class RefListenerFE<Value = any>
 			this.logWarning(`Failed listening on node data, check if your rtdb rules permit reading this node '${this.nodePath}'`);
 			throw e;
 		}
-		this.logInfo(`Listening.`);
+		this.logDebug(`Listening.`);
 
 		return this;
 	}
