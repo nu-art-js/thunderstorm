@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
-import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel} from '@nu-art/ts-common';
+import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, NotImplementedYetException} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types';
 import {CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
@@ -10,6 +10,9 @@ import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils';
 import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Test} from '../phase';
+import {ProjectUnit_RuntimeContext} from './ProjectUnit';
+import {glob} from 'node:fs/promises';
+import {TestType, TestTypes} from '../../core/params/params';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
@@ -32,9 +35,82 @@ const assetExtensions = [
 	'csv',
 ];
 
+
+const defaultTestPatterns: Record<TestType, string> = {
+	pure: './**/*.test.ts',
+	firebase: './**/*.firebase.test.ts',
+	ui: './**/*.ui.test.ts',
+	mobile: './**/*.mobile.test.ts'
+};
+
+const commandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext, commando: Commando_NVM) => Promise<void>> = {
+	pure: async (config, runtimeContext, commando) => {
+		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
+		const testFile = runtimeContext.runtimeParams.testFile;
+		const grep = testFile?.length ? `--grep "${testFile[0]}"` : '';
+
+		const testCommand = `${command} --timeout 0 '${defaultTestPatterns.pure}' --require ts-node/register ${grep}`;
+		await commando
+			.cd(config.fullPath)
+			.append(testCommand)
+			.execute((stdout, stderr, exitCode) => {
+				if (exitCode !== 0)
+					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
+			});
+	},
+	firebase: async (config, runtimeContext, commando) => {
+		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
+		const testFile = runtimeContext.runtimeParams.testFile;
+		const grep = testFile?.length ? `--grep "${testFile[0]}"` : '';
+
+		const testCommand = `firebase emulators:exec "${command} --timeout 0 '${defaultTestPatterns.firebase}' --require ts-node/register ${grep}`;
+		await commando
+			.cd(config.fullPath)
+			.append(testCommand)
+			.execute((stdout, stderr, exitCode) => {
+				if (exitCode !== 0)
+					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
+			});
+	},
+	ui: async () => {
+		throw new NotImplementedYetException('UI tests not implemented yet');
+	},
+	mobile: async () => {
+		throw new NotImplementedYetException('Mobile tests not implemented yet');
+	},
+};
+
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test]> {
+
+	async runTests() {
+		const testsFolder = resolve(this.config.fullPath, 'src/test');
+		if (!await FileSystemUtils.file.exists(testsFolder))
+			return this.logWarning('NO TESTS FOR PACKAGE!');
+
+		const testTypes = this.runtimeContext.runtimeParams.testType;
+
+		for (const testType of TestTypes) {
+			if (testTypes?.length && !testTypes.includes(testType)) {
+				this.logVerbose(`Test type (${testType}) not selected, skipping`);
+				continue;
+			}
+
+			const pattern = `${resolve(testsFolder, defaultTestPatterns[testType])}`;
+			const fileIterator = glob(pattern, {});
+			const files = [];
+			for await (const file of fileIterator)
+				files.push(file);
+
+			if (files.length === 0) {
+				this.logDebug(`No tests found for test type: ${testType} using pattern: ${pattern}`);
+				continue;
+			}
+
+			await commandComposer[testType](this.config, this.runtimeContext, this.allocateCommando(Commando_NVM));
+		}
+	}
 
 	constructor(config: Unit_TypescriptLib<C>['config']) {
 		super(config);
@@ -170,21 +246,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	async purge() {
 		await FileSystemUtils.folder.delete(this.config.output);
 		return super.purge();
-	}
-
-	async runTests() {
-		const command = resolve(this.runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
-		if (!await FileSystemUtils.file.exists(resolve(this.config.fullPath, 'src/test')))
-			return this.logWarning('NO TESTS FOR PACKAGE!');
-
-		const testCommand = `${command} "src/test/**/*.test.ts" --require ts-node/register`;
-		await this.allocateCommando(Commando_NVM)
-			.cd(this.config.fullPath)
-			.append(testCommand)
-			.execute((stdout, stderr, exitCode) => {
-				if (exitCode !== 0)
-					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
-			});
 	}
 
 	async printDependencyTree() {

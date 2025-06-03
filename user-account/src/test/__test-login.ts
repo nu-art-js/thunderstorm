@@ -1,6 +1,6 @@
-import {Account_Login, Request_RegisterAccount} from '../../main';
+import {Account_Login, Request_RegisterAccount} from '../main';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {ModuleBE_AccountDB} from '../../main/backend';
+import {ModuleBE_AccountDB} from '../main/backend';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {expect} from 'chai';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';

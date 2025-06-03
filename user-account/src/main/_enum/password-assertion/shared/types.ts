@@ -18,5 +18,5 @@ export const PasswordAssertionTypes = [
 
 export type PasswordAssertionType = typeof PasswordAssertionTypes[number];
 export type PasswordAssertionConfig = { [K in PasswordAssertionType]?: number };
-export type PasswordFailureReport = { [K in PasswordAssertionType]: string };
+export type PasswordFailureReport = { [K in PasswordAssertionType]?: string };
 export type PasswordAssertionResponseError = ResponseError<'password-assertion-error', PasswordFailureReport>;
