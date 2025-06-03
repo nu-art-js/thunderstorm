@@ -122,7 +122,7 @@ export class HttpServer_Class
 			this.config.baseUrl = baseUrl.replace(/\/\//g, '/');
 		}
 
-		this.express.use((req, res, next) => {
+		this.getExpress().use((req, res, next) => {
 			if (req)
 				req.url = req.url.replace(/\/\//g, '/');
 
@@ -131,10 +131,10 @@ export class HttpServer_Class
 
 		const parserLimit = this.config.bodyParserLimit;
 		if (parserLimit)
-			this.express.use(express.json({limit: parserLimit}));
-		this.express.use(compression());
+			this.getExpress().use(express.json({limit: parserLimit}));
+		this.getExpress().use(compression());
 		for (const middleware of HttpServer_Class.expressMiddleware) {
-			this.express.use(middleware);
+			this.getExpress().use(middleware);
 		}
 
 
@@ -168,7 +168,7 @@ export class HttpServer_Class
 		};
 
 
-		this.express.use(cors({
+		this.getExpress().use(cors({
 			origin: async (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => {
 				if (!origin)
 					return callback(null);
@@ -188,7 +188,7 @@ export class HttpServer_Class
 			exposedHeaders: _cors.responseHeaders,
 		}));
 
-		this.express.options('*', (req: ExpressRequest, res: ExpressResponse) => {
+		this.getExpress().options('*', (req: ExpressRequest, res: ExpressResponse) => {
 			res.end();
 		});
 	}
@@ -198,7 +198,7 @@ export class HttpServer_Class
 		if (!ssl) {
 			this.logDebug('starting HTTP server');
 			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			return require('http').createServer(this.express);
+			return require('http').createServer(this.getExpress());
 		}
 
 		this.logDebug('starting HTTPS server');
@@ -218,7 +218,7 @@ export class HttpServer_Class
 		};
 
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		return require('https').createServer(options, this.express);
+		return require('https').createServer(options, this.getExpress());
 	}
 
 	public async startServer(): Promise<void> {

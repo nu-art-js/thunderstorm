@@ -2,7 +2,8 @@ import {
 	asArray,
 	exists,
 	filterDuplicates,
-	StaticLogger} from '@nu-art/ts-common';
+	StaticLogger
+} from '@nu-art/ts-common';
 import {BaseCliParam, CliParam, CliParams} from './types';
 import {DefaultProcessorsMapper} from './consts';
 
@@ -38,7 +39,7 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 
 			// validate options if exits
 			if (cliParamToResolve.options && !cliParamToResolve.options.includes(value))
-				throw new Error('value not supported for this param');
+				throw new Error(`value not supported for param: ${cliParamToResolve.name}, supported values: ${cliParamToResolve.options.join(', ')}`);
 
 			const key = cliParamToResolve.keyName as Key;
 
