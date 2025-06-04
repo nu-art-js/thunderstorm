@@ -2,13 +2,13 @@ import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
 import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, NotImplementedYetException} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types';
-import {CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils';
 import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Test} from '../phase';
 import {ProjectUnit_RuntimeContext} from './ProjectUnit';
 import {glob} from 'node:fs/promises';
@@ -43,7 +43,7 @@ const defaultTestPatterns: Record<TestType, string> = {
 	mobile: './**/*.test.mobile.ts'
 };
 
-const commandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext, commando: Commando_NVM) => Promise<void>> = {
+const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext, commando: Commando_NVM) => Promise<void>> = {
 	pure: async (config, runtimeContext, commando) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
 		const testFile = runtimeContext.runtimeParams.testFile;
@@ -82,6 +82,34 @@ const commandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runt
 	},
 };
 
+const TestTypeWorkspaceSetup: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<void>> = {
+	pure: async (config, runtimeContext) => {
+	},
+	firebase: async (config, runtimeContext) => {
+		const pathToTestsFirebaseJson = runtimeContext.baiConfig.files?.tests?.firebase?.[CONST_FirebaseJSON];
+		if (!pathToTestsFirebaseJson)
+			throw new ImplementationMissingException('Missing default firebase.json file in tests.firebase');
+
+		const pathToTestsFirebaseRC = runtimeContext.baiConfig.files?.tests?.firebase?.[CONST_FirebaseRC];
+		if (!pathToTestsFirebaseRC)
+			throw new ImplementationMissingException('Missing default .firebaserc file in tests.firebase');
+
+		await FileSystemUtils.file.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseRC), resolve(config.fullPath, CONST_FirebaseRC));
+		await FileSystemUtils.file.template.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseJson), resolve(config.fullPath, CONST_FirebaseJSON), {
+			FIREBASE_RTDB_PORT: `${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 1}`,
+			FIRESTORE_PORT: `${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 2}`,
+			FIRESTORE_WEBSOCKET_PORT: `${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 3}`,
+		}, DEFAULT_TEMPLATE_PATTERN);
+
+	},
+	ui: async () => {
+		throw new NotImplementedYetException('UI tests not implemented yet');
+	},
+	mobile: async () => {
+		throw new NotImplementedYetException('Mobile tests not implemented yet');
+	},
+};
+
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test]> {
@@ -110,7 +138,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				continue;
 			}
 
-			await commandComposer[testType](this.config, this.runtimeContext, this.allocateCommando(Commando_NVM));
+			await TestTypeWorkspaceSetup[testType](this.config, this.runtimeContext);
+			await TestsCommandComposer[testType](this.config, this.runtimeContext, this.allocateCommando(Commando_NVM));
 		}
 	}
 
