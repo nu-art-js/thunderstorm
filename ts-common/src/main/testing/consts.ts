@@ -1,4 +1,4 @@
-import {TestModel, TestSuite} from './types';
+import {TestModel, TestResetListener, TestSuite} from './types';
 import chai, {expect} from 'chai';
 import {ModuleManager} from '../core/module-manager';
 import {exists, resolveContent, voidFunction} from '../utils/tools';
@@ -10,6 +10,7 @@ import {DebugFlag} from '../core/debug-flags';
 import {LogLevel} from '../core/logger/types';
 import {StaticLogger} from '../core/logger/Logger';
 import {BadImplementationException} from '../core/exceptions/exceptions';
+import {Dispatcher} from '../core/dispatcher';
 
 chai.use(chaiAsPromised);
 BeLogged.addClient(LogClient_Terminal);
@@ -83,3 +84,5 @@ export const expectFailAsync = async (action: () => Promise<void>) => {
 		});
 	}
 };
+
+export const dispatcher_resetTests = new Dispatcher<TestResetListener, '__resetForTests'>('__resetForTests');

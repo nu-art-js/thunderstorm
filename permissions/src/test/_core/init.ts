@@ -41,9 +41,9 @@ ModuleBE_PermissionsAssert.setDefaultConfig({strictMode: true});
 
 
 // @ts-ignore
-ModuleManager.resetForTests();
+ModuleManager.__resetForTests();
 // @ts-ignore
-ModuleBE_APIs.resetForTests();
+ModuleBE_APIs.__resetForTests();
 
 new Storm()
 	.addModulePack(accountModules)

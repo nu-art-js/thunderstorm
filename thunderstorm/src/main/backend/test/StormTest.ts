@@ -3,9 +3,10 @@ import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase/backend';
 import {RouteResolver_Dummy} from '../modules/server/route-resolvers/RouteResolver_Dummy';
 import {Storm} from '../core/Storm';
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
-import {ModuleBE_APIs} from '../modules/ModuleBE_APIs';
+import {dispatcher_resetTests} from '@nu-art/ts-common/testing/consts';
 
 type StormTestConfig = { databaseName?: string, modules: Module[], config: TS_Object };
+
 
 export class StormTest {
 
@@ -24,17 +25,19 @@ export class StormTest {
 		ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: this.firebaseConfig}});
 	}
 
-	init() {
-		// @ts-ignore
-		ModuleManager.resetForTests();
-
-		// @ts-ignore
-		ModuleBE_APIs.resetForTests();
-
+	async init() {
 		new Storm({envKey: 'local', pathToDefaultConfig: '_config/default', pathToEnvOverrideConfig: '_config/test'})
 			.addModulePack(this.testConfig.modules)
 			.setConfig({...this.testConfig.config, isDebug: true,})
 			.setInitialRouteResolver(new RouteResolver_Dummy())
 			.init();
+
+		return this;
+	}
+
+	async cleanup() {
+		await dispatcher_resetTests.dispatchModuleAsync();
+		// @ts-ignore
+		ModuleManager.__resetForTests();
 	}
 }

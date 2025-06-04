@@ -38,18 +38,18 @@ const assetExtensions = [
 
 const defaultTestPatterns: Record<TestType, string> = {
 	pure: './**/*.test.ts',
-	firebase: './**/*.firebase.test.ts',
-	ui: './**/*.ui.test.ts',
-	mobile: './**/*.mobile.test.ts'
+	firebase: './**/*.test.firebase.ts',
+	ui: './**/*.test.ui.ts',
+	mobile: './**/*.test.mobile.ts'
 };
 
 const commandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext, commando: Commando_NVM) => Promise<void>> = {
 	pure: async (config, runtimeContext, commando) => {
-		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
+		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
 		const testFile = runtimeContext.runtimeParams.testFile;
-		const grep = testFile?.length ? `--grep "${testFile[0]}"` : '';
+		const grep = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` '${defaultTestPatterns.pure}'`;
 
-		const testCommand = `${command} --timeout 0 '${defaultTestPatterns.pure}' --require ts-node/register ${grep}`;
+		const testCommand = `${command} -p src/test/tsconfig.json --timeout 0 ${grep}`;
 		await commando
 			.cd(config.fullPath)
 			.append(testCommand)
@@ -59,11 +59,13 @@ const commandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runt
 			});
 	},
 	firebase: async (config, runtimeContext, commando) => {
-		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
+		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
 		const testFile = runtimeContext.runtimeParams.testFile;
-		const grep = testFile?.length ? `--grep "${testFile[0]}"` : '';
-
-		const testCommand = `firebase emulators:exec "${command} --timeout 0 '${defaultTestPatterns.firebase}' --require ts-node/register ${grep}`;
+		const grep = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` '${defaultTestPatterns.firebase}'`;
+		const debugPort = runtimeContext.runtimeParams.testDebugPort ? ` --inspect=${runtimeContext.runtimeParams.testDebugPort} --watch-files` : '';
+		// const pah = 'ts-mocha  --timeout 0 --inspect=8107 --watch-files \'src/test/**/*.test.ts\' src/test/**/*.test.ts';
+		const functionContextCommand = `${command}  -p src/test/tsconfig.json --timeout 0 ${debugPort}${grep}`;
+		const testCommand = `firebase emulators:exec "${functionContextCommand}"`;
 		await commando
 			.cd(config.fullPath)
 			.append(testCommand)

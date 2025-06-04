@@ -5,8 +5,7 @@ import {ModuleBE_AccountDB, ModuleBE_SessionDB} from '../main/backend';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {StormTest} from '@nu-art/thunderstorm/backend/test/StormTest';
-import {ModuleBE_SyncManager} from '@nu-art/thunderstorm/backend';
-import {deleteApp, getApps} from 'firebase-admin/app';
+import {ModuleBE_APIs, ModuleBE_SyncManager} from '@nu-art/thunderstorm/backend';
 
 export type Input = {
 	account: Account_RegisterAccount['request'];
@@ -36,8 +35,6 @@ const test = async (input: Input) => {
 		passwordAssertion: {...cleanObject, ...input.assertionConfig}
 	});
 
-	await ModuleBE_AccountDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-
 	const fakeResponse: any = {
 		setHeader: () => {
 		}
@@ -50,18 +47,21 @@ const test = async (input: Input) => {
 const runTestCase = (testCase: TestCase_AccountRegister) => async () => runSingleTestCase(test, testCase);
 
 describe('Accounts - Register', () => {
-	before(async () => {
-		const modules = [
-			ModuleBE_SyncManager,
-			ModuleBE_AccountDB,
-			ModuleBE_SessionDB
-		];
+	const modules = [
+		ModuleBE_APIs,
+		ModuleBE_SyncManager,
+		ModuleBE_AccountDB,
+		ModuleBE_SessionDB
+	];
 
-		new StormTest({modules, config: {}}).init();
+	const stormTest = new StormTest({modules, config: {}});
+	before(async () => {
+		await stormTest.init();
 	});
 
 	beforeEach(async () => {
 		await ModuleBE_AccountDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_SessionDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	});
 
 	it('Simple: test@email.com - 1234', runTestCase({
@@ -109,9 +109,7 @@ describe('Accounts - Register', () => {
 	}));
 
 	after(async () => {
-		console.log('Deleting apps');
-		await Promise.all(getApps().map(app => deleteApp(app)));
+		await stormTest.cleanup();
 	});
 });
 
-// firebase emulators:exec "ts-mocha -p src/test/tsconfig.json --timeout 0 src/test/test-cases/email-validation.test.ts src/test/test-cases/password-validation/lowercase.test.ts src/test/test-cases/password-validation/uppercase.test.ts src/test/test-cases/password-validation/length.test.ts src/test/test-cases/password-validation/simple.test.ts src/test/test-cases/password-validation/special-chars.test.ts src/test/test-cases/password-validation/complex.test.ts src/test/test-cases/password-validation/numbers.test.ts src/test/test-cases/__test-register.test.ts ."
