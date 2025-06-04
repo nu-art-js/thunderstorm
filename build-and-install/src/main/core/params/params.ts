@@ -216,6 +216,15 @@ export const BaiParam_TestFile: BaseCliParam<'testFile', string[]> = {
 	dependencies: [{param: BaiParam_Test, value: true}],
 };
 
+export const BaiParam_TestDebugPort: BaseCliParam<'testDebugPort', number> = {
+	keys: ['--test-debug', '-td'],
+	keyName: 'testDebugPort',
+	type: 'number',
+	group: 'Test',
+	description: 'If provided will connect a debugger on the specified port',
+	dependencies: [{param: BaiParam_Test, value: true}],
+};
+
 export const BaiParam_Launch: BaseCliParam<'launch', string> = {
 	keys: ['--launch', '-l'],
 	keyName: 'launch',
@@ -376,6 +385,7 @@ export const AllBaiParams = [
 	BaiParam_Test,
 	BaiParam_TestType,
 	BaiParam_TestFile,
+	BaiParam_TestDebugPort,
 	BaiParam_Launch,
 	BaiParam_LaunchFrontend,// TODO: to implement
 	BaiParam_LaunchBackend,// TODO: to implement

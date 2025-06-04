@@ -64,9 +64,13 @@ export class BuildAndInstall
 
 		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
 		const executionPlan = await phaseManager.calculateExecutionSteps();
+		let killCounter = 0;
 		process.on('SIGINT', async () => {
 			this.logWarning('\n\n\n---------------------------------- Process Interrupted ----------------------------------\n\n\n');
 			await phaseManager.break();
+			killCounter++;
+			if (killCounter > 5)
+				process.exit(1);
 		});
 
 		await phaseManager.execute(executionPlan);
