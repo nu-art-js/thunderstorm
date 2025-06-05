@@ -103,11 +103,16 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	async launch() {
 		await sleep(2 * Second * Unit_FirebaseFunctionsApp.staggerCount++);
-		await this.releasePorts();
+		await this.releaseEmulatorPorts();
 		await Promise.all([
 			this.runProxy(),
 			this.runEmulator(),
 		]);
+	}
+
+	async releaseEmulatorPorts() {
+		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.basePort + i}`);
+		return this.releasePorts(allPorts);
 	}
 
 	async deployBackend() {
@@ -296,17 +301,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	//######################### Launch Logic #########################
-
-	private async releasePorts() {
-		const commando = this.allocateCommando(Commando_NVM).applyNVM();
-		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.basePort + i}`);
-
-		await commando.setUID(this.config.key)
-			.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
-			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-			.append('echo ')
-			.execute();
-	}
 
 	private async runProxy() {
 		await this.resolveProxyFile();

@@ -1,5 +1,5 @@
 import {Account_Login, Request_RegisterAccount} from '../main';
-import {ModuleBE_AccountDB, ModuleBE_SessionDB} from '../main/backend';
+import {ModuleBE_AccountDB, ModuleBE_FailedLoginAttemptDB, ModuleBE_SessionDB} from '../main/backend';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
@@ -51,6 +51,7 @@ describe('Accounts - Login', () => {
 		ModuleBE_APIs,
 		ModuleBE_SyncManager,
 		ModuleBE_AccountDB,
+		ModuleBE_FailedLoginAttemptDB,
 		ModuleBE_SessionDB
 	];
 
@@ -59,6 +60,7 @@ describe('Accounts - Login', () => {
 		await stormTest.init();
 	});
 	beforeEach(async () => {
+		await ModuleBE_FailedLoginAttemptDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		await ModuleBE_AccountDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		await ModuleBE_SessionDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	});
@@ -96,7 +98,7 @@ describe('Accounts - Login', () => {
 				deviceId
 			}
 		},
-		error: {expected: 'Could not find Account with unique query'}
+		error: {expected: 'There is no account for email'}
 	}));
 
 	it('Login Fail - Password', runTestCase({

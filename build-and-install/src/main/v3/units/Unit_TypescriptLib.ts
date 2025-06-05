@@ -37,10 +37,10 @@ const assetExtensions = [
 
 
 const defaultTestPatterns: Record<TestType, string> = {
-	pure: './**/*.test.ts',
-	firebase: './**/*.test.firebase.ts',
-	ui: './**/*.test.ui.ts',
-	mobile: './**/*.test.mobile.ts'
+	pure: '**/*.test.ts',
+	firebase: '**/*.test.firebase.ts',
+	ui: '**/*.test.ui.ts',
+	mobile: '**/*.test.mobile.ts'
 };
 
 const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext, commando: Commando_NVM) => Promise<void>> = {
@@ -61,10 +61,12 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 	firebase: async (config, runtimeContext, commando) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
 		const testFile = runtimeContext.runtimeParams.testFile;
-		const grep = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` '${defaultTestPatterns.firebase}'`;
-		const debugPort = runtimeContext.runtimeParams.testDebugPort ? ` --inspect=${runtimeContext.runtimeParams.testDebugPort} --watch-files` : '';
+		const testsPattern = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` 'src/test/${defaultTestPatterns.firebase}'`;
+		const debugPort = runtimeContext.runtimeParams.testDebugPort
+			? ` --inspect=${runtimeContext.runtimeParams.testDebugPort} --w -watch-files ${testsPattern}`
+			: '';
 		// const pah = 'ts-mocha  --timeout 0 --inspect=8107 --watch-files \'src/test/**/*.test.ts\' src/test/**/*.test.ts';
-		const functionContextCommand = `${command}  -p src/test/tsconfig.json --timeout 0 ${debugPort}${grep}`;
+		const functionContextCommand = `${command} -p src/test/tsconfig.json --timeout 0 ${debugPort}${testsPattern}`;
 		const testCommand = `firebase emulators:exec "${functionContextCommand}"`;
 		await commando
 			.cd(config.fullPath)
@@ -82,37 +84,44 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 	},
 };
 
-const TestTypeWorkspaceSetup: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<void>> = {
-	pure: async (config, runtimeContext) => {
-	},
-	firebase: async (config, runtimeContext) => {
-		const pathToTestsFirebaseJson = runtimeContext.baiConfig.files?.tests?.firebase?.[CONST_FirebaseJSON];
-		if (!pathToTestsFirebaseJson)
-			throw new ImplementationMissingException('Missing default firebase.json file in tests.firebase');
-
-		const pathToTestsFirebaseRC = runtimeContext.baiConfig.files?.tests?.firebase?.[CONST_FirebaseRC];
-		if (!pathToTestsFirebaseRC)
-			throw new ImplementationMissingException('Missing default .firebaserc file in tests.firebase');
-
-		await FileSystemUtils.file.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseRC), resolve(config.fullPath, CONST_FirebaseRC));
-		await FileSystemUtils.file.template.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseJson), resolve(config.fullPath, CONST_FirebaseJSON), {
-			FIREBASE_RTDB_PORT: `${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 1}`,
-			FIRESTORE_PORT: `${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 2}`,
-			FIRESTORE_WEBSOCKET_PORT: `${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 3}`,
-		}, DEFAULT_TEMPLATE_PATTERN);
-
-	},
-	ui: async () => {
-		throw new NotImplementedYetException('UI tests not implemented yet');
-	},
-	mobile: async () => {
-		throw new NotImplementedYetException('Mobile tests not implemented yet');
-	},
-};
 
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test]> {
+
+	private TestTypeWorkspaceSetup: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<void>> = {
+		pure: async (config, runtimeContext) => {
+		},
+		firebase: async (config, runtimeContext) => {
+			const pathToTestsFirebaseJson = runtimeContext.baiConfig.files?.tests?.firebase?.[CONST_FirebaseJSON];
+			if (!pathToTestsFirebaseJson)
+				throw new ImplementationMissingException('Missing default firebase.json file in tests.firebase');
+
+			const pathToTestsFirebaseRC = runtimeContext.baiConfig.files?.tests?.firebase?.[CONST_FirebaseRC];
+			if (!pathToTestsFirebaseRC)
+				throw new ImplementationMissingException('Missing default .firebaserc file in tests.firebase');
+
+			await FileSystemUtils.file.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseRC), resolve(config.fullPath, CONST_FirebaseRC));
+			const ports = [
+				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 1}`,
+				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 2}`,
+				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 3}`
+			];
+			await FileSystemUtils.file.template.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseJson), resolve(config.fullPath, CONST_FirebaseJSON), {
+				FIREBASE_RTDB_PORT: ports[0],
+				FIRESTORE_PORT: ports[1],
+				FIRESTORE_WEBSOCKET_PORT: ports[2],
+			}, DEFAULT_TEMPLATE_PATTERN);
+
+			await this.releasePorts(ports);
+		},
+		ui: async () => {
+			throw new NotImplementedYetException('UI tests not implemented yet');
+		},
+		mobile: async () => {
+			throw new NotImplementedYetException('Mobile tests not implemented yet');
+		},
+	};
 
 	async runTests() {
 		const testsFolder = resolve(this.config.fullPath, 'src/test');
@@ -138,7 +147,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				continue;
 			}
 
-			await TestTypeWorkspaceSetup[testType](this.config, this.runtimeContext);
+			await this.TestTypeWorkspaceSetup[testType](this.config, this.runtimeContext);
 			await TestsCommandComposer[testType](this.config, this.runtimeContext, this.allocateCommando(Commando_NVM));
 		}
 	}
