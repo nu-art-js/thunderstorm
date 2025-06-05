@@ -22,6 +22,13 @@ export type BAI_Config = {
 		packageJson?: TypedMap<string>
 	}
 	files?: {
+		tests?: {
+			firebase?: {
+				'firebase.json'?: string
+				'.firebaserc'?: string
+				baseEmulationPort?: number
+			}
+		}
 		firebase?: {
 			databaseRules?: string
 			storageRules?: string

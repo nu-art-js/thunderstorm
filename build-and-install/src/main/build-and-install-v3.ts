@@ -17,14 +17,14 @@ import {UnitMapper_FirebaseFunction, UnitMapper_FirebaseHosting, UnitMapper_Node
 
 const DefaultPhases = [
 	...phases_Build,
-	...phases_Launch,
-	...phases_Deploy,
+	phases_Launch,
+	phases_Deploy,
 ];
 
 export class BuildAndInstall
 	extends Logger {
 
-	private phases: Phase<string>[] = DefaultPhases;
+	private phases: Phase<string>[][] = DefaultPhases;
 	private pathToProject: string;
 	private allUnits: BaseUnit<any>[] = [];
 	readonly nodeProjectUnit!: Unit_NodeProject;
@@ -48,7 +48,7 @@ export class BuildAndInstall
 		this.pathToProject = pathToProject;
 	}
 
-	setPhases(phases: Phase<string>[]) {
+	setPhases(phases: Phase<string>[][]) {
 		this.phases = phases;
 	}
 
@@ -59,16 +59,18 @@ export class BuildAndInstall
 
 	async run() {
 		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
-		const unitDependencyTree: ProjectUnit[][] = this.unitsDependencyMapper.buildDependencyTree()
+		const unitDependencyTree: ProjectUnit[][] = (await this.unitsDependencyMapper.buildDependencyTree())
 			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
-
-		this.logDebug('Unit Dependency Graph:', unitDependencyTree.map(units => units.map(unit => unit.config.key)));
 
 		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
 		const executionPlan = await phaseManager.calculateExecutionSteps();
+		let killCounter = 0;
 		process.on('SIGINT', async () => {
 			this.logWarning('\n\n\n---------------------------------- Process Interrupted ----------------------------------\n\n\n');
 			await phaseManager.break();
+			killCounter++;
+			if (killCounter > 5)
+				process.exit(1);
 		});
 
 		await phaseManager.execute(executionPlan);
@@ -113,7 +115,8 @@ export class BuildAndInstall
 			dependsOn: _keys(unit.config.dependencies).filter(key => !!unitKeyToUnitMap[key]) as string[]
 		}));
 
-		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies);
+		const globalOutputFolder = resolve(this.pathToProject, '.trash/output');
+		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies, globalOutputFolder);
 		const runtimeContext: ProjectUnit_RuntimeContext = ({
 			parentUnit: this.nodeProjectUnit,
 			childUnits: allProjectUnits,
@@ -123,6 +126,7 @@ export class BuildAndInstall
 			unitsResolver: <UnitType>(keys: string[], className: Constructor<UnitType>): UnitType[] => {
 				return keys.map(key => unitKeyToUnitMap[key]).filter(unit => unit.isInstanceOf(className)) as UnitType[];
 			},
+			globalOutputFolder,
 		});
 
 		allProjectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));

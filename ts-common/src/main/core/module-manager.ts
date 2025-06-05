@@ -76,7 +76,7 @@ export class ModuleManager
 	}
 
 	// @ts-ignore
-	private static resetForTests() {
+	private static __resetForTests() {
 		_modules.length = 0;
 		// @ts-ignore
 		delete ModuleManager.instance;

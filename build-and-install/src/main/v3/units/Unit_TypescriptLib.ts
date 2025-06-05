@@ -1,20 +1,24 @@
 import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
-import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel} from '@nu-art/ts-common';
+import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, NotImplementedYetException} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types';
-import {CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils';
 import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Test} from '../phase';
+import {ProjectUnit_RuntimeContext} from './ProjectUnit';
+import {glob} from 'node:fs/promises';
+import {TestType, TestTypes} from '../../core/params/params';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
 	customESLintConfig: boolean;
 	customTSConfig: boolean;
+	hasSelfHotReload: boolean
 	output: string;
 };
 
@@ -31,9 +35,113 @@ const assetExtensions = [
 	'csv',
 ];
 
+
+const defaultTestPatterns: Record<TestType, string> = {
+	pure: './**/*.test.ts',
+	firebase: './**/*.test.firebase.ts',
+	ui: './**/*.test.ui.ts',
+	mobile: './**/*.test.mobile.ts'
+};
+
+const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext, commando: Commando_NVM) => Promise<void>> = {
+	pure: async (config, runtimeContext, commando) => {
+		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
+		const testFile = runtimeContext.runtimeParams.testFile;
+		const grep = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` '${defaultTestPatterns.pure}'`;
+
+		const testCommand = `${command} -p src/test/tsconfig.json --timeout 0 ${grep}`;
+		await commando
+			.cd(config.fullPath)
+			.append(testCommand)
+			.execute((stdout, stderr, exitCode) => {
+				if (exitCode !== 0)
+					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
+			});
+	},
+	firebase: async (config, runtimeContext, commando) => {
+		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
+		const testFile = runtimeContext.runtimeParams.testFile;
+		const grep = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` '${defaultTestPatterns.firebase}'`;
+		const debugPort = runtimeContext.runtimeParams.testDebugPort ? ` --inspect=${runtimeContext.runtimeParams.testDebugPort} --watch-files` : '';
+		// const pah = 'ts-mocha  --timeout 0 --inspect=8107 --watch-files \'src/test/**/*.test.ts\' src/test/**/*.test.ts';
+		const functionContextCommand = `${command}  -p src/test/tsconfig.json --timeout 0 ${debugPort}${grep}`;
+		const testCommand = `firebase emulators:exec "${functionContextCommand}"`;
+		await commando
+			.cd(config.fullPath)
+			.append(testCommand)
+			.execute((stdout, stderr, exitCode) => {
+				if (exitCode !== 0)
+					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
+			});
+	},
+	ui: async () => {
+		throw new NotImplementedYetException('UI tests not implemented yet');
+	},
+	mobile: async () => {
+		throw new NotImplementedYetException('Mobile tests not implemented yet');
+	},
+};
+
+const TestTypeWorkspaceSetup: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<void>> = {
+	pure: async (config, runtimeContext) => {
+	},
+	firebase: async (config, runtimeContext) => {
+		const pathToTestsFirebaseJson = runtimeContext.baiConfig.files?.tests?.firebase?.[CONST_FirebaseJSON];
+		if (!pathToTestsFirebaseJson)
+			throw new ImplementationMissingException('Missing default firebase.json file in tests.firebase');
+
+		const pathToTestsFirebaseRC = runtimeContext.baiConfig.files?.tests?.firebase?.[CONST_FirebaseRC];
+		if (!pathToTestsFirebaseRC)
+			throw new ImplementationMissingException('Missing default .firebaserc file in tests.firebase');
+
+		await FileSystemUtils.file.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseRC), resolve(config.fullPath, CONST_FirebaseRC));
+		await FileSystemUtils.file.template.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseJson), resolve(config.fullPath, CONST_FirebaseJSON), {
+			FIREBASE_RTDB_PORT: `${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 1}`,
+			FIRESTORE_PORT: `${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 2}`,
+			FIRESTORE_WEBSOCKET_PORT: `${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 3}`,
+		}, DEFAULT_TEMPLATE_PATTERN);
+
+	},
+	ui: async () => {
+		throw new NotImplementedYetException('UI tests not implemented yet');
+	},
+	mobile: async () => {
+		throw new NotImplementedYetException('Mobile tests not implemented yet');
+	},
+};
+
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test]> {
+
+	async runTests() {
+		const testsFolder = resolve(this.config.fullPath, 'src/test');
+		if (!await FileSystemUtils.file.exists(testsFolder))
+			return this.logWarning('NO TESTS FOR PACKAGE!');
+
+		const testTypes = this.runtimeContext.runtimeParams.testType;
+
+		for (const testType of TestTypes) {
+			if (testTypes?.length && !testTypes.includes(testType)) {
+				this.logVerbose(`Test type (${testType}) not selected, skipping`);
+				continue;
+			}
+
+			const pattern = `${resolve(testsFolder, defaultTestPatterns[testType])}`;
+			const fileIterator = glob(pattern, {});
+			const files = [];
+			for await (const file of fileIterator)
+				files.push(file);
+
+			if (files.length === 0) {
+				this.logDebug(`No tests found for test type: ${testType} using pattern: ${pattern}`);
+				continue;
+			}
+
+			await TestTypeWorkspaceSetup[testType](this.config, this.runtimeContext);
+			await TestsCommandComposer[testType](this.config, this.runtimeContext, this.allocateCommando(Commando_NVM));
+		}
+	}
 
 	constructor(config: Unit_TypescriptLib<C>['config']) {
 		super(config);
@@ -171,18 +279,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		return super.purge();
 	}
 
-	async runTests() {
-		const command = resolve(this.runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/mocha');
-		const testCommand = `${command} "src/test/**/*.test.ts" --require ts-node/register`;
-		await this.allocateCommando(Commando_NVM)
-			.cd(this.config.fullPath)
-			.append(testCommand)
-			.execute((stdout, stderr, exitCode) => {
-				if (exitCode !== 0)
-					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
-			});
-	}
-
 	async printDependencyTree() {
 		const CONST_RunningRoot = process.cwd();
 		this.logDebug(`Generating Dependency Tree - ${this.config.label}`);
@@ -214,9 +310,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		this.resolveESLintConfig();
 		return new Promise<void>(async (resolve, reject) => {
 			this.allocateCommando(Commando_NVM)
-				.cd('/Users/tacb0ss/dev/nu-art/beamz/_thunderstorm/build-and-install/src/test/units/lint/temp/workspace')
+				.cd(this.runtimeContext.parentUnit.config.fullPath)
 				.pwd()
-				.append(`./node_modules/.bin/eslint --debug ${pathToLint}`)
+				.append(`./node_modules/.bin/eslint ${pathToLint}`)
 				.execute((stdout, stderr, exitCode) => {
 					if (exitCode > 0)
 						return reject(new CommandoException(`Linting failed`, stdout, stderr, exitCode));

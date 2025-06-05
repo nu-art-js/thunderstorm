@@ -54,7 +54,6 @@ export const phase_Install: Phase<'install'> = {
 	key: phaseKey_Install,
 	name: 'Install',
 	method: 'install',
-	breakPhases: true,
 	filter: (baiParams) => baiParams.install || baiParams.installPackages || baiParams.installGlobals,
 	dependencyPhase: [phase_Prepare]
 };
@@ -84,7 +83,7 @@ export const phase_Compile: Phase<'compile'> = {
 	name: 'Compile',
 	method: 'compile',
 	filter: (baiParams) => !baiParams.noBuild,
-	dependencyPhase: [phase_PreCompile]
+	dependencyPhase: [phase_PreCompile],
 };
 
 export type Phase_CompileWatch = typeof phase_CompileWatch;
@@ -104,7 +103,6 @@ export const phase_Test: Phase<'runTests'> = {
 	name: 'Test',
 	method: 'runTests',
 	filter: (baiParams) => baiParams.test,
-	runUnitsInDependency: true,
 };
 
 export type Phase_Watch = typeof phase_Watch;
@@ -113,18 +111,14 @@ export const phase_Watch: Phase<'watch'> = {
 	key: phaseKey_Watch,
 	name: 'Watch',
 	method: 'watch',
-	breakPhases: true,
 	filter: (baiParams) => baiParams.watch,
 };
 
-export const phases_Build: Phase<string>[] = [
-	phase_Purge,
-	phase_Prepare,
-	phase_Install,
-	phase_Lint,
-	phase_PreCompile,
-	phase_Compile,
-	phase_Watch
+export const phases_Build: Phase<string>[][] = [
+	[phase_Purge, phase_Prepare],
+	[phase_Install],
+	[phase_Lint, phase_PreCompile, phase_Compile, phase_Test,],
+	[phase_Watch]
 ];
 
 //######################### Launch Phases #########################
@@ -150,7 +144,6 @@ export const phase_DeployFrontend: Phase<'deployFrontend'> = {
 	key: phaseKey_DeployFrontend,
 	name: 'Deploy Frontend',
 	method: 'deployFrontend',
-	breakPhases: true,
 	filter: (baiParams) => !!baiParams.deployFrontend,
 };
 
@@ -161,7 +154,6 @@ export const phase_DeployBackend: Phase<'deployBackend'> = {
 	name: 'Deploy Backend',
 	method: 'deployBackend',
 	filter: (baiParams) => !!baiParams.deployBackend,
-	breakPhases: true,
 };
 
 export const phases_Deploy: Phase<string>[] = [phase_DeployFrontend, phase_DeployBackend];

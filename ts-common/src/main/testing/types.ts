@@ -44,3 +44,9 @@ export type TestSuite<Input, ExpectedResult> = {
 	label: string,
 	timeout?: number,
 }
+
+
+export interface TestResetListener {
+	__resetForTests: () => Promise<any>;
+}
+

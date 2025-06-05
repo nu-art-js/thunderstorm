@@ -1,0 +1,26 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "_config": {
+      "frontend": {
+        ".read": true,
+        ".write": false
+      }
+    },
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
