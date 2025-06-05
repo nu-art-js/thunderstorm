@@ -204,7 +204,8 @@ export class ModuleFE_FocusedObject_Class
 	public getAccountIdsForFocusedItem = (dbKey: string, itemId: UniqueId, ignoreCurrentUser: boolean = true): UniqueId[] => {
 		const data = this.getFocusData(dbKey, itemId);
 		const userIds: UniqueId[] = data ? _keys(data) : [];
-		return ignoreCurrentUser ? userIds.filter(id => id !== ModuleFE_Account.accountId) : userIds;
+		const account = ModuleFE_Account.getCurrentlyLoggedAccount();
+		return ignoreCurrentUser ? userIds.filter(id => id !== account?._id) : userIds;
 	};
 
 	private translateCurrentlyFocusedToFocusedEntities = (): FocusedEntity[] => {
