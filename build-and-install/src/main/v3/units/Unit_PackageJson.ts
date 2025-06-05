@@ -6,6 +6,7 @@ import {resolve} from 'path';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils';
 import {TS_PackageJSON} from '../UnitsMapper/types';
 import {Phase_Prepare, Phase_Purge} from '../phase';
+import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 
 
 export type Unit_PackageJson_Config = Config_ProjectUnit & { packageJson: TS_PackageJSON; };
@@ -45,6 +46,16 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	async purge() {
 		await FileSystemUtils.file.delete(resolve(this.config.fullPath, CONST_PackageJSON));
 		await FileSystemUtils.folder.delete(resolve(this.config.fullPath, CONST_NodeModules));
+	}
+
+	protected async releasePorts(allPorts: string[]) {
+		const commando = this.allocateCommando(Commando_NVM).applyNVM();
+
+		await commando.setUID(this.config.key)
+			.append(`array=($(lsof -ti:${allPorts.join(',')}))`)
+			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
+			.append('echo ')
+			.execute();
 	}
 }
 

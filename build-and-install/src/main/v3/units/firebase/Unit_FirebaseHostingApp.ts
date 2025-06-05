@@ -68,7 +68,12 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	async launch() {
 		this.setStatus('Launching');
+		await this.releaseWebpackPorts();
 		await this.runApp();
+	}
+
+	async releaseWebpackPorts() {
+		return this.releasePorts([`${this.config.servingPort}`]);
 	}
 
 	async deployFrontend() {
@@ -141,10 +146,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 			.setLogLevelFilter((log, type) => {
 				if (log.toLowerCase().includes('<i>'))
 					return LogLevel.Info;
-			})
-			.append(`array=($(lsof -ti:${[this.config.servingPort].join(',')}))`)
-			.append(`((\${#array[@]} > 0)) && kill -9 "\${array[@]}"`)
-			.append('echo ');
+			});
 
 		await this.executeAsyncCommando(commando, 'npm run start');
 		this.logWarning('HOSTING TERMINATED');
