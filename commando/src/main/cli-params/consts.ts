@@ -1,4 +1,4 @@
-import {TypedMap} from '@nu-art/ts-common';
+import {exists, TypedMap} from '@nu-art/ts-common';
 import {CliParam} from './types';
 
 
@@ -8,7 +8,7 @@ export const DefaultProcessor_Boolean: CliParam<any, boolean>['process'] = (inpu
 
 export const DefaultProcessor_String: CliParam<any, string>['process'] = (input?: string, defaultValue?: string): string => {
 	if (!input || !input.length) {
-		if (!defaultValue)
+		if (!exists(defaultValue))
 			throw new Error('expected string value');
 
 		return defaultValue;
@@ -19,7 +19,7 @@ export const DefaultProcessor_String: CliParam<any, string>['process'] = (input?
 
 export const DefaultProcessor_Number: CliParam<any, number>['process'] = (input?: string, defaultValue?: number): number => {
 	if (!input) {
-		if (!defaultValue)
+		if (!exists(defaultValue))
 			throw new Error('expected number value');
 
 		return defaultValue;

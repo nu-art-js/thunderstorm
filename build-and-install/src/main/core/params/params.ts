@@ -176,12 +176,53 @@ export const BaiParam_Watch: BaseCliParam<'watch', boolean> = {
 	description: 'will build and listen for changes in the libraries'
 };
 
+export const BaiParam_WatchBuildTree: BaseCliParam<'watchBuildTree', boolean> = {
+	keys: ['--watchBuildTree', '-wbt'],
+	keyName: 'watchBuildTree',
+	type: 'boolean',
+	group: 'Build',
+	description: 'Once watch triggers, will build the entire tree that depends on the libs that changed',
+	dependencies: [{param: BaiParam_Watch, value: true}]
+};
+
 export const BaiParam_Test: BaseCliParam<'test', boolean> = {
 	keys: ['--test', '-t'],
 	keyName: 'test',
 	type: 'boolean',
 	group: 'Test',
 	description: 'Run the tests in all the project packages',
+};
+
+export const TestTypes = ['pure', 'firebase', 'ui', 'mobile'];
+export type TestType = typeof TestTypes[number];
+export const BaiParam_TestType: BaseCliParam<'testType', TestType[]> = {
+	keys: ['--test-type', '-tt'],
+	keyName: 'testType',
+	type: 'string[]',
+	isArray: true,
+	group: 'Test',
+	options: TestTypes,
+	description: 'Run the tests in all the project packages',
+	dependencies: [{param: BaiParam_Test, value: true}],
+};
+
+export const BaiParam_TestFile: BaseCliParam<'testFile', string[]> = {
+	keys: ['--test-file', '-tf'],
+	keyName: 'testFile',
+	type: 'string[]',
+	isArray: true,
+	group: 'Test',
+	description: 'Run the tests in all the project packages',
+	dependencies: [{param: BaiParam_Test, value: true}],
+};
+
+export const BaiParam_TestDebugPort: BaseCliParam<'testDebugPort', number> = {
+	keys: ['--test-debug', '-td'],
+	keyName: 'testDebugPort',
+	type: 'number',
+	group: 'Test',
+	description: 'If provided will connect a debugger on the specified port',
+	dependencies: [{param: BaiParam_Test, value: true}],
 };
 
 export const BaiParam_Launch: BaseCliParam<'launch', string> = {
@@ -277,13 +318,15 @@ export const BaiParam_QuickDeploy: BaseCliParam<'quickDeploy', boolean> = {
 	description: 'Will deploy both frontend & backend, without any other lifecycle action'
 };
 
-export const BaiParam_Publish: BaseCliParam<'publish', string> = {
+type PromoteType = 'patch' | 'minor' | 'major';
+export const BaiParam_Publish: BaseCliParam<'publish', PromoteType> = {
 	keys: ['--publish'],
 	keyName: 'publish',
 	type: 'string',
 	group: 'Other',
+	options: ['patch', 'minor', 'major'],
 	description: 'Will publish thunderstorm && promote thunderstorm version \nenum options: patch | minor | major \nDefault Param: patch',
-	process: (part) => part ?? 'patch'
+	process: (part) => part as PromoteType ?? 'patch'
 };
 
 export const BaiParam_AllLogs: BaseCliParam<'allLogs', boolean> = {
@@ -300,22 +343,6 @@ export const BaiParam_CloseScreenOnExit: BaseCliParam<'closeOnExit', boolean> = 
 	type: 'boolean',
 	group: 'UI',
 	description: 'will close all the fancy screens once process is done',
-};
-
-export const BaiParam_EncounterManager: BaseCliParam<'encounterManager', boolean> = {
-	keys: ['-em', '--encounter-manager'],
-	keyName: 'encounterManager',
-	type: 'boolean',
-	group: 'Other',
-	description: 'Will install encounter manager shit',
-};
-
-export const BaiParam_EncounterManagerListen: BaseCliParam<'encounterManagerListen', boolean> = {
-	keys: ['-eml', '--encounter-manager-listen'],
-	keyName: 'encounterManagerListen',
-	type: 'boolean',
-	group: 'Other',
-	description: 'Will install encounter manager shit and launch after advisor and km',
 };
 
 export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
@@ -354,7 +381,11 @@ export const AllBaiParams = [
 	BaiParam_NoThunderstorm,
 	BaiParam_Lint,
 	BaiParam_Watch,
-	BaiParam_Test,// TODO: to implement
+	BaiParam_WatchBuildTree,
+	BaiParam_Test,
+	BaiParam_TestType,
+	BaiParam_TestFile,
+	BaiParam_TestDebugPort,
 	BaiParam_Launch,
 	BaiParam_LaunchFrontend,// TODO: to implement
 	BaiParam_LaunchBackend,// TODO: to implement
@@ -367,8 +398,7 @@ export const AllBaiParams = [
 	BaiParam_Publish, // TODO: to implement
 	BaiParam_AllLogs,
 	BaiParam_CloseScreenOnExit,
-	BaiParam_EncounterManager,
-	BaiParam_EncounterManagerListen, BaiParam_UsePackage,
+	BaiParam_UsePackage,
 	BaiParam_DebugLifecycle
 ];
 

@@ -51,6 +51,7 @@ export const FileSystemUtils = {
 			return _fs.rm(pathToFile);
 		},
 		write: async (pathToFile: string, content: string) => {
+			await FileSystemUtils.folder.create(resolve(pathToFile, '..'));
 			return _fs.writeFile(pathToFile, content, 'utf-8');
 		},
 		read: async (pathToFile: string) => {

@@ -1,4 +1,4 @@
-import {addItemToArray, filterDuplicates, flatArray, Logger, removeItemFromArray, timeCounter} from '@nu-art/ts-common';
+import {addItemToArray, exists, flatArray, Logger, removeItemFromArray, timeCounter, TypedMap} from '@nu-art/ts-common';
 import {RunningStatusHandler} from './RunningStatusHandler';
 import {Phase} from './phase';
 import {BaseUnit} from './units';
@@ -18,20 +18,30 @@ export type ExecutionStep = {
 export class PhaseManager
 	extends Logger {
 	private readonly outputFolder: string;
-	private readonly phases: Phase<any>[];
+	private readonly phases: Phase<any>[][];
 	private readonly units: BaseUnit[][];
 	private runningUnits: BaseUnit[] = [];
 	private killed = false;
 	private runtimeParams: BaiParams;
 	private activeUnits: string[];
+	private readonly keyToPhaseMap: TypedMap<Phase<any>>;
 
-	constructor(outputFolder: string, phases: Phase<any>[], units: BaseUnit[][], runtimeParams: BaiParams) {
+	constructor(outputFolder: string, phases: Phase<any>[][], units: BaseUnit[][], runtimeParams: BaiParams) {
 		super();
 		this.outputFolder = outputFolder;
 		this.phases = phases;
 		this.units = units;
 		this.runtimeParams = runtimeParams;
-		const allUnits = filterDuplicates(flatArray(units), u => u.config.key);
+		const unitKeySet = new Set<string>();
+
+		const allUnits: BaseUnit[] = [];
+		for (const unit of flatArray(units)) {
+			if (unitKeySet.has(unit.config.key))
+				throw new Error(`Multiple units with same key: ${unit.config.key}`);
+			unitKeySet.add(unit.config.key);
+			allUnits.push(unit);
+		}
+
 		const usePackageKeys = this.runtimeParams.usePackage;
 		if (!usePackageKeys?.length)
 			this.activeUnits = allUnits.map(unit => unit.config.key);
@@ -39,30 +49,56 @@ export class PhaseManager
 			const regexMatchers = usePackageKeys.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
 			this.activeUnits = allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key);
 		}
+
+		this.keyToPhaseMap = flatArray(phases).reduce<TypedMap<Phase<any>>>((acc, phase) => {
+			acc[phase.key] = phase;
+			return acc;
+		}, {});
 	}
 
 	//######################### Initialization #########################
 
 	async calculateExecutionSteps(): Promise<ScheduledStep[]> {
 		const steps: ScheduledStep[] = [];
+		this.logDebug('Calculating execution steps for phases: ', this.phases.map(phases => phases.map(phase => phase.key)));
+		this.logDebug('Active Units: ', this.activeUnits);
 
-		for (const phase of this.phases) {
-			if (phase.filter && !(await phase.filter(this.runtimeParams)))
-				continue;
+		for (let phaseGroup of this.phases) {
+			phaseGroup = phaseGroup.filter(phase => !exists(phase.filter) || phase.filter(this.runtimeParams));
 
 			for (const layer of this.units) {
-				let eligibleUnits = layer.filter(u => phase.key in u && this.activeUnits.includes(u.config.key));
-
-				if (eligibleUnits.length === 0)
+				const layerUnits = layer.filter(u => this.activeUnits.includes(u.config.key));
+				if (layerUnits.length === 0)
 					continue;
 
-				steps.push({
-					phases: [phase.key],
-					units: eligibleUnits.map(u => u.config.key),
-				});
+				const phaseMap: Map<string, BaseUnit[]> = new Map();
+
+				for (const unit of layerUnits) {
+					const supportedPhases = phaseGroup.filter(phase => phase.key in unit);
+					if (supportedPhases.length === 0)
+						continue;
+
+					const key = phaseGroup
+						.filter(phase => supportedPhases.find(p => p.key === phase.key))
+						.map(p => p.key)
+						.join('|');
+
+					if (!phaseMap.has(key))
+						phaseMap.set(key, []);
+
+					phaseMap.get(key)!.push(unit);
+				}
+
+				for (const [phaseKeyCombo, groupedUnits] of phaseMap.entries()) {
+					steps.push({
+						phases: phaseKeyCombo.split('|'),
+						units: groupedUnits.map(u => u.config.key),
+					});
+				}
 			}
 		}
 
+		this.logVerbose('Calculated execution steps: ', steps);
 		return steps;
 	}
 
@@ -139,7 +175,7 @@ export class PhaseManager
 
 	private mapStep(scheduledStep: ScheduledStep): ExecutionStep {
 		const mappedPhases = scheduledStep.phases.map(phaseKey => {
-			const phase = this.phases.find(p => p.key === phaseKey);
+			const phase = this.keyToPhaseMap[phaseKey];
 			if (!phase)
 				throw new Error(`Phase '${phaseKey}' not found in PhaseManager.phases`);
 			return phase;

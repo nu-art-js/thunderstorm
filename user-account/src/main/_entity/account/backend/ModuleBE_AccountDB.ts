@@ -101,7 +101,6 @@ export class ModuleBE_AccountDB_Class
 		MemKey_AccountEmail.set(account.email!);
 		MemKey_AccountId.set(account._id);
 		MemKey_AccountType.set(account.type);
-
 	};
 
 	constructor() {

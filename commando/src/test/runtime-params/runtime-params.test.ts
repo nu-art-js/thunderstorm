@@ -51,6 +51,51 @@ export const Param_StringWithProcess: BaseCliParam<'stringWithProcess', string> 
 	}
 };
 
+export const Param_Environment: BaseCliParam<'env', string> = {
+	keys: ['--env', '-e'],
+	keyName: 'env',
+	type: 'string',
+	group: 'General',
+	description: 'Environment mode',
+	options: ['dev', 'staging', 'prod'],
+	defaultValue: 'dev',
+};
+
+export const Param_Number: BaseCliParam<'count', number> = {
+	keys: ['--count', '-c'],
+	keyName: 'count',
+	type: 'number',
+	group: 'General',
+	defaultValue: 0,
+	description: 'Count param'
+};
+
+export const Param_StringArray: BaseCliParam<'tags', string[]> = {
+	keys: ['--tags', '-t'],
+	keyName: 'tags',
+	type: 'string[]',
+	group: 'General',
+	description: 'Tags param',
+	isArray: true
+};
+
+export const Param_Test: BaseCliParam<'test', boolean> = {
+	keys: ['--test'],
+	keyName: 'test',
+	type: 'boolean',
+	description: 'Enable test mode',
+	defaultValue: false
+};
+
+export const Param_TestFile: BaseCliParam<'testFile', string> = {
+	keys: ['--test-file'],
+	keyName: 'testFile',
+	type: 'string',
+	description: 'Test file to run',
+	defaultValue: '',
+	dependencies: [{param: Param_Test, value: true}]
+};
+
 type Input = {
 	params: BaseCliParam<any, any>[]
 	input: string
@@ -198,4 +243,172 @@ describe('Runtime Params', () => {
 			result: {stringWithProcess: Param_StringWithProcess.defaultValue},
 		}
 	));
+});
+
+
+describe('Runtime Params - Param_Number', () => {
+	it('GPT - Parse number from short flag', runTestCase({
+		input: {
+			params: [Param_Number],
+			input: '-c=42',
+		},
+		result: {count: 42},
+	}));
+
+	it('GPT - Parse number from long flag', runTestCase({
+		input: {
+			params: [Param_Number],
+			input: '--count=17',
+		},
+		result: {count: 17},
+	}));
+
+	it('GPT - Use default number value when flag missing', runTestCase({
+		input: {
+			params: [Param_Number],
+			input: '',
+		},
+		result: {count: 0},
+	}));
+});
+
+
+describe('Runtime Params - Param_StringArray', () => {
+	it('GPT - Parse array with repeated long flag', runTestCase({
+		input: {
+			params: [Param_StringArray],
+			input: '--tags=dev --tags=qa --tags=prod',
+		},
+		result: {tags: ['dev', 'qa', 'prod']},
+	}));
+
+	it('GPT - Parse array with repeated short flag', runTestCase({
+		input: {
+			params: [Param_StringArray],
+			input: '-t=staging -t=integration',
+		},
+		result: {tags: ['staging', 'integration']},
+	}));
+
+	it('GPT - Empty input results in undefined', runTestCase({
+		input: {
+			params: [Param_StringArray],
+			input: '',
+		},
+		result: {},
+	}));
+});
+
+
+describe('Runtime Params - Param_Environment (enum)', () => {
+	it('GPT - Parse allowed enum value', runTestCase({
+		input: {
+			params: [Param_Environment],
+			input: '--env=prod',
+		},
+		result: {env: 'prod'},
+	}));
+
+	it('GPT - Use default enum when not specified', runTestCase({
+		input: {
+			params: [Param_Environment],
+			input: '',
+		},
+		result: {env: 'dev'},
+	}));
+
+	it('GPT - Parse short flag for enum', runTestCase({
+		input: {
+			params: [Param_Environment],
+			input: '-e=staging',
+		},
+		result: {env: 'staging'},
+	}));
+
+	it('GPT - Invalid enum value falls back to default', runTestCase({
+		input: {
+			params: [Param_Environment],
+			input: '--env=invalid',
+		},
+		error: {expected: 'value not supported'}
+	}));
+});
+
+
+describe('Runtime Params - Failures and Edge Cases', () => {
+	it('GPT - Unknown flag is ignored', runTestCase({
+		input: {
+			params: [Param_Number],
+			input: '--unknown=value',
+		},
+		result: {count: 0},
+	}));
+
+	it('GPT - Repeated conflicting values take last (string)', runTestCase({
+		input: {
+			params: [Param_String],
+			input: '--string=a --string=b --string=c',
+		},
+		result: {string: 'c'},
+	}));
+
+	it('GPT - Repeated conflicting values take last (number)', runTestCase({
+		input: {
+			params: [Param_Number],
+			input: '--count=3 --count=8 --count=22',
+		},
+		result: {count: 22},
+	}));
+
+	it('GPT - Missing value for number param uses default', runTestCase({
+		input: {
+			params: [Param_Number],
+			input: '--count',
+		},
+		result: {count: 0},
+	}));
+
+	it('GPT - Malformed input for number param is ignored', runTestCase({
+		input: {
+			params: [Param_Number],
+			input: '--count=not-a-number',
+		},
+		error: {expected: 'expected number value'}
+	}));
+});
+
+describe('Runtime Params - Derived Dependency Resolution', () => {
+
+	it('GPT - testFile sets test=true implicitly via dependency', runTestCase({
+		input: {
+			params: [Param_Test, Param_TestFile],
+			input: '--test-file=index.ts'
+		},
+		result: {
+			test: true,
+			testFile: 'index.ts'
+		}
+	}));
+
+	it('GPT - testFile and test explicitly provided', runTestCase({
+		input: {
+			params: [Param_Test, Param_TestFile],
+			input: '--test --test-file=index.ts'
+		},
+		result: {
+			test: true,
+			testFile: 'index.ts'
+		}
+	}));
+
+	it('GPT - test not set when testFile not used', runTestCase({
+		input: {
+			params: [Param_Test, Param_TestFile],
+			input: ''
+		},
+		result: {
+			test: false,
+			testFile: ''
+		}
+	}));
 });
