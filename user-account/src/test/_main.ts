@@ -18,22 +18,3 @@
 
 export * from '../main';
 export * from '../main/backend';
-
-
-// class MyClass {
-// 	public f() {
-// 		this.func('8');
-// 	}
-//
-// 	private func(param: string): number {
-// 		return 0;
-// 	}
-// }
-//
-// export function extractPrivateMethod<T extends object, F extends T[K] & ((...args: any[]) => any)>(instance: T, methodName: ): F {
-// 	return (instance as any)[methodName] as F;
-// }
-//
-// const myClass = new MyClass();
-// const callable = extractPrivateMethod(myClass, 'func');
-//
