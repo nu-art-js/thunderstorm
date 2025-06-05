@@ -60,7 +60,7 @@ export const defaultTestProcessor: DefaultTestProcessor = async (promisedResult,
 
 	const result = await promisedResult;
 	if (typeof expectedResult === 'function')
-		return await (expectedResult as () => Promise<any>)();
+		return await (expectedResult as (result: any) => Promise<any>)(result);
 
 	expect(result).to.deep.equal(expectedResult);
 };

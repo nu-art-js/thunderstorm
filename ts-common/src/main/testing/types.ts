@@ -28,11 +28,12 @@ export type TestModel<Input, ExpectedResult> = ResolvableContent<
 		description?: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
 		input: Input,
 	} &
-	({ result: ExpectedResult } |
+	({ result: ExpectedResult | ((result: ExpectedResult) => Promise<any>)} |
 	 {
 		 error: { expected: string | RegExp, message?: string, constructor?: Error | Function }
 	 })
 >
+
 
 export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, ExpectedResult>) => void | Promise<void>;
 
