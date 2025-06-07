@@ -34,11 +34,15 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 			if (!cliParamToResolve)
 				return output;
 
-			const value = inputParam.split('=')[1];
+			let value = inputParam.split('=')[1];
+			if (value && value.startsWith('"') && value.endsWith('"')) {
+				value = value.slice(1, -1);
+				value = value.replace(/\\"/g, '"');
+			}
 			const finalValue = cliParamToResolve.process(value, cliParamToResolve.defaultValue);
 
 			// validate options if exits
-			if (cliParamToResolve.options && !cliParamToResolve.options.includes(value))
+			if (cliParamToResolve.options && !cliParamToResolve.options.includes(finalValue))
 				throw new Error(`value not supported for param: ${cliParamToResolve.name}, supported values: ${cliParamToResolve.options.join(', ')}`);
 
 			const key = cliParamToResolve.keyName as Key;
@@ -65,8 +69,8 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 			return output;
 		}, {} as Output);
 
-		this.params.filter(param => exists(param.defaultValue) && !exists(runtimeParams[param.keyName as Key])).forEach(param => {
-			runtimeParams[param.keyName as Key] = param.defaultValue;
+		this.params.filter(param => exists(param.initialValue) && !exists(runtimeParams[param.keyName as Key])).forEach(param => {
+			runtimeParams[param.keyName as Key] = param.initialValue;
 		});
 
 		return runtimeParams;

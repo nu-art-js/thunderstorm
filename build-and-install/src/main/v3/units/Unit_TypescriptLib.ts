@@ -43,38 +43,29 @@ const defaultTestPatterns: Record<TestType, string> = {
 	mobile: '**/*.test.mobile.ts'
 };
 
-const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext, commando: Commando_NVM) => Promise<void>> = {
-	pure: async (config, runtimeContext, commando) => {
+const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<string>> = {
+	pure: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
-		const testFile = runtimeContext.runtimeParams.testFile;
+		const testFile = runtimeContext.runtimeParams.testFiles;
 		const grep = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` '${defaultTestPatterns.pure}'`;
 
-		const testCommand = `${command} -p src/test/tsconfig.json --timeout 0 ${grep}`;
-		await commando
-			.cd(config.fullPath)
-			.append(testCommand)
-			.execute((stdout, stderr, exitCode) => {
-				if (exitCode !== 0)
-					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
-			});
+		return `${command} -p src/test/tsconfig.json --timeout 0 ${grep}`;
 	},
-	firebase: async (config, runtimeContext, commando) => {
+	firebase: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
-		const testFile = runtimeContext.runtimeParams.testFile;
-		const testsPattern = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` 'src/test/${defaultTestPatterns.firebase}'`;
-		const debugPort = runtimeContext.runtimeParams.testDebugPort
-			? ` --inspect=${runtimeContext.runtimeParams.testDebugPort} --w -watch-files ${testsPattern}`
-			: '';
+		const files = runtimeContext.runtimeParams.testFiles ?? [`src/test/${defaultTestPatterns.firebase}`].map(file => `'${file}'`);
+		const testCases = runtimeContext.runtimeParams.testCases;
+		const cli_testFiles = ` ${files.join(' ')}`;
+		const cli_testCases = testCases ? ` --grep '${testCases.join('|')}'` : '';
+		const cli_watchFiles = files.map(file => `-watch-files '${file}'`).join(' ');
+
+		const debugPort = runtimeContext.runtimeParams.testDebugPort;
+		const cli_debug = debugPort ? ` --inspect=${debugPort} -w ${cli_watchFiles}` : '';
+
 		// const pah = 'ts-mocha  --timeout 0 --inspect=8107 --watch-files \'src/test/**/*.test.ts\' src/test/**/*.test.ts';
-		const functionContextCommand = `${command} -p src/test/tsconfig.json --timeout 0 ${debugPort}${testsPattern}`;
-		const testCommand = `firebase emulators:exec "${functionContextCommand}"`;
-		await commando
-			.cd(config.fullPath)
-			.append(testCommand)
-			.execute((stdout, stderr, exitCode) => {
-				if (exitCode !== 0)
-					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
-			});
+
+		const functionContextCommand = `${command} -p src/test/tsconfig.json --timeout 0 ${cli_debug}${cli_testFiles}${cli_testCases}`;
+		return `firebase emulators:exec "${functionContextCommand}"`;
 	},
 	ui: async () => {
 		throw new NotImplementedYetException('UI tests not implemented yet');
@@ -148,7 +139,14 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			}
 
 			await this.TestTypeWorkspaceSetup[testType](this.config, this.runtimeContext);
-			await TestsCommandComposer[testType](this.config, this.runtimeContext, this.allocateCommando(Commando_NVM));
+			const commando = this.allocateCommando(Commando_NVM)
+				.cd(this.config.fullPath);
+
+			const testCommand = await TestsCommandComposer[testType](this.config, this.runtimeContext);
+			await this.executeAsyncCommando(commando, testCommand, (stdout, stderr, exitCode) => {
+				if (exitCode !== 0)
+					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
+			});
 		}
 	}
 

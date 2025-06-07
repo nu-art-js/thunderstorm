@@ -44,6 +44,7 @@ const test = async (input: Input) => {
 	return true;
 };
 
+
 const runTestCase = (testCase: TestCase_AccountRegister) => async () => runSingleTestCase(test, testCase);
 
 describe('Accounts - Register', () => {
@@ -112,4 +113,5 @@ describe('Accounts - Register', () => {
 		await stormTest.cleanup();
 	});
 });
+
 

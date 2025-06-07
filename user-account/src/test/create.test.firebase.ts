@@ -88,6 +88,7 @@ describe('Accounts - Create', () => {
 				type: 'user'
 			}
 		},
+
 		error: {expected: '400-"Did not receive'}
 	}));
 

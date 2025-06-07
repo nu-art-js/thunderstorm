@@ -15,6 +15,7 @@ import {PhaseManager} from '../PhaseManager';
 import {phase_CompileWatch, Phase_Install, Phase_Watch} from '../phase';
 import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper';
 import {BaseUnit} from './BaseUnit';
+import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
@@ -61,38 +62,6 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		Object.freeze(this.innerUnits);
 	}
 
-	private async installGlobals() {
-		let packages: string[] = _keys(this.config.globalPackages ?? {} as StringMap);
-		if ((!this.runtimeContext.runtimeParams.install && !this.runtimeContext.runtimeParams.installGlobals) || !packages.length)
-			return;
-
-		packages = packages
-			.reduce((acc, pkg) => {
-				acc.push(`${pkg as string}@${this.config.globalPackages![pkg as string]}`);
-				return acc;
-			}, [] as string[]);
-
-		this.logInfo(`Installing Global Packages: ${packages.join(' ')}`);
-		await this.allocateCommando(Commando_NVM)
-			.append(`npm i -g ${packages.join(' ')}`)
-			.execute();
-	}
-
-	async installPackages() {
-		if (!this.runtimeContext.runtimeParams.install && !this.runtimeContext.runtimeParams.installPackages)
-			return;
-
-		this.setStatus('Installing packages', 'start');
-		const units = this.innerUnits.filter(unit => unit.isInstanceOf(Unit_TypescriptLib)) as Unit_TypescriptLib[];
-		const packages = units.map(unit => unit.config.relativePath);
-		await PNPM.createWorkspace(packages, this.config.fullPath);
-		const commando = this.allocateCommando(Commando_NVM, Commando_PNPM);
-		commando.cd(this.config.fullPath);
-		await PNPM.installPackages(commando);
-		this.setStatus('Installed packages', 'end');
-	}
-
-
 	/**
 	 * Resolve all paths to watch in all project libs
 	 * @private
@@ -128,8 +97,20 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 	//######################### Phase Implementation #########################
 
 	async install() {
-		await this.installGlobals();
-		await this.installPackages();
+		if (!this.runtimeContext.runtimeParams.install)
+			return;
+
+		const units = this.innerUnits.filter(unit => unit.isInstanceOf(Unit_TypescriptLib)) as Unit_TypescriptLib[];
+		const packages = units.map(unit => unit.config.relativePath);
+		await PNPM.createWorkspace(packages, this.config.fullPath);
+		const commando = this.allocateCommando(Commando_NVM, Commando_PNPM)
+			.cd(this.config.fullPath)
+			.append(`pnpm store prune`);
+
+		await this.executeAsyncCommando(commando, `pnpm install -f --no-frozen-lockfile --prefer-offline false`, (stdout, stderr, exitCode) => {
+			if (exitCode !== 0)
+				throw new CommandoException(`Error installing packages`, stdout, stderr, exitCode);
+		});
 	}
 
 	async watch(timeout = 2 * Second, maxTimeout = 10 * Second) {

@@ -86,6 +86,19 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 		}
 	}
 
+	async executeCommando<T>(commando: CommandoInteractive, action: (commando: CommandoInteractive) => Promise<T>) {
+		const terminatable = () => {
+			this.logError('KILLLLLLING');
+			return commando.kill();
+		};
+		try {
+			this.registerTerminatable(terminatable);
+			return action(commando);
+		} finally {
+			this.unregisterTerminatable(terminatable);
+		}
+	}
+
 	//######################### Internal Logic #########################
 
 	private initLogClient() {
