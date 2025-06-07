@@ -3,6 +3,7 @@ import {BadImplementationException} from '@nu-art/ts-common';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {BaseCliParam, CliParams} from '../../main/cli-params/types';
 import {CLIParamsResolver} from '../../main/cli-params/CLIParamsResolver';
+import stringArgv from 'string-argv';
 
 export const Param_Help: BaseCliParam<'help', boolean> = {
 	keys: ['--help', '-h'],
@@ -58,7 +59,8 @@ export const Param_Environment: BaseCliParam<'env', string> = {
 	group: 'General',
 	description: 'Environment mode',
 	options: ['dev', 'staging', 'prod'],
-	defaultValue: 'dev',
+	initialValue: 'dev',
+	defaultValue: 'staging',
 };
 
 export const Param_Number: BaseCliParam<'count', number> = {
@@ -66,7 +68,7 @@ export const Param_Number: BaseCliParam<'count', number> = {
 	keyName: 'count',
 	type: 'number',
 	group: 'General',
-	defaultValue: 0,
+	initialValue: 0,
 	description: 'Count param'
 };
 
@@ -84,7 +86,7 @@ export const Param_Test: BaseCliParam<'test', boolean> = {
 	keyName: 'test',
 	type: 'boolean',
 	description: 'Enable test mode',
-	defaultValue: false
+	initialValue: false
 };
 
 export const Param_TestFile: BaseCliParam<'testFile', string> = {
@@ -92,13 +94,12 @@ export const Param_TestFile: BaseCliParam<'testFile', string> = {
 	keyName: 'testFile',
 	type: 'string',
 	description: 'Test file to run',
-	defaultValue: '',
 	dependencies: [{param: Param_Test, value: true}]
 };
 
 type Input = {
 	params: BaseCliParam<any, any>[]
-	input: string
+	input: string | string[]
 }
 type Result = Partial<CliParams<any>>
 type TestSuite_RuntimeParams2 = TestSuite<Input, Result>;
@@ -107,7 +108,13 @@ type TestCase_RuntimeParams = TestSuite_RuntimeParams2['testcases'][number];
 
 const test = async (input: Input): Promise<Result> => {
 	const paramsDef = input.params;
-	const inputParams = input.input.split(' ');
+
+	let inputParams: string[];
+	if (typeof input.input === 'string')
+		inputParams = stringArgv(input.input);
+	else
+		inputParams = input.input;
+
 	return CLIParamsResolver.create(...paramsDef).resolveParamValue(inputParams);
 };
 
@@ -195,6 +202,14 @@ describe('Runtime Params', () => {
 			result: {string: 'final-value'},
 		}
 	));
+	it('"value with spaces"', runTestCase({
+			input: {
+				params: [Param_String],
+				input: ['-s=Value with spaces']
+			},
+			result: {string: 'Value with spaces'},
+		}
+	));
 	it('take last value of all appearances of string param full flag', runTestCase({
 			input: {
 				params: [Param_String],
@@ -216,7 +231,15 @@ describe('Runtime Params', () => {
 				params: [Param_String],
 				input: '-s'
 			},
-			result: {string: Param_StringWithProcess.defaultValue},
+			result: {string: Param_String.defaultValue},
+		}
+	));
+	it('test string param with default value but the argument was not specified', runTestCase({
+			input: {
+				params: [Param_String],
+				input: ''
+			},
+			result: {},
 		}
 	));
 	it('test string param with default value - 2', runTestCase({
@@ -317,6 +340,14 @@ describe('Runtime Params - Param_Environment (enum)', () => {
 		result: {env: 'dev'},
 	}));
 
+	it('GPT - Use default enum when not specified', runTestCase({
+		input: {
+			params: [Param_Environment],
+			input: '--env',
+		},
+		result: {env: 'staging'},
+	}));
+
 	it('GPT - Parse short flag for enum', runTestCase({
 		input: {
 			params: [Param_Environment],
@@ -365,6 +396,14 @@ describe('Runtime Params - Failures and Edge Cases', () => {
 			params: [Param_Number],
 			input: '--count',
 		},
+		error: {expected: 'expected number value'}
+	}));
+
+	it('GPT - Missing value for number param uses default', runTestCase({
+		input: {
+			params: [{...Param_Number, defaultValue: 0}],
+			input: '--count',
+		},
 		result: {count: 0},
 	}));
 
@@ -408,7 +447,6 @@ describe('Runtime Params - Derived Dependency Resolution', () => {
 		},
 		result: {
 			test: false,
-			testFile: ''
 		}
 	}));
 });

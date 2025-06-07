@@ -49,7 +49,7 @@ export const BaiParam_SetEnv: BaseCliParam<'environment', string> = {
 	keyName: 'environment',
 	type: 'string',
 	group: 'Build',
-	defaultValue: 'local',
+	initialValue: 'local',
 	description: 'Will set the .config-${environment}.json as the current .config.json and prepare it as base 64 for local usage \ninput required: envName(string)'
 };
 
@@ -206,13 +206,23 @@ export const BaiParam_TestType: BaseCliParam<'testType', TestType[]> = {
 	dependencies: [{param: BaiParam_Test, value: true}],
 };
 
-export const BaiParam_TestFile: BaseCliParam<'testFile', string[]> = {
+export const BaiParam_TestFile: BaseCliParam<'testFiles', string[]> = {
 	keys: ['--test-file', '-tf'],
-	keyName: 'testFile',
+	keyName: 'testFiles',
 	type: 'string[]',
 	isArray: true,
 	group: 'Test',
-	description: 'Run the tests in all the project packages',
+	description: 'Run the specified test files',
+	dependencies: [{param: BaiParam_Test, value: true}],
+};
+
+export const BaiParam_TestCase: BaseCliParam<'testCases', string[]> = {
+	keys: ['--test-case', '-tc'],
+	keyName: 'testCases',
+	type: 'string[]',
+	isArray: true,
+	group: 'Test',
+	description: 'Run only the specified test cases',
 	dependencies: [{param: BaiParam_Test, value: true}],
 };
 
@@ -221,7 +231,8 @@ export const BaiParam_TestDebugPort: BaseCliParam<'testDebugPort', number> = {
 	keyName: 'testDebugPort',
 	type: 'number',
 	group: 'Test',
-	description: 'If provided will connect a debugger on the specified port',
+	defaultValue: 8001,
+	description: 'If provided will allow a debugger connection on the specified port, and will run the tests in watch mode',
 	dependencies: [{param: BaiParam_Test, value: true}],
 };
 
@@ -385,6 +396,7 @@ export const AllBaiParams = [
 	BaiParam_Test,
 	BaiParam_TestType,
 	BaiParam_TestFile,
+	BaiParam_TestCase,
 	BaiParam_TestDebugPort,
 	BaiParam_Launch,
 	BaiParam_LaunchFrontend,// TODO: to implement
