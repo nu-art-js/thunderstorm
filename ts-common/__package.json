@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-common",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "js and ts infra",
   "keywords": [
     "TacB0sS",
@@ -32,7 +32,7 @@
     "run-tests": "ts-mocha --timeout 50000 -p src/test/tsconfig.json src/test/run-all-tests.ts"
   },
   "dependencies": {
-    "fast-csv": "^4.3.6",
+    "fast-csv": "^5.0.2",
     "export-to-csv": "0.2.1",
     "moment": "$MOMENT_PKG_VERSION",
     "node-forge": "^1.2.1",
@@ -48,5 +48,8 @@
   "_moduleAliases": {
     "@main": "dist/main/ts",
     "@test": "dist/test/ts"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

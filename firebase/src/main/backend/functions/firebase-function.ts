@@ -15,18 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {EventContext, RuntimeOptions} from 'firebase-functions';
-
-import {Express, Request, Response} from 'express';
+import {Express} from 'express';
 import {addItemToArray, StringMap} from '@nu-art/ts-common';
 import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
 import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
 
-
-export interface LocalRequest
-	extends Request {
-	rawBody: Buffer;
-}
 
 export interface TBR_ExpressFunctionInterface {
 	getExpressFunction(): Firebase_ExpressFunction;
@@ -69,9 +62,9 @@ export class Firebase_ExpressFunction
 		if (this.function)
 			return this.function;
 
-		const realFunction: HttpsFunction = onRequest(Firebase_ExpressFunction.config, this.express as (request: LocalRequest, response: Response) => void | Promise<void>);
-		return this.function = onRequest(Firebase_ExpressFunction.config, (req: LocalRequest, res: Response) => {
-			if (this.isReady) { // @ts-ignore
+		const realFunction: HttpsFunction = onRequest(Firebase_ExpressFunction.config, this.express);
+		return this.function = onRequest(Firebase_ExpressFunction.config, (req, res) => {
+			if (this.isReady) {
 				return realFunction(req, res);
 			}
 
@@ -100,17 +93,15 @@ export class Firebase_ExpressFunction
 }
 
 export type FirestoreConfigs = {
-	runTimeOptions?: RuntimeOptions,
+	runTimeOptions?: HttpsOptions,
 	configs: any
 }
 
 export type BucketConfigs = {
-	runtimeOpts?: RuntimeOptions
+	runtimeOpts?: HttpsOptions
 	path: string
 	bucketName?: string
 }
-
-export type FirebaseEventContext = EventContext;
 
 export type TopicMessage = { data: string, attributes: StringMap };
 

@@ -25,6 +25,8 @@ import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword";
 import {readFileSync} from 'fs';
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
+import {TestResetListener} from '@nu-art/ts-common/testing/types';
+import {deleteApp, getApps} from 'firebase-admin/app';
 
 
 type ConfigType = {
@@ -34,9 +36,9 @@ type ConfigType = {
 export const FIREBASE_DEFAULT_PROJECT_ID = 'local';
 
 export class ModuleBE_Firebase_Class
-	extends Module<ConfigType> {
+	extends Module<ConfigType>
+	implements TestResetListener {
 
-	// private readonly tokenSessions: { [s: string]: FirebaseSession_UserPassword; } = {};
 	private readonly adminSessions: { [s: string]: FirebaseSession_Admin; } = {};
 
 	constructor() {
@@ -44,6 +46,14 @@ export class ModuleBE_Firebase_Class
 	}
 
 	protected init(): void {
+	}
+
+	async __resetForTests() {
+		this.logWarning('__resetForTests');
+
+		for (const key in this.adminSessions)
+			delete this.adminSessions[key];
+		await Promise.all(getApps().map(app => deleteApp(app)));
 	}
 
 	public createAdminSession(authKey: string = FIREBASE_DEFAULT_PROJECT_ID) {

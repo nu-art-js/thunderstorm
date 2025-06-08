@@ -61,7 +61,7 @@ export const RuntimeEnvironment = () => ModuleManager.instance.getEnvironment();
 export class ModuleManager
 	extends Logger {
 
-	protected config!: any;
+	protected config: any = {};
 	readonly modules = modulesInterface;
 	public static instance: ModuleManager;
 	readonly version?: string;
@@ -76,7 +76,7 @@ export class ModuleManager
 	}
 
 	// @ts-ignore
-	private static resetForTests() {
+	private static __resetForTests() {
 		_modules.length = 0;
 		// @ts-ignore
 		delete ModuleManager.instance;
@@ -122,9 +122,10 @@ export class ModuleManager
 			// @ts-ignore
 			module.setManager(this);
 
-			if (this.config)
+			const moduleConfig = this.config[module.getName()];
+			if (this.config && exists(moduleConfig))
 				// @ts-ignore
-				module.setConfig(this.config[module.getName()]);
+				module.setConfig(moduleConfig);
 		});
 
 		this.modules.forEach((module: Module) => {

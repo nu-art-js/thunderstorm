@@ -17,6 +17,7 @@ export const tsValidateMustExist = tsValidateExists();
 export const tsValidateOptional = tsValidateExists(false);
 
 export const dbIdLength = 32;
+export const dbRefIdLength = 128;
 
 export const tsValidateId = (length: number, mandatory: boolean = true) => tsValidateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
 export const tsValidateEmail = tsValidateRegexp(
@@ -53,6 +54,7 @@ export const tsValidator_LowercaseStringWithDashes = tsValidateRegexp(/^[a-z-.]+
 export const tsValidator_LowerUpperStringWithSpaces = tsValidateRegexp(/^[A-Za-z ]+$/);
 export const tsValidator_LowerUpperStringWithDashesAndUnderscore = tsValidateRegexp(/^[A-Za-z-_]+$/);
 export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9] ?){6,14}[0-9]$/);
+export const tsValidator_DB_RefId = tsValidateId(dbRefIdLength);
 
 export const tsValidator_AuditableV2: ValidatorTypeResolver<AuditableV2> = {_auditorId: tsValidateString()};
 
