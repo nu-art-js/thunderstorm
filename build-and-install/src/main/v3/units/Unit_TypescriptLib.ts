@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
 import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, NotImplementedYetException} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
+import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
@@ -92,16 +92,26 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			if (!pathToTestsFirebaseRC)
 				throw new ImplementationMissingException('Missing default .firebaserc file in tests.firebase');
 
-			await FileSystemUtils.file.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseRC), resolve(config.fullPath, CONST_FirebaseRC));
+			const pathToProjectRoot = runtimeContext.parentUnit.config.fullPath;
+			await FileSystemUtils.file.copy(resolve(pathToProjectRoot, pathToTestsFirebaseRC), resolve(config.fullPath, CONST_FirebaseRC));
 			const ports = [
 				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 1}`,
 				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 2}`,
 				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 3}`
 			];
-			await FileSystemUtils.file.template.copy(resolve(runtimeContext.parentUnit.config.fullPath, pathToTestsFirebaseJson), resolve(config.fullPath, CONST_FirebaseJSON), {
+
+
+			const firebaseConfigFiles = runtimeContext.baiConfig.files?.firebase;
+			if (!firebaseConfigFiles)
+				throw new ImplementationMissingException(`Missing firebase config files in ${CONST_BaiConfig}`);
+
+			await FileSystemUtils.file.template.copy(resolve(pathToProjectRoot, pathToTestsFirebaseJson), resolve(config.fullPath, CONST_FirebaseJSON), {
 				FIREBASE_RTDB_PORT: ports[0],
 				FIRESTORE_PORT: ports[1],
 				FIRESTORE_WEBSOCKET_PORT: ports[2],
+				FIREBASE_DATABASE_RULES: resolve(pathToProjectRoot, firebaseConfigFiles.databaseRules!),
+				FIREBASE_FIRESTORE_RULES: resolve(pathToProjectRoot, firebaseConfigFiles.firestoreRules!),
+				FIREBASE_FIRESTORE_INDICES: resolve(pathToProjectRoot, firebaseConfigFiles.firestoreIndexesRules!),
 			}, DEFAULT_TEMPLATE_PATTERN);
 
 			await this.releasePorts(ports);
