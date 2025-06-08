@@ -2,15 +2,22 @@ import {promises as _fs} from 'fs';
 import {resolve} from 'path';
 import {BadImplementationException, exists, StringMap} from '@nu-art/ts-common';
 
+
+async function isFile(path: string) {
+	return (await _fs.stat(path)).isFile();
+}
+
+async function isFolder(path: string) {
+	return (await _fs.stat(path)).isDirectory();
+}
+
 async function assertFile(path: string) {
-	const stat = await _fs.stat(path);
-	if (!stat.isFile())
+	if (!(await isFile(path)))
 		throw new BadImplementationException(`Expected file but found directory or non-file: ${path}`);
 }
 
 async function assertFolder(path: string) {
-	const stat = await _fs.stat(path);
-	if (!stat.isDirectory())
+	if (!(await isFolder(path)))
 		throw new BadImplementationException(`Expected folder but found file or non-directory: ${path}`);
 }
 
@@ -115,7 +122,33 @@ export const FileSystemUtils = {
 			if (await fileExists(pathToFolder))
 				return assertFolder(pathToFolder);
 			return _fs.mkdir(pathToFolder, {recursive: true});
-		}
+		},
+		list: Object.assign(async (pathToFolder: string) => {
+			return await _fs.readdir(pathToFolder);
+		}, {
+			forEach: Object.assign(async (pathToFolder: string, callback: (path: string) => Promise<any>) => {
+				const entries = await _fs.readdir(pathToFolder);
+				for (const entry of entries)
+					await callback(resolve(pathToFolder, entry));
+			}, {
+				file: async (pathToFolder: string, callback: (path: string) => Promise<any>) => {
+					await FileSystemUtils.folder.list.forEach(pathToFolder, async entry => {
+						if (!await isFile(entry))
+							return;
+
+						await callback(entry);
+					});
+				},
+				folder: async (pathToFolder: string, callback: (path: string) => Promise<any>) => {
+					await FileSystemUtils.folder.list.forEach(pathToFolder, async entry => {
+						if (!await isFolder(entry))
+							return;
+
+						await callback(entry);
+					});
+				}
+			})
+		})
 	},
 	symlink: {
 		create: async (targetPath: string, linkPath: string) => {
