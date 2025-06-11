@@ -9,7 +9,7 @@
     "build": "tsc"
   },
   "publishConfig": {
-    "directory": "",
+    "directory": "dist",
     "linkDirectory": true
   },
   "dependencies": {
