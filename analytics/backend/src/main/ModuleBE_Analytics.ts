@@ -1,47 +1,36 @@
 import {Module} from '@nu-art/ts-common';
-import {TSAnalyticsPlugin} from './plugins/types';
-import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
-import {TSAnalyticsEvent} from '@nu-art/analytics-shared/src/main';
-
-type Config = {
-	eventsBulkSize?: number;
-};
+import {AnalyticsPanel_Base} from './plugins/AnalyticsPanel_Base';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
+import {Analytics_SendEvent, ApiDef_Analytics} from '@nu-art/analytics-shared';
 
 class ModuleBE_Analytics_Class
-	extends Module<Config> {
+	extends Module {
 
-	private readonly plugins: Map<string, TSAnalyticsPlugin> = new Map();
-	private sendQueue!: QueueV2<TSAnalyticsEvent>;
+	private readonly plugins: Map<string, AnalyticsPanel_Base> = new Map();
 
 	protected init() {
 		super.init();
-		this.sendQueue = new QueueV2('ts-analytics', this.queueRunner);
+		addRoutes([
+			createBodyServerApi(ApiDef_Analytics._v1.sendEvent, this.api_sendEvent),
+		]);
 	}
 
 	//######################### Plugin Management #########################
 
-	public addPlugin(plugin: TSAnalyticsPlugin) {
+	public addPlugin(plugin: AnalyticsPanel_Base) {
 		this.plugins.set(plugin.key, plugin);
 	}
 
-	public removePlugin(plugin: TSAnalyticsPlugin) {
+	public removePlugin(plugin: AnalyticsPanel_Base) {
 		this.plugins.delete(plugin.key);
 	}
 
-	//######################### Queue Management #########################
-
-	private queueRunner = async (event: TSAnalyticsEvent) => {
-		const plugins = Array.from(this.plugins.values());
-		await Promise.all(plugins.map(async plugin => {
-			return plugin.send(event);
-		}));
-	};
-
-	public addEventToQueue = (event: TSAnalyticsEvent) => {
-		this.sendQueue.addItem(event);
-	};
-
 	//######################### API Callbacks #########################
+
+	private api_sendEvent = async (request: Analytics_SendEvent['request']): Promise<Analytics_SendEvent['response']> => {
+		this.plugins.forEach(plugin => {
+		})
+	};
 }
 
 export const ModuleBE_Analytics = new ModuleBE_Analytics_Class();
