@@ -1,4 +1,4 @@
-import {tsValidateExists, Validator, ValidatorTypeResolver} from './validator-core';
+import {tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
 import {tsValidateArray, tsValidateBoolean, tsValidateRegexp, tsValidateString, tsValidateTimestamp, tsValidateValue} from './type-validators';
 import {AuditableV2, DBPointer} from '../utils/types';
 import {DBDef_V3} from '../db/types';
@@ -36,12 +36,12 @@ export const tsValidateUniqueId = tsValidateId(dbIdLength);
 export const tsValidator_arrayOfUniqueIds = tsValidateArray(tsValidateUniqueId);
 export const tsValidate_optionalArrayOfUniqueIds = tsValidate_OptionalArray(tsValidateUniqueId);
 
-export const tsValidateDBPointer: (dbDefs: DBDef_V3<any>[]) => ValidatorTypeResolver<DBPointer> = (dbDefs) => {
+export const tsValidateDBPointer: (dbDefs: DBDef_V3<any>[], mandatory: boolean) => ValidatorTypeResolver<DBPointer> = (dbDefs, mandatory = true) => {
 	const keys = dbDefs.map(def => def.dbKey);
-	return {
+	return [tsValidateExists(mandatory), (dbRef) => tsValidateResult(dbRef, {
 		dbKey: tsValidateValue(keys),
 		id: tsValidateUniqueId,
-	};
+	})];
 };
 
 export const tsValidateOptionalId = tsValidateId(dbIdLength, false);
