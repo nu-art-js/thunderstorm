@@ -6,7 +6,8 @@ export type CliParams<T extends BaseCliParam<string, any>[]> = {
 }
 
 export type DependencyParam<T extends Primitive | Primitive[]> = {
-	param: BaseCliParam<string, T>, value: T
+	param: BaseCliParam<string, T>,
+	value: T
 }
 
 export type BaseCliParam<K extends string, V extends Primitive | Primitive[]> = {

@@ -46,6 +46,7 @@ export const phase_Prepare: Phase<'prepare'> = {
 	key: phaseKey_Prepare,
 	name: 'Prepare',
 	method: 'prepare',
+	filter: (baiParams) => baiParams.prepare,
 };
 
 export type Phase_Install = typeof phase_Install;
@@ -54,7 +55,7 @@ export const phase_Install: Phase<'install'> = {
 	key: phaseKey_Install,
 	name: 'Install',
 	method: 'install',
-	filter: (baiParams) => baiParams.install || baiParams.installPackages || baiParams.installGlobals,
+	filter: (baiParams) => baiParams.install,
 	dependencyPhase: [phase_Prepare]
 };
 

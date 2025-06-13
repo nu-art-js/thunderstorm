@@ -74,7 +74,7 @@ export class PhaseManager
 				const phaseMap: Map<string, BaseUnit[]> = new Map();
 
 				for (const unit of layerUnits) {
-					const supportedPhases = phaseGroup.filter(phase => phase.key in unit);
+					const supportedPhases = phaseGroup.filter(phase => phase.method in unit);
 					if (supportedPhases.length === 0)
 						continue;
 

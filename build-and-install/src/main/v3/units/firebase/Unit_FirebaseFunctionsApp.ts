@@ -86,7 +86,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	async prepare() {
 		await super.prepare();
 		await FileSystemUtils.folder.list.forEach.folder(this.config.fullPath, async (path) => {
-			this.logError(path);
 			if (path.replace(`${this.config.fullPath}/`, '').startsWith('firebase-export-'))
 				return await FileSystemUtils.folder.delete(path);
 		});

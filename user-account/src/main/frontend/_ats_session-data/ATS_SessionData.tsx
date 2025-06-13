@@ -29,7 +29,7 @@ export class ATS_SessionData
 		super(p);
 	}
 
-	__onStorageKeyEvent(event: StorageEvent) {
+	async __onStorageKeyEvent(event: StorageEvent) {
 		this.forceUpdate();
 	}
 

@@ -34,11 +34,7 @@ export class ATS_JsonToObject
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
 		state.freeText ??= false;
-		state.editable ??= new EditableItem<TestType>({}, async (item) => {
-			console.log('Saving: ', item);
-			this.forceUpdate();
-			return item;
-		}, async (item) => console.log('Delete: ', item)).setAutoSave(true);
+		state.editable ??= new EditableItem<TestType>({}).setAutoSave(true);
 		return state;
 	}
 

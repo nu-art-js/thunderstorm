@@ -11,9 +11,9 @@
     "thunderstorm",
     "typescript"
   ],
-  "homepage": "https://github.com/nu-art-js/live-docs",
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {
-    "url": "https://github.com/nu-art-js/live-docs/issues"
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,19 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
   },
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",

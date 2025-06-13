@@ -4,13 +4,6 @@ import {exists} from '@nu-art/ts-common';
 //util regex function
 const regexTemplate = (regexp: string | undefined) => exists(regexp) ? `.*${regexp}.*` : '.*';
 
-export const BaiParam_Help: BaseCliParam<'help', boolean> = {
-	keys: ['--help', '-h'],
-	keyName: 'help',
-	type: 'boolean',
-	group: 'General',
-	description: 'This help menu'
-};
 
 export const BaiParam_DependencyTree: BaseCliParam<'dependencyTree', boolean> = {
 	keys: ['--dependency-tree', '-dt'],
@@ -61,29 +54,11 @@ export const BaiParam_Setup: BaseCliParam<'setup', boolean> = {
 	description: 'Setup local project for developer'
 };
 
-
-export const BaiParam_InstallPackages: BaseCliParam<'installPackages', boolean> = {
-	keys: ['--install-packages', '-ip'],
-	keyName: 'installPackages',
-	type: 'boolean',
-	group: 'Build',
-	description: 'Will run \'npm install\' in all project packages \nWill perform --link'
-};
-
-export const BaiParam_InstallGlobals: BaseCliParam<'installGlobals', boolean> = {
-	keys: ['--install-globals', '-ig'],
-	keyName: 'installGlobals',
-	type: 'boolean',
-	group: 'Build',
-	description: 'Will install all global packages'
-};
-
 export const BaiParam_Install: BaseCliParam<'install', boolean> = {
 	keys: ['--install', '-i'],
 	keyName: 'install',
 	type: 'boolean',
 	group: 'Build',
-	dependencies: [{param: BaiParam_InstallPackages, value: true}, {param: BaiParam_InstallGlobals, value: true}],
 	description: 'Will run \'pnpm install\' on entire project and will install global packages'
 };
 
@@ -97,7 +72,7 @@ export const BaiParam_Clean: BaseCliParam<'clean', boolean> = {
 
 export const BaiParam_Purge: BaseCliParam<'purge', boolean> = {
 	keys: ['--purge', '-p'],
-	dependencies: [{param: BaiParam_Clean, value: true}, {param: BaiParam_InstallPackages, value: true}],
+	dependencies: [{param: BaiParam_Clean, value: true}, {param: BaiParam_Install, value: true}],
 	keyName: 'purge',
 	group: 'Clean',
 	type: 'boolean',
@@ -125,7 +100,16 @@ export const BaiParam_NoBuild: BaseCliParam<'noBuild', boolean> = {
 	keyName: 'noBuild',
 	group: 'Build',
 	type: 'boolean',
-	description: 'Skip the build and link steps'
+	description: 'Skip the build and link steps',
+};
+
+export const BaiParam_Prepare: BaseCliParam<'prepare', boolean> = {
+	keys: [],
+	keyName: 'prepare',
+	group: 'Build',
+	type: 'boolean',
+	initialValue: true,
+	description: '-- internal param --'
 };
 
 export const BaiParam_DryRun: BaseCliParam<'dryRun', boolean> = {
@@ -173,7 +157,8 @@ export const BaiParam_Watch: BaseCliParam<'watch', boolean> = {
 	keyName: 'watch',
 	type: 'boolean',
 	group: 'Build',
-	description: 'will build and listen for changes in the libraries'
+	description: 'will build and listen for changes in the libraries',
+	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}]
 };
 
 export const BaiParam_WatchBuildTree: BaseCliParam<'watchBuildTree', boolean> = {
@@ -371,18 +356,16 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 };
 
 export const AllBaiParams = [
-	BaiParam_Help,
 	BaiParam_DependencyTree,
 	BaiParam_CheckCyclicImports,
 	BaiParam_PrintEnv,
 	BaiParam_Purge,
 	BaiParam_Clean,
 	BaiParam_continue,
+	BaiParam_Prepare,
 	BaiParam_SetEnv,
 	BaiParam_Setup,
 	BaiParam_Install,
-	BaiParam_InstallPackages,
-	BaiParam_InstallGlobals,
 	BaiParam_Generate, // TODO: to implement
 	BaiParam_GenerateDocs,// TODO: to implement
 	BaiParam_NoBuild,

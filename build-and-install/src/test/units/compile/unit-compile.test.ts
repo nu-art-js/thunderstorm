@@ -33,7 +33,7 @@ const test = async (setup: Input): Promise<void> => {
 	FilesCache.clear();
 	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-compile');
 
-	buildAndInstall = new BuildAndInstall(pathToWorkspace);
+	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	await buildAndInstall.build();
 	unit = buildAndInstall.projectUnits.find(unit => unit.config.key == 'lib-compile') as Unit_TypescriptLib;
 
@@ -55,9 +55,9 @@ describe('Unit_NodeLib - Compile Phase', () => {
 		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
 		workspaceCreator.setupWorkspace(['workspace.txt']);
 
-		buildAndInstall = new BuildAndInstall(pathToWorkspace);
+		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 		await buildAndInstall.build();
-		buildAndInstall.setPhases([phase_Prepare, phase_Install]);
+		buildAndInstall.setPhases([[phase_Prepare, phase_Install]]);
 		await buildAndInstall.run();
 	});
 
@@ -143,9 +143,9 @@ describe('Unit_NodeLib - Compile Phase', () => {
 
 
 	after(async function () {
-		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
-		if (allPassed)
-			await FileSystemUtils.folder.delete(pathToTemp);
+		// const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		// if (allPassed)
+		// 	await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();
 	});

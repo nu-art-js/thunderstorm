@@ -15,8 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {BadImplementationException, Exception, Module} from '@nu-art/ts-common';
-import * as jwt from 'jsonwebtoken';
+import {BadImplementationException, currentTimeMillis, Exception, JwtTools, Minute, Module} from '@nu-art/ts-common';
 import {Octokit, RestEndpointMethodTypes} from '@octokit/rest';
 import {OctokitResponse, ReposGetContentResponseData} from '@octokit/types';
 import * as path from 'path';
@@ -59,7 +58,7 @@ export class GithubModule_Class
 			// GitHub App's identifier
 			iss: parseInt(this.config.appId)
 		};
-		const signedToken = await jwt.sign(payload, this.config.privateKey, {algorithm: 'RS256'});
+		const signedToken = await JwtTools.encode(payload, this.config.privateKey, {expiresIn: currentTimeMillis() + 10 * Minute});
 		return this.createClient(signedToken, 'Bearer');
 	}
 
