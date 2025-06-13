@@ -50,9 +50,7 @@
     "xmlbuilder": "^15.1.1",
     "express": "$EXPRESS_PKG_VERSION",
     "request": "^2.88.0",
-    "pako": "^2.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "jwt-decode": "^4.0.0"
+    "pako": "^2.1.0"
   },
   "devDependencies": {
     "@nu-art/google-services": "$THUNDERSTORM_DEP_VERSION",

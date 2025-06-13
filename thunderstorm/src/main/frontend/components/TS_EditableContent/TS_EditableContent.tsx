@@ -12,9 +12,9 @@ type _State<Item> = EditableRef<Item> & {
 	tag?: string
 }
 
-type ProtoType<Opt> = Opt extends DBProto<any> ? Opt['uiType'] : Opt;
+export type EditableContentType<Opt> = Opt extends DBProto<any> ? Opt['uiType'] : Opt;
 
-export abstract class TS_EditableContent<Opt, P = {}, S = {}, ItemType = ProtoType<Opt>,
+export abstract class TS_EditableContent<Opt, P = {}, S = {}, ItemType extends EditableContentType<Opt> = EditableContentType<Opt>,
 	Props extends P & EditableRef<ItemType> & Props_Controller = P & EditableRef<ItemType> & Props_Controller,
 	State extends S & _State<ItemType> = S & _State<ItemType>>
 	extends Controller<Props, State> {

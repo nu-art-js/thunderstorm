@@ -1,4 +1,4 @@
-import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, LogClient_Terminal, Logger, LogLevel} from '@nu-art/ts-common';
+import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, LogClient_Terminal, Logger, LogLevel, merge} from '@nu-art/ts-common';
 import {AllBaiParams, BaiParams} from './core/params/params';
 import {Phase, phases_Build, phases_Deploy, phases_Launch} from './v3/phase';
 import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper';
@@ -11,15 +11,18 @@ import {BaseUnit, Unit_NodeProject} from './v3/units';
 import {resolve} from 'path';
 import {CONST_BaiConfig, CONST_NodeModules} from './core/consts';
 import {FileSystemUtils} from './v3/core/FileSystemUtils';
-import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {UnitMapper_FirebaseFunction, UnitMapper_FirebaseHosting, UnitMapper_NodeLib, UnitMapper_NodeProject} from './v3/UnitsMapper/resolvers';
+import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
+import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 
 
-const DefaultPhases = [
+export const DefaultPhases = [
 	...phases_Build,
 	phases_Launch,
 	phases_Deploy,
 ];
+
+type BAI_Options = { pathToProject: string, runtimeParams: BaseCliParam<string, any>[] };
 
 export class BuildAndInstall
 	extends Logger {
@@ -28,12 +31,18 @@ export class BuildAndInstall
 	private pathToProject: string;
 	private allUnits: BaseUnit<any>[] = [];
 	readonly nodeProjectUnit!: Unit_NodeProject;
-	readonly runtimeParams: BaiParams = CLIParamsResolver.create(...AllBaiParams).resolveParamValue();
+	readonly runtimeParams: BaiParams;
 	readonly projectUnits: ProjectUnit[] = [];
 	private unitsDependencyMapper!: UnitsDependencyMapper;
 
-	constructor(pathToProject: string = process.env.INIT_CWD ?? process.cwd()) {
+	constructor(config: Partial<BAI_Options> = {}) {
 		super();
+		const defaultConfig: BAI_Options = merge({
+			pathToProject: process.env.INIT_CWD ?? process.cwd(),
+			runtimeParams: AllBaiParams,
+		}, config);
+
+		this.runtimeParams = CLIParamsResolver.create(...defaultConfig.runtimeParams).resolveParamValue() as BaiParams;
 		BeLogged.addClient(LogClient_Terminal);
 
 
@@ -45,7 +54,11 @@ export class BuildAndInstall
 
 		this.setMinLevel(DebugFlag.DefaultLogLevel);
 		this.logDebug('Runtime params:', this.runtimeParams);
-		this.pathToProject = pathToProject;
+		this.pathToProject = defaultConfig.pathToProject;
+	}
+
+	setApplicativeUnits(projectUnits: ProjectUnit[]) {
+		this.projectUnits.push(...projectUnits);
 	}
 
 	setPhases(phases: Phase<string>[][]) {
@@ -53,33 +66,6 @@ export class BuildAndInstall
 	}
 
 	async build() {
-		this.projectUnits.push(...(await this.resolveUnits()));
-		Object.freeze(this.projectUnits);
-	}
-
-	async run() {
-		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
-		const unitDependencyTree: ProjectUnit[][] = (await this.unitsDependencyMapper.buildDependencyTree())
-			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
-
-		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
-		const executionPlan = await phaseManager.calculateExecutionSteps();
-		let killCounter = 0;
-		process.on('SIGINT', async () => {
-			this.logWarning('\n\n\n---------------------------------- Process Interrupted ----------------------------------\n\n\n');
-			await phaseManager.break();
-			killCounter++;
-			if (killCounter > 5)
-				process.exit(1);
-		});
-
-		await phaseManager.execute(executionPlan);
-
-		this.logInfo('Completed successfully');
-		this.logInfo('---------------------------------- Process Completed successfully ----------------------------------');
-	}
-
-	private async resolveUnits() {
 		this.logVerbose(`Resolving units from: ${this.pathToProject}`);
 		const unitsMapper = new UnitsMapper();
 		this.allUnits = await unitsMapper
@@ -110,7 +96,10 @@ export class BuildAndInstall
 		const baiConfig = await FilesCache.load.json<BAI_Config>(pathToBaiConfig);
 		this.logDebug('Loaded BAI-Config', baiConfig);
 
-		const unitsDependencies: UnitDependentNode[] = allProjectUnits.map(unit => ({
+		this.projectUnits.push(...allProjectUnits);
+		Object.freeze(this.projectUnits);
+
+		const unitsDependencies: UnitDependentNode[] = this.projectUnits.map(unit => ({
 			key: unit.config.key,
 			dependsOn: _keys(unit.config.dependencies).filter(key => !!unitKeyToUnitMap[key]) as string[]
 		}));
@@ -129,15 +118,35 @@ export class BuildAndInstall
 			globalOutputFolder,
 		});
 
-		allProjectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));
+		this.projectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));
 
 		if (!(await FileSystemUtils.file.exists(resolve(this.nodeProjectUnit.config.fullPath, CONST_NodeModules)))) {
 			this.logInfo(`root project is missing ${CONST_NodeModules} folder. Enabling install...`);
 			this.runtimeParams.install = true;
-			this.runtimeParams.installGlobals = true;
-			this.runtimeParams.installPackages = true;
 		}
 
 		return allProjectUnits;
+	}
+
+	async run() {
+		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
+		const unitDependencyTree: ProjectUnit[][] = (await this.unitsDependencyMapper.buildDependencyTree())
+			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
+
+		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
+		const executionPlan = await phaseManager.calculateExecutionSteps();
+		let killCounter = 0;
+		process.on('SIGINT', async () => {
+			this.logWarning('\n\n\n---------------------------------- Process Interrupted ----------------------------------\n\n\n');
+			await phaseManager.break();
+			killCounter++;
+			if (killCounter > 5)
+				process.exit(1);
+		});
+
+		await phaseManager.execute(executionPlan);
+
+		this.logInfo('Completed successfully');
+		this.logInfo('---------------------------------- Process Completed successfully ----------------------------------');
 	}
 }

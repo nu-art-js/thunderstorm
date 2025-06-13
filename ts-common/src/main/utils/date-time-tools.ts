@@ -18,6 +18,7 @@
 
 import {utc} from 'moment';
 import {AuditBy, Timestamp} from './types';
+import {exists} from './tools';
 
 
 export const Second = 1000;
@@ -32,7 +33,7 @@ export const Format_HHmmss_DDMMYYYY = 'HH:mm:ss_DD-MM-YYYY';
 export const Format_YYYYMMDD_HHmmss = 'YYYY-MM-DD_HH:mm:ss';
 export type Weekday = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
 export const Weekdays: Weekday[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-export type TimerHandler = (...args: any[]) => void;
+export type TimerHandler<Args extends any[] = any[]> = (...args: Args) => void;
 export type TimeRange = [number, number] | [undefined, number] | [number, undefined];
 export type TimeCounter = { dt: () => number; format: (format: string) => string };
 
@@ -42,7 +43,7 @@ export async function timeout(sleepMs: number) {
 
 export const sleep = timeout;
 
-export function _setTimeout(handler: TimerHandler, sleepMs = 0, ...args: any[]): number {
+export function _setTimeout<Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args): number {
 	return setTimeout(handler, sleepMs, ...args) as unknown as number;
 }
 
@@ -52,7 +53,7 @@ export function _clearTimeout(handlerId?: number) {
 	return clearTimeout(handlerId as unknown as ReturnType<typeof setTimeout>);
 }
 
-export function _setInterval(handler: TimerHandler, sleepMs = 0, ...args: any[]) {
+export function _setInterval<Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args) {
 	return setInterval(handler, sleepMs, ...args) as unknown as number;
 }
 
@@ -61,6 +62,74 @@ export function _clearInterval(handlerId?: number) {
 		return;
 	return clearInterval(handlerId as unknown as ReturnType<typeof setInterval>);
 }
+
+/**
+ * Creates a timeout handler object that manages a single `setTimeout` instance.
+ * Includes lifecycle controls: set, clear, reset, isActive.
+ *
+ * @param handler The function to be called after the timeout.
+ * @param sleepMs Timeout duration in milliseconds. Defaults to 0.
+ * @param args Arguments passed to the handler function.
+ * @returns An object with `set`, `clear`, `reset`, and `isActive` methods.
+ */
+export const timeoutHandler = <Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args) => {
+	let handlerId: ReturnType<typeof setTimeout> | undefined;
+
+	const clear = () => {
+		if (!exists(handlerId)) return;
+		clearTimeout(handlerId);
+		handlerId = undefined;
+	};
+
+	const set = () => {
+		if (exists(handlerId)) return;
+		handlerId = setTimeout(handler, sleepMs, ...args);
+	};
+
+	return {
+		set,
+		clear,
+		reset: () => {
+			clear();
+			set();
+		},
+		isActive: () => exists(handlerId),
+	};
+};
+
+/**
+ * Creates an interval handler object that manages a single `setInterval` instance.
+ * Includes lifecycle controls: set, clear, reset, isActive.
+ *
+ * @param handler The function to be called repeatedly.
+ * @param sleepMs Interval duration in milliseconds. Defaults to 0.
+ * @param args Arguments passed to the handler function.
+ * @returns An object with `set`, `clear`, `reset`, and `isActive` methods.
+ */
+export const intervalHandler = <Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args) => {
+	let handlerId: ReturnType<typeof setInterval> | undefined;
+
+	const clear = () => {
+		if (!exists(handlerId)) return;
+		clearInterval(handlerId);
+		handlerId = undefined;
+	};
+
+	const set = () => {
+		if (exists(handlerId)) return;
+		handlerId = setInterval(handler, sleepMs, ...args);
+	};
+
+	return {
+		set,
+		clear,
+		reset: () => {
+			clear();
+			set();
+		},
+		isActive: () => exists(handlerId),
+	};
+};
 
 /**
  * @param comment @deprecated

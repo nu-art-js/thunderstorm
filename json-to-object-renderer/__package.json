@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/json-to-object-renderer",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "Thunderstorm",
   "keywords": [
     "TacB0sS",
@@ -39,13 +39,17 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-styles": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/ts-styles": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEP_VERSION",
     "react": "$REACT_PKG_VERSION"
   },
   "devDependencies": {
     "@types/react": "$REACT_TYPES_VERSION"
+  },
+  "unitConfig": {
+    "customTSConfig": true,
+    "type": "typescript-lib"
   }
 }

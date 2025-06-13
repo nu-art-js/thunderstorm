@@ -28,7 +28,7 @@ import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 
 
 export interface OnStorageKeyChangedListener {
-	__onStorageKeyEvent(event: StorageEvent): void;
+	__onStorageKeyEvent(event: StorageEvent): Promise<void>;
 }
 
 type GetType = string | number | object
@@ -76,8 +76,8 @@ export class StorageModule_Class
 		}
 
 		const dispatcher = new ThunderDispatcher<OnStorageKeyChangedListener, '__onStorageKeyEvent'>('__onStorageKeyEvent');
-		dispatcher.dispatchModule(e);
-		dispatcher.dispatchUI(e);
+		await dispatcher.dispatchModuleAsync(e);
+		await dispatcher.dispatchUIAsync(e);
 	};
 
 	getStorage = (persist: boolean) => persist ? localStorage : sessionStorage;

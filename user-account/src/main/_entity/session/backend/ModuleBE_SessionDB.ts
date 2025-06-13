@@ -1,16 +1,25 @@
 import {
-	__stringify, ApiException, batchActionParallel, currentTimeMillis, Day, Dispatcher, exists, filterInstances, filterKeys, md5, TS_Object, TypedKeyValue
+	ApiException,
+	batchActionParallel,
+	currentTimeMillis,
+	Day,
+	Dispatcher,
+	exists,
+	filterInstances,
+	filterKeys,
+	md5,
+	RecursiveObjectOfPrimitives,
+	TS_Object,
+	TypedKeyValue
 } from '@nu-art/ts-common';
-import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
-import {DBApiConfigV3, HeaderKey, ModuleBE_BaseDB, Storm} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, HeaderKey, ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend';
 import {_SessionKey_Session, DB_Session, DBDef_Session, DBProto_Session} from '../shared';
 import {Header_Authorization, MemKey_AccountId, MemKey_SessionData, MemKey_SessionObject, SessionKey_Account_BE, SessionKey_Session_BE} from './consts';
-import * as jwt from 'jsonwebtoken';
-import {ModuleBE_SecretManager} from '@nu-art/google-services/backend/modules/ModuleBE_SecretManager';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm';
+import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT';
 import Transaction = firestore.Transaction;
 
 
@@ -35,7 +44,7 @@ export class ModuleBE_SessionDB_Class
 	extends ModuleBE_BaseDB<DBProto_Session, Config>
 	implements CollectSessionData<_SessionKey_Session> {
 
-	private sessionSigningPrivateKey: string | undefined;
+	private jwtHandler!: JWT_Handler<RecursiveObjectOfPrimitives>;
 
 	readonly Middleware = async () => {
 		let authorizationHeader: string;
@@ -50,8 +59,7 @@ export class ModuleBE_SessionDB_Class
 		}
 
 		try {
-			const decodedJwt = await this.sessionData.isValidJWT(authorizationHeader) as { sessionData: string };
-			const sessionData = this.sessionData.decode(decodedJwt.sessionData);
+			const sessionData = this.jwtHandler.verifySignature(authorizationHeader);
 
 			//Get the existing dbSession for this authorizationHeader, there is one, even in previousSessions
 			const md5SessionId = md5(authorizationHeader); // We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
@@ -83,10 +91,20 @@ export class ModuleBE_SessionDB_Class
 	constructor() {
 		super(DBDef_Session);
 		this.setDefaultConfig({
-			                      sessionTTLms: Day,
-			                      rotationFactor: 0.5,
-			                      accountSessionIdSigner_SecretName: Const_Default_AccountSessionId_SecretName
-		                      });
+			sessionTTLms: Day,
+			rotationFactor: 0.5,
+			accountSessionIdSigner_SecretName: Const_Default_AccountSessionId_SecretName
+		});
+	}
+
+	init() {
+		super.init();
+		this.jwtHandler = ModuleBE_JWT.jwtHandler<PreDBSessionContent>({
+			label: 'Session-JWT',
+			secretKey: this.config.accountSessionIdSigner_SecretName,
+			ttl: Day,
+			rotationTTL: 2 * Day
+		});
 	}
 
 	async __collectSessionData(data: SessionCollectionParam) {
@@ -101,21 +119,7 @@ export class ModuleBE_SessionDB_Class
 		};
 	}
 
-	private getPrivateKeyForSessionSigning = async (): Promise<string> => {
-		if (Storm.getInstance().getEnvironment() === 'local')
-			this.sessionSigningPrivateKey = this.config.accountSessionIdSigner_SecretName; // Local's private key for JWT signing
-		else
-			this.sessionSigningPrivateKey = await ModuleBE_SecretManager.getSecret(this.config.accountSessionIdSigner_SecretName);
-
-		return this.sessionSigningPrivateKey;
-	};
-
 	private sessionData = {
-		encode: async (sessionData: TS_Object) => gzipSync(Buffer.from(__stringify(sessionData), 'utf8')).toString('base64'),
-		decode: (sessionId: string): TS_Object => JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8')),
-		decodeJWT: (jwtString: string): TS_Object => this.sessionData.decode((jwt.decode(jwtString) as {
-			sessionData: string
-		}).sessionData),
 		collect: async (content: PreDBSessionContent, manipulate?: (sessionData: TS_Object) => TS_Object, transaction?: Transaction) => {
 			const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(content, transaction));
 			let sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
@@ -123,26 +127,9 @@ export class ModuleBE_SessionDB_Class
 				return sessionData;
 			}, {});
 
-			sessionData = manipulate?.(sessionData) ?? sessionData;
-			const encodedSessionData = await this.sessionData.encode(sessionData);
-			return {encoded: encodedSessionData, raw: sessionData};
+			return manipulate?.(sessionData) ?? sessionData;
 		},
 		setToMemKey: (sessionData: TS_Object) => MemKey_SessionData.set(sessionData),
-		createJWT: async (sessionData: any, expiry: number) => {
-			const payload = {sessionData: typeof sessionData === 'string' ? sessionData : JSON.stringify(sessionData)};
-			const privateKey = await this.getPrivateKeyForSessionSigning();
-			const options = {expiresIn: Math.floor(expiry / 1000)};
-
-			try {
-				return jwt.sign(payload, privateKey, options);
-			} catch (e: any) {
-				this.logWarning('Error signing token', e);
-				throw e;
-			}
-		},
-		isValidJWT: async (stringJWT: string) => { // returns the decoded JWT
-			return jwt.verify(stringJWT, await this.getPrivateKeyForSessionSigning());
-		}
 	};
 
 	session = {
@@ -151,18 +138,17 @@ export class ModuleBE_SessionDB_Class
 		},
 		createCustom: async (content: PreDBSessionContent, manipulate: (sessionData: TS_Object) => TS_Object, transaction?: Transaction) => {
 			const sessionData = await this.sessionData.collect(content, manipulate, transaction);
-			const JWTExpiry = content.ttl ?? this.config.sessionTTLms;
-			const jwt = await this.sessionData.createJWT(sessionData.encoded, JWTExpiry);
+			const jwt = await this.jwtHandler.create(sessionData.raw as any, content.ttl ?? this.config.sessionTTLms);
 
 			const session = filterKeys({
-				                           accountId: content.accountId,
-				                           deviceId: content.deviceId,
-				                           prevSession: content.prevSession ?? [],
-				                           label: content.label,
-				                           sessionId: md5(jwt), // The sessionId JWT string is way to long to query by. We save an md5(32 chars) instead in sessionId and previousSessions.
-				                           sessionIdJwt: jwt,
-				                           timestamp: currentTimeMillis(),
-			                           }, ['prevSession', 'label'],);
+				accountId: content.accountId,
+				deviceId: content.deviceId,
+				prevSession: content.prevSession ?? [],
+				label: content.label,
+				sessionId: md5(jwt), // The sessionId JWT string is way to long to query by. We save an md5(32 chars) instead in sessionId and previousSessions.
+				sessionIdJwt: jwt,
+				timestamp: currentTimeMillis(),
+			}, ['prevSession', 'label'],);
 
 			await this.set.item(session, transaction);
 			return {sessionId: jwt, sessionData: sessionData.raw};
@@ -221,18 +207,16 @@ export class ModuleBE_SessionDB_Class
 				label: 'user-auth-session'
 			};
 
-			if (exists(dbSession.sessionIdJwt))
-				if (SessionKey_Account_BE.get(this.sessionData.decodeJWT(dbSession.sessionIdJwt)).type === 'service') {
-					const decodedJwt = jwt.decode(dbSession.sessionIdJwt) as { exp: number };
+			if (exists(dbSession.sessionIdJwt)) {
+				const sessionData = await this.jwtHandler.verifySignature(dbSession.sessionIdJwt);
+				if (SessionKey_Account_BE.get(sessionData).type === 'service') {
+					const decodedJwt = sessionData as { exp: number };
 					content.ttl = (decodedJwt.exp * 1000) - currentTimeMillis(); // jwt expiry is in seconds, and we usually work in milliseconds so this is required to keep consistency
 				}
+			}
 
 			return await this.session.create(content, transaction);
 		},
-		isExpired: (session: DB_Session) => {
-			const decodedJwt = this.sessionData.decodeJWT(session.sessionIdJwt);
-			return currentTimeMillis() >= decodedJwt.session.expiration;
-		}
 	};
 }
 
