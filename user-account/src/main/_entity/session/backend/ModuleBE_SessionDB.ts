@@ -138,6 +138,12 @@ export class ModuleBE_SessionDB_Class
 	};
 
 	session = {
+		createAndReturn: async (content: PreDBSessionContent, transaction?: Transaction) => {
+			const session = await this.session.create(content);
+			MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, session.sessionId);
+			MemKey_SessionData.set(session.sessionData);
+			return session;
+		},
 		create: async (content: PreDBSessionContent, transaction?: Transaction) => {
 			return this.session.createCustom(content, d => d, transaction);
 		},
@@ -221,6 +227,16 @@ export class ModuleBE_SessionDB_Class
 
 			return await this.session.create(content, transaction);
 		},
+		rotateAndReturn: async (dbSession: DB_Session = MemKey_SessionObject.get(), transaction?: Transaction) => {
+			const session = await this.session.rotate(dbSession, transaction);
+			if (!session)
+				return this.logWarning('Session was not rotated. This is probably because the session was already expired.');
+
+			MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, session.sessionId);
+			if (session.sessionData)
+				MemKey_SessionData.set(session.sessionData);
+
+		}
 	};
 }
 
