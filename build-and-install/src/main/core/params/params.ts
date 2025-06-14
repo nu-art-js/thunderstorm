@@ -1,8 +1,4 @@
 import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
-import {exists} from '@nu-art/ts-common';
-
-//util regex function
-const regexTemplate = (regexp: string | undefined) => exists(regexp) ? `.*${regexp}.*` : '.*';
 
 
 export const BaiParam_DependencyTree: BaseCliParam<'dependencyTree', boolean> = {
@@ -221,29 +217,12 @@ export const BaiParam_TestDebugPort: BaseCliParam<'testDebugPort', number> = {
 	dependencies: [{param: BaiParam_Test, value: true}],
 };
 
-export const BaiParam_Launch: BaseCliParam<'launch', string> = {
+export const BaiParam_Launch: BaseCliParam<'launch', boolean> = {
 	keys: ['--launch', '-l'],
 	keyName: 'launch',
-	type: 'string',
+	type: 'boolean',
 	group: 'Apps',
-	process: regexTemplate,
 	description: 'It will add the provided App to the launch list \nrequired input: path-to-app-to-launch(string)'
-};
-
-export const BaiParam_LaunchFrontend: BaseCliParam<'launchFrontend', boolean> = {
-	keys: ['--launch-frontend', '-lf'],
-	keyName: 'launchFrontend',
-	type: 'boolean',
-	group: 'Apps',
-	description: 'Will add the app-frontend to the launch list'
-};
-
-export const BaiParam_LaunchBackend: BaseCliParam<'launchBackend', boolean> = {
-	keys: ['--launch-backend', '-lb'],
-	keyName: 'launchBackend',
-	group: 'Apps',
-	type: 'boolean',
-	description: 'Will add the app-backend to the launch list'
 };
 
 export const BaiParam_DebugBackend: BaseCliParam<'debugBackend', boolean> = {
@@ -259,7 +238,6 @@ export const BaiParam_Deploy: BaseCliParam<'deploy', string> = {
 	keyName: 'deploy',
 	type: 'string',
 	group: 'Apps',
-	process: regexTemplate,
 	description: 'Will add the provided App to the deploy list or all applications'
 };
 
@@ -268,7 +246,6 @@ export const BaiParam_DeployBackend: BaseCliParam<'deployBackend', string> = {
 	keyName: 'deployBackend',
 	group: 'Apps',
 	type: 'string',
-	process: regexTemplate,
 	description: 'Will add the app-backend to the deploy list'
 };
 
@@ -277,7 +254,6 @@ export const BaiParam_DeployFrontend: BaseCliParam<'deployFrontend', string> = {
 	keyName: 'deployFrontend',
 	type: 'string',
 	group: 'Apps',
-	process: regexTemplate,
 	description: 'Will add the app frontend to the deploy list'
 };
 
@@ -294,7 +270,6 @@ export const BaiParam_DebugLifecycle: BaseCliParam<'debugLifecycle', boolean> = 
 	keyName: 'debugLifecycle',
 	group: 'Other',
 	type: 'boolean',
-
 	description: 'Will only print the run config and die'
 };
 
@@ -382,8 +357,6 @@ export const AllBaiParams = [
 	BaiParam_TestCase,
 	BaiParam_TestDebugPort,
 	BaiParam_Launch,
-	BaiParam_LaunchFrontend,// TODO: to implement
-	BaiParam_LaunchBackend,// TODO: to implement
 	BaiParam_DebugBackend,
 	BaiParam_Deploy,
 	BaiParam_DeployBackend,
