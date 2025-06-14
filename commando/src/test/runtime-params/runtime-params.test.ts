@@ -3,7 +3,6 @@ import {BadImplementationException} from '@nu-art/ts-common';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {BaseCliParam, CliParams} from '../../main/cli-params/types';
 import {CLIParamsResolver} from '../../main/cli-params/CLIParamsResolver';
-import stringArgv from 'string-argv';
 
 export const Param_Help: BaseCliParam<'help', boolean> = {
 	keys: ['--help', '-h'],
@@ -111,7 +110,7 @@ const test = async (input: Input): Promise<Result> => {
 
 	let inputParams: string[];
 	if (typeof input.input === 'string')
-		inputParams = stringArgv(input.input);
+		inputParams = input.input.split(' ');
 	else
 		inputParams = input.input;
 

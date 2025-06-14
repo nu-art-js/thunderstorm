@@ -1,4 +1,4 @@
-import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, LogClient_Terminal, Logger, LogLevel, merge} from '@nu-art/ts-common';
+import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, filterDuplicates, LogClient_Terminal, Logger, LogLevel, merge} from '@nu-art/ts-common';
 import {AllBaiParams, BaiParams} from './core/params/params';
 import {Phase, phases_Build, phases_Deploy, phases_Launch} from './v3/phase';
 import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper';
@@ -39,9 +39,9 @@ export class BuildAndInstall
 		super();
 		const defaultConfig: BAI_Options = merge({
 			pathToProject: process.env.INIT_CWD ?? process.cwd(),
-			runtimeParams: AllBaiParams,
 		}, config);
 
+		defaultConfig.runtimeParams = filterDuplicates([...(config.runtimeParams ?? []), ...AllBaiParams], param => param.keyName);
 		this.runtimeParams = CLIParamsResolver.create(...defaultConfig.runtimeParams).resolveParamValue() as BaiParams;
 		BeLogged.addClient(LogClient_Terminal);
 
