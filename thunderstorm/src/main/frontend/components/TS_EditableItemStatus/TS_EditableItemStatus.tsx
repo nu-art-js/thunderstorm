@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {TS_EditableContent} from '../TS_EditableContent/TS_EditableContent';
 import {
 	EditableItem_Status, EditableItemStatus_Creating, EditableItemStatus_ErrorSaving, EditableItemStatus_FailedValidation, EditableItemStatus_Saved,

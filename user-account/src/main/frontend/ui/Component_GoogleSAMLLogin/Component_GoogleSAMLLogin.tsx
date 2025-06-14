@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {Button} from '@nu-art/thunderstorm/frontend';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_GoogleSAMLLogin.scss';

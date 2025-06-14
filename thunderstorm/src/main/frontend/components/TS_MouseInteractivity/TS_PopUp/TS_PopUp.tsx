@@ -1,4 +1,3 @@
-import * as React from 'react';
 import './TS_PopUp.scss';
 import {TS_Overlay} from '../../TS_Overlay';
 import {OnWindowResized} from '../../../modules/ModuleFE_Window';

@@ -2,7 +2,6 @@ import {thunderstormATSGroups} from '../../consts';
 import {ComponentSync} from '../../core/ComponentSync';
 import {LL_H_C, LL_V_L} from '../Layouts';
 import {AppToolsScreen, TS_AppTools} from '../TS_AppTools';
-import * as React from 'react';
 import {Button} from './Button';
 import './ATS_Button.scss';
 import {TS_PropRenderer} from '../TS_PropRenderer';

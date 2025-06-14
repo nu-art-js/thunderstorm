@@ -2,7 +2,6 @@ import {thunderstormATSGroups} from '../../consts';
 import {ComponentSync} from '../../core/ComponentSync';
 import {LL_V_L} from '../Layouts';
 import {AppToolsScreen, TS_AppTools} from '../TS_AppTools';
-import * as React from 'react';
 import './ATS_CheckboxGroup.scss';
 import {TS_CheckboxGroup} from "./TS_CheckboxGroup";
 import {voidFunction} from "@nu-art/ts-common";

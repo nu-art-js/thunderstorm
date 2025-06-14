@@ -1,4 +1,3 @@
-import * as React from 'react';
 import './Component_ShortUrlEditor.scss';
 import {EditableRef, TS_EditableContent} from '@nu-art/thunderstorm/frontend/components/TS_EditableContent/TS_EditableContent';
 import {DBProto_ShortUrl, UI_ShortUrl} from '../../../../_entity/short-url/shared';
@@ -15,13 +14,13 @@ type Props = EditableRef<UI_ShortUrl> & { deleteCallback?: VoidFunction }
 type State = EditableRef<UI_ShortUrl>
 
 const StringEditableInput = TS_InputV2.editable({
-	                                                type: 'text',
-	                                                saveEvent: ['blur', 'accept']
-                                                });
+	type: 'text',
+	saveEvent: ['blur', 'accept']
+});
 
 const TextArea = TS_TextAreaV2.editable({
-	                                        saveEvent: ['blur', 'accept']
-                                        });
+	saveEvent: ['blur', 'accept']
+});
 
 export class Component_ShortUrlEditor
 	extends TS_EditableContent<DBProto_ShortUrl, Props, State> {

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {Config_PanelParent, PanelConfig, Props_WorkspacePanel, State_WorkspacePanel} from './types';
 import {ComponentAsync, ComponentSync} from '@nu-art/thunderstorm/frontend';
 import {compare, resolveContent} from '@nu-art/ts-common';

@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
 import {_className, Button, ComponentSync, Grid, LL_H_C, LL_V_C, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
 import {

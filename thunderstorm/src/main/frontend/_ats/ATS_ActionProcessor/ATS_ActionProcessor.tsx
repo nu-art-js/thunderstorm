@@ -1,4 +1,3 @@
-import * as React from 'react';
 import './ATS_ActionProcessor.scss';
 import {_keys, TypedMap} from '@nu-art/ts-common';
 import {Dialog_ActionProcessorConfirmation} from '../dialogs';

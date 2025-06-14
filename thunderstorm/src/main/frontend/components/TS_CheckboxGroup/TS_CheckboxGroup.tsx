@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
 import './TS_CheckboxGroup.scss';

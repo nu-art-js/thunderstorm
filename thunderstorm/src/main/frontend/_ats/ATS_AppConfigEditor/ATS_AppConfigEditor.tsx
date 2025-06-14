@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {AppConfigKey_FE, DB_AppConfig, ModuleFE_AppConfig} from '../../_entity';
 import {LL_H_C, LL_V_L} from '../../components/Layouts';

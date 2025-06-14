@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_ConflictResolution.scss';
 import {

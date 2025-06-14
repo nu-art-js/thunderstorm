@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {HTMLProps, ReactNode} from 'react';
 import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 import {ComponentSync} from '../core/ComponentSync';

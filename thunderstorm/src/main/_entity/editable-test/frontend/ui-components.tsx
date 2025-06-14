@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {DBProto_EditableTest} from '../shared';
 import {ModuleFE_EditableTest} from './ModuleFE_EditableTest';
 import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '../../../frontend';

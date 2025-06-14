@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {AppToolsScreen, ATS_Frontend, ComponentSync} from '@nu-art/thunderstorm/frontend';
 import {Component_DependencyViewer} from '../../dependency-viewer/Component_DependencyViewer';
 

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_JSONViewer_Tree, TS_JSONViewer_Tree_Item} from './types';
 import {_keys, sortArray} from '@nu-art/ts-common';

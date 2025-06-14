@@ -1,13 +1,13 @@
-import * as React from 'react';
 import {
 	_className,
 	AppToolsScreen,
+	Button,
 	ComponentSync,
 	genericNotificationAction,
 	LL_H_C,
-	LL_V_L, ModuleFE_RoutingV2,
+	LL_V_L,
+	ModuleFE_RoutingV2,
 	TS_AppTools,
-	Button,
 	TS_NavLink
 } from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
@@ -53,9 +53,9 @@ export class ATS_Permissions
 
 	componentDidMount() {
 		const routeKeys = [PermissionProjectsEditor.Route.key,
-			PermissionDomainsEditor.Route.key,
-			PermissionGroupsEditor.Route.key,
-			PermissionUsersEditor.Route.key,
+											 PermissionDomainsEditor.Route.key,
+											 PermissionGroupsEditor.Route.key,
+											 PermissionUsersEditor.Route.key,
 		];
 		if (!arrayIncludesAny(window.location.pathname.split('/'), routeKeys))
 			ModuleFE_RoutingV2.goToRoute(PermissionProjectsEditor.Route);

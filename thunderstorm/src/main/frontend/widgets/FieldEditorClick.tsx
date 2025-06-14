@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {HTMLProps, ReactNode} from 'react';
 import {EditorType, FieldEditor, FieldEditorInputProps} from './FieldEditor';
 import {ComponentSync} from '../core/ComponentSync';

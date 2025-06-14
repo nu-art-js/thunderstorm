@@ -3,7 +3,7 @@ import {BadImplementationException, ImplementationMissingException, RecursiveObj
 import {_SessionKey_Session, DB_Session} from '../shared';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {_SessionKey_Account} from '../../account/shared';
-import {HeaderKey_Authorization, HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
+import {HeaderKey_Authorization, HeaderKey_DeviceId, HeaderKey_Origin, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
 
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
@@ -11,6 +11,7 @@ export const MemKey_AccountType = new MemKey<string>('accounts--type', true);
 export const MemKey_SessionData = new MemKey<RecursiveObjectOfPrimitives>('session-data', true);
 export const MemKey_SessionObject = new MemKey<DB_Session>('session-object', true);
 export const Header_Authorization = new HeaderKey(HeaderKey_Authorization, 403);
+export const Header_Origin = new HeaderKey(HeaderKey_Origin, 403);
 export const Header_TabId = new HeaderKey(HeaderKey_TabId);
 export const Header_DeviceId = new HeaderKey(HeaderKey_DeviceId);
 

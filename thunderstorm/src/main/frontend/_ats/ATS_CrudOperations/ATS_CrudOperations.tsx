@@ -1,4 +1,3 @@
-import * as React from 'react';
 import './ATS_CrudOperations.scss';
 import {AppToolsScreen, ATS_Backend} from '../../components/TS_AppTools';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';

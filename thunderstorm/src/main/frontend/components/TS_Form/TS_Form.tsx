@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 
 export type Props_TSForm<T> = {

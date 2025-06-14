@@ -30,12 +30,15 @@ export interface CollectSessionData<R extends TypedKeyValue<any, any>> {
 }
 
 export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<TypedKeyValue<any, any>>, '__collectSessionData'>('__collectSessionData');
-export const Const_Default_AccountSessionId_SecretName = 'account-session-id-signer';
+export const Const_Default_SessionJWT_SecretKey = 'jwt-signer--account-session';
 
 type Config = DBApiConfigV3<DBProto_Session> & {
 	sessionTTLms: number
 	rotationFactor: number
-	accountSessionIdSigner_SecretName: string
+	jwtSigner: {
+		secretKey: string
+		projectId?: string
+	}
 }
 
 type PreDBSessionContent = { accountId: string, deviceId: string, prevSession?: string[], label: string, ttl?: number };
@@ -59,7 +62,7 @@ export class ModuleBE_SessionDB_Class
 		}
 
 		try {
-			const sessionData = this.jwtHandler.verifySignature(authorizationHeader);
+			const sessionData = await this.jwtHandler.verifySignature(authorizationHeader);
 
 			//Get the existing dbSession for this authorizationHeader, there is one, even in previousSessions
 			const md5SessionId = md5(authorizationHeader); // We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
@@ -93,7 +96,9 @@ export class ModuleBE_SessionDB_Class
 		this.setDefaultConfig({
 			sessionTTLms: Day,
 			rotationFactor: 0.5,
-			accountSessionIdSigner_SecretName: Const_Default_AccountSessionId_SecretName
+			jwtSigner: {
+				secretKey: Const_Default_SessionJWT_SecretKey
+			}
 		});
 	}
 
@@ -101,9 +106,9 @@ export class ModuleBE_SessionDB_Class
 		super.init();
 		this.jwtHandler = ModuleBE_JWT.jwtHandler<PreDBSessionContent>({
 			label: 'Session-JWT',
-			secretKey: this.config.accountSessionIdSigner_SecretName,
 			ttl: Day,
-			rotationTTL: 2 * Day
+			rotationTTL: 2 * Day,
+			...this.config.jwtSigner
 		});
 	}
 
@@ -138,7 +143,8 @@ export class ModuleBE_SessionDB_Class
 		},
 		createCustom: async (content: PreDBSessionContent, manipulate: (sessionData: TS_Object) => TS_Object, transaction?: Transaction) => {
 			const sessionData = await this.sessionData.collect(content, manipulate, transaction);
-			const jwt = await this.jwtHandler.create(sessionData.raw as any, content.ttl ?? this.config.sessionTTLms);
+
+			const jwt = await this.jwtHandler.create(sessionData, content.ttl ?? this.config.sessionTTLms);
 
 			const session = filterKeys({
 				accountId: content.accountId,
@@ -153,10 +159,8 @@ export class ModuleBE_SessionDB_Class
 			await this.set.item(session, transaction);
 			return {sessionId: jwt, sessionData: sessionData.raw};
 		},
-		isExpirationValid: (sessionData?: TS_Object) => {
-			const expiration = SessionKey_Session_BE.get(sessionData).expiration;
-			const now = currentTimeMillis();
-			return expiration > now;
+		isExpired: async (sessionJwt: string) => {
+			return await this.jwtHandler.isExpired(sessionJwt);
 		},
 		canRotate: (createdAt: number, sessionData?: TS_Object) => {
 			if (SessionKey_Account_BE.get(sessionData).type === 'service')

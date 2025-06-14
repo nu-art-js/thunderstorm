@@ -32,10 +32,10 @@ export class JWT_Handler<T extends AnyPrimitive>
 	private config: HandlerConfig;
 	readonly secret;
 
-	constructor(config: HandlerConfig & { label: string, secretKey: string }) {
+	constructor(config: HandlerConfig & { label: string, secretKey: string, projectId?: string }) {
 		super(config.label);
 		this.config = config;
-		this.secret = new SecretKey<string[]>(config.secretKey);
+		this.secret = new SecretKey<string[]>(config.secretKey, config.projectId);
 	}
 
 	async create(claims: T, ttl = this.config.ttl): Promise<string> {
@@ -44,10 +44,7 @@ export class JWT_Handler<T extends AnyPrimitive>
 	}
 
 	private async getSecret() {
-		let secret = await this.secret.get();
-		if (!secret)
-			secret = await this.rotateSecret();
-		return secret;
+		return await this.secret.get([generateHex(32)]);
 	}
 
 	async rotateSecret(): Promise<string[]> {
@@ -106,14 +103,14 @@ export class ModuleBE_JWT_Class
 		intervalHandler(this.rotateSecrets, this.config.rotationCheckInterval);
 	}
 
-	jwtHandler<T extends AnyPrimitive>(jwtConfig: Partial<HandlerConfig> & { label: string, secretKey: string }) {
+	jwtHandler<T extends AnyPrimitive>(jwtConfig: Partial<HandlerConfig> & { label: string, secretKey: string, projectId?: string }) {
 		const jwtHandler = new JWT_Handler<T>(merge(this.config.default, jwtConfig));
 		this.handlers.push(jwtHandler);
 		return jwtHandler;
 	}
 
 	async rotateSecrets() {
-		await Promise.all(filterDuplicates(this.handlers, handler => handler.secret.secretKey).map(handler => handler.rotateSecret()));
+		await Promise.all(filterDuplicates(this.handlers, handler => `${handler.secret.secret.projectId}/${handler.secret.secret.key}`).map(handler => handler.rotateSecret()));
 	}
 }
 

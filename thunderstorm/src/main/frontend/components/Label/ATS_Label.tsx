@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {thunderstormATSGroups} from '../../consts';
 import {ComponentSync} from '../../core/ComponentSync';
 import {LL_V_L} from '../Layouts';

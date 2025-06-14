@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {FirebaseAnalyticsModule} from '@nu-art/firebase/frontend';
 // import {TS_Icons} from '@nu-art/ts-styles';
 import {

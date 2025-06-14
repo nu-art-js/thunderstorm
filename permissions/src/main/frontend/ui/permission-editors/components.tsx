@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 import {TS_Icons} from '@nu-art/ts-styles';
 

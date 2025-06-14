@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ModuleFE_Toaster, ToastBuilder} from '../../component-modules/ModuleFE_Toaster';
 import {TS_Toast} from '../../components/TS_Toaster';
 import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';

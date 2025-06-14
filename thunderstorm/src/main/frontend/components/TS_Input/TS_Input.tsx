@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
 import {KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';

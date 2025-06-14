@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {AppToolsScreen, TS_AppTools} from '../TS_AppTools';
 import {LL_H_C, LL_V_L} from '../Layouts';
