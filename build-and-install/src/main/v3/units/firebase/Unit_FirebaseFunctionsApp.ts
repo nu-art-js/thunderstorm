@@ -7,7 +7,7 @@ import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingExcept
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../../core/FileSystemUtils';
-import {Phase_DeployBackend, Phase_Launch} from '../../phase';
+import {Phase_Deploy, Phase_Launch} from '../../phase';
 import {resolve} from 'path';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
@@ -37,7 +37,7 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_Launch, Phase_DeployBackend]> {
+	implements UnitPhaseImplementor<[Phase_Launch, Phase_Deploy]> {
 
 	static staggerCount: number = 0;
 	static DefaultConfig_FirebaseFunction = {
@@ -119,8 +119,15 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		return this.releasePorts(allPorts);
 	}
 
-	async deployBackend() {
-		await this.deployImpl();
+	async deploy() {
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.cd(this.config.output)
+			.ls()
+			.cat('package.json')
+			.cat('index.js')
+			.cd(this.config.fullPath);
+
+		await this.executeAsyncCommando(commando, `firebase --debug deploy --only functions --force`);
 	}
 
 	//######################### ResolveConfig Logic #########################
@@ -332,19 +339,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await this.executeAsyncCommando(commando, `firebase emulators:start --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect-functions ${this.config.debugPort}` : ''}`);
 		this.logWarning('EMULATORS TERMINATED');
-	}
-
-	//######################### Deploy Logic #########################
-
-	private async deployImpl() {
-		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.config.output)
-			.ls()
-			.cat('package.json')
-			.cat('index.js')
-			.cd(this.config.fullPath);
-
-		return this.executeAsyncCommando(commando, `firebase --debug deploy --only functions --force`);
 	}
 
 }

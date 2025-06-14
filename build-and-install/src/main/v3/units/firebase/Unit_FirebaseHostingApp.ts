@@ -8,7 +8,7 @@ import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node';
 import {resolve} from 'path';
-import {Phase_DeployFrontend, Phase_Launch} from '../../phase';
+import {Phase_Deploy, Phase_Launch} from '../../phase';
 
 
 export type FirebaseHostingConfig = {
@@ -38,7 +38,7 @@ const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_Launch, Phase_DeployFrontend]> {
+	implements UnitPhaseImplementor<[Phase_Launch, Phase_Deploy]> {
 
 	static DefaultConfig_FirebaseHosting = {
 		servingPort: 8100,
@@ -76,8 +76,11 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		return this.releasePorts([`${this.config.servingPort}`]);
 	}
 
-	async deployFrontend() {
-		await this.deployImpl();
+	async deploy() {
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.cd(this.config.fullPath);
+
+		await this.executeAsyncCommando(commando, `firebase --debug deploy --only hosting`);
 	}
 
 	//######################### ResolveConfig Logic #########################
@@ -150,14 +153,5 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 		await this.executeAsyncCommando(commando, 'npm run start');
 		this.logWarning('HOSTING TERMINATED');
-	}
-
-	//######################### Deploy Logic #########################
-
-	private async deployImpl() {
-		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.config.fullPath);
-
-		return this.executeAsyncCommando(commando, `firebase --debug deploy --only hosting`);
 	}
 }

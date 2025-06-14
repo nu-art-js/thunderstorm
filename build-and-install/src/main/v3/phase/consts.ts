@@ -139,22 +139,14 @@ export const phases_Launch: Phase<string>[] = [
 
 //######################### Deploy Phases #########################
 
-export type Phase_DeployFrontend = typeof phase_DeployFrontend;
-export const phaseKey_DeployFrontend = 'deploy-frontend';
-export const phase_DeployFrontend: Phase<'deployFrontend'> = {
-	key: phaseKey_DeployFrontend,
-	name: 'Deploy Frontend',
-	method: 'deployFrontend',
-	filter: (baiParams) => !!baiParams.deployFrontend,
-};
 
-export type Phase_DeployBackend = typeof phase_DeployBackend;
-export const phaseKey_DeployBackend = 'deploy-backend';
-export const phase_DeployBackend: Phase<'deployBackend'> = {
-	key: phaseKey_DeployBackend,
-	name: 'Deploy Backend',
-	method: 'deployBackend',
+export type Phase_Deploy = typeof phase_Deploy;
+export const phaseKey_Deploy = 'deploy';
+export const phase_Deploy: Phase<'deploy'> = {
+	key: phaseKey_Deploy,
+	name: 'Deploy',
+	method: 'deploy',
 	filter: (baiParams) => !!baiParams.deployBackend,
 };
 
-export const phases_Deploy: Phase<string>[] = [phase_DeployFrontend, phase_DeployBackend];
+export const phases_Deploy: Phase<string>[] = [phase_Deploy];
