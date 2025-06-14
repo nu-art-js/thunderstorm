@@ -18,7 +18,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as React from 'react';
 import './TS_ToolTip.scss';
 import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity';
 import {resolveContent} from '@nu-art/ts-common';

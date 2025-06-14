@@ -18,6 +18,7 @@
 
 import {createHmac} from 'crypto';
 import { AnyPrimitive } from './types';
+import {decodeJwt, jwtVerify, SignJWT} from 'jose';
 
 // Text encoder instance reused for key derivation
 const te = new TextEncoder();
@@ -35,6 +36,7 @@ export function hashPasswordWithSalt(salt: string | Buffer, password: string | B
 		.update(password)
 		.digest('hex');
 }
+
 
 /**
  * Derive an HMAC‑SHA secret key from a raw string.
@@ -59,7 +61,7 @@ export const JwtTools = {
 	 *                 `expiresIn` is omitted, a 1‑hour token is issued.
 	 */
 	encode: async <T extends AnyPrimitive>(data: T, secret: string, options?: DecodeJWT_Options): Promise<string> => {
-		return new (await import('jose')).SignJWT(data as any)
+		return new SignJWT(data as any)
 			.setProtectedHeader({alg: options?.alg ?? 'HS256', type: 'JWT'})
 			.setExpirationTime(options?.expiresIn ?? '1H')
 			.sign(hmacKey(secret));
@@ -74,11 +76,11 @@ export const JwtTools = {
 		if (secret)
 			return JwtTools.verifySignature(token, secret);
 
-		return (await import('jose')).decodeJwt(token) as T;
+		return decodeJwt(token) as T;
 	},
 
 	verifySignature: async <T extends AnyPrimitive>(token: string, secret: string): Promise<T> => {
-		return (await (await import('jose')).jwtVerify(token, hmacKey(secret))).payload as T;
+		return (await jwtVerify(token, hmacKey(secret))).payload as T;
 	},
 
 	/**
@@ -87,7 +89,7 @@ export const JwtTools = {
 	 */
 	isValidJWT: async (token: string): Promise<boolean> => {
 		try {
-			const {exp} = (await import('jose')).decodeJwt(token);
+			const {exp} = decodeJwt(token);
 			if (exp == null) return false;
 
 			const now = Math.floor(Date.now() / 1000);

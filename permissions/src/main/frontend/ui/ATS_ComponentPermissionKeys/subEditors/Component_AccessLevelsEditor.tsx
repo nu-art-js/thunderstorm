@@ -1,5 +1,4 @@
-import * as React from 'react';
-import {ComponentSync, LL_V_L, Button} from '@nu-art/thunderstorm/frontend';
+import {Button, ComponentSync, LL_V_L} from '@nu-art/thunderstorm/frontend';
 import {dbObjectToId} from '@nu-art/ts-common';
 import {Permissions_DropDown} from '../../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';

@@ -71,7 +71,7 @@ class ModuleFE_Session_Class
 
 	// @ts-ignore
 	private sessionData!: TS_Object;
-	sessionDecoder: SessionDecoder = zippedSessionContent;
+	sessionDecoder: SessionDecoder = sessionContentJWT;
 	private sessionKey: ResolvableContent<string> = 'session-jwt';
 	private StorageKey_SessionId!: StorageKey<string | undefined>;
 
@@ -144,12 +144,12 @@ class ModuleFE_Session_Class
 		return !!this.StorageKey_SessionId.get();
 	}
 
-	public isSessionValid() {
+	public async isSessionValid() {
 		const sessionToken = this.StorageKey_SessionId.get();
 		if (!sessionToken)
 			return false;
 
-		JwtTools.isValidJWT(sessionToken);
+		return JwtTools.isValidJWT(sessionToken);
 	}
 }
 

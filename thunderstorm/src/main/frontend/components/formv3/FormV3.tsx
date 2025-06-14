@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
 import {ComponentType} from 'react';
 import {_keys} from '@nu-art/ts-common';
 import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem';

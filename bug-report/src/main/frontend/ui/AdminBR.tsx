@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
 import {ComponentSync,} from '@nu-art/thunderstorm/frontend';
 import {DB_BugReport} from '../../shared/api';
 import {__stringify} from '@nu-art/ts-common';

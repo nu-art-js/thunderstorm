@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ReactNode} from 'react';
 import {EditableItem} from '../../utils/EditableItem';
 import {TS_PropRenderer} from '../TS_PropRenderer';

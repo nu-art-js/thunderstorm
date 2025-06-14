@@ -22,7 +22,6 @@
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
 import {_className, BaseAsyncState, ComponentSync} from '@nu-art/thunderstorm/frontend';
-import * as React from 'react';
 import './TS_Workspace.scss';
 import {Props_BaseWorkspace} from './types';
 import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace';
@@ -42,7 +41,7 @@ export class TS_Workspace
 	extends ComponentSync<Props, State> {
 
 	private toRender = false;
-	
+
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.key = nextProps.workspaceKey;
 		return state;

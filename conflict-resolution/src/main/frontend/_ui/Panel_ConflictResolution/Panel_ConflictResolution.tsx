@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {DBEntityDependencies} from '@nu-art/thunderstorm';
 import {Button, ComponentSync, LL_H_C, LL_V_L, ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend';
 import {_keys, _values, filterDuplicates, flatArray, RuntimeModules} from '@nu-art/ts-common';

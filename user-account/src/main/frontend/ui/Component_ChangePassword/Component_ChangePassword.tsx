@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {ModuleFE_Account, SessionKeyFE_Account} from '../../_entity';

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Route} from '../../modules/routing/types';
 import {LL_V_L} from '../Layouts';

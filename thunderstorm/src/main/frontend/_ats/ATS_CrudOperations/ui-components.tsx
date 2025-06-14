@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {Filter, filterDuplicates, ResolvableContent, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import {MandatoryProps_TS_DropDown, TS_DropDown} from '../../components/TS_Dropdown';
 import {SimpleListAdapter} from '../../components/adapter/Adapter';

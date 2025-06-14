@@ -1,4 +1,3 @@
-import * as React from 'react';
 import './ATS_AccountEditor.scss';
 import {_className, AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';

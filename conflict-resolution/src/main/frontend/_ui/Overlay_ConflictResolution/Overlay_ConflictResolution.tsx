@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {DBEntityDependencies} from '@nu-art/thunderstorm';
 import {ComponentSync} from '@nu-art/thunderstorm/frontend';
 import './Overlay_ConflictResolution.scss';

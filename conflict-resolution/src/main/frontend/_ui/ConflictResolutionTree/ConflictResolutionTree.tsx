@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {DBEntityDependencies} from '@nu-art/thunderstorm';
 import {Adapter, AdapterBuilder, ComponentSync, TS_Tree} from '@nu-art/thunderstorm/frontend';
 import {calculateConflictResolutionTree} from './tree-calculation';

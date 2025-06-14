@@ -1,7 +1,6 @@
-import {HTMLProps} from 'react';
-import * as React from 'react';
 import {stopPropagation} from '../../utils/tools';
 import {ModuleFE_Thunderstorm} from '../../modules/ModuleFE_Thunderstorm';
+import {HTMLProps} from 'react';
 
 
 export const TS_CopyToClipboard = (_props: HTMLProps<HTMLDivElement> & { textToCopy: string }) => {

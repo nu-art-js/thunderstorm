@@ -1,6 +1,5 @@
 import {ComponentSync} from '../../core/ComponentSync';
 import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
-import * as React from 'react';
 import {LL_H_C, LL_V_L} from '../../components/Layouts';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Component_CollectionGrid} from './Component_CollectionGrid';

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import './ATS_IDBCacheComparison.scss';
 import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';
 import {RuntimeModules} from '@nu-art/ts-common';

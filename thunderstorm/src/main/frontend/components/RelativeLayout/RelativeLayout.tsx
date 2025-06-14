@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {Component, HTMLProps, ReactNode} from 'react';
 import './RelativeLayout.scss';
 import {_className} from '../../utils/tools';

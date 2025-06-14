@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {useEffect} from 'react';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';

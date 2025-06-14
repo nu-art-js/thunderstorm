@@ -125,7 +125,9 @@ export class ModuleBE_PermissionUserDB_Class
 	insertIfNotExist = async (uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) => {
 		const create = async (transaction?: Transaction) => {
 			const defaultPermissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? await ModuleBE_PermissionUserDB.defaultPermissionGroups() : [];
-			const permissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId))) : [];
+			const permissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups
+				? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId)))
+				: [];
 			this.logInfo(`Received ${defaultPermissionGroups.length} groups to assign, ${permissionGroups.length} of which exist`);
 			const permissionsUserToCreate = {
 				_id: uiAccount._id,
@@ -245,7 +247,7 @@ export class ModuleBE_PermissionUserDB_Class
 			//If we have a valid session(not expired) we use its JWT instead of creating a new one
 			let validSession;
 			for (const session of sessions.sessions) {
-				if (!(await ModuleBE_SessionDB.session.isExpired(session))) {
+				if (!(await ModuleBE_SessionDB.session.isExpired(session.sessionIdJwt))) {
 					validSession = session;
 					break;
 				}

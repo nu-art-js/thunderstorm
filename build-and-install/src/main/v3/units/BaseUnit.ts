@@ -6,6 +6,7 @@ import {
 	BeLogged,
 	Constructor,
 	exists,
+	lastElement,
 	LogClient_MemBuffer,
 	Logger,
 	LogLevel,
@@ -43,7 +44,7 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 	readonly config: Readonly<C>;
 	private unitStatus: string = 'Pending Initialization';
 	protected logger!: LogClient_MemBuffer;
-	private classStack: Set<string>;
+	private readonly classStack: string[] = [];
 	private processTerminator: AsyncVoidFunction[] = [];
 	private timeCounter?: TimeCounter;
 	protected runtimeContext!: RT_Context;
@@ -51,7 +52,6 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 	protected constructor(config: C) {
 		super(config.key);
 		this.config = Object.freeze(config);
-		this.classStack = new Set<string>();
 		this.addToClassStack(BaseUnit);
 		this.initLogClient();
 	}
@@ -143,11 +143,15 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 	}
 
 	protected addToClassStack = (cls: Function) => {
-		this.classStack.add(cls.name);
+		this.classStack.push(cls.name);
 	};
 
 	public isInstanceOf = (cls: Function) => {
-		return this.classStack.has(cls.name);
+		return this.classStack.includes(cls.name);
+	};
+
+	public isInstanceType = (cls: Function) => {
+		return lastElement(this.classStack) === cls.name;
 	};
 
 	public getStatus() {

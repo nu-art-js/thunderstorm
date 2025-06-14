@@ -1,6 +1,15 @@
 import {UnitPhaseImplementor} from '../core/types';
 import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
-import {_keys, arrayToMap, BadImplementationException, MUSTNeverHappenException, Promise_all_sequentially, queuedDebounce, Second} from '@nu-art/ts-common';
+import {
+	_keys,
+	arrayToMap,
+	BadImplementationException, flatArray,
+	lastElement,
+	MUSTNeverHappenException,
+	Promise_all_sequentially,
+	queuedDebounce,
+	Second
+} from '@nu-art/ts-common';
 import * as chokidar from 'chokidar';
 import {FSWatcher} from 'chokidar';
 import {Unit_TypescriptLib} from './Unit_TypescriptLib';
@@ -178,11 +187,25 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					return async () => path.unit.removeSpecificFileFromDist(path.path);
 				}));
 
+				const changedKeys = unitsToCompile.map(u => u.config.key);
+				const libsToCompile = unitsMapper.getReverseDependencies(changedKeys);
+				const fullDependencyTree: BaseUnit[][] = (await unitsMapper.buildDependencyTree(libsToCompile))
+					.map(units => units.map(unitKey => keyToInnerUnitMap[unitKey]));
 				if (this.runtimeContext.runtimeParams.watchBuildTree) {
-					const changedKeys = unitsToCompile.map(u => u.config.key);
-					const libsToCompile = unitsMapper.getReverseDependencies(changedKeys);
-					unitDependencyTree = (await unitsMapper.buildDependencyTree(libsToCompile))
-						.map(units => units.map(unitKey => keyToInnerUnitMap[unitKey]));
+					unitDependencyTree = fullDependencyTree;
+				} else {
+					const units = flatArray(unitDependencyTree)
+					const topApps = lastElement(fullDependencyTree);
+					if (topApps?.length) {
+						const items = topApps.filter(unit => {
+							return unit.isInstanceOf(Unit_TypescriptLib)
+								&& !unit.isInstanceType(Unit_TypescriptLib)
+								&& !(unit as Unit_TypescriptLib).config.hasSelfHotReload
+								&& !units.find(u => u.config.key === unit.config.key);
+						});
+						if (items.length)
+							unitDependencyTree.push(items);
+					}
 				}
 
 				const phaseManager = new PhaseManager(this.config.fullPath, [[phase_CompileWatch]], unitDependencyTree, {

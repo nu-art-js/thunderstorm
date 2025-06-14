@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ComponentSync, LL_H_C, Show} from '@nu-art/thunderstorm/frontend';
 import {FocusData_Map, FocusedEntity} from '../../shared';
 import {compare, filterDuplicates, UniqueId} from '@nu-art/ts-common';

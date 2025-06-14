@@ -1,7 +1,6 @@
 import {compare, filterInstances, sortArray, TypedMap} from '@nu-art/ts-common';
 import {ComponentSync} from '../../core/ComponentSync';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
-import * as React from 'react';
 import {Grid} from '../../components/Layouts';
 import './Component_CollectionGrid.scss';
 import {_className} from '../../utils/tools';

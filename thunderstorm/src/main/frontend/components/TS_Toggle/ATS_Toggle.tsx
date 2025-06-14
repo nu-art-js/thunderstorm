@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {TS_Toggle} from './TS_Toggle';
 import {ComponentSync} from '../../core/ComponentSync';
 import {AppToolsScreen} from '../TS_AppTools';

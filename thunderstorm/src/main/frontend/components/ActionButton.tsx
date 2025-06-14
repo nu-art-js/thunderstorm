@@ -19,8 +19,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-
 export const ActionButton = (props: { action: string | (() => void), icon: string, classCss?: string | { [key: string]: any } }) => {
 	let _action: () => any;
 	if (typeof props.action === 'string')

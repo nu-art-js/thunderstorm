@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
 import {_keys, exists, formatTimestamp} from '@nu-art/ts-common';
 import {Account_Login, AccountEmail, AccountPassword, ErrorType_LoginBlocked} from '../../../shared';
 import './Component_Login.scss';

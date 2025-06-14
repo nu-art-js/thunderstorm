@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';
 import {LL_H_C, LL_V_L} from '../../components/Layouts';
 import './ATS_ProtoComponent.scss';

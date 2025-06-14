@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ComponentSync, LL_V_L, MultiSelect_Selector} from '@nu-art/thunderstorm/frontend';
 import {dbObjectToId, sortArray, UniqueId} from '@nu-art/ts-common';
 import {StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect';

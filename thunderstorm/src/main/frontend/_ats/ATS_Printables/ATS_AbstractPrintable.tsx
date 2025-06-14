@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {ReactNode} from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {LL_H_C, LL_V_L} from '../../components/Layouts';
