@@ -1,5 +1,5 @@
 import {TSAnalyticsEvent} from '@nu-art/analytics-shared';
-import {AnalyticsPanel_Base} from './AnalyticsPanel_Base';
+import {AnalyticsPlugin_Base} from './AnalyticsPlugin_Base';
 import mixpanelLib, {Mixpanel} from 'mixpanel';
 import {BadImplementationException, exists, MissingDataException} from '@nu-art/ts-common';
 import {AnalyticPanelConfig} from './types';
@@ -19,17 +19,17 @@ type MixedPanelsEvent = {
 	properties: MixedPanelsEventProperties;
 }
 
-const pluginKey_MixedPanels = 'mixed-panels';
+export const pluginKey_MixedPanels = 'mixed-panels';
 
-type Config = AnalyticPanelConfig<{ mxConfig?: Partial<mixpanelLib.InitConfig> }>
+type MPConfig = AnalyticPanelConfig<{ mxConfig?: Partial<mixpanelLib.InitConfig> }>
 
 export class AnalyticsPlugin_MixedPanels
-	extends AnalyticsPanel_Base<MixedPanelsEvent, Config> {
+	extends AnalyticsPlugin_Base<MixedPanelsEvent, MPConfig> {
 
 	public readonly key = pluginKey_MixedPanels;
 	private mixpanel: Mixpanel | undefined;
 
-	init(config: Config) {
+	init(config: MPConfig) {
 		super.init(config);
 		if (!config.token)
 			throw new MissingDataException(`Missing token for analytics plugin "${pluginKey_MixedPanels}"`);

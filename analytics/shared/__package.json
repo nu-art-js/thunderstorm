@@ -13,8 +13,8 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEP_VERSION"
+    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION"
   },
   "devDependencies": {},
   "private": false,

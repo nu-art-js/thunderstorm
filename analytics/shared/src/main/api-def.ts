@@ -1,7 +1,10 @@
 import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
+import {TSAnalyticsEvent} from './types';
 
 export type Analytics_SendEvent = {
-	request: {};
+	request: {
+		event: TSAnalyticsEvent;
+	};
 	response: void;
 };
 

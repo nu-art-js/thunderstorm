@@ -1,5 +1,5 @@
 import {TSAnalyticsEvent} from '@nu-art/analytics-shared';
-import {debounce} from '@nu-art/ts-common';
+import {debounce, Logger, LogLevel} from '@nu-art/ts-common';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {AnalyticsPluginBaseConfig} from './types';
 
@@ -7,10 +7,11 @@ import {AnalyticsPluginBaseConfig} from './types';
  * C - plugin specific config, to be used later in interface implementations
  * R - Translation response
  */
-export abstract class AnalyticsPanel_Base<
+export abstract class AnalyticsPlugin_Base<
 	R extends any = any,
 	C extends AnalyticsPluginBaseConfig = AnalyticsPluginBaseConfig
-> {
+>
+	extends Logger {
 	/**
 	 * Unique key used to identify this plugin and retrieve its config.
 	 * Example: 'mixpanel', 'amplitude', 'customLogger'
@@ -47,6 +48,11 @@ export abstract class AnalyticsPanel_Base<
 
 	init(config: C) {
 		this.config = config;
+		const tag = `AnalyticsPlugin_${this.key}`;
+		this.setTag(tag);
+		this.setMinLevel(LogLevel.Info);
+		const message = `Loaded - ${this.config.active ? 'Active' : 'Inactive'}`;
+		this.logInfo(message);
 	}
 
 	//######################### Internal Logic #########################
@@ -62,6 +68,9 @@ export abstract class AnalyticsPanel_Base<
 	//######################### Public Logic #########################
 
 	public registerEvent(event: TSAnalyticsEvent) {
+		if (!this.config?.active)
+			return;
+
 		const translatedEvent = this.translateEvent(event);
 		this.eventBuffer.push(translatedEvent);
 		//If the max packet size has not been reached

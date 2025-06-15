@@ -1,4 +1,5 @@
 export type AnalyticsPluginBaseConfig = {
+	active: boolean;
 	token: string;
 	eventPacketSize: number;
 }
