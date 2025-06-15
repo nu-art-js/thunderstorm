@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/analytics-backend",
-  "version": "$THUNDERSTORM_DEP_VERSION",
+  "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "analytics Backend",
   "license": "Apache-2.0",
   "main": "index.js",
@@ -9,14 +9,14 @@
     "build": "tsc"
   },
   "publishConfig": {
-    "directory": "",
+    "directory": "dist",
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/analytics-shared": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/firebase": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/analytics-shared": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
     "mixpanel": "~0.18.1"
   },
   "devDependencies": {},
