@@ -1,1 +1,1 @@
-export * from './ModuleBE_Analytics';
+export * from './_modules/ModuleBE_Analytics';
