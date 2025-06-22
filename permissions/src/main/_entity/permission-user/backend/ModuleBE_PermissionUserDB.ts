@@ -12,6 +12,7 @@ import {
 	filterInstances,
 	filterKeys,
 	flatArray,
+	JwtTools,
 	merge,
 	TS_Object,
 	TypedMap,
@@ -247,7 +248,7 @@ export class ModuleBE_PermissionUserDB_Class
 			//If we have a valid session(not expired) we use its JWT instead of creating a new one
 			let validSession;
 			for (const session of sessions.sessions) {
-				if (!(await ModuleBE_SessionDB.session.isExpired(session.sessionIdJwt))) {
+				if (await JwtTools.isJwtActive(session.sessionIdJwt)) {
 					validSession = session;
 					break;
 				}

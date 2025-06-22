@@ -1,6 +1,6 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {BadImplementationException, ImplementationMissingException, RecursiveObjectOfPrimitives, TypedKeyValue} from '@nu-art/ts-common';
-import {_SessionKey_Session, DB_Session} from '../shared';
+import {DB_Session} from '../shared';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {_SessionKey_Account} from '../../account/shared';
 import {HeaderKey_Authorization, HeaderKey_DeviceId, HeaderKey_Origin, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
@@ -8,8 +8,11 @@ import {HeaderKey_Authorization, HeaderKey_DeviceId, HeaderKey_Origin, HeaderKey
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
 export const MemKey_AccountType = new MemKey<string>('accounts--type', true);
-export const MemKey_SessionData = new MemKey<RecursiveObjectOfPrimitives>('session-data', true);
-export const MemKey_SessionObject = new MemKey<DB_Session>('session-object', true);
+
+export const MemKey_DB_Session = new MemKey<DB_Session>('db-session-object', false);
+export const MemKey_SessionData = new MemKey<RecursiveObjectOfPrimitives>('jwt-claims', false);
+export const MemKey_Jwt = new MemKey<string>('jwt-token', false);
+
 export const Header_Authorization = new HeaderKey(HeaderKey_Authorization, 403);
 export const Header_Origin = new HeaderKey(HeaderKey_Origin, 403);
 export const Header_TabId = new HeaderKey(HeaderKey_TabId);
@@ -31,7 +34,6 @@ export class SessionKey_BE<Binder extends TypedKeyValue<string | number, any>> {
 }
 
 export const SessionKey_Account_BE = new SessionKey_BE<_SessionKey_Account>('account');
-export const SessionKey_Session_BE = new SessionKey_BE<_SessionKey_Session>('session'); // from __collectSessionData with key 'session'....
 
 export async function getAuditorId() {
 	const sessionData = SessionKey_Account_BE.get();

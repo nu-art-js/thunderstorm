@@ -164,6 +164,7 @@ export type Draftable = { _isDraft: boolean };
  * call function 'resolveContent(resolvableContentObject)' to receive the content which is T.
  */
 export type ResolvableContent<T, K extends any[] = any[]> = T | ((...param: K) => T);
+export type ResolvedContent<T extends ResolvableContent<any, any>> = T extends ResolvableContent<infer R, any> ? R : never;
 
 export type Auditable = {
 	_audit?: AuditBy;
@@ -333,7 +334,7 @@ export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };
  * */
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
-export type AsyncVoidFunction = () => Promise<void>;
+export type AsyncVoidFunction<T = void> = () => Promise<T>;
 
 declare const brand: unique symbol;
 //Type to brand a type with uniqueness

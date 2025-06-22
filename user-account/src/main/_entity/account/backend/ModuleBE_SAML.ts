@@ -105,11 +105,11 @@ export class ModuleBE_SAML_Class
 			const accountWithoutPassword = {email: data.userId.toLowerCase(), deviceId: data.loginContext.deviceId, type: 'user'};
 			MemKey_AccountEmail.set(accountWithoutPassword.email);
 
-			const session = await ModuleBE_AccountDB.account.saml(accountWithoutPassword);
+			const dbSession = await ModuleBE_AccountDB.account.saml(accountWithoutPassword);
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 
-			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), 'g'), encodeURIComponent(session.sessionId));
+			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), 'g'), encodeURIComponent(dbSession.sessionIdJwt));
 			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), encodeURIComponent(accountWithoutPassword.email));
 
 			MemKey_HttpResponse.get().redirect(302, redirectUrl);

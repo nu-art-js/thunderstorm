@@ -58,6 +58,7 @@ describe('Accounts - Login', () => {
 	const stormTest = new StormTest({modules, config: {}});
 	before(async () => {
 		await stormTest.init();
+		ModuleBE_SessionDB['jwtHandler']['secret'].get = async () => ['secret'];
 	});
 	beforeEach(async () => {
 		await ModuleBE_FailedLoginAttemptDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
