@@ -19,7 +19,7 @@ class ModuleBE_Analytics_Class
 		super.init();
 		this.initPlugins();
 		addRoutes([
-			createBodyServerApi(ApiDef_Analytics._v1.sendEvent, this.api_sendEvent),
+			createBodyServerApi(ApiDef_Analytics()._v1.sendEvent, this.api_sendEvent),
 		]);
 	}
 

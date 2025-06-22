@@ -14,8 +14,8 @@ export type ApiStruct_Analytics = {
 	}
 }
 
-export const ApiDef_Analytics: ApiDefResolver<ApiStruct_Analytics> = {
+export const ApiDef_Analytics: (baseUrl?: string) => ApiDefResolver<ApiStruct_Analytics> = (baseUrl) => ({
 	_v1: {
-		sendEvent: {method: HttpMethod.POST, path: '/v1/analytics/send-event'},
+		sendEvent: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/send-event'},
 	}
-};
+});
