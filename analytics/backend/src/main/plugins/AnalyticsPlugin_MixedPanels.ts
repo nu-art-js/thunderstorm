@@ -55,9 +55,15 @@ export class AnalyticsPlugin_MixedPanels
 			throw new BadImplementationException(`Calling send before analytics plugin ${pluginKey_MixedPanels} finished initializing`);
 
 		return new Promise<void>((resolve, reject) => {
+			this.logInfo('Sending Event');
 			this.mixpanel!.track_batch(events, {}, (errors: Error[] | undefined) => {
-				if (errors?.length) reject(errors);
-				else resolve();
+				if (errors?.length) {
+					this.logError(errors);
+					reject(errors);
+				} else {
+					this.logInfo('Event Sent');
+					resolve();
+				}
 			});
 		});
 	}
