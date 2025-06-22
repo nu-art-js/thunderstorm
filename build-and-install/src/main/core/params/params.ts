@@ -17,14 +17,6 @@ export const BaiParam_CheckCyclicImports: BaseCliParam<'checkCyclicImports', boo
 	description: 'will check for cyclic imports and render an svg with the import graph'
 };
 
-export const BaiParam_PrintEnv: BaseCliParam<'printEnv', boolean> = {
-	keys: ['--print-env'],
-	keyName: 'printEnv',
-	type: 'boolean',
-	group: 'General',
-	description: 'Will print the current versions of the important tools'
-};
-
 export const BaiParam_continue: BaseCliParam<'continue', boolean> = {
 	keys: ['--continue', '-con'],
 	keyName: 'continue',
@@ -163,7 +155,7 @@ export const BaiParam_WatchBuildTree: BaseCliParam<'watchBuildTree', boolean> = 
 	type: 'boolean',
 	group: 'Build',
 	description: 'Once watch triggers, will build the entire tree that depends on the libs that changed',
-	dependencies: [{param: BaiParam_Watch, value: true}]
+	dependencies: [{param: BaiParam_Watch, value: true}, {param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}]
 };
 
 export const BaiParam_Test: BaseCliParam<'test', boolean> = {
@@ -212,7 +204,7 @@ export const BaiParam_TestDebugPort: BaseCliParam<'testDebugPort', number> = {
 	keyName: 'testDebugPort',
 	type: 'number',
 	group: 'Test',
-	defaultValue: 8001,
+	defaultValue: 8010,
 	description: 'If provided will allow a debugger connection on the specified port, and will run the tests in watch mode',
 	dependencies: [{param: BaiParam_Test, value: true}],
 };
@@ -239,22 +231,6 @@ export const BaiParam_Deploy: BaseCliParam<'deploy', string> = {
 	type: 'string',
 	group: 'Apps',
 	description: 'Will add the provided App to the deploy list or all applications'
-};
-
-export const BaiParam_DeployBackend: BaseCliParam<'deployBackend', string> = {
-	keys: ['--deploy-backend', '-db'],
-	keyName: 'deployBackend',
-	group: 'Apps',
-	type: 'string',
-	description: 'Will add the app-backend to the deploy list'
-};
-
-export const BaiParam_DeployFrontend: BaseCliParam<'deployFrontend', string> = {
-	keys: ['--deploy-frontend', '-df'],
-	keyName: 'deployFrontend',
-	type: 'string',
-	group: 'Apps',
-	description: 'Will add the app frontend to the deploy list'
 };
 
 export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
@@ -333,7 +309,7 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 export const AllBaiParams = [
 	BaiParam_DependencyTree,
 	BaiParam_CheckCyclicImports,
-	BaiParam_PrintEnv,
+
 	BaiParam_Purge,
 	BaiParam_Clean,
 	BaiParam_continue,
@@ -357,10 +333,9 @@ export const AllBaiParams = [
 	BaiParam_TestCase,
 	BaiParam_TestDebugPort,
 	BaiParam_Launch,
-	BaiParam_DebugBackend,
 	BaiParam_Deploy,
-	BaiParam_DeployBackend,
-	BaiParam_DeployFrontend,
+	BaiParam_DebugBackend,
+
 	BaiParam_Debug,
 	BaiParam_Verbose,
 	BaiParam_Publish, // TODO: to implement
@@ -371,3 +346,4 @@ export const AllBaiParams = [
 ];
 
 export type BaiParams = CliParams<typeof AllBaiParams>;
+

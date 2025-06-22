@@ -17,8 +17,10 @@
  */
 
 import {createHmac} from 'crypto';
-import { AnyPrimitive } from './types';
+import {RecursiveObjectOfPrimitives} from './types';
 import {decodeJwt, jwtVerify, SignJWT} from 'jose';
+import {exists} from './tools';
+import {currentTimeMillis} from './date-time-tools';
 
 // Text encoder instance reused for key derivation
 const te = new TextEncoder();
@@ -37,6 +39,10 @@ export function hashPasswordWithSalt(salt: string | Buffer, password: string | B
 		.digest('hex');
 }
 
+export type JWT_BaseClaims = {
+	iat: number
+	exp: number
+}
 
 /**
  * Derive an HMAC‑SHA secret key from a raw string.
@@ -45,7 +51,7 @@ export function hashPasswordWithSalt(salt: string | Buffer, password: string | B
 const hmacKey = (secret: string) => te.encode(secret);
 
 /** Options for encoding a JWT */
-export interface DecodeJWT_Options {
+export interface EncodeJWT_Options {
 	/** Expiration – e.g. '1h', '10m', or absolute epoch seconds */
 	expiresIn?: string | number;
 	/** Signing algorithm – defaults to 'HS256'. Examples: 'RS256', 'ES256', 'EdDSA' */
@@ -60,10 +66,11 @@ export const JwtTools = {
 	 * @param options  Optional `expiresIn` and `alg` (defaults to 'HS256'). If
 	 *                 `expiresIn` is omitted, a 1‑hour token is issued.
 	 */
-	encode: async <T extends AnyPrimitive>(data: T, secret: string, options?: DecodeJWT_Options): Promise<string> => {
+	encode: async <T extends RecursiveObjectOfPrimitives>(data: T, secret: string, options?: EncodeJWT_Options): Promise<string> => {
 		return new SignJWT(data as any)
 			.setProtectedHeader({alg: options?.alg ?? 'HS256', type: 'JWT'})
-			.setExpirationTime(options?.expiresIn ?? '1H')
+			.setIssuedAt()
+			.setExpirationTime(options?.expiresIn ?? '1h')
 			.sign(hmacKey(secret));
 	},
 
@@ -72,27 +79,42 @@ export const JwtTools = {
 	 * – If `secret` is provided, verify signature and registered claims.
 	 * – If omitted, only parse Base64Url segments (⚠️ no integrity check).
 	 */
-	decode: async <T extends AnyPrimitive>(token: string, secret?: string): Promise<T> => {
+	decode: async <T extends RecursiveObjectOfPrimitives & JWT_BaseClaims>(token: string, secret?: string): Promise<T> => {
 		if (secret)
 			return JwtTools.verifySignature(token, secret);
 
 		return decodeJwt(token) as T;
 	},
 
-	verifySignature: async <T extends AnyPrimitive>(token: string, secret: string): Promise<T> => {
+	verifySignature: async <T extends RecursiveObjectOfPrimitives & JWT_BaseClaims>(token: string, secret: string): Promise<T> => {
 		return (await jwtVerify(token, hmacKey(secret))).payload as T;
+	},
+
+
+	/**
+	 * Extract the `iat` (Issued‑At) claim from a token without verifying.
+	 * @returns Epoch seconds or `undefined` if the claim is missing / malformed.
+	 */
+	getCreationTime: async (token: string): Promise<number | undefined> => {
+		try {
+			const {iat} = decodeJwt(token);
+			return typeof iat === 'number' ? iat : undefined;
+		} catch {
+			return undefined;
+		}
 	},
 
 	/**
 	 * Lightweight client‑side freshness check based on the `exp` claim.
 	 * NOTE: This does **not** verify the signature.
 	 */
-	isValidJWT: async (token: string): Promise<boolean> => {
+	isJwtActive: async (token: string): Promise<boolean> => {
 		try {
 			const {exp} = decodeJwt(token);
-			if (exp == null) return false;
+			if (!exists(exp))
+				return false;
 
-			const now = Math.floor(Date.now() / 1000);
+			const now = Math.floor(currentTimeMillis() / 1000);
 			return exp > now;
 		} catch (err) {
 			// Preserve original behaviour: swallow errors and report invalid.
@@ -100,4 +122,35 @@ export const JwtTools = {
 			return false;
 		}
 	},
+	isJwtExpired: async (token: string): Promise<boolean> => {
+		return !(await JwtTools.isJwtActive(token));
+	}
 };
+
+const originalJwtTools_encode = JwtTools.encode;
+const originalJwtTools_verifySignature = JwtTools.verifySignature;
+
+const TEST_JwtTools_BeforeAll = () => {
+	JwtTools.encode = async <T extends RecursiveObjectOfPrimitives>(data: T, secret: string, options?: EncodeJWT_Options): Promise<string> => {
+		return new SignJWT(data as any)
+			.setProtectedHeader({alg: options?.alg ?? 'HS256', type: 'JWT'})
+			.setIssuedAt(Math.floor(currentTimeMillis() / 1000))
+			.setExpirationTime(options?.expiresIn ?? '1h')
+			.sign(hmacKey(secret));
+	};
+
+	JwtTools.verifySignature = async <T extends RecursiveObjectOfPrimitives & JWT_BaseClaims>(token: string, secret: string): Promise<T> => {
+		return (await jwtVerify(token, hmacKey(secret), {currentDate: new Date(currentTimeMillis())})).payload as T;
+	};
+};
+
+const TEST_JwtTools_AfterAll = () => {
+	JwtTools.encode = originalJwtTools_encode;
+	JwtTools.verifySignature = originalJwtTools_verifySignature;
+};
+
+export const TEST_JwtTools = {
+	beforeAll: TEST_JwtTools_BeforeAll,
+	afterAll: TEST_JwtTools_AfterAll,
+};
+

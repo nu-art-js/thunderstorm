@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
-import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, NotImplementedYetException} from '@nu-art/ts-common';
+import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, NotImplementedYetException, TypedMap} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types';
 import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
@@ -57,7 +57,7 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 		const testCases = runtimeContext.runtimeParams.testCases;
 		const cli_testFiles = ` ${files.join(' ')}`;
 		const cli_testCases = testCases ? ` --grep '${testCases.join('|')}'` : '';
-		const cli_watchFiles = files.map(file => `-watch-files '${file}'`).join(' ');
+		const cli_watchFiles = files.map(file => `-watch-files ${file}`).join(' ');
 
 		const debugPort = runtimeContext.runtimeParams.testDebugPort;
 		const cli_debug = debugPort ? ` --inspect=${debugPort} -w ${cli_watchFiles}` : '';
@@ -373,6 +373,17 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		// copyFileSync(defaultEslint, eslintConfigPath);
 	}
 
+	protected deriveTSConfigPaths() {
+		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies([this.config.key]);
+		const dependencyPaths = this.runtimeContext.unitsResolver<Unit_TypescriptLib>(unitKeys, Unit_TypescriptLib);
+
+		return dependencyPaths.reduce((dependencies, unit) => {
+			dependencies[unit.config.key] = [`${unit.config.fullPath}/src/main`];
+			return dependencies;
+		}, {} as TypedMap<string[]>);
+	}
+
+
 	protected async resolveTSConfig(srcFolder: string, sourceFolderType: string) {
 		const entryPath = pathResolve(srcFolder, sourceFolderType);
 		if (!statSync(entryPath).isDirectory()) {
@@ -393,7 +404,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 		if (existsSync(projectDefaultTsConfig)) {
 			this.logDebug(`Copying project-level default tsconfig for source: ${sourceFolderType}`);
-			await FileSystemUtils.file.template.copy(projectDefaultTsConfig, tsConfigPath, {SOURCE_ROOT: entryPath});
+			const dependencyPaths = {}; //this.deriveTSConfigPaths();
+			await FileSystemUtils.file.template.copy(projectDefaultTsConfig, tsConfigPath, {SOURCE_ROOT: entryPath, PATHS: __stringify(dependencyPaths, true)});
 			return;
 		}
 

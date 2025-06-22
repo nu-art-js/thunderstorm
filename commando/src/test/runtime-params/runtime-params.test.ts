@@ -128,7 +128,14 @@ describe('Runtime Params', () => {
 			result: {help: true},
 		}
 	));
-
+	it('distinct -hlp from -h', runTestCase({
+			input: {
+				params: [Param_Help],
+				input: '-hlp'
+			},
+			result: {},
+		}
+	));
 	it('distinct -i and -ip - 1', runTestCase({
 			input: {
 				params: [Param_I, Param_IP],

@@ -11,16 +11,15 @@ export type DBProto_Session = DBProto<Proto>
 export type UI_Session = DBProto_Session['uiType']
 
 export type DB_Session = DB_Object & {
+	// the md5s of the previous session associated with this session for quick query
+	validSessionJwtMd5s: UniqueId[]
+
 	label?: string
-	accountId: string
-	deviceId: string
-	sessionId: string //md5 of sessionIdJwt
+	accountId: UniqueId
+	deviceId: UniqueId
+	// when refreshing a session we are getting a new session object, this is the session id of the db session the new session was created from
+	linkedSessionId?: UniqueId
 	sessionIdJwt: string //jwt
-	timestamp: number
-	needToRefresh?: boolean
-	prevSession?: string[]
 }
 
-export type SessionData_TTL = { timestamp: number, expiration: number, deviceId: string };
 export type _SessionKey_SessionId = TypedKeyValue<'_id', UniqueId>
-export type _SessionKey_Session = TypedKeyValue<'session', SessionData_TTL>

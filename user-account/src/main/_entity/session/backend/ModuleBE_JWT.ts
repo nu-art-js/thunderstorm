@@ -1,24 +1,24 @@
 import {SecretKey} from '@nu-art/google-services/backend/modules/ModuleBE_SecretManager';
 import {
-	addItemToArrayAtIndex,
-	AnyPrimitive,
 	currentTimeMillis,
 	Day,
 	filterDuplicates,
 	generateHex,
 	Hour,
 	intervalHandler,
+	JWT_BaseClaims,
 	JwtTools,
 	Logger,
 	merge,
-	Module
+	Module,
+	MUSTNeverHappenException,
+	RecursiveObjectOfPrimitives
 } from '@nu-art/ts-common';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 
 type HandlerConfig = {
-	ttl: number
-	rotationTTL: number
+	ttlInMs: number
+	rotationIntervalInMs: number
 	maxSecrets: number
 }
 
@@ -27,10 +27,11 @@ type Config = {
 	default: HandlerConfig
 }
 
-export class JWT_Handler<T extends AnyPrimitive>
+export class JWT_Handler<T extends RecursiveObjectOfPrimitives>
 	extends Logger {
 	private config: HandlerConfig;
 	readonly secret;
+	private cache?: string[];
 
 	constructor(config: HandlerConfig & { label: string, secretKey: string, projectId?: string }) {
 		super(config.label);
@@ -38,47 +39,63 @@ export class JWT_Handler<T extends AnyPrimitive>
 		this.secret = new SecretKey<string[]>(config.secretKey, config.projectId);
 	}
 
-	async create(claims: T, ttl = this.config.ttl): Promise<string> {
+	async create(claims: T, ttlInMs = this.config.ttlInMs): Promise<string> {
 		const secret = await this.getSecret();
-		return await JwtTools.encode<T>(claims, secret[0], {expiresIn: currentTimeMillis() + ttl});
+		return await JwtTools.encode<T>(claims, secret[0], {expiresIn: Math.floor((currentTimeMillis() + ttlInMs) / 1000)});
 	}
 
 	private async getSecret() {
-		return await this.secret.get([generateHex(32)]);
+		if (this.cache)
+			return this.cache;
+
+		return this.cache = await this.secret.get([generateHex(32)]);
 	}
 
 	async rotateSecret(): Promise<string[]> {
-		let secret = await this.secret.get([]);
-		if (secret.length === 0) {
-			secret.push(generateHex(32));
-			await this.secret.set(secret);
-			return secret;
-		}
+		delete this.cache;
 
-		if (currentTimeMillis() < (await this.secret.modifiedTimestamp()) + this.config.rotationTTL)
+		let secret = await this.getSecret();
+		if (currentTimeMillis() < (await this.secret.modifiedTimestamp()) + this.config.rotationIntervalInMs)
 			return secret;
 
-		addItemToArrayAtIndex(secret, generateHex(32), 0);
-		secret.length = this.config.maxSecrets;
+		secret = [generateHex(32), ...secret];
+		if (secret.length > this.config.maxSecrets)
+			secret.length = this.config.maxSecrets;
 
 		await this.secret.set(secret);
 		return secret;
 	}
 
-	async isExpired(jwt: string) {
-		return JwtTools.isValidJWT(jwt);
+	async isActive(jwt: string) {
+		return await JwtTools.isJwtActive(jwt);
 	}
 
-	async verifySignature(jwt: string): Promise<T> {
+	async isExpired(jwt: string) {
+		return await JwtTools.isJwtExpired(jwt);
+	}
+
+	async verifySignature(jwt: string): Promise<{ validated: true, claims: T & JWT_BaseClaims } | { validated: false }> {
+		jwt = jwt.replace(/^Bearer\s/, '');
 		const secrets = await this.getSecret();
 		for (const secret of secrets) {
 			try {
-				return await JwtTools.verifySignature(jwt, secret);
+				return {validated: true, claims: await JwtTools.verifySignature(jwt, secret)};
 			} catch (ignore) {
 			}
 		}
 
-		throw HttpCodes._4XX.FORBIDDEN(`Invalid JWT`);
+		return {validated: false};
+	}
+
+	async assert(jwt: string): Promise<T & JWT_BaseClaims> {
+		if (await this.isExpired(jwt))
+			throw new MUSTNeverHappenException(`JWT is expired: ${jwt}`);
+
+		const result = await this.verifySignature(jwt);
+		if (!result.validated)
+			throw new MUSTNeverHappenException(`JWT signature is invalid: ${jwt}`);
+
+		return result.claims;
 	}
 }
 
@@ -92,8 +109,8 @@ export class ModuleBE_JWT_Class
 		this.setDefaultConfig({
 			rotationCheckInterval: Hour,
 			default: {
-				ttl: Hour,
-				rotationTTL: Day,
+				ttlInMs: Hour,
+				rotationIntervalInMs: Day,
 				maxSecrets: 2,
 			}
 		});
@@ -103,7 +120,7 @@ export class ModuleBE_JWT_Class
 		intervalHandler(this.rotateSecrets, this.config.rotationCheckInterval);
 	}
 
-	jwtHandler<T extends AnyPrimitive>(jwtConfig: Partial<HandlerConfig> & { label: string, secretKey: string, projectId?: string }) {
+	jwtHandler<T extends RecursiveObjectOfPrimitives>(jwtConfig: Partial<HandlerConfig> & { label: string, secretKey: string, projectId?: string }) {
 		const jwtHandler = new JWT_Handler<T>(merge(this.config.default, jwtConfig));
 		this.handlers.push(jwtHandler);
 		return jwtHandler;

@@ -17,7 +17,6 @@ import {
 	TS_Object,
 	TypedKeyValue
 } from '@nu-art/ts-common';
-import {ungzip} from 'pako';
 import {BaseHttpRequest, HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 import {QueryParam_SessionId} from '../shared';
@@ -55,14 +54,9 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number | 'accou
 }
 
 type SessionDecoder = (sessionAsString: string) => Promise<TS_Object>;
-export const zippedSessionContent: SessionDecoder = async (sessionAsString: string) => {
-	const decodedJWT = await JwtTools.decode<{ sessionData: string }>(sessionAsString);
-	const base64Zip = decodedJWT.sessionData;
-	return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(base64Zip), c => c.charCodeAt(0)))));
-};
 
 export const sessionContentJWT: SessionDecoder = async (sessionAsString: string) => {
-	return JwtTools.decode<TS_Object>(sessionAsString);
+	return JwtTools.decode(sessionAsString);
 };
 
 class ModuleFE_Session_Class
@@ -149,7 +143,7 @@ class ModuleFE_Session_Class
 		if (!sessionToken)
 			return false;
 
-		return JwtTools.isValidJWT(sessionToken);
+		return JwtTools.isJwtActive(sessionToken);
 	}
 }
 

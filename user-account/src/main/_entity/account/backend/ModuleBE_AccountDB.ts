@@ -3,7 +3,6 @@ import {
 	BadImplementationException,
 	cloneObj,
 	compare,
-	currentTimeMillis,
 	DB_BaseObject,
 	dispatch_onApplicationException,
 	Dispatcher,
@@ -19,7 +18,6 @@ import {addRoutes, createBodyServerApi, createQueryServerApi, ModuleBE_BaseDB} f
 import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
-import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {
 	_SessionKey_Account,
@@ -44,17 +42,16 @@ import {
 } from '../shared';
 import {assertPasswordRules, PasswordAssertionConfig, PasswordAssertionResponseError} from '../../_enum';
 import {
+	BaseSessionClaims,
 	CollectSessionData,
 	Header_Authorization,
 	MemKey_AccountEmail,
 	MemKey_AccountId,
 	MemKey_AccountType,
+	MemKey_DB_Session,
 	ModuleBE_SessionDB,
-	SessionCollectionParam,
 	SessionKey_Account_BE,
-	SessionKey_Session_BE
 } from '../../session/backend';
-import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm/shared/headers';
 import {ModuleBE_FailedLoginAttemptDB} from '../../failed-login-attempt/backend';
 import Transaction = firestore.Transaction;
 
@@ -112,7 +109,7 @@ export class ModuleBE_AccountDB_Class
 
 		addRoutes([
 			createQueryServerApi(ApiDef_Account._v1.refreshSession, async () => {
-				await ModuleBE_SessionDB.session.rotate();
+				this.logInfo(`Refreshing session for account id = ${MemKey_AccountId.get()}`);
 			}),
 			createBodyServerApi(ApiDef_Account._v1.registerAccount, this.account.register),
 			createBodyServerApi(ApiDef_Account._v1.changePassword, this.account.changePassword),
@@ -123,7 +120,11 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
 			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
 			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail),
-			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({config: this.config.ignorePasswordAssertion ? undefined : this.config.passwordAssertion}))
+			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({
+				config: this.config.ignorePasswordAssertion
+					? undefined
+					: this.config.passwordAssertion
+			}))
 		]);
 	}
 
@@ -138,7 +139,7 @@ export class ModuleBE_AccountDB_Class
 		throw HttpCodes._5XX.NOT_IMPLEMENTED('Account Deletion is not implemented yet');
 	}
 
-	async __collectSessionData(data: SessionCollectionParam) {
+	async __collectSessionData(data: BaseSessionClaims) {
 		const account = await this.query.uniqueAssert(data.accountId);
 		return {
 			key: 'account' as const,
@@ -259,13 +260,13 @@ export class ModuleBE_AccountDB_Class
 				return safeAccount;
 			});
 
-			const content = {
+			const initialClaims = {
 				accountId: safeAccount._id,
 				deviceId: credentials.deviceId,
 				label: 'password-login'
 			};
-			const session = await ModuleBE_SessionDB.session.create(content);
-			MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, session.sessionId);
+
+			await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
 			return safeAccount;
 		},
 		create: async (createAccountRequest: Account_CreateAccount['request']): Promise<Account_CreateAccount['response']> => {
@@ -305,17 +306,17 @@ export class ModuleBE_AccountDB_Class
 				}
 				return dbSafeAccount;
 			});
-			const content = {accountId: dbSafeAccount._id, deviceId: oAuthAccount.deviceId, label: 'saml-login'};
-			return ModuleBE_SessionDB.session.create(content);
+			const initialClaims = {accountId: dbSafeAccount._id, deviceId: oAuthAccount.deviceId, label: 'saml-login'};
+			return ModuleBE_SessionDB._session.create({initialClaims});
 		},
 		changePassword: async (passwordToChange: Account_ChangePassword['request']): Promise<Account_ChangePassword['response']> => {
 			return this.runTransaction(async transaction => {
 				const email = MemKey_AccountEmail.get();
-				const deviceId = SessionKey_Session_BE.get().deviceId;
+				const deviceId = MemKey_DB_Session.get().deviceId;
 				await this.account.login({email, deviceId, password: passwordToChange.oldPassword}); // perform login to make sure the old password holds
 
 				if (!compare(passwordToChange.password, passwordToChange.passwordCheck))
-					throw new ApiException(401, 'Password check mismatch');
+					throw HttpCodes._4XX.UNAUTHORIZED('Password check mismatch');
 
 				const safeAccount = await this.impl.querySafeAccount({email});
 
@@ -331,25 +332,24 @@ export class ModuleBE_AccountDB_Class
 					saltedPassword: spicedAccount.saltedPassword
 				}, transaction);
 
-				const content = {
+				const initialClaims = {
 					accountId: updatedAccount._id,
 					deviceId,
 					label: 'password-change'
 				};
-				const newSession = await ModuleBE_SessionDB.session.create(content);
-				MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, newSession.sessionId);
 
+				await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
 				return makeAccountSafe(updatedAccount);
 			});
 		},
 		setPassword: async (passwordBody: Account_SetPassword['request']): Promise<Account_SetPassword['response']> => {
 			return this.runTransaction(async transaction => {
 				const email = MemKey_AccountEmail.get();
-				const deviceId = SessionKey_Session_BE.get().deviceId;
+				const deviceId = MemKey_DB_Session.get().deviceId;
 
 				const dbAccount = await this.impl.queryUnsafeAccount({email}, transaction);
 				if (dbAccount.saltedPassword)
-					throw new ApiException(403, 'account already has password');
+					throw HttpCodes._4XX.FORBIDDEN('account already has password');
 
 				const safeAccount = makeAccountSafe(dbAccount);
 
@@ -361,24 +361,23 @@ export class ModuleBE_AccountDB_Class
 					saltedPassword: spicedAccount.saltedPassword
 				}, transaction);
 
-				const content = {
+				const initialClaims = {
 					accountId: updatedAccount._id,
 					deviceId,
 					label: 'password-set'
 				};
-				const newSession = await ModuleBE_SessionDB.session.create(content);
-				MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, newSession.sessionId);
 
+				await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
 				return makeAccountSafe(updatedAccount);
 			});
 		},
 		logout: async () => {
 			const sessionId = Header_Authorization.get();
 			if (!sessionId)
-				throw new ApiException(404, 'Missing sessionId');
+				throw HttpCodes._4XX.FORBIDDEN('Missing sessionId');
 
 			await dispatch_onPreLogout.dispatchModuleAsync();
-			await ModuleBE_SessionDB.delete.query({where: {sessionId: md5(sessionId)}});
+			await ModuleBE_SessionDB._session.invalidate.bySession();
 		},
 		getSessions: async (query: DB_BaseObject) => {
 			return {sessions: await ModuleBE_SessionDB.query.where({accountId: query._id})};
@@ -422,13 +421,14 @@ export class ModuleBE_AccountDB_Class
 		}
 	};
 
+
 	// @ts-ignore
 	private token = {
 		create: async ({
-						   accountId,
-						   ttl,
-						   label
-					   }: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
+										 accountId,
+										 ttl,
+										 label
+									 }: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
 			if (!exists(ttl) || ttl < Year)
 				throw HttpCodes._4XX.BAD_REQUEST('Invalid token TTL', `TTL value is invalid (${ttl})`);
 
@@ -440,15 +440,12 @@ export class ModuleBE_AccountDB_Class
 			if (account.type !== 'service')
 				throw new BadImplementationException('Can not generate a token for a non service account');
 
-			const content = {accountId, deviceId: accountId, label, ttl};
-			const {sessionId} = await ModuleBE_SessionDB.session.createCustom(content, (sessionData) => {
-				SessionKey_Session_BE.get(sessionData).expiration = currentTimeMillis() + ttl;
-				return sessionData;
-			});
+			const initialClaims = {accountId, deviceId: accountId, label, ttl};
+			const dbSession = await ModuleBE_SessionDB._session.create({initialClaims});
 			// sessionId here is the JWT that is created and placed inside DB_Session.sessionIdJWT
-			return {token: sessionId};
+			return {token: dbSession.sessionIdJwt};
 		},
-		invalidate: async (token: string) => await ModuleBE_SessionDB.delete.where({sessionId: token}),
+		invalidate: async (token: string) => await ModuleBE_SessionDB.delete.where({_id: md5(token)}),
 		invalidateAll: async (accountId: string) => await ModuleBE_SessionDB.delete.where({accountId})
 	};
 }

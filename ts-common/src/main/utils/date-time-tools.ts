@@ -19,6 +19,7 @@
 import {utc} from 'moment';
 import {AuditBy, Timestamp} from './types';
 import {exists} from './tools';
+import {TimeProxy} from './time-proxy';
 
 
 export const Second = 1000;
@@ -134,7 +135,7 @@ export const intervalHandler = <Args extends any[]>(handler: TimerHandler<Args>,
 /**
  * @param comment @deprecated
  */
-export function auditBy(user: string, comment?: string, timestamp: number = currentTimeMillis()): AuditBy {
+export function auditBy(user: string, comment?: string, timestamp = currentTimeMillis()): AuditBy {
 	const _auditBy: AuditBy = {
 		auditBy: user,
 		auditAt: createReadableTimestampObject(Format_HHmmss_DDMMYYYY, timestamp)
@@ -146,7 +147,7 @@ export function auditBy(user: string, comment?: string, timestamp: number = curr
 }
 
 export function currentTimeMillis() {
-	return Date.now();
+	return TimeProxy.currentTimeMillis();
 }
 
 export function specificTimeTodayMillis(hours: number, minutes: number) {

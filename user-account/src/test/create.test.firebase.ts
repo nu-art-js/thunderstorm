@@ -48,6 +48,7 @@ describe('Accounts - Create', () => {
 	const stormTest = new StormTest({modules, config: {}});
 	before(async () => {
 		await stormTest.init();
+		ModuleBE_SessionDB['jwtHandler']['secret'].get = async () => ['secret'];
 	});
 
 	beforeEach(async () => {
