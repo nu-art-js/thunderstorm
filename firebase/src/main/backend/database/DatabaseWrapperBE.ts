@@ -37,6 +37,10 @@ export class DatabaseWrapperBE
 		this.database = getDatabase(firebaseSession.app) as Firebase_DB;
 	}
 
+	public getUrl() {
+		return this.database.app.options.databaseURL;
+	}
+
 	public async get<T>(path: string, fallbackValue?: T): Promise<T> {
 		const snapshot = await this.getRef(path).once('value');
 		let toRet = fallbackValue;

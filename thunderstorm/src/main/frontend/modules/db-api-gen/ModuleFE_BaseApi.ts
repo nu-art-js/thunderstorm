@@ -42,7 +42,7 @@ type Operation = {
 	pending?: Pending
 }
 
-export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config extends {} = {}, Config extends _Config & DBApiFEConfig<Proto> = _Config & DBApiFEConfig<Proto>>
+export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config extends object = object, Config extends _Config & DBApiFEConfig<Proto> = _Config & DBApiFEConfig<Proto>>
 	extends ModuleFE_BaseDB<Proto, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>> {
 
@@ -57,12 +57,12 @@ export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config exten
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
-		const upsert = apiWithBody(apiDef.v1.upsert, async (item, orginal) => {
-			const toRet = await this.onEntryUpdated(item, orginal);
+		const upsert = apiWithBody(apiDef.v1.upsert, async (item, original) => {
+			const toRet = await this.onEntryUpdated(item, JSON.parse(original as unknown as string));
 			this.IDB.setLastUpdated(item.__updated);
 			return toRet;
 		});
-		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
+		const patch = apiWithBody(apiDef.v1.patch, (items) => this.onEntryPatched(items));
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore

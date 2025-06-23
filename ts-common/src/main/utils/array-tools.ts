@@ -100,7 +100,7 @@ export function toggleElementInArray<T>(array: T[], item: T) {
 /**
  * Removes all items answering the condition given from array in place
  */
-export async function filterAsync<T>(arr: T[], filter: (parameter: T) => Promise<boolean>): Promise<T[]> {
+export async function filterAsync<T>(arr: T[], filter: (parameter: T) => (Promise<boolean> | boolean)): Promise<T[]> {
 	//const boolArray = await arr.map(item => filter(item)); changed
 	const boolArray = await Promise.all(arr.map(item => filter(item)));
 	return arr.filter((item, index) => boolArray[index]);
@@ -133,6 +133,7 @@ export function filterDuplicates<T>(source: T[], mapper: (keyof T) | ((item: T) 
 	const uniqueKeys = new Set(source.map(_mapper));
 	return source.filter(item => uniqueKeys.delete(_mapper(item)));
 }
+
 
 /**
  * filter array of all undefined and null

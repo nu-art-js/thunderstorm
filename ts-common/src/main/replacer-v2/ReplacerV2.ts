@@ -2,7 +2,7 @@ import {filterInstances} from '../utils/array-tools';
 
 
 export type ReplacerV2_Input = {
-	[k: string]: string | ((...params: string[]) => string)
+	[k: string]: (string | number) | ((...params: string[]) => (string | number))
 }
 
 export class ReplacerV2 {
