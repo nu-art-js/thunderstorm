@@ -20,7 +20,7 @@ type BaseInfraProps_TS_GenericDropDownV3<T> = ComponentProps_Error & {
 	style?: CSSProperties
 	placeholder?: string;
 	mapper?: (item: T) => (string | undefined)[]
-	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
+	noOptionsRenderer?: React.ReactNode | ((filter?: string) => React.ReactNode);
 	renderer?: (item: T) => React.ReactElement
 	ifNoneShowAll?: boolean
 	caret?: { open: React.ReactNode, close: React.ReactNode }
