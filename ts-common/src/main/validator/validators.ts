@@ -36,7 +36,7 @@ export const tsValidateUniqueId = tsValidateId(dbIdLength);
 export const tsValidator_arrayOfUniqueIds = tsValidateArray(tsValidateUniqueId);
 export const tsValidate_optionalArrayOfUniqueIds = tsValidate_OptionalArray(tsValidateUniqueId);
 
-export const tsValidateDBPointer: (dbDefs: DBDef_V3<any>[], mandatory: boolean) => ValidatorTypeResolver<DBPointer> = (dbDefs, mandatory = true) => {
+export const tsValidateDBPointer: (dbDefs: DBDef_V3<any>[], mandatory?: boolean) => ValidatorTypeResolver<DBPointer> = (dbDefs, mandatory = true) => {
 	const keys = dbDefs.map(def => def.dbKey);
 	return [tsValidateExists(mandatory), (dbRef) => tsValidateResult(dbRef, {
 		dbKey: tsValidateValue(keys),
