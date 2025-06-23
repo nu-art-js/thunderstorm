@@ -36,13 +36,13 @@ export abstract class AnalyticsPlugin_Base<
 	 * A queue for sending the events to the provider.
 	 * @private
 	 */
-	private queue_Events: QueueV2<R[]> = new QueueV2('plugin-events', this.sendEvents);
+	private queue_Events: QueueV2<R[]> = new QueueV2('plugin-events', e => this.sendEvents(e));
 
 	//######################### Abstract Logic #########################
 
 	protected abstract translateEvent(event: TSAnalyticsEvent): R;
 
-	protected abstract sendEvents(events: R[]): Promise<void>;
+	protected abstract sendEvents: (events: R[]) => Promise<void>;
 
 	//######################### Initialization #########################
 
@@ -74,7 +74,7 @@ export abstract class AnalyticsPlugin_Base<
 		const translatedEvent = this.translateEvent(event);
 		this.eventBuffer.push(translatedEvent);
 		//If the max packet size has not been reached
-		if (this.eventBuffer.length < this.config!.eventPacketSize)
+		if (this.eventBuffer.length < this.config!.eventPacketSize ?? 0)
 			return this.debounce_EmptyEventBuffer();
 
 		//Max packet size has been reached, empty the buffer now

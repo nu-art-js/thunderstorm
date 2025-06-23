@@ -12,9 +12,9 @@ export class AnalyticsPlugin_Logger
 		return event;
 	}
 
-	protected async sendEvents(events: any[]) {
+	protected sendEvents = async (events: any[]) => {
 		this.logInfoBold('######## Analytics Event - Start ########');
 		this.logInfo(events);
 		this.logInfoBold('######## Analytics Event - End ########');
-	}
+	};
 }

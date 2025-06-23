@@ -50,21 +50,22 @@ export class AnalyticsPlugin_MixedPanels
 		};
 	}
 
-	protected async sendEvents(events: MixedPanelsEvent[]) {
+	protected sendEvents = async (events: MixedPanelsEvent[]) => {
 		if (!this.mixpanel)
 			throw new BadImplementationException(`Calling send before analytics plugin ${pluginKey_MixedPanels} finished initializing`);
 
 		return new Promise<void>((resolve, reject) => {
-			this.logInfo('Sending Event');
+			this.logDebug('Sending Events');
+			this.logInfo(events);
 			this.mixpanel!.track_batch(events, {}, (errors: Error[] | undefined) => {
 				if (errors?.length) {
 					this.logError(errors);
 					reject(errors);
 				} else {
-					this.logInfo('Event Sent');
+					this.logDebug('Events Sent');
 					resolve();
 				}
 			});
 		});
-	}
+	};
 }
