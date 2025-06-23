@@ -74,7 +74,7 @@ export abstract class AnalyticsPlugin_Base<
 		const translatedEvent = this.translateEvent(event);
 		this.eventBuffer.push(translatedEvent);
 		//If the max packet size has not been reached
-		if (this.eventBuffer.length < this.config!.eventPacketSize ?? 0)
+		if (this.eventBuffer.length < (this.config!.eventPacketSize ?? 0))
 			return this.debounce_EmptyEventBuffer();
 
 		//Max packet size has been reached, empty the buffer now
