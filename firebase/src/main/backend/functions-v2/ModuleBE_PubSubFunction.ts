@@ -1,17 +1,13 @@
-import {__stringify, dispatch_onApplicationNotification, ServerErrorSeverity, TS_Object} from '@nu-art/ts-common';
+import {__stringify, dispatch_onApplicationNotification, ImplementationMissingException, ServerErrorSeverity, TS_Object} from '@nu-art/ts-common';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
-import {CloudFunction} from 'firebase-functions';
-import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
-import {Message} from 'firebase-admin/lib/messaging/messaging-api';
-import {FirebaseEventContext, TopicMessage} from '../functions/firebase-function';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const functions = require('firebase-functions');
+import {TopicMessage} from '../functions/firebase-function';
+import {CloudEvent, CloudFunction} from 'firebase-functions/v2';
+import {MessagePublishedData, onMessagePublished, PubSubOptions} from 'firebase-functions/v2/pubsub';
 
 export abstract class ModuleBE_PubSubFunction<T extends TS_Object>
 	extends ModuleBE_BaseFunction {
 
-	private function!: CloudFunction<ObjectMetadata>;
+	private function!: CloudFunction<CloudEvent<MessagePublishedData<any>>>;
 	private readonly topic: string;
 
 	protected constructor(topic: string, tag?: string) {
@@ -19,11 +15,11 @@ export abstract class ModuleBE_PubSubFunction<T extends TS_Object>
 		this.topic = topic;
 	}
 
-	abstract onPublish(object: T | undefined, originalMessage: TopicMessage, context: FirebaseEventContext): Promise<any>;
+	abstract onPublish(object: T | undefined, originalMessage: TopicMessage, event: CloudEvent<MessagePublishedData>): Promise<any>;
 
-	private _onPublish = async (object: T | undefined, originalMessage: TopicMessage, context: FirebaseEventContext) => {
+	private _onPublish = async (object: T | undefined, originalMessage: TopicMessage, event: CloudEvent<MessagePublishedData>) => {
 		try {
-			return await this.onPublish(object, originalMessage, context);
+			return await this.onPublish(object, originalMessage, event);
 		} catch (e: any) {
 			const _message = `Error publishing pub/sub message` + __stringify(object) +
 				'\n' + ` to topic ${this.topic}` + '\n with attributes: ' + __stringify(originalMessage.attributes) + '\n' + __stringify(e);
@@ -38,23 +34,25 @@ export abstract class ModuleBE_PubSubFunction<T extends TS_Object>
 	};
 
 	getFunction = () => {
+		if (!this.config.topic)
+			throw new ImplementationMissingException('MUST set a topic !!');
+
 		if (this.function)
 			return this.function;
 
-		return this.function = functions.pubsub.topic(this.topic).onPublish(async (message: Message, context: FirebaseEventContext) => {
+		return this.function = onMessagePublished(this.config as PubSubOptions, async (event) => {
 			// need to validate etc...
-			// @ts-ignore
-			const originalMessage: TopicMessage = message;
+			const originalMessage = event.data.message;
 
 			let data: T | undefined;
 			try {
 				data = JSON.parse(Buffer.from(originalMessage.data, 'base64').toString());
 			} catch (e: any) {
 				this.logError(`Error parsing the data attribute from pub/sub message to topic ${this.topic}` +
-					'\n' + __stringify(originalMessage.data) + '\n' + __stringify(e));
+					              '\n' + __stringify(originalMessage.data) + '\n' + __stringify(e));
 			}
 
-			return this.handleCallback(() => this._onPublish(data, originalMessage, context));
+			return this.handleCallback(() => this._onPublish(data, originalMessage, event));
 		});
 	};
 }

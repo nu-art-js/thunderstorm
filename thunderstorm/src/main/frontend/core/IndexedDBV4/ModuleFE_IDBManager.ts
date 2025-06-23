@@ -1,4 +1,4 @@
-import {DBProto, TypedMap} from '@nu-art/ts-common';
+import {AsyncVoidFunction, DBProto, TypedMap} from '@nu-art/ts-common';
 import {IndexedDB_Database} from './IndexedDB_Database';
 import {DBConfigV3} from './types';
 import {IndexedDB_Store} from './IndexedDB_Store';
@@ -7,7 +7,7 @@ import {IndexedDB_Store} from './IndexedDB_Store';
 export class ModuleFE_IDBManager_Class {
 	databases: TypedMap<IndexedDB_Database> = {};
 
-	register<Proto extends DBProto<any>>(dbConfig: DBConfigV3<Proto>, onDBOpenCallback: VoidFunction) {
+	register<Proto extends DBProto<any>>(dbConfig: DBConfigV3<Proto>, onDBOpenCallback: AsyncVoidFunction) {
 		const indexDb = this.databases[dbConfig.group] || (this.databases[dbConfig.group] = new IndexedDB_Database(dbConfig.group));
 		indexDb.registerStore(dbConfig, onDBOpenCallback);
 

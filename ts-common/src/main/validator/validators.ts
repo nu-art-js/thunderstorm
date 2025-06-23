@@ -1,4 +1,4 @@
-import {tsValidateExists, Validator, ValidatorTypeResolver} from './validator-core';
+import {tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
 import {tsValidateArray, tsValidateBoolean, tsValidateRegexp, tsValidateString, tsValidateTimestamp, tsValidateValue} from './type-validators';
 import {AuditableV2, DBPointer} from '../utils/types';
 import {DBDef_V3} from '../db/types';
@@ -17,6 +17,7 @@ export const tsValidateMustExist = tsValidateExists();
 export const tsValidateOptional = tsValidateExists(false);
 
 export const dbIdLength = 32;
+export const dbRefIdLength = 128;
 
 export const tsValidateId = (length: number, mandatory: boolean = true) => tsValidateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
 export const tsValidateEmail = tsValidateRegexp(
@@ -35,12 +36,12 @@ export const tsValidateUniqueId = tsValidateId(dbIdLength);
 export const tsValidator_arrayOfUniqueIds = tsValidateArray(tsValidateUniqueId);
 export const tsValidate_optionalArrayOfUniqueIds = tsValidate_OptionalArray(tsValidateUniqueId);
 
-export const tsValidateDBPointer: (dbDefs: DBDef_V3<any>[]) => ValidatorTypeResolver<DBPointer> = (dbDefs) => {
+export const tsValidateDBPointer: (dbDefs: DBDef_V3<any>[], mandatory?: boolean) => ValidatorTypeResolver<DBPointer> = (dbDefs, mandatory = true) => {
 	const keys = dbDefs.map(def => def.dbKey);
-	return {
+	return [tsValidateExists(mandatory), (dbRef) => tsValidateResult(dbRef, {
 		dbKey: tsValidateValue(keys),
 		id: tsValidateUniqueId,
-	};
+	})];
 };
 
 export const tsValidateOptionalId = tsValidateId(dbIdLength, false);
@@ -53,6 +54,7 @@ export const tsValidator_LowercaseStringWithDashes = tsValidateRegexp(/^[a-z-.]+
 export const tsValidator_LowerUpperStringWithSpaces = tsValidateRegexp(/^[A-Za-z ]+$/);
 export const tsValidator_LowerUpperStringWithDashesAndUnderscore = tsValidateRegexp(/^[A-Za-z-_]+$/);
 export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9] ?){6,14}[0-9]$/);
+export const tsValidator_DB_RefId = tsValidateId(dbRefIdLength);
 
 export const tsValidator_AuditableV2: ValidatorTypeResolver<AuditableV2> = {_auditorId: tsValidateString()};
 

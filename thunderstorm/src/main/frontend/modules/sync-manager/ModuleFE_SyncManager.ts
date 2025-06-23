@@ -183,7 +183,14 @@ export class ModuleFE_SyncManager_Class
 			ApiDef_SyncManager.v1.smartSync.fullUrl = customBase;
 
 		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
-		await apiWithBody(ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
+		try {
+			await apiWithBody(ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
+		} catch (e: any) {
+			this.logError(e);
+			this.syncing = false;
+			this.pendingSync = false;
+			return;
+		}
 		// //If queue is empty
 		// if (!this.syncQueue.getLength())
 		// 	await this.clearSyncingStatus();
@@ -384,7 +391,7 @@ export class ModuleFE_SyncManager_Class
 			rtModule.dispatchMulti(EventType_Query, allItems);
 
 		} catch (e: any) {
-			this.logError(`Error while syncing ${rtModule.dbDef.dbKey}`, e);
+			this.logError(`Error while syncing collection '${rtModule.dbDef.dbKey}'`, e);
 			throw e;
 		} finally {
 			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);

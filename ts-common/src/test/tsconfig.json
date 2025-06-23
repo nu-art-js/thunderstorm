@@ -1,6 +1,0 @@
-{
-  "extends": "../../../dev-tools/typescript/tsconfig-lib-test.json",
-  "compilerOptions": {
-    "esModuleInterop": true
-  }
-}
