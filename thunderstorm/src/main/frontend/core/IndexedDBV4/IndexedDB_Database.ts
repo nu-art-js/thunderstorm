@@ -132,8 +132,8 @@ export class IndexedDB_Database
 				this.setCurrentVersionData(versionData);
 			};
 
-			request.onerror = () => {
-				this.logErrorBold(`Received error when tried to open IDB store for collection ${this.dbName}`);
+			request.onerror = (e) => {
+				this.logErrorBold(`Received error when tried to open IDB store for collection ${this.dbName}`, e);
 				reject(new Error(`Error opening IDB - ${this.dbName}`));
 				delete this.openPromise;
 			};
