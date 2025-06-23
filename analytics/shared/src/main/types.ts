@@ -13,6 +13,8 @@ export type TSAnalyticsEventMetadata = {
 	ip?: string;
 	/** Application version (e.g., '1.2.3') */
 	appVersion?: string;
+	/** Environment the event originated from */
+	env?: string;
 	/** Any additional context metadata */
 	[key: string]: any;
 };
