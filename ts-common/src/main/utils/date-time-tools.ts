@@ -34,6 +34,7 @@ export type Weekday = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday'
 export const Weekdays: Weekday[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 export type TimerHandler = (...args: any[]) => void;
 export type TimeRange = [number, number] | [undefined, number] | [number, undefined];
+export type TimeCounter = { dt: () => number; format: (format: string) => string };
 
 export async function timeout(sleepMs: number) {
 	return new Promise(resolve => setTimeout(resolve, sleepMs, undefined));
@@ -157,4 +158,29 @@ export function deltaDays(d1: Date | number, d2: Date | number): number {
 	//Else, an extra day needs to be given
 	const date2Offset = new Date(date2.getTime() + (days * Day));
 	return isSameDay(date1, date2Offset) ? days : days + 1;
+}
+
+export function timeCounter() {
+	const started = currentTimeMillis();
+	return {
+		dt: () => currentTimeMillis() - started,
+		format: (format: string) => {
+			let dt = currentTimeMillis() - started;
+			const hours = Math.floor(dt / Hour);
+			dt -= hours * Hour;
+
+			const minutes = Math.floor(dt / Minute);
+			dt -= minutes * Minute;
+
+			const seconds = Math.floor(dt / Second);
+			dt -= seconds * Second;
+
+			const millis = dt;
+			return format
+				.replace('hh', String(hours).padStart(2, '0'))
+				.replace('mm', String(minutes).padStart(2, '0'))
+				.replace('ss', String(seconds).padStart(2, '0'))
+				.replace('zzz', String(millis).padStart(3, '0'));
+		}
+	};
 }

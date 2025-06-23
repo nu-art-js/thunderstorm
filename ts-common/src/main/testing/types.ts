@@ -23,18 +23,31 @@ export type Types<Input, Result> = {
 	input: Input;
 }
 
-export type TestModel<Input, ExpectedResult> = {
-	description: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
-	result: ExpectedResult,
-	input: Input,
-}
+export type TestModel<Input, ExpectedResult> = ResolvableContent<
+	{
+		description?: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
+		input: Input,
+	} &
+	({ result: ExpectedResult | ((result: ExpectedResult) => Promise<any>)} |
+	 {
+		 error: { expected: string | RegExp, message?: string, constructor?: Error | Function }
+	 })
+>
+
 
 export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, ExpectedResult>) => void | Promise<void>;
 
 export type TestSuite<Input, ExpectedResult> = {
-	preProcessor?: () => (void | Promise<void>);
+	before?: () => (void | Promise<void>);
 	processor: TestProcessor<Input, ExpectedResult>;
+	after?: () => (void | Promise<void>);
 	testcases: TestModel<Input, ExpectedResult>[];
 	label: string,
 	timeout?: number,
 }
+
+
+export interface TestResetListener {
+	__resetForTests: () => Promise<any>;
+}
+

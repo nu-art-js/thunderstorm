@@ -18,7 +18,7 @@
 
 import {arrayToMap, batchActionParallel, compare, currentTimeMillis, Day, filterDuplicates, filterKeys, KB, LogLevel, Module} from '@nu-art/ts-common';
 
-import {FirebaseType_BatchResponse, FirebaseType_Message, ModuleBE_Firebase, PushMessagesWrapperBE} from '@nu-art/firebase/backend';
+import {FirebaseType_BatchResponse, ModuleBE_Firebase, PushMessagesWrapperBE} from '@nu-art/firebase/backend';
 import {ApiDef_PushMessages, DB_PushSubscription, PushMessage, PushMessage_Payload, PushMessage_PayloadWrapper, Request_PushRegister} from '../../index';
 
 import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
@@ -30,8 +30,9 @@ import {ModuleBE_PushSessionDB} from './ModuleBE_PushSessionDB';
 import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB';
 import {DBProto_PushMessagesHistory} from '../../shared/push-messages-history';
 import {ModuleBE_PushMessagesHistoryDB} from './ModuleBE_PushMessagesHistoryDB';
-import Transaction = firestore.Transaction;
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {Message} from 'firebase-admin/lib/messaging/messaging-api';
+import Transaction = firestore.Transaction;
 
 
 type Config = {
@@ -106,7 +107,7 @@ export class ModuleBE_PushPubSub_Class
 			throw HttpCodes._4XX.BAD_REQUEST(`Message content too long, ${messageLength} > ${this.config.messageLengthLimit}`,);
 
 		const messageSubscription = {topic: message.topic, props: message.filter};
-		return ModuleBE_PushSubscriptionDB.runTransaction(async (transaction: Transaction) => {
+		const newVar = async (transaction: Transaction) => {
 			let subscriptions = await ModuleBE_PushSubscriptionDB.query.where({topic: message.topic}, transaction);
 			this.logVerbose(`Found ${subscriptions.length} subscribers for message: `, messageSubscription);
 			if (message.filter)
@@ -138,7 +139,7 @@ export class ModuleBE_PushPubSub_Class
 				return this.logDebug('No subscribers match message: ', message);
 
 			const dbMessages = await ModuleBE_PushMessagesHistoryDB.create.all(messagesToCreate);
-			const messagesToSend: FirebaseType_Message[] = dbMessages.map(dbMessage => {
+			const messagesToSend: Message[] = dbMessages.map(dbMessage => {
 				const messageBody: PushMessage_Payload = {
 					_id: dbMessage._id,
 					timestamp: dbMessage.__created,
@@ -161,7 +162,8 @@ export class ModuleBE_PushPubSub_Class
 			const {response, messages} = await this.sendMessage(messagesToSend);
 			this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`, 'messages', messages);
 			// return this.cleanUp(response, messages);
-		});
+		};
+		return ModuleBE_PushSubscriptionDB.runTransaction(newVar);
 	};
 
 	// async pushToUser<MessageType extends PushMessage<any, any, any>>(accountId: string, message: MessageType) {
@@ -199,7 +201,7 @@ export class ModuleBE_PushPubSub_Class
 	// 	};
 	// }
 
-	sendMessage = async (messages: FirebaseType_Message[]): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] }> => {
+	sendMessage = async (messages: Message[]): Promise<{ response: FirebaseType_BatchResponse, messages: Message[] }> => {
 		this.logInfo('sending a message to \n' + Object.keys(messages).join('\n'));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
 
@@ -224,7 +226,7 @@ export class ModuleBE_PushPubSub_Class
 		]);
 	};
 
-	cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {
+	cleanUp = async (response: FirebaseType_BatchResponse) => {
 		this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`);
 
 		if (response.failureCount > 0)

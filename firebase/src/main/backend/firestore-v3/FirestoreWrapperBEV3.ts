@@ -126,7 +126,7 @@ export class FirestoreWrapperBEV3
 				}
 
 				// handle query snapshot
-				if (doc instanceof QuerySnapshot<any>) {
+				if (doc instanceof QuerySnapshot) {
 					const docs = doc.docs;
 
 					// @ts-ignore

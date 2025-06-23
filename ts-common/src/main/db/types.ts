@@ -2,6 +2,14 @@ import {DB_Object, DotNotation, DotNotationValueType, OmitDBObject, SubsetObject
 import {ValidatorTypeResolver} from '../validator/validator-core';
 
 
+export type DB_RefId = {
+	refId: {
+		_refId: string
+		dbKey: string
+		id: string
+	}
+}
+
 export type DBIndex<T extends DB_Object> = {
 	id: string,
 	keys: keyof T | (keyof T)[],

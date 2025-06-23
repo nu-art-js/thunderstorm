@@ -19,6 +19,9 @@
   "devDependencies": {
     "@types/react": "$REACT_TYPES_VERSION"
   },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
   "contributors": [
     {
       "name": "cipher_il",

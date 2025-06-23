@@ -16,14 +16,13 @@
  * limitations under the License.
  */
 
-import {EventContext} from 'firebase-functions';
 import {BadImplementationException, Dispatcher} from '@nu-art/ts-common';
-import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_StorageListener} from '@nu-art/firebase/backend';
 import {PermissionsGroup_PushMessanger} from '@nu-art/push-pub-sub/backend/core/permissions';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DefaultDef_ServiceAccount, RequiresServiceAccount, ServiceAccountCredentials} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
+import {StorageEvent} from 'firebase-functions/storage';
 
 
 export interface OnAssetUploaded {
@@ -41,7 +40,7 @@ export class ModuleBE_BucketListener_Class
 		super();
 	}
 
-	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
+	async onFinalize(event: StorageEvent): Promise<any> {
 		// need to create a dispatch that collects a list of services that requires service account and
 		// service account details, the permissions  create project will create these account for the rest of the system ;
 		return new MemStorage().init(async () => {
@@ -50,14 +49,14 @@ export class ModuleBE_BucketListener_Class
 				throw new BadImplementationException('Need to perform project setup to setup this feature');
 
 			MemKey_AccountId.set(accountId);
-			let filePath = object.name || '';
+			let filePath = event.data.name || '';
 			if (filePath.endsWith('}'))
 				filePath = filePath.substring(0, filePath.length - 1);
 
 			this.logInfo(`File was added to bucket: ${filePath}`);
 			await dispatcher_onAssetUploaded.dispatchModuleAsync(filePath);
-			this.logDebug('Object is ', object);
-			this.logDebug('Context is ', context);
+			this.logDebug('Object is ', event.data);
+			this.logDebug('event is ', event);
 		});
 	}
 

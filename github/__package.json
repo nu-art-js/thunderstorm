@@ -31,5 +31,8 @@
   },
   "devDependencies": {
     "@types/jsonwebtoken": "~8.5.0"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

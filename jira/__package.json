@@ -40,10 +40,7 @@
     "@types/request": "^2.48.3",
     "@types/saml2-js": "^1.6.8"
   },
-  "_moduleAliases": {
-    "@consts": "dist/consts",
-    "@modules": "dist/modules",
-    "@shared": "dist/app-shared"
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }
-
