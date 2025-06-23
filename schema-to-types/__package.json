@@ -34,5 +34,8 @@
   },
   "dependencies": {
     "json-schema-to-typescript": "^13.1.1"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

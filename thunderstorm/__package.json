@@ -39,9 +39,10 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-styles": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/ts-styles": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/google-services": "$THUNDERSTORM_DEP_VERSION",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
@@ -63,6 +64,7 @@
     "history": "^4.9.0",
     "moment": "$MOMENT_PKG_VERSION",
     "qs": "^6.6.0",
+    "cors": "^2.8.5",
     "react-window": "^1.8.8",
     "react-virtualized-auto-sizer": "^1.0.12",
     "pako": "^2.1.0",
@@ -71,6 +73,7 @@
   "devDependencies": {
     "@types/papaparse": "^5.3.14",
     "@types/pako": "^2.0.0",
+    "@types/cors": "^2.8.17",
     "@types/react": "$REACT_TYPES_VERSION",
     "@types/react-dom": "$REACT_DOM_TYPES_VERSION",
     "@types/react-router": "$REACT_ROUTER_TYPES_VERSION",
@@ -82,5 +85,8 @@
     "@types/chrome": "^0.0.202",
     "@types/react-window": "^1.8.5",
     "@types/react-virtualized-auto-sizer": "^1.0.1"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

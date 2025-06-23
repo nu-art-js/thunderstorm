@@ -21,6 +21,7 @@ import {LogLevel, LogLevelOrdinal} from './logger/types';
 
 
 export class DebugFlag {
+
 	public static DefaultLogLevel = LogLevel.Info;
 	private readonly key: string;
 	private minLogLevel: LogLevel;
@@ -82,7 +83,7 @@ export class DebugFlags {
 	private constructor() {
 	}
 
-	public static createFlag(key: string, minLogLevel = LogLevel.Info) {
+	public static createFlag(key: string, minLogLevel = DebugFlag.DefaultLogLevel) {
 		// @ts-ignore
 		return new DebugFlag(key, minLogLevel);
 	}

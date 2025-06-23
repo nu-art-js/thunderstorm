@@ -21,6 +21,17 @@ import {deepClone, filterKeys} from './object-tools';
 import {exists} from './tools';
 import {BadImplementationException} from '../core/exceptions/exceptions';
 
+type MergedType<O, U> = {
+													[K in keyof O & keyof U]-?: NonNullable<O[K]> & NonNullable<U[K]>;
+												} & {
+													[K in Exclude<keyof O, keyof U>]?: O[K];
+												} & {
+													[K in Exclude<keyof U, keyof O>]?: U[K];
+												};
+
+export function mergeObjectTyped<Ori, Ove>(original: Ori, override: Ove, unsafe: boolean = false) {
+	return mergeObject(original, override, unsafe) as MergedType<Ori, Ove>;
+}
 
 export function mergeObject(original: any, override: any, unsafe: boolean = false) {
 	if (original === override) {
