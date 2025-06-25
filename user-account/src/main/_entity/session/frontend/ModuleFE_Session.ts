@@ -159,6 +159,8 @@ class ModuleFE_Session_Class
 			return false;
 		}
 	}
+
+	public getJWT = () => this.StorageKey_SessionId.get();
 }
 
 export const ModuleFE_Session = new ModuleFE_Session_Class();

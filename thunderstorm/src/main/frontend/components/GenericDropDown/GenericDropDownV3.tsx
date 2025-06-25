@@ -52,9 +52,9 @@ type EditableItemProps_GenericDropDownV3<T> =
 	BaseAppLevelProps_TS_GenericDropDownV3<T>
 	& UIProps_EditableItem<any, any, string>
 	& {
-	onSelected?: (selected: T | undefined, superOnSelected: (selected?: T) => Promise<void>) => void
-	canUnselect?: boolean
-}
+		onSelected?: (selected: T | undefined, superOnSelected: (selected?: T) => Promise<void>) => void
+		canUnselect?: boolean
+	}
 	& ComponentProps_Error
 
 export type TemplatingProps_TS_GenericDropDown<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
@@ -71,32 +71,32 @@ export type GenericDropDown_DBPointer_Item<Proto extends DBProto<any>> = { dbKey
 export type TemplatingProps_TS_GenericDropDown_DBPointer<Proto extends DBProto<any>, T extends GenericDropDown_DBPointer_Item<Proto> = GenericDropDown_DBPointer_Item<Proto>> =
 	Omit<BaseInfraProps_TS_GenericDropDownV3<T>, 'mapper'>
 	& {
-	placeholder: string;
-	selectedItemRenderer?: (selected: T) => React.ReactNode
-	pointerProps: {
-		[P in Proto as P['dbKey']]: {
-			module: ModuleFE_BaseApi<P>;
-			mapper: (item: GenericDropDown_DBPointer_Item<P>) => string[];
-			renderer: (item: GenericDropDown_DBPointer_Item<P>) => React.ReactElement;
+		placeholder: string;
+		selectedItemRenderer?: (selected: T) => React.ReactNode
+		pointerProps: {
+			[P in Proto as P['dbKey']]: {
+				module: ModuleFE_BaseApi<P>;
+				mapper: (item: GenericDropDown_DBPointer_Item<P>) => string[];
+				renderer: (item: GenericDropDown_DBPointer_Item<P>) => React.ReactElement;
+			}
 		}
 	}
-}
 
 type EditableItemProps_GenericDropDownV3_DBPointer<T> =
 	BaseAppLevelProps_TS_GenericDropDownV3<T>
 	& UIProps_EditableItem<any, any, DBPointer>
 	& {
-	onSelected?: (selected: T | undefined, superOnSelected: (selected?: T) => Promise<void>) => void
-	canUnselect?: boolean
-}
+		onSelected?: (selected: T | undefined, superOnSelected: (selected?: T) => Promise<void>) => void
+		canUnselect?: boolean
+	}
 	& ComponentProps_Error
 
 type Props_TS_GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
 	TemplatingProps_TS_GenericDropDown<T> &
 	BaseAppLevelProps_TS_GenericDropDownV3<T> &
 	Props_CanUnselect<T> & {
-	selected?: Proto['dbType'] | string | (() => Proto['dbType'] | undefined);
-}
+		selected?: Proto['dbType'] | string | (() => Proto['dbType'] | undefined);
+	}
 
 type State<T extends DB_Object> = ComponentProps_Error & {
 	items: T[]
