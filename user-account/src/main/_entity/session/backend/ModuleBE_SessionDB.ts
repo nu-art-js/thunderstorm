@@ -1,4 +1,5 @@
 import {
+	AnyPrimitive,
 	ApiException,
 	currentTimeMillis,
 	Day,
@@ -34,7 +35,7 @@ export type Props_CreateSession = {
 	initialClaims: BaseSessionClaims
 };
 
-export interface CollectSessionData<R extends TypedKeyValue<any, RecursiveObjectOfPrimitives>> {
+export interface CollectSessionData<R extends TypedKeyValue<any, AnyPrimitive>> {
 	__collectSessionData(data: BaseSessionClaims, transaction?: Transaction): Promise<R>;
 }
 

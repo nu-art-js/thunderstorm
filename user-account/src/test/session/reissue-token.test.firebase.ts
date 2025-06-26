@@ -1,21 +1,11 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {currentTimeMillis, generateHex, JwtTools, RecursiveObjectOfPrimitives, ResolvedContent, Void} from '@nu-art/ts-common';
+import {currentTimeMillis, generateHex, JwtTools} from '@nu-art/ts-common';
 import {BaseSessionClaims, ModuleBE_SessionDB} from '../../main/_entity/session/backend';
-import {stormTester, StormTestInputDefault} from '@nu-art/thunderstorm/backend/test/StormTest';
+import {stormTester, StormTestInput} from '@nu-art/thunderstorm/backend/test/StormTest';
 import {TimeProxy} from '@nu-art/ts-common/utils/time-proxy';
 import {expect} from 'chai';
 import {DB_Session} from '../../main';
-import {DefaultStormTestConfig, ModuleDummy_AccountsUser, ModuleDummy_Claims} from './helpers';
+import {DefaultStormTestConfig_Session, ModuleDummy_AccountsUser, ModuleDummy_Claims} from '../utils/helpers';
 
-type Input = {
-	initialClaims: BaseSessionClaims
-	claims: RecursiveObjectOfPrimitives
-};
-
-type Result = void;
-
-type ReissueTestSuite = TestSuite<Input, Result>;
-type TestCase_SessionClaims = ReissueTestSuite['testcases'][number];
 
 const initialClaims: BaseSessionClaims = {
 	accountId: generateHex(32),
@@ -23,27 +13,20 @@ const initialClaims: BaseSessionClaims = {
 	deviceId: generateHex(32)
 };
 
-const testCase = {
-	input: {
-		initialClaims,
-		claims: {}
-	},
-	result: Void
-};
 
-const DefaultStormTest_WithClaims: StormTestInputDefault = {
-	...DefaultStormTestConfig,
+const DefaultStormTest_WithClaims: StormTestInput = {
+	...DefaultStormTestConfig_Session,
 	modules: [
-		...DefaultStormTestConfig.modules,
+		...DefaultStormTestConfig_Session.modules,
 		ModuleDummy_AccountsUser,
 		ModuleDummy_Claims
 	],
 };
 
 
-const testSessionReissued = async (testCase: ResolvedContent<TestCase_SessionClaims>, check: (session: DB_Session) => Promise<DB_Session>) => {
+const testSessionReissued = async (check: (session: DB_Session) => Promise<DB_Session>) => {
 	ModuleDummy_Claims.value = '8888';
-	const session1 = await ModuleBE_SessionDB._session.create({initialClaims: testCase.input.initialClaims});
+	const session1 = await ModuleBE_SessionDB._session.create({initialClaims});
 	const jwt1 = session1.sessionIdJwt;
 
 	expect(session1._id).to.deep.equal(session1.validSessionJwtMd5s[0]);
@@ -82,22 +65,16 @@ const testSessionReissued = async (testCase: ResolvedContent<TestCase_SessionCla
 
 describe('Reissue JWT Token', () => {
 	it('Session Reissue by dbSession', async () => {
-		await stormTester({
-				...DefaultStormTest_WithClaims,
-				testCase
-			},
-			async (testCase) => {
-				return testSessionReissued(testCase, async (session) => await ModuleBE_SessionDB._session.rotate.reissue.bySession(session));
+		await stormTester(DefaultStormTest_WithClaims,
+			async () => {
+				return testSessionReissued(async (session) => await ModuleBE_SessionDB._session.rotate.reissue.bySession(session));
 			});
 	});
 
 	it('Session Reissue by JWT', async () => {
-		await stormTester({
-				...DefaultStormTest_WithClaims,
-				testCase
-			},
-			async (testCase) => {
-				return testSessionReissued(testCase, async (session) => (await ModuleBE_SessionDB._session.rotate.reissue.byJwt(session.sessionIdJwt))!);
+		await stormTester(DefaultStormTest_WithClaims,
+			async () => {
+				return testSessionReissued(async (session) => (await ModuleBE_SessionDB._session.rotate.reissue.byJwt(session.sessionIdJwt))!);
 			});
 	});
 });

@@ -1,10 +1,10 @@
-import {Account_CreateAccount, MemKey_AccountEmail, ModuleBE_AccountDB, ModuleBE_SessionDB} from '../main/backend';
+import {Account_CreateAccount, MemKey_AccountEmail, ModuleBE_AccountDB} from '../main/backend';
 import {Request_RegisterAccount} from '../main';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {PartialProperties} from '@nu-art/ts-common';
-import {StormTest} from '@nu-art/thunderstorm/backend/test/StormTest';
-import {ModuleBE_APIs, ModuleBE_SyncManager} from '@nu-art/thunderstorm/backend';
+import {stormTester, StormTestInput} from '@nu-art/thunderstorm/backend/test/StormTest';
+import {DefaultStormTestConfig_SessionAndAccount} from './utils/helpers';
 
 export type Input = {
 	createCredentials: PartialProperties<Account_CreateAccount['request'], 'password' | 'passwordCheck'>;
@@ -37,75 +37,65 @@ const test = async (input: Input) => {
 
 const runTestCase = (testCase: TestCase_AccountCreate) => async () => runSingleTestCase(test, testCase);
 
+const DefaultStormTest: StormTestInput = {
+	...DefaultStormTestConfig_SessionAndAccount,
+};
+
 describe('Accounts - Create', () => {
-	const modules = [
-		ModuleBE_APIs,
-		ModuleBE_SyncManager,
-		ModuleBE_AccountDB,
-		ModuleBE_SessionDB
-	];
-
-	const stormTest = new StormTest({modules, config: {}});
-	before(async () => {
-		await stormTest.init();
-		ModuleBE_SessionDB['jwtHandler']['secret'].get = async () => ['secret'];
+	it('Create With password', async () => {
+		await stormTester(DefaultStormTest, runTestCase({
+			description: 'Create With password',
+			input: {
+				createCredentials: {
+					email: 'test@email.com',
+					password: '1234',
+					passwordCheck: '1234',
+					type: 'user'
+				}
+			},
+			result: true
+		}));
 	});
 
-	beforeEach(async () => {
-		await ModuleBE_AccountDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-		await ModuleBE_SessionDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	it('Without password', async () => {
+		await stormTester(DefaultStormTest, runTestCase({
+			description: 'Without password',
+			input: {
+				createCredentials: {
+					email: 'test@email.com',
+					type: 'user'
+				}
+			},
+			result: true
+		}));
 	});
 
-	it('Create With password', runTestCase({
-		description: 'Create With password',
-		input: {
-			createCredentials: {
-				email: 'test@email.com',
-				password: '1234',
-				passwordCheck: '1234',
-				type: 'user'
-			}
-		},
-		result: true
-	}));
+	it('Password without passwordCheck', async () => {
+		await stormTester(DefaultStormTest, runTestCase({
+			description: 'Password without passwordCheck',
+			input: {
+				createCredentials: {
+					email: 'test@email.com',
+					password: '1234',
+					type: 'user'
+				}
+			},
 
-	it('Without password', runTestCase({
-		description: 'Without password',
-		input: {
-			createCredentials: {
-				email: 'test@email.com',
-				type: 'user'
-			}
-		},
-		result: true
-	}));
+			error: {expected: '400-"Did not receive'}
+		}));
+	});
 
-	it('Password without passwordCheck', runTestCase({
-		description: 'Password without passwordCheck',
-		input: {
-			createCredentials: {
-				email: 'test@email.com',
-				password: '1234',
-				type: 'user'
-			}
-		},
-
-		error: {expected: '400-"Did not receive'}
-	}));
-
-	it('passwordCheck without password', runTestCase({
-		description: 'passwordCheck without password',
-		input: {
-			createCredentials: {
-				email: 'test@email.com',
-				passwordCheck: '1234',
-				type: 'user'
-			}
-		},
-		error: {expected: '400-"Did not receive'}
-	}));
-
-	after(async () => {
-		await stormTest.cleanup();
+	it('passwordCheck without password', async () => {
+		await stormTester(DefaultStormTest, runTestCase({
+			description: 'passwordCheck without password',
+			input: {
+				createCredentials: {
+					email: 'test@email.com',
+					passwordCheck: '1234',
+					type: 'user'
+				}
+			},
+			error: {expected: '400-"Did not receive'}
+		}));
 	});
 });

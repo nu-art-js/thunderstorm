@@ -441,7 +441,7 @@ class ModuleBE_Permissions_Class
 		const currentUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(MemKey_AccountId.get());
 		(currentUser.groups || (currentUser.groups = [])).push({groupId: GroupId_SuperAdmin});
 		await ModuleBE_PermissionUserDB.set.item(currentUser);
-		await ModuleBE_SessionDB._session.rotate.reissue.();
+		await ModuleBE_SessionDB._session.rotate.reissue.bySession();
 		this.logInfoBold('Assigned SuperAdmin permissions');
 	};
 }

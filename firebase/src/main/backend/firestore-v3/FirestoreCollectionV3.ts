@@ -194,7 +194,6 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		if (canManipulateQuery)
 			tsQuery = this.hooks?.manipulateQuery?.(deepClone(tsQuery)) ?? tsQuery;
 
-		this.logDebug(this.dbDef.dbKey, tsQuery);
 		const firestoreQuery = FirestoreInterfaceV3.buildQuery<Proto>(this, tsQuery);
 		if (transaction)
 			return (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<Proto['dbType']>[];
@@ -292,7 +291,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	set = Object.freeze({
 		item: async (preDBItem: Proto['uiType'], transaction?: Transaction) => {
-			if(!preDBItem._id)
+			if (!preDBItem._id)
 				await this.hooks?.preWriteProcessing?.(preDBItem, undefined, transaction);
 
 			return await this.doc.item(preDBItem).set(preDBItem, transaction);

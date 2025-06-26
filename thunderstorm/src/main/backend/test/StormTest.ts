@@ -1,4 +1,4 @@
-import {AsyncVoidFunction, generateHex, Module, ModuleManager, RecursiveObjectOfPrimitives, TS_Object} from '@nu-art/ts-common';
+import {AsyncVoidFunction, generateHex, Module, ModuleManager, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
 import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase/backend';
 import {RouteResolver_Dummy} from '../modules/server/route-resolvers/RouteResolver_Dummy';
 import {Storm} from '../core/Storm';
@@ -9,10 +9,10 @@ import {TestModel} from '@nu-art/ts-common/testing/types';
 type StormTestConfig = {
 	databaseName?: string,
 	modules: Module[],
-	config: TS_Object
+	config: RecursiveObjectOfPrimitives
 };
 
-export type StormTestInputDefault = {
+export type StormTestInput = {
 	modules: Module[];
 	config?: RecursiveObjectOfPrimitives
 	cleanup?: AsyncVoidFunction
@@ -20,9 +20,6 @@ export type StormTestInputDefault = {
 	after?: AsyncVoidFunction
 };
 
-export type StormTestInput<TestCase extends TestModel<any, any>> = StormTestInputDefault & {
-	testCase: TestCase
-};
 
 export class StormTest {
 
@@ -60,17 +57,20 @@ export class StormTest {
 	}
 }
 
-export const stormTester = async <TestCase extends TestModel<any, any>>(stormTestInput: StormTestInput<TestCase>, testCaseRunner: (testCase: TestCase) => Promise<void>) => {
-	const stormTest = new StormTest({modules: stormTestInput.modules, config: {}});
+
+export const stormTester = async <TestCase extends TestModel<any, any>>(stormTestInput: StormTestInput, testCaseRunner: () => Promise<void>) => {
+	const stormTest = new StormTest({modules: stormTestInput.modules, config: stormTestInput.config ?? {}});
+	console.log(stormTestInput.config);
 	await stormTest.init();
-	await stormTestInput.before?.();
-	await stormTestInput.cleanup?.();
 	try {
-		await testCaseRunner(stormTestInput.testCase);
+		await stormTestInput.before?.();
+		await testCaseRunner();
 	} finally {
-		await stormTestInput.cleanup?.();
-		await stormTest.cleanup();
+		// first we do all the applicative test cleanups, for example, delete firestore collections
 		await stormTestInput.after?.();
+
+		// only then we clean infra stuff, like firebase apps
+		await stormTest.cleanup();
 	}
 };
 
