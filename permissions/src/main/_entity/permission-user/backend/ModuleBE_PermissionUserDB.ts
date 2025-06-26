@@ -5,6 +5,7 @@ import {
 	_keys,
 	ApiException,
 	asOptionalArray,
+	batchActionParallel,
 	DB_BaseObject,
 	dbObjectToId,
 	exists,
@@ -16,6 +17,7 @@ import {
 	merge,
 	TS_Object,
 	TypedMap,
+	UniqueId,
 	Year
 } from '@nu-art/ts-common';
 import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
@@ -120,7 +122,7 @@ export class ModuleBE_PermissionUserDB_Class
 		const beforeIds = (asOptionalArray(data.before) ?? []).map(before => before?._id);
 
 		const accountIdToInvalidate = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i?._id))).filter(id => beforeIds.includes(id));
-		await ModuleBE_SessionDB.session.invalidate(accountIdToInvalidate);
+		await this.invalidateSession(accountIdToInvalidate);
 	}
 
 	insertIfNotExist = async (uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) => {
@@ -275,6 +277,16 @@ export class ModuleBE_PermissionUserDB_Class
 				await envConfigRef.set(merge(currentConfig, updatedConfig));
 				this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
 			});
+	}
+
+	public async invalidateSession(accountIds: UniqueId[]) {
+		if (!accountIds.length)
+			return;
+
+		const sessions = await batchActionParallel(accountIds, 10, async ids => await ModuleBE_SessionDB.query.custom({where: {accountId: {$in: ids}}}));
+		await this.runTransaction(async (t) => {
+			await Promise.all(sessions.map(session => ModuleBE_SessionDB._session.invalidate.bySession(session, t)));
+		});
 	}
 }
 

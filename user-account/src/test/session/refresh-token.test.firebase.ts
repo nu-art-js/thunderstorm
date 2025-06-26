@@ -1,21 +1,10 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {currentTimeMillis, generateHex, JwtTools, RecursiveObjectOfPrimitives, ResolvedContent, Void} from '@nu-art/ts-common';
+import {currentTimeMillis, generateHex, JwtTools} from '@nu-art/ts-common';
 import {BaseSessionClaims, ModuleBE_SessionDB} from '../../main/_entity/session/backend';
 import {stormTester} from '@nu-art/thunderstorm/backend/test/StormTest';
 import {TimeProxy} from '@nu-art/ts-common/utils/time-proxy';
 import {expect} from 'chai';
 import {DB_Session} from '../../main';
-import {DefaultStormTestConfig, ModuleDummy_AccountsUser} from './helpers';
-
-type Input = {
-	initialClaims: BaseSessionClaims
-	claims: RecursiveObjectOfPrimitives
-};
-
-type Result = void;
-
-type EmailValidationSuite = TestSuite<Input, Result>;
-type TestCase_SessionClaims = EmailValidationSuite['testcases'][number];
+import {DefaultStormTestConfig_Session, ModuleDummy_AccountsUser} from '../utils/helpers';
 
 const initialClaims: BaseSessionClaims = {
 	accountId: generateHex(32),
@@ -24,19 +13,12 @@ const initialClaims: BaseSessionClaims = {
 };
 
 const StormTestConfig_User = {
-	...DefaultStormTestConfig,
-	modules: [...DefaultStormTestConfig.modules, ModuleDummy_AccountsUser],
-	testCase: {
-		input: {
-			initialClaims,
-			claims: {}
-		},
-		result: Void
-	}
+	...DefaultStormTestConfig_Session,
+	modules: [...DefaultStormTestConfig_Session.modules, ModuleDummy_AccountsUser],
 };
 
-const testSessionRefreshed = async (testCase: ResolvedContent<TestCase_SessionClaims>, check: (session: DB_Session) => Promise<DB_Session>) => {
-	const session1 = await ModuleBE_SessionDB._session.create({initialClaims: testCase.input.initialClaims});
+const testSessionRefreshed = async (check: (session: DB_Session) => Promise<DB_Session>) => {
+	const session1 = await ModuleBE_SessionDB._session.create({initialClaims});
 	const jwt1 = session1.sessionIdJwt;
 
 	expect(session1._id).to.deep.equal(session1.validSessionJwtMd5s[0]);
@@ -69,15 +51,15 @@ const testSessionRefreshed = async (testCase: ResolvedContent<TestCase_SessionCl
 describe('Refresh JWT Token', () => {
 	it('Session Refresh by Session', async () => {
 		await stormTester(StormTestConfig_User,
-			async (testCase: ResolvedContent<TestCase_SessionClaims>) => {
-				return testSessionRefreshed(testCase, async (session) => await ModuleBE_SessionDB._session.rotate.refreshIfNeeded.bySession(session));
+			async () => {
+				return testSessionRefreshed(async (session) => await ModuleBE_SessionDB._session.rotate.refreshIfNeeded.bySession(session));
 			});
 	});
 
 	it('Session Refresh by JWT', async () => {
 		await stormTester(StormTestConfig_User,
-			async (testCase: ResolvedContent<TestCase_SessionClaims>) => {
-				return testSessionRefreshed(testCase, async (session) => (await ModuleBE_SessionDB._session.rotate.refreshIfNeeded.byJwt(session.sessionIdJwt))!);
+			async () => {
+				return testSessionRefreshed(async (session) => (await ModuleBE_SessionDB._session.rotate.refreshIfNeeded.byJwt(session.sessionIdJwt))!);
 			});
 	});
 });

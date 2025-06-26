@@ -11,6 +11,7 @@ import {LogLevel} from '../core/logger/types';
 import {StaticLogger} from '../core/logger/Logger';
 import {BadImplementationException} from '../core/exceptions/exceptions';
 import {Dispatcher} from '../core/dispatcher';
+import {Void} from '../utils/types';
 
 chai.use(chaiAsPromised);
 BeLogged.addClient(LogClient_Terminal);
@@ -65,6 +66,20 @@ export const defaultTestProcessor: DefaultTestProcessor = async (promisedResult,
 	expect(result).to.deep.equal(expectedResult);
 };
 
+
+export const runScenario = <Result, ExpectedResult = Result>(test: () => Promise<Result>, _testCase?: TestModel<void, ExpectedResult>, processor = defaultTestProcessor) => {
+	let testCase;
+	if (_testCase)
+		testCase = resolveContent(_testCase);
+	else
+		testCase = {
+			input: Void,
+			result: async (r: ExpectedResult) => {
+			}
+		};
+
+	return async () => runSingleTestCase(test, testCase, processor);
+};
 
 export const runSingleTestCase = async <Input, Result, ExpectedResult = Result>(test: (input: Input) => Promise<Result>, _testCase: TestModel<Input, ExpectedResult>, processor = defaultTestProcessor) => {
 	const testCase = resolveContent(_testCase);
