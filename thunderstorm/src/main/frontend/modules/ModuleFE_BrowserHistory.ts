@@ -111,10 +111,10 @@ export class ModuleFE_BrowserHistory_Class
     }
 
     addQueryParam(key: string, value: string) {
-        const encodedQueryParams = this.getEncodedQueryParams();
-        encodedQueryParams[key] = encodeURIComponent(value);
+        const decodedQueryParams = this.getQueryParams();
+        decodedQueryParams[key] = value;
 
-        this.updateQueryParams(encodedQueryParams);
+        this.updateQueryParams(decodedQueryParams);
     }
 
     removeQueryParam(key: string) {
