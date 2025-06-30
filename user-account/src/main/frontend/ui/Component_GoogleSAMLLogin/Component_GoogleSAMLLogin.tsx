@@ -25,7 +25,7 @@ export const Component_GoogleSAMLLogin = (props: Props) => {
 		className={'ts-account__saml-button'}
 		onClick={onClick}
 	>
-		<div className={'ts-account__saml-button__text'}>{props.text ?? 'Login With Google'}</div>
+		{props.text ?? 'Login With Google'}
 		<TS_Icons.google.component className={'ts-account__saml-button__icon'}/>
 	</Button>;
 };
