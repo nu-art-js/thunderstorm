@@ -18,7 +18,7 @@
 
 import {DotNotation, TS_Object, TypedMap} from './types';
 import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
-import {asArray} from './array-tools';
+import {asArray, sortArray} from './array-tools';
 import {merge} from './merge-tools';
 import {exists} from './tools';
 
@@ -45,6 +45,17 @@ export function _keys<T extends { [k: string]: any }, K extends keyof T>(instanc
 
 export function _values<T extends TS_Object = TS_Object>(object: T): (T[keyof T])[] {
 	return Object.values(object) as (T[keyof T])[];
+}
+
+export function _entries<T extends TS_Object = TS_Object, K extends keyof T = keyof T>(obj: T): { key: K, value: T[K] }[] {
+	return Object.entries(obj).map(entry => ({key: entry[0], value: entry[1]} as { key: K, value: T[K] }));
+}
+
+export function sortObject<T extends TS_Object = TS_Object>(obj: T, sortFunction?: ((key: keyof T) => any)): T {
+	return sortArray(_keys(obj), sortFunction).reduce((toRet, key) => {
+		toRet[key] = obj[key];
+		return toRet;
+	}, {} as T);
 }
 
 export function _setTypedProp<T extends TS_Object>(instance: T, key: keyof T, value: T[keyof T]) {
