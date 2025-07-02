@@ -8,13 +8,12 @@ type Dependencies = {}
 
 type UniqueKeys = '_id';
 type GeneratedProps = never
-type Proto = Proto_DB_Object<DB_AppConfig, 'app-configs', GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Proto<D> = Proto_DB_Object<DB_AppConfig<D>, 'app-configs', GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
-export type DBProto_AppConfig = DBProto<Proto>;
+export type DBProto_AppConfig<D = any> = DBProto<Proto<D>>;
 
 export type UI_AppConfig = DBProto_AppConfig['uiType'];
-export type DB_AppConfig = DB_Object & {
+export type DB_AppConfig<D = any> = DB_Object & {
 	key: string;
-	data: any;
+	data: D;
 }
-
