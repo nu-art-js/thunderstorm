@@ -114,7 +114,7 @@ export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbTy
 			const {editable, prop, ...restProps} = props;
 
 			const onSelected = async (item: Proto['dbType']) => {
-				await editable.updateObj({[prop]: item._id});
+				await editable.updateObj({[prop]: item?._id});
 			};
 
 			return <GenericDropDownV3<Proto>
