@@ -288,8 +288,18 @@ export class ModuleBE_BackupDocDB_Class
 
 		try {
 			this.logInfoBold('Received older backups to delete, count: ' + oldBackupsToDelete.length);
-			await Promise.all(oldBackupsToDelete.map(async oldDoc => (filterInstances([oldDoc.metadataPath, oldDoc.backupPath, oldDoc.firebasePath])
-				.map(async path => (await bucket.getFile(path)).delete()))));
+			const backupDeleteOperations = oldBackupsToDelete
+				.map(doc => filterInstances([doc.metadataPath, doc.backupPath, doc.firebasePath]))
+				.flat()
+				.map(path => async () => {
+					try {
+						const file = await bucket.getFile(path);
+						file.delete();
+					} catch (err: any) {
+						this.logError(`Failed deleting file at path: ${path}`, err);
+					}
+				});
+			await Promise.all(backupDeleteOperations);
 			await this.collection.delete.all(oldBackupsToDelete);
 			this.logInfoBold('Successfully deleted old backups');
 		} catch (err: any) {
