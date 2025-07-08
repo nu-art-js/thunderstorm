@@ -79,16 +79,15 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 	 * @private
 	 */
 	private findMatchingParamToResolve(inputParam: string) {
-		let maxKeyLength = 0;
 		let matchingParam: CliParam<string, any> | undefined;
 
-		// look for the longest fitting param in order to make sure we find the perfect match
 		this.params.forEach((param) => {
 			param.keys.forEach((key) => {
-				if (inputParam === key && key.length > maxKeyLength) {
-					maxKeyLength = key.length;
+				if (inputParam === key)
 					matchingParam = param;
-				}
+
+				if (inputParam.startsWith(`${key}=`))
+					matchingParam = param;
 			});
 		});
 
