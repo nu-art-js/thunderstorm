@@ -19,6 +19,7 @@ export const Param_I: BaseCliParam<'i', boolean> = {
 	group: 'General',
 	description: ''
 };
+
 export const Param_IP: BaseCliParam<'ip', boolean> = {
 	keys: ['-ip'],
 	keyName: 'ip',
@@ -198,6 +199,14 @@ describe('Runtime Params', () => {
 				input: '-ip -i'
 			},
 			result: {i: true, ip: true},
+		}
+	));
+	it('distinct -ip and -i - 5', runTestCase({
+			input: {
+				params: [Param_I],
+				input: '-isdfsdf'
+			},
+			result: {},
 		}
 	));
 	it('take last value of all appearances of string param short flag', runTestCase({
