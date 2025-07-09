@@ -70,6 +70,7 @@ export * from './components/TS_DragAndDrop';
 export * from './components/TS_MemoryMonitor';
 export * from './components/TS_Link';
 export * from './components/TS_CollapsableContainer';
+export * from './components/TS_CollapsableContainerV2';
 export * from './components/TS_ButtonLoader';
 export * from './components/TS_Toggler';
 export * from './components/TS_Space';
