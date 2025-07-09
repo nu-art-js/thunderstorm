@@ -238,3 +238,20 @@ export function reduceObject<ACC, T extends TypedMap<any>>(object: T, acc: ACC, 
 		return reducer(accumulator, typedKey, object[typedKey]);
 	}, acc);
 }
+
+
+export function deepFreeze<T>(object: T): T {
+	if (object === null || typeof object !== 'object')
+		return object;
+
+	// Freeze each property before freezing self
+	for (const key of Object.getOwnPropertyNames(object)) {
+		const value = (object as any)[key];
+
+		if (typeof value === 'object' && value !== null && !Object.isFrozen(value))
+			deepFreeze(value);
+	}
+
+	return Object.freeze(object);
+}
+
