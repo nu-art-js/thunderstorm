@@ -31,8 +31,11 @@ export class AnalyticsPlugin_MixedPanels
 
 	init(config: MPConfig) {
 		super.init(config);
-		if (!config.token)
-			throw new MissingDataException(`Missing token for analytics plugin "${pluginKey_MixedPanels}"`);
+		if (!config.token) {
+			if (config.active)
+				throw new MissingDataException(`Missing token for analytics plugin "${pluginKey_MixedPanels}"`);
+			else return;
+		}
 		this.mixpanel = mixpanelLib.init(config.token, config.mxConfig);
 	}
 
