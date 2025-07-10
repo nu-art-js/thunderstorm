@@ -78,8 +78,8 @@ export class TS_CollapsableContainerV2
 
 	private render_Header() {
 		return <LL_H_C className={'ts-collapsable-container-v2__header'} onClick={this.toggleCollapse} onContextMenu={this.props.onHeaderRightClick}>
-			<div className={'ts-collapsable-container-v2__header-content'}>{resolveContent(this.props.headerRenderer)}</div>
 			{this.render_Header_Caret()}
+			<div className={'ts-collapsable-container-v2__header-content'}>{resolveContent(this.props.headerRenderer)}</div>
 		</LL_H_C>;
 	}
 

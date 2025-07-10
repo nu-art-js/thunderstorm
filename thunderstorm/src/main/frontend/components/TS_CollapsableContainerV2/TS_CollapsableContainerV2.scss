@@ -7,13 +7,10 @@
   .ts-collapsable-container-v2__header {
     width: 100%;
     height: 32px;
-    justify-content: space-between;
-    gap: 8px;
     cursor: pointer;
     background: styles.gray-blue(5);
 
     .ts-collapsable-container-v2__header-content {
-      padding-left: 6px;
       color: #fff;
       font: {
         size: 14px;
