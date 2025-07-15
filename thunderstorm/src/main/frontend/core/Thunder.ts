@@ -24,10 +24,12 @@ import {
 	AsyncVoidFunction,
 	BeLogged,
 	ImplementationMissingException,
-	LogClient_BrowserGroups, merge,
+	LogClient_BrowserGroups,
+	merge,
 	ModuleManager,
 	Promise_all_sequentially,
-	removeItemFromArray, TS_Object
+	removeItemFromArray,
+	TS_Object
 } from '@nu-art/ts-common';
 import {ThunderDispatcher} from './thunder-dispatcher';
 
@@ -42,6 +44,7 @@ import axios from 'axios';
 export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();
 
 export type ThunderConfig = {
+	defaultConfigUrl?: string
 	configUrl: string
 }
 
@@ -59,7 +62,7 @@ export class Thunder
 		super();
 		this._DEBUG_FLAG.enable(false);
 		// @ts-ignore
-		ThunderDispatcher.listenersResolver = () => this.listeners;
+		ThunderDispatcher['listenersResolver'] = () => this.listeners;
 		this.addPreBuildAction(this.fetchConfig.bind(this)); // add config resolver as a pre build action
 
 		this.innerConfig = Object.freeze(config);
@@ -92,11 +95,22 @@ export class Thunder
 
 	private async fetchConfig() {
 		try {
-			const config = await axios.get<TS_Object | undefined>(this.innerConfig.configUrl);
-			if (!config.data || typeof config.data !== 'object')
-				return this.logWarning('cannot merge config, received no data or a non-object data');
+			const promises: Promise<TS_Object | undefined>[] = [];
+			if (this.innerConfig.defaultConfigUrl)
+				promises.push(axios.get<TS_Object | undefined>(this.innerConfig.defaultConfigUrl));
+			else
+				promises.push((async () => ({data: {}}))());
 
-			this.config = merge(this.config, config.data);
+			promises.push(axios.get<TS_Object | undefined>(this.innerConfig.configUrl));
+			const [defaultConfig, envConfig] = await Promise.all(promises);
+			if (typeof defaultConfig?.data !== 'object')
+				return this.logWarning('default config is not an object');
+
+			if (typeof envConfig?.data !== 'object')
+				return this.logWarning('env config is not an object');
+
+
+			this.config = merge(merge(this.config, defaultConfig.data), envConfig.data);
 		} catch (err: any) {
 			this.logError('failed loading config with error', err);
 		}
