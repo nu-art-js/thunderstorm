@@ -154,7 +154,8 @@ export const BaiParam_Watch: BaseCliParam<'watch', boolean> = {
 	type: 'boolean',
 	group: 'Build',
 	description: 'will build and listen for changes in the libraries',
-	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}]
+	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}, {param: BaiParam_AllUnits, value: true}]
+
 };
 
 export const BaiParam_WatchBuildTree: BaseCliParam<'watchBuildTree', boolean> = {
@@ -311,7 +312,8 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 			return [];
 
 		return value!.split(',').map(str => str.trim());
-	}
+	},
+	dependencies: [{param: BaiParam_AllUnits, value: true}]
 };
 
 export const AllBaiParams = [
