@@ -17,6 +17,10 @@ export type UnitDependentNode = {
 	dependsOn: string[];
 };
 
+
+/**
+ * Maps unit dependencies and provides tools to analyze and operate on the dependency graph.
+ */
 export class UnitsDependencyMapper
 	extends Logger {
 	private readonly map: TypedMap<UnitDependentNode> = {};
@@ -34,6 +38,10 @@ export class UnitsDependencyMapper
 					throw new BadImplementationException(`Unknown key: ${dep}, in unit: ${unit.key}`);
 	}
 
+	/**
+	 * Builds dependency layers (bottom-to-top) from the provided keys.
+	 * Filters out any non-participating units and prunes the graph accordingly.
+	 */
 	public async buildDependencyTree(participatingKeys = [..._keys(this.map)] as string[]): Promise<string[][]> {
 		this.logDebug('Building dependency tree for: ', participatingKeys.sort());
 		const dependentNodes = reduceObject(this.map, [] as UnitDependentNode[], (acc, key, value) => {
@@ -126,6 +134,9 @@ export class UnitsDependencyMapper
 		return layers;
 	}
 
+	/**
+	 * Pretty-prints the dependency graph in a visual tree structure.
+	 */
 	public printGraph(): void {
 		console.log('');
 
@@ -168,6 +179,10 @@ export class UnitsDependencyMapper
 		}
 	}
 
+	/**
+	 * Filters units by resolving full downstream dependencies from given targets,
+	 * excluding explicitly excluded units.
+	 */
 	public filterForTargets(included: string[], excluded: string[] = []): UnitDependentNode[] {
 		const visited = new Set<string>();
 		const toExclude = new Set(excluded);
@@ -212,6 +227,9 @@ export class UnitsDependencyMapper
 		}
 	}
 
+	/**
+	 * Given a set of changed keys, returns all upstream dependents (reverse dependencies).
+	 */
 	public getReverseDependencies(changedKeys: string[], strict = true): string[] {
 		const dependentsMap = new Map<string, Set<string>>();
 		for (const key of _keys(this.map) as string[]) {
@@ -243,6 +261,9 @@ export class UnitsDependencyMapper
 		return Array.from(visited);
 	}
 
+	/**
+	 * Recursively gathers all transitive dependencies of given units (excluding the keys themselves).
+	 */
 	public getTransitiveDependencies(key: string[]): string[] {
 		const visited = new Set<string>();
 		const stack = [...key];
@@ -263,6 +284,9 @@ export class UnitsDependencyMapper
 		return [...visited];
 	}
 
+	/**
+	 * Returns all detected cycles in the graph as ordered lists of unit keys.
+	 */
 	public detectCycles(): string[][] {
 		const visited = new Set<string>();
 		const inStack = new Set<string>();
@@ -291,6 +315,9 @@ export class UnitsDependencyMapper
 		return cycles;
 	}
 
+	/**
+	 * Checks if there is a dependency path from one unit to another.
+	 */
 	public isReachable(from: string, to: string): boolean {
 		const visited = new Set<string>();
 		const stack = [from];
@@ -308,6 +335,9 @@ export class UnitsDependencyMapper
 		return false;
 	}
 
+	/**
+	 * Returns all root units (not depended on by any other units).
+	 */
 	public getRoots(): string[] {
 		const allKeys = new Set(_keys(this.map) as string[]);
 		const dependedUpon = new Set<string>();
@@ -317,6 +347,9 @@ export class UnitsDependencyMapper
 		return [...allKeys].filter(k => !dependedUpon.has(k)).sort();
 	}
 
+	/**
+	 * Returns all leaf units (those with no dependencies).
+	 */
 	public getLeaves(): string[] {
 		return _values(this.map).filter(node => node.dependsOn.length === 0).map(node => node.key).sort();
 	}
