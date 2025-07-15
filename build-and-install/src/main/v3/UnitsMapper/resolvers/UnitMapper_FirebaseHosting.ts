@@ -56,6 +56,7 @@ export class UnitMapper_FirebaseHosting_Class
 			...Unit_FirebaseHostingApp.DefaultConfig_FirebaseHosting,
 			...unitConfig,
 			envConfig,
+			isTopLevelApp: true,
 			hasSelfHotReload: unitConfig.hasSelfHotReload ?? false,
 			customESLintConfig: context.customESLintConfig,
 			customTSConfig: context.customTSConfig,
