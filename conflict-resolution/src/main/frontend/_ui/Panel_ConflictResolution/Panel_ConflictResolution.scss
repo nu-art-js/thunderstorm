@@ -31,7 +31,7 @@
       width: 30px;
       height: 30px;
       padding: 8px;
-      @include styles.mouse-interactive-icon(#fff);
+      @include styles.mouseInteractiveIcon(#fff);
     }
   }
 

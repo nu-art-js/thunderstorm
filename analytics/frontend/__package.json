@@ -1,0 +1,27 @@
+{
+  "name": "@nu-art/analytics-frontend",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "Analytics Frontend",
+  "license": "Apache-2.0",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/analytics-shared": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION"
+  },
+  "devDependencies": {},
+  "private": false,
+  "bai": {
+    "label": "Analytics Frontend",
+    "pathToConfig": "./config.ts",
+    "customTSConfig": false
+  }
+}

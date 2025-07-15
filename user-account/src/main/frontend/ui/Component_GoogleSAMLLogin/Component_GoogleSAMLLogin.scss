@@ -1,7 +1,6 @@
 @use '@nu-art/ts-styles' as styles;
 
-.ts-account__saml-button.ts-busy-button,
-.ts-account__saml-button.ts-button {
+.ts-account__saml-button {
 
   &[data-variant="primary"] {
     height: 40px;
@@ -12,19 +11,9 @@
     @include styles.mouseInteractiveBackground(transparent);
     @include styles.mouseInteractiveBorder(styles.dark-blue(2), styles.dark-blue(1));
 
-    .ts-account__saml-button__text {
-      color: #006fab;
-    }
-
     .ts-account__saml-button__icon {
       width: 20px;
       height: 20px;
-    }
-
-    .ts-button-loader {
-      & > div {
-        background: #006fab;
-      }
     }
   }
 

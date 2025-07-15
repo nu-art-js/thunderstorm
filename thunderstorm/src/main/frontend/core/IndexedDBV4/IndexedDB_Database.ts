@@ -1,4 +1,4 @@
-import {Logger, md5, sortArray} from '@nu-art/ts-common';
+import {AsyncVoidFunction, Logger, LogLevel, md5, sortArray} from '@nu-art/ts-common';
 import {DBConfigV3} from './types';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 
@@ -9,7 +9,7 @@ type VersionData = {
 
 type RegisteredStore = {
 	config: DBConfigV3<any>;
-	onDBOpenCallback?: () => (void | Promise<void>);
+	onDBOpenCallback?: () => Promise<void>
 }
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
@@ -27,6 +27,7 @@ export class IndexedDB_Database
 
 	constructor(dbName: string) {
 		super(`IDB_Database-${dbName}`);
+		this.setMinLevel(LogLevel.Debug);
 		this.dbName = dbName;
 	}
 
@@ -52,13 +53,12 @@ export class IndexedDB_Database
 
 	// ######################## Store Interaction ########################
 
-	registerStore = (dbConfig: DBConfigV3<any>, onDBOpenCallback?: VoidFunction) => {
+	registerStore = (dbConfig: DBConfigV3<any>, onDBOpenCallback?: AsyncVoidFunction) => {
 		const registeredStore: RegisteredStore = {config: dbConfig, onDBOpenCallback};
 		(this.registeredStores || (this.registeredStores = [])).push(registeredStore);
 	};
 
 	async getStore(config: DBConfigV3<any>, write = false, _store?: IDBObjectStore): Promise<IDBObjectStore> {
-		this.logDebug(`Trying to get store ${config.name} from DB ${config.group}`, [...this.registeredStores]);
 		if (_store)
 			return _store;
 
@@ -66,7 +66,7 @@ export class IndexedDB_Database
 			await this.open();
 			return this.db.transaction(config.name, write ? 'readwrite' : 'readonly').objectStore(config.name);
 		} catch (err: any) {
-			this.logError(`Failed to get store for collection '${config.name}'`);
+			this.logError(`Failed to get store for collection '${config.group}/${config.name}'`);
 			throw err;
 		}
 	}
@@ -85,19 +85,23 @@ export class IndexedDB_Database
 
 		return this.openPromise = new Promise((resolve, reject) => {
 			if (!IDBAPI)
-				reject(new Error('Error - current browser does not support IndexedDB'));
+				return reject(new Error('Error - current browser does not support IndexedDB'));
 
 			const versionData = this.getNextVersionData();
+			this.logDebug(`Trying to open IDB - ${this.dbName} with version ${versionData.version}`);
 			const request = IDBAPI.open(this.dbName, versionData.version);
-			request.onupgradeneeded = () => {
+			request.onupgradeneeded = async () => {
+				this.logInfo(`Upgrading IDB from ${this.getCurrentVersionData()?.version ?? 0} to ${versionData.version}`);
 				const db = request.result;
 
 				const duplicatedStores = new Set<string>();
 
 				this.registeredStores.forEach(registeredStore => {
 					//Don't create a store that already exists
-					if (db.objectStoreNames.contains(registeredStore.config.name))
+					if (db.objectStoreNames.contains(registeredStore.config.name)) {
+						this.logVerboseBold(`Store ${registeredStore.config.name} already exists in IDB ${this.dbName}`);
 						return duplicatedStores.add(registeredStore.config.name);
+					}
 
 					const options: IDBObjectStoreParameters = {
 						autoIncrement: registeredStore.config.autoIncrement,
@@ -113,31 +117,32 @@ export class IndexedDB_Database
 					registeredStore.config.upgradeProcessor?.(store);
 				});
 
+				this.setCurrentVersionData(versionData);
 				if (duplicatedStores.size)
 					this.logWarningBold(`Stores were registered to IDB ${this.dbName} more than once`, ...Array.from(duplicatedStores));
 			};
 
-			request.onsuccess = () => {
+			request.onsuccess = async () => {
 				const storesLength = request.result.objectStoreNames.length;
 				this.logDebug(`Successfully opened IDB - ${this.dbName} with ${storesLength} stores`);
 				this.db = request.result;
-				this.onDBOpen();
+				await this.onDBOpen();
 				resolve(this);
 				delete this.openPromise;
+				this.setCurrentVersionData(versionData);
 			};
 
-			request.onerror = () => {
-				this.logErrorBold(`Received error when tried to open IDB store for collection ${this.dbName}`);
+			request.onerror = (e) => {
+				this.logErrorBold(`Received error when tried to open IDB store for collection ${this.dbName}`, e);
 				reject(new Error(`Error opening IDB - ${this.dbName}`));
 				delete this.openPromise;
 			};
 		});
 	}
 
-	private onDBOpen = () => {
-		this.registeredStores.forEach(registeredStore => {
-			registeredStore.onDBOpenCallback?.();
-		});
+	private onDBOpen = async () => {
+		for (const store of this.registeredStores)
+			await store.onDBOpenCallback?.();
 	};
 
 	// ######################## Version Control ########################
@@ -165,9 +170,9 @@ export class IndexedDB_Database
 		if (hash === currentVersionData?.hash)
 			return currentVersionData;
 
-		return this.setCurrentVersionData({
+		return {
 			version: ((currentVersionData?.version ?? 0) + 1),
 			hash
-		});
+		};
 	};
 }

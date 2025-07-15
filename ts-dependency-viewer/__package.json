@@ -40,10 +40,10 @@
     "firebase-functions": "4.4.1",
     "react": "$REACT_PKG_VERSION",
     "compression": "^1.7.4",
-    "d3": "^7.8.2",
-    "d3-graphviz": "^5.0.2",
-    "d3-selection": "^3.0.0",
-    "ts-graphviz": "^1.5.3"
+    "d3": "$D3_VERSION",
+    "d3-graphviz": "$D3_GRAPHVIZ_VERSION",
+    "d3-selection": "$D3_SELECTION_VERSION",
+    "ts-graphviz": "$TS_GRAPHVIZ_VERSION"
   },
   "devDependencies": {
     "@types/react": "$REACT_TYPES_VERSION",

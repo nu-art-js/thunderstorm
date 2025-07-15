@@ -68,7 +68,7 @@ export type Props_ItemsEditor<Proto extends DBProto<any>> = {
 	EditorRenderer: React.ComponentType<Partial<Props_EditableItemControllerProto<Proto>>>,
 	Filter?: React.ComponentType<Props_Filter<Proto>>
 	module: ModuleFE_BaseApi<Proto>,
-	route: TS_Route<{ _id: string }>,
+	route?: TS_Route<{ _id: string }>,
 	sort: ItemEditor_CustomSort<Proto>,
 	mapper: ItemEditor_MapperType<Proto>
 	itemRenderer: (item: Proto['uiType']) => JSX.Element,
@@ -159,6 +159,7 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 		const Filter: Props_ItemsEditor<Proto>['Filter'] = this.props.Filter || ItemEditor_DefaultFilter;
 		const Editor: Props_ItemsEditor<Proto>['EditorRenderer'] = this.props.EditorRenderer;
 		const sort = this.props.sort;
+		const selectedItem = this.state.editable?.item;
 		return <FrameLayout id={this.props.id} className="editor-page">
 			<LL_H_T className={_className(this.props.className ?? 'editor-content', 'match_parent')}>
 				<LL_V_L className="items-editor__list">
@@ -176,14 +177,14 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 						contextMenuItems={this.props.contextMenuActions}
 						itemRenderer={this.props.itemRenderer}
 						filter={this.state.filter}
-						selected={this.state.editable?.item}
+						selected={selectedItem}
 						sort={sort}
 						module={this.props.module}
 						onSelected={this.onSelected.bind(this)}/>
 					{this.renderAddNewItem()}
 				</LL_V_L>
 				<div className="item-editor">
-					<Editor item={this.state.editable?.item}/>
+					<Editor item={selectedItem}/>
 				</div>
 			</LL_H_T>
 		</FrameLayout>;
