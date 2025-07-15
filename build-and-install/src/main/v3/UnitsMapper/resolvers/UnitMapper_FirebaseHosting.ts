@@ -3,6 +3,7 @@ import {
 	tsValidateAnyString,
 	tsValidateBoolean,
 	tsValidateDynamicObject,
+	tsValidateMustExist,
 	tsValidateOptional,
 	tsValidateOptionalAnyNumber,
 	tsValidateValue,
@@ -14,7 +15,7 @@ import {resolve} from 'path';
 import {BaiParam_SetEnv} from '../../../core/params/params';
 
 const valuesValidator = {
-	configUrl: tsValidateAnyString,
+	config: tsValidateMustExist,
 	projectId: tsValidateAnyString,
 	isLocal: tsValidateBoolean(false),
 };
@@ -43,7 +44,7 @@ export class UnitMapper_FirebaseHosting_Class
 			throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
 
 		const envConfig = {
-			configUrl: envUnitConfig.configUrl,
+			config: envUnitConfig.config,
 			projectId: envUnitConfig.projectId,
 			isLocal: envUnitConfig.isLocal ?? env === 'local'
 		};

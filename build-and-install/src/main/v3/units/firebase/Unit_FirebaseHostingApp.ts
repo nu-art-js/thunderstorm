@@ -1,7 +1,7 @@
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
 import {FirebasePackageConfig} from '../../../core/types';
 import {UnitPhaseImplementor} from '../../core/types';
-import {ImplementationMissingException, LogLevel, TypedMap} from '@nu-art/ts-common';
+import {ImplementationMissingException, LogLevel, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
@@ -19,7 +19,11 @@ export type FirebaseHostingConfig = {
 	}[]
 };
 
-export type FirebaseHosting_EnvConfig = { configUrl: string, projectId: string, isLocal?: boolean };
+export type FirebaseHosting_EnvConfig = {
+	config: TS_Object,
+	projectId: string,
+	isLocal?: boolean
+};
 export type UnitConfigJSON_FirebaseHosting = UnitConfigJSON_Node & {
 	servingPort?: number,
 	hostingConfig?: FirebaseHostingConfig
@@ -114,9 +118,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	}
 
 	private async resolveHostingRuntimeConfig() {
-		const envConfig = {
-			configUrl: this.getEnvConfig().configUrl,
-		};
+		const envConfig = this.getEnvConfig().config;
 		const targetPath = resolve(this.config.fullPath, `./src/main/config.ts`);
 		const fileContent = `export const config = ${JSON.stringify(envConfig, null, 2)};`;
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
