@@ -1,6 +1,14 @@
 import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
 
 
+export const BaiParam_AllUnits: BaseCliParam<'allUnits', boolean> = {
+	keys: ['--all-units', '-all'],
+	keyName: 'allUnits',
+	type: 'boolean',
+	group: 'Build',
+	description: 'By default only top level and their dependencies are included, using this flag will include ALL the units'
+};
+
 export const BaiParam_DependencyTree: BaseCliParam<'dependencyTree', boolean> = {
 	keys: ['--dependency-tree', '-dt'],
 	keyName: 'dependencyTree',
@@ -331,6 +339,7 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 };
 
 export const AllBaiParams = [
+	BaiParam_AllUnits,
 	BaiParam_DependencyTree,
 	BaiParam_CheckCyclicImports,
 	BaiParam_PrintEnv,

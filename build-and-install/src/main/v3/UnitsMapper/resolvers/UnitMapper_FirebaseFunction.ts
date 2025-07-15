@@ -76,6 +76,7 @@ export class UnitMapper_FirebaseFunction_Class
 			...Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction,
 			...unitConfig,
 			envConfig,
+			isTopLevelApp:true,
 			hasSelfHotReload: unitConfig.hasSelfHotReload ?? false,
 			packageJson: context.packageJson,
 			customESLintConfig: context.customESLintConfig,
