@@ -148,7 +148,8 @@ export class Component_Login
 				{this.errorRenderer()}
 			</LL_H_C>
 			<Button
-				className={`clickable ts-account__action-button`}
+				variant={'tertiary'}
+				className={`ts-account__action-button`}
 				actionInProgress={this.state.submitting}
 				disabled={exists(this.state.blockedUntil)}
 				onClick={this.login}

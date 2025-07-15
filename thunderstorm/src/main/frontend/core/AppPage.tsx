@@ -23,7 +23,7 @@ import {ComponentSync} from './ComponentSync';
 import {dispatch_onPageTitleChanged} from './consts';
 
 // Deprecated use AppPageV2
-export abstract class AppPage<P extends {} = {}, S extends {} = {},
+export abstract class AppPage<P extends object = object, S extends object = object,
 	Props extends P & { pageTitle?: string | ((state: S) => string) } = P & { pageTitle?: string | ((state: S) => string) }>
 	extends ComponentSync<Props, S> {
 

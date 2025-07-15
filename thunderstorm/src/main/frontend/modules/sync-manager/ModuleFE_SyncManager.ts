@@ -27,7 +27,6 @@ import {
 	filterDuplicates,
 	flatArray,
 	generateHex,
-	LogLevel,
 	Module,
 	MUSTNeverHappenException,
 	reduceToMap,
@@ -35,7 +34,8 @@ import {
 	removeItemFromArray,
 	ResolvableContent,
 	resolveContent,
-	RuntimeModules, Second
+	RuntimeModules,
+	Second
 } from '@nu-art/ts-common';
 import {apiWithBody} from '../../core/typed-api';
 import {
@@ -51,10 +51,7 @@ import {
 } from '../../../shared/sync-manager/types';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
-import {
-	ModuleFE_FirebaseListener,
-	RefListenerFE
-} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
@@ -128,7 +125,7 @@ export class ModuleFE_SyncManager_Class
 				return priorityModuleKeys.includes(data.dbKey) ? 2 : 3;
 			})
 			.setOnQueueEmpty(this.clearSyncingStatus);
-		this.setMinLevel(LogLevel.Debug);
+		// this.setMinLevel(LogLevel.Debug);
 	}
 
 
@@ -186,7 +183,14 @@ export class ModuleFE_SyncManager_Class
 			ApiDef_SyncManager.v1.smartSync.fullUrl = customBase;
 
 		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
-		await apiWithBody(ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
+		try {
+			await apiWithBody(ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
+		} catch (e: any) {
+			this.logError(e);
+			this.syncing = false;
+			this.pendingSync = false;
+			return;
+		}
 		// //If queue is empty
 		// if (!this.syncQueue.getLength())
 		// 	await this.clearSyncingStatus();
@@ -387,7 +391,7 @@ export class ModuleFE_SyncManager_Class
 			rtModule.dispatchMulti(EventType_Query, allItems);
 
 		} catch (e: any) {
-			this.logError(`Error while syncing ${rtModule.dbDef.dbKey}`, e);
+			this.logError(`Error while syncing collection '${rtModule.dbDef.dbKey}'`, e);
 			throw e;
 		} finally {
 			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);

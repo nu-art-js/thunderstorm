@@ -18,7 +18,7 @@
 
 import {DotNotation, TS_Object, TypedMap} from './types';
 import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
-import {asArray} from './array-tools';
+import {asArray, sortArray} from './array-tools';
 import {merge} from './merge-tools';
 import {exists} from './tools';
 
@@ -45,6 +45,17 @@ export function _keys<T extends { [k: string]: any }, K extends keyof T>(instanc
 
 export function _values<T extends TS_Object = TS_Object>(object: T): (T[keyof T])[] {
 	return Object.values(object) as (T[keyof T])[];
+}
+
+export function _entries<T extends TS_Object = TS_Object, K extends keyof T = keyof T>(obj: T): { key: K, value: T[K] }[] {
+	return Object.entries(obj).map(entry => ({key: entry[0], value: entry[1]} as { key: K, value: T[K] }));
+}
+
+export function sortObject<T extends TS_Object = TS_Object>(obj: T, sortFunction?: ((key: keyof T) => any)): T {
+	return sortArray(_keys(obj), sortFunction).reduce((toRet, key) => {
+		toRet[key] = obj[key];
+		return toRet;
+	}, {} as T);
 }
 
 export function _setTypedProp<T extends TS_Object>(instance: T, key: keyof T, value: T[keyof T]) {
@@ -220,10 +231,26 @@ function scrubImpl<T>(item: T, config: ScrubConfig): T | undefined {
 	}
 }
 
-
 export function reduceObject<ACC, T extends TypedMap<any>>(object: T, acc: ACC, reducer: <K extends keyof T>(acc: ACC, key: K, value: T[K]) => ACC) {
 	return _keys(object).reduce((accumulator, key) => {
 		const typedKey = key as keyof T;
 		return reducer(accumulator, typedKey, object[typedKey]);
 	}, acc);
 }
+
+
+export function deepFreeze<T>(object: T): T {
+	if (object === null || typeof object !== 'object')
+		return object;
+
+	// Freeze each property before freezing self
+	for (const key of Object.getOwnPropertyNames(object)) {
+		const value = (object as any)[key];
+
+		if (typeof value === 'object' && value !== null && !Object.isFrozen(value))
+			deepFreeze(value);
+	}
+
+	return Object.freeze(object);
+}
+
