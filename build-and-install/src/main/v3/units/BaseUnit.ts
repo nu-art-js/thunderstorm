@@ -28,6 +28,7 @@ import {BaiParams} from '../../core/params/params';
 export type BaseUnit_Config = {
 	key: string;
 	label: string;
+	isTopLevelApp?: boolean;
 }
 
 export type UnitRuntimeContext = {
