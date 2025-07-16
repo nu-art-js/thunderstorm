@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-export * from './modules/ModuleBE_DialogFlow';
 export * from './modules/ModuleBE_GcpManager';
 export * from './modules/ModuleBE_GoogleContacts';
 export * from './modules/ModuleBE_Auth';

@@ -3,10 +3,11 @@
  */
 
 import {ImplementationMissingException, Module, NotImplementedYetException} from '@nu-art/ts-common';
-import {GoogleAuth, JWT, JWTInput,} from 'google-auth-library';
+import {GoogleAuth} from 'google-auth-library/build/src/auth/googleauth';
 import {JWTOptions} from 'google-auth-library/build/src/auth/jwtclient';
 import {OAuth2ClientOptions} from 'google-auth-library/build/src/auth/oauth2client';
 import {UserRefreshClientOptions} from 'google-auth-library/build/src/auth/refreshclient';
+import {JWT, JWTInput} from 'google-auth-library';
 
 
 type AuthModuleConfig = {

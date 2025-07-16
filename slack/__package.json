@@ -44,7 +44,7 @@
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
     "fs": "0.0.1-security",
-    "google-auth-library": "^6.0.6",
+    "google-auth-library": "$GOOGLE_AUTHLIB_VERSION",
     "moment": "$MOMENT_PKG_VERSION",
     "request": "^2.88.0"
   },

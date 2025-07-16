@@ -36,13 +36,13 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
-    "@google-cloud/pubsub": "3.3.0",
-    "@google-cloud/secret-manager": "^5.5.0",
-    "google-auth-library": "^6.0.6",
-    "googleapis": "^55.0.0"
+    "@google-cloud/pubsub": "$GOOGLE_PUBSUB_VERSION",
+    "@google-cloud/secret-manager": "$GOOGLE_SECRET_MANAGER_VERSION",
+    "google-auth-library": "$GOOGLE_AUTHLIB_VERSION",
+    "googleapis": "$GOOGLE_APIS_VERSION"
   },
   "devDependencies": {
-    "@google-cloud/resource-manager": "^3.0.0"
+    "@google-cloud/resource-manager": "^6.2.0"
   },
   "unitConfig": {
     "type": "typescript-lib"
