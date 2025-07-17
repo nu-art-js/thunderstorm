@@ -177,7 +177,7 @@ export class HttpServer_Class
 				if (!resolvedOrigin)
 					return callback(new Error(`CORS issue!!!\n Origin: '${origin}' does not exist in config: ${JSON.stringify(_cors.origins)}`), undefined);
 
-				if (!(await this.customCorsOriginValidator?.(origin, callback))) {
+				if (this.customCorsOriginValidator && !(await this.customCorsOriginValidator?.(origin, callback))) {
 					return callback(new Error(`CORS issue!!!\n Origin: '${origin}' is not valid`), undefined);
 				}
 
