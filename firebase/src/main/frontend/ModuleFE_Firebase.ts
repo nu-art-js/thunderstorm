@@ -74,9 +74,10 @@ export class ModuleFE_Firebase_Class
 			this.setConfig({[localSessionId]: config});
 			return config;
 		} catch (e: any) {
-			throw new ImplementationMissingException(`Either specify configs for the 'ModuleBE_Firebase' or use SDK auto-configuration with firebase hosting`);
+			throw new ImplementationMissingException(`Either specify configs for the 'ModuleBE_Firebase' or use SDK auto-configuration with firebase hosting`, e);
 		}
 	};
+
 
 	public async createSession(projectId?: string | FirebaseConfig, token?: string) {
 		if (!projectId)

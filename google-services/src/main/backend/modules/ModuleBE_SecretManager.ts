@@ -1,4 +1,4 @@
-import {AnyPrimitive, exists, Logger, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {AnyPrimitive, exists, Logger, Module, MUSTNeverHappenException, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {SecretManagerServiceClient} from '@google-cloud/secret-manager';
 import {google} from '@google-cloud/secret-manager/build/protos/protos';
 import {GoogleAuth} from 'google-auth-library';
@@ -21,18 +21,8 @@ type Secret = {
 	version?: string;
 };
 
-type Config = {};
-
 function composeSecretKey(secret: Secret): string {
 	return `projects/${secret.projectId}/secrets/${secret.key}${secret.version ? `/versions/${secret.version}` : ''}`;
-}
-
-class SecretManagerException
-	extends Error {
-	constructor(message: string, public meta?: any) {
-		super(message);
-		this.name = 'SecretManagerException';
-	}
 }
 
 export class SecretKey<T extends AnyPrimitive> {
@@ -90,7 +80,7 @@ export class SecretKey<T extends AnyPrimitive> {
 }
 
 export class ModuleBE_SecretManager_Class
-	extends Module<Config> {
+	extends Module {
 	private client = new SecretManagerServiceClient({
 		apiEndpoint: process.env.SECRET_MANAGER_EMULATOR_HOST ?? undefined
 	});
@@ -106,7 +96,8 @@ export class ModuleBE_SecretManager_Class
 			if (err.code === 5)
 				return undefined;
 
-			throw new SecretManagerException('Failed to retrieve secret', {secret, error: err});
+			await printCallerIdentity();
+			throw new ThisShouldNotHappenException(`Failed to retrieve secret (${secret})`, err);
 		}
 	};
 
@@ -130,8 +121,9 @@ export class ModuleBE_SecretManager_Class
 				parent: secret.name!,
 				payload: {data: Buffer.from(data, 'utf-8')}
 			});
-		} catch (err) {
-			throw new SecretManagerException('Failed to add secret version', {secret, error: err});
+		} catch (err: any) {
+			await printCallerIdentity();
+			throw new ThisShouldNotHappenException(`Failed to update secret version (${secret})`, err);
 		}
 	};
 
@@ -155,8 +147,10 @@ export class ModuleBE_SecretManager_Class
 			const [secret] = await this.client.getSecret({name});
 			return secret;
 		} catch (err: any) {
-			if (err.code !== 5)
-				throw new SecretManagerException('Failed to get secret', {secret: _secret, error: err});
+			if (err.code !== 5) {
+				await printCallerIdentity();
+				throw new ThisShouldNotHappenException(`Failed to get secret (${_secret})`, err);
+			}
 
 			const [created] = await this.client.createSecret({
 				parent: `projects/${_secret.projectId}`,

@@ -60,7 +60,8 @@ export class Thunder
 
 	constructor(config: ThunderConfig) {
 		super();
-		this._DEBUG_FLAG.enable(false);
+		BeLogged.addClient(LogClient_BrowserGroups);
+
 		// @ts-ignore
 		ThunderDispatcher['listenersResolver'] = () => this.listeners;
 		this.addPreBuildAction(this.fetchConfig.bind(this)); // add config resolver as a pre build action
@@ -73,8 +74,6 @@ export class Thunder
 	}
 
 	init() {
-		BeLogged.addClient(LogClient_BrowserGroups);
-
 		super.init();
 
 		const appJsx = this.renderFunc?.(this.props);
