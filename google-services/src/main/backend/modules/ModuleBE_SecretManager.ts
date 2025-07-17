@@ -81,9 +81,7 @@ export class SecretKey<T extends AnyPrimitive> {
 
 export class ModuleBE_SecretManager_Class
 	extends Module {
-	private client = new SecretManagerServiceClient({
-		apiEndpoint: process.env.SECRET_MANAGER_EMULATOR_HOST ?? undefined
-	});
+	private client = new SecretManagerServiceClient();
 
 	public getSecretValue = async (secret: Secret) => {
 		return this.getSecretValueImpl(composeSecretKey(secret));
@@ -97,7 +95,7 @@ export class ModuleBE_SecretManager_Class
 				return undefined;
 
 			await printCallerIdentity();
-			throw new ThisShouldNotHappenException(`Failed to retrieve secret (${secret})`, err);
+			throw new ThisShouldNotHappenException(`Failed to retrieve secret \n Secret: ${JSON.stringify(secret)}`, err);
 		}
 	};
 
