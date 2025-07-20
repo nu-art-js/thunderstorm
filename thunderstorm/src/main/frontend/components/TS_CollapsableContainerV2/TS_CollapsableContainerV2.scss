@@ -18,7 +18,8 @@
       }
     }
 
-    .icon--wrapper {
+    & > .icon--wrapper {
+      flex-shrink: 0;
       height: 100%;
       width: unset;
       aspect-ratio: 1;
@@ -53,7 +54,7 @@
 
   &.collapsed {
     .ts-collapsable-container-v2__header {
-      .icon--wrapper {
+      & > .icon--wrapper {
         rotate: 0deg;
       }
     }
