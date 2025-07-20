@@ -33,6 +33,7 @@ import {
 	IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
+	lastElement,
 	Logger,
 	LogLevel,
 	Module,
@@ -129,6 +130,12 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 			this.logVerbose(`No registered upgrade processors for this module ${this.dbDef.dbKey}`);
 			return instances;
 		}
+
+		//Make sure all items start out with a version
+		instances.forEach(instance => {
+			if (!instance._v)
+				instance._v = lastElement(this.config.versions);
+		});
 
 		let instancesToSave: Proto['dbType'][] = [];
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
@@ -231,6 +238,7 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	};
 
 	public onEntriesUpdated = async (items: Proto['dbType'][], updateIDBLastSynced: boolean = true): Promise<void> => {
+		items = await this.upgradeInstances(items);
 		await this.IDB.syncIndexDb(items);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(items);
@@ -244,10 +252,12 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	};
 
 	public onEntryUpdated = async (item: Proto['dbType'], original: Proto['uiType'], updateIDBLastSynced: boolean = true): Promise<void> => {
+		item = (await this.upgradeInstances([item]))[0];
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item, updateIDBLastSynced);
 	};
 
 	protected onEntryPatched = async (item: Proto['dbType'], updateIDBLastSynced: boolean = true): Promise<void> => {
+		item = (await this.upgradeInstances([item]))[0];
 		return this.onEntryUpdatedImpl(EventType_Patch, item, updateIDBLastSynced);
 	};
 
@@ -294,6 +304,7 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	};
 
 	protected onQueryReturned = async (toUpdate: Proto['dbType'][], toDelete: DB_Object[] = []): Promise<void> => {
+		toUpdate = await this.upgradeInstances(toUpdate);
 		await this.IDB.syncIndexDb(toUpdate, toDelete);
 		// @ts-ignore
 		this.cache.onEntriesUpdated(toUpdate);

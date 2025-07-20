@@ -20,7 +20,6 @@ import {StorageKey} from '@nu-art/thunderstorm/frontend';
 import {_values, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
 import {PanelConfig} from '..';
 import {Workspace} from '../../shared/types';
-import {SessionKey_Account} from '@nu-art/user-account/_entity/account/frontend/consts';
 
 type Config = {
 	defaultConfigs: TypedMap<PanelConfig>,
@@ -33,14 +32,7 @@ export class ModuleFE_Workspace_Class
 	private workspacesToUpsert: TypedMap<any> = {};
 	private upsertRunnable: any;
 
-	private assertLoggedInUser = (logActionString: 'get' | 'set' = 'get') => {
-		const accountId = SessionKey_Account.get()._id;
-		if (!accountId)
-			throw new BadImplementationException(`Trying to ${logActionString} workspace while not having user logged in, fix this`);
-	};
-
 	public getWorkspaceConfigByKey = (key: string): PanelConfig<any> => {
-		this.assertLoggedInUser();
 		const workspace = this.getWorkspaceByKey(key);
 		const config = workspace?.config || this.config.defaultConfigs[key];
 		if (!config)
@@ -50,17 +42,12 @@ export class ModuleFE_Workspace_Class
 	};
 
 	private getWorkspaceByKey = (key: string): Workspace | undefined => {
-		this.assertLoggedInUser();
-
 		return this.getStorageKeyForWorkspace(key).get();
 	};
 
 	private getStorageKeyForWorkspace = (key: string): StorageKey<Workspace> => new StorageKey<Workspace>(`workspace_key__${key}`);
 
 	public setWorkspaceByKey = async (key: string, config: PanelConfig<any>) => {
-		this.assertLoggedInUser('set');
-
-
 		this.workspacesToUpsert[key] = {key: key, config: config};
 
 		clearTimeout(this.upsertRunnable);
