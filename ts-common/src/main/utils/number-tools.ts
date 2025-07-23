@@ -22,3 +22,7 @@ export const roundNumber = (number: number, digits: number) => {
 };
 
 export const clamp = (min: number, num: number, max: number) => Math.min(Math.max(num, min), max);
+
+export const numberInRange = (number: number, range: [number, number]) => {
+	return range[0] <= number && number <= range[1];
+};
