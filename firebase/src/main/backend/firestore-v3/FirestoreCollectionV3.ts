@@ -292,7 +292,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 
 	set = Object.freeze({
 		item: async (preDBItem: Proto['uiType'], transaction?: Transaction) => {
-			// We've noticed that we call preWriteProcessing twice on create. - this is Adam's fault
+			// We've noticed that we call preWriteProcessing twice on create.
 			// if(!preDBItem._id)
 			// 	await this.hooks?.preWriteProcessing?.(preDBItem, undefined, transaction);
 
