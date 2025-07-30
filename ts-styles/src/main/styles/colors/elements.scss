@@ -39,3 +39,18 @@
     border-color: $ca;
   }
 }
+
+@mixin edge-fade($girth, $color) {
+  mask-image:
+          linear-gradient(to top, transparent, #{$color} #{$girth}),
+          linear-gradient(to bottom, transparent, #{$color} #{$girth}),
+          linear-gradient(to left, transparent, #{$color} #{$girth}),
+          linear-gradient(to right, transparent, #{$color} #{$girth});
+  mask-composite: intersect;
+  -webkit-mask-image:
+          linear-gradient(to top, transparent, #{$color} #{$girth}),
+          linear-gradient(to bottom, transparent, #{$color} #{$girth}),
+          linear-gradient(to left, transparent, #{$color} #{$girth}),
+          linear-gradient(to right, transparent, #{$color} #{$girth});
+  -webkit-mask-composite: destination-in;
+}
