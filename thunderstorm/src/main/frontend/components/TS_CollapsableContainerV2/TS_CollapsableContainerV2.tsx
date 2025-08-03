@@ -20,7 +20,7 @@ type Props = {
 	className?: string;
 	style?: React.CSSProperties;
 	id?: string;
-	onHeaderRightClick?: (e: React.MouseEvent) => void;
+	onHeaderRightClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 	forceUpdate?: boolean; //Force component to update when parent component updates. essential if inner components receive props
 	animated?: boolean;
 }
