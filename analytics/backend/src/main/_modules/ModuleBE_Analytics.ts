@@ -45,13 +45,13 @@ class ModuleBE_Analytics_Class
 	//######################### API Callbacks #########################
 
 	private api_sendEvent = async (request: Analytics_SendEvent['request']): Promise<Analytics_SendEvent['response']> => {
-		this.plugins.forEach(plugin => {
+		return this.plugins.forEach(plugin => {
 			plugin.registerEvent(request.event);
 		});
 	};
 
 	private api_updateUser = async (request: Analytics_UpdateUser['request']): Promise<Analytics_UpdateUser['response']> => {
-		this.plugins.forEach(plugin => {
+		return this.plugins.forEach(plugin => {
 			plugin.updateUser?.(request);
 		});
 	};

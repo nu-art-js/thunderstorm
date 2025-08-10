@@ -12,7 +12,7 @@ export class AnalyticsPlugin_Logger
 		return event;
 	}
 
-	public updateUser = undefined;
+	protected updateUser_Impl = undefined;
 
 	protected sendEvents = async (events: any[]) => {
 		this.logInfoBold('######## Analytics Event - Start ########');
