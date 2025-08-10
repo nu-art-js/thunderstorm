@@ -44,6 +44,8 @@ export abstract class AnalyticsPlugin_Base<
 
 	protected abstract sendEvents: (events: R[]) => Promise<void>;
 
+	protected abstract updateUser_Impl: undefined | ((mode: Analytics_UpdateUser['request']['mode'], data: Analytics_UpdateUser['request']['userData']) => Promise<void>);
+
 	//######################### Initialization #########################
 
 	init(config: C) {
@@ -81,5 +83,10 @@ export abstract class AnalyticsPlugin_Base<
 		this.emptyEventBuffer();
 	}
 
-	public abstract updateUser: undefined | ((data: Analytics_UpdateUser['request']) => Promise<void>);
+	public updateUser(request: Analytics_UpdateUser['request']) {
+		if (!this.config?.active)
+			return;
+
+		this.updateUser_Impl?.(request.mode, request.userData);
+	}
 }

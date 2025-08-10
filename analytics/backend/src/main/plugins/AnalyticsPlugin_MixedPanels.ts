@@ -103,13 +103,13 @@ export class AnalyticsPlugin_MixedPanels
 		});
 	};
 
-	public updateUser = async (request: Analytics_UpdateUser['request']) => {
+	protected updateUser_Impl = (mode: Analytics_UpdateUser['request']['mode'], data: Analytics_UpdateUser['request']['userData']) => {
 		if (!this.mixpanel)
 			throw new BadImplementationException(`Calling update user before analytics plugin ${pluginKey_MixedPanels} finished initializing`);
 
 		return new Promise<void>((resolve, reject) => {
-			this.logDebug('Updating user', request.userData);
-			const userProps = this.prepareUserProps(request.userData);
+			this.logDebug('Updating user', data);
+			const userProps = this.prepareUserProps(data);
 			const cb = (err: Error | undefined) => {
 				if (err) {
 					this.logError(err);
@@ -120,15 +120,15 @@ export class AnalyticsPlugin_MixedPanels
 				}
 			};
 
-			switch (request.mode) {
+			switch (mode) {
 				case 'set':
-					this.mixpanel?.people.set(request.userData.userId, userProps, cb);
+					this.mixpanel?.people.set(data.userId, userProps, cb);
 					break;
 				case 'set_once':
-					this.mixpanel?.people.set_once(request.userData.userId, userProps, cb);
+					this.mixpanel?.people.set_once(data.userId, userProps, cb);
 					break;
 				default:
-					throw new BadImplementationException(`No Implementation for mode ${request.mode}`);
+					throw new BadImplementationException(`No Implementation for mode ${mode}`);
 			}
 		});
 	};
