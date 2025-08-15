@@ -18,6 +18,7 @@ export class UnitMapper_NodeProject_Class
 	protected async resolveNodeUnit(context: UnitMapper_NodeContext) {
 		return new Unit_NodeProject({
 			...context.baseConfig,
+			isTopLevelApp: true,
 			isRoot: true,
 			hasSelfHotReload: true,
 			packageJson: context.packageJson,
