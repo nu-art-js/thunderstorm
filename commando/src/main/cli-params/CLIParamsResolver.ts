@@ -25,11 +25,11 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 		type Value = Output[Key];
 
 		const runtimeParams = inputParams.reduce((output, inputParam) => {
-			const cliParamToResolve = this.findMatchingParamToResolve(inputParam);
+			let [key, value] = inputParam.split('=');
+			const cliParamToResolve = this.findMatchingParamToResolve(key);
 			if (!cliParamToResolve)
 				return output;
 
-			let value = inputParam.split('=')[1];
 			if (value && value.startsWith('"') && value.endsWith('"')) {
 				value = value.slice(1, -1);
 				value = value.replace(/\\"/g, '"');
@@ -40,7 +40,7 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 			if (cliParamToResolve.options && !cliParamToResolve.options.includes(finalValue))
 				throw new Error(`value not supported for param: ${cliParamToResolve.name}, supported values: ${cliParamToResolve.options.join(', ')}`);
 
-			const key = cliParamToResolve.keyName as Key;
+			const keyName = cliParamToResolve.keyName as Key;
 
 			if (exists(cliParamToResolve.dependencies))
 				cliParamToResolve.dependencies?.forEach(dependency => {
@@ -48,19 +48,19 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 				});
 
 			if (cliParamToResolve.isArray) {
-				let currentValues = output[key] as Value;
+				let currentValues = output[keyName] as Value;
 				currentValues = filterDuplicates([...(currentValues ?? []), ...asArray(finalValue)]) as Value;
 
-				output[key] = currentValues;
+				output[keyName] = currentValues;
 				return output;
 			}
 
 			//if already exists and the value ain't an array warn that the value will be overridden
-			if (output[key])
-				StaticLogger.logWarning(`this param does not accept multiple values, overriding prev value: ${output[key]}`);
+			if (output[keyName])
+				StaticLogger.logWarning(`this param does not accept multiple values, overriding prev value: ${output[keyName]}`);
 
-			//Apply single value to the object
-			output[key] = finalValue;
+			//Apply a single value to the object
+			output[keyName] = finalValue;
 			return output;
 		}, {} as Output);
 

@@ -146,7 +146,7 @@ export const phase_Deploy: Phase<'deploy'> = {
 	key: phaseKey_Deploy,
 	name: 'Deploy',
 	method: 'deploy',
-	filter: (baiParams) => !!baiParams.deployBackend,
+	filter: (baiParams) => !!baiParams.deploy,
 };
 
 export const phases_Deploy: Phase<string>[] = [phase_Deploy];
