@@ -6,6 +6,14 @@ import {CliError} from '../core/CliError';
 export type CliOptions = ExecOptions & {
 	encoding: BufferEncoding | string | null;
 }
+function toStringWithNewlines(input: string | Buffer<ArrayBufferLike>): string {
+	if (typeof input === 'string')
+		return input;
+
+	return Buffer.isBuffer(input)
+		? input.toString('utf8')
+		: Buffer.from(input as ArrayBufferLike).toString('utf8');
+}
 
 export class SimpleShell
 	extends Logger {
@@ -24,7 +32,7 @@ export class SimpleShell
 		return new Promise((resolve, reject) => {
 			exec(command, this.cliOptions, (error, stdout, stderr) => {
 				if (error) {
-					return reject(new CliError(`executing:\n${command}\n`, stdout, stderr, error));
+					return reject(new CliError(`executing:\n${command}\n`, toStringWithNewlines(stdout), toStringWithNewlines(stderr), error));
 				}
 
 				if (stdout)
@@ -33,7 +41,7 @@ export class SimpleShell
 				if (stderr)
 					this.logError(stderr);
 
-				resolve({stdout, stderr});
+				resolve({stdout:toStringWithNewlines(stdout), stderr:toStringWithNewlines(stderr)});
 			});
 		});
 	};
