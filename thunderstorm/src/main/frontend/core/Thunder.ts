@@ -53,6 +53,8 @@ export class Thunder
 		super();
 		this._DEBUG_FLAG.enable(false);
 		// @ts-ignore
+		window.thunder = this;
+		// @ts-ignore
 		ThunderDispatcher.listenersResolver = () => this.listeners;
 		this.addPreBuildAction(this.fetchConfig.bind(this)); // add config resolver as a pre build action
 	}
