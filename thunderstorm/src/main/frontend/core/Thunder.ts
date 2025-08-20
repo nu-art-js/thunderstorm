@@ -38,6 +38,15 @@ import * as RDC from 'react-dom/client';
 import {appWithJSX} from './AppWrapper';
 import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 import axios from 'axios';
+import {
+	getBrowseAndDeviceLogs,
+	getECMADataLog,
+	getiFrameLog,
+	getJSEngineLogs,
+	globalErrorListener,
+	indexedDBAsyncCheckLog,
+	navigationTimingLog
+} from './thunder-helpers';
 
 export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();
 
@@ -52,6 +61,8 @@ export class Thunder
 	constructor() {
 		super();
 		this._DEBUG_FLAG.enable(false);
+		// @ts-ignore
+		window.thunder = this;
 		// @ts-ignore
 		ThunderDispatcher.listenersResolver = () => this.listeners;
 		this.addPreBuildAction(this.fetchConfig.bind(this)); // add config resolver as a pre build action
@@ -144,6 +155,15 @@ export class Thunder
 		return this;
 	};
 
+	public logStuff = () => {
+		getBrowseAndDeviceLogs();
+		getJSEngineLogs();
+		getECMADataLog();
+		getiFrameLog();
+		navigationTimingLog();
+		globalErrorListener();
+		indexedDBAsyncCheckLog();
+	}
 	public getEnvironment(): string {
 		return Thunder.getInstance().getConfig().label;
 	}
