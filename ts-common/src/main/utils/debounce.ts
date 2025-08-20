@@ -2,10 +2,10 @@ import {BadImplementationException} from '../core/exceptions/exceptions';
 import {Logger} from '../core/logger/Logger';
 import {exists} from './tools';
 
-export class Debounce<Args extends any[]>
+export class Debounce<Args extends any[], Response>
 	extends Logger {
 
-	private action: (...args: Args) => (unknown | Promise<unknown>);
+	private action: (...args: Args) => Response;
 	private readonly waitMs: number;
 	private readonly maxWaitMs?: number;
 	private triggerIndex: number = 0;
@@ -14,7 +14,7 @@ export class Debounce<Args extends any[]>
 	private maxTimer?: ReturnType<typeof setTimeout>;
 	private latestArgs: Args = [] as unknown as Args;
 
-	constructor(action: (...args: Args) => (unknown | Promise<unknown>), waitMs: number, maxWaitMs?: number) {
+	constructor(action: (...args: Args) => Response, waitMs: number, maxWaitMs?: number) {
 		super('Debounce');
 		this.validate_WaitMs(waitMs);
 		this.validate_MaxWaitMs(waitMs, maxWaitMs);
@@ -54,26 +54,19 @@ export class Debounce<Args extends any[]>
 		}
 	}
 
-	private async executeAction(triggerIndex: number) {
+	private executeAction(triggerIndex: number): Response | undefined {
 		if (triggerIndex !== this.triggerIndex)
 			return;
 
 		this.triggerIndex++;
 		const args = this.latestArgs ?? ([] as unknown as Args);
 		this.clearTimers();
-		try {
-			await this.action(...args);
-		} catch (err: any) {
-			this.logError('Action threw error', err);
-		}
+		return this.action(...args);
 	}
 
 	//######################### Public Logic #########################
 
-	/**
-	 * Schedules the action to be performed
-	 * @param args
-	 */
+	/** Schedule the action to be performed (fire-and-forget). */
 	public trigger(...args: Args): void {
 		this.latestArgs = args;
 		//Reset waitTimer
@@ -99,13 +92,17 @@ export class Debounce<Args extends any[]>
 	}
 
 	/**
-	 * Immediately performs the action if one was scheduled
+	 * Run immediately if scheduled and return the action's value.
+	 * - Returns R | Promise<R> when something was scheduled.
+	 * - Returns undefined if nothing was scheduled.
+	 * - If the action throws synchronously here, it will throw to the caller.
+	 * - If it returns a rejected Promise, the caller can handle it.
 	 */
-	public flush() {
+	public flush(): Response | undefined {
 		if (!this.isScheduled())
 			return;
 
-		void this.executeAction(this.triggerIndex);
+		return this.executeAction(this.triggerIndex);
 	}
 
 	/**
