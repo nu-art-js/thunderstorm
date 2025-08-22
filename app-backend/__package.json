@@ -42,7 +42,7 @@
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
     "firebase-functions-test": "^0.1.6",
-    "@slack/web-api": "^5.8.1",
+    "@slack/web-api": "$SLACK_WEB_API_PKG_VERSION",
     "body-parser": "^1.18.3",
     "file-type": "^16.3.0",
     "compression": "^1.7.4",
