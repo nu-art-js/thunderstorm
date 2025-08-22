@@ -34,20 +34,35 @@ export class IndexedDB_Database
 	// ######################## DB Interaction ########################
 
 	clearDB = async () => {
+		const t0 = performance.now?.() ?? Date.now();
+		this.logInfo(`[CLEAR] Requested clear for DB="${this.dbName}"`);
+
 		return new Promise<void>(async (resolve, reject) => {
-			//db is closed & not awaiting opening
-			if (!this.db && !this.openPromise)
-				return resolve();
+			try {
+				//db is closed & not awaiting opening
+				if (!this.db && !this.openPromise) {
+					this.logDebug(`[CLEAR DB] DB not open and no openPromise pending — nothing to clear`);
+					return resolve();
+				}
 
-			if (this.openPromise)
-				await this.openPromise;
+				if (this.openPromise) {
+					this.logDebug(`[CLEAR-DB] Awaiting ongoing openPromise before clearing`);
+					await this.openPromise;
+				}
 
-			const storeNames = Array.from(this.db.objectStoreNames);
-			storeNames.forEach(storeName => {
-				this.db.deleteObjectStore(storeName);
-			});
-			this.db.close();
-			resolve();
+				const storeNames = Array.from(this.db.objectStoreNames);
+				this.logInfo(`[CLEAR-DB] Deleting ${storeNames.length} stores: ${storeNames.join(', ') || '(none)'}`);
+				storeNames.forEach(storeName => {
+					this.db.deleteObjectStore(storeName);
+				});
+				this.db.close();
+				const dt = (performance.now?.() ?? Date.now()) - t0;
+				this.logInfo(`[CLEAR-DB] Completed in ${Math.round(dt)}ms`);
+				resolve();
+			} catch (err) {
+				this.logErrorBold(`[CLEAR-DB] Failed: ${err}`);
+				reject(err);
+			}
 		});
 	};
 
@@ -56,6 +71,7 @@ export class IndexedDB_Database
 	registerStore = (dbConfig: DBConfigV3<any>, onDBOpenCallback?: AsyncVoidFunction) => {
 		const registeredStore: RegisteredStore = {config: dbConfig, onDBOpenCallback};
 		(this.registeredStores || (this.registeredStores = [])).push(registeredStore);
+		this.logDebug(`[REGISTER-STORE] Store="${dbConfig.name}" group="${dbConfig.group}" autoInc=${!!dbConfig.autoIncrement} indices=${dbConfig.indices?.length ?? 0}`);
 	};
 
 	async getStore(config: DBConfigV3<any>, write = false, _store?: IDBObjectStore): Promise<IDBObjectStore> {
@@ -63,8 +79,12 @@ export class IndexedDB_Database
 			return _store;
 
 		try {
+			this.logDebug(`[GET-STORE] Request for "${config.name}" write=${write}`);
 			await this.open();
-			return this.db.transaction(config.name, write ? 'readwrite' : 'readonly').objectStore(config.name);
+			const tx = this.db.transaction(config.name, write ? 'readwrite' : 'readonly');
+			const store = tx.objectStore(config.name);
+			this.logVerboseBold(`[GET-STORE] OK "${config.name}" (mode=${write ? 'rw' : 'ro'})`);
+			return store;
 		} catch (err: any) {
 			this.logError(`Failed to get store for collection '${config.group}/${config.name}'`);
 			throw err;
@@ -73,106 +93,216 @@ export class IndexedDB_Database
 
 	storeExists = async (storeName: string): Promise<boolean> => {
 		await this.open();
-		return this.db.objectStoreNames.contains(storeName);
+		const exists = this.db.objectStoreNames.contains(storeName);
+		this.logDebug(`[STORE-EXISTS] store="${storeName}" => ${exists}`);
+		return exists;
 	};
 
 	async open() {
-		if (this.db)
+		if (this.db) {
+			this.logDebug(`[OPEN] Already open — returning existing connection`);
 			return;
+		}
 
-		if (this.openPromise)
+		if (this.openPromise) {
+			this.logDebug(`[OPEN] Re-entrant call — awaiting existing openPromise`);
 			return this.openPromise;
+		}
+
+		const start = performance.now?.() ?? Date.now();
+		const openId = Math.random().toString(36).slice(2, 8); // useful when correlating logs
+		this.logInfo(`[OPEN:${openId}] Starting open()`);
 
 		return this.openPromise = new Promise((resolve, reject) => {
-			if (!IDBAPI)
+			if (!IDBAPI) {
+				this.logErrorBold(`[OPEN:${openId}] Error — current browser does not support IndexedDB`);
+				delete this.openPromise;
 				return reject(new Error('Error - current browser does not support IndexedDB'));
+			}
 
 			const versionData = this.getNextVersionData();
-			this.logDebug(`Trying to open IDB - ${this.dbName} with version ${versionData.version}`);
+			const currentVersionData = this.getCurrentVersionData();
+
+			this.logDebug(
+				`[OPEN:${openId}] Attempting open DB="${this.dbName}" ` +
+				`(currentVersion=${currentVersionData?.version ?? 0}, nextVersion=${versionData.version}, ` +
+				`currentHash=${currentVersionData?.hash ?? '-'}, nextHash=${versionData.hash})`
+			);
+
 			const request = IDBAPI.open(this.dbName, versionData.version);
+
+			request.onblocked = (e) => {
+				this.logWarningBold(`[OPEN:${openId}] onblocked — Another tab/process holds the old version open`, e);
+			};
+
 			request.onupgradeneeded = async () => {
-				this.logInfo(`Upgrading IDB from ${this.getCurrentVersionData()?.version ?? 0} to ${versionData.version}`);
+				const upStart = performance.now?.() ?? Date.now();
+				this.logInfo(`[OPEN:${openId}] onupgradeneeded: ${this.getCurrentVersionData()?.version ?? 0} -> ${versionData.version}`);
 				const db = request.result;
 
 				const duplicatedStores = new Set<string>();
 
-				this.registeredStores.forEach(registeredStore => {
-					//Don't create a store that already exists
-					if (db.objectStoreNames.contains(registeredStore.config.name)) {
-						this.logVerboseBold(`Store ${registeredStore.config.name} already exists in IDB ${this.dbName}`);
-						return duplicatedStores.add(registeredStore.config.name);
-					}
+				try {
+					this.registeredStores.forEach(registeredStore => {
+						//Don't create a store that already exists
+						if (db.objectStoreNames.contains(registeredStore.config.name)) {
+							this.logVerboseBold(`[OPEN:${openId}] Store already exists: ${registeredStore.config.name}`);
+							return duplicatedStores.add(registeredStore.config.name);
+						}
 
-					const options: IDBObjectStoreParameters = {
-						autoIncrement: registeredStore.config.autoIncrement,
-						keyPath: registeredStore.config.uniqueKeys as unknown as string[]
-					};
+						const options: IDBObjectStoreParameters = {
+							autoIncrement: registeredStore.config.autoIncrement,
+							keyPath: registeredStore.config.uniqueKeys as unknown as string[]
+						};
 
-					const store = db.createObjectStore(registeredStore.config.name, options);
-					registeredStore.config.indices?.forEach(index => store.createIndex(index.id, index.keys as string | string[], {
-						multiEntry: index.params?.multiEntry,
-						unique: index.params?.unique
-					}));
+						const store = db.createObjectStore(registeredStore.config.name, options);
+						this.logDebug(`[OPEN:${openId}] Created store="${registeredStore.config.name}" keyPath=${JSON.stringify(options.keyPath)} autoInc=${!!options.autoIncrement}`);
 
-					registeredStore.config.upgradeProcessor?.(store);
-				});
+						registeredStore.config.indices?.forEach(index => {
+							store.createIndex(index.id, index.keys as string | string[], {
+								multiEntry: index.params?.multiEntry,
+								unique: index.params?.unique
+							});
+							this.logDebug(`[OPEN:${openId}]   +index id="${index.id}" keys=${JSON.stringify(index.keys)} unique=${!!index.params?.unique} multi=${!!index.params?.multiEntry}`);
+						});
 
-				this.setCurrentVersionData(versionData);
-				if (duplicatedStores.size)
-					this.logWarningBold(`Stores were registered to IDB ${this.dbName} more than once`, ...Array.from(duplicatedStores));
+						try {
+							registeredStore.config.upgradeProcessor?.(store);
+							if (registeredStore.config.upgradeProcessor)
+								this.logDebug(`[OPEN:${openId}]   upgradeProcessor executed for "${registeredStore.config.name}"`);
+						} catch (upgradeErr) {
+							this.logErrorBold(`[OPEN:${openId}] upgradeProcessor failed for "${registeredStore.config.name}": ${upgradeErr}`);
+						}
+					});
+
+					this.setCurrentVersionData(versionData);
+					if (duplicatedStores.size)
+						this.logWarningBold(`[OPEN:${openId}] Duplicate store registrations detected`, ...Array.from(duplicatedStores));
+				} catch (e) {
+					this.logErrorBold(`[OPEN:${openId}] onupgradeneeded failed: ${e}`);
+				} finally {
+					const upDt = (performance.now?.() ?? Date.now()) - upStart;
+					this.logInfo(`[OPEN:${openId}] onupgradeneeded completed in ${Math.round(upDt)}ms`);
+				}
 			};
 
 			request.onsuccess = async () => {
-				const storesLength = request.result.objectStoreNames.length;
-				this.logDebug(`Successfully opened IDB - ${this.dbName} with ${storesLength} stores`);
-				this.db = request.result;
-				await this.onDBOpen();
-				resolve(this);
-				delete this.openPromise;
-				this.setCurrentVersionData(versionData);
+				const tConn = (performance.now?.() ?? Date.now()) - start;
+				try {
+					const storesLength = request.result.objectStoreNames.length;
+					this.logInfo(`[OPEN:${openId}] onsuccess — opened DB="${this.dbName}" with ${storesLength} stores in ${Math.round(tConn)}ms`);
+					this.db = request.result;
+
+					// Defensive: log connection lifecycle events
+					this.db.onversionchange = (ev) => {
+						this.logWarningBold(`[OPEN:${openId}] db.onversionchange fired — closing connection`, ev);
+						try { this.db.close(); } catch {}
+					};
+					this.db.onclose = () => this.logInfo(`[OPEN:${openId}] db.onclose`);
+					this.db.onerror = (ev) => this.logErrorBold(`[OPEN:${openId}] db.onerror`, ev);
+
+					// Run open callbacks with full timing & error capture
+					await this.onDBOpen(openId);
+
+					resolve(this);
+					delete this.openPromise;
+
+					// Persist version (again) to ensure it’s set even if there was no upgrade
+					this.setCurrentVersionData(this.getNextVersionData());
+					this.logDebug(`[OPEN:${openId}] Completed open()`);
+				} catch (err) {
+					this.logErrorBold(`[OPEN:${openId}] Failure during onDBOpen(): ${err}`);
+					delete this.openPromise;
+					reject(err);
+				}
 			};
 
 			request.onerror = (e) => {
-				this.logErrorBold(`Received error when tried to open IDB store for collection ${this.dbName}`, e);
-				reject(new Error(`Error opening IDB - ${this.dbName}`));
+				this.logErrorBold(`[OPEN:${openId}] request.onerror — failed to open DB "${this.dbName}"`, e);
 				delete this.openPromise;
+				reject(new Error(`Error opening IDB - ${this.dbName}`));
 			};
 		});
 	}
 
-	private onDBOpen = async () => {
-		for (const store of this.registeredStores)
-			await store.onDBOpenCallback?.();
+	private onDBOpen = async (openId?: string) => {
+		const tag = openId ? `OPEN:${openId}` : `OPEN`;
+		const allStart = performance.now?.() ?? Date.now();
+
+		if (!this.registeredStores?.length) {
+			this.logDebug(`[${tag}] onDBOpen: No registered stores — nothing to notify`);
+			return;
+		}
+
+		this.logInfo(`[${tag}] onDBOpen: Invoking ${this.registeredStores.length} store callbacks`);
+		for (const store of this.registeredStores) {
+			const name = store.config?.name ?? '(unknown-store)';
+			if (!store.onDBOpenCallback) {
+				this.logDebug(`[${tag}] onDBOpen: Store "${name}" has no callback`);
+				continue;
+			}
+
+			const cbStart = performance.now?.() ?? Date.now();
+			let returned: any;
+			let isAsync = false;
+
+			try {
+				returned = store.onDBOpenCallback();
+				isAsync = !!returned && typeof returned.then === 'function';
+				this.logDebug(`[${tag}] onDBOpen: "${name}" callback invoked (async=${isAsync})`);
+
+				// Always await to preserve ordering
+				await returned;
+				const cbDt = (performance.now?.() ?? Date.now()) - cbStart;
+				this.logVerboseBold(`[${tag}] onDBOpen: "${name}" callback completed in ${Math.round(cbDt)}ms`);
+			} catch (err) {
+				const cbDt = (performance.now?.() ?? Date.now()) - cbStart;
+				this.logErrorBold(`[${tag}] onDBOpen: "${name}" callback FAILED after ${Math.round(cbDt)}ms: ${err}`);
+				throw err;
+			}
+		}
+
+		const allDt = (performance.now?.() ?? Date.now()) - allStart;
+		this.logInfo(`[${tag}] onDBOpen: All callbacks completed in ${Math.round(allDt)}ms`);
 	};
 
 	// ######################## Version Control ########################
 
 	private getCurrentVersionData = (): VersionData | undefined => {
 		const storage = new StorageKey<VersionData>(`idb-version-data__${this.dbName}`);
-		return storage.get();
+		const data = storage.get();
+		this.logDebug(`[VERSION] getCurrentVersionData => v=${data?.version ?? '-'} hash=${data?.hash ?? '-'}`);
+		return data;
 	};
 
 	private setCurrentVersionData = (versionData: VersionData): VersionData => {
 		const storage = new StorageKey<VersionData>(`idb-version-data__${this.dbName}`);
 		storage.set(versionData);
+		this.logDebug(`[VERSION] setCurrentVersionData => v=${versionData.version} hash=${versionData.hash}`);
 		return versionData;
 	};
 
 	private generateVersionHash = () => {
 		const stores = sortArray(this.registeredStores, i => i.config.name);
-		return md5(stores.map(i => i.config.name).join(','));
+		const hash = md5(stores.map(i => i.config.name).join(','));
+		this.logDebug(`[VER] generateVersionHash => ${hash} from [${stores.map(s => s.config.name).join(', ')}]`);
+		return hash;
 	};
 
 	private getNextVersionData = (): VersionData => {
 		const currentVersionData = this.getCurrentVersionData();
 		const hash = this.generateVersionHash();
 
-		if (hash === currentVersionData?.hash)
+		if (hash === currentVersionData?.hash) {
+			this.logDebug(`[VER] Hash unchanged — keeping version ${currentVersionData.version}`);
 			return currentVersionData;
+		}
 
-		return {
+		const next: VersionData = {
 			version: ((currentVersionData?.version ?? 0) + 1),
 			hash
 		};
+		this.logInfo(`[VER] Hash changed — bumping version to ${next.version}`);
+		return next;
 	};
 }
