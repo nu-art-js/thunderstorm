@@ -222,7 +222,7 @@ export class ModuleFE_SyncManager_Class
 			await this.smartSync();
 		}, this._debounceTimeout, this._debounceMaxTimeout);
 
-		this.logInfo('Performing Immediate Sync');
+		this.logInfo('Performing Immediate Sync', '');
 		await this.smartSync();
 	}
 

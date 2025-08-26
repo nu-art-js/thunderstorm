@@ -53,7 +53,7 @@ class ModuleFE_ServerInfo_Class
 	private onServerInfoDataChanged = async (snapshot: DataSnapshot) => {
 		const rtdbServerInfoData = snapshot.val() as ServerInfoFirebaseState | undefined;
 		if (!rtdbServerInfoData)
-			return this.logInfo(`Did not receive any ServerInfo via firebase listener`);
+			return this.logInfo(`Did not receive any ServerInfo via firebase listener`, '');
 
 		if (!exists(ModuleManager.instance.version))
 			ModuleManager.instance.setVersion(rtdbServerInfoData.version);
@@ -66,15 +66,15 @@ class ModuleFE_ServerInfo_Class
 		getAppVersion: () => {
 			let version = RuntimeVersion();
 			if (!version) {
-				this.logWarning(`Couldn't find a version-app.json file to get the code version from.`);
+				this.logWarning(`Couldn't find a version-app.json file to get the code version from.`, '');
 				version = '0.0.0';
 			}
-			this.logInfo(`Code version: ${version}`);
+			this.logInfo(`Code version: ${version}`, '');
 			return version;
 		},
 		getLatestVersion: () => {
 			const version = StorageKey_ServerVersion.get() || '0.0.0';
-			this.logInfo(`Server version: ${version}`);
+			this.logInfo(`Server version: ${version}`, '');
 			return version;
 		},
 		shouldUpdateVersion: (): boolean => {
