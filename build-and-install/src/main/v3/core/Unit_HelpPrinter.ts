@@ -1,6 +1,6 @@
 import {_keys, LogLevel, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
-import {AllBaiParams, BaiParam_NoBuild, BaiParam_Prepare} from '../../core/params/params';
+import {AllBaiParams, BaiParam_AllUnits, BaiParam_NoBuild, BaiParam_Prepare} from '../../core/params/params';
 import {UnitPhaseImplementor} from './types';
 import {Phase} from '../phase';
 import {ProjectUnit} from '../units';
@@ -11,7 +11,7 @@ export const BaiParam_Help: BaseCliParam<'help', boolean> = {
 	type: 'boolean',
 	group: 'General',
 	description: 'This help menu',
-	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}]
+	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}, {param: BaiParam_AllUnits, value: true}],
 };
 
 const AllBaiParams_Help = [...AllBaiParams, BaiParam_Help];
@@ -34,7 +34,7 @@ class _Unit_HelpPrinter
 
 	constructor() {
 		super(config);
-		this.setMinLevel(LogLevel.Verbose)
+		this.setMinLevel(LogLevel.Verbose);
 	}
 
 	async printHelp() {

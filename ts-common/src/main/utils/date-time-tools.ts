@@ -75,16 +75,39 @@ export function _clearInterval(handlerId?: number) {
  */
 export const timeoutHandler = <Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args) => {
 	let handlerId: ReturnType<typeof setTimeout> | undefined;
+	let expiration: number | undefined;
 
 	const clear = () => {
-		if (!exists(handlerId)) return;
+		if (!exists(handlerId))
+			return;
+
 		clearTimeout(handlerId);
 		handlerId = undefined;
+		expiration = undefined;
 	};
 
 	const set = () => {
-		if (exists(handlerId)) return;
+		if (exists(handlerId))
+			return;
+
+		expiration = currentTimeMillis() + sleepMs;
 		handlerId = setTimeout(handler, sleepMs, ...args);
+	};
+
+	const adjustTime = () => {
+		if (!exists(handlerId) || !exists(expiration))
+			return;
+
+		const now = currentTimeMillis();
+		const remaining = expiration - now;
+		if (remaining <= 0) {
+			clear();
+			setTimeout(handler, 0, ...args);
+			return;
+		}
+		clear();
+		expiration = now + remaining;
+		handlerId = setTimeout(handler, remaining, ...args);
 	};
 
 	return {
@@ -95,6 +118,7 @@ export const timeoutHandler = <Args extends any[]>(handler: TimerHandler<Args>, 
 			set();
 		},
 		isActive: () => exists(handlerId),
+		_: {onTimeAdjusted: adjustTime},
 	};
 };
 
@@ -108,17 +132,45 @@ export const timeoutHandler = <Args extends any[]>(handler: TimerHandler<Args>, 
  * @returns An object with `set`, `clear`, `reset`, and `isActive` methods.
  */
 export const intervalHandler = <Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args) => {
-	let handlerId: ReturnType<typeof setInterval> | undefined;
+	let handlerId: ReturnType<typeof setTimeout> | undefined;
+	let nextTick: number | undefined;
 
 	const clear = () => {
-		if (!exists(handlerId)) return;
-		clearInterval(handlerId);
+		if (!exists(handlerId))
+			return;
+
+		clearTimeout(handlerId);
 		handlerId = undefined;
+		nextTick = undefined;
+	};
+
+	const tick = () => {
+		handler(...args);
+		nextTick = currentTimeMillis() + sleepMs;
+		handlerId = setTimeout(tick, sleepMs);
 	};
 
 	const set = () => {
-		if (exists(handlerId)) return;
-		handlerId = setInterval(handler, sleepMs, ...args);
+		if (exists(handlerId))
+			return;
+
+		nextTick = currentTimeMillis() + sleepMs;
+		handlerId = setTimeout(tick, sleepMs);
+	};
+
+	const adjustTime = () => {
+		if (!exists(handlerId) || !exists(nextTick))
+			return;
+
+		const now = currentTimeMillis();
+		const remaining = nextTick - now;
+		clear();
+
+		if (remaining <= 0)
+			return setTimeout(tick, 0);
+
+		nextTick = now + remaining;
+		handlerId = setTimeout(tick, remaining);
 	};
 
 	return {
@@ -129,8 +181,10 @@ export const intervalHandler = <Args extends any[]>(handler: TimerHandler<Args>,
 			set();
 		},
 		isActive: () => exists(handlerId),
+		_: { onTimeAdjusted: adjustTime },
 	};
 };
+
 
 /**
  * @param comment @deprecated
