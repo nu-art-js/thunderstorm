@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ModuleFE_MouseInteractivity} from './ModuleFE_MouseInteractivity';
 import {Adapter} from '../../components/adapter/Adapter';
 import {Coordinates, Model_Menu, Model_PopUp, Model_ToolTip, mouseInteractivity_ToolTip} from './types';
-import {generateHex, ResolvableContent} from '@nu-art/ts-common';
+import {generateHex, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {stopPropagation} from '../../utils/tools';
 
 // ######################### General Helpers #########################
@@ -336,6 +336,20 @@ const OpenToolTipAtTop = (id: string, content: ResolvableContent<React.ReactNode
 	};
 };
 
+const OpenToolTipCustom = (id: string, content: ResolvableContent<React.ReactNode, [VoidFunction]>, config: (e: React.MouseEvent<HTMLElement>) => Omit<Model_ToolTip, 'id' | 'content'>) => {
+	return {
+		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+			const model: Model_ToolTip = {
+				id,
+				content,
+				...resolveContent(config?.(e)),
+			};
+			ModuleFE_MouseInteractivity.showTooltip(model);
+		},
+		onMouseLeave: () => ModuleFE_MouseInteractivity.hide(mouseInteractivity_ToolTip),
+	};
+};
+
 // ######################### Menu Helpers #########################
 
 const openMenuAtLeft = (e: React.MouseEvent, content: Adapter) => {
@@ -379,6 +393,7 @@ export const openContent = {
 		top: OpenToolTipAtTop,
 		bottom: OpenToolTipAtBottom,
 		center: OpenToolTipAtCenter,
+		custom: OpenToolTipCustom,
 	},
 	menu: {
 		left: openMenuAtLeft,
