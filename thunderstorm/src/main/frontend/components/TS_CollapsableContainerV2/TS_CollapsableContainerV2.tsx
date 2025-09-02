@@ -23,6 +23,7 @@ type Props = {
 	onHeaderRightClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 	forceUpdate?: boolean; //Force component to update when parent component updates. essential if inner components receive props
 	animated?: boolean;
+	innerRef?: React.RefObject<HTMLDivElement>;
 }
 
 type State = {
@@ -73,7 +74,12 @@ export class TS_CollapsableContainerV2
 			this.state.animated && 'animated',
 			this.state.className,
 		);
-		return <LL_V_L id={this.state.id} className={className} style={this.state.style}>
+		return <LL_V_L
+			id={this.state.id}
+			className={className}
+			style={this.state.style}
+			innerRef={this.props.innerRef}
+		>
 			{this.render_Header()}
 			{this.render_Content()}
 		</LL_V_L>;
