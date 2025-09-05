@@ -137,7 +137,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		//Writing the file to the package source instead of the output is fine,
 		//Webpack bundles files into the output automatically!
 		const targetPath = `${this.config.fullPath}/src/main/${CONST_VersionApp}`;
-		const appVersion = this.runtimeContext.baiConfig.appVersion;
+		const appVersion = this.runtimeContext.version;
 		const fileContent = JSON.stringify({version: appVersion}, null, 2);
 		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
 	}

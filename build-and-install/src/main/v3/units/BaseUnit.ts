@@ -32,6 +32,7 @@ export type BaseUnit_Config = {
 }
 
 export type UnitRuntimeContext = {
+	version: string
 	baiConfig: Readonly<BAI_Config>,
 	unitsMapper: UnitsDependencyMapper,
 	unitsResolver: <Class extends BaseUnit>(keys: string[], className: Constructor<Class>) => Class[],

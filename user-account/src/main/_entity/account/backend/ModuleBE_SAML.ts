@@ -99,6 +99,7 @@ export class ModuleBE_SAML_Class
 
 	assertSaml = async (body: SAML_Assert['request']): Promise<SAML_Assert['response']> => {
 		try {
+			this.logDebug('assertion called with body:', body);
 			const data = await this.assertImpl(body);
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
 

@@ -105,7 +105,7 @@ export const tsValidate = <T>(instance: T | undefined, _validator: ValidatorType
 	return results;
 };
 
-export const tsValidateResult = <T>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, parentInstance?: any): InvalidResult<T> | undefined => {
+export const tsValidateResult = <T>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, strict = true, parentInstance?: any): InvalidResult<T> | undefined => {
 	if (!_validator)
 		return 'No validator provided!' as InvalidResult<T>;
 
@@ -125,18 +125,18 @@ export const tsValidateResult = <T>(instance: T | undefined, _validator: Validat
 			return `Unexpected instance '${instance}'.\nExpected to receive an object, but received something else.` as InvalidResult<T>;
 
 		const __validator = validator as TypeValidator<object>;
-		return tsValidateObject(__validator, instance as object) as InvalidResult<T>;
+		return tsValidateObject(__validator, instance as object, '', strict) as InvalidResult<T>;
 	}
 };
 
-export const tsValidateObject = <T extends object>(__validator: TypeValidator<T>, instance: T, path = ''): InvalidResultObject<T> | undefined => {
+export const tsValidateObject = <T extends object>(__validator: TypeValidator<T>, instance: T, path = '', strict = true): InvalidResultObject<T> | undefined => {
 	const validatorKeys = _keys(__validator);
 	const instanceKeys = Object.keys(instance as unknown as object);
 
 	const result: InvalidResultObject<T> = {};
 	for (const key of instanceKeys) {
 		// @ts-ignore
-		if (!validatorKeys.includes(key))
+		if (!validatorKeys.includes(key) && strict)
 			// @ts-ignore
 			result[key as keyof T] = `Unexpected key '${path}${key}'.\nIf you want to ignore the validation of this property,\n add the following to your validator:\n {\n  ...\n  ${key}: tsValidateOptional\n  ...\n}\n`;
 	}
@@ -144,7 +144,7 @@ export const tsValidateObject = <T extends object>(__validator: TypeValidator<T>
 	for (const key of validatorKeys) {
 		const value: T[keyof T] = instance[key];
 		const validator = __validator[key];
-		const propsResult = tsValidateResult(value as any, validator as any, key, instance);
+		const propsResult = tsValidateResult(value as any, validator as any, key, strict, instance);
 		if (propsResult && propsResult !== CONST_NO_ERROR)
 			result[key as keyof T] = propsResult as InvalidResult<T[keyof T]>;
 	}
