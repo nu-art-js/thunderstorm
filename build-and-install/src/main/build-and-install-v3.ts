@@ -107,6 +107,7 @@ export class BuildAndInstall
 		const globalOutputFolder = resolve(this.pathToProject, '.trash/output');
 		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies, globalOutputFolder);
 		const runtimeContext: ProjectUnit_RuntimeContext = ({
+			version: '',
 			parentUnit: this.nodeProjectUnit,
 			childUnits: allProjectUnits,
 			baiConfig,

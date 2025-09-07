@@ -11,7 +11,6 @@ class ModuleBE_GooglePubSub_Class
 		const authObject = ModuleBE_Auth.getAuth(authKey, []);
 		const auth: GoogleAuth = authObject.auth;
 
-		// @ts-ignore
 		const pubSub = new PubSub({projectId, auth});
 		return {
 			createTopic: async (topicName: string) => {

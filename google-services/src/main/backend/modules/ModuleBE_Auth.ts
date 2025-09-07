@@ -3,19 +3,16 @@
  */
 
 import {ImplementationMissingException, Module, NotImplementedYetException} from '@nu-art/ts-common';
-import {GoogleAuth} from 'google-auth-library/build/src/auth/googleauth';
-import {JWTOptions} from 'google-auth-library/build/src/auth/jwtclient';
-import {OAuth2ClientOptions} from 'google-auth-library/build/src/auth/oauth2client';
-import {UserRefreshClientOptions} from 'google-auth-library/build/src/auth/refreshclient';
-import {JWT, JWTInput} from 'google-auth-library';
+import {google} from 'googleapis';
+import {AuthClient, GoogleAuth, JWT, JWTInput,} from 'google-auth-library';
 
-
+type AuthClient_ = typeof google.auth.getClient
+type ClientOptions = NonNullable<Parameters<AuthClient_>[0]>['clientOptions']
 type AuthModuleConfig = {
 	auth: {
 		[k: string]: JWT_Input | string
 	}
 }
-type Version = 'v1' | 'v2' | 'v3' | 'v4'
 export type JWT_Input = JWTInput
 
 export class ModuleBE_Auth_Class
@@ -25,17 +22,15 @@ export class ModuleBE_Auth_Class
 		this.setDefaultConfig({auth: {}});
 	}
 
-	getAuth<T extends Version = 'v2'>(authKey: string, scopes: string[], version: T = 'v2' as T, clientOptions?: JWTOptions | OAuth2ClientOptions | UserRefreshClientOptions) {
-		const authConfig = this.getAuthConfig(authKey);
+	getAuth(authKey: string, scopes: string[], clientOptions?: ClientOptions): ({ auth: GoogleAuth }) {
+		const conf = this.getAuthConfig(authKey);
+		const base =
+						typeof conf === 'string'
+							? {keyFile: conf}
+							: {credentials: conf}; // JWTInput
 
-		let opts;
-		if (typeof authConfig === 'string') {
-			opts = {keyFile: authConfig, scopes, clientOptions};
-		} else {
-			opts = {credentials: authConfig, scopes, clientOptions};
-		}
-
-		return {version, auth: new GoogleAuth(opts)};
+		const auth = new GoogleAuth<AuthClient>({...base, scopes, clientOptions});
+		return {auth};
 	}
 
 	getAuthConfig(authKey: string) {
