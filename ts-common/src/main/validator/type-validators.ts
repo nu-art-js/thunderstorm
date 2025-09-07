@@ -1,13 +1,5 @@
 import {__stringify, exists} from '../utils/tools';
-import {
-	InvalidResult,
-	InvalidResultArray,
-	InvalidResultObject,
-	tsValidateExists,
-	tsValidateResult,
-	Validator,
-	ValidatorTypeResolver
-} from './validator-core';
+import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
 import {currentTimeMillis, TimeRange} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {asArray, filterInstances} from '../utils/array-tools';
@@ -59,6 +51,7 @@ export const tsValidateCustom = <T>(processor: (input?: T, parentInput?: any) =>
 	return [tsValidateExists(mandatory), processor];
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const typeFunc = (type: any) => typeof type;
 type types = ReturnType<typeof typeFunc>;
 type validatorObject<T> = { [k in types]?: ValidatorTypeResolver<T> }
@@ -71,7 +64,7 @@ export const tsValidateUnionV3 = <T>(validatorObject: validatorObject<T>, mandat
 					}];
 };
 
-export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayType<T>>(validator: ValidatorTypeResolver<I> | ValidatorTypeResolver<I>[], mandatory = true, minimumLength: number = 0): Validator<I[]> => {
+export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayType<T>>(validator: ValidatorTypeResolver<I> | ValidatorTypeResolver<I>[], mandatory = true, minimumLength = 0, strict = true): Validator<I[]> => {
 	return [tsValidateExists(mandatory),
 					...asArray(validator).map(validator => {
 						return (input?: I[]) => {
@@ -80,7 +73,7 @@ export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayT
 							if (_input.length < minimumLength)
 								return 'Array length smaller than minimum defined length';
 							for (let i = 0; i < _input.length; i++) {
-								results[i] = tsValidateResult(_input[i], validator, undefined, input) as InvalidResultArray<I>;
+								results[i] = tsValidateResult(_input[i], validator, undefined, strict, input) as InvalidResultArray<I>;
 							}
 
 							return filterInstances(results).length !== 0 ? results : undefined;
@@ -223,10 +216,9 @@ export const tsValidateTimestamp = (interval?: number, mandatory = true): Valida
 					}];
 };
 
-export const tsValidateAudit = (range?: RangeTimestamp) => {
+export const tsValidateAudit = (range: RangeTimestamp = {min: 0, max: Number.MAX_VALUE}) => {
 	return (audit?: AuditBy) => {
-		return tsValidateResult(audit?.auditAt?.timestamp, tsValidateIsInRange([[0,
-																																						 Number.MAX_VALUE]]));
+		return tsValidateResult(audit?.auditAt?.timestamp, tsValidateIsInRange([[range.min, range.max]]));
 	};
 };
 
@@ -266,7 +258,7 @@ export const tsValidator_valueByKey = <T>(validatorObject: {
 	}) as ValidatorTypeResolver<T>;
 };
 
-export const tsValidator_ArrayOfObjectsByKey = <T extends Object>(key: keyof T, validatorMap: {
+export const tsValidator_ArrayOfObjectsByKey = <T extends object>(key: keyof T, validatorMap: {
 	[k: string]: ValidatorTypeResolver<T>
 }) => {
 	return tsValidateArray(tsValidateCustom((value) => {

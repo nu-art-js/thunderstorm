@@ -113,7 +113,7 @@ export class ModuleBE_GoogleContacts_Class
 		if (!finalAuthKey)
 			throw new ImplementationMissingException('missing authkey for google contacts api');
 
-		const auth = ModuleBE_Auth.getAuth(finalAuthKey, ['https://www.googleapis.com/auth/contacts'], 'v1', {subject: userEmail});
+		const auth = ModuleBE_Auth.getAuth(finalAuthKey, ['https://www.googleapis.com/auth/contacts'], {subject: userEmail});
 		return new people_v1.People(auth);
 	};
 }

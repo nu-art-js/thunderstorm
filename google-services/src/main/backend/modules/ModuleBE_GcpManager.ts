@@ -24,28 +24,21 @@
 import {
 	__stringify,
 	BadImplementationException,
+	filterInstances,
 	ImplementationMissingException,
 	Module,
 	ThisShouldNotHappenException,
-	timeout,
-	filterInstances
-} from "@nu-art/ts-common";
-import {
-	cloudresourcemanager_v1,
-	cloudresourcemanager_v2,
-	serviceusage_v1
-} from "googleapis";
-import {ModuleBE_Auth} from "./ModuleBE_Auth";
+	timeout
+} from '@nu-art/ts-common';
+import {cloudresourcemanager_v1, cloudresourcemanager_v2, serviceusage_v1} from 'googleapis';
+import {ModuleBE_Auth} from './ModuleBE_Auth';
+import {GCPScope, ServiceKey} from './consts';
 import Serviceusage = serviceusage_v1.Serviceusage;
 import Cloudresourcemanager = cloudresourcemanager_v2.Cloudresourcemanager;
 import CloudresourcemanagerV1 = cloudresourcemanager_v1.Cloudresourcemanager;
 import Schema$GoogleApiServiceusageV1Service = serviceusage_v1.Schema$GoogleApiServiceusageV1Service;
 import Schema$Folder = cloudresourcemanager_v2.Schema$Folder;
 import Schema$Project = cloudresourcemanager_v1.Schema$Project;
-import {
-	GCPScope,
-	ServiceKey
-} from "./consts";
 
 type CreateFolder = { parentId: string, folderName: string };
 type QueryFolder = { parentId: string, folderName: string };
@@ -64,34 +57,35 @@ export class ModuleBE_GcpManager_Class
 
 	constructor() {
 		super();
-		this.setDefaultConfig({scopes: [GCPScope.CloudPlatform]} as GoogleCloudManagerConfig)
+		this.setDefaultConfig({scopes: [GCPScope.CloudPlatform]} as GoogleCloudManagerConfig);
 	}
 
-	protected init() {
-		this.cloudServicesManagerAPI = new Serviceusage(ModuleBE_Auth.getAuth(this.config.authKey, this.config.scopes, 'v1'));
-		this.cloudResourcesManagerAPI = new Cloudresourcemanager(ModuleBE_Auth.getAuth(this.config.authKey, this.config.scopes));
-		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(ModuleBE_Auth.getAuth(this.config.authKey, this.config.scopes, 'v1'));
+	protected async init() {
+		const auth = ModuleBE_Auth.getAuth(this.config.authKey, this.config.scopes);
+		this.cloudServicesManagerAPI = new Serviceusage(auth);
+		this.cloudResourcesManagerAPI = new Cloudresourcemanager(auth);
+		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(auth);
 	}
 
 	// FOLDERS
 	async getOrCreateFolder(parentFolderId: string, folderName: string) {
 		if (parentFolderId === undefined)
-			throw new BadImplementationException("MUST provide a parentFolderId");
+			throw new BadImplementationException('MUST provide a parentFolderId');
 
 		if (folderName === undefined)
-			throw new BadImplementationException("MUST provide a folderName");
+			throw new BadImplementationException('MUST provide a folderName');
 
 		const folders = await this.queryFolders({parentId: parentFolderId, folderName});
 		let parentFolder;
 		if (folders.length > 1)
-			throw new ThisShouldNotHappenException("too many folders for query...");
+			throw new ThisShouldNotHappenException('too many folders for query...');
 		else if (folders.length === 1)
 			parentFolder = folders[0];
 		else
 			parentFolder = await this.createFolder({parentId: parentFolderId, folderName});
 
 		if (!parentFolder)
-			throw new BadImplementationException("MUST be parentFolder");
+			throw new BadImplementationException('MUST be parentFolder');
 
 		return this.getFolderId(parentFolder);
 	}
@@ -117,7 +111,7 @@ export class ModuleBE_GcpManager_Class
 	}
 
 	getFolderId(folder: Schema$Folder) {
-		return (folder.name as string).replace("folders/", "");
+		return (folder.name as string).replace('folders/', '');
 	}
 
 	private async _waitForFolderOperation(name: string) {
@@ -131,7 +125,7 @@ export class ModuleBE_GcpManager_Class
 			retry--;
 		}
 
-		throw new ImplementationMissingException("need better handling here..");
+		throw new ImplementationMissingException('need better handling here..');
 	}
 
 	// PROJECTS
@@ -158,7 +152,7 @@ export class ModuleBE_GcpManager_Class
 			projectId,
 			name,
 			parent: {
-				type: "folder",
+				type: 'folder',
 				id: parentId
 			}
 		};
@@ -179,7 +173,7 @@ export class ModuleBE_GcpManager_Class
 			retry--;
 		}
 
-		throw new ImplementationMissingException("need better handling here..");
+		throw new ImplementationMissingException('need better handling here..');
 	}
 
 	// SERVICES
@@ -227,7 +221,7 @@ export class ModuleBE_GcpManager_Class
 			retry--;
 		}
 
-		throw new ImplementationMissingException("need better handling here..");
+		throw new ImplementationMissingException('need better handling here..');
 	}
 
 	async isEnabled(serviceKey: ServiceKey, projectId: string) {
@@ -236,7 +230,7 @@ export class ModuleBE_GcpManager_Class
 	}
 
 	private _isEnabled(service: Schema$GoogleApiServiceusageV1Service) {
-		return service.state === "ENABLED";
+		return service.state === 'ENABLED';
 	}
 
 }
