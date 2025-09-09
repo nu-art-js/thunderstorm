@@ -1,5 +1,6 @@
 import {BadImplementationException} from '../core/exceptions/exceptions';
 import {Logger} from '../core/logger/Logger';
+import {isPromise} from './promise-tools';
 import {exists} from './tools';
 
 export class Debounce<Args extends any[], Response>
@@ -13,6 +14,8 @@ export class Debounce<Args extends any[], Response>
 	private waitTimer?: ReturnType<typeof setTimeout>;
 	private maxTimer?: ReturnType<typeof setTimeout>;
 	private latestArgs: Args = [] as unknown as Args;
+	private actionInProgress: boolean = false;
+	private triggerPending: boolean = false;
 
 	constructor(action: (...args: Args) => Response, waitMs: number, maxWaitMs?: number) {
 		super('Debounce');
@@ -61,7 +64,21 @@ export class Debounce<Args extends any[], Response>
 		this.triggerIndex++;
 		const args = this.latestArgs ?? ([] as unknown as Args);
 		this.clearTimers();
-		return this.action(...args);
+		const result = this.action(...args);
+		//Set up chain triggering if the action is asynchronous.
+		if (isPromise(result)) {
+			this.actionInProgress = true;
+			Promise.resolve(result).finally(() => {
+				this.actionInProgress = false;
+
+				//Immediately execute the action again if debounce was triggered during the current run
+				if (this.triggerPending) {
+					this.triggerPending = false;
+					void this.executeAction(this.triggerIndex);
+				}
+			});
+		}
+		return result;
 	}
 
 	//######################### Public Logic #########################
@@ -69,9 +86,16 @@ export class Debounce<Args extends any[], Response>
 	/** Schedule the action to be performed (fire-and-forget). */
 	public trigger(...args: Args): void {
 		this.latestArgs = args;
+
+		//If action is in progress, queue up immediate trigger
+		if (this.actionInProgress) {
+			this.triggerPending = true;
+			return;
+		}
+
+		// Normal debounce behavior while idle:
 		//Reset waitTimer
-		if (this.waitTimer)
-			clearTimeout(this.waitTimer);
+		if (this.waitTimer) clearTimeout(this.waitTimer);
 		const triggerIndex = this.triggerIndex;
 		this.waitTimer = setTimeout(() => {
 			void this.executeAction(triggerIndex);
@@ -93,10 +117,9 @@ export class Debounce<Args extends any[], Response>
 
 	/**
 	 * Run immediately if scheduled and return the action's value.
-	 * - Returns R | Promise<R> when something was scheduled.
-	 * - Returns undefined if nothing was scheduled.
-	 * - If the action throws synchronously here, it will throw to the caller.
-	 * - If it returns a rejected Promise, the caller can handle it.
+	 * - Returns Response when something was scheduled, else undefined.
+	 * - If action throws sync here, it throws to the caller.
+	 * - If action returns a rejected Promise, caller handles it.
 	 */
 	public flush(): Response | undefined {
 		if (!this.isScheduled())
@@ -105,11 +128,10 @@ export class Debounce<Args extends any[], Response>
 		return this.executeAction(this.triggerIndex);
 	}
 
-	/**
-	 * Cancels current scheduled action
-	 */
-	public clear() {
+	/** Cancel any scheduled run. (Does not cancel in-flight.) */
+	public clear(): void {
 		this.clearTimers();
 		this.triggerIndex++;
+		this.triggerPending = false;
 	}
 }
