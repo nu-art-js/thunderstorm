@@ -1,4 +1,4 @@
-import {ModuleBE_Auth} from '@nu-art/google-services/backend';
+import {ModuleBE_Auth} from '@nu-art/google-services/backend/index';
 import {FIREBASE_DEFAULT_PROJECT_ID} from './_main.js';
 
 

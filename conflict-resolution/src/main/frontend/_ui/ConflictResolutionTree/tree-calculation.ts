@@ -1,5 +1,5 @@
 import {DBEntityDependencies} from '@nu-art/thunderstorm';
-import {ConflictResolutionTree} from './types';
+import {ConflictResolutionTree} from './types.js';
 import {DBProto, RuntimeModules, StaticLogger, UniqueId, _keys} from '@nu-art/ts-common';
 import {ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend';
 

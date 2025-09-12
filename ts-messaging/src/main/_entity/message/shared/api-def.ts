@@ -1,5 +1,5 @@
 import {ApiDefResolver, BodyApi, QueryApi, HttpMethod} from '@nu-art/thunderstorm';
-import {DBDef_message} from './db-def';
+import {DBDef_message} from './db-def.js';
 
 
 export type RequestType = {

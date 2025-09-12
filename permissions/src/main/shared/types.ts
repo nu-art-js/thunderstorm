@@ -1,6 +1,6 @@
 import {TypedKeyValue, TypedMap, UniqueId} from '@nu-art/ts-common';
-import {PermissionKey_BE} from '../backend/PermissionKey_BE';
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject, DB_PermissionUser, DomainToLevelValueMap} from './_entity';
+import {PermissionKey_BE} from '../backend/PermissionKey_BE.js';
+import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject, DB_PermissionUser, DomainToLevelValueMap} from './_entity.js';
 
 
 export type PermissionTypes = {

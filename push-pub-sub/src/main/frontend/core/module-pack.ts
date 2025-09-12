@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {ModuleFE_PushPubSub} from '../modules/ModuleFE_PushPubSub';
+import {ModuleFE_PushPubSub} from '../modules/ModuleFE_PushPubSub.js';
 import {ModuleFE_Firebase} from '@nu-art/firebase/frontend';
-import {ModuleFE_PushSubscription} from '../modules/ModuleFE_PushSubscription';
+import {ModuleFE_PushSubscription} from '../modules/ModuleFE_PushSubscription.js';
 
 
 export const ModulePackFE_PushPubSub = [
@@ -27,4 +27,4 @@ export const ModulePackFE_PushPubSub = [
 	ModuleFE_PushSubscription
 ];
 
-export * from '../modules/ModuleFE_PushPubSub';
+export * from '../modules/ModuleFE_PushPubSub.js';

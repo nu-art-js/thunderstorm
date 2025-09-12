@@ -1,11 +1,11 @@
-import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend/index';
 import {
 	DB_FailedLoginAttempt,
 	DBDef_FailedLoginAttempt,
 	DBProto_FailedLoginAttempt,
 	DefaultMaxLoginAttempts,
 	ErrorType_LoginBlocked
-} from '../shared';
+} from '../shared/index.js';
 import {
 	ApiException,
 	currentTimeMillis, exists,
@@ -16,9 +16,9 @@ import {
 } from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
-import {dispatch_OnLoginFailed} from '../../login-attempts/backend/dispatchers';
-import {OnUserLogin} from '../../account/backend';
-import {SafeDB_Account} from '../../account/shared';
+import {dispatch_OnLoginFailed} from '../../login-attempts/backend/dispatchers.js';
+import {OnUserLogin} from '../../account/backend/index.js';
+import {SafeDB_Account} from '../../account/shared/index.js';
 
 
 type Config = DBApiConfigV3<DBProto_FailedLoginAttempt> & {

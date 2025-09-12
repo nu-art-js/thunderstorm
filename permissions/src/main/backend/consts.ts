@@ -1,6 +1,6 @@
-import {SessionData_Permissions} from '../shared/types';
-import {SessionKey_BE} from '@nu-art/user-account/backend';
-import {SessionData_StrictMode} from './modules/ModuleBE_PermissionsAssert';
+import {SessionData_Permissions} from '../shared/types.js';
+import {SessionKey_BE} from '@nu-art/user-account/backend/index';
+import {SessionData_StrictMode} from './modules/ModuleBE_PermissionsAssert.js';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {TypedMap} from '@nu-art/ts-common';
 

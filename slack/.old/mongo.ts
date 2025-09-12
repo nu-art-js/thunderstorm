@@ -17,4 +17,4 @@
  * limitations under the License.
  */
 
-export * from "./mongo/MongoDBModule";
+export * from "./mongo/MongoDBModule.js";

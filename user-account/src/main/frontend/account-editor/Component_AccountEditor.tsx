@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Account_CreateAccount, AccountType, accountTypes, DB_Account} from '../../shared';
+import {Account_CreateAccount, AccountType, accountTypes, DB_Account} from '../../shared/index.js';
 import {
 	_className,
 	Button,
@@ -18,7 +18,7 @@ import {
 import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, JwtTools, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ModuleFE_Account} from '../_entity';
+import {ModuleFE_Account} from '../_entity.js';
 
 
 type Props = {

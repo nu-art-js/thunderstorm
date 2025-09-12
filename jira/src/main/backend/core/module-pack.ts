@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {JiraModule} from '../modules/JiraModule';
+import {JiraModule} from '../modules/JiraModule.js';
 
 
 export const ModulePack_Backend_Jira = [

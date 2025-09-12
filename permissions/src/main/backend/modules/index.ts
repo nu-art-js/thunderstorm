@@ -17,4 +17,4 @@
  * limitations under the License.
  */
 
-export * from './consts';
+export * from './consts.js';

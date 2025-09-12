@@ -1,5 +1,5 @@
 import {TSAnalyticsEvent} from '@nu-art/analytics-shared';
-import {AnalyticsPlugin_Base} from './AnalyticsPlugin_Base';
+import {AnalyticsPlugin_Base} from './AnalyticsPlugin_Base.js';
 
 export const pluginKey_Logger = 'logger';
 

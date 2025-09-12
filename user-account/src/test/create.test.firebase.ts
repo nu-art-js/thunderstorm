@@ -1,10 +1,10 @@
-import {Account_CreateAccount, MemKey_AccountEmail, ModuleBE_AccountDB} from '../main/backend';
-import {Request_RegisterAccount} from '../main';
+import {Account_CreateAccount, MemKey_AccountEmail, ModuleBE_AccountDB} from '../main/backend/index.js';
+import {Request_RegisterAccount} from '../main/index.js';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {PartialProperties} from '@nu-art/ts-common';
 import {stormTester, StormTestInput} from '@nu-art/thunderstorm/backend/test/StormTest';
-import {DefaultStormTestConfig_SessionAndAccount} from './utils/helpers';
+import {DefaultStormTestConfig_SessionAndAccount} from './utils/helpers.js';
 
 export type Input = {
 	createCredentials: PartialProperties<Account_CreateAccount['request'], 'password' | 'passwordCheck'>;

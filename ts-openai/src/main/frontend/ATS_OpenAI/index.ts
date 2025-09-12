@@ -1,2 +1,2 @@
-export * from './ATS_OpenAI';
+export * from './ATS_OpenAI.js';
     

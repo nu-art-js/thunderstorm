@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
 import {Module} from '@nu-art/ts-common';
 import {HttpServer} from '../modules/server/HttpServer.js';
 import {Storm} from './Storm.js';

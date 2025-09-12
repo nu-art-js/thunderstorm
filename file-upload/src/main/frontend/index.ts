@@ -17,6 +17,6 @@
  * limitations under the License.
  */
 
-export * from './core/module-pack';
-export * from './modules/ModuleFE_Assets';
-export * from './modules/ModuleFE_AssetUploader';
+export * from './core/module-pack.js';
+export * from './modules/ModuleFE_Assets.js';
+export * from './modules/ModuleFE_AssetUploader.js';

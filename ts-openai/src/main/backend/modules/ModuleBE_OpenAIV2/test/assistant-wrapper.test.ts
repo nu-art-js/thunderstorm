@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {OpenAIClient_Assistant_Class} from '../clients/OpenAIClient_Assistant';
+import {OpenAIClient_Assistant_Class} from '../clients/OpenAIClient_Assistant.js';
 import {OpenAI} from 'openai';
 import sinon, {SinonStub} from 'sinon';
 import {BlobLike, Uploadable} from 'openai/uploads';

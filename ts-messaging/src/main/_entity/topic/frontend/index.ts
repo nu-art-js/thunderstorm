@@ -1,1 +1,1 @@
-export * from './modules/ModuleFE_Topic';
+export * from './modules/ModuleFE_Topic.js';

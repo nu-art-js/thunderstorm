@@ -1,9 +1,9 @@
 import {_className, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunderstorm/frontend';
 import {_values} from '@nu-art/ts-common';
 import '../permission-keys-editor.scss';
-import {Component_AccessLevelsEditor} from './Component_AccessLevelsEditor';
-import {PermissionKey_FE} from '../../../PermissionKey_FE';
-import {ModuleFE_PermissionsAssert} from '../../../modules/ModuleFE_PermissionsAssert';
+import {Component_AccessLevelsEditor} from './Component_AccessLevelsEditor.js';
+import {PermissionKey_FE} from '../../../PermissionKey_FE.js';
+import {ModuleFE_PermissionsAssert} from '../../../modules/ModuleFE_PermissionsAssert.js';
 
 type Props = {};
 

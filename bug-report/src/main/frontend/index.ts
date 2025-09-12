@@ -17,5 +17,5 @@
  * limitations under the License.
  */
 
-export * from './core/module-pack';
-export * from './ui/AdminBR';
+export * from './core/module-pack.js';
+export * from './ui/AdminBR.js';

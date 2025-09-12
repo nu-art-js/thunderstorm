@@ -1,2 +1,2 @@
-export * from './ATS_FileUploader';
+export * from './ATS_FileUploader.js';
     

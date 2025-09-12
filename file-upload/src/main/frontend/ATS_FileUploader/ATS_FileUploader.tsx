@@ -9,8 +9,8 @@ import {
 	openContent,
 	TS_DragAndDrop
 } from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
-import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
+import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader.js';
+import {ModuleFE_Assets} from '../modules/ModuleFE_Assets.js';
 import {ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';
 
 

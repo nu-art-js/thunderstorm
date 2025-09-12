@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {PermissionsComponent, Props_PermissionComponent} from './PermissionsComponent';
+import {PermissionsComponent, Props_PermissionComponent} from './PermissionsComponent.js';
 import {_className} from '@nu-art/thunderstorm/frontend';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
 

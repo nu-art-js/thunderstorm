@@ -16,6 +16,6 @@
  * limitations under the License.
  */
 
-export * from './types';
-export * from './db-def';
-export * from './apis';
+export * from './types.js';
+export * from './db-def.js';
+export * from './apis.js';

@@ -38,7 +38,7 @@ import {
 	PushMessage_Payload,
 	PushMessage_PayloadWrapper,
 	Request_PushRegister
-} from '../../index';
+} from '../../index.js';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {MessagingWrapperFE} from '@nu-art/firebase/frontend';
 

@@ -18,18 +18,18 @@
 
 import {arrayToMap, batchActionParallel, compare, currentTimeMillis, Day, filterDuplicates, filterKeys, KB, LogLevel, Module} from '@nu-art/ts-common';
 
-import {FirebaseType_BatchResponse, ModuleBE_Firebase, PushMessagesWrapperBE} from '@nu-art/firebase/backend';
-import {ApiDef_PushMessages, DB_PushSubscription, PushMessage, PushMessage_Payload, PushMessage_PayloadWrapper, Request_PushRegister} from '../../index';
+import {FirebaseType_BatchResponse, ModuleBE_Firebase, PushMessagesWrapperBE} from '@nu-art/firebase/backend/index';
+import {ApiDef_PushMessages, DB_PushSubscription, PushMessage, PushMessage_Payload, PushMessage_PayloadWrapper, Request_PushRegister} from '../../index.js';
 
-import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend/index';
 
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {MemKey_AccountId} from '@nu-art/user-account/backend/index';
 import {firestore} from 'firebase-admin';
-import {UI_PushSession} from '../../shared/push-session';
-import {ModuleBE_PushSessionDB} from './ModuleBE_PushSessionDB';
-import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB';
-import {DBProto_PushMessagesHistory} from '../../shared/push-messages-history';
-import {ModuleBE_PushMessagesHistoryDB} from './ModuleBE_PushMessagesHistoryDB';
+import {UI_PushSession} from '../../shared/push-session/index.js';
+import {ModuleBE_PushSessionDB} from './ModuleBE_PushSessionDB.js';
+import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB.js';
+import {DBProto_PushMessagesHistory} from '../../shared/push-messages-history/index.js';
+import {ModuleBE_PushMessagesHistoryDB} from './ModuleBE_PushMessagesHistoryDB.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {Message} from 'firebase-admin/lib/messaging/messaging-api';
 import Transaction = firestore.Transaction;

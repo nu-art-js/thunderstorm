@@ -1,2 +1,2 @@
-export * from './ModuleFE_PermissionAccessLevel';
-export * from './module-pack';
+export * from './ModuleFE_PermissionAccessLevel.js';
+export * from './module-pack.js';

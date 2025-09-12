@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-import {ModuleFE_LiveDocs} from '../modules/ModuleFE_LiveDocs';
+import {ModuleFE_LiveDocs} from '../modules/ModuleFE_LiveDocs.js';
 
 
 export const ModulePack_Frontend_LiveDocs = [
 	ModuleFE_LiveDocs
 ];
 
-export * from '../modules/ModuleFE_LiveDocs';
+export * from '../modules/ModuleFE_LiveDocs.js';
 

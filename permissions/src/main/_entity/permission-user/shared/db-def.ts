@@ -1,6 +1,6 @@
 import {DBDef_V3, tsValidateArray, tsValidateString, tsValidateStringAndNumbersWithDashes} from '@nu-art/ts-common';
-import {DBProto_PermissionUser} from './types';
-import {PermissionDBGroup} from '../../shared';
+import {DBProto_PermissionUser} from './types.js';
+import {PermissionDBGroup} from '../../shared.js';
 
 
 const Validator_ModifiableProps: DBProto_PermissionUser['modifiablePropsValidator'] = {

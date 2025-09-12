@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {PushMessage} from '../../shared';
-import {ModuleBE_PushPubSub} from './ModuleBE_PushPubSub';
+import {PushMessage} from '../../shared/index.js';
+import {ModuleBE_PushPubSub} from './ModuleBE_PushPubSub.js';
 
 
 export class PushKey_BE<MessageType extends PushMessage<any, any, any>> {

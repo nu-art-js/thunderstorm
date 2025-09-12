@@ -1,2 +1,2 @@
-export * from './ModuleBE_ShortUrlDB';
-export * from './module-pack';
+export * from './ModuleBE_ShortUrlDB.js';
+export * from './module-pack.js';

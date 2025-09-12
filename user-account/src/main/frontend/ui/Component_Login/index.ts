@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-export * from './Component_Login';
+export * from './Component_Login.js';

@@ -42,16 +42,16 @@ import {
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm/backend';
 import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
-import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {ApiDef_PermissionsAssert, Request_AssertApiForUser} from '../../shared';
+import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend/index';
+import {ApiDef_PermissionsAssert, Request_AssertApiForUser} from '../../shared/index.js';
 import {
 	MemKey_HttpRequestBody,
 	MemKey_HttpRequestMethod,
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl
 } from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts';
-import {PermissionKey_BE} from '../PermissionKey_BE';
+import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts.js';
+import {PermissionKey_BE} from '../PermissionKey_BE.js';
 import {
 	Base_AccessLevel,
 	DB_PermissionAccessLevel,
@@ -59,7 +59,7 @@ import {
 	DomainToLevelValueMap,
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB
-} from '../_entity';
+} from '../_entity.js';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };

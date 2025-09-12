@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import sinon, {SinonStub} from 'sinon';
 import {OpenAI} from 'openai';
-import {OpenAIClient_Chat_Class} from '../clients/OpenAIClient_Chat';
+import {OpenAIClient_Chat_Class} from '../clients/OpenAIClient_Chat.js';
 import {BadImplementationException, ThisShouldNotHappenException} from '@nu-art/ts-common';
 
 describe('OpenAIClient_Chat_Class', () => {

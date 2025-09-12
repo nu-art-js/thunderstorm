@@ -16,5 +16,5 @@
  * limitations under the License.
  */
 
-export * from './modules/ModuleFE_PushPubSub';
-export * from './core/module-pack';
+export * from './modules/ModuleFE_PushPubSub.js';
+export * from './core/module-pack.js';

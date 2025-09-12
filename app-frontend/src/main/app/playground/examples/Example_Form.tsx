@@ -21,7 +21,7 @@ import * as React from 'react';
 import {Request_CreateAccount} from '@nu-art/user-account/shared/api';
 import {COLORS} from '@res/colors';
 import {ICONS} from '@app/common/frontend/icons';
-import {renderForm} from '../../themes/forms';
+import {renderForm} from '../../themes/forms.js';
 import {__stringify} from '@nu-art/ts-common';
 
 

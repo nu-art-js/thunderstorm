@@ -11,7 +11,7 @@ import {
 	removeDBObjectKeys,
 	RuntimeModules
 } from '@nu-art/ts-common';
-import {ModuleBE_FirestoreListener} from '@nu-art/firebase/backend';
+import {ModuleBE_FirestoreListener} from '@nu-art/firebase/backend/index';
 import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB.js';
 import {addRoutes} from '../ModuleBE_APIs.js';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js';

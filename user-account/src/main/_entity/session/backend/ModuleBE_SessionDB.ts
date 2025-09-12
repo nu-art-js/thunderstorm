@@ -14,12 +14,12 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
-import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend';
-import {DB_Session, DBDef_Session, DBProto_Session} from '../shared';
-import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend/index';
+import {DB_Session, DBDef_Session, DBProto_Session} from '../shared/index.js';
+import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm';
-import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT';
+import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import Transaction = firestore.Transaction;
 
@@ -271,7 +271,7 @@ export class ModuleBE_SessionDB_Class
 
 			const {dbSession, claims} = await this.runTransaction(async t => {
 				let dbSession = await this._session.query.byJwt(jwt);
-				let latestJwtValidationResult = await this.jwtHandler.verifySignature(dbSession.sessionIdJwt);
+				const latestJwtValidationResult = await this.jwtHandler.verifySignature(dbSession.sessionIdJwt);
 				if (!latestJwtValidationResult.validated)
 					throw new MUSTNeverHappenException(`JWT received from DB is invalid Session id = ${dbSession._id}`);
 

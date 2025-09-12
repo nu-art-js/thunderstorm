@@ -24,11 +24,11 @@ import {
 	Module,
 	TypedMap
 } from '@nu-art/ts-common';
-import {promisifyRequest} from '@nu-art/thunderstorm/backend';
+import {promisifyRequest} from '@nu-art/thunderstorm/backend/index';
 import {HeaderKey_ContentType, HttpMethod} from '@nu-art/thunderstorm';
 import {CoreOptions, Headers, Response, UriOptions} from 'request';
-import {JiraIssueText, JiraUtils} from './utils';
-import {JiraVersion, JiraVersion_Create} from '../../shared/version';
+import {JiraIssueText, JiraUtils} from './utils.js';
+import {JiraVersion, JiraVersion_Create} from '../../shared/version.js';
 
 
 type Config = {

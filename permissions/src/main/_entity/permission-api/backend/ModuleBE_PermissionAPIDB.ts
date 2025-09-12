@@ -1,10 +1,10 @@
-import {DBApiConfigV3, ModuleBE_BaseDB, ServerApi,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionAPI, DBDef_PermissionAPI, DBProto_PermissionAPI} from '../shared';
+import {DBApiConfigV3, ModuleBE_BaseDB, ServerApi,} from '@nu-art/thunderstorm/backend/index';
+import {DB_PermissionAPI, DBDef_PermissionAPI, DBProto_PermissionAPI} from '../shared/index.js';
 import {dbObjectToId, filterInstances, PreDB, UniqueId} from '@nu-art/ts-common';
-import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend/ModuleBE_PermissionAccessLevelDB';
+import {ModuleBE_PermissionAccessLevelDB} from '../../permission-access-level/backend/ModuleBE_PermissionAccessLevelDB.js';
 import {Transaction} from 'firebase-admin/firestore';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
-import {ModuleBE_PermissionProjectDB} from '../../permission-project/backend/ModuleBE_PermissionProjectDB';
+import {MemKey_AccountId} from '@nu-art/user-account/backend/index';
+import {ModuleBE_PermissionProjectDB} from '../../permission-project/backend/ModuleBE_PermissionProjectDB.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {trimStartingForwardSlash} from '@nu-art/thunderstorm/shared/route-tools';
 

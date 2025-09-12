@@ -1,1 +1,1 @@
-export * from './modules/ModuleFE_Message';
+export * from './modules/ModuleFE_Message.js';

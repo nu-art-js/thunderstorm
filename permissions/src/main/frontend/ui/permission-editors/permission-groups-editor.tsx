@@ -10,7 +10,7 @@ import {
 	sortArray,
 	StaticLogger
 } from '@nu-art/ts-common';
-import {MultiSelect} from '../ui-props';
+import {MultiSelect} from '../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {
 	DB_PermissionGroup,
@@ -18,10 +18,10 @@ import {
 	ModuleFE_PermissionAccessLevel,
 	ModuleFE_PermissionDomain,
 	ModuleFE_PermissionGroup
-} from '../../_entity';
-import {Component_BasePermissionItemEditor} from './editor-base';
-import {Input_Text_Blur} from './components';
-import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
+} from '../../_entity.js';
+import {Component_BasePermissionItemEditor} from './editor-base.js';
+import {Input_Text_Blur} from './components.js';
+import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components.js';
 import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
 import {

@@ -20,17 +20,17 @@ import {
 	ApiException, asArray, BadImplementationException, currentTimeMillis, Day, exists, filterInstances, generateHex, Hour, ImplementationMissingException, MB,
 	Minute, MUSTNeverHappenException, ThisShouldNotHappenException, TypedMap
 } from '@nu-art/ts-common';
-import {FileWrapper, FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
-import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDB, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {FileWrapper, FirestoreTransaction} from '@nu-art/firebase/backend/index';
+import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp.js';
+import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDB, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend/index';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
-import {OnAssetUploaded} from './ModuleBE_BucketListener';
-import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage';
-import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '../../shared';
-import {PushMessageBE_FileUploadStatus} from '../core/messages';
+import {OnAssetUploaded} from './ModuleBE_BucketListener.js';
+import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage.js';
+import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '../../shared/index.js';
+import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted';
+import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
 import {firestore} from 'firebase-admin';
 import {FileMetadata} from '@google-cloud/storage/build/cjs/src/file';
 import Transaction = firestore.Transaction;

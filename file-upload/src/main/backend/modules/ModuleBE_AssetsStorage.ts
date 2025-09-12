@@ -16,12 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AxiosHttpModule, OnSyncEnvCompleted} from '@nu-art/thunderstorm/backend';
+import {AxiosHttpModule, OnSyncEnvCompleted} from '@nu-art/thunderstorm/backend/index';
 import {filterInstances, Module, NotImplementedYetException, TypedMap} from '@nu-art/ts-common';
-import {ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
-import {ApiDef_Assets, DB_Asset} from '../../shared';
+import {ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend/index';
+import {ApiDef_Assets, DB_Asset} from '../../shared/index.js';
 import {HttpMethod} from '@nu-art/thunderstorm';
-import {ModuleBE_AssetsDB} from './ModuleBE_AssetsDB';
+import {ModuleBE_AssetsDB} from './ModuleBE_AssetsDB.js';
 
 
 type Config = {

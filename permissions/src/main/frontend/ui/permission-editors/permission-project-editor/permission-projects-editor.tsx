@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
-import {DB_PermissionProject, DBProto_PermissionProject, ModuleFE_PermissionProject} from '../../../_entity';
-import {Component_BasePermissionItemEditor} from '../editor-base';
-import {Input_Text_Blur} from '../components';
-import {PermissionAPIEditor} from '../permission-api-edior/permission-api-editor';
+import {DB_PermissionProject, DBProto_PermissionProject, ModuleFE_PermissionProject} from '../../../_entity.js';
+import {Component_BasePermissionItemEditor} from '../editor-base.js';
+import {Input_Text_Blur} from '../components.js';
+import {PermissionAPIEditor} from '../permission-api-edior/permission-api-editor.js';
 import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
 import './permission-project-editor.scss';

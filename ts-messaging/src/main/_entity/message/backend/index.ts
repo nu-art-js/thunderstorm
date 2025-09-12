@@ -1,1 +1,1 @@
-export * from './modules/ModuleBE_MessageDB';
+export * from './modules/ModuleBE_MessageDB.js';

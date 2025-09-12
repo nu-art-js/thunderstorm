@@ -20,7 +20,7 @@
  */
 
 import {merge, Module, ModuleManager, TS_Object} from '@nu-art/ts-common';
-import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
 
 export type StormConfig = {
 	envKey: string

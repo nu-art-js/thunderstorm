@@ -17,7 +17,7 @@
  */
 
 import {__custom} from '@nu-art/testelot';
-import {ModuleBE_Account} from '../_main';
+import {ModuleBE_Account} from '../_main.js';
 
 
 export function cleanup() {

@@ -1,6 +1,6 @@
 import {DBDef_V3, tsValidateArray, tsValidateOptionalId, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
-import {accountGroupName} from './consts';
-import {DBProto_Session} from './types';
+import {accountGroupName} from './consts.js';
+import {DBProto_Session} from './types.js';
 
 export const Validator_Modifiable: DBProto_Session['modifiablePropsValidator'] = {
 	label: tsValidateString(100, false),

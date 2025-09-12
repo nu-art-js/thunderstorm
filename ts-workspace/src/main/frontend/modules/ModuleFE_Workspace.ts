@@ -19,7 +19,7 @@
 import {StorageKey} from '@nu-art/thunderstorm/frontend';
 import {_values, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
 import {PanelConfig} from '..';
-import {Workspace} from '../../shared/types';
+import {Workspace} from '../../shared/types.js';
 import {SessionKey_Account} from '@nu-art/user-account/_entity/account/frontend/consts';
 
 type Config = {

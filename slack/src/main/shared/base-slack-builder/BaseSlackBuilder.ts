@@ -1,6 +1,6 @@
 import {asArray, BadImplementationException, CustomException, Logger, ServerErrorSeverity} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {SlackBlock, SlackFile, ThreadPointer} from './types';
+import {SlackBlock, SlackFile, ThreadPointer} from './types.js';
 
 
 /**

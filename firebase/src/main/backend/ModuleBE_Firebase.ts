@@ -24,7 +24,7 @@ import {Module} from '@nu-art/ts-common';
 import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin.js';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword";
 import {readFileSync} from 'fs';
-import {ModuleBE_Auth} from '@nu-art/google-services/backend/index.js';
+import {ModuleBE_Auth} from '@nu-art/google-services/backend/index';
 import {TestResetListener} from '@nu-art/ts-common/testing/types';
 import {deleteApp, getApps} from 'firebase-admin/app';
 

@@ -1,7 +1,7 @@
 import {Module} from '@nu-art/ts-common';
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_AccountDB} from './ModuleBE_AccountDB';
-import {ModuleBE_SAML} from './ModuleBE_SAML';
+import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend/index';
+import {ModuleBE_AccountDB} from './ModuleBE_AccountDB.js';
+import {ModuleBE_SAML} from './ModuleBE_SAML.js';
 
 export const ModulePackBE_AccountDB: Module[] = [
 	ModuleBE_AccountDB, createApisForDBModuleV3(ModuleBE_AccountDB),

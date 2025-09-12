@@ -1,2 +1,2 @@
-export * from './module-pack';
-export * from './consts';
+export * from './module-pack.js';
+export * from './consts.js';

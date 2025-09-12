@@ -1,8 +1,8 @@
 import {DBEntityDependencies} from '@nu-art/thunderstorm';
 import {Adapter, AdapterBuilder, ComponentSync, TS_Tree} from '@nu-art/thunderstorm/frontend';
-import {calculateConflictResolutionTree} from './tree-calculation';
-import {ConflictResolutionTreeRenderers} from './tree-rendering';
-import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution';
+import {calculateConflictResolutionTree} from './tree-calculation.js';
+import {ConflictResolutionTreeRenderers} from './tree-rendering.js';
+import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution.js';
 import './ConflictResolutionTree.scss';
 
 type Props = {

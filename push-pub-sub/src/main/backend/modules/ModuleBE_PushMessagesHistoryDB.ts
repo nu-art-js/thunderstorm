@@ -1,5 +1,5 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {DBDef_PushMessagesHistory, DBProto_PushMessagesHistory} from '../../shared/push-messages-history';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend/index';
+import {DBDef_PushMessagesHistory, DBProto_PushMessagesHistory} from '../../shared/push-messages-history/index.js';
 
 
 type Config = DBApiConfigV3<DBProto_PushMessagesHistory> & {

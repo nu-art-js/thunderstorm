@@ -1,9 +1,9 @@
 import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {DB_Asset} from './types1';
+import {DB_Asset} from './types1.js';
 import {DB_BaseObject} from '@nu-art/ts-common';
-import {UI_Asset} from './types';
+import {UI_Asset} from './types.js';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
-import {FileStatus} from '../types';
+import {FileStatus} from '../types.js';
 
 
 export type SignedUrl = {

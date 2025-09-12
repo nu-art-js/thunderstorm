@@ -1,1 +1,1 @@
-export * from './modules/ModuleBE_TopicDB';
+export * from './modules/ModuleBE_TopicDB.js';

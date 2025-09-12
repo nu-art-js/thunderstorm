@@ -19,7 +19,7 @@
 // tslint:disable:no-import-side-effect
 import './res/styles/styles.scss';
 
-import {App} from './app/App';
+import {App} from './app/App.js';
 import {ModuleFE_ForceUpgrade, Thunder} from '@nu-art/thunderstorm/frontend';
 import {ModulePack_Frontend_LiveDocs} from '@nu-art/live-docs/frontend';
 import {ExampleModule} from '@modules/ExampleModule';
@@ -38,7 +38,7 @@ const modules: Module[] = [
 ModuleFE_Permissions.setDefaultConfig({projectId: 'thunderstorm-staging'});
 
 new Thunder()
-	.setConfig(require('./config').config)
+	.setConfig(require('./config.js').config)
 	.addModules(...ModulePack_Frontend_PushPubSub)
 	.addModules(...ModulePack_Frontend_LiveDocs)
 	.addModules(...ModulePack_Frontend_Uploader)

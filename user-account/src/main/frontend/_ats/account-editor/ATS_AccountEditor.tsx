@@ -1,9 +1,9 @@
 import './ATS_AccountEditor.scss';
 import {_className, AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
-import {DB_Account, DBProto_Account} from '../../../shared';
+import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor.js';
+import {DB_Account, DBProto_Account} from '../../../shared/index.js';
 import {generateUUID} from '@nu-art/ts-common';
-import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account';
+import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account.js';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 

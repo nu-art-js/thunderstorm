@@ -1,4 +1,4 @@
 // Generated DB Item type: PushMessagesHistory
-export * from './types';
-export * from './db-def';
-export * from './api-def';
+export * from './types.js';
+export * from './db-def.js';
+export * from './api-def.js';

@@ -1,2 +1,2 @@
-export * from './ModuleFE_ShortUrl';
-export * from './module-pack';
+export * from './ModuleFE_ShortUrl.js';
+export * from './module-pack.js';

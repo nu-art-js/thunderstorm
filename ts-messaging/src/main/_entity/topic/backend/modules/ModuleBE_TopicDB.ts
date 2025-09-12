@@ -1,5 +1,5 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {DBDef_Topic, DBProto_Topic} from '../shared';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend/index';
+import {DBDef_Topic, DBProto_Topic} from '../shared.js';
 
 
 type Config = DBApiConfigV3<DBProto_Topic> & {

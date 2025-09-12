@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
 import {apiWithBody} from '@nu-art/thunderstorm/frontend';
-import {ApiDef_OpenAI, ApiStruct_OpenAI} from '../../shared/api-def';
+import {ApiDef_OpenAI, ApiStruct_OpenAI} from '../../shared/api-def.js';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 
 

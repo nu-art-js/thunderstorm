@@ -1,8 +1,8 @@
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions/shared/types';
-import {ApiDef_Assets, ApiDef_AssetUploader} from '../../shared';
+import {ApiDef_Assets, ApiDef_AssetUploader} from '../../shared/index.js';
 import {DefaultAccessLevel_Admin, DefaultAccessLevel_Delete, DefaultAccessLevel_Read, DefaultAccessLevel_Write} from '@nu-art/permissions/shared/consts';
 import {Domain_Developer} from '@nu-art/permissions/backend/permissions';
-import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI';
+import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI.js';
 
 
 const Domain_AssetsManager_ID = '993c496c6aaad9c67723034137d26c42';

@@ -1,7 +1,7 @@
 import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {ApiStruct_PermissionAccessLevel, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from '../shared';
+import {ApiStruct_PermissionAccessLevel, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from '../shared/index.js';
 
 
 export type DispatcherType_PermissionAccessLevel = DispatcherDef<DBProto_PermissionAccessLevel, `__onPermissionAccessLevelUpdated`>;

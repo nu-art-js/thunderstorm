@@ -24,7 +24,7 @@ import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {StormConfig, BaseStorm} from './BaseStorm.js';
 import {HttpRoute, RouteResolver} from '../modules/server/route-resolvers/index.js';
 import {HttpServer} from '../modules/server/HttpServer.js';
-import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
 import {ServerApi} from '../modules/server/server-api.js';
 
 

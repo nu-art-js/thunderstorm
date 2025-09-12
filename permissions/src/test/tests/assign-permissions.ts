@@ -1,7 +1,7 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {BadImplementationException, dbObjectToId, filterInstances, reduceToMap, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account/backend/index';
 import {
 	Failed_Log,
 	permissionTestCleanup,
@@ -20,10 +20,10 @@ import {
 	Test_DefaultAccountId,
 	Test_Domain1,
 	Test_Setup1
-} from '../_core/consts';
-import {MemKey_UserPermissions} from '../../main/backend';
+} from '../_core/consts.js';
+import {MemKey_UserPermissions} from '../../main/backend/index.js';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
-import {Test_Setup, Test_TargetAccount} from '../_core/types';
+import {Test_Setup, Test_TargetAccount} from '../_core/types.js';
 import {expect} from 'chai';
 
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';

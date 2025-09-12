@@ -10,14 +10,14 @@ import {
 	ModuleFE_PermissionAccessLevel,
 	ModuleFE_PermissionDomain,
 	ModuleFE_PermissionProject
-} from '../../_entity';
-import {Component_BasePermissionItemEditor} from './editor-base';
+} from '../../_entity.js';
+import {Component_BasePermissionItemEditor} from './editor-base.js';
 import {
 	DropDownCaret,
 	Input_Number_Blur,
 	Input_Text_Blur
-} from './components';
-import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
+} from './components.js';
+import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components.js';
 import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
 import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';

@@ -15,13 +15,13 @@ import {
 	Button
 } from '@nu-art/thunderstorm/frontend';
 import {ResolvableContent, resolveContent, RuntimeVersion, TypedMap, UniqueId} from '@nu-art/ts-common';
-import {DB_Account} from '../../../shared';
-import {ModuleFE_Account} from '../../../_entity/account/frontend/ModuleFE_Account';
-import {Component_AccountThumbnail} from '../Component_AccountThumbnail/Component_AccountThumbnail';
+import {DB_Account} from '../../../shared/index.js';
+import {ModuleFE_Account} from '../../../_entity/account/frontend/ModuleFE_Account.js';
+import {Component_AccountThumbnail} from '../Component_AccountThumbnail/Component_AccountThumbnail.js';
 import './PopUp_AccountMenu.scss';
-import {Component_ChangePassword} from '../Component_ChangePassword/Component_ChangePassword';
+import {Component_ChangePassword} from '../Component_ChangePassword/Component_ChangePassword.js';
 import {ModuleFE_Utils} from '@nu-art/thunderstorm/frontend/modules/ModuleFE_Utils/ModuleFE_Utils';
-import {RendererKey_AccountMenu_SubHeader} from '../../consts';
+import {RendererKey_AccountMenu_SubHeader} from '../../consts.js';
 
 
 type ModalProps = {

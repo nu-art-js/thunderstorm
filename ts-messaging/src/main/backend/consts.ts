@@ -1,6 +1,6 @@
 import {filterInstances} from '@nu-art/ts-common';
-import {ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend';
-import {ModulePackBE_Messaging} from './module-pack';
+import {ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend/index';
+import {ModulePackBE_Messaging} from './module-pack.js';
 import {DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions/shared/types';
 import {
 	DefaultAccessLevel_Admin,

@@ -2,7 +2,7 @@ import {Module, RuntimeVersion} from '@nu-art/ts-common';
 import {createQueryServerApi} from '../core/typed-api.js';
 import {addRoutes} from './ModuleBE_APIs.js';
 import {Storm} from '../core/Storm.js';
-import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
 import {ApiDef_ServerInfo, BasicServerInfo, Const_ERROR, Const_OK, Default_ServerInfoNodePath, Response_ServerInfo, ServerInfoFirebaseState} from '../../shared/index.js';
 import {ModuleBE_SyncManager} from './sync-manager/ModuleBE_SyncManager.js';
 

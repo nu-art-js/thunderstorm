@@ -1,5 +1,5 @@
 import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
-import {DBProto_PermissionGroup} from '../../permission-group/shared';
+import {DBProto_PermissionGroup} from '../../permission-group/shared/index.js';
 
 type VersionTypes_PermissionUser = {
 	'1.0.0': DB_PermissionUser

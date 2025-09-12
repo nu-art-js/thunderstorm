@@ -1,1 +1,1 @@
-export * from './show-conflict-resolution';
+export * from './show-conflict-resolution.js';

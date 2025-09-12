@@ -17,10 +17,10 @@
  */
 
 import {__scenario} from '@nu-art/testelot';
-import {Tester} from './_core/Tester';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub';
-import {scenarioCleanup} from './cleaup';
+import {Tester} from './_core/Tester.js';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
+import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub.js';
+import {scenarioCleanup} from './cleaup.js';
 
 
 const mainScenario = __scenario('Push Pub Sub Test');

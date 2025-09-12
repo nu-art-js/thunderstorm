@@ -1,5 +1,5 @@
 import {Module} from '@nu-art/ts-common';
-import {ModuleBE_FocusedObject} from './ModuleBE_FocusedObject';
+import {ModuleBE_FocusedObject} from './ModuleBE_FocusedObject.js';
 
 export const ModulePack_FocusedObjectBE: Module[] = [
 	ModuleBE_FocusedObject
