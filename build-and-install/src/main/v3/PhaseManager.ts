@@ -1,9 +1,9 @@
 import {addItemToArray, exists, flatArray, Logger, removeItemFromArray, timeCounter, TypedMap} from '@nu-art/ts-common';
-import {RunningStatusHandler} from './RunningStatusHandler';
-import {Phase} from './phase';
-import {BaseUnit} from './units';
-import {BaiParams} from '../core/params/params';
-import {PhaseAggregatedException} from '../core/exceptions/PhaseAggregatedException';
+import {RunningStatusHandler} from './RunningStatusHandler.js';
+import {Phase} from './phase/index.js';
+import {BaseUnit} from './units/index.js';
+import {BaiParams} from '../core/params/params.js';
+import {PhaseAggregatedException} from '../core/exceptions/PhaseAggregatedException.js';
 
 export type ScheduledStep = {
 	phases: string[];

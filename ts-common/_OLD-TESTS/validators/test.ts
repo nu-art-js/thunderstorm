@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-import {testSuit_simpleObjectValidator} from './simple-object';
-import {testSuit_nestedObjectValidator} from './nested-object';
-import {testSuit_objectWithArrayValidator} from './object-with-array';
-import {testSuit_nestedObjectWithArrayValidator} from './nested-object-with-array';
-import {testSuit_dynamicPropsObjectValidator} from './dynamic-props-object';
-import {testSuit_values} from './values';
+import {testSuit_simpleObjectValidator} from './simple-object.js';
+import {testSuit_nestedObjectValidator} from './nested-object.js';
+import {testSuit_objectWithArrayValidator} from './object-with-array.js';
+import {testSuit_nestedObjectWithArrayValidator} from './nested-object-with-array.js';
+import {testSuit_dynamicPropsObjectValidator} from './dynamic-props-object.js';
+import {testSuit_values} from './values.js';
 
 
 export const testSuits_validator = [

@@ -1,4 +1,4 @@
-import {compare, runSingleTestCase, TestSuite} from '../_main';
+import {compare, runSingleTestCase, TestSuite} from '../_main.js';
 
 export type Input<T = any> = {
 	one: any;

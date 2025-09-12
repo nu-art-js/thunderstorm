@@ -17,7 +17,7 @@
  */
 
 import {TestSuit, tsValidateRegexp} from '../_main';
-import {TestCase_Validator, validatorProcessor} from './_common';
+import {TestCase_Validator, validatorProcessor} from './_common.js';
 
 
 const simpleObject1: {} = {prop1: 'Adam'};

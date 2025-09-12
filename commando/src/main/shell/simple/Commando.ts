@@ -1,7 +1,7 @@
 import {Constructor, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {SimpleShell} from './SimpleShell';
-import {BaseCommando} from '../core/BaseCommando';
-import {CliError} from '../core/CliError';
+import {SimpleShell} from './SimpleShell.js';
+import {BaseCommando} from '../core/BaseCommando.js';
+import {CliError} from '../core/CliError.js';
 
 
 export class Commando

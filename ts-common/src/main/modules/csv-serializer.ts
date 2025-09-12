@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {TS_Object} from '../utils/types';
+import {TS_Object} from '../utils/types.js';
 
 
 export type CSVProps<T extends TS_Object = TS_Object> = {

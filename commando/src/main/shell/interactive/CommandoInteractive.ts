@@ -1,7 +1,7 @@
 import {Constructor, generateHex, LogLevel} from '@nu-art/ts-common';
-import {InteractiveShell, ShellLogProcessor, ShellPidListener} from './InteractiveShell';
-import {LogTypes} from '../types';
-import {BaseCommando} from '../core/BaseCommando';
+import {InteractiveShell, ShellLogProcessor, ShellPidListener} from './InteractiveShell.js';
+import {LogTypes} from '../types.js';
+import {BaseCommando} from '../core/BaseCommando.js';
 
 
 export class CommandoInteractive

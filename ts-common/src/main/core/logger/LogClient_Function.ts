@@ -19,9 +19,9 @@
 import {
 	LogLevel,
 	LogParam
-} from "./types";
-import {LogClient} from "./LogClient";
-import {_logger_logException} from "./utils";
+} from "./types.js";
+import {LogClient} from "./LogClient.js";
+import {_logger_logException} from "./utils.js";
 
 class LogClient_Function_class
 	extends LogClient {

@@ -1,6 +1,6 @@
 import fs, {promises as _fs} from 'fs';
 import {__stringify, Logger} from '@nu-art/ts-common';
-import {ScheduledStep} from './PhaseManager';
+import {ScheduledStep} from './PhaseManager.js';
 
 
 export class RunningStatusHandler

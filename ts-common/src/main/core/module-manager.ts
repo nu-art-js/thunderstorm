@@ -19,12 +19,12 @@
 /**
  * Created by tacb0ss on 08/07/2018.
  */
-import {Module} from './module';
-import {Dispatcher} from './dispatcher';
-import {BadImplementationException} from './exceptions/exceptions';
-import {Logger} from './logger/Logger';
-import {addItemToArray} from '../utils/array-tools';
-import {exists} from '../utils/tools';
+import {Module} from './module.js';
+import {Dispatcher} from './dispatcher.js';
+import {BadImplementationException} from './exceptions/exceptions.js';
+import {Logger} from './logger/Logger.js';
+import {addItemToArray} from '../utils/array-tools.js';
+import {exists} from '../utils/tools.js';
 
 
 const _modules: Module[] = [];

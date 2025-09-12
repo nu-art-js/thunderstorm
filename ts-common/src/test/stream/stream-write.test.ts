@@ -1,8 +1,8 @@
-import {TestSuite} from '../../main/testing/types';
+import {TestSuite} from '../../main/testing/types.js';
 import * as fs from 'fs';
 import {format} from 'fast-csv';
-import {runSingleTestCase} from '../../main/testing/consts';
-import {StreamTest_Items, StreamTest_ToTransformed} from './test-helper';
+import {runSingleTestCase} from '../../main/testing/consts.js';
+import {StreamTest_Items, StreamTest_ToTransformed} from './test-helper.js';
 
 export type Input = string;
 export type Result = undefined;

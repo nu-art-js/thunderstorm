@@ -1,6 +1,6 @@
 import {Constructor, ImplementationMissingException} from '@nu-art/ts-common';
-import {CommandBuilder} from './CommandBuilder';
-import {CreateMergedInstance} from './class-merger';
+import {CommandBuilder} from './CommandBuilder.js';
+import {CreateMergedInstance} from './class-merger.js';
 
 
 export class BaseCommando {

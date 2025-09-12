@@ -1,6 +1,6 @@
 import {asArray, exists, filterDuplicates, StaticLogger} from '@nu-art/ts-common';
-import {BaseCliParam, CliParam, CliParams} from './types';
-import {DefaultProcessorsMapper} from './consts';
+import {BaseCliParam, CliParam, CliParams} from './types.js';
+import {DefaultProcessorsMapper} from './consts.js';
 
 
 export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output extends CliParams<T> = CliParams<T>> {

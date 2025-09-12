@@ -19,7 +19,7 @@
 
 import * as fs from 'fs';
 import {WriteStream} from 'fs';
-import {LogClient_BaseRotate} from './LogClient_BaseRotate';
+import {LogClient_BaseRotate} from './LogClient_BaseRotate.js';
 
 
 export class LogClient_File

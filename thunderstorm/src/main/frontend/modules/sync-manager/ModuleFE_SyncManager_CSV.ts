@@ -2,12 +2,10 @@ import {_keys, arrayToMap, mergeObject, Module, RuntimeModules, TypedMap} from '
 import {Readable, Writable} from 'stream';
 import {DataStatus} from '../../core/db-api-gen/consts';
 import {ModuleFE_BaseDB} from '../db-api-gen/ModuleFE_BaseDB';
-import {Parser, ParseResult, ParseStepResult} from 'papaparse';
+import {ParseStepResult} from 'papaparse';
 import {ModuleFE_CSVParser, PapaparseConfig} from '../ModuleFE_CSVParser';
 import {ModuleSyncType} from '../db-api-gen/types';
 import {Thunder} from '../../core/Thunder';
-import firebase from 'firebase/compat';
-import Error = firebase.auth.Error;
 import {HeaderKey_ContentType} from '../../shared';
 
 
@@ -34,7 +32,7 @@ export class ModuleFE_SyncManager_CSV_Class
 				url,
 				{
 					transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
-					step: async (results: ParseStepResult<any>, parser: Parser) => {
+					step: async (results: ParseStepResult<any>) => {
 						if (results.errors?.length)
 							return errors.push(...results.errors);
 
@@ -45,7 +43,8 @@ export class ModuleFE_SyncManager_CSV_Class
 
 						itemsToSync.push(item);
 					},
-					complete: async (results: ParseResult<any>) => {
+
+					complete: async () => {
 						for (const moduleKey of _keys(modules)) {
 							const items = itemsToSync.filter(item => item.dbKey === moduleKey);
 							const module = modules[moduleKey];

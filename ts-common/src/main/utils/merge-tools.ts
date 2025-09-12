@@ -17,9 +17,9 @@
  */
 
 
-import {deepClone, filterKeys} from './object-tools';
-import {exists} from './tools';
-import {BadImplementationException} from '../core/exceptions/exceptions';
+import {deepClone, filterKeys} from './object-tools.js';
+import {exists} from './tools.js';
+import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 type MergedType<O, U> = {
 													[K in keyof O & keyof U]-?: NonNullable<O[K]> & NonNullable<U[K]>;

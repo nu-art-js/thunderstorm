@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-import {LogClient_BaseRotate} from './LogClient_BaseRotate';
-import {LogLevel, LogParam} from './types';
-import {_logger_convertLogParamsToStrings, _logger_indentNewLineBy} from './utils';
-import {NoColor} from './LogClient_Terminal';
+import {LogClient_BaseRotate} from './LogClient_BaseRotate.js';
+import {LogLevel, LogParam} from './types.js';
+import {_logger_convertLogParamsToStrings, _logger_indentNewLineBy} from './utils.js';
+import {NoColor} from './LogClient_Terminal.js';
 
 
 function getColor(level: LogLevel, bold = false): string {

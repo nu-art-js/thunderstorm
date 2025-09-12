@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {DebugFlag, DebugFlags} from '../debug-flags';
-import {LogLevel, LogParam} from './types';
-import {BeLogged} from './BeLogged';
+import {DebugFlag, DebugFlags} from '../debug-flags.js';
+import {LogLevel, LogParam} from './types.js';
+import {BeLogged} from './BeLogged.js';
 
 
 export class Logger {

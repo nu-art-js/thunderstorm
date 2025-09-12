@@ -1,6 +1,6 @@
 import {addItemToArrayAtIndex, currentTimeMillis, generateHex, Logger, LogLevel, removeItemFromArray} from '@nu-art/ts-common';
 import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
-import {LogTypes} from '../types';
+import {LogTypes} from '../types.js';
 
 
 export type ShellLogProcessor = (log: string, std: LogTypes) => (Promise<boolean> | boolean);

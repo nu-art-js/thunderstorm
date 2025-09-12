@@ -1,5 +1,5 @@
-import {ApiException} from './exceptions';
-import {ApiError_GeneralErrorMessage} from './types';
+import {ApiException} from './exceptions.js';
+import {ApiError_GeneralErrorMessage} from './types.js';
 
 
 function createGeneralError(code: number) {

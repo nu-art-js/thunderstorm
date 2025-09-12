@@ -1,9 +1,10 @@
-import {UnitPhaseImplementor} from '../core/types';
+import {UnitPhaseImplementor} from '../core/types.js';
 import {AbsolutePath, StringMap} from '@nu-art/ts-common/utils/types';
 import {
 	_keys,
 	arrayToMap,
-	BadImplementationException, flatArray,
+	BadImplementationException,
+	flatArray,
 	lastElement,
 	MUSTNeverHappenException,
 	Promise_all_sequentially,
@@ -12,18 +13,18 @@ import {
 } from '@nu-art/ts-common';
 import * as chokidar from 'chokidar';
 import {FSWatcher} from 'chokidar';
-import {Unit_TypescriptLib} from './Unit_TypescriptLib';
+import {Unit_TypescriptLib} from './Unit_TypescriptLib.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
 import {PNPM} from '@nu-art/commando/shell/services/pnpm';
-import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
+import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {resolve} from 'path';
-import {FileSystemUtils} from '../core/FileSystemUtils';
-import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit';
-import {PhaseManager} from '../PhaseManager';
-import {phase_CompileWatch, Phase_Install, Phase_Watch} from '../phase';
-import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper';
-import {BaseUnit} from './BaseUnit';
+import {FileSystemUtils} from '../core/FileSystemUtils.js';
+import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit.js';
+import {PhaseManager} from '../PhaseManager.js';
+import {phase_CompileWatch, Phase_Install, Phase_Watch} from '../phase/index.js';
+import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper.js';
+import {BaseUnit} from './BaseUnit.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 
 
@@ -194,7 +195,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 				if (this.runtimeContext.runtimeParams.watchBuildTree) {
 					unitDependencyTree = fullDependencyTree;
 				} else {
-					const units = flatArray(unitDependencyTree)
+					const units = flatArray(unitDependencyTree);
 					const topApps = lastElement(fullDependencyTree);
 					if (topApps?.length) {
 						const items = topApps.filter(unit => {

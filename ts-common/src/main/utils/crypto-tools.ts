@@ -17,10 +17,10 @@
  */
 
 import {createHmac} from 'crypto';
-import {RecursiveObjectOfPrimitives} from './types';
+import {RecursiveObjectOfPrimitives} from './types.js';
 import {decodeJwt, jwtVerify, SignJWT} from 'jose';
-import {exists} from './tools';
-import {currentTimeMillis} from './date-time-tools';
+import {exists} from './tools.js';
+import {currentTimeMillis} from './date-time-tools.js';
 
 // Text encoder instance reused for key derivation
 const te = new TextEncoder();

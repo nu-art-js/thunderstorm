@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import {DotNotation, TS_Object, TypedMap} from './types';
-import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
-import {asArray, sortArray} from './array-tools';
-import {merge} from './merge-tools';
-import {exists} from './tools';
+import {DotNotation, TS_Object, TypedMap} from './types.js';
+import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions.js';
+import {asArray, sortArray} from './array-tools.js';
+import {merge} from './merge-tools.js';
+import {exists} from './tools.js';
 
 export function getDotNotatedValue<T extends object>(key: DotNotation<T>, dotNotatedObject: T) {
 	const pathParts = key.split('.');

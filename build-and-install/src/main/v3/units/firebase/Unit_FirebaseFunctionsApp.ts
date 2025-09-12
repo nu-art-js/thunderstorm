@@ -1,13 +1,13 @@
-import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
-import {UnitPhaseImplementor} from '../../core/types';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index.js';
+import {UnitPhaseImplementor} from '../../core/types.js';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts.js';
 import {promises as _fs} from 'fs';
-import {FirebasePackageConfig} from '../../../core/types';
+import {FirebasePackageConfig} from '../../../core/types/index.js';
 import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep} from '@nu-art/ts-common';
-import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts';
+import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../../core/FileSystemUtils';
-import {Phase_Deploy, Phase_Launch} from '../../phase';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../../core/FileSystemUtils.js';
+import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
 import {resolve} from 'path';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {utc} from 'moment';
-import {AuditBy, Timestamp} from './types';
-import {exists} from './tools';
-import {TimeProxy} from './time-proxy';
+import utc from 'moment';
+import {AuditBy, Timestamp} from './types.js';
+import {exists} from './tools.js';
+import {TimeProxy} from './time-proxy.js';
 
 
 export const Second = 1000;

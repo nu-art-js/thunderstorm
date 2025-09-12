@@ -1,4 +1,4 @@
-import {BaseCommando} from './core/BaseCommando';
+import {BaseCommando} from './core/BaseCommando.js';
 
 
 export type LogTypes = 'out' | 'err';

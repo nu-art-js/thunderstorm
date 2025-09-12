@@ -1,4 +1,4 @@
-import {SimpleTestCommando} from '../_common';
+import {SimpleTestCommando} from '../_common.js';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 
 export type TestInput_CommandoBuilder = (commando: SimpleTestCommando) => void;

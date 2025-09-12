@@ -1,5 +1,5 @@
 import {StringMap} from '@nu-art/ts-common';
-import {JSONVersion} from '../core';
+import {JSONVersion} from '../core.js';
 
 export type PackageJson = JSONVersion & {
 	'name': string,

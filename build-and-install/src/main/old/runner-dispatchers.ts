@@ -1,5 +1,5 @@
-import {PhaseRunnerDispatcher} from './PhaseRunnerDispatcher';
-import {BaseUnit} from '../v3/units';
+import {PhaseRunnerDispatcher} from './PhaseRunnerDispatcher.js';
+import {BaseUnit} from '../v3/units/index.js';
 
 export interface OnWatchReady {
 	__onWatchReady: () => void;

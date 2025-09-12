@@ -1,5 +1,5 @@
 import {exists, TypedMap} from '@nu-art/ts-common';
-import {CliParam} from './types';
+import {CliParam} from './types.js';
 
 
 export const DefaultProcessor_Boolean: CliParam<any, boolean>['process'] = (input?: string, defaultValue?: boolean): boolean => {

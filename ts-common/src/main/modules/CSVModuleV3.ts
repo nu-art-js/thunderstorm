@@ -21,7 +21,7 @@
  */
 
 import {Readable, Writable} from 'stream';
-import {Module} from '../core/module';
+import {Module} from '../core/module.js';
 import * as csv from 'fast-csv';
 
 export class CSVModuleV3_Class

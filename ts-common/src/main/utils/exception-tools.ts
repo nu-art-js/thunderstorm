@@ -9,7 +9,7 @@ import {
 	NotImplementedYetException,
 	ThisShouldNotHappenException,
 	WhoCallThisException
-} from '../core/exceptions/exceptions';
+} from '../core/exceptions/exceptions.js';
 
 
 const allExceptions = [

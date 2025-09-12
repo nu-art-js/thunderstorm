@@ -1,6 +1,6 @@
 // file: ./tests/filter/filterAsync.test.ts
 
-import {filterAsync, runSingleTestCase, TestSuite} from '../../_main';
+import {filterAsync, runSingleTestCase, TestSuite} from '../../_main.js';
 
 export type Input<T = any> = {
 	array: T[];

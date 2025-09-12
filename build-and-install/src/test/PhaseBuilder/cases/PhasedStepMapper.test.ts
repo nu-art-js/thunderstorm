@@ -1,5 +1,5 @@
 import {TestModel} from '@nu-art/ts-common/testing/types';
-import {BaiParams, BaseUnit, ExecutionStep, Phase, PhaseManager, ScheduledStep} from '../../_common';
+import {BaiParams, BaseUnit, ExecutionStep, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 
 // test input type

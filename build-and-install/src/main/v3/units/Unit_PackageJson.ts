@@ -1,11 +1,11 @@
-import {CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
+import {CONST_NodeModules, CONST_PackageJSON} from '../../core/consts.js';
 import {__stringify, _keys} from '@nu-art/ts-common';
-import {UnitPhaseImplementor} from '../core/types';
-import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit';
+import {UnitPhaseImplementor} from '../core/types.js';
+import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit.js';
 import {resolve} from 'path';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils';
-import {TS_PackageJSON} from '../UnitsMapper/types';
-import {Phase_Prepare, Phase_Purge} from '../phase';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils.js';
+import {TS_PackageJSON} from '../UnitsMapper/types.js';
+import {Phase_Prepare, Phase_Purge} from '../phase/index.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 
 

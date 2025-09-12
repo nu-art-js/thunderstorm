@@ -20,9 +20,9 @@
  * Created by TacB0sS on 3/16/17.
  */
 
-import {removeItemFromArray} from '../../utils/array-tools';
-import {__stringify} from '../../utils/tools';
-import {LogParam} from './types';
+import {removeItemFromArray} from '../../utils/array-tools.js';
+import {__stringify} from '../../utils/tools.js';
+import {LogParam} from './types.js';
 
 
 export function _logger_logObject(instance: object): string {

@@ -1,8 +1,8 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {BaseCliParam, CliParams} from '../../main/cli-params/types';
-import {CLIParamsResolver} from '../../main/cli-params/CLIParamsResolver';
+import {BaseCliParam, CliParams} from '../../main/cli-params/types.js';
+import {CLIParamsResolver} from '../../main/cli-params/CLIParamsResolver.js';
 
 export const Param_Help: BaseCliParam<'help', boolean> = {
 	keys: ['--help', '-h'],

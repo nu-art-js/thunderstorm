@@ -1,7 +1,7 @@
 import {promises as fs} from 'fs';
 import {Logger, LogLevel} from '@nu-art/ts-common';
-import {convertToFullPath} from '../tools';
-import {Commando_PNPM} from '../plugins/pnpm';
+import {convertToFullPath} from '../tools.js';
+import {Commando_PNPM} from '../plugins/pnpm.js';
 
 
 export class Cli_PNPM

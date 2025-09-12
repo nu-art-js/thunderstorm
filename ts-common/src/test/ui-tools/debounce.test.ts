@@ -1,6 +1,6 @@
-import {TestSuite} from '../../main/testing/types';
-import {debounce, timeout} from '../../main';
-import {runSingleTestCase} from '../../main/testing/consts';
+import {TestSuite} from '../../main/testing/types.js';
+import {debounce, timeout} from '../../main/index.js';
+import {runSingleTestCase} from '../../main/testing/consts.js';
 
 export type Input = {
 	timer?: number;

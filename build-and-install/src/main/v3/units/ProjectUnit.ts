@@ -1,5 +1,5 @@
 import {StringMap} from '@nu-art/ts-common';
-import {BaseUnit, BaseUnit_Config, UnitRuntimeContext} from './BaseUnit';
+import {BaseUnit, BaseUnit_Config, UnitRuntimeContext} from './BaseUnit.js';
 
 
 export type Config_ProjectUnit = BaseUnit_Config & {

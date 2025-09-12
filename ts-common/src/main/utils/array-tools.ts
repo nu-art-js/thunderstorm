@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {exists} from './tools';
-import {_keys} from './object-tools';
-import {NestedArrayType, TypedMap} from './types';
-import {BadImplementationException} from '../core/exceptions/exceptions';
+import {exists} from './tools.js';
+import {_keys} from './object-tools.js';
+import {NestedArrayType, TypedMap} from './types.js';
+import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 
 export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { filteredIn: T[], filteredOut: T[] } {

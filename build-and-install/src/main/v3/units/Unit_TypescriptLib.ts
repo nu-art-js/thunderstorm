@@ -1,18 +1,18 @@
 import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
 import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, NotImplementedYetException, TypedMap} from '@nu-art/ts-common';
-import {UnitPhaseImplementor} from '../core/types';
-import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../core/consts';
+import {UnitPhaseImplementor} from '../core/types.js';
+import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../core/consts.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {resolve, resolve as pathResolve} from 'path';
-import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Test} from '../phase';
-import {ProjectUnit_RuntimeContext} from './ProjectUnit';
+import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils.js';
+import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Test} from '../phase/index.js';
+import {ProjectUnit_RuntimeContext} from './ProjectUnit.js';
 import {glob} from 'node:fs/promises';
-import {TestType, TestTypes} from '../../core/params/params';
+import {TestType, TestTypes} from '../../core/params/params.js';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {

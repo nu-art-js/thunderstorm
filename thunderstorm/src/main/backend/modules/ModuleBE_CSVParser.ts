@@ -1,9 +1,7 @@
 import {Module} from '@nu-art/ts-common';
 import * as Papa from 'papaparse';
-import {Transform, TransformCallback} from 'stream';
 import {ParseResult} from 'papaparse';
-import firebase from 'firebase/compat';
-import Error = firebase.auth.Error;
+import {Transform, TransformCallback} from 'stream';
 
 class ModuleBE_CSVParser_Class
 	extends Module {

@@ -4,6 +4,7 @@
   "author": "nu-art",
   "description": "Styles by Cipher",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc"
   },

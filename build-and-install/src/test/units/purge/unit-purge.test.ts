@@ -1,11 +1,11 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, Unit_PackageJson, Unit_TypescriptLib} from '../../_common';
+import {FileSystemUtils, Unit_PackageJson, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {BuildAndInstall} from '../../../main/build-and-install-v3';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 
 const pathToTemp = resolve(__dirname, './temp');

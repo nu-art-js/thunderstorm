@@ -1,6 +1,6 @@
-import {Unit_NodeProject} from '../../units';
+import {Unit_NodeProject} from '../../units/index.js';
 import {tsValidateValue} from '@nu-art/ts-common';
-import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
+import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
 
 
 export class UnitMapper_NodeProject_Class

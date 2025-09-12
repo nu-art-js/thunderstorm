@@ -1,3 +1,3 @@
-export * from './firebasejson';
-export * from './firebaserc';
-export * from './package-json'
+export * from './firebasejson.js';
+export * from './firebaserc.js';
+export * from './package-json.js'

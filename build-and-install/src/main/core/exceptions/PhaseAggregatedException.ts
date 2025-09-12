@@ -1,5 +1,5 @@
 import {CustomException} from '@nu-art/ts-common';
-import {ScheduledStep} from '../../v3/PhaseManager';
+import {ScheduledStep} from '../../v3/PhaseManager.js';
 
 export class PhaseAggregatedException
 	extends CustomException {

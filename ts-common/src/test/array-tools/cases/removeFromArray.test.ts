@@ -1,4 +1,4 @@
-import {removeFromArray, runSingleTestCase, TestSuite} from '../../_main';
+import {removeFromArray, runSingleTestCase, TestSuite} from '../../_main.js';
 
 export type Input<T = any> = {
 	array: T[];

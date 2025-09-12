@@ -1,4 +1,4 @@
-import {merge, runSingleTestCase, TestSuite} from '../../_main';
+import {merge, runSingleTestCase, TestSuite} from '../../_main.js';
 
 export type Input = {
 	one: any;

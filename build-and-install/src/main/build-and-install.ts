@@ -1,4 +1,4 @@
-import {BuildAndInstall} from './build-and-install-v3';
+import {BuildAndInstall} from './build-and-install-v3.js';
 
 (async () => {
 	const buildAndInstall = new BuildAndInstall();

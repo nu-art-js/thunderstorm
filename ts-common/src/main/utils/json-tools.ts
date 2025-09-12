@@ -1,4 +1,4 @@
-import {__stringify} from './tools';
+import {__stringify} from './tools.js';
 
 export function isValidJson(_string: string) {
 	try {
