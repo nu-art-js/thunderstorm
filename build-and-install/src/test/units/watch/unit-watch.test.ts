@@ -9,11 +9,11 @@ import '../../UnitsDependencyMapper/transitive-dependencies.test';
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, phase_Install, phase_Prepare, Unit_NodeProject, Unit_TypescriptLib} from '../../_common';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_NodeProject, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
-import {BuildAndInstall} from '../../../main/build-and-install-v3';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 
 DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 

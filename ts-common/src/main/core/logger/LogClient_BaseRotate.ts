@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {LogClient} from './LogClient';
-import {LogLevel, LogParam} from './types';
-import {_logger_convertLogParamsToStrings, _logger_indentNewLineBy} from './utils';
+import {LogClient} from './LogClient.js';
+import {LogLevel, LogParam} from './types.js';
+import {_logger_convertLogParamsToStrings, _logger_indentNewLineBy} from './utils.js';
 
 
 type LogRotateListener = () => void

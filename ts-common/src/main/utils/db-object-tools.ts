@@ -1,6 +1,6 @@
-import {DB_Object, OmitDBObject, SubsetObjectByKeys, TS_Object} from './types';
-import {deepClone} from './object-tools';
-import {exists} from './tools';
+import {DB_Object, OmitDBObject, SubsetObjectByKeys, TS_Object} from './types.js';
+import {deepClone} from './object-tools.js';
+import {exists} from './tools.js';
 
 
 export const DB_OBJECT_PROP__ID = '_id';

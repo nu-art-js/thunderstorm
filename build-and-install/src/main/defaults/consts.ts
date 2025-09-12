@@ -1,3 +1,10 @@
+import {fileURLToPath} from 'node:url';
+import {dirname} from 'node:path';
+
+// ESM-safe replacements for __filename/__dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const CONST_FirebaseConfig = `${__dirname}/.firebase_config`;
 const CONST_BackendProxy = `${__dirname}/backend-proxy`;
 

@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {FunctionKeys, ReturnPromiseType} from '../utils/types';
-import {Logger} from './logger/Logger';
+import {FunctionKeys, ReturnPromiseType} from '../utils/types.js';
+import {Logger} from './logger/Logger.js';
 
 
 export type ParamResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? Parameters<T[K]> : never

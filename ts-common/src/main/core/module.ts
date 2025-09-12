@@ -20,13 +20,13 @@
  * Created by tacb0ss on 08/07/2018.
  */
 
-import {ModuleManager} from './module-manager';
-import {BadImplementationException} from './exceptions/exceptions';
-import {merge} from '../utils/merge-tools';
-import {Logger} from './logger/Logger';
-import {LogLevel} from './logger/types';
-import {ValidatorTypeResolver} from '../validator/validator-core';
-import {_clearTimeout, _setTimeout, TimerHandler} from '../utils/date-time-tools';
+import {ModuleManager} from './module-manager.js';
+import {BadImplementationException} from './exceptions/exceptions.js';
+import {merge} from '../utils/merge-tools.js';
+import {Logger} from './logger/Logger.js';
+import {LogLevel} from './logger/types.js';
+import {ValidatorTypeResolver} from '../validator/validator-core.js';
+import {_clearTimeout, _setTimeout, TimerHandler} from '../utils/date-time-tools.js';
 
 
 export abstract class Module<Config = any,

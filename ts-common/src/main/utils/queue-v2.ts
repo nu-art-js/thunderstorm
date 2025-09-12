@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {Logger} from '../core/logger/Logger';
-import {addItemToArray, removeItemFromArray, sortArray} from './array-tools';
+import {Logger} from '../core/logger/Logger.js';
+import {addItemToArray, removeItemFromArray, sortArray} from './array-tools.js';
 
 
 export  type QueueItem<InputType, OutputType> = {

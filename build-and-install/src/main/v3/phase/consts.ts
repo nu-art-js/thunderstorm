@@ -1,4 +1,4 @@
-import {Phase} from './types';
+import {Phase} from './types.js';
 
 //######################### Terminating Phases #########################
 

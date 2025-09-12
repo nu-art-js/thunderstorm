@@ -1,9 +1,9 @@
 import {_keys, LogLevel, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
-import {AllBaiParams, BaiParam_AllUnits, BaiParam_NoBuild, BaiParam_Prepare} from '../../core/params/params';
-import {UnitPhaseImplementor} from './types';
-import {Phase} from '../phase';
-import {ProjectUnit} from '../units';
+import {AllBaiParams, BaiParam_AllUnits, BaiParam_NoBuild, BaiParam_Prepare} from '../../core/params/params.js';
+import {UnitPhaseImplementor} from './types.js';
+import {Phase} from '../phase/index.js';
+import {ProjectUnit} from '../units/index.js';
 
 export const BaiParam_Help: BaseCliParam<'help', boolean> = {
 	keys: ['--help', '-h'],

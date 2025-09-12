@@ -1,6 +1,6 @@
-import {TestSuite} from '../../main/testing/types';
-import {ReplacerV2, ReplacerV2_Input} from '../../main/replacer-v2/ReplacerV2';
-import {runSingleTestCase} from '../_main';
+import {TestSuite} from '../../main/testing/types.js';
+import {ReplacerV2, ReplacerV2_Input} from '../../main/replacer-v2/ReplacerV2.js';
+import {runSingleTestCase} from '../_main.js';
 
 export type Input = {
 	text: string;

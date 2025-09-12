@@ -6,12 +6,12 @@ import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {FileSystemUtils} from '../../../main/v3/core/FileSystemUtils';
+import {FileSystemUtils} from '../../../main/v3/core/FileSystemUtils.js';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
-import {BuildAndInstall} from '../../../main/build-and-install-v3';
-import {FilesCache} from '../../../main/v3/core/FilesCache';
-import {CONST_NodeModules} from '../../../main/core/consts';
-import {phase_Install, phase_Prepare} from '../../../main/v3/phase';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {CONST_NodeModules} from '../../../main/core/consts.js';
+import {phase_Install, phase_Prepare} from '../../../main/v3/phase/index.js';
 
 const pathToTemp = resolve(__dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');

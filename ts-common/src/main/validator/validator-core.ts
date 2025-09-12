@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {_keys} from '../utils/object-tools';
-import {TS_Object} from '../utils/types';
-import {CustomException} from '../core/exceptions/exceptions';
+import {_keys} from '../utils/object-tools.js';
+import {TS_Object} from '../utils/types.js';
+import {CustomException} from '../core/exceptions/exceptions.js';
 
 
 /**

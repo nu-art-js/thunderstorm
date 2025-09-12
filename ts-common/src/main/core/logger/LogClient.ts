@@ -20,7 +20,7 @@ import {
 	LogLevel,
 	LogParam,
 	LogPrefixComposer
-} from './types';
+} from './types.js';
 
 export type LogFilter = (level: LogLevel, tag: string) => boolean;
 

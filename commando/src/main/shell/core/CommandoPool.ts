@@ -1,8 +1,8 @@
 import {Constructor} from '@nu-art/ts-common';
-import {CommandoInteractive} from '../interactive/CommandoInteractive';
-import {BaseCommando} from './BaseCommando';
-import {Commando_Basic} from '../plugins/basic';
-import {MergeTypes} from './class-merger';
+import {CommandoInteractive} from '../interactive/CommandoInteractive.js';
+import {BaseCommando} from './BaseCommando.js';
+import {Commando_Basic} from '../plugins/basic.js';
+import {MergeTypes} from './class-merger.js';
 
 const commandoPool: (CommandoInteractive & BaseCommando & Commando_Basic)[] = [];
 

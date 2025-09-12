@@ -2,13 +2,13 @@
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
-import {BuildAndInstall} from '../../../main/build-and-install-v3';
-import {FilesCache} from '../../../main/v3/core/FilesCache';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {FilesCache} from '../../../main/v3/core/FilesCache.js';
 
 const pathToTemp = resolve(__dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');

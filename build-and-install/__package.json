@@ -2,6 +2,7 @@
   "name": "@nu-art/build-and-install",
   "version": "$THUNDERSTORM_VERSION",
   "description": "",
+  "type": "module",
   "keywords": [
     "TacB0sS",
     "infra",
@@ -13,8 +14,7 @@
     "url": "https://github.com/nu-art-js/thunderstorm/issues"
   },
   "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
+    "directory": "dist"
   },
   "repository": {
     "type": "git",
@@ -38,5 +38,15 @@
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

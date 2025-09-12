@@ -1,2 +1,2 @@
-export * from './interactive/CommandoInteractive';
-export * from './simple/Commando';
+export * from './interactive/CommandoInteractive.js';
+export * from './simple/Commando.js';

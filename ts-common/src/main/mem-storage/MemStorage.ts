@@ -1,8 +1,8 @@
-import {__stringify, exists} from '../utils/tools';
-import {BadImplementationException} from '../core/exceptions/exceptions';
+import {__stringify, exists} from '../utils/tools.js';
+import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 import {AsyncLocalStorage} from 'async_hooks';
-import {ValidationException} from '../validator/validator-core';
+import {ValidationException} from '../validator/validator-core.js';
 
 
 const asyncLocalStorage = new AsyncLocalStorage<MemStorage>();

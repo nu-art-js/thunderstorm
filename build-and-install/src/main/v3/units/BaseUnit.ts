@@ -14,15 +14,15 @@ import {
 	TimeCounter,
 	timeCounter
 } from '@nu-art/ts-common';
-import {dispatcher_UnitStatusChange} from '../../old/PhaseRunnerDispatcher';
-import {CommandoInteractive} from '@nu-art/commando/shell';
+import {dispatcher_UnitStatusChange} from '../../old/PhaseRunnerDispatcher.js';
+import {CommandoInteractive} from '@nu-art/commando/shell/index';
 import {BaseCommando} from '@nu-art/commando/shell/core/BaseCommando';
 import {MergeTypes} from '@nu-art/commando/shell/core/class-merger';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
-import {BAI_Config} from '../../core/types';
-import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper';
-import {BaiParams} from '../../core/params/params';
+import {BAI_Config} from '../../core/types/index.js';
+import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper.js';
+import {BaiParams} from '../../core/params/params.js';
 
 
 export type BaseUnit_Config = {

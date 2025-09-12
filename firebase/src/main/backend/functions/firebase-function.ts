@@ -17,8 +17,7 @@
  */
 import {Express} from 'express';
 import {addItemToArray, StringMap} from '@nu-art/ts-common';
-import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
-import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
+import {HttpsFunction, HttpsOptions, onRequest} from 'firebase-functions/v2/https';
 
 
 export interface TBR_ExpressFunctionInterface {

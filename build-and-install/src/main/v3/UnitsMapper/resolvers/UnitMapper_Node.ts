@@ -1,4 +1,4 @@
-import {TS_PackageJSON} from '../types';
+import {TS_PackageJSON} from '../types.js';
 import {
 	_keys,
 	AbsolutePath, deepClone,
@@ -10,10 +10,10 @@ import {
 	TypeValidator,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {BaseUnit} from '../../units';
-import {FilesCache} from '../../core/FilesCache';
-import {BaseUnitConfig, UnitConfigJSON_Base, UnitMapper_Base} from './UnitMapper_Base';
-import {FileSystemUtils} from '../../core/FileSystemUtils';
+import {BaseUnit} from '../../units/index.js';
+import {FilesCache} from '../../core/FilesCache.js';
+import {BaseUnitConfig, UnitConfigJSON_Base, UnitMapper_Base} from './UnitMapper_Base.js';
+import {FileSystemUtils} from '../../core/FileSystemUtils.js';
 
 
 export type UnitConfigJSON_Node = UnitConfigJSON_Base & {

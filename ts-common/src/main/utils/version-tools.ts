@@ -17,9 +17,9 @@
  */
 
 
-import {BadImplementationException} from '../core/exceptions/exceptions';
-import {tsValidateResult} from '../validator/validator-core';
-import {tsValidateVersion} from '../validator/validators';
+import {BadImplementationException} from '../core/exceptions/exceptions.js';
+import {tsValidateResult} from '../validator/validator-core.js';
+import {tsValidateVersion} from '../validator/validators.js';
 
 /**
  *

@@ -1,8 +1,8 @@
-import {TestSuite} from '../../main/testing/types';
-import {keysToStringify, TestData, testData} from './test-data';
+import {TestSuite} from '../../main/testing/types.js';
+import {keysToStringify, TestData, testData} from './test-data.js';
 import * as fs from 'fs';
-import {JSONCSVModule_Class} from '../../main/modules/JSONCSVModule';
-import {runSingleTestCase} from '../_main';
+import {JSONCSVModule_Class} from '../../main/modules/JSONCSVModule.js';
+import {runSingleTestCase} from '../_main.js';
 
 export type Input = string;
 export type Result = TestData[];

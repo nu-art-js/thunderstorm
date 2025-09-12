@@ -1,5 +1,5 @@
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {RuntimeProjectConfig} from './types';
+import {MemKey} from '@nu-art/ts-common/mem-storage/index';
+import {RuntimeProjectConfig} from './types/index.js';
 
 
 export const CONST_PackageJSONTemplate = '__package.json';

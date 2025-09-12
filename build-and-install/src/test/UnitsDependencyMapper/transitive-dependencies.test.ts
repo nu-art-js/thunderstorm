@@ -1,4 +1,4 @@
-import {UnitDependentNode, UnitsDependencyMapper} from '../_common';
+import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 

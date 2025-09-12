@@ -1,6 +1,6 @@
 import {FunctionKeys, ParamResolver, removeItemFromArray} from '@nu-art/ts-common';
-import {BaseUnit} from '../v3/units';
-import {Phase} from '../v3/phase';
+import {BaseUnit} from '../v3/units/index.js';
+import {Phase} from '../v3/phase/index.js';
 
 export class PhaseRunnerDispatcher<T,
 	K extends FunctionKeys<T> = FunctionKeys<T>,

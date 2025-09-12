@@ -1,4 +1,4 @@
-import {runSingleTestCase, scrub, ScrubConfig, TestSuite} from '../_main';
+import {runSingleTestCase, scrub, ScrubConfig, TestSuite} from '../_main.js';
 
 export type Input = {
 	item: any;

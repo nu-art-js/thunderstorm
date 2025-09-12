@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Default_UniqueKey} from '../db/types';
+import {Default_UniqueKey} from '../db/types.js';
 
 
 export type Primitive = string | number | boolean;

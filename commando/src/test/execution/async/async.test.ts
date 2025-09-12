@@ -1,8 +1,8 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {DefaultTestProcessor, defaultTestProcessor, runSingleTestCase, TestCase_Error} from '@nu-art/ts-common/testing/consts';
 import {expect} from 'chai';
-import {Commando_Basic, CommandoInteractive, ShellLogProcessor, SimpleTestCommando} from '../../_common';
-import {ExpectedResult, Result_Raw, TestResult_CommandoOutput} from '../cases';
+import {Commando_Basic, CommandoInteractive, ShellLogProcessor, SimpleTestCommando} from '../../_common.js';
+import {ExpectedResult, Result_Raw, TestResult_CommandoOutput} from '../cases.js';
 import {BadImplementationException, sleep} from '@nu-art/ts-common';
 
 type Input = (commando: SimpleTestCommando, pidListener: (pid: number, signal: NodeJS.Signals) => Promise<void>) => (number | void);

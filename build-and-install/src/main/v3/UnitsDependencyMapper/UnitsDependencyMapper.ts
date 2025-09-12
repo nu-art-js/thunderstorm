@@ -9,7 +9,7 @@ import {
 	sortArray,
 	TypedMap
 } from '@nu-art/ts-common';
-import {FileSystemUtils} from '../core/FileSystemUtils';
+import {FileSystemUtils} from '../core/FileSystemUtils.js';
 import {resolve} from 'path';
 
 export type UnitDependentNode = {

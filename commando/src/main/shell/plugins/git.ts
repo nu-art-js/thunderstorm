@@ -1,7 +1,7 @@
-import {Commando_Programming} from './programming';
-import {Commando_Basic} from './basic';
-import {MergeClass} from '../core/class-merger';
-import {BaseCommando} from '../core/BaseCommando';
+import {Commando_Programming} from './programming.js';
+import {Commando_Basic} from './basic.js';
+import {MergeClass} from '../core/class-merger.js';
+import {BaseCommando} from '../core/BaseCommando.js';
 
 
 const Super = MergeClass(BaseCommando, Commando_Programming, Commando_Basic);

@@ -22,10 +22,10 @@
 
 import {ExportToCsv, Options} from 'export-to-csv';
 import {createReadStream, promises as fs} from 'fs';
-import {StringMap, TS_Object} from '../utils/types';
-import {Module} from '../core/module';
+import {StringMap, TS_Object} from '../utils/types.js';
+import {Module} from '../core/module.js';
 import {Readable, Transform} from 'stream';
-import {Queue} from '../utils/queue';
+import {Queue} from '../utils/queue.js';
 import * as csvParser from 'csv-parser';
 import * as csv from 'fast-csv';
 

@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {addItemToArray, removeItemFromArray} from '../utils/array-tools';
-import {LogLevel, LogLevelOrdinal} from './logger/types';
+import {addItemToArray, removeItemFromArray} from '../utils/array-tools.js';
+import {LogLevel, LogLevelOrdinal} from './logger/types.js';
 
 
 export class DebugFlag {

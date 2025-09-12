@@ -1,7 +1,7 @@
-import {keysToStringify, testData, TestData, TestData_Parsed} from './test-data';
+import {keysToStringify, testData, TestData, TestData_Parsed} from './test-data.js';
 import * as fs from 'fs';
-import {JSONCSVModule_Class} from '../../main/modules/JSONCSVModule';
-import {runSingleTestCase, TestSuite} from '../_main';
+import {JSONCSVModule_Class} from '../../main/modules/JSONCSVModule.js';
+import {runSingleTestCase, TestSuite} from '../_main.js';
 
 export type Input = {
 	fileName: string;

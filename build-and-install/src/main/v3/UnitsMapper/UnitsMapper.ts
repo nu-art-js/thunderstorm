@@ -1,8 +1,8 @@
-import {BaseUnit, ProjectUnit} from '../units';
+import {BaseUnit, ProjectUnit} from '../units/index.js';
 import {promises as fs} from 'fs';
 import {BadImplementationException, Logger, TypedMap} from '@nu-art/ts-common';
-import {UnitMapper_Base} from './resolvers/UnitMapper_Base';
-import {BaiParams} from '../../core/params/params';
+import {UnitMapper_Base} from './resolvers/UnitMapper_Base.js';
+import {BaiParams} from '../../core/params/params.js';
 
 /**
  * This class will receive a path and will map the workspace packages and libs

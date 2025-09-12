@@ -1,10 +1,10 @@
-import {__stringify, exists} from '../utils/tools';
-import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
-import {currentTimeMillis, TimeRange} from '../utils/date-time-tools';
-import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
-import {asArray, filterInstances} from '../utils/array-tools';
-import {_keys} from '../utils/object-tools';
-import {BadImplementationException} from '../core/exceptions/exceptions';
+import {__stringify, exists} from '../utils/tools.js';
+import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core.js';
+import {currentTimeMillis, TimeRange} from '../utils/date-time-tools.js';
+import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types.js';
+import {asArray, filterInstances} from '../utils/array-tools.js';
+import {_keys} from '../utils/object-tools.js';
+import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 
 export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<string>, mandatory = true) => {

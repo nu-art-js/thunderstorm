@@ -1,7 +1,7 @@
 // New canvas: Reverse filter
 // Motivation: From a changed lib, find all apps (and intermediate libs) that depend on it
 
-import {UnitDependentNode, UnitsDependencyMapper} from '../_common';
+import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 

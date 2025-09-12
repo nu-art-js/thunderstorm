@@ -31,8 +31,8 @@ import {
 	CliParam_TestStringDefault,
 	CliParam_TestStringOptional,
 	CliTestParam
-} from "./consts";
-import {asArray} from '../../src/main';
+} from "./consts.js";
+import {asArray} from '../../src/main/index.js';
 
 type CliTestInput = {
 	param: CliTestParam<any, any>;

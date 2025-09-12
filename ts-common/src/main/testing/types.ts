@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ResolvableContent} from '../utils/types';
+import {ResolvableContent} from '../utils/types.js';
 
 export type Types<Input, Result> = {
 	expected?: Result;

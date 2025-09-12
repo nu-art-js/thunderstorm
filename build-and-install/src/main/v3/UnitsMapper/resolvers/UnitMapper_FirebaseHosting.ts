@@ -9,10 +9,10 @@ import {
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
-import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
-import {FirebaseHosting_EnvConfig, Unit_FirebaseHostingApp, UnitConfigJSON_FirebaseHosting} from '../../units/firebase/Unit_FirebaseHostingApp';
+import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
+import {FirebaseHosting_EnvConfig, Unit_FirebaseHostingApp, UnitConfigJSON_FirebaseHosting} from '../../units/firebase/Unit_FirebaseHostingApp.js';
 import {resolve} from 'path';
-import {BaiParam_SetEnv} from '../../../core/params/params';
+import {BaiParam_SetEnv} from '../../../core/params/params.js';
 
 const valuesValidator = {
 	config: tsValidateMustExist,

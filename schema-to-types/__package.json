@@ -2,6 +2,13 @@
   "name": "@nu-art/schema-to-types",
   "version": "$THUNDERSTORM_VERSION",
   "description": "schema-to-types - Express & Typescript based backend framework",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  },
   "keywords": [
     "TacB0sS",
     "infra",
@@ -33,7 +40,14 @@
     "build": "tsc"
   },
   "dependencies": {
-    "json-schema-to-typescript": "^13.1.1"
+    "@apidevtools/json-schema-ref-parser": "^14.2.0",
+    "command-line-args": "^6.0.1",
+    "quicktype-core": "^23.2.6"
+  },
+  "devDependencies": {
+    "@types/readable-stream": "^4.0.21",
+    "@types/urijs": "^1.19.25",
+    "@types/command-line-args": "^5.2.3"
   },
   "unitConfig": {
     "type": "typescript-lib"

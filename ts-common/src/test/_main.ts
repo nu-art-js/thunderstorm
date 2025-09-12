@@ -16,5 +16,5 @@
  * limitations under the License.
  */
 
-export * from '../main';
-export * from '../main/test-index';
+export * from '../main/index.js';
+export * from '../main/test-index.js';

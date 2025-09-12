@@ -1,5 +1,5 @@
-import {Commando_Basic, CommandoInteractive} from '../_common';
-import {Result_Raw, TestCase_CommandoExecution, TestCases_CommandoExecution, TestInput_CommandoBuilder, TestResult_CommandoOutput} from './cases';
+import {Commando_Basic, CommandoInteractive} from '../_common.js';
+import {Result_Raw, TestCase_CommandoExecution, TestCases_CommandoExecution, TestInput_CommandoBuilder, TestResult_CommandoOutput} from './cases.js';
 import {describe} from 'mocha';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 

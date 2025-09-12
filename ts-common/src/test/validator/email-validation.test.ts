@@ -1,6 +1,6 @@
-import {TestSuite} from '../../main/testing/types';
-import {tsValidateEmail, tsValidateResult} from '../../main';
-import {runSingleTestCase} from '../_main';
+import {TestSuite} from '../../main/testing/types.js';
+import {tsValidateEmail, tsValidateResult} from '../../main/index.js';
+import {runSingleTestCase} from '../_main.js';
 
 export type Input = string;
 export type Result = boolean;

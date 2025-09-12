@@ -1,5 +1,5 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {BaiParams, BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common';
+import {BaiParams, BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
 import {voidFunction} from '@nu-art/ts-common';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 

@@ -1,14 +1,14 @@
-import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index';
-import {FirebasePackageConfig} from '../../../core/types';
-import {UnitPhaseImplementor} from '../../core/types';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index.js';
+import {FirebasePackageConfig} from '../../../core/types/index.js';
+import {UnitPhaseImplementor} from '../../core/types.js';
 import {ImplementationMissingException, LogLevel, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
-import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts';
+import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
-import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node';
+import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node.js';
 import {resolve} from 'path';
-import {Phase_Deploy, Phase_Launch} from '../../phase';
+import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
 
 
 export type FirebaseHostingConfig = {

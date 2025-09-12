@@ -1,6 +1,6 @@
-import {Unit_TypescriptLib} from '../../units';
+import {Unit_TypescriptLib} from '../../units/index.js';
 import {BadImplementationException, tsValidateValue} from '@nu-art/ts-common';
-import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node';
+import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
 import {resolve} from 'path';
 
 
