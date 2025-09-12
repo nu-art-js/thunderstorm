@@ -20,26 +20,23 @@
  */
 
 // noinspection TypeScriptPreferShortImport
-import axios from 'axios';
 import {ApiDef, BaseHttpModule_Class, BaseHttpRequest, TypedApi} from '../../../shared/index.js';
-import {BadImplementationException, composeUrl, StaticLogger, StringMap,} from '@nu-art/ts-common';
-import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types.js';
+import {BadImplementationException, composeUrl, StaticLogger, StringMap} from '@nu-art/ts-common';
 import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
+// Axios v1+ import style
+import axios, {AxiosRequestConfig as Axios_RequestConfig, AxiosResponse as Axios_Response, CanceledError} from 'axios';
+import {Axios_ResponseType} from './types.js';
 
-export class AxiosHttpModule_Class
-	extends BaseHttpModule_Class {
+export class AxiosHttpModule_Class extends BaseHttpModule_Class {
 	private requestOption: Axios_RequestConfig = {};
 
 	init() {
 		super.init();
 		let origin = this.config.origin;
-		if (!origin)
-			return;
+		if (!origin) return;
 
-		if (origin?.endsWith('/'))
-			origin = origin.substring(0, origin.length - 1);
-
+		if (origin?.endsWith('/')) origin = origin.substring(0, origin.length - 1);
 		this.origin = origin;
 	}
 
@@ -51,12 +48,8 @@ export class AxiosHttpModule_Class
 			.setRequestOption(this.requestOption)
 			.addHeaders(this.getDefaultHeaders());
 
-		if (apiDef.fullUrl)
-			request.setUrl(apiDef.fullUrl);
-		else
-			request
-				.setOrigin(apiDef.baseUrl ?? this.origin)
-				.setRelativeUrl(apiDef.path);
+		if (apiDef.fullUrl) request.setUrl(apiDef.fullUrl);
+		else request.setOrigin(apiDef.baseUrl ?? this.origin).setRelativeUrl(apiDef.path);
 
 		return request;
 	}
@@ -65,28 +58,13 @@ export class AxiosHttpModule_Class
 		this.requestOption = requestOption;
 		return this;
 	}
-
-	// async downloadFile(url: string, outputFile: string, key = `Download file: ${url}`) {
-	// 	const downloadRequest = await this.createRequest(HttpMethod.GET, key)
-	// 		.setResponseType('arraybuffer')
-	// 		.setUrl(url);
-	//
-	// 	const downloadResponse = await downloadRequest.executeSync();
-	// 	const outputFolder = outputFile.substring(0, outputFile.lastIndexOf('/'));
-	// 	if (!fs.existsSync(outputFolder))
-	// 		fs.mkdirSync(outputFolder);
-	//
-	// 	fs.writeFileSync(outputFile, downloadResponse);
-	// 	return outputFile;
-	// }
 }
 
 export const AxiosHttpModule = new AxiosHttpModule_Class();
 
-class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
-	extends BaseHttpRequest<API> {
+class AxiosHttpRequest<API extends TypedApi<any, any, any, any>> extends BaseHttpRequest<API> {
 	private response?: Axios_Response<API['R']>;
-	private cancelSignal: Axios_CancelTokenSource;
+	private cancelController: AbortController;
 	protected status?: number;
 	private requestOption: Axios_RequestConfig = {};
 
@@ -94,13 +72,11 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 		super(requestKey, requestData);
 		this.compress = shouldCompress === undefined ? false : shouldCompress;
 
-		this.cancelSignal = axios.CancelToken.source();
+		this.cancelController = new AbortController();
 	}
 
 	getStatus(): number {
-		if (!this.status)
-			throw new BadImplementationException('Missing status..');
-
+		if (!this.status) throw new BadImplementationException('Missing status..');
 		return this.status;
 	}
 
@@ -109,11 +85,11 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 	}
 
 	protected abortImpl(): void {
-		this.cancelSignal.cancel(`Request with key: '${this.key}' aborted by the user.`);
+		this.cancelController.abort();
 	}
 
 	getErrorResponse(): ApiErrorResponse<ResponseError | ApiError_GeneralErrorMessage> {
-		return {debugMessage: this.getResponse()};
+		return { debugMessage: this.getResponse() };
 	}
 
 	setRequestOption(requestOption: Axios_RequestConfig) {
@@ -122,29 +98,13 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 	}
 
 	protected executeImpl(): Promise<void> {
-		//loop through whatever preprocessor
 		const executor = async (resolve: () => void, reject: (error: any) => void) => {
-			if (this.aborted)
-				return resolve();
+			if (this.aborted) return resolve();
 
 			const fullUrl = composeUrl(this.url, this.params);
-
-			// TODO set progress listener
-			// this.xhr.upload.onprogress = this.onProgressListener;
 			const body = this.body;
 
-			if (body)
-				this.addHeader('Content-Length', `${body.length}`);
-			// TODO add zipping of body
-			// if (typeof body === "string" && this.compress)
-			// 	return gzip(body, (error: Error | null, result: Buffer) => {
-			// 		if (error)
-			// 			return reject(error);
-			//
-			// 		xhr.send(result);
-			// 	});
-			//
-			// this.xhr.send(body as BodyInit);
+			if (body) this.addHeader('Content-Length', `${body.length}`);
 
 			const headers = Object.keys(this.headers).reduce((carry: StringMap, headerKey: string) => {
 				carry[headerKey] = this.headers[headerKey].join('; ');
@@ -154,51 +114,39 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 			const options: Axios_RequestConfig = {
 				...this.requestOption,
 				url: fullUrl,
-				method: this.method as Axios_Method,
-				headers: headers,
-				// TODO will probably need to use the abortController with a timeout for this.
+				method: this.method as Axios_RequestConfig['method'],
+				headers,
 				timeout: this.timeout,
-				cancelToken: this.cancelSignal.token
+				signal: this.cancelController.signal, // ✅ Axios v1 cancellation
 			};
 
-			if (body)
-				options.data = body;
-
-			if (this.responseType)
-				options.responseType = this.responseType as Axios_ResponseType;
+			if (body) options.data = body;
+			if (this.responseType) options.responseType = this.responseType as Axios_ResponseType;
 
 			this.logger?.logDebug(options);
 
 			try {
-				this.response = await axios.request(options);
-				this.status = this.response?.status || 200;
+				this.response = await axios.request<API['R']>(options);
+				this.status = this.response?.status ?? 200;
 				return resolve();
 			} catch (e: any) {
-				// console.log('In catch');
-				// TODO handle this here
-				// 	if (xhr.readyState === 4 && xhr.status === 0) {
-				// 		reject(new HttpException(404, this.url));
-				// 		return;
-				// 	}
-
-				if (axios.isCancel(e)) {
-					// Should already be set when I abort but just in case its aborted somehow else
+				// cancellation path in v1
+				if (e instanceof CanceledError || (axios.isCancel && axios.isCancel(e)) || e?.code === 'ERR_CANCELED') {
 					this.aborted = true;
 					StaticLogger.logWarning('Api cancelled: ', e.message);
 				}
 
-				this.response = e.response;
-				this.status = this.response?.status || 500;
+				this.response = e?.response;
+				this.status = this.response?.status ?? 500;
 				return reject(e);
 			}
 		};
+
 		return new Promise<void>(executor);
 	}
 
 	_getResponseHeader(headerKey: string): string | string[] | undefined {
-		if (!this.response)
-			throw new BadImplementationException(`axios didn't return yet`);
-
-		return this.response.headers[headerKey];
+		if (!this.response) throw new BadImplementationException(`axios didn't return yet`);
+		return this.response.headers?.[headerKey as keyof typeof this.response.headers] as any;
 	}
 }

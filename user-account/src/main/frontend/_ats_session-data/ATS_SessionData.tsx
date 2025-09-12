@@ -1,5 +1,5 @@
 import {__stringify} from '@nu-art/ts-common';
-import {ModuleFE_Account} from '../../_entity/account/frontend/ModuleFE_Account';
+import {ModuleFE_Account} from '../../_entity/account/frontend/ModuleFE_Account.js';
 import {AppToolsScreen, ComponentSync, LL_V_L, OnStorageKeyChangedListener, TS_Input, TS_TextArea} from '@nu-art/thunderstorm/frontend';
 
 type ATS_SessionData_Props = {};

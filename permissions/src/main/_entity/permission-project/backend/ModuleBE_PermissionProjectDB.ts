@@ -1,7 +1,7 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionProject, DBDef_PermissionProject, DBProto_PermissionProject} from '../shared';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend/index';
+import {DB_PermissionProject, DBDef_PermissionProject, DBProto_PermissionProject} from '../shared/index.js';
 import {Transaction} from 'firebase-admin/firestore';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {MemKey_AccountId} from '@nu-art/user-account/backend/index';
 
 type Config = DBApiConfigV3<DBProto_PermissionProject> & {}
 

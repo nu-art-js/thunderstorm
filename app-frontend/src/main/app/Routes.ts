@@ -17,10 +17,10 @@
  */
 
 import {ModuleFE_Routing} from '@nu-art/thunderstorm/frontend';
-import {Page_Playground} from './playground/Page_Playground';
-import {Parent} from './Parent';
-import {Child2} from './Child2';
-import {Child1} from './Child1';
+import {Page_Playground} from './playground/Page_Playground.js';
+import {Parent} from './Parent.js';
+import {Child2} from './Child2.js';
+import {Child1} from './Child1.js';
 
 export const Route_Home = 'home';
 export const Route_Login = 'login';

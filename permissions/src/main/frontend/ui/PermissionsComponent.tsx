@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {AwaitModules, ComponentSync, ModuleFE_AppConfig, ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend';
-import {PermissionKey_FE} from '../PermissionKey_FE';
-import {AccessLevel} from '../modules/ModuleFE_PermissionsAssert';
+import {PermissionKey_FE} from '../PermissionKey_FE.js';
+import {AccessLevel} from '../modules/ModuleFE_PermissionsAssert.js';
 
 export const RoutePermissions = (permissionKey: PermissionKey_FE<any>) => () => permissionKey.getAccessLevel() === AccessLevel.HasAccess;
 

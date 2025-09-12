@@ -1,6 +1,6 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {AssertionException, reduceToMap, UniqueId} from '@nu-art/ts-common';
-import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../../main/backend';
+import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../../main/backend/index.js';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {
@@ -17,10 +17,10 @@ import {
 	Test_Domain1,
 	Test_Setup1,
 	Test_Setup2
-} from '../_core/consts';
+} from '../_core/consts.js';
 import {expect} from 'chai';
-import {Test_Setup} from '../_core/types';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {Test_Setup} from '../_core/types.js';
+import {MemKey_AccountId} from '@nu-art/user-account/backend/index';
 
 type CreatePermissionsSetup = {
 	setup: Test_Setup,

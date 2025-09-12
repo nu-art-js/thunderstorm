@@ -1,16 +1,13 @@
 {
   "name": "thunderstorm",
   "version": "1.0.0",
-  "main": "./dist/index.js",
-  "types": "dist/index.d.ts",
   "author": "TacB0sS",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
   },
   "license": "Apache-2.0",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "typedoc": "^0.23.28",
     "typescript": "$TYPESCRIPT_PKG_VERSION",
@@ -31,5 +28,16 @@
   },
   "engines": {
     "node": "22"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

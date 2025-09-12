@@ -1,6 +1,6 @@
 import {convertUpperCamelCase, DBDef_V3, tsValidateBoolean, tsValidateMustExist, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
-import {DBProto_PushMessagesHistory} from './types';
-import {PushPubSubDBGroup} from '../shared';
+import {DBProto_PushMessagesHistory} from './types.js';
+import {PushPubSubDBGroup} from '../shared.js';
 
 const Validator_ModifiableProps: DBProto_PushMessagesHistory['modifiablePropsValidator'] = {};
 

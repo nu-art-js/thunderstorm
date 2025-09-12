@@ -23,8 +23,8 @@
 *	When given panel contents and a page, displays content in resizable panels.*/
 import {_className, BaseAsyncState, ComponentSync} from '@nu-art/thunderstorm/frontend';
 import './TS_Workspace.scss';
-import {Props_BaseWorkspace} from './types';
-import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace';
+import {Props_BaseWorkspace} from './types.js';
+import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace.js';
 
 
 type Props = Props_BaseWorkspace & {

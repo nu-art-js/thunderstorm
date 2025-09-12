@@ -16,8 +16,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DBDef_TempDeleted, DBProto_AssetsDeleted} from '../..';
-import {ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend';
+import {DBDef_TempDeleted, DBProto_AssetsDeleted} from '../../index.js';
+import {ModuleBE_BaseDB} from '@nu-art/thunderstorm/backend/index';
 
 
 export class ModuleBE_AssetsDeleted_Class

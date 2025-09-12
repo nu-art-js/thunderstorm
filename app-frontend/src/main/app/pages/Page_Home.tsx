@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {Hello} from '../Hello';
+import {Hello} from '../Hello.js';
 import {ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend';
 import {ExampleModule} from '@modules/ExampleModule';
 

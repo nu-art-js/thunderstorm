@@ -11,10 +11,10 @@ import {
 	RuntimeModules,
 	TypedMap,
 } from '@nu-art/ts-common';
-import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm/backend';
-import {ApiDef_Permissions,} from '../../shared';
-import {BaseSessionClaims, CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account/backend';
-import {DefaultDef_Group, DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
+import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm/backend/index';
+import {ApiDef_Permissions,} from '../../shared/index.js';
+import {BaseSessionClaims, CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account/backend/index';
+import {DefaultDef_Group, DefaultDef_Project, SessionData_Permissions} from '../../shared/types.js';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -22,7 +22,7 @@ import {
 	Domain_PermissionsDefine,
 	PermissionsPackage_Developer,
 	PermissionsPackage_Permissions
-} from '../permissions';
+} from '../permissions.js';
 import {
 	DefaultAccessLevel_Admin,
 	DefaultAccessLevel_NoAccess,
@@ -30,9 +30,9 @@ import {
 	DefaultAccessLevel_Write,
 	defaultLevelsRouteLookupWords,
 	DuplicateDefaultAccessLevels
-} from '../../shared/consts';
+} from '../../shared/consts.js';
 import {ApiModule} from '@nu-art/thunderstorm';
-import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
+import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert.js';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
 import {
 	DB_PermissionAccessLevel,
@@ -46,7 +46,7 @@ import {
 	ModuleBE_PermissionGroupDB,
 	ModuleBE_PermissionProjectDB,
 	ModuleBE_PermissionUserDB
-} from '../_entity';
+} from '../_entity.js';
 import {trimStartingForwardSlash} from '@nu-art/thunderstorm/shared/route-tools';
 
 

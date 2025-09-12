@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ModuleFE_LiveDocs} from '../modules/ModuleFE_LiveDocs';
+import {ModuleFE_LiveDocs} from '../modules/ModuleFE_LiveDocs.js';
 
 
 type State = {

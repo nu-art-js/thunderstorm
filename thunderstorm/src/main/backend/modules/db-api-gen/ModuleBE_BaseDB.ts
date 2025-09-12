@@ -39,7 +39,7 @@ import {
 	Module,
 	UniqueId
 } from '@nu-art/ts-common';
-import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase,} from '@nu-art/firebase/backend/index';
 import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def.js';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager.js';

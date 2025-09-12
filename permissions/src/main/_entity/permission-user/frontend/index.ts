@@ -1,2 +1,2 @@
-export * from './ModuleFE_PermissionUser';
-export * from './module-pack';
+export * from './ModuleFE_PermissionUser.js';
+export * from './module-pack.js';

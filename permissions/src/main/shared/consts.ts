@@ -1,5 +1,5 @@
 import {md5} from '@nu-art/ts-common';
-import {DefaultDef_AccessLevel, PermissionKey, PreDBAccessLevel} from './types';
+import {DefaultDef_AccessLevel, PermissionKey, PreDBAccessLevel} from './types.js';
 
 
 export const Prefix_PermissionKey = 'permission-key--';

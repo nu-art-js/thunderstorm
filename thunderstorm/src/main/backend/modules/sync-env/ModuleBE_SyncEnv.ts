@@ -9,7 +9,7 @@ import {
 	RuntimeModules,
 	TypedMap
 } from '@nu-art/ts-common';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
 import {addRoutes} from '../ModuleBE_APIs.js';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js';
 import {

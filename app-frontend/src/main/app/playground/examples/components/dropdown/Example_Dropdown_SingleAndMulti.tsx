@@ -19,7 +19,7 @@
 
 import {AdapterBuilder, Example_NewProps, Props_DropDown, SimpleListAdapter, TS_DropDown,} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
-import {flatPlaguesWithTitles, ItemRenderer_Plague, Plague, plagues, PlagueWithTitle, RendererMap_Plague} from './consts';
+import {flatPlaguesWithTitles, ItemRenderer_Plague, Plague, plagues, PlagueWithTitle, RendererMap_Plague} from './consts.js';
 import {Filter} from '@nu-art/ts-common';
 
 export type TestType = {

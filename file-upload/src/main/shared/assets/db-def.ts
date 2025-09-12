@@ -10,7 +10,7 @@ import {
 	tsValidateRegexp,
 	tsValidateString
 } from '@nu-art/ts-common';
-import {AssetDBGroup, DBProto_Assets, DBProto_AssetsDeleted, DBProto_AssetsTemp} from './types';
+import {AssetDBGroup, DBProto_Assets, DBProto_AssetsDeleted, DBProto_AssetsTemp} from './types.js';
 
 
 const Validator_ModifiableProps: DBProto_Assets['modifiablePropsValidator'] = {

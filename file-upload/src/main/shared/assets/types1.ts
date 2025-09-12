@@ -19,7 +19,7 @@
 
 import {BaseHttpRequest} from '@nu-art/thunderstorm';
 import {Auditable, DB_Object, TS_Object} from '@nu-art/ts-common';
-import {FileStatus} from '../types';
+import {FileStatus} from '../types.js';
 
 
 export type Request_Uploader = {

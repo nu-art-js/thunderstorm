@@ -5,7 +5,7 @@ import {
 	tsValidateUniqueId,
 	tsValidateValue
 } from '@nu-art/ts-common';
-import {DBProto_LoginAttempt, LoginStatus_Failed, LoginStatus_Success} from './types';
+import {DBProto_LoginAttempt, LoginStatus_Failed, LoginStatus_Success} from './types.js';
 
 
 const Validator_ModifiableProps: DBProto_LoginAttempt['modifiablePropsValidator'] = {

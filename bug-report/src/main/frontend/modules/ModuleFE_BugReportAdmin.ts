@@ -19,7 +19,7 @@
 import {Module} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {ApiDef_AdminBugReport, ApiStruct_AdminBugReport, DB_BugReport, ReportLogFile} from '../../shared/api';
+import {ApiDef_AdminBugReport, ApiStruct_AdminBugReport, DB_BugReport, ReportLogFile} from '../../shared/api.js';
 
 
 export const RequestKey_GetLog = 'GetLog';

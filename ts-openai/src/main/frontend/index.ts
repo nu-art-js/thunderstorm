@@ -1,1 +1,1 @@
-export * from './modules/ModuleFE_OpenAI';
+export * from './modules/ModuleFE_OpenAI.js';

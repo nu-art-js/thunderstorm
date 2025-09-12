@@ -1,5 +1,5 @@
 import {AppToolsScreen, ATS_Frontend, ComponentSync} from '@nu-art/thunderstorm/frontend';
-import {Component_DependencyViewer} from '../../dependency-viewer/Component_DependencyViewer';
+import {Component_DependencyViewer} from '../../dependency-viewer/Component_DependencyViewer.js';
 
 
 type State = {}

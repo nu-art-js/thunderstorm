@@ -1,7 +1,7 @@
 import {StorageKey} from '@nu-art/thunderstorm/frontend';
-import {_SessionKey_Account, DB_Account} from '../shared';
+import {_SessionKey_Account, DB_Account} from '../shared/index.js';
 import {HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
-import {SessionKey_FE} from '../../session/frontend/ModuleFE_Session';
+import {SessionKey_FE} from '../../session/frontend/ModuleFE_Session.js';
 import {TypedKeyValue} from '@nu-art/ts-common';
 
 export const SessionKeyFE_Account = new SessionKey_FE<_SessionKey_Account>('account');

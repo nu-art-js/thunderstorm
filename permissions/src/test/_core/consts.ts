@@ -1,4 +1,4 @@
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject} from '../../main';
+import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject} from '../../main/index.js';
 import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi';
@@ -6,8 +6,8 @@ import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/managem
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
 import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account/backend';
-import {Test_Project, Test_Setup} from './types';
+import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account/backend/index';
+import {Test_Project, Test_Setup} from './types.js';
 import {UI_Account} from '@nu-art/user-account';
 
 export const permissionTestCleanup = async () => {

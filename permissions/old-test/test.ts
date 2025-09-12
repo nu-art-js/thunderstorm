@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-import {ModulePackBE_Permissions, ModulePackBE_Permissions} from '../src/main/backend';
+import {ModulePackBE_Permissions, ModulePackBE_Permissions} from '../src/main/backend/index.js';
 import {StormTester} from '@nu-art/thunderstorm/backend-test';
 import {__scenario} from '@nu-art/testelot';
-import {createTwoAccessLevels} from './tests/create-project';
+import {createTwoAccessLevels} from './tests/create-project.js';
 import {
 	checkAccessLevelsPropertyOfGroup,
 	checkCreateUserWithEmptyGroups,
@@ -53,18 +53,18 @@ import {
 	tryDeleteAccessLevelAssociatedWithApi,
 	tryDeleteAccessLevelAssociatedWithGroup,
 	tryDeleteDomainAssociatedWithAccessLevel
-} from './tests/permissions-manage';
-import {permissionsAssertDoesCustomFieldsSatisfiesTests, permissionsAssertIsLevelsMatchTests} from './tests/permissions-assert';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {AccountModule} from '@nu-art/user-account/backend';
-import {assignUserPermissionsTests} from './tests/assign-permissions';
+} from './tests/permissions-manage.js';
+import {permissionsAssertDoesCustomFieldsSatisfiesTests, permissionsAssertIsLevelsMatchTests} from './tests/permissions-assert.js';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
+import {AccountModule} from '@nu-art/user-account/backend/index';
+import {assignUserPermissionsTests} from './tests/assign-permissions.js';
 import {
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered,
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered,
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered,
 	testFullAssertUserPermissionsWithEmptyUserCFsArrayAndEmptyRequestCFObj,
 	testFullAssertUserPermissionsWithExtraGroupCFCovered
-} from './tests/full-permission-user-assert';
+} from './tests/full-permission-user-assert.js';
 
 
 export const mainScenario = __scenario('Permissions');

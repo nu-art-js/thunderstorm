@@ -1,7 +1,7 @@
 import {AppConfigKey_FE, ModuleFE_AppConfig} from '@nu-art/thunderstorm/frontend';
 import {_keys, TypedKeyValue} from '@nu-art/ts-common';
-import {DB_PermissionKeyData, PermissionKey, UI_PermissionKeyData} from '../shared/types';
-import {AccessLevel, ModuleFE_PermissionsAssert} from './modules/ModuleFE_PermissionsAssert';
+import {DB_PermissionKeyData, PermissionKey, UI_PermissionKeyData} from '../shared/types.js';
+import {AccessLevel, ModuleFE_PermissionsAssert} from './modules/ModuleFE_PermissionsAssert.js';
 
 
 export class PermissionKey_FE<K extends string = string>

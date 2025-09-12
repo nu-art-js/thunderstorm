@@ -32,8 +32,8 @@ import {
 	PasswordFailureReport,
 	PasswordWithCheck,
 	Request_RegisterAccount
-} from '../../shared';
-import {ModuleFE_Account, StorageKey_DeviceId} from '../_entity';
+} from '../../shared/index.js';
+import {ModuleFE_Account, StorageKey_DeviceId} from '../_entity.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
 

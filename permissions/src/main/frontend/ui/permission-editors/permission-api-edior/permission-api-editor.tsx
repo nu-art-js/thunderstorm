@@ -1,12 +1,12 @@
 import * as React from 'react';
-import {DB_PermissionAPI, DBProto_PermissionAPI, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionAPI, ModuleFE_PermissionDomain} from '../../../_entity';
-import {Component_BasePermissionItemEditor} from '../editor-base';
+import {DB_PermissionAPI, DBProto_PermissionAPI, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionAPI, ModuleFE_PermissionDomain} from '../../../_entity.js';
+import {Component_BasePermissionItemEditor} from '../editor-base.js';
 import {
 	sortArray,
 	UniqueId
 } from '@nu-art/ts-common';
 import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
-import {MultiSelect} from '../../ui-props';
+import {MultiSelect} from '../../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ProtoDef_Selection, Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
 import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';

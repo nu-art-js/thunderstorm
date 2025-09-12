@@ -1,7 +1,7 @@
 import {DBDef_V3, tsValidateString} from '@nu-art/ts-common';
-import {DBProto_PermissionDomain} from './types';
-import {validateProjectId} from '../../../shared/validators';
-import {PermissionDBGroup} from '../../shared';
+import {DBProto_PermissionDomain} from './types.js';
+import {validateProjectId} from '../../../shared/validators.js';
+import {PermissionDBGroup} from '../../shared.js';
 
 const Validator_ModifiableProps: DBProto_PermissionDomain['modifiablePropsValidator'] = {
 	projectId: validateProjectId,

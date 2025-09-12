@@ -1,5 +1,5 @@
-import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
-import {ModuleBE_PermissionUserAPI} from './ModuleBE_PermissionUserAPI';
+import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB.js';
+import {ModuleBE_PermissionUserAPI} from './ModuleBE_PermissionUserAPI.js';
 import {Module} from '@nu-art/ts-common';
 
 

@@ -1,6 +1,6 @@
 import {AppToolsScreen, ComponentSync, LL_V_L} from '@nu-art/thunderstorm/frontend';
-import {PermissionKeysEditor} from './subEditors/permission-keys-editor';
-import {ModuleFE_PermissionAccessLevel} from '../../_entity';
+import {PermissionKeysEditor} from './subEditors/permission-keys-editor.js';
+import {ModuleFE_PermissionAccessLevel} from '../../_entity.js';
 
 
 type State = { selectedProjectId?: string };

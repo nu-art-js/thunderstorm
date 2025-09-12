@@ -19,7 +19,7 @@ import {
 } from '@nu-art/ts-common';
 import {BaseHttpRequest, HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
-import {QueryParam_SessionId} from '../shared';
+import {QueryParam_SessionId} from '../shared/index.js';
 
 export interface OnSessionUpdated {
 	__onSessionUpdated: VoidFunction;

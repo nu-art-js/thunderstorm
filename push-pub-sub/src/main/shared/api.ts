@@ -17,7 +17,7 @@
  */
 
 import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
-import {BaseSubscriptionData, PushMessage, Request_PushRegister} from './types';
+import {BaseSubscriptionData, PushMessage, Request_PushRegister} from './types.js';
 
 
 export type Request_PushTest = {

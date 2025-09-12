@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {ConflictResolutionTree_RendererMap, ConflictResolutionTree_RendererProps} from './types';
-import {ConflictResolutionItem} from '../../../shared';
+import {ConflictResolutionTree_RendererMap, ConflictResolutionTree_RendererProps} from './types.js';
+import {ConflictResolutionItem} from '../../../shared/index.js';
 import {TypedMap} from '@nu-art/ts-common';
 import {Label, ModuleFE_Thunderstorm} from '@nu-art/thunderstorm/frontend';
 

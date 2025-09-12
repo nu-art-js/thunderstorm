@@ -1,6 +1,6 @@
 import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend';
-import {DBProto_PermissionDomain} from '../shared';
-import {ModuleFE_PermissionDomain} from './ModuleFE_PermissionDomain';
+import {DBProto_PermissionDomain} from '../shared/index.js';
+import {ModuleFE_PermissionDomain} from './ModuleFE_PermissionDomain.js';
 import {DBItemDropDownMultiSelector} from '@nu-art/thunderstorm/frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector';
 import {TS_Icons} from '@nu-art/ts-styles';
 

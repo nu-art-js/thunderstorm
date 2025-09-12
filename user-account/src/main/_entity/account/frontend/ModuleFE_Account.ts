@@ -15,11 +15,11 @@ import {
 	QueryParam_SessionId,
 	SAML_Login,
 	UI_Account
-} from '../shared';
-import {SessionKeyFE_Account, StorageKey_DeviceId, StorageKey_TabId} from './consts';
-import {PasswordAssertionConfig} from '../../_enum';
+} from '../shared/index.js';
+import {SessionKeyFE_Account, StorageKey_DeviceId, StorageKey_TabId} from './consts.js';
+import {PasswordAssertionConfig} from '../../_enum.js';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {ModuleFE_Session, OnSessionUpdated} from '../../session/frontend/ModuleFE_Session';
+import {ModuleFE_Session, OnSessionUpdated} from '../../session/frontend/ModuleFE_Session.js';
 import {asArray, cloneObj, composeUrl, DB_BaseObject, Exception, generateHex, KB, TS_Object} from '@nu-art/ts-common';
 
 

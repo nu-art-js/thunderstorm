@@ -1,1 +1,1 @@
-export * from './module-pack'
+export * from './module-pack.js'

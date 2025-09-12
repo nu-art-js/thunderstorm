@@ -21,7 +21,7 @@ import {_keys} from "@nu-art/ts-common";
 import {
 	JiraQuery,
 	QueryItemWithOperator
-} from "./JiraModule";
+} from "./JiraModule.js";
 
 export type JiraIssueText = string | { href: string, text: string };
 

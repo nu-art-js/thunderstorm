@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend/index';
 import {
 	DBDef_LoginAttempt,
 	DBProto_LoginAttempt,
@@ -6,11 +6,11 @@ import {
 	LoginStatus,
 	LoginStatus_Failed,
 	LoginStatus_Success
-} from '../shared';
+} from '../shared/index.js';
 import {filterKeys, UniqueId} from '@nu-art/ts-common';
-import {OnLoginFailed} from './dispatchers';
-import {OnUserLogin} from '../../account/backend';
-import {SafeDB_Account} from '../../account/shared';
+import {OnLoginFailed} from './dispatchers.js';
+import {OnUserLogin} from '../../account/backend/index.js';
+import {SafeDB_Account} from '../../account/shared/index.js';
 import {MemKey_HttpRequest} from '@nu-art/thunderstorm/backend/modules/server/consts';
 
 

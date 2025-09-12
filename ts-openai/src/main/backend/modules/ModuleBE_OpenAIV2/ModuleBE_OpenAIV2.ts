@@ -1,8 +1,8 @@
 import {LogLevel, Module, tsValidate, tsValidateString, tsValidateValue} from "@nu-art/ts-common";
-import {GPT_Model} from "../../../shared/types";
+import {GPT_Model} from "../../../shared/types.js";
 import {OpenAI} from "openai";
-import {OpenAIClient_Assistant_Class} from "./clients/OpenAIClient_Assistant";
-import {OpenAIClient_Chat_Class} from "./clients/OpenAIClient_Chat";
+import {OpenAIClient_Assistant_Class} from "./clients/OpenAIClient_Assistant.js";
+import {OpenAIClient_Chat_Class} from "./clients/OpenAIClient_Chat.js";
 
 type Config = {
     apiKey: string,

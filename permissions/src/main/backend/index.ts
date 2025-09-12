@@ -17,6 +17,6 @@
  * limitations under the License.
  */
 
-export * from './core/module-pack';
-export * from './modules';
-export * from './_entity';
+export * from './core/module-pack.js';
+export * from './modules/index.js';
+export * from './_entity.js';

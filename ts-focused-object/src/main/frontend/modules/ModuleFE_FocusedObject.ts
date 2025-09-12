@@ -2,9 +2,9 @@ import {_keys, debounce, filterDuplicates, Module, removeItemFromArray, Second, 
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, FocusedEntity,} from '../../shared';
+import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, FocusedEntity,} from '../../shared/index.js';
 import {LoggedStatus, ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
-import {DefaultTTL_FocusedObject, getRelationalPath} from '../../shared/consts';
+import {DefaultTTL_FocusedObject, getRelationalPath} from '../../shared/consts.js';
 import {DataSnapshot} from 'firebase/database';
 
 /*

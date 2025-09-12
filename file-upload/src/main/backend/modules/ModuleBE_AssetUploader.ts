@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {ModuleBase_AssetUploader, UploaderConfig,} from '../../shared/modules/ModuleBase_AssetUploader';
-import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule} from '@nu-art/thunderstorm/backend';
-import {ApiDef_AssetUploader, TempSignedUrl, UI_Asset} from '../shared';
+import {ModuleBase_AssetUploader, UploaderConfig,} from '../../shared/modules/ModuleBase_AssetUploader.js';
+import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule} from '@nu-art/thunderstorm/backend/index';
+import {ApiDef_AssetUploader, TempSignedUrl, UI_Asset} from '../shared.js';
 import {ApiDef, BaseHttpRequest, TypedApi} from '@nu-art/thunderstorm';
 
 

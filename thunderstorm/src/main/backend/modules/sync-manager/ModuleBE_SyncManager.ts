@@ -20,7 +20,7 @@
  */
 
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
 import {
 	__stringify,
 	arrayToMap,

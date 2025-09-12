@@ -1,5 +1,5 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {DBDef_PushSession, DBProto_PushSession} from '../../shared/push-session';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend/index';
+import {DBDef_PushSession, DBProto_PushSession} from '../../shared/push-session/index.js';
 
 
 type Config = DBApiConfigV3<DBProto_PushSession> & {

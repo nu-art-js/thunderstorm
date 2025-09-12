@@ -1,6 +1,5 @@
 import {Module} from "@nu-art/ts-common";
-import {PubSub} from "@google-cloud/pubsub";
-import {PublishOptions} from "@google-cloud/pubsub/build/src/topic";
+import {PublishOptions, PubSub} from '@google-cloud/pubsub';
 import {ModuleBE_Auth} from "./ModuleBE_Auth.js";
 import {GoogleAuth} from "google-auth-library";
 

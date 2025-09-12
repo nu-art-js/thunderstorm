@@ -35,10 +35,10 @@ import {
 	PushKey_FileUploaded,
 	TempSignedUrl,
 	UI_Asset
-} from '../../shared';
+} from '../../shared/index.js';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
 import {PushMessage_Payload} from '@nu-art/push-pub-sub';
-import {PushMessage_FileUploaded} from '../assets/messages';
+import {PushMessage_FileUploaded} from '../assets/messages.js';
 
 
 export type FilesToUpload = UI_Asset & {

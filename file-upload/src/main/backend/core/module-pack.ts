@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-import {ModuleBE_AssetsTemp} from '../modules/ModuleBE_AssetsTemp';
-import {ModuleBE_AssetsDB} from '../modules/ModuleBE_AssetsDB';
-import {ModuleBE_BucketListener} from '../modules/ModuleBE_BucketListener';
-import {ModulePackBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {ModuleBE_AssetUploader} from '../modules/ModuleBE_AssetUploader';
-import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI';
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_AssetsStorage} from '../modules/ModuleBE_AssetsStorage';
-import {ModuleBE_AssetsDeleted} from '../modules/ModuleBE_AssetsDeleted';
+import {ModuleBE_AssetsTemp} from '../modules/ModuleBE_AssetsTemp.js';
+import {ModuleBE_AssetsDB} from '../modules/ModuleBE_AssetsDB.js';
+import {ModuleBE_BucketListener} from '../modules/ModuleBE_BucketListener.js';
+import {ModulePackBE_PushPubSub} from '@nu-art/push-pub-sub/backend/index';
+import {ModuleBE_AssetUploader} from '../modules/ModuleBE_AssetUploader.js';
+import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI.js';
+import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend/index';
+import {ModuleBE_AssetsStorage} from '../modules/ModuleBE_AssetsStorage.js';
+import {ModuleBE_AssetsDeleted} from '../modules/ModuleBE_AssetsDeleted.js';
 
 
 export const ModulePackBE_FileUploader = [

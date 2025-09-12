@@ -1,7 +1,8 @@
 import {AnyPrimitive, exists, Logger, Module, MUSTNeverHappenException, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {SecretManagerServiceClient} from '@google-cloud/secret-manager';
-import {google} from '@google-cloud/secret-manager/build/protos/protos';
 import {GoogleAuth} from 'google-auth-library';
+import {google} from '@google-cloud/secret-manager/build/protos/protos.js';
+import ISecret = google.cloud.secretmanager.v1.ISecret;
 
 export const printCallerIdentity = async () => {
 	const logger = new Logger('GCP-Caller');
@@ -113,7 +114,7 @@ export class ModuleBE_SecretManager_Class
 		return secret.name;
 	};
 
-	public updateSecretImpl = async (secret: google.cloud.secretmanager.v1.ISecret, data: string) => {
+	public updateSecretImpl = async (secret: ISecret, data: string) => {
 		try {
 			await this.client.addSecretVersion({
 				parent: secret.name!,

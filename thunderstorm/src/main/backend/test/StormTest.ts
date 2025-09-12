@@ -1,8 +1,8 @@
 import {AsyncVoidFunction, generateHex, Module, ModuleManager, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
-import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase/backend';
+import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase/backend/index';
 import {RouteResolver_Dummy} from '../modules/server/route-resolvers/RouteResolver_Dummy.js';
 import {Storm} from '../core/Storm.js';
-import {ModuleBE_Auth} from '@nu-art/google-services/backend';
+import {ModuleBE_Auth} from '@nu-art/google-services/backend/index';
 import {dispatcher_resetTests} from '@nu-art/ts-common/testing/consts';
 import {TestModel} from '@nu-art/ts-common/testing/types';
 

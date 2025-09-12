@@ -1,5 +1,5 @@
 import {AppToolsScreen, Button, ComponentSync} from '@nu-art/thunderstorm/frontend';
-import {SlackBuilderFE} from '../../SlackBuilderFE';
+import {SlackBuilderFE} from '../../SlackBuilderFE.js';
 import {generateHex, ServerErrorSeverity} from '@nu-art/ts-common';
 
 export class ATS_SlackMessageBuilder

@@ -1,10 +1,10 @@
 import {Day, exists, Module, TEST_JwtTools, TypedKeyValue} from '@nu-art/ts-common';
-import {BaseSessionClaims, CollectSessionData, ModuleBE_SessionDB} from '../../main/_entity/session/backend';
-import {ModuleBE_APIs, ModuleBE_SyncManager} from '@nu-art/thunderstorm/backend';
+import {BaseSessionClaims, CollectSessionData, ModuleBE_SessionDB} from '../../main/_entity/session/backend/index.js';
+import {ModuleBE_APIs, ModuleBE_SyncManager} from '@nu-art/thunderstorm/backend/index';
 import {TimeProxy} from '@nu-art/ts-common/utils/time-proxy';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm/shared';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {ModuleBE_AccountDB} from '../_main';
+import {ModuleBE_AccountDB} from '../_main.js';
 
 export class DummyAccountModule_Class
 	extends Module

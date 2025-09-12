@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {ModuleBE_PushPubSub} from '../modules/ModuleBE_PushPubSub';
-import {ModuleBE_PushSubscriptionAPI, ModuleBE_PushSubscriptionDB} from '../modules/ModuleBE_PushSubscriptionDB';
-import {ModuleBE_PushSessionDB} from '../modules/ModuleBE_PushSessionDB';
-import {ModuleBE_PushMessagesHistoryDB} from '../modules/ModuleBE_PushMessagesHistoryDB';
+import {ModuleBE_PushPubSub} from '../modules/ModuleBE_PushPubSub.js';
+import {ModuleBE_PushSubscriptionAPI, ModuleBE_PushSubscriptionDB} from '../modules/ModuleBE_PushSubscriptionDB.js';
+import {ModuleBE_PushSessionDB} from '../modules/ModuleBE_PushSessionDB.js';
+import {ModuleBE_PushMessagesHistoryDB} from '../modules/ModuleBE_PushMessagesHistoryDB.js';
 
 
 export const ModulePackBE_PushPubSub = [
@@ -30,5 +30,5 @@ export const ModulePackBE_PushPubSub = [
 	ModuleBE_PushSessionDB,
 ];
 
-export * from '../modules/ModuleBE_PushPubSub';
-export * from '../modules/PushKey';
+export * from '../modules/ModuleBE_PushPubSub.js';
+export * from '../modules/PushKey.js';

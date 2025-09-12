@@ -1,3 +1,3 @@
-export * from './ModuleFE_Account';
-export * from './module-pack';
-export * from './consts';
+export * from './ModuleFE_Account.js';
+export * from './module-pack.js';
+export * from './consts.js';

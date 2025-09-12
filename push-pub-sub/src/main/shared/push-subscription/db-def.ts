@@ -8,8 +8,8 @@ import {
 	tsValidateResult,
 	tsValidateString
 } from '@nu-art/ts-common';
-import {DBProto_PushSubscription} from './types';
-import {PushPubSubDBGroup} from '../shared';
+import {DBProto_PushSubscription} from './types.js';
+import {PushPubSubDBGroup} from '../shared.js';
 
 
 const Validator_FilterKey = (value?: number | string) => {

@@ -21,8 +21,8 @@ import {
 	MessageType_Text,
 	MessageType_Video,
 	UI_Message
-} from './types';
-import {MessagingDBGroup} from '../../shared';
+} from './types.js';
+import {MessagingDBGroup} from '../../shared.js';
 
 export const MessageTools = {
 	isText: (instance: UI_Message): instance is DB_Message_Text => {
