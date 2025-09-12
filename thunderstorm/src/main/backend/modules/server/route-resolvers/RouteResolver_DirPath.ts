@@ -19,11 +19,11 @@
  * limitations under the License.
  */
 
-import {ServerApi} from '../server-api';
+import {ServerApi} from '../server-api.js';
 import * as fs from 'fs';
 import * as express from 'express';
 import {asArray, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
-import {ServerApi_Middleware} from '../../../utils/types';
+import {ServerApi_Middleware} from '../../../utils/types.js';
 
 
 export class RouteResolver_DirPath {

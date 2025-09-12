@@ -6,52 +6,52 @@ import {
 	exists,
 	UniqueId
 } from '@nu-art/ts-common';
-import {FrameLayout} from '../FrameLayout';
-import {TS_Route} from '../../modules/routing';
+import {FrameLayout} from '../FrameLayout/index.js';
+import {TS_Route} from '../../modules/routing/index.js';
 import {
 	LL_H_C,
 	LL_H_T,
 	LL_V_L
-} from '../Layouts';
+} from '../Layouts/index.js';
 import './Page_ItemsEditor.scss';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
 import {
 	EditableDBItemV3,
 	EditableItem
-} from '../../utils/EditableItem';
+} from '../../utils/EditableItem.js';
 import {
 	ItemEditor_DefaultList,
 	Props_ListRenderer
-} from './defaults/ItemEditor_ListRenderer';
+} from './defaults/ItemEditor_ListRenderer/index.js';
 import {
 	ItemEditor_CustomSort,
 	ItemEditor_FilterType,
 	ItemEditor_MapperType
-} from './types';
+} from './types.js';
 import {
 	ItemEditor_DefaultFilter,
 	Props_Filter
-} from './defaults/ItemEditor_DefaultFilter';
-import {ApiCallerEventType} from '../../core/db-api-gen/types';
+} from './defaults/ItemEditor_DefaultFilter/index.js';
+import {ApiCallerEventType} from '../../core/db-api-gen/types.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
 	openContent
-} from '../../component-modules/mouse-interactivity';
-import {TS_ButtonLoader} from '../TS_ButtonLoader';
-import {_className} from '../../utils/tools';
+} from '../../component-modules/mouse-interactivity/index.js';
+import {TS_ButtonLoader} from '../TS_ButtonLoader/index.js';
+import {_className} from '../../utils/tools.js';
 import {
 	InferProps,
 	InferState
-} from '../../utils/types';
+} from '../../utils/types.js';
 import {
 	ProtoComponent,
 	ProtoComponentDef,
 	SuperProto
-} from '../../core/proto-component';
-import {Props_EditableItemControllerProto} from '../TS_EditableItemControllerProto';
-import {ModuleFE_BrowserHistoryV2} from '../../modules/ModuleFE_BrowserHistoryV2';
+} from '../../core/proto-component/index.js';
+import {Props_EditableItemControllerProto} from '../TS_EditableItemControllerProto/index.js';
+import {ModuleFE_BrowserHistoryV2} from '../../modules/ModuleFE_BrowserHistoryV2.js';
 
 
 export type MenuAction<Proto extends DBProto<any>> = {

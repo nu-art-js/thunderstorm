@@ -17,7 +17,7 @@
  */
 
 import {BadImplementationException, Logger, TS_Object} from '@nu-art/ts-common';
-import {FirebaseType_DB} from './types';
+import {FirebaseType_DB} from './types.js';
 import {getDatabase, onValue, ref, remove, set, update} from 'firebase/database';
 import {FirebaseApp} from 'firebase/app';
 

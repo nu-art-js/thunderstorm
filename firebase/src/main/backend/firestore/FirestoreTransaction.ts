@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import {FirestoreType_DocumentSnapshot} from './types';
-import {DocWrapper, FirestoreCollection,} from './FirestoreCollection';
+import {FirestoreType_DocumentSnapshot} from './types.js';
+import {DocWrapper, FirestoreCollection,} from './FirestoreCollection.js';
 import {BadImplementationException, merge, Subset, TS_Object} from '@nu-art/ts-common';
-import {FirestoreQuery} from '../../shared/types';
-import {FirestoreInterface} from './FirestoreInterface';
+import {FirestoreQuery} from '../../shared/types.js';
+import {FirestoreInterface} from './FirestoreInterface.js';
 import {Transaction} from 'firebase-admin/firestore';
 
 

@@ -1,22 +1,22 @@
 import {
 	AppToolsScreen,
 	ATS_Frontend
-} from '../../components/TS_AppTools';
-import {ComponentSync} from '../../core/ComponentSync';
+} from '../../components/TS_AppTools/index.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
 import {
 	DBProto_EditableTest,
 	ModuleFE_EditableTest,
 	UI_EditableTest
-} from '../../_entity';
-import {TS_EditableContent} from '../../components/TS_EditableContent/TS_EditableContent';
-import {LL_V_L} from '../../components/Layouts';
-import {TS_PropRenderer} from '../../components/TS_PropRenderer';
+} from '../../_entity.js';
+import {TS_EditableContent} from '../../components/TS_EditableContent/TS_EditableContent.js';
+import {LL_V_L} from '../../components/Layouts/index.js';
+import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
 import {
 	EditableDBItemV3,
 	EditableItem
-} from '../../utils/EditableItem';
-import {TS_DropDown} from '../../components/TS_Dropdown';
-import {SimpleListAdapter} from '../../components/adapter/Adapter';
+} from '../../utils/EditableItem.js';
+import {TS_DropDown} from '../../components/TS_Dropdown/index.js';
+import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
 
 
 type State = {

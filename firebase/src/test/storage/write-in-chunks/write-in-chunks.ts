@@ -1,5 +1,5 @@
-import {dataInChunksInput, getSpecificBucketInput, storage, WriteInChunks} from '../_core/consts';
-import {firestore} from '../../firestore-v3/_core/consts';
+import {dataInChunksInput, getSpecificBucketInput, storage, WriteInChunks} from '../_core/consts.js';
+import {firestore} from '../../firestore-v3/_core/consts.js';
 import {
     __stringify,
     DB_Object,
@@ -9,8 +9,8 @@ import {
     ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import * as Stream from 'stream';
-import {END_OF_STREAM} from '../../../main/backend';
-import {_EmptyQuery} from '../../../main';
+import {END_OF_STREAM} from '../../../main/backend/index.js';
+import {_EmptyQuery} from '../../../main/index.js';
 
 export const writeInChunksTestCases: WriteInChunks['testcases'] = [
     {

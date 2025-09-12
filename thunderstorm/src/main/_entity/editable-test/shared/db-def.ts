@@ -1,5 +1,5 @@
 import {DBDef_V3, tsValidateString} from '@nu-art/ts-common';
-import {DBProto_EditableTest} from './types';
+import {DBProto_EditableTest} from './types.js';
 
 
 const Validator_ModifiableProps: DBProto_EditableTest['modifiablePropsValidator'] = {

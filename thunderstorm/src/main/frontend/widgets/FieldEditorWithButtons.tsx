@@ -1,8 +1,8 @@
 import {HTMLProps} from 'react';
-import {FieldEditor, FieldEditorInputProps} from './FieldEditor';
-import {StorageKey} from '../modules/ModuleFE_LocalStorage';
-import {ComponentSync} from '../core/ComponentSync';
-import {InputType} from '../components/TS_Input/TS_BaseInput';
+import {FieldEditor, FieldEditorInputProps} from './FieldEditor.js';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage.js';
+import {ComponentSync} from '../core/ComponentSync.js';
+import {InputType} from '../components/TS_Input/TS_BaseInput.js';
 
 type State = {
 	isEditing: boolean;

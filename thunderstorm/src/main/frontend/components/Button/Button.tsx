@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
+import {ComponentSync} from '../../core/ComponentSync.js';
 import {ResolvableContent, exists, isPromise, resolveContent} from '@nu-art/ts-common';
 import './Button.scss';
-import {_className} from '../../utils/tools';
-import {LL_H_C} from '../Layouts';
+import {_className} from '../../utils/tools.js';
+import {LL_H_C} from '../Layouts/index.js';
 
 //(string & {}) preserves the literals in autocomplete and allows any other string to be entered
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'text' | 'dangerous' | (string & {});

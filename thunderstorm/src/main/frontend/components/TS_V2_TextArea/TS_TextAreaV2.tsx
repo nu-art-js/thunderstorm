@@ -26,15 +26,15 @@ import {
 	HTMLProps,
 	KeyboardEvent
 } from 'react';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 import './TS_TextAreaV2.scss';
-import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
 import {
 	ComponentProps_Error,
 	convertToHTMLDataAttributes,
 	resolveEditableError
-} from '../types';
-import {getComputedStyleProperty} from '../utils';
+} from '../types.js';
+import {getComputedStyleProperty} from '../utils.js';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';

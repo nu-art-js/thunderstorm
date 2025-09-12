@@ -1,4 +1,4 @@
-import {ActionDeclaration} from './types';
+import {ActionDeclaration} from './types.js';
 import {_keys, Dispatcher, Logger, StaticLogger} from '@nu-art/ts-common';
 
 

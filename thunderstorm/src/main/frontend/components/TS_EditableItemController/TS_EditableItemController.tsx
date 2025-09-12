@@ -1,12 +1,12 @@
 import * as React from 'react';
 import './TS_EditableItemController.scss';
 import {BadImplementationException, DB_Object, DBProto, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {Editable_SaveAction, EditableDBItemV3} from '../../utils/EditableItem';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {ApiCallerEventType} from '../../core/db-api-gen/types';
-import {Props_ItemsEditor} from '../Page_ItemsEditor';
-import {EditableRef} from '../TS_EditableContent/TS_EditableContent';
-import {ComponentSync} from '../../core/ComponentSync';
+import {Editable_SaveAction, EditableDBItemV3} from '../../utils/EditableItem.js';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ApiCallerEventType} from '../../core/db-api-gen/types.js';
+import {Props_ItemsEditor} from '../Page_ItemsEditor/index.js';
+import {EditableRef} from '../TS_EditableContent/TS_EditableContent.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
 
 
 export type TemplatingProps_EditableItemController<Proto extends DBProto<any>, EditorProps extends object = object> = {

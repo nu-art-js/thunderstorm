@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {genericNotificationAction} from '../../components/TS_Notifications';
-import {ToastBuilder} from '../../component-modules/ModuleFE_Toaster';
-import {generateErrorToastContent} from './genereteToasts';
+import {genericNotificationAction} from '../../components/TS_Notifications/index.js';
+import {ToastBuilder} from '../../component-modules/ModuleFE_Toaster.js';
+import {generateErrorToastContent} from './genereteToasts.js';
 
 
 export type FeedbackOptions = {

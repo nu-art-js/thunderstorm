@@ -17,7 +17,7 @@
  */
 
 import {TS_Object} from '@nu-art/ts-common';
-import {FirestoreQuery} from '../../_main';
+import {FirestoreQuery} from '../../_main.js';
 
 
 export type FB_ArrayType = {

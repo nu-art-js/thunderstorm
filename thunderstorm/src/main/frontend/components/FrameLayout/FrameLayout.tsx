@@ -1,6 +1,6 @@
 import {Component, HTMLProps, ReactNode} from 'react';
 import './FrameLayout.scss';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 
 export class FrameLayout

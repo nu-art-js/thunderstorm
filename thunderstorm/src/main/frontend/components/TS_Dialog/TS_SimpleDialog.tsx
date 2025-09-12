@@ -1,6 +1,6 @@
 import './TS_SimpleDialog.scss';
-import {DialogButtons, Props_TSDialog, TS_Dialog} from './TS_Dialog';
-import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
+import {DialogButtons, Props_TSDialog, TS_Dialog} from './TS_Dialog.js';
+import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog.js';
 import * as React from 'react';
 
 

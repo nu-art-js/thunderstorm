@@ -20,13 +20,13 @@
  * Created by tacb0ss on 25/08/2018.
  */
 import {Logger} from '@nu-art/ts-common';
-import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE';
-import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE';
-import {StorageWrapperBE} from '../storage/StorageWrapperBE';
-import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE';
-import {FirebaseConfig} from '../..';
+import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE.js';
+import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE.js';
+import {StorageWrapperBE} from '../storage/StorageWrapperBE.js';
+import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE.js';
+import {FirebaseConfig} from '../../index.js';
 import {App} from 'firebase-admin/app';
-import {FirestoreWrapperBEV3} from '../firestore-v3/FirestoreWrapperBEV3';
+import {FirestoreWrapperBEV3} from '../firestore-v3/FirestoreWrapperBEV3.js';
 
 
 /**

@@ -1,10 +1,10 @@
-import {TS_EditableContent} from '../TS_EditableContent/TS_EditableContent';
+import {TS_EditableContent} from '../TS_EditableContent/TS_EditableContent.js';
 import {
 	EditableItem_Status, EditableItemStatus_Creating, EditableItemStatus_ErrorSaving, EditableItemStatus_FailedValidation, EditableItemStatus_Saved,
 	EditableItemStatus_SavedWithErrors,
 	EditableItemStatus_Saving, EditableItemStatus_Unknown, EditableItemStatus_UnsavedChanges, EditableItemStatusListener
-} from '../../utils/EditableItem';
-import {InferProps, InferState} from '../../utils/types';
+} from '../../utils/EditableItem.js';
+import {InferProps, InferState} from '../../utils/types.js';
 
 
 type Props = {

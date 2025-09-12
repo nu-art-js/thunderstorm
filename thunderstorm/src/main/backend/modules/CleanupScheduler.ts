@@ -20,9 +20,9 @@
  */
 
 import {currentTimeMillis, Dispatcher} from '@nu-art/ts-common';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
-import {ModuleBE_FirebaseScheduler} from '@nu-art/firebase/backend';
-import {ActDetailsDoc} from '../shared';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase.js';
+import {ModuleBE_FirebaseScheduler} from '@nu-art/firebase/backend/index.js';
+import {ActDetailsDoc} from '../shared.js';
 
 export type CleanupDetails = {
 	cleanup: () => Promise<void>,

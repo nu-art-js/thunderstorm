@@ -1,7 +1,7 @@
 import {Module} from '@nu-art/ts-common';
-import {ApiDefCaller} from '../shared';
-import {ApiDef_CollectionActions, ApiStruct_CollectionActions} from '../../shared/collection-actions/api-def';
-import {apiWithBody} from '../core/typed-api';
+import {ApiDefCaller} from '../shared.js';
+import {ApiDef_CollectionActions, ApiStruct_CollectionActions} from '../../shared/collection-actions/api-def.js';
+import {apiWithBody} from '../core/typed-api.js';
 
 class ModuleFE_CollectionActions_Class
 	extends Module {

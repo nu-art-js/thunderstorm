@@ -1,9 +1,9 @@
-import {thunderstormATSGroups} from '../../consts';
-import {ComponentSync} from '../../core/ComponentSync';
-import {LL_V_L} from '../Layouts';
-import {AppToolsScreen, TS_AppTools} from '../TS_AppTools';
+import {thunderstormATSGroups} from '../../consts.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {LL_V_L} from '../Layouts/index.js';
+import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
 import './ATS_CheckboxGroup.scss';
-import {TS_CheckboxGroup} from "./TS_CheckboxGroup";
+import {TS_CheckboxGroup} from "./TS_CheckboxGroup.js";
 import {voidFunction} from "@nu-art/ts-common";
 
 type Props = {};

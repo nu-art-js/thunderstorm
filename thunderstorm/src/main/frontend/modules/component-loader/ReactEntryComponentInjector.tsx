@@ -20,9 +20,9 @@
  */
 
 import * as React from 'react';
-import {EntryComponentLoadingModule} from './entry-component-loading-module';
+import {EntryComponentLoadingModule} from './entry-component-loading-module.js';
 // noinspection TypeScriptPreferShortImport
-import {OnRequestListener} from '../../../shared/request-types';
+import {OnRequestListener} from '../../../shared/request-types.js';
 
 export type LoaderProps = { progress: number };
 

@@ -1,7 +1,7 @@
 import {BadImplementationException} from '@nu-art/ts-common';
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className} from '../../utils/tools';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className} from '../../utils/tools.js';
 
 type TransitionPhase = 'mount' | 'enter' | 'enter-done' | 'exit' | 'exit-done' | 'unmount';
 

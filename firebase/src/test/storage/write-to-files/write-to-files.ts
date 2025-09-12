@@ -8,7 +8,7 @@ import {
 	writeTestInput4,
 	writeTestInput5,
 	WriteTests
-} from '../_core/consts';
+} from '../_core/consts.js';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {expect} from 'chai';
 

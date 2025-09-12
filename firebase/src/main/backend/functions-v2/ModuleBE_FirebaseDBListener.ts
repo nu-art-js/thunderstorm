@@ -1,5 +1,5 @@
 import {deepClone} from '@nu-art/ts-common';
-import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
+import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
 import {onValueWritten} from 'firebase-functions/v2/database';
 
 type TypeOf_onValueWritten = typeof onValueWritten;

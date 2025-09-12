@@ -19,5 +19,5 @@
  * limitations under the License.
  */
 
-export * from './TS_BaseInput';
-export * from './TS_TextAreaV2';
+export * from './TS_BaseInput.js';
+export * from './TS_TextAreaV2.js';

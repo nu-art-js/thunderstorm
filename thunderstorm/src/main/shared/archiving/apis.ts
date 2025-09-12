@@ -1,5 +1,5 @@
 import {DB_Object, UniqueId} from '@nu-art/ts-common';
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types.js';
 
 export type RequestBody_HardDeleteUnique = {
 	_id: UniqueId,

@@ -1,13 +1,13 @@
-import {ComponentSync} from '../../core/ComponentSync';
-import {AppConfigKey_FE, DB_AppConfig, ModuleFE_AppConfig} from '../../_entity';
-import {LL_H_C, LL_V_L} from '../../components/Layouts';
-import {AppToolsScreen, TS_AppTools} from '../../components/TS_AppTools';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {AppConfigKey_FE, DB_AppConfig, ModuleFE_AppConfig} from '../../_entity.js';
+import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
+import {AppToolsScreen, TS_AppTools} from '../../components/TS_AppTools/index.js';
 import {__stringify, exists, sortArray} from '@nu-art/ts-common';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 import './ATS_AppConfigEditor.scss';
-import {TS_JSONViewer} from '../../components/TS_JSONViewer/TS_JSONViewer';
-import {TS_TextArea} from '../../components/TS_Input';
-import { Button } from '../../components/Button/Button';
+import {TS_JSONViewer} from '../../components/TS_JSONViewer/TS_JSONViewer.js';
+import {TS_TextArea} from '../../components/TS_Input/index.js';
+import { Button } from '../../components/Button/Button.js';
 
 type Props = {
 	appConfigFilter?: (appConfig: DB_AppConfig) => boolean;

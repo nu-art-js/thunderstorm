@@ -1,12 +1,12 @@
 import * as React from 'react';
 import './TS_Dialog.scss';
 import {_values, BadImplementationException, filterInstances, flatArray, TS_Object, TypedMap} from '@nu-art/ts-common';
-import {ComponentSync} from '../../core/ComponentSync';
-import {DialogKey, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
-import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
-import {_className, stopPropagation} from '../../utils/tools';
-import {Button} from '../Button/Button';
-import {LL_V_L} from '../Layouts';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {DialogKey, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog.js';
+import {TS_ErrorBoundary} from '../TS_ErrorBoundary/index.js';
+import {_className, stopPropagation} from '../../utils/tools.js';
+import {Button} from '../Button/Button.js';
+import {LL_V_L} from '../Layouts/index.js';
 
 
 /**

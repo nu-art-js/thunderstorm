@@ -1,6 +1,6 @@
-import {TS_Toggle} from './TS_Toggle';
-import {ComponentSync} from '../../core/ComponentSync';
-import {AppToolsScreen} from '../TS_AppTools';
+import {TS_Toggle} from './TS_Toggle.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {AppToolsScreen} from '../TS_AppTools/index.js';
 
 type State = {
 	checked: boolean

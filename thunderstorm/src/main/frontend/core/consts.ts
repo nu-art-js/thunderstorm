@@ -1,4 +1,4 @@
-import {ThunderDispatcher} from './thunder-dispatcher';
+import {ThunderDispatcher} from './thunder-dispatcher.js';
 import {ReactNode} from 'react';
 
 

@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {ComparatorMap, FirestoreQuery, QueryComparator} from '../..';
-import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from './types';
-import {FirestoreCollection} from './FirestoreCollection';
+import {ComparatorMap, FirestoreQuery, QueryComparator} from '../../index.js';
+import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from './types.js';
+import {FirestoreCollection} from './FirestoreCollection.js';
 import {__stringify, BadImplementationException, ImplementationMissingException, StaticLogger, TS_Object} from '@nu-art/ts-common';
 import {Query} from 'firebase-admin/firestore';
 

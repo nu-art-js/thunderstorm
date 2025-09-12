@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_MultiSelect_V2';
+export * from './TS_MultiSelect_V2.js';

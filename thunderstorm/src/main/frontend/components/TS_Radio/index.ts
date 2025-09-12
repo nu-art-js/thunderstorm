@@ -1,1 +1,1 @@
-export * from './TS_Radio';
+export * from './TS_Radio.js';

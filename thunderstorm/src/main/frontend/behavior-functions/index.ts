@@ -1,1 +1,1 @@
-export * from './scroll-into-view';
+export * from './scroll-into-view.js';

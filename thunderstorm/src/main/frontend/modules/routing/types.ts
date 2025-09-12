@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {QueryParams} from '../../shared';
+import {QueryParams} from '../../shared.js';
 import {ResolvableContent} from '@nu-art/ts-common';
-import {ModuleFE_BaseDB} from '../db-api-gen/ModuleFE_BaseDB';
-import {AwaitModule_LoaderProps} from '../../components/AwaitModules/AwaitModules';
+import {ModuleFE_BaseDB} from '../db-api-gen/ModuleFE_BaseDB.js';
+import {AwaitModule_LoaderProps} from '../../components/AwaitModules/AwaitModules.js';
 
 export type TS_Route<T extends QueryParams = QueryParams> = {
 	key: string;

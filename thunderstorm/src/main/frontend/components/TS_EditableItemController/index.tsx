@@ -1,1 +1,1 @@
-export * from './TS_EditableItemController';
+export * from './TS_EditableItemController.js';

@@ -24,9 +24,9 @@
  */
 import {_keys, composeQueryParams, exists, Module,} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
-import {UrlQueryParams} from '../../shared';
+import {UrlQueryParams} from '../../shared/index.js';
 
-import {ThunderDispatcher} from '../core/thunder-dispatcher';
+import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
 
 export type OnUrlParamsChangedListener = {
     __onUrlParamsChanged: VoidFunction

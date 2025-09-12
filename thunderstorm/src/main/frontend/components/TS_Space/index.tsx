@@ -1,1 +1,1 @@
-export * from './TS_Space';
+export * from './TS_Space.js';

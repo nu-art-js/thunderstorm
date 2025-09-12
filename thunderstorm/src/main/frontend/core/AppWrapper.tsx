@@ -20,7 +20,7 @@
  */
 
 import {BrowserRouter, MemoryRouter} from 'react-router-dom';
-import {ThunderAppWrapperProps} from './types';
+import {ThunderAppWrapperProps} from './types.js';
 
 
 export function appWithBrowserRouter(props: ThunderAppWrapperProps) {

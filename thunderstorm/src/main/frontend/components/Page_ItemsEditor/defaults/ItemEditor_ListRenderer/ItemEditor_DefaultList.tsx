@@ -3,27 +3,27 @@ import {
 	DBProto,
 	sortArray
 } from '@nu-art/ts-common';
-import {ModuleFE_BaseApi} from '../../../../modules/db-api-gen/ModuleFE_BaseApi';
-import {_className} from '../../../../utils/tools';
+import {ModuleFE_BaseApi} from '../../../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {_className} from '../../../../utils/tools.js';
 import './ItemEditor_DefaultList.scss';
 import {
 	ItemEditor_CustomSort,
 	ItemEditor_FilterType
-} from '../../types';
-import {ComponentSync} from '../../../../core/ComponentSync';
-import {ApiCallerEventType} from '../../../../core/db-api-gen/types';
-import {MenuAction} from '../../Page_ItemsEditor';
+} from '../../types.js';
+import {ComponentSync} from '../../../../core/ComponentSync.js';
+import {ApiCallerEventType} from '../../../../core/db-api-gen/types.js';
+import {MenuAction} from '../../Page_ItemsEditor.js';
 import {
 	Model_PopUp,
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp
-} from '../../../../component-modules/mouse-interactivity';
-import {Button} from '../../../Button/Button';
-import {VirtualizedList} from '../../../TS_VirtualizedList';
+} from '../../../../component-modules/mouse-interactivity/index.js';
+import {Button} from '../../../Button/Button.js';
+import {VirtualizedList} from '../../../TS_VirtualizedList/index.js';
 import {
 	InferProps,
 	InferState
-} from '../../../../utils/types';
+} from '../../../../utils/types.js';
 
 
 export type Props_ListRenderer<Proto extends DBProto<any>> = {

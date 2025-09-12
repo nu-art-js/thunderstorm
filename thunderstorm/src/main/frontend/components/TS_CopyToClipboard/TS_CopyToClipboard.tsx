@@ -1,5 +1,5 @@
-import {stopPropagation} from '../../utils/tools';
-import {ModuleFE_Thunderstorm} from '../../modules/ModuleFE_Thunderstorm';
+import {stopPropagation} from '../../utils/tools.js';
+import {ModuleFE_Thunderstorm} from '../../modules/ModuleFE_Thunderstorm.js';
 import {HTMLProps} from 'react';
 
 

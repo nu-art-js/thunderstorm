@@ -20,12 +20,12 @@
  */
 
 import {_keys, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
-import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
-import {composeURL} from './ModuleFE_BrowserHistory';
-import {HttpMethod, QueryApi, UrlQueryParams} from '../../shared/types';
-import {base64ToBlob} from '../utils/tools';
-import {ModuleFE_XHR} from './http/ModuleFE_XHR';
-import {dispatch_onClearWebsiteData} from './clearWebsiteDataDispatcher';
+import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster.js';
+import {composeURL} from './ModuleFE_BrowserHistory.js';
+import {HttpMethod, QueryApi, UrlQueryParams} from '../../shared/types.js';
+import {base64ToBlob} from '../utils/tools.js';
+import {ModuleFE_XHR} from './http/ModuleFE_XHR.js';
+import {dispatch_onClearWebsiteData} from './clearWebsiteDataDispatcher.js';
 
 type Config = {
     appName: string

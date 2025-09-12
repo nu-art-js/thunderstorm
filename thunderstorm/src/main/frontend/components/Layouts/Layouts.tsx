@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {CSSProperties, HTMLProps} from 'react';
 import './_Layouts.scss';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 
 export type LinearLayoutProps =

@@ -1,15 +1,15 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
+import {ComponentSync} from '../../core/ComponentSync.js';
 import {exists, ResolvableContent, resolveContent, RuntimeModules} from '@nu-art/ts-common';
-import {DataStatus} from '../../core/db-api-gen/consts';
+import {DataStatus} from '../../core/db-api-gen/consts.js';
 import './AwaitModules.scss';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
-import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager';
-import {LL_H_C, LL_V_L} from '../Layouts/Layouts';
-import {TS_ProgressBar} from '../TS_ProgressBar/TS_ProgressBar';
-import {OnSyncStatusChangedListener} from '../../core/db-api-gen/types';
-import {ModuleSyncType} from '../../modules/db-api-gen/types';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
+import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager.js';
+import {LL_H_C, LL_V_L} from '../Layouts/Layouts.js';
+import {TS_ProgressBar} from '../TS_ProgressBar/TS_ProgressBar.js';
+import {OnSyncStatusChangedListener} from '../../core/db-api-gen/types.js';
+import {ModuleSyncType} from '../../modules/db-api-gen/types.js';
 
 
 type Props = React.PropsWithChildren<{

@@ -1,11 +1,11 @@
 import * as React from 'react';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 import './TS_ButtonGroup.scss';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className} from '../../utils/tools';
-import {InferProps, InferState} from '../../utils/types';
-import {ButtonGroup_Props, ButtonGroup_Props_Controlled, ButtonGroup_State, ButtonGroupItem, ButtonGroupItem_NonControlled} from './types';
-import {Button} from '../Button/Button';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className} from '../../utils/tools.js';
+import {InferProps, InferState} from '../../utils/types.js';
+import {ButtonGroup_Props, ButtonGroup_Props_Controlled, ButtonGroup_State, ButtonGroupItem, ButtonGroupItem_NonControlled} from './types.js';
+import {Button} from '../Button/Button.js';
 
 export class TS_ButtonGroup<ButtonKey extends string = string>
 	extends ComponentSync<ButtonGroup_Props<ButtonKey>, ButtonGroup_State<ButtonKey>> {

@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className, stopPropagation} from '../../utils/tools';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className, stopPropagation} from '../../utils/tools.js';
 import './TS_Tabs.scss';
-import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
+import {StorageKey} from '../../modules/ModuleFE_LocalStorage.js';
 
 
 export type Tab = {

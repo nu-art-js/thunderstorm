@@ -26,9 +26,9 @@ import {
 	GetSignedUrlConfig,
 	MakeFilePublicResponse,
 } from '@google-cloud/storage';
-import {Firebase_CopyResponse, FirebaseType_Storage} from './types';
-import {FirebaseSession} from '../auth/firebase-session';
-import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
+import {Firebase_CopyResponse, FirebaseType_Storage} from './types.js';
+import {FirebaseSession} from '../auth/firebase-session.js';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper.js';
 import {getStorage} from 'firebase-admin/storage';
 import {Response} from 'teeny-request';
 import {Writable} from 'stream';

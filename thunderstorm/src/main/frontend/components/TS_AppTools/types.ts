@@ -1,7 +1,7 @@
 import {ResolvableContent} from '@nu-art/ts-common';
 import * as React from 'react';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
-import {TS_Route} from '../../modules/routing';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
+import {TS_Route} from '../../modules/routing/index.js';
 
 
 export type AppToolsScreen = {

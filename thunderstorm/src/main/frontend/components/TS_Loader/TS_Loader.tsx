@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './TS_Loader.scss';
 import {HTMLProps} from 'react';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 
 export class TS_Loader

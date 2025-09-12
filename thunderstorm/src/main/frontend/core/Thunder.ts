@@ -31,14 +31,14 @@ import {
 	removeItemFromArray,
 	TS_Object
 } from '@nu-art/ts-common';
-import {ThunderDispatcher} from './thunder-dispatcher';
+import {ThunderDispatcher} from './thunder-dispatcher.js';
 
 import '../styles/impl/basic.scss';
 import '../styles/impl/icons.scss';
-import {ThunderAppWrapperProps} from './types';
+import {ThunderAppWrapperProps} from './types.js';
 import * as RDC from 'react-dom/client';
-import {appWithJSX} from './AppWrapper';
-import {StorageKey} from '../modules/ModuleFE_LocalStorage';
+import {appWithJSX} from './AppWrapper.js';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage.js';
 import axios from 'axios';
 
 export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();

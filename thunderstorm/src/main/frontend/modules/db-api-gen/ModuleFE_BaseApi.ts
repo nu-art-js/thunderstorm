@@ -21,12 +21,12 @@
 
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@nu-art/ts-common';
-import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
-import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException, TypedApi} from '../../shared';
-import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
-import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {apiWithBody, apiWithQuery} from '../../core/typed-api';
-import {CustomMemCreators, ModuleSyncType} from './types';
+import {ModuleFE_BaseDB} from './ModuleFE_BaseDB.js';
+import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException, TypedApi} from '../../shared.js';
+import {DBApiFEConfig} from '../../core/db-api-gen/db-def.js';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api.js';
+import {CustomMemCreators, ModuleSyncType} from './types.js';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';

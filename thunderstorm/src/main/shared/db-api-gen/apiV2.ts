@@ -21,7 +21,7 @@
 
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DB_Object, DBDef, IndexKeys, Metadata, PreDB} from '@nu-art/ts-common';
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types.js';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 

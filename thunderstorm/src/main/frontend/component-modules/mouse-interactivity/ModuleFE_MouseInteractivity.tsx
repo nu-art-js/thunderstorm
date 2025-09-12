@@ -21,9 +21,9 @@
 
 import * as React from 'react';
 import {generateHex, Module} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {TS_Tree} from '../../components/TS_Tree';
-import {Model_Menu, Model_PopUp, Model_ToolTip, MouseInteractivityType, PopUpListener, ToolTipListener} from './types';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
+import {TS_Tree} from '../../components/TS_Tree/index.js';
+import {Model_Menu, Model_PopUp, Model_ToolTip, MouseInteractivityType, PopUpListener, ToolTipListener} from './types.js';
 
 const showPopUp = new ThunderDispatcher<PopUpListener, '__onPopUpDisplay'>('__onPopUpDisplay');
 const showToolTip = new ThunderDispatcher<ToolTipListener, '__onToolTipDisplay'>('__onToolTipDisplay');

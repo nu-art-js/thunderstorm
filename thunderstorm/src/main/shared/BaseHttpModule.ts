@@ -19,11 +19,11 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {ApiDef, TypedApi} from './types';
+import {ApiDef, TypedApi} from './types.js';
 
 import {BadImplementationException, Module,} from '@nu-art/ts-common';
-import {BaseHttpRequest} from './BaseHttpRequest';
-import {HttpException} from './request-types';
+import {BaseHttpRequest} from './BaseHttpRequest.js';
+import {HttpException} from './request-types.js';
 
 
 type HttpConfig = {

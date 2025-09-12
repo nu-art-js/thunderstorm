@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {ModuleFE_Utils} from '../../modules/ModuleFE_Utils/ModuleFE_Utils';
-import {ComponentSync} from '../../core/ComponentSync';
+import {ModuleFE_Utils} from '../../modules/ModuleFE_Utils/ModuleFE_Utils.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
 
 type Props = {
 	rendererKey: keyof typeof ModuleFE_Utils.renderers,

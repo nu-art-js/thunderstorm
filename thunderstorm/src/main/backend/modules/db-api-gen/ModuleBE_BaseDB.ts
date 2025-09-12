@@ -41,14 +41,14 @@ import {
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
-import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
+import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def.js';
+import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager.js';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
-import {Response_DBSync} from '../../../shared/sync-manager/types';
+import {Response_DBSync} from '../../../shared/sync-manager/types.js';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_DeletedDocs} from '@nu-art/firebase/backend/firestore-v3/consts';
-import {dispatch_CollectEntityDependencies, EntityDependencyCollection} from '../collection-actions/dispatcher';
-import {DBEntityDependencies, DBEntityDependencyError} from '../../shared';
+import {dispatch_CollectEntityDependencies, EntityDependencyCollection} from '../collection-actions/dispatcher.js';
+import {DBEntityDependencies, DBEntityDependencyError} from '../../shared.js';
 
 
 export type BaseDBApiConfigV3 = {

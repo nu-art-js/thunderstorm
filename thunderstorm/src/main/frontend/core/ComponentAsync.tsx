@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 28/07/2018.
  */
-import {BaseComponent} from './ComponentBase';
+import {BaseComponent} from './ComponentBase.js';
 
 
 export type BaseAsyncState = {

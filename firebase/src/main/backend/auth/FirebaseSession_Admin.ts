@@ -21,7 +21,7 @@
  */
 import {initializeApp} from 'firebase-admin/app';
 import {JWTInput} from 'google-auth-library';
-import {FirebaseSession} from './firebase-session';
+import {FirebaseSession} from './firebase-session.js';
 import {getAuth} from 'firebase-admin/auth';
 
 

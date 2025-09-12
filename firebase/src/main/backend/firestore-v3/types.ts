@@ -1,5 +1,5 @@
 import {DBProto} from '@nu-art/ts-common';
-import {DB_EntityDependencyV2} from '../../shared/types';
+import {DB_EntityDependencyV2} from '../../shared/types.js';
 import {Transaction} from 'firebase-admin/firestore';
 
 export type CanDeleteDBEntitiesProto = {

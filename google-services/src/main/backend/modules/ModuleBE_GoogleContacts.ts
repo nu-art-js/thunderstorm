@@ -19,7 +19,7 @@
 
 import {ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {people_v1} from 'googleapis';
-import {ModuleBE_Auth} from './ModuleBE_Auth';
+import {ModuleBE_Auth} from './ModuleBE_Auth.js';
 
 
 export const standardProperties = [

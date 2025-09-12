@@ -1,5 +1,5 @@
-import {ThunderDispatcher} from '../thunder-dispatcher';
-import {OnSyncStatusChangedListener} from './types';
+import {ThunderDispatcher} from '../thunder-dispatcher.js';
+import {OnSyncStatusChangedListener} from './types.js';
 
 
 export enum SyncStatus {

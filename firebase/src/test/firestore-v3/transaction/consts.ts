@@ -1,8 +1,8 @@
-import {CollectionTest, firestore, id_inner1, id_inner2, id_inner3, id_inner4, id_outer1, innerQueryCollection, outerQueryCollection} from '../_core/consts';
+import {CollectionTest, firestore, id_inner1, id_inner2, id_inner3, id_inner4, id_outer1, innerQueryCollection, outerQueryCollection} from '../_core/consts.js';
 import {expect} from 'chai';
 import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';
-import {DBProto_Type_Complex} from '../../_entity/type-complex/shared';
+import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {DBProto_Type_Complex} from '../../_entity/type-complex/shared/index.js';
 
 
 const transaction_addInner4 = (collectionOuter: FirestoreCollectionV3<DBProto_Type_Complex>, now: number) => {

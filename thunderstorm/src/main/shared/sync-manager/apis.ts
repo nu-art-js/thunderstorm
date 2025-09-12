@@ -1,6 +1,6 @@
-import {ApiDefResolver, BodyApi, HttpMethod} from '../types';
+import {ApiDefResolver, BodyApi, HttpMethod} from '../types.js';
 import {Minute} from '@nu-art/ts-common';
-import {DeltaSyncModule, FullSyncModule, NoNeedToSyncModule, SyncDbData} from './types';
+import {DeltaSyncModule, FullSyncModule, NoNeedToSyncModule, SyncDbData} from './types.js';
 
 export type SyncManagerAPI_SmartSync = {
 	request: {

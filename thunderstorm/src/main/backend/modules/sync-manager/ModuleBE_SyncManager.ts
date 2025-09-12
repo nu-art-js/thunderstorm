@@ -40,9 +40,9 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
-import {createBodyServerApi} from '../../core/typed-api';
-import {addRoutes} from '../ModuleBE_APIs';
-import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB';
+import {createBodyServerApi} from '../../core/typed-api.js';
+import {addRoutes} from '../ModuleBE_APIs.js';
+import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB.js';
 import {
 	DeltaSyncModule,
 	FullSyncModule,
@@ -52,12 +52,12 @@ import {
 	SmartSync_FullSync,
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState
-} from '../../../shared/sync-manager/types';
-import {DBDef_DeletedDoc, DBProto_DeletedDoc} from '../../../shared';
-import {OnSyncEnvCompleted} from '../sync-env/ModuleBE_SyncEnv';
-import {OnModuleCleanupV2} from '../../_entity';
+} from '../../../shared/sync-manager/types.js';
+import {DBDef_DeletedDoc, DBProto_DeletedDoc} from '../../../shared/index.js';
+import {OnSyncEnvCompleted} from '../sync-env/ModuleBE_SyncEnv.js';
+import {OnModuleCleanupV2} from '../../_entity.js';
 import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {ApiDef_SyncManager, SyncManagerAPI_SmartSync} from '../../../shared/sync-manager/apis';
+import {ApiDef_SyncManager, SyncManagerAPI_SmartSync} from '../../../shared/sync-manager/apis.js';
 import Transaction = firestore.Transaction;
 
 

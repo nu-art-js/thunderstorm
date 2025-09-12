@@ -1,2 +1,2 @@
-export * from './performAction';
-export * from './notification-dispatchers';
+export * from './performAction.js';
+export * from './notification-dispatchers.js';

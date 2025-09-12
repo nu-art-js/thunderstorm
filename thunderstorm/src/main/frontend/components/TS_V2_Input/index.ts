@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_InputV2';
+export * from './TS_InputV2.js';

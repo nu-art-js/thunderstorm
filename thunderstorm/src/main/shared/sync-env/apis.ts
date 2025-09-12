@@ -1,6 +1,6 @@
 import {Minute, UniqueId} from '@nu-art/ts-common';
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
-import {BackupMetaData} from '../../_entity/backup-doc/shared';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types.js';
+import {BackupMetaData} from '../../_entity/backup-doc/shared/index.js';
 
 
 export type Request_FetchFromEnv = {

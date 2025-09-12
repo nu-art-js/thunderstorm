@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {BaseNodeRenderer, NodeRendererProps} from '../adapter/BaseRenderer';
+import {BaseNodeRenderer, NodeRendererProps} from '../adapter/BaseRenderer.js';
 
 export class SimpleTreeNodeRenderer
 	extends BaseNodeRenderer<any> {

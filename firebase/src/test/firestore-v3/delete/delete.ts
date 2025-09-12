@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts';
+import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts.js';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {
 	asArray,
@@ -14,9 +14,9 @@ import {
 	sortArray,
 	tsValidateMustExist
 } from '@nu-art/ts-common';
-import {_EmptyQuery} from '../../../main';
-import {DB_Type, DBProto_Type} from '../_entity';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';
+import {_EmptyQuery} from '../../../main/index.js';
+import {DB_Type, DBProto_Type} from '../_entity.js';
+import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 
 chai.use(require('chai-as-promised'));
 

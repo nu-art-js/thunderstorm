@@ -19,15 +19,15 @@
  * limitations under the License.
  */
 import './TS_ToolTip.scss';
-import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity';
+import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity.js';
 import {resolveContent} from '@nu-art/ts-common';
 import {
 	Model_ToolTip,
 	mouseInteractivity_ToolTip,
 	ToolTipListener
-} from '../../../component-modules/mouse-interactivity/types';
-import {ModuleFE_MouseInteractivity} from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity';
-import {OnWindowResized} from '../../../modules/ModuleFE_Window';
+} from '../../../component-modules/mouse-interactivity/types.js';
+import {ModuleFE_MouseInteractivity} from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity.js';
+import {OnWindowResized} from '../../../modules/ModuleFE_Window.js';
 
 export class TS_ToolTip
 	extends TS_MouseInteractivity

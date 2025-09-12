@@ -1,8 +1,8 @@
-import {firestore, testInstance1} from '../../_core/consts';
+import {firestore, testInstance1} from '../../_core/consts.js';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DB_Type, DBProto_Type} from '../../_entity';
+import {DB_Type, DBProto_Type} from '../../_entity.js';
 
 const dbDef: DBDef_V3<DBProto_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,

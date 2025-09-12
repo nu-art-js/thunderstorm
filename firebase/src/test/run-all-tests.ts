@@ -1,5 +1,5 @@
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
-import {FIREBASE_DEFAULT_PROJECT_ID} from './_main';
+import {FIREBASE_DEFAULT_PROJECT_ID} from './_main.js';
 
 
 const config = {

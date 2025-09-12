@@ -1,1 +1,1 @@
-export * from './TS_VirtualizedList'
+export * from './TS_VirtualizedList.js'

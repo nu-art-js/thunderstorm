@@ -1,7 +1,7 @@
 import {AsyncVoidFunction, DBProto, TypedMap} from '@nu-art/ts-common';
-import {IndexedDB_Database} from './IndexedDB_Database';
-import {DBConfigV3} from './types';
-import {IndexedDB_Store} from './IndexedDB_Store';
+import {IndexedDB_Database} from './IndexedDB_Database.js';
+import {DBConfigV3} from './types.js';
+import {IndexedDB_Store} from './IndexedDB_Store.js';
 
 
 export class ModuleFE_IDBManager_Class {

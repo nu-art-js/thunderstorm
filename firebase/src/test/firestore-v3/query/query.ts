@@ -1,7 +1,7 @@
-import {queryAllTestCases, queryComplexTestCases, QueryTest, queryTestCases, queryWithPagination} from './consts';
-import {CollectionTest, firestore, prepareCollectionTest} from '../_core/consts';
+import {queryAllTestCases, queryComplexTestCases, QueryTest, queryTestCases, queryWithPagination} from './consts.js';
+import {CollectionTest, firestore, prepareCollectionTest} from '../_core/consts.js';
 import {DBDef_V3, deepClone, tsValidateMustExist} from '@nu-art/ts-common';
-import {DBProto_Type} from '../_entity';
+import {DBProto_Type} from '../_entity.js';
 
 const dbDef: DBDef_V3<DBProto_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,

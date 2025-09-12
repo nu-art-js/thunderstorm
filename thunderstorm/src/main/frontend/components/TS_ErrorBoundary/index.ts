@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_ErrorBoundary';
+export * from './TS_ErrorBoundary.js';

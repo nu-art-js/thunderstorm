@@ -1,2 +1,2 @@
-export * from './ATS_Toggle';
-export * from './TS_Toggle';
+export * from './ATS_Toggle.js';
+export * from './TS_Toggle.js';

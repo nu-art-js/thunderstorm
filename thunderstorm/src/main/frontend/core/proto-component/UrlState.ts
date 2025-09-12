@@ -1,4 +1,4 @@
-import {ProtoComponentDef} from './types';
+import {ProtoComponentDef} from './types.js';
 import {
 	BadImplementationException,
 	compare,
@@ -8,8 +8,8 @@ import {
 import {
 	ModuleFE_BrowserHistoryV2,
 	OnUrlParamsChangedListenerV2
-} from '../../modules/ModuleFE_BrowserHistoryV2';
-import {ComponentSync} from '../ComponentSync';
+} from '../../modules/ModuleFE_BrowserHistoryV2.js';
+import {ComponentSync} from '../ComponentSync.js';
 
 
 export class UrlState<Def extends ProtoComponentDef<any, any>>

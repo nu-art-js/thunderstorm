@@ -1,3 +1,3 @@
 // Generated DB Item type: Type_Complex
-export * from './types';
+export * from './types.js';
 export * from './db-def';

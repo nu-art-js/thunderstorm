@@ -20,18 +20,18 @@
  */
 import * as React from 'react';
 import './TS_AppTools.scss';
-import {LL_H_C, LL_V_L} from '../Layouts';
-import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
-import {_className} from '../../utils/tools';
-import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
-import {TS_Route} from '../../modules/routing/types';
-import {TS_NavLink} from '../../modules/routing/ModuleFE_RoutingV2';
+import {LL_H_C, LL_V_L} from '../Layouts/index.js';
+import {StorageKey} from '../../modules/ModuleFE_LocalStorage.js';
+import {_className} from '../../utils/tools.js';
+import {TS_ErrorBoundary} from '../TS_ErrorBoundary/index.js';
+import {TS_Route} from '../../modules/routing/types.js';
+import {TS_NavLink} from '../../modules/routing/ModuleFE_RoutingV2.js';
 import {md5, sortArray, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';
 import {Outlet} from 'react-router-dom';
-import {TS_AppTools_Default} from './TS_AppTools_Default';
-import {AppToolsScreen} from './types';
+import {TS_AppTools_Default} from './TS_AppTools_Default.js';
+import {AppToolsScreen} from './types.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {TS_CollapsableContainer} from '../TS_CollapsableContainer';
+import {TS_CollapsableContainer} from '../TS_CollapsableContainer/index.js';
 
 
 type CollapseState = {

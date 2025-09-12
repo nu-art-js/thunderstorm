@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {HTMLAttributes} from 'react';
-import {TreeNode} from './Adapter';
+import {TreeNode} from './Adapter.js';
 
 
 export type ItemRendererProps<Item = any> = { item: Item }

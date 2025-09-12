@@ -1,2 +1,2 @@
-export * from './types';
-export * from './api-def';
+export * from './types.js';
+export * from './api-def.js';

@@ -1,5 +1,5 @@
 import {Module} from '@nu-art/ts-common';
-import {StorageKey} from './ModuleFE_LocalStorage';
+import {StorageKey} from './ModuleFE_LocalStorage.js';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
 const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;

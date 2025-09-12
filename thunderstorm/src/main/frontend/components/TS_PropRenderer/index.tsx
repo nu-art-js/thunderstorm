@@ -1,1 +1,1 @@
-export * from './TS_PropRenderer';
+export * from './TS_PropRenderer.js';

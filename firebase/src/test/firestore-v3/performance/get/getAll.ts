@@ -1,9 +1,9 @@
-import {firestore, testInstance1} from '../../_core/consts';
+import {firestore, testInstance1} from '../../_core/consts.js';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {DBDef_V3, deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DBProto_Type} from '../../../_entity/type/shared';
-import {FirestoreCollectionV3} from '../../../../main/backend/firestore-v3/FirestoreCollectionV3';
+import {DBProto_Type} from '../../../_entity/type/shared/index.js';
+import {FirestoreCollectionV3} from '../../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 
 const dbDef: DBDef_V3<DBProto_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
