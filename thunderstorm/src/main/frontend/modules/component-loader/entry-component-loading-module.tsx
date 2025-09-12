@@ -21,9 +21,9 @@
 
 import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {ModuleFE_XHR} from '../http/ModuleFE_XHR';
-import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory';
-import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '../../../shared';
+import {ModuleFE_XHR} from '../http/ModuleFE_XHR.js';
+import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory.js';
+import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '../../../shared/index.js';
 
 
 type ScriptLoaderBinder = QueryApi<string>

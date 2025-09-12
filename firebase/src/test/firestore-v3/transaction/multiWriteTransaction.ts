@@ -1,9 +1,9 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
-import {firestore, testInstance1} from '../_core/consts';
+import {firestore, testInstance1} from '../_core/consts.js';
 import {expect} from 'chai';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';
-import {DB_Type, DBProto_Type} from '../_entity';
+import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {DB_Type, DBProto_Type} from '../_entity.js';
 
 type Input = {
 	action: (collection: FirestoreCollectionV3<DBProto_Type>, items: PreDB<DB_Type>[]) => Promise<void>

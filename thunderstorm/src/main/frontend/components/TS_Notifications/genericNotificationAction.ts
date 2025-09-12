@@ -1,5 +1,5 @@
 import {Second, StaticLogger} from '@nu-art/ts-common';
-import {ModuleFE_Notifications, UI_Notification} from '../../component-modules/ModuleFE_Notifications';
+import {ModuleFE_Notifications, UI_Notification} from '../../component-modules/ModuleFE_Notifications.js';
 
 
 type UI_NotificationTitle = string | { inProgress: string, failed?: string | ((e: any) => string), success?: string };

@@ -1,5 +1,5 @@
 import {_keys, Module} from '@nu-art/ts-common';
-import {StorageKey} from './ModuleFE_LocalStorage';
+import {StorageKey} from './ModuleFE_LocalStorage.js';
 
 
 type Theme = {

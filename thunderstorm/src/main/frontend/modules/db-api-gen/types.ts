@@ -1,7 +1,7 @@
 import {DBProto} from '@nu-art/ts-common';
-import {DBApiFEConfig} from '../../core/db-api-gen/db-def';
-import {DBConfigV3} from '../../core/IndexedDBV4/types';
-import {IDBCache, MemCache, ModuleFE_BaseDB} from './ModuleFE_BaseDB';
+import {DBApiFEConfig} from '../../core/db-api-gen/db-def.js';
+import {DBConfigV3} from '../../core/IndexedDBV4/types.js';
+import {IDBCache, MemCache, ModuleFE_BaseDB} from './ModuleFE_BaseDB.js';
 
 export enum ModuleSyncType {
 	NoSync,

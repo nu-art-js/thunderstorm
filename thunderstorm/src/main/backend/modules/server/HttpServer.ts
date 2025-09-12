@@ -30,10 +30,10 @@ import * as fs from 'fs';
 import {addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
 import express from 'express';
 
-import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from '../../utils/types';
-import {DefaultApiErrorMessageComposer} from './server-errors';
+import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from '../../utils/types.js';
+import {DefaultApiErrorMessageComposer} from './server-errors.js';
 import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase/backend';
-import {ServerApi} from './server-api';
+import {ServerApi} from './server-api.js';
 import compression from 'compression';
 import cors from 'cors';
 

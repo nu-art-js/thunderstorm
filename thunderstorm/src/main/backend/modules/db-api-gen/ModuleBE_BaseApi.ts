@@ -20,11 +20,11 @@
  */
 
 import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
-import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
+import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
-import {DBApiDefGeneratorIDBV3} from '../../../shared';
-import {addRoutes} from '../ModuleBE_APIs';
-import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
+import {DBApiDefGeneratorIDBV3} from '../../../shared/index.js';
+import {addRoutes} from '../ModuleBE_APIs.js';
+import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js';
 
 
 /**

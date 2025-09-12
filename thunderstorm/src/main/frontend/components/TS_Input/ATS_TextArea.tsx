@@ -1,8 +1,8 @@
-import {ComponentSync} from '../../core/ComponentSync';
-import {AppToolsScreen, TS_AppTools} from '../TS_AppTools';
-import {LL_H_C, LL_V_L} from '../Layouts';
-import {TS_PropRenderer} from '../TS_PropRenderer';
-import {TS_TextArea} from './TS_TextArea';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
+import {LL_H_C, LL_V_L} from '../Layouts/index.js';
+import {TS_PropRenderer} from '../TS_PropRenderer/index.js';
+import {TS_TextArea} from './TS_TextArea.js';
 import './ATS_TextArea.scss';
 
 type State = {

@@ -1,6 +1,6 @@
 import {__stringify, dispatch_onApplicationNotification, ImplementationMissingException, ServerErrorSeverity, TS_Object} from '@nu-art/ts-common';
-import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
-import {TopicMessage} from '../functions/firebase-function';
+import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
+import {TopicMessage} from '../functions/firebase-function.js';
 import {CloudEvent, CloudFunction} from 'firebase-functions/v2';
 import {MessagePublishedData, onMessagePublished, PubSubOptions} from 'firebase-functions/v2/pubsub';
 

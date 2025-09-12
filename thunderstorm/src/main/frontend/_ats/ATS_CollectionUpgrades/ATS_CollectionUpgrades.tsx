@@ -1,14 +1,14 @@
 import * as React from 'react';
 import {filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_CollectionUpgrades.scss';
-import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools';
-import {genericNotificationAction} from '../../components/TS_Notifications';
-import {LL_H_C} from '../../components/Layouts';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
-import {ComponentSync} from '../../core/ComponentSync';
-import {Button} from '../../components/Button/Button';
-import {ModuleFE_CollectionActions} from '../../modules/ModuleFE_CollectionActions';
+import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools/index.js';
+import {genericNotificationAction} from '../../components/TS_Notifications/index.js';
+import {LL_H_C} from '../../components/Layouts/index.js';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {Button} from '../../components/Button/Button.js';
+import {ModuleFE_CollectionActions} from '../../modules/ModuleFE_CollectionActions.js';
 
 
 type State = {

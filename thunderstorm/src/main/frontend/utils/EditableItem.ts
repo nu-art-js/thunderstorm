@@ -27,7 +27,7 @@ import {
 	ValidationException,
 	WhoCallThisException
 } from '@nu-art/ts-common';
-import {ModuleFE_BaseApi} from '../modules/db-api-gen/ModuleFE_BaseApi';
+import {ModuleFE_BaseApi} from '../modules/db-api-gen/ModuleFE_BaseApi.js';
 
 
 export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, ItemType, Prop extends AssetValueType<EnclosingItem, K, ItemType> = AssetValueType<EnclosingItem, K, ItemType>> = {

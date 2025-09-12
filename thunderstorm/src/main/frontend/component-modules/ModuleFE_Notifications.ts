@@ -1,6 +1,6 @@
 import {addItemToArrayAtIndex, currentTimeMillis, DB_Object, generateHex, Module, removeFromArrayByIndex} from '@nu-art/ts-common';
-import {StorageKey} from '../modules/ModuleFE_LocalStorage';
-import {ThunderDispatcher} from '../core/thunder-dispatcher';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage.js';
+import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
 
 
 type NS_Normal = 'normal';

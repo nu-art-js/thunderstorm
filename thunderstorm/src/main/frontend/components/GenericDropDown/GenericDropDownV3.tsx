@@ -1,12 +1,12 @@
 import {_values, DB_Object, DBPointer, DBProto, Filter, ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {TS_DropDown} from '../TS_Dropdown';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {Adapter, SimpleListAdapter} from '../adapter/Adapter';
-import {ComponentSync} from '../../core/ComponentSync';
-import {UIProps_EditableItem} from '../../utils/EditableItem';
-import {ComponentProps_Error, resolveEditableError} from '../types';
+import {TS_DropDown} from '../TS_Dropdown/index.js';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {Adapter, SimpleListAdapter} from '../adapter/Adapter.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
+import {ComponentProps_Error, resolveEditableError} from '../types.js';
 
 
 type Props_CanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | {

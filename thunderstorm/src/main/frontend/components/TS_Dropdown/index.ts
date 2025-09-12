@@ -18,4 +18,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './TS_DropDown';
+export * from './TS_DropDown.js';

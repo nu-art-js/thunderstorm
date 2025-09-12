@@ -21,8 +21,8 @@
 
 import * as React from 'react';
 import {Module, Second} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '../core/thunder-dispatcher';
-import { TS_Toast } from '../components/TS_Toaster/TS_Toast';
+import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
+import { TS_Toast } from '../components/TS_Toaster/TS_Toast.js';
 
 
 export type Toast_Model = {

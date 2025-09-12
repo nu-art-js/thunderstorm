@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {HeaderKey_Authorization} from './headers';
+import {HeaderKey_Authorization} from './headers.js';
 
 
 export const HeaderKey_Env = 'x-env';

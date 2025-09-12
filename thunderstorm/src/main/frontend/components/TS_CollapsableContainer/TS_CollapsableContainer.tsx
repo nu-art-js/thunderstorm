@@ -2,9 +2,9 @@ import {TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import './TS_CollapsableContainer.scss';
 import {ReactNode} from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className} from '../../utils/tools';
-import {LL_V_L} from '../Layouts';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className} from '../../utils/tools.js';
+import {LL_V_L} from '../Layouts/index.js';
 
 
 type Props = {

@@ -36,7 +36,7 @@ import {
 	sortArray,
 	TimerHandler
 } from '@nu-art/ts-common';
-import {Thunder} from './Thunder';
+import {Thunder} from './Thunder.js';
 
 
 let instances = 0;

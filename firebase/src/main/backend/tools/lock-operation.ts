@@ -1,5 +1,5 @@
 import {currentTimeMillis, CustomException} from '@nu-art/ts-common';
-import {ModuleBE_Firebase} from '../ModuleBE_Firebase';
+import {ModuleBE_Firebase} from '../ModuleBE_Firebase.js';
 
 
 /**

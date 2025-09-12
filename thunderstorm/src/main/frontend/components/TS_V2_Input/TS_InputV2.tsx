@@ -26,15 +26,15 @@ import {
 	HTMLProps,
 	KeyboardEvent
 } from 'react';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 import '../TS_Input/TS_Input.scss';
-import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
 import {
 	ComponentProps_Error,
 	convertToHTMLDataAttributes,
 	getErrorTooltip,
 	resolveEditableError
-} from '../types';
+} from '../types.js';
 import {TS_Object} from '@nu-art/ts-common';
 
 

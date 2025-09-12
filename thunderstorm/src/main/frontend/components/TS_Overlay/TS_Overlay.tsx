@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import './TS_Overlay.scss';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 
 type Props = React.PropsWithChildren<{

@@ -1,12 +1,12 @@
-import {ComponentSync} from '../../core/ComponentSync';
-import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
-import {LL_H_C, LL_V_L} from '../../components/Layouts';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog.js';
+import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {Component_CollectionGrid} from './Component_CollectionGrid';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
+import {Component_CollectionGrid} from './Component_CollectionGrid.js';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
 import {ResolvableContent, RuntimeModules, exists, resolveContent} from '@nu-art/ts-common';
 import './Dialog_IDBCacheComparison.scss';
-import {DefaultProps} from '../../utils/types';
+import {DefaultProps} from '../../utils/types.js';
 
 type Props = {
 	modules: ResolvableContent<ModuleFE_BaseDB<any>[]>;

@@ -1,5 +1,5 @@
 import {onRequest} from 'firebase-functions/v2/https';
-import {ModuleBE_Firebase} from '../ModuleBE_Firebase';
+import {ModuleBE_Firebase} from '../ModuleBE_Firebase.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 

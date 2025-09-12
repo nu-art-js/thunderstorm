@@ -1,5 +1,5 @@
-import {ApiDefResolver, HttpMethod, QueryApi} from '../../../shared/types';
-import {FetchBackupDoc} from './types';
+import {ApiDefResolver, HttpMethod, QueryApi} from '../../../shared/types.js';
+import {FetchBackupDoc} from './types.js';
 
 export type Request_BackupId = {
 	backupId: string,

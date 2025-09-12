@@ -1,4 +1,4 @@
-import {DeleteFiles, getSpecificBucketInput, storage} from '../_core/consts';
+import {DeleteFiles, getSpecificBucketInput, storage} from '../_core/consts.js';
 import {expect} from 'chai';
 
 export const deleteFilesTestCases: DeleteFiles['testcases'] = [

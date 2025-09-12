@@ -1,9 +1,9 @@
-import {ModuleFE_Toaster, ToastBuilder} from '../../component-modules/ModuleFE_Toaster';
-import {TS_Toast} from '../../components/TS_Toaster';
-import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';
-import {LL_V_L} from '../../components/Layouts';
+import {ModuleFE_Toaster, ToastBuilder} from '../../component-modules/ModuleFE_Toaster.js';
+import {TS_Toast} from '../../components/TS_Toaster/index.js';
+import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools/index.js';
+import {LL_V_L} from '../../components/Layouts/index.js';
 import {Minute} from '@nu-art/ts-common';
-import {ComponentSync} from '../../core/ComponentSync';
+import {ComponentSync} from '../../core/ComponentSync.js';
 
 
 type ATS_Toaster_Props = {

@@ -19,5 +19,5 @@
  * limitations under the License.
  */
 
-export * from './TS_ToastOverlay';
-export * from './TS_Toast';
+export * from './TS_ToastOverlay.js';
+export * from './TS_Toast.js';

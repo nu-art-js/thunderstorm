@@ -1,11 +1,11 @@
 import './TS_PopUp.scss';
-import {TS_Overlay} from '../../TS_Overlay';
-import {OnWindowResized} from '../../../modules/ModuleFE_Window';
-import {_className, stopPropagation} from '../../../utils/tools';
+import {TS_Overlay} from '../../TS_Overlay/index.js';
+import {OnWindowResized} from '../../../modules/ModuleFE_Window.js';
+import {_className, stopPropagation} from '../../../utils/tools.js';
 import {resolveContent} from '@nu-art/ts-common';
-import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity';
-import {Model_PopUp, mouseInteractivity_PopUp, PopUpListener} from '../../../component-modules/mouse-interactivity/types';
-import {ModuleFE_MouseInteractivity} from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity';
+import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity.js';
+import {Model_PopUp, mouseInteractivity_PopUp, PopUpListener} from '../../../component-modules/mouse-interactivity/types.js';
+import {ModuleFE_MouseInteractivity} from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity.js';
 
 export class TS_PopUp
 	extends TS_MouseInteractivity

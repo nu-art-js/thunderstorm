@@ -43,8 +43,8 @@ import {
 	voidFunction
 } from '@nu-art/ts-common';
 import {composeDbObjectUniqueId} from '@nu-art/firebase';
-import {OnClearWebsiteData} from '../clearWebsiteDataDispatcher';
-import {DBApiFEConfig, getModuleFEConfigV3} from '../../core/db-api-gen/db-def';
+import {OnClearWebsiteData} from '../clearWebsiteDataDispatcher.js';
+import {DBApiFEConfig, getModuleFEConfigV3} from '../../core/db-api-gen/db-def.js';
 import {
 	DataStatus,
 	EventType_Create,
@@ -56,15 +56,15 @@ import {
 	EventType_Update,
 	EventType_UpsertAll,
 	syncDispatcher
-} from '../../core/db-api-gen/consts';
-import {StorageKey} from '../ModuleFE_LocalStorage';
-import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB';
-import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store';
-import {DBConfigV3} from '../../core/IndexedDBV4/types';
-import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager';
-import {CustomMemCreators, ModuleSyncType} from './types';
-import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
+} from '../../core/db-api-gen/consts.js';
+import {StorageKey} from '../ModuleFE_LocalStorage.js';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
+import {IndexDb_Query, ReduceFunction} from '../../core/IndexedDB.js';
+import {IndexedDB_Store} from '../../core/IndexedDBV4/IndexedDB_Store.js';
+import {DBConfigV3} from '../../core/IndexedDBV4/types.js';
+import {ModuleFE_IDBManager} from '../../core/IndexedDBV4/ModuleFE_IDBManager.js';
+import {CustomMemCreators, ModuleSyncType} from './types.js';
+import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types.js';
 
 
 export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfig<Proto> = DBApiFEConfig<Proto>>

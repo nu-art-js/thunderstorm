@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 import './TS_Card.scss';
-import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
-import {LinearLayoutProps} from '../Layouts';
+import {TS_ErrorBoundary} from '../TS_ErrorBoundary/index.js';
+import {LinearLayoutProps} from '../Layouts/index.js';
 
 
 export class TS_Card

@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className} from '../../utils/tools';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className} from '../../utils/tools.js';
 import './TS_Toggle.scss';
 import {generateHex, voidFunction} from '@nu-art/ts-common';
 

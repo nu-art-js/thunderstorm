@@ -21,9 +21,9 @@
 
 import {_keys, addItemToArray, BadImplementationException, composeQueryParams, Module, RouteParams} from '@nu-art/ts-common';
 import * as React from 'react';
-import {defaultLinkNode, defaultNavLinkNode, defaultRouteNode, RoutePath} from './route';
-import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory';
-import {QueryParams} from '../../../shared/types';
+import {defaultLinkNode, defaultNavLinkNode, defaultRouteNode, RoutePath} from './route.js';
+import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory.js';
+import {QueryParams} from '../../../shared/types.js';
 import {Navigate, Routes} from 'react-router-dom';
 
 

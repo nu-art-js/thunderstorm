@@ -1,10 +1,10 @@
 import {_values, ApiException, BadImplementationException, exists, isErrorOfType, Logger, LogLevel, Module, resolveContent, TypedMap} from '@nu-art/ts-common';
 // import {ApiDefServer} from '../../utils/api-caller-types';
-import {ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
-import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
-import {addRoutes} from '../ModuleBE_APIs';
-import {ActionDeclaration} from './types';
-import {RAD_SetupProject} from './Action_SetupProject';
+import {ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor/index.js';
+import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js';
+import {addRoutes} from '../ModuleBE_APIs.js';
+import {ActionDeclaration} from './types.js';
+import {RAD_SetupProject} from './Action_SetupProject.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 

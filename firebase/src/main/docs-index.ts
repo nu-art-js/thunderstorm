@@ -16,6 +16,6 @@
  * limitations under the License.
  */
 
-export * from './shared/types';
-export * from './backend';
-export * from './frontend';
+export * from './shared/types.js';
+export * from './backend/index.js';
+export * from './frontend/index.js';

@@ -1,1 +1,1 @@
-export * from './ItemEditor_DefaultFilter';
+export * from './ItemEditor_DefaultFilter.js';

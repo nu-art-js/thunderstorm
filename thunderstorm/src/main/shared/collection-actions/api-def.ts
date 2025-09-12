@@ -1,6 +1,6 @@
 import {UniqueId} from '@nu-art/ts-common';
-import {ApiDefResolver, BodyApi, HttpMethod} from '../types';
-import {DBEntityDependencies} from './types';
+import {ApiDefResolver, BodyApi, HttpMethod} from '../types.js';
+import {DBEntityDependencies} from './types.js';
 
 export type CollectionActions_Upgrade = {
 	//API to upgrade specific collections

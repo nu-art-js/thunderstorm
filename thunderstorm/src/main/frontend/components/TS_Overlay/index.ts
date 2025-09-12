@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_Overlay';
+export * from './TS_Overlay.js';

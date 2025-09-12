@@ -1,6 +1,6 @@
 import * as chaiAsPromised from 'chai-as-promised';
-import {FreeForm_TestCase1} from './consts';
-import {TestModel_FreeForm} from './types';
+import {FreeForm_TestCase1} from './consts.js';
+import {TestModel_FreeForm} from './types.js';
 
 
 const chai = require('chai');

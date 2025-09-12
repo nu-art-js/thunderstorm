@@ -1,4 +1,4 @@
-import {ApiDefResolver, HttpMethod, QueryApi} from '../../../shared/types';
+import {ApiDefResolver, HttpMethod, QueryApi} from '../../../shared/types.js';
 
 export type RequestBody_GetResolverByKey = { key: string };
 

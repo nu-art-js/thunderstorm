@@ -1,1 +1,1 @@
-export * from './Page_ItemsEditor';
+export * from './Page_ItemsEditor.js';

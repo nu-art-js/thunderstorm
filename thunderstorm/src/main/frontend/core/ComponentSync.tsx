@@ -22,8 +22,8 @@
 /**
  * Created by tacb0ss on 28/07/2018.
  */
-import {BaseComponent} from './ComponentBase';
-import {InferProps, InferState} from '../utils/types';
+import {BaseComponent} from './ComponentBase.js';
+import {InferProps, InferState} from '../utils/types.js';
 
 
 export abstract class ComponentSync<P = any, S = any>

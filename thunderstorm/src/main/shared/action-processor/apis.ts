@@ -1,4 +1,4 @@
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types.js';
 import {Minute} from '@nu-art/ts-common';
 
 

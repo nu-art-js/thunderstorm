@@ -21,9 +21,9 @@
 
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
-import {ApiDef, BaseHttpModule_Class, BaseHttpRequest, TypedApi} from '../../../shared';
+import {ApiDef, BaseHttpModule_Class, BaseHttpRequest, TypedApi} from '../../../shared/index.js';
 import {BadImplementationException, composeUrl, StaticLogger, StringMap,} from '@nu-art/ts-common';
-import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
+import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types.js';
 import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 

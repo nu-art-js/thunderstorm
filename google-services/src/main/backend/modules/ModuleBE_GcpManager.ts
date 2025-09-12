@@ -31,8 +31,8 @@ import {
 	timeout
 } from '@nu-art/ts-common';
 import {cloudresourcemanager_v1, cloudresourcemanager_v2, serviceusage_v1} from 'googleapis';
-import {ModuleBE_Auth} from './ModuleBE_Auth';
-import {GCPScope, ServiceKey} from './consts';
+import {ModuleBE_Auth} from './ModuleBE_Auth.js';
+import {GCPScope, ServiceKey} from './consts.js';
 import Serviceusage = serviceusage_v1.Serviceusage;
 import Cloudresourcemanager = cloudresourcemanager_v2.Cloudresourcemanager;
 import CloudresourcemanagerV1 = cloudresourcemanager_v1.Cloudresourcemanager;

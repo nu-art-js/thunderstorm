@@ -1,10 +1,10 @@
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
-import {TestSuite_Storage_Write} from './write-to-files/write-to-files';
-import {TestSuite_GetAdminBucket} from './bucket-utils/getMainBucket';
-import {TestSuite_GetOrCreateBucket} from './bucket-utils/getOrCreateBucket';
-import {TestSuite_FileDelete} from './delete-file/file-delete';
-import {TestSuite_DeleteFiles} from './delete-file/deleteFiles';
-import {TestSuite_WriteInChunks} from './write-in-chunks/write-in-chunks';
+import {TestSuite_Storage_Write} from './write-to-files/write-to-files.js';
+import {TestSuite_GetAdminBucket} from './bucket-utils/getMainBucket.js';
+import {TestSuite_GetOrCreateBucket} from './bucket-utils/getOrCreateBucket.js';
+import {TestSuite_FileDelete} from './delete-file/file-delete.js';
+import {TestSuite_DeleteFiles} from './delete-file/deleteFiles.js';
+import {TestSuite_WriteInChunks} from './write-in-chunks/write-in-chunks.js';
 
 describe('Firebase Storage - All Tests', () => {
 	testSuiteTester(TestSuite_GetAdminBucket);

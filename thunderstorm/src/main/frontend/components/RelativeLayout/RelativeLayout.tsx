@@ -1,6 +1,6 @@
 import {Component, HTMLProps, ReactNode} from 'react';
 import './RelativeLayout.scss';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 
 export class RelativeLayout

@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
+import {ComponentSync} from '../../core/ComponentSync.js';
 import './TS_DragAndDrop.scss';
-import {LL_V_L, LL_VH_C} from '../Layouts';
+import {LL_V_L, LL_VH_C} from '../Layouts/index.js';
 import {asArray} from '@nu-art/ts-common';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 
 type DND_State =

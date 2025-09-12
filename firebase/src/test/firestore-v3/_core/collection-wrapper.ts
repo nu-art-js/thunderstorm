@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {FilterKeys, ModuleBE_Firebase} from '../../_main';
+import {FilterKeys, ModuleBE_Firebase} from '../../_main.js';
 import {DBDef_V3, DBProto} from '@nu-art/ts-common';
 
 

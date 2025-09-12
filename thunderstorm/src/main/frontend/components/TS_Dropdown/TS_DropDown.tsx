@@ -30,16 +30,16 @@ import {
 	resolveContent,
 	voidFunction
 } from '@nu-art/ts-common';
-import {_className, stopPropagation} from '../../utils/tools';
-import {Adapter,} from '../adapter/Adapter';
-import {TS_Overlay} from '../TS_Overlay';
-import {TS_Tree} from '../TS_Tree';
-import {ComponentSync} from '../../core/ComponentSync';
-import {TS_Input} from '../TS_Input';
+import {_className, stopPropagation} from '../../utils/tools.js';
+import {Adapter,} from '../adapter/Adapter.js';
+import {TS_Overlay} from '../TS_Overlay/index.js';
+import {TS_Tree} from '../TS_Tree/index.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {TS_Input} from '../TS_Input/index.js';
 import './TS_DropDown.scss';
-import {LL_V_L} from '../Layouts';
-import {UIProps_EditableItem} from '../../utils/EditableItem';
-import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types';
+import {LL_V_L} from '../Layouts/index.js';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
+import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types.js';
 
 
 type State<ItemType> = ComponentProps_Error & {

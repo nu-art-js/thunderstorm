@@ -12,16 +12,16 @@ import {
 	RuntimeModules
 } from '@nu-art/ts-common';
 import {ModuleBE_FirestoreListener} from '@nu-art/firebase/backend';
-import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB';
-import {addRoutes} from '../ModuleBE_APIs';
-import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
+import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB.js';
+import {addRoutes} from '../ModuleBE_APIs.js';
+import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js';
 import {
 	ApiDef_Archiving,
 	DBModuleType,
 	RequestBody_HardDeleteUnique,
 	RequestQuery_DeleteAll,
 	RequestQuery_GetHistory
-} from '../../../shared';
+} from '../../../shared/index.js';
 import {_EmptyQuery} from '@nu-art/firebase';
 
 

@@ -1,5 +1,5 @@
 import {DBDef_V3, tsValidateArray, tsValidateNumber, tsValidateString, tsValidateTimestamp} from '@nu-art/ts-common';
-import {DBProto_BackupDoc} from './types';
+import {DBProto_BackupDoc} from './types.js';
 
 
 const Validator_ModifiableProps: DBProto_BackupDoc['modifiablePropsValidator'] = {

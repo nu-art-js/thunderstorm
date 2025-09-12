@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './modules/ModuleEX_Storage';
+export * from './modules/ModuleEX_Storage.js';

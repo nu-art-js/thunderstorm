@@ -1,12 +1,12 @@
 import {ReactNode} from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {LL_H_C, LL_V_L} from '../../components/Layouts';
-import {TS_AppTools} from '../../components/TS_AppTools';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
+import {TS_AppTools} from '../../components/TS_AppTools/index.js';
 import './ATS_Printable.scss';
-import {TS_PropRenderer} from '../../components/TS_PropRenderer';
-import {Button} from '../../components/Button/Button';
-import {ModuleFE_Print} from '../../modules/ModuleFE_Print';
-import {TS_Printable} from '../../components/TS_Printable';
+import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
+import {Button} from '../../components/Button/Button.js';
+import {ModuleFE_Print} from '../../modules/ModuleFE_Print.js';
+import {TS_Printable} from '../../components/TS_Printable/index.js';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 

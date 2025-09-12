@@ -49,17 +49,17 @@ import {
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
-import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
-import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types.js';
+import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types.js';
+import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3.js';
 import {Transaction} from 'firebase-admin/firestore';
-import {FirestoreInterfaceV3} from './FirestoreInterfaceV3';
+import {FirestoreInterfaceV3} from './FirestoreInterfaceV3.js';
 import {firestore} from 'firebase-admin';
-import {DocWrapperV3, UpdateObject} from './DocWrapperV3';
-import {composeDbObjectUniqueId} from '../../shared/utils';
-import {_EmptyQuery, maxBatch} from '../../shared/consts';
+import {DocWrapperV3, UpdateObject} from './DocWrapperV3.js';
+import {composeDbObjectUniqueId} from '../../shared/utils.js';
+import {_EmptyQuery, maxBatch} from '../../shared/consts.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {addDeletedToTransaction} from './consts';
+import {addDeletedToTransaction} from './consts.js';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;

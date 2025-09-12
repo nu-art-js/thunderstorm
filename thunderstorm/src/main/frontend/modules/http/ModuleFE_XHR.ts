@@ -19,11 +19,11 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {ApiDef, TypedApi} from '../../../shared/types';
+import {ApiDef, TypedApi} from '../../../shared/types.js';
 
 import {BadImplementationException, composeUrl} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {BaseHttpModule_Class, BaseHttpRequest, HttpException} from '../../../shared';
+import {BaseHttpModule_Class, BaseHttpRequest, HttpException} from '../../../shared/index.js';
 // noinspection TypeScriptPreferShortImport
 import {gzipSync} from 'zlib';
 import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';

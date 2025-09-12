@@ -19,19 +19,19 @@
  * limitations under the License.
  */
 
-export * from './types';
-export * from './request-types';
-export * from './force-upgrade';
-export * from './consts';
-export * from './server-info/';
-export * from './BaseHttpRequest';
-export * from './BaseHttpModule';
+export * from './types.js';
+export * from './request-types.js';
+export * from './force-upgrade.js';
+export * from './consts.js';
+export * from './server-info/index.js';
+export * from './BaseHttpRequest.js';
+export * from './BaseHttpModule.js';
 //db-api-generator
-export * from './db-api-gen/apiV1';
-export * from './db-api-gen/apiV2';
-export * from './db-api-gen/apiV3';
-export * from './sync-env';
-export * from './archiving';
-export * from './_entity';
-export * from './headers';
-export * from './collection-actions';
+export * from './db-api-gen/apiV1.js';
+export * from './db-api-gen/apiV2.js';
+export * from './db-api-gen/apiV3.js';
+export * from './sync-env/index.js';
+export * from './archiving/index.js';
+export * from './_entity.js';
+export * from './headers.js';
+export * from './collection-actions/index.js';

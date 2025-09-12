@@ -20,11 +20,11 @@
  */
 
 import {Express, NextFunction} from 'express';
-import {ExpressRequest, ExpressResponse, ServerApi_Middleware} from '../../../utils/types';
-import {ServerApi} from '../server-api';
+import {ExpressRequest, ExpressResponse, ServerApi_Middleware} from '../../../utils/types.js';
+import {ServerApi} from '../server-api.js';
 import {asArray, Logger, LogLevel, Module, MUSTNeverHappenException, RuntimeModules} from '@nu-art/ts-common';
-import {ModuleBE_APIs_Class} from '../../ModuleBE_APIs';
-import {ApiDef} from '../../../../shared';
+import {ModuleBE_APIs_Class} from '../../ModuleBE_APIs.js';
+import {ApiDef} from '../../../../shared/index.js';
 
 
 export type HttpRoute = {

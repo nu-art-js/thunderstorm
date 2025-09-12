@@ -1,2 +1,2 @@
-export * from './ModuleBE_AppConfigDB';
-export * from './module-pack';
+export * from './ModuleBE_AppConfigDB.js';
+export * from './module-pack.js';

@@ -1,13 +1,13 @@
 import './ATS_ActionProcessor.scss';
 import {_keys, TypedMap} from '@nu-art/ts-common';
-import {Dialog_ActionProcessorConfirmation} from '../dialogs';
-import {ActionMetaData} from '../../../shared/action-processor';
-import {ComponentAsync} from '../../core/ComponentAsync';
-import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools';
-import {ModuleFE_ActionProcessor} from '../../modules/action-processor/ModuleFE_ActionProcessor';
-import {genericNotificationAction} from '../../components/TS_Notifications';
-import {LL_H_C, LL_V_L} from '../../components/Layouts';
-import {Button} from '../../components/Button/Button';
+import {Dialog_ActionProcessorConfirmation} from '../dialogs/index.js';
+import {ActionMetaData} from '../../../shared/action-processor/index.js';
+import {ComponentAsync} from '../../core/ComponentAsync.js';
+import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools/index.js';
+import {ModuleFE_ActionProcessor} from '../../modules/action-processor/ModuleFE_ActionProcessor.js';
+import {genericNotificationAction} from '../../components/TS_Notifications/index.js';
+import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
+import {Button} from '../../components/Button/Button.js';
 
 type State = {
 	actions: ActionMetaData[];

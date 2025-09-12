@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_Printable';
+export * from './TS_Printable.js';

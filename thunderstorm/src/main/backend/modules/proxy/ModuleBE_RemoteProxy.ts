@@ -20,11 +20,11 @@
  */
 import {ApiException, ImplementationMissingException, Module, TS_Object} from '@nu-art/ts-common';
 
-import {ServerApi} from '../server/server-api';
-import {ServerApi_Middleware} from '../../utils/types';
-import {HeaderKey} from '../server/HeaderKey';
-import {TypedApi} from '../../../shared';
-import {MemKey_HttpRequestPath} from '../server/consts';
+import {ServerApi} from '../server/server-api.js';
+import {ServerApi_Middleware} from '../../utils/types.js';
+import {HeaderKey} from '../server/HeaderKey.js';
+import {TypedApi} from '../../../shared/index.js';
+import {MemKey_HttpRequestPath} from '../server/consts.js';
 
 
 type ProxyConfig = {

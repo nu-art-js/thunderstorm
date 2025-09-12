@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {BaseHttpRequest} from './BaseHttpRequest';
+import {BaseHttpRequest} from './BaseHttpRequest.js';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 import {DBDef_V3} from '@nu-art/ts-common';
 

@@ -1,1 +1,1 @@
-export * from './FrameLayout';
+export * from './FrameLayout.js';

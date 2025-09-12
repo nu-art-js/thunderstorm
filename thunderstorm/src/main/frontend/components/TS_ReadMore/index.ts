@@ -1,1 +1,1 @@
-export * from './TS_ReadMore';
+export * from './TS_ReadMore.js';

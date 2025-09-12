@@ -21,15 +21,15 @@
 
 import * as React from 'react';
 import {HTMLProps} from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className} from '../../utils/tools';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className} from '../../utils/tools.js';
 import './TS_Checkbox.scss';
-import {ComponentProps_Error} from '../types';
+import {ComponentProps_Error} from '../types.js';
 import {
 	SubsetKeys,
 	TS_Object
 } from '@nu-art/ts-common';
-import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
 
 
 type TemplatingProps_TS_Checkbox =

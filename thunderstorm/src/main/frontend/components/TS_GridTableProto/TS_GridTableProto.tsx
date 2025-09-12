@@ -9,14 +9,14 @@ import {
 import {
 	Grid,
 	LinearLayoutProps
-} from '../Layouts';
+} from '../Layouts/index.js';
 import {
 	TemplatingProps_EditableItemController,
 	TS_EditableItemController
-} from '../TS_EditableItemController';
-import {Editable_SaveAction} from '../../utils/EditableItem';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className} from '../../utils/tools';
+} from '../TS_EditableItemController/index.js';
+import {Editable_SaveAction} from '../../utils/EditableItem.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className} from '../../utils/tools.js';
 
 
 type Props_TS_GridTableProto<Proto extends DBProto<any>, EditorProps extends object = object> =

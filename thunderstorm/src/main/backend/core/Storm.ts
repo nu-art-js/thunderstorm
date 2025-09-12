@@ -21,11 +21,11 @@
 
 import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
-import {StormConfig, BaseStorm} from './BaseStorm';
-import {HttpRoute, RouteResolver} from '../modules/server/route-resolvers';
-import {HttpServer} from '../modules/server/HttpServer';
+import {StormConfig, BaseStorm} from './BaseStorm.js';
+import {HttpRoute, RouteResolver} from '../modules/server/route-resolvers/index.js';
+import {HttpServer} from '../modules/server/HttpServer.js';
 import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {ServerApi} from '../modules/server/server-api';
+import {ServerApi} from '../modules/server/server-api.js';
 
 
 const modules: Module[] = [

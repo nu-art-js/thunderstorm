@@ -17,11 +17,11 @@
  */
 
 import {BadImplementationException, batchAction, exists, generateHex, StaticLogger, Subset, TS_Object} from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentSnapshot} from './types';
-import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
-import {FirestoreWrapperBE} from './FirestoreWrapperBE';
-import {FirestoreInterface} from './FirestoreInterface';
-import {FirestoreTransaction} from './FirestoreTransaction';
+import {FirestoreType_Collection, FirestoreType_DocumentSnapshot} from './types.js';
+import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types.js';
+import {FirestoreWrapperBE} from './FirestoreWrapperBE.js';
+import {FirestoreInterface} from './FirestoreInterface.js';
+import {FirestoreTransaction} from './FirestoreTransaction.js';
 import {Transaction} from 'firebase-admin/firestore';
 
 

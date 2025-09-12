@@ -17,8 +17,8 @@
  */
 
 import {ImplementationMissingException, Module} from '@nu-art/ts-common';
-import {ModuleFE_Firebase} from '../ModuleFE_Firebase';
-import {AnalyticsWrapperFE} from './AnalyticsWrapperFE';
+import {ModuleFE_Firebase} from '../ModuleFE_Firebase.js';
+import {AnalyticsWrapperFE} from './AnalyticsWrapperFE.js';
 
 class FirebaseAnalyticsModule_Class
 	extends Module {

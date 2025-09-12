@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {MemKey_HttpRequest} from './consts';
+import {MemKey_HttpRequest} from './consts.js';
 import {ApiException} from '@nu-art/ts-common';
 
 

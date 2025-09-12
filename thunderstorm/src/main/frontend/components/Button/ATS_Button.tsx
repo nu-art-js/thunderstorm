@@ -1,10 +1,10 @@
-import {thunderstormATSGroups} from '../../consts';
-import {ComponentSync} from '../../core/ComponentSync';
-import {LL_H_C, LL_V_L} from '../Layouts';
-import {AppToolsScreen, TS_AppTools} from '../TS_AppTools';
-import {Button} from './Button';
+import {thunderstormATSGroups} from '../../consts.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {LL_H_C, LL_V_L} from '../Layouts/index.js';
+import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
+import {Button} from './Button.js';
 import './ATS_Button.scss';
-import {TS_PropRenderer} from '../TS_PropRenderer';
+import {TS_PropRenderer} from '../TS_PropRenderer/index.js';
 import {generateHex} from '@nu-art/ts-common';
 
 type Props = {};

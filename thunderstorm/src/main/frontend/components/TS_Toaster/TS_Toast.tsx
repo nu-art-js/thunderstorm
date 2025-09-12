@@ -1,6 +1,6 @@
 import './TS_ToastOverlay.scss';
 import * as React from 'react';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 import './TS_Toast.scss';
 

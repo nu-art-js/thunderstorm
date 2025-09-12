@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_MemoryMonitor';
+export * from './TS_MemoryMonitor.js';

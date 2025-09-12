@@ -25,7 +25,7 @@
 import {_keys, compare, merge, Module, Primitive, RecursiveArrayOfPrimitives, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {gzip, ungzip} from 'pako';
-import {ThunderDispatcher} from '../core/thunder-dispatcher';
+import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
 
 
 type AdvancedQueryParam = Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives;

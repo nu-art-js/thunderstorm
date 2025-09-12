@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {ComponentSync} from './ComponentSync';
-import {dispatch_onPageTitleChanged} from './consts';
+import {ComponentSync} from './ComponentSync.js';
+import {dispatch_onPageTitleChanged} from './consts.js';
 
 // Deprecated use AppPageV2
 export abstract class AppPage<P extends object = object, S extends object = object,

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {logicalXOR} from '@nu-art/ts-common';
-import {Coordinates, Model_ToolTip} from '../../../component-modules/mouse-interactivity/types';
-import {ComponentSync} from '../../../core/ComponentSync';
+import {Coordinates, Model_ToolTip} from '../../../component-modules/mouse-interactivity/types.js';
+import {ComponentSync} from '../../../core/ComponentSync.js';
 
 type State = {
 	model?: Model_ToolTip,

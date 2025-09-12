@@ -1,9 +1,9 @@
 import * as React from 'react';
 import './ItemEditor_DefaultFilter.scss';
 import {DBProto, Filter} from '@nu-art/ts-common';
-import {ItemEditor_FilterType, ItemEditor_MapperType} from '../../types';
-import {TS_Input} from '../../../TS_Input';
-import {LL_H_C} from '../../../Layouts';
+import {ItemEditor_FilterType, ItemEditor_MapperType} from '../../types.js';
+import {TS_Input} from '../../../TS_Input/index.js';
+import {LL_H_C} from '../../../Layouts/index.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 
 

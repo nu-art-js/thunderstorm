@@ -1,8 +1,8 @@
-import {DispatcherDef, ThunderDispatcherV3} from '../../../frontend/core/db-api-gen/types';
-import {apiWithQuery} from '../../../frontend/core/typed-api';
-import {ModuleFE_BaseApi} from '../../../frontend/modules/db-api-gen/ModuleFE_BaseApi';
-import {ApiDefCaller} from '../../../shared/types';
-import {ApiDef_AppConfig, ApiStruct_AppConfig, DBDef_AppConfig, DBProto_AppConfig, DB_AppConfig} from './shared';
+import {DispatcherDef, ThunderDispatcherV3} from '../../../frontend/core/db-api-gen/types.js';
+import {apiWithQuery} from '../../../frontend/core/typed-api.js';
+import {ModuleFE_BaseApi} from '../../../frontend/modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ApiDefCaller} from '../../../shared/types.js';
+import {ApiDef_AppConfig, ApiStruct_AppConfig, DBDef_AppConfig, DBProto_AppConfig, DB_AppConfig} from './shared.js';
 import {BadImplementationException, cloneObj, TypedKeyValue} from '@nu-art/ts-common';
 
 export type DispatcherType_AppConfig = DispatcherDef<DBProto_AppConfig, `__onAppConfigsUpdated`>;

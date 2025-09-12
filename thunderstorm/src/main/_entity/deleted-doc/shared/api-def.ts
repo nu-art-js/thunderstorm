@@ -1,4 +1,4 @@
-import {ApiDefResolver} from '../../../shared/types';
+import {ApiDefResolver} from '../../../shared/types.js';
 
 export type RequestType_DeletedDoc = {};
 export type ResponseType_DeletedDoc = {};

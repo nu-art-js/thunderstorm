@@ -27,12 +27,12 @@ import {
 import {
 	Adapter,
 	TreeNode
-} from '../adapter/Adapter';
-import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
-import {_className} from '../../utils/tools';
+} from '../adapter/Adapter.js';
+import {_BaseNodeRenderer} from '../adapter/BaseRenderer.js';
+import {_className} from '../../utils/tools.js';
 import './TS_Tree.scss';
-import {ComponentSync} from '../../core/ComponentSync';
-import {TreeNodeExpandState} from './types';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {TreeNodeExpandState} from './types.js';
 import {
 	_keys,
 	exists

@@ -1,5 +1,5 @@
 import {DB_Object, DBProto, PreDB, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
-import {FB_ArrayType} from '../../../firestore-v3/_core/types';
+import {FB_ArrayType} from '../../../firestore-v3/_core/types.js';
 
 type VersionTypes_Type_Complex = { '1.0.0': DB_Type }
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_Type_Complex>;

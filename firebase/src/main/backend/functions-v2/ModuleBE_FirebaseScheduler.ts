@@ -1,6 +1,6 @@
 import {addItemToArray, ImplementationMissingException} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
+import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
 import {onSchedule, ScheduleFunction, ScheduleOptions} from 'firebase-functions/v2/scheduler';
 
 /**

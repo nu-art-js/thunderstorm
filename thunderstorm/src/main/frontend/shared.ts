@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from '../shared';
+export * from '../shared/index.js';

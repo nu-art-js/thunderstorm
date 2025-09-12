@@ -1,1 +1,1 @@
-export * from './TS_GridTableProto';
+export * from './TS_GridTableProto.js';

@@ -1,1 +1,1 @@
-export * from './TS_CheckboxGroup';
+export * from './TS_CheckboxGroup.js';
