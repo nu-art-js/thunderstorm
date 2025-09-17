@@ -7,6 +7,7 @@ import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
 import {LL_V_L} from '../Layouts';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Button} from '../Button/Button';
+import {InferState} from '../../utils/types';
 
 /**
  * ###DialogButton
@@ -57,6 +58,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	extends ComponentSync<P & Props_TSDialog, S & State_TSDialog> {
 
 	// ######################## Life Cycle ########################
+
 	__consumeDialogCloseEvent(dialogKey: DialogKey) {
 		return false;
 	}
@@ -105,7 +107,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		});
 	};
 
-	protected deriveStateFromProps(nextProps: P, state: S) {
+	protected deriveStateFromProps(nextProps: P, state: InferState<this>) {
+		state.dialogIsBusy ??= false;
 		return state;
 	}
 
