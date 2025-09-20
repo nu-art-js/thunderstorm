@@ -17,7 +17,7 @@
  */
 
 import {addItemToArray, BeLogged, LogClient_MemBuffer, LogLevel, LogLevelOrdinal, Module} from '@nu-art/ts-common';
-import {apiWithBody} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody} from '@nu-art/thunderstorm/frontend/index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_BugReport, ApiStruct_BugReport} from '../../shared/api.js';
 import {TicketDetails} from '../../backend/index.js';

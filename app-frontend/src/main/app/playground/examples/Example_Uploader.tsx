@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ModuleFE_AssetUploader} from '@nu-art/file-upload/frontend';
+import {ModuleFE_AssetUploader} from '@nu-art/file-upload/frontend/index';
 import * as React from 'react';
 
 

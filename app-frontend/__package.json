@@ -17,8 +17,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
     "build": "webpack --mode development --env dev",
     "build-prod": "webpack --mode production --env prod",
@@ -89,5 +87,16 @@
     "@types/d3-array": "^2.8.0",
     "@types/d3-scale": "^3.2.1",
     "@types/history": "^4.7.2"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

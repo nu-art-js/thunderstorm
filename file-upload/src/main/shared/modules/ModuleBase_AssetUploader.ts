@@ -36,7 +36,7 @@ import {
 	TempSignedUrl,
 	UI_Asset
 } from '../../shared/index.js';
-import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
+import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend/index';
 import {PushMessage_Payload} from '@nu-art/push-pub-sub';
 import {PushMessage_FileUploaded} from '../assets/messages.js';
 

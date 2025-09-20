@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Button, EditableDBItemV3, ModuleFE_Toaster, TS_PropRenderer, TS_Route, TS_Table} from '@nu-art/thunderstorm/frontend';
+import {Button, EditableDBItemV3, ModuleFE_Toaster, TS_PropRenderer, TS_Route, TS_Table} from '@nu-art/thunderstorm/frontend/index';
 import {BadImplementationException, capitalizeFirstLetter, exists, PreDB, sortArray, StaticLogger} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {
@@ -18,9 +18,9 @@ import {
 	Input_Text_Blur
 } from './components.js';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components.js';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor/index';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
-import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
+import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto/index';
 
 
 class Component_EditDomain

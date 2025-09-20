@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {AppToolsScreen, ATS_3rd_Party, Button, ComponentSync, LL_H_C, LL_H_T, LL_V_L} from '@nu-art/thunderstorm/frontend';
-import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
+import {AppToolsScreen, ATS_3rd_Party, Button, ComponentSync, LL_H_C, LL_H_T, LL_V_L} from '@nu-art/thunderstorm/frontend/index';
+import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea/index';
 import {ModuleFE_OpenAI} from '../modules/ModuleFE_OpenAI.js';
 import {__stringify} from '@nu-art/ts-common';
 

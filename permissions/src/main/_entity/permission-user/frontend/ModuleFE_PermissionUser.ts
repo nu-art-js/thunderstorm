@@ -1,4 +1,4 @@
-import {apiWithBody, ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend/index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {ApiDef_PermissionUser, ApiStruct_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser} from '../shared/index.js';

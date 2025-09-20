@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend/index';
 import {BadImplementationException, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {PermissionKey_FE} from '../PermissionKey_FE.js';
 import {AccessLevel} from '../modules/ModuleFE_PermissionsAssert.js';

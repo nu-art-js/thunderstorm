@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {Example_NewProps, Props_Tree, SimpleTreeAdapter, ModuleFE_Toaster, TS_Tree,} from '@nu-art/thunderstorm/frontend';
+import {Example_NewProps, Props_Tree, SimpleTreeAdapter, ModuleFE_Toaster, TS_Tree,} from '@nu-art/thunderstorm/frontend/index';
 import {__stringify} from '@nu-art/ts-common';
 
 type Type = {

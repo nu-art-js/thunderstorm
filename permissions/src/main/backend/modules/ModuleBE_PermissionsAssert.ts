@@ -40,8 +40,8 @@ import {
 	ModuleBE_BaseDB,
 	ModuleBE_SyncManager,
 	ServerApi_Middleware
-} from '@nu-art/thunderstorm/backend';
-import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
+} from '@nu-art/thunderstorm/backend/index';
+import {ApiModule, HttpMethod} from '@nu-art/thunderstorm/shared/index';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend/index';
 import {ApiDef_PermissionsAssert, Request_AssertApiForUser} from '../../shared/index.js';
 import {

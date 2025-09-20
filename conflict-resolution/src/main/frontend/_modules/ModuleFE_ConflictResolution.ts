@@ -1,5 +1,5 @@
 import {DBEntityDependencies, DBEntityDependencyErrorType} from '@nu-art/thunderstorm';
-import {ModuleFE_XHR} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_XHR} from '@nu-art/thunderstorm/frontend/index';
 import {BadImplementationException, Module, TypedMap, asArray} from '@nu-art/ts-common';
 import {dispatch_ShowConflictResolution} from '../_dispatchers/index.js';
 import {ConflictResolutionItem} from '../../shared/types.js';

@@ -10,7 +10,7 @@ import {
 import {ApiDef_Account, DBDef_Accounts} from '@nu-art/user-account';
 import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE.js';
 import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys.js';
-import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor';
+import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor/index';
 import {ApiDef_SyncEnv} from '@nu-art/thunderstorm';
 import {ApiDef_CollectionActions} from '@nu-art/thunderstorm/shared/collection-actions/api-def';
 import {

@@ -1,4 +1,4 @@
-import {ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend/index';
 import * as React from 'react';
 
 export class Example_Analytics_Render

@@ -31,8 +31,8 @@ import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB.js';
 import {DBProto_PushMessagesHistory} from '../../shared/push-messages-history/index.js';
 import {ModuleBE_PushMessagesHistoryDB} from './ModuleBE_PushMessagesHistoryDB.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {Message} from 'firebase-admin/lib/messaging/messaging-api';
 import Transaction = firestore.Transaction;
+import { Message } from 'firebase-admin/messaging';
 
 
 type Config = {

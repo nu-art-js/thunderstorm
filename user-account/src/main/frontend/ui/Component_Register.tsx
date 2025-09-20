@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {_className, Button, ComponentSync, Grid, LL_H_C, LL_V_C, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {_className, Button, ComponentSync, Grid, LL_H_C, LL_V_C, TS_PropRenderer} from '@nu-art/thunderstorm/frontend/index';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
 import {
 	Account_RegisterAccount,
@@ -35,7 +35,7 @@ import {
 } from '../../shared/index.js';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../_entity.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
+import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input/index';
 
 type State<T> = {
 	data: Partial<T>

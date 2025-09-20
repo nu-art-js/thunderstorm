@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ComponentSync,} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync,} from '@nu-art/thunderstorm/frontend/index';
 import {DB_BugReport} from '../../shared/api.js';
 import {__stringify} from '@nu-art/ts-common';
 import {OnRequestListener} from '@nu-art/thunderstorm';

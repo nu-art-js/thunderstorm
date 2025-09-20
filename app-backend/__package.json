@@ -17,8 +17,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "./dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "launch": "tsc --watch & firebase emulators:start --import=../.trash/data --export-on-exit",
@@ -68,5 +66,16 @@
     "@consts": "dist/consts",
     "@modules": "dist/modules",
     "@shared": "dist/app-shared"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

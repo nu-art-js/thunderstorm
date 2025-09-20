@@ -1,4 +1,4 @@
-import {AppToolsScreen, Button, ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, Button, ComponentSync} from '@nu-art/thunderstorm/frontend/index';
 import {SlackBuilderFE} from '../../SlackBuilderFE.js';
 import {generateHex, ServerErrorSeverity} from '@nu-art/ts-common';
 

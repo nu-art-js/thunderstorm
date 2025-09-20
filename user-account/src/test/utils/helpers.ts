@@ -2,7 +2,7 @@ import {Day, exists, Module, TEST_JwtTools, TypedKeyValue} from '@nu-art/ts-comm
 import {BaseSessionClaims, CollectSessionData, ModuleBE_SessionDB} from '../../main/_entity/session/backend/index.js';
 import {ModuleBE_APIs, ModuleBE_SyncManager} from '@nu-art/thunderstorm/backend/index';
 import {TimeProxy} from '@nu-art/ts-common/utils/time-proxy';
-import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm/shared';
+import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm/shared/index';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {ModuleBE_AccountDB} from '../_main.js';
 

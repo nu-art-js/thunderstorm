@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {apiWithBody, apiWithQuery, ModuleFE_BaseApi, ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ModuleFE_BaseApi, ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend/index';
 import {ApiDefCaller, HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm';
 import {dispatcher_onAuthRequired} from '@nu-art/thunderstorm/shared/no-auth-listener';
 import {

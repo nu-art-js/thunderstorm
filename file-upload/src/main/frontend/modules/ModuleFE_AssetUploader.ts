@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {apiWithBody, apiWithQuery, ModuleFE_XHR, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ModuleFE_XHR, ThunderDispatcher} from '@nu-art/thunderstorm/frontend/index';
 import {ApiDef_AssetUploader, ApiStruct_AssetUploader, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '../../shared/index.js';
 import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader.js';
 import {BaseSubscriptionData, PushMessage_Payload} from '@nu-art/push-pub-sub';

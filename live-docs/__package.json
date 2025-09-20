@@ -25,8 +25,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "scripts": {
     "build": "tsc"
   },
@@ -39,10 +37,6 @@
       "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
     }
   ],
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
-  },
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
     "@nu-art/firebase": "$THUNDERSTORM_DEP_VERSION",
@@ -66,5 +60,16 @@
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }
