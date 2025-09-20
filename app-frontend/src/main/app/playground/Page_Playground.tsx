@@ -17,14 +17,14 @@
  */
 
 import * as React from 'react';
-import {PlaygroundScreen, TS_Playground} from '@nu-art/thunderstorm/frontend';
+import {PlaygroundScreen, TS_Playground} from '@nu-art/thunderstorm/frontend/index';
 import {Page_ApiGen} from '../pages/Page_ApiGen.js';
 import {Hello} from '../Hello.js';
 import {Example_ApiCustomError} from './examples/Example_ApiCustomError.js';
 import {Example_Dialogs} from './examples/modules/Example_Dialogs.js';
 import {Example_Toaster} from './examples/modules/Example_Toaster.js';
 import {TreeRefactorPage} from './examples/_to-be-removed/TreeRefactorPage.js';
-import {ICONS} from '@app/common/frontend/icons';
+import {ICONS} from '@app/common/frontend/icons/index';
 import {Example_Form} from './examples/Example_Form.js';
 import {Example_TriggerPush} from './examples/Example_TriggerPush.js';
 import {Example_AllDropDowns} from './examples/components/dropdown/Example_AllDropDowns.js';

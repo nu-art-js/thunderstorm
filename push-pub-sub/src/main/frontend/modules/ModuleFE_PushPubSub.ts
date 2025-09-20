@@ -29,7 +29,7 @@ import {
 	apiWithBody,
 	StorageKey,
 	ThunderDispatcher
-} from '@nu-art/thunderstorm/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
 import {
 	ApiDef_PushMessages,
 	ApiStruct_PushMessages,
@@ -40,7 +40,7 @@ import {
 	Request_PushRegister
 } from '../../index.js';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {MessagingWrapperFE} from '@nu-art/firebase/frontend';
+import {MessagingWrapperFE} from '@nu-art/firebase/frontend/index';
 
 
 export const Command_SwToApp = 'SwToApp';

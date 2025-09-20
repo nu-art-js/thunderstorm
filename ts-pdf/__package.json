@@ -24,8 +24,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "files": [
     "**/*"
   ],
@@ -46,5 +44,16 @@
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

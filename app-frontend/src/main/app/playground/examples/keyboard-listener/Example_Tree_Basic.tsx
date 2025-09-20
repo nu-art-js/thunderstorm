@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {Adapter, BaseNodeRenderer, NodeRendererProps, SimpleTreeAdapter, TS_Tree,} from '@nu-art/thunderstorm/frontend';
+import {Adapter, BaseNodeRenderer, NodeRendererProps, SimpleTreeAdapter, TS_Tree,} from '@nu-art/thunderstorm/frontend/index';
 import {__stringify} from '@nu-art/ts-common';
 
 

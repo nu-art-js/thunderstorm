@@ -4,7 +4,7 @@ import {
 	TS_ErrorBoundary,
 	TS_PropRenderer,
 	TS_Route
-} from '@nu-art/thunderstorm/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
 import {
 	MUSTNeverHappenException,
 	sortArray,
@@ -22,12 +22,12 @@ import {
 import {Component_BasePermissionItemEditor} from './editor-base.js';
 import {Input_Text_Blur} from './components.js';
 import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components.js';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor/index';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
 import {
 	Props_EditableItemControllerProto,
 	TS_EditableItemControllerProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
+} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto/index';
 import {Fragment} from 'react';
 
 class Component_EditGroup

@@ -13,7 +13,7 @@ import {
 	TS_ComponentTransition,
 	TS_ErrorBoundary,
 	Button
-} from '@nu-art/thunderstorm/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
 import {ResolvableContent, resolveContent, RuntimeVersion, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {DB_Account} from '../../../shared/index.js';
 import {ModuleFE_Account} from '../../../_entity/account/frontend/ModuleFE_Account.js';

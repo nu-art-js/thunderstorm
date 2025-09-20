@@ -18,7 +18,7 @@
  */
 
 import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
-import {apiWithQuery, ModuleFE_Utils,} from '@nu-art/thunderstorm/frontend';
+import {apiWithQuery, ModuleFE_Utils,} from '@nu-art/thunderstorm/frontend/index';
 import {ApiDef_Permissions} from '../../index.js';
 import {PermissionKey_FE} from '../PermissionKey_FE.js';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts.js';

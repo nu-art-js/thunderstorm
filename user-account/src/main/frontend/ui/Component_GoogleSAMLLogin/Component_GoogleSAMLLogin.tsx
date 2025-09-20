@@ -1,4 +1,4 @@
-import {Button} from '@nu-art/thunderstorm/frontend';
+import {Button} from '@nu-art/thunderstorm/frontend/index';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_GoogleSAMLLogin.scss';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity.js';

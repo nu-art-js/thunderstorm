@@ -17,7 +17,7 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery, ToastBuilder} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ToastBuilder} from '@nu-art/thunderstorm/frontend/index';
 import {DB_Document, LiveDocReqParams} from '../../shared/types.js';
 import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '../../shared/api.js';
 import {ApiDefCaller} from '@nu-art/thunderstorm';

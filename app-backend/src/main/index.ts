@@ -24,7 +24,7 @@ import {
 	ModuleBE_ForceUpgrade,
 	RouteResolver_ModulePath,
 	Storm
-} from '@nu-art/thunderstorm/backend';
+} from '@nu-art/thunderstorm/backend/index';
 import {Environment} from './config.js';
 import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend/index';

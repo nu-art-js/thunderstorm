@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {Component} from 'react';
-import {Adapter, SimpleListAdapter, ModuleFE_Toaster, TS_Input, TS_Tree} from '@nu-art/thunderstorm/frontend';
+import {Adapter, SimpleListAdapter, ModuleFE_Toaster, TS_Input, TS_Tree} from '@nu-art/thunderstorm/frontend/index';
 import {__stringify} from '@nu-art/ts-common';
 
 type Keys = 'first' | 'second'

@@ -1,8 +1,8 @@
 import {DBEntityDependencies} from '@nu-art/thunderstorm';
-import {Button, ComponentSync, LL_H_C, LL_V_L, ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend';
+import {Button, ComponentSync, LL_H_C, LL_V_L, ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend/index';
 import {_keys, _values, filterDuplicates, flatArray, RuntimeModules} from '@nu-art/ts-common';
 import {dispatch_ShowConflictResolution} from '../../_dispatchers/index.js';
-import {TS_Icons} from '@nu-art/ts-styles/icons';
+import {TS_Icons} from '@nu-art/ts-styles/icons/index';
 import './Panel_ConflictResolution.scss';
 import {ConflictResolutionTree} from '../ConflictResolutionTree/ConflictResolutionTree.js';
 

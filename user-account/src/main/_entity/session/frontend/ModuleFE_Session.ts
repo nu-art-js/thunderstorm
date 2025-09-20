@@ -5,7 +5,7 @@ import {
 	OnStorageKeyChangedListener,
 	StorageKey,
 	ThunderDispatcher
-} from '@nu-art/thunderstorm/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
 import {
 	BadImplementationException,
 	currentTimeMillis,

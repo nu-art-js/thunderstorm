@@ -1,6 +1,6 @@
 import {ApiDef_topic, ApiStruct_topic, DBDef_Topic, DBProto_Topic, UI_Topic} from '../shared.js';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {apiWithBody, apiWithQuery, ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend/index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 
 

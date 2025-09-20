@@ -13,13 +13,13 @@ import {
 	TS_Input,
 	TS_PropRenderer,
 	TS_Table
-} from '@nu-art/thunderstorm/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
 import {__stringify, DateTimeFormat_yyyyMMDDTHHmmss, groupArrayBy, removeFromArrayByIndex, TS_Object,} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_PushPubSub, OnPushMessageReceived} from '../../modules/ModuleFE_PushPubSub.js';
 import {PushMessage_Payload} from '../../../shared/index.js';
 import './ATS_PushPubSub.scss';
-import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
+import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input/index';
 import {ModuleFE_PushSubscription} from '../../modules/ModuleFE_PushSubscription.js';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {DBProto_PushSubscription} from '../../../shared/push-subscription/index.js';

@@ -14,7 +14,7 @@ import {
 	TS_DropDown,
 	TS_Input,
 	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
 import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, JwtTools, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {TS_Icons} from '@nu-art/ts-styles';

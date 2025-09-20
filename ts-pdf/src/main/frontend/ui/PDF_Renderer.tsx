@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './PDF_Renderer.scss';
 import {ModuleFE_PDF, PDF_File} from '../modules/ModuleFE_PDF.js';
-import {ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
+import {ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend/index';
 import {_logger_logException} from '@nu-art/ts-common';
 
 

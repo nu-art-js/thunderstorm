@@ -32,8 +32,8 @@ import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
 import {firestore} from 'firebase-admin';
-import {FileMetadata} from '@google-cloud/storage/build/cjs/src/file';
 import Transaction = firestore.Transaction;
+import {FileMetadata} from '@google-cloud/storage';
 
 
 type MyConfig = DBApiConfigV3<DBProto_Assets> & {

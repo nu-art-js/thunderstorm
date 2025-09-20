@@ -1,5 +1,4 @@
-@use '@nu-art/ts-styles/styles' as styles;
-@use '@nu-art/ts-styles/styles/palette' as pl;
+@use '@nu-art/ts-styles' as styles;
 
 #ats__app-config-editor {
   width: 100%;
@@ -40,7 +39,7 @@
         }
 
         &.selected {
-          background: pl.gray(3);
+          background: styles.gray(3);
           color: white;
         }
       }

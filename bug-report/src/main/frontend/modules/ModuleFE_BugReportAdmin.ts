@@ -17,7 +17,7 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery} from '@nu-art/thunderstorm/frontend/index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_AdminBugReport, ApiStruct_AdminBugReport, DB_BugReport, ReportLogFile} from '../../shared/api.js';
 

@@ -9,10 +9,10 @@ import {
 	ModuleFE_RoutingV2,
 	TS_AppTools,
 	TS_NavLink
-} from '@nu-art/thunderstorm/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
 import './ATS_Permissions.scss';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert.js';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
+import {ModuleFE_Account} from '@nu-art/user-account/frontend/index';
 import {arrayIncludesAny, timeout} from '@nu-art/ts-common';
 import {SessionKey_StrictMode_FE} from '../../consts.js';
 import {ModuleFE_PermissionAccessLevel} from '../../../_entity/permission-access-level/frontend/index.js';

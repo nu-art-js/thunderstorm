@@ -19,9 +19,9 @@
 import {_keys, exists, formatTimestamp} from '@nu-art/ts-common';
 import {Account_Login, AccountEmail, AccountPassword, ErrorType_LoginBlocked} from '../../../shared/index.js';
 import './Component_Login.scss';
-import {Button, ComponentSync, LL_H_C, LL_V_C, ModuleFE_Toaster, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {Button, ComponentSync, LL_H_C, LL_V_C, ModuleFE_Toaster, TS_PropRenderer} from '@nu-art/thunderstorm/frontend/index';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity.js';
-import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input';
+import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input/index';
 import {Component_LoginBlocked} from '../Component_LoginBlocked/Component_LoginBlocked.js';
 
 type State<T> = {
@@ -107,7 +107,7 @@ export class Component_Login
 						errorMessages: [`Login blocked until ${formatTimestamp('DD/MM/YYYY HH:mm', blockedUntil)}`],
 					});
 				}
-				this.setState({errorMessages: ['Email or password incorrect'],submitting: false});
+				this.setState({errorMessages: ['Email or password incorrect'], submitting: false});
 			}
 		});
 	};
