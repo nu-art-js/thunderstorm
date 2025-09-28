@@ -93,6 +93,8 @@ export * from './components/TS_ButtonGroup';
 export * from './components/TS_Toggle';
 export * from './components/TS_JSONViewer/TS_JSONViewer';
 export * from './components/Label/Label';
+export * from './components/Video/Video';
+export * from './components/Video/VideoDialog';
 
 export * from './components/GenericRenderer/Component_GenericRenderer';
 export * from './modules/ModuleFE_Utils/ModuleFE_Utils';
