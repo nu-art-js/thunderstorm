@@ -17,13 +17,25 @@
  * limitations under the License.
  */
 import {
-	ApiException, asArray, BadImplementationException, currentTimeMillis, Day, exists, filterInstances, generateHex, Hour, ImplementationMissingException, MB,
-	Minute, MUSTNeverHappenException, ThisShouldNotHappenException, TypedMap
+	ApiException,
+	asArray,
+	BadImplementationException,
+	currentTimeMillis,
+	Day,
+	exists,
+	filterInstances,
+	generateHex,
+	Hour,
+	ImplementationMissingException,
+	MB,
+	Minute,
+	MUSTNeverHappenException,
+	ThisShouldNotHappenException,
+	TypedMap
 } from '@nu-art/ts-common';
 import {FileWrapper, FirestoreTransaction} from '@nu-art/firebase/backend/index';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp.js';
 import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDB, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend/index';
-import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './ModuleBE_BucketListener.js';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage.js';
@@ -32,8 +44,9 @@ import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
 import {firestore} from 'firebase-admin';
-import Transaction = firestore.Transaction;
 import {FileMetadata} from '@google-cloud/storage';
+import Transaction = firestore.Transaction;
+import {fileTypeFromBuffer} from 'file-type';
 
 
 type MyConfig = DBApiConfigV3<DBProto_Assets> & {
@@ -49,9 +62,6 @@ export type AssetContent = {
 }
 
 export  type FileTypeResult = {
-	ext: FileExtension;
-	mime: MimeType;
-} | {
 	ext: string;
 	mime: string;
 }
@@ -65,7 +75,7 @@ export type FileTypeValidation = {
 
 export const DefaultMimetypeValidator = async (file: FileWrapper, doc: DB_Asset) => {
 	const buffer = await file.read();
-	const fileType = await fromBuffer(buffer);
+	const fileType = await fileTypeFromBuffer(buffer);
 	if (!fileType)
 		throw new ImplementationMissingException(`No validator defined for asset of mimetype: ${doc.mimeType}`);
 
@@ -91,11 +101,11 @@ export class ModuleBE_AssetsDB_Class
 	constructor() {
 		super(DBDef_Assets);
 		this.setDefaultConfig({
-			                      ...this.config,
-			                      storagePath: 'assets',
-			                      pathRegexp: '^assets/.*',
-			                      authKey: 'file-uploader'
-		                      });
+			...this.config,
+			storagePath: 'assets',
+			pathRegexp: '^assets/.*',
+			authKey: 'file-uploader'
+		});
 	}
 
 	mimeTypeValidator: TypedMap<FileValidator> = {};
@@ -110,8 +120,8 @@ export class ModuleBE_AssetsDB_Class
 	init() {
 		super.init();
 		addRoutes([
-			          createBodyServerApi(ApiDef_AssetUploader.vv1.getUploadUrl, this.getUrl)
-		          ]);
+			createBodyServerApi(ApiDef_AssetUploader.vv1.getUploadUrl, this.getUrl)
+		]);
 
 		this.registerVersionUpgradeProcessor('1.0.1', async (assets) => {
 			assets.forEach(asset => {

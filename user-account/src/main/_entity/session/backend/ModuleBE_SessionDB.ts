@@ -263,12 +263,15 @@ export class ModuleBE_SessionDB_Class
 	readonly Middleware = async () => {
 		const jwt = Header_Authorization.get(); //jwt
 
+		const expired = await this.jwtHandler.isExpired(jwt);
+		if (expired)
+			throw HttpCodes._4XX.UNAUTHORIZED('JWT received in request is expired');
+
 		const validationResult = await this.jwtHandler.verifySignature(jwt);
 		if (!validationResult.validated)
 			throw HttpCodes._4XX.FORBIDDEN('JWT received in request is invalid');
 
 		try {
-
 			const {dbSession, claims} = await this.runTransaction(async t => {
 				let dbSession = await this._session.query.byJwt(jwt);
 				const latestJwtValidationResult = await this.jwtHandler.verifySignature(dbSession.sessionIdJwt);

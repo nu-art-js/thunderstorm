@@ -2,26 +2,26 @@ import * as React from 'react';
 import {ElementType, HTMLAttributes} from 'react';
 import {_keys} from '@nu-art/ts-common';
 
-import FilterURL, {ReactComponent as Filter} from './svgs/icon__filter.svg';
-import SearchURL, {ReactComponent as Search} from './svgs/icon__search.svg';
-import AttentionURL, {ReactComponent as Attention} from './svgs/icon__attention.svg';
-import BellURL, {ReactComponent as Bell} from './svgs/icon__bell.svg';
-import BinURL, {ReactComponent as Bin} from './svgs/icon__bin.svg';
-import XURL, {ReactComponent as X} from './svgs/icon__x.svg';
-import VURL, {ReactComponent as V} from './svgs/icon__v.svg';
-import MoreURL, {ReactComponent as More} from './svgs/icon__more.svg';
-import CollapseURL, {ReactComponent as Collapse} from './svgs/icon__treeCollapse.svg';
-import GearURL, {ReactComponent as Gear} from './svgs/icon__gear.svg';
-import informationUrl, {ReactComponent as Information} from './svgs/icon__information.svg';
-import filterStopUrl, {ReactComponent as FilterStop} from './svgs/icon__filter-stop.svg';
-import ClearURL, {ReactComponent as Clear} from './svgs/icon__clear.svg';
-import SaveUrl, {ReactComponent as Save} from './svgs/icon__save.svg';
-import MenuUrl, {ReactComponent as Menu} from './svgs/icon__menu.svg';
-import GoogleUrl, {ReactComponent as Google} from './svgs/icon__google.svg';
-import DownloadUrl, {ReactComponent as Download} from './svgs/icon__download.svg';
-import CopyUrl, {ReactComponent as Copy} from './svgs/icon__copy.svg';
-import AddImageUrl, {ReactComponent as AddImage} from './svgs/icon__add-image.svg';
-import UserUrl, {ReactComponent as User} from './svgs/icon__user.svg';
+import {ReactComponent as Filter} from './svgs/icon__filter.svg';
+import {ReactComponent as Search} from './svgs/icon__search.svg';
+import {ReactComponent as Attention} from './svgs/icon__attention.svg';
+import {ReactComponent as Bell} from './svgs/icon__bell.svg';
+import {ReactComponent as Bin} from './svgs/icon__bin.svg';
+import {ReactComponent as X} from './svgs/icon__x.svg';
+import {ReactComponent as V} from './svgs/icon__v.svg';
+import {ReactComponent as More} from './svgs/icon__more.svg';
+import {ReactComponent as Collapse} from './svgs/icon__treeCollapse.svg';
+import {ReactComponent as Gear} from './svgs/icon__gear.svg';
+import {ReactComponent as Information} from './svgs/icon__information.svg';
+import {ReactComponent as FilterStop} from './svgs/icon__filter-stop.svg';
+import {ReactComponent as Clear} from './svgs/icon__clear.svg';
+import {ReactComponent as Save} from './svgs/icon__save.svg';
+import {ReactComponent as Menu} from './svgs/icon__menu.svg';
+import {ReactComponent as Google} from './svgs/icon__google.svg';
+import {ReactComponent as Download} from './svgs/icon__download.svg';
+import {ReactComponent as Copy} from './svgs/icon__copy.svg';
+import {ReactComponent as AddImage} from './svgs/icon__add-image.svg';
+import {ReactComponent as User} from './svgs/icon__user.svg';
 
 
 export type IconStyle = {
@@ -62,26 +62,26 @@ const genIcon = (Icon: ElementType) => {
 };
 
 export const TS_Icons = {
-	Filter: {component: genIcon(Filter), url: FilterURL},
-	Search: {component: genIcon(Search), url: SearchURL},
-	attention: {component: genIcon(Attention), url: AttentionURL},
-	bell: {component: genIcon(Bell), url: BellURL},
-	bin: {component: genIcon(Bin), url: BinURL},
-	more: {component: genIcon(More), url: MoreURL},
-	treeCollapse: {component: genIcon(Collapse), url: CollapseURL},
-	v: {component: genIcon(V), url: VURL},
-	x: {component: genIcon(X), url: XURL},
-	gear: {component: genIcon(Gear), url: GearURL},
-	information: {component: genIcon(Information), url: informationUrl},
-	filterStop: {component: genIcon(FilterStop), url: filterStopUrl},
-	clear: {component: genIcon(Clear), url: ClearURL},
-	save: {component: genIcon(Save), url: SaveUrl},
-	menu: {component: genIcon(Menu), url: MenuUrl},
-	google: {component: genIcon(Google), url: GoogleUrl},
-	download: {component: genIcon(Download), url: DownloadUrl},
-	copy: {component: genIcon(Copy), url: CopyUrl},
-	addImage: {component: genIcon(AddImage), url: AddImageUrl},
-	user: {component: genIcon(User), url: UserUrl},
+	Filter: {component: genIcon(Filter)},
+	Search: {component: genIcon(Search)},
+	attention: {component: genIcon(Attention)},
+	bell: {component: genIcon(Bell)},
+	bin: {component: genIcon(Bin)},
+	more: {component: genIcon(More)},
+	treeCollapse: {component: genIcon(Collapse)},
+	v: {component: genIcon(V)},
+	x: {component: genIcon(X)},
+	gear: {component: genIcon(Gear)},
+	information: {component: genIcon(Information)},
+	filterStop: {component: genIcon(FilterStop)},
+	clear: {component: genIcon(Clear)},
+	save: {component: genIcon(Save)},
+	menu: {component: genIcon(Menu)},
+	google: {component: genIcon(Google)},
+	download: {component: genIcon(Download)},
+	copy: {component: genIcon(Copy)},
+	addImage: {component: genIcon(AddImage)},
+	user: {component: genIcon(User)},
 };
 
 export const tsIconKeys = (): TSIcons[] => {

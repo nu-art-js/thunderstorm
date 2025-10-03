@@ -46,7 +46,6 @@
     "compression": "^1.7.4",
     "debug": "^3.1.0",
     "express": "$EXPRESS_PKG_VERSION",
-    "fs": "0.0.1-security",
     "js-base64": "^2.5.1",
     "module-alias": "^2.2.0",
     "moment": "$MOMENT_PKG_VERSION"

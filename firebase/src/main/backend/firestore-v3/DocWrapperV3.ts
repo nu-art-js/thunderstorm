@@ -1,19 +1,17 @@
 import {_keys, currentTimeMillis, DB_Object, DBProto, exists, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types.js';
 import {Transaction} from 'firebase-admin/firestore';
-import {firestore} from 'firebase-admin';
 import {assertUniqueId, CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from './FirestoreCollectionV3.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {addDeletedToTransaction} from './consts.js';
-import UpdateData = firestore.UpdateData;
-import FieldValue = firestore.FieldValue;
+import admin from 'firebase-admin';
+import type { firestore as Fa } from 'firebase-admin';
+const { FieldValue } = admin.firestore;
 
+export type UpdateObject<Proto extends DBProto<any>> = {
+	_id: UniqueId;
+} & Fa.UpdateData<Proto['dbType']>;
 
-export type UpdateObject<Proto extends DBProto<any>> =
-	{
-		_id: UniqueId
-	}
-	& UpdateData<Proto['dbType']>;
 
 export class DocWrapperV3<Proto extends DBProto<any>> {
 	readonly ref: FirestoreType_DocumentReference<Proto['dbType']>;
@@ -152,7 +150,7 @@ export class DocWrapperV3<Proto extends DBProto<any>> {
 			const _value = updateData[_key];
 
 			if (!exists(_value as any)) {
-				(updateData[_key] as FieldValue) = FieldValue.delete();
+				(updateData[_key] as Fa.FieldValue) = FieldValue.delete();
 			} else {
 				this.updateDeletedFields(_value as UpdateObject<Proto['dbType'] | Proto['dbType'][keyof Proto['dbType']]>);
 			}
