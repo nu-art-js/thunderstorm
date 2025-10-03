@@ -1,148 +1,161 @@
-import {CSSProperties} from "react";
-import {Module} from '@nu-art/ts-common';
+/*
+ * ModuleFE_PDF (ESM-compatible) – PDF.js v4
+ * - Directly uses official PDF.js v4 types (no redundant aliases)
+ * - Worker configured once at init
+ * - Optional TextLayer overlay using v4 `TextLayer` helper
+ */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pdfjsworker = require('pdfjs-dist/build/pdf.worker.entry');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pdfjsLib = require("pdfjs-dist/build/pdf.js");
+import type {CSSProperties} from 'react';
+import {_keys, Module} from '@nu-art/ts-common';
 
-interface PDF_TextContent {
-	items: any[];
-	styles: any;
+// ---- PDF.js v4 imports ----
+// NOTE: The worker import with `?url` works in Vite/Webpack/Rspack. Adjust if your bundler differs.
+import * as pdfjsLib from 'pdfjs-dist';
+import {PDFDocumentProxy} from 'pdfjs-dist';
+import {TextContent} from 'pdfjs-dist/types/src/display/text_layer.js';
+
+const workerUrl = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerUrl;
+
+
+// ---- Engine adapter ----
+export interface PDFEngine {
+	loadFromBuffer(buffer: ArrayBuffer): Promise<PDFDocumentProxy>;
 }
 
-interface PDF_Viewport {
-	height: number
-	width: number
-
-	getViewport(scale: number): Promise<PDF_Viewport>
-}
-
-export interface PDF_Page {
-	_pageInfo: { view: number[] }
-	_pageIndex: number
-
-	render(context: { canvasContext: CanvasRenderingContext2D, viewport: PDF_Viewport }): Promise<void>
-
-	getTextContent(): Promise<PDF_TextContent>
-
-	getViewport(scale: { scale: number }): PDF_Viewport
-}
-
-export interface PDF_File {
-	_pdfInfo: {
-		fingerprint: string
-		numPages: number
-	}
-
-	getPage(pageNumber: number): Promise<PDF_Page>
-}
-
-export class ModuleFE_PDF_Class
-	extends Module {
+class PDFJSEngine
+	implements PDFEngine {
+	private _workerSet = false;
 
 	constructor() {
+		this.ensureWorker();
+	}
+
+	ensureWorker() {
+		if (this._workerSet) return;
+		(pdfjsLib as any).GlobalWorkerOptions.workerSrc = workerUrl;
+		this._workerSet = true;
+	}
+
+	async loadFromBuffer(buffer: ArrayBuffer): Promise<PDFDocumentProxy> {
+		this.ensureWorker();
+		const task = (pdfjsLib as any).getDocument({data: buffer});
+		return (await task.promise) as PDFDocumentProxy;
+	}
+}
+
+// ---- Module implementation ----
+export class ModuleFE_PDF_Class
+	extends Module {
+	private readonly engine: PDFEngine;
+
+	constructor(engine: PDFEngine = new PDFJSEngine()) {
 		super();
+		this.engine = engine;
 	}
 
 	protected init() {
-		pdfjsLib.disableWorker = true;
-		pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsworker;
 	}
 
 	appendCanvas(parent: HTMLElement, style?: CSSProperties) {
 		const canvas = document.createElement('canvas');
-		const _style: CSSProperties = {height: "100%", width: "100%", ...style};
+		const _style: CSSProperties = {height: '100%', width: '100%', ...style};
 		// @ts-ignore
-		_keys(_style).forEach(key => canvas.style[key as any] = _style[key]);
+		_keys(_style).forEach(key => (canvas.style[key as any] = _style[key] as any));
 		parent.appendChild(canvas);
-		return canvas.getContext("2d") as CanvasRenderingContext2D;
+		const ctx = canvas.getContext('2d');
+		if (!ctx)
+			throw new Error('Failed to get 2D context for PDF canvas');
+		return ctx;
 	}
 
 	appendTextLayer(parent: HTMLElement, style?: CSSProperties) {
 		const textLayer = document.createElement('div');
-		const _style: CSSProperties = {height: "100%", width: "100%", ...style};
+		const _style: CSSProperties = {height: '100%', width: '100%', position: 'absolute', inset: 0, ...style};
 		// @ts-ignore
-		_keys(_style).forEach(key => textLayer.style[key as any] = _style[key]);
-
+		_keys(_style).forEach(key => (textLayer.style[key as any] = _style[key] as any));
+		textLayer.classList.add('pdf-text-layer');
 		parent.appendChild(textLayer);
 		return textLayer;
 	}
 
-	async renderPage(canvasContext: CanvasRenderingContext2D, pdfFile: PDF_File, index: number, textLayer?: HTMLDivElement, scale = 4) {
-		const pdfPage = await pdfFile.getPage(index);
-		if (!pdfPage) {
-			this.logError("cannot render pdf page - undefined");
-			// render ERROR on canvas!
-			return {width: 500, height: 500};
+	/** Render a 1-based page index. Returns the viewport used. */
+	async renderPage(
+		canvasContext: CanvasRenderingContext2D,
+		pdfFile: PDFDocumentProxy,
+		pageNumber: number,
+		textLayerDiv?: HTMLDivElement,
+		scale = 1
+	) {
+		if (pageNumber < 1 || pageNumber > pdfFile.numPages)
+			throw new Error(`Page ${pageNumber} out of bounds (1..${pdfFile.numPages})`);
+
+		const page: pdfjsLib.PDFPageProxy = await pdfFile.getPage(pageNumber);
+		if (!page) {
+			this.logError('PDF page is undefined');
+			return {width: 0, height: 0} as pdfjsLib.PageViewport;
 		}
 
-		const viewport = pdfPage.getViewport({scale});
-		canvasContext.canvas.height = viewport.height;
+		const viewport: pdfjsLib.PageViewport = page.getViewport({scale});
+
 		canvasContext.canvas.width = viewport.width;
+		canvasContext.canvas.height = viewport.height;
 
-		await pdfPage.render({canvasContext, viewport});
-		if (textLayer) {
-			// const textContent = await pdfPage.getTextContent();
-			// textLayer.style.left = canvasContext.canvas.offsetLeft + 'px';
-			// textLayer.style.top = canvasContext.canvas.offsetTop + 'px';
-			// textLayer.style.height = canvasContext.canvas.offsetHeight + 'px';
-			// textLayer.style.width = canvasContext.canvas.offsetWidth + 'px';
+		const renderTask = page.render({
+			canvasContext,
+			canvas: canvasContext.canvas, // <-- required in v4 types
+			viewport
+		}) as pdfjsLib.RenderTask;
+		await renderTask.promise;
 
-			// pdfjsLib.renderTextLayer({
-			// 	textContent: textContent,
-			// 	container: textLayer,
-			// 	viewport: viewport,
-			// 	textDivs: []
-			// });
+		if (textLayerDiv) {
+			const textContentStream: ReadableStream<TextContent> = await page.streamTextContent();
+			const layer = new pdfjsLib.TextLayer({
+				textContentSource: textContentStream,
+				container: textLayerDiv,
+				viewport,
+			});
+			await Promise.resolve((layer as any).render());
 		}
+
 		return viewport;
 	}
 
-	async loadFromFile(file: File): Promise<PDF_File> {
+	async loadFromFile(file: File): Promise<PDFDocumentProxy> {
 		this.logDebug(`loading pdf from file: ${file.name}`);
-		const pdfFile = await this._loadFromUrl(URL.createObjectURL(file));
-		this.logDebug(`loaded pdf from file: ${file.name}`);
-		return pdfFile;
+		const buffer = await file.arrayBuffer();
+		return this.engine.loadFromBuffer(buffer);
 	}
 
-	async loadFromUrl(url: string): Promise<PDF_File> {
+	async loadFromUrl(url: string, useFetch = true): Promise<PDFDocumentProxy> {
 		this.logDebug(`loading pdf from url: ${url}`);
-		const pdfFile = await this._loadFromUrl(url);
-		this.logDebug(`loaded pdf from url: ${url}`);
-		return pdfFile;
+		const buffer = useFetch ? await this._fetchAsArrayBuffer(url) : await this._xhrArrayBuffer(url);
+		return this.engine.loadFromBuffer(buffer);
 	}
 
 	async loadFromBuffer(buffer: ArrayBuffer) {
-		this.logDebug(`loading pdf from ArrayBuffer`);
-		const pdfFile = await this._loadFromBuffer(buffer);
-		this.logDebug(`loaded pdf from ArrayBuffer`);
-		return pdfFile;
+		this.logDebug('loading pdf from ArrayBuffer');
+		return this.engine.loadFromBuffer(buffer);
 	}
 
-	private async _loadFromBuffer(data: ArrayBuffer) {
-		const documentLoader = pdfjsLib.getDocument({data});
-		return await documentLoader.promise;
+	private async _fetchAsArrayBuffer(url: string): Promise<ArrayBuffer> {
+		const res = await fetch(url);
+		if (!res.ok)
+			throw new Error(`Failed to fetch PDF: ${res.status} ${res.statusText}`);
+		return await res.arrayBuffer();
 	}
 
-	private async _loadFromUrl(url: string) {
-		const data = await this._fetchDataFromUrl(url);
-		return this._loadFromBuffer(data as ArrayBuffer);
-	}
-
-
-	private async _fetchDataFromUrl(url: string) {
-		return new Promise((accept, reject) => {
+	private async _xhrArrayBuffer(url: string): Promise<ArrayBuffer> {
+		return await new Promise<ArrayBuffer>((resolve, reject) => {
 			const request = new XMLHttpRequest();
 			request.open('GET', url);
-			request.send(null);
-			request.responseType = "arraybuffer";
-			request.onerror = reject;
-			request.onreadystatechange = () => {
-				if (request.readyState === 4 && request.status === 200) {
-					accept(request.response);
-				}
+			request.responseType = 'arraybuffer';
+			request.onerror = () => reject(new Error('XHR network error while fetching PDF'));
+			request.onload = () => {
+				if (request.status >= 200 && request.status < 300) resolve(request.response);
+				else reject(new Error(`XHR failed: ${request.status}`));
 			};
+			request.send();
 		});
 	}
 }

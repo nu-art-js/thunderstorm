@@ -24,7 +24,8 @@
  */
 
 
-import {Server} from 'http';
+import {createServer as createHttpServer, Server} from 'http';
+import {createServer as createHttpsServer} from 'https';
 import {Socket} from 'net';
 import * as fs from 'fs';
 import {addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
@@ -197,8 +198,7 @@ export class HttpServer_Class
 		const ssl = this.config.ssl;
 		if (!ssl) {
 			this.logDebug('starting HTTP server');
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			return require('http').createServer(this.getExpress());
+			return createHttpServer(this.getExpress());
 		}
 
 		this.logDebug('starting HTTPS server');
@@ -217,8 +217,7 @@ export class HttpServer_Class
 			requestCert: false,
 		};
 
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		return require('https').createServer(options, this.getExpress());
+		return createHttpsServer(options, this.getExpress());
 	}
 
 	public async startServer(): Promise<void> {

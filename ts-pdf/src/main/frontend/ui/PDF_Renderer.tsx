@@ -1,13 +1,14 @@
 import * as React from 'react';
 import './PDF_Renderer.scss';
-import {ModuleFE_PDF, PDF_File} from '../modules/ModuleFE_PDF.js';
+import {ModuleFE_PDF} from '../modules/ModuleFE_PDF.js';
 import {ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend/index';
 import {_logger_logException} from '@nu-art/ts-common';
+import {PDFDocumentProxy} from 'pdfjs-dist';
 
 
 type State = {
 	index: number
-	pdfFile?: PDF_File
+	pdfFile?: PDFDocumentProxy
 	width: number
 	height: number
 }
@@ -40,7 +41,7 @@ export class PDF_Renderer
 	private async loadPdf(pdfSrc: string) {
 		this.setState({isLoading: true});
 		try {
-			const pdfFile: PDF_File = await ModuleFE_PDF.loadFromUrl(pdfSrc);
+			const pdfFile = await ModuleFE_PDF.loadFromUrl(pdfSrc);
 			this.setState({pdfFile});
 
 			await this.renderPage(this.state.index);

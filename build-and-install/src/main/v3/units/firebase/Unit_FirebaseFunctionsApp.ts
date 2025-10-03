@@ -319,7 +319,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando, 'ts-node src/main/proxy.ts');
+		await this.executeAsyncCommando(commando, 'tsx src/main/proxy.ts');
 		this.logWarning('PROXY TERMINATED');
 	}
 

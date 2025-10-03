@@ -40,6 +40,7 @@ export class FirebaseSession_Admin
 	 */
 	public connect(): this {
 		this.app = initializeApp(this.config, this.firebaseAppName);
+		this.logWarning(this.app.options);
 		return this;
 	}
 

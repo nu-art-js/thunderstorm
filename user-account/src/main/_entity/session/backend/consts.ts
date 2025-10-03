@@ -13,7 +13,8 @@ export const MemKey_DB_Session = new MemKey<DB_Session>('db-session-object', fal
 export const MemKey_SessionData = new MemKey<RecursiveObjectOfPrimitives>('jwt-claims', false);
 export const MemKey_Jwt = new MemKey<string>('jwt-token', false);
 
-export const Header_Authorization = new HeaderKey(HeaderKey_Authorization, 403);
+export const Header_Authorization = new HeaderKey(HeaderKey_Authorization, 403)
+	.setProcessor((v: string) => (v ?? '').trim().replace(/^bearer\s+/i, ''));
 export const Header_Origin = new HeaderKey(HeaderKey_Origin, 403);
 export const Header_TabId = new HeaderKey(HeaderKey_TabId);
 export const Header_DeviceId = new HeaderKey(HeaderKey_DeviceId);

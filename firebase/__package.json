@@ -45,7 +45,6 @@
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
-    "fs": "0.0.1-security",
     "ws": "^8.13.0",
     "http-proxy": "1.18.1",
     "url": "0.11.3"

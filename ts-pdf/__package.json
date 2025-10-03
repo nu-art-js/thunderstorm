@@ -35,9 +35,10 @@
     "@nu-art/thunderstorm": "$THUNDERSTORM_DEP_VERSION",
     "react": "$REACT_PKG_VERSION",
     "pdf.js": "^0.1.0",
-    "pdfjs-dist": "2.5.207"
+    "pdfjs-dist": "5.4.149"
   },
   "devDependencies": {
+    "@types/pdfjs-dist": "2.10.378",
     "@types/react": "$REACT_TYPES_VERSION",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1"
