@@ -136,6 +136,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	};
 
 	protected closeDialog = (force = false) => {
+		if(this.state.error)
+			this.logError(this.state.error);
 		ModuleFE_Dialog.close(force, this.props.dialogKey);
 	};
 
