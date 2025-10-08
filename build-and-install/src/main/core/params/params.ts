@@ -285,22 +285,6 @@ export const BaiParam_Publish: BaseCliParam<'publish', PromoteType> = {
 	process: (part) => part as PromoteType ?? 'patch'
 };
 
-export const BaiParam_AllLogs: BaseCliParam<'allLogs', boolean> = {
-	keys: ['--all-logs', '-al'],
-	keyName: 'allLogs',
-	type: 'boolean',
-	group: 'UI',
-	description: 'will disable ui and show verbose logs for bai run',
-};
-
-export const BaiParam_CloseScreenOnExit: BaseCliParam<'closeOnExit', boolean> = {
-	keys: ['--close-on-exit', '-cox'],
-	keyName: 'closeOnExit',
-	type: 'boolean',
-	group: 'UI',
-	description: 'will close all the fancy screens once process is done',
-};
-
 export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	keys: ['-up', '--use-packages'],
 	keyName: 'usePackage',
@@ -350,8 +334,6 @@ export const AllBaiParams = [
 	BaiParam_Debug,
 	BaiParam_Verbose,
 	BaiParam_Publish, // TODO: to implement
-	BaiParam_AllLogs,
-	BaiParam_CloseScreenOnExit,
 	BaiParam_UsePackage,
 	BaiParam_DebugLifecycle
 ];
