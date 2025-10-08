@@ -79,15 +79,15 @@ export const JwtTools = {
 	 * – If `secret` is provided, verify signature and registered claims.
 	 * – If omitted, only parse Base64Url segments (⚠️ no integrity check).
 	 */
-	decode: async <T extends RecursiveObjectOfPrimitives & JWT_BaseClaims>(token: string, secret?: string): Promise<T> => {
+	decode: async <T extends RecursiveObjectOfPrimitives>(token: string, secret?: string): Promise<T & JWT_BaseClaims> => {
 		if (secret)
 			return JwtTools.verifySignature(token, secret);
 
-		return decodeJwt(token) as T;
+		return decodeJwt(token) as T & JWT_BaseClaims;
 	},
 
-	verifySignature: async <T extends RecursiveObjectOfPrimitives & JWT_BaseClaims>(token: string, secret: string): Promise<T> => {
-		return (await jwtVerify(token, hmacKey(secret))).payload as T;
+	verifySignature: async <T extends RecursiveObjectOfPrimitives>(token: string, secret: string): Promise<T & JWT_BaseClaims> => {
+		return (await jwtVerify(token, hmacKey(secret))).payload as T & JWT_BaseClaims;
 	},
 
 
@@ -139,8 +139,8 @@ const TEST_JwtTools_BeforeAll = () => {
 			.sign(hmacKey(secret));
 	};
 
-	JwtTools.verifySignature = async <T extends RecursiveObjectOfPrimitives & JWT_BaseClaims>(token: string, secret: string): Promise<T> => {
-		return (await jwtVerify(token, hmacKey(secret), {currentDate: new Date(currentTimeMillis())})).payload as T;
+	JwtTools.verifySignature = async <T extends RecursiveObjectOfPrimitives>(token: string, secret: string): Promise<T & JWT_BaseClaims> => {
+		return (await jwtVerify(token, hmacKey(secret), {currentDate: new Date(currentTimeMillis())})).payload as T & JWT_BaseClaims;
 	};
 };
 
