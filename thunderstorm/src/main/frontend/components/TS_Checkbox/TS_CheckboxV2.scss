@@ -19,6 +19,7 @@
     cursor: pointer;
     user-select: none;
     transition: background 150ms, transform 100ms;
+    outline-offset: -1px;
 
     .icon--wrapper {
       width: 100%;
@@ -61,6 +62,7 @@
 
         &:active {
           transform: scale(0.9);
+          outline: 2px solid #fff;
         }
       }
 
@@ -83,6 +85,12 @@
 
       & + .ts-checkbox-v2__label {
         color: S.light-gray(6);
+      }
+    }
+
+    &:focus {
+      & + .ts-checkbox-v2__icon {
+        outline: 2px solid #fff;
       }
     }
   }
