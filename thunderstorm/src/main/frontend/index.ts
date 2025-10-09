@@ -59,6 +59,7 @@ export * from './components/TS_Dropdown';
 export * from './components/TS_Overlay';
 export * from './components/TS_Tree';
 export * from './components/TS_Checkbox';
+export * from './components/TS_Checkbox/TS_CheckboxV2';
 export * from './components/TS_CheckboxGroup';
 export * from './components/TS_AppTools';
 export * from './components/TS_Loader';

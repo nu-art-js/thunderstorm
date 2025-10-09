@@ -9,6 +9,7 @@ import BellURL, {ReactComponent as Bell} from './svgs/icon__bell.svg';
 import BinURL, {ReactComponent as Bin} from './svgs/icon__bin.svg';
 import XURL, {ReactComponent as X} from './svgs/icon__x.svg';
 import VURL, {ReactComponent as V} from './svgs/icon__v.svg';
+import DashURL, {ReactComponent as Dash} from './svgs/icon__dash.svg';
 import MoreURL, {ReactComponent as More} from './svgs/icon__more.svg';
 import CollapseURL, {ReactComponent as Collapse} from './svgs/icon__treeCollapse.svg';
 import GearURL, {ReactComponent as Gear} from './svgs/icon__gear.svg';
@@ -38,7 +39,7 @@ class RenderIcon
 	render() {
 		const className = 'icon--wrapper ' + (this.props.className ?? '');
 		return <div {...this.props} className={className}
-					style={{WebkitMaskImage: `url(${this.props.icon})`, maskImage: `url(${this.props.icon})`}}/>;
+								style={{WebkitMaskImage: `url(${this.props.icon})`, maskImage: `url(${this.props.icon})`}}/>;
 	}
 }
 
@@ -70,6 +71,7 @@ export const TS_Icons = {
 	treeCollapse: {component: genIcon(Collapse), url: CollapseURL},
 	v: {component: genIcon(V), url: VURL},
 	x: {component: genIcon(X), url: XURL},
+	dash: {component: genIcon(Dash), url: DashURL},
 	gear: {component: genIcon(Gear), url: GearURL},
 	information: {component: genIcon(Information), url: informationUrl},
 	filterStop: {component: genIcon(FilterStop), url: filterStopUrl},
