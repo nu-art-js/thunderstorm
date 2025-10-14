@@ -1,13 +1,31 @@
 @use 'sass:math';
 @use 'sass:color';
 @use 'sass:list';
+@use 'sass:meta';
 
 @function paletteBuilder($baseColor, $steps) {
   $colorsList: ();
   @for $i from 0 to $steps {
     $lightness: math.percentage(math.div($i, $steps));
     $newColor: color.scale($baseColor, $lightness: $lightness);
-    $colorsList: list.append($colorsList, #{$newColor});
+    $colorsList: list.append($colorsList, $newColor);
   }
   @return $colorsList
+}
+
+/// Returns the color with the given alpha (0..1)
+/// Accepts any Sass color: hex, rgb(), hsl(), etc.
+@function colorWithAlpha($color, $alpha: 1) {
+  @if meta.type-of($color) != 'color' {
+    @error "Expected a color, got #{meta.type-of($color)}: #{$color}";
+  }
+
+  @if meta.type-of($alpha) != 'number' or not ($alpha >= 0 and $alpha <= 1) {
+    @error "Alpha must be a number between 0 and 1. Got: #{$alpha}.";
+  }
+
+  $r: color.channel($color, "red", $space: rgb);
+  $g: color.channel($color, "green", $space: rgb);
+  $b: color.channel($color, "blue", $space: rgb);
+  @return rgba($r, $g, $b, $alpha);
 }
