@@ -42,9 +42,11 @@ export function removeItemFromArray<T>(array: T[], item: T) {
  * Removes the first item answering the condition given from array in place
  * tested V
  */
-export function removeFromArray<T>(array: T[], item: (_item: T) => boolean) {
-	const index = array.findIndex(item);
-	return removeFromArrayByIndex(array, index);
+export function removeFromArray<T>(array: T[], filter: (_item: T) => boolean) {
+	const kept = array.filter(x => !filter(x));
+	array.length = 0;
+	array.push(...kept);
+	return array;
 }
 
 /**
