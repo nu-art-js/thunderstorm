@@ -22,7 +22,7 @@ import {resolve} from 'path';
 import {FileSystemUtils} from '../core/FileSystemUtils.js';
 import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit.js';
 import {PhaseManager} from '../PhaseManager.js';
-import {phase_CompileWatch, Phase_Install, Phase_Watch} from '../phase/index.js';
+import {phase_CompileWatch, Phase_Install, Phase_PostPublish, Phase_Watch} from '../phase/index.js';
 import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper.js';
 import {BaseUnit} from './BaseUnit.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
@@ -37,7 +37,7 @@ type PathDeclaration = { fullPath: string, paths: string[], unit: Unit_Typescrip
 
 export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config>
 	extends Unit_PackageJson<C>
-	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch]> {
+	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch, Phase_PostPublish]> {
 
 	private watcher?: FSWatcher;
 	readonly innerUnits: Unit_PackageJson[] = [];
@@ -298,5 +298,9 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		await FileSystemUtils.file.delete(resolve(this.config.fullPath, 'pnpm-lock.yaml'));
 		await FileSystemUtils.file.delete(resolve(this.config.fullPath, 'pnpm-workspace.yaml'));
 		return super.purge();
+	}
+
+	async postPublish() {
+
 	}
 }

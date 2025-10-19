@@ -85,6 +85,14 @@ export function partialCompare<T>(one?: T, two?: T, keysToFilterOut?: (keyof T)[
 	return compare(one, two);
 }
 
+/** Narrowing helper for RegExp (robust across realms) */
+const isRegExp = (v: unknown): v is RegExp =>
+	Object.prototype.toString.call(v) === '[object RegExp]';
+
+/** Compare RegExps by source, flags, and lastIndex */
+const compareRegExp = (a: RegExp, b: RegExp): boolean =>
+	a.source === b.source && a.flags === b.flags && a.lastIndex === b.lastIndex;
+
 /**
  * Returns true for equal.
  */
@@ -106,6 +114,15 @@ export function compare<T>(one?: T, two?: T, keys?: (keyof T)[]): boolean {
 
 	if (one === null || two === null)
 		return false;
+
+	// ----- SPECIAL CASES -----
+	// RegExp: compare semantic fields (keys are non-enumerable)
+	if (isRegExp(one) && isRegExp(two))
+		return compareRegExp(one, two);
+
+	// Date: compare epoch time
+	if (one instanceof Date && two instanceof Date)
+		return one.getTime() === two.getTime();
 
 	if (typeofOne === 'function')
 		throw new BadImplementationException('This compare meant to compare two POJOs.. nothing more');

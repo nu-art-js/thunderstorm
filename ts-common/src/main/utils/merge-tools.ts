@@ -22,12 +22,12 @@ import {exists} from './tools.js';
 import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 type MergedType<O, U> = {
-													[K in keyof O & keyof U]-?: NonNullable<O[K]> & NonNullable<U[K]>;
-												} & {
-													[K in Exclude<keyof O, keyof U>]?: O[K];
-												} & {
-													[K in Exclude<keyof U, keyof O>]?: U[K];
-												};
+	[K in keyof O & keyof U]-?: NonNullable<O[K]> & NonNullable<U[K]>;
+} & {
+	[K in Exclude<keyof O, keyof U>]?: O[K];
+} & {
+	[K in Exclude<keyof U, keyof O>]?: U[K];
+};
 
 export function mergeObjectTyped<Ori, Ove>(original: Ori, override: Ove, unsafe: boolean = false) {
 	return mergeObject(original, override, unsafe) as MergedType<Ori, Ove>;
@@ -78,7 +78,7 @@ export function mergeArray(original: any[], override: any[]) {
 
 export function merge(original: any, override: any, unsafe: boolean = false) {
 	if (!exists(override))
-		return undefined;
+		return override;
 
 	if (!exists(original))
 		return typeof override === 'object' ? filterKeys(override) : override;

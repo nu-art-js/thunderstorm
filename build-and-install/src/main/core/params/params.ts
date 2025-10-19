@@ -281,6 +281,7 @@ export const BaiParam_Publish: BaseCliParam<'publish', PromoteType> = {
 	type: 'string',
 	group: 'Other',
 	options: ['patch', 'minor', 'major'],
+	defaultValue: 'patch',
 	description: 'Will publish thunderstorm && promote thunderstorm version \nenum options: patch | minor | major \nDefault Param: patch',
 	process: (part) => part as PromoteType ?? 'patch'
 };

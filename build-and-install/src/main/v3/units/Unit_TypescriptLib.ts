@@ -2,14 +2,23 @@ import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
 import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, NotImplementedYetException, TypedMap} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types.js';
-import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../core/consts.js';
+import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON, CONST_TS_CONFIG} from '../../core/consts.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils.js';
-import {Phase_CheckCyclicImports, Phase_Compile, Phase_Lint, Phase_PreCompile, Phase_PrintDependencyTree, Phase_Test} from '../phase/index.js';
+import {
+	Phase_CheckCyclicImports,
+	Phase_Compile,
+	Phase_Lint,
+	Phase_PreCompile,
+	Phase_PrintDependencyTree,
+	Phase_Publish,
+	Phase_PublishDryRun,
+	Phase_Test
+} from '../phase/index.js';
 import {ProjectUnit_RuntimeContext} from './ProjectUnit.js';
 import {glob} from 'node:fs/promises';
 import {TestType, TestTypes} from '../../core/params/params.js';
@@ -42,14 +51,14 @@ const defaultTestPatterns: Record<TestType, string> = {
 	ui: '**/*.test.ui.ts',
 	mobile: '**/*.test.mobile.ts'
 };
-
+const CONST_ESM_PREFIX = "export NODE_OPTIONS='--import data:text/javascript,import%20%7B%20register%20%7D%20from%20%22node%3Amodule%22%3B%20import%20%7B%20pathToFileURL%20%7D%20from%20%22node%3Aurl%22%3B%20register%28%22ts-node%2Fesm%22%2C%20pathToFileURL%28%22.%2F%22%29%29%3B'"
 const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<string>> = {
 	pure: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
 		const testFile = runtimeContext.runtimeParams.testFiles;
 		const grep = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` '${defaultTestPatterns.pure}'`;
 
-		return `${command} -p src/test/tsconfig.json --timeout 0 ${grep}`;
+		return `${CONST_ESM_PREFIX} && ${command} -p src/test/${CONST_TS_CONFIG} --timeout 0 ${grep}`;
 	},
 	firebase: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
@@ -64,7 +73,7 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 
 		// const pah = 'ts-mocha  --timeout 0 --inspect=8107 --watch-files \'src/test/**/*.test.ts\' src/test/**/*.test.ts';
 
-		const functionContextCommand = `${command} -p src/test/tsconfig.json --timeout 0 ${cli_debug}${cli_testFiles}${cli_testCases}`;
+		const functionContextCommand = `${command} -p src/test/${CONST_TS_CONFIG} --timeout 0 ${cli_debug}${cli_testFiles}${cli_testCases}`;
 		return `firebase emulators:exec "${functionContextCommand}"`;
 	},
 	ui: async () => {
@@ -78,7 +87,7 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
-	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test]> {
+	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test, Phase_Publish, Phase_PublishDryRun]> {
 
 	private TestTypeWorkspaceSetup: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<void>> = {
 		pure: async (config, runtimeContext) => {
@@ -181,7 +190,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	protected async compileImpl() {
 		const pathToCompile = `${this.config.fullPath}/src/main`;
-		const pathToTSConfig = `${pathToCompile}/tsconfig.json`;
+		const pathToTSConfig = `${pathToCompile}/${CONST_TS_CONFIG}`;
 
 		const commando = this.allocateCommando(Commando_NVM, Commando_Basic)
 			.cd(this.config.fullPath)
@@ -211,10 +220,12 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			// })
 			.append(command)
 			.execute();
+
+		await FileSystemUtils.file.delete(resolve(this.config.output, CONST_TS_CONFIG));
 	}
 
 	public ignoreWatchFiles() {
-		return [`${this.config.fullPath}/.*?/tsconfig.json`];
+		return [`${this.config.fullPath}/.*?/${CONST_TS_CONFIG}`];
 	}
 
 	/**
@@ -326,7 +337,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 		this.resolveESLintConfig();
 		return new Promise<void>(async (resolve, reject) => {
-			this.allocateCommando(Commando_NVM)
+			return this.allocateCommando(Commando_NVM)
 				.cd(this.runtimeContext.parentUnit.config.fullPath)
 				.pwd()
 				.append(`./node_modules/.bin/eslint ${pathToLint}`)
@@ -390,12 +401,12 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			return this.logError(`Unexpected non-directory entry in src/: ${sourceFolderType}`);
 		}
 
-		const tsConfigPath = pathResolve(entryPath, 'tsconfig.json');
+		const tsConfigPath = pathResolve(entryPath, CONST_TS_CONFIG);
 		if (this.config.customTSConfig) {
 			if (!existsSync(tsConfigPath))
 				throw new BadImplementationException(`Expected custom tsconfig in folder for source folder: ${entryPath}`);
 
-			this.logVerbose(`tsconfig.json is defined custom for source: ${sourceFolderType}, skipping copy.`);
+			this.logVerbose(`${CONST_TS_CONFIG} is defined custom for source: ${sourceFolderType}, skipping copy.`);
 			return;
 		}
 
@@ -417,5 +428,27 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 		this.logError(`Missing tsconfig templates for source folder: ${sourceFolderType}`);
 		throw new ImplementationMissingException(`Missing tsconfig template for source folder: ${sourceFolderType}`);
+	}
+
+	public async publishDryRun() {
+		this.logDebug(`Creating NPM Package`);
+		await this.allocateCommando(Commando_Basic)
+			.cd(this.config.output)
+			.append('npm pack')
+			.execute();
+
+		this.logDebug(`Publishing Dry Run`);
+		await this.allocateCommando(Commando_Basic)
+			.cd(this.config.output)
+			.append('npm publish --dry-run')
+			.execute();
+	}
+
+	public async publish() {
+		this.logDebug(`Publishing Package - For REAL`);
+		await this.allocateCommando(Commando_Basic)
+			.cd(this.config.output)
+			.append('npm publish --access public')
+			.execute();
 	}
 }

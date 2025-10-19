@@ -1,0 +1,4 @@
+id,name,optional,innerObject,innerArray,arrayOfObjects
+0000,Adam,asd,"{""a"":10,""b"":""Po""}",[],"[{""a"":10},{""a"":20}]"
+1111,Matan,,"{""a"":20,""b"":""Ze""}",[1],"[{""a"":20}]"
+2222,Itay,,"{""a"":30,""b"":""Zevel""}","[1,2]",[]
