@@ -1,5 +1,5 @@
 import {CONST_NodeModules, CONST_PackageJSON} from '../../core/consts.js';
-import {__stringify, _keys} from '@nu-art/ts-common';
+import {__stringify} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types.js';
 import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit.js';
 import {resolve} from 'path';
@@ -40,7 +40,9 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 
 	async prepare() {
 		const targetPath = resolve(this.config.fullPath, CONST_PackageJSON);
-		await FileSystemUtils.file.template.write(targetPath, __stringify(this.config.packageJson, true), this.deriveLibDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
+		const params = this.deriveLibDependencies();
+		const packageJson = FileSystemUtils.file.template.transform(__stringify(this.config.packageJson, true), params);
+		await FileSystemUtils.file.template.write(targetPath, packageJson, params, DEFAULT_OLD_TEMPLATE_PATTERN);
 	}
 
 	async purge() {

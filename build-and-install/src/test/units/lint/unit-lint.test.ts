@@ -9,18 +9,20 @@ import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator'
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {___dirname} from '@nu-art/ts-common/esm';
 
-const pathToTemp = resolve(__dirname, './temp');
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');
 const pathToWorkspace = resolve(pathToTemp, './workspace');
-const fixtureTemplateExtractor = new TestWorkspaceCreator(__dirname, pathToFixtures);
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
 let unit: Unit_TypescriptLib;
 let buildAndInstall: BuildAndInstall;
 
 
-// const pathToWorkspace = resolve(__dirname, './workspace');
 type Input = { fixtures: string[] };
 type Output = () => void;
 
@@ -43,9 +45,9 @@ describe('TypescriptLib - Lint Phase', () => {
 		workspaceCreator.setupWorkspace(['workspace.txt']);
 		workspaceCreator.setupWorkspace(['project-lib-lint.txt'], 'lib-lint');
 
-		buildAndInstall = new BuildAndInstall(pathToWorkspace);
+		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 		await buildAndInstall.build();
-		buildAndInstall.setPhases([phase_Prepare, phase_Install]);
+		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
 		await buildAndInstall.run();
 	});
 

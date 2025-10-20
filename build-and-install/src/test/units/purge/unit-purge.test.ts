@@ -7,11 +7,14 @@ import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {___dirname} from '@nu-art/ts-common/esm';
 
-const pathToTemp = resolve(__dirname, './temp');
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');
 const pathToWorkspace = resolve(pathToTemp, './workspace');
-const fixtureTemplateExtractor = new TestWorkspaceCreator(__dirname, pathToFixtures);
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 let buildAndInstall: BuildAndInstall;
 
@@ -41,7 +44,7 @@ describe('Unit - Purge Phase', () => {
 		workspaceCreator.setupWorkspace(['workspace.txt']);
 		workspaceCreator.setupWorkspace(['lib-purge.txt'], 'lib-purge');
 
-		buildAndInstall = new BuildAndInstall(pathToWorkspace);
+		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 		await buildAndInstall.build();
 		await buildAndInstall.nodeProjectUnit?.install();
 	});

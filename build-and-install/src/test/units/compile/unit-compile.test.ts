@@ -11,13 +11,15 @@ import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {CONST_PackageJSON} from '../../../main/core/consts.js';
 import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {___dirname} from '@nu-art/ts-common/esm';
 
+const dirname = ___dirname(import.meta.url);
 DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 
-const pathToTemp = resolve(__dirname, './temp');
+const pathToTemp = resolve(dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');
 const pathToWorkspace = resolve(pathToTemp, './workspace');
-const fixtureTemplateExtractor = new TestWorkspaceCreator(__dirname, pathToFixtures);
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
 let unit: Unit_TypescriptLib;
@@ -54,10 +56,11 @@ describe('Unit_NodeLib - Compile Phase', () => {
 		await FileSystemUtils.folder.delete(pathToTemp);
 		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
 		workspaceCreator.setupWorkspace(['workspace.txt']);
+		workspaceCreator.setupWorkspace(['lib-compile.txt'], 'lib-compile');
 
 		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 		await buildAndInstall.build();
-		buildAndInstall.setPhases([[phase_Prepare, phase_Install]]);
+		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
 		await buildAndInstall.run();
 	});
 
@@ -143,9 +146,9 @@ describe('Unit_NodeLib - Compile Phase', () => {
 
 
 	after(async function () {
-		// const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
-		// if (allPassed)
-		// 	await FileSystemUtils.folder.delete(pathToTemp);
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();
 	});

@@ -1,27 +1,29 @@
 // file: ./tests/phase-execution/watch-phase.test.ts
 import {DebugFlag, LogLevel, timeCounter, timeout} from '@nu-art/ts-common';
-import '../compile/unit-compile.test';
-import '../../UnitsMapper/UnitsMapper.test';
-import '../../UnitsDependencyMapper/reverse-dependency-mapper.test';
-import '../../UnitsDependencyMapper/dependency-mapper.test';
-import '../../UnitsDependencyMapper/dependency-filter.test';
-import '../../UnitsDependencyMapper/transitive-dependencies.test';
+import '../compile/unit-compile.test.js';
+import '../../UnitsMapper/UnitsMapper.test.js';
+import '../../UnitsDependencyMapper/reverse-dependency-mapper.test.js';
+import '../../UnitsDependencyMapper/dependency-mapper.test.js';
+import '../../UnitsDependencyMapper/dependency-filter.test.js';
+import '../../UnitsDependencyMapper/transitive-dependencies.test.js';
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {FileSystemUtils, phase_Install, phase_Prepare, Unit_NodeProject, Unit_TypescriptLib} from '../../_common.js';
-import {resolve} from 'path';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {___dirname} from '@nu-art/ts-common/esm';
+import {resolve} from 'path';
+
+const dirname = ___dirname(import.meta.url);
 
 DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 
-
-const pathToTemp = resolve(__dirname, './temp');
+const pathToTemp = resolve(dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');
 const pathToWorkspace = resolve(pathToTemp, './workspace');
-const fixtureTemplateExtractor = new TestWorkspaceCreator(__dirname, pathToFixtures);
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
 let projectUnit: Unit_NodeProject;
@@ -42,7 +44,10 @@ type Input = {
 type Output = boolean;
 
 const test = async (setup: Input): Promise<boolean> => {
-	const bai = new BuildAndInstall(pathToWorkspace);
+	const bai = new BuildAndInstall({pathToProject: pathToWorkspace});
+	bai.runtimeParams.watchBuildTree = false;
+	bai.runtimeParams.allUnits = true;
+
 	await bai.build();
 	projectUnit = bai.nodeProjectUnit;
 	await setup.beforeWatching?.(bai);
@@ -82,9 +87,11 @@ describe('Phase Watch - 1 Lib', () => {
 		});
 
 
-		buildAndInstall = new BuildAndInstall(pathToWorkspace);
+		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+		buildAndInstall.runtimeParams.allUnits = true;
+
 		await buildAndInstall.build();
-		buildAndInstall.setPhases([phase_Prepare, phase_Install]);
+		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
 		await buildAndInstall.run();
 	});
 
@@ -114,6 +121,7 @@ describe('Phase Watch - 1 Lib', () => {
 		input: {
 			fixtures: [],
 			beforeWatching: async bai => {
+				bai.runtimeParams.watchBuildTree = true;
 				const libE = bai.projectUnits.find(unit => unit.config.key == '@demo/lib-e') as Unit_TypescriptLib;
 				await FileSystemUtils.file.delete(resolve(libE.config.fullPath, 'dist/index.js'));
 			},

@@ -43,7 +43,7 @@ async function assertExists(path: string, mustExist: boolean, type: 'File' | 'Fo
 
 const escapeRegExp = (string: string) => string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 
-export const DEFAULT_TEMPLATE_PATTERN = new RegExp(`\{\{([a-zA-Z]\\w{2,}?)\}\}`);
+export const DEFAULT_TEMPLATE_PATTERN = new RegExp(`\{\{(\\S*?)\}\}`);
 export const DEFAULT_OLD_TEMPLATE_PATTERN = new RegExp(`(?<!\\\\)\\$([a-zA-Z]\\w{2,})`);
 
 export const FileSystemUtils = {

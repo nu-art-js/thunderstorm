@@ -52,7 +52,9 @@
     "label": "hosting-1",
     "envs": {
       "local": {
-        "configUrl": "https://localhost:xxx:/path/to/config.json",
+        "config": {
+          "configUrl": "https://localhost:xxx:/path/to/config.json"
+        },
         "projectId": "beamz-dev"
       }
     }
