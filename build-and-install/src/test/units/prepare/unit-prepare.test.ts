@@ -3,17 +3,19 @@ import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {resolve} from 'path';
 import {expect} from 'chai';
-import {FileSystemUtils} from '../../_common.js';
+import {FileSystemUtils, Unit_TypescriptLib} from '../../_common.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
-import {Unit_TypescriptLib} from '../../_common.js';
 import {existsSync} from 'fs';
 import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {___dirname} from '@nu-art/ts-common/esm';
 
-const pathToTemp = resolve(__dirname, './temp');
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');
 const pathToWorkspace = resolve(pathToTemp, './workspace');
-const fixtureTemplateExtractor = new TestWorkspaceCreator(__dirname, pathToFixtures);
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
 let unit: Unit_TypescriptLib;
@@ -28,7 +30,7 @@ const test = async (input: Input): Promise<void> => {
 	FilesCache.clear();
 	workspaceCreator.setupWorkspace(['workspace.txt']);
 	workspaceCreator.setupWorkspace(input.fixtures, 'lib-prepare');
-	buildAndInstall = new BuildAndInstall(pathToWorkspace);
+	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	await buildAndInstall.build();
 
 	unit = buildAndInstall.projectUnits.find(u => u.config.key === 'lib-prepare') as Unit_TypescriptLib;
@@ -61,7 +63,7 @@ describe('Unit_NodeLib - Prepare Phase', () => {
 		input: {fixtures: ['./lib-prepare--templated.txt']},
 		result: async () => {
 			const pkgJson = resolve(unit.config.fullPath, 'package.json');
-			const json = require(pkgJson);
+			const json = JSON.parse(await FileSystemUtils.file.read(pkgJson));
 			expect(json.version).to.equal('1.0.1');
 		}
 	}));

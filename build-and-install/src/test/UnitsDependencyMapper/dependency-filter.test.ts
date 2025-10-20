@@ -15,7 +15,7 @@ const test = async (input: Input): Promise<Result> => {
 };
 
 const runTestCase = (testCase: TestCase_UnitsDependencyFilter, processor?: typeof defaultTestProcessor) => () => {
-	if ('result' in testCase)
+	if ('result' in testCase && Array.isArray(testCase.result))
 		testCase.result = testCase.result.sort();
 
 	return runSingleTestCase(test, testCase, processor);

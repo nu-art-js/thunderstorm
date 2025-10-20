@@ -51,7 +51,7 @@ const defaultTestPatterns: Record<TestType, string> = {
 	ui: '**/*.test.ui.ts',
 	mobile: '**/*.test.mobile.ts'
 };
-const CONST_ESM_PREFIX = "export NODE_OPTIONS='--import data:text/javascript,import%20%7B%20register%20%7D%20from%20%22node%3Amodule%22%3B%20import%20%7B%20pathToFileURL%20%7D%20from%20%22node%3Aurl%22%3B%20register%28%22ts-node%2Fesm%22%2C%20pathToFileURL%28%22.%2F%22%29%29%3B'"
+const CONST_ESM_PREFIX = 'export NODE_OPTIONS=\'--import data:text/javascript,import%20%7B%20register%20%7D%20from%20%22node%3Amodule%22%3B%20import%20%7B%20pathToFileURL%20%7D%20from%20%22node%3Aurl%22%3B%20register%28%22ts-node%2Fesm%22%2C%20pathToFileURL%28%22.%2F%22%29%29%3B\'';
 const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<string>> = {
 	pure: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
@@ -185,6 +185,11 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	protected async clearOutputDirImpl() {
 		await FileSystemUtils.folder.empty(this.config.output, false);
+		await FileSystemUtils.folder.create(this.config.output);
+	}
+
+	public async prepare(): Promise<void> {
+		await super.prepare();
 		await FileSystemUtils.folder.create(this.config.output);
 	}
 

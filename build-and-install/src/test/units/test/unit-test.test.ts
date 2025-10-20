@@ -8,18 +8,21 @@ import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {___dirname} from '@nu-art/ts-common/esm';
 
-const pathToTemp = resolve(__dirname, './temp');
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');
 const pathToWorkspace = resolve(pathToTemp, './workspace');
-const fixtureTemplateExtractor = new TestWorkspaceCreator(__dirname, pathToFixtures);
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
 type Input = { fixtures: string[] };
 type Output = () => void;
 
 const test = async (setup: Input): Promise<void> => {
-	const buildAndInstall = new BuildAndInstall(pathToWorkspace);
+	const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	await buildAndInstall.build();
 
 	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-test', false);
@@ -39,9 +42,9 @@ describe('TypescriptLib - Test Phase', () => {
 		workspaceCreator.setupWorkspace(['workspace.txt']);
 		workspaceCreator.setupWorkspace(['project-lib-test.txt'], 'lib-test');
 
-		const buildAndInstall = new BuildAndInstall(pathToWorkspace);
+		const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 		await buildAndInstall.build();
-		buildAndInstall.setPhases([phase_Prepare, phase_Install]);
+		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
 		await buildAndInstall.run();
 	});
 

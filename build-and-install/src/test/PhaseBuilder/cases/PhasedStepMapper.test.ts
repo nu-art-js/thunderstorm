@@ -5,7 +5,7 @@ import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 // test input type
 type Input = {
 	units: BaseUnit<any>[][];
-	phases: Phase<any>[];
+	phases: Phase<any>[][];
 	scheduledSteps: ScheduledStep[];
 };
 
@@ -36,7 +36,7 @@ const cases: TestModel<Input, Output>[] = [
 		description: 'Error - Unit not found during mapStep()',
 		input: {
 			units: [[]],
-			phases: [mockPhase('build')],
+			phases: [[mockPhase('build')]],
 			scheduledSteps: [{phases: ['build'], units: ['missing-unit']}],
 		},
 		error: {
@@ -50,6 +50,7 @@ const runTestCase = (testCase: TestModel<Input, Output>) => runSingleTestCase(te
 // helper function to mock phases - dedicated for this test suite
 function mockPhase(key: string, filter?: () => Promise<boolean>, unitFilter?: (unit: BaseUnit<any>) => Promise<boolean>): Phase<any> {
 	return {
+		name: key,
 		key,
 		method: key,
 		filter,

@@ -1,0 +1,4941 @@
+// file: ./PhaseBuilder/cases/PhasedExecutionPlanner.test.ts
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {BaiParams, BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
+import {voidFunction} from '@nu-art/ts-common';
+import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+
+//========================= TestSuite Definition =========================
+
+type Input = {
+	units: BaseUnit<any>[][];
+	phases: Phase<any>[][];
+};
+
+type Output = ScheduledStep[];
+
+type TestSuite_CalcExecutionSteps = TestSuite<Input, Output>;
+type TestCase_CalcExecutionSteps = TestSuite_CalcExecutionSteps['testcases'][number];
+
+
+async function test(input: Input) {
+	const {units, phases} = input;
+	const manager = new PhaseManager('output-folder', phases, units, {} as BaiParams);
+	return manager.calculateExecutionSteps();
+}
+
+//========================= Helper Functions =========================
+
+function mockUnit(key: string, methods: string[]): BaseUnit<any> {
+	return {
+		config: {key},
+		...methods.reduce((acc, method) => {
+			acc[method] = voidFunction;
+			return acc;
+		}, {} as any)
+	} as BaseUnit<any>;
+}
+
+function mockPhase(key: string, filter?: () => boolean): Phase<any> {
+	return {
+		key,
+		method: key,
+		filter,
+	} as Phase<any>;
+}
+
+const runTestCase = (testCase: TestCase_CalcExecutionSteps) => runSingleTestCase(test, testCase);
+
+describe('PhaseManager - calculateExecutionSteps', () => {
+	it('Single Phase, Single Unit', () => runTestCase({
+		description: 'Single Phase, Single Unit',
+		input: {
+			units: [[mockUnit('unit-1', ['build'])]],
+			phases: [[mockPhase('build')]],
+		},
+		result: [
+			{phases: ['build'], units: ['unit-1']},
+		],
+	}));
+
+	it('Single Phase, No Eligible Units', () => runTestCase({
+		description: 'Single Phase, No Eligible Units',
+		input: {
+			units: [[mockUnit('unit-1', ['compile'])]],
+			phases: [[mockPhase('build')]],
+		},
+		result: [],
+	}));
+
+	it('Two Units, One Phase Matches Both', () => runTestCase({
+		description: 'Two Units, One Phase Matches Both',
+		input: {
+			units: [[
+				mockUnit('unit-1', ['build']),
+				mockUnit('unit-2', ['build'])
+			]],
+			phases: [[mockPhase('build')]],
+		},
+		result: [
+			{phases: ['build'], units: ['unit-1', 'unit-2']},
+		],
+	}));
+
+	it('Multiple Layers and Phases (One Unit Must Have All Methods)', () => runTestCase({
+		description: 'Multiple Layers and Phases (One Unit Must Have All Methods)',
+		input: {
+			units: [
+				[mockUnit('unit-1', ['prepare', 'build'])],
+				[mockUnit('unit-2', ['build'])],
+			],
+			phases: [[mockPhase('prepare'), mockPhase('build')]],
+		},
+		result: [
+			{phases: ['prepare', 'build'], units: ['unit-1']},
+			{phases: ['build'], units: ['unit-2']},
+		],
+	}));
+
+	it('Phase with filter blocking execution', () => runTestCase({
+		description: 'Phase with filter blocking execution',
+		input: {
+			units: [[mockUnit('unit-1', ['build'])]],
+			phases: [[mockPhase('build', () => false)]],
+		},
+		result: [],
+	}));
+
+	it('Unit missing one of the required phase methods', () => runTestCase({
+		description: 'Unit missing one of the required phase methods',
+		input: {
+			units: [[mockUnit('unit-1', ['build'])]],
+			phases: [[mockPhase('build'), mockPhase('lint')]],
+		},
+		result: [
+			{phases: ['build'], units: ['unit-1']},
+		],
+	}));
+
+	it('Multiple groups of phases across layers', () => runTestCase({
+		description: 'Multiple groups of phases across layers',
+		input: {
+			units: [
+				[mockUnit('lib-a', ['pre', 'compile'])],
+				[mockUnit('app-a', ['lint', 'test'])],
+			],
+			phases: [
+				[mockPhase('pre'), mockPhase('compile')],
+				[mockPhase('lint'), mockPhase('test')],
+			],
+		},
+		result: [
+			{phases: ['pre', 'compile'], units: ['lib-a']},
+			{phases: ['lint', 'test'], units: ['app-a']},
+		],
+	}));
+
+	it('Phases apply only to subset of units in layer', () => runTestCase({
+		description: 'Phases apply only to subset of units in layer',
+		input: {
+			units: [[
+				mockUnit('unit-a', ['compile', 'lint']),
+				mockUnit('unit-b', ['compile'])
+			]],
+			phases: [[mockPhase('compile'), mockPhase('lint')]],
+		},
+		result: [
+			{phases: ['compile', 'lint'], units: ['unit-a']},
+			{phases: ['compile'], units: ['unit-b']},
+		],
+	}));
+
+	it('Empty unit layers are skipped', () => runTestCase({
+		description: 'Empty unit layers are skipped',
+		input: {
+			units: [[], [mockUnit('unit-x', ['test'])]],
+			phases: [[mockPhase('test')]],
+		},
+		result: [
+			{phases: ['test'], units: ['unit-x']},
+		],
+	}));
+
+	it('Phase group with no matching units', () => runTestCase({
+		description: 'Phase group with no matching units',
+		input: {
+			units: [[mockUnit('unit-x', ['build'])]],
+			phases: [[mockPhase('deploy')]],
+		},
+		result: [],
+	}));
+
+	it('Units supporting different phase subsets from the same group', () => runTestCase({
+		description: 'Units supporting different phase subsets from the same group',
+		input: {
+			units: [[
+				mockUnit('unit-a', ['compile']),
+				mockUnit('unit-b', ['compile', 'lint']),
+				mockUnit('unit-c', ['lint']),
+			]],
+			phases: [[mockPhase('compile'), mockPhase('lint')]],
+		},
+		result: [
+			{phases: ['compile'], units: ['unit-a']},
+			{phases: ['compile', 'lint'], units: ['unit-b']},
+			{phases: ['lint'], units: ['unit-c']},
+		],
+	}));
+
+	it('Multiple units in different layers sharing partial phase coverage', () => runTestCase({
+		description: 'Multiple units in different layers sharing partial phase coverage',
+		input: {
+			units: [
+				[mockUnit('unit-a', ['compile'])],
+				[mockUnit('unit-b', ['lint']), mockUnit('unit-c', ['compile', 'lint'])]
+			],
+			phases: [[mockPhase('compile'), mockPhase('lint')]],
+		},
+		result: [
+			{phases: ['compile'], units: ['unit-a']},
+			{phases: ['lint'], units: ['unit-b']},
+			{phases: ['compile', 'lint'], units: ['unit-c']},
+		],
+	}));
+
+	it('Units filtered by runtime param (simulate usePackage behavior)', () => runTestCase({
+		description: 'Units filtered by runtime param (simulate usePackage behavior)',
+		input: {
+			units: [[
+				mockUnit('pkg-core', ['build']),
+				mockUnit('pkg-utils', ['build'])
+			]],
+			phases: [[mockPhase('build')]],
+		},
+		result: [
+			{phases: ['build'], units: ['pkg-core', 'pkg-utils']},
+		],
+	}));
+
+	it('Units with shared and distinct methods across different phase groups', () => runTestCase({
+		description: 'Units with shared and distinct methods across different phase groups',
+		input: {
+			units: [[
+				mockUnit('unit-1', ['prepare', 'compile']),
+				mockUnit('unit-2', ['compile']),
+				mockUnit('unit-3', ['lint'])
+			]],
+			phases: [
+				[mockPhase('prepare'), mockPhase('compile')],
+				[mockPhase('lint')],
+			],
+		},
+		result: [
+			{phases: ['prepare', 'compile'], units: ['unit-1']},
+			{phases: ['compile'], units: ['unit-2']},
+			{phases: ['lint'], units: ['unit-3']},
+		],
+	}));
+
+	it('Units supporting identical phase group in different layers', () => runTestCase({
+		description: 'Units supporting identical phase group in different layers',
+		input: {
+			units: [
+				[mockUnit('layer1-unit', ['test', 'verify'])],
+				[mockUnit('layer2-unit', ['test', 'verify'])],
+			],
+			phases: [[mockPhase('test'), mockPhase('verify')]],
+		},
+		result: [
+			{phases: ['test', 'verify'], units: ['layer1-unit']},
+			{phases: ['test', 'verify'], units: ['layer2-unit']},
+		],
+	}));
+
+	it('Multiple units with overlapping and distinct phase combinations', () => runTestCase({
+		description: 'Multiple units with overlapping and distinct phase combinations',
+		input: {
+			units: [[
+				mockUnit('unit-1', ['compile', 'test']),
+				mockUnit('unit-2', ['compile']),
+				mockUnit('unit-3', ['test']),
+				mockUnit('unit-4', ['compile', 'lint', 'test'])
+			]],
+			phases: [[mockPhase('compile'), mockPhase('test')]],
+		},
+		result: [
+			{phases: ['compile', 'test'], units: ['unit-1', 'unit-4']},
+			{phases: ['compile'], units: ['unit-2']},
+			{phases: ['test'], units: ['unit-3']},
+		],
+	}));
+
+	it('Phases defined but no units implement any', () => runTestCase({
+		description: 'Phases defined but no units implement any',
+		input: {
+			units: [[mockUnit('unit-1', ['init'])]],
+			phases: [[mockPhase('deploy'), mockPhase('cleanup')]],
+		},
+		result: [],
+	}));
+
+	it('Units with staggered phase coverage across multiple groups', () => runTestCase({
+		description: 'Units with staggered phase coverage across multiple groups',
+		input: {
+			units: [[
+				mockUnit('unit-a', ['prepare']),
+				mockUnit('unit-b', ['build']),
+				mockUnit('unit-c', ['test'])
+			]],
+			phases: [
+				[mockPhase('prepare')],
+				[mockPhase('build')],
+				[mockPhase('test')],
+			],
+		},
+		result: [
+			{phases: ['prepare'], units: ['unit-a']},
+			{phases: ['build'], units: ['unit-b']},
+			{phases: ['test'], units: ['unit-c']},
+		],
+	}));
+
+	it('Structured layers with varied phase coverage across multiple groups', () => runTestCase({
+		description: 'Structured layers with varied phase coverage across multiple groups',
+		input: {
+			units: [
+				[
+					mockUnit('unit-a', ['prebuild']),
+					mockUnit('unit-b', ['prebuild', 'compile']),
+					mockUnit('unit-c', ['compile'])
+				],
+				[
+					mockUnit('unit-d', ['test']),
+					mockUnit('unit-e', ['test', 'deploy'])
+				],
+				[
+					mockUnit('unit-f', ['review', 'archive', 'notify']),
+					mockUnit('unit-g', ['review', 'notify'])
+				]
+			],
+			phases: [
+				[mockPhase('prebuild'), mockPhase('compile')],
+				[mockPhase('test')],
+				[mockPhase('review'), mockPhase('archive'), mockPhase('notify')],
+			],
+		},
+		result: [
+			{phases: ['prebuild'], units: ['unit-a']},
+			{phases: ['prebuild', 'compile'], units: ['unit-b']},
+			{phases: ['compile'], units: ['unit-c']},
+			{phases: ['test'], units: ['unit-d', 'unit-e']},
+			{phases: ['review', 'archive', 'notify'], units: ['unit-f']},
+			{phases: ['review', 'notify'], units: ['unit-g']},
+		],
+	}));
+
+	it('Layered units with mixed overlap and non-overlap phase combinations', () => runTestCase({
+		description: 'Layered units with mixed overlap and non-overlap phase combinations',
+		input: {
+			units: [
+				[
+					mockUnit('unit-a', ['setup']),
+					mockUnit('unit-b', ['setup', 'compile']),
+					mockUnit('unit-b1', ['setup', 'compile']),
+					mockUnit('unit-c', ['compile'])
+				],
+				[
+					mockUnit('unit-d', ['test']),
+					mockUnit('unit-e', ['test', 'release']),
+					mockUnit('unit-d1', ['test']),
+				],
+				[
+					mockUnit('unit-f', ['validate', 'finalize', 'report']),
+					mockUnit('unit-g', ['finalize'])
+				]
+			],
+			phases: [
+				[mockPhase('setup'), mockPhase('compile')],
+				[mockPhase('test'), mockPhase('release')],
+				[mockPhase('validate'), mockPhase('finalize'), mockPhase('report')],
+			],
+		},
+		result: [
+			{phases: ['setup'], units: ['unit-a']},
+			{phases: ['setup', 'compile'], units: ['unit-b', 'unit-b1']},
+			{phases: ['compile'], units: ['unit-c']},
+			{phases: ['test'], units: ['unit-d', 'unit-d1']},
+			{phases: ['test', 'release'], units: ['unit-e']},
+			{phases: ['validate', 'finalize', 'report'], units: ['unit-f']},
+			{phases: ['finalize'], units: ['unit-g']},
+		],
+	}));
+
+	it('Fails on duplicate unit keys', () => runTestCase({
+		input: {
+			units: [[
+				mockUnit('unit-dup', ['build']),
+				mockUnit('unit-dup', ['build', 'test'])
+			]],
+			phases: [[mockPhase('build')]]
+		},
+		error: {expected: 'Multiple units with same key: unit-dup'}
+	}));
+
+	it('Unit participates in multiple independent phase groups', () => runTestCase({
+		description: 'Unit in multiple phase groups',
+		input: {
+			units: [[mockUnit('unit-x', ['build', 'test'])]],
+			phases: [[mockPhase('build')], [mockPhase('test')]],
+		},
+		result: [
+			{phases: ['build'], units: ['unit-x']},
+			{phases: ['test'], units: ['unit-x']},
+		],
+	}));
+
+	it('Filter inside phase group disables only subset', () => runTestCase({
+		description: 'Filter disables subset of phase group',
+		input: {
+			units: [[mockUnit('unit-a', ['compile', 'deploy'])]],
+			phases: [[
+				mockPhase('compile'),
+				mockPhase('deploy', () => false)
+			]],
+		},
+		result: [
+			{phases: ['compile'], units: ['unit-a']},
+		],
+	}));
+});
+
+// file: ./PhaseBuilder/cases/PhasedStepMapper.test.ts
+import {TestModel} from '@nu-art/ts-common/testing/types';
+import {BaiParams, BaseUnit, ExecutionStep, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
+import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+
+// test input type
+type Input = {
+	units: BaseUnit<any>[][];
+	phases: Phase<any>[][];
+	scheduledSteps: ScheduledStep[];
+};
+
+// test output type
+type Output = ExecutionStep;
+
+const test = async (input: Input) => {
+	const {units, phases, scheduledSteps} = input;
+	const manager = new PhaseManager('output-folder', phases, units, {} as BaiParams);
+
+	return manager['mapStep'](scheduledSteps[0]);
+};
+
+// the tests, notice these can be a resolvable content, in order to keep bind consts between the input and the output
+const cases: TestModel<Input, Output>[] = [
+	{
+		description: 'Error - Phase not found during mapStep()',
+		input: {
+			units: [[]],
+			phases: [],
+			scheduledSteps: [{phases: ['build'], units: []}],
+		},
+		error: {
+			expected: 'Phase \'build\' not found in PhaseManager.phases',
+		},
+	},
+	{
+		description: 'Error - Unit not found during mapStep()',
+		input: {
+			units: [[]],
+			phases: [[mockPhase('build')]],
+			scheduledSteps: [{phases: ['build'], units: ['missing-unit']}],
+		},
+		error: {
+			expected: 'Unit \'missing-unit\' not found in PhaseManager.units',
+		},
+	}
+];
+
+const runTestCase = (testCase: TestModel<Input, Output>) => runSingleTestCase(test, testCase);
+
+// helper function to mock phases - dedicated for this test suite
+function mockPhase(key: string, filter?: () => Promise<boolean>, unitFilter?: (unit: BaseUnit<any>) => Promise<boolean>): Phase<any> {
+	return {
+		name: key,
+		key,
+		method: key,
+		filter,
+		unitFilter,
+	} as Phase<any>;
+}
+
+// the mocha test launch
+describe('PhaseManager - mapStep', () => {
+	it('Error - Phase not found during mapStep()', () => runTestCase(cases[0]));
+	it('Error - Unit not found during mapStep()', () => runTestCase(cases[1]));
+});
+
+// file: ./UnitsDependencyMapper/dependency-filter.test.ts
+import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+
+export type Input = { units: UnitDependentNode[], target: string[], exclude?: string[] };
+export type Result = string[];
+
+export type TestSuite_UnitsDependencyFilter = TestSuite<Input, Result>;
+export type TestCase_UnitsDependencyFilter = TestSuite_UnitsDependencyFilter['testcases'][number];
+
+const test = async (input: Input): Promise<Result> => {
+	const filter = new UnitsDependencyMapper(input.units);
+	const pruned = filter.filterForTargets(input.target, input.exclude);
+	return pruned.map(unit => unit.key).sort();
+};
+
+const runTestCase = (testCase: TestCase_UnitsDependencyFilter, processor?: typeof defaultTestProcessor) => () => {
+	if ('result' in testCase && Array.isArray(testCase.result))
+		testCase.result = testCase.result.sort();
+
+	return runSingleTestCase(test, testCase, processor);
+};
+
+describe('Units Dependency Filter', () => {
+	it('filter for diamond graph (target = reports-service)', runTestCase({
+		input: {
+			units: [
+				{key: 'shared-core', dependsOn: []},
+				{key: 'user-lib', dependsOn: ['shared-core']},
+				{key: 'analytics-lib', dependsOn: ['shared-core']},
+				{key: 'reports-service', dependsOn: ['user-lib', 'analytics-lib']},
+			],
+			target: ['reports-service']
+		},
+		result: ['shared-core', 'user-lib', 'analytics-lib', 'reports-service']
+	}));
+
+	it('filter out one app from multi-app case', runTestCase({
+		input: {
+			units: [
+				{key: 'shared-lib', dependsOn: []},
+				{key: 'dashboard-app', dependsOn: ['shared-lib']},
+				{key: 'monitor-app', dependsOn: ['shared-lib']},
+			],
+			target: ['dashboard-app']
+		},
+		result: ['shared-lib', 'dashboard-app']
+	}));
+
+	it('filter multi-app tree (admin-app + public-app)', runTestCase({
+		input: {
+			units: [
+				{key: 'lib-utils', dependsOn: []},
+				{key: 'lib-auth', dependsOn: ['lib-utils']},
+				{key: 'lib-permissions', dependsOn: ['lib-utils']},
+				{key: 'lib-api', dependsOn: ['lib-auth', 'lib-permissions']},
+				{key: 'lib-storage', dependsOn: []},
+				{key: 'lib-logging', dependsOn: ['lib-storage']},
+				{key: 'admin-app', dependsOn: ['lib-api', 'lib-logging']},
+				{key: 'user-app', dependsOn: ['lib-auth']},
+				{key: 'public-app', dependsOn: ['lib-permissions']},
+			],
+			target: ['admin-app', 'public-app']
+		},
+		result: [
+			'lib-storage', 'lib-utils',
+			'lib-auth', 'lib-logging', 'lib-permissions',
+			'lib-api',
+			'admin-app', 'public-app'
+		]
+	}));
+
+	it('filter with exclusion (admin-app only, excluding lib-logging)', runTestCase({
+		input: {
+			units: [
+				{key: 'lib-utils', dependsOn: []},
+				{key: 'lib-auth', dependsOn: ['lib-utils']},
+				{key: 'lib-permissions', dependsOn: ['lib-utils']},
+				{key: 'lib-api', dependsOn: ['lib-auth', 'lib-permissions']},
+				{key: 'lib-storage', dependsOn: []},
+				{key: 'lib-logging', dependsOn: ['lib-storage']},
+				{key: 'admin-app', dependsOn: ['lib-api', 'lib-logging']},
+				{key: 'user-app', dependsOn: ['lib-auth']},
+				{key: 'public-app', dependsOn: ['lib-permissions']},
+			],
+			target: ['admin-app'],
+			exclude: ['lib-logging']
+		},
+		result: [
+			'lib-utils',
+			'lib-auth', 'lib-permissions',
+			'lib-api',
+			'admin-app'
+		]
+	}));
+
+	it('deep tree with shared mid-tier libs (target = frontend-app)', runTestCase({
+			input: {
+				units: [
+					{key: 'core-utils', dependsOn: []},
+					{key: 'env-config', dependsOn: ['core-utils']},
+					{key: 'api-client', dependsOn: ['core-utils']},
+					{key: 'auth-lib', dependsOn: ['env-config']},
+					{key: 'data-processor', dependsOn: ['auth-lib', 'api-client']},
+					{key: 'ui-components', dependsOn: ['core-utils']},
+					{key: 'frontend-app', dependsOn: ['ui-components', 'api-client']},
+					{key: 'backend-app', dependsOn: ['data-processor']},
+				],
+				target: ['frontend-app']
+			},
+			result: [
+				'api-client',
+				'core-utils',
+				'frontend-app',
+				'ui-components'
+			]
+		}
+	));
+});
+
+// file: ./UnitsDependencyMapper/dependency-mapper.test.ts
+import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+
+type Input = {
+	nodes: UnitDependentNode[]
+	keys?: string[]
+};
+type Result = string[][];
+
+type TestSuite_UnitsDependencyMapper = TestSuite<Input, Result>;
+type TestCase_UnitsDependencyMapper = TestSuite_UnitsDependencyMapper['testcases'][number];
+
+const test = async (input: Input): Promise<Result> => {
+	const unitsDependencyMapper = new UnitsDependencyMapper(input.nodes);
+	const buildDependencyTree = await unitsDependencyMapper.buildDependencyTree(input.keys);
+	unitsDependencyMapper.printGraph();
+	return buildDependencyTree;
+};
+
+const runTestCase = (testCase: TestCase_UnitsDependencyMapper, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
+
+describe('Units Dependency Mapper', () => {
+	it('should resolve linear chain', runTestCase({
+		input: {
+			nodes: [
+				{key: 'source', dependsOn: []},
+				{key: 'processor', dependsOn: ['source']},
+				{key: 'consumer', dependsOn: ['processor']},
+			]
+		},
+		result: [['source'], ['processor'], ['consumer']],
+	}));
+
+	it('should resolve fan-in graph', runTestCase({
+		input: {
+			nodes: [
+				{key: 'aggregator', dependsOn: ['reader-a', 'reader-b']},
+				{key: 'reader-a', dependsOn: []},
+				{key: 'reader-b', dependsOn: []},
+			]
+		},
+		result: [['reader-a', 'reader-b'], ['aggregator']],
+	}));
+
+	it('should resolve fan-out graph', runTestCase({
+		input: {
+			nodes: [
+				{key: 'config', dependsOn: []},
+				{key: 'service-a', dependsOn: ['config']},
+				{key: 'service-b', dependsOn: ['config']},
+			]
+		},
+		result: [['config'], ['service-a', 'service-b']],
+	}));
+
+	it('should throw on cycle', runTestCase({
+		input: {
+			nodes: [
+				{key: 'loop-a', dependsOn: ['loop-b']},
+				{key: 'loop-b', dependsOn: ['loop-a']},
+			]
+		},
+		error: {expected: /Cyclic/},
+	}));
+
+	it('should resolve shared child with fan-out', runTestCase({
+		input: {
+			nodes: [
+				{key: 'logger', dependsOn: ['utils']},
+				{key: 'utils', dependsOn: []},
+				{key: 'controller', dependsOn: ['parser', 'logger']},
+				{key: 'parser', dependsOn: ['utils']},
+			]
+		},
+		result: [['utils'], ['logger', 'parser'], ['controller']],
+	}));
+
+	it('should handle flat graph', runTestCase({
+		input: {
+			nodes: [
+				{key: 'module-a', dependsOn: []},
+				{key: 'module-b', dependsOn: []},
+				{key: 'module-c', dependsOn: []},
+				{key: 'module-d', dependsOn: []},
+			]
+		},
+		result: [['module-a', 'module-b', 'module-c', 'module-d']],
+	}));
+
+	it('should resolve deep linear chain', runTestCase({
+		input: {
+			nodes: [
+				{key: 'step-1', dependsOn: []},
+				{key: 'step-2', dependsOn: ['step-1']},
+				{key: 'step-3', dependsOn: ['step-2']},
+				{key: 'step-4', dependsOn: ['step-3']},
+				{key: 'step-5', dependsOn: ['step-4']},
+			]
+		},
+		result: [['step-1'], ['step-2'], ['step-3'], ['step-4'], ['step-5']],
+	}));
+
+	it('should handle disconnected subgraphs', runTestCase({
+		input: {
+			nodes: [
+				{key: 'analytics-core', dependsOn: []},
+				{key: 'reporting-engine', dependsOn: ['analytics-core']},
+				{key: 'image-loader', dependsOn: []},
+				{key: 'preview-module', dependsOn: ['image-loader']},
+			]
+		},
+		result: [['analytics-core', 'image-loader'], ['preview-module', 'reporting-engine']],
+	}));
+
+	it('should resolve multiple roots and endpoints', runTestCase({
+		input: {
+			nodes: [
+				{key: 'config-a', dependsOn: []},
+				{key: 'service-a', dependsOn: ['config-a']},
+				{key: 'config-b', dependsOn: []},
+				{key: 'service-b', dependsOn: ['config-b']},
+				{key: 'gateway', dependsOn: ['service-a', 'service-b']},
+				{key: 'frontend', dependsOn: ['gateway']},
+			]
+		},
+		result: [['config-a', 'config-b'], ['service-a', 'service-b'], ['gateway'], ['frontend']],
+	}));
+
+	it('should resolve diamond dependency graph', runTestCase({
+		input: {
+			nodes: [
+				{key: 'foundation', dependsOn: []},
+				{key: 'lib-a', dependsOn: ['foundation']},
+				{key: 'lib-b', dependsOn: ['foundation']},
+				{key: 'api-layer', dependsOn: ['lib-a', 'lib-b']},
+			]
+		},
+		result: [['foundation'], ['lib-a', 'lib-b'], ['api-layer']],
+	}));
+
+	it('should resolve real partial use case', runTestCase({
+		input: {
+			nodes: [
+				{key: '@nu-art/ts-common', dependsOn: []},
+				{key: '@nu-art/firebase', dependsOn: ['@nu-art/ts-common']},
+				{key: '@nu-art/permissions', dependsOn: ['@nu-art/firebase', '@nu-art/ts-common']},
+				{key: '@nu-art/user-account', dependsOn: ['@nu-art/firebase', '@nu-art/ts-common']},
+				{key: '@nu-art/push-pub-sub', dependsOn: ['@nu-art/permissions', '@nu-art/user-account']},
+				{key: '@nu-art/file-upload', dependsOn: ['@nu-art/push-pub-sub']},
+			]
+		},
+		result: [
+			['@nu-art/ts-common'],
+			['@nu-art/firebase'],
+			['@nu-art/permissions', '@nu-art/user-account'],
+			['@nu-art/push-pub-sub'],
+			['@nu-art/file-upload']
+		]
+	}));
+
+	it('should resolve multiple top levels', runTestCase({
+		input: {
+			nodes: [
+				{key: 'a', dependsOn: []},
+				{key: 'b', dependsOn: ['a']},
+				{key: 'c', dependsOn: ['b', 'a']},
+				{key: 'd', dependsOn: ['b', 'a']},
+				{key: 'e', dependsOn: ['c', 'd']},
+				{key: 'f', dependsOn: ['e']},
+				{key: 'g', dependsOn: ['e']},
+				{key: 'h', dependsOn: ['d']},
+				{key: 'i', dependsOn: ['b']},
+			]
+		},
+		result: [['a'], ['b'], ['c', 'd'], ['e'], ['f', 'g', 'h', 'i']],
+	}));
+
+	it('should resolve multiple low levels', runTestCase({
+		input: {
+			nodes: [
+				{key: 'a', dependsOn: []},
+				{key: 'b', dependsOn: []},
+				{key: 'c', dependsOn: ['a']},
+				{key: 'd', dependsOn: ['b']},
+				{key: 'e', dependsOn: ['b']},
+				{key: 'f', dependsOn: ['d', 'e']},
+			],
+			keys: ['a', 'b', 'c', 'd', 'e', 'f']
+		},
+		result: [['a', 'b'], ['d', 'e'], ['c', 'f']],
+	}));
+
+	it('should exclude irrelevant dependency not reachable from given keys', runTestCase({
+		input: {
+			nodes: [
+				{key: 'root', dependsOn: []},
+				{key: 'mid', dependsOn: ['root']},
+				{key: 'leaf', dependsOn: ['mid']},
+				{key: 'unused', dependsOn: []},
+			],
+			keys: ['leaf']
+		},
+		result: [['leaf']],
+	}));
+
+	it('should throw on unknown internal dependency', runTestCase({
+		input: {
+			nodes: [
+				{key: 'a', dependsOn: ['missing']},
+				{key: 'b', dependsOn: ['a']},
+			],
+			keys: ['a', 'b']
+		},
+		error: {expected: 'Unknown key: missing'}
+	}));
+
+	it('should throw if referenced key is missing from nodes', runTestCase({
+		input: {
+			nodes: [
+				{key: 'a', dependsOn: []},
+				{key: 'b', dependsOn: []},
+				{key: 'c', dependsOn: ['a']},
+				{key: 'd', dependsOn: ['b']},
+				{key: 'e', dependsOn: ['b']},
+				{key: 'f', dependsOn: ['d', 'e']},
+			],
+			keys: ['a', 'b', 'c', 'd', 'e', 'f', 'k']
+		},
+		error: {expected: 'Unknown key: k'},
+	}));
+
+	it('should detect self-dependency cycle', runTestCase({
+		input: {
+			nodes: [
+				{key: 'self', dependsOn: ['self']},
+			]
+		},
+		error: {expected: /Cyclic/},
+	}));
+
+	it('should resolve reachable nodes only', runTestCase({
+		input: {
+			nodes: [
+				{key: 'root', dependsOn: ['a']},
+				{key: 'a', dependsOn: []},
+				{key: 'c', dependsOn: ['a']},
+			],
+			keys: ['c']
+		},
+		result: [['c']],
+	}));
+});
+
+// file: ./UnitsDependencyMapper/reverse-dependency-mapper.test.ts
+// New canvas: Reverse filter
+// Motivation: From a changed lib, find all apps (and intermediate libs) that depend on it
+
+import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+
+export type ReverseFilterInput = { units: UnitDependentNode[], changed: string[] };
+export type ReverseFilterResult = string[];
+
+export type TestSuite_UnitsReverseDependency = TestSuite<ReverseFilterInput, ReverseFilterResult>;
+export type TestCase_UnitsReverseDependency = TestSuite_UnitsReverseDependency['testcases'][number];
+
+const test = async (input: ReverseFilterInput): Promise<ReverseFilterResult> => {
+	const mapper = new UnitsDependencyMapper(input.units);
+	const result = mapper.getReverseDependencies(input.changed);
+	return result.sort();
+};
+
+const runTestCase = (testCase: TestCase_UnitsReverseDependency, processor?: typeof defaultTestProcessor) => {
+	if ('result' in testCase && Array.isArray(testCase.result))
+		testCase.result = testCase.result.sort();
+
+	return () => runSingleTestCase(test, testCase, processor);
+};
+
+
+describe('Units Reverse Dependency MApper', () => {
+
+	it('single leaf change (lib-auth)', runTestCase({
+		input: {
+			units: [
+				{key: 'lib-utils', dependsOn: []},
+				{key: 'lib-auth', dependsOn: ['lib-utils']},
+				{key: 'lib-api', dependsOn: ['lib-auth']},
+				{key: 'admin-app', dependsOn: ['lib-api']},
+			],
+			changed: ['lib-auth']
+		},
+		result: ['lib-auth', 'lib-api', 'admin-app']
+	}));
+
+	it('mid graph change (lib-utils)', runTestCase({
+		input: {
+			units: [
+				{key: 'lib-utils', dependsOn: []},
+				{key: 'lib-auth', dependsOn: ['lib-utils']},
+				{key: 'lib-api', dependsOn: ['lib-auth']},
+				{key: 'public-app', dependsOn: ['lib-api']},
+				{key: 'admin-app', dependsOn: ['lib-auth']},
+			],
+			changed: ['lib-utils']
+		},
+		result: ['lib-utils', 'lib-auth', 'lib-api', 'admin-app', 'public-app']
+	}));
+
+	it('multiple changed nodes (lib-auth and lib-api)', runTestCase({
+		input: {
+			units: [
+				{key: 'lib-core', dependsOn: []},
+				{key: 'lib-auth', dependsOn: ['lib-core']},
+				{key: 'lib-api', dependsOn: ['lib-core']},
+				{key: 'integration-service', dependsOn: ['lib-auth', 'lib-api']},
+				{key: 'gateway-app', dependsOn: ['integration-service']},
+			],
+			changed: ['lib-auth', 'lib-api']
+		},
+		result: ['lib-auth', 'lib-api', 'integration-service', 'gateway-app']
+	}));
+
+	it('changed lib not referenced anywhere', runTestCase({
+		input: {
+			units: [
+				{key: 'lib-unused', dependsOn: []},
+				{key: 'user-app', dependsOn: []},
+			],
+			changed: ['lib-unused']
+		},
+		result: ['lib-unused']
+	}));
+
+	it('deep nested chain (change = core-utils)', runTestCase({
+		input: {
+			units: [
+				{key: 'core-utils', dependsOn: []},
+				{key: 'env-config', dependsOn: ['core-utils']},
+				{key: 'auth-lib', dependsOn: ['env-config']},
+				{key: 'data-layer', dependsOn: ['auth-lib']},
+				{key: 'frontend-app', dependsOn: ['data-layer']},
+			],
+			changed: ['core-utils']
+		},
+		result: ['core-utils', 'env-config', 'auth-lib', 'data-layer', 'frontend-app']
+	}));
+
+	it('change propagates through shared lib to multiple apps', runTestCase({
+		input: {
+			units: [
+				{key: 'core-utils', dependsOn: []},
+				{key: 'shared-lib', dependsOn: ['core-utils']},
+				{key: 'admin-ui', dependsOn: ['shared-lib']},
+				{key: 'user-ui', dependsOn: ['shared-lib']},
+				{key: 'user-service', dependsOn: ['shared-lib']},
+			],
+			changed: ['core-utils']
+		},
+		result: ['core-utils', 'shared-lib', 'admin-ui', 'user-ui', 'user-service']
+	}));
+
+	it('isolated subgraphs with targeted change', runTestCase({
+		input: {
+			units: [
+				{key: 'auth-core', dependsOn: []},
+				{key: 'auth-service', dependsOn: ['auth-core']},
+				{key: 'billing-core', dependsOn: []},
+				{key: 'billing-service', dependsOn: ['billing-core']},
+				{key: 'billing-app', dependsOn: ['billing-service']},
+			],
+			changed: ['auth-core']
+		},
+		result: ['auth-core', 'auth-service']
+	}));
+
+	it('fan-out to many services from one shared lib', runTestCase({
+		input: {
+			units: [
+				{key: 'shared-logger', dependsOn: []},
+				{key: 'auth-service', dependsOn: ['shared-logger']},
+				{key: 'payment-service', dependsOn: ['shared-logger']},
+				{key: 'notification-service', dependsOn: ['shared-logger']},
+				{key: 'dashboard-app', dependsOn: ['auth-service', 'payment-service']},
+			],
+			changed: ['shared-logger']
+		},
+		result: ['shared-logger', 'auth-service', 'payment-service', 'notification-service', 'dashboard-app']
+	}));
+
+	it('changed node not found in graph', runTestCase({
+		input: {
+			units: [
+				{key: 'app-a', dependsOn: []},
+				{key: 'app-b', dependsOn: ['app-a']},
+			],
+			changed: ['non-existent-lib']
+		},
+		error: {
+			expected: 'Unknown unit: non-existent-lib',
+		}
+	}));
+
+	it('changed node filtered out by structure (no downstream)', runTestCase({
+		input: {
+			units: [
+				{key: 'app-x', dependsOn: []},
+				{key: 'lib-unused', dependsOn: []},
+			],
+			changed: ['lib-unused']
+		},
+		result: ['lib-unused']
+	}));
+
+	it('changed node partially matches graph (only one found)', runTestCase({
+		input: {
+			units: [
+				{key: 'lib-core', dependsOn: []},
+				{key: 'feature-lib', dependsOn: ['lib-core']},
+				{key: 'feature-app', dependsOn: ['feature-lib']},
+			],
+			changed: ['lib-core', 'ghost-lib']
+		},
+		error: {
+			expected: 'Unknown unit: ghost-lib',
+		}
+	}));
+
+	it('all changed nodes are valid but disconnected', runTestCase({
+			input: {
+				units: [
+					{key: 'core-a', dependsOn: []},
+					{key: 'core-b', dependsOn: []},
+					{key: 'app-a', dependsOn: ['core-a']},
+					{key: 'app-b', dependsOn: ['core-b']},
+				],
+				changed: ['core-a', 'core-b']
+			},
+			result: ['core-a', 'core-b', 'app-a', 'app-b']
+		}
+	));
+});
+
+// file: ./UnitsDependencyMapper/transitive-dependencies.test.ts
+import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+
+export type Input = { units: UnitDependentNode[], target: string };
+export type Result = string[];
+
+export type TestSuite_GetTransitiveDependencies = TestSuite<Input, Result>;
+export type TestCase_GetTransitiveDependencies = TestSuite_GetTransitiveDependencies['testcases'][number];
+
+const test = async (input: Input): Promise<Result> => {
+	const mapper = new UnitsDependencyMapper(input.units);
+	return mapper.getTransitiveDependencies([input.target]).sort();
+};
+
+const runTestCase = (testCase: TestCase_GetTransitiveDependencies, processor?: typeof defaultTestProcessor) => () => {
+	if ('result' in testCase && Array.isArray(testCase.result))
+		testCase.result = testCase.result.sort();
+
+	return runSingleTestCase(test, testCase, processor);
+};
+
+describe('UnitsDependencyMapper.getTransitiveDependencies', () => {
+	it('should resolve all direct and indirect dependencies', runTestCase({
+		input: {
+			units: [
+				{key: 'core-utils', dependsOn: []},
+				{key: 'env-config', dependsOn: ['core-utils']},
+				{key: 'auth-lib', dependsOn: ['env-config']},
+				{key: 'data-layer', dependsOn: ['auth-lib']},
+				{key: 'frontend-app', dependsOn: ['data-layer']},
+			],
+			target: 'frontend-app'
+		},
+		result: ['core-utils', 'env-config', 'auth-lib', 'data-layer']
+	}));
+
+	it('should return empty if unit has no dependencies', runTestCase({
+		input: {
+			units: [
+				{key: 'base-lib', dependsOn: []},
+				{key: 'standalone-app', dependsOn: []}
+			],
+			target: 'standalone-app'
+		},
+		result: []
+	}));
+
+	it('should throw if target does not exist', runTestCase({
+		input: {
+			units: [
+				{key: 'x', dependsOn: []}
+			],
+			target: 'ghost-lib'
+		},
+		error: {
+			expected: 'Unit \'ghost-lib\' not found',
+		}
+	}));
+
+	it('diamond graph dependencies (target = d)', runTestCase({
+		input: {
+			units: [
+				{key: 'a', dependsOn: []},
+				{key: 'b', dependsOn: ['a']},
+				{key: 'c', dependsOn: ['a']},
+				{key: 'd', dependsOn: ['b', 'c']},
+			],
+			target: 'd'
+		},
+		result: ['a', 'b', 'c']
+	}));
+
+	it('disconnected subgraphs (target = c)', runTestCase({
+		input: {
+			units: [
+				{key: 'a', dependsOn: ['b']},
+				{key: 'b', dependsOn: []},
+				{key: 'c', dependsOn: ['d']},
+				{key: 'd', dependsOn: []},
+			],
+			target: 'c'
+		},
+		result: ['d']
+	}));
+});
+
+// file: ./UnitsMapper/.gitignore
+temp
+
+// file: ./UnitsMapper/UnitsMapper.test.ts
+import {FileSystemUtils, Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp, Unit_NodeProject, Unit_TypescriptLib} from '../_common.js';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {resolve} from 'path';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
+import {BuildAndInstall} from '../../main/build-and-install-v3.js';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {___dirname} from '@nu-art/ts-common/esm';
+
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
+const pathToFixtures = resolve(pathToTemp, './fixtures');
+const pathToWorkspace = resolve(pathToTemp, './workspace');
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
+
+export type Input = {
+	fixtures: string[],
+}
+
+export type Result = {
+	key: string,
+	type: string,
+	relativePath: string,
+	outputPath: string | undefined,
+}[]
+export type TestSuite_UnitsMapper = TestSuite<Input, Result>;
+export type TestCase_UnitsMapper = TestSuite_UnitsMapper['testcases'][number];
+
+
+let buildAndInstall: BuildAndInstall;
+const test = async (input: Input): Promise<Result> => {
+	workspaceCreator.setupWorkspace(['workspace.txt', ...input.fixtures]);
+	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+	await buildAndInstall.build();
+
+	return buildAndInstall.projectUnits.map(unit => {
+		return {
+			key: unit.config.key,
+			type: unit.constructor.name,
+			relativePath: unit.config.relativePath,
+			outputPath: ('output' in unit.config ? unit.config.output : undefined) as string | undefined,
+		};
+	});
+};
+
+const runTestCase = (testCase: TestCase_UnitsMapper, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
+
+describe('UnitsMapper', () => {
+	before(async function () {
+		this.timeout(20000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../workspace-fixture.txt', 'fixtures.txt']);
+	});
+
+	it('Project with root, function app, hosting app and two ts lib', runTestCase({
+			input: {
+				fixtures: ['full-workspace.txt'],
+			},
+			result: [
+				{
+					type: Unit_NodeProject.name,
+					key: 'project-root',
+					relativePath: '.',
+					outputPath: undefined
+				},
+				{
+					type: Unit_FirebaseFunctionsApp.name,
+					key: 'function-1',
+					relativePath: './func-app-1',
+					outputPath: resolve(pathToWorkspace, './func-app-1/dist')
+				},
+				{
+					type: Unit_FirebaseHostingApp.name,
+					key: 'hosting-1',
+					relativePath: './hosting-app-1',
+					outputPath: resolve(pathToWorkspace, './hosting-app-1/dist')
+				},
+				{
+					type: Unit_TypescriptLib.name,
+					key: 'lib-1',
+					relativePath: './lib-1',
+					outputPath: resolve(pathToWorkspace, './lib-1/dist')
+				},
+				{
+					type: Unit_TypescriptLib.name,
+					key: 'lib-2',
+					relativePath: './lib-2',
+					outputPath: resolve(pathToWorkspace, './lib-2/dist')
+				},
+			]
+		})
+	);
+
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
+		await CommandoPool.killAll();
+	});
+});
+
+// file: ./UnitsMapper/fixtures.txt
+// file:// ./full-workspace.txt
+//// file:// ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "root ts"
+  }
+}
+
+//// file:// ./func-app-1/__package.json
+{
+  "name": "function-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "basePort": 1,
+    "debugPort": 2,
+    "type": "firebase-function",
+    "label": "function-1",
+    "envs": {
+      "local": {
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}
+
+//// file:// ./hosting-app-1/__package.json
+{
+  "name": "hosting-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "servingPort": 1,
+    "type": "firebase-hosting",
+    "label": "hosting-1",
+    "envs": {
+      "local": {
+        "configUrl": "https://localhost:xxx:/path/to/config.json",
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}
+
+//// file:// ./lib-1/__package.json
+{
+  "name": "lib-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-1 ts"
+  }
+}
+
+//// file:// ./lib-2/__package.json
+{
+  "name": "lib-2",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-2 ts"
+  }
+}
+
+// file: ./UnitsMapper/temp/fixtures/full-workspace.txt
+// file:// ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "root ts"
+  }
+}
+
+// file:// ./func-app-1/__package.json
+{
+  "name": "function-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "basePort": 1,
+    "debugPort": 2,
+    "type": "firebase-function",
+    "label": "function-1",
+    "envs": {
+      "local": {
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}
+
+// file:// ./hosting-app-1/__package.json
+{
+  "name": "hosting-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "servingPort": 1,
+    "type": "firebase-hosting",
+    "label": "hosting-1",
+    "envs": {
+      "local": {
+        "configUrl": "https://localhost:xxx:/path/to/config.json",
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}
+
+// file:// ./lib-1/__package.json
+{
+  "name": "lib-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-1 ts"
+  }
+}
+
+// file:// ./lib-2/__package.json
+{
+  "name": "lib-2",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-2 ts"
+  }
+}
+
+// file: ./UnitsMapper/temp/fixtures/workspace.txt
+// file:// ./.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+// file:// ./.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+// file:// ./.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// file:// ./.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+// file:// ./.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file:// ./.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file:// ./.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+
+// file:// ./bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+// file:// ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+// file:// ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+// file: ./UnitsMapper/temp/workspace/.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+// file: ./UnitsMapper/temp/workspace/.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file: ./UnitsMapper/temp/workspace/.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "root ts"
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+// file: ./UnitsMapper/temp/workspace/func-app-1/__package.json
+{
+  "name": "function-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "basePort": 1,
+    "debugPort": 2,
+    "type": "firebase-function",
+    "label": "function-1",
+    "envs": {
+      "local": {
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/hosting-app-1/__package.json
+{
+  "name": "hosting-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "servingPort": 1,
+    "type": "firebase-hosting",
+    "label": "hosting-1",
+    "envs": {
+      "local": {
+        "configUrl": "https://localhost:xxx:/path/to/config.json",
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/lib-1/__package.json
+{
+  "name": "lib-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-1 ts"
+  }
+}
+
+// file: ./UnitsMapper/temp/workspace/lib-2/__package.json
+{
+  "name": "lib-2",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-2 ts"
+  }
+}
+
+// file: ./_common.ts
+export * from '../main/v3/units/BaseUnit.js';
+export * from '../main/v3/phase/index.js';
+export * from '../main/v3/PhaseManager.js';
+
+export * from '../main/v3/UnitsMapper/UnitsMapper.js';
+export * from '../main/v3/units/index.js';
+export * from '../main/v3/units/firebase/Unit_FirebaseFunctionsApp.js';
+export * from '../main/v3/units/firebase/Unit_FirebaseHostingApp.js';
+
+export * from '../main/v3/UnitsMapper/resolvers/UnitMapper_Base.js';
+export * from '../main/v3/UnitsMapper/resolvers/UnitMapper_Node.js';
+export * from '../main/v3/UnitsMapper/resolvers/UnitMapper_NodeLib.js';
+export * from '../main/v3/UnitsMapper/resolvers/UnitMapper_NodeProject.js';
+export * from '../main/v3/UnitsMapper/resolvers/UnitMapper_FirebaseFunction.js';
+export * from '../main/v3/UnitsMapper/resolvers/UnitMapper_FirebaseHosting.js';
+export * from '../main/v3/UnitsDependencyMapper/UnitsDependencyMapper.js';
+
+export * from '../main/core/params/params.js';
+export * from '../main/v3/core/FileSystemUtils.js';
+
+// file: ./tsconfig.json
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "declaration": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "strict": true,
+    "sourceRoot": "/Users/tacb0ss/dev/nu-art/beamz/_thunderstorm/build-and-install/src/test"
+  }
+}
+
+// file: ./units/compile/.gitignore
+temp
+
+// file: ./units/compile/fixtures.txt
+// file:// ./workspace-compile-valid.txt
+//// file:// ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+
+//// file:// ./src/main/index.ts
+export const x = 5;
+
+// file:// ./workspace-compile-invalid-tsconfig.txt
+//// file:// ./src/main/tsconfig.json
+{ invalid-json
+
+//// file:// ./src/main/index.ts
+export const x = 5;
+
+// file:// ./workspace-compile-missing-tsconfig.txt
+//// file:// ./src/main/index.ts
+export const x = 5;
+
+// file:// ./workspace-compile-with-asset.txt
+//// file:// ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file:// ./src/main/index.ts
+export const x = 5;
+
+//// file:// ./src/main/file.svg
+<svg></svg>
+
+
+// file:// ./workspace-compile-invalid-source.txt
+//// file:// ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file:// ./src/main/index.ts
+export const = 5;
+
+
+
+// file:// ./lib-compile.txt
+//// file:// ./__package.json
+{
+  "name": "lib-compile",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-compile",
+      "customTSConfig": true
+    }
+}
+
+// file:// ./lib-compile--fail.txt
+//// file:// ./__package.json
+
+{
+  "name": "lib-compile",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-compile"
+    }
+}
+
+// file: ./units/compile/unit-compile.test.ts
+// file:// ./tests/phase-execution/compile-phase.test.ts
+import {DebugFlag, LogLevel} from '@nu-art/ts-common';
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
+import {resolve} from 'path';
+import {existsSync} from 'fs';
+import {expect} from 'chai';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {CONST_PackageJSON} from '../../../main/core/consts.js';
+import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {___dirname} from '@nu-art/ts-common/esm';
+
+const dirname = ___dirname(import.meta.url);
+DebugFlag.DefaultLogLevel = LogLevel.Verbose;
+
+const pathToTemp = resolve(dirname, './temp');
+const pathToFixtures = resolve(pathToTemp, './fixtures');
+const pathToWorkspace = resolve(pathToTemp, './workspace');
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
+
+let unit: Unit_TypescriptLib;
+let buildAndInstall: BuildAndInstall;
+
+type Input = {
+	fixtures: string[];
+	compileWatch?: boolean;
+};
+type Output = () => (Promise<void>);
+
+const test = async (setup: Input): Promise<void> => {
+	FilesCache.clear();
+	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-compile');
+
+	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+	await buildAndInstall.build();
+	unit = buildAndInstall.projectUnits.find(unit => unit.config.key == 'lib-compile') as Unit_TypescriptLib;
+
+	if (setup.compileWatch)
+		await unit.watchCompile();
+	else
+		await unit.compile();
+};
+
+type TestSuite_PhaseCompile = TestSuite<Input, Output>;
+type TestCase_PhaseCompile = TestSuite_PhaseCompile['testcases'][number];
+
+const runTestCase = (testCase: TestCase_PhaseCompile, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
+
+describe('Unit_NodeLib - Compile Phase', () => {
+	before(async function () {
+		this.timeout(20000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		workspaceCreator.setupWorkspace(['workspace.txt']);
+		workspaceCreator.setupWorkspace(['lib-compile.txt'], 'lib-compile');
+
+		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+		await buildAndInstall.build();
+		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
+		await buildAndInstall.run();
+	});
+
+	it('Compile - Creates output folder if it does not exist', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-valid.txt']},
+		result: async () => {
+			expect(existsSync(unit.config.output)).to.be.true;
+		}
+	}));
+
+	it('Compile - Valid tsconfig and outputs JS to dist', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-valid.txt']},
+		result: async () => {
+			const compiledJS = resolve(unit.config.output, 'index.js');
+			expect(existsSync(compiledJS)).to.be.true;
+		}
+	}));
+
+	it('Compile - Copies assets (e.g. .svg) to dist folder', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-with-asset.txt']},
+		result: async () => {
+			expect(existsSync(resolve(unit.config.output, 'file.svg'))).to.be.true;
+		}
+	}));
+
+	it('Compile - Writes dist/package.json with correct content', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-valid.txt']},
+		result: async () => {
+			const distPackageJson = resolve(unit.config.output, CONST_PackageJSON);
+			expect(existsSync(distPackageJson)).to.be.true;
+		}
+	}));
+
+	it('Compile - Fails with invalid tsconfig file', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-invalid-tsconfig.txt']},
+		error: {
+			expected: 'Error compiling'
+		}
+	}));
+
+	it('Compile - Fails gracefully with missing tsconfig.json', runTestCase({
+		input: {fixtures: ['./lib-compile--fail.txt', './workspace-compile-missing-tsconfig.txt']},
+		error: {
+			expected: 'Error compiling'
+		}
+	}));
+
+	it('Compile - Fails on syntax error in source', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-invalid-source.txt']},
+		error: {
+			expected: 'Error compiling'
+		}
+	}));
+
+	it('Watch Compile - Fails on syntax error in source using watchCompile()', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-invalid-source.txt'], compileWatch: true},
+		error: {
+			expected: 'Error compiling'
+		}
+	}));
+
+	it('Watch Compile - Outputs JS to dist', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-valid.txt'], compileWatch: true},
+		result: async () => {
+			const compiledJS = resolve(unit.config.output, 'index.js');
+			expect(existsSync(compiledJS)).to.be.true;
+		}
+	}));
+
+	it('Watch Compile - Fails with invalid tsconfig', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-invalid-tsconfig.txt'], compileWatch: true},
+		error: {
+			expected: 'Error compiling'
+		}
+	}));
+
+	it('Watch Compile - Copies assets (e.g. .svg) to dist folder', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-with-asset.txt'], compileWatch: true},
+		result: async () => {
+			expect(existsSync(resolve(unit.config.output, 'file.svg'))).to.be.true;
+		}
+	}));
+
+
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
+		await CommandoPool.killAll();
+	});
+});
+
+// file: ./units/install/.gitignore
+temp
+
+// file: ./units/install/fixtures.txt
+// file:// ./project-root--with-linked-package.txt
+//// file:// ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0",
+    "lib-linked": "workspace:*"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+
+}
+
+//// file:// ./lib-linked/__package.json
+{
+  "name": "lib-linked",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-linked"
+  }
+}
+
+//// file:// ./lib-linked/dist/index.js
+module.exports = { linked: true };
+
+// file: ./units/install/unit-install.test.ts
+// file:// ./tests/phase-execution/install-phase.test.ts
+
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {resolve} from 'path';
+import {existsSync} from 'fs';
+import {expect} from 'chai';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
+import {FileSystemUtils} from '../../../main/v3/core/FileSystemUtils.js';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {CONST_NodeModules} from '../../../main/core/consts.js';
+import {phase_Install, phase_Prepare} from '../../../main/v3/phase/index.js';
+import {___dirname} from '@nu-art/ts-common/esm';
+
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
+const pathToFixtures = resolve(pathToTemp, './fixtures');
+const pathToWorkspace = resolve(pathToTemp, './workspace');
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
+
+const pathToProject = pathToWorkspace; // alias for clarity
+
+type Input = { fixtures: string[] };
+type Output = () => void;
+
+const runInstallTest = async (setup: Input): Promise<void> => {
+	FilesCache.clear();
+	workspaceCreator.setupWorkspace(setup.fixtures);
+
+	const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+	await buildAndInstall.build();
+	buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
+	await buildAndInstall.run();
+};
+
+const runTestCase = (test: (input: Input) => Promise<void>) => (testCase: TestSuite<Input, Output>['testcases'][number]) =>
+	() => runSingleTestCase(test, testCase);
+
+describe('NodeProject - Install Phase (Project Packages)', () => {
+	const run = runTestCase(runInstallTest);
+
+	before(async function () {
+		this.timeout(20000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+	});
+
+	it('Should installPackages', run(() => ({
+		input: {fixtures: ['workspace.txt']},
+		result: async () => {
+			assertLocalPackageInstalled();
+		}
+	}))).timeout(10000);
+
+	it('Should link a local typescript library into root node_modules', run(() => ({
+		input: {fixtures: ['workspace.txt', './project-root--with-linked-package.txt']},
+		result: async () => {
+			const linkedPath = resolve(pathToProject, `${CONST_NodeModules}/lib-linked`);
+			expect(existsSync(linkedPath)).to.be.true;
+
+			const realPath = resolve(pathToWorkspace, CONST_NodeModules, await FileSystemUtils.symlink.read(linkedPath));
+			const expectedPath = resolve(pathToWorkspace, 'lib-linked/dist');
+			expect(realPath).to.equal(expectedPath);
+		}
+	}))).timeout(10000);
+
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
+		await CommandoPool.killAll();
+	});
+});
+
+
+function assertLocalPackageInstalled() {
+	expect(existsSync(resolve(pathToProject, CONST_NodeModules))).to.be.true;
+	expect(existsSync(resolve(pathToProject, `${CONST_NodeModules}/typescript`))).to.be.true;
+}
+
+// file: ./units/lint/.gitignore
+temp
+
+// file: ./units/lint/fixtures.txt
+// file:// ./project-lib-lint.txt
+//// file:// ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  },
+  "include": ["./**/*.ts"]
+}
+
+//// file:// ./__package.json
+{
+  "name": "lib-lint",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-lint",
+      "customTSConfig": true
+    }
+}
+
+// file:// ./project-lib-lint--valid.txt
+//// file:// ./lib-lint/src/main/index.ts
+const isValid = true;
+
+//// file:// ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+
+// file:// ./project-lib-lint--invalid.txt
+//// file:// ./lib-lint/src/main/index.ts
+const unused = true;
+
+//// file:// ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file: ./units/lint/unit-lint.test.ts
+// file:// ./tests/phase-execution/lint-phase.test.ts
+
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
+import {resolve} from 'path';
+import {expect} from 'chai';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {___dirname} from '@nu-art/ts-common/esm';
+
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
+const pathToFixtures = resolve(pathToTemp, './fixtures');
+const pathToWorkspace = resolve(pathToTemp, './workspace');
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
+
+let unit: Unit_TypescriptLib;
+let buildAndInstall: BuildAndInstall;
+
+
+type Input = { fixtures: string[] };
+type Output = () => void;
+
+const test = async (setup: Input): Promise<void> => {
+	FilesCache.clear();
+	workspaceCreator.setupWorkspace(setup.fixtures, '', false);
+	unit = buildAndInstall.projectUnits.find(unit => unit.config.key == 'lib-lint') as Unit_TypescriptLib;
+	await unit.lint();
+};
+
+type TestSuite_LintPhase = TestSuite<Input, Output>;
+type TestCase_LintPhase = TestSuite_LintPhase['testcases'][number];
+const runTestCase = (testCase: TestCase_LintPhase) => () => runSingleTestCase(test, testCase);
+
+describe('TypescriptLib - Lint Phase', () => {
+	before(async function () {
+		this.timeout(20000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		workspaceCreator.setupWorkspace(['workspace.txt']);
+		workspaceCreator.setupWorkspace(['project-lib-lint.txt'], 'lib-lint');
+
+		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+		await buildAndInstall.build();
+		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
+		await buildAndInstall.run();
+	});
+
+
+	it('Should pass linting without errors', runTestCase(() => {
+		return {
+			input: {fixtures: ['./project-lib-lint--valid.txt']},
+			result: async () => {
+				expect(true).to.be.true; // Placeholder until lint result is assertable
+			}
+		};
+	})).timeout(15000);
+
+	it('Should fail linting on invalid code', runTestCase(() => {
+		return {
+			input: {fixtures: ['./project-lib-lint--invalid.txt']},
+			error: {
+				expected: 'Linting failed'
+			}
+		};
+	})).timeout(15000);
+
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
+		await CommandoPool.killAll();
+	});
+});
+
+// file: ./units/prepare/.gitignore
+temp
+
+// file: ./units/prepare/fixtures.txt
+// file:// ./lib-prepare--static.txt
+//// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file:// ./lib-prepare--templated.txt
+//// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "$app_version",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file:// ./lib-prepare--unknown-template.txt
+//// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "$app_version_doesnt_exists",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file:// ./lib-prepare--repeated-template.txt
+//// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "$app_version",
+  "description": "$app_version",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file:// ./lib-prepare--escaped-template.txt
+//// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "description": "This should not be replaced: \\$escaped",
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file:// ./lib-prepare--numeric-template.txt
+//// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "description": "$2024",
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file:// ./lib-prepare--short-template.txt
+//// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "description": "$ab",
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file:// ./lib-prepare--escaped-shell-template.txt
+//// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "scripts": {
+    "build": "webpack --env app.env=\\$SINGLE_ESCAPE \\\\$DOUBLE_ESCAPE"
+  },
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file:// ./lib-prepare--missing-package.txt
+//// file:// ./src/main/index.ts
+export const y = 42;
+
+// file: ./units/prepare/temp/fixtures/lib-prepare--escaped-shell-template.txt
+// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "scripts": {
+    "build": "webpack --env app.env=\\$SINGLE_ESCAPE \\\\$DOUBLE_ESCAPE"
+  },
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/temp/fixtures/lib-prepare--escaped-template.txt
+// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "description": "This should not be replaced: \\$escaped",
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/temp/fixtures/lib-prepare--missing-package.txt
+// file:// ./src/main/index.ts
+export const y = 42;
+
+// file: ./units/prepare/temp/fixtures/lib-prepare--numeric-template.txt
+// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "description": "$2024",
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/temp/fixtures/lib-prepare--repeated-template.txt
+// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "$app_version",
+  "description": "$app_version",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/temp/fixtures/lib-prepare--short-template.txt
+// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "description": "$ab",
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/temp/fixtures/lib-prepare--static.txt
+// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/temp/fixtures/lib-prepare--templated.txt
+// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "$app_version",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/temp/fixtures/lib-prepare--unknown-template.txt
+// file:// ./__package.json
+{
+  "name": "lib-prepare",
+  "version": "$app_version_doesnt_exists",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/temp/fixtures/workspace.txt
+// file:// ./.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+// file:// ./.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+// file:// ./.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// file:// ./.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+// file:// ./.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file:// ./.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file:// ./.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+
+// file:// ./bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+// file:// ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+// file:// ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./units/prepare/temp/workspace/.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+// file: ./units/prepare/temp/workspace/.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+// file: ./units/prepare/temp/workspace/.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// file: ./units/prepare/temp/workspace/.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+// file: ./units/prepare/temp/workspace/.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file: ./units/prepare/temp/workspace/.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/prepare/temp/workspace/.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/prepare/temp/workspace/__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./units/prepare/temp/workspace/bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+// file: ./units/prepare/temp/workspace/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+// file: ./units/prepare/temp/workspace/lib-prepare/__package.json
+{
+  "name": "lib-prepare",
+  "scripts": {
+    "build": "webpack --env app.env=\\$SINGLE_ESCAPE \\\\$DOUBLE_ESCAPE"
+  },
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/temp/workspace/lib-prepare/package.json
+{
+  "name": "lib-prepare",
+  "scripts": {
+    "build": "webpack --env app.env=\\$SINGLE_ESCAPE \\\\$DOUBLE_ESCAPE"
+  },
+  "version": "1.0.1",
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-prepare"
+  }
+}
+
+// file: ./units/prepare/unit-prepare.test.ts
+// file:// ./tests/phase-execution/prepare-phase.test.ts
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {resolve} from 'path';
+import {expect} from 'chai';
+import {FileSystemUtils, Unit_TypescriptLib} from '../../_common.js';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {existsSync} from 'fs';
+import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {___dirname} from '@nu-art/ts-common/esm';
+
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
+const pathToFixtures = resolve(pathToTemp, './fixtures');
+const pathToWorkspace = resolve(pathToTemp, './workspace');
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
+
+let unit: Unit_TypescriptLib;
+let buildAndInstall: BuildAndInstall;
+
+type Input = {
+	fixtures: string[];
+};
+type Output = () => Promise<void>;
+
+const test = async (input: Input): Promise<void> => {
+	FilesCache.clear();
+	workspaceCreator.setupWorkspace(['workspace.txt']);
+	workspaceCreator.setupWorkspace(input.fixtures, 'lib-prepare');
+	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+	await buildAndInstall.build();
+
+	unit = buildAndInstall.projectUnits.find(u => u.config.key === 'lib-prepare') as Unit_TypescriptLib;
+	await unit.prepare();
+};
+
+type TestSuite_Prepare = TestSuite<Input, Output>;
+type TestCase_Prepare = TestSuite_Prepare['testcases'][number];
+const runTestCase = (testCase: TestCase_Prepare, processor = defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
+
+describe('Unit_NodeLib - Prepare Phase', () => {
+	before(async function () {
+		this.timeout(10000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+	});
+
+	it('Prepare - Copies __package.json to package.json with no templates', runTestCase({
+		input: {fixtures: ['./lib-prepare--static.txt']},
+		result: async () => {
+			const pkgJson = resolve(unit.config.fullPath, 'package.json');
+			expect(existsSync(pkgJson)).to.be.true;
+			const packageJson = await FileSystemUtils.file.read(pkgJson);
+			const __packageJson = await FileSystemUtils.file.read(resolve(unit.config.fullPath, '__package.json'));
+			expect(packageJson.trim()).to.equal(__packageJson.trim());
+		}
+	}));
+
+	it('Prepare - Resolves simple $template values from package.json', runTestCase({
+		input: {fixtures: ['./lib-prepare--templated.txt']},
+		result: async () => {
+			const pkgJson = resolve(unit.config.fullPath, 'package.json');
+			const json = require(pkgJson);
+			expect(json.version).to.equal('1.0.1');
+		}
+	}));
+
+	it('Prepare - Fails when required template param is missing', runTestCase({
+		input: {fixtures: ['./lib-prepare--unknown-template.txt']},
+		error: {expected: 'Missing template param'}
+	}));
+
+	it('Prepare - Replaces multiple instances of the same template param', runTestCase({
+		input: {fixtures: ['./lib-prepare--repeated-template.txt']},
+		result: async () => {
+			const pkgJson = resolve(unit.config.fullPath, 'package.json');
+			const content = await FileSystemUtils.file.read(pkgJson);
+			expect(content.match(/1\.0\.1/g)?.length).to.equal(2);
+		}
+	}));
+
+	it('Prepare - Does not replace escaped template param $$escaped', runTestCase({
+		input: {fixtures: ['./lib-prepare--escaped-template.txt']},
+		result: async () => {
+			const pkgJson = resolve(unit.config.fullPath, 'package.json');
+			const content = await FileSystemUtils.file.read(pkgJson);
+			expect(content).to.contain('$escaped');
+		}
+	}));
+
+	it('Prepare - Does not replace numeric template param $2024', runTestCase({
+		input: {fixtures: ['./lib-prepare--numeric-template.txt']},
+		result: async () => {
+			const pkgJson = resolve(unit.config.fullPath, 'package.json');
+			const content = await FileSystemUtils.file.read(pkgJson);
+			expect(content).to.contain('$2024');
+		}
+	}));
+
+	it('Prepare - Does not match template keys under 3 chars (e.g., $ab)', runTestCase({
+		input: {fixtures: ['./lib-prepare--short-template.txt']},
+		result: async () => {
+			const pkgJson = resolve(unit.config.fullPath, 'package.json');
+			const content = await FileSystemUtils.file.read(pkgJson);
+			expect(content).to.contain('$ab');
+		}
+	}));
+
+	it('Prepare - Does not replace shell-style escaped template param \$ENV', runTestCase({
+		input: {fixtures: ['./lib-prepare--escaped-shell-template.txt']},
+		result: async () => {
+			const pkgJson = resolve(unit.config.fullPath, 'package.json');
+			const content = await FileSystemUtils.file.read(pkgJson);
+			expect(content).to.contain('\\$SINGLE_ESCAPE');
+			expect(content).to.contain('\\\\$DOUBLE_ESCAPE');
+		}
+	}));
+
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+	});
+});
+
+// file: ./units/purge/.gitignore
+temp
+
+// file: ./units/purge/fixtures.txt
+// file:// ./lib-purge.txt
+//// file:// ./__package.json
+{
+  "name": "lib-purge",
+  "version": "1.0.0",
+  "dependencies": {
+    "is-sorted": "^1.0.5"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-purge",
+      "customTSConfig": true
+    }
+}
+
+//// file:// ./dist/index.js
+console.log('compiled output');
+
+// file: ./units/purge/unit-purge.test.ts
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {FileSystemUtils, Unit_PackageJson, Unit_TypescriptLib} from '../../_common.js';
+import {resolve} from 'path';
+import {existsSync} from 'fs';
+import {expect} from 'chai';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {___dirname} from '@nu-art/ts-common/esm';
+
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
+const pathToFixtures = resolve(pathToTemp, './fixtures');
+const pathToWorkspace = resolve(pathToTemp, './workspace');
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
+let buildAndInstall: BuildAndInstall;
+
+type Input = {
+	fixtures: string[]
+	unitKey: string
+};
+type Output = () => void;
+
+let unit: Unit_PackageJson;
+const test = async (setup: Input): Promise<void> => {
+	// workspaceCreator.setupWorkspace(setup.fixtures, '', false);
+
+	unit = buildAndInstall.projectUnits.find(unit => unit.config.key == setup.unitKey) as Unit_PackageJson;
+	await unit.purge();
+};
+
+type TestSuite_UnitPurge = TestSuite<Input, Output>;
+type TestCase_UnitPurge = TestSuite_UnitPurge['testcases'][number];
+const runTestCase = (testCase: TestCase_UnitPurge) => () => runSingleTestCase(test, testCase);
+
+describe('Unit - Purge Phase', () => {
+	before(async function () {
+		this.timeout(20000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		workspaceCreator.setupWorkspace(['workspace.txt']);
+		workspaceCreator.setupWorkspace(['lib-purge.txt'], 'lib-purge');
+
+		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+		await buildAndInstall.build();
+		await buildAndInstall.nodeProjectUnit?.install();
+	});
+
+
+	it('TypescriptLib - purge node_modules and dist', runTestCase(() => {
+		return {
+			input: {
+				fixtures: [/*'./workspace-purge-node-lib.txt'*/],
+				unitKey: 'lib-purge',
+			},
+			result: async () => {
+				expect(existsSync(resolve(unit.config.fullPath, 'node_modules'))).to.be.false;
+				expect(existsSync(resolve(unit.config.fullPath, (unit as Unit_TypescriptLib).config.output))).to.be.false;
+			}
+		};
+	}));
+
+	it('Project Unit - purge node_modules and and lock files', runTestCase(() => {
+		return {
+			input: {
+				fixtures: [/*'./workspace-purge-root-project.txt'*/],
+				unitKey: 'project-root',
+			},
+			result: async () => {
+				expect(existsSync(resolve(unit.config.fullPath, 'node_modules'))).to.be.false;
+				expect(existsSync(resolve(unit.config.fullPath, 'pnpm-lock.yaml'))).to.be.false;
+				expect(existsSync(resolve(unit.config.fullPath, 'pnpm-workspace.yaml'))).to.be.false;
+				expect(existsSync(resolve(unit.config.fullPath, 'package-lock.json'))).to.be.false;
+			}
+		};
+	}));
+
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
+		await CommandoPool.killAll();
+	});
+});
+
+// file: ./units/test/.gitignore
+temp
+
+// file: ./units/test/fixtures.txt
+// file:// ./project-lib-test.txt
+//// file:// ./src/test/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  },
+  "include": ["./**/*.ts"]
+}
+
+//// file:// ./__package.json
+{
+  "name": "@demo/lib-test",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-test"
+  }
+}
+
+//// file:// ./src/main/index.ts
+export const add = (a: number, b: number) => a + b;
+
+// file:// ./workspace-test-fail.txt
+//// file:// ./src/test/test.test-helper.ts
+const add = (a: number, b: number) => a + b;
+describe('add()', () => {
+  it('fails on purpose', () => {
+    if (add(1, 2) !== 4)
+      throw new Error('Intentional failure');
+  });
+});
+
+// file:// ./workspace-test-pass.txt
+//// file:// ./src/test/test.test-helper.ts
+const add = (a: number, b: number) => a + b;
+describe('add()', () => {
+  it('adds numbers', () => {
+    if (add(1, 2) !== 3)
+      throw new Error('Test failed');
+  });
+});
+
+// file: ./units/test/temp/fixtures/project-lib-test.txt
+// file:// ./src/test/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  },
+  "include": ["./**/*.ts"]
+}
+
+// file:// ./__package.json
+{
+  "name": "@demo/lib-test",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-test"
+  }
+}
+
+// file:// ./src/main/index.ts
+export const add = (a: number, b: number) => a + b;
+
+// file: ./units/test/temp/fixtures/workspace-test-fail.txt
+// file:// ./src/test/test.test-helper.ts
+const add = (a: number, b: number) => a + b;
+describe('add()', () => {
+  it('fails on purpose', () => {
+    if (add(1, 2) !== 4)
+      throw new Error('Intentional failure');
+  });
+});
+
+// file: ./units/test/temp/fixtures/workspace-test-pass.txt
+// file:// ./src/test/test.test-helper.ts
+const add = (a: number, b: number) => a + b;
+describe('add()', () => {
+  it('adds numbers', () => {
+    if (add(1, 2) !== 3)
+      throw new Error('Test failed');
+  });
+});
+
+// file: ./units/test/temp/fixtures/workspace.txt
+// file:// ./.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+// file:// ./.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+// file:// ./.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// file:// ./.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+// file:// ./.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file:// ./.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file:// ./.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+
+// file:// ./bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+// file:// ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+// file:// ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./units/test/temp/workspace/.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+// file: ./units/test/temp/workspace/.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+// file: ./units/test/temp/workspace/.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// file: ./units/test/temp/workspace/.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+// file: ./units/test/temp/workspace/.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file: ./units/test/temp/workspace/.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/test/temp/workspace/.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/test/temp/workspace/.trash/output/dependency-tree-calc-2025-10-19T18:00:50.json
+{"unitKeys":["project-root"],"dependencies":[{"key":"project-root","dependsOn":[]},{"key":"@demo/lib-test","dependsOn":[]}],"output":[["project-root"]]}
+
+// file: ./units/test/temp/workspace/__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./units/test/temp/workspace/bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+// file: ./units/test/temp/workspace/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+// file: ./units/test/temp/workspace/lib-test/__package.json
+{
+  "name": "@demo/lib-test",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-test"
+  }
+}
+
+// file: ./units/test/temp/workspace/lib-test/src/main/index.ts
+export const add = (a: number, b: number) => a + b;
+
+// file: ./units/test/temp/workspace/lib-test/src/test/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  },
+  "include": ["./**/*.ts"]
+}
+
+// file: ./units/test/temp/workspace/package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./units/test/temp/workspace/pnpm-workspace.yaml
+packages:
+  - './lib-test'
+
+// file: ./units/test/temp/workspace/running-status.json
+{
+  "index": 0,
+  "steps": [
+    {
+      "phases": [
+        "prepare"
+      ],
+      "units": [
+        "project-root"
+      ]
+    },
+    {
+      "phases": [
+        "install"
+      ],
+      "units": [
+        "project-root"
+      ]
+    }
+  ]
+}
+
+// file: ./units/test/unit-test.test.ts
+// file:// ./tests/phase-execution/test-phase.test.ts
+
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
+import {resolve} from 'path';
+import {expect} from 'chai';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {___dirname} from '@nu-art/ts-common/esm';
+
+const dirname = ___dirname(import.meta.url);
+
+const pathToTemp = resolve(dirname, './temp');
+const pathToFixtures = resolve(pathToTemp, './fixtures');
+const pathToWorkspace = resolve(pathToTemp, './workspace');
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
+
+type Input = { fixtures: string[] };
+type Output = () => void;
+
+const test = async (setup: Input): Promise<void> => {
+	const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+	await buildAndInstall.build();
+
+	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-test', false);
+	const unit = buildAndInstall.projectUnits.find(unit => unit.config.key == '@demo/lib-test') as Unit_TypescriptLib;
+	await unit.runTests();
+};
+
+type TestSuite_TestPhase = TestSuite<Input, Output>;
+type TestCase_TestPhase = TestSuite_TestPhase['testcases'][number];
+const runTestCase = (testCase: TestCase_TestPhase) => () => runSingleTestCase(test, testCase);
+
+describe('TypescriptLib - Test Phase', () => {
+	before(async function () {
+		this.timeout(20000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		workspaceCreator.setupWorkspace(['workspace.txt']);
+		workspaceCreator.setupWorkspace(['project-lib-test.txt'], 'lib-test');
+
+		const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+		await buildAndInstall.build();
+		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
+		await buildAndInstall.run();
+	});
+
+	it('Should pass generated test suite', runTestCase({
+		input: {fixtures: ['./workspace-test-pass.txt']},
+		result: async () => {
+			expect(true).to.be.true;
+		}
+	})).timeout(15000);
+
+	it('Should fail generated test suite', runTestCase({
+		input: {fixtures: ['./workspace-test-fail.txt']},
+		error: {
+			expected: 'Error running tests'
+		}
+	})).timeout(15000);
+
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
+		await CommandoPool.killAll();
+	});
+});
+
+// file: ./units/watch/.gitignore
+temp
+
+// file: ./units/watch/fixtures.txt
+// file:// ./lib-a.txt
+//// file:// ./__package.json
+{
+  "name": "@demo/lib-a",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-a"
+    }
+}
+
+//// file:// ./src/main/index.ts
+export const libA = () => 'A';
+
+// file:// ./lib-b.txt
+//// file:// ./__package.json
+{
+  "name": "@demo/lib-b",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+      "dependencies": {
+        "@demo/lib-a": "?"
+      },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-b"
+    }
+}
+
+//// file:// ./src/main/index.ts
+export const libB = () => 'B';
+
+// file:// ./lib-c.txt
+//// file:// ./__package.json
+{
+  "name": "@demo/lib-c",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-b": "?"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+   "unitConfig": {
+     "type": "typescript-lib",
+     "label": "lib-c"
+   }
+}
+
+//// file:// ./src/main/index.ts
+import {libB} from '@demo/lib-b';
+export const libC = () => libB() + 'C';
+
+// file:// ./lib-d.txt
+//// file:// ./__package.json
+{
+  "name": "@demo/lib-d",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-d"
+  }
+}
+
+//// file:// ./src/main/index.ts
+export const libD = () => 'libD';
+
+// file:// ./lib-e.txt
+//// file:// ./__package.json
+{
+  "name": "@demo/lib-e",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-c": "?",
+    "@demo/lib-d": "?"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-e"
+  }
+}
+
+//// file:// ./src/main/index.ts
+import {libC} from '@demo/lib-c';
+import {libD} from '@demo/lib-d';
+export const libE = () => libC() + libD();
+
+// file:// ./project-lib-config.txt
+//// file:// ./.eslintrc.json
+{ "root": true }
+
+
+//// file:// ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/watch/temp/fixtures/lib-a.txt
+// file:// ./__package.json
+{
+  "name": "@demo/lib-a",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-a"
+    }
+}
+
+// file:// ./src/main/index.ts
+export const libA = () => 'A';
+
+// file: ./units/watch/temp/fixtures/lib-b.txt
+// file:// ./__package.json
+{
+  "name": "@demo/lib-b",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+      "dependencies": {
+        "@demo/lib-a": "?"
+      },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-b"
+    }
+}
+
+// file:// ./src/main/index.ts
+export const libB = () => 'B';
+
+// file: ./units/watch/temp/fixtures/lib-c.txt
+// file:// ./__package.json
+{
+  "name": "@demo/lib-c",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-b": "?"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+   "unitConfig": {
+     "type": "typescript-lib",
+     "label": "lib-c"
+   }
+}
+
+// file:// ./src/main/index.ts
+import {libB} from '@demo/lib-b';
+export const libC = () => libB() + 'C';
+
+// file: ./units/watch/temp/fixtures/lib-d.txt
+// file:// ./__package.json
+{
+  "name": "@demo/lib-d",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-d"
+  }
+}
+
+// file:// ./src/main/index.ts
+export const libD = () => 'libD';
+
+// file: ./units/watch/temp/fixtures/lib-e.txt
+// file:// ./__package.json
+{
+  "name": "@demo/lib-e",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-c": "?",
+    "@demo/lib-d": "?"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-e"
+  }
+}
+
+// file:// ./src/main/index.ts
+import {libC} from '@demo/lib-c';
+import {libD} from '@demo/lib-d';
+export const libE = () => libC() + libD();
+
+// file: ./units/watch/temp/fixtures/project-lib-config.txt
+// file:// ./.eslintrc.json
+{ "root": true }
+
+
+// file:// ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/watch/temp/fixtures/workspace.txt
+// file:// ./.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+// file:// ./.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+// file:// ./.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// file:// ./.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+// file:// ./.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file:// ./.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file:// ./.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+
+// file:// ./bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+// file:// ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+// file:// ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./units/watch/temp/workspace/.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+// file: ./units/watch/temp/workspace/.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+// file: ./units/watch/temp/workspace/.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// file: ./units/watch/temp/workspace/.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+// file: ./units/watch/temp/workspace/.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file: ./units/watch/temp/workspace/.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/watch/temp/workspace/.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/watch/temp/workspace/.trash/output/dependency-tree-calc-2025-10-19T18:02:44.json
+{"unitKeys":["project-root"],"dependencies":[{"key":"project-root","dependsOn":[]},{"key":"@demo/lib-a","dependsOn":[]},{"key":"@demo/lib-b","dependsOn":["@demo/lib-a"]},{"key":"@demo/lib-c","dependsOn":["@demo/lib-b"]},{"key":"@demo/lib-d","dependsOn":[]},{"key":"@demo/lib-e","dependsOn":["@demo/lib-c","@demo/lib-d"]}],"output":[["project-root"]]}
+
+// file: ./units/watch/temp/workspace/__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./units/watch/temp/workspace/bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+// file: ./units/watch/temp/workspace/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+// file: ./units/watch/temp/workspace/lib-a/.eslintrc.json
+{ "root": true }
+
+// file: ./units/watch/temp/workspace/lib-a/__package.json
+{
+  "name": "@demo/lib-a",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-a"
+    }
+}
+
+// file: ./units/watch/temp/workspace/lib-a/src/main/index.ts
+export const libA = () => 'A';
+
+// file: ./units/watch/temp/workspace/lib-a/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/watch/temp/workspace/lib-b/.eslintrc.json
+{ "root": true }
+
+// file: ./units/watch/temp/workspace/lib-b/__package.json
+{
+  "name": "@demo/lib-b",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+      "dependencies": {
+        "@demo/lib-a": "?"
+      },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-b"
+    }
+}
+
+// file: ./units/watch/temp/workspace/lib-b/src/main/index.ts
+export const libB = () => 'B';
+
+// file: ./units/watch/temp/workspace/lib-b/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/watch/temp/workspace/lib-c/.eslintrc.json
+{ "root": true }
+
+// file: ./units/watch/temp/workspace/lib-c/__package.json
+{
+  "name": "@demo/lib-c",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-b": "?"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+   "unitConfig": {
+     "type": "typescript-lib",
+     "label": "lib-c"
+   }
+}
+
+// file: ./units/watch/temp/workspace/lib-c/src/main/index.ts
+import {libB} from '@demo/lib-b';
+export const libC = () => libB() + 'C';
+
+// file: ./units/watch/temp/workspace/lib-c/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/watch/temp/workspace/lib-d/.eslintrc.json
+{ "root": true }
+
+// file: ./units/watch/temp/workspace/lib-d/__package.json
+{
+  "name": "@demo/lib-d",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-d"
+  }
+}
+
+// file: ./units/watch/temp/workspace/lib-d/src/main/index.ts
+export const libD = () => 'libD';
+
+// file: ./units/watch/temp/workspace/lib-d/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/watch/temp/workspace/lib-e/.eslintrc.json
+{ "root": true }
+
+// file: ./units/watch/temp/workspace/lib-e/__package.json
+{
+  "name": "@demo/lib-e",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-c": "?",
+    "@demo/lib-d": "?"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-e"
+  }
+}
+
+// file: ./units/watch/temp/workspace/lib-e/src/main/index.ts
+import {libC} from '@demo/lib-c';
+import {libD} from '@demo/lib-d';
+export const libE = () => libC() + libD();
+
+// file: ./units/watch/temp/workspace/lib-e/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./units/watch/temp/workspace/package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./units/watch/temp/workspace/pnpm-workspace.yaml
+packages:
+  - './lib-a'
+  - './lib-b'
+  - './lib-c'
+  - './lib-d'
+  - './lib-e'
+
+// file: ./units/watch/temp/workspace/running-status.json
+{
+  "index": 0,
+  "steps": [
+    {
+      "phases": [
+        "prepare"
+      ],
+      "units": [
+        "project-root"
+      ]
+    },
+    {
+      "phases": [
+        "install"
+      ],
+      "units": [
+        "project-root"
+      ]
+    }
+  ]
+}
+
+// file: ./units/watch/unit-watch.test.ts
+// file:// ./tests/phase-execution/watch-phase.test.ts
+import {DebugFlag, LogLevel, timeCounter, timeout} from '@nu-art/ts-common';
+import '../compile/unit-compile.test.js';
+import '../../UnitsMapper/UnitsMapper.test.js';
+import '../../UnitsDependencyMapper/reverse-dependency-mapper.test.js';
+import '../../UnitsDependencyMapper/dependency-mapper.test.js';
+import '../../UnitsDependencyMapper/dependency-filter.test.js';
+import '../../UnitsDependencyMapper/transitive-dependencies.test.js';
+
+import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {FileSystemUtils, phase_Install, phase_Prepare, Unit_NodeProject, Unit_TypescriptLib} from '../../_common.js';
+import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
+import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
+import {___dirname} from '@nu-art/ts-common/esm';
+import {resolve} from 'path';
+
+const dirname = ___dirname(import.meta.url);
+
+DebugFlag.DefaultLogLevel = LogLevel.Verbose;
+
+const pathToTemp = resolve(dirname, './temp');
+const pathToFixtures = resolve(pathToTemp, './fixtures');
+const pathToWorkspace = resolve(pathToTemp, './workspace');
+const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
+const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
+
+let projectUnit: Unit_NodeProject;
+let buildAndInstall: BuildAndInstall;
+
+
+type Input = {
+	fixtures: string[];
+	beforeWatching?: (bai: BuildAndInstall) => Promise<void>;
+	whileWatching: (bai: BuildAndInstall) => Promise<void>;
+	waitFor: {
+		interval?: number;
+		timeout?: number;
+		predicate: () => Promise<boolean>;
+	};
+};
+
+type Output = boolean;
+
+const test = async (setup: Input): Promise<boolean> => {
+	const bai = new BuildAndInstall({pathToProject: pathToWorkspace});
+	await bai.build();
+	projectUnit = bai.nodeProjectUnit;
+	await setup.beforeWatching?.(bai);
+
+	bai.nodeProjectUnit.watch(100, 200).then(async () => {
+		console.log('watching ENDED');
+	}, async () => {
+		console.log('watching error');
+	});
+
+	await timeout(500);
+	await setup.whileWatching?.(bai);
+	const counter = timeCounter();
+	let fulfilled = false;
+	while (counter.dt() < (setup.waitFor.timeout ?? 5000)) {
+		await timeout(setup.waitFor.interval ?? 500);
+		fulfilled = await setup.waitFor.predicate();
+		if (fulfilled)
+			break;
+	}
+	await projectUnit.stopWatch();
+	return fulfilled;
+};
+
+type TestSuite_WatchPhase = TestSuite<Input, Output>;
+type TestCase_WatchPhase = TestSuite_WatchPhase['testcases'][number];
+const runTestCase = (testCase: TestCase_WatchPhase) => () => runSingleTestCase(test, testCase);
+
+describe('Phase Watch - 1 Lib', () => {
+	before(async function () {
+		this.timeout(20000);
+		await FileSystemUtils.folder.delete(pathToTemp);
+		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		workspaceCreator.setupWorkspace(['workspace.txt']);
+		['lib-a', 'lib-b', 'lib-c', 'lib-d', 'lib-e'].forEach(libName => {
+			workspaceCreator.setupWorkspace(['project-lib-config.txt', `${libName}.txt`], libName);
+		});
+
+
+		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+		await buildAndInstall.build();
+		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
+		await buildAndInstall.run();
+	});
+
+	it('Should rebuild lib-e when its source is changed', runTestCase({
+		input: {
+			fixtures: [],
+			whileWatching: async (bai) => {
+				const libE = bai.projectUnits.find(unit => unit.config.key == '@demo/lib-e') as Unit_TypescriptLib;
+				const filePath = resolve(libE.config.fullPath, 'src/main/index.ts');
+				await FileSystemUtils.file.write(filePath, `export const libE = () => 'changed';`);
+			},
+			waitFor: {
+				predicate: async () => {
+					try {
+						const output = await FileSystemUtils.file.read(resolve(pathToWorkspace, 'lib-e/dist/index.js'));
+						return output.includes('changed');
+					} catch (e) {
+						return false;
+					}
+				}
+			}
+		},
+		result: true
+	})).timeout(20000);
+
+	it('Should rebuild lib-e when lib-a changes (propagated)', runTestCase({
+		input: {
+			fixtures: [],
+			beforeWatching: async bai => {
+				const libE = bai.projectUnits.find(unit => unit.config.key == '@demo/lib-e') as Unit_TypescriptLib;
+				await FileSystemUtils.file.delete(resolve(libE.config.fullPath, 'dist/index.js'));
+			},
+			whileWatching: async (bai) => {
+				const libA = bai.projectUnits.find(unit => unit.config.key == '@demo/lib-a') as Unit_TypescriptLib;
+				const filePath = resolve(libA.config.fullPath, 'src/main/index.ts');
+				await FileSystemUtils.file.write(filePath, `export const libA = () => 'changed';`);
+			},
+			waitFor: {
+				predicate: async () => {
+					try {
+						return await FileSystemUtils.file.exists(resolve(pathToWorkspace, 'lib-e/dist/index.js'));
+					} catch (e) {
+						return false;
+					}
+				}
+			}
+		},
+		result: true
+	})).timeout(20000);
+	//
+	// it('Calling watch twice will fail', runTestCase({
+	// 	input: {
+	// 		fixtures: [],
+	// 		whileWatching: async () => {
+	// 			await projectUnit.watch();
+	// 			await new Promise(res => setTimeout(res, 500));
+	// 		}
+	// 	},
+	// 	error: {
+	// 		expected: 'Watcher already initialized'
+	// 	}
+	// }));
+
+	after(async function () {
+		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
+		if (allPassed)
+			await FileSystemUtils.folder.delete(pathToTemp);
+
+		await projectUnit.stopWatch();
+		await CommandoPool.killAll();
+	});
+});
+
+// file: ./workspace-fixture.txt
+// file:// ./workspace.txt
+//// file:// ./.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+//// file:// ./.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+//// file:// ./.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+//// file:// ./.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+//// file:// ./.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+//// file:// ./.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file:// ./.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+
+//// file:// ./bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+//// file:// ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+//// file:// ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}

@@ -4,7 +4,9 @@ import {expect} from 'chai';
 import {Commando_Basic, CommandoInteractive, ShellLogProcessor, SimpleTestCommando} from '../../_common.js';
 import {ExpectedResult, Result_Raw, TestResult_CommandoOutput} from '../cases.js';
 import {BadImplementationException, sleep} from '@nu-art/ts-common';
+import {___dirname} from '@nu-art/ts-common/esm';
 
+const dirname = ___dirname(import.meta.url);
 type Input = (commando: SimpleTestCommando, pidListener: (pid: number, signal: NodeJS.Signals) => Promise<void>) => (number | void);
 
 let commando: SimpleTestCommando;
@@ -108,7 +110,7 @@ describe('Commando - Async Execution', () => {
 	it('Run file async', runTestCase({
 		description: 'Run file async',
 		input: (commando) => {
-			commando.appendAsync(`bash ${__dirname}/sleep-script-2s.sh`);
+			commando.appendAsync(`bash ${dirname}/sleep-script-2s.sh`);
 			return 1;
 		},
 		result: {
@@ -120,7 +122,7 @@ describe('Commando - Async Execution', () => {
 	it('Run file async, and SIGINT the process', runTestCase({
 		description: 'Run file async, and SIGINT the process',
 		input: (commando, pidListener) => {
-			commando.appendAsync(`bash ${__dirname}/sleep-script-2s.sh`, async pid => {
+			commando.appendAsync(`bash ${dirname}/sleep-script-2s.sh`, async pid => {
 					await sleep(1000);
 					await pidListener(pid, 'SIGINT');
 				}
@@ -135,7 +137,7 @@ describe('Commando - Async Execution', () => {
 	it('Run file async, and SIGTERM the process', runTestCase({
 		description: 'Run file async, and SIGTERM the process',
 		input: (commando, pidListener) => {
-			commando.appendAsync(`bash ${__dirname}/sleep-script-2s.sh`, async pid => {
+			commando.appendAsync(`bash ${dirname}/sleep-script-2s.sh`, async pid => {
 					await sleep(1000);
 					await pidListener(pid, 'SIGTERM');
 				}
@@ -150,7 +152,7 @@ describe('Commando - Async Execution', () => {
 	it('Run file async, and SIGKILL the process', runTestCase({
 		description: 'Run file async, and SIGKILL the process',
 		input: (commando, pidListener) => {
-			commando.appendAsync(`bash ${__dirname}/sleep-script-2s.sh`, async pid => {
+			commando.appendAsync(`bash ${dirname}/sleep-script-2s.sh`, async pid => {
 					await sleep(1000);
 					await pidListener(pid, 'SIGKILL');
 				}
@@ -166,7 +168,7 @@ describe('Commando - Async Execution', () => {
 	it('Run file async with small sleeps, and kill the process', runTestCase({
 		description: 'Run file async with small sleeps, and kill the process',
 		input: (commando, pidListener) => {
-			commando.appendAsync(`bash ${__dirname}/sleep-script-50x0.2.sh`, async pid => {
+			commando.appendAsync(`bash ${dirname}/sleep-script-50x0.2.sh`, async pid => {
 					await sleep(1000);
 					await pidListener(pid, 'SIGTERM');
 				}
@@ -181,7 +183,7 @@ describe('Commando - Async Execution', () => {
 		// this one is a problem, there is no way to tell whether this process even existed or stopped running.. not sure how to test this
 		description: 'Run file async with small sleeps, and kill wrong process',
 		input: (commando, pidListener) => {
-			commando.appendAsync(`bash ${__dirname}/sleep-script-2s.sh`, async pid => {
+			commando.appendAsync(`bash ${dirname}/sleep-script-2s.sh`, async pid => {
 					await sleep(1000);
 					await pidListener(pid + 1, 'SIGTERM');
 				}

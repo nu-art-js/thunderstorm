@@ -26,6 +26,7 @@ import {phase_CompileWatch, Phase_Install, Phase_PostPublish, Phase_Watch} from 
 import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper.js';
 import {BaseUnit} from './BaseUnit.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
+import {CONST_PNPM_LOCK, CONST_PNPM_WORKSPACE} from '../../core/consts.js';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
@@ -112,7 +113,9 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 		const units = this.innerUnits.filter(unit => unit.isInstanceOf(Unit_TypescriptLib)) as Unit_TypescriptLib[];
 		const packages = units.map(unit => unit.config.relativePath);
-		await PNPM.createWorkspace(packages, this.config.fullPath);
+		if (packages.length > 0)
+			await PNPM.createWorkspace(packages, this.config.fullPath);
+
 		const commando = this.allocateCommando(Commando_NVM, Commando_PNPM)
 			.cd(this.config.fullPath)
 			.append(`pnpm store prune`);
@@ -295,8 +298,8 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 	}
 
 	async purge() {
-		await FileSystemUtils.file.delete(resolve(this.config.fullPath, 'pnpm-lock.yaml'));
-		await FileSystemUtils.file.delete(resolve(this.config.fullPath, 'pnpm-workspace.yaml'));
+		await FileSystemUtils.file.delete(resolve(this.config.fullPath, CONST_PNPM_LOCK));
+		await FileSystemUtils.file.delete(resolve(this.config.fullPath, CONST_PNPM_WORKSPACE));
 		return super.purge();
 	}
 
