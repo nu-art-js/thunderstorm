@@ -73,7 +73,7 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 
 		// const pah = 'ts-mocha  --timeout 0 --inspect=8107 --watch-files \'src/test/**/*.test.ts\' src/test/**/*.test.ts';
 
-		const functionContextCommand = `${command} -p src/test/${CONST_TS_CONFIG} --timeout 0 ${cli_debug}${cli_testFiles}${cli_testCases}`;
+		const functionContextCommand = `${CONST_ESM_PREFIX} && ${command} -p src/test/${CONST_TS_CONFIG} --timeout 0 ${cli_debug}${cli_testFiles}${cli_testCases}`;
 		return `firebase emulators:exec "${functionContextCommand}"`;
 	},
 	ui: async () => {
@@ -83,7 +83,6 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 		throw new NotImplementedYetException('Mobile tests not implemented yet');
 	},
 };
-
 
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
@@ -108,6 +107,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 2}`,
 				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 3}`
 			];
+
+			if (runtimeContext.runtimeParams.testDebugPort)
+				ports.push(`${runtimeContext.runtimeParams.testDebugPort}`);
 
 
 			const firebaseConfigFiles = runtimeContext.baiConfig.files?.firebase;

@@ -271,6 +271,10 @@ export class ModuleBE_SessionDB_Class
 		if (!validationResult.validated)
 			throw HttpCodes._4XX.FORBIDDEN('JWT received in request is invalid');
 
+		await this.locateSession(jwt);
+	};
+
+	private async locateSession(jwt: string) {
 		try {
 			const {dbSession, claims} = await this.runTransaction(async t => {
 				let dbSession = await this._session.query.byJwt(jwt);
@@ -295,7 +299,7 @@ export class ModuleBE_SessionDB_Class
 			this.logErrorBold(jwt);
 			throw HttpCodes._4XX.UNAUTHORIZED('JWT received in request is invalid', err);
 		}
-	};
+	}
 
 	async __collectSessionData(data: BaseSessionClaims) {
 		return {

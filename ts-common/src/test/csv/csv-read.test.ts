@@ -39,9 +39,9 @@ const CSV_CONTENT = [
 ].join('\n');
 
 describe('CSV - Read', () => {
-	const csvPath = './test-files/test.csv';
+	const csvPath = resolve(dirname, 'test-files/test.csv');
 	before(async () => {
-		await FileSystemUtils.file.write(resolve(dirname, 'test-files/test.csv'), CSV_CONTENT);
+		await FileSystemUtils.file.write(csvPath, CSV_CONTENT);
 	});
 
 	after(async () => {

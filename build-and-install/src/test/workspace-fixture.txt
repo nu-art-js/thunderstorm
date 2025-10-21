@@ -151,6 +151,7 @@ export default [
     "typescript": "latest",
     "ts-node": "latest",
     "mocha": "latest",
+    "ts-mocha": "latest",
     "eslint": "latest",
     "@typescript-eslint/parser": "latest",
     "@typescript-eslint/eslint-plugin": "latest",

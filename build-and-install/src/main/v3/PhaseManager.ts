@@ -2,7 +2,6 @@ import {addItemToArray, exists, flatArray, Logger, removeItemFromArray, timeCoun
 import {RunningStatusHandler} from './RunningStatusHandler.js';
 import {Phase} from './phase/index.js';
 import {BaseUnit} from './units/index.js';
-import {BaiParams} from '../core/params/params.js';
 import {PhaseAggregatedException} from '../core/exceptions/PhaseAggregatedException.js';
 
 export type ScheduledStep = {
@@ -17,21 +16,19 @@ export type ExecutionStep = {
 
 export class PhaseManager
 	extends Logger {
-	private readonly outputFolder: string;
 	private readonly phases: Phase<any>[][];
 	private readonly units: BaseUnit[][];
 	private runningUnits: BaseUnit[] = [];
 	private killed = false;
-	private runtimeParams: BaiParams;
+	private runningStatus: RunningStatusHandler;
 	private activeUnits: string[];
 	private readonly keyToPhaseMap: TypedMap<Phase<any>>;
 
-	constructor(outputFolder: string, phases: Phase<any>[][], units: BaseUnit[][], runtimeParams: BaiParams) {
+	constructor(runningStatus: RunningStatusHandler, phases: Phase<any>[][], units: BaseUnit[][]) {
 		super();
-		this.outputFolder = outputFolder;
 		this.phases = phases;
 		this.units = units;
-		this.runtimeParams = runtimeParams;
+		this.runningStatus = runningStatus;
 		const unitKeySet = new Set<string>();
 
 		const allUnits: BaseUnit[] = [];
@@ -42,7 +39,7 @@ export class PhaseManager
 			allUnits.push(unit);
 		}
 
-		const usePackageKeys = this.runtimeParams.usePackage;
+		const usePackageKeys = this.runningStatus.runtimeParams.usePackage;
 		if (!usePackageKeys?.length)
 			this.activeUnits = allUnits.map(unit => unit.config.key);
 		else {
@@ -64,7 +61,7 @@ export class PhaseManager
 		this.logDebug('Active Units: ', this.activeUnits);
 
 		for (let phaseGroup of this.phases) {
-			phaseGroup = phaseGroup.filter(phase => !exists(phase.filter) || phase.filter(this.runtimeParams));
+			phaseGroup = phaseGroup.filter(phase => !exists(phase.filter) || phase.filter(this.runningStatus.runtimeParams));
 
 			for (const layer of this.units) {
 				const layerUnits = layer.filter(u => this.activeUnits.includes(u.config.key));
@@ -103,16 +100,9 @@ export class PhaseManager
 	}
 
 	async execute(_steps: ScheduledStep[]) {
-		let startIndex = 0;
-		const runningStatus = new RunningStatusHandler(this.outputFolder, _steps);
-
-		if (this.runtimeParams.continue)
-			startIndex = await runningStatus.load();
-		else
-			await runningStatus.init();
 
 		this.runningUnits = [];
-		for (let i = startIndex; i < _steps.length; i++) {
+		for (let i = this.runningStatus.startIndex; i < _steps.length; i++) {
 			if (this.killed)
 				break;
 
@@ -130,7 +120,7 @@ export class PhaseManager
 						if (this.killed)
 							break;
 
-						if (this.runtimeParams.dryRun) {
+						if (this.runningStatus.runtimeParams.dryRun) {
 							this.logInfo(`[${phase.key}] - ${unit.config.key}`);
 							continue;
 						}
@@ -159,7 +149,7 @@ export class PhaseManager
 				})
 			);
 
-			await runningStatus.update(i);
+			await this.runningStatus.update(i);
 
 			if (failedStep && errors.length)
 				throw new PhaseAggregatedException(errors, failedStep);

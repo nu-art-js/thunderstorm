@@ -1,5 +1,5 @@
 // file: ./tests/phase-execution/watch-phase.test.ts
-import {DebugFlag, LogLevel, timeCounter, timeout} from '@nu-art/ts-common';
+import {DebugFlag, LogLevel, sleep, timeCounter, timeout} from '@nu-art/ts-common';
 import '../compile/unit-compile.test.js';
 import '../../UnitsMapper/UnitsMapper.test.js';
 import '../../UnitsDependencyMapper/reverse-dependency-mapper.test.js';
@@ -77,6 +77,8 @@ type TestCase_WatchPhase = TestSuite_WatchPhase['testcases'][number];
 const runTestCase = (testCase: TestCase_WatchPhase) => () => runSingleTestCase(test, testCase);
 
 describe('Phase Watch - 1 Lib', () => {
+	let suiteHasFailures = false;
+
 	before(async function () {
 		this.timeout(20000);
 		await FileSystemUtils.folder.delete(pathToTemp);
@@ -156,12 +158,16 @@ describe('Phase Watch - 1 Lib', () => {
 	// 	}
 	// }));
 
+	afterEach(function () {
+		if (this.currentTest?.state === 'failed')
+			suiteHasFailures = true;
+	});
+
 	after(async function () {
-		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
-		if (allPassed)
+		await sleep(1000);
+		if (!suiteHasFailures)
 			await FileSystemUtils.folder.delete(pathToTemp);
 
-		await projectUnit.stopWatch();
 		await CommandoPool.killAll();
 	});
 });
