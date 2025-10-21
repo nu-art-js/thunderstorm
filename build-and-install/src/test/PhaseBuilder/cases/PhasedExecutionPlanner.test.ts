@@ -2,6 +2,7 @@ import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {BaiParams, BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
 import {voidFunction} from '@nu-art/ts-common';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {RunningStatusHandler} from '../../../main/v3/RunningStatusHandler.js';
 
 //========================= TestSuite Definition =========================
 
@@ -18,7 +19,7 @@ type TestCase_CalcExecutionSteps = TestSuite_CalcExecutionSteps['testcases'][num
 
 async function test(input: Input) {
 	const {units, phases} = input;
-	const manager = new PhaseManager('output-folder', phases, units, {} as BaiParams);
+	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units);
 	return manager.calculateExecutionSteps();
 }
 

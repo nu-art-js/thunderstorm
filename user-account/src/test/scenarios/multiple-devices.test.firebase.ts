@@ -18,7 +18,7 @@ const DefaultStormTest: StormTestInput = {
 		ModuleBE_AccountDB: {
 			...DefaultStormTestConfig_SessionAndAccount.config.ModuleBE_AccountDB,
 			canRegister: true,
-			...TestHelper_NoPasswordAssertion
+			...TestHelper_NoPasswordAssertion()
 		}
 	}
 };
@@ -38,17 +38,16 @@ describe('Multi-device login retains independent sessions', () => {
 				};
 				const {email, password, deviceA, deviceB} = input;
 
+
 				// Login from Device A
 				const promiseRegister = ModuleBE_AccountDB.account.register({email, password, passwordCheck: password, deviceId: deviceA});
 				const jwt1 = await TestHelper_InterceptJwtHeader(promiseRegister);
 
-				// const sessionA = MemKey_DB_Session.get();
 
 				// Login from Device B
 				const promiseLogin = ModuleBE_AccountDB.account.login({email, password, deviceId: deviceB});
 				const jwt2 = await TestHelper_InterceptJwtHeader(promiseLogin);
 
-				// const sessionB = MemKey_DB_Session.get();
 				expect(jwt1).to.not.equal(jwt2);
 			}));
 	});

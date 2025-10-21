@@ -1,6 +1,7 @@
 import {TestModel} from '@nu-art/ts-common/testing/types';
 import {BaiParams, BaseUnit, ExecutionStep, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {RunningStatusHandler} from '../../../main/v3/RunningStatusHandler.js';
 
 // test input type
 type Input = {
@@ -14,7 +15,7 @@ type Output = ExecutionStep;
 
 const test = async (input: Input) => {
 	const {units, phases, scheduledSteps} = input;
-	const manager = new PhaseManager('output-folder', phases, units, {} as BaiParams);
+	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units);
 
 	return manager['mapStep'](scheduledSteps[0]);
 };

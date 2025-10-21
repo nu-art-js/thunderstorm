@@ -14,6 +14,7 @@ import {FileSystemUtils} from './v3/core/FileSystemUtils.js';
 import {UnitMapper_FirebaseFunction, UnitMapper_FirebaseHosting, UnitMapper_NodeLib, UnitMapper_NodeProject} from './v3/UnitsMapper/resolvers/index.js';
 import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
+import {RunningStatusHandler} from './v3/RunningStatusHandler.js';
 
 
 export const DefaultPhases = [
@@ -34,6 +35,7 @@ export class BuildAndInstall
 	readonly runtimeParams: BaiParams;
 	readonly projectUnits: ProjectUnit[] = [];
 	private unitsDependencyMapper!: UnitsDependencyMapper;
+	readonly runningStatus: RunningStatusHandler;
 
 	constructor(config: Partial<BAI_Options> = {}) {
 		super();
@@ -44,7 +46,12 @@ export class BuildAndInstall
 		defaultConfig.runtimeParams = filterDuplicates([...(config.runtimeParams ?? []), ...AllBaiParams], param => param.keyName);
 		this.runtimeParams = CLIParamsResolver.create(...defaultConfig.runtimeParams).resolveParamValue() as BaiParams;
 		BeLogged.addClient(LogClient_Terminal);
+		this.pathToProject = defaultConfig.pathToProject;
+		this.runningStatus = new RunningStatusHandler(this.pathToProject, this.runtimeParams);
+	}
 
+	async init() {
+		await this.runningStatus.init();
 
 		if (this.runtimeParams.debug)
 			DebugFlag.DefaultLogLevel = LogLevel.Debug;
@@ -54,7 +61,7 @@ export class BuildAndInstall
 
 		this.setMinLevel(DebugFlag.DefaultLogLevel);
 		this.logDebug('Runtime params:', this.runtimeParams);
-		this.pathToProject = defaultConfig.pathToProject;
+
 	}
 
 	setApplicativeUnits(projectUnits: ProjectUnit[]) {
@@ -66,6 +73,7 @@ export class BuildAndInstall
 	}
 
 	async build() {
+		await this.init();
 		this.logVerbose(`Resolving units from: ${this.pathToProject}`);
 		const unitsMapper = new UnitsMapper();
 		this.allUnits = await unitsMapper
@@ -139,7 +147,7 @@ export class BuildAndInstall
 		const unitDependencyTree: ProjectUnit[][] = (await this.unitsDependencyMapper.buildDependencyTree(participatingUnitKeys))
 			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
 
-		const phaseManager = new PhaseManager(this.pathToProject, this.phases, unitDependencyTree, this.runtimeParams);
+		const phaseManager = new PhaseManager(this.runningStatus, this.phases, unitDependencyTree);
 		const executionPlan = await phaseManager.calculateExecutionSteps();
 		let killCounter = 0;
 		process.on('SIGINT', async () => {

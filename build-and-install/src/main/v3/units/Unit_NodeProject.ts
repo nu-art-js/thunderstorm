@@ -27,6 +27,7 @@ import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMap
 import {BaseUnit} from './BaseUnit.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {CONST_PNPM_LOCK, CONST_PNPM_WORKSPACE} from '../../core/consts.js';
+import {RunningStatusHandler} from '../RunningStatusHandler.js';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
@@ -212,10 +213,12 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					}
 				}
 
-				const phaseManager = new PhaseManager(this.config.fullPath, [[phase_CompileWatch]], unitDependencyTree, {
+				const watchRuntimeParams = {
 					...this.runtimeContext.runtimeParams,
-					noBuild: false
-				});
+					noBuild: false,
+					continue: false
+				};
+				const phaseManager = new PhaseManager(new RunningStatusHandler(this.config.fullPath, watchRuntimeParams).isolate(), [[phase_CompileWatch]], unitDependencyTree);
 				// @ts-ignore
 				phaseManager.setTag('PhaseManager-Watcher');
 				const executionPlan = await phaseManager.calculateExecutionSteps();

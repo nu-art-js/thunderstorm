@@ -62,7 +62,7 @@ function generalAfter() {
 	ModuleBE_SessionDB['jwtHandler']['secret'].get = secretGet;
 }
 
-export const TestHelper_NoPasswordAssertion = Object.freeze({
+export const TestHelper_NoPasswordAssertion = () => ({
 	passwordAssertion: {
 		'max-length': undefined,
 		'min-length': undefined,
@@ -105,7 +105,7 @@ export const DefaultStormTestConfig_SessionAndAccount = Object.freeze({
 	config: {
 		...DefaultStormTestConfig_Session.config,
 		ModuleBE_AccountDB: {
-			...TestHelper_NoPasswordAssertion
+			...TestHelper_NoPasswordAssertion()
 		}
 	},
 	before: async () => {

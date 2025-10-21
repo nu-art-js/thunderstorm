@@ -13,6 +13,7 @@ import {FilesCache} from '../../../main/v3/core/FilesCache.js';
 import {CONST_NodeModules} from '../../../main/core/consts.js';
 import {phase_Install, phase_Prepare} from '../../../main/v3/phase/index.js';
 import {___dirname} from '@nu-art/ts-common/esm';
+import { sleep } from '@nu-art/ts-common';
 
 const dirname = ___dirname(import.meta.url);
 
@@ -42,6 +43,7 @@ const runTestCase = (test: (input: Input) => Promise<void>) => (testCase: TestSu
 
 describe('NodeProject - Install Phase (Project Packages)', () => {
 	const run = runTestCase(runInstallTest);
+	let suiteHasFailures = false;
 
 	before(async function () {
 		this.timeout(20000);
@@ -68,9 +70,14 @@ describe('NodeProject - Install Phase (Project Packages)', () => {
 		}
 	}))).timeout(10000);
 
+	afterEach(function () {
+		if (this.currentTest?.state === 'failed')
+			suiteHasFailures = true;
+	});
+
 	after(async function () {
-		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
-		if (allPassed)
+		await sleep(1000);
+		if (!suiteHasFailures)
 			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();

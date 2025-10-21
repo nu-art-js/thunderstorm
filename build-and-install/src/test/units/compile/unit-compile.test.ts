@@ -1,5 +1,5 @@
 // file: ./tests/phase-execution/compile-phase.test.ts
-import {DebugFlag, LogLevel} from '@nu-art/ts-common';
+import {DebugFlag, LogLevel, sleep} from '@nu-art/ts-common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {FileSystemUtils, phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
@@ -51,6 +51,8 @@ type TestCase_PhaseCompile = TestSuite_PhaseCompile['testcases'][number];
 const runTestCase = (testCase: TestCase_PhaseCompile, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 
 describe('Unit_NodeLib - Compile Phase', () => {
+	let suiteHasFailures = false;
+
 	before(async function () {
 		this.timeout(20000);
 		await FileSystemUtils.folder.delete(pathToTemp);
@@ -145,9 +147,14 @@ describe('Unit_NodeLib - Compile Phase', () => {
 	}));
 
 
+	afterEach(function () {
+		if (this.currentTest?.state === 'failed')
+			suiteHasFailures = true;
+	});
+
 	after(async function () {
-		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
-		if (allPassed)
+		await sleep(1000);
+		if (!suiteHasFailures)
 			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();

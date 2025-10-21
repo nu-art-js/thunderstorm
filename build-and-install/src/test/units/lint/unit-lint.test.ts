@@ -10,6 +10,7 @@ import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {FilesCache} from '../../../main/v3/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
+import {sleep} from '@nu-art/ts-common';
 
 const dirname = ___dirname(import.meta.url);
 
@@ -38,6 +39,8 @@ type TestCase_LintPhase = TestSuite_LintPhase['testcases'][number];
 const runTestCase = (testCase: TestCase_LintPhase) => () => runSingleTestCase(test, testCase);
 
 describe('TypescriptLib - Lint Phase', () => {
+	let suiteHasFailures = false;
+
 	before(async function () {
 		this.timeout(20000);
 		await FileSystemUtils.folder.delete(pathToTemp);
@@ -70,9 +73,14 @@ describe('TypescriptLib - Lint Phase', () => {
 		};
 	})).timeout(15000);
 
+	afterEach(function () {
+		if (this.currentTest?.state === 'failed')
+			suiteHasFailures = true;
+	});
+
 	after(async function () {
-		const allPassed = this.test?.parent?.tests.every(t => t.state === 'passed');
-		if (allPassed)
+		await sleep(1000);
+		if (!suiteHasFailures)
 			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();
