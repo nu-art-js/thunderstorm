@@ -452,7 +452,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		this.logDebug(`Creating NPM Package`);
 		await this.allocateCommando(Commando_Basic)
 			.cd(this.config.output)
-			.append('npm pack')
+			.append('npm pack --pack-destination ./..')
 			.execute();
 
 		this.logDebug(`Publishing Dry Run`);
