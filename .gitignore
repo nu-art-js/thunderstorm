@@ -31,7 +31,6 @@ dist
 dist-test
 docs
 build
-package.json
 package-lock.json
 config.ts
 imports-*.svg
