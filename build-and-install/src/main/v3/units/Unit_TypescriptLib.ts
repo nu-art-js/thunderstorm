@@ -194,7 +194,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		await super.prepare();
 		await FileSystemUtils.folder.create(this.config.output);
 		if (this.config.packageJson.private) {
-			this.logError('HERE');
 			// @ts-ignore
 			this.publish = undefined;
 			// @ts-ignore
@@ -470,7 +469,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		this.logDebug(`Publishing Package - For REAL`);
 		await this.allocateCommando(Commando_Basic)
 			.cd(this.config.output)
-			.append('echo "npm publish --access public" BAD BAD BAD')
+			.append('npm publish --access public')
 			.execute();
 	}
 }
