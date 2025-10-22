@@ -134,9 +134,9 @@ export const phase_Launch: Phase<'launch'> = {
 	filter: (baiParams) => !!baiParams.launch,
 };
 
-export const phases_Launch: Phase<string>[] = [
+export const phases_Launch: Phase<string>[][] = [[
 	phase_Launch,
-];
+]];
 
 //######################### Publish and Deploy Phases #########################
 export type Phase_PublishDryRun = typeof phase_PublishDryRun;
@@ -145,7 +145,7 @@ export const phase_PublishDryRun: Phase<'publishDryRun'> = {
 	key: phaseKey_PublishDryRun,
 	name: 'PublishDryRun',
 	method: 'publishDryRun',
-	filter: (baiParams) => !!baiParams.publish && baiParams.dryRun,
+	filter: (baiParams) => baiParams.publishDryRun,
 };
 
 export type Phase_Publish = typeof phase_Publish;
@@ -154,7 +154,7 @@ export const phase_Publish: Phase<'publish'> = {
 	key: phaseKey_Publish,
 	name: 'Publish',
 	method: 'publish',
-	filter: (baiParams) => !!baiParams.publish && !baiParams.dryRun,
+	filter: (baiParams) => !!baiParams.publish,
 };
 
 export type Phase_PostPublish = typeof phase_PostPublish;
@@ -176,4 +176,4 @@ export const phase_Deploy: Phase<'deploy'> = {
 	filter: (baiParams) => !!baiParams.deploy,
 };
 
-export const phases_Deploy: Phase<string>[] = [phase_PublishDryRun, phase_Publish, phase_PostPublish, phase_Deploy];
+export const phases_Deploy: Phase<string>[][] = [[phase_PublishDryRun, phase_Publish, phase_Deploy], [phase_PostPublish]];

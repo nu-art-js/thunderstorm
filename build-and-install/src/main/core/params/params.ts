@@ -282,8 +282,16 @@ export const BaiParam_Publish: BaseCliParam<'publish', PromoteType> = {
 	group: 'Other',
 	options: ['patch', 'minor', 'major'],
 	defaultValue: 'patch',
-	description: 'Will publish thunderstorm && promote thunderstorm version \nenum options: patch | minor | major \nDefault Param: patch',
+	description: 'Will publish to NPM any package that is not marked as private in its __package.json   \nenum options: patch | minor | major \nDefault Param: patch',
 	process: (part) => part as PromoteType ?? 'patch'
+};
+
+export const BaiParam_PublishDryRun: BaseCliParam<'publishDryRun', boolean> = {
+	keys: ['--publish-dry-run'],
+	keyName: 'publishDryRun',
+	type: 'boolean',
+	group: 'Other',
+	description: 'Will pack and prepare a package for publish, but will NOT publish to NPM any package',
 };
 
 export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
@@ -334,7 +342,8 @@ export const AllBaiParams = [
 
 	BaiParam_Debug,
 	BaiParam_Verbose,
-	BaiParam_Publish, // TODO: to implement
+	BaiParam_PublishDryRun,
+	BaiParam_Publish,
 	BaiParam_UsePackage,
 	BaiParam_DebugLifecycle
 ];

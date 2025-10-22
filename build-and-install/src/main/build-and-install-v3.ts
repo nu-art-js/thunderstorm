@@ -19,8 +19,8 @@ import {RunningStatusHandler} from './v3/RunningStatusHandler.js';
 
 export const DefaultPhases = [
 	...phases_Build,
-	phases_Launch,
-	phases_Deploy,
+	...phases_Launch,
+	...phases_Deploy,
 ];
 
 type BAI_Options = { pathToProject: string, runtimeParams: BaseCliParam<string, any>[] };
