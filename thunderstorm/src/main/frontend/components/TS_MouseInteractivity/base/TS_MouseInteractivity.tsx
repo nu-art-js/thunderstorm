@@ -1,22 +1,22 @@
 import * as React from 'react';
 import {logicalXOR} from '@nu-art/ts-common';
-import {Coordinates, Model_ToolTip} from '../../../component-modules/mouse-interactivity/types';
+import {Coordinates, MouseInteractivity_Model} from '../../../component-modules/mouse-interactivity/types';
 import {ComponentSync} from '../../../core/ComponentSync';
 
-type State = {
-	model?: Model_ToolTip,
+type State<M extends MouseInteractivity_Model> = {
+	model?: M,
 	open: boolean
 }
 type Prop = {}
 
-export class TS_MouseInteractivity
-	extends ComponentSync<Prop, State> {
+export class TS_MouseInteractivity<M extends MouseInteractivity_Model = MouseInteractivity_Model>
+	extends ComponentSync<Prop, State<M>> {
 
 	protected ref: React.RefObject<HTMLDivElement> = React.createRef();
 
 	private minimumMargin: number = 5;
 
-	protected deriveStateFromProps(nextProps: Prop, state: State): State {
+	protected deriveStateFromProps(nextProps: Prop, state: State<M>): State<M> {
 		state.open ??= false;
 		return state;
 	}

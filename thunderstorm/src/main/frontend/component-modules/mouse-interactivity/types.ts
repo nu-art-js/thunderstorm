@@ -9,7 +9,7 @@ export const mouseInteractivity_ToolTip: MouseInteractivityType = 'tool-tip';
 
 export type Coordinates = { x: number, y: number };
 
-type MouseInteractivity_Model = {
+export type MouseInteractivity_Model = {
 	id: string
 	modalPos: Coordinates,
 	originPos: Coordinates
@@ -26,7 +26,9 @@ export type Model_Menu = Omit<MouseInteractivity_Model, 'content'> & {
 	onNodeDoubleClicked?: Function,
 }
 
-export type Model_PopUp = MouseInteractivity_Model;
+export type Model_PopUp = MouseInteractivity_Model & {
+	ignoreOverlayClick?: ResolvableContent<boolean>;
+};
 
 export type Model_ToolTip = MouseInteractivity_Model & {
 	contentHoverDelay?: number;
