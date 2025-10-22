@@ -83,3 +83,33 @@ export const = 5;
       "label": "lib-compile"
     }
 }
+
+// file: ./lib-compile-2.txt
+//// file: ./__package.json
+{
+    "name": "lib-compile-2",
+    "version": "1.0.0",
+    "publishConfig": {
+        "directory": "dist",
+        "linkDirectory": true
+    },
+    "dependencies": {
+        "lib-compile": "?"
+    },
+    "unitConfig": {
+        "type": "typescript-lib",
+        "label": "lib-compile-2",
+        "customTSConfig": true
+    }
+}
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+
+//// file: ./src/main/index.ts
+export const x = 5;

@@ -312,9 +312,12 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	protected async copyPackageJSONToOutput() {
 		const targetPath = resolve(this.config.output, CONST_PackageJSON);
-		await FileSystemUtils.file.template.write(targetPath, __stringify(this.config.packageJson, true), this.deriveDistDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
+		const params = this.deriveDistDependencies();
+		const packageJson = FileSystemUtils.file.template.transform(__stringify(this.config.packageJson, true), params);
+		this.logVerbose('Compiling params: ', params);
+		this.logVerbose('Compiling from package.json: ', packageJson);
+		await FileSystemUtils.file.template.write(targetPath, packageJson, params, DEFAULT_OLD_TEMPLATE_PATTERN);
 	}
-
 
 	async purge() {
 		await FileSystemUtils.folder.delete(this.config.output);
