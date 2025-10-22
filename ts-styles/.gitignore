@@ -13,3 +13,4 @@ package-lock.json
 imports-*.svg
 
 src/main/tsconfig.json
+*.tgz

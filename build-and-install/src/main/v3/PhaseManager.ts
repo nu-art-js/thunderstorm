@@ -130,7 +130,6 @@ export class PhaseManager
 						const dtCounter = timeCounter();
 						try {
 							this.logInfo(`Phase(${phase.name}) - Running - ${unit.config.key}`);
-							this.logWarning(`type of ${phase.method}: ${typeof unit[phase.method as keyof BaseUnit]}`);
 							if (typeof unit[phase.method as keyof BaseUnit] === 'function')
 								await (unit[phase.method as keyof BaseUnit] as Function).call(unit);
 
