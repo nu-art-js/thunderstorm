@@ -193,6 +193,13 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	public async prepare(): Promise<void> {
 		await super.prepare();
 		await FileSystemUtils.folder.create(this.config.output);
+		if (this.config.packageJson.private) {
+			this.logError('HERE');
+			// @ts-ignore
+			this.publish = undefined;
+			// @ts-ignore
+			this.publishDryRun = undefined;
+		}
 	}
 
 	protected async compileImpl() {
@@ -230,6 +237,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 		await FileSystemUtils.file.delete(resolve(this.config.output, CONST_TS_CONFIG));
 	}
+
 
 	public ignoreWatchFiles() {
 		return [`${this.config.fullPath}/.*?/${CONST_TS_CONFIG}`];
@@ -438,6 +446,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	public async publishDryRun() {
+		if (this.config.packageJson.private)
+			return this.logWarning(`Not publishing a private package`);
+
 		this.logDebug(`Creating NPM Package`);
 		await this.allocateCommando(Commando_Basic)
 			.cd(this.config.output)
@@ -451,11 +462,15 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			.execute();
 	}
 
+
 	public async publish() {
+		if (this.config.packageJson.private)
+			return this.logInfo(`Not publishing a private package`);
+
 		this.logDebug(`Publishing Package - For REAL`);
 		await this.allocateCommando(Commando_Basic)
 			.cd(this.config.output)
-			.append('npm publish --access public')
+			.append('echo "npm publish --access public" BAD BAD BAD')
 			.execute();
 	}
 }

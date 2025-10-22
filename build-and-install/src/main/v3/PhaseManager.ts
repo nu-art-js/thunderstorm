@@ -71,7 +71,7 @@ export class PhaseManager
 				const phaseMap: Map<string, BaseUnit[]> = new Map();
 
 				for (const unit of layerUnits) {
-					const supportedPhases = phaseGroup.filter(phase => phase.method in unit);
+					const supportedPhases = phaseGroup.filter(phase => phase.method in unit && typeof unit[phase.method as keyof typeof unit] === 'function');
 					if (supportedPhases.length === 0)
 						continue;
 
@@ -130,7 +130,10 @@ export class PhaseManager
 						const dtCounter = timeCounter();
 						try {
 							this.logInfo(`Phase(${phase.name}) - Running - ${unit.config.key}`);
-							await (unit[phase.method as keyof BaseUnit] as Function).call(unit);
+							this.logWarning(`type of ${phase.method}: ${typeof unit[phase.method as keyof BaseUnit]}`);
+							if (typeof unit[phase.method as keyof BaseUnit] === 'function')
+								await (unit[phase.method as keyof BaseUnit] as Function).call(unit);
+
 							let operationDuration = '';
 							if (dtCounter.dt() > 1500)
 								operationDuration = ` (${dtCounter.format('mm:ss')})`;

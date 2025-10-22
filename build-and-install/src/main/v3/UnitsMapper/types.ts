@@ -9,6 +9,7 @@ export type TS_UnitConfig = TS_Object & {
 export type TS_PackageJSON<T = any> = {
 	'name': string,
 	'description'?: string,
+	private?: boolean,
 	'publishConfig'?: {
 		'directory': string,
 		'linkDirectory': boolean
