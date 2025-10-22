@@ -17,3 +17,4 @@ imports-*.svg
 
 src/test/tsconfig.json
 src/main/tsconfig.json
+*.tgz

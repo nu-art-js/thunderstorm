@@ -15,4 +15,5 @@ config.ts
 imports-*.svg
 
 src/main/tsconfig.json
+*.tgz
 src/test/tsconfig.json

@@ -15,6 +15,7 @@ config.ts
 imports-*.svg
 
 src/main/tsconfig.json
+*.tgz
 # Compiled
 src/main/main.js
 src/main/schema-to-types.js
