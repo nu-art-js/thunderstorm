@@ -29,7 +29,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION"
+    "@nu-art/ts-common": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

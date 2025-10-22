@@ -29,12 +29,12 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/firebase": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/slack": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/user-account": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/jira": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/ts-common": "?",
+    "@nu-art/firebase": "?",
+    "@nu-art/slack": "?",
+    "@nu-art/thunderstorm": "?",
+    "@nu-art/user-account": "?",
+    "@nu-art/jira": "?",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "react": "$REACT_PKG_VERSION",

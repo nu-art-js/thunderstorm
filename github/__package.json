@@ -20,8 +20,8 @@
   "license": "Apache-2.0",
   "author": "TacB0sS",
   "dependencies": {
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEP_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/thunderstorm": "?",
+    "@nu-art/ts-common": "?",
     "@octokit/plugin-paginate-rest": "2.2.1",
     "@octokit/rest": "18.0.9",
     "@octokit/types": "^5.5.0",

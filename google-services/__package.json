@@ -33,7 +33,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_DEP_VERSION",
+    "@nu-art/ts-common": "?",
     "@google-cloud/pubsub": "$GOOGLE_PUBSUB_VERSION",
     "@google-cloud/secret-manager": "$GOOGLE_SECRET_MANAGER_VERSION",
     "google-auth-library": "$GOOGLE_AUTHLIB_VERSION",
