@@ -1,5 +1,5 @@
 import {CONST_NodeModules, CONST_PackageJSON} from '../../core/consts.js';
-import {__stringify} from '@nu-art/ts-common';
+import {__stringify, StringMap} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types.js';
 import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit.js';
 import {resolve} from 'path';
@@ -24,8 +24,17 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 
 	//######################### Internal Logic #########################
 
-	protected deriveDistDependencies() {
-		return {...this.runtimeContext.baiConfig.templateParams?.packageJson};
+	protected deriveDistDependencies(): StringMap {
+		const params = this.runtimeContext.childUnits.reduce((dependencies, unit) => {
+			dependencies[unit.config.key] = (unit as Unit_PackageJson).config.packageJson.version;
+			return dependencies;
+		}, {
+			...this.runtimeContext.baiConfig.templateParams?.packageJson,
+		});
+		return {
+			...params,
+			THUNDERSTORM_DEP_VERSION: this.runtimeContext.baiConfig.templateParams?.packageJson?.['THUNDERSTORM_VERSION'] ?? ''
+		};
 	}
 
 	protected deriveLibDependencies() {

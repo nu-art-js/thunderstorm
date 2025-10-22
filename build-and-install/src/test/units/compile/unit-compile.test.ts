@@ -22,12 +22,13 @@ const pathToWorkspace = resolve(pathToTemp, './workspace');
 const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
-let unit: Unit_TypescriptLib;
+let unitLib1: Unit_TypescriptLib;
 let buildAndInstall: BuildAndInstall;
 
 type Input = {
 	fixtures: string[];
 	compileWatch?: boolean;
+	compileLib2?: boolean;
 };
 type Output = () => (Promise<void>);
 
@@ -37,12 +38,14 @@ const test = async (setup: Input): Promise<void> => {
 
 	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	await buildAndInstall.build();
-	unit = buildAndInstall.projectUnits.find(unit => unit.config.key == 'lib-compile') as Unit_TypescriptLib;
+	unitLib1 = buildAndInstall.projectUnits.find(unit => unit.config.key == 'lib-compile') as Unit_TypescriptLib;
+	if (setup.compileLib2)
+		await (buildAndInstall.projectUnits.find(unit => unit.config.key == 'lib-compile-2') as Unit_TypescriptLib).compile();
 
 	if (setup.compileWatch)
-		await unit.watchCompile();
+		await unitLib1.watchCompile();
 	else
-		await unit.compile();
+		await unitLib1.compile();
 };
 
 type TestSuite_PhaseCompile = TestSuite<Input, Output>;
@@ -51,16 +54,20 @@ type TestCase_PhaseCompile = TestSuite_PhaseCompile['testcases'][number];
 const runTestCase = (testCase: TestCase_PhaseCompile, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 
 describe('Unit_NodeLib - Compile Phase', () => {
+	// @ts-ignore
 	let suiteHasFailures = false;
 
 	before(async function () {
-		this.timeout(20000);
+		this.timeout(30000);
 		await FileSystemUtils.folder.delete(pathToTemp);
 		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
 		workspaceCreator.setupWorkspace(['workspace.txt']);
 		workspaceCreator.setupWorkspace(['lib-compile.txt'], 'lib-compile');
+		workspaceCreator.setupWorkspace(['lib-compile-2.txt'], 'lib-compile-2', false);
 
 		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+		buildAndInstall.runtimeParams.allUnits = true;
+
 		await buildAndInstall.build();
 		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
 		await buildAndInstall.run();
@@ -69,14 +76,21 @@ describe('Unit_NodeLib - Compile Phase', () => {
 	it('Compile - Creates output folder if it does not exist', runTestCase({
 		input: {fixtures: ['./lib-compile.txt', './workspace-compile-valid.txt']},
 		result: async () => {
-			expect(existsSync(unit.config.output)).to.be.true;
+			expect(existsSync(unitLib1.config.output)).to.be.true;
 		}
 	}));
+
+	it('Compile - Compile lib 2 - package.json', runTestCase({
+		input: {fixtures: ['./lib-compile.txt', './workspace-compile-valid.txt'], compileLib2: true},
+		result: async () => {
+			expect(existsSync(unitLib1.config.output)).to.be.true;
+		}
+	})).timeout(50000);
 
 	it('Compile - Valid tsconfig and outputs JS to dist', runTestCase({
 		input: {fixtures: ['./lib-compile.txt', './workspace-compile-valid.txt']},
 		result: async () => {
-			const compiledJS = resolve(unit.config.output, 'index.js');
+			const compiledJS = resolve(unitLib1.config.output, 'index.js');
 			expect(existsSync(compiledJS)).to.be.true;
 		}
 	}));
@@ -84,14 +98,14 @@ describe('Unit_NodeLib - Compile Phase', () => {
 	it('Compile - Copies assets (e.g. .svg) to dist folder', runTestCase({
 		input: {fixtures: ['./lib-compile.txt', './workspace-compile-with-asset.txt']},
 		result: async () => {
-			expect(existsSync(resolve(unit.config.output, 'file.svg'))).to.be.true;
+			expect(existsSync(resolve(unitLib1.config.output, 'file.svg'))).to.be.true;
 		}
 	}));
 
 	it('Compile - Writes dist/package.json with correct content', runTestCase({
 		input: {fixtures: ['./lib-compile.txt', './workspace-compile-valid.txt']},
 		result: async () => {
-			const distPackageJson = resolve(unit.config.output, CONST_PackageJSON);
+			const distPackageJson = resolve(unitLib1.config.output, CONST_PackageJSON);
 			expect(existsSync(distPackageJson)).to.be.true;
 		}
 	}));
@@ -127,7 +141,7 @@ describe('Unit_NodeLib - Compile Phase', () => {
 	it('Watch Compile - Outputs JS to dist', runTestCase({
 		input: {fixtures: ['./lib-compile.txt', './workspace-compile-valid.txt'], compileWatch: true},
 		result: async () => {
-			const compiledJS = resolve(unit.config.output, 'index.js');
+			const compiledJS = resolve(unitLib1.config.output, 'index.js');
 			expect(existsSync(compiledJS)).to.be.true;
 		}
 	}));
@@ -142,7 +156,7 @@ describe('Unit_NodeLib - Compile Phase', () => {
 	it('Watch Compile - Copies assets (e.g. .svg) to dist folder', runTestCase({
 		input: {fixtures: ['./lib-compile.txt', './workspace-compile-with-asset.txt'], compileWatch: true},
 		result: async () => {
-			expect(existsSync(resolve(unit.config.output, 'file.svg'))).to.be.true;
+			expect(existsSync(resolve(unitLib1.config.output, 'file.svg'))).to.be.true;
 		}
 	}));
 
@@ -154,8 +168,8 @@ describe('Unit_NodeLib - Compile Phase', () => {
 
 	after(async function () {
 		await sleep(1000);
-		if (!suiteHasFailures)
-			await FileSystemUtils.folder.delete(pathToTemp);
+		// if (!suiteHasFailures)
+		// 	await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();
 	});
