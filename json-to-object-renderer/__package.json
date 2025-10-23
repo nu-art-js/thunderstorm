@@ -41,10 +41,10 @@
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
     "@nu-art/thunderstorm": "?",
-    "react": "$REACT_PKG_VERSION"
+    "react": "?"
   },
   "devDependencies": {
-    "@types/react": "$REACT_TYPES_VERSION"
+    "@types/react": "?"
   },
   "unitConfig": {
     "customTSConfig": true,

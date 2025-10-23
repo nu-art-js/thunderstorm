@@ -35,13 +35,13 @@
     "@nu-art/thunderstorm": "?",
     "@nu-art/user-account": "?",
     "@nu-art/permissions": "?",
-    "firebase": "$FIREBASE_PKG_VERSION",
-    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
-    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
-    "react": "$REACT_PKG_VERSION"
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "react": "?"
   },
   "devDependencies": {
-    "@types/react": "$REACT_TYPES_VERSION",
+    "@types/react": "?",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1"
   },

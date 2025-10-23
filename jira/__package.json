@@ -23,17 +23,17 @@
     "@nu-art/thunderstorm": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/firebase": "?",
-    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-admin": "?",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",
-    "express": "$EXPRESS_PKG_VERSION",
+    "express": "?",
     "module-alias": "^2.2.0",
-    "moment": "$MOMENT_PKG_VERSION",
+    "moment": "?",
     "request": "^2.88.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.2",
-    "@types/express": "$EXPRESS_TYPES_VERSION",
+    "@types/express": "?",
     "@types/js-base64": "^2.3.1",
     "@types/request": "^2.48.3",
     "@types/saml2-js": "^1.6.8"
