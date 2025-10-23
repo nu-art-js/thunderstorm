@@ -168,8 +168,8 @@ describe('Unit_NodeLib - Compile Phase', () => {
 
 	after(async function () {
 		await sleep(1000);
-		// if (!suiteHasFailures)
-		// 	await FileSystemUtils.folder.delete(pathToTemp);
+		if (!suiteHasFailures)
+			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();
 	});
