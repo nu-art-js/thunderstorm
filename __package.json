@@ -10,8 +10,8 @@
   "dependencies": {},
   "devDependencies": {
     "typedoc": "^0.23.28",
-    "typescript": "$TYPESCRIPT_PKG_VERSION",
-    "eslint": "$ES_LINT_VERSION",
+    "typescript": "?",
+    "eslint": "?",
     "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
@@ -19,11 +19,11 @@
     "chai": "^4.3.7",
     "use-strict": "^1.0.1",
     "@types/estree": "^1.0.0",
-    "@types/node": "$NODE_TYPES_VERSION",
+    "@types/node": "?",
     "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
     "@types/mocha": "^10.0.1",
-    "@types/express": "$EXPRESS_TYPES_VERSION",
+    "@types/express": "?",
     "@types/mime": "^3.0.0"
   },
   "engines": {

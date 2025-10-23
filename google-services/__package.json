@@ -34,10 +34,10 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@google-cloud/pubsub": "$GOOGLE_PUBSUB_VERSION",
-    "@google-cloud/secret-manager": "$GOOGLE_SECRET_MANAGER_VERSION",
-    "google-auth-library": "$GOOGLE_AUTHLIB_VERSION",
-    "googleapis": "$GOOGLE_APIS_VERSION"
+    "@google-cloud/pubsub": "?",
+    "@google-cloud/secret-manager": "?",
+    "google-auth-library": "?",
+    "googleapis": "?"
   },
   "devDependencies": {
     "@google-cloud/resource-manager": "^6.2.0"

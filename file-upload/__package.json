@@ -38,22 +38,22 @@
     "@nu-art/user-account": "?",
     "@nu-art/thunderstorm": "?",
     "@nu-art/ts-common": "?",
-    "@google-cloud/common": "$GOOGLE_CLOUD_COMMON",
-    "@google-cloud/storage": "$GOOGLE_CLOUD_STORAGE",
-    "@google-cloud/firestore": "$GOOGLE_CLOUD_FIRESTORE",
-    "react": "$REACT_PKG_VERSION",
+    "@google-cloud/common": "?",
+    "@google-cloud/storage": "?",
+    "@google-cloud/firestore": "?",
+    "react": "?",
     "jszip": "^3.2.2",
-    "express": "$EXPRESS_PKG_VERSION",
-    "firebase": "$FIREBASE_PKG_VERSION",
-    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
-    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
-    "google-auth-library": "$GOOGLE_AUTHLIB_VERSION",
+    "express": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "google-auth-library": "?",
     "file-type": "^21.0.0"
   },
   "devDependencies": {
-    "@types/react": "$REACT_TYPES_VERSION",
+    "@types/react": "?",
     "@types/compression": "^1.0.1",
-    "@types/express": "$EXPRESS_TYPES_VERSION"
+    "@types/express": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

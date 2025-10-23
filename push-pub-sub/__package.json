@@ -31,13 +31,13 @@
     "@nu-art/ts-common": "?",
     "@nu-art/firebase": "?",
     "@nu-art/user-account": "?",
-    "firebase": "$FIREBASE_PKG_VERSION",
-    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
-    "moment": "$MOMENT_PKG_VERSION",
-    "react": "$REACT_PKG_VERSION"
+    "firebase": "?",
+    "firebase-admin": "?",
+    "moment": "?",
+    "react": "?"
   },
   "devDependencies": {
-    "@types/react": "$REACT_TYPES_VERSION"
+    "@types/react": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"
