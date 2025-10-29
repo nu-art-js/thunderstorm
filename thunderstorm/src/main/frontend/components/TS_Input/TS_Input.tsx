@@ -100,6 +100,7 @@ export class TS_Input<Key extends string = string>
 			onChange={this.changeValue}
 			onKeyDown={this.onKeyDown}
 			autoComplete={props.autoComplete ? 'on' : 'off'}
+			disabled={props.disabled}
 		/>;
 	}
 }
