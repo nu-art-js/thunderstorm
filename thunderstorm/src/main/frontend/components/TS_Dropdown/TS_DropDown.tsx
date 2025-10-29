@@ -21,15 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {
-	BadImplementationException,
-	clamp,
-	debounce,
-	Filter,
-	ResolvableContent,
-	resolveContent,
-	voidFunction
-} from '@nu-art/ts-common';
+import {BadImplementationException, clamp, debounce, Filter, ResolvableContent, resolveContent, voidFunction} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -472,6 +464,8 @@ export class TS_DropDown<ItemType>
 			//Contain the max and min width of the tree
 			style.minWidth = containerData.width;
 			style.maxWidth = window.innerWidth - 40;
+			// @ts-ignore
+			style['--dd-width'] = `${containerData.width}px`;
 		}
 		if (!this.state.adapter.data)
 			throw new BadImplementationException('No data provided to TS_DropDown!');
