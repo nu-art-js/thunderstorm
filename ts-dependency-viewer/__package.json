@@ -35,9 +35,9 @@
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
     "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "firebase": "~9.18.0",
-    "firebase-admin": "11.9.0",
-    "firebase-functions": "4.4.1",
+    "firebase": "$FIREBASE_PKG_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
     "react": "$REACT_PKG_VERSION",
     "compression": "^1.7.4",
     "d3": "$D3_VERSION",
