@@ -46,6 +46,7 @@ type State<ItemType> = ComponentProps_Error & {
 	className?: string;
 	hidePlaceholderOnOpen?: boolean;
 	treeResizeObserver: ResizeObserver;
+	disabled: boolean;
 }
 
 type StaticProps = {
@@ -213,6 +214,7 @@ export class TS_DropDown<ItemType>
 			treeContainerRef: nextState.treeContainerRef,
 			className: nextState.className,
 			treeResizeObserver: nextState.treeResizeObserver,
+			disabled: !!nextProps.disabled,
 		};
 	}
 
@@ -266,7 +268,7 @@ export class TS_DropDown<ItemType>
 	}
 
 	private closeList = (e?: InputEvent, selectedItem?: ItemType | null, action?: () => (void | Promise<void>)) => {
-		if (this.props.disabled)
+		if (this.state.disabled)
 			return;
 
 		if (e)
@@ -386,7 +388,7 @@ export class TS_DropDown<ItemType>
 			'ts-dropdown',
 			this.state.className,
 			this.state.open ? 'open' : undefined,
-			this.props.disabled ? 'disabled' : undefined,
+			this.state.disabled ? 'disabled' : undefined,
 		);
 		return (
 			<div className={className}
@@ -412,7 +414,7 @@ export class TS_DropDown<ItemType>
 				className="ts-dropdown__header"
 				onClick={(e) => {
 					stopPropagation(e);
-					if (this.props.disabled) {
+					if (this.state.disabled) {
 						return;
 					}
 					this.state.open ? this.closeList(e) : this.setState({open: true});
