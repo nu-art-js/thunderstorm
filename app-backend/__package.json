@@ -23,7 +23,7 @@
     "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
   },
   "dependencies": {
-    "@app/app-shared": "$APP_DEP_VERSION",
+    "@app/app-shared": "?",
     "@nu-art/bug-report": "?",
     "@nu-art/jira": "?",
     "@nu-art/file-upload": "?",
