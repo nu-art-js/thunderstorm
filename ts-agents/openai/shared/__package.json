@@ -1,5 +1,5 @@
 {
-  "name": "@nu-art/ts-openai",
+  "name": "@nu-art/ts-openai-shared",
   "version": "$THUNDERSTORM_VERSION",
   "description": "ts-openai - Express & Typescript based backend framework",
   "keywords": [

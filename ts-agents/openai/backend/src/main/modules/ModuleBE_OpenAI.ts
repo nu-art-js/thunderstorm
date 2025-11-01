@@ -2,8 +2,8 @@ import {__stringify, BadImplementationException, Module, ThisShouldNotHappenExce
 
 import {OpenAI} from 'openai';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend/index';
-import {ApiDef_OpenAI, Request_ChatGPT} from '../../shared/api-def.js';
-import {GPT_Model} from '../../shared/types.js';
+import {GPT_Model} from '@nu-art/ts-openai-shared/types';
+import {ApiDef_OpenAI, Request_ChatGPT} from '@nu-art/ts-openai-shared/api-def';
 
 type Config = {
 	directives: TypedMap<{
