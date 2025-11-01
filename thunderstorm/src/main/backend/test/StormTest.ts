@@ -60,7 +60,6 @@ export class StormTest {
 
 export const stormTester = async <TestCase extends TestModel<any, any>>(stormTestInput: StormTestInput, testCaseRunner: () => Promise<void>) => {
 	const stormTest = new StormTest({modules: stormTestInput.modules, config: stormTestInput.config ?? {}});
-	console.log(stormTestInput.config);
 	await stormTest.init();
 	try {
 		await stormTestInput.before?.();

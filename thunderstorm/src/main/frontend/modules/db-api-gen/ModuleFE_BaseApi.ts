@@ -29,19 +29,45 @@ import {apiWithBody, apiWithQuery} from '../../core/typed-api.js';
 import {CustomMemCreators, ModuleSyncType} from './types.js';
 
 
+/**
+ * Type representing possible database operation request types
+ */
 type RequestType = 'upsert' | 'patch' | 'delete';
+
+/**
+ * Interface representing a pending database operation
+ */
 type Pending = {
+	/** The type of request being made */
 	requestType: RequestType;
+	/** The HTTP request object */
 	request: BaseHttpRequest<any>
+	/** Optional success callback */
 	onSuccess?: (response: any, data?: string) => Promise<void> | void,
+	/** Optional error callback */
 	onError?: (reason: HttpException) => any
 };
 
+/**
+ * Interface representing the state of database operations
+ */
 type Operation = {
+	/** Currently executing operation */
 	running: Pending,
+	/** Operation waiting to be executed */
 	pending?: Pending
 }
 
+/**
+ * Base API module for frontend database operations
+ *
+ * Provides core functionality for database CRUD operations through API endpoints
+ * including support for operation queueing and request management.
+ *
+ * @template Proto - Database protocol type extending DBProto
+ * @template _Config - Base configuration type
+ * @template Config - Extended configuration type with DBApiFEConfig
+ */
 export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config extends object = object, Config extends _Config & DBApiFEConfig<Proto> = _Config & DBApiFEConfig<Proto>>
 	extends ModuleFE_BaseDB<Proto, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>> {
@@ -50,6 +76,14 @@ export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config exten
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['v1'];
 	private operations: TypedMap<Operation> = {};
 
+	/**
+	 * Creates an instance of ModuleFE_BaseApi
+	 *
+	 * @param dbDef - Database definition
+	 * @param defaultDispatcher - Default dispatcher for events
+	 * @param version - Optional API version string
+	 * @param customMemCreators - Optional custom memory creators for the database
+	 */
 	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string, customMemCreators?: CustomMemCreators<Proto>) {
 		super(dbDef, defaultDispatcher, ModuleSyncType.APISync, customMemCreators);
 
@@ -96,10 +130,23 @@ export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config exten
 		};
 	}
 
+	/**
+	 * Resolves the API definition for the database
+	 *
+	 * @param dbDef - Database definition
+	 * @param version - Optional API version
+	 * @returns Generated API definition for the database
+	 */
 	protected resolveApiDef(dbDef: DBDef_V3<Proto>, version: string | undefined) {
 		return DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
 	}
 
+	/**
+	 * Cleans up data before upserting to database
+	 *
+	 * @param toUpsert - Data to be upserted
+	 * @returns Cleaned up data
+	 */
 	protected cleanUp = (toUpsert: Proto['uiType']) => {
 		return toUpsert;
 	};

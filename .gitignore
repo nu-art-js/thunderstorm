@@ -38,3 +38,5 @@ imports-*.svg
 **/src/main/tsconfig.json
 **/src/test/tsconfig.json
 **/*.tgz
+fixture.txt
+_fixture.txt

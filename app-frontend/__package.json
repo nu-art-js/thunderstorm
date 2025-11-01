@@ -34,7 +34,7 @@
     "@nu-art/ts-common": "?",
     "@nu-art/user-account": "?",
     "@nu-art/ts-workspace": "?",
-    "@app/app-shared": "$APP_DEP_VERSION",
+    "@app/app-shared": "?",
     "firebase": "?",
     "clean-html": "^1.5.0",
     "file-loader": "^6.2.0",
