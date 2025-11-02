@@ -27,19 +27,19 @@
     "build": "tsc -b -f"
   },
   "dependencies": {
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-styles": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/permissions": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/user-account": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "firebase": "$FIREBASE_PKG_VERSION",
-    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
-    "moment": "$MOMENT_PKG_VERSION",
-    "react": "$REACT_PKG_VERSION"
+    "@nu-art/thunderstorm": "?",
+    "@nu-art/ts-styles": "?",
+    "@nu-art/permissions": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/firebase": "?",
+    "@nu-art/user-account": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "moment": "?",
+    "react": "?"
   },
   "devDependencies": {
-    "@types/react": "$REACT_TYPES_VERSION"
+    "@types/react": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

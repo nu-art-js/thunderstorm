@@ -13,11 +13,11 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "react": "$REACT_PKG_VERSION"
+    "@nu-art/ts-common": "?",
+    "react": "?"
   },
   "devDependencies": {
-    "@types/react": "$REACT_TYPES_VERSION"
+    "@types/react": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

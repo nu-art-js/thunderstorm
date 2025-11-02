@@ -13,10 +13,10 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/analytics-shared": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/firebase": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/analytics-shared": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/firebase": "?",
+    "@nu-art/thunderstorm": "?",
     "mixpanel": "~0.18.1"
   },
   "devDependencies": {},
