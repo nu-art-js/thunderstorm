@@ -75,8 +75,13 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 		const direction = this.props.itemsDirection ?? 'horizontal';
 
 		const Wrapper = direction === 'horizontal' ? LL_H_C : LL_V_L;
+		const className = _className(
+			'ts-multi-select__list',
+			this.props.disabled && 'disabled',
+			this.props.className
+		);
 
-		return <Wrapper className={_className('ts-multi-select__list', this.props.className)}>
+		return <Wrapper className={className}>
 			{/*selected items list*/}
 			{itemsToRender.map((item, i) => {
 				return <LL_H_C className="ts-multi-select__list-value" key={i}>
