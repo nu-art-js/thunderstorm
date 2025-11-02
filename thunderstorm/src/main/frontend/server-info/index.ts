@@ -1,2 +1,2 @@
-export * from './Button_VersionUpdate';
-export * from './ModuleFE_ServerInfo';
+export * from './Button_VersionUpdate.js';
+export * from './ModuleFE_ServerInfo.js';

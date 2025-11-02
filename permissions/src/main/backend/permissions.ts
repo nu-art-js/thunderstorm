@@ -1,16 +1,16 @@
-import {ApiDef_Permissions,} from '../shared';
-import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '../shared/types';
+import {ApiDef_Permissions,} from '../shared/index.js';
+import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '../shared/types.js';
 import {
 	DefaultAccessLevel_Admin,
 	DefaultAccessLevel_Delete,
 	DefaultAccessLevel_NoAccess,
 	DefaultAccessLevel_Read,
 	DefaultAccessLevel_Write,
-} from '../shared/consts';
+} from '../shared/consts.js';
 import {ApiDef_Account, DBDef_Accounts} from '@nu-art/user-account';
-import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE';
-import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys';
-import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor';
+import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE.js';
+import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '../shared/permission-keys.js';
+import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor/index';
 import {ApiDef_SyncEnv} from '@nu-art/thunderstorm';
 import {ApiDef_CollectionActions} from '@nu-art/thunderstorm/shared/collection-actions/api-def';
 import {
@@ -20,7 +20,7 @@ import {
 	DBDef_PermissionGroup,
 	DBDef_PermissionProject,
 	DBDef_PermissionUser
-} from './_entity';
+} from './_entity.js';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 

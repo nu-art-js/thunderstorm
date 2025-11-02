@@ -1,8 +1,8 @@
 import {Module} from '@nu-art/ts-common';
-import {AnalyticsPlugin_Base} from '../plugins/AnalyticsPlugin_Base';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
+import {AnalyticsPlugin_Base} from '../plugins/AnalyticsPlugin_Base.js';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend/index';
 import {Analytics_SendEvent, Analytics_UpdateUser, ApiDef_Analytics} from '@nu-art/analytics-shared';
-import {AnalyticsPluginRegistry} from '../plugins';
+import {AnalyticsPluginRegistry} from '../plugins/index.js';
 
 type Config = {
 	plugins: {

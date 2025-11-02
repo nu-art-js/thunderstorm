@@ -1,4 +1,4 @@
-import {DBProto_ShortUrl} from './types';
+import {DBProto_ShortUrl} from './types.js';
 import {DBDef_V3, tsValidateGeneralUrl, tsValidateShortUrl, tsValidateString} from '@nu-art/ts-common';
 
 

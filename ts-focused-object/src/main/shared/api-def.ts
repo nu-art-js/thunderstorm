@@ -1,5 +1,5 @@
 import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
-import {FocusedEntity} from './types';
+import {FocusedEntity} from './types.js';
 
 export type FocusedItem_Update = {
 	request: {

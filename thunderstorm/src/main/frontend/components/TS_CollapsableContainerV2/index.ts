@@ -1,2 +1,2 @@
-export * from './TS_CollapsableContainerV2';
-export * from './ats';
+export * from './TS_CollapsableContainerV2.js';
+export * from './ats.js';

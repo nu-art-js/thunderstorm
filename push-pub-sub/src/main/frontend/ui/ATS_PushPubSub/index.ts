@@ -1,2 +1,2 @@
-export * from './ATS_PushPubSub';
+export * from './ATS_PushPubSub.js';
     

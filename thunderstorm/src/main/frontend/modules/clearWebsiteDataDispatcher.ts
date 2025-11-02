@@ -1,4 +1,4 @@
-import {ThunderDispatcher} from '../core/thunder-dispatcher';
+import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
 
 export interface OnClearWebsiteData {
 	__onClearWebsiteData(): void;

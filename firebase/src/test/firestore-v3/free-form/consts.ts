@@ -1,7 +1,7 @@
-import {firestore} from '../_core/consts';
+import {firestore} from '../_core/consts.js';
 import {expect} from 'chai';
 import {ArrayType, DBDef_V3, exists, tsValidateMustExist} from '@nu-art/ts-common';
-import {DB_FreeForm, DBProto_FreeForm, TestModel_FreeForm} from './types';
+import {DB_FreeForm, DBProto_FreeForm, TestModel_FreeForm} from './types.js';
 
 const DBDef_FreeForm: DBDef_V3<DBProto_FreeForm> = {
 	dbKey: 'free-form_testcase1',

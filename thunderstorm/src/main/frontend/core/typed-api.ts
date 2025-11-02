@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi} from '../shared';
-import {ModuleFE_XHR} from '../modules/http/ModuleFE_XHR';
+import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi} from '../shared.js';
+import {ModuleFE_XHR} from '../modules/http/ModuleFE_XHR.js';
 
 
 type ApiQueryReturnType<API extends QueryApi<any, any, any, any, HttpMethod_Query>> = API['P'] extends undefined ? () => BaseHttpRequest<API> : (params: API['P']) => BaseHttpRequest<API>

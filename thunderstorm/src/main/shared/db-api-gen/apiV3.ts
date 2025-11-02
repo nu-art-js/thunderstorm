@@ -21,7 +21,7 @@
 
 import {EntityDependencyError, FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DBDef_V3, DBProto, IndexKeys, Metadata} from '@nu-art/ts-common';
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types.js';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 

@@ -1,6 +1,6 @@
 import {exec, ExecOptions} from 'child_process';
 import {Logger} from '@nu-art/ts-common';
-import {CliError} from '../core/CliError';
+import {CliError} from '../core/CliError.js';
 
 
 export type CliOptions = ExecOptions & {

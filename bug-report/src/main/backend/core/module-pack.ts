@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-import {ModuleBE_BugReport} from '../modules/ModuleBE_BugReport';
-import {ModuleBE_AdminBR} from '../modules/ModuleBE_AdminBR';
-import {JiraBugReportIntegrator} from '../modules/JiraBugReportIntegrator';
-// import {JiraModule} from '@nu-art/jira/backend';
-import {SlackBugReportIntegrator} from '../modules/SlackBugReportIntegrator';
-import {ModuleBE_Slack} from '@nu-art/slack/backend';
+import {ModuleBE_BugReport} from '../modules/ModuleBE_BugReport.js';
+import {ModuleBE_AdminBR} from '../modules/ModuleBE_AdminBR.js';
+import {JiraBugReportIntegrator} from '../modules/JiraBugReportIntegrator.js';
+// import {JiraModule} from '@nu-art/jira/backend/index';
+import {SlackBugReportIntegrator} from '../modules/SlackBugReportIntegrator.js';
+import {ModuleBE_Slack} from '@nu-art/slack/backend/index';
 
 
 export const ModulePack_Backend_BugReport = [

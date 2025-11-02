@@ -1,10 +1,11 @@
-import {DBApiConfigV3, MemKey_ServerApi, ModuleBE_BaseDB, Storm,} from '@nu-art/thunderstorm/backend';
-import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from './shared';
+import {DBApiConfigV3, MemKey_ServerApi, ModuleBE_BaseDB, Storm,} from '@nu-art/thunderstorm/backend/index';
+import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from './shared.js';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
 import {
 	_keys,
 	ApiException,
 	asOptionalArray,
+	batchActionParallel,
 	DB_BaseObject,
 	dbObjectToId,
 	exists,
@@ -12,16 +13,18 @@ import {
 	filterInstances,
 	filterKeys,
 	flatArray,
+	JwtTools,
 	merge,
 	TS_Object,
 	TypedMap,
+	UniqueId,
 	Year
 } from '@nu-art/ts-common';
-import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB';
-import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB.js';
+import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend/index';
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account';
-import {MemKey_UserPermissions} from '../../../backend/consts';
+import {MemKey_UserPermissions} from '../../../backend/consts.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
 import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm/backend/modules/_tdb/service-accounts';
 
@@ -119,13 +122,15 @@ export class ModuleBE_PermissionUserDB_Class
 		const beforeIds = (asOptionalArray(data.before) ?? []).map(before => before?._id);
 
 		const accountIdToInvalidate = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i?._id))).filter(id => beforeIds.includes(id));
-		await ModuleBE_SessionDB.session.invalidate(accountIdToInvalidate);
+		await this.invalidateSession(accountIdToInvalidate);
 	}
 
 	insertIfNotExist = async (uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) => {
 		const create = async (transaction?: Transaction) => {
 			const defaultPermissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? await ModuleBE_PermissionUserDB.defaultPermissionGroups() : [];
-			const permissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId))) : [];
+			const permissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups
+				? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId)))
+				: [];
 			this.logInfo(`Received ${defaultPermissionGroups.length} groups to assign, ${permissionGroups.length} of which exist`);
 			const permissionsUserToCreate = {
 				_id: uiAccount._id,
@@ -241,8 +246,15 @@ export class ModuleBE_PermissionUserDB_Class
 
 			//Service accounts are only allowed to have one session... but this isn't the defined place to be a cop about it
 			const sessions = await ModuleBE_AccountDB.account.getSessions(account);
+
 			//If we have a valid session(not expired) we use its JWT instead of creating a new one
-			const validSession = sessions.sessions.find(_session => !ModuleBE_SessionDB.session.isExpired(_session));
+			let validSession;
+			for (const session of sessions.sessions) {
+				if (await JwtTools.isJwtActive(session.sessionIdJwt)) {
+					validSession = session;
+					break;
+				}
+			}
 			this.logError(serviceAccount.ttl);
 			const token = validSession?.sessionIdJwt ? {token: validSession?.sessionIdJwt} : await tokenCreator({
 				accountId: account._id,
@@ -265,6 +277,16 @@ export class ModuleBE_PermissionUserDB_Class
 				await envConfigRef.set(merge(currentConfig, updatedConfig));
 				this.logInfoBold('Created Service Accounts for', _keys(updatedConfig));
 			});
+	}
+
+	public async invalidateSession(accountIds: UniqueId[]) {
+		if (!accountIds.length)
+			return;
+
+		const sessions = await batchActionParallel(accountIds, 10, async ids => await ModuleBE_SessionDB.query.custom({where: {accountId: {$in: ids}}}));
+		await this.runTransaction(async (t) => {
+			await Promise.all(sessions.map(session => ModuleBE_SessionDB._session.invalidate.bySession(session, t)));
+		});
 	}
 }
 

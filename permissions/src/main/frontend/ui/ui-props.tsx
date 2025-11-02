@@ -1,12 +1,11 @@
-import * as React from 'react';
-import {ComponentSync, LL_V_L, MultiSelect_Selector} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_V_L, MultiSelect_Selector} from '@nu-art/thunderstorm/frontend/index';
 import {dbObjectToId, sortArray, UniqueId} from '@nu-art/ts-common';
-import {StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect';
-import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_PermissionGroup} from '../_entity';
-import {DropDown_PermissionAccessLevel} from '../../_entity/permission-access-level/frontend/ui-components';
-import {DropDown_PermissionProject} from '../../_entity/permission-project/frontend/ui-components';
-import {DropDown_PermissionDomain} from '../../_entity/permission-domain/frontend/ui-components';
-import {DropDown_PermissionGroup} from '../../_entity/permission-group/frontend/ui-components';
+import {StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect/index';
+import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_PermissionGroup} from '../_entity.js';
+import {DropDown_PermissionAccessLevel} from '../../_entity/permission-access-level/frontend/ui-components.js';
+import {DropDown_PermissionProject} from '../../_entity/permission-project/frontend/ui-components.js';
+import {DropDown_PermissionDomain} from '../../_entity/permission-domain/frontend/ui-components.js';
+import {DropDown_PermissionGroup} from '../../_entity/permission-group/frontend/ui-components.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 
 

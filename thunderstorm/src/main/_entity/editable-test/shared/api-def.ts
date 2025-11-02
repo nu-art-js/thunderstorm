@@ -1,4 +1,4 @@
-import {ApiDefResolver} from '../../../shared';
+import {ApiDefResolver} from '../../../shared/index.js';
 
 export type RequestType = {
 //

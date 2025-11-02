@@ -18,7 +18,7 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert';
+import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert.js';
 import {
 	ModulePackFE_PermissionAccessLevel,
 	ModulePackFE_PermissionAPI,
@@ -26,7 +26,7 @@ import {
 	ModulePackFE_PermissionGroup,
 	ModulePackFE_PermissionProject,
 	ModulePackFE_PermissionUser
-} from '../_entity';
+} from '../_entity.js';
 
 export const ModulePackFE_Permissions: Module[] = [
 	ModuleFE_PermissionsAssert,

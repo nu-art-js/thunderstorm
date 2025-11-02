@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Button, EditableDBItemV3, ModuleFE_Toaster, TS_PropRenderer, TS_Route, TS_Table} from '@nu-art/thunderstorm/frontend';
+import {Button, EditableDBItemV3, ModuleFE_Toaster, TS_PropRenderer, TS_Route, TS_Table} from '@nu-art/thunderstorm/frontend/index';
 import {BadImplementationException, capitalizeFirstLetter, exists, PreDB, sortArray, StaticLogger} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {
@@ -10,13 +10,17 @@ import {
 	ModuleFE_PermissionAccessLevel,
 	ModuleFE_PermissionDomain,
 	ModuleFE_PermissionProject
-} from '../../_entity';
-import {Component_BasePermissionItemEditor} from './editor-base';
-import {DropDownCaret, Input_Number_Blur, Input_Text_Blur} from './components';
-import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
+} from '../../_entity.js';
+import {Component_BasePermissionItemEditor} from './editor-base.js';
+import {
+	DropDownCaret,
+	Input_Number_Blur,
+	Input_Text_Blur
+} from './components.js';
+import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components.js';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor/index';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
-import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
+import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto/index';
 
 
 class Component_EditDomain
@@ -51,7 +55,7 @@ class Component_EditDomain
 
 		editable.set(prop, value);
 		editable.validate();
-		if (editable.hasErrors())
+		if (editable.hasValidationError())
 			return;
 
 		await editable.save();
@@ -186,7 +190,7 @@ export class PermissionDomainsEditor
 		keys: ['selected'],
 		module: ModuleFE_PermissionDomain,
 		mapper: domain => [`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`],
-		sort: domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`,
+		sort: (items) => sortArray(items, domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`),
 		itemRenderer: domain => <>{`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`}</>,
 		EditorRenderer: Controller_DomainsEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionDomain>>>,
 		route: this.Route,

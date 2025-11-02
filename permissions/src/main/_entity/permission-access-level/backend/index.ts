@@ -1,2 +1,2 @@
-export * from './ModuleBE_PermissionAccessLevelDB';
-export * from './module-pack';
+export * from './ModuleBE_PermissionAccessLevelDB.js';
+export * from './module-pack.js';

@@ -1,5 +1,5 @@
 import {__stringify, dispatch_onApplicationNotification, ServerErrorSeverity} from '@nu-art/ts-common';
-import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
+import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
 import {onObjectFinalized, StorageEvent, StorageOptions} from 'firebase-functions/v2/storage';
 import {CloudFunction} from 'firebase-functions/v2';
 

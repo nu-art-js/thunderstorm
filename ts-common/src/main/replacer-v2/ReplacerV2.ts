@@ -1,4 +1,4 @@
-import {filterInstances} from '../utils/array-tools';
+import {filterInstances} from '../utils/array-tools.js';
 
 
 export type ReplacerV2_Input = {

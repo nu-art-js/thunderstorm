@@ -17,9 +17,9 @@
  */
 
 import {ImplementationMissingException, Module} from '@nu-art/ts-common';
-import {IssueType, JiraIssueText, JiraModule, JiraProject, LabelType} from '@nu-art/jira/backend';
-import {Platform_Jira, ReportLogFile, Request_BugReport} from '../..';
-import {TicketDetails} from './ModuleBE_BugReport';
+import {IssueType, JiraIssueText, JiraModule, JiraProject, LabelType} from '@nu-art/jira/backend/index';
+import {Platform_Jira, ReportLogFile, Request_BugReport} from '../../index.js';
+import {TicketDetails} from './ModuleBE_BugReport.js';
 
 
 type Config = {

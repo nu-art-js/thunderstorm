@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './Layouts';
+export * from './Layouts.js';

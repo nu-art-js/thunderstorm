@@ -1,5 +1,5 @@
-import {DBPointer} from '../utils/types';
-import {MetadataObject} from './types';
+import {DBPointer} from '../utils/types.js';
+import {MetadataObject} from './types.js';
 
 export const Const_UniqueKey = '_id';
 export const Const_UniqueKeys = [Const_UniqueKey];

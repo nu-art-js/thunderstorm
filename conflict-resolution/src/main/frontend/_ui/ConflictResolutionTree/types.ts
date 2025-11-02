@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {TreeNode, TreeType} from '@nu-art/thunderstorm/frontend';
+import {TreeNode, TreeType} from '@nu-art/thunderstorm/frontend/index';
 import {DBProto, UniqueId} from '@nu-art/ts-common';
 
 type Props_CheckedItem = {

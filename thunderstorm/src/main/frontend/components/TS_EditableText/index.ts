@@ -1,1 +1,1 @@
-export * from './TS_EditableText';
+export * from './TS_EditableText.js';

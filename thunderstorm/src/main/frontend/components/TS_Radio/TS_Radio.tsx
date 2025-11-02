@@ -1,8 +1,8 @@
 import * as React from 'react';
 import './TS_Radio.scss';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className, stopPropagation} from '../../utils/tools';
-import {Label} from '../Label/Label';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className, stopPropagation} from '../../utils/tools.js';
+import {Label} from '../Label/Label.js';
 
 type Props<ItemType> = {
 												 values: ItemType[];

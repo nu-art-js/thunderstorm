@@ -1,0 +1,115 @@
+// file: ./lib-a.txt
+//// file: ./__package.json
+{
+  "name": "@demo/lib-a",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-a"
+    }
+}
+
+//// file: ./src/main/index.ts
+export const libA = () => 'A';
+
+// file: ./lib-b.txt
+//// file: ./__package.json
+{
+  "name": "@demo/lib-b",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+      "dependencies": {
+        "@demo/lib-a": "?"
+      },
+    "unitConfig": {
+      "type": "typescript-lib",
+      "label": "lib-b"
+    }
+}
+
+//// file: ./src/main/index.ts
+export const libB = () => 'B';
+
+// file: ./lib-c.txt
+//// file: ./__package.json
+{
+  "name": "@demo/lib-c",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-b": "?"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+   "unitConfig": {
+     "type": "typescript-lib",
+     "label": "lib-c"
+   }
+}
+
+//// file: ./src/main/index.ts
+import {libB} from '@demo/lib-b';
+export const libC = () => libB() + 'C';
+
+// file: ./lib-d.txt
+//// file: ./__package.json
+{
+  "name": "@demo/lib-d",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-d"
+  }
+}
+
+//// file: ./src/main/index.ts
+export const libD = () => 'libD';
+
+// file: ./lib-e.txt
+//// file: ./__package.json
+{
+  "name": "@demo/lib-e",
+  "version": "1.0.0",
+  "dependencies": {
+    "@demo/lib-c": "?",
+    "@demo/lib-d": "?"
+  },
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-e"
+  }
+}
+
+//// file: ./src/main/index.ts
+import {libC} from '@demo/lib-c';
+import {libD} from '@demo/lib-d';
+export const libE = () => libC() + libD();
+
+// file: ./project-lib-config.txt
+//// file: ./.eslintrc.json
+{ "root": true }
+
+
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}

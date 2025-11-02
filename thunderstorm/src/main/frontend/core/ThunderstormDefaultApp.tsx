@@ -1,15 +1,15 @@
-import {ComponentSync} from './ComponentSync';
-import {TS_Route} from '../modules/routing/types';
+import {ComponentSync} from './ComponentSync.js';
+import {TS_Route} from '../modules/routing/types.js';
 import * as React from 'react';
 import {generateUUID} from '@nu-art/ts-common';
-import {Thunder} from './Thunder';
-import {stopPropagation} from '../utils/tools';
-import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2';
-import {TS_DialogOverlay} from '../components/TS_Dialog';
-import {TS_PopUp, TS_ToolTip} from '../components/TS_MouseInteractivity';
-import {TS_ToastOverlay} from '../components/TS_Toaster';
-import {TS_Notifications} from '../components/TS_Notifications';
-import {TS_MemoryMonitor} from '../components/TS_MemoryMonitor';
+import {Thunder} from './Thunder.js';
+import {stopPropagation} from '../utils/tools.js';
+import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2.js';
+import {TS_DialogOverlay} from '../components/TS_Dialog/index.js';
+import {TS_PopUp, TS_ToolTip} from '../components/TS_MouseInteractivity/index.js';
+import {TS_ToastOverlay} from '../components/TS_Toaster/index.js';
+import {TS_Notifications} from '../components/TS_Notifications/index.js';
+import {TS_MemoryMonitor} from '../components/TS_MemoryMonitor/index.js';
 
 
 export class ThunderstormDefaultApp

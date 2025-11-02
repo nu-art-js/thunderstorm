@@ -20,7 +20,7 @@
  */
 
 import {Dispatcher, Module} from '@nu-art/ts-common';
-import {ModuleFE_XHR} from './http/ModuleFE_XHR';
+import {ModuleFE_XHR} from './http/ModuleFE_XHR.js';
 import {
 	ApiDef,
 	ApiDef_ForceUpgrade,
@@ -31,9 +31,9 @@ import {
 	HttpMethod,
 	QueryApi,
 	UpgradeRequired
-} from '../../shared';
-import {browserType} from '../utils/tools';
-import {apiWithQuery} from '../core/typed-api';
+} from '../../shared/index.js';
+import {browserType} from '../utils/tools.js';
+import {apiWithQuery} from '../core/typed-api.js';
 
 
 type Config = {

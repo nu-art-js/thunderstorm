@@ -9,24 +9,24 @@ import {
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
-import {AppToolsScreen, ATS_Fullstack, TS_AppTools} from '../../components/TS_AppTools';
-import {genericNotificationAction} from '../../components/TS_Notifications';
-import {ModuleFE_SyncEnvV2} from '../../modules/sync-env/ModuleFE_SyncEnvV2';
-import {LL_H_C, LL_V_L} from '../../components/Layouts';
-import {TS_Checkbox} from '../../components/TS_Checkbox';
-import {TS_Input} from '../../components/TS_Input';
-import {DBModuleType, Response_FetchBackupMetadata} from '../../../shared';
-import {ComponentSync} from '../../core/ComponentSync';
-import {Thunder} from '../../core/Thunder';
-import {TS_PropRenderer} from '../../components/TS_PropRenderer';
-import {SimpleListAdapter} from '../../components/adapter/Adapter';
-import {TS_DropDown} from '../../components/TS_Dropdown';
-import {_className} from '../../utils/tools';
-import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
-import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager';
-import {Button} from '../../components/Button/Button';
+import {AppToolsScreen, ATS_Fullstack, TS_AppTools} from '../../components/TS_AppTools/index.js';
+import {genericNotificationAction} from '../../components/TS_Notifications/index.js';
+import {ModuleFE_SyncEnvV2} from '../../modules/sync-env/ModuleFE_SyncEnvV2.js';
+import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
+import {TS_Checkbox} from '../../components/TS_Checkbox/index.js';
+import {TS_Input} from '../../components/TS_Input/index.js';
+import {DBModuleType, Response_FetchBackupMetadata} from '../../../shared/index.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {Thunder} from '../../core/Thunder.js';
+import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
+import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
+import {TS_DropDown} from '../../components/TS_Dropdown/index.js';
+import {_className} from '../../utils/tools.js';
+import {StorageKey} from '../../modules/ModuleFE_LocalStorage.js';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
+import {ModuleFE_SyncManager} from '../../modules/sync-manager/ModuleFE_SyncManager.js';
+import {Button} from '../../components/Button/Button.js';
 
 
 const Environments = ['prod', 'staging', 'dev', 'local'] as const;

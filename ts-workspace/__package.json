@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-workspace",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "TS Workspace",
   "keywords": [
     "TacB0sS",
@@ -13,8 +13,6 @@
   ],
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "scripts": {
     "build": "tsc"
   },
@@ -26,6 +24,7 @@
     "@nu-art/ts-common": "?",
     "@nu-art/firebase": "?",
     "@nu-art/thunderstorm": "?",
+    "@nu-art/user-account": "?",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
@@ -45,5 +44,16 @@
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

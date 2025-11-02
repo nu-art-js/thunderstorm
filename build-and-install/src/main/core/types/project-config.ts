@@ -1,5 +1,5 @@
-import {StringMap} from '@nu-art/ts-common';
-import { Package, RuntimePackage } from './package';
+import {StringMap, TypedMap} from '@nu-art/ts-common';
+import {Package, RuntimePackage} from './package/index.js';
 
 export type ProjectConfig = {
 	params: StringMap;
@@ -14,3 +14,33 @@ export type RuntimeProjectConfig = {
 };
 
 export type Constructor<T> = new (...args: any) => T
+
+export type BAI_Config = {
+	thunderstormVersion: string
+	appVersion: string
+	templateParams?: {
+		packageJson?: TypedMap<string>
+	}
+	files?: {
+		tests?: {
+			firebase?: {
+				'firebase.json'?: string
+				'.firebaserc'?: string
+				baseEmulationPort?: number
+			}
+		}
+		firebase?: {
+			databaseRules?: string
+			storageRules?: string
+			firestoreIndexesRules?: string
+			firestoreRules?: string
+		}
+		typescript?: {
+			tsConfig?: StringMap
+			eslintConfig?: string
+		}
+		backend: {
+			proxy: string
+		}
+	}
+}

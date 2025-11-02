@@ -18,12 +18,12 @@
  */
 
 import * as React from 'react';
-import {ICONS} from '@app/common/frontend/icons';
-import {BaseNodeRenderer,} from '@nu-art/thunderstorm/frontend';
-import { Plague} from './consts';
-import {Playground_DropdownSingleAndMulti} from './Example_Dropdown_SingleAndMulti';
-import {Playground_DropdownMultiType} from './Example_Dropdown_MultiType';
-import {Playground_DropdownSingleType} from './Example_Dropdown_SingleType';
+import {ICONS} from '@app/common/frontend/icons/index';
+import {BaseNodeRenderer,} from '@nu-art/thunderstorm/frontend/index';
+import { Plague} from './consts.js';
+import {Playground_DropdownSingleAndMulti} from './Example_Dropdown_SingleAndMulti.js';
+import {Playground_DropdownMultiType} from './Example_Dropdown_MultiType.js';
+import {Playground_DropdownSingleType} from './Example_Dropdown_SingleType.js';
 
 
 export type Node = {

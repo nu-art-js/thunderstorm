@@ -19,13 +19,12 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
 import {ComponentType} from 'react';
 import {_keys} from '@nu-art/ts-common';
-import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem';
-import {ComponentSync} from '../../core/ComponentSync';
-import {TS_PropRenderer} from '../TS_PropRenderer';
-import {EditableRef} from '../TS_EditableItemComponent/TS_EditableItemComponent';
+import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {TS_PropRenderer} from '../TS_PropRenderer/index.js';
+import {EditableRef} from '../TS_EditableContent/TS_EditableContent.js';
 
 
 export type Props_FormV3<T> = {

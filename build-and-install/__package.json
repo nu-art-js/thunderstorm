@@ -1,7 +1,8 @@
 {
   "name": "@nu-art/build-and-install",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "",
+  "type": "module",
   "keywords": [
     "TacB0sS",
     "infra",
@@ -13,8 +14,7 @@
     "url": "https://github.com/nu-art-js/thunderstorm/issues"
   },
   "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
+    "directory": "dist"
   },
   "repository": {
     "type": "git",
@@ -22,23 +22,29 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "files": [
     "**/*"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "plop": "npm run plop --prefix ../.."
   },
   "dependencies": {
     "chokidar": "^3.6.0",
-    "neo-blessed": "^0.2.0",
-    "blessed": "^0.1.81",
-    "glob": "^10.3.14",
     "@nu-art/ts-common": "?",
     "@nu-art/commando": "?"
   },
-  "devDependencies": {
-    "@types/blessed": "^0.1.25"
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

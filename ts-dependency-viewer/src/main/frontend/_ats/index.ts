@@ -1,1 +1,1 @@
-export * from './ATS_DependencyGraph/ATS_DependencyGraph';
+export * from './ATS_DependencyGraph/ATS_DependencyGraph.js';

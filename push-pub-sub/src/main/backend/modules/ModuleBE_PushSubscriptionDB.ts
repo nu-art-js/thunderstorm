@@ -1,5 +1,5 @@
-import {createApisForDBModuleV3, DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend';
-import {DBDef_PushSubscription, DBProto_PushSubscription} from '../../shared/push-subscription';
+import {createApisForDBModuleV3, DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend/index';
+import {DBDef_PushSubscription, DBProto_PushSubscription} from '../../shared/push-subscription/index.js';
 
 
 type Config = DBApiConfigV3<DBProto_PushSubscription> & {

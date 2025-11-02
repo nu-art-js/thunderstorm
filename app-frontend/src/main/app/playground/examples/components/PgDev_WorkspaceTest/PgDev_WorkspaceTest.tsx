@@ -2,8 +2,8 @@ import {
 	ComponentSync,
 	SimpleListAdapter,
 	TS_DropDown,
-} from '@nu-art/thunderstorm/frontend';
-import {PanelConfig, TS_HorizontalWorkspace, TS_VerticalWorkspace, TS_Workspace} from '@nu-art/ts-workspace/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
+import {PanelConfig, TS_HorizontalWorkspace, TS_VerticalWorkspace, TS_Workspace} from '@nu-art/ts-workspace/frontend/index';
 import * as React from 'react';
 
 const leftPanel = (props: {}) => <div

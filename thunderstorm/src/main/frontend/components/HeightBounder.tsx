@@ -1,7 +1,6 @@
-import * as React from 'react';
 import {HTMLAttributes} from 'react';
-import {ComponentSync} from '../core/ComponentSync';
-import {OnWindowResized} from '../modules/ModuleFE_Window';
+import {ComponentSync} from '../core/ComponentSync.js';
+import {OnWindowResized} from '../modules/ModuleFE_Window.js';
 
 type BounderProps = HTMLAttributes<HTMLDivElement>;
 

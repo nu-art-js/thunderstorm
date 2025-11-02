@@ -19,5 +19,5 @@
  * limitations under the License.
  */
 
-export * from './TS_DialogOverlay';
-export * from './TS_Dialog';
+export * from './TS_DialogOverlay.js';
+export * from './TS_Dialog.js';

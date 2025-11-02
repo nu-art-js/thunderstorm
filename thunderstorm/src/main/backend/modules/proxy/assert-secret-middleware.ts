@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {ServerApi_Middleware} from '../../utils/types';
-import {ModuleBE_RemoteProxy} from './ModuleBE_RemoteProxy';
+import {ServerApi_Middleware} from '../../utils/types.js';
+import {ModuleBE_RemoteProxy} from './ModuleBE_RemoteProxy.js';
 
 
 export const AssertSecretMiddleware: ServerApi_Middleware = async () => {

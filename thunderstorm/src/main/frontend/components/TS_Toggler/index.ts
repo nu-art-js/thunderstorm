@@ -1,1 +1,1 @@
-export * from './TS_Toggler';
+export * from './TS_Toggler.js';

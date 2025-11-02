@@ -33,14 +33,33 @@ import {
 	TypedKeyValue,
 	TypedMap
 } from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi, ModuleBE_BaseApi_Class, ModuleBE_BaseDB, ModuleBE_SyncManager, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
-import {ApiModule, HttpMethod} from '@nu-art/thunderstorm';
-import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {ApiDef_PermissionsAssert, Request_AssertApiForUser} from '../../shared';
-import {MemKey_HttpRequestBody, MemKey_HttpRequestMethod, MemKey_HttpRequestQuery, MemKey_HttpRequestUrl} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts';
-import {PermissionKey_BE} from '../PermissionKey_BE';
-import {Base_AccessLevel, DB_PermissionAccessLevel, DB_PermissionAPI, DomainToLevelValueMap, ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity';
+import {
+	addRoutes,
+	createBodyServerApi,
+	ModuleBE_BaseApi_Class,
+	ModuleBE_BaseDB,
+	ModuleBE_SyncManager,
+	ServerApi_Middleware
+} from '@nu-art/thunderstorm/backend/index';
+import {ApiModule, HttpMethod} from '@nu-art/thunderstorm/shared/index';
+import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account/backend/index';
+import {ApiDef_PermissionsAssert, Request_AssertApiForUser} from '../../shared/index.js';
+import {
+	MemKey_HttpRequestBody,
+	MemKey_HttpRequestMethod,
+	MemKey_HttpRequestQuery,
+	MemKey_HttpRequestUrl
+} from '@nu-art/thunderstorm/backend/modules/server/consts';
+import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts.js';
+import {PermissionKey_BE} from '../PermissionKey_BE.js';
+import {
+	Base_AccessLevel,
+	DB_PermissionAccessLevel,
+	DB_PermissionAPI,
+	DomainToLevelValueMap,
+	ModuleBE_PermissionAccessLevelDB,
+	ModuleBE_PermissionAPIDB
+} from '../_entity.js';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -54,7 +73,7 @@ type Config = {
  * [DomainId uniqueString]: accessLevel's numerical value
  */
 
-export type SessionData_StrictMode = TypedKeyValue<'strictMode', boolean>
+export type SessionData_StrictMode = TypedKeyValue<'strictMode', { isStrictMode: boolean }>
 
 export class ModuleBE_PermissionsAssert_Class
 	extends Module<Config>
@@ -120,7 +139,7 @@ export class ModuleBE_PermissionsAssert_Class
 	};
 
 	async __collectSessionData(): Promise<SessionData_StrictMode> {
-		return {key: 'strictMode', value: this.isStrictMode()};
+		return {key: 'strictMode', value: {isStrictMode: this.isStrictMode()}};
 	}
 
 	init() {

@@ -21,10 +21,10 @@
  * Created by tacb0ss on 19/09/2018.
  */
 import {Logger, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {FirebaseConfig} from '../../index';
-import {MessagingWrapperFE} from '../messaging/MessagingWrapperFE';
-import {AnalyticsWrapperFE} from '../analytics/AnalyticsWrapperFE';
-import {DatabaseWrapperFE} from '../database/DatabaseWrapperFE';
+import {FirebaseConfig} from '../../index.js';
+import {MessagingWrapperFE} from '../messaging/MessagingWrapperFE.js';
+import {AnalyticsWrapperFE} from '../analytics/AnalyticsWrapperFE.js';
+import {DatabaseWrapperFE} from '../database/DatabaseWrapperFE.js';
 import {getAuth, signInWithCustomToken, signOut} from 'firebase/auth';
 import {FirebaseApp, initializeApp} from 'firebase/app';
 

@@ -18,11 +18,11 @@
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
 import {__stringify, ApiException, decode, ImplementationMissingException, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend/index';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {ModuleBE_AccountDB} from './ModuleBE_AccountDB';
-import {ApiDef_SAML, QueryParam_Email, QueryParam_RedirectUrl, QueryParam_SessionId, SAML_Assert, SAML_Login} from '../shared';
-import {MemKey_AccountEmail} from '../../session/backend';
+import {ModuleBE_AccountDB} from './ModuleBE_AccountDB.js';
+import {ApiDef_SAML, QueryParam_Email, QueryParam_RedirectUrl, QueryParam_SessionId, SAML_Assert, SAML_Login} from '../shared/index.js';
+import {MemKey_AccountEmail} from '../../session/backend/index.js';
 
 
 /**
@@ -99,17 +99,18 @@ export class ModuleBE_SAML_Class
 
 	assertSaml = async (body: SAML_Assert['request']): Promise<SAML_Assert['response']> => {
 		try {
+			this.logDebug('assertion called with body:', body);
 			const data = await this.assertImpl(body);
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
 
 			const accountWithoutPassword = {email: data.userId.toLowerCase(), deviceId: data.loginContext.deviceId, type: 'user'};
 			MemKey_AccountEmail.set(accountWithoutPassword.email);
 
-			const session = await ModuleBE_AccountDB.account.saml(accountWithoutPassword);
+			const dbSession = await ModuleBE_AccountDB.account.saml(accountWithoutPassword);
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 
-			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), 'g'), encodeURIComponent(session.sessionId));
+			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), 'g'), encodeURIComponent(dbSession.sessionIdJwt));
 			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), encodeURIComponent(accountWithoutPassword.email));
 
 			MemKey_HttpResponse.get().redirect(302, redirectUrl);

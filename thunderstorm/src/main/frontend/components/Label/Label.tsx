@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className} from '../../utils/tools';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className} from '../../utils/tools.js';
 import './Label.scss';
-import {OnWindowResized} from '../../modules/ModuleFE_Window';
+import {OnWindowResized} from '../../modules/ModuleFE_Window.js';
 
 type Props = React.PropsWithChildren<{
     tooltip?: React.ReactNode; //The content that will appear in the tooltip

@@ -1,5 +1,5 @@
-import {PackageJson} from '../configs';
-import {Package, Package_Sourceless} from './package';
+import {PackageJson} from '../configs/index.js';
+import {Package, Package_Sourceless} from './package.js';
 
 
 type WithPackageJson = {

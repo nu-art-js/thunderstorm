@@ -1,7 +1,7 @@
-import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend/index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {ApiStruct_PermissionGroup, DBDef_PermissionGroup, DBProto_PermissionGroup} from '../shared';
+import {ApiStruct_PermissionGroup, DBDef_PermissionGroup, DBProto_PermissionGroup} from '../shared/index.js';
 
 export type DispatcherType_PermissionGroup = DispatcherDef<DBProto_PermissionGroup, `__onPermissionGroupUpdated`>;
 

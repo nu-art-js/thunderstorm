@@ -17,7 +17,7 @@
  */
 
 import {Logger} from '@nu-art/ts-common';
-import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from './types';
+import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from './types.js';
 import {
 	deleteToken,
 	getMessaging,

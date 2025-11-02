@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/slack",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "Storm - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",
@@ -24,8 +24,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "files": [
     "**/*"
   ],
@@ -38,13 +36,12 @@
     "react": "?",
     "react-dom": "?",
     "react-router-dom": "?",
-    "@slack/web-api": "?",
+    "@slack/web-api": "7.9.3",
     "@slack/events-api": "^2.3.0",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
-    "fs": "0.0.1-security",
-    "google-auth-library": "^6.0.6",
+    "google-auth-library": "?",
     "moment": "?",
     "request": "^2.88.0"
   },
@@ -56,5 +53,16 @@
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

@@ -1,2 +1,2 @@
-export * from './modules/ModuleBE_FocusedObject';
-export * from './modules/module-pack';
+export * from './modules/ModuleBE_FocusedObject.js';
+export * from './modules/module-pack.js';

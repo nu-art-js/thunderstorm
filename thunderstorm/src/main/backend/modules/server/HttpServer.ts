@@ -24,17 +24,19 @@
  */
 
 
-import {Server} from 'http';
+import {createServer as createHttpServer, Server} from 'http';
+import {createServer as createHttpsServer} from 'https';
 import {Socket} from 'net';
 import * as fs from 'fs';
 import {addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
 import express from 'express';
 
-import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from '../../utils/types';
-import {DefaultApiErrorMessageComposer} from './server-errors';
-import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase/backend';
-import {ServerApi} from './server-api';
+import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from '../../utils/types.js';
+import {DefaultApiErrorMessageComposer} from './server-errors.js';
+import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase/backend/index';
+import {ServerApi} from './server-api.js';
 import compression from 'compression';
+import cors from 'cors';
 
 
 const ALL_Methods: string[] = [
@@ -62,6 +64,8 @@ type ConfigType = {
 	bodyParserLimit: number | string
 };
 
+export type CustomOrigin = (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => (boolean | Promise<boolean>);
+
 export class HttpServer_Class
 	extends Module<ConfigType>
 	implements TBR_ExpressFunctionInterface {
@@ -71,13 +75,14 @@ export class HttpServer_Class
 	readonly express!: Express;
 	private server!: Server;
 	private socketId: number = 0;
+	private customCorsOriginValidator: CustomOrigin | undefined;
 
 	constructor() {
 		super('http-server');
 		// this.express = express();
 	}
 
-	getExpress():Express {
+	getExpress(): Express {
 		if (this.express)
 			return this.express;
 
@@ -104,6 +109,10 @@ export class HttpServer_Class
 		return this.config.baseUrl;
 	}
 
+	setCustomCorsOriginValidator(validator: CustomOrigin) {
+		this.customCorsOriginValidator = validator;
+	}
+
 	protected async init() {
 		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
 		const baseUrl = this.config.baseUrl;
@@ -114,7 +123,7 @@ export class HttpServer_Class
 			this.config.baseUrl = baseUrl.replace(/\/\//g, '/');
 		}
 
-		this.express.use((req, res, next) => {
+		this.getExpress().use((req, res, next) => {
 			if (req)
 				req.url = req.url.replace(/\/\//g, '/');
 
@@ -123,19 +132,20 @@ export class HttpServer_Class
 
 		const parserLimit = this.config.bodyParserLimit;
 		if (parserLimit)
-			this.express.use(express.json({limit: parserLimit}));
-		this.express.use(compression());
+			this.getExpress().use(express.json({limit: parserLimit}));
+		this.getExpress().use(compression());
 		for (const middleware of HttpServer_Class.expressMiddleware) {
-			this.express.use(middleware);
+			this.getExpress().use(middleware);
 		}
 
-		const cors = this.config.cors || {};
-		cors.headers = DefaultHeaders.reduce((toRet, item: string) => {
+
+		const _cors = this.config.cors || {};
+		_cors.headers = DefaultHeaders.reduce((toRet, item: string) => {
 			if (!toRet.includes(item))
 				addItemToArray(toRet, item);
 
 			return toRet;
-		}, cors.headers || []);
+		}, _cors.headers || []);
 
 		const resolveCorsOrigin = (origin?: string | string[]): string | undefined => {
 			let _origin: string;
@@ -147,29 +157,39 @@ export class HttpServer_Class
 			else
 				_origin = origin[0];
 
-			if (!cors.origins)
+			if (!_cors.origins)
 				return _origin;
 
-			if (cors.origins.indexOf(_origin.toLowerCase()) > -1)
-				return _origin;
+			for (const allowedOrigin of _cors.origins) {
+				if (allowedOrigin === _origin.toLowerCase() ||
+					(allowedOrigin.includes('*') && new RegExp(`^${allowedOrigin.replace(/\*/g, '.*')}$`).test(_origin.toLowerCase()))) {
+					return _origin;
+				}
+			}
 		};
 
-		this.express.all('*', (req: ExpressRequest, res: ExpressResponse, next: express.NextFunction) => {
-			let origin = req.headers.origin;
-			if (origin) {
-				origin = resolveCorsOrigin(origin);
+
+		this.getExpress().use(cors({
+			origin: async (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => {
 				if (!origin)
-					this.logWarning(`CORS issue!!!\n Origin: '${req.headers.origin}' does not exist in config: ${JSON.stringify(cors.origins)}`);
-			}
+					return callback(null);
 
-			res.header('Access-Control-Allow-Origin', origin || 'N/A');
-			res.header('Access-Control-Allow-Methods', (cors.methods || ALL_Methods)?.join(','));
-			res.header('Access-Control-Allow-Headers', cors.headers?.join(','));
-			res.header('Access-Control-Expose-Headers', cors.responseHeaders?.join(','));
+				const resolvedOrigin = resolveCorsOrigin(origin);
+				if (!resolvedOrigin)
+					return callback(new Error(`CORS issue!!!\n Origin: '${origin}' does not exist in config: ${JSON.stringify(_cors.origins)}`), undefined);
 
-			next();
-		});
-		this.express.options('*', (req: ExpressRequest, res: ExpressResponse) => {
+				if (this.customCorsOriginValidator && !(await this.customCorsOriginValidator?.(origin, callback))) {
+					return callback(new Error(`CORS issue!!!\n Origin: '${origin}' is not valid`), undefined);
+				}
+
+				callback(null, resolvedOrigin);
+			},
+			methods: _cors.methods || ALL_Methods,
+			allowedHeaders: _cors.headers,
+			exposedHeaders: _cors.responseHeaders,
+		}));
+
+		this.getExpress().options('*', (req: ExpressRequest, res: ExpressResponse) => {
 			res.end();
 		});
 	}
@@ -178,8 +198,7 @@ export class HttpServer_Class
 		const ssl = this.config.ssl;
 		if (!ssl) {
 			this.logDebug('starting HTTP server');
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			return require('http').createServer(this.express);
+			return createHttpServer(this.getExpress());
 		}
 
 		this.logDebug('starting HTTPS server');
@@ -198,8 +217,7 @@ export class HttpServer_Class
 			requestCert: false,
 		};
 
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		return require('https').createServer(options, this.express);
+		return createHttpsServer(options, this.getExpress());
 	}
 
 	public async startServer(): Promise<void> {

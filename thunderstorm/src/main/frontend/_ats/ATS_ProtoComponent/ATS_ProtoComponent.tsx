@@ -1,14 +1,13 @@
-import * as React from 'react';
-import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';
-import {LL_H_C, LL_V_L} from '../../components/Layouts';
+import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools/index.js';
+import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
 import './ATS_ProtoComponent.scss';
 import {generateArray, UniqueId} from '@nu-art/ts-common';
-import {TS_PropRenderer} from '../../components/TS_PropRenderer';
-import {TS_DropDown} from '../../components/TS_Dropdown';
-import {SimpleListAdapter} from '../../components/adapter/Adapter';
-import {ProtoComponent, ProtoComponentDef} from '../../core/proto-component';
-import {ComponentSync} from '../../core/ComponentSync';
-import { Button } from '../../components/Button/Button';
+import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
+import {TS_DropDown} from '../../components/TS_Dropdown/index.js';
+import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
+import {ProtoComponent, ProtoComponentDef} from '../../core/proto-component/index.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import { Button } from '../../components/Button/Button.js';
 
 
 type Keys = 'selectedNumber' | 'selectedExampleId';

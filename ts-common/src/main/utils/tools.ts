@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {_keys} from './object-tools';
-import {ResolvableContent, TS_Object} from './types';
+import {_keys} from './object-tools.js';
+import {ResolvableContent, TS_Object} from './types.js';
 
 
 export function regexpCase(value: string, reg: string) {

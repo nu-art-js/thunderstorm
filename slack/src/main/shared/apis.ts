@@ -1,6 +1,6 @@
 import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
-import {PreSendSlackStructuredMessage} from './types';
-import {SlackBlock, ThreadPointer} from './base-slack-builder';
+import {PreSendSlackStructuredMessage} from './types.js';
+import {SlackBlock, ThreadPointer} from './base-slack-builder/index.js';
 import {WebAPICallResult} from '@slack/web-api';
 
 export type Request_PostMessage = { channel: string, message: any };

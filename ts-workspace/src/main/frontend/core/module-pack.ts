@@ -17,10 +17,10 @@
  */
 
 
-import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace';
+import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace.js';
 
 export const ModulePack_Frontend_TSWorkspace = [
 	ModuleFE_Workspace,
 ];
 
-export * from '../modules/ModuleFE_Workspace';
+export * from '../modules/ModuleFE_Workspace.js';

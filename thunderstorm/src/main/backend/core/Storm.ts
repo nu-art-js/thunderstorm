@@ -21,11 +21,11 @@
 
 import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
-import {BaseStorm} from './BaseStorm';
-import {HttpRoute, RouteResolver} from '../modules/server/route-resolvers';
-import {HttpServer} from '../modules/server/HttpServer';
-import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {ServerApi} from '../modules/server/server-api';
+import {StormConfig, BaseStorm} from './BaseStorm.js';
+import {HttpRoute, RouteResolver} from '../modules/server/route-resolvers/index.js';
+import {HttpServer} from '../modules/server/HttpServer.js';
+import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
+import {ServerApi} from '../modules/server/server-api.js';
 
 
 const modules: Module[] = [
@@ -39,8 +39,8 @@ export class Storm
 	private routeResolver!: RouteResolver;
 	private functions: any[] = [];
 
-	constructor() {
-		super();
+	constructor(config: StormConfig | string) {
+		super(config);
 		BeLogged.addClient(process.env.GCLOUD_PROJECT && process.env.FUNCTIONS_EMULATOR ? LogClient_Terminal : LogClient_Function);
 
 		this.addModulePack(modules);

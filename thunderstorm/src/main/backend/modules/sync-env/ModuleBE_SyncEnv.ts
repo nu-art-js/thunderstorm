@@ -9,9 +9,9 @@ import {
 	RuntimeModules,
 	TypedMap
 } from '@nu-art/ts-common';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {addRoutes} from '../ModuleBE_APIs';
-import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
+import {addRoutes} from '../ModuleBE_APIs.js';
+import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js';
 import {
 	ApiDef,
 	ApiDef_SyncEnv,
@@ -25,13 +25,13 @@ import {
 	Request_GetMetadata,
 	Response_BackupDocs,
 	Response_FetchBackupMetadata
-} from '../../../shared';
-import {AxiosHttpModule} from '../http/AxiosHttpModule';
-import {MemKey_HttpRequest} from '../server/consts';
-import {ModuleBE_BaseApi_Class} from '../db-api-gen/ModuleBE_BaseApi';
-import {Storm} from '../../core/Storm';
-import {ModuleBE_BackupDocDB} from '../../../_entity/backup-doc/backend';
-import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB';
+} from '../../../shared/index.js';
+import {AxiosHttpModule} from '../http/AxiosHttpModule.js';
+import {MemKey_HttpRequest} from '../server/consts.js';
+import {ModuleBE_BaseApi_Class} from '../db-api-gen/ModuleBE_BaseApi.js';
+import {Storm} from '../../core/Storm.js';
+import {ModuleBE_BackupDocDB} from '../../../_entity/backup-doc/backend/index.js';
+import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB.js';
 import {Transform, Writable} from 'stream';
 import {firestore} from 'firebase-admin';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
@@ -146,7 +146,7 @@ class ModuleBE_SyncEnv_Class
 				.toLowerCase()} doesn't have env ${body.env} in it's allowedEnvsToSyncFrom list.`);
 
 		this.logInfoBold('Received API call Fetch From Env!');
-		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
+		this.logInfo(`Origin env: ${body.env}, backupId: ${body.backupId}`);
 		let startTime = undefined; // required for log
 		let endTime = undefined; // required for log
 

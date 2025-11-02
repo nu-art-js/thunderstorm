@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ModuleManager} from "./module-manager";
+import {ModuleManager} from "./module-manager.js";
 
 export class Application
 	extends ModuleManager {

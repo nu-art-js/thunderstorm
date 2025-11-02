@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {logicalXOR} from '@nu-art/ts-common';
-import {Coordinates, MouseInteractivity_Model} from '../../../component-modules/mouse-interactivity/types';
-import {ComponentSync} from '../../../core/ComponentSync';
+import {Coordinates, MouseInteractivity_Model} from '../../../component-modules/mouse-interactivity/types.js';
+import {ComponentSync} from '../../../core/ComponentSync.js';
 
 type State<M extends MouseInteractivity_Model> = {
 	model?: M,

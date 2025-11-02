@@ -20,10 +20,9 @@
  */
 
 import {TS_Object} from '@nu-art/ts-common';
-import {HTMLProps} from 'react';
-import {_className} from '../../utils/tools';
+import React, {HTMLProps} from 'react';
+import {_className} from '../../utils/tools.js';
 import './TS_Table.scss';
-import React = require('react');
 
 
 export type Header<T extends TableHeaders<any>> = T extends TableHeaders<infer R, infer A, infer P> ? P | {

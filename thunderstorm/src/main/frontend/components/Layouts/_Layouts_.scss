@@ -31,11 +31,20 @@
   align-items: center;
 }
 
+%ll_vh_c {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
 %ll_v_r {
   display: flex;
   flex-flow: column;
   align-items: flex-end;
 }
+
 
 %ll_h_t {
   display: flex;

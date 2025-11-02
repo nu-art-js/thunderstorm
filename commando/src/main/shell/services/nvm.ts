@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import {promises as _fs} from 'fs';
 import * as path from 'path';
 import {Logger, LogLevel} from '@nu-art/ts-common';
-import {Commando_NVM} from '../plugins/nvm';
+import {Commando_NVM} from '../plugins/nvm.js';
 
 
 const CONST__FILE_NVMRC = '.nvmrc';

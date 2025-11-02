@@ -18,7 +18,7 @@
  */
 
 import {__custom, __scenario, ContextKey} from '@nu-art/testelot';
-import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1, testLevel2} from './_core';
+import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1, testLevel2} from './_core.js';
 import {ModuleBE_PermissionAccessLevel} from '../_main';
 
 

@@ -20,14 +20,23 @@
  */
 
 import * as React from 'react';
-import {CSSProperties, Fragment} from 'react';
-import {Adapter, TreeNode} from '../adapter/Adapter';
-import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
-import {_className} from '../../utils/tools';
+import {
+	CSSProperties,
+	Fragment
+} from 'react';
+import {
+	Adapter,
+	TreeNode
+} from '../adapter/Adapter.js';
+import {_BaseNodeRenderer} from '../adapter/BaseRenderer.js';
+import {_className} from '../../utils/tools.js';
 import './TS_Tree.scss';
-import {ComponentSync} from '../../core/ComponentSync';
-import {TreeNodeExpandState} from './types';
-import {_keys, exists} from '@nu-art/ts-common';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {TreeNodeExpandState} from './types.js';
+import {
+	_keys,
+	exists
+} from '@nu-art/ts-common';
 
 
 export type Props_Tree = {
@@ -218,7 +227,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const data = adjustedNode.data;
 
 		let filteredKeys: any[] = [];
-		const alwaysExpanded: boolean = typeof _data === 'object' && _data.alwaysExpanded;
+		const alwaysExpanded: boolean = exists(_data) && typeof _data === 'object' && _data.alwaysExpanded;
 		let expanded = alwaysExpanded || !!this.props.checkExpanded(this.state.expanded, nodePath, data);
 		if (nodePath.endsWith('_children/'))
 			expanded = true;
@@ -280,10 +289,8 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			return null;
 
 		const className = _className('ts-tree__node', isParent && 'ts-tree__parent-node', isSelected && 'ts-tree__selected-node', `depth-${level}`);
-		return <div tabIndex={this.props.indexTreeNodes ? 1 : undefined} data-path={path} className={className}
-					ref={nodeRefResolver}
-					onClick={this.onNodeClicked}
-					onContextMenu={this.onContextMenuClicked}>
+		return <div tabIndex={this.props.indexTreeNodes ? 1 : undefined} data-path={path} className={className} ref={nodeRefResolver} onClick={this.onNodeClicked}
+		            onContextMenu={this.onContextMenuClicked}>
 			<TreeNodeRenderer item={item} node={node}/>
 		</div>;
 	}

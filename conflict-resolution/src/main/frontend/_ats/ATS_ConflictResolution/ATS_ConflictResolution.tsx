@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_ConflictResolution.scss';
 import {
@@ -12,9 +11,9 @@ import {
 	TS_DropDown,
 	TS_Input,
 	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
 import {ModuleFE_CollectionActions} from '@nu-art/thunderstorm/frontend/modules/ModuleFE_CollectionActions';
-import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution';
+import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution.js';
 
 type State = {
 	upgradableModules: ModuleFE_BaseApi<any, any>[];

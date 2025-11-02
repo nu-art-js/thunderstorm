@@ -1,7 +1,7 @@
 import {Analytics_UpdateUser, TSAnalyticsEvent} from '@nu-art/analytics-shared';
 import {debounce, Logger, LogLevel} from '@nu-art/ts-common';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
-import {AnalyticsPluginBaseConfig} from './types';
+import {AnalyticsPluginBaseConfig} from './types.js';
 
 /**
  * C - plugin specific config, to be used later in interface implementations

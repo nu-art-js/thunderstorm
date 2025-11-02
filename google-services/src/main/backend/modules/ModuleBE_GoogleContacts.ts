@@ -19,7 +19,7 @@
 
 import {ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {people_v1} from 'googleapis';
-import {ModuleBE_Auth} from './ModuleBE_Auth';
+import {ModuleBE_Auth} from './ModuleBE_Auth.js';
 
 
 export const standardProperties = [
@@ -113,7 +113,7 @@ export class ModuleBE_GoogleContacts_Class
 		if (!finalAuthKey)
 			throw new ImplementationMissingException('missing authkey for google contacts api');
 
-		const auth = ModuleBE_Auth.getAuth(finalAuthKey, ['https://www.googleapis.com/auth/contacts'], 'v1', {subject: userEmail});
+		const auth = ModuleBE_Auth.getAuth(finalAuthKey, ['https://www.googleapis.com/auth/contacts'], {subject: userEmail});
 		return new people_v1.People(auth);
 	};
 }

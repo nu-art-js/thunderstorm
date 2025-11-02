@@ -1,6 +1,6 @@
-import {TestSuite} from '../../main/testing/types';
-import {debounce, filterDuplicates, generateArray, sleep} from '../../main';
-import {QueueItem, QueueV2} from '../../main/utils/queue-v2';
+import {TestSuite} from '../../main/testing/types.js';
+import {debounce, filterDuplicates, generateArray, sleep} from '../../main/index.js';
+import {QueueItem, QueueV2} from '../../main/utils/queue-v2.js';
 
 
 type Input<T = any> = {

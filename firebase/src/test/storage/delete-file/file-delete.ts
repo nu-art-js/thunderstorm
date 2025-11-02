@@ -1,4 +1,4 @@
-import {deleteFileInput, FileDelete, getSpecificBucketInput, notExistingFileName, storage} from '../_core/consts';
+import {deleteFileInput, FileDelete, getSpecificBucketInput, notExistingFileName, storage} from '../_core/consts.js';
 import {expect} from 'chai';
 
 

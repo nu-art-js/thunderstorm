@@ -25,7 +25,7 @@ import {FirebaseApp} from 'firebase/app';
 import 'firebase/auth';
 import {Logger} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {SwMessagingWrapperFE} from '../messaging/SwMessagingWrapperFE';
+import {SwMessagingWrapperFE} from '../messaging/SwMessagingWrapperFE.js';
 import {getMessaging} from 'firebase/messaging';
 
 

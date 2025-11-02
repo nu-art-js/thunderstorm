@@ -1,95 +1,162 @@
-import {__stringify, BadImplementationException, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {SecretManagerServiceClient, v1} from '@google-cloud/secret-manager';
-import {google} from '@google-cloud/secret-manager/build/protos/protos';
+import {AnyPrimitive, exists, Logger, Module, MUSTNeverHappenException, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {SecretManagerServiceClient} from '@google-cloud/secret-manager';
+import {GoogleAuth} from 'google-auth-library';
+import {google} from '@google-cloud/secret-manager/build/protos/protos.js';
+import ISecret = google.cloud.secretmanager.v1.ISecret;
 
-type Config = {}
+export const printCallerIdentity = async () => {
+	const logger = new Logger('GCP-Caller');
+	const auth = new GoogleAuth({scopes: 'https://www.googleapis.com/auth/cloud-platform'});
+	const client = await auth.getClient();
+	const projectId = await auth.getProjectId();
+	const token = await client.getAccessToken();
+	const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${token.token}`);
+	const info = await res.json();
+	logger.logInfo(`🔐 GCP Caller Identity: ${info.email || info.sub}`);
+	logger.logInfo(`🏗️ GCP Project ID: ${projectId}`);
+};
 
-type SecretUpsertProps = {
-	//Path to secret, i.e. "projects/{parent}"
-	parent: string;
-	//Secret name
-	name: string;
-	//Secret data
-	data: string
+type Secret = {
+	key: string;
+	projectId: string;
+	version?: string;
+};
+
+function composeSecretKey(secret: Secret): string {
+	return `projects/${secret.projectId}/secrets/${secret.key}${secret.version ? `/versions/${secret.version}` : ''}`;
+}
+
+export class SecretKey<T extends AnyPrimitive> {
+	readonly secret: Secret;
+
+	constructor(name: string, parent = process.env.GCP_PROJECT_ID ?? process.env.GCLOUD_PROJECT) {
+		if (!parent)
+			throw new MUSTNeverHappenException(`Missing the secret parent project id for secret ${name}`);
+
+		this.secret = Object.freeze({projectId: parent, key: name});
+	}
+
+	get(): Promise<T | undefined>;
+	get(fallbackValue: T): Promise<T>;
+	async get(fallbackValue?: T, version: string = 'latest'): Promise<T | undefined> {
+		let rawSecret = await ModuleBE_SecretManager.tryGetSecretValue({...this.secret, version});
+		if (exists(rawSecret))
+			return JSON.parse(rawSecret) as T;
+
+		if (!exists(fallbackValue))
+			return undefined;
+
+		const secret = await ModuleBE_SecretManager.getOrCreateSecret(this.secret);
+		rawSecret = JSON.stringify(fallbackValue);
+		await ModuleBE_SecretManager.updateSecretImpl(secret, rawSecret);
+		return fallbackValue;
+	}
+
+	async set(secret: T) {
+		return ModuleBE_SecretManager.updateSecret(this.secret, JSON.stringify(secret));
+	}
+
+	async previous(reverseIndex = 1): Promise<T | undefined> {
+		const versions = await ModuleBE_SecretManager.listEnabledVersions(this.secret);
+		const version = versions[reverseIndex];
+		if (!version?.name)
+			throw new MUSTNeverHappenException(`Missing version name at index ${reverseIndex}`);
+
+		const rawSecret = await ModuleBE_SecretManager.getSecretValueImpl(version.name);
+		return rawSecret ? JSON.parse(rawSecret) as T : undefined;
+	}
+
+	async modifiedTimestamp(): Promise<number> {
+		const versions = await ModuleBE_SecretManager.listEnabledVersions(this.secret);
+		if (!versions.length)
+			return 0;
+
+		const versionName = versions[0].name;
+		if (!versionName)
+			return 0;
+
+		const metadata = await ModuleBE_SecretManager.getSecretVersionMetadata(versionName);
+		return metadata.createTime ? Number(metadata.createTime.seconds) * 1000 : 0;
+	}
 }
 
 export class ModuleBE_SecretManager_Class
-	extends Module<Config> {
-	private secretManagerClient: v1.SecretManagerServiceClient;
+	extends Module {
+	private client = new SecretManagerServiceClient();
 
-	constructor() {
-		super();
-		this.secretManagerClient = new SecretManagerServiceClient();
-	}
+	public getSecretValue = async (secret: Secret) => {
+		return this.getSecretValueImpl(composeSecretKey(secret));
+	};
 
-	public async getSecret(secretName: string) {
+	public tryGetSecretValue = async (secret: Secret) => {
 		try {
-			const [version] = await this.secretManagerClient.accessSecretVersion({
-				name: secretName
-			});
-
-			const secretContent = version.payload?.data?.toString();
-			if (!secretContent)
-				throw new MUSTNeverHappenException(`Got empty content for secret: ${secretName}`);
-
-			return secretContent;
-		} catch (e: any) {
-			this.logError(`Failed to get secret: ${secretName}`, __stringify(e));
-			throw e;
-		}
-	}
-
-	public async upsertSecret(props: SecretUpsertProps): Promise<string> {
-		const secret = await this.getOrCreateSecret(props.parent, props.name);
-		if (!secret.name)
-			throw new BadImplementationException(`Got string with no name on it for ${__stringify(props)}`);
-
-		await this.updateSecret(secret, props.data);
-		return secret.name;
-	}
-
-	//######################### Inner Logic #########################
-
-	private getOrCreateSecret = async (parent: string, name: string): Promise<google.cloud.secretmanager.v1.ISecret> => {
-		try {
-			const pathToSecret = `projects/${parent}/secrets/${name}`;
-			const [secret] = await this.secretManagerClient.getSecret({name: pathToSecret});
-			//Secret exists, return it
-			this.logVerbose(`Secret exists: ${secret.name}`);
-			return secret;
+			return await this.getSecretValue(secret);
 		} catch (err: any) {
-			if (err.code !== 5) { // error 5 means secret does not exist, so we continue on to create it
-				this.logError('Failed to get secret', err);
-				throw err;
-			}
-			//Secret did not exist, create and return it
-			const [secret] = await this.secretManagerClient.createSecret({
-				parent: `projects/${parent}`,
-				secretId: name,
-				secret: {
-					name: name,
-					replication: {
-						automatic: {},
-					}
-				}
-			});
-			this.logVerbose(`Created secret ${secret.name}`);
-			return secret;
+			if (err.code === 5)
+				return undefined;
+
+			await printCallerIdentity();
+			throw new ThisShouldNotHappenException(`Failed to retrieve secret \n Secret: ${JSON.stringify(secret)}`, err);
 		}
 	};
 
-	private updateSecret = async (secret: google.cloud.secretmanager.v1.ISecret, data: string): Promise<void> => {
+	public getSecretValueImpl = async (secretKey: string) => {
+		const [version] = await this.client.accessSecretVersion({name: secretKey});
+		return version.payload?.data?.toString();
+	};
+
+	public updateSecret = async (_secret: Secret, data: string): Promise<string> => {
+		const secret = await this.getOrCreateSecret(_secret);
+		if (!secret.name)
+			throw new MUSTNeverHappenException(`Missing secret.name for ${composeSecretKey(_secret)}`);
+
+		await this.updateSecretImpl(secret, data);
+		return secret.name;
+	};
+
+	public updateSecretImpl = async (secret: ISecret, data: string) => {
 		try {
-			const [version] = await this.secretManagerClient.addSecretVersion({
-				parent: secret.name,
-				payload: {
-					data: Buffer.from(data, 'utf-8')
-				},
+			await this.client.addSecretVersion({
+				parent: secret.name!,
+				payload: {data: Buffer.from(data, 'utf-8')}
 			});
-			this.logVerbose(`Updated secret ${secret.name} version ${version.name}`);
 		} catch (err: any) {
-			this.logError(`Failed to update secret ${secret.name}`);
-			throw err;
+			await printCallerIdentity();
+			throw new ThisShouldNotHappenException(`Failed to update secret version (${secret})`, err);
+		}
+	};
+
+	public listEnabledVersions = async (secret: Secret) => {
+		const [versions] = await this.client.listSecretVersions({parent: composeSecretKey(secret)});
+		return versions.filter(v => v.state === 'ENABLED').sort((a, b) => {
+			const aVer = Number(a.name?.split('/').pop());
+			const bVer = Number(b.name?.split('/').pop());
+			return isNaN(bVer - aVer) ? 0 : bVer - aVer;
+		});
+	};
+
+	public getSecretVersionMetadata = async (versionName: string) => {
+		const [version] = await this.client.getSecretVersion({name: versionName});
+		return version;
+	};
+
+	public getOrCreateSecret = async (_secret: Secret) => {
+		const name = composeSecretKey(_secret);
+		try {
+			const [secret] = await this.client.getSecret({name});
+			return secret;
+		} catch (err: any) {
+			if (err.code !== 5) {
+				await printCallerIdentity();
+				throw new ThisShouldNotHappenException(`Failed to get secret (${_secret})`, err);
+			}
+
+			const [created] = await this.client.createSecret({
+				parent: `projects/${_secret.projectId}`,
+				secretId: _secret.key,
+				secret: {replication: {automatic: {}}}
+			});
+			return created;
 		}
 	};
 }

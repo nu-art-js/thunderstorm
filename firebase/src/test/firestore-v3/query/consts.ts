@@ -15,10 +15,10 @@ import {
 	testInstance3,
 	testInstance4,
 	testInstance5
-} from '../_core/consts';
-import {_EmptyQuery} from '../../../main';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';
-import {DBProto_Type, DB_Type, TestInputValue} from '../_entity';
+} from '../_core/consts.js';
+import {_EmptyQuery} from '../../../main/index.js';
+import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {DBProto_Type, DB_Type, TestInputValue} from '../_entity.js';
 
 export type QueryTestInput = {
 	value: TestInputValue;

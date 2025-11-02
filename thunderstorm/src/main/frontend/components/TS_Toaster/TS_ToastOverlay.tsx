@@ -20,8 +20,8 @@
  */
 
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {Toast_Model, ToastListener, ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {Toast_Model, ToastListener, ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster.js';
 
 
 type State = { model?: Toast_Model };

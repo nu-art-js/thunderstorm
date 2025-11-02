@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 import {CustomException, ErrorMessage, Module, ServerErrorSeverity, ServerErrorSeverity_Ordinal} from '@nu-art/ts-common';
-import {ModuleBE_Slack, ThreadPointer} from './ModuleBE_Slack';
+import {ModuleBE_Slack, ThreadPointer} from './ModuleBE_Slack.js';
 
 type Config = {
 	exclude: string[]

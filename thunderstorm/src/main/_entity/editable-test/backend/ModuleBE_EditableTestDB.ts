@@ -1,6 +1,6 @@
-import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB';
-import {DBDef_EditableTest} from '../shared/db-def';
-import {DBProto_EditableTest} from '../shared/types';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB.js';
+import {DBDef_EditableTest} from '../shared/db-def.js';
+import {DBProto_EditableTest} from '../shared/types.js';
 
 type Config = DBApiConfigV3<DBProto_EditableTest> & {
 // 	

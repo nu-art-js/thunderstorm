@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_Checkbox';
+export * from './TS_Checkbox.js';

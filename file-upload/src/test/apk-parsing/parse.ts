@@ -22,7 +22,7 @@ import {__custom} from '@nu-art/testelot';
 import {
 	FileWrapper,
 	ModuleBE_Firebase
-} from '@nu-art/firebase/backend';
+} from '@nu-art/firebase/backend/index';
 import {
 	assert,
 	BadImplementationException,

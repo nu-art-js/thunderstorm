@@ -1,7 +1,6 @@
-import * as React from 'react';
-import {DBProto_ShortUrl} from '../shared';
-import {ModuleFE_ShortUrl} from './ModuleFE_ShortUrl';
-import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown} from '@nu-art/thunderstorm/frontend';
+import {DBProto_ShortUrl} from '../shared/index.js';
+import {ModuleFE_ShortUrl} from './ModuleFE_ShortUrl.js';
+import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown} from '@nu-art/thunderstorm/frontend/index';
 
 const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_ShortUrl> = {
 	module: ModuleFE_ShortUrl,

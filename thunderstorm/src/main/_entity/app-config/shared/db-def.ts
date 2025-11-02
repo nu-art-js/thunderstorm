@@ -1,5 +1,5 @@
 import {DBDef_V3, tsValidateMustExist, tsValidateString} from '@nu-art/ts-common';
-import {DBProto_AppConfig} from './types';
+import {DBProto_AppConfig} from './types.js';
 
 
 const Validator_ModifiableProps: DBProto_AppConfig['modifiablePropsValidator'] = {

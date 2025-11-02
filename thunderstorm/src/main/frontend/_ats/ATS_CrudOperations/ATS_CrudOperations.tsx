@@ -1,20 +1,19 @@
-import * as React from 'react';
 import './ATS_CrudOperations.scss';
-import {AppToolsScreen, ATS_Backend} from '../../components/TS_AppTools';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
-import {ComponentSync} from '../../core/ComponentSync';
-import {LL_H_C, LL_V_L} from '../../components/Layouts';
-import {DropDown_DBModules} from './ui-components';
-import {TS_DropDown} from '../../components/TS_Dropdown';
-import {SimpleListAdapter} from '../../components/adapter/Adapter';
+import {AppToolsScreen, ATS_Backend} from '../../components/TS_AppTools/index.js';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
+import {DropDown_DBModules} from './ui-components.js';
+import {TS_DropDown} from '../../components/TS_Dropdown/index.js';
+import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject} from '@nu-art/ts-common';
-import {TS_TextArea} from '../../components/TS_Input';
-import {Button} from '../../components/Button/Button';
-import {ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster';
-import {BaseHttpRequest} from '../../../shared';
-import {ModuleFE_Thunderstorm} from '../../modules/ModuleFE_Thunderstorm';
+import {TS_TextArea} from '../../components/TS_Input/index.js';
+import {Button} from '../../components/Button/Button.js';
+import {ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster.js';
+import {BaseHttpRequest} from '../../../shared/index.js';
+import {ModuleFE_Thunderstorm} from '../../modules/ModuleFE_Thunderstorm.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 
 type Action = {

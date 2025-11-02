@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_Table';
+export * from './TS_Table.js';

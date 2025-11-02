@@ -21,7 +21,7 @@
  */
 import {initializeApp} from 'firebase-admin/app';
 import {JWTInput} from 'google-auth-library';
-import {FirebaseSession} from './firebase-session';
+import {FirebaseSession} from './firebase-session.js';
 import {getAuth} from 'firebase-admin/auth';
 
 
@@ -40,6 +40,7 @@ export class FirebaseSession_Admin
 	 */
 	public connect(): this {
 		this.app = initializeApp(this.config, this.firebaseAppName);
+		this.logWarning(this.app.options);
 		return this;
 	}
 

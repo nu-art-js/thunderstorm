@@ -1,10 +1,9 @@
 import {compare, filterInstances, sortArray, TypedMap} from '@nu-art/ts-common';
-import {ComponentSync} from '../../core/ComponentSync';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
-import * as React from 'react';
-import {Grid} from '../../components/Layouts';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
+import {Grid} from '../../components/Layouts/index.js';
 import './Component_CollectionGrid.scss';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 type Props = {
 	modules: ModuleFE_BaseDB<any>[];

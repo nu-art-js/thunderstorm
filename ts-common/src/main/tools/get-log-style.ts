@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {_keys} from '../utils/object-tools';
+import {_keys} from '../utils/object-tools.js';
 
 export type LogStyle = {
 	'color'?: string;

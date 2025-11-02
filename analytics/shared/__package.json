@@ -3,8 +3,6 @@
   "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "Analytics Shared",
   "license": "Apache-2.0",
-  "main": "index.js",
-  "types": "index.d.ts",
   "scripts": {
     "build": "tsc"
   },
@@ -22,5 +20,16 @@
     "label": "Analytics Shared",
     "pathToConfig": "./config.ts",
     "customTSConfig": false
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

@@ -1,3 +1,3 @@
-export * from './ModuleFE_MouseInteractivity';
-export * from './helper-functions';
-export * from './types';
+export * from './ModuleFE_MouseInteractivity.js';
+export * from './helper-functions.js';
+export * from './types.js';

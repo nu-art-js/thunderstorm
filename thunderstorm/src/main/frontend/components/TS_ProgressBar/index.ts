@@ -1,1 +1,1 @@
-export * from './TS_ProgressBar';
+export * from './TS_ProgressBar.js';

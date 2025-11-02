@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-export * from './_enum';
-export * from './_entity';
-export * from './module-pack';
-export * from '../_entity/account/frontend/ModuleFE_Account';
-export * from './ui/Component_Login/Component_Login';
-export * from './ui/Component_Register';
-export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin';
-export * from './ui/Component_ChangePassword/Component_ChangePassword';
-export * from './ui/Component_AccountThumbnail/Component_AccountThumbnail';
-export * from './ui/PopUp_AccountMenu/PopUp_AccountMenu';
+export * from './_enum.js';
+export * from './_entity.js';
+export * from './module-pack.js';
+export * from '../_entity/account/frontend/ModuleFE_Account.js';
+export * from './ui/Component_Login/Component_Login.js';
+export * from './ui/Component_Register.js';
+export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin.js';
+export * from './ui/Component_ChangePassword/Component_ChangePassword.js';
+export * from './ui/Component_AccountThumbnail/Component_AccountThumbnail.js';
+export * from './ui/PopUp_AccountMenu/PopUp_AccountMenu.js';

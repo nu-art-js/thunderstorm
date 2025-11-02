@@ -17,10 +17,10 @@
  */
 
 import {__custom, __scenario} from '@nu-art/testelot';
-import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub';
+import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub.js';
 import {assert, compare, currentTimeMillis, generateHex, Hour} from '@nu-art/ts-common';
-import {DB_PushSubscription, DB_PushSession, Request_PushRegister} from '../main';
-import {FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
+import {DB_PushSubscription, DB_PushSession, Request_PushRegister} from '../main/index.js';
+import {FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend/index';
 
 
 const arrayOf2 = Array(2).fill(0);

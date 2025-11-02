@@ -19,22 +19,22 @@ import {
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
-import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB.js';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase';
 import {Readable} from 'stream';
 import {FirestoreCollectionV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc} from '../shared/types';
-import {addRoutes} from '../../../backend/modules/ModuleBE_APIs';
-import {ApiDef_BackupDoc, Request_BackupId, Response_BackupDocs} from '../shared/api-def';
-import {createQueryServerApi} from '../../../backend/core/typed-api';
-import {DBDef_BackupDoc} from '../shared/db-def';
+import {BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc} from '../shared/types.js';
+import {addRoutes} from '../../../backend/modules/ModuleBE_APIs.js';
+import {ApiDef_BackupDoc, Request_BackupId, Response_BackupDocs} from '../shared/api-def.js';
+import {createQueryServerApi} from '../../../backend/core/typed-api.js';
+import {DBDef_BackupDoc} from '../shared/db-def.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {MemKey_HttpRequestHeaders} from '../../../backend/modules/server/consts';
-import {ApiDef, HttpMethod, QueryApi} from '../../../shared';
-import {AxiosHttpModule} from '../../../backend';
+import {MemKey_HttpRequestHeaders} from '../../../backend/modules/server/consts.js';
+import {ApiDef, HttpMethod, QueryApi} from '../../../shared/index.js';
+import {AxiosHttpModule} from '../../../backend/index.js';
 import {CSVModuleV3} from '@nu-art/ts-common/modules/CSVModuleV3';
-import {ModuleBE_CollectionActions} from '../../../backend/modules/collection-actions/ModuleBE_CollectionActions';
+import {ModuleBE_CollectionActions} from '../../../backend/modules/collection-actions/ModuleBE_CollectionActions.js';
 
 export interface OnModuleCleanupV2 {
 	__onCleanupInvokedV2: () => Promise<void>;

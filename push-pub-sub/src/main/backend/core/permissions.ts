@@ -1,8 +1,8 @@
 import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions/shared/types';
 import {CreateDefaultAccessLevels, DefaultAccessLevel_Admin} from '@nu-art/permissions/shared/consts';
-import {ApiDef_PushMessages} from '../../shared';
+import {ApiDef_PushMessages} from '../../shared/index.js';
 import {Domain_Developer} from '@nu-art/permissions/backend/permissions';
-import {ModuleBE_PushSubscriptionAPI} from '../modules/ModuleBE_PushSubscriptionDB';
+import {ModuleBE_PushSubscriptionAPI} from '../modules/ModuleBE_PushSubscriptionDB.js';
 import {_values} from '@nu-art/ts-common';
 
 

@@ -1,5 +1,5 @@
-import {DB_Object, DotNotation, DotNotationValueType, OmitDBObject, SubsetObjectByKeys, UniqueId} from '../utils/types';
-import {ValidatorTypeResolver} from '../validator/validator-core';
+import {DB_Object, DotNotation, DotNotationValueType, OmitDBObject, SubsetObjectByKeys, UniqueId} from '../utils/types.js';
+import {ValidatorTypeResolver} from '../validator/validator-core.js';
 
 
 export type DB_RefId = {

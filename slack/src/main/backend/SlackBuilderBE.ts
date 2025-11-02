@@ -1,5 +1,5 @@
-import {ModuleBE_Slack, ThreadPointer} from './ModuleBE_Slack';
-import {BaseSlackBuilder, PreSendSlackStructuredMessage, SlackBlock} from '../shared';
+import {ModuleBE_Slack, ThreadPointer} from './ModuleBE_Slack.js';
+import {BaseSlackBuilder, PreSendSlackStructuredMessage, SlackBlock} from '../shared/index.js';
 import {__stringify, currentTimeMillis, formatTimestamp, generateHex} from '@nu-art/ts-common';
 
 export class SlackBuilderBE

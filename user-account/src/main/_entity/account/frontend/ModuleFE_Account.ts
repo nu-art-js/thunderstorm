@@ -1,8 +1,6 @@
 import * as React from 'react';
-import {apiWithBody, apiWithQuery, ModuleFE_BaseApi, ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
-import {cloneObj, composeUrl, DB_BaseObject, Exception, generateHex, KB, TS_Object} from '@nu-art/ts-common';
-import {HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
+import {apiWithBody, apiWithQuery, ModuleFE_BaseApi, ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend/index';
+import {ApiDefCaller, HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm';
 import {dispatcher_onAuthRequired} from '@nu-art/thunderstorm/shared/no-auth-listener';
 import {
 	Account_ChangeThumbnail,
@@ -15,14 +13,14 @@ import {
 	DBDef_Accounts,
 	DBProto_Account,
 	QueryParam_SessionId,
-	Response_Auth,
 	SAML_Login,
 	UI_Account
-} from '../shared';
-import {StorageKey_DeviceId, StorageKey_TabId} from './consts';
-import {PasswordAssertionConfig} from '../../_enum';
+} from '../shared/index.js';
+import {SessionKeyFE_Account, StorageKey_DeviceId, StorageKey_TabId} from './consts.js';
+import {PasswordAssertionConfig} from '../../_enum.js';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {ModuleFE_Session, OnSessionUpdated} from '../../session/frontend/ModuleFE_Session';
+import {ModuleFE_Session, OnSessionUpdated} from '../../session/frontend/ModuleFE_Session.js';
+import {asArray, cloneObj, composeUrl, DB_BaseObject, Exception, generateHex, KB, TS_Object} from '@nu-art/ts-common';
 
 
 export interface OnLoginStatusUpdated {
@@ -53,7 +51,6 @@ class ModuleFE_Account_Class
 
 	readonly _v1: ApiDefCaller_Account['_v1'];
 	private status: LoggedStatus = LoggedStatus.LOGGED_OUT;
-	accountId!: string;
 
 	__onLoginStatusUpdated() {
 		//Get the password assertion config if needed
@@ -67,10 +64,10 @@ class ModuleFE_Account_Class
 		// const login = apiWithBody(ApiDef_Account._v1.login, this.setLoginInfo);
 		this._v1 = {
 			refreshSession: apiWithQuery(ApiDef_Account._v1.refreshSession),
-			registerAccount: apiWithBody(ApiDef_Account._v1.registerAccount, this.setLoginInfo),
+			registerAccount: apiWithBody(ApiDef_Account._v1.registerAccount),
 			createAccount: apiWithBody(ApiDef_Account._v1.createAccount, this.onAccountCreated),
-			changePassword: apiWithBody(ApiDef_Account._v1.changePassword, this.setLoginInfo),
-			login: apiWithBody(ApiDef_Account._v1.login, this.setLoginInfo),
+			changePassword: apiWithBody(ApiDef_Account._v1.changePassword),
+			login: apiWithBody(ApiDef_Account._v1.login),
 			// login: (account: Account_Login['request']) => {
 			//
 			// 	toUpsert = this.cleanUp(toUpsert);
@@ -79,7 +76,7 @@ class ModuleFE_Account_Class
 			// },
 			logout: apiWithQuery(ApiDef_Account._v1.logout),
 			createToken: apiWithBody(ApiDef_Account._v1.createToken),
-			setPassword: apiWithBody(ApiDef_Account._v1.setPassword, this.setLoginInfo),
+			setPassword: apiWithBody(ApiDef_Account._v1.setPassword),
 			getSessions: apiWithQuery(ApiDef_Account._v1.getSessions),
 			changeThumbnail: apiWithBody(ApiDef_Account._v1.changeThumbnail, this.onThumbnailChanged),
 			loginSaml: apiWithQuery(ApiDef_SAML._v1.loginSaml, this.onLoginCompletedSAML),
@@ -118,7 +115,7 @@ class ModuleFE_Account_Class
 
 	getLoggedStatus = () => this.status;
 
-	isStatus = (status: LoggedStatus) => this.status === status;
+	isStatus = (status: LoggedStatus | LoggedStatus[]) => asArray(status).includes(this.status);
 
 	__onSessionUpdated() {
 		if (!ModuleFE_Session.hasSession())
@@ -194,11 +191,11 @@ class ModuleFE_Account_Class
 
 	public getPasswordAssertionConfig = () => StorageKey_PasswordAssertionConfig.get();
 
-	// ######################## API Callbacks ########################
-
-	private setLoginInfo = async (response: Response_Auth, body: any, request: BaseHttpRequest<any>) => {
-		this.accountId = response._id;
+	public getCurrentlyLoggedAccount = () => {
+		return SessionKeyFE_Account.get();
 	};
+
+	// ######################## API Callbacks ########################
 
 	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
 		await this.onEntriesUpdated([response as DB_Account]);

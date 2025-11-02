@@ -1,8 +1,20 @@
-import {_keys, arrayToMap, Dispatcher, filterInstances, flatArray, Module, MUSTNeverHappenException, PreDB, reduceToMap, RuntimeModules, TypedMap,} from '@nu-art/ts-common';
-import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm/backend';
-import {ApiDef_Permissions,} from '../../shared';
-import {CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB, SessionCollectionParam} from '@nu-art/user-account/backend';
-import {DefaultDef_Group, DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
+import {
+	_keys,
+	arrayToMap,
+	Dispatcher,
+	filterInstances,
+	flatArray,
+	Module,
+	MUSTNeverHappenException,
+	PreDB,
+	reduceToMap,
+	RuntimeModules,
+	TypedMap,
+} from '@nu-art/ts-common';
+import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm/backend/index';
+import {ApiDef_Permissions,} from '../../shared/index.js';
+import {BaseSessionClaims, CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account/backend/index';
+import {DefaultDef_Group, DefaultDef_Project, SessionData_Permissions} from '../../shared/types.js';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -10,7 +22,7 @@ import {
 	Domain_PermissionsDefine,
 	PermissionsPackage_Developer,
 	PermissionsPackage_Permissions
-} from '../permissions';
+} from '../permissions.js';
 import {
 	DefaultAccessLevel_Admin,
 	DefaultAccessLevel_NoAccess,
@@ -18,9 +30,9 @@ import {
 	DefaultAccessLevel_Write,
 	defaultLevelsRouteLookupWords,
 	DuplicateDefaultAccessLevels
-} from '../../shared/consts';
+} from '../../shared/consts.js';
 import {ApiModule} from '@nu-art/thunderstorm';
-import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
+import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert.js';
 import {PerformProjectSetup} from '@nu-art/thunderstorm/backend/modules/action-processor/Action_SetupProject';
 import {
 	DB_PermissionAccessLevel,
@@ -34,7 +46,7 @@ import {
 	ModuleBE_PermissionGroupDB,
 	ModuleBE_PermissionProjectDB,
 	ModuleBE_PermissionUserDB
-} from '../_entity';
+} from '../_entity.js';
 import {trimStartingForwardSlash} from '@nu-art/thunderstorm/shared/route-tools';
 
 
@@ -149,7 +161,7 @@ class ModuleBE_Permissions_Class
 	// 	return PermissionProject_Permissions;
 	// }
 
-	async __collectSessionData(data: SessionCollectionParam): Promise<SessionData_Permissions> {
+	async __collectSessionData(data: BaseSessionClaims): Promise<SessionData_Permissions> {
 		const permissionUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(data.accountId);
 		const userGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(permissionUser.groups.map(g => g.groupId)));
 		const permissionMap = await this.getUserPermissionMap(userGroups);
@@ -429,7 +441,7 @@ class ModuleBE_Permissions_Class
 		const currentUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(MemKey_AccountId.get());
 		(currentUser.groups || (currentUser.groups = [])).push({groupId: GroupId_SuperAdmin});
 		await ModuleBE_PermissionUserDB.set.item(currentUser);
-		await ModuleBE_SessionDB.session.rotate();
+		await ModuleBE_SessionDB._session.rotate.reissue.bySession();
 		this.logInfoBold('Assigned SuperAdmin permissions');
 	};
 }

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/google-services",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "google-services",
   "keywords": [
     "TacB0sS",
@@ -29,22 +29,31 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "scripts": {
     "build": "tsc"
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@google-cloud/pubsub": "3.3.0",
-    "@google-cloud/secret-manager": "^5.5.0",
-    "google-auth-library": "^6.0.6",
-    "googleapis": "^55.0.0"
+    "@google-cloud/pubsub": "?",
+    "@google-cloud/secret-manager": "?",
+    "google-auth-library": "?",
+    "googleapis": "?"
   },
   "devDependencies": {
-    "@google-cloud/resource-manager": "^3.0.0"
+    "@google-cloud/resource-manager": "^6.2.0"
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

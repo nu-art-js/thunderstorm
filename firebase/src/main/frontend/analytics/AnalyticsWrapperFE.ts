@@ -18,7 +18,7 @@
  */
 
 import {Logger} from '@nu-art/ts-common';
-import {FirebaseType_Analytics, FirebaseType_CallOptions, FirebaseType_EventNameString} from './types';
+import {FirebaseType_Analytics, FirebaseType_CallOptions, FirebaseType_EventNameString} from './types.js';
 import {
     CustomParams,
     getAnalytics,

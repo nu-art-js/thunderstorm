@@ -20,7 +20,7 @@ class ModuleFE_Print_Class
 		});
 	}
 
-	async printElement(div: HTMLDivElement, bodyAttributes: TypedKeyValue<string, string>[] = this.defaultBodyAttributes()) {
+	async printElement(div: HTMLElement, bodyAttributes: TypedKeyValue<string, string>[] = this.defaultBodyAttributes()) {
 		return new Promise<void>((resolve, reject) => {
 			const themeValue = document.body.getAttribute('theme');
 			if (themeValue)

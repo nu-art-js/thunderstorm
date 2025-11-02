@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_Link';
+export * from './TS_Link.js';

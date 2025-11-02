@@ -19,6 +19,6 @@
  * limitations under the License.
  */
 
-export * from './SimpleTreeNodeRenderer';
-export * from './types';
-export * from './TS_Tree';
+export * from './SimpleTreeNodeRenderer.js';
+export * from './types.js';
+export * from './TS_Tree.js';

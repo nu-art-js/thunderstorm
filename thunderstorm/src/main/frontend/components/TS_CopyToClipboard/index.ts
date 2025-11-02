@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_CopyToClipboard';
+export * from './TS_CopyToClipboard.js';

@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {LogClient} from './LogClient';
-import {removeItemFromArray} from '../../utils/array-tools';
-import {LogLevel, LogParam} from './types';
+import {LogClient} from './LogClient.js';
+import {removeItemFromArray} from '../../utils/array-tools.js';
+import {LogLevel, LogParam} from './types.js';
 
 
 class BeLogged_Class {

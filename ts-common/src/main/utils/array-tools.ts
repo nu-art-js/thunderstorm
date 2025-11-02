@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {exists} from './tools';
-import {_keys} from './object-tools';
-import {NestedArrayType, TypedMap} from './types';
-import {BadImplementationException} from '../core/exceptions/exceptions';
+import {exists} from './tools.js';
+import {_keys} from './object-tools.js';
+import {NestedArrayType, TypedMap} from './types.js';
+import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 
 export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { filteredIn: T[], filteredOut: T[] } {
@@ -42,9 +42,11 @@ export function removeItemFromArray<T>(array: T[], item: T) {
  * Removes the first item answering the condition given from array in place
  * tested V
  */
-export function removeFromArray<T>(array: T[], item: (_item: T) => boolean) {
-	const index = array.findIndex(item);
-	return removeFromArrayByIndex(array, index);
+export function removeFromArray<T>(array: T[], filter: (_item: T) => boolean) {
+	const kept = array.filter(x => !filter(x));
+	array.length = 0;
+	array.push(...kept);
+	return array;
 }
 
 /**

@@ -1,7 +1,7 @@
 import {Dispatcher, UniqueId} from '@nu-art/ts-common';
-import {CanDeleteDBEntitiesProto} from './types';
+import {CanDeleteDBEntitiesProto} from './types.js';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {PotentialDependenciesToDelete} from '../../shared/types';
+import {PotentialDependenciesToDelete} from '../../shared/types.js';
 
 export const canDeleteDispatcherV3 = new Dispatcher<CanDeleteDBEntitiesProto, '__canDeleteEntitiesProto'>('__canDeleteEntitiesProto');
 

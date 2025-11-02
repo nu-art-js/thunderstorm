@@ -22,11 +22,11 @@
 
 import {ExportToCsv, Options} from 'export-to-csv';
 import {createReadStream, promises as fs} from 'fs';
-import {StringMap, TS_Object} from '../utils/types';
-import {Module} from '../core/module';
+import {StringMap, TS_Object} from '../utils/types.js';
+import {Module} from '../core/module.js';
 import {Readable, Transform} from 'stream';
-import {Queue} from '../utils/queue';
-import csvParser = require('csv-parser');
+import {Queue} from '../utils/queue.js';
+import * as csvParser from 'csv-parser';
 import * as csv from 'fast-csv';
 
 
@@ -107,7 +107,7 @@ class CSVModule_Class
 			const results: T[] = [];
 
 			stream
-				.pipe(csvParser(this.createReadParserOptions<T>(readOptions)))
+				.pipe(csvParser.default(this.createReadParserOptions<T>(readOptions)))
 				.on('data', (instance) => {
 					delete instance['undefined'];
 					results.push(instance);
@@ -123,7 +123,7 @@ class CSVModule_Class
 			instancesQueue.setParallelCount(queueCount);
 
 			stream
-				.pipe(csvParser(this.createReadParserOptions(readOptions)))
+				.pipe(csvParser.default(this.createReadParserOptions(readOptions)))
 				.on('data', (instance) => instancesQueue.addItem(() => callback(instance)))
 				.on('error', (err) => reject(err))
 				.on('end', () => instancesQueue.setOnQueueEmpty(() => resolve()));
@@ -133,7 +133,7 @@ class CSVModule_Class
 	async forEachCsvRowFromStreamSync<T extends TS_Object>(stream: Readable, callback: (instance: T, index: number, csvStream: Transform) => void, readOptions: ReadOptions = {}): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			let rowIndex = 0;
-			const csvStream = csvParser(this.createReadParserOptions(readOptions));
+			const csvStream = csvParser.default(this.createReadParserOptions(readOptions));
 			stream
 				.pipe(csvStream)
 				.on('data', (instance) => callback(instance, rowIndex++, csvStream))

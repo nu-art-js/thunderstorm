@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-import {HttpRoute} from './RouteResolver_ModulePath';
+import {HttpRoute} from './RouteResolver_ModulePath.js';
 
-export * from './RouteResolver_DirPath';
-export * from './RouteResolver_ModulePath';
+export * from './RouteResolver_DirPath.js';
+export * from './RouteResolver_ModulePath.js';
 
 export type RouteResolver = {
 	resolveApi: (urlPrefix?: string) => void

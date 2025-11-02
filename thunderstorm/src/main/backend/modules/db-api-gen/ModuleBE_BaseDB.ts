@@ -39,16 +39,16 @@ import {
 	Module,
 	UniqueId
 } from '@nu-art/ts-common';
-import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase,} from '@nu-art/firebase/backend/index';
 import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v3/FirestoreCollectionV3';
-import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def';
-import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager';
+import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def.js';
+import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager.js';
 import {DocWrapperV3} from '@nu-art/firebase/backend/firestore-v3/DocWrapperV3';
-import {Response_DBSync} from '../../../shared/sync-manager/types';
+import {Response_DBSync} from '../../../shared/sync-manager/types.js';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_DeletedDocs} from '@nu-art/firebase/backend/firestore-v3/consts';
-import {dispatch_CollectEntityDependencies, EntityDependencyCollection} from '../collection-actions/dispatcher';
-import {DBEntityDependencies, DBEntityDependencyError} from '../../shared';
+import {dispatch_CollectEntityDependencies, EntityDependencyCollection} from '../collection-actions/dispatcher.js';
+import {DBEntityDependencies, DBEntityDependencyError} from '../../shared.js';
 
 
 export type BaseDBApiConfigV3 = {
@@ -319,6 +319,15 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	};
 
 	upgradeCollection = async (force = false) => {
+		return this.processCollection(async (instances)=>{
+			const instancesToSave: Proto['dbType'][] = await this.upgradeInstances(instances, force);
+
+			// @ts-ignore
+			await this.collection.upgradeInstances(instancesToSave);
+		})
+	};
+
+	processCollection = async (processInstances:(instances:Proto['dbType'][]) => Promise<void>) => {
 		let docs: DocWrapperV3<Proto>[];
 		const itemsCount = this.config.chunksSize;
 
@@ -334,11 +343,8 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			});
 
 			const instances = docs.map(d => d.data!);
-			this.logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) ${this.dbDef.entityName}s ....`);
-			const instancesToSave: Proto['dbType'][] = await this.upgradeInstances(instances, force);
-
-			// @ts-ignore
-			await this.collection.upgradeInstances(instancesToSave);
+			this.logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
+			await processInstances(instances)
 
 			if (toDelete.length > 0) {
 				this.logWarning(`Need to delete docs: ${toDelete.length} ${this.dbDef.entityName}s ....`);

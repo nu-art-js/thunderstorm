@@ -1,8 +1,7 @@
-import * as React from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {useEffect} from 'react';
-import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {ModuleFE_RoutingV2} from './ModuleFE_RoutingV2';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
+import {ModuleFE_RoutingV2} from './ModuleFE_RoutingV2.js';
 
 
 export interface OnLocationChanged {

@@ -1,2 +1,2 @@
-export * from './testing/types';
-export * from './testing/consts';
+export * from './testing/types.js';
+export * from './testing/consts.js';

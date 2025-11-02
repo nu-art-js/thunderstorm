@@ -1,6 +1,6 @@
-import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend/index';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {DBDef_PushSubscription, DBProto_PushSubscription} from '../../shared/push-subscription';
+import {DBDef_PushSubscription, DBProto_PushSubscription} from '../../shared/push-subscription/index.js';
 
 
 export const dispatch_onSubscriptionChanged = new ThunderDispatcherV3<DispatcherDef<DBProto_PushSubscription, `__onSubscriptionUpdated`>>('__onSubscriptionUpdated');

@@ -1,9 +1,8 @@
-import * as React from 'react';
 import {DBEntityDependencies} from '@nu-art/thunderstorm';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend/index';
 import './Overlay_ConflictResolution.scss';
-import {Panel_ConflictResolution} from '../Panel_ConflictResolution/Panel_ConflictResolution';
-import {OnShowConflictResolution} from '../../_dispatchers';
+import {Panel_ConflictResolution} from '../Panel_ConflictResolution/Panel_ConflictResolution.js';
+import {OnShowConflictResolution} from '../../_dispatchers/index.js';
 
 type State = {
 	dependencies?: DBEntityDependencies

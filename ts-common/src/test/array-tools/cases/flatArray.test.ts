@@ -1,4 +1,4 @@
-import {flatArray, runSingleTestCase, TestSuite} from '../../_main';
+import {flatArray, runSingleTestCase, TestSuite} from '../../_main.js';
 
 export type Input<T = any> = {
 	array: T[];

@@ -26,8 +26,8 @@ import {
 	objectWithArray1,
 	objectWithArray2,
 	objectWithArray3
-} from "./object-with-array";
-import {TestCase_Validator, validatorProcessor} from "./_common";
+} from "./object-with-array.js";
+import {TestCase_Validator, validatorProcessor} from "./_common.js";
 
 type ObjectWithNestedArray = { prop2: ObjectWithArray }
 const objectWithNestedArray0: ObjectWithNestedArray = {prop2: objectWithArray1};

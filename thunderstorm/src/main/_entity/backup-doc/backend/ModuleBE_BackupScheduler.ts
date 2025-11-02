@@ -1,5 +1,5 @@
-import {ModuleBE_FirebaseScheduler} from '@nu-art/firebase/backend';
-import {ModuleBE_BackupDocDB} from './ModuleBE_BackupDocDB';
+import {ModuleBE_FirebaseScheduler} from '@nu-art/firebase/backend/index';
+import {ModuleBE_BackupDocDB} from './ModuleBE_BackupDocDB.js';
 
 
 class ModuleBE_BackupScheduler_Class

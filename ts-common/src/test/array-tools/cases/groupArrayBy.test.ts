@@ -1,4 +1,4 @@
-import {groupArrayBy, runSingleTestCase, TestSuite} from '../../_main';
+import {groupArrayBy, runSingleTestCase, TestSuite} from '../../_main.js';
 
 export type Input<T = any> = {
 	array: T[];

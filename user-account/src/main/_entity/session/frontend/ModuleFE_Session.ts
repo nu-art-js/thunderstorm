@@ -5,17 +5,26 @@ import {
 	OnStorageKeyChangedListener,
 	StorageKey,
 	ThunderDispatcher
-} from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, currentTimeMillis, exists, Module, ResolvableContent, resolveContent, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
-import {jwtDecode} from 'jwt-decode';
-import {ungzip} from 'pako';
+} from '@nu-art/thunderstorm/frontend/index';
+import {
+	BadImplementationException,
+	currentTimeMillis,
+	exists,
+	JwtTools,
+	Module,
+	ResolvableContent,
+	resolveContent,
+	TS_Object,
+	TypedKeyValue
+} from '@nu-art/ts-common';
 import {BaseHttpRequest, HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
-import {QueryParam_SessionId} from '../shared';
+import {QueryParam_SessionId} from '../shared/index.js';
 
 export interface OnSessionUpdated {
 	__onSessionUpdated: VoidFunction;
 }
+
 
 export const dispatch_onSessionUpdated = new ThunderDispatcher<OnSessionUpdated, '__onSessionUpdated'>('__onSessionUpdated');
 export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
@@ -44,15 +53,10 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number | 'accou
 	}
 }
 
-type SessionDecoder = (sessionAsString: string) => TS_Object;
-export const zippedSessionContent: SessionDecoder = (sessionAsString: string) => {
-	const decodedJWT = jwtDecode<{ sessionData: string }>(sessionAsString);
-	const base64Zip = decodedJWT.sessionData;
-	return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(base64Zip), c => c.charCodeAt(0)))));
-};
+type SessionDecoder = (sessionAsString: string) => Promise<TS_Object>;
 
-export const sessionContentJWT: SessionDecoder = (sessionAsString: string) => {
-	return jwtDecode<TS_Object>(sessionAsString);
+export const sessionContentJWT: SessionDecoder = async (sessionAsString: string) => {
+	return JwtTools.decode(sessionAsString);
 };
 
 class ModuleFE_Session_Class
@@ -61,14 +65,14 @@ class ModuleFE_Session_Class
 
 	// @ts-ignore
 	private sessionData!: TS_Object;
-	sessionDecoder: SessionDecoder = zippedSessionContent;
+	sessionDecoder: SessionDecoder = sessionContentJWT;
 	private sessionKey: ResolvableContent<string> = 'session-jwt';
 	private StorageKey_SessionId!: StorageKey<string | undefined>;
 
 	init() {
 		this.StorageKey_SessionId = new StorageKey<string | undefined>(resolveContent(this.sessionKey));
 		this.StorageKey_SessionId.onChange(async (sessionAsString) => {
-			this.onSessionUpdated(sessionAsString);
+			await this.onSessionUpdated(sessionAsString);
 		});
 
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_Authorization, () => {
@@ -105,11 +109,11 @@ class ModuleFE_Session_Class
 		this.sessionKey = sessionKey;
 	}
 
-	__onStorageKeyEvent(event: StorageEvent) {
+	async __onStorageKeyEvent(event: StorageEvent) {
 		if (event.key !== this.StorageKey_SessionId.key)
 			return;
 
-		this.onSessionUpdated(this.StorageKey_SessionId.get());
+		await this.onSessionUpdated(this.StorageKey_SessionId.get());
 	}
 
 	__onAuthRequiredListener(request: BaseHttpRequest<any>) {
@@ -117,10 +121,10 @@ class ModuleFE_Session_Class
 		StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
 	}
 
-	private onSessionUpdated(sessionAsString?: string) {
+	private async onSessionUpdated(sessionAsString?: string) {
 		if (sessionAsString)
 			try {
-				this.sessionData = this.sessionDecoder(sessionAsString);
+				this.sessionData = await this.sessionDecoder(sessionAsString);
 			} catch (e: any) {
 				this.logError('Error decoding session data', e);
 			}
@@ -134,30 +138,12 @@ class ModuleFE_Session_Class
 		return !!this.StorageKey_SessionId.get();
 	}
 
-	public isSessionValid() {
+	public async isSessionValid() {
 		const sessionToken = this.StorageKey_SessionId.get();
 		if (!sessionToken)
 			return false;
 
-		try {
-			// Decode the JWT token to access its payload.
-			// Here we expect an optional 'exp' claim (expiration time in seconds).
-			const decodedJWT = jwtDecode<{ exp?: number }>(sessionToken);
-
-			// If the expiration time is not present, consider the session invalid.
-			if (!exists(decodedJWT.exp))
-				return false;
-
-			// Get the current time in seconds.
-			const currentTime = currentTimeMillis() / 1000;
-
-			// Return true if the token's expiration time is in the future.
-			return decodedJWT.exp > currentTime;
-		} catch (error: any) {
-			// Log any errors during decoding and consider the session invalid.
-			this.logError('Error validating session token', error);
-			return false;
-		}
+		return JwtTools.isJwtActive(sessionToken);
 	}
 
 	public getJWT = () => this.StorageKey_SessionId.get();

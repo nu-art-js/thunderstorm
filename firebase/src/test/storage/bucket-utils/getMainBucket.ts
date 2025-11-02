@@ -1,4 +1,4 @@
-import {BucketUtils, getMainBucketInput, getMainBucketResult, storage} from '../_core/consts';
+import {BucketUtils, getMainBucketInput, getMainBucketResult, storage} from '../_core/consts.js';
 import {expect} from 'chai';
 
 export const bucketUtilsTestCases: BucketUtils['testcases'] = [

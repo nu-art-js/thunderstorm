@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {Logger} from '../core/logger/Logger';
-import {KeyValue, TS_Object} from '../utils/types';
-import {ValidationException} from '../validator/validator-core';
+import {Logger} from '../core/logger/Logger.js';
+import {KeyValue, TS_Object} from '../utils/types.js';
+import {ValidationException} from '../validator/validator-core.js';
 
 
 export class Replacer

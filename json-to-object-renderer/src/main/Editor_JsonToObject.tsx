@@ -1,24 +1,24 @@
-import {EditableItem, TS_EditableItemComponent} from '@nu-art/thunderstorm/frontend';
+import {EditableContentType, EditableItem, TS_EditableContent} from '@nu-art/thunderstorm/frontend/index';
 import {__stringify, tsValidateResult, ValidatorTypeResolver} from '@nu-art/ts-common';
 import React, {ReactNode} from 'react';
-import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea';
+import {TS_TextAreaV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_TextArea/index';
 import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
 import './Editor_JsonToObject.scss';
 
 type Props<T> = {
-	validator: ValidatorTypeResolver<T>;
-	renderer: (item: EditableItem<T>) => ReactNode;
+	validator: ValidatorTypeResolver<EditableContentType<T>>;
+	renderer: (item: EditableItem<EditableContentType<T>>) => ReactNode;
 	isFreeTextMode: boolean
 }
 
-type State<T> = {
+type State = {
 	isFreeTextMode: boolean
 	value: string
 	isValid: boolean
 }
 
 export class Editor_JsonToObject<T>
-	extends TS_EditableItemComponent<T, Props<T>, State<T>> {
+	extends TS_EditableContent<T, Props<T>, State> {
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, _state: InferState<this>): InferState<this> {
 		const state = super.deriveStateFromProps(nextProps, _state) as InferState<this>;
@@ -57,12 +57,11 @@ export class Editor_JsonToObject<T>
 		</>;
 	}
 
-
 	private validateItem(value: string) {
 		let isValid: boolean;
-		let item = {} as T;
+		let item = {} as EditableContentType<T>;
 		try {
-			item = JSON.parse(value) as T;
+			item = JSON.parse(value) as EditableContentType<T>;
 			isValid = tsValidateResult(item, this.props.validator) === undefined;
 		} catch (e: any) {
 			isValid = false;

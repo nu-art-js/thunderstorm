@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_Tabs';
+export * from './TS_Tabs.js';

@@ -1,7 +1,6 @@
-import * as React from 'react';
-import {Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend/index';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {ModuleFE_Account, SessionKeyFE_Account} from '../../_entity';
+import {ModuleFE_Account, SessionKeyFE_Account} from '../../_entity.js';
 
 type Props = {
 	postSubmitAction?: () => void;
@@ -20,9 +19,10 @@ export class Component_ChangePassword
 	// ######################## Life Cycle ########################
 
 	protected deriveStateFromProps(nextProps: any, state: State): State {
-		if (!ModuleFE_Account.accountId)
+		const account = SessionKeyFE_Account.get();
+		if (!account)
 			throw new ThisShouldNotHappenException('Rendering a change password component without user logged in');
-		state.shouldGiveCurrentPassword = SessionKeyFE_Account.get().hasPassword;
+		state.shouldGiveCurrentPassword = account.hasPassword;
 		return state;
 	}
 

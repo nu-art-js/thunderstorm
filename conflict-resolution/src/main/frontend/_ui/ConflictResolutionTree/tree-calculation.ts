@@ -1,7 +1,7 @@
 import {DBEntityDependencies} from '@nu-art/thunderstorm';
-import {ConflictResolutionTree} from './types';
+import {ConflictResolutionTree} from './types.js';
 import {DBProto, RuntimeModules, StaticLogger, UniqueId, _keys} from '@nu-art/ts-common';
-import {ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend/index';
 
 const getItem = (dbKey: string, itemId: UniqueId): DBProto<any>['dbType'] | undefined => {
 	const module = RuntimeModules().filter(module => (module as ModuleFE_BaseDB<any>).dbDef?.dbKey === dbKey)[0] as ModuleFE_BaseDB<any>;

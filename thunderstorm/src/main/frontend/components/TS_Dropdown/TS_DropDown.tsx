@@ -22,16 +22,16 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
 import {BadImplementationException, clamp, debounce, Filter, ResolvableContent, resolveContent, voidFunction} from '@nu-art/ts-common';
-import {_className, stopPropagation} from '../../utils/tools';
-import {Adapter,} from '../adapter/Adapter';
-import {TS_Overlay} from '../TS_Overlay';
-import {TS_Tree} from '../TS_Tree';
-import {ComponentSync} from '../../core/ComponentSync';
-import {TS_Input} from '../TS_Input';
+import {_className, stopPropagation} from '../../utils/tools.js';
+import {Adapter,} from '../adapter/Adapter.js';
+import {TS_Overlay} from '../TS_Overlay/index.js';
+import {TS_Tree} from '../TS_Tree/index.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {TS_Input} from '../TS_Input/index.js';
 import './TS_DropDown.scss';
-import {LL_V_L} from '../Layouts';
-import {UIProps_EditableItem} from '../../utils/EditableItem';
-import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types';
+import {LL_V_L} from '../Layouts/index.js';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
+import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types.js';
 
 
 type State<ItemType> = ComponentProps_Error & {
@@ -106,6 +106,7 @@ export type Props_DropDown<ItemType> =
 export type MandatoryProps_TS_DropDown<ItemType> = Dropdown_Props<ItemType>
 
 type BasePartialProps_DropDown<T> = {
+	className?: string;
 	inputValue?: string;
 	placeholder?: string;
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
@@ -409,9 +410,13 @@ export class TS_DropDown<ItemType>
 	}
 
 	private renderHeader = () => {
+		const className = _className(
+			'ts-dropdown__header',
+			this.props.disabled ? 'disabled' : undefined)
+
 		return (
 			<div
-				className="ts-dropdown__header"
+				className={className}
 				onClick={(e) => {
 					stopPropagation(e);
 					if (this.state.disabled) {

@@ -18,7 +18,7 @@
  */
 
 import * as React from 'react';
-import {Example_NewProps, FieldEditorClick, FieldEditorClickProps} from '@nu-art/thunderstorm/frontend';
+import {Example_NewProps, FieldEditorClick, FieldEditorClickProps} from '@nu-art/thunderstorm/frontend/index';
 
 type TestType = {
 	prop1?: string,

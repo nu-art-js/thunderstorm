@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {FirebaseSession} from './firebase-session';
+import {FirebaseSession} from './firebase-session.js';
 import {Logger} from '@nu-art/ts-common';
 
 /**

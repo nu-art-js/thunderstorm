@@ -42,9 +42,9 @@ import {
 
 import {Stream} from 'stream';
 import {parse} from 'url';
-import {HttpServer} from './HttpServer';
+import {HttpServer} from './HttpServer.js';
 // noinspection TypeScriptPreferShortImport
-import {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from '../../utils/types';
+import {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from '../../utils/types.js';
 import {
 	MemKey_HttpRequest,
 	MemKey_HttpRequestBody,
@@ -54,7 +54,7 @@ import {
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl,
 	MemKey_HttpResponse
-} from './consts';
+} from './consts.js';
 import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {
 	ApiDef,
@@ -64,7 +64,7 @@ import {
 	QueryApi,
 	QueryParams,
 	TypedApi
-} from '../../../shared/types';
+} from '../../../shared/types.js';
 
 
 export const MemKey_ServerApi = new MemKey<ServerApi<any>>('server-api', true);
@@ -159,6 +159,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		await this.call(req, res);
 		await this.performPostCallActions();
 	};
+
 
 	private performPostCallActions = async () => {
 		try {

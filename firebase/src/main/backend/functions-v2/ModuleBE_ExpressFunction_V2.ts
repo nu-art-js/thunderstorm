@@ -1,8 +1,8 @@
-import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
+import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
 import {addItemToArray} from '@nu-art/ts-common';
 import express, {Express} from 'express';
 import {HttpsOptions, HttpsFunction, onRequest} from 'firebase-functions/v2/https';
-import {WebSocket} from 'ws';
+import {WebSocket, WebSocketServer} from 'ws';
 
 
 export class ModuleBE_ExpressFunction_V2<Config = {}>
@@ -42,7 +42,7 @@ export class ModuleBE_SocketFunction
 	protected createFunction(_express: Express) {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const server = require('http').createServer(_express);
-		const wss = new WebSocket.Server({server});
+		const wss = new WebSocketServer({server});
 
 		wss.on('connection', (ws: WebSocket) => {
 			ws.on('message', (message: string) => {

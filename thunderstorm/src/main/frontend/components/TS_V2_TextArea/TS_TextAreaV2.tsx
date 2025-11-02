@@ -20,16 +20,21 @@
  */
 
 import * as React from 'react';
-import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
-import {_className} from '../../utils/tools';
+import {
+	ChangeEvent,
+	CSSProperties,
+	HTMLProps,
+	KeyboardEvent
+} from 'react';
+import {_className} from '../../utils/tools.js';
 import './TS_TextAreaV2.scss';
-import {UIProps_EditableItem} from '../../utils/EditableItem';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
 import {
 	ComponentProps_Error,
 	convertToHTMLDataAttributes,
 	resolveEditableError
-} from '../types';
-import {getComputedStyleProperty} from '../utils';
+} from '../types.js';
+import {getComputedStyleProperty} from '../utils.js';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
@@ -241,8 +246,18 @@ export class TS_TextAreaV2
 		}
 	};
 
+	componentDidMount() {
+		if (this.props.resizeWithText)
+			this.resizeWithText();
+	}
+
+	componentDidUpdate() {
+		if (this.props.resizeWithText)
+			this.resizeWithText();
+	}
+
 	render() {
-		const {onAccept, error, trim, saveEvent, forceAcceptKeys, focus, innerRef, resizeWithText, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, ...props} = this.props;
 
 		return <textarea
 			{...props}

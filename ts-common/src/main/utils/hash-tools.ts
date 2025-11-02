@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {md} from "node-forge";
+import md from "node-forge";
 
 export function md5(toBeConverted: any) {
 	return md.md5.create().update(toBeConverted).digest().toHex().toLowerCase();

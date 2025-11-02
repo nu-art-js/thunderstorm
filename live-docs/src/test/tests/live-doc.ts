@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ModuleBE_LiveDocs} from '../_main';
+import {ModuleBE_LiveDocs} from '../_main.js';
 import {assert, auditBy} from '@nu-art/ts-common';
-import {cleanup} from './_core';
-import {ApiException} from '@nu-art/thunderstorm/backend';
+import {cleanup} from './_core.js';
+import {ApiException} from '@nu-art/thunderstorm/backend/index';
 
 
 export function getNoneExistingDoc() {

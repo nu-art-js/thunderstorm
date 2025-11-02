@@ -16,5 +16,5 @@
  * limitations under the License.
  */
 
-export * from './modules/CSVModule';
-export * from './modules/CSVModuleV3';
+export * from './modules/CSVModule.js';
+export * from './modules/CSVModuleV3.js';

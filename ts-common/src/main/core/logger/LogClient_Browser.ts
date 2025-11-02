@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {LogLevel, LogParam} from './types';
-import {LogClient} from './LogClient';
-import {TypedMap} from '../../utils/types';
-import {getLogStyle, LogStyle} from '../../tools/get-log-style';
+import {LogLevel, LogParam} from './types.js';
+import {LogClient} from './LogClient.js';
+import {TypedMap} from '../../utils/types.js';
+import {getLogStyle, LogStyle} from '../../tools/get-log-style.js';
 
 
 class LogClient_Browser_class

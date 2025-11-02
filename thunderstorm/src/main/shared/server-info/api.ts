@@ -1,5 +1,5 @@
-import {ApiDefResolver, HttpMethod, QueryApi} from '../types';
-import {BasicServerInfo} from './types';
+import {ApiDefResolver, HttpMethod, QueryApi} from '../types.js';
+import {BasicServerInfo} from './types.js';
 
 
 export type Response_ServerInfo = BasicServerInfo & {

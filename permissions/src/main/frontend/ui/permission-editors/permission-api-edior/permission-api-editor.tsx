@@ -1,14 +1,17 @@
 import * as React from 'react';
-import {DB_PermissionAPI, DBProto_PermissionAPI, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionAPI, ModuleFE_PermissionDomain} from '../../../_entity';
-import {Component_BasePermissionItemEditor} from '../editor-base';
-import {UniqueId} from '@nu-art/ts-common';
-import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
-import {MultiSelect} from '../../ui-props';
+import {DB_PermissionAPI, DBProto_PermissionAPI, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionAPI, ModuleFE_PermissionDomain} from '../../../_entity.js';
+import {Component_BasePermissionItemEditor} from '../editor-base.js';
+import {
+	sortArray,
+	UniqueId
+} from '@nu-art/ts-common';
+import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend/index';
+import {MultiSelect} from '../../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ProtoDef_Selection, Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
+import {ProtoDef_Selection, Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor/index';
 import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
 import './permission-api-editor.scss';
-import {TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
+import {TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto/index';
 
 
 type Props = {
@@ -76,7 +79,7 @@ export class PermissionAPIEditor
 		keys: ['selected'],
 		module: ModuleFE_PermissionAPI,
 		mapper: api => [api.path],
-		sort: api => api.path,
+		sort: (items) => sortArray(items, 'path'),
 		id: 'api-permission-editor',
 		itemRenderer: api => <>{api.path}</>,
 		EditorRenderer: (props) => <Controller_ApiEditor {...props}/>,

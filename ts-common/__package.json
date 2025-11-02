@@ -2,6 +2,7 @@
   "name": "@nu-art/ts-common",
   "version": "$THUNDERSTORM_VERSION",
   "description": "js and ts infra",
+  "type": "module",
   "keywords": [
     "TacB0sS",
     "infra",
@@ -19,13 +20,10 @@
     "url": "git+ssh://git@github.com:nu-art-js/ts-common.git"
   },
   "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
+    "directory": "dist"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "scripts": {
     "build": "tsc",
     "typedocs": "typedoc --options typedoc.json",
@@ -39,6 +37,7 @@
     "uuid": "^9.0.0",
     "csv-parser": "^2.3.3",
     "xlsx": "^0.18.5",
+    "jose": "?",
     "pbkdf2": "3.1.3"
   },
   "devDependencies": {
@@ -46,11 +45,17 @@
     "@types/minimatch": "^5.1.2",
     "@types/node-forge": "^1.0.0"
   },
-  "_moduleAliases": {
-    "@main": "dist/main/ts",
-    "@test": "dist/test/ts"
-  },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

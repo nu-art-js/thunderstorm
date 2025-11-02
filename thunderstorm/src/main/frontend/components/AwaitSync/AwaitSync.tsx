@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
+import {ComponentSync} from '../../core/ComponentSync.js';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {ModuleFE_SyncManager, PermissibleModulesUpdated} from '../../modules/sync-manager/ModuleFE_SyncManager';
+import {ModuleFE_SyncManager, PermissibleModulesUpdated} from '../../modules/sync-manager/ModuleFE_SyncManager.js';
 import './AwaitSync.scss';
 
 type Props = React.PropsWithChildren<{ customLoader?: ResolvableContent<React.ReactNode>; }>;

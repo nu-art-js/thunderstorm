@@ -21,9 +21,9 @@
  */
 
 import {__stringify, BadImplementationException, ImplementationMissingException, Module} from '@nu-art/ts-common';
-import {FirebaseConfig} from '..';
-import {FirebaseSessionFE} from './auth/FirebaseSessionFE';
-import {SwFirebaseSessionFE} from './auth/SwFirebaseSessionFE';
+import {FirebaseSessionFE} from './auth/FirebaseSessionFE.js';
+import {SwFirebaseSessionFE} from './auth/SwFirebaseSessionFE.js';
+import {FirebaseConfig} from '../shared/types.js';
 
 const localSessionId = 'local';
 
@@ -74,9 +74,10 @@ export class ModuleFE_Firebase_Class
 			this.setConfig({[localSessionId]: config});
 			return config;
 		} catch (e: any) {
-			throw new ImplementationMissingException(`Either specify configs for the 'ModuleBE_Firebase' or use SDK auto-configuration with firebase hosting`);
+			throw new ImplementationMissingException(`Either specify configs for the 'ModuleBE_Firebase' or use SDK auto-configuration with firebase hosting`, e);
 		}
 	};
+
 
 	public async createSession(projectId?: string | FirebaseConfig, token?: string) {
 		if (!projectId)

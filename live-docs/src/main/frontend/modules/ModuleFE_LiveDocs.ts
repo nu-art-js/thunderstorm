@@ -17,11 +17,11 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery, ToastBuilder} from '@nu-art/thunderstorm/frontend';
-import {DB_Document, LiveDocReqParams} from '../../shared/types';
-import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '../../shared/api';
+import {apiWithBody, apiWithQuery, ToastBuilder} from '@nu-art/thunderstorm/frontend/index';
+import {DB_Document, LiveDocReqParams} from '../../shared/types.js';
+import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '../../shared/api.js';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {DefaultLiveDocEditor} from '../utils';
+import {DefaultLiveDocEditor} from '../utils.js';
 
 
 export type LiveDocActionResolver = (doc: DB_Document) => ToastBuilder;

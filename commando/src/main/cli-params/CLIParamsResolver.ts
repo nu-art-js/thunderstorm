@@ -1,10 +1,6 @@
-import {
-	asArray,
-	exists,
-	filterDuplicates,
-	StaticLogger} from '@nu-art/ts-common';
-import {BaseCliParam, CliParam, CliParams} from './types';
-import {DefaultProcessorsMapper} from './consts';
+import {asArray, exists, filterDuplicates, StaticLogger} from '@nu-art/ts-common';
+import {BaseCliParam, CliParam, CliParams} from './types.js';
+import {DefaultProcessorsMapper} from './consts.js';
 
 
 export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output extends CliParams<T> = CliParams<T>> {
@@ -29,18 +25,22 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 		type Value = Output[Key];
 
 		const runtimeParams = inputParams.reduce((output, inputParam) => {
-			const cliParamToResolve = this.findMatchingParamToResolve(inputParam);
+			let [key, value] = inputParam.split('=');
+			const cliParamToResolve = this.findMatchingParamToResolve(key);
 			if (!cliParamToResolve)
 				return output;
 
-			const value = inputParam.split('=')[1];
+			if (value && value.startsWith('"') && value.endsWith('"')) {
+				value = value.slice(1, -1);
+				value = value.replace(/\\"/g, '"');
+			}
 			const finalValue = cliParamToResolve.process(value, cliParamToResolve.defaultValue);
 
 			// validate options if exits
-			if (cliParamToResolve.options && !cliParamToResolve.options.includes(value))
-				throw new Error('value not supported for this param');
+			if (cliParamToResolve.options && !cliParamToResolve.options.includes(finalValue))
+				throw new Error(`value not supported for param: ${cliParamToResolve.name}, supported values: ${cliParamToResolve.options.join(', ')}`);
 
-			const key = cliParamToResolve.keyName as Key;
+			const keyName = cliParamToResolve.keyName as Key;
 
 			if (exists(cliParamToResolve.dependencies))
 				cliParamToResolve.dependencies?.forEach(dependency => {
@@ -48,24 +48,24 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 				});
 
 			if (cliParamToResolve.isArray) {
-				let currentValues = output[key] as Value;
+				let currentValues = output[keyName] as Value;
 				currentValues = filterDuplicates([...(currentValues ?? []), ...asArray(finalValue)]) as Value;
 
-				output[key] = currentValues;
+				output[keyName] = currentValues;
 				return output;
 			}
 
 			//if already exists and the value ain't an array warn that the value will be overridden
-			if (output[key])
-				StaticLogger.logWarning(`this param does not accept multiple values, overriding prev value: ${output[key]}`);
+			if (output[keyName])
+				StaticLogger.logWarning(`this param does not accept multiple values, overriding prev value: ${output[keyName]}`);
 
-			//Apply single value to the object
-			output[key] = finalValue;
+			//Apply a single value to the object
+			output[keyName] = finalValue;
 			return output;
 		}, {} as Output);
 
-		this.params.filter(param => exists(param.defaultValue) && !exists(runtimeParams[param.keyName as Key])).forEach(param => {
-			runtimeParams[param.keyName as Key] = param.defaultValue;
+		this.params.filter(param => exists(param.initialValue) && !exists(runtimeParams[param.keyName as Key])).forEach(param => {
+			runtimeParams[param.keyName as Key] = param.initialValue;
 		});
 
 		return runtimeParams;
@@ -79,16 +79,15 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 	 * @private
 	 */
 	private findMatchingParamToResolve(inputParam: string) {
-		let maxKeyLength = 0;
 		let matchingParam: CliParam<string, any> | undefined;
 
-		// look for the longest fitting param in order to make sure we find the perfect match
 		this.params.forEach((param) => {
 			param.keys.forEach((key) => {
-				if (inputParam.startsWith(key) && key.length > maxKeyLength) {
-					maxKeyLength = key.length;
+				if (inputParam === key)
 					matchingParam = param;
-				}
+
+				if (inputParam.startsWith(`${key}=`))
+					matchingParam = param;
 			});
 		});
 

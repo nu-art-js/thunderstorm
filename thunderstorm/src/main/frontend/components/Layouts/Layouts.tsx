@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {CSSProperties, HTMLProps} from 'react';
 import './_Layouts.scss';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 
 export type LinearLayoutProps =
@@ -87,6 +87,6 @@ export class LL_H_B
 export class LL_VH_C
 	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
-		super(props, 'll_v_c match_height flex__justify-center');
+		super(props, 'll_vh_c');
 	}
 }

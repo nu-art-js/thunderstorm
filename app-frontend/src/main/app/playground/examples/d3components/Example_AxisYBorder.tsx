@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend/index';
 import {ScaleLinear} from 'd3-scale';
 
 type Props = {

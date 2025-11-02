@@ -24,19 +24,21 @@ import {
 	AsyncVoidFunction,
 	BeLogged,
 	ImplementationMissingException,
-	LogClient_BrowserGroups, merge,
+	LogClient_BrowserGroups,
+	merge,
 	ModuleManager,
 	Promise_all_sequentially,
-	removeItemFromArray, TS_Object
+	removeItemFromArray,
+	TS_Object
 } from '@nu-art/ts-common';
-import {ThunderDispatcher} from './thunder-dispatcher';
+import {ThunderDispatcher} from './thunder-dispatcher.js';
 
 import '../styles/impl/basic.scss';
 import '../styles/impl/icons.scss';
-import {ThunderAppWrapperProps} from './types';
+import {ThunderAppWrapperProps} from './types.js';
 import * as RDC from 'react-dom/client';
-import {appWithJSX} from './AppWrapper';
-import {StorageKey} from '../modules/ModuleFE_LocalStorage';
+import {appWithJSX} from './AppWrapper.js';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage.js';
 import axios from 'axios';
 import {
 	getBrowseAndDeviceLogs,
@@ -50,6 +52,11 @@ import {
 
 export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();
 
+export type ThunderConfig = {
+	defaultConfigUrl?: string
+	configUrl: string
+}
+
 export class Thunder
 	extends ModuleManager {
 
@@ -57,15 +64,20 @@ export class Thunder
 	private renderFunc!: (props: ThunderAppWrapperProps) => React.ReactElement;
 	private props!: ThunderAppWrapperProps<any>;
 	private preBuildActions: AsyncVoidFunction[] = [];
+	readonly innerConfig: Readonly<ThunderConfig>;
 
-	constructor() {
+
+	constructor(config: ThunderConfig) {
 		super();
-		this._DEBUG_FLAG.enable(false);
+		BeLogged.addClient(LogClient_BrowserGroups);
+
 		// @ts-ignore
 		window.thunder = this;
 		// @ts-ignore
-		ThunderDispatcher.listenersResolver = () => this.listeners;
+		ThunderDispatcher['listenersResolver'] = () => this.listeners;
 		this.addPreBuildAction(this.fetchConfig.bind(this)); // add config resolver as a pre build action
+
+		this.innerConfig = Object.freeze(config);
 	}
 
 	static getInstance(): Thunder {
@@ -73,8 +85,6 @@ export class Thunder
 	}
 
 	init() {
-		BeLogged.addClient(LogClient_BrowserGroups);
-
 		super.init();
 
 		const appJsx = this.renderFunc?.(this.props);
@@ -94,15 +104,23 @@ export class Thunder
 	}
 
 	private async fetchConfig() {
-		if (!this.config.configLoaderUrl)
-			return;
-
 		try {
-			const config = await axios.get<TS_Object | undefined>(this.config.configLoaderUrl);
-			if (!config.data || typeof config.data !== 'object')
-				return this.logWarning('cannot merge config, received no data or a non-object data');
+			const promises: Promise<TS_Object | undefined>[] = [];
+			if (this.innerConfig.defaultConfigUrl)
+				promises.push(axios.get<TS_Object | undefined>(this.innerConfig.defaultConfigUrl));
+			else
+				promises.push((async () => ({data: {}}))());
 
-			this.config = merge(this.config, config.data);
+			promises.push(axios.get<TS_Object | undefined>(this.innerConfig.configUrl));
+			const [defaultConfig, envConfig] = await Promise.all(promises);
+			if (typeof defaultConfig?.data !== 'object')
+				return this.logWarning('default config is not an object');
+
+			if (typeof envConfig?.data !== 'object')
+				return this.logWarning('env config is not an object');
+
+
+			this.config = merge(merge(this.config, defaultConfig.data), envConfig.data);
 		} catch (err: any) {
 			this.logError('failed loading config with error', err);
 		}

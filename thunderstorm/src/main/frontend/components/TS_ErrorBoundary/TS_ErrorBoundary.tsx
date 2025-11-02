@@ -22,7 +22,7 @@ import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_ErrorBoundary.scss';
 import {Logger} from '@nu-art/ts-common';
-import {BaseComponent} from '../../core/ComponentBase';
+import {BaseComponent} from '../../core/ComponentBase.js';
 
 
 type State = {

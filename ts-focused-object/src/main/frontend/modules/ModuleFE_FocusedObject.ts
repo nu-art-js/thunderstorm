@@ -1,10 +1,10 @@
 import {_keys, debounce, filterDuplicates, Module, removeItemFromArray, Second, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend/index';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, FocusedEntity,} from '../../shared';
-import {LoggedStatus, ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
-import {DefaultTTL_FocusedObject, getRelationalPath} from '../../shared/consts';
+import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, FocusedEntity,} from '../../shared/index.js';
+import {LoggedStatus, ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account/frontend/index';
+import {DefaultTTL_FocusedObject, getRelationalPath} from '../../shared/consts.js';
 import {DataSnapshot} from 'firebase/database';
 
 /*
@@ -204,7 +204,8 @@ export class ModuleFE_FocusedObject_Class
 	public getAccountIdsForFocusedItem = (dbKey: string, itemId: UniqueId, ignoreCurrentUser: boolean = true): UniqueId[] => {
 		const data = this.getFocusData(dbKey, itemId);
 		const userIds: UniqueId[] = data ? _keys(data) : [];
-		return ignoreCurrentUser ? userIds.filter(id => id !== ModuleFE_Account.accountId) : userIds;
+		const account = ModuleFE_Account.getCurrentlyLoggedAccount();
+		return ignoreCurrentUser ? userIds.filter(id => id !== account?._id) : userIds;
 	};
 
 	private translateCurrentlyFocusedToFocusedEntities = (): FocusedEntity[] => {

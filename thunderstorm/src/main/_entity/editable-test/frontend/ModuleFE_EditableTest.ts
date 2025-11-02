@@ -1,7 +1,7 @@
-import {DispatcherDef, ThunderDispatcherV3} from '../../../frontend/core/db-api-gen/types';
-import {ApiStruct_EditableTest, DBDef_EditableTest, DBProto_EditableTest} from '../shared';
-import {ApiDefCaller} from '../../../shared';
-import { ModuleFE_BaseApi } from '../../../frontend/modules/db-api-gen/ModuleFE_BaseApi';
+import {DispatcherDef, ThunderDispatcherV3} from '../../../frontend/core/db-api-gen/types.js';
+import {ApiStruct_EditableTest, DBDef_EditableTest, DBProto_EditableTest} from '../shared/index.js';
+import {ApiDefCaller} from '../../../shared/index.js';
+import { ModuleFE_BaseApi } from '../../../frontend/modules/db-api-gen/ModuleFE_BaseApi.js';
 
 
 export type DispatcherType_EditableTest = DispatcherDef<DBProto_EditableTest, `__onEditableTestUpdated`>;

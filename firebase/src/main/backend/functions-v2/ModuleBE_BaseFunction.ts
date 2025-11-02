@@ -1,5 +1,5 @@
 import {addItemToArray, dispatch_onApplicationNotification, Module, ServerErrorSeverity} from '@nu-art/ts-common';
-import {FirebaseFunctionInterface} from '../functions/firebase-function';
+import {FirebaseFunctionInterface} from '../functions/firebase-function.js';
 
 export abstract class ModuleBE_BaseFunction<Config = any>
 	extends Module<Config>

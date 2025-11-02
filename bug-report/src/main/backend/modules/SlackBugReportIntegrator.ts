@@ -18,9 +18,9 @@
  */
 
 import {generateHex, ImplementationMissingException, Module} from '@nu-art/ts-common';
-import {Platform_Slack, ReportLogFile, Request_BugReport} from '../..';
-import {TicketDetails} from './ModuleBE_BugReport';
-import {ModuleBE_Slack} from '@nu-art/slack/backend';
+import {Platform_Slack, ReportLogFile, Request_BugReport} from '../../index.js';
+import {TicketDetails} from './ModuleBE_BugReport.js';
+import {ModuleBE_Slack} from '@nu-art/slack/backend/index';
 
 type Config = {
 	channel: string

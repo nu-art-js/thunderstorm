@@ -1,7 +1,7 @@
-import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend/index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {ApiStruct_PermissionProject, DBDef_PermissionProject, DBProto_PermissionProject} from '../shared';
+import {ApiStruct_PermissionProject, DBDef_PermissionProject, DBProto_PermissionProject} from '../shared/index.js';
 
 
 export type DispatcherType_PermissionProject = DispatcherDef<DBProto_PermissionProject, `__onPermissionProjectUpdated`>;

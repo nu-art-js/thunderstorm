@@ -1,5 +1,5 @@
 import {randomBytes} from "crypto";
-import {generateHex, StaticLogger, TypedMap} from "../../main";
+import {generateHex, StaticLogger, TypedMap} from "../../main/index.js";
 
 
 function createArray() {

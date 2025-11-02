@@ -17,12 +17,11 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-import {ComponentSync,} from '@nu-art/thunderstorm/frontend';
-import {DB_BugReport} from '../../shared/api';
+import {ComponentSync,} from '@nu-art/thunderstorm/frontend/index';
+import {DB_BugReport} from '../../shared/api.js';
 import {__stringify} from '@nu-art/ts-common';
 import {OnRequestListener} from '@nu-art/thunderstorm';
-import {ModuleFE_BugReportAdmin, RequestKey_GetLog} from '../modules/ModuleFE_BugReportAdmin';
+import {ModuleFE_BugReportAdmin, RequestKey_GetLog} from '../modules/ModuleFE_BugReportAdmin.js';
 
 
 export class AdminBR

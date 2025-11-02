@@ -1,8 +1,8 @@
-import * as React from 'react';
-import {AppToolsScreen, ComponentSync, EditableItem, LL_V_L, TS_Button, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, ComponentSync, EditableItem, LL_V_L, TS_Button, TS_PropRenderer} from '@nu-art/thunderstorm/frontend/index';
 import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
-import {Editor_JsonToObject} from '../Editor_JsonToObject';
+import {Editor_JsonToObject} from '../Editor_JsonToObject.js';
 import {tsValidateString, ValidatorTypeResolver} from '@nu-art/ts-common';
+import React from 'react';
 
 type ATS_JsonToObject_Props = {};
 type ATS_JsonToObject_State = {
@@ -34,11 +34,7 @@ export class ATS_JsonToObject
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>): InferState<this> {
 		state.freeText ??= false;
-		state.editable ??= new EditableItem<TestType>({}, async (item) => {
-			console.log('Saving: ', item);
-			this.forceUpdate();
-			return item;
-		}, async (item) => console.log('Delete: ', item)).setAutoSave(true);
+		state.editable ??= new EditableItem<TestType>({}).setAutoSave(true);
 		return state;
 	}
 
@@ -47,7 +43,6 @@ export class ATS_JsonToObject
 	}
 
 	render() {
-
 		return <LL_V_L>
 			<Editor_JsonToObject
 				isFreeTextMode={this.state.freeText}

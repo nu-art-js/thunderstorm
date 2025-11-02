@@ -1,6 +1,6 @@
 import {mkdirSync, readFileSync, writeFileSync, rmSync} from 'fs';
 import {dirname, resolve} from 'path';
-import {Logger} from '../core/logger/Logger';
+import {Logger} from '../core/logger/Logger.js';
 
 const FILE_HEADER_REGEX = /^\/\/ file: (.+)$/gm;
 const INNER_FILE_HEADER_REGEX = /^(\/\/)*?\/\/\/\/ file:/gm;

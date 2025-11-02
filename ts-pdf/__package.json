@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-pdf",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "ts-pdf - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",
@@ -24,8 +24,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "files": [
     "**/*"
   ],
@@ -37,14 +35,26 @@
     "@nu-art/thunderstorm": "?",
     "react": "?",
     "pdf.js": "^0.1.0",
-    "pdfjs-dist": "2.5.207"
+    "pdfjs-dist": "5.4.149"
   },
   "devDependencies": {
+    "@types/pdfjs-dist": "2.10.378",
     "@types/react": "?",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1"
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

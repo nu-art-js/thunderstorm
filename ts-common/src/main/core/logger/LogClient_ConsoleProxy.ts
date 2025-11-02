@@ -1,9 +1,9 @@
-import {_logger_getPrefix, LogClient} from './LogClient';
-import {LogLevel, LogParam} from './types';
-import {debounce} from '../../utils/ui-tools';
-import {Minute, Second, sleep} from '../../utils/date-time-tools';
-import {__stringify} from '../../utils/tools';
-import {filterInstances} from '../../utils/array-tools';
+import {_logger_getPrefix, LogClient} from './LogClient.js';
+import {LogLevel, LogParam} from './types.js';
+import {debounce} from '../../utils/ui-tools.js';
+import {Minute, Second, sleep} from '../../utils/date-time-tools.js';
+import {__stringify} from '../../utils/tools.js';
+import {filterInstances} from '../../utils/array-tools.js';
 
 export type LogToStream = {
 	severity: LogLevel,

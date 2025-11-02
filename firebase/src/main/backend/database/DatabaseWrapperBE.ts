@@ -17,10 +17,10 @@
  */
 
 // import {FirestoreCollection} from "./FirestoreCollection";
-import {Firebase_DB} from './types';
+import {Firebase_DB} from './types.js';
 import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-art/ts-common';
-import {FirebaseSession} from '../auth/firebase-session';
-import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
+import {FirebaseSession} from '../auth/firebase-session.js';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper.js';
 import {getDatabase, Reference} from 'firebase-admin/database';
 
 

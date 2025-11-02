@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {ModuleFE_BugReport} from '../modules/ModuleFE_BugReport';
-import {ModuleFE_BugReportAdmin} from '../modules/ModuleFE_BugReportAdmin';
+import {ModuleFE_BugReport} from '../modules/ModuleFE_BugReport.js';
+import {ModuleFE_BugReportAdmin} from '../modules/ModuleFE_BugReportAdmin.js';
 
 
 export const ModulePack_Frontend_BugReport = [
@@ -25,6 +25,6 @@ export const ModulePack_Frontend_BugReport = [
 	ModuleFE_BugReportAdmin
 ];
 
-export * from '../modules/ModuleFE_BugReport';
-export * from '../modules/ModuleFE_BugReportAdmin';
+export * from '../modules/ModuleFE_BugReport.js';
+export * from '../modules/ModuleFE_BugReportAdmin.js';
 

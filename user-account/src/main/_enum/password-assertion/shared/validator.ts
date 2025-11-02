@@ -10,7 +10,7 @@ import {
 	PasswordAssertionType_SpecialChars,
 	PasswordAssertionTypes,
 	PasswordFailureReport
-} from './types';
+} from './types.js';
 
 type PasswordAssertionTypeValidator = (amount: number) => Validator<string>;
 

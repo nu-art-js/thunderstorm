@@ -18,9 +18,9 @@
 
 import * as React from 'react';
 import {ExampleModule, RequestKey_GetApi, RequestKey_PostApi,} from '@modules/ExampleModule';
-import {ComponentSync, ModuleFE_ForceUpgrade} from '@nu-art/thunderstorm/frontend';
-import {LiveDoc} from '@nu-art/live-docs/frontend';
-import {AdminBR} from '@nu-art/bug-report/frontend';
+import {ComponentSync, ModuleFE_ForceUpgrade} from '@nu-art/thunderstorm/frontend/index';
+import {LiveDoc} from '@nu-art/live-docs/frontend/index';
+import {AdminBR} from '@nu-art/bug-report/frontend/index';
 import {OnRequestListener} from '@nu-art/thunderstorm';
 
 export class Hello_Renderer

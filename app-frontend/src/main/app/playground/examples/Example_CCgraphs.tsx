@@ -18,8 +18,8 @@
 
 import * as React from 'react';
 import {ComponentSync} from '@nu-art/thunderstorm/frontend/core/ComponentSync';
-import Example_LineGraph, {D3ChartData} from './d3components/Example_LineGraph';
-import Example_TableGraph, {TableData} from './d3components/Example_TableGraph';
+import Example_LineGraph, {D3ChartData} from './d3components/Example_LineGraph.js';
+import Example_TableGraph, {TableData} from './d3components/Example_TableGraph.js';
 
 
 export type Coordinates = {

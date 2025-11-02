@@ -1,13 +1,22 @@
-import * as React from 'react';
-import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';
-import {ComponentSync} from '../../core/ComponentSync';
-import {DBProto_EditableTest, ModuleFE_EditableTest, UI_EditableTest} from '../../_entity';
-import {TS_EditableItemComponentProto} from '../../components/TS_EditableItemComponent/TS_EditableItemComponent';
-import {LL_V_L} from '../../components/Layouts';
-import {TS_PropRenderer} from '../../components/TS_PropRenderer';
-import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem';
-import {TS_DropDown} from '../../components/TS_Dropdown';
-import {SimpleListAdapter} from '../../components/adapter/Adapter';
+import {
+	AppToolsScreen,
+	ATS_Frontend
+} from '../../components/TS_AppTools/index.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {
+	DBProto_EditableTest,
+	ModuleFE_EditableTest,
+	UI_EditableTest
+} from '../../_entity.js';
+import {TS_EditableContent} from '../../components/TS_EditableContent/TS_EditableContent.js';
+import {LL_V_L} from '../../components/Layouts/index.js';
+import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
+import {
+	EditableDBItemV3,
+	EditableItem
+} from '../../utils/EditableItem.js';
+import {TS_DropDown} from '../../components/TS_Dropdown/index.js';
+import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
 
 
 type State = {
@@ -37,9 +46,12 @@ export class ATS_EditableItemTesting
 	}
 
 	private getEditableItem() {
-		return new EditableDBItemV3(this.getInitialItem(), ModuleFE_EditableTest, (dbItem) => {
-			this.setState({editableItem: this.state.editableItem});
-		}).setOnChanged(async editable => this.setState({editableItem: editable})).setAutoSave(true);
+		return new EditableDBItemV3(this.getInitialItem(), ModuleFE_EditableTest)
+			.setSaveAction(async (dbItem) => {
+				this.setState({editableItem: this.state.editableItem});
+				return dbItem;
+			})
+			.setOnChanged(async editable => this.setState({editableItem: editable})).setAutoSave(true);
 	}
 
 	render() {
@@ -51,12 +63,12 @@ export class ATS_EditableItemTesting
 
 // const EditableInput = TS_InputV2.editable({type: 'text', saveEvent: ['accept', 'blur']});
 const Dropdown_Zevel = TS_DropDown.prepareEditable({
-	adapter: SimpleListAdapter(['ani', 'pah', 'zevel'], item => <>{item.item}</>),
-	placeholder: 'select pah zevel'
-});
+	                                                   adapter: SimpleListAdapter(['ani', 'pah', 'zevel'], item => <>{item.item}</>),
+	                                                   placeholder: 'select pah zevel'
+                                                   });
 
 class EditableItemTestEditor
-	extends TS_EditableItemComponentProto<DBProto_EditableTest> {
+	extends TS_EditableContent<DBProto_EditableTest> {
 	render() {
 		return <LL_V_L>
 			<TS_PropRenderer.Vertical label={'Prop A'}>

@@ -1,0 +1,46 @@
+// file: ./project-lib-test.txt
+//// file: ./src/test/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  },
+  "include": ["./**/*.ts"]
+}
+
+//// file: ./__package.json
+{
+  "name": "@demo/lib-test",
+  "version": "1.0.0",
+    "publishConfig": {
+      "directory": "dist",
+      "linkDirectory": true
+    },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-test"
+  }
+}
+
+//// file: ./src/main/index.ts
+export const add = (a: number, b: number) => a + b;
+
+// file: ./workspace-test-fail.txt
+//// file: ./src/test/fail.test.ts
+const add = (a: number, b: number) => a + b;
+describe('add()', () => {
+  it('fails on purpose', () => {
+    if (add(1, 2) !== 4)
+      throw new Error('Intentional failure');
+  });
+});
+
+// file: ./workspace-test-pass.txt
+//// file: ./src/test/pass.test.ts
+const add = (a: number, b: number) => a + b;
+describe('add()', () => {
+  it('adds numbers', () => {
+    if (add(1, 2) !== 3)
+      throw new Error('Test failed');
+  });
+});

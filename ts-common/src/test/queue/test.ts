@@ -1,5 +1,5 @@
-import {testSuiteTester} from '../../main/testing/consts';
-import {TestSuite_Queue} from './queue';
+import {testSuiteTester} from '../../main/testing/consts.js';
+import {TestSuite_Queue} from './queue.js';
 
 
 describe('queue test', () => {

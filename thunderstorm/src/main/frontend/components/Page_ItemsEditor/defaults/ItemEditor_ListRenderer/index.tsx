@@ -1,1 +1,1 @@
-export * from './ItemEditor_DefaultList';
+export * from './ItemEditor_DefaultList.js';

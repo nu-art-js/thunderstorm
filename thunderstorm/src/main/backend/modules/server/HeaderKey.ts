@@ -19,13 +19,14 @@
  * limitations under the License.
  */
 
-import {MemKey_HttpRequest} from './consts';
+import {MemKey_HttpRequest} from './consts.js';
 import {ApiException} from '@nu-art/ts-common';
 
 
 export class HeaderKey {
 	private readonly key: string;
 	private readonly responseCode: number;
+	private processor = (value: string) => value;
 
 	constructor(key: string, responseCode: number = 400) {
 		this.key = key.toLowerCase();
@@ -37,6 +38,11 @@ export class HeaderKey {
 		if (!value)
 			throw new ApiException(this.responseCode, `Missing expected header: ${this.key}`);
 
-		return value;
+		return this.processor(value);
+	}
+
+	setProcessor(processor: (value: string) => string) {
+		this.processor = processor;
+		return this;
 	}
 }

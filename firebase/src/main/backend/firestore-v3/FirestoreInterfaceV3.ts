@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {ComparatorMap, FirestoreQuery, QueryComparator} from '../..';
-import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from '../firestore/types';
-import {FirestoreCollectionV3} from './FirestoreCollectionV3';
+import {ComparatorMap, FirestoreQuery, QueryComparator} from '../../index.js';
+import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from '../firestore/types.js';
+import {FirestoreCollectionV3} from './FirestoreCollectionV3.js';
 import {
 	__stringify,
 	BadImplementationException,

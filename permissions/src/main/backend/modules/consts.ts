@@ -2,8 +2,8 @@ import {
 	DomainNamespace_PermissionAssignment,
 	DomainNamespace_PermissionManagement,
 	DuplicateDefaultAccessLevels
-} from '../../shared/consts';
-import {DefaultDef_Package} from '../../shared/types';
+} from '../../shared/consts.js';
+import {DefaultDef_Package} from '../../shared/types.js';
 import {
 	DBDef_PermissionAPI,
 	DBDef_PermissionAccessLevel,
@@ -11,7 +11,7 @@ import {
 	DBDef_PermissionGroup,
 	DBDef_PermissionProject,
 	DBDef_PermissionUser
-} from '../_entity';
+} from '../_entity.js';
 
 export const Domain_PermissionAssignment = Object.freeze({
 	_id: '1f41541c4514b50140ae62c1f7097029',
