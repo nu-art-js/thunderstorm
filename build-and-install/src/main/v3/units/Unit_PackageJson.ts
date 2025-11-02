@@ -41,7 +41,7 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 		return this.runtimeContext.childUnits.reduce((dependencies, unit) => {
 			dependencies[unit.config.key] = 'workspace:*';
 			return dependencies;
-		}, {...this.runtimeContext.baiConfig.templateParams?.packageJson});
+		}, {...this.runtimeContext.baiConfig.templateParams?.packageJson, __ENV__: this.runtimeContext.runtimeParams.environment} as StringMap);
 	}
 
 
