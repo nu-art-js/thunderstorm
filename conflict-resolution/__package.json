@@ -39,13 +39,13 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/ts-styles": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "react": "$REACT_PKG_VERSION"
+    "@nu-art/ts-common": "?",
+    "@nu-art/ts-styles": "?",
+    "@nu-art/thunderstorm": "?",
+    "react": "?"
   },
   "devDependencies": {
-    "@types/react": "$REACT_TYPES_VERSION"
+    "@types/react": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

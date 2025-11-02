@@ -34,7 +34,7 @@
   "dependencies": {
     "fast-csv": "^5.0.2",
     "export-to-csv": "0.2.1",
-    "moment": "$MOMENT_PKG_VERSION",
+    "moment": "?",
     "node-forge": "^1.2.1",
     "uuid": "^9.0.0",
     "csv-parser": "^2.3.3",

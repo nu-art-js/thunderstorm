@@ -35,8 +35,8 @@
     "neo-blessed": "^0.2.0",
     "blessed": "^0.1.81",
     "glob": "^10.3.14",
-    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
-    "@nu-art/commando": "$THUNDERSTORM_DEPENDENCY_VERSION"
+    "@nu-art/ts-common": "?",
+    "@nu-art/commando": "?"
   },
   "devDependencies": {
     "@types/blessed": "^0.1.25"
