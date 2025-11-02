@@ -1,0 +1,63 @@
+{
+  "name": "@nu-art/ts-messaging-backend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Backend module for Thunderstorm messaging system that handles topics, discussions and messages management with Firebase integration",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "ts-messaging"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?",
+    "@nu-art/thunderstorm": "?",
+    "@nu-art/user-account": "?",
+    "@nu-art/permissions": "?",
+    "@nu-art/ts-messaging-shared": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "react": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

@@ -1,9 +1,9 @@
-import {BaseCommando} from '../core/BaseCommando';
-import {Commando_Programming} from './programming';
-import {MergeClass} from '../core/class-merger';
-import {Commando_Basic} from './basic';
+import {BaseCommando} from '../core/BaseCommando.js';
+import {Commando_Programming} from './programming.js';
+import {MergeClass} from '../core/class-merger.js';
+import {Commando_Basic} from './basic.js';
 import {Exception, filterDuplicates} from '@nu-art/ts-common';
-import {removeAnsiCodes} from '../tools';
+import {removeAnsiCodes} from '../tools.js';
 
 
 const Super = MergeClass(BaseCommando, Commando_Programming, Commando_Basic);

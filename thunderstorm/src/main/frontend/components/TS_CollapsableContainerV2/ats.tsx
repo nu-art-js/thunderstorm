@@ -1,11 +1,10 @@
-import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {AppToolsScreen, TS_AppTools} from '../TS_AppTools';
-import {thunderstormATSGroups} from '../../consts';
-import {LL_H_C, LL_V_L} from '../Layouts';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
+import {thunderstormATSGroups} from '../../consts.js';
+import {LL_H_C, LL_V_L} from '../Layouts/index.js';
 import './ats.scss';
-import {TS_PropRenderer} from '../TS_PropRenderer';
-import {TS_CollapsableContainerV2} from './TS_CollapsableContainerV2';
+import {TS_PropRenderer} from '../TS_PropRenderer/index.js';
+import {TS_CollapsableContainerV2} from './TS_CollapsableContainerV2.js';
 
 const lorem = () => <p className={'lorem'}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sagittis mauris quis elit tristique tempor. Sed in
 	pellentesque nisi, eu

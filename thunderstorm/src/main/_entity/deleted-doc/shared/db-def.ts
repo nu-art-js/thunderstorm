@@ -1,5 +1,5 @@
 import {DBDef_V3, tsValidateMustExist} from '@nu-art/ts-common';
-import {DBProto_DeletedDoc} from './types';
+import {DBProto_DeletedDoc} from './types.js';
 
 
 // const Validator_ModifiableProps: DBProto_DeletedDoc['modifiablePropsValidator'] = {

@@ -18,10 +18,10 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {ApiDef_AdminBugReport, DB_BugReport, Paths} from '../../shared/api';
+import {ApiDef_AdminBugReport, DB_BugReport, Paths} from '../../shared/api.js';
 
-import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend/index';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend/index';
 
 
 type Config = {

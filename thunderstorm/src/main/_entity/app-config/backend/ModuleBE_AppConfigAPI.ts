@@ -1,9 +1,9 @@
-import {createQueryServerApi} from '../../../backend/core/typed-api';
-import {addRoutes} from '../../../backend/modules/ModuleBE_APIs';
-import {ModuleBE_BaseApi_Class} from '../../../backend/modules/db-api-gen/ModuleBE_BaseApi';
-import {ApiDef_AppConfig, RequestBody_GetResolverByKey} from '../shared/api-def';
-import {DBProto_AppConfig} from '../shared/types';
-import {ModuleBE_AppConfigDB} from './ModuleBE_AppConfigDB';
+import {createQueryServerApi} from '../../../backend/core/typed-api.js';
+import {addRoutes} from '../../../backend/modules/ModuleBE_APIs.js';
+import {ModuleBE_BaseApi_Class} from '../../../backend/modules/db-api-gen/ModuleBE_BaseApi.js';
+import {ApiDef_AppConfig, RequestBody_GetResolverByKey} from '../shared/api-def.js';
+import {DBProto_AppConfig} from '../shared/types.js';
+import {ModuleBE_AppConfigDB} from './ModuleBE_AppConfigDB.js';
 
 class ModuleBE_AppConfigAPI_Class
 	extends ModuleBE_BaseApi_Class<DBProto_AppConfig> {

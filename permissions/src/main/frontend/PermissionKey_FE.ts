@@ -1,18 +1,18 @@
-import {AppConfigKey_FE, ModuleFE_AppConfig} from '@nu-art/thunderstorm/frontend';
+import {AppConfigKey_FE, ModuleFE_AppConfig} from '@nu-art/thunderstorm/frontend/index';
 import {_keys, TypedKeyValue} from '@nu-art/ts-common';
-import {DB_PermissionKeyData, PermissionKey, UI_PermissionKeyData} from '../shared/types';
-import {AccessLevel, ModuleFE_PermissionsAssert} from './modules/ModuleFE_PermissionsAssert';
+import {DB_PermissionKeyData, PermissionKey, UI_PermissionKeyData} from '../shared/types.js';
+import {AccessLevel, ModuleFE_PermissionsAssert} from './modules/ModuleFE_PermissionsAssert.js';
 
 
 export class PermissionKey_FE<K extends string = string>
 	extends AppConfigKey_FE<TypedKeyValue<K, DB_PermissionKeyData>> {
 
-	static generatePermissionKeysByLevels = <K extends PermissionKey>(keysMapper: { [key in K]: string }): { [key in K]: PermissionKey_FE } => {
+	static generatePermissionKeysByLevels = <K_ extends PermissionKey>(keysMapper: { [key in K_]: string }): { [key in K_]: PermissionKey_FE } => {
 		return _keys(keysMapper).reduce((mapper, currentKey) => {
 			if (!mapper[currentKey])
 				mapper[currentKey] = new PermissionKey_FE(keysMapper[currentKey]);
 			return mapper;
-		}, {} as { [key in K]: PermissionKey_FE });
+		}, {} as { [key in K_]: PermissionKey_FE });
 	};
 
 	constructor(key: K) {

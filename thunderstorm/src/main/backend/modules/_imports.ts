@@ -19,9 +19,9 @@
  * limitations under the License.
  */
 
-export * from './server/server-api';
-export * from './server/HttpServer';
-export * from './proxy/RemoteProxyCaller';
-export * from './proxy/ModuleBE_RemoteProxy';
-export * from '../utils/promisify-request';
-export * from './CleanupScheduler';
+export * from './server/server-api.js';
+export * from './server/HttpServer.js';
+export * from './proxy/RemoteProxyCaller.js';
+export * from './proxy/ModuleBE_RemoteProxy.js';
+export * from '../utils/promisify-request.js';
+export * from './CleanupScheduler.js';

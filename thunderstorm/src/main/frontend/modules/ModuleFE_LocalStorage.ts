@@ -23,12 +23,12 @@
  * Created by tacb0ss on 27/07/2018.
  */
 import {_keys, exists, merge, Module, TS_Object, TypedMap} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '../core/thunder-dispatcher';
-import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
+import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
+import {OnClearWebsiteData} from './clearWebsiteDataDispatcher.js';
 
 
 export interface OnStorageKeyChangedListener {
-	__onStorageKeyEvent(event: StorageEvent): void;
+	__onStorageKeyEvent(event: StorageEvent): Promise<void>;
 }
 
 type GetType = string | number | object
@@ -76,8 +76,8 @@ export class StorageModule_Class
 		}
 
 		const dispatcher = new ThunderDispatcher<OnStorageKeyChangedListener, '__onStorageKeyEvent'>('__onStorageKeyEvent');
-		dispatcher.dispatchModule(e);
-		dispatcher.dispatchUI(e);
+		await dispatcher.dispatchModuleAsync(e);
+		await dispatcher.dispatchUIAsync(e);
 	};
 
 	getStorage = (persist: boolean) => persist ? localStorage : sessionStorage;

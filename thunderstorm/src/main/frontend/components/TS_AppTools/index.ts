@@ -18,5 +18,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './TS_AppTools';
-export * from './types';
+export * from './TS_AppTools.js';
+export * from './types.js';

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {StorageKey} from '@nu-art/thunderstorm/frontend';
+import {StorageKey} from '@nu-art/thunderstorm/frontend/index';
 import {_values, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
-import {PanelConfig} from '..';
-import {Workspace} from '../../shared/types';
+import {PanelConfig} from '../index.js';
+import {Workspace} from '../../shared/types.js';
 
 type Config = {
 	defaultConfigs: TypedMap<PanelConfig>,

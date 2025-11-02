@@ -1,1 +1,1 @@
-export * from '../_enum/password-assertion/shared';
+export * from '../_enum/password-assertion/shared/index.js';

@@ -1,5 +1,5 @@
-import {BaseCommando} from '../core/BaseCommando';
-import {CliBlock} from '../types';
+import {BaseCommando} from '../core/BaseCommando.js';
+import {CliBlock} from '../types.js';
 
 
 export class Commando_Programming

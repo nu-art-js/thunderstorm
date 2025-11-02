@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */'../main/frontend/modules/JiraModule';
-import {Tester} from './_core/Tester';
-import {issueScenario} from './jira/issue';
+import {Tester} from './_core/Tester.js';
+import {issueScenario} from './jira/issue.js';
 
 
 const mainScenario = __scenario('Bug Report Testing');

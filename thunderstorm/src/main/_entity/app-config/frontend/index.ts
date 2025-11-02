@@ -1,2 +1,2 @@
-export * from './ModuleFE_AppConfig';
-export * from './module-pack';
+export * from './ModuleFE_AppConfig.js';
+export * from './module-pack.js';

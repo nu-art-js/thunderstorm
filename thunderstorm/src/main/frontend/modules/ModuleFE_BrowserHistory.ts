@@ -24,9 +24,9 @@
  */
 import {_keys, composeQueryParams, exists, Module,} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
-import {UrlQueryParams} from '../../shared';
+import {UrlQueryParams} from '../../shared/index.js';
 
-import {ThunderDispatcher} from '../core/thunder-dispatcher';
+import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
 
 export type OnUrlParamsChangedListener = {
     __onUrlParamsChanged: VoidFunction
@@ -111,10 +111,10 @@ export class ModuleFE_BrowserHistory_Class
     }
 
     addQueryParam(key: string, value: string) {
-        const encodedQueryParams = this.getEncodedQueryParams();
-        encodedQueryParams[key] = encodeURIComponent(value);
+        const decodedQueryParams = this.getQueryParams();
+        decodedQueryParams[key] = value;
 
-        this.updateQueryParams(encodedQueryParams);
+        this.updateQueryParams(decodedQueryParams);
     }
 
     removeQueryParam(key: string) {

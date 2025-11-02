@@ -17,6 +17,6 @@
  * limitations under the License.
  */
 
-export * from "./core/module-pack";
-export * from "./ui/LiveDoc";
-export * from "./utils";
+export * from "./core/module-pack.js";
+export * from "./ui/LiveDoc.js";
+export * from "./utils.js";

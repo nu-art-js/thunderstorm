@@ -1,7 +1,7 @@
-import {tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
-import {tsValidateArray, tsValidateBoolean, tsValidateRegexp, tsValidateString, tsValidateTimestamp, tsValidateValue} from './type-validators';
-import {AuditableV2, DBPointer} from '../utils/types';
-import {DBDef_V3} from '../db/types';
+import {tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core.js';
+import {tsValidateArray, tsValidateBoolean, tsValidateRegexp, tsValidateString, tsValidateTimestamp, tsValidateValue} from './type-validators.js';
+import {AuditableV2, DBPointer} from '../utils/types.js';
+import {DBDef_V3} from '../db/types.js';
 
 
 export const tsValidate_OptionalArray = <T>(validator: ValidatorTypeResolver<T>) => tsValidateArray(validator, false);

@@ -1,8 +1,8 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {QueryParams} from '../../../shared';
+import {QueryParams} from '../../../shared/index.js';
 import {IncomingHttpHeaders} from 'http';
-import {ExpressRequest} from '../../utils/types';
-import {ApiResponse} from './server-api';
+import {ExpressRequest} from '../../utils/types.js';
+import {ApiResponse} from './server-api.js';
 
 
 export const MemKey_HttpRequest = new MemKey<ExpressRequest>('http-request', true);

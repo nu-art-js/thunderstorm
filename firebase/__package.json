@@ -24,8 +24,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "files": [
     "**/*"
   ],
@@ -42,12 +40,11 @@
     "@google-cloud/common": "?",
     "@google-cloud/storage": "?",
     "@google-cloud/firestore": "?",
+    "google-auth-library": "?",
     "express": "?",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
-    "google-auth-library": "^6.0.6",
-    "fs": "0.0.1-security",
     "ws": "^8.13.0",
     "http-proxy": "1.18.1",
     "url": "0.11.3"
@@ -62,5 +59,16 @@
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

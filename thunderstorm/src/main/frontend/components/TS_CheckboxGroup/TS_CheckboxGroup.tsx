@@ -1,9 +1,8 @@
-import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className} from '../../utils/tools';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className} from '../../utils/tools.js';
 import './TS_CheckboxGroup.scss';
-import {TS_Checkbox} from '../TS_Checkbox';
-import {LL_V_L} from '../Layouts';
+import {TS_Checkbox} from '../TS_Checkbox/index.js';
+import {LL_V_L} from '../Layouts/index.js';
 import {BadImplementationException} from '@nu-art/ts-common';
 
 type CheckboxOption = {

@@ -1,13 +1,12 @@
-import * as React from 'react';
 import {ComponentClass, FunctionComponent} from 'react';
 import {BrowserRouter, Navigate, NavigateFunction, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
-import {TS_Route} from './types';
+import {TS_Route} from './types.js';
 import {BadImplementationException, composeUrl, Module, removeItemFromArray} from '@nu-art/ts-common';
-import {LocationChangeListener} from './LocationChangeListener';
-import {QueryParams} from '../../../shared';
-import {mouseEventHandler, stopPropagation} from '../../utils/tools';
-import {AwaitModules} from '../../components/AwaitModules/AwaitModules';
-import {AwaitSync} from '../../components/AwaitSync/AwaitSync';
+import {LocationChangeListener} from './LocationChangeListener.js';
+import {QueryParams} from '../../../shared/index.js';
+import {mouseEventHandler, stopPropagation} from '../../utils/tools.js';
+import {AwaitModules} from '../../components/AwaitModules/AwaitModules.js';
+import {AwaitSync} from '../../components/AwaitSync/AwaitSync.js';
 
 
 class ModuleFE_RoutingV2_Class

@@ -1,10 +1,9 @@
-import * as React from 'react';
 import {HTMLProps, ReactNode} from 'react';
-import {StorageKey} from '../modules/ModuleFE_LocalStorage';
-import {ComponentSync} from '../core/ComponentSync';
-import {TS_Input, TS_InputProps} from '../components/TS_Input/TS_Input';
-import {TS_TextArea} from '../components/TS_Input/TS_TextArea';
-import {InputType} from '../components/TS_Input/TS_BaseInput';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage.js';
+import {ComponentSync} from '../core/ComponentSync.js';
+import {TS_Input, TS_InputProps} from '../components/TS_Input/TS_Input.js';
+import {TS_TextArea} from '../components/TS_Input/TS_TextArea.js';
+import {InputType} from '../components/TS_Input/TS_BaseInput.js';
 
 export type FieldEditorInputProps<K extends string | number> = Omit<TS_InputProps<K>, 'onChange' | 'value' | 'onAccept' | 'type' | 'id'>
 

@@ -17,13 +17,13 @@
  */
 
 import * as React from 'react';
-import {Playground_DropdownSingleAndMulti} from '../components/dropdown/Example_Dropdown_SingleAndMulti';
-import {Playground_DropdownMultiType} from '../components/dropdown/Example_Dropdown_MultiType';
-import {Playground_DropdownSingleType} from '../components/dropdown/Example_Dropdown_SingleType';
-import {Playground_Tree_Data} from '../keyboard-listener/Example_Tree_Data';
-import {Playground_Tree_Basic} from '../keyboard-listener/Example_Tree_Basic';
-import {Playground_Tree_MultiType} from '../keyboard-listener/Example_Tree_MultiType';
-import {LL_H_T} from '@nu-art/thunderstorm/frontend';
+import {Playground_DropdownSingleAndMulti} from '../components/dropdown/Example_Dropdown_SingleAndMulti.js';
+import {Playground_DropdownMultiType} from '../components/dropdown/Example_Dropdown_MultiType.js';
+import {Playground_DropdownSingleType} from '../components/dropdown/Example_Dropdown_SingleType.js';
+import {Playground_Tree_Data} from '../keyboard-listener/Example_Tree_Data.js';
+import {Playground_Tree_Basic} from '../keyboard-listener/Example_Tree_Basic.js';
+import {Playground_Tree_MultiType} from '../keyboard-listener/Example_Tree_MultiType.js';
+import {LL_H_T} from '@nu-art/thunderstorm/frontend/index';
 
 const TreeRefactorPage_Renderer = () => (<>
 	<div className="ll_v_l" style={{width: '100%', height: '100%'}}>

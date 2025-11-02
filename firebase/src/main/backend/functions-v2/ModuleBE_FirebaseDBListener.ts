@@ -1,18 +1,19 @@
 import {deepClone} from '@nu-art/ts-common';
-import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction';
-import {ParamsOf} from 'firebase-functions/lib/common/params';
-import {onValueWritten, DatabaseEvent, DataSnapshot} from 'firebase-functions/v2/database';
-import {CloudFunction, Change} from 'firebase-functions/v2';
+import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
+import {onValueWritten} from 'firebase-functions/v2/database';
+
+type TypeOf_onValueWritten = typeof onValueWritten;
 
 export abstract class ModuleBE_FirebaseDBListener<DataType = any, ConfigType = any>
 	extends ModuleBE_BaseFunction<ConfigType> {
 
 	private readonly listeningPath: string;
-	private function!: CloudFunction<DatabaseEvent<Change<DataSnapshot>, ParamsOf<any>>>;
+	private function!: ReturnType<TypeOf_onValueWritten>;
 
 	protected constructor(listeningPath: string, name?: string) {
 		super();
-		name && this.setName(name);
+		if (name)
+			this.setName(name);
 		this.listeningPath = listeningPath;
 	}
 
@@ -22,7 +23,7 @@ export abstract class ModuleBE_FirebaseDBListener<DataType = any, ConfigType = a
 		if (this.function)
 			return this.function;
 
-		const handler = (event: DatabaseEvent<Change<DataSnapshot>, ParamsOf<string>>) => {
+		const handler: Parameters<TypeOf_onValueWritten>[1] = (event) => {
 			const before: DataType = event.data.before && event.data.before.val();
 			const after: DataType = event.data.after && event.data.after.val();
 			const params = deepClone(event.params);

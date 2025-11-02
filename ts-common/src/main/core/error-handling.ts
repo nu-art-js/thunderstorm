@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {Module} from './module';
-import {Dispatcher} from './dispatcher';
-import {CustomException} from './exceptions/exceptions';
+import {Module} from './module.js';
+import {Dispatcher} from './dispatcher.js';
+import {CustomException} from './exceptions/exceptions.js';
 
 export enum ServerErrorSeverity {
 	Debug    = 'Debug',

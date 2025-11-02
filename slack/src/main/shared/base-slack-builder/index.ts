@@ -1,2 +1,2 @@
-export * from './BaseSlackBuilder'
-export * from './types'
+export * from './BaseSlackBuilder.js'
+export * from './types.js'

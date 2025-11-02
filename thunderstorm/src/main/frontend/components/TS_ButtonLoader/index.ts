@@ -1,1 +1,1 @@
-export * from './TS_ButtonLoader';
+export * from './TS_ButtonLoader.js';

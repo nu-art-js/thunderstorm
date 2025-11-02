@@ -17,14 +17,21 @@
  */
 
 import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {Bucket, CreateReadStreamOptions, CreateWriteStreamOptions, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
-import {Firebase_CopyResponse, FirebaseType_Storage} from './types';
-import {FirebaseSession} from '../auth/firebase-session';
-import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
+import {
+	Bucket,
+	CreateReadStreamOptions,
+	CreateWriteStreamOptions,
+	File,
+	FileMetadata,
+	GetSignedUrlConfig,
+	MakeFilePublicResponse,
+} from '@google-cloud/storage';
+import {Firebase_CopyResponse, FirebaseType_Storage} from './types.js';
+import {FirebaseSession} from '../auth/firebase-session.js';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper.js';
 import {getStorage} from 'firebase-admin/storage';
 import {Response} from 'teeny-request';
 import {Writable} from 'stream';
-import {FileMetadata} from '@google-cloud/storage/build/cjs/src/file';
 
 
 export const END_OF_STREAM = {END_OF_STREAM: 'END_OF_STREAM'};
@@ -104,7 +111,7 @@ export class BucketWrapper {
 
 	private async iterateOverFiles(folder: string, filter: (file: File) => boolean, action: (file: File) => Promise<any>) {
 		return new Promise<void>((resolve, reject) => {
-			const callback = async (err: Error | null, files?: File[], nextQuery?: {}) => {
+			const callback = async (err: Error | null, files?: File[], nextQuery?: object) => {
 				if (err)
 					return reject(err);
 
@@ -119,9 +126,9 @@ export class BucketWrapper {
 			};
 
 			this.bucket.getFiles({
-				                     prefix: folder,
-				                     autoPaginate: false
-			                     }, callback);
+				prefix: folder,
+				autoPaginate: false
+			}, callback);
 		});
 	}
 }
@@ -234,9 +241,9 @@ export class FileWrapper {
 				.file
 				.createReadStream()
 				.pipe(destinationFile
-					      .createWriteStream()
-					      .on('error', reject)
-					      .on('finish', () => resolve([destinationFile, undefined]))
+					.createWriteStream()
+					.on('error', reject)
+					.on('finish', () => resolve([destinationFile, undefined]))
 				)
 				.on('error', reject);
 		});

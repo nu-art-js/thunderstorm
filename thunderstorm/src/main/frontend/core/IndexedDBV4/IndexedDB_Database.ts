@@ -1,6 +1,6 @@
 import {AsyncVoidFunction, Logger, LogLevel, md5, sortArray} from '@nu-art/ts-common';
-import {DBConfigV3} from './types';
-import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
+import {DBConfigV3} from './types.js';
+import {StorageKey} from '../../modules/ModuleFE_LocalStorage.js';
 
 type VersionData = {
 	version: number;

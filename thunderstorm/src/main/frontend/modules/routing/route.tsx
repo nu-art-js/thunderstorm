@@ -22,7 +22,7 @@
 import {composeUrl, RouteParams} from '@nu-art/ts-common';
 import * as React from 'react';
 import {Link, NavLink, Route} from 'react-router-dom';
-import {ReactEntryComponentInjector} from '../component-loader/ReactEntryComponentInjector';
+import {ReactEntryComponentInjector} from '../component-loader/ReactEntryComponentInjector.js';
 
 
 export class RoutePath {

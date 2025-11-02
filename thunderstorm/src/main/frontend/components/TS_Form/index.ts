@@ -1,3 +1,3 @@
-export * from './consts';
-export * from './types';
-export * from './TS_Form';
+export * from './consts.js';
+export * from './types.js';
+export * from './TS_Form.js';

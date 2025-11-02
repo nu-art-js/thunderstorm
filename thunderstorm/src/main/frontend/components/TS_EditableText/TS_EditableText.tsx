@@ -1,10 +1,10 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
+import {ComponentSync} from '../../core/ComponentSync.js';
 import './TS_EditableText.scss';
-import {TS_Input, TS_TextArea} from '../TS_Input';
-import {_className, stopPropagation, stringReplacer} from '../../utils/tools';
-import {TS_ReadMore} from '../TS_ReadMore';
-import { Button } from '../Button/Button';
+import {TS_Input, TS_TextArea} from '../TS_Input/index.js';
+import {_className, stopPropagation, stringReplacer} from '../../utils/tools.js';
+import {TS_ReadMore} from '../TS_ReadMore/index.js';
+import { Button } from '../Button/Button.js';
 
 type Props = {
 	text: string;

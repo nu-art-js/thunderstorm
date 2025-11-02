@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {FirebaseType_BatchResponse, FirebaseType_SubscriptionResponse,} from './types';
-import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {FirebaseSession} from '../auth/firebase-session';
+import {FirebaseType_BatchResponse, FirebaseType_SubscriptionResponse,} from './types.js';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper.js';
+import {FirebaseSession} from '../auth/firebase-session.js';
 import {Message, MulticastMessage, getMessaging, Messaging} from 'firebase-admin/messaging';
 
 

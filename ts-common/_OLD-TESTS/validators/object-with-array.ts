@@ -17,7 +17,7 @@
  */
 
 import {TestSuit, tsValidateArray, tsValidateExists, tsValidateOptional, tsValidateRegexp} from '../_main';
-import {TestCase_Validator, validatorProcessor} from './_common';
+import {TestCase_Validator, validatorProcessor} from './_common.js';
 
 
 export type ObjectWithArray = { prop1?: string[] }

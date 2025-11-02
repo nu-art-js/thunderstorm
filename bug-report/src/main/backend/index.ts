@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-export * from './core/module-pack';
-export * from './modules/ModuleBE_AdminBR';
-export * from './modules/ModuleBE_BugReport';
-export * from './modules/JiraBugReportIntegrator';
-export * from './modules/SlackBugReportIntegrator';
+export * from './core/module-pack.js';
+export * from './modules/ModuleBE_AdminBR.js';
+export * from './modules/ModuleBE_BugReport.js';
+export * from './modules/JiraBugReportIntegrator.js';
+export * from './modules/SlackBugReportIntegrator.js';

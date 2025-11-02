@@ -1,6 +1,6 @@
-import {apiWithBody, ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend/index';
 import {currentTimeMillis} from '@nu-art/ts-common';
-import {ApiDef_Assets, ApiStruct_Assets, DBDef_Assets, DBProto_Assets} from '../../shared';
+import {ApiDef_Assets, ApiStruct_Assets, DBDef_Assets, DBProto_Assets} from '../../shared/index.js';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 

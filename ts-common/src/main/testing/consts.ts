@@ -1,16 +1,17 @@
-import {TestModel, TestResetListener, TestSuite} from './types';
+import {TestModel, TestResetListener, TestSuite} from './types.js';
 import chai, {expect} from 'chai';
-import {ModuleManager} from '../core/module-manager';
-import {exists, resolveContent, voidFunction} from '../utils/tools';
-import {MemStorage} from '../mem-storage/MemStorage';
+import {ModuleManager} from '../core/module-manager.js';
+import {exists, resolveContent, voidFunction} from '../utils/tools.js';
+import {MemStorage} from '../mem-storage/MemStorage.js';
 import chaiAsPromised from 'chai-as-promised';
-import {BeLogged} from '../core/logger/BeLogged';
-import {LogClient_Terminal} from '../core/logger/LogClient_Terminal';
-import {DebugFlag} from '../core/debug-flags';
-import {LogLevel} from '../core/logger/types';
-import {StaticLogger} from '../core/logger/Logger';
-import {BadImplementationException} from '../core/exceptions/exceptions';
-import {Dispatcher} from '../core/dispatcher';
+import {BeLogged} from '../core/logger/BeLogged.js';
+import {LogClient_Terminal} from '../core/logger/LogClient_Terminal.js';
+import {DebugFlag} from '../core/debug-flags.js';
+import {LogLevel} from '../core/logger/types.js';
+import {StaticLogger} from '../core/logger/Logger.js';
+import {BadImplementationException} from '../core/exceptions/exceptions.js';
+import {Dispatcher} from '../core/dispatcher.js';
+import {Void} from '../utils/types.js';
 
 chai.use(chaiAsPromised);
 BeLogged.addClient(LogClient_Terminal);
@@ -65,6 +66,20 @@ export const defaultTestProcessor: DefaultTestProcessor = async (promisedResult,
 	expect(result).to.deep.equal(expectedResult);
 };
 
+
+export const runScenario = <Result, ExpectedResult = Result>(test: () => Promise<Result>, _testCase?: TestModel<void, ExpectedResult>, processor = defaultTestProcessor) => {
+	let testCase;
+	if (_testCase)
+		testCase = resolveContent(_testCase);
+	else
+		testCase = {
+			input: Void,
+			result: async (r: ExpectedResult) => {
+			}
+		};
+
+	return async () => runSingleTestCase(test, testCase, processor);
+};
 
 export const runSingleTestCase = async <Input, Result, ExpectedResult = Result>(test: (input: Input) => Promise<Result>, _testCase: TestModel<Input, ExpectedResult>, processor = defaultTestProcessor) => {
 	const testCase = resolveContent(_testCase);

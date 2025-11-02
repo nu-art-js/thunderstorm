@@ -1,7 +1,6 @@
-import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {LL_H_C} from '../Layouts';
-import {_className} from '../../utils/tools';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {LL_H_C} from '../Layouts/index.js';
+import {_className} from '../../utils/tools.js';
 import './TS_Toggler.scss';
 
 type Props<T> = {

@@ -1,1 +1,1 @@
-export * from './function-module/Module_ShortUrlResolver';
+export * from './function-module/Module_ShortUrlResolver.js';

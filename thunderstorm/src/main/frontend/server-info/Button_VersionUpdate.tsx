@@ -1,6 +1,6 @@
 import React from 'react';
-import {ComponentSync} from '../core/ComponentSync';
-import {ModuleFE_ServerInfo, OnServerInfoUpdatedListener} from './ModuleFE_ServerInfo';
+import {ComponentSync} from '../core/ComponentSync.js';
+import {ModuleFE_ServerInfo, OnServerInfoUpdatedListener} from './ModuleFE_ServerInfo.js';
 import './Button_VersionUpdate.scss';
 
 export type Props = {

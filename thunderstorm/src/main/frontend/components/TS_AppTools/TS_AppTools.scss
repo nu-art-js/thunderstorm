@@ -121,9 +121,9 @@ $headerHeight: 40px;
       align-items: center;
       gap: 8px;
 
-      @include styles.mouse-interactive-background(styles.gray(6), styles.gray(4), styles.gray(2));
-      @include styles.mouse-interactive-icon(black, black, white);
-      @include styles.mouse-interactive-text(black, black, white);
+      @include styles.mouseInteractiveBackground(styles.gray(6), styles.gray(4), styles.gray(2));
+      @include styles.mouseInteractiveIcon(black, black, white);
+      @include styles.mouseInteractiveText(black, black, white);
 
       .ts-app-tools__nav-bar__item__title {
         color: inherit;

@@ -1,6 +1,5 @@
-import {LL_V_L} from '@nu-art/thunderstorm/frontend';
-import {SessionKey_Permissions_FE} from '../consts';
-import * as React from 'react';
+import {LL_V_L} from '@nu-art/thunderstorm/frontend/index';
+import {SessionKey_Permissions_FE} from '../consts.js';
 
 export const Renderer_RoleNames = () => {
 	const roles = SessionKey_Permissions_FE.get().roles;

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Default_UniqueKey} from '../db/types';
+import {Default_UniqueKey} from '../db/types.js';
 
 
 export type Primitive = string | number | boolean;
@@ -26,6 +26,8 @@ export type RecursiveObjectOfPrimitives = {
 };
 
 export type RecursiveArrayOfPrimitives = (Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives)[]
+
+export type AnyPrimitive = Primitive | RecursiveObjectOfPrimitives | RecursiveArrayOfPrimitives;
 
 export type CustomOptional<T, K> = {
 	[P in keyof T]?: K
@@ -47,7 +49,11 @@ export type Subset<T> = {
  * type MyMapper = { a: number, b: string, c: boolean, d: number };
  * type MySubsetKeys = SubsetKeys<Keys, MyMapper, number>; // 'a' | 'd'
  */
-export type SubsetKeys<AllKeys extends string | number | symbol, Mapper extends { [K in AllKeys]: any }, ExpectedType> = { [K in AllKeys]: Mapper[K] extends ExpectedType ? K : never }[AllKeys];
+export type SubsetKeys<AllKeys extends string | number | symbol, Mapper extends { [K in AllKeys]: any }, ExpectedType> = {
+	[K in AllKeys]: Mapper[K] extends ExpectedType
+		? K
+		: never
+}[AllKeys];
 
 /**
  * Utility type to generate a new type `T` where only the properties with keys listed in `Keys` are included.
@@ -78,7 +84,11 @@ export type SubsetObjectByKeys<T, Keys extends keyof T> = {
 export type SubsetObjectByValue<T, ExpectedType> = SubsetObjectByKeys<T, SubsetKeys<keyof T, T, ExpectedType>>;
 
 export type OptionalKeys<T extends TS_Object> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
-export type MandatoryKeys<T extends TS_Object, V = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
+export type MandatoryKeys<T extends TS_Object, V = any> = Exclude<{
+	[K in keyof T]: T extends Record<K, T[K]>
+		? (T[K] extends V ? K : never)
+		: never
+}[keyof T], undefined>
 
 export type RequireOptionals<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> =
 	Pick<T, Exclude<keyof T, Keys>>
@@ -154,6 +164,7 @@ export type Draftable = { _isDraft: boolean };
  * call function 'resolveContent(resolvableContentObject)' to receive the content which is T.
  */
 export type ResolvableContent<T, K extends any[] = any[]> = T | ((...param: K) => T);
+export type ResolvedContent<T extends ResolvableContent<any, any>> = T extends ResolvableContent<infer R, any> ? R : never;
 
 export type Auditable = {
 	_audit?: AuditBy;
@@ -323,7 +334,7 @@ export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };
  * */
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
-export type AsyncVoidFunction = () => Promise<void>;
+export type AsyncVoidFunction<T = void> = () => Promise<T>;
 
 declare const brand: unique symbol;
 //Type to brand a type with uniqueness

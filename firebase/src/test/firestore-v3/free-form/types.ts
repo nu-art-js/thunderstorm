@@ -1,5 +1,5 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {TestInputValue} from '../_entity';
+import {TestInputValue} from '../_entity.js';
 import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
 
 type VersionTypes_Type_Complex = { '1.0.0': DB_FreeForm }

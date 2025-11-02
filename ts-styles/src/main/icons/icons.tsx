@@ -9,7 +9,6 @@ import BellURL, {ReactComponent as Bell} from './svgs/icon__bell.svg';
 import BinURL, {ReactComponent as Bin} from './svgs/icon__bin.svg';
 import XURL, {ReactComponent as X} from './svgs/icon__x.svg';
 import VURL, {ReactComponent as V} from './svgs/icon__v.svg';
-import DashURL, {ReactComponent as Dash} from './svgs/icon__dash.svg';
 import MoreURL, {ReactComponent as More} from './svgs/icon__more.svg';
 import CollapseURL, {ReactComponent as Collapse} from './svgs/icon__treeCollapse.svg';
 import GearURL, {ReactComponent as Gear} from './svgs/icon__gear.svg';
@@ -55,33 +54,33 @@ export const iconsRenderer = (key: IconData, props: IconAttributes) => {
 const genIcon = (Icon: ElementType) => {
 	return (props: IconAttributes) => <div
 		{...props}
-		className={'icon--wrapper ' + (props.className ?? '')}
-	>
+		className={'icon--wrapper ' + (props.className ?? '')}>
 		<Icon/>
 	</div>;
 };
 
 export const TS_Icons = {
-	Filter: {component: genIcon(Filter), url: FilterURL},
-	Search: {component: genIcon(Search), url: SearchURL},
-	attention: {component: genIcon(Attention), url: AttentionURL},
-	bell: {component: genIcon(Bell), url: BellURL},
-	bin: {component: genIcon(Bin), url: BinURL},
-	more: {component: genIcon(More), url: MoreURL},
-	treeCollapse: {component: genIcon(Collapse), url: CollapseURL},
-	v: {component: genIcon(V), url: VURL},
-	x: {component: genIcon(X), url: XURL},
+	Filter: {component: genIcon(Filter)},
+	Search: {component: genIcon(Search)},
+	attention: {component: genIcon(Attention)},
+	bell: {component: genIcon(Bell)},
+	bin: {component: genIcon(Bin)},
+	more: {component: genIcon(More)},
+	treeCollapse: {component: genIcon(Collapse)},
+	v: {component: genIcon(V)},
+	x: {component: genIcon(X)},
 	dash: {component: genIcon(Dash), url: DashURL},
-	gear: {component: genIcon(Gear), url: GearURL},
-	information: {component: genIcon(Information), url: informationUrl},
-	filterStop: {component: genIcon(FilterStop), url: filterStopUrl},
-	clear: {component: genIcon(Clear), url: ClearURL},
-	save: {component: genIcon(Save), url: SaveUrl},
-	menu: {component: genIcon(Menu), url: MenuUrl},
-	google: {component: genIcon(Google), url: GoogleUrl},
-	download: {component: genIcon(Download), url: DownloadUrl},
-	copy: {component: genIcon(Copy), url: CopyUrl},
-	addImage: {component: genIcon(AddImage), url: AddImageUrl},
+	gear: {component: genIcon(Gear)},
+	information: {component: genIcon(Information)},
+	filterStop: {component: genIcon(FilterStop)},
+	clear: {component: genIcon(Clear)},
+	save: {component: genIcon(Save)},
+	menu: {component: genIcon(Menu)},
+	google: {component: genIcon(Google)},
+	download: {component: genIcon(Download)},
+	copy: {component: genIcon(Copy)},
+	addImage: {component: genIcon(AddImage)},
+	user: {component: genIcon(User)},
 };
 
 export const tsIconKeys = (): TSIcons[] => {

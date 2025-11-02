@@ -1,9 +1,9 @@
 import {_keys, cloneObj, compare, currentTimeMillis, flatArray, Module, UniqueId} from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {Header_DeviceId, Header_TabId, MemKey_AccountId, OnPreLogout} from '@nu-art/user-account/backend';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {ApiDef_FocusedObject, FocusData_Map, FocusedEntity, FocusedItem_Update,} from '../../shared';
-import {DefaultTTL_FocusedObject, getRelationalPath} from '../../shared/consts';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend/index';
+import {Header_DeviceId, Header_TabId, MemKey_AccountId, OnPreLogout} from '@nu-art/user-account/backend/index';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
+import {ApiDef_FocusedObject, FocusData_Map, FocusedEntity, FocusedItem_Update,} from '../../shared/index.js';
+import {DefaultTTL_FocusedObject, getRelationalPath} from '../../shared/consts.js';
 
 type Config = {}
 

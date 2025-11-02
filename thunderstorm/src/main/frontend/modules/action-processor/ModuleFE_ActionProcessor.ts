@@ -1,7 +1,7 @@
 import {Module} from '@nu-art/ts-common';
-import {ApiDefCaller} from '../../shared';
-import {ApiDef_ActionProcessing, ApiStruct_ActionProcessing} from '../../../shared/action-processor';
-import {apiWithBody, apiWithQuery} from '../../core/typed-api';
+import {ApiDefCaller} from '../../shared.js';
+import {ApiDef_ActionProcessing, ApiStruct_ActionProcessing} from '../../../shared/action-processor/index.js';
+import {apiWithBody, apiWithQuery} from '../../core/typed-api.js';
 
 
 class ModuleFE_ActionProcessor_Class

@@ -21,8 +21,8 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_ListOrganizer.scss';
-import {LL_V_L} from '../Layouts';
-import {ComponentSync} from '../../core/ComponentSync';
+import {LL_V_L} from '../Layouts/index.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
 import {exists, swapInArrayByIndex} from '@nu-art/ts-common';
 
 

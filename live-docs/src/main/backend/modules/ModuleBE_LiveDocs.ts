@@ -31,12 +31,12 @@ import {
 	LiveDocHistoryReqParams,
 	LiveDocReqParams,
 	Request_UpdateDocument,
-} from '../../shared/types';
+} from '../../shared/types.js';
 
-import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
 
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
-import {ApiDef_LiveDoc} from '../../shared/api';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend/index';
+import {ApiDef_LiveDoc} from '../../shared/api.js';
 
 
 export const CollectionName_LiveDocs = 'live-docs';

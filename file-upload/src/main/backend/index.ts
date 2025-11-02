@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-export * from './core/module-pack';
-export * from './modules/ModuleBE_AssetsDB';
-export * from './modules/ModuleBE_AssetsTemp';
-export * from './modules/ModuleBE_BucketListener';
-export * from './modules/ModuleBE_AssetUploader';
+export * from './core/module-pack.js';
+export * from './modules/ModuleBE_AssetsDB.js';
+export * from './modules/ModuleBE_AssetsTemp.js';
+export * from './modules/ModuleBE_BucketListener.js';
+export * from './modules/ModuleBE_AssetUploader.js';

@@ -1,1 +1,1 @@
-export * from './GenericDropDownV3';
+export * from './GenericDropDownV3.js';

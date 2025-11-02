@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {ApiDef, ApiDefResolver, HttpMethod, QueryApi} from './types';
+import {ApiDef, ApiDefResolver, HttpMethod, QueryApi} from './types.js';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 

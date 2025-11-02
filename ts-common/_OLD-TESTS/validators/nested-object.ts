@@ -22,7 +22,7 @@ import {
 	tsValidateValue,
 	TestSuit
 } from '../_main';
-import {TestCase_Validator, validatorProcessor} from './_common';
+import {TestCase_Validator, validatorProcessor} from './_common.js';
 
 
 type SubNestedObject = object & {

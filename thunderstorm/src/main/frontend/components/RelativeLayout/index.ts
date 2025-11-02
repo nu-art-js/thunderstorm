@@ -1,1 +1,1 @@
-export * from './RelativeLayout';
+export * from './RelativeLayout.js';

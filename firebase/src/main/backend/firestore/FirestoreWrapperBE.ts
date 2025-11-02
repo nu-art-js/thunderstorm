@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import {FirestoreCollection,} from './FirestoreCollection';
-import {FirestoreType, FirestoreType_Collection,} from './types';
-import {FilterKeys} from '../../shared/types';
-import {FirebaseSession} from '../auth/firebase-session';
-import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
+import {FirestoreCollection,} from './FirestoreCollection.js';
+import {FirestoreType, FirestoreType_Collection,} from './types.js';
+import {FilterKeys} from '../../shared/types.js';
+import {FirebaseSession} from '../auth/firebase-session.js';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper.js';
 import {DB_Object, TS_Object} from '@nu-art/ts-common';
 import {getFirestore} from 'firebase-admin/firestore';
 

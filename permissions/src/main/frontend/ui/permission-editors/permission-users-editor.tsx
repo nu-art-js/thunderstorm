@@ -1,16 +1,17 @@
 import * as React from 'react';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
-import {DB_PermissionUser, DBProto_PermissionUser, ModuleFE_PermissionUser} from '../../_entity';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor';
-import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend';
-import {MultiSelect} from '../ui-props';
-import {Component_BasePermissionItemEditor} from './editor-base';
+import {ModuleFE_Account} from '@nu-art/user-account/frontend/index';
+import {DB_PermissionUser, DBProto_PermissionUser, ModuleFE_PermissionUser} from '../../_entity.js';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor/index';
+import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend/index';
+import {MultiSelect} from '../ui-props.js';
+import {Component_BasePermissionItemEditor} from './editor-base.js';
 import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
 import {
 	Props_EditableItemControllerProto,
 	TS_EditableItemControllerProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto';
-import {EditableRef} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemComponent/TS_EditableItemComponent';
+} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto/index';
+import {EditableRef} from '@nu-art/thunderstorm/frontend/components/TS_EditableContent/TS_EditableContent';
+import {sortArray} from '@nu-art/ts-common';
 
 
 class Component_EditAccount
@@ -62,7 +63,7 @@ export class PermissionUsersEditor
 		keys: ['selected'],
 		module: ModuleFE_PermissionUser,
 		mapper: (user) => [ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'],
-		sort: (user) => ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found',
+		sort: (items) => sortArray(items, (user) => ModuleFE_Account.cache.unique(user._id)?.email),
 		itemRenderer: (user) => <>{ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'}</>,
 		EditorRenderer: Controller_EditAccount as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionUser>>>,
 		hideAddItem: true,

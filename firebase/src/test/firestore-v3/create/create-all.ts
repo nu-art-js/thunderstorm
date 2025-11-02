@@ -1,10 +1,10 @@
-import {duplicateObjectToCreate, firestore, testInstance2} from '../_core/consts';
+import {duplicateObjectToCreate, firestore, testInstance2} from '../_core/consts.js';
 import {asArray, deepClone} from '@nu-art/ts-common';
-import {CreateTest, createTestCases} from './consts';
+import {CreateTest, createTestCases} from './consts.js';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
-import {createTests_dbDef} from './create';
-import {DBProto_Type} from '../../_entity/type/shared';
+import {createTests_dbDef} from './create.js';
+import {DBProto_Type} from '../../_entity/type/shared/index.js';
 
 const chai = require('chai');
 chai.use(chaiAsPromised);

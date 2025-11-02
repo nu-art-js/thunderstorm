@@ -1,8 +1,8 @@
 import {Analytics_UpdateUser, TSAnalyticsEvent} from '@nu-art/analytics-shared';
-import {AnalyticsPlugin_Base} from './AnalyticsPlugin_Base';
+import {AnalyticsPlugin_Base} from './AnalyticsPlugin_Base.js';
 import mixpanelLib, {Mixpanel} from 'mixpanel';
 import {_keys, BadImplementationException, exists, MissingDataException, TypedMap} from '@nu-art/ts-common';
-import {AnalyticPanelConfig} from './types';
+import {AnalyticPanelConfig} from './types.js';
 
 type MixedPanelsEventProperties = {
 	distinct_id: string;

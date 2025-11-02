@@ -16,9 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
-import {ModulePackFE_PushPubSub} from '@nu-art/push-pub-sub/frontend';
-import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
+import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader.js';
+import {ModulePackFE_PushPubSub} from '@nu-art/push-pub-sub/frontend/index';
+import {ModuleFE_Assets} from '../modules/ModuleFE_Assets.js';
 
 
 export const ModulePackFE_FileUploader = [

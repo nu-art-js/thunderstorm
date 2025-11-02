@@ -27,12 +27,12 @@ import {
 	padNumber
 } from '@nu-art/ts-common';
 
-import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
+import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend/index';
 
-import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
+import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../../index.js';
 
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend/index';
+import {MemKey_AccountId} from '@nu-art/user-account/backend/index';
 import JSZip from 'jszip';
 
 export type TicketDetails = {

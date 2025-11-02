@@ -11,8 +11,6 @@
   ],
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "publishConfig": {
     "directory": "dist",
     "linkDirectory": true
@@ -26,5 +24,16 @@
   "dependencies": {
     "@nu-art/thunderstorm": "?",
     "@nu-art/ts-common": "?"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

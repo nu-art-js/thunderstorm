@@ -1,31 +1,31 @@
-import * as React from 'react';
 import {
 	_className,
 	AppToolsScreen,
+	Button,
 	ComponentSync,
 	genericNotificationAction,
 	LL_H_C,
-	LL_V_L, ModuleFE_RoutingV2,
+	LL_V_L,
+	ModuleFE_RoutingV2,
 	TS_AppTools,
-	Button,
 	TS_NavLink
-} from '@nu-art/thunderstorm/frontend';
+} from '@nu-art/thunderstorm/frontend/index';
 import './ATS_Permissions.scss';
-import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
+import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert.js';
+import {ModuleFE_Account} from '@nu-art/user-account/frontend/index';
 import {arrayIncludesAny, timeout} from '@nu-art/ts-common';
-import {SessionKey_StrictMode_FE} from '../../consts';
-import {ModuleFE_PermissionAccessLevel} from '../../../_entity/permission-access-level/frontend';
-import {ModuleFE_PermissionAPI} from '../../../_entity/permission-api/frontend';
-import {ModuleFE_PermissionProject} from '../../../_entity/permission-project/frontend';
-import {ModuleFE_PermissionDomain} from '../../../_entity/permission-domain/frontend';
-import {ModuleFE_PermissionGroup} from '../../../_entity/permission-group/frontend';
-import {ModuleFE_PermissionUser} from '../../../_entity/permission-user/frontend';
+import {SessionKey_StrictMode_FE} from '../../consts.js';
+import {ModuleFE_PermissionAccessLevel} from '../../../_entity/permission-access-level/frontend/index.js';
+import {ModuleFE_PermissionAPI} from '../../../_entity/permission-api/frontend/index.js';
+import {ModuleFE_PermissionProject} from '../../../_entity/permission-project/frontend/index.js';
+import {ModuleFE_PermissionDomain} from '../../../_entity/permission-domain/frontend/index.js';
+import {ModuleFE_PermissionGroup} from '../../../_entity/permission-group/frontend/index.js';
+import {ModuleFE_PermissionUser} from '../../../_entity/permission-user/frontend/index.js';
 import {Outlet} from 'react-router-dom';
-import {PermissionUsersEditor} from '../permission-editors/permission-users-editor';
-import {PermissionProjectsEditor} from '../permission-editors/permission-project-editor/permission-projects-editor';
-import {PermissionDomainsEditor} from '../permission-editors/permission-domains-editor';
-import {PermissionGroupsEditor} from '../permission-editors/permission-groups-editor';
+import {PermissionUsersEditor} from '../permission-editors/permission-users-editor.js';
+import {PermissionProjectsEditor} from '../permission-editors/permission-project-editor/permission-projects-editor.js';
+import {PermissionDomainsEditor} from '../permission-editors/permission-domains-editor.js';
+import {PermissionGroupsEditor} from '../permission-editors/permission-groups-editor.js';
 
 export class ATS_Permissions
 	extends ComponentSync {
@@ -53,9 +53,9 @@ export class ATS_Permissions
 
 	componentDidMount() {
 		const routeKeys = [PermissionProjectsEditor.Route.key,
-			PermissionDomainsEditor.Route.key,
-			PermissionGroupsEditor.Route.key,
-			PermissionUsersEditor.Route.key,
+											 PermissionDomainsEditor.Route.key,
+											 PermissionGroupsEditor.Route.key,
+											 PermissionUsersEditor.Route.key,
 		];
 		if (!arrayIncludesAny(window.location.pathname.split('/'), routeKeys))
 			ModuleFE_RoutingV2.goToRoute(PermissionProjectsEditor.Route);

@@ -1,6 +1,6 @@
-import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend/index';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {DBDef_PermissionDomain, DBProto_PermissionDomain} from '../shared';
+import {DBDef_PermissionDomain, DBProto_PermissionDomain} from '../shared/index.js';
 
 export type DispatcherType_PermissionDomain = DispatcherDef<DBProto_PermissionDomain, `__onPermissionDomainUpdated`>;
 

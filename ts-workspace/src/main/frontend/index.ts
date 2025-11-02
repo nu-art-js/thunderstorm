@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-export * from './core/module-pack';
-export * from './ui/TS_Workspace';
-export * from './ui/Panels';
-export * from './ui/TS_OrientedWorkspace';
-export * from './ui/types';
+export * from './core/module-pack.js';
+export * from './ui/TS_Workspace.js';
+export * from './ui/Panels.js';
+export * from './ui/TS_OrientedWorkspace.js';
+export * from './ui/types.js';
 

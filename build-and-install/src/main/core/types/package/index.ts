@@ -1,2 +1,2 @@
-export * from './package';
-export * from './runtime-package';
+export * from './package.js';
+export * from './runtime-package.js';

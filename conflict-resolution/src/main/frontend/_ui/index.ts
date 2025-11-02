@@ -1,1 +1,1 @@
-export * from './Overlay_ConflictResolution/Overlay_ConflictResolution';
+export * from './Overlay_ConflictResolution/Overlay_ConflictResolution.js';

@@ -17,7 +17,7 @@
  */
 
 import {__custom, __scenario, TestException} from '@nu-art/testelot';
-import {testLevel1, testLevel2} from './_core';
+import {testLevel1, testLevel2} from './_core.js';
 import {GroupPairWithBaseLevelsObj, ModuleBE_PermissionsAssert, RequestPairWithLevelsObj} from '../_main';
 import {generateHex, StringMap} from '@nu-art/ts-common';
 

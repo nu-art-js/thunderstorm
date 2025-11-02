@@ -1,11 +1,10 @@
-import * as React from 'react';
 import './ATS_IDBCacheComparison.scss';
-import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools';
+import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools/index.js';
 import {RuntimeModules} from '@nu-art/ts-common';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
-import {DBModuleType} from '../../../shared';
-import {ComponentSync} from '../../core/ComponentSync';
-import {Component_CollectionGrid} from './Component_CollectionGrid';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {DBModuleType} from '../../../shared/index.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {Component_CollectionGrid} from './Component_CollectionGrid.js';
 
 type State = {
 	collectionDetails: {

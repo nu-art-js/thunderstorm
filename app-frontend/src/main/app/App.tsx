@@ -17,11 +17,11 @@
  */
 
 import * as React from 'react';
-import {ModuleFE_Routing, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Routing, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay} from '@nu-art/thunderstorm/frontend/index';
 
 import {VersionOnScreen} from '@components/VersionOnScreen';
-import {registerRoutes} from './Routes';
-import {OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
+import {registerRoutes} from './Routes.js';
+import {OnLoginStatusUpdated} from '@nu-art/user-account/frontend/index';
 
 
 export class App

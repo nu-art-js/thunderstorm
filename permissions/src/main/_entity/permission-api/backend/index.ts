@@ -1,2 +1,2 @@
-export * from './ModuleBE_PermissionAPIDB';
-export * from './module-pack';
+export * from './ModuleBE_PermissionAPIDB.js';
+export * from './module-pack.js';

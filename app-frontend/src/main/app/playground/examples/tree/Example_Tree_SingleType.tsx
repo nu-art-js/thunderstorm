@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {Adapter, SimpleTreeAdapter, ModuleFE_Toaster, TS_Tree} from '@nu-art/thunderstorm/frontend';
+import {Adapter, SimpleTreeAdapter, ModuleFE_Toaster, TS_Tree} from '@nu-art/thunderstorm/frontend/index';
 import {__stringify, deepClone} from '@nu-art/ts-common';
 
 type Type = {

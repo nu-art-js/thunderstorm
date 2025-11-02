@@ -1,10 +1,9 @@
-import * as React from 'react';
-import {ComponentSync, LL_V_L, Button} from '@nu-art/thunderstorm/frontend';
+import {Button, ComponentSync, LL_V_L} from '@nu-art/thunderstorm/frontend/index';
 import {dbObjectToId} from '@nu-art/ts-common';
-import {Permissions_DropDown} from '../../ui-props';
+import {Permissions_DropDown} from '../../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {PermissionKey_FE} from '../../../PermissionKey_FE';
-import {DB_PermissionAccessLevel, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain} from '../../../_entity';
+import {PermissionKey_FE} from '../../../PermissionKey_FE.js';
+import {DB_PermissionAccessLevel, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain} from '../../../_entity.js';
 
 type Props = {
 	permissionKey: PermissionKey_FE;

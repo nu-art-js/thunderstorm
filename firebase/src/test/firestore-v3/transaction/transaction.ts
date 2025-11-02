@@ -1,6 +1,6 @@
-import {CollectionTest, prepareCollectionTest} from '../_core/consts';
+import {CollectionTest, prepareCollectionTest} from '../_core/consts.js';
 import * as chaiAsPromised from 'chai-as-promised';
-import {transactionTestCases} from './consts';
+import {transactionTestCases} from './consts.js';
 
 const chai = require('chai');
 chai.use(chaiAsPromised);

@@ -20,11 +20,11 @@
  */
 import {__stringify, ApiException, composeUrl, ImplementationMissingException, MimeType_json, Module,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {BodyApi, QueryApi} from '../../../shared/types';
-import {promisifyRequest} from '../../utils/promisify-request';
-import {RequestOptions} from '../../../backend';
+import {BodyApi, QueryApi} from '../../../shared/types.js';
+import {promisifyRequest} from '../../utils/promisify-request.js';
+import {RequestOptions} from '../../../backend/index.js';
 import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
-import { HeaderKey_ContentType } from '../../shared';
+import { HeaderKey_ContentType } from '../../shared.js';
 
 
 export type RemoteServerConfig = {

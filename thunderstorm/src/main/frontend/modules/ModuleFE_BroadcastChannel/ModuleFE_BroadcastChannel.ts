@@ -1,5 +1,5 @@
 import {__stringify, Logger, Module, TypedMap} from '@nu-art/ts-common';
-import {Message} from '../ModuleFE_WindowMessenger';
+import {Message} from '../ModuleFE_WindowMessenger.js';
 
 
 class ModuleFE_BroadcastChannel_Class

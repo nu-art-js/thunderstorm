@@ -1,9 +1,8 @@
-import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend';
-import * as React from 'react';
-import {DBProto_PermissionUser} from '../shared';
-import {ModuleFE_PermissionUser} from './ModuleFE_PermissionUser';
+import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend/index';
+import {DBProto_PermissionUser} from '../shared/index.js';
+import {ModuleFE_PermissionUser} from './ModuleFE_PermissionUser.js';
 import {DBItemDropDownMultiSelector} from '@nu-art/thunderstorm/frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
+import {ModuleFE_Account} from '@nu-art/user-account/frontend/index';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 

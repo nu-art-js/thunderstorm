@@ -1,1 +1,1 @@
-export * from './TS_CollapsableContainer';
+export * from './TS_CollapsableContainer.js';

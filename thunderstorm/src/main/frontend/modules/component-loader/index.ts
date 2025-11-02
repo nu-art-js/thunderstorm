@@ -1,2 +1,2 @@
-export * from './entry-component-loading-module';
-export * from './ReactEntryComponentInjector';
+export * from './entry-component-loading-module.js';
+export * from './ReactEntryComponentInjector.js';

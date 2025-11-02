@@ -7,12 +7,8 @@
   .ts-input {
     width: 250px;
     max-width: unset;
-    height: 40px;
     min-height: unset;
-    border: 2px solid styles.gray(1);
     background: white;
-    border-radius: 8px;
-    font-size: 14px;
 
     &::placeholder {
       font-size: 12px;
@@ -29,7 +25,6 @@
     }
 
     .ts-dropdown__header {
-      border: 2px solid styles.gray(1);
       border-radius: 8px;
       position: relative;
       align-items: center;
@@ -46,8 +41,6 @@
 
     .ts-dropdown__items-container {
       border: 2px solid styles.gray(1);
-      padding-top: 18px;
-      transform: translateY(-18px);
     }
 
     &.disabled {
@@ -94,11 +87,11 @@
       color: white;
       display: grid;
       place-content: center;
+      flex-shrink: 0;
       font: {
         size: 18px;
         weight: bold;
       }
-      flex-shrink: 0;
     }
 
     .item-list__filter {
@@ -209,14 +202,14 @@
         &.delete .icon--wrapper {
           width: 32px;
           height: 32px;
-          @include styles.mouse-interactive-icon(styles.red(4), styles.red(3), styles.red(2));
+          @include styles.mouseInteractiveIcon(styles.red(4), styles.red(3), styles.red(2));
           @include styles.set-svg-color-transition();
         }
 
         &.save .icon--wrapper {
           width: 24px;
           height: 24px;
-          @include styles.mouse-interactive-icon(styles.green(4), styles.green(3), styles.green(2));
+          @include styles.mouseInteractiveIcon(styles.green(4), styles.green(3), styles.green(2));
         }
       }
     }
@@ -268,7 +261,7 @@
         transform: translateX(100%);
         transition: transform 200ms ease-out;
         cursor: pointer;
-        @include styles.mouse-interactive-icon(white);
+        @include styles.mouseInteractiveIcon(white);
       }
 
       &:hover {

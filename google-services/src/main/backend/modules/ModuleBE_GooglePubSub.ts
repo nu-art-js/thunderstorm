@@ -1,7 +1,6 @@
 import {Module} from "@nu-art/ts-common";
-import {PubSub} from "@google-cloud/pubsub";
-import {PublishOptions} from "@google-cloud/pubsub/build/src/topic";
-import {ModuleBE_Auth} from "./ModuleBE_Auth";
+import {PublishOptions, PubSub} from '@google-cloud/pubsub';
+import {ModuleBE_Auth} from "./ModuleBE_Auth.js";
 import {GoogleAuth} from "google-auth-library";
 
 class ModuleBE_GooglePubSub_Class
@@ -11,7 +10,6 @@ class ModuleBE_GooglePubSub_Class
 		const authObject = ModuleBE_Auth.getAuth(authKey, []);
 		const auth: GoogleAuth = authObject.auth;
 
-		// @ts-ignore
 		const pubSub = new PubSub({projectId, auth});
 		return {
 			createTopic: async (topicName: string) => {

@@ -1,6 +1,6 @@
 import {DBProto} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '../thunder-dispatcher';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB';
+import {ThunderDispatcher} from '../thunder-dispatcher.js';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
 
 
 export type SingleApiEvent = 'create' | 'update' | 'unique' | 'delete' | 'patch'

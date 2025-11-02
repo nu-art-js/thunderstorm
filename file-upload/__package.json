@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/file-upload",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "File Uploader - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",
@@ -24,8 +24,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "files": [
     "**/*"
   ],
@@ -49,9 +47,8 @@
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
-    "fs": "0.0.1-security",
-    "google-auth-library": "^6.0.6",
-    "file-type": "^16.3.0"
+    "google-auth-library": "?",
+    "file-type": "^21.0.0"
   },
   "devDependencies": {
     "@types/react": "?",
@@ -60,5 +57,16 @@
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

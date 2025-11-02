@@ -1,5 +1,5 @@
 import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
-import {FirebaseToken, PushSessionId} from '../types';
+import {FirebaseToken, PushSessionId} from '../types.js';
 
 
 type VersionTypes_PushSession = { '1.0.0': DB_PushSession };

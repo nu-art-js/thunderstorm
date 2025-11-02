@@ -16,14 +16,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {apiWithBody, apiWithQuery, ModuleFE_XHR, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {ApiDef_AssetUploader, ApiStruct_AssetUploader, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '../../shared';
-import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader';
+import {apiWithBody, apiWithQuery, ModuleFE_XHR, ThunderDispatcher} from '@nu-art/thunderstorm/frontend/index';
+import {ApiDef_AssetUploader, ApiStruct_AssetUploader, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '../../shared/index.js';
+import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader.js';
 import {BaseSubscriptionData, PushMessage_Payload} from '@nu-art/push-pub-sub';
 import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub/frontend/modules/ModuleFE_PushPubSub';
 import {ApiDef, ApiDefCaller, BaseHttpRequest, TypedApi} from '@nu-art/thunderstorm';
 import {generateHex} from '@nu-art/ts-common';
-import {PushMessage_FileUploaded} from '../../shared/assets/messages';
+import {PushMessage_FileUploaded} from '../../shared/assets/messages.js';
 
 
 export class ModuleFE_AssetUploader_Class

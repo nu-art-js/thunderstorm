@@ -10,7 +10,7 @@ type Options = {
  * Default options for CommandBuilder class instances.
  */
 const defaultOptions: Options = {
-	newlineDelimiter: '\n ',
+	newlineDelimiter: '\n',
 	indentation: 2,
 };
 
@@ -66,7 +66,11 @@ export class CommandBuilder {
 	readonly append = (command: string): this => {
 		const commands = command.split(this.option.newlineDelimiter);
 		for (const _command of commands) {
-			this.commands.push(`${this.getIndentation()}${_command.trim()}`);
+			const command = _command.trim();
+			if (command.length === 0)
+				this.commands.push(command);
+			else
+				this.commands.push(`${this.getIndentation()}${command}`);
 		}
 
 		return this;

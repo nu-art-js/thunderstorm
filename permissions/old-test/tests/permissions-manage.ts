@@ -18,7 +18,7 @@
  */
 
 import {__custom, __scenario, ContextKey, TestException} from '@nu-art/testelot';
-import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1, testLevel2} from './_core';
+import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1, testLevel2} from './_core.js';
 import {
     ModuleBE_PermissionAccessLevel,
     ModuleBE_PermissionApi,
@@ -26,9 +26,9 @@ import {
     ModuleBE_PermissionGroup,
     ModuleBE_PermissionUserDB
 } from '../_main';
-import {ApiException} from '@nu-art/thunderstorm/backend';
+import {ApiException} from '@nu-art/thunderstorm/backend/index';
 import {generateHex, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {ModuleBE_Account} from '@nu-art/user-account/backend/index';
 
 
 const apiPath = 'v1/assert/something';

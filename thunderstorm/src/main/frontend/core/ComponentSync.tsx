@@ -22,8 +22,8 @@
 /**
  * Created by tacb0ss on 28/07/2018.
  */
-import {BaseComponent} from './ComponentBase';
-import {InferProps, InferState} from '../utils/types';
+import {BaseComponent} from './ComponentBase.js';
+import {InferProps, InferState} from '../utils/types.js';
 
 
 export abstract class ComponentSync<P = any, S = any>
@@ -33,7 +33,9 @@ export abstract class ComponentSync<P = any, S = any>
 		this.logVerbose('Deriving state from props');
 		state ??= this.state ? {...this.state} : {} as S;
 		const _state = this.deriveStateFromProps(nextProps, state);
-		this.mounted && _state && this.setState(_state);
+		if (this.mounted && _state)
+			this.setState(_state);
+
 		return _state;
 	}
 
@@ -48,7 +50,9 @@ export abstract class ComponentSyncInfer<P = any, S = any>
 	protected _deriveStateFromProps(nextProps: InferProps<this>, state?: InferState<this>): InferState<this> {
 		this.logVerbose('Deriving state from props');
 		const _state = this.deriveStateFromProps(nextProps, (state ?? (this.state ? {...this.state} : {})) as InferState<this>);
-		this.mounted && _state && this.setState(_state);
+		if (this.mounted && _state)
+			this.setState(_state);
+
 		return _state as InferState<this>;
 	}
 

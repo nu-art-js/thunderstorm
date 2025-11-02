@@ -1,0 +1,94 @@
+// file: ./full-workspace.txt
+//// file: ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "root ts"
+  }
+}
+
+//// file: ./func-app-1/__package.json
+{
+  "name": "function-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "basePort": 1,
+    "debugPort": 2,
+    "type": "firebase-function",
+    "label": "function-1",
+    "envs": {
+      "local": {
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}
+
+//// file: ./hosting-app-1/__package.json
+{
+  "name": "hosting-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "servingPort": 1,
+    "type": "firebase-hosting",
+    "label": "hosting-1",
+    "envs": {
+      "local": {
+        "config": {
+          "configUrl": "https://localhost:xxx:/path/to/config.json"
+        },
+        "projectId": "beamz-dev"
+      }
+    }
+  }
+}
+
+//// file: ./lib-1/__package.json
+{
+  "name": "lib-1",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-1 ts"
+  }
+}
+
+//// file: ./lib-2/__package.json
+{
+  "name": "lib-2",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-2 ts"
+  }
+}

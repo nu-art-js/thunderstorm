@@ -1,5 +1,5 @@
-import {ModuleBE_EditableTestDB} from './ModuleBE_EditableTestDB';
-import {createApisForDBModuleV3} from '../../../backend';
+import {ModuleBE_EditableTestDB} from './ModuleBE_EditableTestDB.js';
+import {createApisForDBModuleV3} from '../../../backend/index.js';
 
 
 export const ModulePackBE_EditableTest = [ModuleBE_EditableTestDB, createApisForDBModuleV3(ModuleBE_EditableTestDB)];

@@ -1,10 +1,10 @@
-import {duplicateObjectToCreate, firestore} from '../_core/consts';
+import {duplicateObjectToCreate, firestore} from '../_core/consts.js';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import * as chaiAsPromised from 'chai-as-promised';
-import {CreateTest, createTestCases} from './consts';
+import {CreateTest, createTestCases} from './consts.js';
 import {expect} from 'chai';
-import {DB_Type, DBProto_Type, TestInputValue} from '../_entity';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';
+import {DB_Type, DBProto_Type, TestInputValue} from '../_entity.js';
+import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 
 const chai = require('chai');
 chai.use(chaiAsPromised);

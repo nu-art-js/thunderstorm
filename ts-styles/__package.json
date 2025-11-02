@@ -1,9 +1,9 @@
 {
   "name": "@nu-art/ts-styles",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "author": "nu-art",
   "description": "Styles by Cipher",
-  "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc"
   },
@@ -27,5 +27,17 @@
       "name": "cipher_il",
       "url": "https://www.npmjs.com/~cipher_il"
     }
-  ]
+  ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "sass": "./index.scss"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js",
+      "sass": "./*.scss"
+    }
+  }
 }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Account_CreateAccount, AccountType, accountTypes, DB_Account, DB_Session} from '../../shared';
+import {Account_CreateAccount, AccountType, accountTypes, DB_Account} from '../../shared/index.js';
 import {
 	_className,
 	Button,
@@ -14,12 +14,11 @@ import {
 	TS_DropDown,
 	TS_Input,
 	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend';
-import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, UniqueId, Year} from '@nu-art/ts-common';
+} from '@nu-art/thunderstorm/frontend/index';
+import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, JwtTools, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ModuleFE_Account} from '../_entity';
-import {jwtDecode} from 'jwt-decode';
+import {ModuleFE_Account} from '../_entity.js';
 
 
 type Props = {
@@ -28,12 +27,22 @@ type Props = {
 	onComplete?: (_id: UniqueId) => void
 }
 
+type SessionJWT = {
+	sessionData: string,
+	exp: number,
+	iat: number
+	_id: string
+	label?: string
+	deviceId: string
+	sessionIdJwt: string
+};
+
 type State = Partial<Account_CreateAccount['request']> & {
 	isPreview: boolean,
 	tokenTTL: number
 	tokenLabel: string
 	user?: DB_Account
-	sessions: DB_Session[]
+	sessions: SessionJWT[]
 }
 
 export class Component_AccountEditor
@@ -46,8 +55,20 @@ export class Component_AccountEditor
 
 		const accountId = nextProps.user?._id;
 		if (accountId)
-			ModuleFE_Account._v1.getSessions({_id: accountId}).execute((response) => {
-				this.setState({sessions: response.sessions});
+			ModuleFE_Account._v1.getSessions({_id: accountId}).execute(async (response) => {
+				const sessions = await Promise.all(response.sessions.map(async session => {
+					const sessionJWT = await JwtTools.decode<SessionJWT>(session.sessionIdJwt);
+
+					return {
+						...sessionJWT,
+						_id: session._id,
+						label: session.label,
+						deviceId: session.deviceId,
+						sessionIdJwt: session.sessionIdJwt,
+					};
+				}));
+
+				this.setState({sessions});
 			});
 
 		return state;
@@ -209,14 +230,8 @@ export class Component_AccountEditor
 				<div className={'grid-title'}></div>
 				{this.state.sessions.map(session => {
 					try {
-						const decodedJwt = jwtDecode<{
-							sessionData: string,
-							exp: number,
-							iat: number
-						}>(session.sessionIdJwt);
-
-						const createdAt = DateTimeFormat_yyyyMMDDTHHmmss.format(decodedJwt.iat * 1000);
-						const validTill = DateTimeFormat_yyyyMMDDTHHmmss.format(decodedJwt.exp * 1000);
+						const createdAt = DateTimeFormat_yyyyMMDDTHHmmss.format(session.iat * 1000);
+						const validTill = DateTimeFormat_yyyyMMDDTHHmmss.format(session.exp * 1000);
 						return <React.Fragment key={session._id}>
 							<LL_H_C className={'grid-cell'}>{session.label ?? 'No Label'}</LL_H_C>
 							<LL_H_C className={'grid-cell'}>{`${createdAt}`}</LL_H_C>

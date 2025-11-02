@@ -2,8 +2,8 @@
 *	When given panel contents and a page, displays content in resizable panels.*/
 import * as React from 'react';
 import {Fragment} from 'react';
-import {PanelParentSync} from './Panels';
-import {Config_PanelParent, Props_OrientedWorkspace, Props_WorkspaceParentPanel, State_WorkspaceParentPanel} from './types';
+import {PanelParentSync} from './Panels.js';
+import {Config_PanelParent, Props_OrientedWorkspace, Props_WorkspaceParentPanel, State_WorkspaceParentPanel} from './types.js';
 
 type State = {
 	factors: number[];

@@ -19,9 +19,9 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {ModuleFE_Thunderstorm, UrlTarget} from '../../modules/ModuleFE_Thunderstorm';
+import {ModuleFE_Thunderstorm, UrlTarget} from '../../modules/ModuleFE_Thunderstorm.js';
 import './TS_Link.scss';
-import {_className, stopPropagation} from '../../utils/tools';
+import {_className, stopPropagation} from '../../utils/tools.js';
 import {TypedMap} from '@nu-art/ts-common';
 
 

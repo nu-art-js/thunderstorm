@@ -1,1 +1,1 @@
-export * from './TS_Card';
+export * from './TS_Card.js';

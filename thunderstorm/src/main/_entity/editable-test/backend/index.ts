@@ -1,1 +1,1 @@
-export * from './ModuleBE_EditableTestDB';
+export * from './ModuleBE_EditableTestDB.js';

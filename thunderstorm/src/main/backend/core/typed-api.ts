@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-import {AxiosHttpModule} from '../modules/http/AxiosHttpModule';
-import {_ServerBodyApi, _ServerQueryApi} from '../modules/server/server-api';
-import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi} from '../shared';
-import {ServerApi_Middleware} from '../utils/types';
+import {AxiosHttpModule} from '../modules/http/AxiosHttpModule.js';
+import {_ServerBodyApi, _ServerQueryApi} from '../modules/server/server-api.js';
+import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi} from '../shared.js';
+import {ServerApi_Middleware} from '../utils/types.js';
 
 
 export function createQueryServerApi<API extends QueryApi<any, any, any, any, HttpMethod_Query>>(apiDef: ApiDef<API>, action: (params: API['P']) => Promise<API['R']>, ...middleware: ServerApi_Middleware[]) {

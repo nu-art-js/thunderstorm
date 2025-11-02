@@ -1,2 +1,2 @@
-export * from './ModuleBE_LoginAttemptDB';
-export * from './module-pack';
+export * from './ModuleBE_LoginAttemptDB.js';
+export * from './module-pack.js';

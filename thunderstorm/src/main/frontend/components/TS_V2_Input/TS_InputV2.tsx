@@ -20,11 +20,21 @@
  */
 
 import * as React from 'react';
-import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
-import {_className} from '../../utils/tools';
-import './TS_InputV2.scss';
-import {UIProps_EditableItem} from '../../utils/EditableItem';
-import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types';
+import {
+	ChangeEvent,
+	CSSProperties,
+	HTMLProps,
+	KeyboardEvent
+} from 'react';
+import {_className} from '../../utils/tools.js';
+import '../TS_Input/TS_Input.scss';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
+import {
+	ComponentProps_Error,
+	convertToHTMLDataAttributes,
+	getErrorTooltip,
+	resolveEditableError
+} from '../types.js';
 import {TS_Object} from '@nu-art/ts-common';
 
 
@@ -34,6 +44,7 @@ type InputState = {
 	name?: string,
 	initialValue?: string
 	value?: string
+	focused?: boolean
 }
 
 export type InputType = 'text' | 'number' | 'password' | 'time';
@@ -70,7 +81,7 @@ export type TemplatingProps_TS_InputV2 = TypeProps_TS_Input & BaseInfraProps_TS_
 export type Props_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & TypeProps_TS_Input & {
 	value?: string
 	onChange?: (value: string, id: string) => void
-	onAccept?: (value: string, event: KeyboardEvent<HTMLInputElement>) => void
+	onAccept?: (value: string, event: KeyboardEvent<HTMLInputElement>) => Promise<any> | any
 	onBlur?: (value: string, event: React.FocusEvent<HTMLInputElement>) => void
 	allowAccept?: boolean
 }
@@ -79,7 +90,7 @@ export type NativeProps_TS_InputV2 = Props_TS_InputV2
 export type EditableItemProps_TS_InputV2<ValueType, K extends keyof T, T extends TS_Object & { [k in K]: ValueType } | ValueType[]> =
 	Omit<BaseAppLevelProps_TS_InputV2, 'value'> & { value?: ValueType }
 	& UIProps_EditableItem<T, K, ValueType>
-	& { onChange?: (value: ValueType) => void, }
+	& { onChange?: (value: ValueType) => Promise<any> | any, }
 
 /**
  * A better way to capture user input
@@ -111,13 +122,16 @@ export class TS_InputV2
 	static readonly _editableTime = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & { [k in K]: number | string }>(props: EditableItemProps_TS_InputV2<number | string, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
-			const {editable, prop, showErrorTooltip, saveEvent, ...rest} = props;
+			const {editable, prop, showErrorTooltip, saveEvent, onChange: _onChange, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
 			let onAccept;
 
-			const saveEventHandler = (value: string | number) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value} as T);
+			const saveEventHandler = (value: string | number) => {
+				return _onChange ? _onChange(value) : editable.updateObj({[prop]: value} as T);
+			};
+
 			if (_saveEvents!.includes('change'))
 				onChange = saveEventHandler;
 
@@ -155,13 +169,16 @@ export class TS_InputV2
 	static readonly _editableNumber = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & { [k in K]: number }>(props: EditableItemProps_TS_InputV2<number, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
-			const {editable, prop, saveEvent, showErrorTooltip, ...rest} = props;
+			const {editable, prop, showErrorTooltip, saveEvent, onChange: _onChange, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
 			let onAccept;
 
-			const saveEventHandler = (value: string) => props.onChange ? props.onChange(+value) : editable.updateObj({[prop]: +value} as T);
+			const saveEventHandler = (value: string) => {
+				return _onChange ? _onChange(+value) : editable.updateObj({[prop]: +value} as T);
+			};
+
 			if (_saveEvents!.includes('change'))
 				onChange = saveEventHandler;
 
@@ -207,13 +224,16 @@ export class TS_InputV2
 	static readonly _editable = (templateProps: TemplatingProps_TS_InputV2) => {
 		return <K extends string, T extends TS_Object & ({ [k in K]?: string } | { [k in K]: string })>(props: EditableItemProps_TS_InputV2<string | undefined, K, T>) => {
 			const {type, ...restTemplatingProps} = templateProps;
-			const {editable, prop, saveEvent, ignoreError, showErrorTooltip, ...rest} = props;
+			const {editable, prop, showErrorTooltip, saveEvent, onChange: _onChange, ...rest} = props;
 			const _saveEvents = [...saveEvent || [], ...templateProps.saveEvent || []];
 			let onChange;
 			let onBlur;
 			let onAccept;
 
-			const saveEventHandler = (value: string) => props.onChange ? props.onChange(value) : editable.updateObj({[prop]: value} as T);
+			const saveEventHandler = (value: string) => {
+				return _onChange ? _onChange(value) : editable.updateObj({[prop]: value} as T);
+			};
+
 			if (_saveEvents!.includes('change'))
 				onChange = saveEventHandler;
 
@@ -223,7 +243,7 @@ export class TS_InputV2
 			if (_saveEvents!.includes('accept'))
 				onAccept = saveEventHandler;
 
-			const value: string = props.editable.get(props.prop);
+			const value: string = editable.get(prop);
 			return <TS_InputV2
 				error={resolveEditableError(props)}
 				{...restTemplatingProps} {...rest}
@@ -241,17 +261,18 @@ export class TS_InputV2
 		saveEvent: ['accept']
 	};
 
-	protected ref?: HTMLInputElement;
+	inputRef: React.RefObject<HTMLInputElement>;
 
 	constructor(props: Props_TS_InputV2) {
 		super(props);
 
+		this.inputRef = React.createRef();
 		this.state = TS_InputV2.getInitialState(props);
 	}
 
 	static getDerivedStateFromProps(props: Props_TS_InputV2, state: InputState) {
 		if (props.id === state.id && state.name === props.name && state.initialValue === props.value)
-			return {value: state.value};
+			return {value: state.value, focused: state.focused};
 
 		return TS_InputV2.getInitialState(props);
 	}
@@ -271,7 +292,7 @@ export class TS_InputV2
 		this.props.onChange?.(value, event.target.id);
 	};
 
-	onKeyDown = (ev: KeyboardEvent<HTMLInputElement>) => {
+	onKeyDown = async (ev: KeyboardEvent<HTMLInputElement>) => {
 		let value = ev.currentTarget.value;
 		if (!(ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)) {
 			if (ev.key === 'Enter') {
@@ -283,8 +304,9 @@ export class TS_InputV2
 				ev.target.blur();
 
 				if (this.props.onAccept) {
-					if (value !== this.props.value || this.props.allowAccept)
-						this.props.onAccept(value, ev);
+					if (value !== this.props.value || this.props.allowAccept) {
+						await this.props.onAccept(value, ev);
+					}
 					ev.stopPropagation();
 				}
 			}
@@ -297,27 +319,47 @@ export class TS_InputV2
 
 		if (ev.key === 'Enter' && this.props.forceAcceptKeys?.find(key => ev[key]))
 			if (this.props.onAccept) {
-				if (value !== this.props.value || this.props.allowAccept)
-					this.props.onAccept(value, ev);
+				if (value !== this.props.value || this.props.allowAccept) {
+					await this.props.onAccept(value, ev);
+				}
 				ev.stopPropagation();
 			}
 
 		this.props.onKeyDown?.(ev);
 	};
 
+	componentDidMount() {
+		// console.log(`REFOCUS!!!`);
+		if (!this.inputRef.current)
+			return console.log(`CAN'T REFOCUS!!! - no REF: ${this.state.value}`);
+
+		// if (this.props.innerRef) {
+		// 	// @ts-ignore
+		// 	this.props.innerRef.current = ref;
+		// }
+
+		if (this.state.focused) {
+			console.log(`REFOCUS!!! - value: ${this.state.value}`);
+			this.inputRef.current.focus();
+		}
+	}
+
 	render() {
-		const {onAccept,allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
+		const {onAccept, allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
 
 		return <input
 			{...props}
 			{...convertToHTMLDataAttributes(this.props.error, 'error')}
 			{...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
 			autoFocus={focus}
-			ref={props.innerRef}
+			ref={this.inputRef}
 			onBlur={(event) => {
 				const value = event.target.value;
-				this.setState({value});
+				this.setState({value, focused: false});
 				props.onBlur?.(value, event);
+			}}
+			onFocus={(event) => {
+				this.setState({focused: true});
 			}}
 			name={props.name || props.id}
 			className={_className('ts-input', props.className)}

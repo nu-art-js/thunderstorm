@@ -1,11 +1,11 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore, validateDBObject} from '../_core/consts';
+import {firestore, validateDBObject} from '../_core/consts.js';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
-import {composeDbObjectUniqueId} from '../../../main';
-import {DB_Type_MultiKey, DBProto_Type_MultiKey} from '../../_entity/type-multi-key/shared';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';
+import {composeDbObjectUniqueId} from '../../../main/index.js';
+import {DB_Type_MultiKey, DBProto_Type_MultiKey} from '../../_entity/type-multi-key/shared/index.js';
+import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 
 
 chai.use(require('chai-as-promised'));

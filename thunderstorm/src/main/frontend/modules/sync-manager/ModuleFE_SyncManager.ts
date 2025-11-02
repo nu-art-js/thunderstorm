@@ -37,7 +37,7 @@ import {
 	RuntimeModules,
 	Second
 } from '@nu-art/ts-common';
-import {apiWithBody} from '../../core/typed-api';
+import {apiWithBody} from '../../core/typed-api.js';
 import {
 	DeltaSyncModule,
 	FullSyncModule,
@@ -48,18 +48,18 @@ import {
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState,
 	SyncDbData
-} from '../../../shared/sync-manager/types';
-import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts';
+} from '../../../shared/sync-manager/types.js';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
+import {DataStatus, EventType_Query} from '../../core/db-api-gen/consts.js';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
-import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules';
-import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule';
-import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi';
-import {ModuleSyncType} from '../db-api-gen/types';
-import {BaseHttpRequest} from '../../../shared';
-import {ApiDef_SyncManager, SyncManagerAPI_SmartSync} from '../../../shared/sync-manager/apis';
+import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules.js';
+import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule.js';
+import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi.js';
+import {ModuleSyncType} from '../db-api-gen/types.js';
+import {BaseHttpRequest} from '../../../shared/index.js';
+import {ApiDef_SyncManager, SyncManagerAPI_SmartSync} from '../../../shared/sync-manager/apis.js';
 
 
 export interface PermissibleModulesUpdated {

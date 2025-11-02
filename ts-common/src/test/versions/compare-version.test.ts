@@ -1,6 +1,6 @@
-import {TestSuite} from '../../main/testing/types';
-import {compareVersions} from '../../main';
-import {runSingleTestCase} from '../_main';
+import {TestSuite} from '../../main/testing/types.js';
+import {compareVersions} from '../../main/index.js';
+import {runSingleTestCase} from '../_main.js';
 
 export type Input = {
 	firstVersion: string;

@@ -1,4 +1,5 @@
 import {Module} from '@nu-art/ts-common';
-import {ModuleFE_Account} from './ModuleFE_Account';
+import {ModuleFE_Account} from './ModuleFE_Account.js';
+import {ModuleFE_Session} from '../../session/frontend/ModuleFE_Session.js';
 
-export const ModulePackFE_AccountDB: Module[] = [ModuleFE_Account];
+export const ModulePackFE_AccountDB: Module[] = [ModuleFE_Account, ModuleFE_Session];

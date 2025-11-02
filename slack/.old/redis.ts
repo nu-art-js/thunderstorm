@@ -17,4 +17,4 @@
  * limitations under the License.
  */
 
-export * from "./redis/RedisModule";
+export * from "./redis/RedisModule.js";

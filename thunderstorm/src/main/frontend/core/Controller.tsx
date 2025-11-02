@@ -1,6 +1,6 @@
-import {ComponentSync} from './ComponentSync';
+import {ComponentSync} from './ComponentSync.js';
 import * as React from 'react';
-import {TS_ErrorBoundary} from '../components/TS_ErrorBoundary';
+import {TS_ErrorBoundary} from '../components/TS_ErrorBoundary/index.js';
 
 
 export type Props_Controller = {

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {FirestoreCollectionHooks, FirestoreCollectionV3,} from './FirestoreCollectionV3';
-import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
-import {FirebaseSession} from '../auth/firebase-session';
-import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
+import {FirestoreCollectionHooks, FirestoreCollectionV3,} from './FirestoreCollectionV3.js';
+import {FirestoreType, FirestoreType_Collection,} from '../firestore/types.js';
+import {FirebaseSession} from '../auth/firebase-session.js';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper.js';
 import {DB_Object, DBDef_V3, DBProto, Promise_all_sequentially, UniqueId} from '@nu-art/ts-common';
 import {
 	DocumentReference,

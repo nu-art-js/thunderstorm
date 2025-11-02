@@ -1,4 +1,4 @@
-import {sortArray, runSingleTestCase, TestSuite} from '../../_main';
+import {sortArray, runSingleTestCase, TestSuite} from '../../_main.js';
 
 export type Input<T = any> = {
 	array: T[];

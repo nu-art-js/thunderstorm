@@ -17,7 +17,7 @@
  */
 
 import {TestSuit} from '../_main';
-import {TestCase_Validator, validatorProcessor} from './_common';
+import {TestCase_Validator, validatorProcessor} from './_common.js';
 
 
 type _DynamicProps = { [k: string]: string } | string

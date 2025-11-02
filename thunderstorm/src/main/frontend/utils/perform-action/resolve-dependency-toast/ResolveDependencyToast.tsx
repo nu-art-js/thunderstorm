@@ -1,8 +1,7 @@
 import {UniqueId} from '@nu-art/ts-common';
-import * as React from 'react';
-import {dispatch_onDeleteConflicts} from '../notification-dispatchers';
+import {dispatch_onDeleteConflicts} from '../notification-dispatchers.js';
 import './ResolveDependencyToast.scss';
-import {ModuleFE_Toaster} from '../../../component-modules/ModuleFE_Toaster';
+import {ModuleFE_Toaster} from '../../../component-modules/ModuleFE_Toaster.js';
 
 type Props = {
 	deletedEntity: string;

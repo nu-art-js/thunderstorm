@@ -1,5 +1,5 @@
 import {DBProto, IndexKeys, Logger, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {DBConfigV3, IndexDb_Query_V3, ReduceFunction_V3} from './types';
+import {DBConfigV3, IndexDb_Query_V3, ReduceFunction_V3} from './types.js';
 
 
 type StoreResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>, write?: boolean, store?: IDBObjectStore) => Promise<IDBObjectStore>;

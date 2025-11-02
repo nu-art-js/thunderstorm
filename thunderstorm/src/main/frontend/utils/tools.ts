@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Browser} from '../../shared/consts';
+import {Browser} from '../../shared/consts.js';
 import {BadImplementationException, filterInstances, ImplementationMissingException} from '@nu-art/ts-common';
 import * as React from 'react';
 import {DependencyList, Dispatch, EffectCallback, SetStateAction} from 'react';

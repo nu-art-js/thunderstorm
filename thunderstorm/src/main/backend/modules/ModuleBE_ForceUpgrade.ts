@@ -35,11 +35,11 @@ import {
 	HeaderKey_BrowserType,
 	HeaderKey_UserAgent,
 	UpgradeRequired
-} from '../../shared';
-import {ServerApi_Middleware} from '../utils/types';
-import {createQueryServerApi} from '../core/typed-api';
-import {HeaderKey} from './server/HeaderKey';
-import {addRoutes} from './ModuleBE_APIs';
+} from '../../shared/index.js';
+import {ServerApi_Middleware} from '../utils/types.js';
+import {createQueryServerApi} from '../core/typed-api.js';
+import {HeaderKey} from './server/HeaderKey.js';
+import {addRoutes} from './ModuleBE_APIs.js';
 
 
 type VersionConfig = {

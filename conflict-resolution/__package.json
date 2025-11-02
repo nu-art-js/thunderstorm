@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/conflict-resolution",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "Conflict Resolution",
   "keywords": [
     "TacB0sS",
@@ -20,8 +20,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
   "scripts": {
     "build": "tsc"
   },
@@ -49,5 +47,16 @@
   },
   "unitConfig": {
     "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
   }
 }

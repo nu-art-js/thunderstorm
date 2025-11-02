@@ -1,14 +1,14 @@
 import * as React from 'react';
-import {AppToolsScreen} from '../../components/TS_AppTools/types';
-import {thunderstormCapabilitiesGroup} from '../../consts';
-import {ComponentSync} from '../../core/ComponentSync';
-import {LL_H_C, LL_V_L} from '../../components/Layouts';
-import {TS_AppTools} from '../../components/TS_AppTools';
+import {AppToolsScreen} from '../../components/TS_AppTools/types.js';
+import {thunderstormCapabilitiesGroup} from '../../consts.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
+import {TS_AppTools} from '../../components/TS_AppTools/index.js';
 import './ATS_Printable.scss';
-import {TS_PropRenderer} from '../../components/TS_PropRenderer';
-import {Button} from '../../components/Button/Button';
-import {ModuleFE_Print} from '../../modules/ModuleFE_Print';
-import {TS_Printable} from '../../components/TS_Printable';
+import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
+import {Button} from '../../components/Button/Button.js';
+import {ModuleFE_Print} from '../../modules/ModuleFE_Print.js';
+import {TS_Printable} from '../../components/TS_Printable/index.js';
 import {generateArray} from '@nu-art/ts-common';
 
 

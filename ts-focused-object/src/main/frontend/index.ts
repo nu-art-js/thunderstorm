@@ -1,1 +1,1 @@
-export * from './modules/ModuleFE_FocusedObject';
+export * from './modules/ModuleFE_FocusedObject.js';

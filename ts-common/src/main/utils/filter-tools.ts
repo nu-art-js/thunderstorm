@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {filterInstances, sortArray} from './array-tools';
+import {filterInstances, sortArray} from './array-tools.js';
 
 
 const specialChars = ['(', ')', '?', '[', ']', '*', '\\', '/'];

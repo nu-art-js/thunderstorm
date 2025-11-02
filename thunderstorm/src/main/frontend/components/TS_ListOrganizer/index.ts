@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_ListOrganizer';
+export * from './TS_ListOrganizer.js';

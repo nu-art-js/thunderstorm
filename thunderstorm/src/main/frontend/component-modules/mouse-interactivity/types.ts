@@ -1,4 +1,4 @@
-import {Adapter} from '../../components/adapter/Adapter';
+import {Adapter} from '../../components/adapter/Adapter.js';
 import * as React from 'react';
 import {ResolvableContent} from '@nu-art/ts-common';
 

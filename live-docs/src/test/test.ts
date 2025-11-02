@@ -18,9 +18,9 @@
 
 import {StormTester} from '@nu-art/thunderstorm/backend-test';
 import {__scenario} from '@nu-art/testelot';
-import {add_Get_Update_Undo_Redo_Doc, getNoneExistingDoc} from './tests/live-doc';
-import {ModulePack_Backend_LiveDocs} from './_main';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {add_Get_Update_Undo_Redo_Doc, getNoneExistingDoc} from './tests/live-doc.js';
+import {ModulePack_Backend_LiveDocs} from './_main.js';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
 
 
 export const mainScenario = __scenario('Live-docs testing');

@@ -7,9 +7,9 @@ import {
 	tsValidateString,
 	tsValidateUniqueId
 } from '@nu-art/ts-common';
-import {DBProto_PermissionAPI} from './types';
-import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../../shared/validators';
-import {PermissionDBGroup} from '../../shared';
+import {DBProto_PermissionAPI} from './types.js';
+import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../../shared/validators.js';
+import {PermissionDBGroup} from '../../shared.js';
 
 
 const Validator_ModifiableProps: DBProto_PermissionAPI['modifiablePropsValidator'] = {

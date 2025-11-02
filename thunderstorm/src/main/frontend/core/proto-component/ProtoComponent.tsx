@@ -1,7 +1,7 @@
-import {ComponentSync} from '../ComponentSync';
+import {ComponentSync} from '../ComponentSync.js';
 import {BadImplementationException, compare, deepClone} from '@nu-art/ts-common';
-import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2} from '../../modules/ModuleFE_BrowserHistoryV2';
-import {ProtoComponentDef} from './types';
+import {ModuleFE_BrowserHistoryV2, OnUrlParamsChangedListenerV2} from '../../modules/ModuleFE_BrowserHistoryV2.js';
+import {ProtoComponentDef} from './types.js';
 
 
 /**

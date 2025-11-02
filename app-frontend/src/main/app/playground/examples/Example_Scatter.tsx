@@ -19,9 +19,9 @@
 import * as React from 'react';
 import {ComponentSync} from '@nu-art/thunderstorm/frontend/core/ComponentSync';
 import {scaleLinear} from 'd3-scale';
-import AxisLeft from './d3components/Example_AxisX';
+import AxisLeft from './d3components/Example_AxisX.js';
 import AxisBottom from './d3components/Example_AxisBottom.';
-import {TS_Input} from '@nu-art/thunderstorm/frontend';
+import {TS_Input} from '@nu-art/thunderstorm/frontend/index';
 
 
 export type Coordinates = {

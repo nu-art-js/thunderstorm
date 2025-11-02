@@ -30,13 +30,13 @@ import {
 	tsValidateString,
 	UniqueId
 } from '@nu-art/ts-common';
-import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend';
-import {ModuleBE_Auth} from '@nu-art/google-services/backend';
+import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend/index.js';
+import {ModuleBE_Auth} from '@nu-art/google-services/backend/index';
 import {TestModel, TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
-import {DB_Type, DB_Type_Complex, DBProto_Type_Complex, TestInputValue} from '../_entity';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3';
-import {FB_ArrayType} from './types';
+import {DB_Type, DB_Type_Complex, DBProto_Type_Complex, TestInputValue} from '../_entity.js';
+import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {FB_ArrayType} from './types.js';
 
 const config = {
 	project_id: generateHex(4),

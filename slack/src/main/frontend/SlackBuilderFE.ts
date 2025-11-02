@@ -1,5 +1,5 @@
-import {BaseSlackBuilder} from '../shared';
-import {ModuleFE_Slack} from './ModuleFE_Slack';
+import {BaseSlackBuilder} from '../shared/index.js';
+import {ModuleFE_Slack} from './ModuleFE_Slack.js';
 
 /**
  * FE implementation of slack message builder

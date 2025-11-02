@@ -1,1 +1,1 @@
-export * from './ModuleFE_EditableTest';
+export * from './ModuleFE_EditableTest.js';

@@ -18,7 +18,7 @@
  */
 
 import {Logger} from '@nu-art/ts-common';
-import {FirebaseType_Messaging} from './types';
+import {FirebaseType_Messaging} from './types.js';
 import {onBackgroundMessage} from 'firebase/messaging/sw';
 
 export class SwMessagingWrapperFE

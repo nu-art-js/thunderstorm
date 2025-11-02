@@ -1,11 +1,11 @@
 import {compareVersions, currentTimeMillis, exists, Module, ModuleManager, RuntimeVersion} from '@nu-art/ts-common';
-import {apiWithQuery} from '../core/typed-api';
-import {ApiDef_ServerInfo, ApiStruct_ServerInfo} from '../../shared/server-info/api';
-import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, ServerInfoFirebaseState} from '../../shared';
+import {apiWithQuery} from '../core/typed-api.js';
+import {ApiDef_ServerInfo, ApiStruct_ServerInfo} from '../../shared/server-info/api.js';
+import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, ServerInfoFirebaseState} from '../../shared/index.js';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
-import {ThunderDispatcher} from '../core/thunder-dispatcher';
-import {StorageKey} from '../modules/ModuleFE_LocalStorage';
+import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage.js';
 
 export const StorageKey_ServerVersion = new StorageKey<string>('server-version');
 

@@ -1,7 +1,7 @@
-import {CSVModuleV3_Class} from './CSVModuleV3';
-import {TS_Object} from '../utils/types';
-import {_keys} from '../utils/object-tools';
-import {__stringify} from '../utils/tools';
+import {CSVModuleV3_Class} from './CSVModuleV3.js';
+import {TS_Object} from '../utils/types.js';
+import {_keys} from '../utils/object-tools.js';
+import {__stringify} from '../utils/tools.js';
 import {Readable, Writable} from 'stream';
 import * as csv from 'fast-csv';
 

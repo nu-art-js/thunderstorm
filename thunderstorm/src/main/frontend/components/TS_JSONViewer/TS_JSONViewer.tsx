@@ -1,12 +1,11 @@
-import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
-import {TS_JSONViewer_Tree, TS_JSONViewer_Tree_Item} from './types';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {TS_JSONViewer_Tree, TS_JSONViewer_Tree_Item} from './types.js';
 import {_keys, sortArray} from '@nu-art/ts-common';
-import {TS_Tree} from '../TS_Tree';
-import {AdapterBuilder} from '../adapter/Adapter';
-import {NodeRendererProps} from '../adapter/BaseRenderer';
-import {_className} from '../../utils/tools';
-import {LL_H_C} from '../Layouts';
+import {TS_Tree} from '../TS_Tree/index.js';
+import {AdapterBuilder} from '../adapter/Adapter.js';
+import {NodeRendererProps} from '../adapter/BaseRenderer.js';
+import {_className} from '../../utils/tools.js';
+import {LL_H_C} from '../Layouts/index.js';
 import './TS_JSONViewer.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 

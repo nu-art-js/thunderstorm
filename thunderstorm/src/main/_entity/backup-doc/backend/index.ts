@@ -1,2 +1,2 @@
-export * from './ModuleBE_BackupDocDB';
-export * from './module-pack';
+export * from './ModuleBE_BackupDocDB.js';
+export * from './module-pack.js';

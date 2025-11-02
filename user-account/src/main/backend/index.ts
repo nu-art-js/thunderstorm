@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './module-pack';
-export * from './_entity';
-export * from './_enum';
-export * from './SlackReporter';
+export * from './module-pack.js';
+export * from './_entity.js';
+export * from './_enum.js';
+export * from './SlackReporter.js';

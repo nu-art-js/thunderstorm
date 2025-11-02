@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Form, Form_FieldProps, FormRenderer} from './types';
+import {Form, Form_FieldProps, FormRenderer} from './types.js';
 import * as React from 'react';
 import {_keys, TS_Object, TypeValidator} from '@nu-art/ts-common';
 

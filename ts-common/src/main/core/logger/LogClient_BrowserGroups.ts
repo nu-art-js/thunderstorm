@@ -1,6 +1,6 @@
-import {_keys} from '../../utils/object-tools';
-import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, LogClient} from './LogClient';
-import {LogLevel, LogParam} from './types';
+import {_keys} from '../../utils/object-tools.js';
+import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, LogClient} from './LogClient.js';
+import {LogLevel, LogParam} from './types.js';
 
 const PrimitiveLogParams: LogParam[] = ['string', 'number', 'boolean'];
 

@@ -1,1 +1,1 @@
-export * from './_modules/ModuleFE_Analytics';
+export * from './_modules/ModuleFE_Analytics.js';

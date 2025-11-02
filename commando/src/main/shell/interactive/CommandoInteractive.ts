@@ -1,7 +1,7 @@
 import {Constructor, generateHex, LogLevel} from '@nu-art/ts-common';
-import {InteractiveShell} from './InteractiveShell';
-import {LogTypes} from '../types';
-import {BaseCommando} from '../core/BaseCommando';
+import {InteractiveShell, ShellLogProcessor, ShellPidListener} from './InteractiveShell.js';
+import {LogTypes} from '../types.js';
+import {BaseCommando} from '../core/BaseCommando.js';
 
 
 export class CommandoInteractive
@@ -17,7 +17,6 @@ export class CommandoInteractive
 		const _commando = BaseCommando._create(CommandoInteractive, ...plugins);
 		const commando = _commando as typeof _commando & CommandoInteractive;
 		commando.shell = new InteractiveShell();
-		commando.shell.setMinLevel(LogLevel.Verbose);
 		return commando;
 	}
 
@@ -62,16 +61,17 @@ export class CommandoInteractive
 	 * @param {NodeJS.Signals | number} [signal] - The signal to send to the process.
 	 * @returns {boolean} - Whether the kill signal was successfully sent.
 	 */
-	kill(signal?: NodeJS.Signals | number) {
+	kill(signal?: NodeJS.Signals) {
 		return this.shell.kill(signal);
 	}
 
 	/**
 	 * Gracefully kills a process by its PID.
 	 * @param {number} [pid] - The PID of the process to kill.
+	 * @param signal
 	 */
-	async gracefullyKill(pid?: number) {
-		return this.shell.gracefullyKill(pid);
+	async killSubprocess(pid: number, signal?: NodeJS.Signals) {
+		return this.shell.killSubprocess(pid, signal);
 	}
 
 	/**
@@ -94,89 +94,86 @@ export class CommandoInteractive
 		return this;
 	}
 
-
-	/**
-	 * Executes commands asynchronously and listens for the PID.
-	 *
-	 * @param {Function} pidListener - A listener function to handle the PID.
-	 * @param {Function} [callback] - A callback function to handle the command output.
-	 * @returns {Promise<T>} - The result of the callback function.
-	 */
-	async executeAsync<T>(pidListener: (pid: number) => void, callback?: (stdout: string, stderr: string, exitCode: number) => T): Promise<T> {
-		const pidUniqueKey = generateHex(16);
-		const regexp = new RegExp(`${pidUniqueKey}=(\\d+)`);
-		const functionContent = this.builder.reset().trim() + ' &';
-
-		const pidLogProcessor = (log: string) => {
-			const match = log.match(regexp);
-			if (!match)
-				return true;
-
-			const pid = +match[1];
-			pidListener(pid);
-			return false;
-		};
-
-		return await this
-			.append(functionContent)
-			.append('pid=$!')
-			.append(`echo "${pidUniqueKey}=\${pid}"`)
-			.append(`wait \$pid`)
-			.addLogProcessor(pidLogProcessor)
-			.execute(callback);
-	}
-
 	/**
 	 * Executes commands and processes logs to extract exit code.
 	 * @param {Function} [callback] - A callback function to handle the command output.
 	 * @returns {Promise<T>} - The result of the callback function.
 	 */
 	async execute<T>(callback?: (stdout: string, stderr: string, exitCode: number) => T): Promise<T> {
-		return await new Promise<T>((resolve, reject) => {
-			const uniqueKey = generateHex(16);
-			const regexp = new RegExp(`${uniqueKey}=(\\d+)`);
+		let logProcessor;
+		let stdLogProcessor;
+		let onCloseListener;
 
-			let _stderr = '';
-			let _stdout = '';
-			const logProcessor = (log: string, type: LogTypes) => {
-				if (type === 'err')
-					_stderr += `${log}\n`;
-				else
-					_stdout += `${log}\n`;
+		try {
+			return await new Promise<T>((resolve, reject) => {
+				const uniqueKey = generateHex(16);
+				const regexp = new RegExp(`${uniqueKey}=(\\d+)`);
 
-				if (!log.includes(uniqueKey))
+				let _stderr = '';
+				let _stdout = '';
+				stdLogProcessor = (log: string, type: LogTypes) => {
+					if (type === 'err')
+						_stderr += `${log}\n`;
+					else
+						_stdout += `${log}\n`;
+
 					return true;
+				};
 
-				const match = log.match(regexp);
-				if (!match)
-					return true;
+				let uidCounter = 0;
+				let exitCode = -1;
+				logProcessor = (log: string, type: LogTypes) => {
+					if (!log.includes(uniqueKey))
+						return true;
 
-				const exitCode = match?.[1];
-				this.removeLogProcessor(logProcessor);
+					const match = log.match(regexp);
+					if (!match)
+						return false;
 
-				try {
-					resolve(callback?.(_stdout, _stderr, +exitCode)!);
-				} catch (err: any) {
-					reject(err);
-				}
+					uidCounter++;
+					if (type === 'out')
+						exitCode = +(match![1]);
 
-				return false;
-			};
-			this.builder.append(`echo ${uniqueKey}=$?`);
-			const command = this.builder.reset();
+					if (uidCounter !== 2)
+						return false;
 
-			this.shell.addLogProcessor(logProcessor);
-			this.shell.execute(command);
-		});
+					try {
+						resolve(callback?.(_stdout, _stderr, +exitCode)!);
+					} catch (err: any) {
+						reject(err);
+					}
+
+					return false;
+				};
+
+				onCloseListener = (exitCode: number) => {
+					resolve(callback?.(_stdout, _stderr, exitCode)!);
+				};
+
+				this.builder.append(`echo ${uniqueKey}=$? && echo ${uniqueKey}=$? 1>&2`);
+				const command = this.builder.reset();
+
+				this.shell.addLogProcessor(logProcessor, 0);
+				this.shell.addLogProcessor(stdLogProcessor);
+				this.shell.addOnCloseListener(onCloseListener);
+				this.shell.execute(command);
+			});
+		} finally {
+			this.shell.removeLogProcessor(logProcessor!);
+			this.shell.removeLogProcessor(stdLogProcessor!);
+			this.shell.removeOnCloseListener(onCloseListener!);
+		}
+
 	}
 
 	/**
 	 * Adds a log processor to the shell.
 	 * @param {Function} processor - The log processor function to add.
+	 * @param index
 	 * @returns {this} - The CommandoInteractive instance for method chaining.
 	 */
-	addLogProcessor(processor: (log: string, std: LogTypes) => boolean) {
-		this.shell.addLogProcessor(processor);
+	addLogProcessor(processor: ShellLogProcessor, index?: number) {
+		this.shell.addLogProcessor(processor, index);
 		return this;
 	}
 
@@ -184,12 +181,13 @@ export class CommandoInteractive
 		this.shell.setLogLevelFilter(processor);
 		return this;
 	}
+
 	/**
 	 * Removes a log processor from the shell.
 	 * @param {Function} processor - The log processor function to remove.
 	 * @returns {this} - The CommandoInteractive instance for method chaining.
 	 */
-	removeLogProcessor(processor: (log: string, std: LogTypes) => boolean) {
+	removeLogProcessor(processor: ShellLogProcessor) {
 		this.shell.removeLogProcessor(processor);
 		return this;
 	}
@@ -202,5 +200,32 @@ export class CommandoInteractive
 	append(command: string) {
 		this.builder.append(command);
 		return this;
+	}
+
+	appendAsync(command: string, pidListener?: ShellPidListener) {
+		const pidUniqueKey = generateHex(16);
+		const regexp = new RegExp(`${pidUniqueKey}=(\\d+)`);
+
+		const pidLogProcessor = async (log: string) => {
+			const match = log.match(regexp);
+			if (!match)
+				return true;
+
+			const pid = +match[1];
+			await pidListener?.(pid);
+			return false;
+		};
+
+		this.append(`${command} &`)
+			.append('pid=$!')
+			.append(`echo "${pidUniqueKey}=\${pid}"`)
+			.append(`wait \$pid`)
+			.addLogProcessor(pidLogProcessor, 0);
+
+		return this;
+	}
+
+	getCommand() {
+		return this.builder.getCommand();
 	}
 }

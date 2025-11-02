@@ -17,5 +17,5 @@
  */
 
 export * from '../src/main/backend/modules/_imports';
-export * from '../src/main/backend';
-export * from '../src/main';
+export * from '../src/main/backend/index.js';
+export * from '../src/main/index.js';

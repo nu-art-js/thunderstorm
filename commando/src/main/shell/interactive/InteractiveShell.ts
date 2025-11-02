@@ -1,17 +1,22 @@
-import {Logger, LogLevel, removeItemFromArray} from '@nu-art/ts-common';
+import {addItemToArrayAtIndex, currentTimeMillis, generateHex, Logger, LogLevel, removeItemFromArray} from '@nu-art/ts-common';
 import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
-import {LogTypes} from '../types';
+import {LogTypes} from '../types.js';
 
 
-type LogProcessor = (log: string, std: LogTypes) => boolean;
+export type ShellLogProcessor = (log: string, std: LogTypes) => (Promise<boolean> | boolean);
+export type ShellPidListener = (pid: number) => (Promise<any> | any);
+
 
 const defaultLogLevelFilter = (log: string, std: LogTypes) => std === 'err' ? LogLevel.Error : LogLevel.Info;
+
+type OnCloseListener = (exitCode: number) => void;
 
 export class InteractiveShell
 	extends Logger {
 
 	private _debug: boolean = false;
-	private logProcessors: (LogProcessor)[] = [];
+	private logProcessors: (ShellLogProcessor)[] = [];
+	private onCloseListeners: (OnCloseListener)[] = [];
 	private shell: ChildProcessWithoutNullStreams | ChildProcess;
 	private alive: boolean;
 	private logLevelFilter: (log: string, std: LogTypes) => LogLevel | undefined = defaultLogLevelFilter;
@@ -21,42 +26,59 @@ export class InteractiveShell
 	 */
 	constructor() {
 		super();
+		this.setTag(`${this.constructor['name']}(${generateHex(4)})`);
 		this.shell = spawn('/bin/bash', {
 			detached: true,  // This is important to make the process a session leader
-			shell: true
+			shell: true,
+			env: {
+				...process.env,
+				NODE_OPTIONS: ''   // Remove any --inspect flags
+			}
 		});
 
 		this.alive = true;
 
-		const printer = (std: LogTypes) => (data: Buffer) => {
+		const printer = (std: LogTypes) => async (data: Buffer) => {
 			const messages = data.toString().trim().split('\n');
-			if (!messages.length) return;
+			if (!messages.length)
+				return;
 
 			for (const message of messages) {
 				try {
-					const toPrint = this.logProcessors.length === 0 || this.logProcessors.reduce((toPrint, processor) => {
-						const filter = processor(message, std);
-						return toPrint && filter;
-					}, true);
+					let consumed = false;
 
-					if (toPrint) {
+					for (const processor of this.logProcessors) {
+						const result = await processor(message, std);
+						if (!result) {
+							consumed = true;
+							break;
+						}
+					}
+
+					if (!consumed) {
 						const logLevel = this.logLevelFilter(message, std) ?? defaultLogLevelFilter(message, std);
 						this.log(logLevel, false, [message]);
 					}
-
 				} catch (e: any) {
 					this.logError(e);
 				}
 			}
 		};
 
-		this.shell.stdout?.on('data', printer('out'));
-		this.shell.stderr?.on('data', printer('err'));
+		const stdoutPrinter = printer('out');
+		const stderrPrinter = printer('err');
+		this.shell.stdout?.on('data', stdoutPrinter);
+		this.shell.stderr?.on('data', stderrPrinter);
 
 		// Handle shell exit
-		this.shell.on('close', (code) => {
+		this.shell.on('close', async (code) => {
 			this.alive = false;
-			this.logInfo(`child process exited with code ${code}`);
+			code = code === null ? -1 : code;
+			this.onCloseListeners.forEach(listener => listener(code === null ? -1 : code));
+
+			const printer = code === 0 ? stdoutPrinter : stderrPrinter;
+			const string = `Process exited with code: ${code}`;
+			printer(Buffer.from(string));
 		});
 	}
 
@@ -75,11 +97,11 @@ export class InteractiveShell
 	 * @param {string} command - The command to execute.
 	 */
 	execute = (command: string) => {
-		if (this._debug)
-			this.logDebug(`executing: `, `"""\n${command}\n"""`);
+		this.logVerbose(`executing: `, `"""\n${command}\n"""`);
 
 		this.shell.stdin?.write(command + '\n', 'utf-8', (err?: Error | null) => {
-			if (err) this.logError(`error`, err);
+			if (err)
+				this.logError(`error`, err);
 		});
 	};
 
@@ -92,53 +114,88 @@ export class InteractiveShell
 		});
 	};
 
-	/**
-	 * Sends a signal to terminate the shell process.
-	 * @param {NodeJS.Signals | number} [signal] - The signal to send to the shell process.
-	 * @returns {boolean | undefined} - The result of the kill operation.
-	 */
-	kill = (signal?: NodeJS.Signals | number) => {
-		if (!this.alive)
-			return;
-
-		this.logWarning(`Killing......`);
-		// return this.gracefullyKill(this.shell.pid);
-		return this.shell.emit('exit', 2);
+// Check if a given PID is alive
+	isAlive = (pid: number): boolean => {
+		try {
+			process.kill(pid, 0); // Non-intrusive check
+			return true;
+		} catch {
+			return false;
+		}
 	};
 
-	/**
-	 * Attempts to gracefully terminate the shell process.
-	 * @param {number} [pid] - Process ID of the shell to terminate.
-	 * @returns {Promise<void>} - Resolves when the shell process is gracefully killed.
-	 */
-	gracefullyKill = async (pid?: number) => {
+// Poll until a PID is no longer alive or timeout is hit
+	waitForExit = (pid: number, timeout = 10000, sampleInterval = 100): Promise<void> => {
+		const startTime = currentTimeMillis();
+
+		return new Promise((resolve, reject) => {
+			const check = () => {
+				if (!this.isAlive(pid))
+					return resolve();
+
+				if (currentTimeMillis() - startTime > timeout) {
+					this.logWarning(`PID ${pid} did not exit in time. Sending 'SIGTERM'.`);
+					try {
+						process.kill(pid, 'SIGTERM');
+					} catch (e: any) {
+						this.logError(`Failed to send 'SIGTERM' to PID ${pid}`, e);
+					}
+
+					return reject(new Error(`PID ${pid} did not exit after ${timeout}ms`));
+				}
+
+				setTimeout(check, sampleInterval);
+			};
+			check();
+		});
+	};
+
+// Kill the main shell process (interactive shell)
+	kill = async (signal: NodeJS.Signals = 'SIGINT', timeout = 10000): Promise<void> => {
 		if (!this.alive)
 			return;
 
-		return new Promise<void>((resolve, reject) => {
-			this.logWarning('Killing process');
-			this.shell.on('exit', async (code, signal) => {
-				this.logWarning(`Process Killed ${signal}`);
-				resolve();
-			});
+		this.logWarning(`Sending ${signal} to shell PID: ${this.shell.pid}`);
 
-			if (pid) {
-				this.logWarning(`KILLING PID: ${pid}`);
-				process.kill(pid, 'SIGINT');
-			} else {
-				this.logWarning(`KILLING SHELL WITH SIGINT`);
-				this.shell.kill('SIGINT');
-			}
-		});
+		try {
+			this.shell.kill(signal);
+		} catch (e: any) {
+			this.logError(`Failed to send ${signal} to shell`, e);
+			throw e;
+		}
+
+		await this.waitForExit(this.shell.pid!, timeout);
+		this.logWarning(`Shell process PID ${this.shell.pid} terminated`);
+	};
+
+// Kill a background subprocess PID without affecting the shell
+	killSubprocess = async (pid: number, signal: NodeJS.Signals = 'SIGINT', timeout = 10000): Promise<void> => {
+		if (!this.isAlive(pid)) {
+			this.logDebug(`Subprocess PID ${pid} already exited`);
+			return;
+		}
+
+		this.logWarning(`Sending ${signal} to subprocess PID: ${pid}`);
+
+		try {
+			process.kill(pid, signal);
+		} catch (e: any) {
+			this.logError(`Failed to send ${signal} to subprocess`, e);
+			throw e;
+		}
+
+		await this.waitForExit(pid, timeout);
+		this.logWarning(`Subprocess PID ${pid} terminated`);
 	};
 
 	/**
 	 * Adds a log processor to handle log messages.
 	 * @param {(log: string, std: LogTypes) => boolean} processor - The log processor function.
+	 * @param index -
 	 * @returns {this} - The InteractiveShell instance for method chaining.
 	 */
-	addLogProcessor(processor: LogProcessor) {
-		this.logProcessors.push(processor);
+	addLogProcessor(processor: ShellLogProcessor, index = this.logProcessors.length) {
+		addItemToArrayAtIndex(this.logProcessors, processor, index);
 		return this;
 	}
 
@@ -147,12 +204,23 @@ export class InteractiveShell
 		return this;
 	}
 
+	addOnCloseListener(listener: OnCloseListener) {
+		this.onCloseListeners.push(listener);
+		return this;
+	}
+
+	removeOnCloseListener(listener: OnCloseListener) {
+		removeItemFromArray(this.onCloseListeners, listener);
+		return this;
+	}
+
+
 	/**
 	 * Removes a log processor from handling log messages.
 	 * @param {(log: string, std: LogTypes) => boolean} processor - The log processor function to remove.
 	 * @returns {this} - The InteractiveShell instance for method chaining.
 	 */
-	removeLogProcessor(processor: LogProcessor) {
+	removeLogProcessor(processor: ShellLogProcessor) {
 		removeItemFromArray(this.logProcessors, processor);
 		return this;
 	}

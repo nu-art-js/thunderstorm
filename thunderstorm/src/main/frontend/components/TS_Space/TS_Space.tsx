@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {_className} from '../../utils/tools';
+import {_className} from '../../utils/tools.js';
 
 
 export class TS_Space

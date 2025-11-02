@@ -19,12 +19,12 @@
 import {
 	LogLevel,
 	LogParam
-} from './types';
-import {LogClient} from './LogClient';
+} from './types.js';
+import {LogClient} from './LogClient.js';
 import {
 	_logger_convertLogParamsToStrings,
 	_logger_indentNewLineBy
-} from './utils';
+} from './utils.js';
 
 
 export const NoColor = '\x1b[0m';
