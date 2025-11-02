@@ -433,8 +433,13 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		if (existsSync(projectDefaultTsConfig)) {
 			this.logDebug(`Copying project-level default tsconfig for source: ${sourceFolderType}`);
 			const dependencyPaths = {}; //this.deriveTSConfigPaths();
-			await FileSystemUtils.file.template.copy(projectDefaultTsConfig, tsConfigPath, {SOURCE_ROOT: entryPath, PATHS: __stringify(dependencyPaths, true)});
-			return;
+			const includeSources = `"sourceMap": true,
+    "sourceRoot": "${entryPath}",`;
+			const templateParams = {
+				INCLUDE_SOURCES: this.runtimeContext.runtimeParams.publish ? '' : includeSources,
+				PATHS: __stringify(dependencyPaths, true)
+			};
+			return FileSystemUtils.file.template.copy(projectDefaultTsConfig, tsConfigPath, templateParams);
 		}
 
 		// if (existsSync(defaultTsConfigTemplate)) {
