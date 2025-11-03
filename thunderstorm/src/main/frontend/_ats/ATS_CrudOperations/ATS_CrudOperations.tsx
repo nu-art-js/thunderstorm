@@ -28,6 +28,10 @@ const ACTIONS: Action[] = [
 		action: (dbModule, input) => dbModule.v1.upsert(input)
 	},
 	{
+		label: 'upsert all',
+		action: (dbModule, input) => dbModule.v1.upsertAll(JSON.parse(input))
+	},
+	{
 		label: 'query',
 		action: (dbModule, input) => dbModule.v1.query(input as unknown as FirestoreQuery<any>)
 
