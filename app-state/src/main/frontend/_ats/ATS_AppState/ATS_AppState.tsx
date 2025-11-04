@@ -1,19 +1,24 @@
 import {AppToolsScreen, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {thunderstormCapabilitiesGroup} from '@nu-art/thunderstorm/frontend/consts';
 import * as React from 'react';
-import {PageStateManager} from '../../_modules/ModuleFE_AppState';
+import {OnPageStateUpdated, PageStateManager} from '../../_modules/ModuleFE_AppState';
 import {md5} from '@nu-art/ts-common';
 
 type State = {
 	value_Input?: string;
 };
 
-const manager = new PageStateManager<State>(md5('ats-app-state'));
+const manager = new PageStateManager<State>(md5('App State'));
 
 class ATS_AppState_Class
-	extends ComponentSync<unknown, State> {
+	extends ComponentSync<unknown, State>
+	implements OnPageStateUpdated {
 
-	deriveStateFromProps(p: unknown, state: State) {
+	__onPageStateUpdated = manager.getDispatchListenerCB(() => {
+
+	});
+
+	protected deriveStateFromProps(p: unknown, state: State) {
 		state.value_Input ??= manager.value.get('value_Input');
 		return state;
 	}
