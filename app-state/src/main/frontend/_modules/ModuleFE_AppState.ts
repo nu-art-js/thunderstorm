@@ -1,12 +1,15 @@
-import {BadImplementationException, cloneObj, deepClone, exists, Logger, mergeObject, Module, TS_Object} from '@nu-art/ts-common';
-import {StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {_keys, BadImplementationException, cloneObj, composeUrl, deepClone, exists, Logger, mergeObject, Module, TS_Object} from '@nu-art/ts-common';
+import {ModuleFE_BrowserHistory, ModuleFE_Thunderstorm, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {convertBase64ToObject, convertObjectToBase64} from '@nu-art/thunderstorm/shared/base64-tools';
 import {AppState} from '../../shared';
+import {URLParam_AppState} from './consts';
+
 
 export interface OnPageStateUpdated {
 	__onPageStateUpdated: (manager: PageStateManager<any>) => void;
 }
 
-const dispatch_OnPageStateUpdated = new ThunderDispatcher<OnPageStateUpdated, '__onPageStateUpdated'>('__onPageStateUpdated');
+export const dispatch_OnPageStateUpdated = new ThunderDispatcher<OnPageStateUpdated, '__onPageStateUpdated'>('__onPageStateUpdated');
 
 type PathRegistry = { [path: string]: PageStateManager<any> };
 
@@ -24,6 +27,7 @@ class ModuleFE_AppState_Class
 		this.sessionStorage = new StorageKey<AppState>('app-state', false);
 		this.pathRegistry = {};
 		this.appState = this.sessionStorage.get(() => this.localStorage.get({}));
+		this.deriveStateFromURLParam();
 	}
 
 	public registerManager = (manager: PageStateManager<any>) => {
@@ -33,14 +37,45 @@ class ModuleFE_AppState_Class
 		this.pathRegistry[manager.route] = manager;
 	};
 
+	// ######################### State Interaction #########################
+
 	public setPageState = (manager: PageStateManager<any>, state: TS_Object) => {
 		this.appState[manager.route] = state;
 		this.sessionStorage.set(this.appState);
 		this.localStorage.set(this.appState);
-		dispatch_OnPageStateUpdated.dispatchAll(manager);
 	};
 
 	public getPageState = (manager: PageStateManager<any>) => this.appState[manager.route] ?? {};
+
+	// ######################### Import / Export #########################
+
+	private deriveStateFromURLParam = () => {
+		const encoded = ModuleFE_BrowserHistory.getQueryParameter(URLParam_AppState);
+		if (!exists(encoded))
+			return;
+
+		const decoded = this.decodeState(encoded);
+		_keys(decoded).forEach(key => {
+			this.appState[key] = mergeObject(this.appState[key], decoded[key]);
+		});
+		ModuleFE_BrowserHistory.removeQueryParam(URLParam_AppState);
+	};
+
+	public getExportStateForManager = (manager: PageStateManager<any>) => {
+		const pageState = this.getPageState(manager);
+		const appState = {[manager.route]: pageState};
+		const encoded = this.encodeState(appState);
+		const baseUrl = window.location.origin + manager.route;
+		return composeUrl(baseUrl, {[URLParam_AppState]: encoded});
+	};
+
+	private encodeState = (decoded: AppState): string => {
+		return convertObjectToBase64(decoded);
+	};
+
+	private decodeState = (encoded: string): AppState => {
+		return convertBase64ToObject(encoded);
+	};
 }
 
 const ModuleFE_AppState = new ModuleFE_AppState_Class();
@@ -89,5 +124,10 @@ export class PageStateManager<PageState extends TS_Object>
 			if (manager === this)
 				cb();
 		};
+	};
+
+	public getExportURL = () => {
+		const url = ModuleFE_AppState.getExportStateForManager(this);
+		ModuleFE_Thunderstorm.copyToClipboard(url, 'Export URL copied to clipboard');
 	};
 }

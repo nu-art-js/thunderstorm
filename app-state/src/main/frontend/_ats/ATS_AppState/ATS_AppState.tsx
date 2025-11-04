@@ -1,22 +1,17 @@
-import {AppToolsScreen, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {thunderstormCapabilitiesGroup} from '@nu-art/thunderstorm/frontend/consts';
 import * as React from 'react';
-import {OnPageStateUpdated, PageStateManager} from '../../_modules/ModuleFE_AppState';
+import {PageStateManager} from '../../_modules/ModuleFE_AppState';
 import {md5} from '@nu-art/ts-common';
 
 type State = {
 	value_Input?: string;
 };
 
-const manager = new PageStateManager<State>(md5('App State'));
+const manager = new PageStateManager<State>(`/app-tools/${md5('App State')}`);
 
 class ATS_AppState_Class
-	extends ComponentSync<unknown, State>
-	implements OnPageStateUpdated {
-
-	__onPageStateUpdated = manager.getDispatchListenerCB(() => {
-
-	});
+	extends ComponentSync<unknown, State> {
 
 	protected deriveStateFromProps(p: unknown, state: State) {
 		state.value_Input ??= manager.value.get('value_Input');
@@ -33,6 +28,9 @@ class ATS_AppState_Class
 						this.setState({value_Input: val}, () => manager.value.set('value_Input', val));
 					}}/>
 			</TS_PropRenderer.Horizontal>
+			<Button variant={'primary'} onClick={() => manager.getExportURL()}>
+				Export State
+			</Button>
 		</LL_V_L>;
 	}
 }
