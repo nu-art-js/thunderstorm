@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {_keys, exists, merge, Module, TS_Object, TypedMap} from '@nu-art/ts-common';
+import {_keys, exists, merge, Module, ResolvableContent, resolveContent, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 
@@ -105,7 +105,7 @@ export class StorageModule_Class
 		delete this.cache[key];
 	}
 
-	public get(key: string, fallbackValue?: GetType, persist: boolean = true): string | number | object | undefined {
+	public get(key: string, fallbackValue?: ResolvableContent<GetType>, persist: boolean = true): string | number | object | undefined {
 		let value: string | number | object | null = this.cache[key];
 		if (value)
 			return value;
@@ -113,7 +113,7 @@ export class StorageModule_Class
 		value = this.getStorage(persist).getItem(key);
 		// this.logDebug(`get: ${key} = ${value}`)
 		if (!exists(value) || value === 'null' || value === 'undefined')
-			return fallbackValue;
+			return resolveContent(fallbackValue);
 
 		// if (!this.isIncognito)
 		return this.cache[key] = JSON.parse(value!);
@@ -182,8 +182,8 @@ export class StorageKey<ValueType = string | number | object> {
 	}
 
 	get(): ValueType | undefined;
-	get(fallbackValue: ValueType): ValueType;
-	get(fallbackValue?: ValueType): ValueType {
+	get(fallbackValue: ResolvableContent<ValueType>): ValueType;
+	get(fallbackValue?: ResolvableContent<ValueType>): ValueType {
 		// @ts-ignore
 		return ModuleFE_LocalStorage.get(this.key, fallbackValue, this.persist) as unknown as ValueType;
 	}

@@ -13,9 +13,18 @@ type PathRegistry = { [path: string]: PageStateManager<any> };
 class ModuleFE_AppState_Class
 	extends Module {
 
-	private pathRegistry: PathRegistry = {};
-	private appState: AppState = {};
-	private stateStorage = new StorageKey<AppState>('app-state');
+	private readonly pathRegistry: PathRegistry;
+	private readonly appState: AppState;
+	private readonly localStorage: StorageKey<AppState>;
+	private readonly sessionStorage: StorageKey<AppState>;
+
+	constructor() {
+		super();
+		this.localStorage = new StorageKey<AppState>('app-state', true);
+		this.sessionStorage = new StorageKey<AppState>('app-state', false);
+		this.pathRegistry = {};
+		this.appState = this.sessionStorage.get(() => this.localStorage.get({}));
+	}
 
 	public registerManager = (manager: PageStateManager<any>) => {
 		if (exists(this.pathRegistry[manager.route]))
@@ -26,13 +35,12 @@ class ModuleFE_AppState_Class
 
 	public setPageState = (manager: PageStateManager<any>, state: TS_Object) => {
 		this.appState[manager.route] = state;
-		this.stateStorage.set(this.appState);
+		this.sessionStorage.set(this.appState);
+		this.localStorage.set(this.appState);
 		dispatch_OnPageStateUpdated.dispatchAll(manager);
 	};
 
-	public getPageState = (manager: PageStateManager<any>) => {
-		return this.appState[manager.route] ?? {};
-	};
+	public getPageState = (manager: PageStateManager<any>) => this.appState[manager.route] ?? {};
 }
 
 const ModuleFE_AppState = new ModuleFE_AppState_Class();
