@@ -1,0 +1,53 @@
+{
+  "name": "@nu-art/floating-windows",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "Floating Windows",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/ts-styles": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_DEPENDENCY_VERSION",
+    "react": "$REACT_PKG_VERSION"
+  },
+  "devDependencies": {
+    "@types/react": "$REACT_TYPES_VERSION"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  }
+}
