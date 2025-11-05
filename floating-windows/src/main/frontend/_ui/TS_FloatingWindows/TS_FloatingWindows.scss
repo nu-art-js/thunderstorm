@@ -1,42 +1,4 @@
 #ts-floating-windows {
   width: 0;
   height: 0;
-
-  .ts-floating-window {
-    position: fixed;
-    background: #fff;
-    padding: 16px;
-    min-width: 20px;
-    min-height: 20px;
-    max-width: calc(100vw - 32px);
-    max-height: calc(100vh - 32px);
-
-    .ts-floating-window__drag-anchor {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 20px;
-      height: 20px;
-      cursor: move;
-    }
-
-    &.dragging {
-      .ts-floating-window__drag-anchor {
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-      }
-    }
-
-    &.resizable {
-      resize: both;
-      overflow: auto;
-    }
-
-    @supports selector(::-webkit-resizer) {
-      &::-webkit-resizer {
-        appearance: none;
-      }
-    }
-  }
 }

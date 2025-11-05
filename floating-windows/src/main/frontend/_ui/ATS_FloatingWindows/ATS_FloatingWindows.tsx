@@ -3,42 +3,73 @@ import {AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thu
 import {thunderstormCapabilitiesGroup} from '@nu-art/thunderstorm/frontend/consts';
 import {Model_FloatingWindow} from '../../types';
 import {ModuleFE_FloatingWindows} from '../../_modules/ModuleFE_FloatingWindows';
+import {windowRect} from '../../_utils/get-window-rect';
 
 class ATS_FloatingWindows_Class
 	extends ComponentSync {
 
-	private openWindow1 = () => {
+	private openHalfLeft = () => {
 		const model: Model_FloatingWindow = {
 			key: 'ats-window-1',
-			content: (cb) => this.renderWindowContent('Window 1', cb),
+			content: (cb) => this.renderWindowContent('Test Half Left', cb),
 			resizable: true,
 			moveable: true,
-			rect: {
-				y: 200,
-				x: 20
-			}
+			rect: windowRect.halfScreen_Left()
 		};
 		ModuleFE_FloatingWindows.window.add(model);
 	};
 
-	private openWindow2 = () => {
+	private openHalfRight = () => {
 		const model: Model_FloatingWindow = {
 			key: 'ats-window-2',
-			content: (cb) => this.renderWindowContent('Window 2', cb),
+			content: (cb) => this.renderWindowContent('Test Half Right', cb),
 			resizable: true,
 			moveable: true,
-			rect: {
-				y: 200,
-				x: 220
-			}
+			rect: windowRect.halfScreen_Right(),
+		};
+		ModuleFE_FloatingWindows.window.add(model);
+	};
+
+	private openThirdLeft = () => {
+		const model: Model_FloatingWindow = {
+			key: 'ats-window-3',
+			content: (cb) => this.renderWindowContent('Test Third Left', cb),
+			resizable: true,
+			moveable: true,
+			rect: windowRect.thirdScreen_Left(),
+		};
+		ModuleFE_FloatingWindows.window.add(model);
+	};
+
+	private openThirdMiddle = () => {
+		const model: Model_FloatingWindow = {
+			key: 'ats-window-4',
+			content: (cb) => this.renderWindowContent('Test Third Middle', cb),
+			resizable: true,
+			moveable: true,
+			rect: windowRect.thirdScreen_Middle(),
+		};
+		ModuleFE_FloatingWindows.window.add(model);
+	};
+
+	private openThirdRight = () => {
+		const model: Model_FloatingWindow = {
+			key: 'ats-window-5',
+			content: (cb) => this.renderWindowContent('Test Third Right', cb),
+			resizable: true,
+			moveable: true,
+			rect: windowRect.thirdScreen_Right(),
 		};
 		ModuleFE_FloatingWindows.window.add(model);
 	};
 
 	render() {
-		return <LL_V_L>
-			<Button variant={'primary'} onClick={this.openWindow1}>Open Window 1</Button>
-			<Button variant={'primary'} onClick={this.openWindow2}>Open Window 2</Button>
+		return <LL_V_L style={{gap: 10}}>
+			<Button variant={'primary'} onClick={this.openHalfLeft}>Open Half Left</Button>
+			<Button variant={'primary'} onClick={this.openHalfRight}>Open Half Right</Button>
+			<Button variant={'primary'} onClick={this.openThirdLeft}>Open Third Left</Button>
+			<Button variant={'primary'} onClick={this.openThirdMiddle}>Open Third Middle</Button>
+			<Button variant={'primary'} onClick={this.openThirdRight}>Open Third Right</Button>
 		</LL_V_L>;
 	}
 
