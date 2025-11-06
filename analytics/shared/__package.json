@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/analytics-shared",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$THUNDERSTORM_VERSION",
   "description": "Analytics Shared",
   "license": "Apache-2.0",
   "scripts": {
@@ -20,6 +20,9 @@
     "label": "Analytics Shared",
     "pathToConfig": "./config.ts",
     "customTSConfig": false
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {
