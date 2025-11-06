@@ -1,6 +1,6 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, Unit_PackageJson, Unit_TypescriptLib} from '../../_common.js';
+import {Unit_PackageJson, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {expect} from 'chai';
@@ -9,6 +9,7 @@ import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {sleep} from '@nu-art/ts-common';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 const dirname = ___dirname(import.meta.url);
 
@@ -38,7 +39,7 @@ type TestCase_UnitPurge = TestSuite_UnitPurge['testcases'][number];
 const runTestCase = (testCase: TestCase_UnitPurge) => () => runSingleTestCase(test, testCase);
 
 describe('Unit - Purge Phase', () => {
-	let suiteHasFailures = false;
+	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {
 		this.timeout(20000);
@@ -84,11 +85,13 @@ describe('Unit - Purge Phase', () => {
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')
 			suiteHasFailures = true;
+
+		suiteHasFailures ??= false;
 	});
 
 	after(async function () {
 		await sleep(1000);
-		if (!suiteHasFailures)
+		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();

@@ -16,4 +16,3 @@ export * from '../main/v3/UnitsMapper/resolvers/UnitMapper_FirebaseHosting.js';
 export * from '../main/v3/UnitsDependencyMapper/UnitsDependencyMapper.js';
 
 export * from '../main/core/params/params.js';
-export * from '../main/v3/core/FileSystemUtils.js';
