@@ -126,6 +126,7 @@ export const phase_Watch: Phase<'watch'> = {
 
 export const phases_Build: Phase<string>[][] = [
 	[phase_Purge, phase_Prepare],
+	[phase_ToESM],
 	[phase_Install],
 	[phase_Lint, phase_PreCompile, phase_Compile, phase_Test,],
 	[phase_Watch]
