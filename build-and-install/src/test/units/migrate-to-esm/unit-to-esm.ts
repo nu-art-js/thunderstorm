@@ -1,6 +1,6 @@
 // version: v2;
 // file: ./test/units/migration/unit-to-esm.test.ts
-import {DebugFlag, LogLevel} from '@nu-art/ts-common';
+import {DebugFlag, LogLevel, sleep} from '@nu-art/ts-common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {phase_Prepare, phase_ToESM} from '../../_common.js';
@@ -212,11 +212,14 @@ describe('Unit_NodeLib - ToESM Phase', () => {
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')
 			suiteHasFailures = true;
+
+		suiteHasFailures ??= false;
 	});
 
 	after(async function () {
-		// if (!suiteHasFailures)
-		// 	await FileSystemUtils.folder.delete(pathToTemp);
+		await sleep(1000);
+		if (suiteHasFailures === false)
+			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();
 	});
