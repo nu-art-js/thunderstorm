@@ -1,7 +1,7 @@
 import {expect} from 'chai';
-import {OpenAIClient_Assistant_Class} from '../main/backend/modules/ModuleBE_OpenAIV2/clients/OpenAIClient_Assistant.js';
 import {OpenAI} from 'openai';
 import sinon, {SinonStub} from 'sinon';
+import {OpenAIClient_Assistant_Class} from '../main/modules/ModuleBE_OpenAIV2/clients/OpenAIClient_Assistant.js';
 
 describe('OpenAIClient_Assistant_Class', () => {
 	let openAIClient: sinon.SinonStubbedInstance<OpenAI>;

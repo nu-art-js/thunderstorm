@@ -262,14 +262,6 @@ export const BaiParam_Publish: BaseCliParam<'publish', PromoteType> = {
 	process: (part) => part as PromoteType ?? 'patch'
 };
 
-export const BaiParam_PublishDryRun: BaseCliParam<'publishDryRun', boolean> = {
-	keys: ['--publish-dry-run'],
-	keyName: 'publishDryRun',
-	type: 'boolean',
-	group: 'Other',
-	description: 'Will pack and prepare a package for publish, but will NOT publish to NPM any package',
-};
-
 export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	keys: ['-up', '--use-packages'],
 	keyName: 'usePackage',
@@ -282,6 +274,24 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 
 		return value!.split(',').map(str => str.trim());
 	},
+	dependencies: [{param: BaiParam_AllUnits, value: true}]
+};
+
+export const BaiParam_ToESM: BaseCliParam<'toESM', boolean> = {
+	keys: ['-tesm', '--to-esm'],
+	keyName: 'toESM',
+	type: 'boolean',
+	group: 'Other',
+	description: 'Will migrate existing CJS code to ESM',
+	dependencies: [{param: BaiParam_AllUnits, value: true}]
+};
+
+export const BaiParam_Simulate: BaseCliParam<'simulation', boolean> = {
+	keys: ['--simulate', '-sim'],
+	keyName: 'simulation',
+	type: 'boolean',
+	group: 'Other',
+	description: 'In combination with other params, will not perform the outbound operation, but instead simulate it',
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
 };
 
@@ -315,9 +325,10 @@ export const AllBaiParams = [
 
 	BaiParam_Debug,
 	BaiParam_Verbose,
-	BaiParam_PublishDryRun,
 	BaiParam_Publish,
 	BaiParam_UsePackage,
+	BaiParam_ToESM,
+	BaiParam_Simulate,
 	BaiParam_DebugLifecycle
 ];
 

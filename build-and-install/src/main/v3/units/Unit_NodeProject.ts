@@ -19,7 +19,6 @@ import {Commando_PNPM} from '@nu-art/commando/shell/plugins/pnpm';
 import {PNPM} from '@nu-art/commando/shell/services/pnpm';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {resolve} from 'path';
-import {FileSystemUtils} from '../core/FileSystemUtils.js';
 import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit.js';
 import {PhaseManager} from '../PhaseManager.js';
 import {phase_CompileWatch, Phase_Install, Phase_PostPublish, Phase_Watch} from '../phase/index.js';
@@ -28,6 +27,7 @@ import {BaseUnit} from './BaseUnit.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {CONST_PNPM_LOCK, CONST_PNPM_WORKSPACE} from '../../core/consts.js';
 import {RunningStatusHandler} from '../RunningStatusHandler.js';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
