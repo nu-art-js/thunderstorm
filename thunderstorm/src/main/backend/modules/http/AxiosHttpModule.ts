@@ -133,7 +133,7 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 			// this.xhr.upload.onprogress = this.onProgressListener;
 			const body = this.body;
 
-			if (body)
+			if (typeof body === 'string')
 				this.addHeader('Content-Length', `${body.length}`);
 			// TODO add zipping of body
 			// if (typeof body === "string" && this.compress)
