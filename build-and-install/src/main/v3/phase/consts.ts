@@ -29,7 +29,7 @@ export const phase_ToESM: Phase<'convertToESM'> = {
 	key: phaseKey_ToESM,
 	name: 'ToESM',
 	method: 'convertToESM',
-	filter: (baiParams) => !baiParams.toESM,
+	filter: (baiParams) => baiParams.toESM,
 };
 
 // export const phases_Terminating: Phase<string>[] = [
