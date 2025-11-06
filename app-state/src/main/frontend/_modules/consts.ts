@@ -1,0 +1,1 @@
+export const URLParam_AppState = 'app-state';

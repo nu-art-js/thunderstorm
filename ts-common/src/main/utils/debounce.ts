@@ -1,7 +1,7 @@
-import {BadImplementationException} from '../core/exceptions/exceptions';
-import {Logger} from '../core/logger/Logger';
-import {isPromise} from './promise-tools';
-import {exists} from './tools';
+import {BadImplementationException} from '../core/exceptions/exceptions.js';
+import {Logger} from '../core/logger/Logger.js';
+import {isPromise} from './promise-tools.js';
+import {exists} from './tools.js';
 
 export class Debounce<Args extends any[], Response>
 	extends Logger {
