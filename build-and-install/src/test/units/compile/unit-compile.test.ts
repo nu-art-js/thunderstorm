@@ -12,7 +12,7 @@ import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {CONST_PackageJSON} from '../../../main/core/consts.js';
 import {FilesCache} from '../../../main/v3/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
-import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 const dirname = ___dirname(import.meta.url);
 DebugFlag.DefaultLogLevel = LogLevel.Verbose;
@@ -55,8 +55,7 @@ type TestCase_PhaseCompile = TestSuite_PhaseCompile['testcases'][number];
 const runTestCase = (testCase: TestCase_PhaseCompile, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 
 describe('Unit_NodeLib - Compile Phase', () => {
-	// @ts-ignore
-	let suiteHasFailures = false;
+	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {
 		this.timeout(30000);
@@ -161,15 +160,16 @@ describe('Unit_NodeLib - Compile Phase', () => {
 		}
 	}));
 
-
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')
 			suiteHasFailures = true;
+
+		suiteHasFailures ??= false;
 	});
 
 	after(async function () {
 		await sleep(1000);
-		if (!suiteHasFailures)
+		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();

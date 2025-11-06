@@ -9,12 +9,13 @@ import '../../UnitsDependencyMapper/transitive-dependencies.test.js';
 
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {FileSystemUtils, phase_Install, phase_Prepare, Unit_NodeProject, Unit_TypescriptLib} from '../../_common.js';
+import {phase_Install, phase_Prepare, Unit_NodeProject, Unit_TypescriptLib} from '../../_common.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {resolve} from 'path';
+import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
 
 const dirname = ___dirname(import.meta.url);
 
@@ -77,7 +78,7 @@ type TestCase_WatchPhase = TestSuite_WatchPhase['testcases'][number];
 const runTestCase = (testCase: TestCase_WatchPhase) => () => runSingleTestCase(test, testCase);
 
 describe('Phase Watch - 1 Lib', () => {
-	let suiteHasFailures = false;
+	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {
 		this.timeout(20000);
@@ -161,11 +162,13 @@ describe('Phase Watch - 1 Lib', () => {
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')
 			suiteHasFailures = true;
+
+		suiteHasFailures ??= false;
 	});
 
 	after(async function () {
 		await sleep(1000);
-		if (!suiteHasFailures)
+		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();

@@ -44,10 +44,8 @@ async function assertExists(path: string, mustExist: boolean, type: 'File' | 'Fo
 }
 
 
-const escapeRegExp = (string: string) => string.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
-
-export const DEFAULT_TEMPLATE_PATTERN = new RegExp(`\{\{([a-zA-Z]\\w{2,}?)\}\}`);
-export const DEFAULT_OLD_TEMPLATE_PATTERN = new RegExp(`(?<!\\\\)\\$([a-zA-Z]\\w{2,})`);
+export const DEFAULT_TEMPLATE_PATTERN = new RegExp(`\{\{(\\S*?)\}\}`);
+export const DEFAULT_OLD_TEMPLATE_PATTERN = new RegExp(`(?<!\\\\)\\$([a-zA-Z][\\w-_]{2,})`);
 
 export const FileSystemUtils = {
 	exists: async (pathToFile: string) => {
@@ -92,8 +90,7 @@ export const FileSystemUtils = {
 					if (!exists(value))
 						throw new BadImplementationException(`Missing template param: ${match[1]}`);
 
-					const fullMatchRegex = new RegExp(escapeRegExp(match[0]), 'g');
-					input = input.replace(fullMatchRegex, value);
+					input = input.replace(match[0], value);
 				}
 
 				return input;

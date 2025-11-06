@@ -3,7 +3,7 @@ import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {resolve} from 'path';
 import {expect} from 'chai';
-import {FileSystemUtils, Unit_TypescriptLib} from '../../_common.js';
+import {Unit_TypescriptLib} from '../../_common.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {existsSync} from 'fs';
@@ -11,6 +11,7 @@ import {FilesCache} from '../../../main/v3/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {sleep} from '@nu-art/ts-common';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
 
 const dirname = ___dirname(import.meta.url);
 
@@ -44,7 +45,7 @@ type TestCase_Prepare = TestSuite_Prepare['testcases'][number];
 const runTestCase = (testCase: TestCase_Prepare, processor = defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 
 describe('Unit_NodeLib - Prepare Phase', () => {
-	let suiteHasFailures = false;
+	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {
 		this.timeout(10000);
@@ -126,11 +127,13 @@ describe('Unit_NodeLib - Prepare Phase', () => {
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')
 			suiteHasFailures = true;
+
+		suiteHasFailures ??= false;
 	});
 
 	after(async function () {
 		await sleep(1000);
-		if (!suiteHasFailures)
+		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();
