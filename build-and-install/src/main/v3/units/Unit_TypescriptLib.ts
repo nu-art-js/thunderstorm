@@ -1,14 +1,30 @@
 import * as fs from 'fs';
 import {copyFileSync, existsSync, promises as _fs, readdirSync, statSync} from 'fs';
-import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, NotImplementedYetException, TypedMap} from '@nu-art/ts-common';
+import {
+	__stringify,
+	arrayToMap,
+	BadImplementationException,
+	exists,
+	ImplementationMissingException,
+	LogLevel,
+	NotImplementedYetException,
+	TypedMap
+} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types.js';
-import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON, CONST_TS_CONFIG} from '../../core/consts.js';
+import {
+	CONST_BaiConfig,
+	CONST_FirebaseJSON,
+	CONST_FirebaseRC,
+	CONST_NodeModules,
+	CONST_PackageJSON,
+	CONST_PackageJSONTemplate,
+	CONST_TS_CONFIG
+} from '../../core/consts.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils.js';
 import {
 	Phase_CheckCyclicImports,
 	Phase_Compile,
@@ -16,12 +32,14 @@ import {
 	Phase_PreCompile,
 	Phase_PrintDependencyTree,
 	Phase_Publish,
-	Phase_PublishDryRun,
-	Phase_Test
+	Phase_Test,
+	Phase_ToESM
 } from '../phase/index.js';
 import {ProjectUnit_RuntimeContext} from './ProjectUnit.js';
 import {glob} from 'node:fs/promises';
 import {TestType, TestTypes} from '../../core/params/params.js';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import path from 'node:path';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
@@ -86,7 +104,7 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
-	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test, Phase_Publish, Phase_PublishDryRun]> {
+	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test, Phase_Publish, Phase_ToESM]> {
 
 	private TestTypeWorkspaceSetup: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<void>> = {
 		pure: async (config, runtimeContext) => {
@@ -196,8 +214,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		if (this.config.packageJson.private) {
 			// @ts-ignore
 			this.publish = undefined;
-			// @ts-ignore
-			this.publishDryRun = undefined;
 		}
 	}
 
@@ -280,7 +296,6 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	//######################### Phase Implementations #########################
-
 
 	public async preCompile() {
 		const srcFolder = pathResolve(this.config.fullPath, 'src');
@@ -452,27 +467,27 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		throw new ImplementationMissingException(`Missing tsconfig template for source folder: ${sourceFolderType}`);
 	}
 
-	public async publishDryRun() {
-		if (this.config.packageJson.private)
-			return this.logWarning(`Not publishing a private package`);
-
-		this.logDebug(`Creating NPM Package`);
-		await this.allocateCommando(Commando_Basic)
-			.cd(this.config.output)
-			.append('npm pack --pack-destination ./..')
-			.execute();
-
-		this.logDebug(`Publishing Dry Run`);
-		await this.allocateCommando(Commando_Basic)
-			.cd(this.config.output)
-			.append('npm publish --dry-run')
-			.execute();
-	}
-
-
 	public async publish() {
 		if (this.config.packageJson.private)
 			return this.logInfo(`Not publishing a private package`);
+
+		if (this.runtimeContext.runtimeParams.simulation) {
+			this.logWarning(` ===> Publish Simulation -STARTED <=== `);
+			this.logDebug(`Creating NPM Package`);
+			await this.allocateCommando(Commando_Basic)
+				.cd(this.config.output)
+				.append('npm pack --pack-destination ./..')
+				.execute();
+
+			this.logDebug(`Publishing Dry Run`);
+			await this.allocateCommando(Commando_Basic)
+				.cd(this.config.output)
+				.append('npm publish --dry-run')
+				.execute();
+			this.logWarning(` ===> Publish Simulation - ENDED <=== `);
+
+			return;
+		}
 
 		this.logDebug(`Publishing Package - For REAL`);
 		await this.allocateCommando(Commando_Basic)
@@ -480,4 +495,149 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			.append('npm publish --access public')
 			.execute();
 	}
+
+	async convertToESM() {
+		const ignore = ['node_modules', '.git', 'dist', '.gitignore', 'build'];
+		const specificFiles = [CONST_PackageJSONTemplate];
+		const fileExtensions = ['.ts', '.tsx', '.mts', '.js', '.jsx', '.mjs'];
+		const units = arrayToMap(this.runtimeContext.childUnits, unit => unit.config.key);
+
+		const toESM = async (pathTofile: string, importPath: string) => {
+			importPath = importPath.replace(/\/+/g, '/');
+			if (importPath.endsWith('.js'))
+				return importPath;
+
+			for (const extension of fileExtensions) {
+				if (!importPath.endsWith(extension))
+					continue;
+
+				importPath = importPath.replace(extension, '');
+				break;
+			}
+
+			let initialPath;
+			let relativePathToFile;
+			let extension = '';
+			if (importPath.startsWith('.') || importPath.startsWith('/')) {
+				initialPath = path.dirname(pathTofile);
+				relativePathToFile = importPath;
+				extension = '.js';
+			} else {
+				const [part1, part2, ...relativePathParts] = importPath.split('/');
+				const unit = units[part1] ?? units[`${part1}/${part2}`];
+				if (unit) {
+					initialPath = `${unit.config.fullPath}/src/main`;
+					relativePathToFile = relativePathParts.join('/');
+				}
+			}
+
+			if (!exists(initialPath) || !exists(relativePathToFile))
+				return importPath;
+
+			const fullPath = path.resolve(initialPath, relativePathToFile);
+			if (await FileSystemUtils.exists(fullPath) && await FileSystemUtils.folder.isFolder(fullPath))
+				relativePathToFile = `${relativePathToFile}/index`;
+
+			// throw new BadImplementationException(`Expected file to exist: ${fullPath}`);
+
+			relativePathToFile += extension;
+			relativePathToFile = relativePathToFile.replace(/\/+/g, '/');
+
+			return relativePathToFile;
+		};
+
+		const importMatchers = [
+			{
+				regex: /from\s+["']([^"']+)["']/g,
+				replacer: async (pathTofile: string, importPath: string) => `from "${await toESM(pathTofile, importPath)}"`
+			},
+			{
+				regex: /require\(\s*["']([^"']+)["']\s*\)/g,
+				replacer: async (pathTofile: string, importPath: string) => `await import("${await toESM(pathTofile, importPath)}")`
+			},
+			{
+				regex: /import\(\s*["']([^"']+)["']\s*\)/g,
+				replacer: async (pathTofile: string, importPath: string) => `import("${await toESM(pathTofile, importPath)}")`
+			},
+		];
+
+		const updateImports = async (pathToEntry: string) => {
+			let content = await FileSystemUtils.file.read(pathToEntry);
+			this.logDebug('Processing file: ', pathToEntry);
+			for (const {regex, replacer} of importMatchers) {
+				const matches: { original: string; path: string; index: number }[] = [];
+				let match: RegExpExecArray | null;
+
+				regex.lastIndex = 0;
+				while ((match = regex.exec(content))) {
+					matches.push({original: match[0], path: match[1], index: match.index});
+					regex.lastIndex = match.index + match[0].length;
+				}
+
+				for (const {original, path} of matches) {
+					const replacement = await replacer(pathToEntry, path);
+					// Replace all exact original strings globally
+					content = content.split(original).join(replacement);
+				}
+			}
+
+			if (!this.runtimeContext.runtimeParams.simulation)
+				await FileSystemUtils.file.write(pathToEntry, content);
+		};
+
+		const migratePackageJSON = async (pathToEntry: string) => {
+			const packageJson = JSON.parse(await FileSystemUtils.file.read(pathToEntry));
+			if (!packageJson.name.startsWith('@nu-art/'))
+				packageJson.private = packageJson.private ?? true;
+
+			packageJson.type = packageJson.type ?? 'module';
+			packageJson.exports = packageJson.exports ?? {
+				'.': {
+					'types': './index.d.ts',
+					'import': './index.js'
+				},
+				'./*': {
+					'types': './*.d.ts',
+					'import': './*.js'
+				}
+			};
+
+			if (!this.runtimeContext.runtimeParams.simulation)
+				await FileSystemUtils.file.write(pathToEntry, __stringify(packageJson, true));
+		};
+
+		await FileSystemUtils.folder.iterate(this.config.fullPath, {
+			filter: async (pathToEntry) => {
+				const name = path.basename(pathToEntry);
+				if (ignore.includes(name))
+					return false;
+
+				if (await FileSystemUtils.folder.isFolder(pathToEntry))
+					return true;
+
+				if (!await FileSystemUtils.file.isFile(pathToEntry)) {
+					this.logWarning(`NOT a file or folder: ${pathToEntry}`);
+					return false;
+				}
+
+				if (specificFiles.includes(name))
+					return true;
+
+				const fileExtension = path.extname(pathToEntry);
+				return fileExtensions.includes(fileExtension.toLowerCase());
+			},
+			processor: async (pathToEntry: string) => {
+				const name = path.basename(pathToEntry);
+				const fileExtension = path.extname(pathToEntry);
+
+				if (name === CONST_PackageJSONTemplate)
+					return await migratePackageJSON(pathToEntry);
+
+				if (fileExtensions.includes(fileExtension.toLowerCase()))
+					return await updateImports(pathToEntry);
+
+			},
+		});
+
+	};
 }

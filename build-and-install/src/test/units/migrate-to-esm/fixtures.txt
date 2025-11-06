@@ -1,0 +1,351 @@
+version: v1
+// file: ./lib-migrate.txt
+//// file: ./__package.json
+{
+  "name": "lib-migrate",
+  "version": "0.0.0",
+  "private": true,
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "lib-migrate",
+    "customTSConfig": true
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  }
+}
+
+// file: ./workspace-migrate-rel-file.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+import { u } from './util';
+import { h } from '../shared/helpers';
+
+export const out = u() + h();
+
+//// file: ./src/main/util.ts
+export const u = () => 'u';
+
+//// file: ./src/shared/helpers.ts
+export const h = () => 'h';
+
+// file: ./workspace-migrate-index-resolution.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+import { lib } from './lib';
+export const out = lib();
+
+//// file: ./src/main/lib/index.ts
+export const lib = () => 1;
+
+// file: ./workspace-migrate-type-only.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+import type { Foo } from './types';
+
+const x: Foo = { a: 1 };
+export const ok: Foo = x;
+
+//// file: ./src/main/types.ts
+export type Foo = { a: number };
+
+// file: ./workspace-migrate-bare-package.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+import _ from 'lodash';
+export const r = _.camelCase('A B');
+
+// file: ./workspace-migrate-ts-paths.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "baseUrl": "./src/main",
+    "paths": {
+      "@app/*": ["*"]
+    }
+  }
+}
+
+//// file: ./src/main/a.ts
+import { sum } from '@app/utils';
+export const r = sum(1, 2);
+
+//// file: ./src/main/utils/index.ts
+export const sum = (a: number, b: number) => a + b;
+
+// file: ./workspace-migrate-require-dynamic.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+const modName = './util';
+// dynamic require — should be flagged by migration phase
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const m = require(modName);
+export const r = m.u();
+
+//// file: ./src/main/util.ts
+export const u = () => 'u';
+
+// file: ./workspace-migrate-cross-package-relative.txt
+//// file: ./packages/pkg-a/__package.json
+{
+  "name": "pkg-a",
+  "version": "0.0.0",
+  "private": true,
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "pkg-a",
+    "customTSConfig": true
+  },
+  "publish": {
+    "location": "dist",
+    "linkDirectory": true
+  }
+}
+
+//// file: ./packages/pkg-a/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./packages/pkg-a/src/main/a.ts
+import { b } from 'pkg-b/file';
+export const r = b();
+
+//// file: ./packages/pkg-b/__package.json
+{
+  "name": "pkg-b",
+  "version": "0.0.0",
+  "private": true,
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "pkg-b",
+    "customTSConfig": true
+  },
+  "publish": {
+    "location": "dist",
+    "linkDirectory": true
+  }
+}
+
+//// file: ./packages/pkg-b/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./packages/pkg-b/src/main/file.ts
+export const b = () => 'b';
+
+// file: ./workspace-migrate-explicit-index.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+import { lib } from './lib/index';
+export const out = lib();
+
+//// file: ./src/main/lib/index.ts
+export const lib = () => 1;
+
+// file: ./workspace-migrate-trailing-slash.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+import { lib } from './lib/';
+export const out = lib();
+
+//// file: ./src/main/lib/index.ts
+export const lib = () => 2;
+
+// file: ./workspace-migrate-dot-to-index.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/index.ts
+export const main = () => 3;
+
+//// file: ./src/main/a.ts
+import { main } from './';
+export const out = main();
+
+// file: ./workspace-migrate-already-js.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/util.ts
+export const u = () => 'u';
+
+//// file: ./src/main/a.ts
+import { u } from './util.js';
+export const out = u();
+
+// file: ./workspace-migrate-ts-tsx.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "jsx": "react-jsx"
+  }
+}
+
+//// file: ./src/main/util.ts
+export const u = () => 'u';
+
+//// file: ./src/main/Comp.tsx
+export const Comp = () => null;
+
+//// file: ./src/main/a.ts
+import { u } from './util.ts';
+import { Comp } from './Comp.tsx';
+
+export const out = u;
+export const C = Comp;
+
+
+version: v1
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+import { lib } from './lib/index';
+export const out = lib();
+
+//// file: ./src/main/lib/index.ts
+export const lib = () => 1;
+
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+import { lib } from './lib/';
+export const out = lib();
+
+//// file: ./src/main/lib/index.ts
+export const lib = () => 2;
+
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/index.ts
+export const main = () => 3;
+
+//// file: ./src/main/a.ts
+import { main } from './';
+export const out = main();
+
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/util.ts
+export const u = () => 'u';
+
+//// file: ./src/main/a.ts
+import { u } from './util.js';
+export const out = u();
+
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "jsx": "react-jsx"
+  }
+}
+
+//// file: ./src/main/util.ts
+export const u = () => 'u';
+
+//// file: ./src/main/Comp.tsx
+export const Comp = () => null;
+
+//// file: ./src/main/a.ts
+import { u } from './util.ts';
+import { Comp } from './Comp.tsx';
+
+export const out = u;
+export const C = Comp;

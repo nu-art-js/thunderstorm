@@ -3,10 +3,10 @@ import {__stringify, StringMap} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types.js';
 import {Config_ProjectUnit, ProjectUnit} from './ProjectUnit.js';
 import {resolve} from 'path';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../core/FileSystemUtils.js';
 import {TS_PackageJSON} from '../UnitsMapper/types.js';
 import {Phase_Prepare, Phase_Purge} from '../phase/index.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 
 export type Unit_PackageJson_Config = Config_ProjectUnit & { packageJson: TS_PackageJSON; };
