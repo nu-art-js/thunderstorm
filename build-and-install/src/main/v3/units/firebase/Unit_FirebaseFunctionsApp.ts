@@ -6,9 +6,9 @@ import {FirebasePackageConfig} from '../../../core/types/index.js';
 import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '../../core/FileSystemUtils.js';
 import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
 import {resolve} from 'path';
+import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',

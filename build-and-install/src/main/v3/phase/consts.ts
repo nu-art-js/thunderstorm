@@ -23,6 +23,15 @@ export const phase_CheckCyclicImports: Phase<'checkCyclicImports'> = {
 	terminateAfterPhase: true,
 };
 
+export type Phase_ToESM = typeof phase_ToESM;
+export const phaseKey_ToESM = 'convertToESM';
+export const phase_ToESM: Phase<'convertToESM'> = {
+	key: phaseKey_ToESM,
+	name: 'ToESM',
+	method: 'convertToESM',
+	filter: (baiParams) => !baiParams.noBuild,
+};
+
 // export const phases_Terminating: Phase<string>[] = [
 // 	phase_PrintDependencyTree,
 // 	phase_CheckCyclicImports,
@@ -139,15 +148,6 @@ export const phases_Launch: Phase<string>[][] = [[
 ]];
 
 //######################### Publish and Deploy Phases #########################
-export type Phase_PublishDryRun = typeof phase_PublishDryRun;
-export const phaseKey_PublishDryRun = 'publishDryRun';
-export const phase_PublishDryRun: Phase<'publishDryRun'> = {
-	key: phaseKey_PublishDryRun,
-	name: 'PublishDryRun',
-	method: 'publishDryRun',
-	filter: (baiParams) => baiParams.publishDryRun,
-};
-
 export type Phase_Publish = typeof phase_Publish;
 export const phaseKey_Publish = 'publish';
 export const phase_Publish: Phase<'publish'> = {
@@ -176,4 +176,4 @@ export const phase_Deploy: Phase<'deploy'> = {
 	filter: (baiParams) => !!baiParams.deploy,
 };
 
-export const phases_Deploy: Phase<string>[][] = [[phase_PublishDryRun, phase_Publish, phase_Deploy], [phase_PostPublish]];
+export const phases_Deploy: Phase<string>[][] = [[phase_Publish, phase_Deploy], [phase_PostPublish]];

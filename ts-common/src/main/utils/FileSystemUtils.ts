@@ -3,6 +3,7 @@ import {resolve} from 'path';
 import {BadImplementationException} from '../core/exceptions/exceptions.js';
 import {StringMap} from './types.js';
 import {exists} from './tools.js';
+import path from 'node:path';
 
 
 async function isFile(path: string) {
@@ -49,7 +50,13 @@ export const DEFAULT_TEMPLATE_PATTERN = new RegExp(`\{\{([a-zA-Z]\\w{2,}?)\}\}`)
 export const DEFAULT_OLD_TEMPLATE_PATTERN = new RegExp(`(?<!\\\\)\\$([a-zA-Z]\\w{2,})`);
 
 export const FileSystemUtils = {
+	exists: async (pathToFile: string) => {
+		return await fileExists(pathToFile);
+	},
 	file: {
+		isFile: async (pathToFile: string) => {
+			return isFile(pathToFile);
+		},
 		exists: async (pathToFile: string) => {
 			return await fileExists(pathToFile);
 		},
@@ -103,6 +110,10 @@ export const FileSystemUtils = {
 		},
 	},
 	folder: {
+		isFolder: async (pathToFile: string) => {
+			return isFolder(pathToFile);
+		},
+
 		delete: async (pathToFolder: string, mustExist = false) => {
 			if (!await assertExists(pathToFolder, mustExist, 'Folder'))
 				return;
@@ -130,8 +141,7 @@ export const FileSystemUtils = {
 		}, {
 			forEach: Object.assign(async (pathToFolder: string, callback: (path: string) => Promise<any>) => {
 				const entries = await _fs.readdir(pathToFolder);
-				for (const entry of entries)
-					await callback(resolve(pathToFolder, entry));
+				return Promise.all(entries.map(entry => callback(resolve(pathToFolder, entry))));
 			}, {
 				file: async (pathToFolder: string, callback: (path: string) => Promise<any>) => {
 					await FileSystemUtils.folder.list.forEach(pathToFolder, async entry => {
@@ -150,7 +160,25 @@ export const FileSystemUtils = {
 					});
 				}
 			})
-		})
+		}),
+		iterate: async (pathToDir: string, options: FileIteratorOptions) => {
+			const pathToEntry = path.resolve(pathToDir);
+
+			if (await FileSystemUtils.file.isFile(pathToEntry)) {
+				(await options.filter(pathToEntry)) && (await options.processor(pathToEntry));
+				return;
+			}
+
+
+			if (await FileSystemUtils.folder.isFolder(pathToEntry)) {
+				await FileSystemUtils.folder.list.forEach(pathToEntry, async (entry): Promise<any> => {
+					return (await options.filter(entry)) && (await FileSystemUtils.folder.iterate(entry, options));
+				});
+				return;
+			}
+
+			throw new BadImplementationException(`Expected file or folder but found something else: ${pathToEntry}`);
+		}
 	},
 	symlink: {
 		create: async (targetPath: string, linkPath: string) => {
@@ -171,3 +199,9 @@ export const FileSystemUtils = {
 		}
 	}
 };
+
+type FileIteratorOptions = {
+	filter: (path: string) => Promise<boolean>
+	processor: (path: string) => Promise<any>
+	followSymlinks?: boolean
+}
