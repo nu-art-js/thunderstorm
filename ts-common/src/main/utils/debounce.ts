@@ -57,7 +57,9 @@ export class Debounce<Args extends any[], Response>
 		}
 	}
 
-	private executeAction(triggerIndex: number): Response | undefined {
+	private executeAction(triggerIndex: number, immediate: true): Response;
+	private executeAction(triggerIndex: number, immediate?: false): undefined;
+	private executeAction(triggerIndex: number, immediate?: boolean): Response | undefined {
 		if (triggerIndex !== this.triggerIndex)
 			return;
 
@@ -65,6 +67,9 @@ export class Debounce<Args extends any[], Response>
 		const args = this.latestArgs ?? ([] as unknown as Args);
 		this.clearTimers();
 		const result = this.action(...args);
+		if (immediate)
+			return result;
+
 		//Set up chain triggering if the action is asynchronous.
 		if (isPromise(result)) {
 			this.actionInProgress = true;
@@ -78,7 +83,6 @@ export class Debounce<Args extends any[], Response>
 				}
 			});
 		}
-		return result;
 	}
 
 	//######################### Public Logic #########################
@@ -112,7 +116,7 @@ export class Debounce<Args extends any[], Response>
 	 * Returns whether an action is currently scheduled
 	 */
 	public isScheduled(): boolean {
-		return Boolean(this.waitTimer || this.maxTimer);
+		return exists(this.waitTimer ?? this.maxTimer);
 	}
 
 	/**
@@ -123,9 +127,9 @@ export class Debounce<Args extends any[], Response>
 	 */
 	public flush(): Response | undefined {
 		if (!this.isScheduled())
-			return;
+			return void this.logInfo('Not scheduled');
 
-		return this.executeAction(this.triggerIndex);
+		return this.executeAction(this.triggerIndex, true);
 	}
 
 	/** Cancel any scheduled run. (Does not cancel in-flight.) */
