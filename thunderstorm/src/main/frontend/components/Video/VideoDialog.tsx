@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
-import {ComponentSync} from '../../core/ComponentSync';
-import {TS_Video_Props} from './types';
-import {_className} from '../../utils/tools';
-import {TS_Video} from './Video';
+import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {TS_Video_Props} from './types.js';
+import {_className} from '../../utils/tools.js';
+import {TS_Video} from './Video.js';
 import './VideoDialog.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 

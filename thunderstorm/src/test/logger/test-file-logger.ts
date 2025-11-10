@@ -20,7 +20,7 @@
  */
 
 import {BeLogged, Logger, padNumber} from '@nu-art/ts-common';
-import {LogClient_File} from '../../main/frontend/utils/LogClient_File';
+import {LogClient_File} from '../../main/frontend/utils/LogClient_File.js';
 
 
 BeLogged.addClient(new LogClient_File('logger', '../.trash/logger-test', 10, 1024).setRotationListener(() => {

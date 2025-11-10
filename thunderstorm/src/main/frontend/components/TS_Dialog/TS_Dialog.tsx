@@ -1,14 +1,14 @@
 import * as React from 'react';
 import './TS_Dialog.scss';
 import {_values, BadImplementationException, filterInstances, flatArray, TS_Object, TypedMap} from '@nu-art/ts-common';
-import {DialogKey} from '../../component-modules/ModuleFE_Dialog.js';
+import {DialogKey, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog.js';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary/index.js';
 import {Button} from '../Button/Button.js';
 import {LL_V_L} from '../Layouts/index.js';
 
-import {ComponentSync} from '../../core/ComponentSync';
-import {_className, stopPropagation} from '../../utils/tools';
-import {InferState} from '../../utils/types';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {_className, stopPropagation} from '../../utils/tools.js';
+import {InferState} from '../../utils/types.js';
 
 /**
  * ###DialogButton
@@ -137,7 +137,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	};
 
 	protected closeDialog = (force = false) => {
-		if(this.state.error)
+		if (this.state.error)
 			this.logError(this.state.error);
 		ModuleFE_Dialog.close(force, this.props.dialogKey);
 	};

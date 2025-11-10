@@ -48,7 +48,7 @@ import {
 	globalErrorListener,
 	indexedDBAsyncCheckLog,
 	navigationTimingLog
-} from './thunder-helpers';
+} from './thunder-helpers.js';
 
 export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();
 
