@@ -35,7 +35,7 @@ export * from './core/thunder-modulepack.js';
 export * from './core/Thunder.js';
 export * from './core/typed-api.js';
 export * from './core/proto-component/index.js';
-// export * from './core/IndexedDBV3';
+// export * from './core/IndexedDBV3.js';
 export * from './core/IndexedDBV4/IndexedDB_Store.js';
 
 export * from './component-modules/ModuleFE_Dialog.js';
@@ -56,7 +56,7 @@ export * from './components/TS_Dropdown/index.js';
 export * from './components/TS_Overlay/index.js';
 export * from './components/TS_Tree/index.js';
 export * from './components/TS_Checkbox/index.js';
-export * from './components/TS_Checkbox/TS_CheckboxV2';
+export * from './components/TS_Checkbox/TS_CheckboxV2.js';
 export * from './components/TS_CheckboxGroup/index.js';
 export * from './components/TS_AppTools/index.js';
 export * from './components/TS_Loader/index.js';
@@ -91,8 +91,8 @@ export * from './components/TS_ButtonGroup/index.js';
 export * from './components/TS_Toggle/index.js';
 export * from './components/TS_JSONViewer/TS_JSONViewer.js';
 export * from './components/Label/Label.js';
-export * from './components/Video/Video';
-export * from './components/Video/VideoDialog';
+export * from './components/Video/Video.js';
+export * from './components/Video/VideoDialog.js';
 
 export * from './components/GenericRenderer/Component_GenericRenderer.js';
 export * from './modules/ModuleFE_Utils/ModuleFE_Utils.js';

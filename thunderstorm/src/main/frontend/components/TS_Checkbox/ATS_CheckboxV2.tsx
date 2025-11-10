@@ -1,10 +1,9 @@
-import * as React from 'react';
-import {thunderstormATSGroups} from '../../consts';
-import {ComponentSync} from '../../core/ComponentSync';
-import {Grid} from '../Layouts';
-import {AppToolsScreen} from '../TS_AppTools';
+import {thunderstormATSGroups} from '../../consts.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {Grid} from '../Layouts/index.js';
+import {AppToolsScreen} from '../TS_AppTools/index.js';
 import './ATS_CheckboxV2.scss';
-import {TS_CheckboxV2} from './TS_CheckboxV2';
+import {TS_CheckboxV2} from './TS_CheckboxV2.js';
 import {voidFunction} from '@nu-art/ts-common';
 
 type State = {

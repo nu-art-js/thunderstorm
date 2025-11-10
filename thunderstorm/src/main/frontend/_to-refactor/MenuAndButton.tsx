@@ -21,9 +21,9 @@
 //
 // import * as React from 'react';
 // import {CSSProperties, ReactNode} from 'react';
-// import {MenuBuilder, PopUp_Model_Content, PopUpListener, resolveRealPosition} from '../component-modules/mouse-interactivity/ModuleFE_PopUp';
+// import {MenuBuilder, PopUp_Model_Content, PopUpListener, resolveRealPosition} from '../component-modules/mouse-interactivity/ModuleFE_PopUp.js';
 // import {BadImplementationException} from '@nu-art/ts-common';
-// import {Adapter} from '../components/adapter/Adapter';
+// import {Adapter} from '../components/adapter/Adapter.js';
 //
 // type Props = {
 // 	id: string

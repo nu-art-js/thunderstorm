@@ -575,20 +575,20 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				replacer: async (pathTofile: string, importPath: string) => `from '${await toESM(pathTofile, importPath)}'`
 			},
 			{
-				regex: /require\((\S+)?\)/g,
-				replacer: async (pathTofile: string, importPath: string) => `await import("${await toESM(pathTofile, importPath)}")`
+				regex: /\srequire\((\S+)?\)/g,
+				replacer: async (pathTofile: string, importPath: string) => ` await import("${await toESM(pathTofile, importPath)}")`
 			},
 			{
-				regex: /require\((\S+)?\)/g,
-				replacer: async (pathTofile: string, importPath: string) => `await import('${await toESM(pathTofile, importPath)}')`
+				regex: /\srequire\((\S+)?\)/g,
+				replacer: async (pathTofile: string, importPath: string) => ` await import('${await toESM(pathTofile, importPath)}')`
 			},
 			{
-				regex: /require\(\s*"(\S+)?"\s*\)/g,
-				replacer: async (pathTofile: string, importPath: string) => `await import("${await toESM(pathTofile, importPath)}")`
+				regex: /\srequire\(\s*"(\S+)?"\s*\)/g,
+				replacer: async (pathTofile: string, importPath: string) => ` await import("${await toESM(pathTofile, importPath)}")`
 			},
 			{
-				regex: /require\(\s*'(\S+)?'\s*\)/g,
-				replacer: async (pathTofile: string, importPath: string) => `await import('${await toESM(pathTofile, importPath)}')`
+				regex: /\srequire\(\s*'(\S+)?'\s*\)/g,
+				replacer: async (pathTofile: string, importPath: string) => ` await import('${await toESM(pathTofile, importPath)}')`
 			},
 			{
 				regex: /import\(\s*"(\S+)?"\s*\)/g,

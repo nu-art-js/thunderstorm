@@ -21,7 +21,6 @@
 
 import {HttpRoute} from './RouteResolver_ModulePath.js';
 
-export * from './RouteResolver_DirPath.js';
 export * from './RouteResolver_ModulePath.js';
 
 export type RouteResolver = {
