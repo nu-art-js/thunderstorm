@@ -4,7 +4,6 @@ import {
 	__stringify,
 	arrayToMap,
 	BadImplementationException,
-	exists,
 	ImplementationMissingException,
 	LogLevel,
 	NotImplementedYetException,
@@ -502,62 +501,102 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const fileExtensions = ['.ts', '.tsx', '.mts', '.js', '.jsx', '.mjs'];
 		const units = arrayToMap(this.runtimeContext.childUnits, unit => unit.config.key);
 
-		const toESM = async (pathTofile: string, importPath: string) => {
-			importPath = importPath.replace(/\/+/g, '/');
-			if (importPath.endsWith('.js'))
-				return importPath;
+		const toESM = async (pathTofile: string, originImportPath: string) => {
+			originImportPath = originImportPath.replace(/\/+/g, '/');
+			if (originImportPath.endsWith('.js'))
+				return originImportPath;
+
+			if (originImportPath.endsWith('.json'))
+				return originImportPath;
 
 			for (const extension of fileExtensions) {
-				if (!importPath.endsWith(extension))
+				if (!originImportPath.endsWith(extension))
 					continue;
 
-				importPath = importPath.replace(extension, '');
+				originImportPath = originImportPath.replace(extension, '');
 				break;
 			}
 
-			let initialPath;
-			let relativePathToFile;
-			let extension = '';
-			if (importPath.startsWith('.') || importPath.startsWith('/')) {
-				initialPath = path.dirname(pathTofile);
-				relativePathToFile = importPath;
-				extension = '.js';
-			} else {
-				const [part1, part2, ...relativePathParts] = importPath.split('/');
-				const unit = units[part1] ?? units[`${part1}/${part2}`];
-				if (unit) {
-					initialPath = `${unit.config.fullPath}/src/main`;
-					relativePathToFile = relativePathParts.join('/');
-				}
+			// this can be ./path/to/folder => ./path/to/folder/index.js
+			// this can be ./path/to/file   => ./path/to/file.js
+			if (originImportPath.startsWith('.') || originImportPath.startsWith('/')) {
+				const initialPath = path.dirname(pathTofile);
+				let relativePathToFile = originImportPath;
+
+				const fullPath = path.resolve(initialPath, relativePathToFile);
+				if (await FileSystemUtils.exists(fullPath) && await FileSystemUtils.folder.isFolder(fullPath))
+					relativePathToFile = `${relativePathToFile}/index`;
+
+				// either way we need to add a .js
+				relativePathToFile += '.js';
+				relativePathToFile = relativePathToFile.replace(/\/+/g, '/');
+
+				return relativePathToFile;
 			}
 
-			if (!exists(initialPath) || !exists(relativePathToFile))
+			const resolveImportPathFromUnit = async (packageName: string, relativePathToFile: string) => {
+				const unit = units[packageName];
+				if (!unit)
+					return;
+
+				let initialPath = `${unit.config.fullPath}/src/main`;
+				const fullPath = path.resolve(initialPath, relativePathToFile);
+				if (await FileSystemUtils.exists(fullPath) && await FileSystemUtils.folder.isFolder(fullPath))
+					relativePathToFile = `${relativePathToFile}/index`;
+
+				const importPath = `${packageName}/${relativePathToFile}`.replace(/\/+/g, '/');
+				if (importPath === `${packageName}/index`)
+					return `${packageName}`;
+
 				return importPath;
+			};
 
-			const fullPath = path.resolve(initialPath, relativePathToFile);
-			if (await FileSystemUtils.exists(fullPath) && await FileSystemUtils.folder.isFolder(fullPath))
-				relativePathToFile = `${relativePathToFile}/index`;
+			// this can be {{libName}}/path/to/file   => {{libName}}/path/to/file
+			let [libName1, ...rest1] = originImportPath.split('/');
+			let esmImportPath = await resolveImportPathFromUnit(libName1, rest1.join('/'));
+			if (esmImportPath)
+				return esmImportPath;
 
-			// throw new BadImplementationException(`Expected file to exist: ${fullPath}`);
+			let [libOrg, libName2, ...rest2] = originImportPath.split('/');
+			esmImportPath = await resolveImportPathFromUnit(`${libOrg}/${libName2}`, rest2.join('/'));
+			if (esmImportPath)
+				return esmImportPath;
 
-			relativePathToFile += extension;
-			relativePathToFile = relativePathToFile.replace(/\/+/g, '/');
-
-			return relativePathToFile;
+			return originImportPath;
 		};
 
 		const importMatchers = [
 			{
-				regex: /from\s+["']([^"']+)["']/g,
+				regex: /from\s+"(\S+)?"/g,
 				replacer: async (pathTofile: string, importPath: string) => `from "${await toESM(pathTofile, importPath)}"`
 			},
 			{
-				regex: /require\(\s*["']([^"']+)["']\s*\)/g,
+				regex: /from\s+'(\S+)?'/g,
+				replacer: async (pathTofile: string, importPath: string) => `from '${await toESM(pathTofile, importPath)}'`
+			},
+			{
+				regex: /require\((\S+)?\)/g,
 				replacer: async (pathTofile: string, importPath: string) => `await import("${await toESM(pathTofile, importPath)}")`
 			},
 			{
-				regex: /import\(\s*["']([^"']+)["']\s*\)/g,
+				regex: /require\((\S+)?\)/g,
+				replacer: async (pathTofile: string, importPath: string) => `await import('${await toESM(pathTofile, importPath)}')`
+			},
+			{
+				regex: /require\(\s*"(\S+)?"\s*\)/g,
+				replacer: async (pathTofile: string, importPath: string) => `await import("${await toESM(pathTofile, importPath)}")`
+			},
+			{
+				regex: /require\(\s*'(\S+)?'\s*\)/g,
+				replacer: async (pathTofile: string, importPath: string) => `await import('${await toESM(pathTofile, importPath)}')`
+			},
+			{
+				regex: /import\(\s*"(\S+)?"\s*\)/g,
 				replacer: async (pathTofile: string, importPath: string) => `import("${await toESM(pathTofile, importPath)}")`
+			},
+			{
+				regex: /import\(\s*'(\S+)?'\s*\)/g,
+				replacer: async (pathTofile: string, importPath: string) => `import('${await toESM(pathTofile, importPath)}')`
 			},
 		];
 

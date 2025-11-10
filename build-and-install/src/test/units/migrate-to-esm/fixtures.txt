@@ -26,8 +26,8 @@ version: v1
 }
 
 //// file: ./src/main/a.ts
-import { u } from './util';
-import { h } from '../shared/helpers';
+import { u } from './util.js';
+import { h } from '../shared/helpers.js';
 
 export const out = u() + h();
 
@@ -134,8 +134,8 @@ export const u = () => 'u';
     "label": "pkg-a",
     "customTSConfig": true
   },
-  "publish": {
-    "location": "dist",
+    "publishConfig": {
+    "directory": "dist",
     "linkDirectory": true
   }
 }
@@ -162,8 +162,8 @@ export const r = b();
     "label": "pkg-b",
     "customTSConfig": true
   },
-  "publish": {
-    "location": "dist",
+    "publishConfig": {
+    "directory": "dist",
     "linkDirectory": true
   }
 }
@@ -349,3 +349,158 @@ import { Comp } from './Comp.tsx';
 
 export const out = u;
 export const C = Comp;
+version: v1
+// file: ./workspace-migrate-cross-package-bare.txt
+//// file: ./packages/pkg-a/__package.json
+{
+  "name": "pkg-a",
+  "version": "0.0.0",
+  "private": true,
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "pkg-a",
+    "customTSConfig": true
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "pkg-b": "workspace:*"
+  }
+}
+
+//// file: ./packages/pkg-a/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./packages/pkg-a/src/main/a.ts
+import { b } from 'pkg-b';
+export const r = b();
+
+//// file: ./packages/pkg-b/__package.json
+{
+  "name": "pkg-b",
+  "version": "0.0.0",
+  "private": true,
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "pkg-b",
+    "customTSConfig": true
+  },
+    "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  }
+}
+
+//// file: ./packages/pkg-b/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./packages/pkg-b/src/main/index.ts
+export const b = () => 'b';
+
+// file: ./workspace-migrate-dyn-import-static.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/lib/index.ts
+export const lib = () => 1;
+
+//// file: ./src/main/a.ts
+export const run = async () => {
+  const mod = await import('./lib');
+  return (await mod).lib();
+};
+
+// file: ./workspace-migrate-dyn-import-expr.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+const name = 'index';
+export const run = async () => import('./lib/' + name);
+
+// file: ./workspace-migrate-require-literal.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/util.ts
+export const u = () => 'u';
+
+//// file: ./src/main/a.ts
+// literal require: should convert to await import('./util.js')
+const m = require('./util');
+export const r = m.u();
+
+// file: ./workspace-migrate-require-expr.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/a.ts
+// non-literal require: should convert to await import(name)
+const name = './util';
+const m = require(name);
+export const r = m;
+
+// file: ./workspace-migrate-asset-import.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./src/main/logo.svg
+<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="5" r="4"/></svg>
+
+//// file: ./src/main/a.ts
+import './logo.svg';
+export const x = 1;
+
+// file: ./workspace-migrate-json-import.txt
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  }
+}
+
+//// file: ./src/main/data.json
+{ "a": 1 }
+
+//// file: ./src/main/a.ts
+import data from './data.json';
+export const a = data.a;
