@@ -287,7 +287,7 @@ export const BaiParam_ToESM: BaseCliParam<'toESM', boolean> = {
 };
 
 export const BaiParam_Simulate: BaseCliParam<'simulation', boolean> = {
-	keys: ['--simulate', '-sim'],
+	keys: ['--simulate', '-sim', '--simulation'],
 	keyName: 'simulation',
 	type: 'boolean',
 	group: 'Other',
