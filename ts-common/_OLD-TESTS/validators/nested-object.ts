@@ -21,7 +21,7 @@ import {
 	tsValidateRegexp,
 	tsValidateValue,
 	TestSuit
-} from '../_main';
+} from '../_main.js';
 import {TestCase_Validator, validatorProcessor} from './_common.js';
 
 

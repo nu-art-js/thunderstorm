@@ -20,7 +20,7 @@ import {
 	tsValidateArray,
 	tsValidateRegexp,
 	TestSuit
-} from "../_main";
+} from "../_main.js";
 import {
 	ObjectWithArray,
 	objectWithArray1,

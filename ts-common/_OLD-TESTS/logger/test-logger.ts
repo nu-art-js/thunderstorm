@@ -22,7 +22,7 @@ import {
 	ThisShouldNotHappenException,
 	Logger,
 	BeLogged
-} from "../_main";
+} from "../_main.js";
 
 
 class TestLogger

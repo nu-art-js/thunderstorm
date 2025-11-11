@@ -30,7 +30,7 @@ import {
 import {
 	ModuleBE_Firebase,
 	ModuleBE_Firebase_Class
-} from "@nu-art/firebase/backend";
+} from "@nu-art/firebase/backend/index";
 
 export class Tester
 	extends ModuleManager {

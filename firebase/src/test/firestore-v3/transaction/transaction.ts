@@ -2,7 +2,7 @@ import {CollectionTest, prepareCollectionTest} from '../_core/consts.js';
 import * as chaiAsPromised from 'chai-as-promised';
 import {transactionTestCases} from './consts.js';
 
-const chai = require('chai');
+const chai = await import("'chai'");
 chai.use(chaiAsPromised);
 
 export const TestCases_FB_Transaction: CollectionTest['testcases'] = [

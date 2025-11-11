@@ -27,7 +27,7 @@ import {
 	ModuleBE_PermissionsAssert,
 	ModuleBE_PermissionUserDB,
 	User_Group
-} from '../_main';
+} from '../_main.js';
 import {FirestoreTransaction} from '@nu-art/firebase/backend/index';
 import {cleanup} from './_core.js';
 import {__custom, __scenario} from '@nu-art/testelot';

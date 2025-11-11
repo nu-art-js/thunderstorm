@@ -31,7 +31,7 @@ import {
 import {read} from "fs";
 
 
-const PkgReader = require('isomorphic-apk-reader');
+const PkgReader = await import("'isomorphic-apk-reader'");
 const ApkPath = 'files-temp/pah.apk';
 
 async function parseApkImpl(file: FileWrapper) {

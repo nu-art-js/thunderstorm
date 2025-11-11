@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunderstorm/frontend';
+import {AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunderstorm/frontend/index';
 import {thunderstormCapabilitiesGroup} from '@nu-art/thunderstorm/frontend/consts';
-import {Model_FloatingWindow} from '../../types';
-import {ModuleFE_FloatingWindows} from '../../_modules/ModuleFE_FloatingWindows';
-import {windowRect} from '../../_utils/get-window-rect';
+import {Model_FloatingWindow} from '../../types.js';
+import {ModuleFE_FloatingWindows} from '../../_modules/ModuleFE_FloatingWindows.js';
+import {windowRect} from '../../_utils/get-window-rect.js';
 
 class ATS_FloatingWindows_Class
 	extends ComponentSync {

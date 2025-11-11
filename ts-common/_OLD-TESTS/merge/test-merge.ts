@@ -17,8 +17,8 @@
  */
 
 
-import {merge} from "../../main/utils/merge-tools";
-import {StaticLogger} from "../../main";
+import {merge} from "../../main/utils/merge-tools.js";
+import {StaticLogger} from "../../main.js";
 
 const int = 1;
 const str = 'a';

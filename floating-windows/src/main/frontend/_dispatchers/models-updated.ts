@@ -1,4 +1,4 @@
-import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend/index';
 
 export interface FloatingWindows_WindowsUpdated {
 	__onFloatingWindowsUpdated: VoidFunction;

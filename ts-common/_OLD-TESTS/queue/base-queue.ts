@@ -19,7 +19,7 @@
 import {
 	Queue, StaticLogger,
 	timeout
-} from "../_main";
+} from "../_main.js";
 
 const queue = new Queue("test");
 

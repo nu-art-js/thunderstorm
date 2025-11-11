@@ -5,12 +5,12 @@ import {ModuleBE_APIs, Storm} from '@nu-art/thunderstorm/backend/index';
 import {RouteResolver_Dummy} from '@nu-art/thunderstorm/backend/modules/server/route-resolvers/RouteResolver_Dummy';
 import {ModuleBE_PermissionsAssert} from '../../main/backend/index.js';
 import {ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account/backend/index';
-import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject';
-import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain';
-import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';
-import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi';
-import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
-import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
+import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject.js';
+import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain.js';
+import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel.js';
+import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi.js';
+import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB.js';
+import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup.js';
 
 
 
