@@ -1,57 +1,67 @@
-import {BadImplementationException, Logger, removeItemFromArray} from '@nu-art/ts-common';
+import {arrayIncludesAll, BadImplementationException, DBPointer, Debounce, Logger, removeItemFromArray} from '@nu-art/ts-common';
 import {SearchAddOn, SearchAddOnDef} from './SearchAddOn';
 import {SearchItem} from './SearchItem';
 
-export type SearchAddOnRenderer = { __onSearchFilterChanged: VoidFunction };
+export interface SearchAddOnRenderer {
+	__onSearchFilterChanged: VoidFunction;
+	readonly addOn: SearchAddOn<any>;
+}
 
 export class SearchContext
 	extends Logger {
 
-	private readonly key: string;
 	private readonly searchItems: SearchItem<any, any>[];
-	private readonly filterDictionary: { [AddOnKey: string]: any };
 	private readonly addOns: SearchAddOn<any>[];
-	private readonly _filterChangeListeners: SearchAddOnRenderer[];
+	private readonly filterDictionary: { [AddOnKey: string]: any } = {};
+	private readonly _filterChangeListeners: SearchAddOnRenderer[] = [];
+	private readonly searchDebouncer = new Debounce(() => this.search(), 500, 1000);
 
-	constructor(key: string, searchItems: SearchItem<any, any>[]) {
+	constructor(key: string, searchItems: SearchItem<any, any>[], addOns: SearchAddOn<any>[]) {
 		super(`SearchContext-${key}`);
-		this.key = key;
 		this.searchItems = searchItems;
-		this.filterDictionary = {};
-		this.addOns = [];
-		this._filterChangeListeners = [];
+		this.addOns = addOns;
 	}
 
 	//######################### Internal Logic #########################
 
+	private getInitialSearchResults = (activeAddOns: SearchAddOn<any>[]): DBPointer[] => {
+		const results: DBPointer[] = [];
+		const addOnKeys = activeAddOns.map(addOn => addOn.key);
+		this.searchItems.forEach(searchItem => {
+			if (!arrayIncludesAll(searchItem.compatibleAddOnKeys as string[], addOnKeys))
+				return;
+			const pointers: DBPointer[] = searchItem.module.cache.all().map(i => ({dbKey: searchItem.module.dbDef.dbKey, id: i._id}));
+			results.push(...pointers);
+		});
+		return results;
+	};
+
+	private getActiveAddOns = () => {
+		return this.addOns.filter(addOn => {
+			const currentValue = this.filterDictionary[addOn.key];
+			return addOn.isActive(currentValue);
+		});
+	};
+
+	private search = () => {
+		const addons = this.getActiveAddOns();
+		const searchResults = this.getInitialSearchResults(addons);
+		this.logInfo('searchResults', searchResults);
+	};
 
 	//######################### Public Logic #########################
 
 	public filter = {
 		set: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key'], value: AddOn['param']): void => {
 			this.filterDictionary[key] = value;
+			//Notify all listeners that filters have changed
+			this._filterChangeListeners.forEach(listener => listener.__onSearchFilterChanged());
+			//Trigger search
+			this.searchDebouncer.trigger();
 		},
 		get: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key']): AddOn['param'] | undefined => {
 			return this.filterDictionary[key];
 		},
-
-	};
-
-	public addOn = {
-		register: <AddOn extends SearchAddOn<any>>(addOn: AddOn) => {
-			if (this.addOns.includes(addOn))
-				return;
-
-			if (this.addOns.find(item => item.key === addOn.key)) {
-				this.logError('Trying to register more than one addon for the same key', `Context Key: ${this.key}`, `AddOn Key: ${addOn.key}`);
-				throw new BadImplementationException('Error registering addon to search context');
-			}
-
-			this.addOns.push(addOn);
-		},
-		unregister: <AddOn extends SearchAddOn<any>>(addOn: AddOn) => {
-			removeItemFromArray(this.addOns, addOn);
-		}
 	};
 
 	public filterChangeListeners = {
@@ -59,10 +69,16 @@ export class SearchContext
 			if (this._filterChangeListeners.includes(renderer))
 				return;
 
+			const addOn = this.addOns.find(addOn => addOn.key === renderer.addOn.key);
+			if (!addOn)
+				throw new BadImplementationException('Trying to ');
+
 			this._filterChangeListeners.push(renderer);
 		},
 		unregister: (renderer: SearchAddOnRenderer) => {
 			removeItemFromArray(this._filterChangeListeners, renderer);
 		}
 	};
+
+	public test_TriggerSearch = () => this.searchDebouncer.trigger();
 }
