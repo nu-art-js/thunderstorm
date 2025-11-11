@@ -1,5 +1,3 @@
-import {ReactElement} from 'react';
-
 export type SearchAddOnDef<
 	Key extends string, //The addon key
 	Param extends any, //The type of the param held in the filter dictionary
@@ -13,5 +11,7 @@ export type SearchAddOnDef<
 }
 
 export type SearchAddOn<Def extends SearchAddOnDef<any, any, any, any>> = {
-	renderer: (onChangeCallback: (key: Def['key'], param: Def['param']) => void) => ReactElement;
+	key: Def['key'];
+	valueFilter: (param: NonNullable<Def['param']>, itemParam: Def['itemParam']) => boolean;
+	isActive: (param: Def['param']) => boolean;
 }
