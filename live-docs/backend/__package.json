@@ -1,0 +1,79 @@
+{
+  "name": "@nu-art/live-docs-backend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Live docs Backend",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "live-docs",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/live-docs.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "dependencies": {
+    "@nu-art/live-docs-shared": "?",
+    "@nu-art/firebase-backend": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/thunderstorm-backend": "?",
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/ts-common": "?",
+    "express": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "module-alias": "^2.2.0",
+    "moment": "?",
+    "react": "?",
+    "react-dom": "?",
+    "react-router-dom": "?",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/express": "?",
+    "@types/history": "^4.7.2",
+    "@types/request": "^2.48.1"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "@nu-art/live-docs-backend Backend"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

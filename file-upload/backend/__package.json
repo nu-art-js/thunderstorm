@@ -1,0 +1,79 @@
+{
+  "name": "@nu-art/file-upload-backend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "File Uploader - Express & Typescript based backend framework Backend",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "storm",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/file-upload",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/file-upload/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/file-upload.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/file-upload-shared": "?",
+    "@google-cloud/common": "?",
+    "@google-cloud/firestore": "?",
+    "@google-cloud/storage": "?",
+    "@nu-art/firebase-backend": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/permissions-backend": "?",
+    "@nu-art/permissions-shared": "?",
+    "@nu-art/push-pub-sub-backend": "?",
+    "@nu-art/push-pub-sub-shared": "?",
+    "@nu-art/thunderstorm-backend": "?",
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/ts-styles": "?",
+    "@nu-art/user-account-backend": "?",
+    "@nu-art/user-account-shared": "?",
+    "express": "?",
+    "file-type": "^21.0.0",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "google-auth-library": "?",
+    "jszip": "^3.2.2",
+    "react": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/compression": "^1.0.1",
+    "@types/express": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "@nu-art/file-upload-backend Backend"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

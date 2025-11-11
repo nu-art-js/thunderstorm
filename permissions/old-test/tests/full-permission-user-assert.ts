@@ -28,10 +28,10 @@ import {
 	ModuleBE_PermissionUserDB,
 	User_Group
 } from '../_main.js';
-import {FirestoreTransaction} from '@nu-art/firebase/backend/index';
+import {FirestoreTransaction} from '@nu-art/firebase-backend';
 import {cleanup} from './_core.js';
 import {__custom, __scenario} from '@nu-art/testelot';
-import {ApiException} from '@nu-art/thunderstorm/backend/index';
+import {ApiException} from '@nu-art/thunderstorm-backend';
 
 
 function makeAlphaBetIdForTestOnly(length: number) {

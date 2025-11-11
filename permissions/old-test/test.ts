@@ -55,8 +55,8 @@ import {
 	tryDeleteDomainAssociatedWithAccessLevel
 } from './tests/permissions-manage.js';
 import {permissionsAssertDoesCustomFieldsSatisfiesTests, permissionsAssertIsLevelsMatchTests} from './tests/permissions-assert.js';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
-import {AccountModule} from '@nu-art/user-account/backend/index';
+import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
+import {AccountModule} from '@nu-art/user-account-backend';
 import {assignUserPermissionsTests} from './tests/assign-permissions.js';
 import {
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered,

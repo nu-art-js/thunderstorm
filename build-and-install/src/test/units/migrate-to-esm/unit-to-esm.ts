@@ -261,7 +261,7 @@ describe('Unit_NodeLib - ToESM Phase', () => {
 		result: async () => {
 			const content = await FileSystemUtils.file.read(resolve(pathToPackage, './src/main/a.ts'));
 			expect(content).to.contain('import \'./logo.svg\'');
-			expect(content).to.not.contain('.svg.js');
+			expect(content).to.not.contain('.svg');
 		}
 	}));
 
