@@ -1,15 +1,17 @@
-import * as React from 'react';
 import {SearchAddOn, SearchAddOnDef} from '../../_core';
-import {TS_Input} from '@nu-art/thunderstorm/frontend';
 
-type AddOnDef_SearchTerm = SearchAddOnDef<'searchTerm', string, 'getSearchTerm', string>;
+type AddOnDef_SearchTerm = SearchAddOnDef<'searchTerm', string | undefined, 'getSearchTerm', string>;
 
 export const AddOn_SearchTerm: SearchAddOn<AddOnDef_SearchTerm> = {
-	renderer: (onChangeCallback) => <TS_Input type={'text'} onChange={val => onChangeCallback('searchTerm', val)}/>
+	key: 'searchTerm',
+	valueFilter: (param, itemParam) => itemParam.includes(param),
+	isActive: (param) => !!param && param.length >= 3,
 };
 
-type AddOnDef_SearchTerms = SearchAddOnDef<'searchTerms', string, 'getSearchTerms', string[]>
+type AddOnDef_SearchTerms = SearchAddOnDef<'searchTerms', string | undefined, 'getSearchTerms', string[]>
 
 export const AddOn_SearchTerms: SearchAddOn<AddOnDef_SearchTerms> = {
-	renderer: (onChangeCallback) => <TS_Input type={'text'} onChange={val => onChangeCallback('searchTerms', val)}/>
+	key: 'searchTerms',
+	valueFilter: (param, itemParam) => itemParam.some(value => value.includes(param)),
+	isActive: (param) => !!param && param.length >= 3,
 };
