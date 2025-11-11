@@ -9,7 +9,7 @@ type MixedPanelsEventProperties = {
 	time: number;
 	// Optional metadata fields commonly used
 	$session_id?: string;
-	$groups: TypedMap<string>
+	$groups?: TypedMap<string>
 	// Any custom event-specific properties (typed later per event if needed)
 	[key: string]: any;
 };
@@ -79,8 +79,8 @@ export class AnalyticsPlugin_MixedPanels
 				time: Math.floor(event.timestamp / 1000), //Mixed panels expects seconds
 				...(exists(event.context) ? event.context : {}),
 				...(exists(event.properties) ? event.properties : {}),
+				...(exists(event.groups) ? event.groups : {}),
 				...(exists(event.sessionId) ? {$session_id: event.sessionId} : {}),
-				$groups: event.groups ?? {},
 			}
 		};
 	}
