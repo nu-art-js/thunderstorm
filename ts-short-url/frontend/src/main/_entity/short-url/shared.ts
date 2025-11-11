@@ -1,0 +1,1 @@
+export * from '@nu-art/ts-short-url-shared/_entity/short-url';

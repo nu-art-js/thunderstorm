@@ -13,8 +13,10 @@
   "dependencies": {
     "@nu-art/analytics-shared": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/firebase": "?",
-    "@nu-art/thunderstorm": "?",
+    "@nu-art/firebase-backend": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/thunderstorm-backend": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "mixpanel": "~0.18.1"
   },
   "devDependencies": {},

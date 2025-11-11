@@ -17,9 +17,9 @@
  */
 import {ApiException, Dispatcher, Module, randomObject} from '@nu-art/ts-common';
 import {ApiDef_Examples, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
-import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
-import {addRoutes, createBodyServerApi, createQueryServerApi,} from '@nu-art/thunderstorm/backend/index';
-import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend/index';
+import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase-backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi,} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub-backend';
 
 
 type Config = {

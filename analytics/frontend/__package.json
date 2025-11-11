@@ -13,7 +13,8 @@
   "dependencies": {
     "@nu-art/analytics-shared": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm": "?"
+    "@nu-art/thunderstorm-frontend": "?",
+    "@nu-art/thunderstorm-shared": "?"
   },
   "devDependencies": {},
   "private": false,

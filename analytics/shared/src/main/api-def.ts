@@ -1,4 +1,4 @@
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm-shared';
 import {TSAnalyticsEvent} from './types.js';
 
 export type Analytics_SendEvent = {

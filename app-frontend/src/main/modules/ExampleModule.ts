@@ -20,11 +20,11 @@ import {__stringify, Module, Second} from '@nu-art/ts-common';
 
 import {apiWithBody, apiWithQuery, ModuleFE_Toaster, ThunderDispatcher, ModuleFE_XHR} from '@nu-art/thunderstorm/frontend/index';
 import {ApiStruct_Examples, CommonBodyReq, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
-import {ApiDef, ApiDefCaller, ApiErrorResponse, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDef, ApiDefCaller, ApiErrorResponse, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
 import {Test} from '@modules/TestModule';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend/index';
 import {ModuleFE_Firebase} from '@nu-art/firebase/frontend/index';
-import {DB_Notifications} from '@nu-art/push-pub-sub';
+import {DB_Notifications} from '@nu-art/push-pub-sub-shared';
 import {ApiDef_Examples} from '@app/app-shared/shared/index';
 
 

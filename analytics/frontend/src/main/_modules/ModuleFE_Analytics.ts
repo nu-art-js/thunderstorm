@@ -1,5 +1,5 @@
 import {ApiDef_Analytics, ApiStruct_Analytics} from '@nu-art/analytics-shared';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {ApiDefCaller} from '@nu-art/thunderstorm-frontend';
 import {apiWithBody} from '@nu-art/thunderstorm/frontend/index';
 import {Module} from '@nu-art/ts-common';
 

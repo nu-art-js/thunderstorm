@@ -20,7 +20,7 @@ import {StormTester} from '@nu-art/thunderstorm/backend-test';
 import {createUser, testBadSessionID, testLoginWithWrongPass, testLoginWithWrongUser, testSuccessfulLogin} from './tests/create-user.js';
 import {ModuleBE_Account} from './_main.js';
 import {__scenario} from '@nu-art/testelot';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend/index';
+import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 
 
 export const mainScenario = __scenario('login');

@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "openai": "?",
     "firebase": "?",
     "firebase-admin": "?",

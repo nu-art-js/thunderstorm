@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm": "?"
+    "@nu-art/thunderstorm-shared": "?"
   },
   "devDependencies": {},
   "private": false,

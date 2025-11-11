@@ -37,10 +37,10 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/firebase": "?",
+    "@nu-art/firebase-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
-    "@nu-art/thunderstorm": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "react": "?"
   },
   "devDependencies": {

@@ -1,0 +1,76 @@
+{
+  "name": "@nu-art/firebase-backend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Storm - Express & Typescript based backend framework Backend",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "storm",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/firebase",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/firebase/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/firebase.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "run-tests": "firebase emulators:exec \"npm run test\"",
+    "test": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files '**/*.ts' src/test/firestore-v2/__test.ts",
+    "rtv2": "firebase emulators:exec \"npm run test-v2\"",
+    "test-v2": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files '**/*.ts' src/test/firestore-v2/__test.ts"
+  },
+  "dependencies": {
+    "@nu-art/firebase-shared": "?",
+    "@google-cloud/common": "?",
+    "@google-cloud/firestore": "?",
+    "@google-cloud/storage": "?",
+    "@nu-art/google-services-backend": "?",
+    "@nu-art/ts-common": "?",
+    "express": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "google-auth-library": "?",
+    "http-proxy": "1.18.1",
+    "url": "0.11.3",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.0.1",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/http-proxy": "1.17.14",
+    "teeny-request": "~7.2.0",
+    "@types/ws": "^8.5.5"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "@nu-art/firebase-backend Backend"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}
