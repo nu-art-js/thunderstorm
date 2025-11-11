@@ -26,7 +26,7 @@ import {
     ModuleBE_PermissionGroup,
     ModuleBE_PermissionUserDB,
     PredefinedGroup
-} from '../_main';
+} from '../_main.js';
 
 
 const contextKey2 = new ContextKey<ConfigDB>('config-2');

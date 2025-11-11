@@ -22,12 +22,12 @@ import {
 	Test_Setup1
 } from '../_core/consts.js';
 import {MemKey_UserPermissions} from '../../main/backend/index.js';
-import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
+import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB.js';
 import {Test_Setup, Test_TargetAccount} from '../_core/types.js';
 import {expect} from 'chai';
 
-import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
-import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';
+import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup.js';
+import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel.js';
 import {_EmptyQuery} from '@nu-art/firebase';
 
 

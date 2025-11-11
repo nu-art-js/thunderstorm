@@ -16,6 +16,6 @@
  * limitations under the License.
  */
 
-export * from '../src/main/backend/modules/_imports';
+export * from '../src/main/backend/modules/_imports.js';
 export * from '../src/main/backend/index.js';
 export * from '../src/main/index.js';

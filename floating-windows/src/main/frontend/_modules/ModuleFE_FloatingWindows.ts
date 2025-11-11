@@ -1,7 +1,7 @@
 import {Module, removeFromArrayByIndex} from '@nu-art/ts-common';
-import {Model_FloatingWindow} from '../types';
-import {dispatcher_FloatingWindows_FocusWindow} from '../_dispatchers/focus-window';
-import {dispatch_FloatingWindows_WindowsUpdated} from '../_dispatchers/models-updated';
+import {Model_FloatingWindow} from '../types.js';
+import {dispatcher_FloatingWindows_FocusWindow} from '../_dispatchers/focus-window.js';
+import {dispatch_FloatingWindows_WindowsUpdated} from '../_dispatchers/models-updated.js';
 
 class ModuleFE_FloatingWindow_Class
 	extends Module {

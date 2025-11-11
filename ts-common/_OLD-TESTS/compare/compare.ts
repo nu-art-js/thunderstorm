@@ -20,7 +20,7 @@ import {
 	compare,
 	TestCase,
 	TestSuit
-} from "../_main";
+} from "../_main.js";
 
 type CompareTestInput = {
 	one: any;

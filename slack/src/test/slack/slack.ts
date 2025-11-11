@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {ModuleBE_Slack, Slack_ServerApiError, SlackMessage} from '../../main';
+import {ModuleBE_Slack, Slack_ServerApiError, SlackMessage} from '../../main/index.js';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {CustomException, ServerErrorSeverity, BadImplementationException, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {ApiException} from '@nu-art/thunderstorm/backend/index';

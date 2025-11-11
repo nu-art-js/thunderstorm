@@ -1,10 +1,10 @@
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_FloatingWindows} from '../../_modules/ModuleFE_FloatingWindows';
-import {FloatingWindows_WindowsUpdated} from '../../_dispatchers/models-updated';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend/index';
+import {ModuleFE_FloatingWindows} from '../../_modules/ModuleFE_FloatingWindows.js';
+import {FloatingWindows_WindowsUpdated} from '../../_dispatchers/models-updated.js';
 import './TS_FloatingWindows.scss';
-import {Model_FloatingWindow} from '../../types';
-import {TS_FloatingWindow} from '../TS_FloatingWindow/TS_FloatingWindow';
+import {Model_FloatingWindow} from '../../types.js';
+import {TS_FloatingWindow} from '../TS_FloatingWindow/TS_FloatingWindow.js';
 
 type State = {
 	windowModels: Model_FloatingWindow[];

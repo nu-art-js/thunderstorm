@@ -22,7 +22,7 @@ import {AppTester} from "@nu-art/testelot";
 import {
 	ModuleBE_Firebase,
 	ModuleBE_Firebase_Class
-} from "@nu-art/firebase/backend";
+} from "@nu-art/firebase/backend/index";
 import {ImplementationMissingException} from "@nu-art/ts-common";
 
 export class MyTester

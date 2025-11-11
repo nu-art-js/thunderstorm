@@ -14,11 +14,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */le} from '../../main/frontend/modules/JiraModule';
+ */le} from '../../main/frontend/modules/JiraModule.js';
 import {assert, generateHex, StaticLogger, StringMap} from '@nu-art/ts-common';
 
 
-const JSZip = require('jszip');
+const JSZip = await import("'jszip'");
 
 const baseProject = {
 	id: '10030',

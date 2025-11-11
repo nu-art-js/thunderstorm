@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-// import {FirestoreCollection} from "./FirestoreCollection";
+// import {FirestoreCollection} from "./FirestoreCollection.js";
 import {Firebase_DB} from './types.js';
 import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-art/ts-common';
 import {FirebaseSession} from '../auth/firebase-session.js';
