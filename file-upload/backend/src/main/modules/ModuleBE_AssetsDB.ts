@@ -33,7 +33,6 @@ import {
 	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
-import {FileWrapper, FirestoreTransaction} from '@nu-art/firebase-shared';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp.js';
 import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDB, OnCleanupSchedulerAct} from '@nu-art/thunderstorm-backend';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
@@ -45,8 +44,9 @@ import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-ba
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
 import {firestore} from 'firebase-admin';
 import {FileMetadata} from '@google-cloud/storage';
-import Transaction = firestore.Transaction;
 import {fileTypeFromBuffer} from 'file-type';
+import {FileWrapper, FirestoreTransaction} from '@nu-art/firebase-backend';
+import Transaction = firestore.Transaction;
 
 
 type MyConfig = DBApiConfigV3<DBProto_Assets> & {
