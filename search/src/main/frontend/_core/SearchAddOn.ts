@@ -12,6 +12,7 @@ export type SearchAddOnDef<
 
 export type SearchAddOn<Def extends SearchAddOnDef<any, any, any, any>> = {
 	key: Def['key'];
+	methodName: Def['methodName'];
 	valueFilter: (param: NonNullable<Def['param']>, itemParam: Def['itemParam']) => boolean;
 	isActive: (param: Def['param']) => boolean;
 }
