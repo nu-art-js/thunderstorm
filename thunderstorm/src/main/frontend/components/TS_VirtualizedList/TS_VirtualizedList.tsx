@@ -5,15 +5,16 @@ import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 
 type Props = {
-	listToRender: ResolvableContent<React.ReactNode>[],
+	listToRender: ResolvableContent<React.ReactNode, [React.CSSProperties]>[],
 	height?: number | string,
 	className?: string,
 	width?: number,
 	itemHeight: number,
 	selectedItem?: number
+	omitWrapper?: boolean;
 };
 
-export const VirtualizedList = ({height, width, listToRender, itemHeight, selectedItem, className}: Props) => {
+export const VirtualizedList = ({height, width, listToRender, itemHeight, selectedItem, className, omitWrapper}: Props) => {
 	const listRef = React.useRef<any>();
 
 	React.useEffect(() => {
@@ -23,8 +24,11 @@ export const VirtualizedList = ({height, width, listToRender, itemHeight, select
 	}, [selectedItem, listToRender]);
 
 	function ItemWrapper({index, style}: { index: number, style: any }) {
+		if (omitWrapper)
+			return resolveContent(listToRender[index], style);
+
 		return <div style={style}>
-			{resolveContent(listToRender[index])}
+			{resolveContent(listToRender[index], style)}
 		</div>;
 	}
 

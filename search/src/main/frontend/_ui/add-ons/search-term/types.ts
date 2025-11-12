@@ -4,6 +4,6 @@ export type AddOnDef_SearchTerm = SearchAddOnDef<'searchTerm', string | undefine
 export const AddOn_SearchTerm: SearchAddOn<AddOnDef_SearchTerm> = {
 	key: 'searchTerm',
 	methodName: 'getSearchTerm',
-	valueFilter: (param, itemParam) => itemParam.includes(param),
+	valueFilter: (param, itemParam) => itemParam.includes(param.toLowerCase()),
 	isActive: (param) => !!param && param.length >= 3,
 };

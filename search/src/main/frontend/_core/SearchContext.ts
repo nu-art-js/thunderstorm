@@ -20,7 +20,7 @@ export class SearchContext
 	private activeAddOns: SearchAddOn<any>[];
 
 	private minimumRequiredActiveAddons: number = 0;
-	private readonly searchDebouncer = new Debounce(() => this.search(), 500, 1000);
+	private readonly searchDebouncer = new Debounce(() => this.search(), 200, 500);
 	private readonly filterDictionary: { [AddOnKey: string]: any } = {};
 	private readonly _filterChangeListeners: SearchAddOnRenderer[] = [];
 	private searchResults?: DBPointer[];
@@ -82,8 +82,13 @@ export class SearchContext
 	};
 
 	private search = () => {
-		if (this.activeAddOns.length < this.minimumRequiredActiveAddons)
+		if (this.activeAddOns.length < this.minimumRequiredActiveAddons) {
+			if (this.addOns.length) {
+				this.searchResults = [];
+				this._searchResultChangeListeners.forEach(listener => listener.__onSearchResultsChanged());
+			}
 			return;
+		}
 
 		let searchResults = this.getInitialSearchResults();
 		const searchItemMap = this.activeSearchItems.reduce((map, item) => {
@@ -98,7 +103,6 @@ export class SearchContext
 				return addOn.valueFilter(currentParam, itemParam);
 			});
 		});
-		this.logInfo('Search Results', searchResults);
 		this.searchResults = searchResults;
 		this._searchResultChangeListeners.forEach(listener => listener.__onSearchResultsChanged());
 	};
