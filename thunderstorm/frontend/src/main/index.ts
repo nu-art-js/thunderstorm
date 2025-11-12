@@ -134,6 +134,7 @@ export * from './modules/ModuleFE_StorageCleaner.js';
 export * from './modules/sync-manager/ModuleFE_SyncManager.js';
 export * from './modules/sync-manager/ModuleFE_SyncManager_CSV.js';
 export * from './utils/tools.js';
+export * from './utils/types.js';
 
 //ATS Groups
 export * from './components/ats-group.js';
