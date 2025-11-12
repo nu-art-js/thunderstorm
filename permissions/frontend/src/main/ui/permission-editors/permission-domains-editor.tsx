@@ -1,26 +1,14 @@
 import * as React from 'react';
-import {Button, EditableDBItemV3, ModuleFE_Toaster, TS_PropRenderer, TS_Route, TS_Table} from '@nu-art/thunderstorm/frontend/index';
+import {Button, EditableDBItemV3, InferProps, ModuleFE_Toaster, TS_PropRenderer, TS_Route, TS_Table} from '@nu-art/thunderstorm-frontend/index';
 import {BadImplementationException, capitalizeFirstLetter, exists, PreDB, sortArray, StaticLogger} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {
-	DB_PermissionAccessLevel,
-	DB_PermissionDomain,
-	DBProto_PermissionAccessLevel,
-	DBProto_PermissionDomain,
-	ModuleFE_PermissionAccessLevel,
-	ModuleFE_PermissionDomain,
-	ModuleFE_PermissionProject
-} from '../../_entity.js';
+import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_PermissionProject} from '../../_entity.js';
 import {Component_BasePermissionItemEditor} from './editor-base.js';
-import {
-	DropDownCaret,
-	Input_Number_Blur,
-	Input_Text_Blur
-} from './components.js';
-import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components.js';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor/index';
-import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
-import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto/index';
+import {DropDownCaret, Input_Number_Blur, Input_Text_Blur} from './components.js';
+import {DropDown_PermissionProject} from '../../_entity/permission-project/ui-components.js';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
+import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemControllerProto/index';
+import {DB_PermissionAccessLevel, DB_PermissionDomain, DBProto_PermissionAccessLevel, DBProto_PermissionDomain} from '@nu-art/permissions-shared';
 
 
 class Component_EditDomain

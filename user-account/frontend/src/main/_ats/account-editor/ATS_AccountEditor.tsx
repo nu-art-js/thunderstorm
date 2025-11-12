@@ -1,10 +1,10 @@
 import './ATS_AccountEditor.scss';
-import {_className, AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunderstorm/frontend/index';
+import {_className, AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunderstorm-frontend/index';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor.js';
 import {DB_Account, DBProto_Account} from '@nu-art/user-account-shared';
 import {generateUUID} from '@nu-art/ts-common';
-import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account.js';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.js';
 
 
 type Props = {}

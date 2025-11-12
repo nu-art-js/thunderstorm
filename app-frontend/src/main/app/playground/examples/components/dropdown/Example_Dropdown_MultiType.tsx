@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {AdapterBuilder, LL_V_C, TreeItem, TS_DropDown} from '@nu-art/thunderstorm/frontend/index';
+import {AdapterBuilder, LL_V_C, TreeItem, TS_DropDown} from '@nu-art/thunderstorm-frontend/index';
 import * as React from 'react';
 import {ICONS} from '@app/common/frontend/icons/index';
 import {flatPlaguesWithTitles, Plague, RendererMap_Plague} from './consts.js';

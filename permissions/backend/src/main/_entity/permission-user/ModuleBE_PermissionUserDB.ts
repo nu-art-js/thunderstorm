@@ -20,11 +20,11 @@ import {
 	UniqueId,
 	Year
 } from '@nu-art/ts-common';
-import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB.js';
+import {ModuleBE_PermissionGroupDB} from '../permission-group/ModuleBE_PermissionGroupDB.js';
 import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {Transaction} from 'firebase-admin/firestore';
-import {UI_Account} from '@nu-art/user-account-backend';
-import {MemKey_UserPermissions} from '../../../backend/consts.js';
+import {UI_Account} from '@nu-art/user-account-shared';
+import {MemKey_UserPermissions} from '../../consts.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm-backend/modules/_tdb/service-accounts';
 

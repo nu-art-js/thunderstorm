@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ConflictResolutionTree_RendererMap, ConflictResolutionTree_RendererProps} from './types.js';
 import {ConflictResolutionItem} from '@nu-art/conflict-resolution-shared';
 import {TypedMap} from '@nu-art/ts-common';
-import {Label, ModuleFE_Thunderstorm} from '@nu-art/thunderstorm/frontend/index';
+import {Label, ModuleFE_Thunderstorm} from '@nu-art/thunderstorm-frontend/index';
 
 const renderTreeNode_CheckedItem = (props: ConflictResolutionTree_RendererProps<'checkedItem'>, map: TypedMap<ConflictResolutionItem<any>>) => {
 	const crItem = map[props.item.dbKey];

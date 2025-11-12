@@ -55,8 +55,7 @@
     "module-alias": "^2.2.0"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/bug-report-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

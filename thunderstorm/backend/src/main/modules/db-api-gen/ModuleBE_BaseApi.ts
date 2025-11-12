@@ -21,7 +21,7 @@
 
 import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
-import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-backend';
+import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {DBApiDefGeneratorIDBV3} from '@nu-art/thunderstorm-shared';
 import {addRoutes} from '../ModuleBE_APIs.js';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js';

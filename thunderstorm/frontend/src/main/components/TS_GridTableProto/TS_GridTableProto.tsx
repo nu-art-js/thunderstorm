@@ -10,13 +10,10 @@ import {
 	Grid,
 	LinearLayoutProps
 } from '../Layouts/index.js';
-import {
-	TemplatingProps_EditableItemController,
-	TS_EditableItemController
-} from '../TS_EditableItemController/index.js';
-import {Editable_SaveAction} from '../../utils/EditableItem.js';
 import {ComponentSync} from '../../core/ComponentSync.js';
 import {_className} from '../../utils/tools.js';
+import {TemplatingProps_EditableItemController, TS_EditableItemController} from '../TS_EditableItemController/index.js';
+import {Editable_SaveAction} from '../../utils/EditableItem.js';
 
 
 type Props_TS_GridTableProto<Proto extends DBProto<any>, EditorProps extends object = object> =

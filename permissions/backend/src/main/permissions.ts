@@ -1,26 +1,25 @@
-import {ApiDef_Permissions,} from '@nu-art/permissions-shared';
-import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions-shared';
 import {
-	DefaultAccessLevel_Admin,
-	DefaultAccessLevel_Delete,
-	DefaultAccessLevel_NoAccess,
-	DefaultAccessLevel_Read,
-	DefaultAccessLevel_Write,
-} from '@nu-art/permissions-shared/consts';
-import {ApiDef_Account, DBDef_Accounts} from '@nu-art/user-account-backend';
-import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE.js';
-import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '@nu-art/permissions-shared/permission-keys';
-import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm/shared/action-processor/index';
-import {ApiDef_SyncEnv} from '@nu-art/thunderstorm-backend';
-import {ApiDef_CollectionActions} from '@nu-art/thunderstorm/shared/collection-actions/api-def';
-import {
+	ApiDef_Permissions,
 	DBDef_PermissionAccessLevel,
 	DBDef_PermissionAPI,
 	DBDef_PermissionDomain,
 	DBDef_PermissionGroup,
 	DBDef_PermissionProject,
-	DBDef_PermissionUser
-} from './_entity.js';
+	DBDef_PermissionUser,
+	DefaultAccessLevel_Admin,
+	DefaultAccessLevel_Delete,
+	DefaultAccessLevel_NoAccess,
+	DefaultAccessLevel_Read,
+	DefaultAccessLevel_Write,
+	DefaultDef_Group,
+} from '@nu-art/permissions-shared';
+import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE.js';
+import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm-shared/action-processor/index';
+import {ApiDef_CollectionActions} from '@nu-art/thunderstorm-shared/collection-actions/api-def';
+import {DefaultDef_Domain, DefaultDef_Package} from './types.js';
+import {ApiDef_Account, DBDef_Accounts} from '@nu-art/user-account-shared';
+import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '@nu-art/permissions-shared/permission-keys';
+import {ApiDef_SyncEnv} from '@nu-art/thunderstorm-shared';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 

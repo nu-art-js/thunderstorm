@@ -2,7 +2,7 @@ import {compareVersions, currentTimeMillis, exists, Module, ModuleManager, Runti
 import {apiWithQuery} from '../core/typed-api.js';
 import {ApiDef_ServerInfo, ApiStruct_ServerInfo} from '@nu-art/thunderstorm-shared/server-info/api';
 import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, ServerInfoFirebaseState} from '@nu-art/thunderstorm-shared';
-import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase/frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
+import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase-frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
 import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
 import {StorageKey} from '../modules/ModuleFE_LocalStorage.js';

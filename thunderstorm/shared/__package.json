@@ -84,8 +84,7 @@
     "@types/react-virtualized-auto-sizer": "^1.0.1"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/thunderstorm-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

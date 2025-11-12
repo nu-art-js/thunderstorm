@@ -87,8 +87,7 @@
     "@types/react-virtualized-auto-sizer": "^1.0.1"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/thunderstorm-backend Backend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

@@ -1,9 +1,9 @@
-import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package} from '@nu-art/permissions/shared/types';
-import {CreateDefaultAccessLevels, DefaultAccessLevel_Admin} from '@nu-art/permissions/shared/consts';
+import {CreateDefaultAccessLevels, DefaultAccessLevel_Admin, DefaultDef_Group} from '@nu-art/permissions-shared';
 import {ApiDef_PushMessages} from '@nu-art/push-pub-sub-shared';
 import {Domain_Developer} from '@nu-art/permissions-backend/permissions';
 import {ModuleBE_PushSubscriptionAPI} from '../modules/ModuleBE_PushSubscriptionDB.js';
 import {_values} from '@nu-art/ts-common';
+import {DefaultDef_Domain, DefaultDef_Package} from '@nu-art/permissions-backend/types';
 
 
 const Domain_PushMessages_ID = 'ce2e840bb639c34887ae19c2c7c82c11';

@@ -46,8 +46,7 @@
     "@types/mocha": "^10.0.1"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/ts-focused-object-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

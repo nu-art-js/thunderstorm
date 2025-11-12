@@ -52,8 +52,7 @@
     "@types/react-router-dom": "?"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/slack-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

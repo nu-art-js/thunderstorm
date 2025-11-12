@@ -51,8 +51,7 @@
     "@types/d3-graphviz": "^2.6.7"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/ts-dependency-viewer-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

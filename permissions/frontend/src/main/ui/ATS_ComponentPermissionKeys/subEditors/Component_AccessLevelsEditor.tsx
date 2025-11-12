@@ -1,9 +1,10 @@
-import {Button, ComponentSync, LL_V_L} from '@nu-art/thunderstorm/frontend/index';
+import {Button, ComponentSync, LL_V_L} from '@nu-art/thunderstorm-frontend/index';
 import {dbObjectToId} from '@nu-art/ts-common';
 import {Permissions_DropDown} from '../../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {PermissionKey_FE} from '../../../PermissionKey_FE.js';
-import {DB_PermissionAccessLevel, ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain} from '../../../_entity.js';
+import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain} from '../../../_entity.js';
+import {DB_PermissionAccessLevel} from '@nu-art/permissions-shared';
 
 type Props = {
 	permissionKey: PermissionKey_FE;

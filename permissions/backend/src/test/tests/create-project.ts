@@ -1,6 +1,6 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {AssertionException, reduceToMap, UniqueId} from '@nu-art/ts-common';
-import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../../main/backend/index.js';
+import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../main/index.js';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {

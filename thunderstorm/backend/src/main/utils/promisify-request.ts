@@ -21,7 +21,7 @@
 
 import request, {Response} from 'request';
 import {__stringify, ApiException} from '@nu-art/ts-common';
-import {RequestOptions} from '../../backend/index.js';
+import {RequestOptions} from '../index.js';
 
 
 export async function promisifyRequest(_request: RequestOptions, throwException: boolean = true): Promise<Response> {

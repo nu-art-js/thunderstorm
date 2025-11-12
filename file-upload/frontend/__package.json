@@ -62,8 +62,7 @@
     "@types/express": "?"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/file-upload-frontend Frontend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

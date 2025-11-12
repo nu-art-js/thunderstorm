@@ -4,8 +4,8 @@ import {ModuleBE_APIs} from '../modules/ModuleBE_APIs.js';
 import {ModuleBE_SyncEnv} from '../modules/sync-env/ModuleBE_SyncEnv.js';
 import {ModuleBE_ActionProcessor} from '../modules/action-processor/ModuleBE_ActionProcessor.js';
 import {ModuleBE_ServerInfo} from '../modules/ModuleBE_ServerInfo.js';
-import {ModulePackBE_AppConfigDB} from '../../_entity/app-config/backend/index.js';
-import {ModulePackBE_BackupDocDB} from '../../_entity/backup-doc/backend/index.js';
+import {ModulePackBE_AppConfigDB} from '../_entity/app-config/index.js';
+import {ModulePackBE_BackupDocDB} from '../_entity/backup-doc/index.js';
 import { ModuleBE_CollectionActions } from '../modules/collection-actions/ModuleBE_CollectionActions.js';
 
 export const ModulePack_ThunderstormBE: Module[] = [

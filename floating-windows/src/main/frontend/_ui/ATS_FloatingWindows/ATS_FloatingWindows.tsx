@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunderstorm/frontend/index';
-import {thunderstormCapabilitiesGroup} from '@nu-art/thunderstorm/frontend/consts';
+import {AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunderstorm-frontend/index';
+import {thunderstormCapabilitiesGroup} from '@nu-art/thunderstorm-frontend/consts';
 import {Model_FloatingWindow} from '../../types.js';
 import {ModuleFE_FloatingWindows} from '../../_modules/ModuleFE_FloatingWindows.js';
 import {windowRect} from '../../_utils/get-window-rect.js';

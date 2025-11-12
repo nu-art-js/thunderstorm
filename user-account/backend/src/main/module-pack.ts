@@ -23,7 +23,7 @@ import {
 	ModulePackBE_SessionDB
 } from './_entity.js';
 import {ModuleBE_SecretManager} from '@nu-art/google-services-backend/modules/ModuleBE_SecretManager';
-import {ModulePackBE_LoginAttemptDB} from '../_entity/login-attempts/backend/index.js';
+import {ModulePackBE_LoginAttemptDB} from './_entity/login-attempts/index.js';
 
 export const ModulePackBE_Accounts: Module[] = [
 	...ModulePackBE_AccountDB,

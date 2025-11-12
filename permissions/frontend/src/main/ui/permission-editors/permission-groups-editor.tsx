@@ -1,34 +1,16 @@
 import * as React from 'react';
-import {
-	ModuleFE_Toaster,
-	TS_ErrorBoundary,
-	TS_PropRenderer,
-	TS_Route
-} from '@nu-art/thunderstorm/frontend/index';
-import {
-	MUSTNeverHappenException,
-	sortArray,
-	StaticLogger
-} from '@nu-art/ts-common';
+import {Fragment} from 'react';
+import {InferProps, ModuleFE_Toaster, TS_ErrorBoundary, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm-frontend/index';
+import {MUSTNeverHappenException, sortArray, StaticLogger} from '@nu-art/ts-common';
 import {MultiSelect} from '../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {
-	DB_PermissionGroup,
-	DBProto_PermissionGroup,
-	ModuleFE_PermissionAccessLevel,
-	ModuleFE_PermissionDomain,
-	ModuleFE_PermissionGroup
-} from '../../_entity.js';
+import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_PermissionGroup} from '../../_entity.js';
 import {Component_BasePermissionItemEditor} from './editor-base.js';
 import {Input_Text_Blur} from './components.js';
-import {DropDown_PermissionProject} from '../../../_entity/permission-project/frontend/ui-components.js';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor/index';
-import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
-import {
-	Props_EditableItemControllerProto,
-	TS_EditableItemControllerProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto/index';
-import {Fragment} from 'react';
+import {DropDown_PermissionProject} from '../../_entity/permission-project/ui-components.js';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
+import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemControllerProto/index';
+import {DB_PermissionGroup, DBProto_PermissionGroup} from '@nu-art/permissions-shared';
 
 class Component_EditGroup
 	extends Component_BasePermissionItemEditor<DBProto_PermissionGroup> {

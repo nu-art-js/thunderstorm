@@ -39,8 +39,7 @@
     "@types/saml2-js": "^1.6.8"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/jira-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

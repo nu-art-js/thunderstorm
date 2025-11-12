@@ -1,10 +1,10 @@
 import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject} from '../../main/index.js';
-import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject.js';
-import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain.js';
-import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi.js';
-import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel.js';
-import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup.js';
-import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB.js';
+import {ModuleBE_PermissionProject} from '../main/modules/management/ModuleBE_PermissionProject.js';
+import {ModuleBE_PermissionDomain} from '../main/modules/management/ModuleBE_PermissionDomain.js';
+import {ModuleBE_PermissionApi} from '../main/modules/management/ModuleBE_PermissionApi.js';
+import {ModuleBE_PermissionAccessLevel} from '../main/modules/management/ModuleBE_PermissionAccessLevel.js';
+import {ModuleBE_PermissionGroup} from '../main/modules/assignment/ModuleBE_PermissionGroup.js';
+import {ModuleBE_PermissionUserDB} from '../main/modules/assignment/ModuleBE_PermissionUserDB.js';
 import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account-backend';
 import {Test_Project, Test_Setup} from './types.js';

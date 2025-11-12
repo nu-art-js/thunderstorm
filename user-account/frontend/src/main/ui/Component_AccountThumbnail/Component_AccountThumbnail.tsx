@@ -1,11 +1,11 @@
 import * as React from 'react';
-import {_className, AwaitModules, ComponentSync, ModuleFE_BaseApi, TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend/index';
+import {_className, AwaitModules, ComponentSync, ModuleFE_BaseApi, TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm-frontend/index';
 import {cloneObj, filterDuplicates, MUSTNeverHappenException, ResolvableContent, resolveContent, UniqueId} from '@nu-art/ts-common';
-import {ModuleFE_Account, OnAccountsUpdated} from '../../../_entity/account/frontend/ModuleFE_Account.js';
+import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.js';
 import {DB_Account, DBProto_Account} from '@nu-art/user-account-shared';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_AccountThumbnail.scss';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
 
 
 type Props = {

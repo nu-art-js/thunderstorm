@@ -1,4 +1,4 @@
-import {AppToolsScreen, ATS_Frontend, ComponentSync} from '@nu-art/thunderstorm/frontend/index';
+import {AppToolsScreen, ATS_Frontend, ComponentSync} from '@nu-art/thunderstorm-frontend/index';
 import {Component_DependencyViewer} from '../../dependency-viewer/Component_DependencyViewer.js';
 
 

@@ -15,9 +15,8 @@ import {
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
 import {addRoutes, createBodyServerApi, createQueryServerApi, ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
-import {FirestoreQuery} from '@nu-art/firebase-backend';
+import {FirestoreQuery} from '@nu-art/firebase-shared';
 import {FirestoreInterfaceV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreInterfaceV3';
-import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase-backend';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {
 	_SessionKey_Account,
@@ -34,13 +33,15 @@ import {
 	AccountToSpice,
 	AccountType,
 	ApiDef_Account,
+	assertPasswordRules,
 	DB_Account,
 	DBDef_Accounts,
 	DBProto_Account,
+	PasswordAssertionConfig,
+	PasswordAssertionResponseError,
 	SafeDB_Account,
 	UI_Account
-} from '@nu-art/user-account-shared/_entity/account';
-import {assertPasswordRules, PasswordAssertionConfig, PasswordAssertionResponseError} from '../../_enum.js';
+} from '@nu-art/user-account-shared';
 import {
 	BaseSessionClaims,
 	CollectSessionData,
@@ -51,9 +52,10 @@ import {
 	MemKey_DB_Session,
 	ModuleBE_SessionDB,
 	SessionKey_Account_BE,
-} from '../../session/backend/index.js';
-import {ModuleBE_FailedLoginAttemptDB} from '../../failed-login-attempt/backend/index.js';
+} from '../session/index.js';
+import {ModuleBE_FailedLoginAttemptDB} from '../failed-login-attempt/index.js';
 import Transaction = firestore.Transaction;
+import { FirestoreType_DocumentSnapshot } from '@nu-art/firebase-backend';
 
 
 type BaseAccount = {

@@ -1,5 +1,5 @@
-import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB.js';
-import {DB_AppConfig, DBDef_AppConfig, DBProto_AppConfig} from './shared.js';
+import {DB_AppConfig, DBDef_AppConfig, DBProto_AppConfig } from '@nu-art/thunderstorm-shared';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '../../modules/db-api-gen/ModuleBE_BaseDB.js';
 import {_keys, ApiException, Logger, PreDB, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 
 type InferType<T> = T extends AppConfigKey_BE<infer ValueType> ? ValueType : never;

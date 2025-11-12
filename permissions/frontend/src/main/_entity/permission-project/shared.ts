@@ -1,1 +1,1 @@
-export * from '@nu-art/permissions-shared/_entity/permission-project';
+export * from '@nu-art/permissions-shared';

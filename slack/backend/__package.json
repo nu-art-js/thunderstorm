@@ -54,8 +54,7 @@
     "@types/react-router-dom": "?"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/slack-backend Backend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

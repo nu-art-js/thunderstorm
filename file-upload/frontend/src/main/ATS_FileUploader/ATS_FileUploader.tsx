@@ -1,4 +1,4 @@
-import {FirebaseAnalyticsModule} from '@nu-art/firebase/frontend/index';
+import {FirebaseAnalyticsModule} from '@nu-art/firebase-frontend/index';
 // import {TS_Icons} from '@nu-art/ts-styles';
 import {
 	AppToolsScreen,
@@ -8,7 +8,7 @@ import {
 	LL_V_L,
 	openContent,
 	TS_DragAndDrop
-} from '@nu-art/thunderstorm/frontend/index';
+} from '@nu-art/thunderstorm-frontend/index';
 import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader.js';
 import {ModuleFE_Assets} from '../modules/ModuleFE_Assets.js';
 import {ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';

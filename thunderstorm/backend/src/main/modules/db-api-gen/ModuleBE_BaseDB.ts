@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase-backend';
+import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase-shared';
 import {
 	_keys,
 	ApiException,

@@ -1,8 +1,8 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
-import {DB_Session, PasswordAssertionConfig} from '../../../shared/index.js';
 import {DB_BaseObject, Minute, UniqueId} from '@nu-art/ts-common';
 import {AccountType, DB_Account, UI_Account} from './types.js';
-import {QueryParam_RedirectUrl} from '../../session/shared/consts.js';
+import {DB_Session, QueryParam_RedirectUrl} from '../session/index.js';
+import {PasswordAssertionConfig} from '../../_enum/password-assertion/index.js';
 
 //######################## Util Types ########################
 

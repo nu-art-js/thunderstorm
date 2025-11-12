@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-backend';
+import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {
 	__stringify,

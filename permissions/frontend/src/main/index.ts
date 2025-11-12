@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+export * from './PermissionKey_FE.js';
 export * from './core/module-pack.js';
 export * from './ui/index.js';
 export * from './consts.js';

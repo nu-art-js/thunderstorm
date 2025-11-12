@@ -1,4 +1,4 @@
-import {ComponentSync, LL_H_C} from '@nu-art/thunderstorm/frontend/index';
+import {ComponentSync, LL_H_C} from '@nu-art/thunderstorm-frontend/index';
 import {currentTimeMillis, Second} from '@nu-art/ts-common';
 
 type Props = {

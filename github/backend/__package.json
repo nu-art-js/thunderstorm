@@ -32,8 +32,7 @@
     "@types/jsonwebtoken": "~8.5.0"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/github-backend Backend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

@@ -43,8 +43,7 @@
     "@google-cloud/resource-manager": "^6.2.0"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/google-services-backend Backend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

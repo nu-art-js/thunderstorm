@@ -16,10 +16,6 @@ import {
 import './Page_ItemsEditor.scss';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
 import {
-	EditableDBItemV3,
-	EditableItem
-} from '../../utils/EditableItem.js';
-import {
 	ItemEditor_DefaultList,
 	Props_ListRenderer
 } from './defaults/ItemEditor_ListRenderer/index.js';
@@ -52,6 +48,7 @@ import {
 } from '../../core/proto-component/index.js';
 import {Props_EditableItemControllerProto} from '../TS_EditableItemControllerProto/index.js';
 import {ModuleFE_BrowserHistoryV2} from '../../modules/ModuleFE_BrowserHistoryV2.js';
+import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem.js';
 
 
 export type MenuAction<Proto extends DBProto<any>> = {

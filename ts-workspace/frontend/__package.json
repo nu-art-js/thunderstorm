@@ -47,8 +47,7 @@
     "@types/request": "^2.48.1"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/ts-workspace-frontend Frontend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

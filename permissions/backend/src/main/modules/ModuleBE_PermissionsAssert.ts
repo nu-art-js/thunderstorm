@@ -30,7 +30,6 @@ import {
 	Module,
 	RuntimeModules,
 	StringMap,
-	TypedKeyValue,
 	TypedMap
 } from '@nu-art/ts-common';
 import {
@@ -41,9 +40,17 @@ import {
 	ModuleBE_SyncManager,
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm-backend';
-import {ApiModule, HttpMethod} from '@nu-art/thunderstorm/shared/index';
+import {ApiModule, HttpMethod} from '@nu-art/thunderstorm-shared';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account-backend';
-import {ApiDef_PermissionsAssert, Request_AssertApiForUser} from '@nu-art/permissions-shared';
+import {
+	ApiDef_PermissionsAssert,
+	Base_AccessLevel,
+	DB_PermissionAccessLevel,
+	DB_PermissionAPI,
+	DomainToLevelValueMap,
+	Request_AssertApiForUser,
+	SessionData_StrictMode
+} from '@nu-art/permissions-shared';
 import {
 	MemKey_HttpRequestBody,
 	MemKey_HttpRequestMethod,
@@ -52,14 +59,7 @@ import {
 } from '@nu-art/thunderstorm-backend/modules/server/consts';
 import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts.js';
 import {PermissionKey_BE} from '../PermissionKey_BE.js';
-import {
-	Base_AccessLevel,
-	DB_PermissionAccessLevel,
-	DB_PermissionAPI,
-	DomainToLevelValueMap,
-	ModuleBE_PermissionAccessLevelDB,
-	ModuleBE_PermissionAPIDB
-} from '../_entity.js';
+import {ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity.js';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -72,8 +72,6 @@ type Config = {
 /**
  * [DomainId uniqueString]: accessLevel's numerical value
  */
-
-export type SessionData_StrictMode = TypedKeyValue<'strictMode', { isStrictMode: boolean }>
 
 export class ModuleBE_PermissionsAssert_Class
 	extends Module<Config>

@@ -50,8 +50,7 @@
     "@types/mocha": "^10.0.1"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/ts-focused-object-frontend Frontend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

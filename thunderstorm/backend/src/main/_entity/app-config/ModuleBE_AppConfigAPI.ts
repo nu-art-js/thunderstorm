@@ -1,6 +1,6 @@
-import {createQueryServerApi} from '../../../backend/core/typed-api.js';
-import {addRoutes} from '../../../backend/modules/ModuleBE_APIs.js';
-import {ModuleBE_BaseApi_Class} from '../../../backend/modules/db-api-gen/ModuleBE_BaseApi.js';
+import {createQueryServerApi} from '../../core/typed-api.js';
+import {addRoutes} from '../../modules/ModuleBE_APIs.js';
+import {ModuleBE_BaseApi_Class} from '../../modules/db-api-gen/ModuleBE_BaseApi.js';
 import {ApiDef_AppConfig, RequestBody_GetResolverByKey} from '@nu-art/thunderstorm-shared/_entity/app-config/api-def';
 import {DBProto_AppConfig} from '@nu-art/thunderstorm-shared';
 import {ModuleBE_AppConfigDB} from './ModuleBE_AppConfigDB.js';

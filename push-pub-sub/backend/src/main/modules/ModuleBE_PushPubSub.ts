@@ -19,7 +19,14 @@
 import {arrayToMap, batchActionParallel, compare, currentTimeMillis, Day, filterDuplicates, filterKeys, KB, LogLevel, Module} from '@nu-art/ts-common';
 
 import {FirebaseType_BatchResponse, ModuleBE_Firebase, PushMessagesWrapperBE} from '@nu-art/firebase-backend';
-import {ApiDef_PushMessages, DB_PushSubscription, PushMessage, PushMessage_Payload, PushMessage_PayloadWrapper, Request_PushRegister} from '../../index.js';
+import {
+	ApiDef_PushMessages,
+	DB_PushSubscription,
+	PushMessage,
+	PushMessage_Payload,
+	PushMessage_PayloadWrapper,
+	Request_PushRegister
+} from '@nu-art/push-pub-sub-shared';
 
 import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm-backend';
 
@@ -31,8 +38,8 @@ import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB.js';
 import {DBProto_PushMessagesHistory} from '@nu-art/push-pub-sub-shared/push-messages-history/index';
 import {ModuleBE_PushMessagesHistoryDB} from './ModuleBE_PushMessagesHistoryDB.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {Message} from 'firebase-admin/messaging';
 import Transaction = firestore.Transaction;
-import { Message } from 'firebase-admin/messaging';
 
 
 type Config = {

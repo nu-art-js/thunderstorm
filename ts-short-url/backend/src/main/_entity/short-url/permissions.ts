@@ -1,8 +1,8 @@
-import {DomainNamespace_ShortUrl, PermissionKey_ShortUrlEdit, PermissionKey_ShortUrlView} from '@nu-art/ts-short-url-shared/_entity/short-url/consts';
-import {DefaultDef_Package} from '@nu-art/permissions/shared/types';
-import {DefaultAccessLevel_Read, DefaultAccessLevel_Write, DuplicateDefaultAccessLevels} from '@nu-art/permissions/shared/consts';
+import {DefaultAccessLevel_Read, DefaultAccessLevel_Write, DuplicateDefaultAccessLevels} from '@nu-art/permissions-shared';
 import {defaultValueResolver, PermissionKey_BE} from '@nu-art/permissions-backend/PermissionKey_BE';
 import {ModuleBE_ShortUrlDB} from './ModuleBE_ShortUrlDB.js';
+import {DomainNamespace_ShortUrl, PermissionKey_ShortUrlEdit, PermissionKey_ShortUrlView} from '@nu-art/ts-short-url-shared';
+import {DefaultDef_Package} from '@nu-art/permissions-backend';
 
 export const Domain_ShortUrl = Object.freeze({
 	_id: '8a7614bc128ee1fb6ddf896c46922ab3',

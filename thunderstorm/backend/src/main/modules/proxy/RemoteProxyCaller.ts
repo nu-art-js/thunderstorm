@@ -22,7 +22,7 @@ import {__stringify, ApiException, composeUrl, ImplementationMissingException, M
 // noinspection TypeScriptPreferShortImport
 import {BodyApi, QueryApi} from '@nu-art/thunderstorm-shared';
 import {promisifyRequest} from '../../utils/promisify-request.js';
-import {RequestOptions} from '../../../backend/index.js';
+import {RequestOptions} from '../../index.js';
 import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
 import { HeaderKey_ContentType } from '../../shared.js';
 

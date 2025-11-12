@@ -1,7 +1,15 @@
-import {DBDef_V3, tsValidateArray, tsValidateDynamicObject, tsValidateNumber, tsValidateOptionalId, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
+import {
+	DBDef_V3,
+	tsValidateArray,
+	tsValidateDynamicObject,
+	tsValidateNumber,
+	tsValidateOptionalId,
+	tsValidateString,
+	tsValidateUniqueId
+} from '@nu-art/ts-common';
 import {DBProto_PermissionGroup} from './types.js';
-import {validateGroupLabel} from '../../../shared/validators.js';
-import {PermissionDBGroup} from '../../shared.js';
+import {PermissionDBGroup} from '../../consts.js';
+import {validateGroupLabel} from '../../validators.js';
 
 const Validator_ModifiableProps: DBProto_PermissionGroup['modifiablePropsValidator'] = {
 	label: validateGroupLabel,

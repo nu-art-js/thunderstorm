@@ -40,8 +40,7 @@
     "@types/react": "?"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/push-pub-sub-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

@@ -18,12 +18,12 @@
  */
 
 import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
-import {apiWithQuery, ModuleFE_Utils,} from '@nu-art/thunderstorm/frontend/index';
-import {ApiDef_Permissions} from '../../index.js';
+import {apiWithQuery, ModuleFE_Utils,} from '@nu-art/thunderstorm-frontend/index';
 import {PermissionKey_FE} from '../PermissionKey_FE.js';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts.js';
-import {RendererKey_AccountMenu_SubHeader} from '@nu-art/user-account/frontend/consts';
+import {RendererKey_AccountMenu_SubHeader} from '@nu-art/user-account-frontend/consts';
 import {Renderer_RoleNames} from '../ui/Renderer_RoleNames.js';
+import {ApiDef_Permissions} from '@nu-art/permissions-shared';
 
 
 export type PermissionsModuleFEConfig = {

@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {PlaygroundScreen, TS_Playground} from '@nu-art/thunderstorm/frontend/index';
+import {PlaygroundScreen, TS_Playground} from '@nu-art/thunderstorm-frontend/index';
 import {Page_ApiGen} from '../pages/Page_ApiGen.js';
 import {Hello} from '../Hello.js';
 import {Example_ApiCustomError} from './examples/Example_ApiCustomError.js';

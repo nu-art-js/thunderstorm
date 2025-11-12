@@ -1,6 +1,6 @@
 import {_keys, BadImplementationException, cloneObj, composeUrl, deepClone, exists, Logger, mergeObject, Module, TS_Object} from '@nu-art/ts-common';
-import {ModuleFE_BrowserHistory, ModuleFE_Thunderstorm, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend/index';
-import {convertBase64ToObject, convertObjectToBase64} from '@nu-art/thunderstorm/shared/base64-tools';
+import {ModuleFE_BrowserHistory, ModuleFE_Thunderstorm, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
+import {convertBase64ToObject, convertObjectToBase64} from '@nu-art/thunderstorm-shared/base64-tools';
 import {AppState} from '../../shared/index.js';
 import {URLParam_AppState} from './consts.js';
 

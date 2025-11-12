@@ -3,14 +3,14 @@ import {ModuleBE_Auth} from '@nu-art/google-services-backend';
 import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase-backend';
 import {ModuleBE_APIs, Storm} from '@nu-art/thunderstorm-backend';
 import {RouteResolver_Dummy} from '@nu-art/thunderstorm-backend/modules/server/route-resolvers/RouteResolver_Dummy';
-import {ModuleBE_PermissionsAssert} from '../../main/backend/index.js';
+import {ModuleBE_PermissionsAssert} from '../main/index.js';
 import {ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
-import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject.js';
-import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain.js';
-import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel.js';
-import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi.js';
-import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB.js';
-import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup.js';
+import {ModuleBE_PermissionProject} from '../main/modules/management/ModuleBE_PermissionProject.js';
+import {ModuleBE_PermissionDomain} from '../main/modules/management/ModuleBE_PermissionDomain.js';
+import {ModuleBE_PermissionAccessLevel} from '../main/modules/management/ModuleBE_PermissionAccessLevel.js';
+import {ModuleBE_PermissionApi} from '../main/modules/management/ModuleBE_PermissionApi.js';
+import {ModuleBE_PermissionUserDB} from '../main/modules/assignment/ModuleBE_PermissionUserDB.js';
+import {ModuleBE_PermissionGroup} from '../main/modules/assignment/ModuleBE_PermissionGroup.js';
 
 
 

@@ -28,7 +28,6 @@ import {
 } from 'react';
 import {_className} from '../../utils/tools.js';
 import '../TS_Input/TS_Input.scss';
-import {UIProps_EditableItem} from '../../utils/EditableItem.js';
 import {
 	ComponentProps_Error,
 	convertToHTMLDataAttributes,
@@ -36,6 +35,7 @@ import {
 	resolveEditableError
 } from '../types.js';
 import {TS_Object} from '@nu-art/ts-common';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
 
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';

@@ -1,5 +1,4 @@
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {AppConfigKey_FE, DB_AppConfig, ModuleFE_AppConfig} from '../../_entity.js';
 import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
 import {AppToolsScreen, TS_AppTools} from '../../components/TS_AppTools/index.js';
 import {__stringify, exists, sortArray} from '@nu-art/ts-common';
@@ -8,6 +7,8 @@ import './ATS_AppConfigEditor.scss';
 import {TS_JSONViewer} from '../../components/TS_JSONViewer/TS_JSONViewer.js';
 import {TS_TextArea} from '../../components/TS_Input/index.js';
 import { Button } from '../../components/Button/Button.js';
+import {AppConfigKey_FE, ModuleFE_AppConfig} from '../../index.js';
+import { DB_AppConfig } from '@nu-art/thunderstorm-shared';
 
 type Props = {
 	appConfigFilter?: (appConfig: DB_AppConfig) => boolean;

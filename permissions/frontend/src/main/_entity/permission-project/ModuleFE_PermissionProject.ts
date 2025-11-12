@@ -1,7 +1,7 @@
-import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend/index';
-import {ApiDefCaller} from '@nu-art/thunderstorm-frontend';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {ApiStruct_PermissionProject, DBDef_PermissionProject, DBProto_PermissionProject} from '@nu-art/permissions-shared/_entity/permission-project';
+import {ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
+import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
+import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ApiStruct_PermissionProject, DBDef_PermissionProject, DBProto_PermissionProject} from '@nu-art/permissions-shared';
 
 
 export type DispatcherType_PermissionProject = DispatcherDef<DBProto_PermissionProject, `__onPermissionProjectUpdated`>;

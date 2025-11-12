@@ -62,8 +62,7 @@
     "@types/request": "^2.48.1"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/live-docs-backend Backend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

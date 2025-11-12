@@ -19,22 +19,21 @@ import {
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
-import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB.js';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '../../modules/db-api-gen/ModuleBE_BaseDB.js';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-backend';
+import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {Readable} from 'stream';
 import {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
-import {BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc} from '@nu-art/thunderstorm-shared';
-import {addRoutes} from '../../../backend/modules/ModuleBE_APIs.js';
+import {ApiDef, BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
+import {addRoutes} from '../../modules/ModuleBE_APIs.js';
 import {ApiDef_BackupDoc, Request_BackupId, Response_BackupDocs} from '@nu-art/thunderstorm-shared/_entity/backup-doc/api-def';
-import {createQueryServerApi} from '../../../backend/core/typed-api.js';
+import {createQueryServerApi} from '../../core/typed-api.js';
 import {DBDef_BackupDoc} from '@nu-art/thunderstorm-shared/_entity/backup-doc/db-def';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {MemKey_HttpRequestHeaders} from '../../../backend/modules/server/consts.js';
-import {ApiDef, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared/_entity/backup-doc';
-import {AxiosHttpModule} from '../../../backend/index.js';
+import {MemKey_HttpRequestHeaders} from '../../modules/server/consts.js';
+import {AxiosHttpModule} from '../../index.js';
 import {CSVModuleV3} from '@nu-art/ts-common/modules/CSVModuleV3';
-import {ModuleBE_CollectionActions} from '../../../backend/modules/collection-actions/ModuleBE_CollectionActions.js';
+import {ModuleBE_CollectionActions} from '../../modules/collection-actions/ModuleBE_CollectionActions.js';
 
 export interface OnModuleCleanupV2 {
 	__onCleanupInvokedV2: () => Promise<void>;

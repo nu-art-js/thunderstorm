@@ -31,6 +31,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@nu-art/push-pub-sub-frontend": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/ts-styles": "?",
     "@nu-art/push-pub-sub-shared": "?",
@@ -56,8 +57,7 @@
     "@types/express": "?"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/file-upload-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

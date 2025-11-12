@@ -1,5 +1,5 @@
 import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
-import {DBProto_PermissionDomain} from '../../permission-domain/shared/types.js';
+import {DBProto_PermissionDomain} from '../permission-domain/types.js';
 
 type VersionTypes_PermissionAccessLevel = {
 	'1.0.0': DB_PermissionAccessLevel

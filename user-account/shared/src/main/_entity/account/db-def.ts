@@ -7,7 +7,7 @@ import {
 	tsValidator_nonMandatoryString
 } from '@nu-art/ts-common';
 import {_accountTypes, DBProto_Account} from './types.js';
-import {accountGroupName} from '../../session/shared/consts.js';
+import {accountGroupName} from '../session/consts.js';
 
 const modifiablePropsValidator: DBProto_Account['modifiablePropsValidator'] = {
 	email: tsValidateEmail,

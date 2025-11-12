@@ -45,8 +45,7 @@
     "@types/react": "?"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/push-pub-sub-backend Backend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

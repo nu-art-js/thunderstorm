@@ -86,14 +86,17 @@
     "@types/react-virtualized-auto-sizer": "^1.0.1"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/thunderstorm-frontend Frontend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
+    },
+    "./editable-item": {
+      "types": "./editable-item.d.ts",
+      "import": "./editable-item.js"
     },
     "./*": {
       "types": "./*.d.ts",

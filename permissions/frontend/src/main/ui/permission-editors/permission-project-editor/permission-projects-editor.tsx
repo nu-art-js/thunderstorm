@@ -1,17 +1,14 @@
 import * as React from 'react';
-import {TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm/frontend/index';
-import {DB_PermissionProject, DBProto_PermissionProject, ModuleFE_PermissionProject} from '../../../_entity.js';
+import {InferProps, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm-frontend/index';
+import {ModuleFE_PermissionProject} from '../../../_entity.js';
 import {Component_BasePermissionItemEditor} from '../editor-base.js';
 import {Input_Text_Blur} from '../components.js';
 import {PermissionAPIEditor} from '../permission-api-edior/permission-api-editor.js';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm/frontend/components/Page_ItemsEditor/index';
-import {InferProps} from '@nu-art/thunderstorm/frontend/utils/types';
+import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
 import './permission-project-editor.scss';
-import {
-	Props_EditableItemControllerProto,
-	TS_EditableItemControllerProto
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableItemControllerProto/index';
+import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemControllerProto/index';
 import {sortArray} from '@nu-art/ts-common';
+import {DB_PermissionProject, DBProto_PermissionProject} from '@nu-art/permissions-shared';
 
 class Component_EditProject
 	extends Component_BasePermissionItemEditor<DBProto_PermissionProject> {

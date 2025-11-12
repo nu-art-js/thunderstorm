@@ -61,8 +61,7 @@
     "@types/jsonwebtoken": "^9.0.6"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/user-account-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

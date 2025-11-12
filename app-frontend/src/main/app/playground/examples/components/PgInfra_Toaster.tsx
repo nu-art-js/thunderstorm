@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ToastBuilder, ModuleFE_Toaster, TS_Toast} from '@nu-art/thunderstorm/frontend/index';
+import {ToastBuilder, ModuleFE_Toaster, TS_Toast} from '@nu-art/thunderstorm-frontend/index';
 
 
 export class PgInfra_Toaster

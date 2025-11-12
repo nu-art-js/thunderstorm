@@ -1,22 +1,13 @@
-import {
-	AppToolsScreen,
-	ATS_Frontend
-} from '../../components/TS_AppTools/index.js';
+import {AppToolsScreen, ATS_Frontend} from '../../components/TS_AppTools/index.js';
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {
-	DBProto_EditableTest,
-	ModuleFE_EditableTest,
-	UI_EditableTest
-} from '../../_entity.js';
+import {ModuleFE_EditableTest,} from '../../_entity.js';
 import {TS_EditableContent} from '../../components/TS_EditableContent/TS_EditableContent.js';
 import {LL_V_L} from '../../components/Layouts/index.js';
 import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
-import {
-	EditableDBItemV3,
-	EditableItem
-} from '../../utils/EditableItem.js';
+import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem.js';
 import {TS_DropDown} from '../../components/TS_Dropdown/index.js';
 import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
+import {DBProto_EditableTest, UI_EditableTest} from '@nu-art/thunderstorm-shared';
 
 
 type State = {
@@ -63,9 +54,9 @@ export class ATS_EditableItemTesting
 
 // const EditableInput = TS_InputV2.editable({type: 'text', saveEvent: ['accept', 'blur']});
 const Dropdown_Zevel = TS_DropDown.prepareEditable({
-	                                                   adapter: SimpleListAdapter(['ani', 'pah', 'zevel'], item => <>{item.item}</>),
-	                                                   placeholder: 'select pah zevel'
-                                                   });
+	adapter: SimpleListAdapter(['ani', 'pah', 'zevel'], item => <>{item.item}</>),
+	placeholder: 'select pah zevel'
+});
 
 class EditableItemTestEditor
 	extends TS_EditableContent<DBProto_EditableTest> {

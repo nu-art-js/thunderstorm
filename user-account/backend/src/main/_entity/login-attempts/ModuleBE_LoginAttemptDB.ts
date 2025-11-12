@@ -6,11 +6,11 @@ import {
 	LoginStatus,
 	LoginStatus_Failed,
 	LoginStatus_Success
-} from '@nu-art/user-account-shared/_entity/login-attempts';
+} from '@nu-art/user-account-shared';
 import {filterKeys, UniqueId} from '@nu-art/ts-common';
 import {OnLoginFailed} from './dispatchers.js';
-import {OnUserLogin} from '../../account/backend/index.js';
-import {SafeDB_Account} from '@nu-art/user-account-shared/_enum/account';
+import {OnUserLogin} from '../account/index.js';
+import {SafeDB_Account} from '@nu-art/user-account-shared';
 import {MemKey_HttpRequest} from '@nu-art/thunderstorm-backend/modules/server/consts';
 
 

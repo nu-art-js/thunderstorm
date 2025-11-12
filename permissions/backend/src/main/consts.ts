@@ -1,8 +1,7 @@
-import {SessionData_Permissions} from '@nu-art/permissions-shared';
 import {SessionKey_BE} from '@nu-art/user-account-backend';
-import {SessionData_StrictMode} from './modules/ModuleBE_PermissionsAssert.js';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {TypedMap} from '@nu-art/ts-common';
+import {SessionData_Permissions, SessionData_StrictMode} from '@nu-art/permissions-shared';
 
 export const SessionKey_Permissions_BE = new SessionKey_BE<SessionData_Permissions>('permissions');
 export const SessionKey_StrictMode_BE = new SessionKey_BE<SessionData_StrictMode>('strictMode');

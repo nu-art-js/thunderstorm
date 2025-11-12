@@ -21,8 +21,8 @@ import {__stringify, ApiException, decode, ImplementationMissingException, LogLe
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm-backend';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
 import {ModuleBE_AccountDB} from './ModuleBE_AccountDB.js';
-import {ApiDef_SAML, QueryParam_Email, QueryParam_RedirectUrl, QueryParam_SessionId, SAML_Assert, SAML_Login} from '@nu-art/user-account-shared/_entity/account';
-import {MemKey_AccountEmail} from '../../session/backend/index.js';
+import {ApiDef_SAML, QueryParam_Email, QueryParam_RedirectUrl, QueryParam_SessionId, SAML_Assert, SAML_Login} from '@nu-art/user-account-shared';
+import {MemKey_AccountEmail} from '../session/index.js';
 
 
 /**
