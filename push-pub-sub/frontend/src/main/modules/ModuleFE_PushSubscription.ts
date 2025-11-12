@@ -1,5 +1,5 @@
-import {ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend/index';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
+import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
 import {DBDef_PushSubscription, DBProto_PushSubscription} from '@nu-art/push-pub-sub-shared/push-subscription/index';
 
 

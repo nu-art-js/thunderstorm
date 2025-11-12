@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {_className, ComponentSync} from '@nu-art/thunderstorm/frontend/index';
+import {_className, ComponentSync} from '@nu-art/thunderstorm-frontend/index';
 import {Model_FloatingWindow} from '../../types.js';
 import {FloatingWindows_FocusWindow} from '../../_dispatchers/focus-window.js';
 import {BadImplementationException, Debounce, Second} from '@nu-art/ts-common';

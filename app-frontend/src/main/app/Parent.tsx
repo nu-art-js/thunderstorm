@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend/index';
+import {ComponentSync} from '@nu-art/thunderstorm-frontend/index';
 
 export class Parent
 	extends ComponentSync {

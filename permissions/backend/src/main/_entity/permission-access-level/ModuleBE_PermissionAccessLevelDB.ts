@@ -1,13 +1,13 @@
 import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
 import {DB_PermissionAccessLevel, DB_PermissionAccessLevel_1_0_0, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from './shared.js';
-import {Clause_Where} from '@nu-art/firebase-backend';
+import {Clause_Where} from '@nu-art/firebase-shared';
 import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates} from '@nu-art/ts-common';
 import {FirestoreTransaction} from '@nu-art/firebase-backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
-import {ModuleBE_PermissionAPIDB} from '../../permission-api/backend/ModuleBE_PermissionAPIDB.js';
-import {ModuleBE_PermissionDomainDB} from '../../permission-domain/backend/ModuleBE_PermissionDomainDB.js';
-import {ModuleBE_PermissionGroupDB} from '../../permission-group/backend/ModuleBE_PermissionGroupDB.js';
+import {ModuleBE_PermissionAPIDB} from '../permission-api/index.js';
+import {ModuleBE_PermissionDomainDB} from '../permission-domain/index.js';
+import {ModuleBE_PermissionGroupDB} from '../permission-group/index.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 
 

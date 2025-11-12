@@ -33,10 +33,10 @@ import {
 	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
-import {FileWrapper, FirestoreTransaction} from '@nu-art/firebase-backend';
+import {FileWrapper, FirestoreTransaction} from '@nu-art/firebase-shared';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp.js';
 import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDB, OnCleanupSchedulerAct} from '@nu-art/thunderstorm-backend';
-import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-backend';
+import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {OnAssetUploaded} from './ModuleBE_BucketListener.js';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage.js';
 import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';

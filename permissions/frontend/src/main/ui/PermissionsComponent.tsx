@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AwaitModules, ComponentSync, ModuleFE_AppConfig, ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend/index';
+import {AwaitModules, ComponentSync, ModuleFE_AppConfig, ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend/index';
 import {PermissionKey_FE} from '../PermissionKey_FE.js';
 import {AccessLevel} from '../modules/ModuleFE_PermissionsAssert.js';
 

@@ -30,8 +30,8 @@ import {ComponentSync} from '../../core/ComponentSync.js';
 import {TS_Input} from '../TS_Input/index.js';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts/index.js';
-import {UIProps_EditableItem} from '../../utils/EditableItem.js';
 import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip, resolveEditableError} from '../types.js';
+import {UIProps_EditableItem} from '../../utils/EditableItem.js';
 
 
 type State<ItemType> = ComponentProps_Error & {

@@ -5,7 +5,7 @@ import {
 	DBProto_FailedLoginAttempt,
 	DefaultMaxLoginAttempts,
 	ErrorType_LoginBlocked
-} from '@nu-art/user-account-shared/_entity/failed-login-attempt';
+} from '@nu-art/user-account-shared';
 import {
 	ApiException,
 	currentTimeMillis, exists,
@@ -16,9 +16,9 @@ import {
 } from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
-import {dispatch_OnLoginFailed} from '../../login-attempts/backend/dispatchers.js';
-import {OnUserLogin} from '../../account/backend/index.js';
-import {SafeDB_Account} from '@nu-art/user-account-shared/_enum/account';
+import {dispatch_OnLoginFailed} from '../login-attempts/dispatchers.js';
+import {OnUserLogin} from '../account/index.js';
+import {SafeDB_Account} from '@nu-art/user-account-shared';
 
 
 type Config = DBApiConfigV3<DBProto_FailedLoginAttempt> & {

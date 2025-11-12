@@ -16,10 +16,9 @@
  * limitations under the License.
  */
 
-export * from './_enum.js';
 export * from './_entity.js';
 export * from './module-pack.js';
-export * from '../_entity/account/frontend/ModuleFE_Account.js';
+export * from './_entity/account/ModuleFE_Account.js';
 export * from './ui/Component_Login/Component_Login.js';
 export * from './ui/Component_Register.js';
 export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin.js';

@@ -16,20 +16,10 @@
  * limitations under the License.
  */
 
-import {
-	addItemToArray,
-	compare,
-	generateHex,
-	ImplementationMissingException,
-	Module,
-	removeFromArray,
-	ThisShouldNotHappenException
-} from '@nu-art/ts-common';
-import {
-	apiWithBody,
-	StorageKey,
-	ThunderDispatcher
-} from '@nu-art/thunderstorm/frontend/index';
+import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {apiWithBody, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
+import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
+import {MessagingWrapperFE} from '@nu-art/firebase-frontend/index';
 import {
 	ApiDef_PushMessages,
 	ApiStruct_PushMessages,
@@ -38,9 +28,7 @@ import {
 	PushMessage_Payload,
 	PushMessage_PayloadWrapper,
 	Request_PushRegister
-} from '../../index.js';
-import {ApiDefCaller} from '@nu-art/thunderstorm-frontend';
-import {MessagingWrapperFE} from '@nu-art/firebase/frontend/index';
+} from '@nu-art/push-pub-sub-shared';
 
 
 export const Command_SwToApp = 'SwToApp';

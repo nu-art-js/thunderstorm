@@ -1,9 +1,9 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {BadImplementationException, ImplementationMissingException, RecursiveObjectOfPrimitives, TypedKeyValue} from '@nu-art/ts-common';
-import {DB_Session} from '@nu-art/user-account-shared/_entity/session';
+import {DB_Session} from '@nu-art/user-account-shared';
 import {HeaderKey} from '@nu-art/thunderstorm-backend';
-import {_SessionKey_Account} from '@nu-art/user-account-shared/_enum/account';
-import {HeaderKey_Authorization, HeaderKey_DeviceId, HeaderKey_Origin, HeaderKey_TabId} from '@nu-art/thunderstorm/shared/headers';
+import {_SessionKey_Account} from '@nu-art/user-account-shared';
+import {HeaderKey_Authorization, HeaderKey_DeviceId, HeaderKey_Origin, HeaderKey_TabId} from '@nu-art/thunderstorm-shared/headers';
 
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountId = new MemKey<string>('accounts--id', true);

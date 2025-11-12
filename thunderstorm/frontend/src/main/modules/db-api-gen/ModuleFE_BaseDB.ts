@@ -43,7 +43,7 @@ import {
 	ValidationException,
 	voidFunction
 } from '@nu-art/ts-common';
-import {composeDbObjectUniqueId} from '@nu-art/firebase-frontend';
+import {composeDbObjectUniqueId} from '@nu-art/firebase-shared';
 import {OnClearWebsiteData} from '../clearWebsiteDataDispatcher.js';
 import {DBApiFEConfig, getModuleFEConfigV3} from '../../core/db-api-gen/db-def.js';
 import {

@@ -1,8 +1,8 @@
-import {AppToolsScreen, ComponentSync, EditableItem, LL_V_L, TS_Button, TS_PropRenderer} from '@nu-art/thunderstorm/frontend/index';
-import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
+import {AppToolsScreen, ComponentSync, EditableItem, LL_V_L, TS_Button, TS_PropRenderer} from '@nu-art/thunderstorm-frontend';
 import {Editor_JsonToObject} from '../Editor_JsonToObject.js';
 import {tsValidateString, ValidatorTypeResolver} from '@nu-art/ts-common';
 import React from 'react';
+import {InferProps, InferState} from '@nu-art/thunderstorm-frontend/utils/types.js';
 
 type ATS_JsonToObject_Props = {};
 type ATS_JsonToObject_State = {

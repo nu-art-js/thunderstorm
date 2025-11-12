@@ -1,1 +1,0 @@
-export * from '@nu-art/thunderstorm-shared/_entity/app-config';

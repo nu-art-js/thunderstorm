@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-frontend';
+import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB.js';
 import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException, TypedApi} from '../../shared.js';

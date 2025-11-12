@@ -29,7 +29,7 @@ import {Stream} from 'stream';
 import {postSlackMessageErrorHandler} from './utils.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {SlackBuilderBE} from './SlackBuilderBE.js';
-import {HttpMethod} from '@nu-art/thunderstorm-backend';
+import {HttpMethod} from '@nu-art/thunderstorm-shared';
 
 
 interface ChatPostMessageResult

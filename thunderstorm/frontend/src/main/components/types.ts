@@ -1,6 +1,6 @@
 import {_keys, EmptyObject, exists, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {EditableItem} from '../utils/EditableItem.js';
 import {openContent} from '../component-modules/mouse-interactivity/index.js';
+import {EditableItem} from '../utils/EditableItem.js';
 
 
 type CustomErrorLevel = string

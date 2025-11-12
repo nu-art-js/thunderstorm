@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {StorageKey} from '@nu-art/thunderstorm/frontend/index';
+import {StorageKey} from '@nu-art/thunderstorm-frontend/index';
 import {_values, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
 import {PanelConfig} from '../index.js';
 import {Workspace} from '@nu-art/ts-workspace-shared';

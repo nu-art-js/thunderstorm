@@ -1,6 +1,6 @@
-import {DBApiConfigV3, ModuleBE_BaseDB} from '../../../backend/modules/db-api-gen/ModuleBE_BaseDB.js';
+import { DBProto_EditableTest } from '@nu-art/thunderstorm-shared/_entity/editable-test/types';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '../../modules/db-api-gen/ModuleBE_BaseDB.js';
 import {DBDef_EditableTest} from '@nu-art/thunderstorm-shared/_entity/editable-test/db-def';
-import {DBProto_EditableTest} from '@nu-art/thunderstorm-shared';
 
 type Config = DBApiConfigV3<DBProto_EditableTest> & {
 // 	

@@ -1,4 +1,4 @@
-import {ApiDef_ShortUrl, DBDef_ShortUrl, DBProto_ShortUrl, GetShortUrlRequest, GetShortUrlResponse} from '@nu-art/ts-short-url-shared/_entity/short-url';
+import {ApiDef_ShortUrl, DBDef_ShortUrl, DBProto_ShortUrl, GetShortUrlRequest, GetShortUrlResponse} from '@nu-art/ts-short-url-shared';
 import {addRoutes, createQueryServerApi, DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
 import {generateShortURL} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';

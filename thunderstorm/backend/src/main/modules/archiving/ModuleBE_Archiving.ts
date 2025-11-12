@@ -22,7 +22,7 @@ import {
 	RequestQuery_DeleteAll,
 	RequestQuery_GetHistory
 } from '@nu-art/thunderstorm-shared';
-import {_EmptyQuery} from '@nu-art/firebase-backend';
+import {_EmptyQuery} from '@nu-art/firebase-shared';
 
 
 type Params = { collectionName: string, docId: string }

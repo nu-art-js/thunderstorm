@@ -17,28 +17,16 @@
  * limitations under the License.
  */
 
-import {
-	addItemToArray,
-	auditBy,
-	currentTimeMillis,
-	filterInstances,
-	generateHex,
-	Module,
-	padNumber
-} from '@nu-art/ts-common';
+import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
 
 import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend';
 
-import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../../index.js';
 
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm-backend';
-import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import JSZip from 'jszip';
+import {ApiDef_BugReport, DB_BugReport, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared/api';
+import {MemKey_AccountId} from '@nu-art/user-account-backend/_entity/session/index';
 
-export type TicketDetails = {
-	platform: string
-	issueId: string
-}
 type Config = {
 	projectId?: string,
 	bucket?: string,

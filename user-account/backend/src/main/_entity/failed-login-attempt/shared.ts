@@ -1,1 +1,0 @@
-export * from '@nu-art/user-account-shared/_entity/failed-login-attempt';

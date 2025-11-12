@@ -1,6 +1,7 @@
 import {md5} from '@nu-art/ts-common';
-import {DefaultDef_AccessLevel, PermissionKey, PreDBAccessLevel} from './types.js';
+import {PermissionKey, PreDBAccessLevel} from './types.js';
 
+export const PermissionDBGroup = 'permission';
 
 export const Prefix_PermissionKey = 'permission-key--';
 export const DomainNamespace_PermissionAssignment = 'Permissions Assignment';
@@ -30,7 +31,7 @@ export const defaultAccessLevels = [
 	DefaultAccessLevel_Admin,
 ];
 
-export const DuplicateDefaultAccessLevels = (seed: string): DefaultDef_AccessLevel[] => {
+export const DuplicateDefaultAccessLevels = (seed: string) => {
 	return CreateDefaultAccessLevels(seed, [
 		{...DefaultAccessLevel_NoAccess},
 		{...DefaultAccessLevel_Read},
@@ -40,12 +41,13 @@ export const DuplicateDefaultAccessLevels = (seed: string): DefaultDef_AccessLev
 	]);
 };
 
-export const CreateDefaultAccessLevels = (seed: string, accessLevels: PreDBAccessLevel[]): DefaultDef_AccessLevel[] => {
-	return accessLevels.map(level => ({...level, _id: md5(`${seed}${level.name}`), uiLabel: level.name}));
-};
 
 const generateDefaultKeyName = (namespace: string, accessLevelName: string) => {
 	return `${defaultPermissionKeySuffix}--${namespace}--${accessLevelName}`;
+};
+
+export const CreateDefaultAccessLevels = (seed: string, accessLevels: PreDBAccessLevel[]) => {
+	return accessLevels.map(level => ({...level, _id: md5(`${seed}${level.name}`), uiLabel: level.name}));
 };
 
 export const generateKeyNamesByAccessLevel = <AccessLevel extends PreDBAccessLevel>(namespace: string, accessLevels: AccessLevel[]) => {

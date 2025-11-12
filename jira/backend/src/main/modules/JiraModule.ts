@@ -25,10 +25,10 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {promisifyRequest} from '@nu-art/thunderstorm-backend';
-import {HeaderKey_ContentType, HttpMethod} from '@nu-art/thunderstorm-backend';
 import {CoreOptions, Headers, Response, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils.js';
 import {JiraVersion, JiraVersion_Create} from '@nu-art/jira-shared/version';
+import { HeaderKey_ContentType, HttpMethod } from '@nu-art/thunderstorm-shared';
 
 
 type Config = {

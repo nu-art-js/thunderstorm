@@ -1,7 +1,7 @@
-import {DBProto_EditableTest} from '@nu-art/thunderstorm-shared/_entity/editable-test';
 import {ModuleFE_EditableTest} from './ModuleFE_EditableTest.js';
-import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '../../../frontend/index.js';
-import {DBItemDropDownMultiSelector} from '../../../frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector.js';
+import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '../../index.js';
+import {DBItemDropDownMultiSelector} from '../../components/_TS_MultiSelect/DBItemDropDownMultiSelector.js';
+import {DBProto_EditableTest} from '@nu-art/thunderstorm-shared/_entity/editable-test/index';
 
 
 const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_EditableTest> = {

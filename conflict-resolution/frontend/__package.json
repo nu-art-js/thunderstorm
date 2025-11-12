@@ -48,8 +48,7 @@
     "@types/react": "?"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/conflict-resolution-frontend Frontend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

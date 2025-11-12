@@ -1,15 +1,7 @@
-import {
-	DBDef_V3,
-	tsValidateArray,
-	tsValidateBoolean,
-	tsValidateDynamicObject,
-	tsValidateNumber,
-	tsValidateString,
-	tsValidateUniqueId
-} from '@nu-art/ts-common';
+import {DBDef_V3, tsValidateArray, tsValidateBoolean, tsValidateDynamicObject, tsValidateNumber, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
 import {DBProto_PermissionAPI} from './types.js';
-import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../../shared/validators.js';
-import {PermissionDBGroup} from '../../shared.js';
+import {PermissionDBGroup} from '../../consts.js';
+import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../validators.js';
 
 
 const Validator_ModifiableProps: DBProto_PermissionAPI['modifiablePropsValidator'] = {

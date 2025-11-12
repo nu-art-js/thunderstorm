@@ -1,7 +1,7 @@
 import {Module} from '@nu-art/ts-common';
-import {ApiDefCaller} from '@nu-art/thunderstorm-frontend';
+import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
 import {ApiDef_Slack, ApiStruct_Slack} from '@nu-art/slack-shared';
-import {apiWithBody} from '@nu-art/thunderstorm/frontend/index';
+import {apiWithBody} from '@nu-art/thunderstorm-frontend/index';
 
 export class ModuleFE_Slack_Class
 	extends Module<any, any> {

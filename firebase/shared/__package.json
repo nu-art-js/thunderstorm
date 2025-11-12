@@ -57,8 +57,7 @@
     "@types/ws": "^8.5.5"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/firebase-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

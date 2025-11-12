@@ -18,8 +18,11 @@
 
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
 import {Auditable, DB_Object} from '@nu-art/ts-common';
-import {TicketDetails} from '../backend/modules/ModuleBE_BugReport.js';
 
+export type TicketDetails = {
+	platform: string
+	issueId: string
+}
 
 export type BugReport = {
 	name: string

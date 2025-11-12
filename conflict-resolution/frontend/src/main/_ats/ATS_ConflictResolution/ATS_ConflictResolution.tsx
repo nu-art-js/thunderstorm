@@ -11,8 +11,8 @@ import {
 	TS_DropDown,
 	TS_Input,
 	TS_PropRenderer
-} from '@nu-art/thunderstorm/frontend/index';
-import {ModuleFE_CollectionActions} from '@nu-art/thunderstorm/frontend/modules/ModuleFE_CollectionActions';
+} from '@nu-art/thunderstorm-frontend/index';
+import {ModuleFE_CollectionActions} from '@nu-art/thunderstorm-frontend/modules/ModuleFE_CollectionActions';
 import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution.js';
 
 type State = {

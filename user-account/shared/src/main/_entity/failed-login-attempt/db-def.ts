@@ -1,6 +1,6 @@
 import {DBDef_V3, tsValidateNumber, tsValidateUniqueId} from '@nu-art/ts-common';
 import {DBProto_FailedLoginAttempt} from './types.js';
-import {accountGroupName} from '../../session/shared/index.js';
+import {accountGroupName} from '../session/index.js';
 
 
 const Validator_ModifiableProps: DBProto_FailedLoginAttempt['modifiablePropsValidator'] = {

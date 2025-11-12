@@ -59,8 +59,7 @@
     "@types/request": "^2.48.1"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/live-docs-shared Shared"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

@@ -17,5 +17,4 @@
  */
 export * from './module-pack.js';
 export * from './_entity.js';
-export * from './_enum.js';
 export * from './SlackReporter.js';

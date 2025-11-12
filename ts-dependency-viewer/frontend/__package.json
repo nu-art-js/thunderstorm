@@ -53,8 +53,7 @@
     "@types/d3-graphviz": "^2.6.7"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/ts-dependency-viewer-frontend Frontend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

@@ -1,8 +1,12 @@
-import {AppConfigKey_FE, ModuleFE_AppConfig} from '@nu-art/thunderstorm/frontend/index';
-import {_keys, TypedKeyValue} from '@nu-art/ts-common';
-import {DB_PermissionKeyData, PermissionKey, UI_PermissionKeyData} from '@nu-art/permissions-shared';
+import {AppConfigKey_FE, ModuleFE_AppConfig} from '@nu-art/thunderstorm-frontend/index';
+import {_keys, TypedKeyValue, UniqueId} from '@nu-art/ts-common';
+import {DB_PermissionKeyData, DomainToLevelValueMap, PermissionKey} from '@nu-art/permissions-shared';
 import {AccessLevel, ModuleFE_PermissionsAssert} from './modules/ModuleFE_PermissionsAssert.js';
 
+export type UI_PermissionKeyData = {
+	accessLevelIds: UniqueId[];
+	_accessLevels?: DomainToLevelValueMap
+}
 
 export class PermissionKey_FE<K extends string = string>
 	extends AppConfigKey_FE<TypedKeyValue<K, DB_PermissionKeyData>> {

@@ -59,8 +59,7 @@
     "@types/ws": "^8.5.5"
   },
   "unitConfig": {
-    "type": "typescript-lib",
-    "label": "@nu-art/firebase-backend Backend"
+    "type": "typescript-lib"
   },
   "type": "module",
   "exports": {

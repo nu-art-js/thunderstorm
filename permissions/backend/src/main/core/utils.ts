@@ -1,7 +1,7 @@
 import {_values, md5, TypedMap, UniqueId} from '@nu-art/ts-common';
-import {DefaultDef_Domain, DefaultDef_Group, DefaultDef_Package, PreDBAccessLevel} from '@nu-art/permissions-shared';
-import {CreateDefaultAccessLevels, DefaultAccessLevel_NoAccess, DefaultAccessLevel_Read,} from '@nu-art/permissions-shared/consts';
+import {CreateDefaultAccessLevels, DefaultAccessLevel_NoAccess, DefaultAccessLevel_Read, DefaultDef_Group, PreDBAccessLevel} from '@nu-art/permissions-shared';
 import {defaultValueResolverV2, PermissionKey_BE} from '../PermissionKey_BE.js';
+import {DefaultDef_Domain, DefaultDef_Package} from '../types.js';
 
 
 export const Permissions_abTest = (seed: UniqueId, namespace: string, permutations: string[]) => {

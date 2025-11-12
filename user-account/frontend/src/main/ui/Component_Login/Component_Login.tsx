@@ -19,9 +19,9 @@
 import {_keys, exists, formatTimestamp} from '@nu-art/ts-common';
 import {Account_Login, AccountEmail, AccountPassword, ErrorType_LoginBlocked} from '@nu-art/user-account-shared';
 import './Component_Login.scss';
-import {Button, ComponentSync, LL_H_C, LL_V_C, ModuleFE_Toaster, TS_PropRenderer} from '@nu-art/thunderstorm/frontend/index';
+import {Button, ComponentSync, LL_H_C, LL_V_C, ModuleFE_Toaster, TS_PropRenderer} from '@nu-art/thunderstorm-frontend/index';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity.js';
-import {TS_InputV2} from '@nu-art/thunderstorm/frontend/components/TS_V2_Input/index';
+import {TS_InputV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_Input/index';
 import {Component_LoginBlocked} from '../Component_LoginBlocked/Component_LoginBlocked.js';
 
 type State<T> = {

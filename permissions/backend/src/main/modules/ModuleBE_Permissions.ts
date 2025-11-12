@@ -12,9 +12,23 @@ import {
 	TypedMap,
 } from '@nu-art/ts-common';
 import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm-backend';
-import {ApiDef_Permissions,} from '@nu-art/permissions-shared';
+import {
+	ApiDef_Permissions,
+	DB_PermissionAccessLevel,
+	DB_PermissionAPI,
+	DB_PermissionDomain,
+	DB_PermissionGroup,
+	DB_PermissionProject,
+	DefaultAccessLevel_Admin,
+	DefaultAccessLevel_NoAccess,
+	DefaultAccessLevel_Read,
+	DefaultAccessLevel_Write,
+	DefaultDef_Group,
+	defaultLevelsRouteLookupWords,
+	DuplicateDefaultAccessLevels,
+	SessionData_Permissions,
+} from '@nu-art/permissions-shared';
 import {BaseSessionClaims, CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
-import {DefaultDef_Group, DefaultDef_Project, SessionData_Permissions} from '@nu-art/permissions-shared';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -23,23 +37,9 @@ import {
 	PermissionsPackage_Developer,
 	PermissionsPackage_Permissions
 } from '../permissions.js';
-import {
-	DefaultAccessLevel_Admin,
-	DefaultAccessLevel_NoAccess,
-	DefaultAccessLevel_Read,
-	DefaultAccessLevel_Write,
-	defaultLevelsRouteLookupWords,
-	DuplicateDefaultAccessLevels
-} from '@nu-art/permissions-shared/consts';
-import {ApiModule} from '@nu-art/thunderstorm-backend';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert.js';
 import {PerformProjectSetup} from '@nu-art/thunderstorm-backend/modules/action-processor/Action_SetupProject';
 import {
-	DB_PermissionAccessLevel,
-	DB_PermissionAPI,
-	DB_PermissionDomain,
-	DB_PermissionGroup,
-	DB_PermissionProject,
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB,
 	ModuleBE_PermissionDomainDB,
@@ -47,7 +47,9 @@ import {
 	ModuleBE_PermissionProjectDB,
 	ModuleBE_PermissionUserDB
 } from '../_entity.js';
-import {trimStartingForwardSlash} from '@nu-art/thunderstorm/shared/route-tools';
+import {trimStartingForwardSlash} from '@nu-art/thunderstorm-shared/route-tools';
+import {ApiModule} from '@nu-art/thunderstorm-shared';
+import {DefaultDef_Project} from '../types.js';
 
 
 export interface CollectPermissionsProjects {

@@ -1,6 +1,6 @@
 import {Logger} from '@nu-art/ts-common';
 import {ModuleBE_Slack} from '@nu-art/slack-backend';
-import {MemKey_AccountEmail} from '../_entity/session/backend/index.js';
+import {MemKey_AccountEmail} from './_entity/session/index.js';
 
 export class SlackReporter extends Logger {
 

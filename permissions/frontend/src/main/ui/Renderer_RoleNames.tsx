@@ -1,4 +1,4 @@
-import {LL_V_L} from '@nu-art/thunderstorm/frontend/index';
+import {LL_V_L} from '@nu-art/thunderstorm-frontend/index';
 import {SessionKey_Permissions_FE} from '../consts.js';
 
 export const Renderer_RoleNames = () => {

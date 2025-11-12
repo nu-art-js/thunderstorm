@@ -9,18 +9,18 @@ import {
 	ModuleFE_RoutingV2,
 	TS_AppTools,
 	TS_NavLink
-} from '@nu-art/thunderstorm/frontend/index';
+} from '@nu-art/thunderstorm-frontend/index';
 import './ATS_Permissions.scss';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert.js';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend/index';
+import {ModuleFE_Account} from '@nu-art/user-account-frontend/index';
 import {arrayIncludesAny, timeout} from '@nu-art/ts-common';
 import {SessionKey_StrictMode_FE} from '../../consts.js';
-import {ModuleFE_PermissionAccessLevel} from '../../../_entity/permission-access-level/frontend/index.js';
-import {ModuleFE_PermissionAPI} from '../../../_entity/permission-api/frontend/index.js';
-import {ModuleFE_PermissionProject} from '../../../_entity/permission-project/frontend/index.js';
-import {ModuleFE_PermissionDomain} from '../../../_entity/permission-domain/frontend/index.js';
-import {ModuleFE_PermissionGroup} from '../../../_entity/permission-group/frontend/index.js';
-import {ModuleFE_PermissionUser} from '../../../_entity/permission-user/frontend/index.js';
+import {ModuleFE_PermissionAccessLevel} from '../../_entity/permission-access-level/index.js';
+import {ModuleFE_PermissionAPI} from '../../_entity/permission-api/index.js';
+import {ModuleFE_PermissionProject} from '../../_entity/permission-project/index.js';
+import {ModuleFE_PermissionDomain} from '../../_entity/permission-domain/index.js';
+import {ModuleFE_PermissionGroup} from '../../_entity/permission-group/index.js';
+import {ModuleFE_PermissionUser} from '../../_entity/permission-user/index.js';
 import {Outlet} from 'react-router-dom';
 import {PermissionUsersEditor} from '../permission-editors/permission-users-editor.js';
 import {PermissionProjectsEditor} from '../permission-editors/permission-project-editor/permission-projects-editor.js';

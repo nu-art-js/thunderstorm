@@ -17,14 +17,7 @@
  * limitations under the License.
  */
 import {__stringify, _keys, BadImplementationException, Dispatcher, Minute, Module, Queue} from '@nu-art/ts-common';
-import {
-	ApiDef,
-	ApiDefCaller,
-	BaseHttpRequest,
-	HeaderKey_ContentType,
-	TS_Progress,
-	TypedApi
-} from '@nu-art/thunderstorm-shared';
+import {ApiDef, ApiDefCaller, BaseHttpRequest, HeaderKey_ContentType, TS_Progress, TypedApi} from '@nu-art/thunderstorm-shared';
 
 import {
 	ApiDef_UploadFile,
@@ -35,8 +28,8 @@ import {
 	PushKey_FileUploaded,
 	TempSignedUrl,
 	UI_Asset
-} from '../../shared/index.js';
-import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend/index';
+} from '../index.js';
+import {OnPushMessageReceived} from '@nu-art/push-pub-sub-frontend';
 import {PushMessage_Payload} from '@nu-art/push-pub-sub-shared';
 import {PushMessage_FileUploaded} from '../assets/messages.js';
 

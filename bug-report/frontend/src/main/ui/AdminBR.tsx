@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-import {ComponentSync,} from '@nu-art/thunderstorm/frontend/index';
+import {ComponentSync,} from '@nu-art/thunderstorm-frontend/index';
 import {DB_BugReport} from '@nu-art/bug-report-shared/api';
 import {__stringify} from '@nu-art/ts-common';
-import {OnRequestListener} from '@nu-art/thunderstorm-frontend';
+import {OnRequestListener} from '@nu-art/thunderstorm-shared';
 import {ModuleFE_BugReportAdmin, RequestKey_GetLog} from '../modules/ModuleFE_BugReportAdmin.js';
 
 

@@ -1,6 +1,6 @@
 import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
-import {DBProto_PermissionProject} from '../../permission-project/shared/index.js';
-import {DBProto_PermissionAccessLevel} from '../../permission-access-level/shared/index.js';
+import {DBProto_PermissionProject} from '../permission-project/index.js';
+import {DBProto_PermissionAccessLevel} from '../permission-access-level/index.js';
 
 type VersionTypes_PermissionAPI = {
 	'1.0.0': DB_PermissionAPI,

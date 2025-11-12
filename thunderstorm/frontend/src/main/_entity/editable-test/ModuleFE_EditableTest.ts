@@ -1,7 +1,7 @@
-import {DispatcherDef, ThunderDispatcherV3} from '../../../frontend/core/db-api-gen/types.js';
-import {ApiStruct_EditableTest, DBDef_EditableTest, DBProto_EditableTest} from '@nu-art/thunderstorm-shared/_entity/editable-test';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared/_entity/editable-test';
-import { ModuleFE_BaseApi } from '../../../frontend/modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ApiStruct_EditableTest, DBDef_EditableTest, DBProto_EditableTest} from '@nu-art/thunderstorm-shared/_entity/editable-test/index';
+import {DispatcherDef, ThunderDispatcherV3} from '../../core/db-api-gen/types.js';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ApiDefCaller} from '@nu-art/thunderstorm-shared/types';
 
 
 export type DispatcherType_EditableTest = DispatcherDef<DBProto_EditableTest, `__onEditableTestUpdated`>;
@@ -16,8 +16,7 @@ export class ModuleFE_EditableTest_Class
 
 	constructor() {
 		super(DBDef_EditableTest, dispatch_onEditableTestChanged);
-		this._v1 = {
-		};
+		this._v1 = {};
 	}
 
 }

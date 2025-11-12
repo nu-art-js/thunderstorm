@@ -1,6 +1,6 @@
 import {DBDef_V3, tsValidateIsInRange, tsValidateString, tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/ts-common';
 import {DBProto_PermissionAccessLevel} from './types.js';
-import {PermissionDBGroup} from '../../shared.js';
+import {PermissionDBGroup} from '../../consts.js';
 
 const Validator_ModifiableProps: DBProto_PermissionAccessLevel['modifiablePropsValidator'] = {
 	domainId: tsValidateUniqueId,

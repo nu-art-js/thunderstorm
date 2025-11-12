@@ -30,7 +30,7 @@ import {AxiosHttpModule} from '../http/AxiosHttpModule.js';
 import {MemKey_HttpRequest} from '../server/consts.js';
 import {ModuleBE_BaseApi_Class} from '../db-api-gen/ModuleBE_BaseApi.js';
 import {Storm} from '../../core/Storm.js';
-import {ModuleBE_BackupDocDB} from '../../../_entity/backup-doc/backend/index.js';
+import {ModuleBE_BackupDocDB} from '../../_entity/backup-doc/index.js';
 import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB.js';
 import {Transform, Writable} from 'stream';
 import {firestore} from 'firebase-admin';

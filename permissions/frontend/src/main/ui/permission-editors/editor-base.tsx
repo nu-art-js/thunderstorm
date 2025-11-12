@@ -1,12 +1,12 @@
 import * as React from 'react';
-import {LL_V_L, ModuleFE_BaseApi} from '@nu-art/thunderstorm/frontend/index';
+import {LL_V_L, ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
 import {DBProto} from '@nu-art/ts-common';
 import './editor-base.scss';
 import {
 	EditableRef,
 	TS_EditableContent
-} from '@nu-art/thunderstorm/frontend/components/TS_EditableContent/TS_EditableContent';
-import {InferProps, InferState} from '@nu-art/thunderstorm/frontend/utils/types';
+} from '@nu-art/thunderstorm-frontend/components/TS_EditableContent/TS_EditableContent';
+import {InferProps, InferState} from '@nu-art/thunderstorm-frontend';
 
 //Editors refactor WIP
 

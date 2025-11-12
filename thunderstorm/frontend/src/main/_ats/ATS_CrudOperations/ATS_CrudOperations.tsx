@@ -7,7 +7,7 @@ import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
 import {DropDown_DBModules} from './ui-components.js';
 import {TS_DropDown} from '../../components/TS_Dropdown/index.js';
 import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
-import {FirestoreQuery} from '@nu-art/firebase-frontend';
+import {FirestoreQuery} from '@nu-art/firebase-shared';
 import {DB_BaseObject} from '@nu-art/ts-common';
 import {TS_TextArea} from '../../components/TS_Input/index.js';
 import {Button} from '../../components/Button/Button.js';

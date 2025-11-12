@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {apiWithBody, apiWithQuery, ModuleFE_BaseApi, ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend/index';
-import {ApiDefCaller, HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm-frontend';
-import {dispatcher_onAuthRequired} from '@nu-art/thunderstorm/shared/no-auth-listener';
+import {apiWithBody, apiWithQuery, ModuleFE_BaseApi, ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
+import {ApiDefCaller, HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm-shared';
+import {dispatcher_onAuthRequired} from '@nu-art/thunderstorm-shared/no-auth-listener';
 import {
 	Account_ChangeThumbnail,
 	Account_GetPasswordAssertionConfig,
@@ -12,15 +12,15 @@ import {
 	DB_Account,
 	DBDef_Accounts,
 	DBProto_Account,
+	PasswordAssertionConfig,
 	QueryParam_SessionId,
 	SAML_Login,
 	UI_Account
-} from '@nu-art/user-account-shared/_entity/account';
+} from '@nu-art/user-account-shared';
 import {SessionKeyFE_Account, StorageKey_DeviceId, StorageKey_TabId} from './consts.js';
-import {PasswordAssertionConfig} from '../../_enum.js';
-import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {ModuleFE_Session, OnSessionUpdated} from '../../session/frontend/ModuleFE_Session.js';
+import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
 import {asArray, cloneObj, composeUrl, DB_BaseObject, Exception, generateHex, KB, TS_Object} from '@nu-art/ts-common';
+import {ModuleFE_Session, OnSessionUpdated} from '../session/ModuleFE_Session.js';
 
 
 export interface OnLoginStatusUpdated {

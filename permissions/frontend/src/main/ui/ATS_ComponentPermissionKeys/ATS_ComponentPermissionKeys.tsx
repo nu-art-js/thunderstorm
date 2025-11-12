@@ -1,4 +1,4 @@
-import {AppToolsScreen, ComponentSync, LL_V_L} from '@nu-art/thunderstorm/frontend/index';
+import {AppToolsScreen, ComponentSync, LL_V_L} from '@nu-art/thunderstorm-frontend/index';
 import {PermissionKeysEditor} from './subEditors/permission-keys-editor.js';
 import {ModuleFE_PermissionAccessLevel} from '../../_entity.js';
 

@@ -1,17 +1,15 @@
 import {
-	DomainNamespace_PermissionAssignment,
-	DomainNamespace_PermissionManagement,
-	DuplicateDefaultAccessLevels
-} from '@nu-art/permissions-shared/consts';
-import {DefaultDef_Package} from '@nu-art/permissions-shared';
-import {
-	DBDef_PermissionAPI,
 	DBDef_PermissionAccessLevel,
+	DBDef_PermissionAPI,
 	DBDef_PermissionDomain,
 	DBDef_PermissionGroup,
 	DBDef_PermissionProject,
-	DBDef_PermissionUser
-} from '../_entity.js';
+	DBDef_PermissionUser,
+	DomainNamespace_PermissionAssignment,
+	DomainNamespace_PermissionManagement,
+	DuplicateDefaultAccessLevels
+} from '@nu-art/permissions-shared';
+import {DefaultDef_Package} from '../types.js';
 
 export const Domain_PermissionAssignment = Object.freeze({
 	_id: '1f41541c4514b50140ae62c1f7097029',

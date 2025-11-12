@@ -20,3 +20,4 @@
 export * from './core/module-pack.js';
 export * from './modules/index.js';
 export * from './_entity.js';
+export * from './types.js';

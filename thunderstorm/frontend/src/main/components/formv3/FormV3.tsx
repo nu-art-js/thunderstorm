@@ -21,9 +21,9 @@
 
 import {ComponentType} from 'react';
 import {_keys} from '@nu-art/ts-common';
-import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem.js';
 import {ComponentSync} from '../../core/ComponentSync.js';
 import {TS_PropRenderer} from '../TS_PropRenderer/index.js';
+import {EditableItem, UIProps_EditableItem} from '../../utils/EditableItem.js';
 import {EditableRef} from '../TS_EditableContent/TS_EditableContent.js';
 
 

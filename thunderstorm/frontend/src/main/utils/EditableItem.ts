@@ -165,7 +165,7 @@ export class EditableItem<T>
 
 	private updateItemImpl(newItem: T) {
 		// @ts-ignore
-		this.item = deepClone(newItem as any);
+		this['item'] = deepClone(newItem as any);
 		this.originalItem = newItem;
 	}
 

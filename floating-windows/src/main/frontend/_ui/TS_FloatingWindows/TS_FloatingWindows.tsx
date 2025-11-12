@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend/index';
+import {ComponentSync} from '@nu-art/thunderstorm-frontend/index';
 import {ModuleFE_FloatingWindows} from '../../_modules/ModuleFE_FloatingWindows.js';
 import {FloatingWindows_WindowsUpdated} from '../../_dispatchers/models-updated.js';
 import './TS_FloatingWindows.scss';
