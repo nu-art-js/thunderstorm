@@ -54,7 +54,7 @@ export class Component_SearchResults
 			if (!item)
 				return;
 
-			return () => item.resultRenderer(result);
+			return (style?: React.CSSProperties) => item.resultRenderer(result, style);
 		}));
 	};
 
@@ -67,8 +67,9 @@ export class Component_SearchResults
 			className={'c__search-results'}
 			width={0}
 			height={height}
-			itemHeight={32}
+			itemHeight={this.props.itemHeight}
 			listToRender={list}
+			omitWrapper
 		/>;
 	}
 }

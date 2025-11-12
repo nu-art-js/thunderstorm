@@ -5,9 +5,23 @@ import {Component_SearchAddOn} from '../../components/Component_SearchAddOn';
 import {AddOn_SearchTerm, AddOnDef_SearchTerm} from './types';
 import './Component_AddOn_SearchTerm.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
+import { InferProps, InferState } from '@nu-art/thunderstorm/frontend/utils/types';
+
+type Props = {
+	placeholder?: string;
+};
+
+type State = {
+	placeholder?: string;
+};
 
 export class Component_AddOn_SearchTerm
-	extends Component_SearchAddOn<AddOnDef_SearchTerm> {
+	extends Component_SearchAddOn<AddOnDef_SearchTerm,Props,State> {
+
+	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
+		state.placeholder = nextProps.placeholder
+		return state;
+	}
 
 	public addOn: SearchAddOn<AddOnDef_SearchTerm> = AddOn_SearchTerm;
 
@@ -16,6 +30,7 @@ export class Component_AddOn_SearchTerm
 			<TS_Input
 				type={'text'}
 				value={this.state.value}
+				placeholder={this.state.placeholder}
 				onChange={val => this.setValue(val)}
 			/>
 			<TS_Icons.Search.component/>
