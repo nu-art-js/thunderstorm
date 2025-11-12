@@ -11,11 +11,19 @@ type State<AddOnDef extends SearchAddOnDef<string, any, any, any>> = {
 	value?: AddOnDef['param'];
 };
 
-export abstract class Component_SearchAddOn<AddOnDef extends SearchAddOnDef<string, any, any, any>>
-	extends ComponentSync<Props, State<AddOnDef>>
+export abstract class Component_SearchAddOn<
+	AddOnDef extends SearchAddOnDef<string, any, any, any>,
+	_Props extends {} = {},
+	_State extends {} = {},
+	P extends _Props & Props = _Props & Props,
+	S extends _State & State<AddOnDef> = _State & State<AddOnDef>
+>
+	extends ComponentSync<P, S>
 	implements SearchAddOnRenderer {
 
 	public abstract readonly addOn: SearchAddOn<AddOnDef>;
+
+	//######################### Life Cycle #########################
 
 	__onSearchFilterChanged = () => {
 		const nextValue = this.props.context.filter.get(this.addOn.key);
@@ -30,4 +38,10 @@ export abstract class Component_SearchAddOn<AddOnDef extends SearchAddOnDef<stri
 	componentWillUnmount() {
 		this.props.context.filterChangeListeners.unregister(this);
 	}
+
+	//######################### Logic #########################
+
+	protected setValue = (val?: AddOnDef['param']) => {
+		this.props.context.filter.set(this.addOn.key, val);
+	};
 }
