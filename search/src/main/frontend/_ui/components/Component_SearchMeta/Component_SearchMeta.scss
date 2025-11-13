@@ -1,0 +1,11 @@
+.c__search-meta {
+  width: 100%;
+  height: 28px;
+  justify-content: space-between;
+
+  .c__search-meta__results,
+  .c__search-meta__time {
+    color: inherit;
+    font: inherit;
+  }
+}

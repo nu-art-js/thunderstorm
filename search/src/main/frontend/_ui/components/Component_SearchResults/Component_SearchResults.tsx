@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync, VirtualizedList} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_V_L, VirtualizedList} from '@nu-art/thunderstorm/frontend';
 import {SearchContext, SearchItem, SearchResultsRenderer} from '../../../_core';
 import './Component_SearchResults.scss';
 import {DBPointer, filterInstances, ResolvableContent} from '@nu-art/ts-common';
@@ -61,6 +61,9 @@ export class Component_SearchResults
 	//######################### Render #########################
 
 	render() {
+		if (!this.state.searchResults?.length)
+			return this.render_NoResults();
+
 		const list = this.getList();
 		const height = Math.min(list.length * this.props.itemHeight, this.state.maxHeight);
 		return <VirtualizedList
@@ -72,4 +75,10 @@ export class Component_SearchResults
 			omitWrapper
 		/>;
 	}
+
+	private render_NoResults = () => {
+		return <LL_V_L className={'c__search-results no-results'}>
+			No results to show
+		</LL_V_L>;
+	};
 }
