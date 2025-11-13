@@ -141,8 +141,10 @@ export class SearchContext
 				return;
 
 			const addOn = this.addOns.find(addOn => addOn.key === renderer.addOn.key);
-			if (!addOn)
+			if (!addOn) {
+				this.logError(renderer, this.addOns);
 				throw new BadImplementationException('Trying to register a listener that is not connected to an addon');
+			}
 
 			this._filterChangeListeners.push(renderer);
 		},

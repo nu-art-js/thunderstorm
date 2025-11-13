@@ -25,11 +25,11 @@ export abstract class Component_SearchAddOn<
 
 	//######################### Life Cycle #########################
 
-	__onSearchFilterChanged = () => {
+	__onSearchFilterChanged() {
 		const nextValue = this.props.context.filter.get(this.addOn.key);
 		if (!compare(this.state.value, nextValue))
 			this.setState({value: nextValue});
-	};
+	}
 
 	componentDidMount() {
 		this.props.context.filterChangeListeners.register(this);
