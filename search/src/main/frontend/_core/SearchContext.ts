@@ -24,6 +24,7 @@ export class SearchContext
 	private readonly filterDictionary: { [AddOnKey: string]: any } = {};
 	private readonly _filterChangeListeners: SearchAddOnRenderer[] = [];
 	private searchResults?: DBPointer[];
+	private searchTime?: number;
 	private readonly _searchResultChangeListeners: SearchResultsRenderer[] = [];
 
 	constructor(key: string) {
@@ -84,12 +85,14 @@ export class SearchContext
 	private search = () => {
 		if (this.activeAddOns.length < this.minimumRequiredActiveAddons) {
 			if (this.addOns.length) {
-				this.searchResults = [];
+				delete this.searchResults;
+				delete this.searchTime;
 				this._searchResultChangeListeners.forEach(listener => listener.__onSearchResultsChanged());
 			}
 			return;
 		}
 
+		const startTime = Date.now();
 		let searchResults = this.getInitialSearchResults();
 		const searchItemMap = this.activeSearchItems.reduce((map, item) => {
 			map[item.module.dbDef.dbKey] = item;
@@ -105,6 +108,7 @@ export class SearchContext
 		});
 		this.searchResults = searchResults;
 		this._searchResultChangeListeners.forEach(listener => listener.__onSearchResultsChanged());
+		this.searchTime = Date.now() - startTime;
 	};
 
 	//######################### Public Logic #########################
@@ -112,6 +116,8 @@ export class SearchContext
 	public getActiveSearchItems = () => [...this.activeSearchItems];
 
 	public getSearchResults = () => this.searchResults;
+
+	public getSearchTime = () => this.searchTime;
 
 	public filter = {
 		set: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key'], value: AddOn['param']): void => {
