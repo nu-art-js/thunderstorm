@@ -1,12 +1,11 @@
 import './Component_ShortUrlEditor.scss';
-import {EditableRef, TS_EditableContent} from '@nu-art/thunderstorm-frontend/components/TS_EditableContent/TS_EditableContent';
+import {EditableRef, TS_EditableContent, TS_EditableItemStatus} from '@nu-art/thunderstorm-frontend/editable-item';
 import {Button, InferProps, InferState, LL_H_C, ModuleFE_Thunderstorm, TS_Card, TS_PropRenderer} from '@nu-art/thunderstorm-frontend/index';
 import {TS_InputV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_Input/index';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {TS_EditableItemStatus} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemStatus/TS_EditableItemStatus';
 import {TS_TextAreaV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_TextArea/index';
 import {DBProto_ShortUrl, UI_ShortUrl} from '@nu-art/ts-short-url-shared';
-import { ModuleFE_ShortUrl } from '../../../_entity/short-url/index.js';
+import {ModuleFE_ShortUrl} from '../../../_entity/short-url/index.js';
 
 
 type Props = EditableRef<UI_ShortUrl> & { deleteCallback?: VoidFunction }
