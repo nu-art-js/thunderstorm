@@ -226,7 +226,7 @@ export class EditableItem<T>
 		return !compare(conflictingItem, this.item);
 	}
 
-	protected hasChanges() {
+	hasChanges() {
 		// console.group('compare', this.originalItem);
 		// console.log('item', this.item);
 		// console.log('originalItem', this.originalItem);
@@ -397,6 +397,8 @@ export class EditableItem<T>
 		if (validationResults?.editing)
 			return error;
 	}
+
+	hasErrors = () => !!this.validationResults;
 
 	hasValidationError = () => !!this.validationResults;
 

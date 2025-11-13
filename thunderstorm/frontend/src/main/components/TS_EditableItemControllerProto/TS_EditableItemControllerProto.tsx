@@ -14,12 +14,12 @@ import {EditableDBItemV3} from '../../utils/EditableItem.js';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
 import {ApiCallerEventType} from '../../core/db-api-gen/types.js';
 import {ProtoDef_Selection} from '../Page_ItemsEditor/index.js';
-import {EditableRef} from '../TS_EditableContent/TS_EditableContent.js';
 import {ProtoComponent} from '../../core/proto-component/index.js';
 import {
 	InferProps,
 	InferState
 } from '../../utils/types.js';
+import { EditableRef } from '../TS_EditableContent/types.js';
 
 
 export type Props_EditableItemControllerProto<Proto extends DBProto<any>, EditorProps extends {} = {}> =

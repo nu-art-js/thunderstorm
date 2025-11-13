@@ -7,7 +7,7 @@ import {MultiSelect} from '../../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Page_ItemsEditor, ProtoDef_Selection} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
 import './permission-api-editor.scss';
-import {TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemControllerProto/index';
+import {TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/editable-item';
 import {DB_PermissionAPI, DBProto_PermissionAPI} from '@nu-art/permissions-shared';
 
 

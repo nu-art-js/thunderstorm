@@ -5,8 +5,8 @@ import {Editable_SaveAction, EditableDBItemV3} from '../../utils/EditableItem.js
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
 import {ApiCallerEventType} from '../../core/db-api-gen/types.js';
 import {Props_ItemsEditor} from '../Page_ItemsEditor/index.js';
-import {EditableRef} from '../TS_EditableContent/TS_EditableContent.js';
 import {ComponentSync} from '../../core/ComponentSync.js';
+import {EditableRef} from '../TS_EditableContent/types.js';
 
 
 export type TemplatingProps_EditableItemController<Proto extends DBProto<any>, EditorProps extends object = object> = {

@@ -5,8 +5,7 @@ import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_It
 import {InferProps, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm-frontend/index';
 import {MultiSelect} from '../ui-props.js';
 import {Component_BasePermissionItemEditor} from './editor-base.js';
-import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemControllerProto/index';
-import {EditableRef} from '@nu-art/thunderstorm-frontend/components/TS_EditableContent/TS_EditableContent';
+import {EditableRef, Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/editable-item';
 import {sortArray} from '@nu-art/ts-common';
 import {DB_PermissionUser, DBProto_PermissionUser} from '@nu-art/permissions-shared';
 

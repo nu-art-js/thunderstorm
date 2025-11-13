@@ -9,7 +9,7 @@ import {Component_BasePermissionItemEditor} from './editor-base.js';
 import {Input_Text_Blur} from './components.js';
 import {DropDown_PermissionProject} from '../../_entity/permission-project/ui-components.js';
 import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
-import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemControllerProto/index';
+import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/editable-item';
 import {DB_PermissionGroup, DBProto_PermissionGroup} from '@nu-art/permissions-shared';
 
 class Component_EditGroup

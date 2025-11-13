@@ -1,12 +1,11 @@
 import {ReactNode} from 'react';
-import {EditableItem} from '../../utils/EditableItem.js';
 import {TS_PropRenderer} from '../TS_PropRenderer/index.js';
 import {DBProto} from '@nu-art/ts-common';
 import {Controller, Props_Controller} from '../../core/Controller.js';
 import {InferState} from '../../utils/types.js';
+import {EditableRef} from './types.js';
 
 
-export type EditableRef<Item> = { editable: EditableItem<Item> };
 type _State<Item> = EditableRef<Item> & {
 	tag?: string
 }

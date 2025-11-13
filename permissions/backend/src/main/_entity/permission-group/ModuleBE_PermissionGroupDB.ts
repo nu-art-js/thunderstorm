@@ -1,5 +1,5 @@
 import {DBApiConfigV3, ModuleBE_ActionProcessor, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
-import {DB_PermissionGroup, DB_PermissionGroup_1_0_0, DBDef_PermissionGroup, DBProto_PermissionGroup} from './shared.js';
+import {DB_PermissionGroup, DB_PermissionGroup_1_0_0, DBDef_PermissionGroup, DBProto_PermissionGroup} from '@nu-art/permissions-shared';
 import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB} from '../permission-access-level/index.js';
 import {Transaction} from 'firebase-admin/firestore';
