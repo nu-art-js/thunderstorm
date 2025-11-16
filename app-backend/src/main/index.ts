@@ -33,7 +33,7 @@ import {ModulePackBE_Permissions} from '@nu-art/permissions-backend';
 import {JiraBugReportIntegrator, ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report-backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub-backend';
 import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload-backend';
-import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
+import {Firebase_ExpressFunction} from '@nu-art/firebase-backend-functions';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
 import {PubsubExample} from '@modules/PubsubExample';
 import {ModuleBE_Slack, Slack_ServerApiError} from '@nu-art/slack-backend';

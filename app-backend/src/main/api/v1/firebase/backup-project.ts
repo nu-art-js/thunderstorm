@@ -26,7 +26,7 @@
 // 	QueryApi
 // } from '@nu-art/thunderstorm-shared';
 //
-// // import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
+// // import {ProjectFirestoreBackup} from "@nu-art/firebase-backend-firestore-backup";
 // import {ExpressRequest} from '@nu-art/thunderstorm-backend';
 //
 //
