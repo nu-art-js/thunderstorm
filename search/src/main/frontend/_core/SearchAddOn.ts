@@ -1,3 +1,5 @@
+import {DBPointer} from '@nu-art/ts-common';
+
 export type SearchAddOnDef<
 	Key extends string, //The addon key
 	Param extends any, //The type of the param held in the filter dictionary
@@ -13,6 +15,8 @@ export type SearchAddOnDef<
 export type SearchAddOn<Def extends SearchAddOnDef<any, any, any, any>> = {
 	key: Def['key'];
 	methodName: Def['methodName'];
-	valueFilter: (param: NonNullable<Def['param']>, itemParam: Def['itemParam']) => boolean;
+	valueFilter: (param: NonNullable<Def['param']>, item: SearchResult) => boolean;
 	isActive: (param: Def['param']) => boolean;
 }
+
+export type SearchResult = DBPointer & { filterResults: { [k: string]: any } }

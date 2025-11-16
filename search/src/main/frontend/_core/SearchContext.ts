@@ -1,6 +1,7 @@
-import {arrayIncludesAll, BadImplementationException, DBPointer, Debounce, Logger, removeItemFromArray} from '@nu-art/ts-common';
-import {SearchAddOn, SearchAddOnDef} from './SearchAddOn';
+import {arrayIncludesAll, BadImplementationException, Debounce, Logger, removeItemFromArray} from '@nu-art/ts-common';
+import {SearchAddOn, SearchAddOnDef, SearchResult} from './SearchAddOn';
 import {SearchItem} from './SearchItem';
+import {SearchSorter} from './SearchSorter';
 
 export interface SearchAddOnRenderer {
 	__onSearchFilterChanged: VoidFunction;
@@ -18,12 +19,13 @@ export class SearchContext
 	private activeSearchItems: SearchItem<any, any>[];
 	private addOns: SearchAddOn<any>[];
 	private activeAddOns: SearchAddOn<any>[];
+	private sorters: SearchSorter<any>[];
 
 	private minimumRequiredActiveAddons: number = 0;
 	private readonly searchDebouncer = new Debounce(() => this.search(), 200, 500);
 	private readonly filterDictionary: { [AddOnKey: string]: any } = {};
 	private readonly _filterChangeListeners: SearchAddOnRenderer[] = [];
-	private searchResults?: DBPointer[];
+	private searchResults?: SearchResult[];
 	private searchTime?: number;
 	private readonly _searchResultChangeListeners: SearchResultsRenderer[] = [];
 
@@ -33,6 +35,7 @@ export class SearchContext
 		this.activeSearchItems = [];
 		this.addOns = [];
 		this.activeAddOns = [];
+		this.sorters = [];
 	}
 
 	//######################### Factory Logic #########################
@@ -48,6 +51,11 @@ export class SearchContext
 		this.addOns = addOns;
 		this.setActiveAddOns();
 		this.setActiveSearchItems();
+		return this;
+	};
+
+	public setSorters = (sorters: SearchSorter<any>[]) => {
+		this.sorters = sorters;
 		return this;
 	};
 
@@ -73,10 +81,10 @@ export class SearchContext
 		this.activeSearchItems = this.searchItems.filter(searchItem => arrayIncludesAll(searchItem.compatibleAddOnKeys as string[], activeAddOnKeys));
 	};
 
-	private getInitialSearchResults = (): DBPointer[] => {
-		const results: DBPointer[] = [];
+	private getInitialSearchResults = (): SearchResult[] => {
+		const results: SearchResult[] = [];
 		this.activeSearchItems.forEach(searchItem => {
-			const pointers: DBPointer[] = searchItem.module.cache.all().map(i => ({dbKey: searchItem.module.dbDef.dbKey, id: i._id}));
+			const pointers: SearchResult[] = searchItem.module.cache.all().map(i => ({dbKey: searchItem.module.dbDef.dbKey, id: i._id, filterResults: {}}));
 			results.push(...pointers);
 		});
 		return results;
@@ -94,21 +102,34 @@ export class SearchContext
 
 		const startTime = Date.now();
 		let searchResults = this.getInitialSearchResults();
+		//Map active search item to dbKeys for O(1) access
 		const searchItemMap = this.activeSearchItems.reduce((map, item) => {
 			map[item.module.dbDef.dbKey] = item;
 			return map;
 		}, {} as { [key: string]: SearchItem<any, any> });
+
+		//Cycle filter the results by active add-ons
 		this.activeAddOns.forEach(addOn => {
 			const currentParam = this.filterDictionary[addOn.key];
 			searchResults = searchResults.filter(result => {
 				const searchItem = searchItemMap[result.dbKey];
-				const itemParam = searchItem.addOnMethods[addOn.methodName](result);
-				return addOn.valueFilter(currentParam, itemParam);
+				result.filterResults[addOn.key] = searchItem.addOnMethods[addOn.methodName](result);
+				return addOn.valueFilter(currentParam, result);
 			});
 		});
+
+		//Sort results
+		this.sorters.forEach(sorter => {
+			const value = this.filterDictionary[sorter.key];
+			if (!value)
+				return;
+
+			sorter.sortFunction(value, searchResults);
+		});
+
 		this.searchResults = searchResults;
-		this._searchResultChangeListeners.forEach(listener => listener.__onSearchResultsChanged());
 		this.searchTime = Date.now() - startTime;
+		this._searchResultChangeListeners.forEach(listener => listener.__onSearchResultsChanged());
 	};
 
 	//######################### Public Logic #########################

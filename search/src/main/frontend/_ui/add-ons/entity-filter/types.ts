@@ -4,6 +4,6 @@ export type AddOnDef_EntityFilter = SearchAddOnDef<'entity', string[] | undefine
 export const AddOn_EntityFilter: SearchAddOn<AddOnDef_EntityFilter> = {
 	key: 'entity',
 	methodName: 'getEntityKey',
-	valueFilter: (entities, entityKey) => entities.includes(entityKey),
+	valueFilter: (entities, result) => entities.includes(result.filterResults['entity']),
 	isActive: (entities) => !!entities?.length,
 };

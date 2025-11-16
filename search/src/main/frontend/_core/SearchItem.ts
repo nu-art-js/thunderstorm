@@ -1,6 +1,6 @@
 import {CSSProperties, ReactNode} from 'react';
 import {DBPointer, DBProto} from '@nu-art/ts-common';
-import {SearchAddOnDef} from './SearchAddOn';
+import {SearchAddOnDef, SearchResult} from './SearchAddOn';
 import {ModuleFE_BaseDB} from '@nu-art/thunderstorm/frontend';
 
 type AddOnTuple = readonly SearchAddOnDef<any, any, any, any>[]
@@ -21,5 +21,5 @@ export type SearchItem<Proto extends DBProto<any>, A extends AddOnTuple> = Reado
 	entityLabel: string;
 	addOnMethods: Readonly<SearchAddOnsMethodExtractor<A>>;
 	compatibleAddOnKeys: Readonly<SearchAddOnsKeyExtractor<A>>;
-	resultRenderer: (result: DBPointer, style?: CSSProperties) => ReactNode;
+	resultRenderer: (result: SearchResult, style?: CSSProperties) => ReactNode;
 }>
