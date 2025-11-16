@@ -1,6 +1,5 @@
 import {AppToolsScreen, Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm-frontend/index';
 import {thunderstormCapabilitiesGroup} from '@nu-art/thunderstorm-frontend/consts';
-import * as React from 'react';
 import {PageStateManager} from '../../_modules/ModuleFE_AppState.js';
 import {md5} from '@nu-art/ts-common';
 
