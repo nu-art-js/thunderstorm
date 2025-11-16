@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {ComponentSync, LL_V_L, VirtualizedList} from '@nu-art/thunderstorm/frontend';
-import {SearchContext, SearchItem, SearchResultsRenderer} from '../../../_core';
+import {SearchContext, SearchItem, SearchResult, SearchResultsRenderer} from '../../../_core';
 import './Component_SearchResults.scss';
-import {DBPointer, filterInstances, ResolvableContent} from '@nu-art/ts-common';
+import {filterInstances, ResolvableContent} from '@nu-art/ts-common';
 
 type Props = {
 	context: SearchContext;
@@ -11,7 +11,7 @@ type Props = {
 };
 
 type State = {
-	searchResults?: DBPointer[];
+	searchResults?: SearchResult[];
 	maxHeight: number;
 };
 
