@@ -104,7 +104,7 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>> extends BaseHtt
 			const fullUrl = composeUrl(this.url, this.params);
 			const body = this.body;
 
-			if (body) this.addHeader('Content-Length', `${body.length}`);
+			if (typeof body === 'string') this.addHeader('Content-Length', `${body.length}`);
 
 			const headers = Object.keys(this.headers).reduce((carry: StringMap, headerKey: string) => {
 				carry[headerKey] = this.headers[headerKey].join('; ');

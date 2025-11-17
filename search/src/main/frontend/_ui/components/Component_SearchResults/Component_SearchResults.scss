@@ -1,0 +1,10 @@
+.c__search-results {
+  width: 100% !important;
+
+  &.no-results {
+    font: {
+      size: 24px;
+      weight: 600;
+    }
+  }
+}

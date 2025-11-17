@@ -1,18 +1,20 @@
 import * as React from 'react';
 import {FixedSizeList as List} from 'react-window';
 import AutoSizer, {Size} from 'react-virtualized-auto-sizer';
+import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 
 type Props = {
-	listToRender: JSX.Element[],
+	listToRender: ResolvableContent<React.ReactNode, [React.CSSProperties]>[],
 	height?: number | string,
 	className?: string,
 	width?: number,
 	itemHeight: number,
 	selectedItem?: number
+	omitWrapper?: boolean;
 };
 
-export const VirtualizedList = ({height, width, listToRender, itemHeight, selectedItem, className}: Props) => {
+export const VirtualizedList = ({height, width, listToRender, itemHeight, selectedItem, className, omitWrapper}: Props) => {
 	const listRef = React.useRef<any>();
 
 	React.useEffect(() => {
@@ -22,8 +24,11 @@ export const VirtualizedList = ({height, width, listToRender, itemHeight, select
 	}, [selectedItem, listToRender]);
 
 	function ItemWrapper({index, style}: { index: number, style: any }) {
+		if (omitWrapper)
+			return resolveContent(listToRender[index], style);
+
 		return <div style={style}>
-			{listToRender[index]}
+			{resolveContent(listToRender[index], style)}
 		</div>;
 	}
 
@@ -48,7 +53,7 @@ export const TS_VirtualizedList = (props: Props) => {
 			{(size: Size) => <VirtualizedList className={props.className} selectedItem={props.selectedItem}
 																				itemHeight={props.itemHeight}
 																				listToRender={props.listToRender}
-																				height={size.height}
+																				height={props.height ?? size.height}
 																				width={size.width}/>}
 		</AutoSizer>
 	);
