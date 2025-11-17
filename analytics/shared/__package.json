@@ -16,11 +16,6 @@
   },
   "devDependencies": {},
   "private": false,
-  "bai": {
-    "label": "Analytics Shared",
-    "pathToConfig": "./config.ts",
-    "customTSConfig": false
-  },
   "unitConfig": {
     "type": "typescript-lib"
   },

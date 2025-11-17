@@ -24,7 +24,7 @@ import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/
 
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm-backend';
 import JSZip from 'jszip';
-import {ApiDef_BugReport, DB_BugReport, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared/api';
+import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared';
 import {MemKey_AccountId} from '@nu-art/user-account-backend/_entity/session/index';
 
 type Config = {
