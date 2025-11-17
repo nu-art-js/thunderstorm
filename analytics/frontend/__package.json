@@ -18,11 +18,6 @@
   },
   "devDependencies": {},
   "private": false,
-  "bai": {
-    "label": "Analytics Frontend",
-    "pathToConfig": "./config.ts",
-    "customTSConfig": false
-  },
   "unitConfig": {
     "type": "typescript-lib"
   },

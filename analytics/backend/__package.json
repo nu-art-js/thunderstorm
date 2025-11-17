@@ -21,11 +21,6 @@
   },
   "devDependencies": {},
   "private": false,
-  "bai": {
-    "label": "Analytics Backend",
-    "pathToConfig": "./config.ts",
-    "customTSConfig": false
-  },
   "unitConfig": {
     "type": "typescript-lib"
   },

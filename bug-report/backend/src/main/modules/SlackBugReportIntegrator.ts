@@ -18,8 +18,7 @@
  */
 
 import {generateHex, ImplementationMissingException, Module} from '@nu-art/ts-common';
-import {Platform_Slack, ReportLogFile, Request_BugReport} from '../../index.js';
-import {TicketDetails} from './ModuleBE_BugReport.js';
+import {Platform_Slack, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared';
 import {ModuleBE_Slack} from '@nu-art/slack-backend';
 
 type Config = {
