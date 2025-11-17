@@ -1,6 +1,6 @@
 import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, filterDuplicates, LogClient_Terminal, Logger, LogLevel, merge} from '@nu-art/ts-common';
 import {AllBaiParams, BaiParams} from './core/params/params.js';
-import {Phase, phases_Build, phases_Deploy, phases_Launch} from './v3/phase/index.js';
+import {Phase, phases_Build, phases_Deploy, phases_Launch, phases_Terminating} from './v3/phase/index.js';
 import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper.js';
 import {UnitDependentNode, UnitsDependencyMapper} from './v3/UnitsDependencyMapper/UnitsDependencyMapper.js';
 import {FilesCache} from './v3/core/FilesCache.js';
@@ -14,11 +14,12 @@ import {UnitMapper_FirebaseFunction, UnitMapper_FirebaseHosting, UnitMapper_Node
 import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {RunningStatusHandler} from './v3/RunningStatusHandler.js';
-import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 
 export const DefaultPhases = [
 	...phases_Build,
+	...phases_Terminating,
 	...phases_Launch,
 	...phases_Deploy,
 ];

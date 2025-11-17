@@ -32,10 +32,10 @@ export const phase_ToESM: Phase<'convertToESM'> = {
 	filter: (baiParams) => baiParams.toESM,
 };
 
-// export const phases_Terminating: Phase<string>[] = [
-// 	phase_PrintDependencyTree,
-// 	phase_CheckCyclicImports,
-// ];
+export const phases_Terminating: Phase<string>[][] = [
+	[phase_PrintDependencyTree],
+	[phase_CheckCyclicImports],
+];
 
 //######################### Build Phases #########################
 

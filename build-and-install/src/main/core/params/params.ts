@@ -17,13 +17,6 @@ export const BaiParam_DependencyTree: BaseCliParam<'dependencyTree', boolean> = 
 	description: 'Will print the projects packages dependencies tree into the .trash folder'
 };
 
-export const BaiParam_CheckCyclicImports: BaseCliParam<'checkCyclicImports', boolean> = {
-	keys: ['--check-cyclic-imports', '-cci'],
-	keyName: 'checkCyclicImports',
-	type: 'boolean',
-	group: 'General',
-	description: 'will check for cyclic imports and render an svg with the import graph'
-};
 
 export const BaiParam_continue: BaseCliParam<'continue', boolean> = {
 	keys: ['--continue', '-con'],
@@ -293,6 +286,23 @@ export const BaiParam_Simulate: BaseCliParam<'simulation', boolean> = {
 	group: 'Other',
 	description: 'In combination with other params, will not perform the outbound operation, but instead simulate it',
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
+};
+
+export const BaiParam_CheckCyclicImports: BaseCliParam<'checkCyclicImports', boolean> = {
+	keys: ['--check-cyclic-imports', '-cci'],
+	keyName: 'checkCyclicImports',
+	type: 'boolean',
+	group: 'General',
+	description: 'will check for cyclic imports and render an svg with the import graph',
+	dependencies: [
+		{param: BaiParam_NoBuild, value: true},
+		{param: BaiParam_Launch, value: false},
+		{param: BaiParam_Install, value: false},
+		{param: BaiParam_Deploy, value: false},
+		{param: BaiParam_Publish, value: false},
+		{param: BaiParam_Purge, value: false},
+		{param: BaiParam_Clean, value: false},
+	]
 };
 
 export const AllBaiParams = [
