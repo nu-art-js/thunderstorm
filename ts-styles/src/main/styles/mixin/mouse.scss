@@ -1,6 +1,6 @@
 @use "../colors" as colors;
 
-@mixin mouseInteractiveBackground($background, $hoverBackground: $background, $activeBackground: $hoverBackground) {
+@mixin mouse-interactive-background($background, $hoverBackground: $background, $activeBackground: $hoverBackground) {
   & {
     background: $background;
     cursor: pointer;
@@ -54,7 +54,7 @@
 // @param $hoverColor - background when mouse hover
 // @param $activeColor - background when mouse click
 //
-@mixin mouseInteractiveIcon($color,$hoverColor:$color,$activeColor:$hoverColor,$transition: 0) {
+@mixin mouse-interactive-icon($color,$hoverColor:$color,$activeColor:$hoverColor,$transition: 0) {
   $rules: fill, stroke;
 
   @if $transition != 0 {
