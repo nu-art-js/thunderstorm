@@ -1,0 +1,21 @@
+.search-add-on__search-terms {
+  width: 100%;
+  min-width: 300px;
+  height: 28px;
+  gap: 16px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0 16px;
+
+  .icon--wrapper {
+    flex-shrink: 0;
+  }
+
+  .ts-input {
+    width: 0;
+    flex: 1;
+    border: none;
+    max-width: unset;
+    outline: none;
+  }
+}

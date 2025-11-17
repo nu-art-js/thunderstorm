@@ -110,21 +110,23 @@ export class SearchContext
 
 		//Cycle filter the results by active add-ons
 		this.activeAddOns.forEach(addOn => {
-			const currentParam = this.filterDictionary[addOn.key];
+			const filterValue = this.filterDictionary[addOn.key];
 			searchResults = searchResults.filter(result => {
 				const searchItem = searchItemMap[result.dbKey];
-				result.filterResults[addOn.key] = searchItem.addOnMethods[addOn.methodName](result);
-				return addOn.valueFilter(currentParam, result);
+				result.filterResults[addOn.key] = {value: searchItem.addOnMethods[addOn.methodName](result)};
+				const filterResult = addOn.resultFilter(filterValue, result);
+				result.filterResults[addOn.key].score = filterResult.score;
+				return filterResult.pass;
 			});
 		});
 
 		//Sort results
 		this.sorters.forEach(sorter => {
-			const value = this.filterDictionary[sorter.key];
-			if (!value)
+			const addOn = this.activeAddOns.find(addOn => addOn.key === sorter.key);
+			if (!addOn) //No connected active addon was found, do not run sorter
 				return;
 
-			sorter.sortFunction(value, searchResults);
+			sorter.sortFunction(searchResults);
 		});
 
 		this.searchResults = searchResults;
@@ -141,7 +143,7 @@ export class SearchContext
 	public getSearchTime = () => this.searchTime;
 
 	public filter = {
-		set: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key'], value: AddOn['param']): void => {
+		set: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key'], value: AddOn['valueType']): void => {
 			this.filterDictionary[key] = value;
 			//Re-calculate active addons and search items
 			this.setActiveAddOns();
@@ -151,7 +153,7 @@ export class SearchContext
 			//Trigger search
 			this.searchDebouncer.trigger();
 		},
-		get: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key']): AddOn['param'] | undefined => {
+		get: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key']): AddOn['valueType'] | undefined => {
 			return this.filterDictionary[key];
 		},
 	};
