@@ -1,22 +1,22 @@
 import {DBPointer} from '@nu-art/ts-common';
 
+export type SearchResult = DBPointer & { filterResults: { [k: string]: { value: any, score?: number } } }
+
 export type SearchAddOnDef<
 	Key extends string, //The addon key
-	Param extends any, //The type of the param held in the filter dictionary
+	ValueType extends any, //The type of the value held in the filter dictionary
 	MethodName extends string, //The name of the method that the search item needs to implement
-	ItemParam extends any //The type of the param given by the item to compare against
+	ItemValueType extends any //The type of the value given by the item to compare against
 > = {
 	key: Key;
-	param: Param;
+	valueType: ValueType;
 	methodName: MethodName;
-	itemParam: ItemParam;
+	itemValueType: ItemValueType;
 }
 
 export type SearchAddOn<Def extends SearchAddOnDef<any, any, any, any>> = {
 	key: Def['key'];
 	methodName: Def['methodName'];
-	valueFilter: (param: NonNullable<Def['param']>, item: SearchResult) => boolean;
-	isActive: (param: Def['param']) => boolean;
+	resultFilter: (value: NonNullable<Def['valueType']>, item: SearchResult) => { pass: boolean, score?: number };
+	isActive: (param: Def['valueType']) => boolean;
 }
-
-export type SearchResult = DBPointer & { filterResults: { [k: string]: any } }

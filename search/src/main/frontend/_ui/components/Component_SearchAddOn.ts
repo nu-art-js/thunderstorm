@@ -8,7 +8,7 @@ type Props = {
 };
 
 type State<AddOnDef extends SearchAddOnDef<string, any, any, any>> = {
-	value?: AddOnDef['param'];
+	value?: AddOnDef['valueType'];
 };
 
 export abstract class Component_SearchAddOn<
@@ -41,7 +41,7 @@ export abstract class Component_SearchAddOn<
 
 	//######################### Logic #########################
 
-	protected setValue = (val?: AddOnDef['param']) => {
+	protected setValue = (val?: AddOnDef['valueType']) => {
 		this.props.context.filter.set(this.addOn.key, val);
 	};
 }

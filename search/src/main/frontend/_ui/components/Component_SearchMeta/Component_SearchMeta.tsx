@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync, LL_H_C} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_H_C, stopPropagation} from '@nu-art/thunderstorm/frontend';
 import {SearchContext, SearchResultsRenderer} from '../../../_core';
 import './Component_SearchMeta.scss';
 
@@ -25,6 +25,16 @@ export class Component_SearchMeta
 		this.props.context.searchResultChangeListeners.unregister(this);
 	}
 
+	//######################### Logic #########################
+
+	private onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (!e.metaKey)
+			return;
+
+		stopPropagation(e);
+		this.logInfo('SearchResults', this.props.context.getSearchResults());
+	};
+
 	//######################### Render #########################
 
 	render() {
@@ -32,7 +42,7 @@ export class Component_SearchMeta
 		if (!searchResults?.length)
 			return;
 
-		return <LL_H_C className={'c__search-meta'}>
+		return <LL_H_C className={'c__search-meta'} onClick={this.onClick}>
 			<div className={'c__search-meta__results'}>{searchResults.length} Results</div>
 			{this.renderTime()}
 		</LL_H_C>;
