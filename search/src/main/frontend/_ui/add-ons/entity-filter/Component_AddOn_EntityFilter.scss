@@ -1,0 +1,14 @@
+.search-add-on__entity-filter {
+  padding: 16px;
+  flex-shrink: 0;
+
+  .search-add-on__entity-filter__item-list {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .ts-dropdown {
+      max-width: 150px;
+    }
+  }
+}
