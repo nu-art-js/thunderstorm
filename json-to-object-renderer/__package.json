@@ -48,7 +48,6 @@
     "@types/react": "?"
   },
   "unitConfig": {
-    "customTSConfig": true,
     "type": "typescript-lib"
   },
   "type": "module",

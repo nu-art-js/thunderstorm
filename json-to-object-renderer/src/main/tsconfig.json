@@ -1,22 +1,22 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "target": "ES2022",
-    "jsx": "react",
+    "jsx": "react-jsx",
+    "allowJs": true,
     "lib": [
-      "es6",
-      "es7",
-      "dom"
+      "ES2022",
+      "DOM"
     ],
+    "sourceMap": true,
+    "sourceRoot": "/Users/tacb0ss/dev/quai/quai-web-esm/_thunderstorm/json-to-object-renderer/src/main",
     "declaration": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
-    "sourceMap": true,
-    "sourceRoot": "/Users/tacb0ss/dev/nu-art/beamz/_thunderstorm/json-to-object-renderer/src/main",
     "strict": true
-  },
-  "esModuleInterop": true
+  }
 }
