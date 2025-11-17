@@ -9,7 +9,7 @@
     gap: 16px;
     border: 2px solid #006fab;
     @include styles.mouse-interactive-background(transparent);
-    @include styles.mouseInteractiveBorder(styles.dark-blue(2), styles.dark-blue(1));
+    @include styles.mouse-interactive-border-color(styles.dark-blue(2), styles.dark-blue(1));
 
     .ts-account__saml-button__icon {
       width: 20px;
