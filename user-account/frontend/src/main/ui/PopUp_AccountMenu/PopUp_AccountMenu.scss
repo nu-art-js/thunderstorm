@@ -4,7 +4,7 @@
   width: 95%;
   height: 30px;
   margin: 0 auto;
-  @include styles.mouseInteractiveBackground(styles.dark-blue(2), styles.dark-blue(1));
+  @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));
 }
 
 #pop-up__account-menu {
@@ -91,7 +91,7 @@
         border: 2px solid styles.dark-blue(2);
 
         @include styles.mouseInteractiveText(styles.dark-blue(2), white);
-        @include styles.mouseInteractiveBackground(white, styles.dark-blue(2));
+        @include styles.mouse-interactive-background(white, styles.dark-blue(2));
       }
     }
 
@@ -132,7 +132,7 @@
         size: 14px;
       }
 
-      @include styles.mouseInteractiveBackground(white, styles.dark-blue(2));
+      @include styles.mouse-interactive-background(white, styles.dark-blue(2));
       @include styles.mouseInteractiveText(styles.dark-blue(2), white);
     }
 

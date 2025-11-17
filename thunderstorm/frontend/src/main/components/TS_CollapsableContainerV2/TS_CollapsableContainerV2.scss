@@ -25,7 +25,7 @@
       aspect-ratio: 1;
       padding: 6px;
       rotate: 90deg;
-      @include styles.mouseInteractiveIcon(#fff);
+      @include styles.mouse-interactive-icon(#fff);
     }
   }
 
