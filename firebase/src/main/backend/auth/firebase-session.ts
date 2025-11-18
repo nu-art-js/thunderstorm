@@ -19,8 +19,7 @@
 /**
  * Created by tacb0ss on 25/08/2018.
  */
-import {Logger} from '@nu-art/ts-common';
-import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE';
+import {Logger, TypedMap} from '@nu-art/ts-common';
 import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE';
 import {StorageWrapperBE} from '../storage/StorageWrapperBE';
 import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE';
@@ -48,10 +47,9 @@ export type Firebase_UserCredential = {
 export abstract class FirebaseSession<Config>
 	extends Logger {
 	app!: App;
-	protected database?: DatabaseWrapperBE;
+	protected databases: TypedMap<DatabaseWrapperBE> = {};
 	protected storage?: StorageWrapperBE;
-	protected firestore?: FirestoreWrapperBE;
-	protected firestoreV3?: FirestoreWrapperBEV3;
+	protected firestoresV3: TypedMap<FirestoreWrapperBEV3> = {};
 	protected messaging?: PushMessagesWrapperBE;
 
 	protected config: Config;
@@ -80,10 +78,12 @@ export abstract class FirebaseSession<Config>
 	/**
 	 * Returns an instance of the DatabaseWrapperBE object, which provides access to a database.
 	 */
-	public getDatabase(): DatabaseWrapperBE {
-		if (this.database)
-			return this.database;
-		return this.database = new DatabaseWrapperBE(this);
+	public getDatabase(dbName: string = 'default'): DatabaseWrapperBE {
+		if (this.databases[dbName])
+			return this.databases[dbName];
+		const database = new DatabaseWrapperBE(this);
+		this.databases[dbName] = database;
+		return database;
 	}
 
 	/**
@@ -95,19 +95,11 @@ export abstract class FirebaseSession<Config>
 		return this.storage = new StorageWrapperBE(this);
 	}
 
-	/**
-	 * Returns an instance of the FirestoreWrapperBE object, which provides access to the Firestore database service.
-	 */
-	public getFirestore(): FirestoreWrapperBE {
-		if (this.firestore)
-			return this.firestore;
-		return this.firestore = new FirestoreWrapperBE(this);
-	}
+	public getFirestoreV3(dbName: string = 'default'): FirestoreWrapperBEV3 {
+		if (!this.firestoresV3[dbName])
+			this.firestoresV3[dbName] = new FirestoreWrapperBEV3(this);
 
-	public getFirestoreV3(): FirestoreWrapperBEV3 {
-		if (this.firestoreV3)
-			return this.firestoreV3;
-		return this.firestoreV3 = new FirestoreWrapperBEV3(this);
+		return this.firestoresV3[dbName];
 	}
 
 	/**
