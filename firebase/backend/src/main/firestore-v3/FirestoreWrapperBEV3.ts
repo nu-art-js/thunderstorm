@@ -21,15 +21,7 @@ import {FirestoreType, FirestoreType_Collection,} from '../firestore/types.js';
 import {FirebaseSession} from '../auth/firebase-session.js';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper.js';
 import {DB_Object, DBDef_V3, DBProto, Promise_all_sequentially, UniqueId} from '@nu-art/ts-common';
-import {
-	DocumentReference,
-	DocumentSnapshot,
-	getFirestore,
-	Query,
-	QueryDocumentSnapshot,
-	QuerySnapshot,
-	Transaction,
-} from 'firebase-admin/firestore';
+import {DocumentReference, DocumentSnapshot, getFirestore, Query, QueryDocumentSnapshot, QuerySnapshot, Transaction,} from 'firebase-admin/firestore';
 
 
 export class FirestoreWrapperBEV3
@@ -38,9 +30,12 @@ export class FirestoreWrapperBEV3
 	readonly firestore: FirestoreType;
 	private readonly collections: { [collectionName: string]: FirestoreCollectionV3<any> } = {};
 
-	constructor(firebaseSession: FirebaseSession<any>) {
+	constructor(firebaseSession: FirebaseSession<any>, dbName?: string) {
 		super(firebaseSession);
-		this.firestore = getFirestore(firebaseSession.app);
+		if (dbName)
+			this.firestore = getFirestore(firebaseSession.app, dbName);
+		else
+			this.firestore = getFirestore(firebaseSession.app);
 	}
 
 	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>, transaction?: Transaction): Promise<ReturnType> => {
