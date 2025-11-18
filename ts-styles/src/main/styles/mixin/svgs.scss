@@ -1,4 +1,4 @@
-@use '../consts' as consts;
+$svg-prop-rules: fill, stroke;
 
 @mixin setIconProp($prop,$value) {
   *:not([data-no-#{$prop}="true"]):not(g):not(svg) {
@@ -7,7 +7,7 @@
 }
 
 @mixin color-svg($color) {
-  @each $rule in consts.$svg-prop-rules {
+  @each $rule in $svg-prop-rules {
     @include setIconProp($rule, $color);
   }
 }
@@ -22,8 +22,9 @@
 /// @param $bgh - background when mouse hover
 /// @param $bga - background when mouse click
 ///
+
 @mixin mouse-interactive-icon($color, $color-h: $color, $color-a: $color-h) {
-  @each $rule in consts.$svg-prop-rules {
+  @each $rule in $svg-prop-rules {
     @include setIconProp($rule, $color);
     &:hover {
       @include setIconProp($rule, $color-h);

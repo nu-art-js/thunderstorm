@@ -1,5 +1,5 @@
 @use 'sass:list';
-@use '../consts' as consts;
+@use '../mixin' as M;
 @use './general' as general;
 
 @function background-transition($time: 200, $style: ease-out) {
@@ -8,7 +8,7 @@
 
 @function svg-color-transition($time:200 , $style: ease-out) {
   $transitions: ();
-  @each $rule in consts.$svg-prop-rules {
+  @each $rule in M.$svg-prop-rules {
     $transitions: list.append($transitions, $rule #{$time}ms $style, comma);
   }
 
