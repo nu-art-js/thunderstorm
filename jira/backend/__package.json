@@ -30,7 +30,6 @@
     "compression": "^1.7.4",
     "express": "?",
     "firebase-admin": "?",
-    "module-alias": "^2.2.0",
     "moment": "?",
     "request": "^2.88.0"
   },

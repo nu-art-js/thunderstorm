@@ -27,7 +27,6 @@
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",
     "express": "?",
-    "module-alias": "^2.2.0",
     "moment": "?",
     "request": "^2.88.0"
   },

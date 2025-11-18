@@ -67,7 +67,6 @@
     "html-webpack-plugin": "^5.5.0",
     "imagemin": "^8.0.1",
     "mini-css-extract-plugin": "^2.4.5",
-    "module-alias": "^2.2.0",
     "qs": "^6.6.0",
     "react": "?",
     "react-dom": "?",

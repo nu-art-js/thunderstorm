@@ -33,7 +33,6 @@
     "react-router-dom": "?",
     "moment": "?",
     "express": "?",
-    "module-alias": "^2.2.0",
     "request": "^2.88.0"
   },
   "devDependencies": {
