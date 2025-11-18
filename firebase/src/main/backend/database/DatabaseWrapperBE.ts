@@ -21,7 +21,7 @@ import {Firebase_DB} from './types';
 import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-art/ts-common';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {getDatabase, Reference} from 'firebase-admin/database';
+import {getDatabase, getDatabaseWithUrl, Reference} from 'firebase-admin/database';
 
 
 /**
@@ -32,9 +32,13 @@ export class DatabaseWrapperBE
 
 	private readonly database: Firebase_DB;
 
-	constructor(firebaseSession: FirebaseSession<any>) {
+	constructor(firebaseSession: FirebaseSession<any>, url?: string) {
 		super(firebaseSession);
-		this.database = getDatabase(firebaseSession.app) as Firebase_DB;
+		if (url)
+			this.database = getDatabaseWithUrl(url, firebaseSession.app);
+		else
+			this.database = getDatabase(firebaseSession.app);
+
 	}
 
 	public getUrl() {
