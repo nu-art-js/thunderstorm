@@ -1,6 +1,7 @@
 import {DBDef_V3, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
 import {DBProto_Topic} from './types.js';
-import {MessagingDBGroup} from '../index.js';
+import {MessagingDBGroup} from '../consts.js';
+
 
 const Validator_ModifiableProps: DBProto_Topic['modifiablePropsValidator'] = {};
 
