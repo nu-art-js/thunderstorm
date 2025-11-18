@@ -1,10 +1,10 @@
-@use '@nu-art/ts-styles' as styles;
+@use '@nu-art/ts-styles' as S;
 
 %main-button-design {
   width: 95%;
   height: 30px;
   margin: 0 auto;
-  @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));
+  @include S.mouse-interactive-background(S.dark-blue(2), S.dark-blue(1));
 }
 
 #pop-up__account-menu {
@@ -13,14 +13,14 @@
   overflow: hidden;
   background: white;
   border-radius: 10px;
-  border: 2px solid styles.dark-blue(1);
+  border: 2px solid S.dark-blue(1);
   position: relative;
 
   .account-menu__not-found {
     width: 100%;
     height: 100%;
     font-size: 18px;
-    color: styles.dark-blue(1);
+    color: S.dark-blue(1);
   }
 
   .account-menu {
@@ -28,7 +28,7 @@
     height: 100%;
 
     .account-menu__separator {
-      background: styles.dark-blue(1);
+      background: S.dark-blue(1);
       width: 95%;
       flex-shrink: 0;
       margin: 0 auto;
@@ -58,7 +58,7 @@
           size: 18px;
           weight: 600;
         }
-        color: styles.dark-blue(1);
+        color: S.dark-blue(1);
       }
     }
 
@@ -67,14 +67,14 @@
       padding: 4px;
       width: 100%;
 
-      @include styles.customScrollbar('vertical');
+      @include S.customScrollbar('vertical');
 
       .role-name {
         font: {
           size: 12px;
           weight: 550;
         }
-        color: styles.dark-blue(1);
+        color: S.dark-blue(1);
       }
     }
 
@@ -88,10 +88,10 @@
         margin: 0;
         height: 30px;
         background: transparent;
-        border: 2px solid styles.dark-blue(2);
+        border: 2px solid S.dark-blue(2);
 
-        @include styles.mouseInteractiveText(styles.dark-blue(2), white);
-        @include styles.mouse-interactive-background(white, styles.dark-blue(2));
+        @include S.mouse-interactive-text(S.dark-blue(2), white);
+        @include S.mouse-interactive-background(white, S.dark-blue(2));
       }
     }
 
@@ -132,8 +132,8 @@
         size: 14px;
       }
 
-      @include styles.mouse-interactive-background(white, styles.dark-blue(2));
-      @include styles.mouseInteractiveText(styles.dark-blue(2), white);
+      @include S.mouse-interactive-background(white, S.dark-blue(2));
+      @include S.mouse-interactive-text(S.dark-blue(2), white);
     }
 
     &:not(.show) {
@@ -150,7 +150,7 @@
 
       .ts-prop-renderer {
         .ts-input {
-          border: 1px solid styles.dark-blue(2);
+          border: 1px solid S.dark-blue(2);
           border-radius: 6px;
           min-height: 35px;
         }
