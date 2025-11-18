@@ -1,4 +1,4 @@
-@use "../colors" as colors;
+@use './svgs' as *;
 
 @mixin mouse-interactive-background($background, $hoverBackground: $background, $activeBackground: $hoverBackground) {
   & {
