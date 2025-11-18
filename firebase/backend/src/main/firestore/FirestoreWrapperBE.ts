@@ -31,9 +31,12 @@ export class FirestoreWrapperBE
 	readonly firestore: FirestoreType;
 	private readonly collections: { [collectionName: string]: FirestoreCollection<any> } = {};
 
-	constructor(firebaseSession: FirebaseSession<any>) {
+	constructor(firebaseSession: FirebaseSession<any>, dbName?: string) {
 		super(firebaseSession);
-		this.firestore = getFirestore(firebaseSession.app);
+		if (dbName)
+			this.firestore = getFirestore(firebaseSession.app, dbName);
+		else
+			this.firestore = getFirestore(firebaseSession.app);
 	}
 
 	public getCollection<Type extends TS_Object>(name: string, uniqueKeys?: FilterKeys<Type>): FirestoreCollection<Type> {
