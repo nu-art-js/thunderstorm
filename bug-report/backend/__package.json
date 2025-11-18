@@ -57,8 +57,7 @@
     "@types/history": "^4.7.2",
     "@types/jszip": "^3.1.7",
     "@types/react": "?",
-    "@types/request": "^2.48.1",
-    "module-alias": "^2.2.0"
+    "@types/request": "^2.48.1"
   },
   "unitConfig": {
     "type": "typescript-lib"

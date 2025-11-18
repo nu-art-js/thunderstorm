@@ -33,7 +33,6 @@
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
-    "module-alias": "^2.2.0",
     "moment": "?",
     "react": "?",
     "react-dom": "?",
