@@ -1,6 +1,0 @@
-{
-  "extends": "../../../dev-tools/typescript/tsconfig-lib-sw.json",
-  "compilerOptions": {
-    "skipLibCheck": true
-  }
-}
