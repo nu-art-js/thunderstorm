@@ -23,6 +23,7 @@ import * as React from 'react';
 import {
 	AsyncVoidFunction,
 	BeLogged,
+	exists,
 	ImplementationMissingException,
 	LogClient_BrowserGroups,
 	merge,
@@ -105,6 +106,7 @@ export class Thunder
 
 	private async fetchConfig() {
 		try {
+			this.config = {};
 			const promises: Promise<TS_Object | undefined>[] = [];
 			if (this.innerConfig.defaultConfigUrl)
 				promises.push(axios.get<TS_Object | undefined>(this.innerConfig.defaultConfigUrl));
@@ -113,6 +115,12 @@ export class Thunder
 
 			promises.push(axios.get<TS_Object | undefined>(this.innerConfig.configUrl));
 			const [defaultConfig, envConfig] = await Promise.all(promises);
+			if (!exists(defaultConfig?.data))
+				return this.logWarning('Could not resolve default config');
+
+			if (!exists(envConfig?.data))
+				return this.logWarning('Could not resolve env config');
+
 			if (typeof defaultConfig?.data !== 'object')
 				return this.logWarning('default config is not an object');
 
@@ -181,7 +189,8 @@ export class Thunder
 		navigationTimingLog();
 		globalErrorListener();
 		indexedDBAsyncCheckLog();
-	}
+	};
+
 	public getEnvironment(): string {
 		return Thunder.getInstance().getConfig().label;
 	}
