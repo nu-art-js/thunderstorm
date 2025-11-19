@@ -22,4 +22,5 @@ export type SearchItem<Proto extends DBProto<any>, A extends AddOnTuple> = Reado
 	addOnMethods: Readonly<SearchAddOnsMethodExtractor<A>>;
 	compatibleAddOnKeys: Readonly<SearchAddOnsKeyExtractor<A>>;
 	resultRenderer: (result: SearchResult, style?: CSSProperties) => ReactNode;
+	labelResolver: (result: SearchResult) => string;
 }>

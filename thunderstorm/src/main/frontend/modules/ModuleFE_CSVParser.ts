@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
 import * as Papa from 'papaparse';
-import {LocalFile, ParseResult} from 'papaparse';
+import {LocalFile, ParseResult, UnparseConfig} from 'papaparse';
 
 export type PapaparseConfig = Omit<Papa.ParseRemoteConfig, 'download'>;
 
@@ -51,6 +51,13 @@ class ModuleFE_CSVParser_Class
 			};
 			Papa.parse(url, config);
 		});
+	};
+
+	toString = <T>(items: T[], config?: UnparseConfig): string => {
+		if (!items?.length)
+			return '';
+
+		return Papa.unparse(items, {header: true, ...(config ?? {})});
 	};
 }
 
