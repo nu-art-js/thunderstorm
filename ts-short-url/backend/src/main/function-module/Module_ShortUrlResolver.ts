@@ -2,8 +2,8 @@ import {ModuleBE_ExpressFunction_V2} from '@nu-art/firebase-backend';
 import {Express, Response} from 'express';
 import {tsValidateResult, tsValidateShortUrl} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {ModuleBE_ShortUrlDB} from '../_entity/short-url/index.js';
 import {HttpsFunction} from 'firebase-functions/v2/https';
+import {ModuleBE_ShortUrlDB} from '../_entity/short-url/ModuleBE_ShortUrlDB.js';
 
 class Module_ShortUrlResolver_Class
 	extends ModuleBE_ExpressFunction_V2 {
