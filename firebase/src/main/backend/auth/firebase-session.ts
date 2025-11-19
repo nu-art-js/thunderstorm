@@ -100,19 +100,19 @@ export abstract class FirebaseSession<Config>
 	/**
 	 * Returns an instance of the FirestoreWrapperBE object, which provides access to the Firestore database service.
 	 */
-	public getFirestore(dbName: string = 'default'): FirestoreWrapperBE {
-		if (!this.firestores[dbName])
-			this.firestores[dbName] = new FirestoreWrapperBE(this, dbName);
+	public getFirestore(dbName?: string): FirestoreWrapperBE {
+		if (!this.firestores[dbName ?? 'default'])
+			this.firestores[dbName ?? 'default'] = new FirestoreWrapperBE(this, dbName);
 
-		return this.firestores[dbName];
+		return this.firestores[dbName ?? 'default'];
 	}
 
 
-	public getFirestoreV3(dbName: string = 'default'): FirestoreWrapperBEV3 {
-		if (!this.firestoresV3[dbName])
-			this.firestoresV3[dbName] = new FirestoreWrapperBEV3(this, dbName);
+	public getFirestoreV3(dbName?: string): FirestoreWrapperBEV3 {
+		if (!this.firestoresV3[dbName ?? 'default'])
+			this.firestoresV3[dbName ?? 'default'] = new FirestoreWrapperBEV3(this, dbName);
 
-		return this.firestoresV3[dbName];
+		return this.firestoresV3[dbName ?? 'default'];
 	}
 
 	/**
