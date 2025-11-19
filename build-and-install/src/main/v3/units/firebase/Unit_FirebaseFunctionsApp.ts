@@ -1,4 +1,3 @@
-import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index.js';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts.js';
 import {promises as _fs} from 'fs';
@@ -9,6 +8,7 @@ import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
 import {resolve} from 'path';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',
