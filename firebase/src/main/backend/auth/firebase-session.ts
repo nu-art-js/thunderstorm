@@ -81,11 +81,11 @@ export abstract class FirebaseSession<Config>
 	/**
 	 * Returns an instance of the DatabaseWrapperBE object, which provides access to a database.
 	 */
-	public getDatabase(dbName: string = 'default'): DatabaseWrapperBE {
-		if (!this.databases[dbName])
-			this.databases[dbName] = new DatabaseWrapperBE(this, dbName);
+	public getDatabase(dbName?: string): DatabaseWrapperBE {
+		if (!this.databases[dbName ?? 'default'])
+			this.databases[dbName ?? 'default'] = new DatabaseWrapperBE(this, dbName);
 
-		return this.databases[dbName];
+		return this.databases[dbName ?? 'default'];
 	}
 
 	/**
