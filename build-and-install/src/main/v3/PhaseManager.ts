@@ -107,7 +107,6 @@ export class PhaseManager
 	}
 
 	async execute(_steps: ScheduledStep[]) {
-
 		this.runningUnits = [];
 		for (let i = this.runningStatus.startIndex; i < _steps.length; i++) {
 			if (this.killed)
@@ -123,6 +122,10 @@ export class PhaseManager
 			let failedStep;
 			await Promise.all(
 				step.units.map(async (unit) => {
+					if (this.runningStatus.isCompleted(unit.config.key))
+						return;
+
+					let failed = false;
 					for (const phase of step.phases) {
 						if (this.killed)
 							break;
@@ -150,18 +153,21 @@ export class PhaseManager
 							errors.push(error);
 							failedStep = scheduledStep;
 							this.killed = true;
+							failed = true;
 							break;
 						} finally {
 							removeItemFromArray(this.runningUnits, unit);
 						}
 					}
+					if (!failed)
+						await this.runningStatus.onUnitCompleted(unit.config.key);
 				})
 			);
 
-			await this.runningStatus.update(i);
-
 			if (failedStep && errors.length)
 				throw new PhaseAggregatedException(errors, failedStep);
+
+			await this.runningStatus.update(i);
 		}
 
 		this.logInfo('All steps completed.');

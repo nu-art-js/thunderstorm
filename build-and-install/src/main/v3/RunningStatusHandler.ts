@@ -1,14 +1,16 @@
 import fs, {promises as _fs} from 'fs';
 import {__stringify, Logger} from '@nu-art/ts-common';
-import {ScheduledStep} from './PhaseManager.js';
 import {BaiParams} from '../core/params/params.js';
 
 
 export class RunningStatusHandler
 	extends Logger {
+
 	private isolated = false;
-	private steps: ScheduledStep[] = [];
-	private outputFolder: string;
+	private readonly outputFolder: string;
+
+	// The completed units in the phase.. when running -con, these can be skipped
+	private completedUnits: string[] = [];
 	runtimeParams: BaiParams;
 	startIndex: number = 0;
 
@@ -29,28 +31,36 @@ export class RunningStatusHandler
 		}
 	}
 
-	setSteps(steps: ScheduledStep[]) {
-		if (this.runtimeParams.continue)
-			return;
-
-		this.steps = steps;
-	}
-
 	isolate(): RunningStatusHandler {
 		this.isolated = true;
 		return this;
 	}
 
+	isCompleted(unitKey: string) {
+		return this.completedUnits.includes(unitKey);
+	}
+
+	async onUnitCompleted(unitKey: string) {
+		this.logError(`On unit completed: ${unitKey}`);
+		this.completedUnits.push(unitKey);
+		await this.saveStatus();
+	}
+
 	async update(index: number) {
 		this.startIndex = index;
+		this.logError(`Setting execution index to #${index}`);
+		this.completedUnits = [];
 		if (this.isolated)
 			return;
 
-		this.logVerbose(`Setting execution index to #${index}`, this.steps[index]);
+		await this.saveStatus();
+	}
+
+	private async saveStatus() {
 		await _fs.writeFile(`${this.outputFolder}/running-status.json`, __stringify({
 			index: this.startIndex,
 			runtimeParams: this.runtimeParams,
-			steps: this.steps
+			completedUnits: this.completedUnits
 		}, true));
 	}
 
@@ -58,7 +68,7 @@ export class RunningStatusHandler
 		try {
 			const data = JSON.parse(await _fs.readFile(`${this.outputFolder}/running-status.json`, {encoding: 'utf-8'}));
 			this.startIndex = data.index;
-			this.steps = data.steps;
+			this.completedUnits = data.completedUnits;
 			this.runtimeParams = data.runtimeParams;
 			return data.index;
 		} catch (e: any) {

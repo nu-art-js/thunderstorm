@@ -9,6 +9,7 @@ import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node.j
 import {resolve} from 'path';
 import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
+import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 
 
 export type FirebaseHostingConfig = {
@@ -130,7 +131,10 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		const commando = this.allocateCommando(Commando_NVM, Commando_Basic).applyNVM()
 			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando, `ENV=${this.runtimeContext.runtimeParams.environment} npm run build`);
+		await this.executeAsyncCommando(commando, `ENV=${this.runtimeContext.runtimeParams.environment} npm run build`, (stdout, stderr, exitCode) => {
+			if (exitCode > 0)
+				throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
+		});
 	}
 
 	private async createAppVersionFile() {
