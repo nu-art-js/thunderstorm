@@ -116,7 +116,6 @@ export class BuildAndInstall
 			dependsOn: _keys(unit.config.dependencies).filter(key => !!unitKeyToUnitMap[key]) as string[]
 		}));
 
-		this.logWarning(this.projectUnits.map(unit => unit.config.key));
 		const globalOutputFolder = resolve(this.pathToProject, '.trash/output');
 		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies, globalOutputFolder);
 		const runtimeContext: ProjectUnit_RuntimeContext = ({
