@@ -10,6 +10,7 @@ export type DependencyParam<T extends Primitive | Primitive[]> = {
 	value: T
 }
 
+
 export type BaseCliParam<K extends string, V extends Primitive | Primitive[]> = {
 	keys: string[];
 	keyName: K;
