@@ -36,9 +36,7 @@
     "node-forge": "^1.2.1",
     "uuid": "^9.0.0",
     "csv-parser": "^2.3.3",
-    "xlsx": "^0.18.5",
-    "jose": "?",
-    "pbkdf2": "3.1.2"
+    "jose": "?"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",

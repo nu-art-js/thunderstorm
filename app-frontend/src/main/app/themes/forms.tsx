@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {Component_Form, ComponentSync, FormProps, ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend/index';
+import {Component_Form, ComponentSync, FormProps, ModuleFE_Toaster} from '@nu-art/thunderstorm-frontend/index';
 import {deepClone, TS_Object, tsValidateObject} from '@nu-art/ts-common';
 
 

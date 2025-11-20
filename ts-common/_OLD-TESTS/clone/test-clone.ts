@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {deepClone} from "../../main/utils/object-tools";
-import {__stringify} from "../../main/utils/tools";
-import {StaticLogger} from "../../main";
+import {deepClone} from "../../main/utils/object-tools.js";
+import {__stringify} from "../../main/utils/tools.js";
+import {StaticLogger} from "../../main.js";
 
 const int = 1;
 const str = 'a';

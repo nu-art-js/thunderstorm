@@ -1,0 +1,70 @@
+{
+  "name": "@nu-art/slack-backend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Storm - Express & Typescript based backend framework Backend",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "storm",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/storm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/storm/issues"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/storm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/slack-shared": "?",
+    "@nu-art/thunderstorm-backend": "?",
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/ts-common": "?",
+    "@slack/events-api": "^2.3.0",
+    "@slack/web-api": "7.9.3",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "google-auth-library": "?",
+    "moment": "?",
+    "react": "?",
+    "react-dom": "?",
+    "react-router-dom": "?",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/react-dom": "?",
+    "@types/react-router": "?",
+    "@types/react-router-dom": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

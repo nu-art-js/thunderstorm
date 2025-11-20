@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {InvalidResult, TestCase, TestProcessor, tsValidateResult, ValidatorTypeResolver} from '../_main';
+import {InvalidResult, TestCase, TestProcessor, tsValidateResult, ValidatorTypeResolver} from '../_main.js';
 
 
 export type TestInput_Validator<T> = {

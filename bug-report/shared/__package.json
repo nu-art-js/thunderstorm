@@ -1,0 +1,70 @@
+{
+  "name": "@nu-art/bug-report-shared",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Bug Report Shared",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "bug-report",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/bug-report",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/bug-report/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/bug-report.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/slack-shared": "?",
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/user-account-shared": "?",
+    "@nu-art/jira-shared": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "react": "?",
+    "react-dom": "?",
+    "react-router-dom": "?",
+    "express": "?",
+    "jszip": "^3.3.0",
+    "request": "^2.88.0",
+    "moment": "?"
+  },
+  "devDependencies": {
+    "@types/express": "?",
+    "@types/file-saver": "^2.0.1",
+    "@types/history": "^4.7.2",
+    "@types/jszip": "^3.1.7",
+    "@types/react": "?",
+    "@types/request": "^2.48.1"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import {__stringify, BadImplementationException, Module, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {GPT_Model} from '@nu-art/ts-openai-shared/types';
 import {OpenAI} from 'openai';
-import {ChatCompletionMessageParam} from 'openai/resources/chat/completions.mjs';
+import {ChatCompletionMessageParam} from 'openai/resources/chat/completions';
 
 type Request_Query = {
 	message: string;

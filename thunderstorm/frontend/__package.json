@@ -1,0 +1,107 @@
+{
+  "name": "@nu-art/thunderstorm-frontend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Thunderstorm Frontend",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/firebase-frontend": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/ts-styles": "?",
+    "abort-controller": "^3.0.0",
+    "axios": "^1.13.1",
+    "body-parser": "^1.19.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "crypto-browserify": "^3.12.0",
+    "csstype": "^3.0.0",
+    "express": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "history": "^4.9.0",
+    "moment": "?",
+    "pako": "^2.1.0",
+    "papaparse": "^5.4.1",
+    "qs": "^6.6.0",
+    "react": "?",
+    "react-dom": "?",
+    "react-router-dom": "?",
+    "react-virtualized-auto-sizer": "^1.0.12",
+    "react-window": "^1.8.8",
+    "request": "^2.88.0",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.4"
+  },
+  "devDependencies": {
+    "@types/papaparse": "^5.3.14",
+    "@types/pako": "^2.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/react": "?",
+    "@types/react-dom": "?",
+    "@types/react-router": "?",
+    "@types/react-router-dom": "?",
+    "@types/compression": "^1.7.0",
+    "@types/express": "?",
+    "@types/history": "^4.7.2",
+    "@types/request": "^2.48.1",
+    "@types/chrome": "^0.0.202",
+    "@types/react-window": "^1.8.5",
+    "@types/react-virtualized-auto-sizer": "^1.0.1"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./editable-item": {
+      "types": "./editable-item.d.ts",
+      "import": "./editable-item.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    },
+    "./styles": "./styles.scss"
+  }
+}

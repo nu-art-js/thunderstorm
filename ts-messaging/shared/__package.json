@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "react": "?"
   },
   "devDependencies": {
@@ -48,10 +48,6 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
-    },
-    "./*": {
-      "types": "./*.d.ts",
-      "import": "./*.js"
     }
   }
 }

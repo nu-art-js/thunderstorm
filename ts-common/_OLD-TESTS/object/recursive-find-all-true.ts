@@ -20,11 +20,11 @@
 import {
 	_values,
 	TypedMap
-} from "../_main";
+} from "../_main.js";
 import {
 	TestCase,
 	TestSuit
-} from "../../main/testing/test-case";
+} from "../../main/testing/test-case.js";
 
 
 type FilterKeys = TypedMap<boolean | TypedMap<boolean | TypedMap<boolean>>>

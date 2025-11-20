@@ -17,11 +17,11 @@
  */
 
 
-import {compareVersions} from "../_main";
+import {compareVersions} from "../_main.js";
 import {
 	TestCase,
 	TestSuit
-} from "../../main/testing/test-case";
+} from "../../main/testing/test-case.js";
 
 
 type VersionTestInput = {

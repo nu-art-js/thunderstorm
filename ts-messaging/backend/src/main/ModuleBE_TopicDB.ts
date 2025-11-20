@@ -2,8 +2,8 @@
  * Database module for managing topics in the messaging system
  * Provides CRUD operations and database access for topics
  */
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm/backend/index';
-import {DBDef_Topic, DBProto_Topic} from '@nu-art/ts-messaging-shared/index';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
+import {DBDef_Topic, DBProto_Topic} from '@nu-art/ts-messaging-shared';
 
 
 /**

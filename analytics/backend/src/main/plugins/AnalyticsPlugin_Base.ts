@@ -1,4 +1,4 @@
-import {TSAnalyticsEvent} from '@nu-art/analytics-shared';
+import {Analytics_UpdateUser, TSAnalyticsEvent} from '@nu-art/analytics-shared';
 import {debounce, Logger, LogLevel} from '@nu-art/ts-common';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {AnalyticsPluginBaseConfig} from './types.js';
@@ -44,6 +44,8 @@ export abstract class AnalyticsPlugin_Base<
 
 	protected abstract sendEvents: (events: R[]) => Promise<void>;
 
+	protected abstract updateUser_Impl: undefined | ((mode: Analytics_UpdateUser['request']['mode'], data: Analytics_UpdateUser['request']['userData']) => Promise<void>);
+
 	//######################### Initialization #########################
 
 	init(config: C) {
@@ -79,5 +81,12 @@ export abstract class AnalyticsPlugin_Base<
 
 		//Max packet size has been reached, empty the buffer now
 		this.emptyEventBuffer();
+	}
+
+	public updateUser(request: Analytics_UpdateUser['request']) {
+		if (!this.config?.active)
+			return;
+
+		this.updateUser_Impl?.(request.mode, request.userData);
 	}
 }

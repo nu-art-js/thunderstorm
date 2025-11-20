@@ -1,4 +1,4 @@
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm/backend/index';
+import {createApisForDBModuleV3} from '@nu-art/thunderstorm-backend';
 import {ModuleBE_MessageDB} from './ModuleBE_MessageDB.js';
 import {ModuleBE_TopicDB} from './ModuleBE_TopicDB.js';
 

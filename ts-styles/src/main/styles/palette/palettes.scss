@@ -17,53 +17,53 @@ $_monochromatic: paletteBuilder(#9CAEB7, $colorChunks);
 $_green: paletteBuilder(#2AA10F, $colorChunks);
 
 @function monochromatic($i) {
-  @return #{list.nth($_monochromatic,$i)}
+  @return list.nth($_monochromatic, $i);
 }
 
 @function black($i) {
-  @return #{list.nth($_black, $i)}
+  @return list.nth($_black, $i);
 }
 
 @function gray-blue($i) {
-  @return #{list.nth($_gray-blue, $i)}
+  @return list.nth($_gray-blue, $i);
 }
 
 @function dark-blue($i) {
-  @return #{list.nth($_dark-blue, $i)}
+  @return list.nth($_dark-blue, $i);
 }
 
 @function dark-green($i) {
-  @return #{list.nth($_dark-green, $i)}
+  @return list.nth($_dark-green, $i);
 }
 
 @function green($i) {
-  @return #{list.nth($_green,$i)}
+  @return list.nth($_green, $i);
 }
 
 @function purple($i) {
-  @return #{list.nth($_purple, $i)}
+  @return list.nth($_purple, $i);
 }
 
 @function pink($i) {
-  @return #{list.nth($_pink, $i)}
+  @return list.nth($_pink, $i);
 }
 
 @function ochre($i) {
-  @return #{list.nth($_ochre, $i)}
+  @return list.nth($_ochre, $i);
 }
 
 @function orange($i) {
-  @return #{list.nth($_orange, $i)}
+  @return list.nth($_orange, $i);
 }
 
 @function red($i) {
-  @return #{list.nth($_red, $i)}
+  @return list.nth($_red, $i);
 }
 
 @function gray($i) {
-  @return #{list.nth($_gray,$i)}
+  @return list.nth($_gray, $i);
 }
 
 @function light-gray($i) {
-  @return #{list.nth($_light-gray,$i)}
+  @return list.nth($_light-gray, $i);
 }

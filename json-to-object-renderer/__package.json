@@ -37,17 +37,17 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/firebase": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
-    "@nu-art/thunderstorm": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "react": "?"
   },
   "devDependencies": {
     "@types/react": "?"
   },
   "unitConfig": {
-    "customTSConfig": true,
     "type": "typescript-lib"
   },
   "type": "module",

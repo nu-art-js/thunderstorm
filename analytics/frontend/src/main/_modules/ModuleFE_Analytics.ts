@@ -1,6 +1,6 @@
 import {ApiDef_Analytics, ApiStruct_Analytics} from '@nu-art/analytics-shared';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {apiWithBody} from '@nu-art/thunderstorm/frontend/index';
+import {apiWithBody} from '@nu-art/thunderstorm-frontend/index';
+import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
 import {Module} from '@nu-art/ts-common';
 
 type Config = {
@@ -15,6 +15,7 @@ class ModuleFE_Analytics_Class
 	init() {
 		const apiDef = ApiDef_Analytics(this.config.baseURL);
 		this._v1.sendEvent = apiWithBody(apiDef._v1.sendEvent);
+		this._v1.updateUser = apiWithBody(apiDef._v1.updateUser);
 	}
 }
 

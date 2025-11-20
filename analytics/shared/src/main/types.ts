@@ -1,4 +1,4 @@
-import {UniqueId} from '@nu-art/ts-common';
+import {TypedMap, UniqueId} from '@nu-art/ts-common';
 
 /**
  * Contextual metadata describing the environment in which the event occurred.
@@ -42,7 +42,7 @@ export type TSAnalyticsEvent = {
 	/**
 	 * The group or organization ID associated with the event, if applicable.
 	 */
-	groupId?: string;
+	groups?: TypedMap<UniqueId>
 	/**
 	 * The session ID this event is part of.
 	 * Useful for session-level tracking, funnels, and behavior analysis.

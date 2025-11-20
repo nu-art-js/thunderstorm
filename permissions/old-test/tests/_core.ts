@@ -27,7 +27,7 @@ import {
 	ModuleBE_PermissionGroup,
 	ModuleBE_PermissionProject,
 	ModuleBE_PermissionUserDB
-} from '../_main';
+} from '../_main.js';
 
 import {__custom} from '@nu-art/testelot';
 

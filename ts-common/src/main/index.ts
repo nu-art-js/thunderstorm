@@ -63,7 +63,8 @@ export * from './utils/filter-tools.js';
 export * from './utils/ui-tools.js';
 export * from './utils/json-tools.js';
 export * from './utils/promise-tools.js';
-export * from './utils/url-tools.js'
+export * from './utils/url-tools.js';
+export * from './utils/debounce.js';
 
 export * from './validator/validator-core.js';
 export * from './validator/validators.js';

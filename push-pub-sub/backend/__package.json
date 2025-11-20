@@ -1,0 +1,61 @@
+{
+  "name": "@nu-art/push-pub-sub-backend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "push-pub-sub Backend",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "push-pub-sub",
+    "thunderstorm",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/push-pub-sub.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc -b -f"
+  },
+  "dependencies": {
+    "@nu-art/push-pub-sub-shared": "?",
+    "@nu-art/firebase-backend": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/permissions-backend": "?",
+    "@nu-art/permissions-shared": "?",
+    "@nu-art/thunderstorm-backend": "?",
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/ts-styles": "?",
+    "@nu-art/user-account-backend": "?",
+    "@nu-art/user-account-shared": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "moment": "?",
+    "react": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

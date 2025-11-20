@@ -25,10 +25,10 @@ import {
     ModuleBE_PermissionDomain,
     ModuleBE_PermissionGroup,
     ModuleBE_PermissionUserDB
-} from '../_main';
-import {ApiException} from '@nu-art/thunderstorm/backend/index';
+} from '../_main.js';
+import {ApiException} from '@nu-art/thunderstorm-backend';
 import {generateHex, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend/index';
+import {ModuleBE_Account} from '@nu-art/user-account-backend';
 
 
 const apiPath = 'v1/assert/something';

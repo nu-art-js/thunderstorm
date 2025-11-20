@@ -1,0 +1,54 @@
+{
+  "name": "@nu-art/jira-shared",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Jira api Module Shared",
+  "keywords": [
+    "TacB0sS",
+    "backend",
+    "boilerplate",
+    "Jira",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm-boilerplate.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "dependencies": {
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/firebase-shared": "?",
+    "firebase-admin": "?",
+    "body-parser": "^1.18.3",
+    "compression": "^1.7.4",
+    "express": "?",
+    "moment": "?",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.2",
+    "@types/express": "?",
+    "@types/js-base64": "^2.3.1",
+    "@types/request": "^2.48.3",
+    "@types/saml2-js": "^1.6.8"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

@@ -1,0 +1,295 @@
+/*
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Module dependencies.
+ */
+
+
+import {createServer as createHttpServer, Server} from 'http';
+import {createServer as createHttpsServer} from 'https';
+import {Socket} from 'net';
+import * as fs from 'fs';
+import {addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
+import express from 'express';
+
+import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from '../../utils/types.js';
+import {DefaultApiErrorMessageComposer} from './server-errors.js';
+import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase-backend';
+import {ServerApi} from './server-api.js';
+import compression from 'compression';
+import cors from 'cors';
+
+
+const ALL_Methods: string[] = [
+	'GET',
+	'PUT',
+	'PATCH',
+	'POST',
+	'DELETE',
+	'OPTIONS'];
+
+const DefaultHeaders: string[] = [
+	'content-type',
+	'content-encoding',];
+
+type ConfigType = {
+	port: number;
+	baseUrl: string;
+	cors: {
+		origins?: string[],
+		methods?: string[],
+		headers: string[],
+		responseHeaders: string[],
+	}
+	ssl: { key: string, cert: string }
+	bodyParserLimit: number | string
+};
+
+export type CustomOrigin = (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => (boolean | Promise<boolean>);
+
+export class HttpServer_Class
+	extends Module<ConfigType>
+	implements TBR_ExpressFunctionInterface {
+
+	private static readonly expressMiddleware: ExpressRequestHandler[] = [];
+	errorMessageComposer: HttpErrorHandler = DefaultApiErrorMessageComposer();
+	readonly express!: Express;
+	private server!: Server;
+	private socketId: number = 0;
+	private customCorsOriginValidator: CustomOrigin | undefined;
+
+	constructor() {
+		super('http-server');
+		// this.express = express();
+	}
+
+	getExpress(): Express {
+		if (this.express)
+			return this.express;
+
+		// Originally Express was created in the constructor, and this class is a singleton module, meaning Express is created in the import part of the file that starts Storm.
+		// Express now is initialized during the builder of Storm, instead of the import stage of the file.
+		// @ts-ignore
+		return this.express! = express();
+	}
+
+	getExpressFunction() {
+		return new Firebase_ExpressFunction(this.getExpress());
+	}
+
+	setErrorMessageComposer(errorMessageComposer: HttpErrorHandler) {
+		this.errorMessageComposer = errorMessageComposer;
+	}
+
+	static addMiddleware(middleware: ExpressRequestHandler) {
+		HttpServer_Class.expressMiddleware.push(middleware);
+		return this;
+	}
+
+	getBaseUrl() {
+		return this.config.baseUrl;
+	}
+
+	setCustomCorsOriginValidator(validator: CustomOrigin) {
+		this.customCorsOriginValidator = validator;
+	}
+
+	protected async init() {
+		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
+		const baseUrl = this.config.baseUrl;
+		if (baseUrl) {
+			if (baseUrl.endsWith('/'))
+				this.config.baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+
+			this.config.baseUrl = baseUrl.replace(/\/\//g, '/');
+		}
+
+		this.getExpress().use((req, res, next) => {
+			if (req)
+				req.url = req.url.replace(/\/\//g, '/');
+
+			next();
+		});
+
+		const parserLimit = this.config.bodyParserLimit;
+		if (parserLimit)
+			this.getExpress().use(express.json({limit: parserLimit}));
+		this.getExpress().use(compression());
+		for (const middleware of HttpServer_Class.expressMiddleware) {
+			this.getExpress().use(middleware);
+		}
+
+
+		const _cors = this.config.cors || {};
+		_cors.headers = DefaultHeaders.reduce((toRet, item: string) => {
+			if (!toRet.includes(item))
+				addItemToArray(toRet, item);
+
+			return toRet;
+		}, _cors.headers || []);
+
+		const resolveCorsOrigin = (origin?: string | string[]): string | undefined => {
+			let _origin: string;
+			if (!origin)
+				return;
+
+			if (typeof origin === 'string')
+				_origin = origin;
+			else
+				_origin = origin[0];
+
+			if (!_cors.origins)
+				return _origin;
+
+			for (const allowedOrigin of _cors.origins) {
+				if (allowedOrigin === _origin.toLowerCase() ||
+					(allowedOrigin.includes('*') && new RegExp(`^${allowedOrigin.replace(/\*/g, '.*')}$`).test(_origin.toLowerCase()))) {
+					return _origin;
+				}
+			}
+		};
+
+
+		this.getExpress().use(cors({
+			origin: async (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => {
+				if (!origin)
+					return callback(null);
+
+				const resolvedOrigin = resolveCorsOrigin(origin);
+				if (!resolvedOrigin)
+					return callback(new Error(`CORS issue!!!\n Origin: '${origin}' does not exist in config: ${JSON.stringify(_cors.origins)}`), undefined);
+
+				if (this.customCorsOriginValidator && !(await this.customCorsOriginValidator?.(origin, callback))) {
+					return callback(new Error(`CORS issue!!!\n Origin: '${origin}' is not valid`), undefined);
+				}
+
+				callback(null, resolvedOrigin);
+			},
+			methods: _cors.methods || ALL_Methods,
+			allowedHeaders: _cors.headers,
+			exposedHeaders: _cors.responseHeaders,
+		}));
+
+		this.getExpress().options('*', (req: ExpressRequest, res: ExpressResponse) => {
+			res.end();
+		});
+	}
+
+	private createServer(): Server {
+		const ssl = this.config.ssl;
+		if (!ssl) {
+			this.logDebug('starting HTTP server');
+			return createHttpServer(this.getExpress());
+		}
+
+		this.logDebug('starting HTTPS server');
+		let key = ssl.key;
+		if (!ssl.key.startsWith('-----BEGIN'))
+			key = fs.readFileSync(ssl.key, 'utf8');
+
+		let cert = ssl.cert;
+		if (!ssl.cert.startsWith('-----BEGIN'))
+			cert = fs.readFileSync(ssl.cert, 'utf8');
+
+		const options = {
+			key: key,
+			cert: cert,
+			rejectUnauthorized: false,
+			requestCert: false,
+		};
+
+		return createHttpsServer(options, this.getExpress());
+	}
+
+	public async startServer(): Promise<void> {
+		return new Promise<void>((resolve, rejected) => {
+			this.connectImpl((err?: Error) => {
+				if (err)
+					return rejected(err);
+
+				resolve();
+			});
+		});
+	}
+
+	private connectImpl(onCompletion: { (err?: Error): void; }) {
+		this.server = this.createServer();
+
+		this.server.listen(this.config.port);
+		this.server.on('connection', (socket: Socket) => {
+			this.logInfo(`Got a new connection(${this.socketId++}): ${socket}`);
+			// Extend socket lifetime for demo purposes
+			// socket.setTimeout(4000);
+		});
+
+		this.server.on('error', (error: any) => {
+			switch (error.code) {
+				case 'EACCES':
+					this.logErrorBold(`Server port: ${this.config.port} requires elevated privileges`);
+					process.exit(1);
+					break;
+
+				case 'EADDRINUSE':
+					this.logErrorBold(`Unable to start server port(${this.config.port}) is already in use!`);
+					onCompletion(error);
+					break;
+
+				default:
+					this.logErrorBold(`Error starting server... unknown state: ${error.code}`);
+					onCompletion(error);
+					return;
+			}
+
+			if (error.syscall !== 'listen') {
+				onCompletion(error);
+				return;
+			}
+
+		});
+
+		this.server.on('listening', () => {
+			const address = this.server.address();
+
+			// Explicit check has to be made due to address.port
+			if (!address) {
+				this.logDebug(`Exiting !!`);
+				process.exit(1);
+				return;
+			}
+
+			this.logDebug(`Server is listening on ${(typeof address === 'string' ? `pipe: ${JSON.stringify(address)}` : `port: ${address.port}`)}`);
+			onCompletion();
+		});
+	}
+
+	public terminate(): Promise<void> {
+		return new Promise<void>((resolve) => {
+			this.server.close(() => {
+				this.logInfo('Server is terminated!');
+				resolve();
+			});
+		});
+	}
+}
+
+export const HttpServer = new HttpServer_Class();
+

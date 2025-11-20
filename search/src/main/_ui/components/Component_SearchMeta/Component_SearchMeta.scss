@@ -1,0 +1,17 @@
+@use '@nu-art/ts-styles' as S;
+
+.c__search-meta {
+  width: 100%;
+  height: 28px;
+  justify-content: space-between;
+
+  .c__search-meta__time {
+    color: inherit;
+    font: inherit;
+  }
+
+  .c__search-meta__results {
+    font: inherit;
+    @include S.mouse-interactive-text(inherit, S.dark-blue(4), S.dark-blue(3));
+  }
+}

@@ -22,7 +22,7 @@ import {
 	MessageType_Video,
 	UI_Message
 } from './types.js';
-import {MessagingDBGroup} from '../index.js';
+import {MessagingDBGroup} from '../consts.js';
 
 /**
  * Utility object containing type guard methods for different message types

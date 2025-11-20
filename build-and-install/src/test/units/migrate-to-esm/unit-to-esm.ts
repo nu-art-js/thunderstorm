@@ -235,7 +235,7 @@ describe('Unit_NodeLib - ToESM Phase', () => {
 		}
 	}));
 
-// D3 — require('./util') → await import('./util.js')
+// D3 — await import("'./util'") → await import('./util.js')
 	it('require() with static literal converts to await import() with .js', runTestCase({
 		input: {fixtures: ['./lib-migrate.txt', './workspace-migrate-require-literal.txt']},
 		result: async () => {
@@ -245,7 +245,7 @@ describe('Unit_NodeLib - ToESM Phase', () => {
 		}
 	}));
 
-// D4 — require(name) → await import(name)
+// D4 — await import("name") → await import(name)
 	it('require() with non-literal expression converts to await import(expression)', runTestCase({
 		input: {fixtures: ['./lib-migrate.txt', './workspace-migrate-require-expr.txt']},
 		result: async () => {
@@ -261,7 +261,7 @@ describe('Unit_NodeLib - ToESM Phase', () => {
 		result: async () => {
 			const content = await FileSystemUtils.file.read(resolve(pathToPackage, './src/main/a.ts'));
 			expect(content).to.contain('import \'./logo.svg\'');
-			expect(content).to.not.contain('.svg.js');
+			expect(content).to.not.contain('.svg');
 		}
 	}));
 

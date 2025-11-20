@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {CliParam} from "../../main";
+import {CliParam} from "../../main.js";
 
 export type CliTestParam<K extends string, T extends string | string[]> = CliParam<K, T> & {
 	value: T extends string ? string[] : string[]

@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend/index';
+import {ModuleFE_Toaster} from '@nu-art/thunderstorm-frontend/index';
 
 
 class Example_Dialogs_Renderer

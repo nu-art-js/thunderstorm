@@ -1,0 +1,81 @@
+{
+  "name": "@nu-art/user-account-backend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "User Account Backend",
+  "keywords": [
+    "TacB0sS",
+    "create account",
+    "express",
+    "infra",
+    "login",
+    "nu-art",
+    "saml",
+    "thunderstorm",
+    "typescript",
+    "user-account"
+  ],
+  "homepage": "https://github.com/nu-art-js/user-account",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/user-account/issues"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/user-account.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc",
+    "run-tests": "firebase emulators:exec \"npm run test\"",
+    "test": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files 'src/test/**/*.test.ts' src/test/**/*.test.ts"
+  },
+  "dependencies": {
+    "@nu-art/user-account-shared": "?",
+    "@nu-art/firebase-backend": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/slack-backend": "?",
+    "@nu-art/slack-shared": "?",
+    "@nu-art/thunderstorm-backend": "?",
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/ts-styles": "?",
+    "express": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "moment": "?",
+    "pako": "^2.1.0",
+    "react": "?",
+    "request": "^2.88.0",
+    "saml2-js": "^4.0.1",
+    "xmlbuilder": "^15.1.1"
+  },
+  "devDependencies": {
+    "@nu-art/google-services-backend": "?",
+    "@types/react": "?",
+    "@types/express": "?",
+    "@types/history": "^4.7.2",
+    "@types/request": "^2.48.1",
+    "@types/saml2-js": "^1.6.8",
+    "@types/pako": "^2.0.0",
+    "@types/jsonwebtoken": "^9.0.6"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

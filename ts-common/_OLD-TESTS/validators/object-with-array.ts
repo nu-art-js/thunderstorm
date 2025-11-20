@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {TestSuit, tsValidateArray, tsValidateExists, tsValidateOptional, tsValidateRegexp} from '../_main';
+import {TestSuit, tsValidateArray, tsValidateExists, tsValidateOptional, tsValidateRegexp} from '../_main.js';
 import {TestCase_Validator, validatorProcessor} from './_common.js';
 
 

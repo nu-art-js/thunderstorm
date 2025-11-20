@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Form, Form_FieldProps, FormRenderer, ModuleFE_Toaster, TS_Input} from '@nu-art/thunderstorm/frontend/index';
+import {Form, Form_FieldProps, FormRenderer, ModuleFE_Toaster, TS_Input} from '@nu-art/thunderstorm-frontend/index';
 import * as React from 'react';
 import {Request_CreateAccount} from '@nu-art/user-account/shared/api';
 import {COLORS} from '@res/colors';

@@ -83,3 +83,14 @@ export const logicalXOR = (a: boolean, b: boolean) => {
 };
 
 export type KeyBinder<K extends string, Type> = { Key: K, Type: Type }
+
+export function createLockedAsyncFunction(fn: () => Promise<void>): () => void {
+	let inProgress = false;
+	return () => {
+		if (inProgress) return;
+		inProgress = true;
+		Promise.resolve(fn()).finally(() => {
+			inProgress = false;
+		});
+	};
+}
