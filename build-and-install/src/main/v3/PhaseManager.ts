@@ -1,4 +1,4 @@
-import {addItemToArray, exists, flatArray, Logger, removeItemFromArray, timeCounter, TypedMap} from '@nu-art/ts-common';
+import {addItemToArray, asArray, exists, flatArray, Logger, removeItemFromArray, timeCounter, TypedMap} from '@nu-art/ts-common';
 import {RunningStatusHandler} from './RunningStatusHandler.js';
 import {Phase} from './phase/index.js';
 import {BaseUnit} from './units/index.js';
@@ -45,6 +45,13 @@ export class PhaseManager
 		else {
 			const regexMatchers = usePackageKeys.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
 			this.activeUnits = allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key);
+		}
+
+		const packagesToInclude = this.runningStatus.runtimeParams.includePackage;
+		if (packagesToInclude?.length) {
+			const regexMatchers = asArray(packagesToInclude).map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
+			this.activeUnits.push(...allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key));
+			this.activeUnits = [...new Set(this.activeUnits)];
 		}
 
 		this.keyToPhaseMap = flatArray(phases).reduce<TypedMap<Phase<any>>>((acc, phase) => {

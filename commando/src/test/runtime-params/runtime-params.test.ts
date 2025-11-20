@@ -97,6 +97,39 @@ export const Param_TestFile: BaseCliParam<'testFile', string> = {
 	dependencies: [{param: Param_Test, value: true}]
 };
 
+export const Param_Include: BaseCliParam<'include', string[]> = {
+	keys: ['--include'],
+	keyName: 'include',
+	type: 'string[]',
+	description: 'Test include to run',
+};
+
+export const Param_DependInclude: BaseCliParam<'depend-include', boolean> = {
+	keys: ['--depend-include'],
+	keyName: 'depend-include',
+	type: 'boolean',
+	description: '',
+};
+
+
+export const Param_IncludePackage: BaseCliParam<'includePackage', string[]> = {
+	keys: ['--include-package'],
+	keyName: 'includePackage',
+	type: 'string[]',
+	group: 'Build',
+	description: 'Package to include in the run',
+};
+
+export const Param_SetupAlias: BaseCliParam<'setup', boolean> = {
+	keys: ['--setup'],
+	keyName: 'setup',
+	type: 'boolean',
+	group: 'Build',
+	description: 'Setup local project for developer',
+	// This mirrors BaiParam_Setup → BaiParam_includePackage = "project-setup"
+	dependencies: [{param: Param_IncludePackage, value: ['project-setup']}],
+};
+
 type Input = {
 	params: BaseCliParam<any, any>[]
 	input: string | string[]
@@ -115,7 +148,8 @@ const test = async (input: Input): Promise<Result> => {
 	else
 		inputParams = input.input;
 
-	return CLIParamsResolver.create(...paramsDef).resolveParamValue(inputParams);
+	const cliParams = CLIParamsResolver.create(...paramsDef).resolveParamValue(inputParams);
+	return cliParams;
 };
 
 const runTestCase = (testCase: TestCase_RuntimeParams, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
@@ -464,4 +498,26 @@ describe('Runtime Params - Derived Dependency Resolution', () => {
 			test: false,
 		}
 	}));
+
+	it('GPT - setup implicitly sets includePackage=project-setup', runTestCase({
+		input: {
+			params: [Param_SetupAlias, Param_IncludePackage],
+			input: '--setup',
+		},
+		result: {
+			setup: true,
+			includePackage: ['project-setup'],
+		},
+	}));
+
+	it('GPT - includePackage alone is parsed without setup', runTestCase({
+		input: {
+			params: [Param_SetupAlias, Param_IncludePackage],
+			input: '--include-package=custom-package',
+		},
+		result: {
+			includePackage: ['custom-package'],
+		},
+	}));
+
 });

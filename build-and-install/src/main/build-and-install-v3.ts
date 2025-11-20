@@ -29,6 +29,7 @@ type BAI_Options = { pathToProject: string, runtimeParams: BaseCliParam<string, 
 export class BuildAndInstall
 	extends Logger {
 
+	private unitsMapper!: UnitsMapper;
 	private phases: Phase<string>[][] = DefaultPhases;
 	private pathToProject: string;
 	private allUnits: BaseUnit<any>[] = [];
@@ -62,7 +63,17 @@ export class BuildAndInstall
 
 		this.setMinLevel(DebugFlag.DefaultLogLevel);
 		this.logDebug('Runtime params:', this.runtimeParams);
+		this.unitsMapper = new UnitsMapper();
+		this.prepareUnitsMapper(this.unitsMapper);
+	}
 
+	prepareUnitsMapper(unitsMapper: UnitsMapper) {
+		unitsMapper
+			.addRules(UnitMapper_NodeLib)
+			.addRules(UnitMapper_NodeProject)
+			.addRules(UnitMapper_FirebaseHosting)
+			.addRules(UnitMapper_FirebaseFunction)
+			.setRuntimeParams(this.runtimeParams);
 	}
 
 	setApplicativeUnits(projectUnits: ProjectUnit[]) {
@@ -76,15 +87,7 @@ export class BuildAndInstall
 	async build() {
 		await this.init();
 		this.logVerbose(`Resolving units from: ${this.pathToProject}`);
-		const unitsMapper = new UnitsMapper();
-		this.allUnits = await unitsMapper
-			.addRules(UnitMapper_NodeLib)
-			.addRules(UnitMapper_NodeProject)
-			.addRules(UnitMapper_FirebaseHosting)
-			.addRules(UnitMapper_FirebaseFunction)
-			.setRuntimeParams(this.runtimeParams)
-			.resolveUnits(this.pathToProject);
-
+		this.allUnits = await this.unitsMapper.resolveUnits(this.pathToProject);
 		Object.freeze(this.allUnits);
 
 		this.logDebug('Units found:', this.allUnits.map(unit => `${unit.constructor?.['name']}: ${unit.config.key}`).join('\n'));
@@ -113,6 +116,7 @@ export class BuildAndInstall
 			dependsOn: _keys(unit.config.dependencies).filter(key => !!unitKeyToUnitMap[key]) as string[]
 		}));
 
+		this.logWarning(this.projectUnits.map(unit => unit.config.key));
 		const globalOutputFolder = resolve(this.pathToProject, '.trash/output');
 		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies, globalOutputFolder);
 		const runtimeContext: ProjectUnit_RuntimeContext = ({

@@ -47,7 +47,7 @@ export class PageLoadingModule_Class
 			})
 			.execute(response => {
 				const divElement: HTMLScriptElement = document.createElement('script');
-				divElement.innerHTML = response;
+				// divElement.innerHTML = response;
 				divElement.id = src;
 				divElement.async = true;
 				this.injected[src] = divElement;

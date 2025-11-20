@@ -22,7 +22,6 @@
 import {composeUrl, RouteParams} from '@nu-art/ts-common';
 import * as React from 'react';
 import {Link, NavLink, Route} from 'react-router-dom';
-import {ReactEntryComponentInjector} from '../component-loader/ReactEntryComponentInjector.js';
 
 
 export class RoutePath {
@@ -93,8 +92,8 @@ export const defaultLinkNode = (route: RoutePath, node?: React.ReactNode): React
 };
 
 export const defaultRouteNode = (route: RoutePath): React.ReactElement => {
-	if (typeof route.component === 'string')
-		return <ReactEntryComponentInjector src={route.component}/>;
+	// if (typeof route.component === 'string')
+	// 	return <ReactEntryComponentInjector src={route.component}/>;
 
 	const Component = route.component;
 	return <Route key={route.key} path={route.path} element={<Component/>}/>;

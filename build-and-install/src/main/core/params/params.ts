@@ -35,14 +35,6 @@ export const BaiParam_SetEnv: BaseCliParam<'environment', string> = {
 	description: 'Will set the .config-${environment}.json as the current .config.json and prepare it as base 64 for local usage \ninput required: envName(string)'
 };
 
-export const BaiParam_Setup: BaseCliParam<'setup', boolean> = {
-	keys: ['--setup'],
-	keyName: 'setup',
-	type: 'boolean',
-	group: 'Build',
-	description: 'Setup local project for developer'
-};
-
 export const BaiParam_Install: BaseCliParam<'install', boolean> = {
 	keys: ['--install', '-i'],
 	keyName: 'install',
@@ -270,6 +262,21 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
 };
 
+export const BaiParam_includePackage: BaseCliParam<'includePackage', string[]> = {
+	keys: ['-in', '--include='],
+	keyName: 'includePackage',
+	type: 'string[]',
+	group: 'Other',
+	description: 'Will include the units to process',
+	process: (value) => {
+		if (!value)
+			return [];
+
+		return value!.split(',').map(str => str.trim());
+	},
+	dependencies: []
+};
+
 export const BaiParam_ToESM: BaseCliParam<'toESM', boolean> = {
 	keys: ['-tesm', '--to-esm'],
 	keyName: 'toESM',
@@ -315,7 +322,6 @@ export const AllBaiParams = [
 	BaiParam_continue,
 	BaiParam_Prepare,
 	BaiParam_SetEnv,
-	BaiParam_Setup,
 	BaiParam_Install,
 	BaiParam_Generate, // TODO: to implement
 	BaiParam_GenerateDocs,// TODO: to implement
@@ -336,6 +342,7 @@ export const AllBaiParams = [
 	BaiParam_Debug,
 	BaiParam_Verbose,
 	BaiParam_Publish,
+	BaiParam_includePackage,
 	BaiParam_UsePackage,
 	BaiParam_ToESM,
 	BaiParam_Simulate,
