@@ -77,7 +77,7 @@ export class JWT_Handler<T extends RecursiveObjectOfPrimitives>
 	async verifySignature(jwt: string): Promise<{ validated: true, claims: T & JWT_BaseClaims } | { validated: false }> {
 		jwt = jwt.replace(/^Bearer\s/, '');
 		const secrets = await this.getSecret();
-		this.logWarning(`Verifying JWT signature with secrets:`, secrets, jwt);
+		this.logVerbose(`Verifying JWT signature with secrets:`, secrets, jwt);
 
 		for (const secret of secrets) {
 			try {
