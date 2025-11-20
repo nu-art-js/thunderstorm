@@ -5,9 +5,9 @@ export type CliParams<T extends BaseCliParam<string, any>[]> = {
 	[K in T[number]['keyName']]: NonNullable<Extract<T[number], { keyName: K }>['defaultValue']>
 }
 
-export type DependencyParam<T extends Primitive | Primitive[]> = {
-	param: BaseCliParam<string, T>,
-	value: T
+export type DependencyParam<Param extends BaseCliParam<string, any>> = {
+	param: Param,
+	value: Param extends BaseCliParam<string, infer V> ? V : never
 }
 
 export type BaseCliParam<K extends string, V extends Primitive | Primitive[]> = {
