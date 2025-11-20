@@ -1,7 +1,7 @@
-import {TSAnalyticsEvent} from '@nu-art/analytics-shared';
+import {Analytics_UpdateUser, TSAnalyticsEvent} from '@nu-art/analytics-shared';
 import {AnalyticsPlugin_Base} from './AnalyticsPlugin_Base.js';
 import mixpanelLib, {Mixpanel} from 'mixpanel';
-import {BadImplementationException, exists, MissingDataException} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, exists, MissingDataException, TypedMap} from '@nu-art/ts-common';
 import {AnalyticPanelConfig} from './types.js';
 
 type MixedPanelsEventProperties = {
@@ -9,7 +9,7 @@ type MixedPanelsEventProperties = {
 	time: number;
 	// Optional metadata fields commonly used
 	$session_id?: string;
-	$group_id?: string;
+	$groups?: TypedMap<string>
 	// Any custom event-specific properties (typed later per event if needed)
 	[key: string]: any;
 };
@@ -17,6 +17,13 @@ type MixedPanelsEventProperties = {
 type MixedPanelsEvent = {
 	event: string;
 	properties: MixedPanelsEventProperties;
+}
+
+type MixPanelsUserProps = {
+	$first_name?: string;
+	$last_name?: string;
+	$name?: string;
+	[key: string]: any;
 }
 
 export const pluginKey_MixedPanels = 'mixed-panels';
@@ -39,16 +46,41 @@ export class AnalyticsPlugin_MixedPanels
 		this.mixpanel = mixpanelLib.init(config.token, config.mxConfig);
 	}
 
+	//######################### Internal Logic #########################
+
+	private prepareUserProps = (data: Analytics_UpdateUser['request']['userData']): MixPanelsUserProps => {
+		const {userId, ...rest} = data;
+		const props: MixPanelsUserProps = {};
+		_keys(rest).forEach(key => {
+			switch (key) {
+				case 'firstName':
+					props.$first_name = rest[key];
+					break;
+				case 'lastName':
+					props.$last_name = rest[key];
+					break;
+				case 'displayName':
+					props.$name = rest[key];
+					break;
+				default:
+					props[key] = rest[key];
+			}
+		});
+		return props;
+	};
+
+	//######################### Implemented Logic #########################
+
 	protected translateEvent(event: TSAnalyticsEvent): MixedPanelsEvent {
 		return {
 			event: event.key,
 			properties: {
 				distinct_id: event.userId ?? 'unknown',
 				time: Math.floor(event.timestamp / 1000), //Mixed panels expects seconds
-				...(exists(event.sessionId) ? {$session_id: event.sessionId} : {}),
-				...(exists(event.groupId) ? {$group_id: event.groupId} : {}),
 				...(exists(event.context) ? event.context : {}),
 				...(exists(event.properties) ? event.properties : {}),
+				...(exists(event.groups) ? event.groups : {}),
+				...(exists(event.sessionId) ? {$session_id: event.sessionId} : {}),
 			}
 		};
 	}
@@ -58,8 +90,7 @@ export class AnalyticsPlugin_MixedPanels
 			throw new BadImplementationException(`Calling send before analytics plugin ${pluginKey_MixedPanels} finished initializing`);
 
 		return new Promise<void>((resolve, reject) => {
-			this.logDebug('Sending Events');
-			this.logInfo(events);
+			this.logDebug('Sending Events', events);
 			this.mixpanel!.track_batch(events, {}, (errors: Error[] | undefined) => {
 				if (errors?.length) {
 					this.logError(errors);
@@ -69,6 +100,36 @@ export class AnalyticsPlugin_MixedPanels
 					resolve();
 				}
 			});
+		});
+	};
+
+	protected updateUser_Impl = (mode: Analytics_UpdateUser['request']['mode'], data: Analytics_UpdateUser['request']['userData']) => {
+		if (!this.mixpanel)
+			throw new BadImplementationException(`Calling update user before analytics plugin ${pluginKey_MixedPanels} finished initializing`);
+
+		return new Promise<void>((resolve, reject) => {
+			this.logDebug('Updating user', data);
+			const userProps = this.prepareUserProps(data);
+			const cb = (err: Error | undefined) => {
+				if (err) {
+					this.logError(err);
+					reject(err);
+				} else {
+					this.logDebug('Successfully updated user');
+					resolve();
+				}
+			};
+
+			switch (mode) {
+				case 'set':
+					this.mixpanel?.people.set(data.userId, userProps, cb);
+					break;
+				case 'set_once':
+					this.mixpanel?.people.set_once(data.userId, userProps, cb);
+					break;
+				default:
+					throw new BadImplementationException(`No Implementation for mode ${mode}`);
+			}
 		});
 	};
 }

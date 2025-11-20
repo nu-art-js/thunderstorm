@@ -1,7 +1,7 @@
 import {Module} from '@nu-art/ts-common';
 import {AnalyticsPlugin_Base} from '../plugins/AnalyticsPlugin_Base.js';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend/index';
-import {Analytics_SendEvent, ApiDef_Analytics} from '@nu-art/analytics-shared';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm-backend';
+import {Analytics_SendEvent, Analytics_UpdateUser, ApiDef_Analytics} from '@nu-art/analytics-shared';
 import {AnalyticsPluginRegistry} from '../plugins/index.js';
 
 type Config = {
@@ -20,6 +20,7 @@ class ModuleBE_Analytics_Class
 		this.initPlugins();
 		addRoutes([
 			createBodyServerApi(ApiDef_Analytics()._v1.sendEvent, this.api_sendEvent),
+			createBodyServerApi(ApiDef_Analytics()._v1.updateUser, this.api_updateUser),
 		]);
 	}
 
@@ -44,8 +45,14 @@ class ModuleBE_Analytics_Class
 	//######################### API Callbacks #########################
 
 	private api_sendEvent = async (request: Analytics_SendEvent['request']): Promise<Analytics_SendEvent['response']> => {
-		this.plugins.forEach(plugin => {
+		return this.plugins.forEach(plugin => {
 			plugin.registerEvent(request.event);
+		});
+	};
+
+	private api_updateUser = async (request: Analytics_UpdateUser['request']): Promise<Analytics_UpdateUser['response']> => {
+		return this.plugins.forEach(plugin => {
+			plugin.updateUser?.(request);
 		});
 	};
 }

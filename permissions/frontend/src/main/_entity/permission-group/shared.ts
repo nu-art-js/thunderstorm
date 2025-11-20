@@ -1,0 +1,1 @@
+export * from '@nu-art/permissions-shared';

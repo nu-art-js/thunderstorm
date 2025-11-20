@@ -1,4 +1,3 @@
-import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index.js';
 import {FirebasePackageConfig} from '../../../core/types/index.js';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {ImplementationMissingException, LogLevel, TS_Object, TypedMap} from '@nu-art/ts-common';
@@ -9,6 +8,7 @@ import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node.js';
 import {resolve} from 'path';
 import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 
 
 export type FirebaseHostingConfig = {

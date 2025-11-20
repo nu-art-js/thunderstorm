@@ -23,7 +23,7 @@ import {
 	flatArray,
 	TestCase,
 	TestSuit
-} from "../_main";
+} from "../_main.js";
 import {
 	CliParam_TestArray,
 	CliParam_TestArrayOptional,

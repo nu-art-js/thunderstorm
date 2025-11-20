@@ -1,6 +1,6 @@
 import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, filterDuplicates, LogClient_Terminal, Logger, LogLevel, merge} from '@nu-art/ts-common';
 import {AllBaiParams, BaiParams} from './core/params/params.js';
-import {Phase, phases_Build, phases_Deploy, phases_Launch} from './v3/phase/index.js';
+import {Phase, phases_Build, phases_Deploy, phases_Launch, phases_Terminating} from './v3/phase/index.js';
 import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper.js';
 import {UnitDependentNode, UnitsDependencyMapper} from './v3/UnitsDependencyMapper/UnitsDependencyMapper.js';
 import {FilesCache} from './v3/core/FilesCache.js';
@@ -14,11 +14,12 @@ import {UnitMapper_FirebaseFunction, UnitMapper_FirebaseHosting, UnitMapper_Node
 import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {RunningStatusHandler} from './v3/RunningStatusHandler.js';
-import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 
 export const DefaultPhases = [
 	...phases_Build,
+	...phases_Terminating,
 	...phases_Launch,
 	...phases_Deploy,
 ];
@@ -28,6 +29,7 @@ type BAI_Options = { pathToProject: string, runtimeParams: BaseCliParam<string, 
 export class BuildAndInstall
 	extends Logger {
 
+	private unitsMapper!: UnitsMapper;
 	private phases: Phase<string>[][] = DefaultPhases;
 	private pathToProject: string;
 	private allUnits: BaseUnit<any>[] = [];
@@ -61,7 +63,17 @@ export class BuildAndInstall
 
 		this.setMinLevel(DebugFlag.DefaultLogLevel);
 		this.logDebug('Runtime params:', this.runtimeParams);
+		this.unitsMapper = new UnitsMapper();
+		this.prepareUnitsMapper(this.unitsMapper);
+	}
 
+	prepareUnitsMapper(unitsMapper: UnitsMapper) {
+		unitsMapper
+			.addRules(UnitMapper_NodeLib)
+			.addRules(UnitMapper_NodeProject)
+			.addRules(UnitMapper_FirebaseHosting)
+			.addRules(UnitMapper_FirebaseFunction)
+			.setRuntimeParams(this.runtimeParams);
 	}
 
 	setApplicativeUnits(projectUnits: ProjectUnit[]) {
@@ -75,15 +87,7 @@ export class BuildAndInstall
 	async build() {
 		await this.init();
 		this.logVerbose(`Resolving units from: ${this.pathToProject}`);
-		const unitsMapper = new UnitsMapper();
-		this.allUnits = await unitsMapper
-			.addRules(UnitMapper_NodeLib)
-			.addRules(UnitMapper_NodeProject)
-			.addRules(UnitMapper_FirebaseHosting)
-			.addRules(UnitMapper_FirebaseFunction)
-			.setRuntimeParams(this.runtimeParams)
-			.resolveUnits(this.pathToProject);
-
+		this.allUnits = await this.unitsMapper.resolveUnits(this.pathToProject);
 		Object.freeze(this.allUnits);
 
 		this.logDebug('Units found:', this.allUnits.map(unit => `${unit.constructor?.['name']}: ${unit.config.key}`).join('\n'));

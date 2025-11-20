@@ -24,19 +24,19 @@ import {
 	ModuleBE_ForceUpgrade,
 	RouteResolver_ModulePath,
 	Storm
-} from '@nu-art/thunderstorm/backend/index';
+} from '@nu-art/thunderstorm-backend';
 import {Environment} from './config.js';
 import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
-import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend/index';
+import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs-backend';
 import {Module} from '@nu-art/ts-common';
-import {ModulePackBE_Permissions} from '@nu-art/permissions/backend/index';
-import {JiraBugReportIntegrator, ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend/index';
-import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend/index';
-import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload/backend/index';
-import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
+import {ModulePackBE_Permissions} from '@nu-art/permissions-backend';
+import {JiraBugReportIntegrator, ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report-backend';
+import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub-backend';
+import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload-backend';
+import {Firebase_ExpressFunction} from '@nu-art/firebase-backend-functions';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
 import {PubsubExample} from '@modules/PubsubExample';
-import {ModuleBE_Slack, Slack_ServerApiError} from '@nu-art/slack/backend/index';
+import {ModuleBE_Slack, Slack_ServerApiError} from '@nu-art/slack-backend';
 
 
 const packageJson = require('./package.json');

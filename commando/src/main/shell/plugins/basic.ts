@@ -73,13 +73,19 @@ export class Commando_Basic
 		return this;
 	}
 
-	public rmdir(dirPath: string, options?: Cli_RmdirOptions): this {
+	public rm(dirPath: string, options?: Cli_RmdirOptions): this {
 		let command = 'rm';
 		if (options?.force)
-			command += ' -rf';
+			command += ' -f';
 
-		if (options?.recursive)
-			command += ' -r';
+		this.append(`${command} ${dirPath}`);
+		return this;
+	}
+
+	public rmdir(dirPath: string, options?: Cli_RmdirOptions): this {
+		let command = 'rm -r';
+		if (options?.force)
+			command += ' -f';
 
 		this.append(`${command} ${dirPath}`);
 		return this;

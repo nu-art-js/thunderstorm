@@ -1,3 +1,0 @@
-
-packageName=ts-short-url
-ModuleName=ShortUrl

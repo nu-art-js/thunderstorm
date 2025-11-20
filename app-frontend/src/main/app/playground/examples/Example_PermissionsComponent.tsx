@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {PermissionsComponent} from '@nu-art/permissions/frontend/index';
+import {PermissionsComponent} from '@nu-art/permissions-frontend/index';
 
 
 export class Example_PermissionsComponent_Renderer

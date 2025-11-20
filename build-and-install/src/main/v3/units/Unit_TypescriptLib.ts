@@ -350,15 +350,19 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	async checkCyclicImports() {
 		this.logDebug(`Checking Cyclic Imports - ${this.config.label}`);
+		const pathToMain = pathResolve(this.config.fullPath, './src/main');
+		const pathToTsConfig = pathResolve(pathToMain, './tsconfig.json');
 		await this.allocateCommando(Commando_Basic)
 			.cd(this.config.fullPath)
 			// .setStdErrorValidator(stderr => {
 			// 	return !stderr.includes('Finding files') && !stderr.includes('Image created');
 			// })
-			.append(`npx madge --no-spinner --image "./imports-${this.config.key}.svg" --circular ${this.config.output}`)
+			.append(`npx madge --no-spinner --ts-config ${pathToTsConfig} --image "./imports-${this.config.key}.svg" --extensions ts,tsx,mts,js,mjs --circular ${pathToMain} `)
 			.append('echo $?')
 			.execute();
 	}
+
+	// npx madge --circular --ts-config ./tsconfig.json --extensions ts,tsx,mts,js,mjs ./src/main
 
 	async lint() {
 		// need to move the copy of the default eslint rules to here
@@ -575,20 +579,20 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				replacer: async (pathTofile: string, importPath: string) => `from '${await toESM(pathTofile, importPath)}'`
 			},
 			{
-				regex: /require\((\S+)?\)/g,
-				replacer: async (pathTofile: string, importPath: string) => `await import("${await toESM(pathTofile, importPath)}")`
+				regex: /\srequire\((\S+)?\)/g,
+				replacer: async (pathTofile: string, importPath: string) => ` await import("${await toESM(pathTofile, importPath)}")`
 			},
 			{
-				regex: /require\((\S+)?\)/g,
-				replacer: async (pathTofile: string, importPath: string) => `await import('${await toESM(pathTofile, importPath)}')`
+				regex: /\srequire\((\S+)?\)/g,
+				replacer: async (pathTofile: string, importPath: string) => ` await import('${await toESM(pathTofile, importPath)}')`
 			},
 			{
-				regex: /require\(\s*"(\S+)?"\s*\)/g,
-				replacer: async (pathTofile: string, importPath: string) => `await import("${await toESM(pathTofile, importPath)}")`
+				regex: /\srequire\(\s*"(\S+)?"\s*\)/g,
+				replacer: async (pathTofile: string, importPath: string) => ` await import("${await toESM(pathTofile, importPath)}")`
 			},
 			{
-				regex: /require\(\s*'(\S+)?'\s*\)/g,
-				replacer: async (pathTofile: string, importPath: string) => `await import('${await toESM(pathTofile, importPath)}')`
+				regex: /\srequire\(\s*'(\S+)?'\s*\)/g,
+				replacer: async (pathTofile: string, importPath: string) => ` await import('${await toESM(pathTofile, importPath)}')`
 			},
 			{
 				regex: /import\(\s*"(\S+)?"\s*\)/g,

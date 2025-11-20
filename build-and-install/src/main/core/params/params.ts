@@ -17,13 +17,6 @@ export const BaiParam_DependencyTree: BaseCliParam<'dependencyTree', boolean> = 
 	description: 'Will print the projects packages dependencies tree into the .trash folder'
 };
 
-export const BaiParam_CheckCyclicImports: BaseCliParam<'checkCyclicImports', boolean> = {
-	keys: ['--check-cyclic-imports', '-cci'],
-	keyName: 'checkCyclicImports',
-	type: 'boolean',
-	group: 'General',
-	description: 'will check for cyclic imports and render an svg with the import graph'
-};
 
 export const BaiParam_continue: BaseCliParam<'continue', boolean> = {
 	keys: ['--continue', '-con'],
@@ -40,14 +33,6 @@ export const BaiParam_SetEnv: BaseCliParam<'environment', string> = {
 	group: 'Build',
 	initialValue: 'local',
 	description: 'Will set the .config-${environment}.json as the current .config.json and prepare it as base 64 for local usage \ninput required: envName(string)'
-};
-
-export const BaiParam_Setup: BaseCliParam<'setup', boolean> = {
-	keys: ['--setup'],
-	keyName: 'setup',
-	type: 'boolean',
-	group: 'Build',
-	description: 'Setup local project for developer'
 };
 
 export const BaiParam_Install: BaseCliParam<'install', boolean> = {
@@ -277,6 +262,21 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
 };
 
+export const BaiParam_includePackage: BaseCliParam<'includePackage', string[]> = {
+	keys: ['-in', '--include='],
+	keyName: 'includePackage',
+	type: 'string[]',
+	group: 'Other',
+	description: 'Will include the units to process',
+	process: (value) => {
+		if (!value)
+			return [];
+
+		return value!.split(',').map(str => str.trim());
+	},
+	dependencies: []
+};
+
 export const BaiParam_ToESM: BaseCliParam<'toESM', boolean> = {
 	keys: ['-tesm', '--to-esm'],
 	keyName: 'toESM',
@@ -295,6 +295,23 @@ export const BaiParam_Simulate: BaseCliParam<'simulation', boolean> = {
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
 };
 
+export const BaiParam_CheckCyclicImports: BaseCliParam<'checkCyclicImports', boolean> = {
+	keys: ['--check-cyclic-imports', '-cci'],
+	keyName: 'checkCyclicImports',
+	type: 'boolean',
+	group: 'General',
+	description: 'will check for cyclic imports and render an svg with the import graph',
+	dependencies: [
+		{param: BaiParam_NoBuild, value: true},
+		{param: BaiParam_Launch, value: false},
+		{param: BaiParam_Install, value: false},
+		{param: BaiParam_Deploy, value: false},
+		{param: BaiParam_Publish, value: false},
+		{param: BaiParam_Purge, value: false},
+		{param: BaiParam_Clean, value: false},
+	]
+};
+
 export const AllBaiParams = [
 	BaiParam_AllUnits,
 	BaiParam_DependencyTree,
@@ -305,7 +322,6 @@ export const AllBaiParams = [
 	BaiParam_continue,
 	BaiParam_Prepare,
 	BaiParam_SetEnv,
-	BaiParam_Setup,
 	BaiParam_Install,
 	BaiParam_Generate, // TODO: to implement
 	BaiParam_GenerateDocs,// TODO: to implement
@@ -326,6 +342,7 @@ export const AllBaiParams = [
 	BaiParam_Debug,
 	BaiParam_Verbose,
 	BaiParam_Publish,
+	BaiParam_includePackage,
 	BaiParam_UsePackage,
 	BaiParam_ToESM,
 	BaiParam_Simulate,

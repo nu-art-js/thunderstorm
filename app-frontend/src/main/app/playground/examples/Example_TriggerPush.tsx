@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend/index';
+import {ComponentSync} from '@nu-art/thunderstorm-frontend/index';
 import {_setTimeout, Second} from '@nu-art/ts-common';
 import {ExampleModule} from '@modules/ExampleModule';
-import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub/frontend/index';
+import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub-frontend/index';
 import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub/shared/types';
 
 export type State = {

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {generateHex, StaticLogger} from "../../main";
+import {generateHex, StaticLogger} from "../../main.js";
 
 export const testSuit_newSecret = {
 	key: 'New Secret',

@@ -19,16 +19,16 @@
 // import {
 // 	ServerApi,
 // 	ApiResponse
-// } from "@nu-art/thunderstorm/backend";
+// } from '@nu-art/thunderstorm-backend';
 //
 // import {
 // 	HttpMethod,
 // 	QueryApi
-// } from "@nu-art/thunderstorm";
+// } from '@nu-art/thunderstorm-shared';
 //
-// import {FirebaseProjectCollections} from "@nu-art/firebase";
-// import {ModuleBE_Firebase} from "@nu-art/firebase/backend";
-// import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+// import {FirebaseProjectCollections} from '@nu-art/firebase-shared';
+// import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
+// import {ExpressRequest} from '@nu-art/thunderstorm-backend';
 //
 //
 // class ServerApi_RegisterExternalProject

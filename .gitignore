@@ -35,8 +35,7 @@ package-lock.json
 config.ts
 imports-*.svg
 
-**/src/main/tsconfig.json
-**/src/test/tsconfig.json
+**/src/**/tsconfig.json
 **/*.tgz
 fixture.txt
 _fixture.txt

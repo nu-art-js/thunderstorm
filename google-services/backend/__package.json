@@ -1,0 +1,59 @@
+{
+  "name": "@nu-art/google-services-backend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "google-services Backend",
+  "keywords": [
+    "TacB0sS",
+    "create account",
+    "express",
+    "infra",
+    "login",
+    "nu-art",
+    "permissions",
+    "saml",
+    "thunderstorm",
+    "typescript",
+    "user-account"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?",
+    "@google-cloud/pubsub": "?",
+    "@google-cloud/secret-manager": "?",
+    "google-auth-library": "?",
+    "googleapis": "?"
+  },
+  "devDependencies": {
+    "@google-cloud/resource-manager": "^6.2.0"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

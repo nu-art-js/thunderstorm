@@ -1,6 +1,5 @@
-import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../index.js';
 import {UnitPhaseImplementor} from '../../core/types.js';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON} from '../../../core/consts.js';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../../core/consts.js';
 import {promises as _fs} from 'fs';
 import {FirebasePackageConfig} from '../../../core/types/index.js';
 import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep} from '@nu-art/ts-common';
@@ -9,6 +8,7 @@ import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
 import {resolve} from 'path';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',
@@ -325,7 +325,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando, 'tsx src/main/proxy.ts');
+		const command = `${this.runtimeContext.parentUnit.config.fullPath}/${CONST_NodeModules}/.bin/tsx`;
+		await this.executeAsyncCommando(commando, `${command} src/main/proxy.ts`);
 		this.logWarning('PROXY TERMINATED');
 	}
 

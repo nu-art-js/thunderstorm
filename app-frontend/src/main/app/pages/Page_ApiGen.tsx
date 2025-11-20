@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ModuleFE_PermissionsProject} from '@nu-art/permissions/frontend/index';
+import {ModuleFE_PermissionsProject} from '@nu-art/permissions-frontend/index';
 
 class Page_ApiGen_Renderer
 	extends React.Component {
