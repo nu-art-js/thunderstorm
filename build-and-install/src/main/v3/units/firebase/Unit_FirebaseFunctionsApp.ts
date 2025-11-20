@@ -90,6 +90,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				return await FileSystemUtils.folder.delete(path);
 		});
 		await FileSystemUtils.folder.create(resolve(this.config.fullPath, this.config.pathToEmulatorData));
+		await FileSystemUtils.file.delete(this.pathToProxy());
+
 		await this.resolveConfigs();
 	}
 
@@ -160,7 +162,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async resolveProxyFile() {
 		const envConfig = this.getEnvConfig();
-		const targetPath = `${this.config.fullPath}/src/main/proxy.ts`;
+		const targetPath = this.pathToProxy();
 		const path = this.runtimeContext.baiConfig.files?.backend?.proxy;
 		if (!path)
 			return;
@@ -173,6 +175,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			PATH_TO_SSL_CERTIFICATE: `${this.config.sslCert}`,
 		};
 		await FileSystemUtils.file.template.copy(path, targetPath, params);
+	}
+
+	private pathToProxy() {
+		return resolve(this.config.fullPath, 'src/main/proxy.ts');
 	}
 
 	private async resolveConfigDir() {
