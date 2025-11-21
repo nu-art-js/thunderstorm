@@ -41,14 +41,14 @@ export class RunningStatusHandler
 	}
 
 	async onUnitCompleted(unitKey: string) {
-		this.logError(`On unit completed: ${unitKey}`);
+		this.logDebug(`On unit completed: ${unitKey}`);
 		this.completedUnits.push(unitKey);
 		await this.saveStatus();
 	}
 
 	async update(index: number) {
 		this.startIndex = index;
-		this.logError(`Setting execution index to #${index}`);
+		this.logDebug(`Setting execution index to #${index}`);
 		this.completedUnits = [];
 		if (this.isolated)
 			return;
