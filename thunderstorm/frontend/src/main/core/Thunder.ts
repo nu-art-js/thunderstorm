@@ -135,12 +135,12 @@ export class Thunder
 	}
 
 	protected addUIListener(listener: any): void {
-		this.logInfo(`Register UI listener: ${listener}`);
+		this.logVerbose(`Register UI listener: ${listener}`);
 		this.listeners.push(listener);
 	}
 
 	protected removeUIListener(listener: any): void {
-		this.logInfo(`Unregister UI listener: ${listener}`);
+		this.logVerbose(`Unregister UI listener: ${listener}`);
 		removeItemFromArray(this.listeners, listener);
 	}
 
