@@ -1,7 +1,7 @@
 import {ComponentClass, FunctionComponent} from 'react';
 import {BrowserRouter, Navigate, NavigateFunction, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
 import {TS_Route} from './types.js';
-import {BadImplementationException, composeUrl, Module, removeItemFromArray} from '@nu-art/ts-common';
+import {BadImplementationException, composeUrl, LogLevel, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {LocationChangeListener} from './LocationChangeListener.js';
 import {QueryParams} from '@nu-art/thunderstorm-shared';
 import {mouseEventHandler, stopPropagation} from '../../utils/tools.js';
@@ -48,6 +48,7 @@ class ModuleFE_RoutingV2_Class
 
 	generateRoutes(rootRoute: TS_Route) {
 		// This needs to be a component in order to be build the routes on rendering after modules are awaited
+		this.buildRouteMap(rootRoute);
 		const RoutesRenderer = () => <Routes>
 			{this.routeBuilder(rootRoute)}
 		</Routes>;
@@ -58,41 +59,50 @@ class ModuleFE_RoutingV2_Class
 		</BrowserRouter>;
 	}
 
-	private routeBuilder = (route: TS_Route<any>, _path: string = '') => {
+	buildRouteMap(route: TS_Route, _path: string = '') {
 		const path = `${_path}/`;
 		this.routesMapByKey[route.key] = {route, fullPath: _path};
 		this.routesMapByPath[_path] = route;
+		route.children?.map(route => this.buildRouteMap(route, `${path}${route.path}`));
+	}
 
+	private routeBuilder = (route: TS_Route<any>) => {
+		this.logDebug(`building route for: ${route.key}`);
+
+		const path = this.routesMapByKey[route.key].fullPath;
 		const routes = route.children || [];
 		const indicesRoutes = routes?.filter(route => route.index);
 		if (indicesRoutes && indicesRoutes.length > 1)
 			throw new BadImplementationException(`more than one index route found in ${path}: ${indicesRoutes.map(r => r.key).join(', ')}`);
 
 		const indexRoute = indicesRoutes?.[0];
-		if (indexRoute)
-			this.logDebug(`index: ${path}${indexRoute.path}`);
-
-		if (route.fallback)
-			this.logDebug(`fallback: ${path}`);
 
 		let _indexRoute;
 		if (indexRoute) {
 			const Component = this.resolveRouteComponent(indexRoute);
-			if (indexRoute.path)
+			if (indexRoute.path) {
+				this.logDebug(`index route redirect to path: ${path}/${indexRoute.path}`);
 				// force redirect to a different route
-				_indexRoute = <Route index element={<Navigate to={`${path}${indexRoute.path}`}/>}/>;
-			else {
+				_indexRoute = <Route index element={<Navigate to={`${path}/${indexRoute.path}`}/>}/>;
+			} else {
 				// default index route renderer
+				this.logDebug(`index route render component: ${path}/${indexRoute.path}`);
 				_indexRoute = <Route index Component={Component} element={indexRoute.element}/>;
 				removeItemFromArray(routes, indexRoute);
 			}
 		}
 
+		if (route.fallback)
+			this.logDebug(`fallback: ${path}`);
+
+		const children = route.children?.filter(route => {
+			return route.enabled?.() ?? true;
+		}) ?? [];
 		const Component = this.resolveRouteComponent(route);
 		return <Route key={route.key} path={route.path} Component={Component} element={route.element}>
 			{_indexRoute}
-			{route.children?.filter(route => route.enabled?.() ?? true).map(route => this.routeBuilder(route, `${path}${route.path}`))}
-			{route.fallback && <Route path="*" element={<Navigate to={path}/>}/>}
+			{children.map(route => this.routeBuilder(route))}
+			{/*{route.fallback && <Route path="*" element={<Navigate to={path}/>}/>}*/}
 		</Route>;
 	};
 
