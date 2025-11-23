@@ -46,10 +46,14 @@ export class RunningStatusHandler
 		await this.saveStatus();
 	}
 
-	async update(index: number) {
-		this.startIndex = index;
-		this.logDebug(`Setting execution index to #${index}`);
+	async onStepEnded() {
+		this.logDebug(`On step ended successfully #${this.startIndex}`);
 		this.completedUnits = [];
+	}
+
+	async onStepStarted(index: number) {
+		this.startIndex = index;
+		this.logDebug(`Setting execution index to #${this.startIndex}`);
 		if (this.isolated)
 			return;
 
@@ -68,7 +72,7 @@ export class RunningStatusHandler
 		try {
 			const data = JSON.parse(await _fs.readFile(`${this.outputFolder}/running-status.json`, {encoding: 'utf-8'}));
 			this.startIndex = data.index;
-			this.completedUnits = data.completedUnits;
+			this.completedUnits = data.completedUnits ?? [];
 			this.runtimeParams = data.runtimeParams;
 			return data.index;
 		} catch (e: any) {
