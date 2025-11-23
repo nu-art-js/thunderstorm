@@ -115,6 +115,7 @@ export class PhaseManager
 
 			const scheduledStep = _steps[i];
 			const step = this.mapStep(scheduledStep);
+			await this.runningStatus.onStepStarted(i);
 			this.logDebug(`Executing step #${i + 1}/${_steps.length}`);
 			this.logVerbose(scheduledStep);
 
@@ -167,7 +168,7 @@ export class PhaseManager
 			if (failedStep && errors.length)
 				throw new PhaseAggregatedException(errors, failedStep);
 
-			await this.runningStatus.update(i);
+			await this.runningStatus.onStepEnded();
 		}
 
 		this.logInfo('All steps completed.');
