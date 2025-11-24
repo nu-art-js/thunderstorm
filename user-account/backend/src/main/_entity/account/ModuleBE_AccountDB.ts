@@ -54,8 +54,8 @@ import {
 	SessionKey_Account_BE,
 } from '../session/index.js';
 import {ModuleBE_FailedLoginAttemptDB} from '../failed-login-attempt/index.js';
+import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase-backend';
 import Transaction = firestore.Transaction;
-import { FirestoreType_DocumentSnapshot } from '@nu-art/firebase-backend';
 
 
 type BaseAccount = {
@@ -442,8 +442,8 @@ export class ModuleBE_AccountDB_Class
 			if (account.type !== 'service')
 				throw new BadImplementationException('Can not generate a token for a non service account');
 
-			const initialClaims = {accountId, deviceId: accountId, label, ttl};
-			const dbSession = await ModuleBE_SessionDB._session.create({initialClaims});
+			const initialClaims = {accountId, deviceId: accountId, label};
+			const dbSession = await ModuleBE_SessionDB._session.create({initialClaims}, ttl);
 			// sessionId here is the JWT that is created and placed inside DB_Session.sessionIdJWT
 			return {token: dbSession.sessionIdJwt};
 		},
