@@ -1,0 +1,51 @@
+{
+  "name": "@nu-art/work-hub-frontend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "TS WorkHub Frontend",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "live-docs",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/work-hub-shared": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/thunderstorm-frontend": "?",
+    "react": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    },
+    "./modules": {
+      "types": "./_modules/index.d.ts",
+      "import": "./_modules/index.js"
+    }
+  }
+}
