@@ -35,17 +35,13 @@
   },
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./index.d.ts",
-      "import": "./index.js"
-    },
-    "./*": {
-      "types": "./*.d.ts",
-      "import": "./*.js"
-    },
     "./modules": {
-      "types": "./_modules/index.d.ts",
-      "import": "./_modules/index.js"
+      "types": "./_module/index.d.ts",
+      "import": "./_module/index.js"
+    },
+    "./ui": {
+      "types": "./_ui/index.d.ts",
+      "import": "./_ui/index.js"
     }
   }
 }
