@@ -16,6 +16,7 @@ export const Component_WorkHub_Header: FC<Props> = (props) => {
 				key={tab.id}
 				id={tab.id}
 				label={tab.label}
+				tag={tab.tag}
 				selected={tab.id === props.selectedTabId}
 			/>;
 		})}

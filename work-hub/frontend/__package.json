@@ -35,9 +35,9 @@
   },
   "type": "module",
   "exports": {
-    "./modules": {
-      "types": "./_module/index.d.ts",
-      "import": "./_module/index.js"
+    "./core": {
+      "types": "./_core/index.d.ts",
+      "import": "./_core/index.js"
     },
     "./ui": {
       "types": "./_ui/index.d.ts",
