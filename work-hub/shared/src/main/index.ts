@@ -1,7 +1,7 @@
-import {ReactNode} from 'react';
-
 export type WorkHubTab = {
+	itemKey: string;
 	id: string;
 	label: string;
-	content: () => ReactNode,
+	tag?: string;
+	renderArgs: any;
 };

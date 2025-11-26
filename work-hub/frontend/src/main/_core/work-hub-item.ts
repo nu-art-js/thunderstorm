@@ -1,0 +1,38 @@
+import {Logger} from '@nu-art/ts-common';
+import {ModuleFE_WorkHub} from '../_module/index.js';
+import {ReactNode} from 'react';
+
+export class WorkHubItem<Args extends any = void>
+	extends Logger {
+
+	public readonly key: string;
+	public renderer: (args: Args) => ReactNode;
+	private tabTag: string | undefined;
+
+	constructor(key: string) {
+		super(`WorkHubItem_${key}`);
+		this.key = key;
+		this.renderer = () => `Renderer not set for work hub item ${this.key}`;
+		ModuleFE_WorkHub.workHubItem.register(this);
+	}
+
+	public setRenderer = (renderer: (args: Args) => ReactNode) => {
+		this.renderer = renderer;
+		return this;
+	};
+
+	public setTag = (tag: string) => {
+		this.tabTag = tag;
+		return this;
+	};
+
+	public openTab = (id: string, label: string, args: Args) => {
+		ModuleFE_WorkHub.tabs.add({
+			itemKey: this.key,
+			tag: this.tabTag,
+			id,
+			label,
+			renderArgs: args,
+		});
+	};
+}

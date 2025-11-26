@@ -1,8 +1,9 @@
-import {lastElement, Module, removeFromArrayByIndex, removeItemFromArray} from '@nu-art/ts-common';
+import {BadImplementationException, lastElement, Module, removeFromArrayByIndex, removeItemFromArray} from '@nu-art/ts-common';
 import {WorkHubTab} from '@nu-art/work-hub-shared';
 import {ModuleFE_WorkHub_TabActions} from './types.js';
 import {dispatch_OnWorkHubTabSelected, dispatch_OnWorkHubTabsUpdated} from '../../dispatchers.js';
 import {StorageKey} from '@nu-art/thunderstorm-frontend';
+import {WorkHubItem} from '../../_core/work-hub-item.js';
 
 class ModuleFE_WorkHub_Class
 	extends Module {
@@ -11,12 +12,14 @@ class ModuleFE_WorkHub_Class
 		super();
 		this._tabs = this.storage_tabs.get([]);
 		this._tabStack = this.storage_tabStack.get([]);
+		this._workHubItemMap = {};
 	}
 
 	//######################### Class Properties #########################
 
 	private readonly _tabs: WorkHubTab[];
 	private readonly _tabStack: string[];
+	private readonly _workHubItemMap: { [key: string]: WorkHubItem };
 	private readonly storage_tabs = new StorageKey<WorkHubTab[]>('work-hub__tabs');
 	private readonly storage_tabStack = new StorageKey<string[]>('work-hub__tab-stack');
 
@@ -66,7 +69,24 @@ class ModuleFE_WorkHub_Class
 			this.tabStack.pop(tabId);
 			dispatch_OnWorkHubTabsUpdated.dispatchUI();
 		},
-		getSelectedId: () => lastElement(this._tabStack),
+		getSelected: () => {
+			const selectedId = lastElement(this._tabStack);
+			if (!selectedId)
+				return;
+
+			return this._tabs.find(i => i.id === selectedId);
+		},
+	};
+
+	public workHubItem = {
+		register: (item: WorkHubItem<any>) => {
+			this._workHubItemMap[item.key] ??= item;
+		},
+		getByKey: (key: string): WorkHubItem<any> => {
+			if (!this._workHubItemMap[key])
+				throw new BadImplementationException(`No WorkHubItem registered for key ${key}`);
+			return this._workHubItemMap[key];
+		}
 	};
 }
 

@@ -1,12 +1,23 @@
 .c__work-hub-tab {
   background: #fff;
-  padding: 4px 8px;
+  padding: 4px 4px;
   border-radius: 6px;
   border: 2px solid transparent;
-  gap: 4px;
+  gap: 6px;
   font: {
     size: 14px;
     weight: 500;
+  }
+
+  .c__work-hub-tab__tag {
+    padding: 2px 4px;
+    background: #0000ff;
+    color: #fff;
+    border-radius: 4px;
+    font: {
+      size: 12px;
+      weight: 600;
+    }
   }
 
   &.selected {
