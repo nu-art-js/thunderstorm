@@ -1,6 +1,7 @@
 {
   "name": "app-backend",
   "version": "$APP_VERSION",
+  "private": true,
   "description": "Backend hello world",
   "keywords": [
     "TacB0sS",

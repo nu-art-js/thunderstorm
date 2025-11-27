@@ -1,6 +1,7 @@
 {
   "name": "@app/app-shared",
   "version": "$APP_VERSION",
+  "private": true,
   "description": "app-shared",
   "keywords": [
     "TacB0sS",
