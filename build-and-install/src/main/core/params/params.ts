@@ -195,12 +195,18 @@ export const BaiParam_DebugBackend: BaseCliParam<'debugBackend', boolean> = {
 	description: 'Will add the app backend to the launch list - in debug mode'
 };
 
-export const BaiParam_Deploy: BaseCliParam<'deploy', string> = {
+export const BaiParam_Deploy: BaseCliParam<'deploy', boolean> = {
 	keys: ['--deploy', '-dep'],
 	keyName: 'deploy',
-	type: 'string',
+	type: 'boolean',
 	group: 'Apps',
-	description: 'Will add the provided App to the deploy list or all applications'
+	description: 'Will add the provided App to the deploy list or all applications',
+	dependencies: [
+		{param: BaiParam_Launch, value: false},
+		{param: BaiParam_Watch, value: false},
+		{param: BaiParam_WatchBuildTree, value: false},
+		{param: BaiParam_GenerateDocs, value: false},
+	]
 };
 
 export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {

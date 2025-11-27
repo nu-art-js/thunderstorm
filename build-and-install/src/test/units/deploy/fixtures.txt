@@ -1,0 +1,218 @@
+// file: ./workspace-deploy.txt
+//// file: ./.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false
+  }
+}
+
+//// file: ./.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+//// file: ./.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+//// file: ./.config/.firebase-config/storage.rules
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if request.auth!=null;
+    }
+  }
+}
+
+//// file: ./.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+//// file: ./bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      }
+    }
+  }
+}
+
+//// file: ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "ts-mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
+// file: ./firebase-function-hello.txt
+//// file: ./firebase-function-hello/__package.json
+{
+  "name": "firebase-function-hello",
+  "type": "module",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "firebase-functions": "^5.0.0"
+  },
+  "unitConfig": {
+    "type": "firebase-function",
+    "label": "firebase-function-hello",
+    "customTSConfig": true,
+    "envs": {
+      "test": {
+        "projectId": "{{FIREBASE_TEST_PROJECT}}",
+        "isLocal": false
+      }
+    }
+  }
+}
+
+//// file: ./firebase-function-hello/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
+
+//// file: ./firebase-function-hello/src/main/index.ts
+import * as functions from 'firebase-functions';
+
+export const hello = functions.https.onRequest((request, response) => {
+  response.json({
+    message: 'Hello World',
+    deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
+  });
+});
+
+//// file: ./firebase-function-hello/dist/index.js
+import * as functions from 'firebase-functions';
+
+
+export const hello = functions.https.onRequest((request, response) => {
+  response.json({
+    message: 'Hello World',
+    deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
+  });
+});
+
+//// file: ./firebase-function-hello/dist/package.json
+{
+  "name": "firebase-function-hello",
+  "type": "module",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "firebase-functions": "^5.0.0"
+  }
+}
+
+// file: ./firebase-hosting-hello.txt
+//// file: ./firebase-hosting-hello/__package.json
+{
+  "name": "firebase-hosting-hello",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "scripts": {
+    "build": "mkdir -p dist/public && cp src/main/index.html dist/public/"
+  },
+  "unitConfig": {
+    "type": "firebase-hosting",
+    "label": "firebase-hosting-hello",
+    "customTSConfig": true,
+    "servingPort": 8100,
+    "hostingConfig": {
+      "public": "dist/public",
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    "envs": {
+      "test": {
+        "config": {},
+        "projectId": "{{FIREBASE_TEST_PROJECT}}",
+        "isLocal": false
+      }
+    }
+  }
+}
+
+//// file: ./firebase-hosting-hello/src/main/index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hello World</title>
+</head>
+<body>
+  <h1>Hello World</h1>
+  <p>Deployment ID: {{DEPLOYMENT_ID_PLACEHOLDER}}</p>
+</body>
+</html>
+
+//// file: ./firebase-hosting-hello/dist/public/index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hello World</title>
+</head>
+<body>
+  <h1>Hello World</h1>
+  <p>Deployment ID: {{DEPLOYMENT_ID_PLACEHOLDER}}</p>
+</body>
+</html>
+

@@ -28,7 +28,7 @@ type Output = () => void;
 
 let unit: Unit_PackageJson;
 const test = async (setup: Input): Promise<void> => {
-	// workspaceCreator.setupWorkspace(setup.fixtures, '', false);
+	// await workspaceCreator.setupWorkspace(setup.fixtures, '', false);
 
 	unit = buildAndInstall.projectUnits.find(unit => unit.config.key == setup.unitKey) as Unit_PackageJson;
 	await unit.purge();
@@ -44,9 +44,9 @@ describe('Unit - Purge Phase', () => {
 	before(async function () {
 		this.timeout(20000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
-		workspaceCreator.setupWorkspace(['workspace.txt']);
-		workspaceCreator.setupWorkspace(['lib-purge.txt'], 'lib-purge');
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		await workspaceCreator.setupWorkspace(['workspace.txt']);
+		await workspaceCreator.setupWorkspace(['lib-purge.txt'], 'lib-purge');
 
 		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 		await buildAndInstall.build();
