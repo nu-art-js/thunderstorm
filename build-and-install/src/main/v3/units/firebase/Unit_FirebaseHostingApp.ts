@@ -1,6 +1,6 @@
 import {FirebasePackageConfig} from '../../../core/types/index.js';
 import {UnitPhaseImplementor} from '../../core/types.js';
-import {ImplementationMissingException, LogLevel, TS_Object, TypedMap} from '@nu-art/ts-common';
+import {ImplementationMissingException, LogLevel, StringMap, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {promises as _fs} from 'fs';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
@@ -10,6 +10,7 @@ import {resolve} from 'path';
 import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
+import {deployLogFilter} from './common.js';
 
 
 export type FirebaseHostingConfig = {
@@ -44,6 +45,8 @@ const CONST_VersionApp = 'version-app.json';
 export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_Launch, Phase_Deploy]> {
+
+	public hosting: StringMap = {};
 
 	static DefaultConfig_FirebaseHosting = {
 		servingPort: 8100,
@@ -83,9 +86,15 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	async deploy() {
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.config.fullPath);
+			.cd(this.config.fullPath)
+			.setLogLevelFilter(deployLogFilter)
+			// example: Function URL (hello(us-central1)): https://hello-kv65k7yylq-uc.a.run.app
+			.onLog(/.*Hosting URL.*(https:\/\/.*?)$/, match => {
+				this.hosting[match[1]] = match[2];
+			});
 
-		await this.executeAsyncCommando(commando, `firebase --debug deploy --only hosting`);
+		const debug = this.runtimeContext.runtimeParams.verbose ? ' --debug' : '';
+		await this.executeAsyncCommando(commando, `firebase${debug} deploy --only hosting`);
 	}
 
 	//######################### ResolveConfig Logic #########################

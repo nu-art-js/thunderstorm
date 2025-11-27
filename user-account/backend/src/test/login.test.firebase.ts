@@ -1,11 +1,11 @@
-import {Account_Login, Request_RegisterAccount} from '../main/index.js';
-import {ModuleBE_AccountDB, ModuleBE_FailedLoginAttemptDB} from '../main/backend/index.js';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {generateHex} from '@nu-art/ts-common';
 import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
 import {DefaultStormTestConfig_SessionAndAccount} from './utils/helpers.js';
+import {Account_Login, Request_RegisterAccount} from '@nu-art/user-account-shared';
+import {ModuleBE_AccountDB, ModuleBE_FailedLoginAttemptDB} from './_main.js';
 
 export type Input = {
 	registerCredentials: Request_RegisterAccount;

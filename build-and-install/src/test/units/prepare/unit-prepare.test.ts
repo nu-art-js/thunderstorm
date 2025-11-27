@@ -31,8 +31,8 @@ type Output = () => Promise<void>;
 
 const test = async (input: Input): Promise<void> => {
 	FilesCache.clear();
-	workspaceCreator.setupWorkspace(['workspace.txt']);
-	workspaceCreator.setupWorkspace(input.fixtures, 'lib-prepare');
+	await workspaceCreator.setupWorkspace(['workspace.txt']);
+	await workspaceCreator.setupWorkspace(input.fixtures, 'lib-prepare');
 	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	await buildAndInstall.build();
 
@@ -50,7 +50,7 @@ describe('Unit_NodeLib - Prepare Phase', () => {
 	before(async function () {
 		this.timeout(10000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
 	});
 
 	it('Prepare - Copies __package.json to package.json with no templates', runTestCase({
