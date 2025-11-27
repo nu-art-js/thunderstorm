@@ -34,7 +34,7 @@ type Output = () => Promise<void>;
 // Processor
 const test = async (setup: Input) => {
 	// materialize test workspace for this case
-	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-migrate', false);
+	await workspaceCreator.setupWorkspace(setup.fixtures, 'lib-migrate', false);
 
 	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	buildAndInstall.runtimeParams.allUnits = true;
@@ -60,9 +60,9 @@ describe('Unit_NodeLib - ToESM Phase', () => {
 	beforeEach(async function () {
 		await FileSystemUtils.folder.delete(pathToTemp);
 		// Bring in repo-wide base workspace + this suite's fixtures catalog
-		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
 		// Base workspace and base package under test
-		workspaceCreator.setupWorkspace(['workspace.txt']);
+		await workspaceCreator.setupWorkspace(['workspace.txt']);
 	});
 
 	it('adds .js to relative file imports', runTestCase({

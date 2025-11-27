@@ -1,10 +1,11 @@
-import {mkdirSync, readFileSync, writeFileSync, rmSync} from 'fs';
+import {mkdirSync, readFileSync, rmSync, writeFileSync} from 'fs';
 import {dirname, resolve} from 'path';
 import {Logger} from '../core/logger/Logger.js';
+import {StringMap} from '../utils/index.js';
+import {FileSystemUtils} from '../utils/FileSystemUtils.js';
 
 const FILE_HEADER_REGEX = /^\/\/ file: (.+)$/gm;
 const INNER_FILE_HEADER_REGEX = /^(\/\/)*?\/\/\/\/ file:/gm;
-
 
 export class TestWorkspaceCreator
 	extends Logger {
@@ -18,23 +19,45 @@ export class TestWorkspaceCreator
 		this.pathToWorkspace = pathToWorkspace;
 	}
 
-	setupWorkspace(fixtures: string[], relativePath = '', clean = true) {
-		if (clean)
-			this.clearWorkspace(relativePath);
+	async setupWorkspace(fixtures: string[], relativePath?: string, clean?: boolean): Promise<void>;
+	async setupWorkspace(fixtures: string[], params: StringMap, relativePath?: string, clean?: boolean): Promise<void>;
+	async setupWorkspace(fixtures: string[], params?: StringMap | string, relativePath?: boolean | string, clean?: boolean) {
+		let _clean = clean;
+		let _relativePath;
+		let _params;
+
+		if (typeof relativePath === 'boolean') {
+			_clean = relativePath;
+		} else if (typeof relativePath === 'string') {
+			_relativePath = relativePath;
+		}
+
+		if (typeof params === 'string') {
+			_relativePath = params;
+			_params = {};
+		} else {
+			_params = params;
+		}
+
+		_relativePath = _relativePath ?? '';
+		_clean = _clean ?? true;
+
+		if (_clean)
+			await this.clearWorkspace(_relativePath);
 
 		for (const fixture of fixtures) {
-			this.extractFixture(resolve(this.pathToFixtures, fixture), relativePath);
+			await this.extractFixture(resolve(this.pathToFixtures, fixture), _relativePath, _params);
 		}
 	}
 
-	clearWorkspace(relativePathInWorkspace = '') {
+	async clearWorkspace(relativePathInWorkspace = '') {
 		const path = resolve(this.pathToWorkspace, relativePathInWorkspace);
 		this.logWarning(`Deleting folder: ${path}`);
-		rmSync(path, {recursive: true, force: true});
+		await FileSystemUtils.folder.delete(path);
 	}
 
-	extractFixture(pathToFixture: string, relativePathInWorkspace = '') {
-		const content = readFileSync(pathToFixture, 'utf8');
+	async extractFixture(pathToFixture: string, relativePathInWorkspace = '', params: StringMap = {}) {
+		const content = await FileSystemUtils.file.template.read(pathToFixture, params);
 
 
 		const matches = [...content.matchAll(FILE_HEADER_REGEX)];
@@ -61,13 +84,11 @@ export class TestWorkspaceCreator
 
 			fileContent = fileContent.replace(INNER_FILE_HEADER_REGEX, '\$1// file:');
 
-			mkdirSync(dirname(targetPath), {recursive: true});
-			writeFileSync(targetPath, fileContent);
+			await FileSystemUtils.file.write(targetPath, fileContent);
 			this.logVerbose(`Wrote: ${targetPath}`);
 		}
 	}
 }
-
 
 export function setupWorkspace(pathToWorkspaceFile: string, outputRootDir: string, clean = true) {
 	const content = readFileSync(pathToWorkspaceFile, 'utf8');

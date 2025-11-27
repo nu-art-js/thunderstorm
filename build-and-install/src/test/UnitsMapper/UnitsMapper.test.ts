@@ -32,7 +32,7 @@ export type TestCase_UnitsMapper = TestSuite_UnitsMapper['testcases'][number];
 
 let buildAndInstall: BuildAndInstall;
 const test = async (input: Input): Promise<Result> => {
-	workspaceCreator.setupWorkspace(['workspace.txt', ...input.fixtures]);
+	await workspaceCreator.setupWorkspace(['workspace.txt', ...input.fixtures]);
 	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	await buildAndInstall.build();
 
@@ -52,7 +52,7 @@ describe('UnitsMapper', () => {
 	before(async function () {
 		this.timeout(20000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		fixtureTemplateExtractor.setupWorkspace(['../workspace-fixture.txt', 'fixtures.txt']);
+		await fixtureTemplateExtractor.setupWorkspace(['../workspace-fixture.txt', 'fixtures.txt']);
 	});
 
 	it('Project with root, function app, hosting app and two ts lib', runTestCase({

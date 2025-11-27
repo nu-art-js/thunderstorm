@@ -1,6 +1,6 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {assertPasswordRules, PasswordAssertionConfig, PasswordFailureReport} from '../../main/index.js';
+import {assertPasswordRules, PasswordAssertionConfig, PasswordFailureReport} from '@nu-art/user-account-shared';
 
 
 type PasswordValidationInput = {

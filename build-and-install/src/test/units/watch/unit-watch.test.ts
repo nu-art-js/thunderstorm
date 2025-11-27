@@ -15,7 +15,7 @@ import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {resolve} from 'path';
-import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 const dirname = ___dirname(import.meta.url);
 
@@ -83,11 +83,11 @@ describe('Phase Watch - 1 Lib', () => {
 	before(async function () {
 		this.timeout(20000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
-		workspaceCreator.setupWorkspace(['workspace.txt']);
-		['lib-a', 'lib-b', 'lib-c', 'lib-d', 'lib-e'].forEach(libName => {
-			workspaceCreator.setupWorkspace(['project-lib-config.txt', `${libName}.txt`], libName);
-		});
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		await workspaceCreator.setupWorkspace(['workspace.txt']);
+		await Promise.all(['lib-a', 'lib-b', 'lib-c', 'lib-d', 'lib-e'].map(libName => {
+			return workspaceCreator.setupWorkspace(['project-lib-config.txt', `${libName}.txt`], libName);
+		}));
 
 
 		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});

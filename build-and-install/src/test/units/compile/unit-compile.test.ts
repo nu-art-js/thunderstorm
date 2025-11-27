@@ -35,7 +35,7 @@ type Output = () => (Promise<void>);
 
 const test = async (setup: Input): Promise<void> => {
 	FilesCache.clear();
-	workspaceCreator.setupWorkspace(setup.fixtures, 'lib-compile');
+	await workspaceCreator.setupWorkspace(setup.fixtures, 'lib-compile');
 
 	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	await buildAndInstall.build();
@@ -60,10 +60,10 @@ describe('Unit_NodeLib - Compile Phase', () => {
 	before(async function () {
 		this.timeout(30000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
-		workspaceCreator.setupWorkspace(['workspace.txt']);
-		workspaceCreator.setupWorkspace(['lib-compile.txt'], 'lib-compile');
-		workspaceCreator.setupWorkspace(['lib-compile-2.txt'], 'lib-compile-2', false);
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		await workspaceCreator.setupWorkspace(['workspace.txt']);
+		await workspaceCreator.setupWorkspace(['lib-compile.txt'], 'lib-compile');
+		await workspaceCreator.setupWorkspace(['lib-compile-2.txt'], 'lib-compile-2', false);
 
 		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 		buildAndInstall.runtimeParams.allUnits = true;

@@ -1,10 +1,10 @@
 import {generateHex, JwtTools, RecursiveObjectOfPrimitives, tsValidate, tsValidateMustExist, tsValidateValue} from '@nu-art/ts-common';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {BaseSessionClaims, ModuleBE_SessionDB} from '../../main/_entity/session/backend/index.js';
 import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
-import {DB_Session} from '../../main/index.js';
 import {expect} from 'chai';
 import {DefaultStormTestConfig_Session, ModuleDummy_Claims} from '../utils/helpers.js';
+import {BaseSessionClaims, ModuleBE_SessionDB} from '../_main.js';
+import {DB_Session} from '@nu-art/user-account-shared';
 
 type Input = {
 	initialClaims: BaseSessionClaims
