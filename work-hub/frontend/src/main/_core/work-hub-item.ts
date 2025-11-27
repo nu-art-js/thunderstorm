@@ -1,11 +1,13 @@
 import {Logger} from '@nu-art/ts-common';
 import {ModuleFE_WorkHub} from '../_module/index.js';
 import {ReactNode} from 'react';
+import {ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend';
 
 export class WorkHubItem<Args extends any = void>
 	extends Logger {
 
 	public readonly key: string;
+	public modulesToAwait: ModuleFE_BaseDB<any>[] | undefined;
 	public renderer: (args: Args) => ReactNode;
 	private tabTag: string | undefined;
 
@@ -23,6 +25,11 @@ export class WorkHubItem<Args extends any = void>
 
 	public setTag = (tag: string) => {
 		this.tabTag = tag;
+		return this;
+	};
+
+	public setModulesToAwait = (modules: ModuleFE_BaseDB<any>[]) => {
+		this.modulesToAwait = modules;
 		return this;
 	};
 
