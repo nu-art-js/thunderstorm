@@ -30,7 +30,7 @@ type Output = () => void;
 
 const runInstallTest = async (setup: Input): Promise<void> => {
 	FilesCache.clear();
-	workspaceCreator.setupWorkspace(setup.fixtures);
+	await workspaceCreator.setupWorkspace(setup.fixtures);
 
 	const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	await buildAndInstall.build();
@@ -48,7 +48,7 @@ describe('NodeProject - Install Phase (Project Packages)', () => {
 	before(async function () {
 		this.timeout(20000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
 	});
 
 	it('Should installPackages', run(() => ({

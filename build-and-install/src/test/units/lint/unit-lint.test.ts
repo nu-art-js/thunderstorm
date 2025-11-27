@@ -30,7 +30,7 @@ type Output = () => void;
 
 const test = async (setup: Input): Promise<void> => {
 	FilesCache.clear();
-	workspaceCreator.setupWorkspace(setup.fixtures, '', false);
+	await workspaceCreator.setupWorkspace(setup.fixtures, '', false);
 	unit = buildAndInstall.projectUnits.find(unit => unit.config.key == 'lib-lint') as Unit_TypescriptLib;
 	await unit.lint();
 };
@@ -45,9 +45,9 @@ describe('TypescriptLib - Lint Phase', () => {
 	before(async function () {
 		this.timeout(20000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
-		workspaceCreator.setupWorkspace(['workspace.txt']);
-		workspaceCreator.setupWorkspace(['project-lib-lint.txt'], 'lib-lint');
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		await workspaceCreator.setupWorkspace(['workspace.txt']);
+		await workspaceCreator.setupWorkspace(['project-lib-lint.txt'], 'lib-lint');
 
 		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 		await buildAndInstall.build();

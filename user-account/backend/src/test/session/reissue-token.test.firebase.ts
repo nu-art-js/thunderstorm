@@ -1,10 +1,10 @@
 import {currentTimeMillis, generateHex, JwtTools} from '@nu-art/ts-common';
-import {BaseSessionClaims, ModuleBE_SessionDB} from '../../main/_entity/session/backend/index.js';
 import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
 import {TimeProxy} from '@nu-art/ts-common/utils/time-proxy';
 import {expect} from 'chai';
-import {DB_Session} from '../../main/index.js';
 import {DefaultStormTestConfig_Session, ModuleDummy_AccountsUser, ModuleDummy_Claims} from '../utils/helpers.js';
+import { BaseSessionClaims, ModuleBE_SessionDB } from '../_main.js';
+import { DB_Session } from '@nu-art/user-account-shared';
 
 
 const initialClaims: BaseSessionClaims = {

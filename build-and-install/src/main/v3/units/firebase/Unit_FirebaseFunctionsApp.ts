@@ -2,13 +2,15 @@ import {UnitPhaseImplementor} from '../../core/types.js';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../../core/consts.js';
 import {promises as _fs} from 'fs';
 import {FirebasePackageConfig} from '../../../core/types/index.js';
-import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep} from '@nu-art/ts-common';
+import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
 import {resolve} from 'path';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
+import {CommandoException} from '@nu-art/commando/shell/core/CliError';
+import {deployLogFilter} from './common.js';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',
@@ -38,6 +40,8 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_Launch, Phase_Deploy]> {
+
+	public functions: StringMap = {};
 
 	static staggerCount: number = 0;
 	static DefaultConfig_FirebaseFunction = {
@@ -127,9 +131,21 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			.ls()
 			.cat('package.json')
 			.cat('index.js')
-			.cd(this.config.fullPath);
+			.cd(this.config.fullPath)
+			.setLogLevelFilter(deployLogFilter)
+			// example: Function URL (hello(us-central1)): https://hello-kv65k7yylq-uc.a.run.app
+			.onLog(/.*Function URL.*?\((.*?)\(.*(https:\/\/.*?)$/, match => {
+				this.functions[match[1]] = match[2];
+			});
 
-		await this.executeAsyncCommando(commando, `firebase --debug deploy --only functions --force`);
+
+		const debug = this.runtimeContext.runtimeParams.verbose ? ' --debug' : '';
+		await this.executeAsyncCommando(commando, `firebase${debug} deploy --only functions --force`, (stdout, stderr, exitCode) => {
+			if (exitCode !== 0)
+				throw new CommandoException('Failed to deploy function', stdout, stderr, exitCode);
+		});
+
+		this.logInfo(`Functions: `, this.functions);
 	}
 
 	//######################### ResolveConfig Logic #########################
@@ -184,11 +200,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	private async resolveConfigDir() {
 		//Create the dir if it doesn't exist
 		const pathToFirebaseConfigFolder = `${this.config.fullPath}/${this.config.pathToFirebaseConfig}`;
-		try {
-			await _fs.access(pathToFirebaseConfigFolder);
-		} catch (e: any) {
-			await _fs.mkdir(pathToFirebaseConfigFolder, {recursive: true});
-		}
+		await FileSystemUtils.folder.create(pathToFirebaseConfigFolder);
 
 		//Fill config dir with relevant files for each file that doesn't exist
 		const defaultFiles = this.runtimeContext.baiConfig.files?.firebase;
@@ -199,12 +211,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		await Promise.all(Const_FirebaseConfigKeys.map(async firebaseConfigKey => {
 				const pathToConfigFile = `${pathToFirebaseConfigFolder}/${Const_FirebaseDefaultsKeyToFile[firebaseConfigKey]}`;
-				const path = defaultFiles[firebaseConfigKey];
-				if (!path)
+				if (!defaultFiles[firebaseConfigKey])
 					return;
 
-				const defaultFileContent = await _fs.readFile(path, {encoding: 'utf-8'});
-				await _fs.writeFile(pathToConfigFile, defaultFileContent, {encoding: 'utf-8'});
+				const path = resolve(this.runtimeContext.parentUnit.config.fullPath, defaultFiles[firebaseConfigKey]);
+				await FileSystemUtils.file.copy(path, pathToConfigFile);
 			})
 		);
 	}
@@ -258,6 +269,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				functions: {
 					source: this.config.output.replace(`${this.config.fullPath}/`, ''),
 					ignore: this.config.ignore,
+					runtime: 'nodejs22',
 				}
 			};
 		}
