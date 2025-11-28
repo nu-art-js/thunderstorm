@@ -122,7 +122,16 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		if (envConfig.isLocal)
 			fileContent = {};
 		else
-			fileContent = {hosting: this.config.hostingConfig};
+			fileContent = {
+				hosting: this.config.hostingConfig ?? {
+					'hosting': {
+						'public': 'dist',
+						'rewrites': [
+							{'source': '**', 'destination': '/index.html'}
+						]
+					}
+				}
+			};
 
 		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
 	}
