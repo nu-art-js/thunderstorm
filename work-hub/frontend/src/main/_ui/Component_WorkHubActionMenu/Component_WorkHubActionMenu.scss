@@ -9,15 +9,14 @@
   overflow: hidden;
 
   .ts-button[data-variant='work-hub-menu-action'] {
-    --ts-button--content-color: #333;
+    --ts-button--content-color: #{S.black(1)};
     height: 24px;
     width: 100%;
     min-height: unset;
     margin: 0;
     padding: 0;
     border-radius: 6px;
-
-    @include S.mouse-interactive-background(transparent, S.dark-blue(6));
+    background: transparent;
 
     .ts-button__content {
       justify-content: flex-start;
@@ -26,6 +25,15 @@
         size: 14px;
         weight: 500;
       }
+    }
+
+    &:enabled {
+      @include S.mouse-interactive-background(transparent, S.dark-blue(6));
+    }
+
+    &:disabled {
+      opacity: 1;
+      --ts-button--content-color: #{S.black(5)};
     }
   }
 
