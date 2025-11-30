@@ -20,7 +20,6 @@ export class Component_WorkHubActionMenu
 			content: () => <Component_WorkHubActionMenu {...props}/>,
 			originPos: {x: e.clientX, y: e.clientY},
 			modalPos: {x: 1, y: 1},
-			offset: {y: 8},
 		};
 		ModuleFE_MouseInteractivity.showContent(model);
 	};
@@ -64,6 +63,7 @@ export class Component_WorkHubActionMenu
 		return <Button
 			key={index}
 			variant={'work-hub-menu-action'}
+			disabled={action.disabled}
 			onClick={async () => {
 				await action.action();
 				this.closeMenu();
