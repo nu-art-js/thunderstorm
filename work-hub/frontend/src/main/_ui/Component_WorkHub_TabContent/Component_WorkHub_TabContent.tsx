@@ -13,11 +13,11 @@ export const Component_WorkHub_TabContent: FC<Props> = (props) => {
 	if (item.modulesToAwait?.length)
 		return <div className={'c__work-hub-tab-content'}>
 			<AwaitModules modules={item.modulesToAwait}>
-				{item.renderer(props.tab.renderArgs)}
+				{item.renderer(item, props.tab.renderArgs)}
 			</AwaitModules>
 		</div>;
 
 	return <div className={'c__work-hub-tab-content'}>
-		{item.renderer(props.tab.renderArgs)}
+		{item.renderer(item, props.tab.renderArgs)}
 	</div>;
 };
