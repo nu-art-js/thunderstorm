@@ -141,8 +141,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		const debug = this.runtimeContext.runtimeParams.verbose ? ' --debug' : '';
 		await this.executeAsyncCommando(commando, `firebase${debug} deploy --only functions --force`, (stdout, stderr, exitCode) => {
-			if (exitCode !== 0)
-				throw new CommandoException('Failed to deploy function', stdout, stderr, exitCode);
+			if (exitCode === 0)
+				return;
+
+			throw new CommandoException(`Failed to deploy function with exit code ${exitCode}`, stdout, stderr, exitCode);
 		});
 
 		this.logInfo(`Functions: `, this.functions);
