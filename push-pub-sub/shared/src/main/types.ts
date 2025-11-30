@@ -51,3 +51,8 @@ export type PushMessage_Payload<MessageType extends PushMessage<any, any, any> =
 	timestamp: number
 	message: MessageType['data']
 }
+
+export interface OnPushMessageReceived<MessageType extends PushMessage<any, any, any> = PushMessage<any, any, any>> {
+	__onMessageReceived(notification: PushMessage_Payload<MessageType>): void;
+}
+
