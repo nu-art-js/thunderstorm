@@ -9,6 +9,7 @@ type Props = {
 
 type State = {
 	currentRenderer: React.ComponentType
+	props: any
 }
 
 export class Component_GenericRenderer
@@ -16,11 +17,12 @@ export class Component_GenericRenderer
 
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
 		state.currentRenderer = ModuleFE_Utils.getRenderer(nextProps.rendererKey, nextProps.props);
+		state.props = nextProps.props;
 		return state;
 	}
 
 	render() {
 		const Renderer = this.state.currentRenderer;
-		return <Renderer {...this.props.props}/>;
+		return <Renderer {...this.state.props}/>;
 	}
 }
