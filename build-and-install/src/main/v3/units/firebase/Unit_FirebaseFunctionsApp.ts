@@ -79,17 +79,26 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const distDependencies = this.deriveDistDependencies();
 		packageJson.main = 'index.js';
 		packageJson.types = 'index.d.ts';
-		if (packageJson.dependencies) {
-			packageJson.dependencies = reduceObject(packageJson.dependencies, packageJson.dependencies, (acc, key, value) => {
-				acc[key] = distDependencies[key] ?? value;
-				return acc;
-			});
-
-			this.dependencyUnits.reduce((accumulator, unit) => {
-				accumulator[unit.config.key] = distDependencies[unit.config.key];
-				return accumulator;
-			}, packageJson.dependencies);
+		
+		// Ensure dependencies object exists
+		if (!packageJson.dependencies) {
+			packageJson.dependencies = {};
 		}
+
+		// First, update existing dependencies (replace workspace:* with file: paths where applicable)
+		const dependencies = reduceObject(packageJson.dependencies, packageJson.dependencies, (acc, key, value) => {
+			acc[key] = distDependencies[key] ?? value;
+			return acc;
+		});
+
+		// Then, add ALL dependencyUnits to the dependencies (this includes transitive dependencies)
+		// This ensures the entire dependency tree is referenced in the main package.json
+		this.dependencyUnits.forEach(unit => {
+			dependencies[unit.config.key] = distDependencies[unit.config.key];
+		});
+
+		packageJson.dependencies = dependencies;
+
 		await FileSystemUtils.file.template.write(targetPath, __stringify(packageJson, true), this.deriveDistDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
 	}
 
