@@ -19,7 +19,7 @@
 import {__stringify, _keys, BadImplementationException, Dispatcher, Minute, Module, Queue} from '@nu-art/ts-common';
 import {ApiDef, ApiDefCaller, BaseHttpRequest, HeaderKey_ContentType, TS_Progress, TypedApi} from '@nu-art/thunderstorm-shared';
 
-import {OnPushMessageReceived} from '@nu-art/push-pub-sub-frontend';
+import {OnPushMessageReceived} from '@nu-art/push-pub-sub-shared';
 import {PushMessage_Payload} from '@nu-art/push-pub-sub-shared';
 import {FileStatus, PushKey_FileUploaded, PushMessage_FileUploaded} from '../assets/messages.js';
 import {DB_Asset, UI_Asset} from '../assets/types.js';

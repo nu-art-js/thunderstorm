@@ -24,7 +24,7 @@ import {
 	ApiDef_PushMessages,
 	ApiStruct_PushMessages,
 	BaseSubscriptionData,
-	PushMessage,
+	OnPushMessageReceived,
 	PushMessage_Payload,
 	PushMessage_PayloadWrapper,
 	Request_PushRegister
@@ -32,10 +32,6 @@ import {
 
 
 export const Command_SwToApp = 'SwToApp';
-
-export interface OnPushMessageReceived<MessageType extends PushMessage<any, any, any> = PushMessage<any, any, any>> {
-	__onMessageReceived(notification: PushMessage_Payload<MessageType>): void;
-}
 
 type FirebaseConfig = {
 	apiKey: string
