@@ -31,7 +31,6 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/push-pub-sub-frontend": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/ts-styles": "?",
     "@nu-art/push-pub-sub-shared": "?",
