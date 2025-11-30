@@ -162,9 +162,13 @@ export class BuildAndInstall
 				process.exit(1);
 		});
 
-		await phaseManager.execute(executionPlan);
+		try {
+			await phaseManager.execute(executionPlan);
 
-		this.logInfo('Completed successfully');
-		this.logInfo('---------------------------------- Process Completed successfully ----------------------------------');
+			this.logInfo('Completed successfully');
+			this.logInfo('---------------------------------- Process Completed successfully ----------------------------------');
+		} catch (e) {
+
+		}
 	}
 }

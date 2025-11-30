@@ -40,8 +40,11 @@ export class UnitMapper_FirebaseHosting_Class
 		const outputDir = context.packageJson.publishConfig?.directory;
 		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
 		const envUnitConfig = context.packageJson.unitConfig.envs[env];
-		if (!envUnitConfig)
+		if (!envUnitConfig) {
+			this.logWarning('Package Json config:', context.packageJson.unitConfig);
 			throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
+		}
+
 
 		const envConfig = {
 			config: envUnitConfig.config,
