@@ -79,11 +79,17 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const distDependencies = this.deriveDistDependencies();
 		packageJson.main = 'index.js';
 		packageJson.types = 'index.d.ts';
-		if (packageJson.dependencies)
+		if (packageJson.dependencies) {
 			packageJson.dependencies = reduceObject(packageJson.dependencies, packageJson.dependencies, (acc, key, value) => {
 				acc[key] = distDependencies[key] ?? value;
 				return acc;
 			});
+
+			this.dependencyUnits.reduce((accumulator, unit) => {
+				accumulator[unit.config.key] = distDependencies[unit.config.key];
+				return accumulator;
+			}, packageJson.dependencies);
+		}
 		await FileSystemUtils.file.template.write(targetPath, __stringify(packageJson, true), this.deriveDistDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
 	}
 
@@ -306,10 +312,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	protected deriveDistDependencies() {
-		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies([this.config.key]);
-		const dependencyUnits = this.runtimeContext.unitsResolver<Unit_TypescriptLib>(unitKeys, Unit_TypescriptLib);
-
-		return dependencyUnits.reduce((dependencies, unit) => {
+		return this.dependencyUnits.reduce((dependencies, unit) => {
 			dependencies[unit.config.key] = `file:.dependencies/${unit.config.key}`;
 			return dependencies;
 		}, super.deriveDistDependencies());
@@ -317,9 +320,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async createDependenciesDir() {
 		//Gather units that are dependencies of this unit
-		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies([this.config.key]);
-		const dependencyUnits = this.runtimeContext.unitsResolver<Unit_TypescriptLib>(unitKeys, Unit_TypescriptLib);
-		await Promise.all(dependencyUnits.map(async unit => {
+		await Promise.all(this.dependencyUnits.map(async unit => {
 			//Copy dependency unit output into this units output/.dependency dir
 			const dependencyOutputPath = `${unit.config.output}/`;
 			const targetPath = `${this.config.output}/.dependencies/${unit.config.key}/`;
