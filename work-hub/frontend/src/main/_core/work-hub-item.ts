@@ -8,7 +8,7 @@ export class WorkHubItem<Args extends any = void>
 
 	public readonly key: string;
 	public modulesToAwait: ModuleFE_BaseDB<any>[] | undefined;
-	public renderer: (args: Args) => ReactNode;
+	public renderer: (workHubItem: WorkHubItem<Args>, args: Args) => ReactNode;
 	private tabTag: string | undefined;
 
 	constructor(key: string) {
@@ -18,7 +18,7 @@ export class WorkHubItem<Args extends any = void>
 		ModuleFE_WorkHub.workHubItem.register(this);
 	}
 
-	public setRenderer = (renderer: (args: Args) => ReactNode) => {
+	public setRenderer = (renderer: (workHubItem: WorkHubItem<Args>, args: Args) => ReactNode) => {
 		this.renderer = renderer;
 		return this;
 	};
