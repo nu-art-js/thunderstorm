@@ -1,4 +1,4 @@
-import {BadImplementationException, lastElement, Module, removeFromArrayByIndex, removeItemFromArray} from '@nu-art/ts-common';
+import {BadImplementationException, lastElement, mergeObject, Module, removeFromArrayByIndex, removeItemFromArray} from '@nu-art/ts-common';
 import {WorkHubTab} from '@nu-art/work-hub-shared';
 import {ModuleFE_WorkHub_TabActions} from './types.js';
 import {dispatch_OnWorkHubTabSelected, dispatch_OnWorkHubTabsUpdated} from '../../dispatchers.js';
@@ -76,6 +76,15 @@ class ModuleFE_WorkHub_Class
 
 			return this._tabs.find(i => i.id === selectedId);
 		},
+		updateArgs: (tabId: string, args: any) => {
+			const tab = this._tabs.find(tab => tab.id === tabId);
+			if (!tab)
+				return;
+
+			tab.renderArgs = mergeObject({...tab.renderArgs}, args);
+			this.storage_tabs.set(this._tabs);
+			dispatch_OnWorkHubTabsUpdated.dispatchUI();
+		}
 	};
 
 	public workHubItem = {

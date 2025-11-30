@@ -1,5 +1,5 @@
 import {WorkHubTab} from '@nu-art/work-hub-shared';
-import {FC} from 'react';
+import {createRef, FC, useEffect} from 'react';
 import {ModuleFE_WorkHub} from '../../_module/index.js';
 import './Component_WorkHub_TabContent.scss';
 import {AwaitModules} from '@nu-art/thunderstorm-frontend';
@@ -10,14 +10,18 @@ type Props = {
 
 export const Component_WorkHub_TabContent: FC<Props> = (props) => {
 	const item = ModuleFE_WorkHub.workHubItem.getByKey(props.tab.itemKey);
+	const ref = createRef<HTMLDivElement>();
+	useEffect(() => {
+		ref.current?.focus();
+	});
 	if (item.modulesToAwait?.length)
-		return <div className={'c__work-hub-tab-content'}>
+		return <div className={'c__work-hub-tab-content'} ref={ref} tabIndex={0}>
 			<AwaitModules modules={item.modulesToAwait}>
 				{item.renderer(item, props.tab.renderArgs)}
 			</AwaitModules>
 		</div>;
 
-	return <div className={'c__work-hub-tab-content'}>
+	return <div className={'c__work-hub-tab-content'} ref={ref} tabIndex={0}>
 		{item.renderer(item, props.tab.renderArgs)}
 	</div>;
 };

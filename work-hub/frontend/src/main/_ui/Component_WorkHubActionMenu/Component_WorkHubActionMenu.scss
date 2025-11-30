@@ -1,0 +1,45 @@
+@use '@nu-art/ts-styles' as S;
+
+#work-hub-action-menu {
+  width: 300px;
+  border: 1px solid #333;
+  box-shadow: 0 0 15px 0 #BAB8E6;
+  padding: 4px;
+  border-radius: 10px;
+  overflow: hidden;
+
+  .ts-button[data-variant='work-hub-menu-action'] {
+    --ts-button--content-color: #333;
+    height: 24px;
+    width: 100%;
+    min-height: unset;
+    margin: 0;
+    padding: 0;
+    border-radius: 6px;
+
+    @include S.mouse-interactive-background(transparent, S.dark-blue(6));
+
+    .ts-button__content {
+      justify-content: flex-start;
+      padding: 0 4px;
+      font: {
+        size: 14px;
+        weight: 500;
+      }
+    }
+  }
+
+  .action-menu__section {
+    width: 100%;
+    padding: 4px 0;
+    gap: 4px;
+
+    .action-menu__section-label {
+
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #333;
+    }
+  }
+}
