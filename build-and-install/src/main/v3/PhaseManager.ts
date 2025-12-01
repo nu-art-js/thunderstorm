@@ -166,8 +166,9 @@ export class PhaseManager
 				})
 			);
 
-			if (failedStep && errors.length)
+			if (failedStep && errors.length) {
 				throw new PhaseAggregatedException(errors, failedStep);
+			}
 
 			await this.runningStatus.onStepEnded();
 		}

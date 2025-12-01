@@ -2,7 +2,7 @@ import {UnitPhaseImplementor} from '../../core/types.js';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../../core/consts.js';
 import {promises as _fs} from 'fs';
 import {FirebasePackageConfig} from '../../../core/types/index.js';
-import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep, StringMap} from '@nu-art/ts-common';
+import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
@@ -79,23 +79,22 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const distDependencies = this.deriveDistDependencies();
 		packageJson.main = 'index.js';
 		packageJson.types = 'index.d.ts';
-		
-		// Ensure dependencies object exists
-		if (!packageJson.dependencies) {
-			packageJson.dependencies = {};
-		}
+
+		const dependencies = packageJson.dependencies ?? {};
 
 		// First, update existing dependencies (replace workspace:* with file: paths where applicable)
-		const dependencies = reduceObject(packageJson.dependencies, packageJson.dependencies, (acc, key, value) => {
-			acc[key] = distDependencies[key] ?? value;
-			return acc;
-		});
+		_keys(dependencies).reduce((dependencies, packageName) => {
+			if (distDependencies[packageName])
+				dependencies[packageName] = distDependencies[packageName];
+			return dependencies;
+		}, dependencies);
 
 		// Then, add ALL dependencyUnits to the dependencies (this includes transitive dependencies)
 		// This ensures the entire dependency tree is referenced in the main package.json
-		this.dependencyUnits.forEach(unit => {
+		this.dependencyUnits.reduce((dependencies, unit) => {
 			dependencies[unit.config.key] = distDependencies[unit.config.key];
-		});
+			return dependencies;
+		}, dependencies);
 
 		packageJson.dependencies = dependencies;
 

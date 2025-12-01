@@ -18,14 +18,6 @@ export const BaiParam_DependencyTree: BaseCliParam<'dependencyTree', boolean> = 
 };
 
 
-export const BaiParam_continue: BaseCliParam<'continue', boolean> = {
-	keys: ['--continue', '-con'],
-	keyName: 'continue',
-	type: 'boolean',
-	group: 'Build',
-	description: 'Will pick up where last build process failed'
-};
-
 export const BaiParam_SetEnv: BaseCliParam<'environment', string> = {
 	keys: ['--set-env', '-se'],
 	keyName: 'environment',
@@ -126,6 +118,15 @@ export const BaiParam_WatchBuildTree: BaseCliParam<'watchBuildTree', boolean> = 
 	group: 'Build',
 	description: 'Once watch triggers, will build the entire tree that depends on the libs that changed',
 	dependencies: [{param: BaiParam_Watch, value: true}, {param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}]
+};
+
+export const BaiParam_continue: BaseCliParam<'continue', boolean> = {
+	keys: ['--continue', '-con'],
+	keyName: 'continue',
+	type: 'boolean',
+	group: 'Build',
+	description: 'Will pick up where last build process failed',
+	dependencies: [{param: BaiParam_Watch, value: false}]
 };
 
 export const BaiParam_Test: BaseCliParam<'test', boolean> = {

@@ -39,7 +39,6 @@
     "@nu-art/thunderstorm-backend": "?",
     "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/ts-styles": "?",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
