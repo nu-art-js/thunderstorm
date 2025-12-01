@@ -15,6 +15,7 @@ import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {RunningStatusHandler} from './v3/RunningStatusHandler.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {ImplementationMissingException} from '@nu-art/ts-common/src/main/index';
 
 
 export const DefaultPhases = [
@@ -98,6 +99,9 @@ export class BuildAndInstall
 
 		// @ts-ignore
 		this['nodeProjectUnit'] = nodeProjectUnit;
+
+		if (!this.nodeProjectUnit)
+			throw new ImplementationMissingException('NodeProject unit not found. Make sure you have a Unit_NodeProject in your project.');
 
 		this.nodeProjectUnit.assignUnit(allProjectUnits);
 		this.logDebug(`Parent unit: ${this.nodeProjectUnit.config.key}`);
