@@ -6,4 +6,5 @@ export type ModuleFE_WorkHub_TabActions = {
 	add: (tab: WorkHubTab, setAsSelected?: boolean) => void;
 	remove: (tabId: string) => void;
 	getSelected: () => WorkHubTab | undefined;
+	updateArgs: (tabId: string, args: any) => void;
 }

@@ -55,7 +55,6 @@
     "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
-    "@nu-art/google-services-backend": "?",
     "@types/react": "?",
     "@types/express": "?",
     "@types/history": "^4.7.2",

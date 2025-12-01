@@ -188,6 +188,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		}
 	}
 
+	protected dependencyUnits!: Unit_TypescriptLib[];
+
 	constructor(config: Unit_TypescriptLib<C>['config']) {
 		super(config);
 		this.addToClassStack(Unit_TypescriptLib);
@@ -214,6 +216,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			// @ts-ignore
 			this.publish = undefined;
 		}
+		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies([this.config.key]);
+		this.dependencyUnits = this.runtimeContext.unitsResolver<Unit_TypescriptLib>(unitKeys, Unit_TypescriptLib);
 	}
 
 	protected async compileImpl() {
@@ -313,6 +317,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	async compile() {
+		if (!this.dependencyUnits)
+			await this.prepare();
+
 		await this.clearOutputDirImpl();
 		await this.compileImpl();
 		await this.copyAssetsToOutput();

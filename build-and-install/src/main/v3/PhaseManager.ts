@@ -3,6 +3,7 @@ import {RunningStatusHandler} from './RunningStatusHandler.js';
 import {Phase} from './phase/index.js';
 import {BaseUnit} from './units/index.js';
 import {PhaseAggregatedException} from '../core/exceptions/PhaseAggregatedException.js';
+import {UnitPhaseException} from '../core/exceptions/UnitPhaseException.js';
 
 export type ScheduledStep = {
 	phases: string[];
@@ -119,7 +120,7 @@ export class PhaseManager
 			this.logDebug(`Executing step #${i + 1}/${_steps.length}`);
 			this.logVerbose(scheduledStep);
 
-			const errors: Error[] = [];
+			const errors: UnitPhaseException[] = [];
 			let failedStep;
 			await Promise.all(
 				step.units.map(async (unit) => {
@@ -151,7 +152,7 @@ export class PhaseManager
 							this.logInfo(`Phase(${phase.name}) - Completed${operationDuration} - ${unit.config.key}`);
 						} catch (error: any) {
 							this.logError(`Phase(${phase.name}) - Error - ${unit.config.key}`, error);
-							errors.push(error);
+							errors.push(new UnitPhaseException(error, unit, phase.key));
 							failedStep = scheduledStep;
 							this.killed = true;
 							failed = true;
@@ -165,8 +166,9 @@ export class PhaseManager
 				})
 			);
 
-			if (failedStep && errors.length)
+			if (failedStep && errors.length) {
 				throw new PhaseAggregatedException(errors, failedStep);
+			}
 
 			await this.runningStatus.onStepEnded();
 		}
