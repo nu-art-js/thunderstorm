@@ -1,0 +1,17 @@
+{
+  "name": "@test/lib-a",
+  "type": "module",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@test/lib-b": "workspace:*"
+  },
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "@test/lib-a"
+  }
+}
+

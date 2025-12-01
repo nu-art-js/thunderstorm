@@ -1,0 +1,15 @@
+{
+  "name": "@test/lib-b",
+  "type": "module",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {},
+  "unitConfig": {
+    "type": "typescript-lib",
+    "label": "@test/lib-b"
+  }
+}
+

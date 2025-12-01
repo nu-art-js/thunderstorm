@@ -1,0 +1,12 @@
+{
+  "index": 6,
+  "runtimeParams": {
+    "prepare": true,
+    "environment": "test",
+    "allUnits": true,
+    "install": true
+  },
+  "completedUnits": [
+    "firebase-function-nested-deps"
+  ]
+}

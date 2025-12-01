@@ -1,0 +1,20 @@
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "ts-mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}
+
