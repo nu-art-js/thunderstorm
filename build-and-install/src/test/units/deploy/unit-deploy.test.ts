@@ -2,7 +2,7 @@
 import {DebugFlag, generateHex, LogLevel, sleep} from '@nu-art/ts-common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {phase_Deploy, phase_Prepare, Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../../_common.js';
+import {phase_Compile, phase_Deploy, phase_Install, phase_Prepare, Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp} from '../../_common.js';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
@@ -64,7 +64,7 @@ describe('Firebase Deploy Phase', () => {
 	before(async function () {
 		this.timeout(60000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt'], params);
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt', 'firebase-function-nested-deps.txt'], params);
 		await workspaceCreator.setupWorkspace(['workspace-deploy.txt'], params);
 	});
 
@@ -136,6 +136,69 @@ describe('Firebase Deploy Phase', () => {
 				// The deploy method will throw if it fails
 			}
 		})).timeout(300000); // Skip by default - requires Firebase CLI authentication
+
+		it('Functions - Nested Dependencies - All transitive dependencies in package.json', async () => {
+			FilesCache.clear();
+			await workspaceCreator.setupWorkspace(['./workspace-deploy.txt', './firebase-function-nested-deps.txt'], params);
+
+			const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
+			buildAndInstall.runtimeParams.allUnits = true;
+			buildAndInstall.runtimeParams.environment = 'test';
+			// Use compile phase instead of deploy to test package.json generation
+			buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Compile]]);
+
+			await buildAndInstall.build();
+			await buildAndInstall.run();
+
+			const functionUnit = buildAndInstall.projectUnits.find(unit => unit.config.key === 'firebase-function-nested-deps') as Unit_FirebaseFunctionsApp;
+			expect(functionUnit).to.exist;
+
+			// Verify output directory exists
+			const distPackageJsonPath = resolve(functionUnit.config.output, 'package.json');
+			expect(existsSync(distPackageJsonPath)).to.be.true;
+
+			// Read and parse the generated package.json
+			const distPackageJson = JSON.parse(readFileSync(distPackageJsonPath, 'utf-8'));
+			expect(distPackageJson.dependencies).to.exist;
+
+			// Verify all transitive dependencies are included
+			// Direct dependency: @test/lib-a
+			expect(distPackageJson.dependencies['@test/lib-a']).to.exist;
+			expect(distPackageJson.dependencies['@test/lib-a']).to.equal('file:.dependencies/@test/lib-a');
+
+			// Transitive dependency: @test/lib-b (dependency of @test/lib-a)
+			expect(distPackageJson.dependencies['@test/lib-b']).to.exist;
+			expect(distPackageJson.dependencies['@test/lib-b']).to.equal('file:.dependencies/@test/lib-b');
+
+			// External dependency: firebase-functions
+			expect(distPackageJson.dependencies['firebase-functions']).to.exist;
+
+			// Verify .dependencies folder structure exists
+			const dependenciesDir = resolve(functionUnit.config.output, '.dependencies');
+			expect(existsSync(dependenciesDir)).to.be.true;
+
+			const libADir = resolve(dependenciesDir, '@test/lib-a');
+			expect(existsSync(libADir)).to.be.true;
+
+			const libBDir = resolve(dependenciesDir, '@test/lib-b');
+			expect(existsSync(libBDir)).to.be.true;
+
+			// Verify nested package.json files exist
+			const libAPackageJson = resolve(libADir, 'package.json');
+			expect(existsSync(libAPackageJson)).to.be.true;
+
+			const libBPackageJson = resolve(libBDir, 'package.json');
+			expect(existsSync(libBPackageJson)).to.be.true;
+
+			// Verify nested package.json has correct structure
+			const libAPackage = JSON.parse(readFileSync(libAPackageJson, 'utf-8'));
+			expect(libAPackage.name).to.equal('@test/lib-a');
+
+			const libBPackage = JSON.parse(readFileSync(libBPackageJson, 'utf-8'));
+			expect(libBPackage.name).to.equal('@test/lib-b');
+
+			functionUnit.logDebug('=== Nested Dependencies Test Completed ===');
+		}).timeout(300000);
 	});
 
 	describe('Deployment Verification', () => {
