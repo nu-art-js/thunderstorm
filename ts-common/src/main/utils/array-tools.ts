@@ -154,11 +154,7 @@ export function filterFalsy<T>(array?: (T | undefined | null | void)[]): T[] {
 /**
  * receives array and builds hashmap whom keys are decided via function and values are from array
  * */
-export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: {
-	[k: string]: T
-}) => string | number | (string | number)[], map: {
-	[k: string]: T
-} = {}): { [k: string]: T } {
+export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: TypedMap<T>) => string | number | (string | number)[], map: TypedMap<T> = {}): TypedMap<T> {
 	return reduceToMap<T, T>(array, getKey, item => item, map);
 }
 

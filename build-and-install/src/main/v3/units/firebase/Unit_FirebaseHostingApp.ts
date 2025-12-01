@@ -114,6 +114,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
 	}
 
+
 	private async resolveHostingJSON() {
 		const envConfig = this.getEnvConfig();
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseJSON}`;
@@ -122,7 +123,14 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		if (envConfig.isLocal)
 			fileContent = {};
 		else
-			fileContent = {hosting: this.config.hostingConfig};
+			fileContent = {
+				hosting: this.config.hostingConfig ?? {
+					'public': 'dist',
+					'rewrites': [
+						{'source': '**', 'destination': '/index.html'}
+					]
+				}
+			};
 
 		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
 	}

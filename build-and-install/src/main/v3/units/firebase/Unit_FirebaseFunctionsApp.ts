@@ -2,7 +2,7 @@ import {UnitPhaseImplementor} from '../../core/types.js';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../../core/consts.js';
 import {promises as _fs} from 'fs';
 import {FirebasePackageConfig} from '../../../core/types/index.js';
-import {__stringify, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, reduceObject, Second, sleep, StringMap} from '@nu-art/ts-common';
+import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
@@ -79,11 +79,25 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const distDependencies = this.deriveDistDependencies();
 		packageJson.main = 'index.js';
 		packageJson.types = 'index.d.ts';
-		if (packageJson.dependencies)
-			packageJson.dependencies = reduceObject(packageJson.dependencies, packageJson.dependencies, (acc, key, value) => {
-				acc[key] = distDependencies[key] ?? value;
-				return acc;
-			});
+
+		const dependencies = packageJson.dependencies ?? {};
+
+		// First, update existing dependencies (replace workspace:* with file: paths where applicable)
+		_keys(dependencies).reduce((dependencies, packageName) => {
+			if (distDependencies[packageName])
+				dependencies[packageName] = distDependencies[packageName];
+			return dependencies;
+		}, dependencies);
+
+		// Then, add ALL dependencyUnits to the dependencies (this includes transitive dependencies)
+		// This ensures the entire dependency tree is referenced in the main package.json
+		this.dependencyUnits.reduce((dependencies, unit) => {
+			dependencies[unit.config.key] = distDependencies[unit.config.key];
+			return dependencies;
+		}, dependencies);
+
+		packageJson.dependencies = dependencies;
+
 		await FileSystemUtils.file.template.write(targetPath, __stringify(packageJson, true), this.deriveDistDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
 	}
 
@@ -141,8 +155,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		const debug = this.runtimeContext.runtimeParams.verbose ? ' --debug' : '';
 		await this.executeAsyncCommando(commando, `firebase${debug} deploy --only functions --force`, (stdout, stderr, exitCode) => {
-			if (exitCode !== 0)
-				throw new CommandoException('Failed to deploy function', stdout, stderr, exitCode);
+			if (exitCode === 0)
+				return;
+
+			throw new CommandoException(`Failed to deploy function with exit code ${exitCode}`, stdout, stderr, exitCode);
 		});
 
 		this.logInfo(`Functions: `, this.functions);
@@ -304,10 +320,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	protected deriveDistDependencies() {
-		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies([this.config.key]);
-		const dependencyUnits = this.runtimeContext.unitsResolver<Unit_TypescriptLib>(unitKeys, Unit_TypescriptLib);
-
-		return dependencyUnits.reduce((dependencies, unit) => {
+		return this.dependencyUnits.reduce((dependencies, unit) => {
 			dependencies[unit.config.key] = `file:.dependencies/${unit.config.key}`;
 			return dependencies;
 		}, super.deriveDistDependencies());
@@ -315,9 +328,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async createDependenciesDir() {
 		//Gather units that are dependencies of this unit
-		const unitKeys = this.runtimeContext.unitsMapper.getTransitiveDependencies([this.config.key]);
-		const dependencyUnits = this.runtimeContext.unitsResolver<Unit_TypescriptLib>(unitKeys, Unit_TypescriptLib);
-		await Promise.all(dependencyUnits.map(async unit => {
+		await Promise.all(this.dependencyUnits.map(async unit => {
 			//Copy dependency unit output into this units output/.dependency dir
 			const dependencyOutputPath = `${unit.config.output}/`;
 			const targetPath = `${this.config.output}/.dependencies/${unit.config.key}/`;
