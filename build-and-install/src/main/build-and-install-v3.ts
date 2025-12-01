@@ -168,7 +168,9 @@ export class BuildAndInstall
 			this.logInfo('Completed successfully');
 			this.logInfo('---------------------------------- Process Completed successfully ----------------------------------');
 		} catch (e) {
-
+			this.logInfo('Process Failed');
+			this.logInfo('---------------------------------- Process Failed ----------------------------------');
+			throw e;
 		}
 	}
 }

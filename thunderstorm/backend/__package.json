@@ -42,7 +42,6 @@
     "@nu-art/firebase-shared": "?",
     "@nu-art/google-services-backend": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/ts-styles": "?",
     "abort-controller": "^3.0.0",
     "axios": "^1.13.1",
     "body-parser": "^1.19.0",

@@ -317,6 +317,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	async compile() {
+		if (!this.dependencyUnits)
+			await this.prepare();
+
 		await this.clearOutputDirImpl();
 		await this.compileImpl();
 		await this.copyAssetsToOutput();
