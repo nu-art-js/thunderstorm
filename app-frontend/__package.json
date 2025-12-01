@@ -1,6 +1,6 @@
 {
   "name": "app-frontend",
-  "version": "$APP_VERSION",
+  "version": "{{APP_VERSION}}",
   "private": true,
   "description": "Frontend hello world with Thunder",
   "keywords": [
