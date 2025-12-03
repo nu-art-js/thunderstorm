@@ -1,4 +1,16 @@
-import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, filterDuplicates, LogClient_Terminal, Logger, LogLevel, merge} from '@nu-art/ts-common';
+import {
+	_keys,
+	arrayToMap,
+	BeLogged,
+	Constructor,
+	DebugFlag,
+	filterDuplicates,
+	ImplementationMissingException,
+	LogClient_Terminal,
+	Logger,
+	LogLevel,
+	merge
+} from '@nu-art/ts-common';
 import {AllBaiParams, BaiParams} from './core/params/params.js';
 import {Phase, phases_Build, phases_Deploy, phases_Launch, phases_Terminating} from './v3/phase/index.js';
 import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper.js';
@@ -15,7 +27,6 @@ import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
 import {RunningStatusHandler} from './v3/RunningStatusHandler.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
-import {ImplementationMissingException} from '@nu-art/ts-common/src/main/index';
 
 
 export const DefaultPhases = [
@@ -112,6 +123,7 @@ export class BuildAndInstall
 		const baiConfig = await FilesCache.load.json<BAI_Config>(pathToBaiConfig);
 		this.logDebug('Loaded BAI-Config', baiConfig);
 
+
 		this.projectUnits.push(...allProjectUnits);
 		Object.freeze(this.projectUnits);
 
@@ -126,6 +138,7 @@ export class BuildAndInstall
 		const versionFilePath = resolve(this.pathToProject, CONST_VersionApp);
 		this.logInfo('loading version from: ', versionFilePath);
 		const version = await FileSystemUtils.file.read.json<{ version: string }>(versionFilePath, {version: '1.0.0'});
+
 		const runtimeContext: ProjectUnit_RuntimeContext = ({
 			version: version.version,
 			parentUnit: this.nodeProjectUnit,
