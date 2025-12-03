@@ -9,7 +9,7 @@ import {ProjectUnit, ProjectUnit_RuntimeContext} from './v3/units/ProjectUnit.js
 import {PhaseManager} from './v3/PhaseManager.js';
 import {BaseUnit, Unit_NodeProject} from './v3/units/index.js';
 import {resolve} from 'path';
-import {CONST_BaiConfig, CONST_NodeModules} from './core/consts.js';
+import {CONST_BaiConfig, CONST_NodeModules, CONST_VersionApp} from './core/consts.js';
 import {UnitMapper_FirebaseFunction, UnitMapper_FirebaseHosting, UnitMapper_NodeLib, UnitMapper_NodeProject} from './v3/UnitsMapper/resolvers/index.js';
 import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
 import {BaseCliParam} from '@nu-art/commando/cli-params/types';
@@ -119,7 +119,7 @@ export class BuildAndInstall
 		const globalOutputFolder = resolve(this.pathToProject, '.trash/output');
 		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies, globalOutputFolder);
 
-		const versionFilePath = resolve(this.pathToProject, 'version-app.json');
+		const versionFilePath = resolve(this.pathToProject, CONST_VersionApp);
 		this.logInfo('loading version from: ', versionFilePath);
 		const version = await FileSystemUtils.file.read.json<{ version: string }>(versionFilePath, {version: '1.0.0'});
 		const runtimeContext: ProjectUnit_RuntimeContext = ({

@@ -1,6 +1,5 @@
 import {UnitPhaseImplementor} from '../../core/types.js';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON} from '../../../core/consts.js';
-import {promises as _fs} from 'fs';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON, CONST_VersionApp} from '../../../core/consts.js';
 import {FirebasePackageConfig} from '../../../core/types/index.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts.js';
@@ -188,8 +187,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				}
 			}
 		};
-		const targetPath = `${this.config.fullPath}/${CONST_FirebaseRC}`;
-		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
+		const targetPath = resolve(this.config.fullPath, CONST_FirebaseRC);
+		await FileSystemUtils.file.write.json(targetPath, rcConfig);
 	}
 
 	private async resolveProxyFile() {
@@ -290,7 +289,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			};
 		}
 
-		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
+		await FileSystemUtils.file.write.json(targetPath, fileContent);
 	}
 
 	private async resolveFunctionsRuntimeConfig() {
@@ -305,7 +304,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		const inLocalIgnoreTLS = `${envConfig.isLocal ? '// @ts-ignore\nprocess.env[\'NODE_TLS_REJECT_UNAUTHORIZED\'] = 0;\n\n' : ''}`;
 		const fileContent = `${inLocalIgnoreTLS}export const Environment = ${JSON.stringify(beConfig)};`;
-		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
+		await FileSystemUtils.file.write(targetPath, fileContent);
 	}
 
 	//######################### Compile Logic #########################
@@ -313,10 +312,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	private async createAppVersionFile() {
 		//Writing the file to the package source instead of the output is fine,
 		//copyAssetsToOutput will move the file to output
-		// const targetPath = `${this.config.fullPath}/src/main/${CONST_VersionApp}`;
-		// const appVersion = MemKey_ProjectConfig.get().projectVersion;
-		// const fileContent = JSON.stringify({version: appVersion}, null, 2);
-		// await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
+		const targetPath = `${this.config.fullPath}/src/main/${CONST_VersionApp}`;
+		const appVersion = this.runtimeContext.version;
+		await FileSystemUtils.file.write.json(targetPath, {version: appVersion});
 	}
 
 	protected deriveDistDependencies() {

@@ -1,7 +1,7 @@
 import {FirebasePackageConfig} from '../../../core/types/index.js';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {ImplementationMissingException, LogLevel, StringMap, TS_Object, TypedMap} from '@nu-art/ts-common';
-import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts.js';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_VersionApp} from '../../../core/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node.js';
@@ -39,8 +39,6 @@ export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 	envConfig: FirebaseHosting_EnvConfig
 	sources?: string[];
 };
-
-const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
 	extends Unit_TypescriptLib<C>
