@@ -1,8 +1,19 @@
-import {MouseEvent} from 'react';
-import {Button, ComponentSync, LL_V_L, Model_PopUp, ModuleFE_MouseInteractivity, mouseInteractivity_PopUp} from '@nu-art/thunderstorm-frontend';
+import {CSSProperties, MouseEvent} from 'react';
+import {
+	_className,
+	Button,
+	ComponentSync,
+	LL_H_C,
+	LL_V_L,
+	Model_PopUp,
+	ModuleFE_MouseInteractivity,
+	mouseInteractivity_PopUp
+} from '@nu-art/thunderstorm-frontend';
 import {WorkHubItem_MenuAction, WorkHubItem_MenuSection} from './types.js';
 import {ModuleFE_WorkHub} from '../../_module/index.js';
 import './Component_WorkHubActionMenu.scss';
+import {TS_Icons} from '@nu-art/ts-styles';
+import {generateHex} from '@nu-art/ts-common';
 
 type Props = {
 	tabId: string;
@@ -60,15 +71,39 @@ export class Component_WorkHubActionMenu
 	};
 
 	private render_Action = (action: WorkHubItem_MenuAction, index: number) => {
+		if (action.action)
+			return this.render_ActionButton(action, index);
+
+		return this.render_ActionWithInner(action, index);
+	};
+
+	private render_ActionButton = (action: WorkHubItem_MenuAction, index: number) => {
 		return <Button
 			key={index}
 			variant={'work-hub-menu-action'}
 			disabled={action.disabled}
 			onClick={async () => {
-				await action.action();
+				await action.action!();
 				this.closeMenu();
 			}}>
 			{action.label}
 		</Button>;
+	};
+
+	private render_ActionWithInner = (action: WorkHubItem_MenuAction, index: number) => {
+		const hasInner = !!action.innerActions?.length;
+		const renderInner = hasInner && !action.disabled;
+		const anchorId = generateHex(4);
+		const style = {'--anchor-id': anchorId} as CSSProperties;
+		const className = _className('work-hub-menu-action-with-inner', action.disabled && 'disabled');
+		return <div className={className} style={style} key={index}>
+			<LL_H_C className={'work-hub-menu-action'}>
+				<div className={'work-hub-menu-action__label'}>{action.label}</div>
+				{hasInner && <TS_Icons.treeCollapse.component/>}
+			</LL_H_C>
+			{renderInner && <LL_V_L className={'work-hub-menu-action__inner-actions'}>
+				{action.innerActions?.map(this.render_Action)}
+			</LL_V_L>}
+		</div>;
 	};
 }

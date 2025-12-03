@@ -64,14 +64,29 @@ export const FileSystemUtils = {
 			await assertFile(pathToFile);
 			return _fs.rm(pathToFile);
 		},
-		write: async (pathToFile: string, content: string) => {
+		write: Object.assign(async (pathToFile: string, content: string) => {
 			await FileSystemUtils.folder.create(resolve(pathToFile, '..'));
 			return _fs.writeFile(pathToFile, content, 'utf-8');
-		},
-		read: async (pathToFile: string) => {
+		}, {
+			json: async <T>(pathToFile: string, value: T) => {
+				return await FileSystemUtils.file.write(pathToFile, JSON.stringify(value, null, 2));
+			}
+		}),
+		read: Object.assign(async (pathToFile: string) => {
 			await assertFile(pathToFile);
 			return _fs.readFile(pathToFile, 'utf-8');
-		},
+		}, {
+			json: async <T>(pathToFile: string, defaultValue?: T): Promise<T> => {
+				try {
+					return JSON.parse(await FileSystemUtils.file.read(pathToFile));
+				} catch (e) {
+					if (!exists(defaultValue))
+						throw e;
+
+					return defaultValue;
+				}
+			}
+		}),
 		copy: async (sourcePath: string, targetPath: string) => {
 			await assertExists(targetPath, false, 'File');
 			await assertFile(sourcePath);

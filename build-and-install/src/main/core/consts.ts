@@ -1,7 +1,7 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/index';
 import {RuntimeProjectConfig} from './types/index.js';
 
-
+export const CONST_VersionApp = 'version-app.json';
 export const CONST_PackageJSONTemplate = '__package.json';
 export const CONST_PackageJSON = 'package.json';
 export const CONST_NodeModules = 'node_modules';
