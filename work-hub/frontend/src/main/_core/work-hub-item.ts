@@ -57,6 +57,10 @@ export class WorkHubItem<Args extends any = void>
 		});
 	};
 
+	public closeTab = (tabId: string) => {
+		ModuleFE_WorkHub.tabs.remove(tabId);
+	};
+
 	public openTabMenu = (e: MouseEvent<HTMLDivElement>, tab: WorkHubTab) => {
 		const customSections = this.customMenuActionsResolver(tab);
 		Component_WorkHubActionMenu.show(e, {
