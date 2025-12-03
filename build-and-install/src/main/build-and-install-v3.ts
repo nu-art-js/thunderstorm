@@ -118,8 +118,12 @@ export class BuildAndInstall
 
 		const globalOutputFolder = resolve(this.pathToProject, '.trash/output');
 		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies, globalOutputFolder);
+
+		const versionFilePath = resolve(this.pathToProject, 'version-app.json');
+		this.logInfo('loading version from: ', versionFilePath);
+		const version = await FileSystemUtils.file.read.json<{ version: string }>(versionFilePath, {version: '1.0.0'});
 		const runtimeContext: ProjectUnit_RuntimeContext = ({
-			version: '',
+			version: version.version,
 			parentUnit: this.nodeProjectUnit,
 			childUnits: allProjectUnits,
 			baiConfig,
