@@ -6,6 +6,8 @@ import {WorkHubTab} from '@nu-art/work-hub-shared';
 import {Component_WorkHubActionMenu} from '../_ui/Component_WorkHubActionMenu/Component_WorkHubActionMenu.js';
 import {WorkHubItem_MenuSection} from '../_ui/Component_WorkHubActionMenu/types.js';
 
+type MenuResolver = (tab: WorkHubTab) => (Promise<WorkHubItem_MenuSection[]> | WorkHubItem_MenuSection[]);
+
 export class WorkHubItem<Args extends any = void>
 	extends Logger {
 
@@ -13,7 +15,7 @@ export class WorkHubItem<Args extends any = void>
 	public modulesToAwait: ModuleFE_BaseDB<any>[] | undefined;
 	public renderer: (workHubItem: WorkHubItem<Args>, args: Args) => ReactNode;
 	private tabTag: string | undefined;
-	private customMenuActionsResolver: (tab: WorkHubTab) => WorkHubItem_MenuSection[];
+	private customMenuActionsResolver: MenuResolver;
 
 	// ######################## Builder ########################
 
@@ -40,7 +42,7 @@ export class WorkHubItem<Args extends any = void>
 		return this;
 	};
 
-	public setCustomMenuActionsResolver = (resolver: (tab: WorkHubTab) => WorkHubItem_MenuSection[]) => {
+	public setCustomMenuActionsResolver = (resolver: MenuResolver) => {
 		this.customMenuActionsResolver = resolver;
 		return this;
 	};
@@ -61,8 +63,8 @@ export class WorkHubItem<Args extends any = void>
 		ModuleFE_WorkHub.tabs.remove(tabId);
 	};
 
-	public openTabMenu = (e: MouseEvent<HTMLDivElement>, tab: WorkHubTab) => {
-		const customSections = this.customMenuActionsResolver(tab);
+	public openTabMenu = async (e: MouseEvent<HTMLDivElement>, tab: WorkHubTab) => {
+		const customSections = await this.customMenuActionsResolver(tab);
 		Component_WorkHubActionMenu.show(e, {
 			tabId: tab.id,
 			customSections
