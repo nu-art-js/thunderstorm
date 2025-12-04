@@ -10,15 +10,7 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types.js';
-import {
-	CONST_BaiConfig,
-	CONST_FirebaseJSON,
-	CONST_FirebaseRC,
-	CONST_NodeModules,
-	CONST_PackageJSON,
-	CONST_PackageJSONTemplate,
-	CONST_TS_CONFIG
-} from '../../core/consts.js';
+import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, CONST_PackageJSONTemplate, CONST_TS_CONFIG} from '../../core/consts.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
@@ -231,8 +223,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			})
 			.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'));
 
-		const command = resolve(this.runtimeContext.parentUnit.config.fullPath, CONST_NodeModules, 'typescript', 'bin', 'tsc');
-		await this.executeAsyncCommando(commando, `${command} -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.config.output}"`,
+		await this.executeAsyncCommando(commando, `${this.npmCommand('tsc')} -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.config.output}"`,
 			(stdout, stderr, exitCode) => {
 				if (stderr.length)
 					this.logError(stderr);

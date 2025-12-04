@@ -24,6 +24,10 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 
 	//######################### Internal Logic #########################
 
+	protected npmCommand(command: string) {
+		return resolve(this.runtimeContext.parentUnit.config.fullPath, './node_modules/.bin', command);
+	}
+
 	protected deriveDistDependencies(): StringMap {
 		const params = this.runtimeContext.childUnits.reduce((dependencies, unit) => {
 			dependencies[unit.config.key] = (unit as Unit_PackageJson).config.packageJson.version;

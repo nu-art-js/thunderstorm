@@ -1,5 +1,5 @@
 import {UnitPhaseImplementor} from '../../core/types.js';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_NodeModules, CONST_PackageJSON, CONST_VersionApp} from '../../../core/consts.js';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, CONST_VersionApp} from '../../../core/consts.js';
 import {FirebasePackageConfig} from '../../../core/types/index.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../defaults/consts.js';
@@ -157,7 +157,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 
 		const debug = this.runtimeContext.runtimeParams.verbose ? ' --debug' : '';
-		await this.executeAsyncCommando(commando, `firebase${debug} deploy --only functions --force`, (stdout, stderr, exitCode) => {
+		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')}${debug} deploy --only functions --force`, (stdout, stderr, exitCode) => {
 			if (exitCode === 0)
 				return;
 
@@ -350,8 +350,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.config.fullPath);
 
-		const command = `${this.runtimeContext.parentUnit.config.fullPath}/${CONST_NodeModules}/.bin/tsx`;
-		await this.executeAsyncCommando(commando, `${command} src/main/proxy.ts`);
+		await this.executeAsyncCommando(commando, `${this.npmCommand('tsx')} src/main/proxy.ts`);
 		this.logWarning('PROXY TERMINATED');
 	}
 
@@ -368,7 +367,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'));
 
-		await this.executeAsyncCommando(commando, `firebase emulators:start --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend
+		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect-functions ${this.config.debugPort}` : ''}`);
 		this.logWarning('EMULATORS TERMINATED');
 	}
