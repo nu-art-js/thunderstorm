@@ -185,7 +185,7 @@ export const BaiParam_Launch: BaseCliParam<'launch', boolean> = {
 	keyName: 'launch',
 	type: 'boolean',
 	group: 'Apps',
-	description: 'It will add the provided App to the launch list \nrequired input: path-to-app-to-launch(string)'
+	description: 'Will perform the launch phast on packages that supports it. use the --use-package flag to filter out for specific packages'
 };
 
 export const BaiParam_DebugBackend: BaseCliParam<'debugBackend', boolean> = {
@@ -201,7 +201,7 @@ export const BaiParam_Deploy: BaseCliParam<'deploy', boolean> = {
 	keyName: 'deploy',
 	type: 'boolean',
 	group: 'Apps',
-	description: 'Will add the provided App to the deploy list or all applications',
+	description: 'Will perform the deploy phast on packages that supports it. use the --use-package flag to filter out for specific packages',
 	dependencies: [
 		{param: BaiParam_Launch, value: false},
 		{param: BaiParam_Watch, value: false},
@@ -227,7 +227,7 @@ export const BaiParam_DebugLifecycle: BaseCliParam<'debugLifecycle', boolean> = 
 };
 
 export const BaiParam_Verbose: BaseCliParam<'verbose', boolean> = {
-	keys: ['--verbose', '-d'],
+	keys: ['--verbose', '-v'],
 	keyName: 'verbose',
 	group: 'Other',
 	type: 'boolean',
@@ -239,7 +239,14 @@ export const BaiParam_QuickDeploy: BaseCliParam<'quickDeploy', boolean> = {
 	keyName: 'quickDeploy',
 	type: 'boolean',
 	group: 'Other',
-	description: 'Will deploy both frontend & backend, without any other lifecycle action'
+	description: 'Will perform the deploy phase without other lifecycle options',
+	dependencies: [
+		...BaiParam_Deploy.dependencies!,
+		{param: BaiParam_Purge, value: false},
+		{param: BaiParam_Lint, value: false},
+		{param: BaiParam_Test, value: false},
+		{param: BaiParam_NoBuild, value: true},
+	]
 };
 
 type PromoteType = 'patch' | 'minor' | 'major';
