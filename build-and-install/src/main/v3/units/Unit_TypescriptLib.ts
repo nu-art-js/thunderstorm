@@ -6,7 +6,9 @@ import {
 	BadImplementationException,
 	ImplementationMissingException,
 	LogLevel,
+	merge,
 	NotImplementedYetException,
+	RecursivePartial,
 	TypedMap
 } from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../core/types.js';
@@ -31,6 +33,7 @@ import {glob} from 'node:fs/promises';
 import {TestType, TestTypes} from '../../core/params/params.js';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import path from 'node:path';
+import {TsConfig} from './types.js';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
@@ -428,7 +431,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 
-	protected async resolveTSConfig(srcFolder: string, sourceFolderType: string) {
+	protected async resolveTSConfig(srcFolder: string, sourceFolderType: string, tsConfigOverride?: RecursivePartial<TsConfig>) {
 		const entryPath = pathResolve(srcFolder, sourceFolderType);
 		if (!statSync(entryPath).isDirectory()) {
 			return this.logError(`Unexpected non-directory entry in src/: ${sourceFolderType}`);
@@ -447,15 +450,29 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const projectDefaultTsConfig = pathResolve(this.runtimeContext.parentUnit.config.fullPath, this.runtimeContext.baiConfig.files?.typescript?.tsConfig?.[sourceFolderType] ?? `tsconfig-${sourceFolderType}.json`);
 
 		if (existsSync(projectDefaultTsConfig)) {
-			this.logDebug(`Copying project-level default tsconfig for source: ${sourceFolderType}`);
-			const dependencyPaths = {}; //this.deriveTSConfigPaths();
-			const includeSources = `"sourceMap": true,
-    "sourceRoot": "${entryPath}",`;
-			const templateParams = {
-				INCLUDE_SOURCES: this.runtimeContext.runtimeParams.publish ? '' : includeSources,
-				PATHS: __stringify(dependencyPaths, true)
+			this.logDebug(`Reading and merging project-level default tsconfig for source: ${sourceFolderType}`);
+
+			// Read the template JSON file
+			const templateConfig = await FileSystemUtils.file.read.json<TsConfig>(projectDefaultTsConfig);
+
+			// Build the override config with conditional sourceMap settings
+			const overrideConfig: RecursivePartial<TsConfig> = {
+				...tsConfigOverride,
+				compilerOptions: {
+					...tsConfigOverride?.compilerOptions,
+					...(this.runtimeContext.runtimeParams.publish ? {} : {
+						sourceMap: true,
+						sourceRoot: entryPath
+					})
+				}
 			};
-			return FileSystemUtils.file.template.copy(projectDefaultTsConfig, tsConfigPath, templateParams);
+
+			// Merge template with override
+			const mergedConfig = merge(templateConfig, overrideConfig) as TsConfig;
+
+			// Write the merged config
+			await FileSystemUtils.file.write.json(tsConfigPath, mergedConfig);
+			return;
 		}
 
 		// if (existsSync(defaultTsConfigTemplate)) {
