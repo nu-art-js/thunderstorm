@@ -1,8 +1,7 @@
 import {FirebasePackageConfig} from '../../../core/types/index.js';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {ImplementationMissingException, LogLevel, StringMap, TS_Object, TypedMap} from '@nu-art/ts-common';
-import {promises as _fs} from 'fs';
-import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../core/consts.js';
+import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_VersionApp} from '../../../core/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../UnitsMapper/resolvers/UnitMapper_Node.js';
@@ -11,6 +10,7 @@ import {Phase_Deploy, Phase_Launch} from '../../phase/index.js';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {deployLogFilter} from './common.js';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 
 export type FirebaseHostingConfig = {
@@ -39,8 +39,6 @@ export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 	envConfig: FirebaseHosting_EnvConfig
 	sources?: string[];
 };
-
-const CONST_VersionApp = 'version-app.json';
 
 export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
 	extends Unit_TypescriptLib<C>
@@ -111,7 +109,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		const envConfig = this.getEnvConfig();
 		const rcConfig = {projects: {default: envConfig.projectId}};
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseRC}`;
-		await _fs.writeFile(targetPath, JSON.stringify(rcConfig, null, 2), {encoding: 'utf-8'});
+		await FileSystemUtils.file.write.json(targetPath, rcConfig);
 	}
 
 
@@ -132,14 +130,14 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 				}
 			};
 
-		await _fs.writeFile(targetPath, JSON.stringify(fileContent, null, 2), {encoding: 'utf-8'});
+		await FileSystemUtils.file.write.json(targetPath, fileContent);
 	}
 
 	private async resolveHostingRuntimeConfig() {
 		const envConfig = this.getEnvConfig().config;
 		const targetPath = resolve(this.config.fullPath, `./src/main/config.ts`);
 		const fileContent = `export const config = ${JSON.stringify(envConfig, null, 2)};`;
-		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
+		await FileSystemUtils.file.write(targetPath, fileContent);
 	}
 
 	//######################### Compile Logic #########################
@@ -159,8 +157,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		//Webpack bundles files into the output automatically!
 		const targetPath = `${this.config.fullPath}/src/main/${CONST_VersionApp}`;
 		const appVersion = this.runtimeContext.version;
-		const fileContent = JSON.stringify({version: appVersion}, null, 2);
-		await _fs.writeFile(targetPath, fileContent, {encoding: 'utf-8'});
+		await FileSystemUtils.file.write.json(targetPath, {version: appVersion});
 	}
 
 	//######################### Launch Logic #########################

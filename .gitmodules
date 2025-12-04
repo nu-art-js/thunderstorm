@@ -1,4 +1,0 @@
-[submodule "dev-tools"]
-	path = dev-tools
-	url = git@github.com:nu-art/dev-tools.git
-	branch = master
