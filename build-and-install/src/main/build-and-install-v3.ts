@@ -1,4 +1,16 @@
-import {_keys, arrayToMap, BeLogged, Constructor, DebugFlag, filterDuplicates, LogClient_Terminal, Logger, LogLevel, merge} from '@nu-art/ts-common';
+import {
+	_keys,
+	arrayToMap,
+	BeLogged,
+	Constructor,
+	DebugFlag,
+	filterDuplicates,
+	ImplementationMissingException,
+	LogClient_Terminal,
+	Logger,
+	LogLevel,
+	merge
+} from '@nu-art/ts-common';
 import {AllBaiParams, BaiParams} from './core/params/params.js';
 import {Phase, phases_Build, phases_Deploy, phases_Launch, phases_Terminating} from './v3/phase/index.js';
 import {UnitsMapper} from './v3/UnitsMapper/UnitsMapper.js';
@@ -99,6 +111,9 @@ export class BuildAndInstall
 		// @ts-ignore
 		this['nodeProjectUnit'] = nodeProjectUnit;
 
+		if (!this.nodeProjectUnit)
+			throw new ImplementationMissingException('NodeProject unit not found. Make sure you have a Unit_NodeProject in your project.');
+
 		this.nodeProjectUnit.assignUnit(allProjectUnits);
 		this.logDebug(`Parent unit: ${this.nodeProjectUnit.config.key}`);
 		this.logDebug(`Child units: ${allProjectUnits.map(unit => unit.config.key).join(', ')}`);
@@ -107,6 +122,7 @@ export class BuildAndInstall
 		this.logVerbose(`Loading BAI-Config from: ${pathToBaiConfig}`);
 		const baiConfig = await FilesCache.load.json<BAI_Config>(pathToBaiConfig);
 		this.logDebug('Loaded BAI-Config', baiConfig);
+
 
 		this.projectUnits.push(...allProjectUnits);
 		Object.freeze(this.projectUnits);
@@ -122,6 +138,7 @@ export class BuildAndInstall
 		const versionFilePath = resolve(this.pathToProject, CONST_VersionApp);
 		this.logInfo('loading version from: ', versionFilePath);
 		const version = await FileSystemUtils.file.read.json<{ version: string }>(versionFilePath, {version: '1.0.0'});
+
 		const runtimeContext: ProjectUnit_RuntimeContext = ({
 			version: version.version,
 			parentUnit: this.nodeProjectUnit,
