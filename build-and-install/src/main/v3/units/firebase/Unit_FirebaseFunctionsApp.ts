@@ -119,8 +119,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await this.resolveFunctionsJSON();
 	}
 
-	async postCompile() {
+	async compile() {
 		await this.createAppVersionFile();
+		await super.compile();
+	}
+
+	async postCompile() {
 		await this.createDependenciesDir();
 	}
 
