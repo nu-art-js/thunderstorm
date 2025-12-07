@@ -21,6 +21,34 @@
 
 /**
  * Created by tacb0ss on 27/07/2018.
+ * 
+ * @deprecated This module is deprecated. Use ModuleFE_RoutingV2 instead.
+ * 
+ * Migration Guide:
+ * 
+ * Query Parameters:
+ * - ModuleFE_BrowserHistory.getQueryParams() → ModuleFE_RoutingV2.getQueryParams()
+ * - ModuleFE_BrowserHistory.getQueryParameter(key) → ModuleFE_RoutingV2.getQueryParameter(key)
+ * - ModuleFE_BrowserHistory.setQuery(params) → ModuleFE_RoutingV2.setQuery(params)
+ * - ModuleFE_BrowserHistory.addQueryParam(key, value) → ModuleFE_RoutingV2.addQueryParam(key, value)
+ * - ModuleFE_BrowserHistory.removeQueryParam(key) → ModuleFE_RoutingV2.removeQueryParam(key)
+ * 
+ * URL Utilities:
+ * - ModuleFE_BrowserHistory.getCurrent() → ModuleFE_RoutingV2.getCurrent()
+ * - ModuleFE_BrowserHistory.getCurrentUrl() → ModuleFE_RoutingV2.getCurrentUrl()
+ * - ModuleFE_BrowserHistory.getOrigin() → ModuleFE_RoutingV2.getOrigin()
+ * 
+ * Navigation:
+ * - ModuleFE_BrowserHistory.push(location) → ModuleFE_RoutingV2.push(location)
+ * - ModuleFE_BrowserHistory.replace(location) → ModuleFE_RoutingV2.replace(location)
+ * - ModuleFE_BrowserHistory.setUrl(url, params) → Use ModuleFE_RoutingV2.push({pathname: url, search: ...})
+ * 
+ * Utility Functions:
+ * - composeURL(url, params) → ModuleFE_RoutingV2.composeURL(url, params) (or import from routing module)
+ * - encodeUrlParams(params) → ModuleFE_RoutingV2.encodeUrlParams(params) (or import from routing module)
+ * - composeQuery(params) → ModuleFE_RoutingV2.composeQuery(params) (or import from routing module)
+ * 
+ * This module will be removed in a future version. Please migrate to ModuleFE_RoutingV2.
  */
 import {_keys, composeQueryParams, exists, Module,} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
@@ -34,7 +62,11 @@ export type OnUrlParamsChangedListener = {
 
 export const dispatcher_urlParamsChanged = new ThunderDispatcher<OnUrlParamsChangedListener, '__onUrlParamsChanged'>('__onUrlParamsChanged');
 
-// move all the shit from here to the Routing module
+/**
+ * @deprecated Use ModuleFE_RoutingV2 instead. This class will be removed in a future version.
+ * 
+ * All functionality has been migrated to ModuleFE_RoutingV2. See file-level deprecation notice for migration guide.
+ */
 export class ModuleFE_BrowserHistory_Class
     extends Module {
     private readonly history: History<any>;
@@ -46,6 +78,15 @@ export class ModuleFE_BrowserHistory_Class
 
     /**
      * Update and navigate according to query params
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.push() instead
+     * 
+     * Migration:
+     * // Old:
+     * ModuleFE_BrowserHistory.push({pathname: '/path', search: '?key=value'});
+     * 
+     * // New:
+     * ModuleFE_RoutingV2.push({pathname: '/path', search: '?key=value'});
      */
     push(push: LocationDescriptorObject) {
         this.history.push(push);
@@ -53,6 +94,15 @@ export class ModuleFE_BrowserHistory_Class
 
     /**
      * Update query params
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.replace() instead
+     * 
+     * Migration:
+     * // Old:
+     * ModuleFE_BrowserHistory.replace({pathname: '/path', search: '?key=value'});
+     * 
+     * // New:
+     * ModuleFE_RoutingV2.replace({pathname: '/path', search: '?key=value'});
      */
     replace(push: LocationDescriptorObject) {
         this.history.replace(push);
@@ -91,6 +141,18 @@ export class ModuleFE_BrowserHistory_Class
         }, queryParams);
     };
 
+    /**
+     * Get all query parameters from the current URL (decoded)
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.getQueryParams() instead
+     * 
+     * Migration:
+     * // Old:
+     * const params = ModuleFE_BrowserHistory.getQueryParams();
+     * 
+     * // New:
+     * const params = ModuleFE_RoutingV2.getQueryParams();
+     */
     getQueryParams() {
         const params = this.getEncodedQueryParams();
         _keys(params).forEach(key => {
@@ -104,12 +166,36 @@ export class ModuleFE_BrowserHistory_Class
         return params;
     }
 
+    /**
+     * Replace all query parameters on the current route
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.setQuery() instead
+     * 
+     * Migration:
+     * // Old:
+     * ModuleFE_BrowserHistory.setQuery({key: 'value'});
+     * 
+     * // New:
+     * ModuleFE_RoutingV2.setQuery({key: 'value'});
+     */
     setQuery(queryParams: UrlQueryParams) {
         const encodedQueryParams = encodeUrlParams(queryParams);
 
         this.updateQueryParams(encodedQueryParams);
     }
 
+    /**
+     * Add or update a single query parameter on the current route
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.addQueryParam() instead
+     * 
+     * Migration:
+     * // Old:
+     * ModuleFE_BrowserHistory.addQueryParam('key', 'value');
+     * 
+     * // New:
+     * ModuleFE_RoutingV2.addQueryParam('key', 'value');
+     */
     addQueryParam(key: string, value: string) {
         const decodedQueryParams = this.getQueryParams();
         decodedQueryParams[key] = value;
@@ -117,6 +203,18 @@ export class ModuleFE_BrowserHistory_Class
         this.updateQueryParams(decodedQueryParams);
     }
 
+    /**
+     * Remove a single query parameter from the current route
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.removeQueryParam() instead
+     * 
+     * Migration:
+     * // Old:
+     * ModuleFE_BrowserHistory.removeQueryParam('key');
+     * 
+     * // New:
+     * ModuleFE_RoutingV2.removeQueryParam('key');
+     */
     removeQueryParam(key: string) {
         const encodedQueryParams = this.getEncodedQueryParams();
         delete encodedQueryParams[key];
@@ -126,6 +224,19 @@ export class ModuleFE_BrowserHistory_Class
         this.replace(data);
     }
 
+    /**
+     * Set URL with optional query parameters
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.push() instead
+     * 
+     * Migration:
+     * // Old:
+     * ModuleFE_BrowserHistory.setUrl('/path', {key: 'value'});
+     * 
+     * // New:
+     * const search = ModuleFE_RoutingV2.composeQuery({key: 'value'});
+     * ModuleFE_RoutingV2.push({pathname: '/path', search: search ? `?${search}` : ''});
+     */
     setUrl(url: string, queryParams?: UrlQueryParams) {
         this.push(this.createHistoryDataFromQueryParams(queryParams, url));
     }
@@ -143,18 +254,60 @@ export class ModuleFE_BrowserHistory_Class
         this.replace(data);
     }
 
+    /**
+     * Get the window origin
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.getOrigin() instead
+     * 
+     * Migration:
+     * // Old:
+     * const origin = ModuleFE_BrowserHistory.getOrigin();
+     * 
+     * // New:
+     * const origin = ModuleFE_RoutingV2.getOrigin();
+     */
     getOrigin() {
         return window.location.origin;
     }
 
+    /**
+     * Get the current location object
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.getCurrent() instead
+     * 
+     * Migration:
+     * // Old:
+     * const location = ModuleFE_BrowserHistory.getCurrent();
+     * 
+     * // New:
+     * const location = ModuleFE_RoutingV2.getCurrent();
+     */
     getCurrent() {
         return this.history.location;
     }
 
+    /**
+     * Get the history object (internal use)
+     * 
+     * @deprecated This method is deprecated. The history object is no longer exposed.
+     * If you need navigation functionality, use ModuleFE_RoutingV2 methods instead.
+     */
     getHistory() {
         return this.history;
     }
 
+    /**
+     * Get a single query parameter from the current URL
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.getQueryParameter() instead
+     * 
+     * Migration:
+     * // Old:
+     * const value = ModuleFE_BrowserHistory.getQueryParameter('key');
+     * 
+     * // New:
+     * const value = ModuleFE_RoutingV2.getQueryParameter('key');
+     */
     getQueryParameter(key: string) {
         const queryParams = ModuleFE_BrowserHistory.getQueryParams();
         const value = queryParams[key];
@@ -164,23 +317,81 @@ export class ModuleFE_BrowserHistory_Class
         return value;
     }
 
+    /**
+     * Get the current URL pathname
+     * 
+     * @deprecated Use ModuleFE_RoutingV2.getCurrentUrl() instead
+     * 
+     * Migration:
+     * // Old:
+     * const url = ModuleFE_BrowserHistory.getCurrentUrl();
+     * 
+     * // New:
+     * const url = ModuleFE_RoutingV2.getCurrentUrl();
+     */
     getCurrentUrl() {
         return ModuleFE_BrowserHistory.getCurrent().pathname;
     }
 }
 
+/**
+ * @deprecated Use ModuleFE_RoutingV2.getCurrentUrl() instead
+ * 
+ * Migration:
+ * // Old:
+ * const url = getCurrentUrl();
+ * 
+ * // New:
+ * import {ModuleFE_RoutingV2} from '@nu-art/thunderstorm-frontend';
+ * const url = ModuleFE_RoutingV2.getCurrentUrl();
+ */
 export function getCurrentUrl() {
     return ModuleFE_BrowserHistory.getCurrentUrl();
 }
 
+/**
+ * @deprecated Use ModuleFE_RoutingV2.getQueryParameter() instead
+ * 
+ * Migration:
+ * // Old:
+ * const value = getQueryParameter('key');
+ * 
+ * // New:
+ * import {ModuleFE_RoutingV2} from '@nu-art/thunderstorm-frontend';
+ * const value = ModuleFE_RoutingV2.getQueryParameter('key');
+ */
 export function getQueryParameter(name: string) {
     return ModuleFE_BrowserHistory.getQueryParameter(name);
 }
 
+/**
+ * @deprecated Use ModuleFE_RoutingV2.getQueryParams() instead
+ * 
+ * Migration:
+ * // Old:
+ * const params = getUrlQuery();
+ * 
+ * // New:
+ * import {ModuleFE_RoutingV2} from '@nu-art/thunderstorm-frontend';
+ * const params = ModuleFE_RoutingV2.getQueryParams();
+ */
 export function getUrlQuery() {
     return ModuleFE_BrowserHistory.getQueryParams();
 }
 
+/**
+ * @deprecated Use ModuleFE_RoutingV2.encodeUrlParams() or import from routing module instead
+ * 
+ * Migration:
+ * // Old:
+ * const encoded = encodeUrlParams(params);
+ * 
+ * // New:
+ * import {encodeUrlParams} from '@nu-art/thunderstorm-frontend/modules/routing/ModuleFE_RoutingV2';
+ * // OR
+ * import {ModuleFE_RoutingV2} from '@nu-art/thunderstorm-frontend';
+ * const encoded = ModuleFE_RoutingV2.encodeUrlParams(params);
+ */
 export function encodeUrlParams(queryParams?: UrlQueryParams) {
     const encodedQueryParams = {...queryParams};
     _keys(encodedQueryParams).forEach(key => {
@@ -195,6 +406,19 @@ export function encodeUrlParams(queryParams?: UrlQueryParams) {
     return encodedQueryParams;
 }
 
+/**
+ * @deprecated Use ModuleFE_RoutingV2.composeQuery() or import from routing module instead
+ * 
+ * Migration:
+ * // Old:
+ * const query = composeQuery(params);
+ * 
+ * // New:
+ * import {composeQuery} from '@nu-art/thunderstorm-frontend/modules/routing/ModuleFE_RoutingV2';
+ * // OR
+ * import {ModuleFE_RoutingV2} from '@nu-art/thunderstorm-frontend';
+ * const query = ModuleFE_RoutingV2.composeQuery(params);
+ */
 export function composeQuery(queryParams?: UrlQueryParams) {
     const queryAsString = composeQueryParams(queryParams);
     if (queryAsString.length === 0)
@@ -203,6 +427,19 @@ export function composeQuery(queryParams?: UrlQueryParams) {
     return queryAsString;
 }
 
+/**
+ * @deprecated Use ModuleFE_RoutingV2.composeURL() or import from routing module instead
+ * 
+ * Migration:
+ * // Old:
+ * const url = composeURL('/path', params);
+ * 
+ * // New:
+ * import {composeURL} from '@nu-art/thunderstorm-frontend/modules/routing/ModuleFE_RoutingV2';
+ * // OR
+ * import {ModuleFE_RoutingV2} from '@nu-art/thunderstorm-frontend';
+ * const url = ModuleFE_RoutingV2.composeURL('/path', params);
+ */
 export function composeURL(url: string, queryParams?: UrlQueryParams) {
     const queryAsString = composeQuery(queryParams);
     return `${url}${queryAsString.length > 0 ? `?${queryAsString}` : ''}`;
