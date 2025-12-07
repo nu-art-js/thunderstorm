@@ -1,6 +1,6 @@
 import {
 	getQueryParameter,
-	ModuleFE_BrowserHistory,
+	ModuleFE_RoutingV2,
 	ModuleFE_XHR,
 	OnStorageKeyChangedListener,
 	StorageKey,
@@ -94,9 +94,9 @@ class ModuleFE_Session_Class
 			this.StorageKey_SessionId.set(sessionId);
 		});
 
-		let sessionId = getQueryParameter(QueryParam_SessionId);
+		let sessionId = ModuleFE_RoutingV2.getQueryParameter(QueryParam_SessionId);
 		if (sessionId)
-			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_SessionId);
+			ModuleFE_RoutingV2.removeQueryParam(QueryParam_SessionId);
 		else
 			sessionId = this.StorageKey_SessionId.get();
 

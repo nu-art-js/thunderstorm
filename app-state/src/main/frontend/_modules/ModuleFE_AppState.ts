@@ -1,5 +1,5 @@
 import {_keys, BadImplementationException, cloneObj, composeUrl, deepClone, exists, Logger, mergeObject, Module, TS_Object} from '@nu-art/ts-common';
-import {ModuleFE_BrowserHistory, ModuleFE_Thunderstorm, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
+import {ModuleFE_RoutingV2, ModuleFE_Thunderstorm, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
 import {convertBase64ToObject, convertObjectToBase64} from '@nu-art/thunderstorm-shared/base64-tools';
 import {AppState} from '../../shared/index.js';
 import {URLParam_AppState} from './consts.js';
@@ -50,7 +50,7 @@ class ModuleFE_AppState_Class
 	// ######################### Import / Export #########################
 
 	private deriveStateFromURLParam = () => {
-		const encoded = ModuleFE_BrowserHistory.getQueryParameter(URLParam_AppState);
+		const encoded = ModuleFE_RoutingV2.getQueryParameter(URLParam_AppState);
 		if (!exists(encoded))
 			return;
 
@@ -58,7 +58,7 @@ class ModuleFE_AppState_Class
 		_keys(decoded).forEach(key => {
 			this.appState[key] = mergeObject(this.appState[key], decoded[key]);
 		});
-		ModuleFE_BrowserHistory.removeQueryParam(URLParam_AppState);
+		ModuleFE_RoutingV2.removeQueryParam(URLParam_AppState);
 	};
 
 	public getExportStateForManager = (manager: PageStateManager<any>) => {

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ModuleFE_Routing} from '@nu-art/thunderstorm-frontend/index';
+import {TS_Route} from '@nu-art/thunderstorm-frontend';
 import {Page_Playground} from './playground/Page_Playground.js';
 import {Parent} from './Parent.js';
 import {Child2} from './Child2.js';
@@ -26,12 +26,35 @@ export const Route_Home = 'home';
 export const Route_Login = 'login';
 export const Route_Playground = 'playground';
 
-export const registerRoutes = () => {
-	ModuleFE_Routing.clearRoutes();
+// Note: Child routes must be defined before parent route that references them
+export const Route_Child2: TS_Route = {
+	key: 'child2',
+	path: 'child2',
+	Component: Child2,
+};
 
-	//home route should be declared last
-	ModuleFE_Routing.addRoute('child2', '/parent/child2', Child2).setLabel('Child2');
-	ModuleFE_Routing.addRoute('child1', '/parent/child1', Child1).setLabel('Child1');
-	ModuleFE_Routing.addRoute('parent', '/parent', Parent);
-	ModuleFE_Routing.addRoute(Route_Home, '/', Page_Playground).setLabel('Home').setExact(false);
+export const Route_Child1: TS_Route = {
+	key: 'child1',
+	path: 'child1',
+	Component: Child1,
+};
+
+export const Route_Parent: TS_Route = {
+	key: 'parent',
+	path: 'parent',
+	Component: Parent,
+	children: [
+		Route_Child1,
+		Route_Child2,
+	],
+};
+
+export const Route_Root: TS_Route = {
+	key: 'root',
+	path: '/',
+	Component: Page_Playground,
+	fallback: true,
+	children: [
+		Route_Parent,
+	],
 };
