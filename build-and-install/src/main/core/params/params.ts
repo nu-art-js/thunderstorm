@@ -107,7 +107,7 @@ export const BaiParam_Watch: BaseCliParam<'watch', boolean> = {
 	type: 'boolean',
 	group: 'Build',
 	description: 'will build and listen for changes in the libraries',
-	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}, {param: BaiParam_AllUnits, value: true}]
+	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_AllUnits, value: true}]
 
 };
 
