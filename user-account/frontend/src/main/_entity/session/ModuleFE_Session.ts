@@ -1,11 +1,4 @@
-import {
-	getQueryParameter,
-	ModuleFE_RoutingV2,
-	ModuleFE_XHR,
-	OnStorageKeyChangedListener,
-	StorageKey,
-	ThunderDispatcher
-} from '@nu-art/thunderstorm-frontend/index';
+import {ModuleFE_RoutingV2, ModuleFE_XHR, OnStorageKeyChangedListener, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
 import {
 	BadImplementationException,
 	currentTimeMillis,
