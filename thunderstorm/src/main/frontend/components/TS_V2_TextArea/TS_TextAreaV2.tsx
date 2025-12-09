@@ -24,11 +24,7 @@ import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_TextAreaV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem';
-import {
-	ComponentProps_Error,
-	convertToHTMLDataAttributes,
-	resolveEditableError
-} from '../types';
+import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types';
 import {getComputedStyleProperty} from '../utils';
 
 
@@ -56,13 +52,13 @@ type BaseAppLevelProps_TS_TextAreaV2 =
 	& Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref'>
 	& BaseInfraProps_TS_TextAreaV2
 	& {
-	id?: string
-	placeholder?: string
-	name?: string
-	focus?: boolean
-	innerRef?: React.RefObject<HTMLTextAreaElement>;
-	onCancel?: () => void;
-}
+		id?: string
+		placeholder?: string
+		name?: string
+		focus?: boolean
+		innerRef?: React.RefObject<HTMLTextAreaElement>;
+		onCancel?: () => void;
+	}
 
 export type TemplatingProps_TS_TextAreaV2 = BaseInfraProps_TS_TextAreaV2
 
@@ -75,8 +71,8 @@ export type Props_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2 & {
 
 export type NativeProps_TS_TextAreaV2 = Props_TS_TextAreaV2 & { componentRef?: React.RefObject<TS_TextAreaV2>; }
 export type EditableItemProps_TS_TextAreaV2 = BaseAppLevelProps_TS_TextAreaV2
-	& UIProps_EditableItem<any, any, string>
-	& { onChange?: (value: string) => void, componentRef?: React.RefObject<TS_TextAreaV2>; }
+																							& UIProps_EditableItem<any, any, string>
+																							& { onChange?: (value: string) => void, componentRef?: React.RefObject<TS_TextAreaV2>; }
 
 /**
  * A better way to capture user input
@@ -157,6 +153,11 @@ export class TS_TextAreaV2
 			initialValue: props.value,
 			value: props.value || ''
 		};
+	}
+
+	public componentDidUpdate(prevProps: Readonly<Props_TS_TextAreaV2>, prevState: Readonly<InputState>) {
+		if (prevState.value !== this.state.value)
+			this.resizeWithText();
 	}
 
 	changeValue = (event: ChangeEvent<HTMLTextAreaElement>) => {
