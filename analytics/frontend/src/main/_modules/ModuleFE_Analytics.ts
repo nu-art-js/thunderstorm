@@ -16,6 +16,7 @@ class ModuleFE_Analytics_Class
 		const apiDef = ApiDef_Analytics(this.config.baseURL);
 		this._v1.sendEvent = apiWithBody(apiDef._v1.sendEvent);
 		this._v1.updateUser = apiWithBody(apiDef._v1.updateUser);
+		this._v1.updateLexicon = apiWithBody(apiDef._v1.updateLexicon);
 	}
 }
 

@@ -1,4 +1,4 @@
-import {Analytics_UpdateUser, TSAnalyticsEvent} from '@nu-art/analytics-shared';
+import {Analytics_UpdateLexicon, Analytics_UpdateUser, TSAnalyticsEvent} from '@nu-art/analytics-shared';
 import {debounce, Logger, LogLevel} from '@nu-art/ts-common';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {AnalyticsPluginBaseConfig} from './types.js';
@@ -45,6 +45,7 @@ export abstract class AnalyticsPlugin_Base<
 	protected abstract sendEvents: (events: R[]) => Promise<void>;
 
 	protected abstract updateUser_Impl: undefined | ((mode: Analytics_UpdateUser['request']['mode'], data: Analytics_UpdateUser['request']['userData']) => Promise<void>);
+	protected abstract updateLexicon_Impl: undefined | ((mode: Analytics_UpdateLexicon['request']['mode'], data: Analytics_UpdateLexicon['request']['lexiconMap']) => Promise<void>);
 
 	//######################### Initialization #########################
 
@@ -88,5 +89,12 @@ export abstract class AnalyticsPlugin_Base<
 			return;
 
 		this.updateUser_Impl?.(request.mode, request.userData);
+	}
+
+	public updateLexicon(request: Analytics_UpdateLexicon['request']) {
+		if (!this.config?.active)
+			return;
+
+		this.updateLexicon_Impl?.(request.mode, request.lexiconMap);
 	}
 }
