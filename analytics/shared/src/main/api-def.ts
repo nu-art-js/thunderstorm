@@ -22,10 +22,21 @@ export type Analytics_UpdateUser = {
 	response: void;
 }
 
+export type Analytics_UpdateLexicon = {
+	request: {
+		mode: 'set' | 'set_once',
+		lexiconMap: {
+			[groupKey: string]: { id: string, label: string };
+		}
+	};
+	response: void;
+}
+
 export type ApiStruct_Analytics = {
 	_v1: {
 		sendEvent: BodyApi<Analytics_SendEvent['response'], Analytics_SendEvent['request']>;
 		updateUser: BodyApi<Analytics_UpdateUser['response'], Analytics_UpdateUser['request']>;
+		updateLexicon: BodyApi<Analytics_UpdateLexicon['response'], Analytics_UpdateLexicon['request']>
 	}
 }
 
@@ -33,5 +44,6 @@ export const ApiDef_Analytics: (baseUrl?: string) => ApiDefResolver<ApiStruct_An
 	_v1: {
 		sendEvent: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/send-event'},
 		updateUser: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/update-user'},
+		updateLexicon: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/update-lexicon'},
 	}
 });
