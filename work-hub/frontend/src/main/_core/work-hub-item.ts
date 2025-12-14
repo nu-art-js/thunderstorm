@@ -7,13 +7,14 @@ import {Component_WorkHubActionMenu} from '../_ui/Component_WorkHubActionMenu/Co
 import {WorkHubItem_MenuSection} from '../_ui/Component_WorkHubActionMenu/types.js';
 
 type MenuResolver = (tab: WorkHubTab) => (Promise<WorkHubItem_MenuSection[]> | WorkHubItem_MenuSection[]);
+type WorkHubItemRenderer<Args extends any = void> = (workHubItem: WorkHubItem<Args>, tabId: string, args: Args) => ReactNode;
 
 export class WorkHubItem<Args extends any = void>
 	extends Logger {
 
 	public readonly key: string;
 	public modulesToAwait: ModuleFE_BaseDB<any>[] | undefined;
-	public renderer: (workHubItem: WorkHubItem<Args>, args: Args) => ReactNode;
+	public renderer: WorkHubItemRenderer<Args>;
 	private tabTag: string | undefined;
 	private customMenuActionsResolver: MenuResolver;
 
@@ -27,7 +28,7 @@ export class WorkHubItem<Args extends any = void>
 		ModuleFE_WorkHub.workHubItem.register(this);
 	}
 
-	public setRenderer = (renderer: (workHubItem: WorkHubItem<Args>, args: Args) => ReactNode) => {
+	public setRenderer = (renderer: WorkHubItemRenderer<Args>) => {
 		this.renderer = renderer;
 		return this;
 	};
