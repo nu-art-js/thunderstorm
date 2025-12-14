@@ -20,9 +20,10 @@
  */
 
 import {Browser} from '@nu-art/thunderstorm-shared/consts';
-import {BadImplementationException, filterInstances, ImplementationMissingException} from '@nu-art/ts-common';
+import {BadImplementationException, DBProto, filterInstances, ImplementationMissingException} from '@nu-art/ts-common';
 import * as React from 'react';
 import {DependencyList, Dispatch, EffectCallback, SetStateAction} from 'react';
+import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB.js';
 
 
 export function browserType(): Browser {
@@ -171,3 +172,9 @@ export const stringReplacer = (_content: string, _toReplace: string, replacer: (
 		i++;
 	}
 };
+
+export type EntityToResolve<P extends DBProto<any> = DBProto<any>> = string | P['dbType'] | undefined;
+export const resolveId = (entity: EntityToResolve) => typeof entity === 'string' ? entity : entity?._id;
+export const resolveEntity = <P extends DBProto<any>>(module: ModuleFE_BaseDB<P>) => (entity: EntityToResolve<P>) => typeof entity === 'string'
+	? module.cache.unique(entity)
+	: entity;

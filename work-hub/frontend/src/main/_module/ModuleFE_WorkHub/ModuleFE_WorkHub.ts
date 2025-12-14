@@ -22,6 +22,7 @@ class ModuleFE_WorkHub_Class
 	private readonly _workHubItemMap: { [key: string]: WorkHubItem };
 	private readonly storage_tabs = new StorageKey<WorkHubTab[]>('work-hub__tabs');
 	private readonly storage_tabStack = new StorageKey<string[]>('work-hub__tab-stack');
+	private postTabAdditionCallback: VoidFunction | undefined = undefined;
 
 	//######################### Internal Methods #########################
 
@@ -57,6 +58,7 @@ class ModuleFE_WorkHub_Class
 					this.tabStack.push(tab.id);
 
 				dispatch_OnWorkHubTabsUpdated.dispatchUI();
+				this.postTabAdditionCallback?.();
 			}
 		},
 		remove: (tabId) => {
@@ -97,6 +99,8 @@ class ModuleFE_WorkHub_Class
 			return this._workHubItemMap[key];
 		}
 	};
+
+	public setPostTabAdditionCallback = (callback: VoidFunction) => this.postTabAdditionCallback = callback;
 }
 
 export const ModuleFE_WorkHub = new ModuleFE_WorkHub_Class();
