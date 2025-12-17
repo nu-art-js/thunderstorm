@@ -28,6 +28,7 @@ export type Model_Menu = Omit<MouseInteractivity_Model, 'content'> & {
 
 export type Model_PopUp = MouseInteractivity_Model & {
 	ignoreOverlayClick?: ResolvableContent<boolean>;
+	onOverlayClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 };
 
 export type Model_ToolTip = MouseInteractivity_Model & {
