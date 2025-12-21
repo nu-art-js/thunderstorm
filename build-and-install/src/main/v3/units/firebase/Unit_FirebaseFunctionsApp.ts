@@ -101,6 +101,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	async prepare() {
+		if (!this.config.envConfig.projectId.length) {
+			this.logWarning('envConfig: ', this.config.envConfig);
+			throw new ImplementationMissingException(`Missing EnvConfig in unit ${this.config.key}`);
+		}
+
 		await super.prepare();
 		await FileSystemUtils.folder.list.forEach.folder(this.config.fullPath, async (path) => {
 			if (path.replace(`${this.config.fullPath}/`, '').startsWith('firebase-export-'))
@@ -169,16 +174,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	//######################### ResolveConfig Logic #########################
 
-	private getEnvConfig() {
-		const envConfig = this.config.envConfig;
-		if (!envConfig)
-			throw new ImplementationMissingException(`Missing EnvConfig in unit ${this.config.key}`);
-
-		return envConfig;
-	}
-
 	private async resolveFunctionsRC() {
-		const envConfig = this.getEnvConfig();
+		const envConfig = this.config.envConfig;
 		const rcConfig = {
 			projects: {
 				default: envConfig.projectId
@@ -196,7 +193,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async resolveProxyFile() {
-		const envConfig = this.getEnvConfig();
+		const envConfig = this.config.envConfig;
 		const targetPath = this.pathToProxy();
 		const path = this.runtimeContext.baiConfig.files?.backend?.proxy;
 		if (!path)
@@ -240,7 +237,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async resolveFunctionsJSON() {
-		const envConfig = this.getEnvConfig();
+		const envConfig = this.config.envConfig;
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseJSON}`;
 		let fileContent;
 		if (envConfig.isLocal) {
@@ -297,7 +294,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async resolveFunctionsRuntimeConfig() {
-		const envConfig = this.getEnvConfig();
+		const envConfig = this.config.envConfig;
 		const targetPath = `${this.config.fullPath}/src/main/config.ts`;
 		const envKey = this.runtimeContext.runtimeParams.environment;
 		const beConfig = {

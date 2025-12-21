@@ -1,5 +1,4 @@
 import {
-	ImplementationMissingException,
 	tsValidate_OptionalArray,
 	tsValidateAnyString,
 	tsValidateBoolean,
@@ -59,9 +58,18 @@ export class UnitMapper_FirebaseFunction_Class
 		const outputDir = context.packageJson.publishConfig?.directory;
 
 		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
-		const envUnitConfig = context.packageJson.unitConfig.envs[env];
-		if (!envUnitConfig)
-			throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
+		let envUnitConfig = context.packageJson.unitConfig.envs[env];
+		if (!envUnitConfig) {
+			this.logWarning(`Missing EnvConfig in unit ${context.baseConfig.key}`);
+			envUnitConfig = {
+				defaultConfig: '',
+				envConfig: '',
+				projectId: '',
+				isLocal: true
+			};
+			// throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
+		}
+
 
 		const envConfig = {
 			defaultConfig: envUnitConfig.defaultConfig,
@@ -76,7 +84,7 @@ export class UnitMapper_FirebaseFunction_Class
 			...Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction,
 			...unitConfig,
 			envConfig,
-			isTopLevelApp:true,
+			isTopLevelApp: true,
 			hasSelfHotReload: unitConfig.hasSelfHotReload ?? false,
 			packageJson: context.packageJson,
 			customESLintConfig: context.customESLintConfig,
