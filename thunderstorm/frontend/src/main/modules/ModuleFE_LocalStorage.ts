@@ -86,6 +86,9 @@ export class StorageModule_Class
 		if (value === undefined)
 			return this.delete(key);
 
+		if (this.cache[key] === value)
+			return;
+
 		this.cache[key] = value;
 		this.getStorage(persist).setItem(key, JSON.stringify(value));
 
