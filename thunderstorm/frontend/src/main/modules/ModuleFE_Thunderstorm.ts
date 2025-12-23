@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_keys, BadImplementationException, Module, MUSTNeverHappenException, RuntimeModules, TypedMap} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, Module, MUSTNeverHappenException, Promise_all_sequentially, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster.js';
 import {composeURL} from './ModuleFE_BrowserHistory.js';
 import {GenericUpdate, HttpMethod, QueryApi, UrlQueryParams} from '@nu-art/thunderstorm-shared';
@@ -156,20 +156,19 @@ class ModuleFE_Thunderstorm_Class
 	}
 
 	performGenericUpdate = async (updateData: GenericUpdate[]) => {
-		this.logWarning('HERE', updateData);
-		const promises: Promise<void>[] = [];
+		const promises: (() => Promise<void>)[] = [];
 		updateData.forEach(update => {
-			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>(module => module.dbDef.dbKey === update.dbKey);
+			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>(module => module.dbDef?.dbKey === update.dbKey);
 			if (!module)
 				throw new MUSTNeverHappenException(`Trying to perform a generic update without an existing module for dbKey ${update.dbKey}`);
 
 			if (update.data.toUpdate?.length)
-				promises.push(module.onEntriesUpdated(update.data.toUpdate));
+				promises.push(() => module.onEntriesUpdated(update.data.toUpdate!));
 
 			if (update.data.toDelete?.length)
-				promises.push(module.onEntriesDeleted(update.data.toDelete));
+				promises.push(() => module.onEntriesDeleted(update.data.toDelete!));
 		});
-		await Promise.all(promises);
+		await Promise_all_sequentially(promises);
 	};
 }
 
