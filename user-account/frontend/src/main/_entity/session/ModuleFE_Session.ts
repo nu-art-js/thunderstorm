@@ -100,9 +100,10 @@ class ModuleFE_Session_Class
 		else
 			sessionId = this.StorageKey_SessionId.get();
 
-		if (sessionId)
+		if (sessionId) {
 			this.StorageKey_SessionId.set(sessionId);
-
+			this.onSessionUpdated(sessionId);
+		}
 	}
 
 	setSessionKey(sessionKey: ResolvableContent<string>) {
