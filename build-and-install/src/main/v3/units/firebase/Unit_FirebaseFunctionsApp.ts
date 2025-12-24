@@ -19,7 +19,7 @@ export const firebaseFunctionEmulator_WarningStrings: string[] = [
 	'⚠',
 ];
 
-type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean };
+type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean, identityAccount?: string };
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig?: FirebasePackageConfig;
 	pathToFirebaseConfig: string,
@@ -352,9 +352,17 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async runEmulator() {
+		if (!this.config.envConfig.identityAccount)
+			throw new ImplementationMissingException('Must provide an identity service account to launch emulator');
+
+		const pathToIdentityAccount = resolve(this.config.fullPath, this.config.envConfig.identityAccount);
+		if (!FileSystemUtils.file.exists(pathToIdentityAccount))
+			throw new ImplementationMissingException(`Missing identity file at: ${pathToIdentityAccount}`);
+
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
 			.cd(this.config.fullPath)
+			.append(`export GOOGLE_APPLICATION_CREDENTIALS="${pathToIdentityAccount}"`)
 			.setLogLevelFilter((log, type) => {
 				if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
 					return LogLevel.Error;
