@@ -142,6 +142,8 @@ export class SearchContext
 
 	public getSearchTime = () => this.searchTime;
 
+	public getAddOns = () => [...this.addOns];
+
 	public filter = {
 		set: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key'], value: AddOn['valueType']): void => {
 			this.filterDictionary[key] = value;

@@ -654,7 +654,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 			return this.setStatus(EditableItemStatus_FailedValidation);
 
 		if (this.saveError)
-			return this.setStatus(exports.EditableItemStatus_ErrorSaving);
+			return this.setStatus(EditableItemStatus_ErrorSaving);
 
 		if (this.hasChanges()) {
 			return this.setStatus(EditableItemStatus_UnsavedChanges);

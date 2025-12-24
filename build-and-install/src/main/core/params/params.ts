@@ -265,7 +265,7 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	keys: ['-up', '--use-packages'],
 	keyName: 'usePackage',
 	type: 'string[]',
-	group: 'Other',
+	group: 'Build',
 	description: 'Will specify units to process',
 	process: (value) => {
 		if (!value)
@@ -277,11 +277,26 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 };
 
 export const BaiParam_includePackage: BaseCliParam<'includePackage', string[]> = {
-	keys: ['-in', '--include='],
+	keys: ['-in', '--include'],
 	keyName: 'includePackage',
 	type: 'string[]',
-	group: 'Other',
+	group: 'Build',
 	description: 'Will include the units to process',
+	process: (value) => {
+		if (!value)
+			return [];
+
+		return value!.split(',').map(str => str.trim());
+	},
+	dependencies: []
+};
+
+export const BaiParam_Apps: BaseCliParam<'includeApps', string[]> = {
+	keys: ['-app', '--application'],
+	keyName: 'includeApps',
+	type: 'string[]',
+	group: 'Build',
+	description: 'Will include the applications and all their dependency units to the build process',
 	process: (value) => {
 		if (!value)
 			return [];
@@ -340,6 +355,7 @@ export const AllBaiParams = [
 	BaiParam_Generate, // TODO: to implement
 	BaiParam_GenerateDocs,// TODO: to implement
 	BaiParam_NoBuild,
+	BaiParam_Apps,
 	BaiParam_DryRun,
 	BaiParam_Lint,
 	BaiParam_Watch,

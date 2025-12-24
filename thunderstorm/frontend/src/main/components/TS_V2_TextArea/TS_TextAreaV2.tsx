@@ -20,20 +20,11 @@
  */
 
 import * as React from 'react';
-import {
-	ChangeEvent,
-	CSSProperties,
-	HTMLProps,
-	KeyboardEvent
-} from 'react';
+import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools.js';
 import './TS_TextAreaV2.scss';
 import {UIProps_EditableItem} from '../../utils/EditableItem.js';
-import {
-	ComponentProps_Error,
-	convertToHTMLDataAttributes,
-	resolveEditableError
-} from '../types.js';
+import {ComponentProps_Error, convertToHTMLDataAttributes, resolveEditableError} from '../types.js';
 import {getComputedStyleProperty} from '../utils.js';
 
 
@@ -164,6 +155,11 @@ export class TS_TextAreaV2
 		};
 	}
 
+	public componentDidUpdate(prevProps: Readonly<Props_TS_TextAreaV2>, prevState: Readonly<InputState>) {
+		if (this.props.resizeWithText && prevState.value !== this.state.value)
+			this.resizeWithText();
+	}
+
 	changeValue = (event: ChangeEvent<HTMLTextAreaElement>) => {
 		const value = event.target.value;
 		this.setState({value});
@@ -247,11 +243,6 @@ export class TS_TextAreaV2
 	};
 
 	componentDidMount() {
-		if (this.props.resizeWithText)
-			this.resizeWithText();
-	}
-
-	componentDidUpdate() {
 		if (this.props.resizeWithText)
 			this.resizeWithText();
 	}

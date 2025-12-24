@@ -1,5 +1,4 @@
 import {
-	ImplementationMissingException,
 	tsValidate_OptionalArray,
 	tsValidateAnyString,
 	tsValidateBoolean,
@@ -18,6 +17,7 @@ import {BaiParam_SetEnv} from '../../../core/params/params.js';
 type EnvConfig = {
 	defaultConfig?: string,
 	envConfig?: string,
+	identityAccount?: string,
 	projectId: string,
 	isLocal?: boolean
 };
@@ -33,6 +33,7 @@ type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
 const valuesValidator = {
 	defaultConfig: tsValidateOptionalAnyString,
 	envConfig: tsValidateOptionalAnyString,
+	identityAccount: tsValidateOptionalAnyString,
 	projectId: tsValidateAnyString,
 	isLocal: tsValidateBoolean(false),
 };
@@ -59,11 +60,22 @@ export class UnitMapper_FirebaseFunction_Class
 		const outputDir = context.packageJson.publishConfig?.directory;
 
 		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
-		const envUnitConfig = context.packageJson.unitConfig.envs[env];
-		if (!envUnitConfig)
-			throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
+		let envUnitConfig = context.packageJson.unitConfig.envs[env];
+		if (!envUnitConfig) {
+			this.logWarning(`Missing EnvConfig in unit ${context.baseConfig.key}`);
+			envUnitConfig = {
+				identityAccount: '',
+				defaultConfig: '',
+				envConfig: '',
+				projectId: '',
+				isLocal: true
+			};
+			// throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
+		}
+
 
 		const envConfig = {
+			identityAccount: envUnitConfig.identityAccount,
 			defaultConfig: envUnitConfig.defaultConfig,
 			envConfig: envUnitConfig.envConfig,
 			projectId: envUnitConfig.projectId,
@@ -76,7 +88,7 @@ export class UnitMapper_FirebaseFunction_Class
 			...Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction,
 			...unitConfig,
 			envConfig,
-			isTopLevelApp:true,
+			isTopLevelApp: true,
 			hasSelfHotReload: unitConfig.hasSelfHotReload ?? false,
 			packageJson: context.packageJson,
 			customESLintConfig: context.customESLintConfig,

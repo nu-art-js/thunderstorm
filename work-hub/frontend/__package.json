@@ -43,6 +43,10 @@
     "./ui": {
       "types": "./_ui/index.d.ts",
       "import": "./_ui/index.js"
+    },
+    "./modules": {
+      "types": "./_module/ModuleFE_WorkHub/ModuleFE_WorkHub.d.ts",
+      "import": "./_module/ModuleFE_WorkHub/ModuleFE_WorkHub.js"
     }
   }
 }
