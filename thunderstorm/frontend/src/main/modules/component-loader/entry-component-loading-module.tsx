@@ -22,7 +22,7 @@
 import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
 import {ModuleFE_XHR} from '../http/ModuleFE_XHR.js';
-import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory.js';
+import {ModuleFE_RoutingV2} from '../routing/ModuleFE_RoutingV2.js';
 import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '@nu-art/thunderstorm-shared';
 
 
@@ -36,7 +36,7 @@ export class PageLoadingModule_Class
 	loadScript(src: string, progressListener: (progress: number) => void) {
 		const apiDef: ApiDef<ScriptLoaderBinder> = {
 			method: HttpMethod.GET,
-			baseUrl: ModuleFE_BrowserHistory.getOrigin(),
+			baseUrl: ModuleFE_RoutingV2.getOrigin(),
 			path: src
 		};
 		ModuleFE_XHR
