@@ -53,7 +53,7 @@ class ModuleFE_WorkHub_Class
 				return;
 			} else {
 				this._tabs.push(tab);
-				this.storage_tabs.set(this._tabs);
+				this.storage_tabs.set([...this._tabs]);
 				if (setAsSelected)
 					this.tabStack.push(tab.id);
 
@@ -67,7 +67,7 @@ class ModuleFE_WorkHub_Class
 				return;
 
 			removeFromArrayByIndex(this._tabs, index);
-			this.storage_tabs.set(this._tabs);
+			this.storage_tabs.set([...this._tabs]);
 			this.tabStack.pop(tabId);
 			dispatch_OnWorkHubTabsUpdated.dispatchUI();
 		},
@@ -84,7 +84,7 @@ class ModuleFE_WorkHub_Class
 				return;
 
 			tab.renderArgs = mergeObject({...tab.renderArgs}, args);
-			this.storage_tabs.set(this._tabs);
+			this.storage_tabs.set([...this._tabs]);
 			dispatch_OnWorkHubTabsUpdated.dispatchUI();
 		}
 	};
