@@ -21,8 +21,8 @@
 
 import {_keys, BadImplementationException, Module, MUSTNeverHappenException, Promise_all_sequentially, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster.js';
-import {composeURL} from './ModuleFE_BrowserHistory.js';
-import {GenericUpdate, HttpMethod, QueryApi, UrlQueryParams} from '@nu-art/thunderstorm-shared';
+import {composeURL} from './routing/ModuleFE_RoutingV2.js';
+import {HttpMethod, QueryApi, UrlQueryParams} from '@nu-art/thunderstorm-shared';
 import {base64ToBlob} from '../utils/tools.js';
 import {ModuleFE_XHR} from './http/ModuleFE_XHR.js';
 import {dispatch_onClearWebsiteData} from './clearWebsiteDataDispatcher.js';
