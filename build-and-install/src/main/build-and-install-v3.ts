@@ -164,11 +164,19 @@ export class BuildAndInstall
 
 	async run() {
 		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
-		const topLevelApps = this.projectUnits.filter(unit => unit.config.isTopLevelApp);
-		const topLevelAppKeys = topLevelApps.map(unit => unit.config.key);
+		let topLevelAppKeys = this.projectUnits.filter(unit => unit.config.isTopLevelApp).map(unit => unit.config.key);
+		this.logWarning('this.runtimeParams.includeApps', this.runtimeParams.includeApps);
+		if (this.runtimeParams.includeApps?.length) {
+			this.logWarning('HEREHREHREHRHERHER');
+			const regexMatchers = this.runtimeParams.includeApps.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
+			topLevelAppKeys = topLevelAppKeys.filter(unitKey => regexMatchers.some(matcher => matcher.test(unitKey)));
+		}
+
+		this.logDebug('topLevelAppKeys: ', topLevelAppKeys);
 		const participatingUnitKeys = this.runtimeParams.allUnits
 			? undefined
 			: [...this.unitsDependencyMapper.getTransitiveDependencies(topLevelAppKeys), ...topLevelAppKeys];
+
 		const unitDependencyTree: ProjectUnit[][] = (await this.unitsDependencyMapper.buildDependencyTree(participatingUnitKeys))
 			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
 

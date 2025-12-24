@@ -1,5 +1,4 @@
 import {
-	ImplementationMissingException,
 	tsValidateAnyString,
 	tsValidateBoolean,
 	tsValidateDynamicObject,
@@ -39,10 +38,14 @@ export class UnitMapper_FirebaseHosting_Class
 	protected async resolveNodeUnit(context: UnitMapper_NodeContext<UnitConfigJSON_FirebaseHosting>) {
 		const outputDir = context.packageJson.publishConfig?.directory;
 		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
-		const envUnitConfig = context.packageJson.unitConfig.envs[env];
+		let envUnitConfig = context.packageJson.unitConfig.envs[env];
 		if (!envUnitConfig) {
-			this.logWarning('Package Json config:', context.packageJson.unitConfig);
-			throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
+			this.logWarning(`Missing EnvConfig in unit ${context.baseConfig.key}`);
+			envUnitConfig = {
+				config: {},
+				projectId: '',
+				isLocal: true
+			};
 		}
 
 

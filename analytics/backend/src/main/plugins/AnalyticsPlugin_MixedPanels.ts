@@ -1,6 +1,6 @@
-import {Analytics_UpdateUser, TSAnalyticsEvent} from '@nu-art/analytics-shared';
+import {Analytics_UpdateLexicon, Analytics_UpdateUser, TSAnalyticsEvent} from '@nu-art/analytics-shared';
 import {AnalyticsPlugin_Base} from './AnalyticsPlugin_Base.js';
-import mixpanelLib, {Mixpanel} from 'mixpanel';
+import mixpanelLib, {Mixpanel, PropertyDict} from 'mixpanel';
 import {_keys, BadImplementationException, exists, MissingDataException, TypedMap} from '@nu-art/ts-common';
 import {AnalyticPanelConfig} from './types.js';
 
@@ -24,6 +24,13 @@ type MixPanelsUserProps = {
 	$last_name?: string;
 	$name?: string;
 	[key: string]: any;
+}
+
+type MixPanelsLexiconMap = {
+	[groupKey: string]: {
+		id: string;
+		propDict: PropertyDict;
+	}
 }
 
 export const pluginKey_MixedPanels = 'mixed-panels';
@@ -67,6 +74,16 @@ export class AnalyticsPlugin_MixedPanels
 			}
 		});
 		return props;
+	};
+
+	private prepareLexiconMap = (data: Analytics_UpdateLexicon['request']['lexiconMap']): MixPanelsLexiconMap => {
+		return _keys(data).reduce((map, groupKey) => {
+			map[groupKey] = {
+				id: data[groupKey].id,
+				propDict: {$name: data[groupKey].label},
+			};
+			return map;
+		}, {} as MixPanelsLexiconMap);
 	};
 
 	//######################### Implemented Logic #########################
@@ -127,6 +144,62 @@ export class AnalyticsPlugin_MixedPanels
 				case 'set_once':
 					this.mixpanel?.people.set_once(data.userId, userProps, cb);
 					break;
+				default:
+					throw new BadImplementationException(`No Implementation for mode ${mode}`);
+			}
+		});
+	};
+
+	protected updateLexicon_Impl = (mode: Analytics_UpdateLexicon['request']['mode'], data: Analytics_UpdateLexicon['request']['lexiconMap']) => {
+		if (!this.mixpanel)
+			throw new BadImplementationException(`Calling update lexicon before analytics plugin ${pluginKey_MixedPanels} finished initializing`);
+
+		return new Promise<void>((resolve, reject) => {
+			const lexiconMap = this.prepareLexiconMap(data);
+			this.logDebug('Updating Lexicon', lexiconMap);
+			switch (mode) {
+				case 'set': {
+					const promises = _keys(lexiconMap)
+						.map(groupKey => new Promise<void>((resolve, reject) => {
+							this.mixpanel?.groups.set(groupKey as string, lexiconMap[groupKey].id, lexiconMap[groupKey].propDict, (err) => {
+								if (err) {
+									this.logError(err);
+									reject(err);
+								} else {
+									this.logDebug('Successfully updated lexicon');
+									resolve();
+								}
+							});
+						}));
+					Promise.all(promises)
+						.then(() => resolve())
+						.catch(err => {
+							this.logError('Failed batch updating lexicon', err);
+							reject();
+						});
+					break;
+				}
+				case 'set_once': {
+					const promises = _keys(lexiconMap)
+						.map(groupKey => new Promise<void>((resolve, reject) => {
+							this.mixpanel?.groups.set_once(groupKey as string, lexiconMap[groupKey].id, lexiconMap[groupKey].propDict, (err) => {
+								if (err) {
+									this.logError(err);
+									reject(err);
+								} else {
+									this.logDebug('Successfully updated lexicon');
+									resolve();
+								}
+							});
+						}));
+					Promise.all(promises)
+						.then(() => resolve())
+						.catch(err => {
+							this.logError('Failed batch updating lexicon', err);
+							reject();
+						});
+					break;
+				}
 				default:
 					throw new BadImplementationException(`No Implementation for mode ${mode}`);
 			}

@@ -34,6 +34,7 @@ export class TS_PopUp
 				if (!model.ignoreOverlayClick || !resolveContent(model?.ignoreOverlayClick))
 					this.setState({open: false});
 				ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
+				model?.onOverlayClick?.(e);
 			}}>
 			<div className="ts-popup__content" id={model.id} ref={this.ref} onClick={stopPropagation} onContextMenu={stopPropagation}>
 				{resolveContent(model.content, () => this.forceUpdate())}

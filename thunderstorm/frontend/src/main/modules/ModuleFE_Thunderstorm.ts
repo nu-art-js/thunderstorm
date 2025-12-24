@@ -19,13 +19,14 @@
  * limitations under the License.
  */
 
-import {_keys, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, Module, MUSTNeverHappenException, Promise_all_sequentially, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster.js';
 import {composeURL} from './routing/ModuleFE_RoutingV2.js';
 import {HttpMethod, QueryApi, UrlQueryParams} from '@nu-art/thunderstorm-shared';
 import {base64ToBlob} from '../utils/tools.js';
 import {ModuleFE_XHR} from './http/ModuleFE_XHR.js';
 import {dispatch_onClearWebsiteData} from './clearWebsiteDataDispatcher.js';
+import {ModuleFE_BaseApi} from './db-api-gen/ModuleFE_BaseApi.js';
 
 type Config = {
 	appName: string
@@ -33,6 +34,7 @@ type Config = {
 }
 
 export type UrlTarget = '_blank' | '_self' | '_parent' | '_top' | string;
+
 
 export type FileDownloadProps = {
 	url?: string, //if want to download from url
@@ -152,6 +154,22 @@ class ModuleFE_Thunderstorm_Class
 		element.setAttribute('download', `${props.fileName}`);
 		element.click();
 	}
+
+	performGenericUpdate = async (updateData: GenericUpdate[]) => {
+		const promises: (() => Promise<void>)[] = [];
+		updateData.forEach(update => {
+			const module = RuntimeModules().find<ModuleFE_BaseApi<any>>(module => module.dbDef?.dbKey === update.dbKey);
+			if (!module)
+				throw new MUSTNeverHappenException(`Trying to perform a generic update without an existing module for dbKey ${update.dbKey}`);
+
+			if (update.data.toUpdate?.length)
+				promises.push(() => module.onEntriesUpdated(update.data.toUpdate!));
+
+			if (update.data.toDelete?.length)
+				promises.push(() => module.onEntriesDeleted(update.data.toDelete!));
+		});
+		await Promise_all_sequentially(promises);
+	};
 }
 
 export const ModuleFE_Thunderstorm = new ModuleFE_Thunderstorm_Class();

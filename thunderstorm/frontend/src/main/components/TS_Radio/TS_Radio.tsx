@@ -50,10 +50,10 @@ export class TS_Radio<ItemType>
 			? undefined
 			: value;
 
-		this.setState({checked: nextValue}, () => {
-			this.props.onCheck?.(nextValue!, prevValue);
-			this.forceUpdate();
-		});
+		if (this.props.onCheck)
+			return this.props.onCheck(nextValue!, prevValue);
+
+		this.setState({checked: nextValue});
 	};
 
 	// ######################### Render #########################
