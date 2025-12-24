@@ -17,8 +17,9 @@
  */
 
 import * as React from 'react';
-import {ComponentSync, ModuleFE_Routing} from '@nu-art/thunderstorm-frontend/index';
+import {ComponentSync, ModuleFE_RoutingV2, TS_NavLink} from '@nu-art/thunderstorm-frontend/index';
 import {Parent} from './Parent.js';
+import {Route_Child2} from './Routes.js';
 
 export class Child1
 	extends ComponentSync {
@@ -30,7 +31,7 @@ export class Child1
 	render() {
 		return <Parent>
 			<div>Child1</div>
-			{ModuleFE_Routing.getLink('child2')}
+			<TS_NavLink route={Route_Child2}>Child2</TS_NavLink>
 		</Parent>;
 	}
 
