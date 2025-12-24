@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {_keys, exists, merge, Module, ResolvableContent, resolveContent, TS_Object, TypedMap} from '@nu-art/ts-common';
+import {_keys, deepClone, exists, merge, Module, ResolvableContent, resolveContent, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
 import {OnClearWebsiteData} from './clearWebsiteDataDispatcher.js';
 
@@ -109,17 +109,15 @@ export class StorageModule_Class
 	}
 
 	public get(key: string, fallbackValue?: ResolvableContent<GetType>, persist: boolean = true): string | number | object | undefined {
-		let value: string | number | object | null = this.cache[key];
-		if (value)
-			return value;
+		if (this.cache[key])
+			return deepClone(this.cache[key]);
 
-		value = this.getStorage(persist).getItem(key);
-		// this.logDebug(`get: ${key} = ${value}`)
-		if (!exists(value) || value === 'null' || value === 'undefined')
+		const value = this.getStorage(persist).getItem(key);
+		if (!exists(value))
 			return resolveContent(fallbackValue);
 
-		// if (!this.isIncognito)
-		return this.cache[key] = JSON.parse(value!);
+		this.cache[key] = JSON.parse(value);
+		return deepClone(this.cache[key]);
 	}
 
 	public query<T>(query: RegExp): T[] {

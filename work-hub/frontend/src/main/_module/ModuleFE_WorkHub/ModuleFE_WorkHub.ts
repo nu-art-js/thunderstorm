@@ -30,11 +30,11 @@ class ModuleFE_WorkHub_Class
 		push: (tabId: string) => {
 			this.tabStack.pop(tabId);
 			this._tabStack.push(tabId);
-			this.storage_tabStack.set(this._tabStack);
+			this.storage_tabStack.set([...this._tabStack]);
 		},
 		pop: (tabId: string) => {
 			removeItemFromArray(this._tabStack, tabId);
-			this.storage_tabStack.set(this._tabStack);
+			this.storage_tabStack.set([...this._tabStack]);
 		},
 	};
 
