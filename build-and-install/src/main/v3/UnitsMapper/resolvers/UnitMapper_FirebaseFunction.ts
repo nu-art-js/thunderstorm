@@ -17,6 +17,7 @@ import {BaiParam_SetEnv} from '../../../core/params/params.js';
 type EnvConfig = {
 	defaultConfig?: string,
 	envConfig?: string,
+	identityAccount?: string,
 	projectId: string,
 	isLocal?: boolean
 };
@@ -32,6 +33,7 @@ type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
 const valuesValidator = {
 	defaultConfig: tsValidateOptionalAnyString,
 	envConfig: tsValidateOptionalAnyString,
+	identityAccount: tsValidateOptionalAnyString,
 	projectId: tsValidateAnyString,
 	isLocal: tsValidateBoolean(false),
 };
@@ -62,6 +64,7 @@ export class UnitMapper_FirebaseFunction_Class
 		if (!envUnitConfig) {
 			this.logWarning(`Missing EnvConfig in unit ${context.baseConfig.key}`);
 			envUnitConfig = {
+				identityAccount: '',
 				defaultConfig: '',
 				envConfig: '',
 				projectId: '',
@@ -72,6 +75,7 @@ export class UnitMapper_FirebaseFunction_Class
 
 
 		const envConfig = {
+			identityAccount: envUnitConfig.identityAccount,
 			defaultConfig: envUnitConfig.defaultConfig,
 			envConfig: envUnitConfig.envConfig,
 			projectId: envUnitConfig.projectId,

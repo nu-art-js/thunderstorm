@@ -77,7 +77,7 @@ export abstract class UnitMapper_Node<
 				return; // not the expected type for this mapper
 
 			packageJson = deepClone(packageJson);
-			tsValidate(packageJson.unitConfig, this.validator as ValidatorTypeResolver<ConfigJSON>);
+			tsValidate(packageJson.unitConfig, this.validator as ValidatorTypeResolver<ConfigJSON>, false);
 			const dependencies = packageJson.dependencies;
 			if (dependencies)
 				packageJson.dependencies = _keys(dependencies).reduce<StringMap>((acc, key) => {
