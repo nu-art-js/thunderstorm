@@ -1,20 +1,7 @@
-import {AnyPrimitive, exists, Logger, Module, MUSTNeverHappenException, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {AnyPrimitive, exists, Module, MUSTNeverHappenException, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {SecretManagerServiceClient} from '@google-cloud/secret-manager';
-import {GoogleAuth} from 'google-auth-library';
 import {google} from '@google-cloud/secret-manager/build/protos/protos.js';
 import ISecret = google.cloud.secretmanager.v1.ISecret;
-
-export const printCallerIdentity = async () => {
-	const logger = new Logger('GCP-Caller');
-	const auth = new GoogleAuth({scopes: 'https://www.googleapis.com/auth/cloud-platform'});
-	const client = await auth.getClient();
-	const projectId = await auth.getProjectId();
-	const token = await client.getAccessToken();
-	const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${token.token}`);
-	const info = await res.json();
-	logger.logInfo(`🔐 GCP Caller Identity: ${info.email || info.sub}`);
-	logger.logInfo(`🏗️ GCP Project ID: ${projectId}`);
-};
 
 type Secret = {
 	key: string;
@@ -95,7 +82,6 @@ export class ModuleBE_SecretManager_Class
 			if (err.code === 5)
 				return undefined;
 
-			await printCallerIdentity();
 			throw new ThisShouldNotHappenException(`Failed to retrieve secret \n Secret: ${JSON.stringify(secret)}`, err);
 		}
 	};
@@ -121,7 +107,6 @@ export class ModuleBE_SecretManager_Class
 				payload: {data: Buffer.from(data, 'utf-8')}
 			});
 		} catch (err: any) {
-			await printCallerIdentity();
 			throw new ThisShouldNotHappenException(`Failed to update secret version (${secret})`, err);
 		}
 	};
@@ -147,7 +132,6 @@ export class ModuleBE_SecretManager_Class
 			return secret;
 		} catch (err: any) {
 			if (err.code !== 5) {
-				await printCallerIdentity();
 				throw new ThisShouldNotHappenException(`Failed to get secret (${_secret})`, err);
 			}
 
