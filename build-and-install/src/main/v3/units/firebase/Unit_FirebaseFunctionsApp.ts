@@ -352,24 +352,31 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async runEmulator() {
-		if (!this.config.envConfig.identityAccount)
-			throw new ImplementationMissingException('Must provide an identity service account to launch emulator');
+		let exportGoogleCredentials: string | undefined;
 
-		const pathToIdentityAccount = resolve(this.config.fullPath, this.config.envConfig.identityAccount);
-		if (!FileSystemUtils.file.exists(pathToIdentityAccount))
-			throw new ImplementationMissingException(`Missing identity file at: ${pathToIdentityAccount}`);
+		if (this.config.envConfig.identityAccount) {
+			const pathToIdentityAccount = resolve(this.config.fullPath, this.config.envConfig.identityAccount);
+			if (!FileSystemUtils.file.exists(pathToIdentityAccount))
+				throw new ImplementationMissingException(`Missing identity file at: ${pathToIdentityAccount}`);
+
+			exportGoogleCredentials = `export GOOGLE_APPLICATION_CREDENTIALS="${pathToIdentityAccount}"`;
+		}
+
 
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
-			.cd(this.config.fullPath)
-			.append(`export GOOGLE_APPLICATION_CREDENTIALS="${pathToIdentityAccount}"`)
-			.setLogLevelFilter((log, type) => {
-				if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
-					return LogLevel.Error;
+			.cd(this.config.fullPath);
 
-				if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
-					return LogLevel.Warning;
-			})
+		if (exportGoogleCredentials)
+			commando.append(exportGoogleCredentials);
+
+		commando.setLogLevelFilter((log, type) => {
+			if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
+				return LogLevel.Error;
+
+			if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
+				return LogLevel.Warning;
+		})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'));
 
 		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend
