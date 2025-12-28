@@ -291,6 +291,14 @@ export const BaiParam_includePackage: BaseCliParam<'includePackage', string[]> =
 	dependencies: []
 };
 
+export const BaiParam_BuildTree: BaseCliParam<'buildTree', boolean> = {
+	keys: ['--build-tree', '-bt'],
+	keyName: 'buildTree',
+	type: 'boolean',
+	group: 'Build',
+	description: 'When used with -up, makes all transitive dependencies active (compile/test them too)',
+};
+
 export const BaiParam_Apps: BaseCliParam<'includeApps', string[]> = {
 	keys: ['-app', '--application'],
 	keyName: 'includeApps',
@@ -374,6 +382,7 @@ export const AllBaiParams = [
 	BaiParam_Publish,
 	BaiParam_includePackage,
 	BaiParam_UsePackage,
+	BaiParam_BuildTree,
 	BaiParam_ToESM,
 	BaiParam_Simulate,
 	BaiParam_DebugLifecycle

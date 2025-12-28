@@ -23,14 +23,16 @@ export class PhaseManager
 	private killed = false;
 	private runningStatus: RunningStatusHandler;
 	private activeUnits: string[];
+	private projectUnitKeys: string[];
 	private readonly keyToPhaseMap: TypedMap<Phase<any>>;
 
-	constructor(runningStatus: RunningStatusHandler, phases: Phase<any>[][], units: BaseUnit[][], activeUnits: string[]) {
+	constructor(runningStatus: RunningStatusHandler, phases: Phase<any>[][], units: BaseUnit[][], activeUnits: string[], projectUnitKeys: string[]) {
 		super();
 		this.phases = phases;
 		this.units = units;
 		this.runningStatus = runningStatus;
 		this.activeUnits = activeUnits;
+		this.projectUnitKeys = projectUnitKeys;
 
 		const unitsSet = new Set();
 		for (const unit of flatArray(this.units)) {
@@ -59,19 +61,39 @@ export class PhaseManager
 		const steps: ScheduledStep[] = [];
 		this.logDebug('Calculating execution steps for phases: ', this.phases.map(phases => phases.map(phase => phase.key)));
 		this.logDebug('Active Units: ', this.activeUnits);
+		this.logDebug('Project Units: ', this.projectUnitKeys);
 
 		for (let phaseGroup of this.phases) {
 			phaseGroup = phaseGroup.filter(phase => !exists(phase.filter) || phase.filter(this.runningStatus.runtimeParams));
 
 			for (const layer of this.units) {
-				const layerUnits = layer.filter(u => this.activeUnits.includes(u.config.key));
+				// Determine eligible units for this phase group
+				// A unit is eligible if it's eligible for at least one phase in the group
+				const eligibleUnitKeys = new Set<string>();
+				for (const phase of phaseGroup) {
+					const unitCategory = phase.unitCategory ?? "active";
+					const phaseEligibleKeys = unitCategory === "project" ? this.projectUnitKeys : this.activeUnits;
+					phaseEligibleKeys.forEach(key => eligibleUnitKeys.add(key));
+				}
+
+				const layerUnits = layer.filter(u => eligibleUnitKeys.has(u.config.key));
 				if (layerUnits.length === 0)
 					continue;
 
 				const phaseMap: Map<string, BaseUnit[]> = new Map();
 
 				for (const unit of layerUnits) {
-					const supportedPhases = phaseGroup.filter(phase => phase.method in unit && typeof unit[phase.method as keyof typeof unit] === 'function');
+					// Find phases this unit supports and is eligible for
+					const supportedPhases = phaseGroup.filter(phase => {
+						if (!(phase.method in unit && typeof unit[phase.method as keyof typeof unit] === 'function'))
+							return false;
+						
+						// Check if unit is eligible for this specific phase
+						const unitCategory = phase.unitCategory ?? "active";
+						const phaseEligibleKeys = unitCategory === "project" ? this.projectUnitKeys : this.activeUnits;
+						return phaseEligibleKeys.includes(unit.config.key);
+					});
+
 					if (supportedPhases.length === 0)
 						continue;
 
