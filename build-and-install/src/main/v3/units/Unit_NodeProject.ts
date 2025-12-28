@@ -218,7 +218,8 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					noBuild: false,
 					continue: false
 				};
-				const phaseManager = new PhaseManager(new RunningStatusHandler(this.config.fullPath, watchRuntimeParams).isolate(), [[phase_CompileWatch]], unitDependencyTree, this.runtimeContext.childUnits.map(unit => unit.config.key));
+				const activeUnitKeys = this.runtimeContext.childUnits.map(unit => unit.config.key);
+				const phaseManager = new PhaseManager(new RunningStatusHandler(this.config.fullPath, watchRuntimeParams).isolate(), [[phase_CompileWatch]], unitDependencyTree, activeUnitKeys, activeUnitKeys);
 				// @ts-ignore
 				phaseManager.setTag('PhaseManager-Watcher');
 				const executionPlan = await phaseManager.calculateExecutionSteps();

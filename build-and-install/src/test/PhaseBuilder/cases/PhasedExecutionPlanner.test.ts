@@ -21,7 +21,8 @@ type TestCase_CalcExecutionSteps = TestSuite_CalcExecutionSteps['testcases'][num
 async function test(input: Input) {
 	const {units, phases} = input;
 	const activeUnits = input.activeUnits ?? flatArray(units).map(u => u.config.key);
-	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units, activeUnits);
+	const projectUnitKeys = input.activeUnits ?? flatArray(units).map(u => u.config.key); // For tests, use activeUnits as projectUnits
+	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units, activeUnits, projectUnitKeys);
 	return manager.calculateExecutionSteps();
 }
 

@@ -18,7 +18,8 @@ type Output = ExecutionStep;
 const test = async (input: Input) => {
 	const {units, phases, scheduledSteps} = input;
 	const activeUnits = input.activeUnits ?? flatArray(units).map(u => u.config.key);
-	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units, activeUnits);
+	const projectUnitKeys = input.activeUnits ?? flatArray(units).map(u => u.config.key); // For tests, use activeUnits as projectUnits
+	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units, activeUnits, projectUnitKeys);
 
 	return manager['mapStep'](scheduledSteps[0]);
 };

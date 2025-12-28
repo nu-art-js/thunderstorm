@@ -23,6 +23,7 @@ import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {BAI_Config} from '../../core/types/index.js';
 import {UnitsDependencyMapper} from '../UnitsDependencyMapper/UnitsDependencyMapper.js';
 import {BaiParams} from '../../core/params/params.js';
+import {Workspace} from '../Workspace.js';
 
 
 export type BaseUnit_Config = {
@@ -38,6 +39,7 @@ export type UnitRuntimeContext = {
 	unitsResolver: <Class extends BaseUnit>(keys: string[], className: Constructor<Class>) => Class[],
 	runtimeParams: BaiParams
 	globalOutputFolder: string
+	workspace?: Workspace;  // Optional workspace reference for advanced queries
 };
 
 export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_Context extends UnitRuntimeContext = UnitRuntimeContext>
