@@ -17,4 +17,4 @@
  */
 
 export * from '../main/index.js';
-export * from '../main/test-index.js';
+export * from '../main/testing.js';

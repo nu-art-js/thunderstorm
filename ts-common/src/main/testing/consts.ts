@@ -1,4 +1,4 @@
-import {TestModel, TestResetListener, TestSuite} from './types.js';
+import {TestCase_Error, TestModel, TestResetListener, TestSuite} from './types.js';
 import chai, {expect} from 'chai';
 import {ModuleManager} from '../core/module-manager.js';
 import {exists, resolveContent, voidFunction} from '../utils/tools.js';
@@ -50,16 +50,22 @@ export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input
 
 };
 
-export type TestCase_Error = { expected: string | RegExp, message?: string, constructor?: Error | Function };
 export type DefaultTestProcessor<Result = any, ExpectedResult = Result> = (promisedResult: Promise<Result>, expectedResult?: ((() => Promise<any>) | ExpectedResult), error?: TestCase_Error) => Promise<any>;
 export const defaultTestProcessor: DefaultTestProcessor = async (promisedResult, expectedResult, error) => {
 	if (!exists(expectedResult) && !exists(error))
 		throw new BadImplementationException('MUST provide expectedResult or error');
 
-	if (error)
+	if (typeof error === 'object')
 		return expect(promisedResult).to.be.rejectedWith(error.expected);
 
-	const result = await promisedResult;
+	let result: any;
+	try {
+		result = await promisedResult;
+	} catch (e: any) {
+		if (typeof error === 'function')
+			return await error(e);
+	}
+
 	if (typeof expectedResult === 'function')
 		return await (expectedResult as (result: any) => Promise<any>)(result);
 
