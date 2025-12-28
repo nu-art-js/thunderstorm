@@ -44,7 +44,11 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 
 			if (exists(cliParamToResolve.dependencies))
 				cliParamToResolve.dependencies?.forEach(dependency => {
-					output[dependency.param.keyName as Key] = dependency.value;
+					// If dependency value is a function, call it with the current param's processed value
+					const dependencyValue = typeof dependency.value === 'function' 
+						? dependency.value(finalValue) 
+						: dependency.value;
+					output[dependency.param.keyName as Key] = dependencyValue;
 				});
 
 			if (cliParamToResolve.isArray) {

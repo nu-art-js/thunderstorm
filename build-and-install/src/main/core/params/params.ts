@@ -276,20 +276,6 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
 };
 
-export const BaiParam_includePackage: BaseCliParam<'includePackage', string[]> = {
-	keys: ['-in', '--include'],
-	keyName: 'includePackage',
-	type: 'string[]',
-	group: 'Build',
-	description: 'Will include the units to process',
-	process: (value) => {
-		if (!value)
-			return [];
-
-		return value!.split(',').map(str => str.trim());
-	},
-	dependencies: []
-};
 
 export const BaiParam_BuildTree: BaseCliParam<'buildTree', boolean> = {
 	keys: ['--build-tree', '-bt'],
@@ -311,7 +297,11 @@ export const BaiParam_Apps: BaseCliParam<'includeApps', string[]> = {
 
 		return value!.split(',').map(str => str.trim());
 	},
-	dependencies: []
+	isArray: true,
+	dependencies: [
+		{param: BaiParam_UsePackage, value: (currentValue: string[]) => currentValue},
+		{param: BaiParam_BuildTree, value: true}
+	]
 };
 
 export const BaiParam_ToESM: BaseCliParam<'toESM', boolean> = {
@@ -380,7 +370,6 @@ export const AllBaiParams = [
 	BaiParam_Debug,
 	BaiParam_Verbose,
 	BaiParam_Publish,
-	BaiParam_includePackage,
 	BaiParam_UsePackage,
 	BaiParam_BuildTree,
 	BaiParam_ToESM,
