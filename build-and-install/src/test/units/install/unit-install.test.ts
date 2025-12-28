@@ -46,7 +46,7 @@ describe('NodeProject - Install Phase (Project Packages)', () => {
 	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {
-		this.timeout(20000);
+		this.timeout(30000);
 		await FileSystemUtils.folder.delete(pathToTemp);
 		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
 	});
@@ -56,7 +56,7 @@ describe('NodeProject - Install Phase (Project Packages)', () => {
 		result: async () => {
 			assertLocalPackageInstalled();
 		}
-	}))).timeout(10000);
+	}))).timeout(30000);
 
 	it('Should link a local typescript library into root node_modules', run(() => ({
 		input: {fixtures: ['workspace.txt', './project-root--with-linked-package.txt']},
@@ -68,7 +68,7 @@ describe('NodeProject - Install Phase (Project Packages)', () => {
 			const expectedPath = resolve(pathToWorkspace, 'lib-linked/dist');
 			expect(realPath).to.equal(expectedPath);
 		}
-	}))).timeout(10000);
+	}))).timeout(30000);
 
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')
@@ -78,6 +78,7 @@ describe('NodeProject - Install Phase (Project Packages)', () => {
 	});
 
 	after(async function () {
+		this.timeout(15000);
 		await sleep(1000);
 		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);

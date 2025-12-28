@@ -79,6 +79,7 @@ service firebase.storage {
     "eslint": "latest",
     "@typescript-eslint/parser": "latest",
     "@typescript-eslint/eslint-plugin": "latest",
+    "firebase-tools": "latest",
     "undici-types": "^7.8.0"
   },
   "unitConfig": {
@@ -125,20 +126,19 @@ service firebase.storage {
 }
 
 //// file: ./firebase-function-hello/src/main/index.ts
-import * as functions from 'firebase-functions';
+import {onRequest} from 'firebase-functions/v2/https';
 
-export const hello = functions.https.onRequest((request, response) => {
-  response.json({
-    message: 'Hello World',
-    deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
-  });
+export const hello = onRequest((request, response) => {
+	response.json({
+		message: 'Hello World',
+		deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
+	});
 });
 
 //// file: ./firebase-function-hello/dist/index.js
-import * as functions from 'firebase-functions';
+import {onRequest} from 'firebase-functions/v2/https';
 
-
-export const hello = functions.https.onRequest((request, response) => {
+export const hello = onRequest((request, response) => {
   response.json({
     message: 'Hello World',
     deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'

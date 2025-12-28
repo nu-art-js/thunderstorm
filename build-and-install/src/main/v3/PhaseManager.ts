@@ -1,4 +1,4 @@
-import {addItemToArray, asArray, exists, flatArray, Logger, removeItemFromArray, timeCounter, TypedMap} from '@nu-art/ts-common';
+import {addItemToArray, BadImplementationException, exists, flatArray, Logger, removeItemFromArray, timeCounter, TypedMap} from '@nu-art/ts-common';
 import {RunningStatusHandler} from './RunningStatusHandler.js';
 import {Phase} from './phase/index.js';
 import {BaseUnit} from './units/index.js';
@@ -25,37 +25,29 @@ export class PhaseManager
 	private activeUnits: string[];
 	private readonly keyToPhaseMap: TypedMap<Phase<any>>;
 
-	constructor(runningStatus: RunningStatusHandler, phases: Phase<any>[][], units: BaseUnit[][]) {
+	constructor(runningStatus: RunningStatusHandler, phases: Phase<any>[][], units: BaseUnit[][], activeUnits: string[]) {
 		super();
 		this.phases = phases;
 		this.units = units;
 		this.runningStatus = runningStatus;
-		const unitKeySet = new Set<string>();
+		this.activeUnits = activeUnits;
 
-		const allUnits: BaseUnit[] = [];
-		for (const unit of flatArray(units)) {
-			if (unitKeySet.has(unit.config.key))
-				throw new Error(`Multiple units with same key: ${unit.config.key}`);
-			unitKeySet.add(unit.config.key);
-			allUnits.push(unit);
+		const unitsSet = new Set();
+		for (const unit of flatArray(this.units)) {
+			if (unitsSet.has(unit.config.key))
+				throw new BadImplementationException(`Found duplicate unit: '${unit.config.key}' in the project`);
+			unitsSet.add(unit.config.key);
 		}
 
-		const usePackageKeys = this.runningStatus.runtimeParams.usePackage;
-		if (!usePackageKeys?.length)
-			this.activeUnits = allUnits.map(unit => unit.config.key);
-		else {
-			const regexMatchers = usePackageKeys.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
-			this.activeUnits = allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key);
+		const phasesSet = new Set();
+		const flatPhases = flatArray(this.phases);
+		for (const phase of flatPhases) {
+			if (phasesSet.has(phase.key))
+				throw new BadImplementationException(`Found duplicate phase '${phase.key}' in the project`);
+			phasesSet.add(phase.key);
 		}
 
-		const packagesToInclude = this.runningStatus.runtimeParams.includePackage;
-		if (packagesToInclude?.length) {
-			const regexMatchers = asArray(packagesToInclude).map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
-			this.activeUnits.push(...allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key));
-			this.activeUnits = [...new Set(this.activeUnits)];
-		}
-
-		this.keyToPhaseMap = flatArray(phases).reduce<TypedMap<Phase<any>>>((acc, phase) => {
+		this.keyToPhaseMap = flatPhases.reduce<TypedMap<Phase<any>>>((acc, phase) => {
 			acc[phase.key] = phase;
 			return acc;
 		}, {});

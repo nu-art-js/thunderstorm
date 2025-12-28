@@ -1,6 +1,6 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {BaiParams, BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
-import {voidFunction} from '@nu-art/ts-common';
+import {flatArray, voidFunction} from '@nu-art/ts-common';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {RunningStatusHandler} from '../../../main/v3/RunningStatusHandler.js';
 
@@ -9,6 +9,7 @@ import {RunningStatusHandler} from '../../../main/v3/RunningStatusHandler.js';
 type Input = {
 	units: BaseUnit<any>[][];
 	phases: Phase<any>[][];
+	activeUnits?: string[]
 };
 
 type Output = ScheduledStep[];
@@ -19,7 +20,8 @@ type TestCase_CalcExecutionSteps = TestSuite_CalcExecutionSteps['testcases'][num
 
 async function test(input: Input) {
 	const {units, phases} = input;
-	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units);
+	const activeUnits = input.activeUnits ?? flatArray(units).map(u => u.config.key);
+	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units, activeUnits);
 	return manager.calculateExecutionSteps();
 }
 
@@ -377,7 +379,7 @@ describe('PhaseManager - calculateExecutionSteps', () => {
 			]],
 			phases: [[mockPhase('build')]]
 		},
-		error: {expected: 'Multiple units with same key: unit-dup'}
+		error: {expected: 'Found duplicate unit: \'unit-dup\''}
 	}));
 
 	it('Unit participates in multiple independent phase groups', () => runTestCase({

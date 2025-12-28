@@ -1,10 +1,12 @@
 import {
 	_keys,
 	arrayToMap,
+	asArray,
 	BeLogged,
 	Constructor,
 	DebugFlag,
 	filterDuplicates,
+	flatArray,
 	ImplementationMissingException,
 	LogClient_Terminal,
 	Logger,
@@ -50,6 +52,7 @@ export class BuildAndInstall
 	readonly projectUnits: ProjectUnit[] = [];
 	private unitsDependencyMapper!: UnitsDependencyMapper;
 	readonly runningStatus: RunningStatusHandler;
+	readonly phaseManager!: PhaseManager;
 
 	constructor(config: Partial<BAI_Options> = {}) {
 		super();
@@ -96,6 +99,29 @@ export class BuildAndInstall
 		this.phases = phases;
 	}
 
+	async run() {
+		const executionPlan = await this.phaseManager.calculateExecutionSteps();
+		let killCounter = 0;
+		process.on('SIGINT', async () => {
+			this.logWarning('\n\n\n---------------------------------- Process Interrupted ----------------------------------\n\n\n');
+			await this.phaseManager.break();
+			killCounter++;
+			if (killCounter > 5)
+				process.exit(1);
+		});
+
+		try {
+			await this.phaseManager.execute(executionPlan);
+
+			this.logInfo('Completed successfully');
+			this.logInfo('---------------------------------- Process Completed successfully ----------------------------------');
+		} catch (e) {
+			this.logInfo('Process Failed');
+			this.logInfo('---------------------------------- Process Failed ----------------------------------');
+			throw e;
+		}
+	}
+
 	async build() {
 		await this.init();
 		this.logVerbose(`Resolving units from: ${this.pathToProject}`);
@@ -113,10 +139,6 @@ export class BuildAndInstall
 
 		if (!this.nodeProjectUnit)
 			throw new ImplementationMissingException('NodeProject unit not found. Make sure you have a Unit_NodeProject in your project.');
-
-		this.nodeProjectUnit.assignUnit(allProjectUnits);
-		this.logDebug(`Parent unit: ${this.nodeProjectUnit.config.key}`);
-		this.logDebug(`Child units: ${allProjectUnits.map(unit => unit.config.key).join(', ')}`);
 
 		const pathToBaiConfig = resolve(this.nodeProjectUnit.config.fullPath, CONST_BaiConfig);
 		this.logVerbose(`Loading BAI-Config from: ${pathToBaiConfig}`);
@@ -139,35 +161,16 @@ export class BuildAndInstall
 		this.logInfo('loading version from: ', versionFilePath);
 		const version = await FileSystemUtils.file.read.json<{ version: string }>(versionFilePath, {version: '1.0.0'});
 
-		const runtimeContext: ProjectUnit_RuntimeContext = ({
-			version: version.version,
-			parentUnit: this.nodeProjectUnit,
-			childUnits: allProjectUnits,
-			baiConfig,
-			runtimeParams: this.runtimeParams,
-			unitsMapper: this.unitsDependencyMapper,
-			unitsResolver: <UnitType>(keys: string[], className: Constructor<UnitType>): UnitType[] => {
-				return keys.map(key => unitKeyToUnitMap[key]).filter(unit => unit.isInstanceOf(className)) as UnitType[];
-			},
-			globalOutputFolder,
-		});
-
-		this.projectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));
 
 		if (!(await FileSystemUtils.file.exists(resolve(this.nodeProjectUnit.config.fullPath, CONST_NodeModules)))) {
 			this.logInfo(`root project is missing ${CONST_NodeModules} folder. Enabling install...`);
 			this.runtimeParams.install = true;
 		}
 
-		return allProjectUnits;
-	}
-
-	async run() {
 		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
 		let topLevelAppKeys = this.projectUnits.filter(unit => unit.config.isTopLevelApp).map(unit => unit.config.key);
 		this.logWarning('this.runtimeParams.includeApps', this.runtimeParams.includeApps);
 		if (this.runtimeParams.includeApps?.length) {
-			this.logWarning('HEREHREHREHRHERHER');
 			const regexMatchers = this.runtimeParams.includeApps.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
 			topLevelAppKeys = topLevelAppKeys.filter(unitKey => regexMatchers.some(matcher => matcher.test(unitKey)));
 		}
@@ -180,26 +183,57 @@ export class BuildAndInstall
 		const unitDependencyTree: ProjectUnit[][] = (await this.unitsDependencyMapper.buildDependencyTree(participatingUnitKeys))
 			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
 
-		const phaseManager = new PhaseManager(this.runningStatus, this.phases, unitDependencyTree);
-		const executionPlan = await phaseManager.calculateExecutionSteps();
-		let killCounter = 0;
-		process.on('SIGINT', async () => {
-			this.logWarning('\n\n\n---------------------------------- Process Interrupted ----------------------------------\n\n\n');
-			await phaseManager.break();
-			killCounter++;
-			if (killCounter > 5)
-				process.exit(1);
+		const activeUnits = this.deriveActiveUnits(unitDependencyTree);
+
+		const runtimeContext: ProjectUnit_RuntimeContext = ({
+			version: version.version,
+			parentUnit: this.nodeProjectUnit,
+			childUnits: allProjectUnits.filter(unit => activeUnits.includes(unit.config.key)),
+			baiConfig,
+			runtimeParams: this.runtimeParams,
+			unitsMapper: this.unitsDependencyMapper,
+			unitsResolver: <UnitType>(keys: string[], className: Constructor<UnitType>): UnitType[] => {
+				return keys.map(key => unitKeyToUnitMap[key]).filter(unit => unit.isInstanceOf(className)) as UnitType[];
+			},
+			globalOutputFolder,
 		});
 
-		try {
-			await phaseManager.execute(executionPlan);
+		this.projectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));
+		this.nodeProjectUnit.assignUnit(runtimeContext.childUnits);
 
-			this.logInfo('Completed successfully');
-			this.logInfo('---------------------------------- Process Completed successfully ----------------------------------');
-		} catch (e) {
-			this.logInfo('Process Failed');
-			this.logInfo('---------------------------------- Process Failed ----------------------------------');
-			throw e;
+		this.logDebug(`Parent unit: ${this.nodeProjectUnit.config.key}`);
+		this.logDebug(`Child units: ${allProjectUnits.map(unit => unit.config.key).join(', ')}`);
+
+		// @ts-ignore
+		this["phaseManager"] = new PhaseManager(this.runningStatus, this.phases, unitDependencyTree, activeUnits);
+	}
+
+	private deriveActiveUnits(units: BaseUnit[][]) {
+		const unitKeySet = new Set<string>();
+		let activeUnits: string[] = [];
+		const allUnits: BaseUnit[] = [];
+		for (const unit of flatArray(units)) {
+			if (unitKeySet.has(unit.config.key))
+				throw new Error(`Multiple units with same key: ${unit.config.key}`);
+			unitKeySet.add(unit.config.key);
+			allUnits.push(unit);
 		}
+
+		const usePackageKeys = this.runningStatus.runtimeParams.usePackage;
+		if (!usePackageKeys?.length)
+			activeUnits = allUnits.map(unit => unit.config.key);
+		else {
+			const regexMatchers = usePackageKeys.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
+			activeUnits = allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key);
+		}
+
+		const packagesToInclude = this.runningStatus.runtimeParams.includePackage;
+		if (packagesToInclude?.length) {
+			const regexMatchers = asArray(packagesToInclude).map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
+			activeUnits.push(...allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key));
+			activeUnits = [...new Set(activeUnits)];
+		}
+
+		return activeUnits;
 	}
 }

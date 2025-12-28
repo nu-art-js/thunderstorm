@@ -97,7 +97,12 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 			});
 
 		const debug = this.runtimeContext.runtimeParams.verbose ? ' --debug' : '';
-		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')}${debug} deploy --only hosting`);
+		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')}${debug} deploy --only hosting`, (stdout, stderr, exitCode) => {
+			if (exitCode === 0)
+				return;
+
+			throw new CommandoException(`Failed to deploy hosting with exit code ${exitCode}`, stdout, stderr, exitCode);
+		});
 	}
 
 	//######################### ResolveConfig Logic #########################

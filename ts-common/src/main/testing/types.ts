@@ -23,15 +23,17 @@ export type Types<Input, Result> = {
 	input: Input;
 }
 
+export type TestCase_Error = { expected: string | RegExp, message?: string, constructor?: Error | Function } | ((error: Error) => Promise<any>);
+
 export type TestModel<Input, ExpectedResult> = ResolvableContent<
 	{
 		description?: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
 		input: Input,
 	} &
-	({ result: ExpectedResult | ((result: ExpectedResult) => Promise<any>)} |
-	 {
-		 error: { expected: string | RegExp, message?: string, constructor?: Error | Function }
-	 })
+	({ result: ExpectedResult | ((result: ExpectedResult) => Promise<any>) } |
+		{
+			error: TestCase_Error
+		})
 >
 
 

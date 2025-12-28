@@ -51,6 +51,10 @@
       "types": "./index.d.ts",
       "import": "./index.js"
     },
+    "./testing": {
+      "types": "./testing.d.ts",
+      "import": "./testing.js"
+    },
     "./*": {
       "types": "./*.d.ts",
       "import": "./*.js"
