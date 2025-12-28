@@ -1,13 +1,12 @@
 import {Primitive, TypeOfTypeAsString} from '@nu-art/ts-common';
 
-
 export type CliParams<T extends BaseCliParam<string, any>[]> = {
 	[K in T[number]['keyName']]: NonNullable<Extract<T[number], { keyName: K }>['defaultValue']>
 }
 
 export type DependencyParam<T extends Primitive | Primitive[]> = {
 	param: BaseCliParam<string, T>,
-	value: T
+	value: T | ((currentValue: any) => T)
 }
 
 

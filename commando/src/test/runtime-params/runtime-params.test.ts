@@ -521,3 +521,96 @@ describe('Runtime Params - Derived Dependency Resolution', () => {
 	}));
 
 });
+
+describe('Runtime Params - Dynamic Dependencies', () => {
+	const Param_UsePackage: BaseCliParam<'usePackage', string[]> = {
+		keys: ['-up', '--use-packages'],
+		keyName: 'usePackage',
+		type: 'string[]',
+		group: 'Build',
+		description: 'Will specify units to process',
+		process: (value) => {
+			if (!value)
+				return [];
+
+			return value!.split(',').map(str => str.trim());
+		},
+		isArray: true,
+	};
+
+	const Param_BuildTree: BaseCliParam<'buildTree', boolean> = {
+		keys: ['--build-tree', '-bt'],
+		keyName: 'buildTree',
+		type: 'boolean',
+		group: 'Build',
+		description: 'When used with -up, makes all transitive dependencies active',
+	};
+
+	const Param_Apps: BaseCliParam<'includeApps', string[]> = {
+		keys: ['-app', '--application'],
+		keyName: 'includeApps',
+		type: 'string[]',
+		group: 'Build',
+		description: 'Will include the applications and all their dependency units to the build process',
+		process: (value) => {
+			if (!value)
+				return [];
+
+			return value!.split(',').map(str => str.trim());
+		},
+		isArray: true,
+		dependencies: [
+			{param: Param_UsePackage, value: (currentValue: string[]) => currentValue},
+			{param: Param_BuildTree, value: true}
+		]
+	};
+
+	it('GPT - app sets usePackage to same value and buildTree to true', runTestCase({
+		input: {
+			params: [Param_Apps, Param_UsePackage, Param_BuildTree],
+			input: '-app=my-app',
+		},
+		result: {
+			includeApps: ['my-app'],
+			usePackage: ['my-app'],
+			buildTree: true,
+		},
+	}));
+
+	it('GPT - app with multiple values sets usePackage to same values and buildTree to true', runTestCase({
+		input: {
+			params: [Param_Apps, Param_UsePackage, Param_BuildTree],
+			input: '-app=app1,app2,app3',
+		},
+		result: {
+			includeApps: ['app1', 'app2', 'app3'],
+			usePackage: ['app1', 'app2', 'app3'],
+			buildTree: true,
+		},
+	}));
+
+	it('GPT - app with long flag sets usePackage and buildTree', runTestCase({
+		input: {
+			params: [Param_Apps, Param_UsePackage, Param_BuildTree],
+			input: '--application=my-application',
+		},
+		result: {
+			includeApps: ['my-application'],
+			usePackage: ['my-application'],
+			buildTree: true,
+		},
+	}));
+
+	it('GPT - app dependency works even when usePackage is explicitly set', runTestCase({
+		input: {
+			params: [Param_Apps, Param_UsePackage, Param_BuildTree],
+			input: '-app=my-app -up=other-package',
+		},
+		result: {
+			includeApps: ['my-app'],
+			usePackage: ['my-app', 'other-package'],
+			buildTree: true,
+		},
+	}));
+
+});
