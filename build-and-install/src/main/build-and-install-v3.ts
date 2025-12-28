@@ -46,7 +46,7 @@ export class BuildAndInstall
 	private unitsMapper!: UnitsMapper;
 	private phases: Phase<string>[][] = DefaultPhases;
 	private pathToProject: string;
-	private allUnits: BaseUnit<any>[] = [];
+	private scannedUnits: BaseUnit<any>[] = [];
 	readonly nodeProjectUnit!: Unit_NodeProject;
 	readonly runtimeParams: BaiParams;
 	readonly projectUnits: ProjectUnit[] = [];
@@ -124,30 +124,34 @@ export class BuildAndInstall
 
 	async build() {
 		await this.init();
-		this.logVerbose(`Resolving units from: ${this.pathToProject}`);
-		this.allUnits = await this.unitsMapper.resolveUnits(this.pathToProject);
-		Object.freeze(this.allUnits);
+		this.logDebug(`Resolving units from: ${this.pathToProject}`);
+		this.scannedUnits = await this.unitsMapper.resolveUnits(this.pathToProject);
+		Object.freeze(this.scannedUnits);
 
-		this.logDebug('Units found:', this.allUnits.map(unit => `${unit.constructor?.['name']}: ${unit.config.key}`).join('\n'));
-		const unitKeyToUnitMap = arrayToMap(this.allUnits, unit => unit.config.key);
+		const unitKeyToUnitMap = arrayToMap(this.scannedUnits, unit => unit.config.key);
 
-		const allProjectUnits = this.allUnits.filter(unit => unit.isInstanceOf(ProjectUnit)) as ProjectUnit[];
+		const allProjectUnits = this.scannedUnits.filter(unit => unit.isInstanceOf(ProjectUnit)) as ProjectUnit[];
 		const nodeProjectUnit = allProjectUnits.find(unit => unit.isInstanceOf(Unit_NodeProject)) as Unit_NodeProject;
+		this.projectUnits.push(...allProjectUnits);
+		Object.freeze(this.projectUnits);
+
+		this.logVerbose('Units Scanned:\n', this.scannedUnits.map(unit => {
+			const projectUnit = this.projectUnits.includes(unit as ProjectUnit) ? '*' : ' ';
+			const rootUnit = nodeProjectUnit === unit ? '*' : ' ';
+			return `${projectUnit}${rootUnit} ${unit.constructor?.['name']}: ${unit.config.key}`;
+		}).join('\n'));
+
 
 		// @ts-ignore
 		this['nodeProjectUnit'] = nodeProjectUnit;
-
 		if (!this.nodeProjectUnit)
 			throw new ImplementationMissingException('NodeProject unit not found. Make sure you have a Unit_NodeProject in your project.');
 
 		const pathToBaiConfig = resolve(this.nodeProjectUnit.config.fullPath, CONST_BaiConfig);
-		this.logVerbose(`Loading BAI-Config from: ${pathToBaiConfig}`);
+		this.logDebug(`Loading BAI-Config from: ${pathToBaiConfig}`);
 		const baiConfig = await FilesCache.load.json<BAI_Config>(pathToBaiConfig);
-		this.logDebug('Loaded BAI-Config', baiConfig);
+		this.logVerbose('Loaded BAI-Config', baiConfig);
 
-
-		this.projectUnits.push(...allProjectUnits);
-		Object.freeze(this.projectUnits);
 
 		const unitsDependencies: UnitDependentNode[] = this.projectUnits.map(unit => ({
 			key: unit.config.key,
@@ -156,39 +160,25 @@ export class BuildAndInstall
 
 		const globalOutputFolder = resolve(this.pathToProject, '.trash/output');
 		this.unitsDependencyMapper = new UnitsDependencyMapper(unitsDependencies, globalOutputFolder);
-
-		const versionFilePath = resolve(this.pathToProject, CONST_VersionApp);
-		this.logInfo('loading version from: ', versionFilePath);
-		const version = await FileSystemUtils.file.read.json<{ version: string }>(versionFilePath, {version: '1.0.0'});
-
+		let version = await this.loadVersion();
 
 		if (!(await FileSystemUtils.file.exists(resolve(this.nodeProjectUnit.config.fullPath, CONST_NodeModules)))) {
 			this.logInfo(`root project is missing ${CONST_NodeModules} folder. Enabling install...`);
 			this.runtimeParams.install = true;
 		}
 
-		const keyToUnitMap = arrayToMap(this.projectUnits, u => u.config.key);
-		let topLevelAppKeys = this.projectUnits.filter(unit => unit.config.isTopLevelApp).map(unit => unit.config.key);
-		this.logWarning('this.runtimeParams.includeApps', this.runtimeParams.includeApps);
-		if (this.runtimeParams.includeApps?.length) {
-			const regexMatchers = this.runtimeParams.includeApps.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
-			topLevelAppKeys = topLevelAppKeys.filter(unitKey => regexMatchers.some(matcher => matcher.test(unitKey)));
-		}
+		const units = this.deriveUnits(this.scannedUnits);
+		this.nodeProjectUnit.assignUnit(allProjectUnits.filter(unit => units.projectUnits.includes(unit.config.key)));
 
-		this.logDebug('topLevelAppKeys: ', topLevelAppKeys);
-		const participatingUnitKeys = this.runtimeParams.allUnits
-			? undefined
-			: [...this.unitsDependencyMapper.getTransitiveDependencies(topLevelAppKeys), ...topLevelAppKeys];
+		this.logDebug(`Parent unit: ${this.nodeProjectUnit.config.key}`);
+		this.logDebug(`Active units: ${units.activeUnits.join(', ')}`);
+		this.logDebug(`Project units: ${units.projectUnits.join(', ')}`);
 
-		const unitDependencyTree: ProjectUnit[][] = (await this.unitsDependencyMapper.buildDependencyTree(participatingUnitKeys))
-			.map(units => units.map(unitKey => keyToUnitMap[unitKey])) as ProjectUnit[][];
-
-		const activeUnits = this.deriveActiveUnits(unitDependencyTree);
 
 		const runtimeContext: ProjectUnit_RuntimeContext = ({
 			version: version.version,
 			parentUnit: this.nodeProjectUnit,
-			childUnits: allProjectUnits.filter(unit => activeUnits.includes(unit.config.key)),
+			childUnits: allProjectUnits.filter(unit => units.projectUnits.includes(unit.config.key)),
 			baiConfig,
 			runtimeParams: this.runtimeParams,
 			unitsMapper: this.unitsDependencyMapper,
@@ -199,19 +189,30 @@ export class BuildAndInstall
 		});
 
 		this.projectUnits.forEach(unit => unit.setupRuntimeContext(runtimeContext));
-		this.nodeProjectUnit.assignUnit(runtimeContext.childUnits);
 
-		this.logDebug(`Parent unit: ${this.nodeProjectUnit.config.key}`);
-		this.logDebug(`Child units: ${allProjectUnits.map(unit => unit.config.key).join(', ')}`);
+		const unitDependencyTree: ProjectUnit[][] = (await this.unitsDependencyMapper.buildDependencyTree(units.projectUnits))
+			.map(units => units.map(unitKey => unitKeyToUnitMap[unitKey])) as ProjectUnit[][];
 
+		const manager = new PhaseManager(this.runningStatus, this.phases, unitDependencyTree, units.projectUnits);
 		// @ts-ignore
-		this["phaseManager"] = new PhaseManager(this.runningStatus, this.phases, unitDependencyTree, activeUnits);
+		this['phaseManager'] = manager;
 	}
 
-	private deriveActiveUnits(units: BaseUnit[][]) {
+	private async loadVersion() {
+		const versionFilePath = resolve(this.pathToProject, CONST_VersionApp);
+		if (await FileSystemUtils.file.exists(versionFilePath)) {
+			this.logDebug('Loading version from: ', versionFilePath);
+			return await FileSystemUtils.file.read.json<{ version: string }>(versionFilePath, {version: '1.0.0'});
+		} else {
+			this.logWarning(`No version file found at '${versionFilePath}', using default version: '1.0.0'`);
+			return {version: '1.0.0'};
+		}
+	}
+
+	private deriveUnits(units: BaseUnit[]) {
 		const unitKeySet = new Set<string>();
-		let activeUnits: string[] = [];
 		const allUnits: BaseUnit[] = [];
+
 		for (const unit of flatArray(units)) {
 			if (unitKeySet.has(unit.config.key))
 				throw new Error(`Multiple units with same key: ${unit.config.key}`);
@@ -219,21 +220,48 @@ export class BuildAndInstall
 			allUnits.push(unit);
 		}
 
-		const usePackageKeys = this.runningStatus.runtimeParams.usePackage;
-		if (!usePackageKeys?.length)
-			activeUnits = allUnits.map(unit => unit.config.key);
-		else {
+		let activeUnits: string[] = [];
+		let projectUnits: string[] = [];
+
+		// 1. Handle usePackage: adds to both active and project
+		const usePackageKeys = this.runtimeParams.usePackage;
+		if (usePackageKeys?.length) {
 			const regexMatchers = usePackageKeys.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
-			activeUnits = allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key);
+			const matched = allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key);
+			activeUnits.push(...matched);
+			projectUnits.push(...matched);
 		}
 
-		const packagesToInclude = this.runningStatus.runtimeParams.includePackage;
+		// 2. Handle includePackage: adds as active and its transitive to project
+		const packagesToInclude = this.runtimeParams.includePackage;
 		if (packagesToInclude?.length) {
 			const regexMatchers = asArray(packagesToInclude).map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
-			activeUnits.push(...allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key));
-			activeUnits = [...new Set(activeUnits)];
+			const matched = allUnits.filter(unit => regexMatchers.some(matcher => matcher.test(unit.config.key))).map(unit => unit.config.key);
+			activeUnits.push(...matched);
+			projectUnits.push(...matched, ...this.unitsDependencyMapper.getTransitiveDependencies(matched));
 		}
 
-		return activeUnits;
+		// 3. Handle includeApps: adds apps and transitive to both active and project
+		let topLevelAppKeys = this.projectUnits.filter(unit => unit.config.isTopLevelApp).map(unit => unit.config.key);
+		if (this.runtimeParams.includeApps?.length) {
+			const regexMatchers = this.runtimeParams.includeApps.map(filter => new RegExp(`.*?${filter}.*?`, 'i'));
+			const matchedApps = topLevelAppKeys.filter(unitKey => regexMatchers.some(matcher => matcher.test(unitKey)));
+			const transitive = this.unitsDependencyMapper.getTransitiveDependencies(matchedApps);
+
+			activeUnits.push(...matchedApps, ...transitive);
+			projectUnits.push(...matchedApps, ...transitive);
+		}
+
+		// If no filters applied and not allUnits, default to all units
+		if (!usePackageKeys?.length && !packagesToInclude?.length && !this.runtimeParams.includeApps?.length) {
+			const allKeys = allUnits.map(unit => unit.config.key);
+			activeUnits = allKeys;
+			projectUnits = allKeys;
+		}
+
+		return {
+			activeUnits: [...new Set(activeUnits)],
+			projectUnits: [...new Set(projectUnits)]
+		};
 	}
 }
