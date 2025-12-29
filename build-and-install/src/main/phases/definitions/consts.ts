@@ -56,6 +56,7 @@ export const phase_Prepare: Phase<'prepare'> = {
 	name: 'Prepare',
 	method: 'prepare',
 	filter: (baiParams) => baiParams.prepare,
+	unitCategory: "project", // All project units need to be prepared
 };
 
 export type Phase_Install = typeof phase_Install;

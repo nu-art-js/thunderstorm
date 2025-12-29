@@ -13,4 +13,7 @@ export type Phase<PhaseMethod extends string> = {
 	terminateAfterPhase?: boolean;
 	//Phases that are dependency of this phase and must run for this phase to work
 	dependencyPhase?: Phase<string>[];
+	//Unit category determines which units participate in this phase
+	//"project" = all project units (active + dependencies), "active" = only active units (default)
+	unitCategory?: "project" | "active";
 }
