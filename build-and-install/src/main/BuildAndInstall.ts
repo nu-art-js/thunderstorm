@@ -9,7 +9,7 @@ import {
 	LogLevel,
 	merge
 } from '@nu-art/ts-common';
-import {AllBaiParams, BaiParams} from './params/params.js';
+import {AllBaiParams, BaiParams} from './core/params.js';
 import {Phase, phases_Build, phases_Deploy, phases_Launch, phases_Terminating} from './phases/definitions/index.js';
 import {UnitsMapper} from './units/discovery/UnitsMapper.js';
 import {FilesCache} from './core/FilesCache.js';

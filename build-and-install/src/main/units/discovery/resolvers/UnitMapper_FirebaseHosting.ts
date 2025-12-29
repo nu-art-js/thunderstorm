@@ -12,7 +12,7 @@ import {
 import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
 import {FirebaseHosting_EnvConfig, Unit_FirebaseHostingApp, UnitConfigJSON_FirebaseHosting} from '../../implementations/firebase/Unit_FirebaseHostingApp.js';
 import {resolve} from 'path';
-import {BaiParam_SetEnv} from '../../../params/params.js';
+import {BaiParam_SetEnv} from '../../../core/params.js';
 
 const valuesValidator = {
 	config: tsValidateMustExist,

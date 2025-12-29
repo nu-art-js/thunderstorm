@@ -1,4 +1,4 @@
-import {BaiParams} from '../../params/params.js';
+import {BaiParams} from '../../core/params.js';
 
 export type Phase<PhaseMethod extends string> = {
 	//Key identifier of the phase, Unique
