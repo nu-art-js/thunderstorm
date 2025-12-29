@@ -47,8 +47,6 @@ describe('TypescriptLib - Test Phase', () => {
 		await workspaceCreator.setupWorkspace(['project-lib-test.txt'], 'lib-test');
 
 		const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
-		buildAndInstall.runtimeParams.allUnits = true;
-
 		await buildAndInstall.build();
 		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
 		await buildAndInstall.run();

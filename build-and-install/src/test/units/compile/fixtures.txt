@@ -68,19 +68,9 @@ export const = 5;
     }
 }
 
-//// file: ./src/main/tsconfig.json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "moduleResolution": "node"
-  }
-}
-
-//// file: ./src/main/index.ts
-export const x = 5;
-
 // file: ./lib-compile--fail.txt
 //// file: ./__package.json
+
 {
   "name": "lib-compile",
   "version": "1.0.0",
@@ -90,13 +80,9 @@ export const x = 5;
     },
     "unitConfig": {
       "type": "typescript-lib",
-      "label": "lib-compile",
-      "customTSConfig": true
+      "label": "lib-compile"
     }
 }
-
-//// file: ./src/main/index.ts
-export const x = 5;
 
 // file: ./lib-compile-2.txt
 //// file: ./__package.json

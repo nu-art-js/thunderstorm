@@ -1,6 +1,6 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {phase_Install, phase_Prepare, Unit_PackageJson, Unit_TypescriptLib} from '../../_common.js';
+import {Unit_PackageJson, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {expect} from 'chai';
@@ -49,11 +49,8 @@ describe('Unit - Purge Phase', () => {
 		await workspaceCreator.setupWorkspace(['lib-purge.txt'], 'lib-purge');
 
 		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
-		buildAndInstall.runtimeParams.allUnits = true;
-
 		await buildAndInstall.build();
-		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
-		await buildAndInstall.run();
+		await buildAndInstall.nodeProjectUnit?.install();
 	});
 
 

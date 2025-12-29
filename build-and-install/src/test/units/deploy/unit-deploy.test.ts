@@ -45,7 +45,7 @@ const test = async (setup: Input) => {
 	buildAndInstall.runtimeParams.allUnits = true;
 	buildAndInstall.runtimeParams.environment = 'test';
 	buildAndInstall.runtimeParams.deploy = true;
-	buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Deploy]]);
+	buildAndInstall.setPhases([[phase_Prepare], [phase_Deploy]]);
 
 	await buildAndInstall.build();
 	await buildAndInstall.run();
@@ -70,10 +70,7 @@ describe('Firebase Deploy Phase', () => {
 
 	describe('Deploy Phase', () => {
 		it('Functions - Deploy to Firebase', runTestCase({
-			input: {
-				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-				skipDeploy: false
-			},
+			input: {fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'], skipDeploy: false},
 			result: async (bai: BuildAndInstall) => {
 				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
 				expect(functionUnit).to.exist;
@@ -106,7 +103,6 @@ describe('Firebase Deploy Phase', () => {
 
 				const data = await response.json();
 				expect(data.message).to.equal('Hello World');
-				functionUnit.logDebug(`Got deployment id: ${data.deploymentId}`);
 				expect(data.deploymentId).to.exist;
 				expect(data.deploymentId).to.equal(deploymentId);
 				functionUnit.logDebug('=== Deploy Function Testing Completed ===');
@@ -233,7 +229,6 @@ describe('Firebase Deploy Phase', () => {
 	});
 
 	after(async function () {
-		this.timeout(15000);
 		await sleep(1000);
 		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);
