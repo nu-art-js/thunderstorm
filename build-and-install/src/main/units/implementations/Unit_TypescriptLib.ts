@@ -21,7 +21,9 @@ import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {
 	Phase_CheckCyclicImports,
 	Phase_Compile,
+	Phase_ExtractDynamicDeps,
 	Phase_Lint,
+	Phase_MapExports,
 	Phase_PreCompile,
 	Phase_PrintDependencyTree,
 	Phase_Publish,
@@ -34,6 +36,7 @@ import {TestType, TestTypes} from '../../params/params.js';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import path from 'node:path';
 import {TsConfig} from './types.js';
+import {ExportMapper} from '../../exports/ExportMapper.js';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
@@ -98,7 +101,7 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
-	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test, Phase_Publish, Phase_ToESM]> {
+	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test, Phase_Publish, Phase_ToESM, Phase_ExtractDynamicDeps, Phase_MapExports]> {
 
 	private TestTypeWorkspaceSetup: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<void>> = {
 		pure: async (config, runtimeContext) => {
@@ -308,6 +311,140 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			.cd(this.config.fullPath)
 			.append('bash prebuild.sh')
 			.execute();
+	}
+
+	public async extractDynamicDeps() {
+		this.setStatus('Extracting dynamic dependencies', 'start');
+		
+		// Get all workspace package names from parent unit's child units
+		const workspacePackageNames = new Set<string>();
+		for (const unit of this.runtimeContext.childUnits) {
+			workspacePackageNames.add(unit.config.key);
+		}
+
+		// Find all TypeScript files in src/main and src/test
+		const srcMainTs = `${this.config.fullPath}/src/main/**/*.ts`;
+		const srcMainTsx = `${this.config.fullPath}/src/main/**/*.tsx`;
+		
+		const allFiles: string[] = [];
+		for await (const file of glob(srcMainTs, {}))
+			allFiles.push(file);
+		for await (const file of glob(srcMainTsx, {}))
+			allFiles.push(file);
+
+		// Regex patterns for ESM imports
+		const importFromRegex = /from\s+["']([^"']+)["']/g;
+		const dynamicImportRegex = /import\(["']([^"']+)["']\)/g;
+
+		const workspacePackages = new Set<string>();
+		const externalPackages = new Set<string>();
+
+		// Helper function to process import matches
+		const processImportMatches = (regex: RegExp, content: string) => {
+			let match;
+			while ((match = regex.exec(content)) !== null) {
+				const importPath = match[1];
+				const packageName = this.extractPackageName(importPath);
+				if (packageName) {
+					if (workspacePackageNames.has(packageName)) {
+						workspacePackages.add(packageName);
+					} else {
+						externalPackages.add(packageName);
+					}
+				}
+			}
+			regex.lastIndex = 0;
+		};
+
+		// Process each file
+		for (const filePath of allFiles) {
+			const content = await FileSystemUtils.file.read(filePath);
+			
+			// Extract imports from "import ... from 'package'" and dynamic import('package')
+			processImportMatches(importFromRegex, content);
+			processImportMatches(dynamicImportRegex, content);
+		}
+
+		// Sort and convert to arrays
+		const workspaceArray = Array.from(workspacePackages).sort();
+		const externalArray = Array.from(externalPackages).sort();
+
+		// Write to _dynamic-deps.json
+		const outputPath = pathResolve(this.config.fullPath, '_dynamic-deps.json');
+		const output = {
+			workspace: workspaceArray,
+			external: externalArray
+		};
+
+		await FileSystemUtils.file.write(outputPath, __stringify(output, true));
+		this.logInfo(`Extracted ${workspaceArray.length} workspace and ${externalArray.length} external dependencies`);
+		this.setStatus('Dynamic dependencies extracted', 'end');
+	}
+
+	private extractPackageName(importPath: string): string | null {
+		// Skip relative imports
+		if (importPath.startsWith('.') || importPath.startsWith('/')) {
+			return null;
+		}
+
+		// Handle scoped packages: @scope/package or @scope/package/path
+		if (importPath.startsWith('@')) {
+			const parts = importPath.split('/');
+			if (parts.length >= 2) {
+				return `${parts[0]}/${parts[1]}`;
+			}
+			return null;
+		}
+
+		// Handle unscoped packages: package or package/path
+		const firstSlash = importPath.indexOf('/');
+		if (firstSlash === -1) {
+			return importPath;
+		}
+		return importPath.substring(0, firstSlash);
+	}
+
+	public async mapExports() {
+		this.setStatus('Mapping exports', 'start');
+
+		// Get project root
+		const projectRoot = this.runtimeContext.parentUnit.config.fullPath;
+
+		// Find all TypeScript files in src/main
+		const srcMainTs = `${this.config.fullPath}/src/main/**/*.ts`;
+		const srcMainTsx = `${this.config.fullPath}/src/main/**/*.tsx`;
+
+		const allFiles: string[] = [];
+		for await (const file of glob(srcMainTs, {}))
+			allFiles.push(file);
+		for await (const file of glob(srcMainTsx, {}))
+			allFiles.push(file);
+
+		// Load previous errors if they exist (for retry capability)
+		const previousErrors = await ExportMapper.loadPreviousErrors(projectRoot, this.config.key);
+
+		// Map exports
+		const { exports, errors } = await ExportMapper.mapExports(projectRoot, this.config.fullPath, this.config.key, allFiles, previousErrors || undefined);
+
+		// Write exports to centralized location
+		const indexPath = ExportMapper.getIndexPath(projectRoot, this.config.key);
+		await FileSystemUtils.folder.create(indexPath);
+		const outputPath = pathResolve(indexPath, '_export-for-import.json');
+		await FileSystemUtils.file.write(outputPath, __stringify(exports, true));
+
+		// Generate optimized index files
+		await ExportMapper.generateIndexFiles(projectRoot, this.config.key, exports);
+
+		// Write errors to centralized location (if any)
+		await ExportMapper.writeErrors(projectRoot, this.config.key, errors);
+
+		// Log summary
+		this.logInfo(`Mapped ${exports.length} exports`);
+		if (errors.length > 0) {
+			this.logWarning(`Encountered ${errors.length} errors during export mapping. See ${indexPath}/_export-errors.json for details.`);
+		}
+
+		this.setStatus('Exports mapped', 'end');
 	}
 
 	async compile() {

@@ -3,13 +3,14 @@ import {
 	_keys,
 	_values,
 	BadImplementationException,
-	DateTimeFormat_yyyyMMDDTHHmmss, deepClone,
+	DateTimeFormat_yyyyMMDDTHHmmss,
+	deepClone,
 	Logger,
 	reduceObject,
 	sortArray,
 	TypedMap
 } from '@nu-art/ts-common';
-import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {resolve} from 'path';
 
 export type UnitDependentNode = {
@@ -98,19 +99,21 @@ export class UnitsDependencyMapper
 
 		while (resolved.size < participatingKeys.length - topLayer.length) {
 			const nextLayer: string[] = [];
-
+			let lastNode: UnitDependentNode | undefined;
 			for (const key of _keys(map) as string[]) {
 				const node = map[key];
 				if (resolved.has(key) || topLayer.includes(key)) continue;
 
-				if (node.dependsOn.every(dep => resolved.has(dep)))
+				if (node.dependsOn.every(dep => resolved.has(dep))) {
+					lastNode = node;
 					nextLayer.push(key);
+				}
 			}
 
 			if (nextLayer.length === 0) {
 				this.logWarning(participatingKeys);
 				this.logWarning(map);
-				this.logWarning(layers);
+				this.logWarning(`Cyclic or disconnected dependency detected: ${lastNode?.key ?? '??'} and [${nextLayer.join(', ')}]`);
 				throw new Error('Cyclic or disconnected dependency detected');
 			}
 

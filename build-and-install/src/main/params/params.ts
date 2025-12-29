@@ -107,7 +107,7 @@ export const BaiParam_Watch: BaseCliParam<'watch', boolean> = {
 	type: 'boolean',
 	group: 'Build',
 	description: 'will build and listen for changes in the libraries',
-	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_AllUnits, value: true}]
+	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}, {param: BaiParam_AllUnits, value: true}]
 
 };
 
@@ -265,7 +265,7 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	keys: ['-up', '--use-packages'],
 	keyName: 'usePackage',
 	type: 'string[]',
-	group: 'Build',
+	group: 'Other',
 	description: 'Will specify units to process',
 	process: (value) => {
 		if (!value)
@@ -276,32 +276,19 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
 };
 
-
-export const BaiParam_BuildTree: BaseCliParam<'buildTree', boolean> = {
-	keys: ['--build-tree', '-bt'],
-	keyName: 'buildTree',
-	type: 'boolean',
-	group: 'Build',
-	description: 'When used with -up, makes all transitive dependencies active (compile/test them too)',
-};
-
-export const BaiParam_Apps: BaseCliParam<'includeApps', string[]> = {
-	keys: ['-app', '--application'],
-	keyName: 'includeApps',
+export const BaiParam_includePackage: BaseCliParam<'includePackage', string[]> = {
+	keys: ['-in', '--include='],
+	keyName: 'includePackage',
 	type: 'string[]',
-	group: 'Build',
-	description: 'Will include the applications and all their dependency units to the build process',
+	group: 'Other',
+	description: 'Will include the units to process',
 	process: (value) => {
 		if (!value)
 			return [];
 
 		return value!.split(',').map(str => str.trim());
 	},
-	isArray: true,
-	dependencies: [
-		{param: BaiParam_UsePackage, value: (currentValue: string[]) => currentValue},
-		{param: BaiParam_BuildTree, value: true}
-	]
+	dependencies: []
 };
 
 export const BaiParam_ToESM: BaseCliParam<'toESM', boolean> = {
@@ -339,6 +326,41 @@ export const BaiParam_CheckCyclicImports: BaseCliParam<'checkCyclicImports', boo
 	]
 };
 
+export const BaiParam_ExtractDynamicDeps: BaseCliParam<'extractDynamicDeps', boolean> = {
+	keys: ['--extract-dynamic-deps', '-edd'],
+	keyName: 'extractDynamicDeps',
+	type: 'boolean',
+	group: 'Build',
+	description: 'Extract dynamic dependencies from TypeScript files and write to _dynamic-deps.json',
+	dependencies: [{param: BaiParam_AllUnits, value: true}]
+};
+
+export const BaiParam_MapExports: BaseCliParam<'mapExports', boolean> = {
+	keys: ['--map-exports', '-me'],
+	keyName: 'mapExports',
+	type: 'boolean',
+	group: 'Build',
+	description: 'Map all exported symbols from TypeScript files and write to _export-for-import.json',
+	dependencies: [{param: BaiParam_AllUnits, value: true}]
+};
+
+export const BaiParam_IndicesMcpServer: BaseCliParam<'indicesMcpServer', boolean> = {
+	keys: ['--indices-mcp-server', '-imcp'],
+	keyName: 'indicesMcpServer',
+	type: 'boolean',
+	group: 'Launch',
+	description: 'Start Export Indices MCP server for export index queries'
+};
+
+export const BaiParam_IndicesMcpPort: BaseCliParam<'indicesMcpPort', number> = {
+	keys: ['--indices-mcp-port'],
+	keyName: 'indicesMcpPort',
+	type: 'number',
+	group: 'Launch',
+	description: 'Port for Export Indices MCP server (default: 3001)',
+	dependencies: [{param: BaiParam_IndicesMcpServer, value: true}]
+};
+
 export const AllBaiParams = [
 	BaiParam_AllUnits,
 	BaiParam_DependencyTree,
@@ -353,7 +375,6 @@ export const AllBaiParams = [
 	BaiParam_Generate, // TODO: to implement
 	BaiParam_GenerateDocs,// TODO: to implement
 	BaiParam_NoBuild,
-	BaiParam_Apps,
 	BaiParam_DryRun,
 	BaiParam_Lint,
 	BaiParam_Watch,
@@ -370,10 +391,14 @@ export const AllBaiParams = [
 	BaiParam_Debug,
 	BaiParam_Verbose,
 	BaiParam_Publish,
+	BaiParam_includePackage,
 	BaiParam_UsePackage,
-	BaiParam_BuildTree,
 	BaiParam_ToESM,
 	BaiParam_Simulate,
+	BaiParam_ExtractDynamicDeps,
+	BaiParam_MapExports,
+	BaiParam_IndicesMcpServer,
+	BaiParam_IndicesMcpPort,
 	BaiParam_DebugLifecycle
 ];
 

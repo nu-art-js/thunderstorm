@@ -1,4 +1,4 @@
-import {addItemToArray, BadImplementationException, exists, flatArray, Logger, removeItemFromArray, timeCounter, TypedMap} from '@nu-art/ts-common';
+import {addItemToArray, asArray, BadImplementationException, exists, flatArray, Logger, removeItemFromArray, timeCounter, TypedMap} from '@nu-art/ts-common';
 import {RunningStatusHandler} from '../runtime/RunningStatusHandler.js';
 import {Phase} from './definitions/index.js';
 import {BaseUnit} from '../units/index.js';
@@ -67,33 +67,14 @@ export class PhaseManager
 			phaseGroup = phaseGroup.filter(phase => !exists(phase.filter) || phase.filter(this.runningStatus.runtimeParams));
 
 			for (const layer of this.units) {
-				// Determine eligible units for this phase group
-				// A unit is eligible if it's eligible for at least one phase in the group
-				const eligibleUnitKeys = new Set<string>();
-				for (const phase of phaseGroup) {
-					const unitCategory = phase.unitCategory ?? "active";
-					const phaseEligibleKeys = unitCategory === "project" ? this.projectUnitKeys : this.activeUnits;
-					phaseEligibleKeys.forEach(key => eligibleUnitKeys.add(key));
-				}
-
-				const layerUnits = layer.filter(u => eligibleUnitKeys.has(u.config.key));
+				const layerUnits = layer.filter(u => this.activeUnits.includes(u.config.key));
 				if (layerUnits.length === 0)
 					continue;
 
 				const phaseMap: Map<string, BaseUnit[]> = new Map();
 
 				for (const unit of layerUnits) {
-					// Find phases this unit supports and is eligible for
-					const supportedPhases = phaseGroup.filter(phase => {
-						if (!(phase.method in unit && typeof unit[phase.method as keyof typeof unit] === 'function'))
-							return false;
-						
-						// Check if unit is eligible for this specific phase
-						const unitCategory = phase.unitCategory ?? "active";
-						const phaseEligibleKeys = unitCategory === "project" ? this.projectUnitKeys : this.activeUnits;
-						return phaseEligibleKeys.includes(unit.config.key);
-					});
-
+					const supportedPhases = phaseGroup.filter(phase => phase.method in unit && typeof unit[phase.method as keyof typeof unit] === 'function');
 					if (supportedPhases.length === 0)
 						continue;
 

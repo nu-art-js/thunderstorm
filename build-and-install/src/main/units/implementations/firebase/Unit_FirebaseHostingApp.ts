@@ -59,11 +59,6 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	//######################### Phase Implementations #########################
 
 	async prepare() {
-		if (!this.config.envConfig.projectId.length) {
-			this.logWarning('envConfig: ', this.config.envConfig);
-			throw new ImplementationMissingException(`Missing EnvConfig in unit ${this.config.key}`);
-		}
-
 		await super.prepare();
 		await this.resolveHostingRC();
 		await this.resolveHostingJSON();
@@ -97,18 +92,21 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 			});
 
 		const debug = this.runtimeContext.runtimeParams.verbose ? ' --debug' : '';
-		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')}${debug} deploy --only hosting`, (stdout, stderr, exitCode) => {
-			if (exitCode === 0)
-				return;
-
-			throw new CommandoException(`Failed to deploy hosting with exit code ${exitCode}`, stdout, stderr, exitCode);
-		});
+		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')}${debug} deploy --only hosting`);
 	}
 
 	//######################### ResolveConfig Logic #########################
 
-	private async resolveHostingRC() {
+	private getEnvConfig() {
 		const envConfig = this.config.envConfig;
+		if (!envConfig)
+			throw new ImplementationMissingException(`Missing EnvConfig in unit ${this.config.label}`);
+
+		return envConfig;
+	}
+
+	private async resolveHostingRC() {
+		const envConfig = this.getEnvConfig();
 		const rcConfig = {projects: {default: envConfig.projectId}};
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseRC}`;
 		await FileSystemUtils.file.write.json(targetPath, rcConfig);
@@ -116,7 +114,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 
 	private async resolveHostingJSON() {
-		const envConfig = this.config.envConfig;
+		const envConfig = this.getEnvConfig();
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseJSON}`;
 		let fileContent: any;
 
@@ -136,7 +134,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	}
 
 	private async resolveHostingRuntimeConfig() {
-		const envConfig = this.config.envConfig.config;
+		const envConfig = this.getEnvConfig().config;
 		const targetPath = resolve(this.config.fullPath, `./src/main/config.ts`);
 		const fileContent = `export const config = ${JSON.stringify(envConfig, null, 2)};`;
 		await FileSystemUtils.file.write(targetPath, fileContent);
