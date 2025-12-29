@@ -1,7 +1,7 @@
 import {AbsolutePath, Logger, RelativePath, StringMap, TypeValidator} from '@nu-art/ts-common';
 import {BaseUnit} from '../../index.js';
 import {BAI_Config} from '../../../config/types/index.js';
-import {BaiParams} from '../../../params/params.js';
+import {BaiParams} from '../../../core/params.js';
 
 
 export type BaseUnitConfig = {

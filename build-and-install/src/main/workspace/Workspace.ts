@@ -1,5 +1,5 @@
 import {_keys, arrayToMap, Constructor, flatArray, Logger, TypedMap} from '@nu-art/ts-common';
-import {BaiParams} from '../params/params.js';
+import {BaiParams} from '../core/params.js';
 import {UnitsMapper} from '../units/discovery/UnitsMapper.js';
 import {UnitDependentNode, UnitsDependencyMapper} from '../dependencies/UnitsDependencyMapper.js';
 import {BaseUnit, ProjectUnit, Unit_NodeProject} from '../units/index.js';

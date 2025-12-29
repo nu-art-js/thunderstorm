@@ -1,6 +1,6 @@
 import fs, {promises as _fs} from 'fs';
 import {__stringify, Logger} from '@nu-art/ts-common';
-import {BaiParams} from '../params/params.js';
+import {BaiParams} from '../core/params.js';
 
 
 export class RunningStatusHandler

@@ -32,7 +32,7 @@ import {
 } from '../../phases/definitions/index.js';
 import {ProjectUnit_RuntimeContext} from '../base/ProjectUnit.js';
 import {glob} from 'node:fs/promises';
-import {TestType, TestTypes} from '../../params/params.js';
+import {TestType, TestTypes} from '../../core/params.js';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import path from 'node:path';
 import {ExportMapper} from '../../exports/ExportMapper.js';

@@ -12,7 +12,7 @@ import {
 import {UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
 import {Unit_FirebaseFunctionsApp} from '../../implementations/firebase/Unit_FirebaseFunctionsApp.js';
 import {resolve} from 'path';
-import {BaiParam_SetEnv} from '../../../params/params.js';
+import {BaiParam_SetEnv} from '../../../core/params.js';
 
 
 type EnvConfig = {
