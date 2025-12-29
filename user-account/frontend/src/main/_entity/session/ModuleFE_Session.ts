@@ -90,7 +90,7 @@ class ModuleFE_Session_Class
 		const prevSessionId = this.StorageKey_SessionId.get();
 		let sessionId = ModuleFE_RoutingV2.getQueryParameter(QueryParam_SessionId);
 		if (sessionId) {
-			ModuleFE_RoutingV2.removeQueryParam(QueryParam_SessionId);
+			setTimeout(() => ModuleFE_RoutingV2.removeQueryParam(QueryParam_SessionId), 1000);
 			this.StorageKey_SessionId.set(sessionId);
 			if (sessionId === prevSessionId)
 				this.onSessionUpdated(sessionId)
