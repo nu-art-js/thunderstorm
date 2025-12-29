@@ -276,19 +276,31 @@ export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
 };
 
-export const BaiParam_includePackage: BaseCliParam<'includePackage', string[]> = {
-	keys: ['-in', '--include='],
-	keyName: 'includePackage',
+export const BaiParam_BuildTree: BaseCliParam<'buildTree', boolean> = {
+	keys: ['--build-tree', '-bt'],
+	keyName: 'buildTree',
+	type: 'boolean',
+	group: 'Build',
+	description: 'When used with -up, makes all transitive dependencies active (compile/test them too)',
+};
+
+export const BaiParam_Apps: BaseCliParam<'includeApps', string[]> = {
+	keys: ['-app', '--application'],
+	keyName: 'includeApps',
 	type: 'string[]',
-	group: 'Other',
-	description: 'Will include the units to process',
+	group: 'Build',
+	description: 'Will include the applications and all their dependency units to the build process',
 	process: (value) => {
 		if (!value)
 			return [];
 
 		return value!.split(',').map(str => str.trim());
 	},
-	dependencies: []
+	isArray: true,
+	dependencies: [
+		{param: BaiParam_UsePackage, value: (currentValue: string[]) => currentValue},
+		{param: BaiParam_BuildTree, value: true}
+	]
 };
 
 export const BaiParam_ToESM: BaseCliParam<'toESM', boolean> = {
@@ -307,15 +319,6 @@ export const BaiParam_Simulate: BaseCliParam<'simulation', boolean> = {
 	group: 'Other',
 	description: 'In combination with other params, will not perform the outbound operation, but instead simulate it',
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
-};
-
-export const BaiParam_BuildTree: BaseCliParam<'buildTree', boolean> = {
-	keys: ['--build-tree', '-bt'],
-	keyName: 'buildTree',
-	type: 'boolean',
-	group: 'Build',
-	description: 'When using --use-package, also build transitive dependencies (not just prepare them)',
-	dependencies: [{param: BaiParam_UsePackage, value: true}]
 };
 
 export const BaiParam_CheckCyclicImports: BaseCliParam<'checkCyclicImports', boolean> = {
@@ -384,6 +387,7 @@ export const AllBaiParams = [
 	BaiParam_Generate, // TODO: to implement
 	BaiParam_GenerateDocs,// TODO: to implement
 	BaiParam_NoBuild,
+	BaiParam_Apps,
 	BaiParam_DryRun,
 	BaiParam_Lint,
 	BaiParam_Watch,
@@ -400,7 +404,6 @@ export const AllBaiParams = [
 	BaiParam_Debug,
 	BaiParam_Verbose,
 	BaiParam_Publish,
-	BaiParam_includePackage,
 	BaiParam_UsePackage,
 	BaiParam_ToESM,
 	BaiParam_Simulate,
