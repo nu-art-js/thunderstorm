@@ -12,12 +12,10 @@
     },
     "unitConfig": {
       "type": "typescript-lib",
-      "label": "lib-purge"
+      "label": "lib-purge",
+      "customTSConfig": true
     }
 }
-
-//// file: ./src/main/index.ts
-console.log('compiled output');
 
 //// file: ./dist/index.js
 console.log('compiled output');

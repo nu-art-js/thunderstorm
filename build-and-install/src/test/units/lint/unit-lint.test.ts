@@ -50,8 +50,6 @@ describe('TypescriptLib - Lint Phase', () => {
 		await workspaceCreator.setupWorkspace(['project-lib-lint.txt'], 'lib-lint');
 
 		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
-		buildAndInstall.runtimeParams.allUnits = true;
-
 		await buildAndInstall.build();
 		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
 		await buildAndInstall.run();
