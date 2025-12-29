@@ -18,6 +18,24 @@
 
 import {ModuleManager} from "./module-manager.js";
 
+/**
+ * Application class that extends ModuleManager with startup callback support.
+ * 
+ * Provides a convenient way to execute code after all modules have been initialized.
+ * The `onStarted` callback is executed asynchronously and errors are caught and logged
+ * but don't prevent the application from continuing.
+ * 
+ * @example
+ * ```typescript
+ * const app = new Application();
+ * app.addModulePack([ModuleA, ModuleB]);
+ * app.setConfig({ ... });
+ * app.build(async () => {
+ *   // This runs after all modules are initialized
+ *   await startServer();
+ * });
+ * ```
+ */
 export class Application
 	extends ModuleManager {
 
@@ -25,6 +43,16 @@ export class Application
 		super();
 	}
 
+	/**
+	 * Initializes all modules and optionally executes a startup callback.
+	 * 
+	 * The callback is executed asynchronously (fire-and-forget). If the callback
+	 * returns data, it will be logged. Errors in the callback are caught and logged
+	 * but don't affect the application state.
+	 * 
+	 * @param onStarted - Optional async callback to execute after initialization.
+	 *                    The callback's return value (if any) will be logged.
+	 */
 	build(onStarted?: () => Promise<any>) {
 		super.build();
 		onStarted && onStarted()

@@ -66,17 +66,45 @@ export function isErrorOfType<T extends Error>(e: Error | unknown, _exceptionTyp
  *
  * @category Exceptions
  */
+/**
+ * Base class for all custom exceptions in the nu-art ecosystem.
+ * 
+ * Extends the native Error class and adds:
+ * - Type identification via `exceptionType` (class name)
+ * - Runtime type checking via `isInstanceOf()` method
+ * - Markdown message generation for reporting
+ * - Optional cause chain for error tracking
+ * 
+ * **Important**: The `stack` property is set from a new Error instance to ensure
+ * proper stack trace capture at the point of exception creation.
+ * 
+ * @category Exceptions
+ */
 export abstract class CustomException
 	extends Error {
 
+	/** The name of the exception class (e.g., "BadImplementationException") */
 	public exceptionType: string;
 
+	/** 
+	 * Runtime type checker that compares exception types by class name.
+	 * Works with `isErrorOfType()` for type-safe error handling.
+	 */
 	public isInstanceOf: (_exceptionType: Function) => boolean;
 
+	/** Generates a markdown-formatted error message for reporting */
 	public generateMrkDwnMessage: () => string;
 
+	/** Optional underlying error that caused this exception (error chaining) */
 	public cause?: Error;
 
+	/**
+	 * Creates a new CustomException instance.
+	 * 
+	 * @param exceptionType - The exception class constructor (used to extract the class name)
+	 * @param message - Human-readable error message
+	 * @param cause - Optional underlying error that caused this exception
+	 */
 	protected constructor(exceptionType: Function, message: string, cause?: Error) {
 		super(message);
 		this.message = message;
@@ -94,8 +122,11 @@ export abstract class CustomException
 }
 
 /**
- * # <ins>Exception</ins>
- * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "Exception",
+ * Generic exception class for general error conditions.
+ * 
+ * Use this for errors that don't fit into more specific exception categories.
+ * For more specific cases, prefer the specialized exception classes.
+ * 
  * @category Exceptions
  */
 export class Exception
@@ -107,8 +138,11 @@ export class Exception
 }
 
 /**
- * # <ins>BadImplementationException</ins>
- * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "BadImplementationException",
+ * Thrown when code is implemented incorrectly or violates design constraints.
+ * 
+ * Use this for programming errors, incorrect API usage, or violations of
+ * architectural rules (e.g., module naming conventions, singleton violations).
+ * 
  * @category Exceptions
  */
 export class BadImplementationException
@@ -120,8 +154,11 @@ export class BadImplementationException
 }
 
 /**
- * # <ins>ImplementationMissingException</ins>
- * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "ImplementationMissingException",
+ * Thrown when required functionality has not been implemented.
+ * 
+ * Use this when code expects an implementation that is missing (e.g., abstract
+ * method not overridden, required module not registered).
+ * 
  * @category Exceptions
  */
 export class ImplementationMissingException
@@ -133,8 +170,11 @@ export class ImplementationMissingException
 }
 
 /**
- * # <ins>MUSTNeverHappenException</ins>
- * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "MUSTNeverHappenException",
+ * Thrown when a condition that MUST never occur is detected.
+ * 
+ * Use this for critical invariants that, if violated, indicate a serious bug
+ * or system corruption. This is stronger than `ThisShouldNotHappenException`.
+ * 
  * @category Exceptions
  */
 export class MUSTNeverHappenException
@@ -146,8 +186,12 @@ export class MUSTNeverHappenException
 }
 
 /**
- * # <ins>NotImplementedYetException</ins>
- * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "NotImplementedYetException",
+ * Thrown when functionality is planned but not yet implemented.
+ * 
+ * Use this for placeholder code or features that are in development.
+ * This is different from `ImplementationMissingException` which indicates
+ * a missing required implementation.
+ * 
  * @category Exceptions
  */
 export class NotImplementedYetException
@@ -159,8 +203,12 @@ export class NotImplementedYetException
 }
 
 /**
- * # <ins>ThisShouldNotHappenException</ins>
- * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "ThisShouldNotHappenException",
+ * Thrown when an unexpected but potentially recoverable condition occurs.
+ * 
+ * Use this for conditions that shouldn't happen under normal circumstances
+ * but might occur due to edge cases or external factors. Less severe than
+ * `MUSTNeverHappenException`.
+ * 
  * @category Exceptions
  */
 export class ThisShouldNotHappenException
@@ -268,17 +316,60 @@ export class AssertionException
 	}
 }
 
+/**
+ * Exception class for API errors with HTTP response codes and structured error bodies.
+ * 
+ * Used for errors that need to be returned to API clients with:
+ * - HTTP status code
+ * - Structured error response body
+ * - Debug message for server-side logging
+ * 
+ * The constructor accepts `causeOrMessage` as either a string (message) or Error (cause),
+ * allowing flexible error construction. If both `causeOrMessage` (as Error) and `cause`
+ * are provided, `causeOrMessage` takes precedence.
+ * 
+ * @template Err - Type of the error body (must extend ResponseError)
+ * 
+ * @category Exceptions
+ * 
+ * @example
+ * ```typescript
+ * // With message string
+ * throw new ApiException(404, 'Resource not found');
+ * 
+ * // With cause Error
+ * throw new ApiException(500, originalError);
+ * 
+ * // With both message and cause
+ * throw new ApiException(400, 'Invalid input', validationError);
+ * ```
+ */
 export class ApiException<Err extends ResponseError = ApiError_GeneralErrorMessage>
 	extends CustomException {
 
+	/** Structured error response body for API clients */
 	public readonly responseBody: ApiErrorResponse<Err> = {};
+	/** HTTP status code for the error response */
 	public readonly responseCode: number;
 
+	/**
+	 * Sets the error body and returns this instance for method chaining.
+	 * 
+	 * @param errorBody - Error body object to include in the response
+	 * @returns This instance for chaining
+	 */
 	public readonly setErrorBody = (errorBody: Err) => {
 		this.responseBody.error = errorBody;
 		return this;
 	};
 
+	/**
+	 * Creates a new ApiException.
+	 * 
+	 * @param responseCode - HTTP status code (e.g., 404, 500)
+	 * @param causeOrMessage - Either a message string or an Error object (as cause)
+	 * @param cause - Optional additional cause Error (only used if causeOrMessage is a string)
+	 */
 	constructor(responseCode: number, causeOrMessage?: string | Error, cause?: Error) {
 		super(ApiException, `${responseCode}${ApiException.getMessage(causeOrMessage)}`, ApiException.getCause(causeOrMessage, cause));
 
@@ -286,10 +377,18 @@ export class ApiException<Err extends ResponseError = ApiError_GeneralErrorMessa
 		this.responseBody.debugMessage = _logger_logException(this);
 	}
 
+	/**
+	 * Extracts message string from causeOrMessage if it's a string.
+	 */
 	private static getMessage(causeOrMessage?: string | Error) {
 		return typeof causeOrMessage === 'string' ? `-${JSON.stringify(causeOrMessage)}` : '';
 	}
 
+	/**
+	 * Extracts cause Error from parameters.
+	 * If causeOrMessage is an Error, it's used as the cause.
+	 * Otherwise, the cause parameter is used.
+	 */
 	private static getCause(causeOrMessage?: string | Error, cause?: Error) {
 		return typeof causeOrMessage != 'string' ? causeOrMessage : cause;
 	}
