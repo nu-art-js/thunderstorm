@@ -19,7 +19,7 @@ export const firebaseFunctionEmulator_WarningStrings: string[] = [
 	'⚠',
 ];
 
-type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean, identityAccount?: string };
+type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean };
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig?: FirebasePackageConfig;
 	pathToFirebaseConfig: string,
@@ -101,11 +101,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	async prepare() {
-		if (!this.config.envConfig.projectId.length) {
-			this.logWarning('envConfig: ', this.config.envConfig);
-			throw new ImplementationMissingException(`Missing EnvConfig in unit ${this.config.key}`);
-		}
-
 		await super.prepare();
 		await FileSystemUtils.folder.list.forEach.folder(this.config.fullPath, async (path) => {
 			if (path.replace(`${this.config.fullPath}/`, '').startsWith('firebase-export-'))
@@ -174,8 +169,16 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	//######################### ResolveConfig Logic #########################
 
-	private async resolveFunctionsRC() {
+	private getEnvConfig() {
 		const envConfig = this.config.envConfig;
+		if (!envConfig)
+			throw new ImplementationMissingException(`Missing EnvConfig in unit ${this.config.key}`);
+
+		return envConfig;
+	}
+
+	private async resolveFunctionsRC() {
+		const envConfig = this.getEnvConfig();
 		const rcConfig = {
 			projects: {
 				default: envConfig.projectId
@@ -193,7 +196,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async resolveProxyFile() {
-		const envConfig = this.config.envConfig;
+		const envConfig = this.getEnvConfig();
 		const targetPath = this.pathToProxy();
 		const path = this.runtimeContext.baiConfig.files?.backend?.proxy;
 		if (!path)
@@ -237,7 +240,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async resolveFunctionsJSON() {
-		const envConfig = this.config.envConfig;
+		const envConfig = this.getEnvConfig();
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseJSON}`;
 		let fileContent;
 		if (envConfig.isLocal) {
@@ -294,7 +297,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async resolveFunctionsRuntimeConfig() {
-		const envConfig = this.config.envConfig;
+		const envConfig = this.getEnvConfig();
 		const targetPath = `${this.config.fullPath}/src/main/config.ts`;
 		const envKey = this.runtimeContext.runtimeParams.environment;
 		const beConfig = {
@@ -352,31 +355,16 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private async runEmulator() {
-		let exportGoogleCredentials: string | undefined;
-
-		if (this.config.envConfig.identityAccount) {
-			const pathToIdentityAccount = resolve(this.config.fullPath, this.config.envConfig.identityAccount);
-			if (!FileSystemUtils.file.exists(pathToIdentityAccount))
-				throw new ImplementationMissingException(`Missing identity file at: ${pathToIdentityAccount}`);
-
-			exportGoogleCredentials = `export GOOGLE_APPLICATION_CREDENTIALS="${pathToIdentityAccount}"`;
-		}
-
-
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
-			.cd(this.config.fullPath);
+			.cd(this.config.fullPath)
+			.setLogLevelFilter((log, type) => {
+				if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
+					return LogLevel.Error;
 
-		if (exportGoogleCredentials)
-			commando.append(exportGoogleCredentials);
-
-		commando.setLogLevelFilter((log, type) => {
-			if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
-				return LogLevel.Error;
-
-			if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
-				return LogLevel.Warning;
-		})
+				if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
+					return LogLevel.Warning;
+			})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'));
 
 		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend

@@ -29,7 +29,7 @@ export class UnitsMapper
 			if (!unit)
 				continue;
 
-			this.logVerbose(`Found unit ${unit.config.key} at path ${path}`);
+			this.logDebug(`Found unit ${unit.config.key} at path ${path}`);
 			units.push(unit);
 			if (!unit.config.isRoot)
 				return units;

@@ -21,13 +21,14 @@ import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {resolve} from 'path';
 import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {PhaseManager} from '../../phases/PhaseManager.js';
-import {phase_CompileWatch, Phase_Install, Phase_PostPublish, Phase_Watch} from '../../phases/definitions/index.js';
+import {phase_CompileWatch, Phase_Install, Phase_IndicesMcpServer, Phase_PostPublish, Phase_Watch} from '../../phases/definitions/index.js';
 import {UnitsDependencyMapper} from '../../dependencies/UnitsDependencyMapper.js';
 import {BaseUnit} from '../base/BaseUnit.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {CONST_PNPM_LOCK, CONST_PNPM_WORKSPACE} from '../../config/consts.js';
 import {RunningStatusHandler} from '../../runtime/RunningStatusHandler.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {IndicesMcpServer} from '../../exports/IndicesMcpServer.js';
 
 
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
@@ -39,7 +40,7 @@ type PathDeclaration = { fullPath: string, paths: string[], unit: Unit_Typescrip
 
 export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config>
 	extends Unit_PackageJson<C>
-	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch, Phase_PostPublish]> {
+	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch, Phase_PostPublish, Phase_IndicesMcpServer]> {
 
 	private watcher?: FSWatcher;
 	readonly innerUnits: Unit_PackageJson[] = [];
@@ -156,6 +157,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 				//add unit to set
 				units.add(unit);
+
 
 				return unit;
 			};
@@ -309,5 +311,47 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 	async postPublish() {
 
+	}
+
+	async indicesMcpServer() {
+		this.setStatus('Starting Export Indices MCP Server', 'start');
+
+		const projectRoot = this.config.fullPath;
+		const port = this.runtimeContext.runtimeParams.indicesMcpPort || 3001;
+
+		// Get active TypeScriptLib packages
+		const packages = this.innerUnits.filter(unit => unit.isInstanceOf(Unit_TypescriptLib)) as Unit_TypescriptLib[];
+
+		if (packages.length === 0) {
+			this.logWarning('No TypeScriptLib packages found. MCP server will have no packages to expose.');
+		}
+
+		const server = new IndicesMcpServer(port, projectRoot, packages);
+
+		// Handle graceful shutdown
+		const shutdown = async () => {
+			this.logInfo('Shutting down Export Indices MCP Server...');
+			await server.stop();
+			process.exit(0);
+		};
+
+		process.on('SIGINT', shutdown);
+		process.on('SIGTERM', shutdown);
+
+		try {
+			await server.start();
+			this.setStatus('Export Indices MCP Server running', 'end');
+			this.logInfo(`Export Indices MCP Server is running on http://localhost:${port}`);
+			this.logInfo('Press Ctrl+C to stop the server');
+
+			// Keep process alive - return a promise that never resolves
+			return new Promise<void>(() => {
+				// This promise never resolves, keeping the process alive
+			});
+		} catch (error: any) {
+			this.logError('Failed to start Export Indices MCP Server:', error);
+			this.setStatus('Export Indices MCP Server failed', 'end');
+			throw error;
+		}
 	}
 }

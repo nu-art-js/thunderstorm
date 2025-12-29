@@ -56,7 +56,6 @@ export const phase_Prepare: Phase<'prepare'> = {
 	name: 'Prepare',
 	method: 'prepare',
 	filter: (baiParams) => baiParams.prepare,
-	unitCategory: "project", // All project units need to be prepared
 };
 
 export type Phase_Install = typeof phase_Install;
@@ -85,6 +84,24 @@ export const phase_PreCompile: Phase<'preCompile'> = {
 	name: 'PreCompile',
 	method: 'preCompile',
 	filter: (baiParams) => !baiParams.noBuild,
+};
+
+export type Phase_ExtractDynamicDeps = typeof phase_ExtractDynamicDeps;
+export const phaseKey_ExtractDynamicDeps = 'extract-dynamic-deps';
+export const phase_ExtractDynamicDeps: Phase<'extractDynamicDeps'> = {
+	key: phaseKey_ExtractDynamicDeps,
+	name: 'Extract Dynamic Dependencies',
+	method: 'extractDynamicDeps',
+	filter: (baiParams) => baiParams.extractDynamicDeps,
+};
+
+export type Phase_MapExports = typeof phase_MapExports;
+export const phaseKey_MapExports = 'map-exports';
+export const phase_MapExports: Phase<'mapExports'> = {
+	key: phaseKey_MapExports,
+	name: 'Map Exports',
+	method: 'mapExports',
+	filter: (baiParams) => baiParams.mapExports,
 };
 
 export type Phase_Compile = typeof phase_Compile;
@@ -129,7 +146,7 @@ export const phases_Build: Phase<string>[][] = [
 	[phase_Purge, phase_Prepare],
 	[phase_ToESM],
 	[phase_Install],
-	[phase_Lint, phase_PreCompile, phase_Compile, phase_Test,],
+	[phase_Lint, phase_PreCompile, phase_ExtractDynamicDeps, phase_MapExports, phase_Compile, phase_Test,],
 	[phase_Watch]
 ];
 
@@ -145,8 +162,18 @@ export const phase_Launch: Phase<'launch'> = {
 	filter: (baiParams) => !!baiParams.launch,
 };
 
+export type Phase_IndicesMcpServer = typeof phase_IndicesMcpServer;
+export const phaseKey_IndicesMcpServer = 'indices-mcp-server';
+export const phase_IndicesMcpServer: Phase<'indicesMcpServer'> = {
+	key: phaseKey_IndicesMcpServer,
+	name: 'Export Indices MCP Server',
+	method: 'indicesMcpServer',
+	filter: (baiParams) => baiParams.indicesMcpServer,
+};
+
 export const phases_Launch: Phase<string>[][] = [[
 	phase_Launch,
+	phase_IndicesMcpServer,
 ]];
 
 //######################### Publish and Deploy Phases #########################
