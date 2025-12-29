@@ -22,13 +22,29 @@ import {tsValidateResult} from '../validator/validator-core.js';
 import {tsValidateVersion} from '../validator/validators.js';
 
 /**
- *
- * @param firstVersion a version
- * @param secondVersion another version
- *
- * @return -1 if first is greater
- *          0 if versions match
- *          1 if second is greater
+ * Compares two semantic version strings.
+ * 
+ * Extracts the major.minor.patch pattern from each version string and compares
+ * them numerically. Only the first matching pattern is used (e.g., "1.2.3-beta"
+ * becomes "1.2.3").
+ * 
+ * **Comparison logic**:
+ * - Compares major, then minor, then patch numbers
+ * - Returns -1 if first version is greater
+ * - Returns 0 if versions are equal
+ * - Returns 1 if second version is greater
+ * 
+ * @param firstVersion - First version string (must contain X.Y.Z pattern)
+ * @param secondVersion - Second version string (must contain X.Y.Z pattern)
+ * @returns Comparison result: -1, 0, or 1
+ * @throws BadImplementationException if versions are undefined or don't contain X.Y.Z pattern
+ * 
+ * @example
+ * ```typescript
+ * compareVersions('1.2.3', '1.2.4') // Returns 1 (second is greater)
+ * compareVersions('2.0.0', '1.9.9') // Returns -1 (first is greater)
+ * compareVersions('1.0.0', '1.0.0') // Returns 0 (equal)
+ * ```
  */
 export function compareVersions(firstVersion: string, secondVersion: string) {
 	if (!firstVersion)
@@ -66,8 +82,13 @@ export function compareVersions(firstVersion: string, secondVersion: string) {
 }
 
 /**
- * Expects a version of XXX.YYY.ZZZ and nothing else
- * @param version
+ * Validates that a version string matches the semantic version format (X.Y.Z).
+ * 
+ * Uses the validator system to check that the version string contains exactly
+ * three dot-separated numbers with no other content.
+ * 
+ * @param version - Version string to validate
+ * @returns Validation result object
  */
 export function validateVersion(version: string) {
 	return tsValidateResult(version, tsValidateVersion);

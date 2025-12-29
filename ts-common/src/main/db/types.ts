@@ -2,27 +2,66 @@ import {DB_Object, DotNotation, DotNotationValueType, OmitDBObject, SubsetObject
 import {ValidatorTypeResolver} from '../validator/validator-core.js';
 
 
+/**
+ * Database reference ID structure.
+ * 
+ * Represents a reference to another database object with metadata.
+ */
 export type DB_RefId = {
 	refId: {
+		/** Reference ID string */
 		_refId: string
+		/** Database key (collection name) */
 		dbKey: string
+		/** Object ID */
 		id: string
 	}
 }
 
+/**
+ * Database index definition.
+ * 
+ * Defines an index on one or more fields of a database object.
+ * 
+ * @template T - Database object type
+ */
 export type DBIndex<T extends DB_Object> = {
+	/** Index identifier */
 	id: string,
+	/** Field(s) to index (single key or array of keys) */
 	keys: keyof T | (keyof T)[],
+	/** Optional index parameters */
 	params?: { multiEntry: boolean, unique: boolean }
 };
 
+/** Default unique key name for database objects */
 export type Default_UniqueKey = '_id';
+/** Version type (semantic version string) */
 export type VersionType = string
+
+/**
+ * Version declaration for database object versioning.
+ * 
+ * Defines available versions and their corresponding types.
+ * 
+ * @template Versions - Array of version strings
+ * @template Types - Map of version to object type
+ */
 export type VersionsDeclaration<Versions extends VersionType[] = ['1.0.0'], Types extends { [V in Versions[number]]: DB_Object } = { [V in Versions[number]]: DB_Object }> = {
+	/** Array of version strings */
 	versions: Versions
+	/** Map of version to object type */
 	types: Types
 };
 
+/**
+ * Type for defining dependencies between database objects.
+ * 
+ * Maps dot-notation paths to DBProto definitions, allowing type-safe
+ * references to related database objects.
+ * 
+ * @template T - Object type with dependencies
+ */
 export type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DBProto<any> }
 
 type Exact<T, Shape> = T & {
@@ -142,6 +181,16 @@ export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> =
 }
 export type test = TypeOfTypeAsString<DotNotationValueType<{ a?: { b?: string } }, 'a.b'>>
 
+/**
+ * Converts a TypeScript type to a string representation.
+ * 
+ * Maps types to their string equivalents for metadata/validation:
+ * - Arrays: 'string[]', 'number[]', 'boolean[]', 'object[]', or 'array'
+ * - Primitives: 'string', 'number', 'boolean'
+ * - Objects: 'object'
+ * 
+ * @template ValueType - Type to convert
+ */
 export type TypeOfTypeAsString<ValueType> =
 	ValueType extends any[] ?
 		ValueType extends string[] ? 'string[]' :
@@ -155,20 +204,45 @@ export type TypeOfTypeAsString<ValueType> =
 					ValueType extends object ? 'object' :
 						never;
 
+/**
+ * Metadata for a single property.
+ * 
+ * @template ValueType - Property value type
+ */
 export type MetadataProperty<ValueType> = {
+	/** String representation of the value type */
 	valueType: TypeOfTypeAsString<ValueType>,
+	/** Whether the property is optional */
 	optional: boolean,
+	/** Human-readable description */
 	description: string
 
 }
 
+/**
+ * Metadata for an object type (all properties required).
+ * 
+ * @template T - Object type
+ */
 export type MetadataObject<T> = { [K in keyof T]-?: MetadataNested<T[K]> };
 
+/**
+ * Metadata for a nested type (handles arrays and objects recursively).
+ * 
+ * @template T - Type to get metadata for
+ */
 export type MetadataNested<T> =
 	T extends (infer I)[] ? MetadataProperty<T> & { metadata: Metadata<I> } :
 		T extends object ? MetadataProperty<T> & { metadata: MetadataObject<T> } :
 			MetadataProperty<T>;
 
+/**
+ * Metadata type that handles arrays, objects, and primitives.
+ * 
+ * Recursively defines metadata for nested structures.
+ * 
+ * @template T - Type to get metadata for
+ */
 export type Metadata<T> =
 	T extends (infer I)[] ? MetadataProperty<T> & { metadata: Metadata<I> } :
 		T extends object ? MetadataObject<T> :

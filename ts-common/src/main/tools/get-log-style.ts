@@ -18,6 +18,11 @@
 
 import {_keys} from '../utils/object-tools.js';
 
+/**
+ * CSS style properties for console.log() styling.
+ * 
+ * Used with the `%c` format specifier in console.log() to apply CSS styles.
+ */
 export type LogStyle = {
 	'color'?: string;
 	'background-color'?: string;
@@ -26,11 +31,19 @@ export type LogStyle = {
 }
 
 /**
- * Returns a style string for console.log()
- * To log with style, make sure to add '%c' at the start of the log.
- * log structure should be: console.log('%cTEXT HERE', STYLE STRING, any other items to log)
- *
- * @param styleObj - one or more style objects defining the log style
+ * Generates a CSS style string for console.log() formatting.
+ * 
+ * Combines multiple style objects into a single CSS string compatible with
+ * the `%c` format specifier in console.log().
+ * 
+ * **Usage**:
+ * ```typescript
+ * const style = getLogStyle({color: 'red', 'background-color': 'yellow'});
+ * console.log('%cStyled text', style, 'normal text');
+ * ```
+ * 
+ * @param styleObj - One or more style objects (merged together)
+ * @returns CSS style string
  */
 export function getLogStyle(...styleObj: LogStyle[]): string {
 	let style = '';
