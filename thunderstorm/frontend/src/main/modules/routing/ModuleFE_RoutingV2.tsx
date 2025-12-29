@@ -1,5 +1,6 @@
 import {ComponentClass, FunctionComponent} from 'react';
-import {BrowserRouter, Navigate, NavigateFunction, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
+import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
+import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {TS_Route} from './types.js';
 import {BadImplementationException, composeQueryParams, composeUrl, exists, Module, removeItemFromArray, _keys} from '@nu-art/ts-common';
 import {LocationChangeListener} from './LocationChangeListener.js';
@@ -23,7 +24,12 @@ class ModuleFE_RoutingV2_Class
 	private routesMapByPath: {
 		[fullPath: string]: TS_Route
 	} = {};
-	private navigate!: NavigateFunction;
+	private readonly history: History<any>;
+
+	constructor() {
+		super();
+		this.history = createBrowserHistory();
+	}
 
 	// ######################## Public Functions ########################
 
@@ -34,7 +40,7 @@ class ModuleFE_RoutingV2_Class
 			if (window.location.href === url)
 				return this.logWarning(`attempting to set same route: ${url}`);
 
-			this.navigate(url);
+			this.history.push(url);
 		} catch (e: any) {
 			this.logError(`cannot resolve route for route: `, route, e);
 			throw e;
@@ -176,10 +182,6 @@ class ModuleFE_RoutingV2_Class
 		return this.routesMapByPath[window.location.pathname];
 	}
 
-	setNavigate(navigate: NavigateFunction) {
-		this.navigate = navigate;
-	}
-
 	// ######################## Query Param Methods ########################
 
 	/**
@@ -280,7 +282,7 @@ class ModuleFE_RoutingV2_Class
 	 */
 	push(location: { pathname: string; search?: string; hash?: string }) {
 		const url = this.composeLocationUrl(location);
-		this.navigate(url);
+		this.history.push(url);
 	}
 
 	/**
@@ -289,7 +291,7 @@ class ModuleFE_RoutingV2_Class
 	 */
 	replace(location: { pathname: string; search?: string; hash?: string }) {
 		const url = this.composeLocationUrl(location);
-		this.navigate(url, { replace: true });
+		this.history.replace(url);
 	}
 
 	// ######################## Private Helper Methods ########################
@@ -349,7 +351,7 @@ class ModuleFE_RoutingV2_Class
 
 	private updateQueryParams(encodedQueryParams: UrlQueryParams) {
 		const url = this.createLocationDataFromQueryParams(encodedQueryParams);
-		this.navigate(url, { replace: true });
+		this.history.replace(url);
 	}
 
 	private composeLocationUrl(location: { pathname: string; search?: string; hash?: string }): string {
