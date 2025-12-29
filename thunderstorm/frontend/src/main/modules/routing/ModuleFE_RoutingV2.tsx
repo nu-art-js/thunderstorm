@@ -1,13 +1,20 @@
 import {ComponentClass, FunctionComponent} from 'react';
 import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
-import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
+import {createBrowserHistory, History} from 'history';
 import {TS_Route} from './types.js';
-import {BadImplementationException, composeQueryParams, composeUrl, exists, Module, removeItemFromArray, _keys} from '@nu-art/ts-common';
-import {LocationChangeListener} from './LocationChangeListener.js';
+import {_keys, BadImplementationException, composeQueryParams, composeUrl, exists, Module, removeItemFromArray} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
 import {QueryParams, UrlQueryParams} from '@nu-art/thunderstorm-shared';
 import {mouseEventHandler, stopPropagation} from '../../utils/tools.js';
 import {AwaitModules} from '../../components/AwaitModules/AwaitModules.js';
 import {AwaitSync} from '../../components/AwaitSync/AwaitSync.js';
+
+
+export interface OnLocationChanged {
+	__onLocationChanged: (path: string) => void;
+}
+
+export const dispatch_onLocationChanged = new ThunderDispatcher<OnLocationChanged, '__onLocationChanged'>('__onLocationChanged');
 
 
 class ModuleFE_RoutingV2_Class
@@ -29,6 +36,9 @@ class ModuleFE_RoutingV2_Class
 	constructor() {
 		super();
 		this.history = createBrowserHistory();
+		this.history.listen((location) => {
+			dispatch_onLocationChanged.dispatchUI(location.pathname);
+		});
 	}
 
 	// ######################## Public Functions ########################
@@ -60,7 +70,6 @@ class ModuleFE_RoutingV2_Class
 		</Routes>;
 
 		return <BrowserRouter>
-			<LocationChangeListener/>
 			<RoutesRenderer/>
 		</BrowserRouter>;
 	}
