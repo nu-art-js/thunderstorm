@@ -309,6 +309,15 @@ export const BaiParam_Simulate: BaseCliParam<'simulation', boolean> = {
 	dependencies: [{param: BaiParam_AllUnits, value: true}]
 };
 
+export const BaiParam_BuildTree: BaseCliParam<'buildTree', boolean> = {
+	keys: ['--build-tree', '-bt'],
+	keyName: 'buildTree',
+	type: 'boolean',
+	group: 'Build',
+	description: 'When using --use-package, also build transitive dependencies (not just prepare them)',
+	dependencies: [{param: BaiParam_UsePackage, value: true}]
+};
+
 export const BaiParam_CheckCyclicImports: BaseCliParam<'checkCyclicImports', boolean> = {
 	keys: ['--check-cyclic-imports', '-cci'],
 	keyName: 'checkCyclicImports',
@@ -395,6 +404,7 @@ export const AllBaiParams = [
 	BaiParam_UsePackage,
 	BaiParam_ToESM,
 	BaiParam_Simulate,
+	BaiParam_BuildTree,
 	BaiParam_ExtractDynamicDeps,
 	BaiParam_MapExports,
 	BaiParam_IndicesMcpServer,

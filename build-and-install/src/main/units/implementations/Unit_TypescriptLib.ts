@@ -35,8 +35,8 @@ import {glob} from 'node:fs/promises';
 import {TestType, TestTypes} from '../../params/params.js';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import path from 'node:path';
-import {TsConfig} from './types.js';
 import {ExportMapper} from '../../exports/ExportMapper.js';
+import {TsConfig} from '../base/types.js';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
