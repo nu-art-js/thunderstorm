@@ -22,6 +22,16 @@ import {NestedArrayType, TypedMap} from './types.js';
 import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 
+/**
+ * Splits an array into two arrays based on a filter condition.
+ * 
+ * More efficient than calling filter twice as it only iterates once, but note
+ * that it still creates two new arrays. The original array is not modified.
+ * 
+ * @param input - Array to filter
+ * @param filter - Function that returns true for items to include in filteredIn
+ * @returns Object with filteredIn (matching items) and filteredOut (non-matching items)
+ */
 export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { filteredIn: T[], filteredOut: T[] } {
 	return {
 		filteredIn: input.filter(filter),
@@ -30,8 +40,13 @@ export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { fi
 }
 
 /**
- * Finds and removes first instance of item from array
- * tested V
+ * Finds and removes the first instance of an item from an array (in-place).
+ * 
+ * Uses reference equality (===) to find the item. Only removes the first match.
+ * 
+ * @param array - Array to modify (modified in-place)
+ * @param item - Item to remove
+ * @returns The modified array (same instance)
  */
 export function removeItemFromArray<T>(array: T[], item: T) {
 	const index = array.indexOf(item);
@@ -39,8 +54,14 @@ export function removeItemFromArray<T>(array: T[], item: T) {
 }
 
 /**
- * Removes the first item answering the condition given from array in place
- * tested V
+ * Removes the first item matching the condition from an array (in-place).
+ * 
+ * **Important**: This modifies the array in-place by clearing it and repopulating
+ * it with the filtered items. Only the first matching item is removed.
+ * 
+ * @param array - Array to modify (modified in-place)
+ * @param filter - Function that returns true for the item to remove
+ * @returns The modified array (same instance)
  */
 export function removeFromArray<T>(array: T[], filter: (_item: T) => boolean) {
 	const kept = array.filter(x => !filter(x));
@@ -60,6 +81,15 @@ export function removeFromArrayByIndex<T>(array: T[], index: number) {
 	return array;
 }
 
+/**
+ * Swaps two elements in an array by their indices (in-place).
+ * 
+ * @param array - Array to modify (modified in-place)
+ * @param i1 - Index of first element
+ * @param i2 - Index of second element
+ * @returns The modified array (same instance)
+ * @throws {BadImplementationException} If either index is out of bounds
+ */
 export function swapInArrayByIndex<T>(array: T[], i1: number, i2: number) {
 	if (i1 < 0 || i1 >= array.length)
 		throw new BadImplementationException(`index i1 out of bounds: ${i1}`);
@@ -100,7 +130,14 @@ export function toggleElementInArray<T>(array: T[], item: T) {
 }
 
 /**
- * Removes all items answering the condition given from array in place
+ * Filters an array using an async filter function.
+ * 
+ * All filter operations are executed in parallel, then the results are applied
+ * to create the filtered array. The original array is not modified.
+ * 
+ * @param arr - Array to filter
+ * @param filter - Async or sync function that returns a boolean or Promise<boolean>
+ * @returns Promise that resolves to the filtered array
  */
 export async function filterAsync<T>(arr: T[], filter: (parameter: T) => (Promise<boolean> | boolean)): Promise<T[]> {
 	//const boolArray = await arr.map(item => filter(item)); changed
@@ -120,8 +157,19 @@ export function findDuplicates<T>(array1: T[], array2: T[]): T[] {
 const defaultMapper: <T>(item: T) => any = (item) => item;
 
 /**
- remove all duplicates in array
- * */
+ * Removes duplicate items from an array based on a key or mapper function.
+ * 
+ * When a mapper is provided, uniqueness is determined by the mapped value.
+ * For objects, you can specify a property key or a custom mapper function.
+ * 
+ * **Note**: The implementation uses `Set.delete()` which modifies the Set.
+ * This works because `delete()` returns true if the item was present, false otherwise.
+ * 
+ * @param source - Array to deduplicate
+ * @param mapper - Optional property key or function to extract uniqueness key.
+ *                 If not provided, uses reference equality (Set-based deduplication).
+ * @returns New array with duplicates removed (preserves first occurrence)
+ */
 export function filterDuplicates<T>(source: T[], mapper: (keyof T) | ((item: T) => any) = defaultMapper): T[] {
 	if (defaultMapper === mapper)
 		return Array.from(new Set(source));
@@ -152,8 +200,16 @@ export function filterFalsy<T>(array?: (T | undefined | null | void)[]): T[] {
 }
 
 /**
- * receives array and builds hashmap whom keys are decided via function and values are from array
- * */
+ * Converts an array to a map/object where keys are determined by a function.
+ * 
+ * Each array item becomes a value in the map. The key can be a single value
+ * or an array of keys (in which case the same value is stored under multiple keys).
+ * 
+ * @param array - Array to convert
+ * @param getKey - Function that returns a key or array of keys for each item
+ * @param map - Optional existing map to merge into (modified in-place)
+ * @returns Map object with array items as values
+ */
 export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: TypedMap<T>) => string | number | (string | number)[], map: TypedMap<T> = {}): TypedMap<T> {
 	return reduceToMap<T, T>(array, getKey, item => item, map);
 }
@@ -165,8 +221,16 @@ type KeyResolver<Input, Output = Input> = (item: Input, index: number, map: {
 type Mapper<Input, Output = Input> = (item: Input, index: number, map: { [k: string]: Output }) => Output;
 
 /**
- * turns array into object that is similar to hashmap
- *
+ * Reduces an array to a map/object with custom key resolution and value mapping.
+ * 
+ * More flexible than `arrayToMap` as it allows transforming values via the mapper.
+ * Keys can be single values or arrays (for storing the same value under multiple keys).
+ * 
+ * @param array - Array to reduce
+ * @param keyResolver - Function that returns key(s) for each item
+ * @param mapper - Function that transforms each item into the output value
+ * @param map - Optional existing map to merge into (modified in-place)
+ * @returns Map object with transformed values
  */
 export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<Input[]>), keyResolver: KeyResolver<Input, Output>, mapper: Mapper<Input, Output>, map: TypedMap<Output> = {}): TypedMap<Output> {
 	return (array as (Input[])).reduce((toRet, element, index) => {
@@ -182,8 +246,18 @@ export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<In
 }
 
 /**
- * sorts array
- * */
+ * Sorts an array by a key, array of keys, or custom mapper function.
+ * 
+ * **Important**: This modifies the array in-place (mutates the original array).
+ * 
+ * When multiple keys are provided, sorting is done hierarchically (first by
+ * first key, then by second key, etc.). The `invert` parameter reverses the sort order.
+ * 
+ * @param array - Array to sort (modified in-place)
+ * @param map - Property key(s) or function to extract sort value. Defaults to identity.
+ * @param invert - If true, sorts in descending order
+ * @returns The sorted array (same instance, modified in-place)
+ */
 export function sortArray<T>(array: T[], map: keyof T | (keyof T)[] | ((item: T) => any) = i => i, invert = false): T[] {
 	const functionMap = map;
 	if (typeof functionMap === 'function') {
@@ -208,8 +282,19 @@ export function sortArray<T>(array: T[], map: keyof T | (keyof T)[] | ((item: T)
 }
 
 /**
- * "splits" array into given size of chunks and then does "action" on chunk and return to array of actions on chunks +-
- * */
+ * Processes an array in batches sequentially, applying an async action to each batch.
+ * 
+ * Splits the array into chunks of the specified size and processes each chunk
+ * one at a time (sequentially). The action can return a single value or an array
+ * of values, which are all collected into the result array.
+ * 
+ * Use this when you need to limit concurrency or process items in order.
+ * 
+ * @param arr - Array to process
+ * @param chunk - Size of each batch
+ * @param action - Async function that processes a batch and returns result(s)
+ * @returns Promise that resolves to an array of all results
+ */
 export async function batchAction<T = any, R = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
 	const result: R[] = [];
 	for (let i = 0, j = arr.length; i < j; i += chunk) {
@@ -249,6 +334,19 @@ export async function Promise_all_sequentially<T>(promises: Array<() => Promise<
 	return results;
 }
 
+/**
+ * Processes an array in batches in parallel, applying an async action to each batch.
+ * 
+ * Splits the array into chunks and processes all chunks concurrently using Promise.all.
+ * The action can return a single value or an array of values, which are all collected.
+ * 
+ * Use this when you want maximum concurrency and order doesn't matter.
+ * 
+ * @param arr - Array to process
+ * @param chunk - Size of each batch
+ * @param action - Async function that processes a batch and returns result(s)
+ * @returns Promise that resolves to an array of all results
+ */
 export async function batchActionParallel<T = any, R = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
 	const promises: Promise<R>[] = [];
 	for (let i = 0, j = arr.length; i < j; i += chunk) {
@@ -270,9 +368,14 @@ export async function batchActionParallel<T = any, R = any>(arr: T[], chunk: num
 }
 
 /**
- * Returns a flat array from an array of arrays.
- * @param arr An array that is potentially a matrix
- * @param result A flat array of single values
+ * Recursively flattens a nested array structure into a single-level array.
+ * 
+ * **Important**: The `result` parameter is modified in-place. If you don't want
+ * to mutate an existing array, pass a new empty array or omit the parameter.
+ * 
+ * @param arr - Nested array to flatten
+ * @param result - Array to accumulate results into (modified in-place, defaults to new array)
+ * @returns Flattened array (same instance as result parameter)
  */
 export function flatArray<T extends any[], K = NestedArrayType<T>>(arr: T, result: K[] = []): K[] {
 	for (let i = 0, length = arr.length; i < length; i++) {
@@ -290,6 +393,16 @@ export function filterFlatInstances<T extends any[], K = NestedArrayType<T>>(arr
 	return filterInstances(flatArray(arr, result)) as Exclude<K, undefined>[];
 }
 
+/**
+ * Groups array items by a key extracted via a mapper function.
+ * 
+ * Creates an array of objects, each containing a key and the array of items
+ * that map to that key.
+ * 
+ * @param arr - Array to group
+ * @param mapper - Function that extracts the grouping key from each item
+ * @returns Array of objects with `key` and `values` properties
+ */
 export function groupArrayBy<T, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): {
 	key: K,
 	values: T[]

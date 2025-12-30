@@ -2,8 +2,12 @@ import {_keys} from '../../utils/object-tools.js';
 import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, LogClient} from './LogClient.js';
 import {LogLevel, LogParam} from './types.js';
 
+/** Array of primitive types that can be combined with prefix */
 const PrimitiveLogParams: LogParam[] = ['string', 'number', 'boolean'];
 
+/**
+ * CSS style object for browser console styling.
+ */
 export type LoggerStyleObject = {
 	color?: string;
 	'background-color'?: string;
@@ -12,6 +16,14 @@ export type LoggerStyleObject = {
 	'border-radius'?: string;
 }
 
+/**
+ * Log client for browser console with grouped output and styled prefixes.
+ * 
+ * Uses browser console's grouping feature (console.groupCollapsed) to organize
+ * logs. Applies CSS styling to different parts of the log prefix (level, timestamp, tag)
+ * for visual distinction. If the first log parameter is a primitive, it's combined
+ * with the prefix for cleaner output.
+ */
 class LogClient_BrowserGroups_Class
 	extends LogClient {
 
@@ -28,6 +40,19 @@ class LogClient_BrowserGroups_Class
 		return `%c${_logger_getPrefix(level)}%c${date}%c${tag}`;
 	}
 
+	/**
+	 * Outputs log messages with browser console grouping and styling.
+	 * 
+	 * If the first parameter is a primitive (string/number/boolean), it's combined
+	 * with the prefix for cleaner single-line output. Otherwise, uses console.groupCollapsed
+	 * to create a collapsible group with the prefix as the header and remaining parameters
+	 * as grouped content.
+	 * 
+	 * @param level - Log level
+	 * @param bold - Whether to apply bold formatting
+	 * @param prefix - Composed prefix string (with %c markers for styling)
+	 * @param toLog - Array of values to log
+	 */
 	protected logMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]): void {
 		if (!prefix.startsWith('%c'))
 			prefix = `%c ${prefix}`;

@@ -99,6 +99,39 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 	},
 };
 
+/**
+ * TypeScript library unit for building TypeScript packages.
+ * 
+ * **Key Responsibilities**:
+ * - Compiles TypeScript to JavaScript
+ * - Runs tests (pure, firebase, ui, mobile)
+ * - Lints code
+ * - Publishes packages
+ * - Manages assets (JSON, SCSS, SVG, images)
+ * - Handles ESM conversion
+ * 
+ * **Phases Implemented**:
+ * - `preCompile()`: Prepares compilation (creates output dir, clears if needed)
+ * - `compile()`: Compiles TypeScript using tsc
+ * - `watchCompile()`: Incremental compilation for watch mode
+ * - `runTests()`: Runs tests based on test type
+ * - `lint()`: Lints code using ESLint
+ * - `publish()`: Publishes package to registry
+ * - `convertToESM()`: Converts package to ESM format
+ * - `printDependencyTree()`: Prints dependency tree
+ * - `checkCyclicImports()`: Checks for circular imports
+ * 
+ * **Test Types**:
+ * - **pure**: Standard TypeScript tests (ts-mocha)
+ * - **firebase**: Tests with Firebase emulators
+ * - **ui**: UI tests (not implemented)
+ * - **mobile**: Mobile tests (not implemented)
+ * 
+ * **Asset Management**: Automatically copies non-TypeScript files (JSON, SCSS, SVG, images)
+ * to output directory during compilation.
+ * 
+ * **Dependency Resolution**: Resolves transitive dependencies for compilation order.
+ */
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test, Phase_Publish, Phase_ToESM, Phase_ExtractDynamicDeps, Phase_MapExports]> {
