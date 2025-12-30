@@ -104,6 +104,15 @@ service firebase.storage {
     "type": "firebase-function",
     "label": "firebase-function-hello",
     "customTSConfig": true,
+    "containerDeployment": {
+      "artifactRegistry": {
+        "region": "us-central1",
+        "repository": "firebase-functions",
+        "projectId": "{{FIREBASE_TEST_PROJECT}}"
+      },
+      "imageName": "firebase-function-hello",
+      "dockerfile": "Dockerfile"
+    },
     "envs": {
       "test": {
         "projectId": "{{FIREBASE_TEST_PROJECT}}",

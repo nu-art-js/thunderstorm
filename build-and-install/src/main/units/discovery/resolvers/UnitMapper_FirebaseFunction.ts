@@ -1,5 +1,6 @@
 import {
 	ImplementationMissingException,
+	tsValidate,
 	tsValidate_OptionalArray,
 	tsValidateAnyString,
 	tsValidateBoolean,
@@ -37,6 +38,16 @@ const valuesValidator = {
 	isLocal: tsValidateBoolean(false),
 };
 
+const containerDeploymentValidator = {
+	artifactRegistry: {
+		region: tsValidateAnyString,
+		repository: tsValidateAnyString,
+		projectId: tsValidateAnyString,
+	},
+	imageName: tsValidateOptionalAnyString,
+	dockerfile: tsValidateOptionalAnyString,
+};
+
 export class UnitMapper_FirebaseFunction_Class
 	extends UnitMapper_Node<Unit_FirebaseFunctionsApp, UnitConfigJSON_FirebaseFunction> {
 
@@ -48,6 +59,12 @@ export class UnitMapper_FirebaseFunction_Class
 		basePort: tsValidateOptionalAnyNumber,
 		sslKey: tsValidateOptionalAnyString,
 		sslCert: tsValidateOptionalAnyString,
+		containerDeployment: (value: any) => {
+			if (value === undefined || value === null)
+				return undefined; // Optional, so undefined is valid
+			tsValidate(value, containerDeploymentValidator);
+			return undefined; // Valid
+		},
 		...UnitMapper_Node.tsValidator_Node,
 	};
 
