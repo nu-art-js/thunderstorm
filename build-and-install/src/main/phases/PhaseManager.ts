@@ -283,6 +283,20 @@ export class PhaseManager
 		return Promise.all(this.runningUnits.map(unit => unit.kill()));
 	}
 
+	/**
+	 * Maps scheduled step (with string keys) to execution step (with actual instances).
+	 * 
+	 * **Mapping Process**:
+	 * - Maps phase keys to Phase instances using `keyToPhaseMap`
+	 * - Maps unit keys to BaseUnit instances by searching through unit layers
+	 * 
+	 * **Performance Note**: Unit lookup iterates through all layers (O(n) complexity).
+	 * Consider using a lookup map for O(1) access in large workspaces.
+	 * 
+	 * @param scheduledStep - Scheduled step with phase/unit keys
+	 * @returns Execution step with phase/unit instances
+	 * @throws Error if phase or unit not found
+	 */
 	private mapStep(scheduledStep: ScheduledStep): ExecutionStep {
 		const mappedPhases = scheduledStep.phases.map(phaseKey => {
 			const phase = this.keyToPhaseMap[phaseKey];
