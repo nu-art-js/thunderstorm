@@ -17,7 +17,7 @@ import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 const dirname = ___dirname(import.meta.url);
 DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 
-const pathToTemp = resolve(dirname, './temp-deploy-image');
+const pathToTemp = resolve(dirname, './temp');
 const pathToFixtures = resolve(pathToTemp, './fixtures');
 const pathToWorkspace = resolve(pathToTemp, './workspace');
 const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
@@ -73,7 +73,7 @@ describe('Firebase Deploy Image Phase', () => {
 	describe('Deploy Image Phase', () => {
 		it('Functions - Deploy Container Image to Firebase', runTestCase({
 			input: {
-				fixtures: ['./workspace-deploy.txt', './firebase-function-hello-container.txt'],
+				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
 				imageTag: 'test-deploy-image-v1.0.0',
 				skipDeploy: false
 			},
@@ -124,7 +124,7 @@ describe('Firebase Deploy Image Phase', () => {
 
 		it('Functions - Deploy Image with Custom Image Name', runTestCase({
 			input: {
-				fixtures: ['./workspace-deploy.txt', './firebase-function-hello-container.txt'],
+				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
 				imageTag: 'custom-deploy-v1.0.0',
 				skipDeploy: false
 			},
@@ -134,7 +134,7 @@ describe('Firebase Deploy Image Phase', () => {
 
 				// Verify containerDeployment config exists
 				expect(functionUnit.config.containerDeployment).to.exist;
-				// const containerDeployment = functionUnit.config.containerDeployment!;
+				const containerDeployment = functionUnit.config.containerDeployment!;
 
 				// Verify firebase.json uses container image format
 				const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
@@ -152,7 +152,7 @@ describe('Firebase Deploy Image Phase', () => {
 
 		it('Functions - Verify Container Image Format in firebase.json', runTestCase({
 			input: {
-				fixtures: ['./workspace-deploy.txt', './firebase-function-hello-container.txt'],
+				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
 				imageTag: 'format-test-v1.0.0',
 				skipDeploy: true
 			},
