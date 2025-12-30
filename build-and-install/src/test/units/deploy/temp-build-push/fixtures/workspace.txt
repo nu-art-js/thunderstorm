@@ -1,0 +1,163 @@
+// file: ./.config/.firebase-config/database.rules.json
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "state": {
+      "ModuleBE_SyncManager": {
+        "syncData": {
+          ".read": true,
+          ".write": false
+        }
+      },
+      "ModuleBE_FocusedObject": {
+        "focusedData": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}
+
+// file: ./.config/.firebase-config/firestore.indexes.json
+{
+  "indexes": [],
+  "fieldOverrides": []
+}
+
+// file: ./.config/.firebase-config/firestore.rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// file: ./.config/.firebase-config/storage.rules
+rules_version = '2';
+  service firebase.storage {
+    match /b/{bucket}/o {
+      match /{allPaths=**} {
+        allow read, write: if request.auth!=null;
+      }
+    }
+  }
+
+// file: ./.config/eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['error'],
+    },
+  },
+];
+
+// file: ./.config/tsconfig-main.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+// file: ./.config/tsconfig-test.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+
+// file: ./bai-config.json
+{
+  "templateParams": {
+    "packageJson":{
+        "sort": "^0.0.3",
+        "app_version": "1.0.1",
+        "app": "2.2.2"
+    }
+  },
+  "files": {
+    "firebase": {
+      "databaseRules": "./.config/.firebase-config/database.rules.json",
+      "storageRules": "./.config/.firebase-config/storage.rules",
+      "firestoreIndexesRules": "./.config/.firebase-config/firestore.indexes.json",
+      "firestoreRules": "./.config/.firebase-config/firestore.rules"
+    },
+    "typescript": {
+      "tsConfig": {
+        "main": "./.config/tsconfig-main.json",
+        "test": "./.config/tsconfig-test.json"
+      },
+      "eslint": "./config/eslint.config.mjs"
+    }
+  }
+}
+
+// file: ./eslint.config.mjs
+import parser from '@typescript-eslint/parser';
+import plugin from '@typescript-eslint/eslint-plugin';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: '**/src/main/tsconfig.json',
+        tsconfigRootDir: process.cwd(),
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': plugin,
+    },
+    rules: {
+      ...plugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+];
+
+// file: ./__package.json
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest",
+    "ts-node": "latest",
+    "mocha": "latest",
+    "ts-mocha": "latest",
+    "eslint": "latest",
+    "@typescript-eslint/parser": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "undici-types": "^7.8.0"
+  },
+  "unitConfig": {
+    "type": "node-project",
+    "label": "project-root"
+  }
+}

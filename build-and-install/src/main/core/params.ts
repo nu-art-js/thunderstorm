@@ -210,6 +210,25 @@ export const BaiParam_Deploy: BaseCliParam<'deploy', boolean> = {
 	]
 };
 
+export const BaiParam_BuildPushImage: BaseCliParam<'buildPushImage', string> = {
+	keys: ['--build-push-image', '-bpi'],
+	keyName: 'buildPushImage',
+	type: 'string',
+	group: 'Deployment',
+	description: 'Build Docker container image and push to Artifact Registry. Usage: --build-push-image <tag>',
+};
+
+export const BaiParam_DeployImage: BaseCliParam<'deployImage', string> = {
+	keys: ['--deploy-image', '-di'],
+	keyName: 'deployImage',
+	type: 'string',
+	group: 'Deployment',
+	description: 'Deploy container image from Artifact Registry to Firebase Functions. Usage: --deploy-image <tag>',
+	dependencies: [
+		{param: BaiParam_BuildPushImage, value: (currentValue: string) => currentValue}, // Auto-enable build+push with same tag when deploy is requested
+	]
+};
+
 export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
 	keys: ['--debug', '-d'],
 	keyName: 'debug',
@@ -399,6 +418,8 @@ export const AllBaiParams = [
 	BaiParam_TestDebugPort,
 	BaiParam_Launch,
 	BaiParam_Deploy,
+	BaiParam_BuildPushImage,
+	BaiParam_DeployImage,
 	BaiParam_DebugBackend,
 
 	BaiParam_Debug,

@@ -2,7 +2,7 @@ import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {BaiParams, BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
 import {flatArray, voidFunction} from '@nu-art/ts-common';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {RunningStatusHandler} from '../../../main/v3/RunningStatusHandler.js';
+import {RunningStatusHandler} from '../../_common.js';
 
 //========================= TestSuite Definition =========================
 

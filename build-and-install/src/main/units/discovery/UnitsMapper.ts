@@ -6,27 +6,27 @@ import {BaiParams} from '../../core/params.js';
 
 /**
  * Recursively scans workspace and discovers units using resolution rules.
- * 
+ *
  * **Discovery Process**:
  * 1. Starts at project root path
  * 2. Applies resolution rules in order (first match wins)
  * 3. If unit found and not root, stops recursion (unit is a leaf)
  * 4. If unit is root, continues scanning subdirectories
  * 5. Skips `node_modules` and hidden directories (`.git`, `.vscode`, etc.)
- * 
+ *
  * **Resolution Rules**:
  * - Rules are added via `addRules()` (e.g., UnitMapper_NodeLib, UnitMapper_FirebaseFunction)
  * - Each rule checks if a path matches its criteria (package.json, firebase.json, etc.)
  * - Rules can be configured with runtime params
- * 
+ *
  * **Unit Types**:
  * - **Root Units**: Continue scanning subdirectories (e.g., monorepo root)
  * - **Leaf Units**: Stop recursion (e.g., individual packages)
- * 
+ *
  * **Filtering**: Automatically skips:
  * - `node_modules` directories
  * - Hidden directories (starting with `.`)
- * 
+ *
  * **Usage**: Called by `Workspace.scanUnits()` to discover all units in workspace.
  */
 export class UnitsMapper
@@ -49,7 +49,7 @@ export class UnitsMapper
 			if (!unit)
 				continue;
 
-			this.logDebug(`Found unit ${unit.config.key} at path ${path}`);
+			this.logVerbose(`Found unit ${unit.config.key} at path ${path}`);
 			units.push(unit);
 			if (!unit.config.isRoot)
 				return units;
@@ -75,13 +75,13 @@ export class UnitsMapper
 
 	/**
 	 * Adds unit resolution rules.
-	 * 
+	 *
 	 * Rules are tried in order (first match wins). Common rules:
 	 * - `UnitMapper_NodeProject`: Root project unit
 	 * - `UnitMapper_NodeLib`: TypeScript libraries
 	 * - `UnitMapper_FirebaseHosting`: Firebase hosting apps
 	 * - `UnitMapper_FirebaseFunction`: Firebase functions
-	 * 
+	 *
 	 * @param rules - Unit mapper rules to add
 	 * @returns This instance for chaining
 	 */
@@ -92,9 +92,9 @@ export class UnitsMapper
 
 	/**
 	 * Sets runtime params on all rules.
-	 * 
+	 *
 	 * Rules can use runtime params to filter or configure resolution behavior.
-	 * 
+	 *
 	 * @param runtimeParams - Runtime parameters
 	 * @returns This instance for chaining
 	 */
@@ -105,9 +105,9 @@ export class UnitsMapper
 
 	/**
 	 * Validates that all units have unique keys.
-	 * 
+	 *
 	 * Throws `BadImplementationException` if duplicate keys found.
-	 * 
+	 *
 	 * @param units - Units to validate
 	 * @throws BadImplementationException if duplicate keys found
 	 */
