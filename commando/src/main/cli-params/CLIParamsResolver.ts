@@ -3,22 +3,75 @@ import {BaseCliParam, CliParam, CliParams} from './types.js';
 import {DefaultProcessorsMapper} from './consts.js';
 
 
+/**
+ * Type-safe CLI parameter resolver and parser.
+ * 
+ * Parses command-line arguments (`process.argv`) into a typed object based on
+ * parameter definitions. Supports:
+ * - Multiple keys/aliases per parameter
+ * - Type validation and conversion
+ * - Default values and initial values
+ * - Option validation (restrict to specific values)
+ * - Array parameters (collect multiple values)
+ * - Dependencies (set other params based on current param)
+ * - Quoted string handling
+ * 
+ * **Usage**:
+ * ```typescript
+ * const resolver = CLIParamsResolver.create(
+ *   { keys: ['--name', '-n'], keyName: 'name', type: 'string', description: 'Name' },
+ *   { keys: ['--count'], keyName: 'count', type: 'number', defaultValue: 1 }
+ * );
+ * const params = resolver.resolveParamValue();
+ * // params.name: string, params.count: number
+ * ```
+ * 
+ * @template T - Array of BaseCliParam definitions
+ * @template Output - Resolved parameters object type
+ */
 export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output extends CliParams<T> = CliParams<T>> {
 
+	/** Processed parameters with all required fields filled */
 	private params: CliParam<string, any>[];
 
+	/**
+	 * Creates a CLIParamsResolver instance.
+	 * 
+	 * @template T - Array of BaseCliParam definitions
+	 * @param params - Parameter definitions
+	 * @returns New CLIParamsResolver instance
+	 */
 	static create<T extends BaseCliParam<string, any>[]>(...params: T) {
 		return new CLIParamsResolver<T>(params);
 	}
 
+	/**
+	 * Creates a CLIParamsResolver and processes parameters.
+	 * 
+	 * @param params - Parameter definitions (may be incomplete)
+	 */
 	constructor(params: BaseCliParam<string, any>[]) {
 		this.params = this.translate(params);
 	}
 
 	/**
-	 * Format current input params and return it structured by the app params type.
-	 * @param inputParams current console input arguments
-	 * @returns CliParamsObject
+	 * Parses command-line arguments into a typed parameters object.
+	 * 
+	 * **Parsing Behavior**:
+	 * - Splits arguments by `=` (e.g., `--key=value`)
+	 * - Strips quotes from values and unescapes quotes
+	 * - Processes values using parameter processors
+	 * - Validates against options if provided
+	 * - Handles dependencies (sets dependent params)
+	 * - Accumulates array values (removes duplicates)
+	 * - Applies initial values for missing params
+	 * - Warns when overriding non-array values
+	 * 
+	 * **Input Format**: `--key=value` or `--key value` (space-separated not supported)
+	 * 
+	 * @param inputParams - Command-line arguments (default: `process.argv.slice(2)`)
+	 * @returns Typed object with resolved parameter values
+	 * @throws Error if value not in options, or if required value missing
 	 */
 	resolveParamValue(inputParams = process.argv.slice(2, process.argv.length)) {
 		type Key = keyof Output

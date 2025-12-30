@@ -16,4 +16,5 @@
  * limitations under the License.
  */
 
+/** Constant representing undefined (useful for type-safe undefined values) */
 export const _U = undefined;

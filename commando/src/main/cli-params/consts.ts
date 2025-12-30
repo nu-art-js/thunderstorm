@@ -1,11 +1,32 @@
 import {exists, TypedMap} from '@nu-art/ts-common';
 import {CliParam} from './types.js';
 
-
+/**
+ * Default processor for boolean CLI parameters.
+ * 
+ * **Note**: Always returns `true` regardless of input. This appears to be
+ * a bug - boolean flags typically should return `true` if present, `false` if absent,
+ * or use the defaultValue.
+ * 
+ * @param input - Optional input string (ignored)
+ * @param defaultValue - Optional default value (ignored)
+ * @returns Always returns `true`
+ */
 export const DefaultProcessor_Boolean: CliParam<any, boolean>['process'] = (input?: string, defaultValue?: boolean): boolean => {
 	return true;
 };
 
+/**
+ * Default processor for string CLI parameters.
+ * 
+ * Returns the input string, or defaultValue if input is empty/missing.
+ * Throws if input is empty and no default is provided.
+ * 
+ * @param input - Optional input string
+ * @param defaultValue - Optional default value
+ * @returns Processed string value
+ * @throws Error if input is empty and no default provided
+ */
 export const DefaultProcessor_String: CliParam<any, string>['process'] = (input?: string, defaultValue?: string): string => {
 	if (!input || !input.length) {
 		if (!exists(defaultValue))
@@ -17,6 +38,17 @@ export const DefaultProcessor_String: CliParam<any, string>['process'] = (input?
 	return input;
 };
 
+/**
+ * Default processor for number CLI parameters.
+ * 
+ * Parses the input as a number, or returns defaultValue if input is missing.
+ * Throws if input is not a valid number or if input is empty and no default provided.
+ * 
+ * @param input - Optional input string
+ * @param defaultValue - Optional default value
+ * @returns Parsed number value
+ * @throws Error if input is not a number or missing with no default
+ */
 export const DefaultProcessor_Number: CliParam<any, number>['process'] = (input?: string, defaultValue?: number): number => {
 	if (!input) {
 		if (!exists(defaultValue))
@@ -31,6 +63,12 @@ export const DefaultProcessor_Number: CliParam<any, number>['process'] = (input?
 	return Number(input);
 };
 
+/**
+ * Map of default processors by type name.
+ * 
+ * Used by CLIParamsResolver to assign processors when not provided.
+ * Keys match the type strings from `TypeOfTypeAsString`.
+ */
 export const DefaultProcessorsMapper: TypedMap<CliParam<any, any>['process']> = {
 	string: DefaultProcessor_String,
 	boolean: DefaultProcessor_Boolean,

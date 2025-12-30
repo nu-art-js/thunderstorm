@@ -4,6 +4,18 @@ import {convertToFullPath} from '../tools.js';
 import {Commando_PNPM} from '../plugins/pnpm.js';
 
 
+/**
+ * PNPM package manager service for managing PNPM installations.
+ * 
+ * Handles installation, version management, and package operations.
+ * Works with Commando_PNPM plugin to execute PNPM commands.
+ * 
+ * **Features**:
+ * - Install/uninstall PNPM
+ * - Version management
+ * - Package installation
+ * - Environment variable configuration
+ */
 export class Cli_PNPM
 	extends Logger {
 
@@ -31,6 +43,15 @@ export class Cli_PNPM
 		this._expectedVersion = value;
 	}
 
+	/**
+	 * Installs PNPM with the expected version.
+	 * 
+	 * Checks if PNPM is already installed with the expected version.
+	 * Uninstalls and reinstalls if version mismatch.
+	 * 
+	 * @param commando - Commando_PNPM instance to use for installation
+	 * @returns This instance for method chaining
+	 */
 	install = async (commando: Commando_PNPM) => {
 		if (this.isInstalled()) {
 			const version = (await commando.getVersion());
@@ -46,11 +67,32 @@ export class Cli_PNPM
 		return this;
 	};
 
+	/**
+	 * Checks if PNPM is installed.
+	 * 
+	 * Verifies environment variable is set.
+	 * 
+	 * @returns True if PNPM_HOME environment variable is set
+	 */
 	isInstalled = () => !!process.env[this._homeEnvVar];
+
+	/**
+	 * Installs packages using PNPM.
+	 * 
+	 * Delegates to Commando_PNPM.installPackages().
+	 * 
+	 * @param commando - Commando_PNPM instance to use
+	 * @returns Promise that resolves when packages are installed
+	 */
 	installPackages = async (commando: Commando_PNPM) => {
 		return await commando.installPackages();
 	};
 
+	/**
+	 * Uninstalls PNPM by removing its home directory.
+	 * 
+	 * @returns Promise that resolves when uninstall completes
+	 */
 	uninstall = async () => {
 		this.logDebug('Uninstalling PNPM');
 		const absolutePathToPNPM_Home = process.env[this._homeEnvVar];

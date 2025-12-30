@@ -1,23 +1,30 @@
 {
   "name": "@nu-art/ts-common",
   "version": "$THUNDERSTORM_VERSION",
-  "description": "js and ts infra",
+  "description": "Core TypeScript infrastructure library for building modular applications with lifecycle management, logging, validation, and utilities",
   "type": "module",
   "keywords": [
-    "TacB0sS",
-    "infra",
+    "typescript",
+    "infrastructure",
+    "module-system",
+    "lifecycle-management",
+    "logging",
+    "validation",
+    "utilities",
     "nu-art",
     "thunderstorm",
     "ts-common",
-    "typescript"
+    "framework",
+    "application-framework"
   ],
-  "homepage": "https://github.com/nu-art-js/ts-common",
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {
-    "url": "https://github.com/nu-art-js/ts-common/issues"
+    "url": "https://github.com/nu-art-js/thunderstorm/issues?q=is%3Aissue+label%3Ats-common"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/ts-common.git"
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/ts-common"
   },
   "publishConfig": {
     "directory": "dist"
@@ -50,6 +57,14 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
+    },
+    "./utils": {
+      "types": "./utils/index.d.ts",
+      "import": "./utils/index.js"
+    },
+    "./mem-storage": {
+      "types": "./mem-storage/index.d.ts",
+      "import": "./mem-storage/index.js"
     },
     "./testing": {
       "types": "./testing.d.ts",

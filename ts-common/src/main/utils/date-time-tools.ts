@@ -22,6 +22,7 @@ import {exists} from './tools.js';
 import {TimeProxy} from './time-proxy.js';
 
 
+/** Time constants in milliseconds */
 export const Second = 1000;
 export const Minute = Second * 60;
 export const Hour = Minute * 60;
@@ -30,6 +31,7 @@ export const Week = Day * 7;
 export const Year = Day * 365;
 export const Month = Year / 12;
 
+/** Predefined timestamp format strings */
 export const Format_HHmmss_DDMMYYYY = 'HH:mm:ss_DD-MM-YYYY';
 export const Format_YYYYMMDD_HHmmss = 'YYYY-MM-DD_HH:mm:ss';
 export type Weekday = 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
@@ -38,26 +40,62 @@ export type TimerHandler<Args extends any[] = any[]> = (...args: Args) => void;
 export type TimeRange = [number, number] | [undefined, number] | [number, undefined];
 export type TimeCounter = { dt: () => number; format: (format: string) => string };
 
+/**
+ * Creates a Promise that resolves after the specified delay.
+ * 
+ * @param sleepMs - Delay in milliseconds
+ * @returns Promise that resolves after the delay
+ */
 export async function timeout(sleepMs: number) {
 	return new Promise(resolve => setTimeout(resolve, sleepMs, undefined));
 }
 
+/** Alias for timeout() */
 export const sleep = timeout;
 
+/**
+ * Wrapper for setTimeout that returns a number instead of NodeJS.Timeout.
+ * 
+ * Used for cross-platform compatibility (browser setTimeout returns number,
+ * Node.js returns Timeout object).
+ * 
+ * @param handler - Function to execute after delay
+ * @param sleepMs - Delay in milliseconds (default: 0)
+ * @param args - Arguments to pass to the handler
+ * @returns Timeout ID as a number
+ */
 export function _setTimeout<Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args): number {
 	return setTimeout(handler, sleepMs, ...args) as unknown as number;
 }
 
+/**
+ * Wrapper for clearTimeout that accepts a number.
+ * 
+ * @param handlerId - Timeout ID to clear
+ */
 export function _clearTimeout(handlerId?: number) {
 	if (!handlerId)
 		return;
 	return clearTimeout(handlerId as unknown as ReturnType<typeof setTimeout>);
 }
 
+/**
+ * Wrapper for setInterval that returns a number instead of NodeJS.Timeout.
+ * 
+ * @param handler - Function to execute repeatedly
+ * @param sleepMs - Interval in milliseconds (default: 0)
+ * @param args - Arguments to pass to the handler
+ * @returns Interval ID as a number
+ */
 export function _setInterval<Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args) {
 	return setInterval(handler, sleepMs, ...args) as unknown as number;
 }
 
+/**
+ * Wrapper for clearInterval that accepts a number.
+ * 
+ * @param handlerId - Interval ID to clear
+ */
 export function _clearInterval(handlerId?: number) {
 	if (!handlerId)
 		return;
@@ -66,12 +104,22 @@ export function _clearInterval(handlerId?: number) {
 
 /**
  * Creates a timeout handler object that manages a single `setTimeout` instance.
- * Includes lifecycle controls: set, clear, reset, isActive.
- *
- * @param handler The function to be called after the timeout.
- * @param sleepMs Timeout duration in milliseconds. Defaults to 0.
- * @param args Arguments passed to the handler function.
- * @returns An object with `set`, `clear`, `reset`, and `isActive` methods.
+ * 
+ * Provides a controlled interface for managing timeouts with lifecycle methods.
+ * The handler tracks expiration time and supports time adjustment (useful for
+ * time synchronization scenarios).
+ * 
+ * **Features**:
+ * - `set()` - Starts the timeout (idempotent - does nothing if already active)
+ * - `clear()` - Cancels the timeout
+ * - `reset()` - Cancels and restarts the timeout
+ * - `isActive()` - Checks if timeout is currently active
+ * - `_.onTimeAdjusted` - Internal method to adjust timeout when system time changes
+ * 
+ * @param handler - Function to be called after the timeout
+ * @param sleepMs - Timeout duration in milliseconds (default: 0)
+ * @param args - Arguments to pass to the handler function
+ * @returns Object with timeout control methods
  */
 export const timeoutHandler = <Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args) => {
 	let handlerId: ReturnType<typeof setTimeout> | undefined;
@@ -94,6 +142,12 @@ export const timeoutHandler = <Args extends any[]>(handler: TimerHandler<Args>, 
 		handlerId = setTimeout(handler, sleepMs, ...args);
 	};
 
+	/**
+	 * Adjusts the timeout when system time changes.
+	 * 
+	 * Recalculates remaining time and reschedules the timeout accordingly.
+	 * If the expiration time has already passed, executes immediately.
+	 */
 	const adjustTime = () => {
 		if (!exists(handlerId) || !exists(expiration))
 			return;
@@ -123,13 +177,18 @@ export const timeoutHandler = <Args extends any[]>(handler: TimerHandler<Args>, 
 };
 
 /**
- * Creates an interval handler object that manages a single `setInterval` instance.
- * Includes lifecycle controls: set, clear, reset, isActive.
- *
- * @param handler The function to be called repeatedly.
- * @param sleepMs Interval duration in milliseconds. Defaults to 0.
- * @param args Arguments passed to the handler function.
- * @returns An object with `set`, `clear`, `reset`, and `isActive` methods.
+ * Creates an interval handler object that manages a repeating timer.
+ * 
+ * Uses `setTimeout` recursively instead of `setInterval` for better control and
+ * time adjustment support. Provides the same interface as `timeoutHandler`.
+ * 
+ * **Note**: The interval is recalculated after each tick, so drift is minimized
+ * and time adjustments are properly handled.
+ * 
+ * @param handler - Function to be called repeatedly
+ * @param sleepMs - Interval duration in milliseconds (default: 0)
+ * @param args - Arguments to pass to the handler function
+ * @returns Object with interval control methods
  */
 export const intervalHandler = <Args extends any[]>(handler: TimerHandler<Args>, sleepMs = 0, ...args: Args) => {
 	let handlerId: ReturnType<typeof setTimeout> | undefined;
@@ -144,6 +203,9 @@ export const intervalHandler = <Args extends any[]>(handler: TimerHandler<Args>,
 		nextTick = undefined;
 	};
 
+	/**
+	 * Executes the handler and schedules the next tick.
+	 */
 	const tick = () => {
 		handler(...args);
 		nextTick = currentTimeMillis() + sleepMs;
@@ -158,6 +220,11 @@ export const intervalHandler = <Args extends any[]>(handler: TimerHandler<Args>,
 		handlerId = setTimeout(tick, sleepMs);
 	};
 
+	/**
+	 * Adjusts the interval when system time changes.
+	 * 
+	 * Recalculates the next tick time based on remaining time.
+	 */
 	const adjustTime = () => {
 		if (!exists(handlerId) || !exists(nextTick))
 			return;
@@ -200,10 +267,25 @@ export function auditBy(user: string, comment?: string, timestamp = currentTimeM
 	return _auditBy;
 }
 
+/**
+ * Gets the current time in milliseconds using TimeProxy.
+ * 
+ * TimeProxy allows for time manipulation in tests (e.g., fast-forwarding time).
+ * In production, this returns the actual current time.
+ * 
+ * @returns Current timestamp in milliseconds
+ */
 export function currentTimeMillis() {
 	return TimeProxy.currentTimeMillis();
 }
 
+/**
+ * Gets the timestamp for a specific time today in local timezone.
+ * 
+ * @param hours - Hour (0-23)
+ * @param minutes - Minute (0-59)
+ * @returns Timestamp in milliseconds for the specified time today
+ */
 export function specificTimeTodayMillis(hours: number, minutes: number) {
 	const date = new Date();
 	date.setHours(hours);
@@ -211,16 +293,37 @@ export function specificTimeTodayMillis(hours: number, minutes: number) {
 	return date.getTime();
 }
 
+/**
+ * Gets the current local time in milliseconds.
+ * 
+ * @returns Current local timestamp in milliseconds
+ */
 export function currentLocalTimeMillis() {
 	const date = new Date();
 	return date.getTime();
 }
 
+/**
+ * Gets the current time in milliseconds adjusted for timezone offset.
+ * 
+ * **Note**: This adds the timezone offset, which may not be the intended behavior
+ * for most use cases. Consider using `currentTimeMillis()` or `currentLocalTimeMillis()` instead.
+ * 
+ * @returns Current timestamp adjusted by timezone offset
+ */
 export function currentTimeMillisWithTimeZone() {
 	const date = new Date();
 	return date.getTime() + date.getTimezoneOffset();
 }
 
+/**
+ * Creates a Timestamp object with both numeric timestamp and formatted string.
+ * 
+ * @param pattern - Moment.js format pattern (default: Format_HHmmss_DDMMYYYY)
+ * @param timestamp - Timestamp in milliseconds (default: current time)
+ * @param timezone - Optional timezone string
+ * @returns Timestamp object with timestamp, pretty, and optional timezone
+ */
 export function createReadableTimestampObject(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone?: string) {
 
 	const timeObj: Timestamp = {
@@ -235,7 +338,15 @@ export function createReadableTimestampObject(pattern: string = Format_HHmmss_DD
 }
 
 /**
- * For detailed list of formats visit https://momentjs.com/docs/#/displaying/format/
+ * Formats a timestamp using a Moment.js pattern.
+ * 
+ * **Note**: Adjusts for timezone offset using `-new Date().getTimezoneOffset()`.
+ * For detailed format patterns, see https://momentjs.com/docs/#/displaying/format/
+ * 
+ * @param pattern - Moment.js format pattern (default: Format_HHmmss_DDMMYYYY)
+ * @param timestamp - Timestamp in milliseconds (default: current time)
+ * @param timezone - Timezone string (default: system timezone)
+ * @returns Formatted timestamp string
  */
 export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone: string = Intl.DateTimeFormat()
 	.resolvedOptions().timeZone) {
@@ -244,28 +355,73 @@ export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timest
 	return m.format(pattern);
 }
 
+/**
+ * Parses a timestamp string into milliseconds using a format pattern.
+ * 
+ * @param timestamp - Timestamp string to parse
+ * @param pattern - Moment.js format pattern (default: Format_HHmmss_DDMMYYYY)
+ * @returns Timestamp in milliseconds
+ */
 export function parseTimeString(timestamp: string, pattern: string = Format_HHmmss_DDMMYYYY): number {
 	return utc(timestamp, pattern).valueOf();
 }
 
+/**
+ * Normalizes a timestamp by formatting and re-parsing it.
+ * 
+ * Useful for removing sub-second precision or normalizing to a specific format.
+ * 
+ * @param timestamp - Timestamp in milliseconds
+ * @param pattern - Format pattern to normalize to
+ * @returns Normalized timestamp in milliseconds
+ */
 export function normalizeTimestamp(timestamp: number, pattern: string): number {
 	return parseTimeString(formatTimestamp(pattern, timestamp), pattern);
 }
 
+/**
+ * Creates a date/time formatter object with parse and format methods.
+ * 
+ * Provides a convenient API for working with a specific date format pattern.
+ * 
+ * @param format - Moment.js format pattern
+ * @returns Object with `parse()` and `format()` methods
+ */
 export const DateTimeFormat = (format: string) => {
 	return {
 		parse: (timestampAsString: string) => parseTimeString(timestampAsString, format),
 		format: (timestamp = currentTimeMillis()) => formatTimestamp(format, timestamp)
 	};
 };
+
+/** Pre-configured formatter for ISO 8601 date-time format */
 export const DateTimeFormat_yyyyMMDDTHHmmss = DateTimeFormat('YYYY-MM-DDTHH:mm:ss');
+/** Pre-configured formatter for date-only format (YYYY-MM-DD) */
 export const DateTimeFormat_yyyyMMDD = DateTimeFormat('YYYY-MM-DD');
+/** Pre-configured formatter for European date format (DD/MM/YYYY) */
 export const DateTimeFormat_DDMMYYYY = DateTimeFormat('DD/MM/YYYY');
 
 export function isSameDay(date1: Date, date2: Date): boolean {
 	return utc(date1).isSame(date2, 'day');
 }
 
+/**
+ * Calculates the number of days between two dates.
+ * 
+ * Returns the number of calendar days difference, not just 24-hour periods.
+ * The calculation accounts for day boundaries - if the dates are on different
+ * calendar days, it calculates the difference and adds 1 if needed to reach
+ * the same calendar day.
+ * 
+ * **Examples**:
+ * - Same day: returns 0
+ * - Jan 1 to Jan 2: returns 1
+ * - Jan 1 23:59 to Jan 2 00:01: returns 1 (different calendar days)
+ * 
+ * @param d1 - First date (Date object or timestamp)
+ * @param d2 - Second date (Date object or timestamp)
+ * @returns Number of calendar days difference (positive if d1 > d2, negative if d1 < d2)
+ */
 export function deltaDays(d1: Date | number, d2: Date | number): number {
 	const date1 = typeof d1 === 'number' ? new Date(d1) : d1;
 	const date2 = typeof d2 === 'number' ? new Date(d2) : d2;
@@ -284,6 +440,28 @@ export function deltaDays(d1: Date | number, d2: Date | number): number {
 	return isSameDay(date1, date2Offset) ? days : days + 1;
 }
 
+/**
+ * Creates a time counter that tracks elapsed time since creation.
+ * 
+ * Returns an object with methods to get elapsed time:
+ * - `dt()` - Returns elapsed milliseconds
+ * - `format(format)` - Returns formatted elapsed time string
+ * 
+ * Format string supports:
+ * - `hh` - Hours (00-99)
+ * - `mm` - Minutes (00-59)
+ * - `ss` - Seconds (00-59)
+ * - `zzz` - Milliseconds (000-999)
+ * 
+ * @returns TimeCounter object with dt() and format() methods
+ * 
+ * @example
+ * ```typescript
+ * const counter = timeCounter();
+ * // ... do work ...
+ * console.log(counter.format('hh:mm:ss.zzz')); // "00:01:23.456"
+ * ```
+ */
 export function timeCounter() {
 	const started = currentTimeMillis();
 	return {

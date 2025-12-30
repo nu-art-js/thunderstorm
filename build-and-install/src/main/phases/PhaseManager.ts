@@ -5,16 +5,53 @@ import {BaseUnit} from '../units/index.js';
 import {PhaseAggregatedException} from '../exceptions/PhaseAggregatedException.js';
 import {UnitPhaseException} from '../exceptions/UnitPhaseException.js';
 
+/**
+ * Scheduled execution step (before mapping to actual phases/units).
+ */
 export type ScheduledStep = {
 	phases: string[];
 	units: string[];
 };
 
+/**
+ * Mapped execution step with actual phase and unit instances.
+ */
 export type ExecutionStep = {
 	phases: Phase<any>[];
 	units: BaseUnit<any>[];
 };
 
+/**
+ * Manages phase execution across units in dependency order.
+ * 
+ * **Execution Model**:
+ * - **Phase Groups**: Phases that can run in parallel (e.g., [prepare, compile])
+ * - **Unit Layers**: Units grouped by dependency level (dependencies first)
+ * - **Steps**: Combinations of phase groups × unit layers
+ * 
+ * **Execution Flow**:
+ * 1. `calculateExecutionSteps()`: Plans which phases run on which units
+ * 2. `execute()`: Executes steps sequentially, phases in parallel within steps
+ * 3. Units in same layer run phases in parallel (Promise.all)
+ * 
+ * **Eligibility Rules**:
+ * - Unit must implement the phase method (e.g., `compile()`, `test()`)
+ * - Unit must be in active/project units (based on phase.unitCategory)
+ * - Phase filter (if present) must pass runtime params
+ * 
+ * **Error Handling**:
+ * - First failure stops execution (sets `killed = true`)
+ * - Aggregates all errors into `PhaseAggregatedException`
+ * - Tracks running units for graceful shutdown
+ * 
+ * **Resume Support**:
+ * - Skips completed steps (via `runningStatus.startIndex`)
+ * - Skips completed units within steps (via `runningStatus.isCompleted()`)
+ * 
+ * **Validation**:
+ * - Constructor validates no duplicate units or phases
+ * - Throws `BadImplementationException` on duplicates
+ */
 export class PhaseManager
 	extends Logger {
 	private readonly phases: Phase<any>[][];
@@ -57,6 +94,26 @@ export class PhaseManager
 
 	//######################### Initialization #########################
 
+	/**
+	 * Calculates the execution plan: which phases run on which units.
+	 * 
+	 * **Algorithm**:
+	 * 1. For each phase group (phases that can run together)
+	 * 2. Filter phases by runtime params (if phase.filter exists)
+	 * 3. For each unit layer (dependency level)
+	 * 4. Find units eligible for at least one phase in the group
+	 * 5. Group units by which phases they support
+	 * 6. Create steps: phase combinations × unit groups
+	 * 
+	 * **Phase Grouping**: Units that support the same set of phases are grouped
+	 * together in a step (identified by phase keys joined with '|').
+	 * 
+	 * **Unit Eligibility**:
+	 * - Unit must implement phase method
+	 * - Unit must be in active/project units (based on phase.unitCategory)
+	 * 
+	 * @returns Array of scheduled steps (phases and unit keys)
+	 */
 	async calculateExecutionSteps(): Promise<ScheduledStep[]> {
 		const steps: ScheduledStep[] = [];
 		this.logDebug('Calculating execution steps for phases: ', this.phases.map(phases => phases.map(phase => phase.key)));
@@ -120,6 +177,30 @@ export class PhaseManager
 		return steps;
 	}
 
+	/**
+	 * Executes the planned steps sequentially.
+	 * 
+	 * **Execution Model**:
+	 * - Steps run sequentially (one after another)
+	 * - Units within a step run phases in parallel (Promise.all)
+	 * - Phases for a unit run sequentially (in phase group order)
+	 * 
+	 * **Resume Support**:
+	 * - Starts from `runningStatus.startIndex` (if --continue)
+	 * - Skips units marked as completed
+	 * 
+	 * **Dry Run**: If `--dry-run`, only logs phase/unit names without executing.
+	 * 
+	 * **Error Handling**:
+	 * - First error stops execution (sets `killed = true`)
+	 * - All errors aggregated into `PhaseAggregatedException`
+	 * - Running units tracked for graceful shutdown
+	 * 
+	 * **Performance**: Logs operation duration if > 1.5 seconds.
+	 * 
+	 * @param _steps - Scheduled steps to execute
+	 * @throws PhaseAggregatedException if any phase fails
+	 */
 	async execute(_steps: ScheduledStep[]) {
 		this.runningUnits = [];
 		for (let i = this.runningStatus.startIndex; i < _steps.length; i++) {
@@ -189,6 +270,14 @@ export class PhaseManager
 		this.logInfo('All steps completed.');
 	}
 
+	/**
+	 * Gracefully stops execution and kills all running units.
+	 * 
+	 * Called on SIGINT (Ctrl+C). Sets `killed = true` to stop further execution,
+	 * then calls `kill()` on all currently running units.
+	 * 
+	 * @returns Promise that resolves when all units are killed
+	 */
 	break() {
 		this.killed = true;
 		return Promise.all(this.runningUnits.map(unit => unit.kill()));
