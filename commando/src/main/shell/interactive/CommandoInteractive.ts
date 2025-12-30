@@ -4,14 +4,39 @@ import {LogTypes} from '../types.js';
 import {BaseCommando} from '../core/BaseCommando.js';
 
 
+/**
+ * Interactive shell command executor extending BaseCommando.
+ * 
+ * Maintains a persistent bash session and executes commands in sequence,
+ * allowing state to persist between commands. Provides advanced features:
+ * - Log processing and filtering
+ * - Exit code extraction
+ * - Background process management
+ * - PID tracking for subprocesses
+ * 
+ * **Key Differences from Commando**:
+ * - Uses InteractiveShell (persistent session) vs SimpleShell (one-shot)
+ * - Commands execute in the same shell context (variables persist)
+ * - Supports log processors for reactive command execution
+ * - Can run background processes and track their PIDs
+ * 
+ * **Exit Code Extraction**:
+ * Uses a unique key pattern (`echo ${key}=$?`) to extract exit codes
+ * from both stdout and stderr, ensuring accurate exit code detection.
+ */
 export class CommandoInteractive
 	extends BaseCommando {
+	/** Interactive shell instance managing the persistent session */
 	private shell: InteractiveShell;
 
 	/**
-	 * Creates a new instance of CommandoInteractive merged with the provided plugins.
-	 * @param {Constructor<any>[]} plugins - The plugins to merge with CommandoInteractive.
-	 * @returns {CommandoInteractive} - The new instance of CommandoInteractive merged with the plugins.
+	 * Creates a CommandoInteractive instance with plugins.
+	 * 
+	 * Initializes the InteractiveShell after merging plugins.
+	 * 
+	 * @template T - Array of plugin constructor types
+	 * @param plugins - Plugin classes to merge
+	 * @returns Merged CommandoInteractive instance with plugins
 	 */
 	static create<T extends Constructor<any>[]>(...plugins: T) {
 		const _commando = BaseCommando._create(CommandoInteractive, ...plugins);
@@ -95,9 +120,27 @@ export class CommandoInteractive
 	}
 
 	/**
-	 * Executes commands and processes logs to extract exit code.
-	 * @param {Function} [callback] - A callback function to handle the command output.
-	 * @returns {Promise<T>} - The result of the callback function.
+	 * Executes accumulated commands and extracts exit code from shell output.
+	 * 
+	 * **Exit Code Extraction Strategy**:
+	 * - Appends `echo ${uniqueKey}=$?` to both stdout and stderr
+	 * - Uses log processors to detect the unique key pattern
+	 * - Waits for both outputs (stdout and stderr) to capture exit code
+	 * - Falls back to shell close event if pattern not detected
+	 * 
+	 * **Log Processing**:
+	 * - Adds temporary log processors to capture stdout/stderr
+	 * - Accumulates all output until exit code is detected
+	 * - Removes processors after execution (in finally block)
+	 * 
+	 * **Behavior**:
+	 * - Resolves when exit code is detected or shell closes
+	 * - Calls callback with accumulated stdout, stderr, and exit code
+	 * - Always cleans up log processors (even on error)
+	 * 
+	 * @template T - Return type of callback
+	 * @param callback - Function to process command output
+	 * @returns Promise resolving to callback result
 	 */
 	async execute<T>(callback?: (stdout: string, stderr: string, exitCode: number) => T): Promise<T> {
 		let logProcessor;
@@ -202,6 +245,22 @@ export class CommandoInteractive
 		return this;
 	}
 
+	/**
+	 * Appends a command to run in the background and tracks its PID.
+	 * 
+	 * **Behavior**:
+	 * - Runs command with `&` (background)
+	 * - Captures PID using `pid=$!` and echoes it with unique key
+	 * - Waits for the process to complete
+	 * - Calls pidListener when PID is detected
+	 * 
+	 * **Use Case**: Running long-running processes while continuing
+	 * to execute other commands in the same shell session.
+	 * 
+	 * @param command - Command to run in background
+	 * @param pidListener - Optional callback when PID is detected
+	 * @returns This instance for method chaining
+	 */
 	appendAsync(command: string, pidListener?: ShellPidListener) {
 		const pidUniqueKey = generateHex(16);
 		const regexp = new RegExp(`${pidUniqueKey}=(\\d+)`);

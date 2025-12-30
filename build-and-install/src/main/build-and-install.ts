@@ -1,3 +1,9 @@
+/**
+ * Main entry point for build-and-install CLI.
+ * 
+ * Creates a BuildAndInstall instance, builds the workspace, and executes all phases.
+ * Exits with code 0 on success, or logs errors and exits with code 0 (should probably exit with 1 on error).
+ */
 import {BuildAndInstall} from './build-and-install-v3.js';
 
 (async () => {

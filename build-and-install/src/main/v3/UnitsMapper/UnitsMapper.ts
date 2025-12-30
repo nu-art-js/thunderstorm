@@ -5,9 +5,29 @@ import {UnitMapper_Base} from './resolvers/UnitMapper_Base.js';
 import {BaiParams} from '../../core/params/params.js';
 
 /**
- * This class will receive a path and will map the workspace packages and libs
- *
- * A lib will have rules to infer it, mainly from the package.json but also from existing files in the context of the node lib
+ * Recursively scans workspace and discovers units using resolution rules.
+ * 
+ * **Discovery Process**:
+ * 1. Starts at project root path
+ * 2. Applies resolution rules in order (first match wins)
+ * 3. If unit found and not root, stops recursion (unit is a leaf)
+ * 4. If unit is root, continues scanning subdirectories
+ * 5. Skips `node_modules` and hidden directories (`.git`, `.vscode`, etc.)
+ * 
+ * **Resolution Rules**:
+ * - Rules are added via `addRules()` (e.g., UnitMapper_NodeLib, UnitMapper_FirebaseFunction)
+ * - Each rule checks if a path matches its criteria (package.json, firebase.json, etc.)
+ * - Rules can be configured with runtime params
+ * 
+ * **Unit Types**:
+ * - **Root Units**: Continue scanning subdirectories (e.g., monorepo root)
+ * - **Leaf Units**: Stop recursion (e.g., individual packages)
+ * 
+ * **Filtering**: Automatically skips:
+ * - `node_modules` directories
+ * - Hidden directories (starting with `.`)
+ * 
+ * **Usage**: Called by `Workspace.scanUnits()` to discover all units in workspace.
  */
 export class UnitsMapper
 	extends Logger {
@@ -53,16 +73,44 @@ export class UnitsMapper
 		return units;
 	}
 
+	/**
+	 * Adds unit resolution rules.
+	 * 
+	 * Rules are tried in order (first match wins). Common rules:
+	 * - `UnitMapper_NodeProject`: Root project unit
+	 * - `UnitMapper_NodeLib`: TypeScript libraries
+	 * - `UnitMapper_FirebaseHosting`: Firebase hosting apps
+	 * - `UnitMapper_FirebaseFunction`: Firebase functions
+	 * 
+	 * @param rules - Unit mapper rules to add
+	 * @returns This instance for chaining
+	 */
 	addRules<T extends BaseUnit<any>>(...rules: UnitMapper_Base<T>[]) {
 		this.rules.push(...rules);
 		return this;
 	}
 
+	/**
+	 * Sets runtime params on all rules.
+	 * 
+	 * Rules can use runtime params to filter or configure resolution behavior.
+	 * 
+	 * @param runtimeParams - Runtime parameters
+	 * @returns This instance for chaining
+	 */
 	setRuntimeParams(runtimeParams: BaiParams) {
 		this.rules.forEach(rule => rule.setRuntimeParams(runtimeParams));
 		return this;
 	}
 
+	/**
+	 * Validates that all units have unique keys.
+	 * 
+	 * Throws `BadImplementationException` if duplicate keys found.
+	 * 
+	 * @param units - Units to validate
+	 * @throws BadImplementationException if duplicate keys found
+	 */
 	assertUniqueKeys(units: ProjectUnit[]) {
 		const keyToUnit: TypedMap<ProjectUnit> = {};
 
