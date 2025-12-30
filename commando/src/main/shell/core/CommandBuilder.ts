@@ -14,9 +14,25 @@ const defaultOptions: Options = {
 	indentation: 2,
 };
 
+/**
+ * Builds shell commands with indentation and formatting support.
+ * 
+ * Accumulates commands in an array and formats them with proper indentation.
+ * Supports custom newline delimiters and indentation levels. Commands can
+ * be split across multiple lines using the newline delimiter.
+ * 
+ * **Behavior**:
+ * - Commands are trimmed before adding
+ * - Empty commands are preserved (for spacing)
+ * - Indentation is applied per line when commands contain newlines
+ * - `reset()` returns the accumulated command and clears the builder
+ */
 export class CommandBuilder {
+	/** Array of accumulated command strings */
 	commands: string[] = [];
+	/** Current indentation level (number of indent steps) */
 	private indentation: number = 0;
+	/** Configuration options for formatting */
 	private option: Options = defaultOptions;
 
 	/**
@@ -60,8 +76,15 @@ export class CommandBuilder {
 
 	/**
 	 * Appends a command to the command list with proper indentation.
-	 * @param {string} command - The command to append.
-	 * @returns {this} - The CommandBuilder instance for method chaining.
+	 * 
+	 * **Behavior**:
+	 * - Splits the command by the newline delimiter (allows multi-line commands)
+	 * - Trims each line
+	 * - Applies current indentation to non-empty lines
+	 * - Preserves empty lines as-is (for spacing)
+	 * 
+	 * @param command - Command string to append (can contain newlines)
+	 * @returns This instance for method chaining
 	 */
 	readonly append = (command: string): this => {
 		const commands = command.split(this.option.newlineDelimiter);

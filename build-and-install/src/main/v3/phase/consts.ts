@@ -1,3 +1,24 @@
+/**
+ * Phase definitions for the build system.
+ * 
+ * **Phase Groups**:
+ * - `phases_Terminating`: Phases that terminate execution after completion
+ * - `phases_Build`: Main build phases (purge, prepare, install, compile, test, etc.)
+ * - `phases_Launch`: Launch phases (start applications)
+ * - `phases_Deploy`: Deployment phases
+ * 
+ * **Phase Execution Order**:
+ * 1. Build phases run first (prepare, install, compile, test)
+ * 2. Terminating phases can stop execution early
+ * 3. Launch phases start applications
+ * 4. Deploy phases publish/deploy
+ * 
+ * **Phase Filters**: Most phases have filters based on runtime params (e.g., `--lint`, `--test`).
+ * Phases only run if their filter returns true (or no filter is present).
+ * 
+ * **Dependency Phases**: Some phases depend on others (e.g., `compile` depends on `preCompile`).
+ * Dependencies are automatically resolved by PhaseManager.
+ */
 import {Phase} from './types.js';
 
 //######################### Terminating Phases #########################

@@ -28,6 +28,17 @@ export const phase_Help: Phase<'printHelp'> = {
 
 const config = {key: 'help-printer', fullPath: process.cwd(), relativePath: '.', dependencies: {}, label: 'Help Printer'};
 
+/**
+ * Special unit for printing help information.
+ * 
+ * **Purpose**: Displays all available CLI parameters grouped by category.
+ * 
+ * **Usage**: Automatically added when `--help` flag is used.
+ * 
+ * **Output**: Groups parameters by their `group` property and displays:
+ * - Parameter keys (e.g., `--install`, `-i`)
+ * - Parameter descriptions
+ */
 class _Unit_HelpPrinter
 	extends ProjectUnit
 	implements UnitPhaseImplementor<[Phase_Help]> {
@@ -37,6 +48,11 @@ class _Unit_HelpPrinter
 		this.setMinLevel(LogLevel.Verbose);
 	}
 
+	/**
+	 * Prints help information for all CLI parameters.
+	 * 
+	 * Groups parameters by their `group` property and displays keys and descriptions.
+	 */
 	async printHelp() {
 		this.logInfo('Build and install parameters:');
 		const noGroupConst = 'No Group';

@@ -36,6 +36,30 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 // const CONST_VersionApp = 'version-app.json';
 
 
+/**
+ * Firebase Functions application unit.
+ * 
+ * **Key Features**:
+ * - Extends Unit_TypescriptLib (compiles TypeScript)
+ * - Manages Firebase Functions configuration
+ * - Supports emulator with SSL and debug ports
+ * - Handles function deployment
+ * 
+ * **Phases Implemented**:
+ * - `prepare()`: Sets up Firebase Functions config
+ * - `compile()`: Compiles TypeScript for functions
+ * - `launch()`: Starts Firebase Functions emulator
+ * - `deploy()`: Deploys functions to Firebase
+ * 
+ * **Configuration**:
+ * - `debugPort`: Port for Node.js debugger
+ * - `basePort`: Base port for emulator
+ * - `sslKey`/`sslCert`: SSL certificates for emulator
+ * - `pathToEmulatorData`: Path for emulator data persistence
+ * - `envConfig`: Environment config (projectId, identityAccount)
+ * 
+ * **Emulator**: Runs Firebase Functions emulator with log filtering and error detection.
+ */
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_Launch, Phase_Deploy]> {

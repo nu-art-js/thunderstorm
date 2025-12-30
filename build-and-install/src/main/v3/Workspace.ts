@@ -5,10 +5,28 @@ import {UnitDependentNode, UnitsDependencyMapper} from './UnitsDependencyMapper/
 import {BaseUnit, ProjectUnit, Unit_NodeProject} from './units/index.js';
 
 /**
- * Manages all units in the workspace, including:
- * - Scanned Units: All units discovered from workspace scan
- * - Active Units: Units selected for execution (compile/test/lint)
- * - Project Units: Active units + their transitive dependencies
+ * Central workspace manager for all units in the build system.
+ * 
+ * **Unit Categories**:
+ * - **Scanned Units**: All units discovered from workspace file system scan
+ * - **Active Units**: Units selected for execution (compile/test/lint) based on runtime params
+ * - **Project Units**: Active units + their transitive dependencies (needed for prepare/install)
+ * 
+ * **Key Responsibilities**:
+ * - Unit discovery and storage
+ * - Dependency resolution and tree building
+ * - Unit lookup by key/type
+ * - Active/project unit derivation based on runtime params
+ * 
+ * **Dependency Management**:
+ * - Uses `UnitsDependencyMapper` to resolve transitive dependencies
+ * - Builds dependency tree in layers (dependencies first, dependents last)
+ * - Filters dependencies to only include units that exist in workspace
+ * 
+ * **Runtime Params Impact**:
+ * - `--use-package`: Filters active units to match regex patterns
+ * - `--build-tree`: Includes transitive dependencies in active units
+ * - Without flags: All units are active and project units
  */
 export class Workspace
 	extends Logger {

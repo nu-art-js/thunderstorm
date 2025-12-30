@@ -2,6 +2,17 @@ import {BaseCommando} from '../core/BaseCommando.js';
 import {CliBlock} from '../types.js';
 
 
+/**
+ * Programming constructs plugin for Commando.
+ * 
+ * Provides control flow structures for building shell scripts:
+ * - Conditionals (`if`/`else`)
+ * - Loops (`for`, `while`)
+ * - Functions
+ * 
+ * These methods build shell script structures with proper indentation
+ * and syntax, allowing programmatic construction of complex shell scripts.
+ */
 export class Commando_Programming
 	extends BaseCommando {
 
@@ -54,7 +65,10 @@ export class Commando_Programming
 
 	/**
 	 * Appends a 'continue' command for loop control.
-	 * @returns {this} - The Cli instance for method chaining.
+	 * 
+	 * Skips to the next iteration of the innermost loop.
+	 * 
+	 * @returns This instance for method chaining
 	 */
 	continue(): this {
 		this.append('continue');
@@ -63,7 +77,10 @@ export class Commando_Programming
 
 	/**
 	 * Appends a 'break' command for loop control.
-	 * @returns {this} - The Cli instance for method chaining.
+	 * 
+	 * Exits the innermost loop.
+	 * 
+	 * @returns This instance for method chaining
 	 */
 	break(): this {
 		this.append('break');
@@ -72,7 +89,10 @@ export class Commando_Programming
 
 	/**
 	 * Appends a 'return' command for exiting a function or script.
-	 * @returns {this} - The Cli instance for method chaining.
+	 * 
+	 * Exits the current function or script with optional exit code.
+	 * 
+	 * @returns This instance for method chaining
 	 */
 	return(): this {
 		this.append('return');
