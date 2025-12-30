@@ -92,14 +92,14 @@ describe('Firebase Deploy Image Phase', () => {
 
 				const firebaseJson = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
 				expect(firebaseJson.functions).to.exist;
-				
+
 				// Verify container image format (source should be the image reference, not a path)
 				expect(firebaseJson.functions.source).to.exist;
 				const imageName = containerDeployment.imageName || functionUnit.config.key;
 				const artifactRegistryPath = `${containerDeployment.artifactRegistry.region}-docker.pkg.dev/${containerDeployment.artifactRegistry.projectId}/${containerDeployment.artifactRegistry.repository}`;
 				const expectedImageReference = `${artifactRegistryPath}/${imageName}:test-deploy-image-v1.0.0`;
 				expect(firebaseJson.functions.source).to.equal(expectedImageReference);
-				
+
 				// Verify runtime is not set (container images don't need runtime)
 				expect(firebaseJson.functions.runtime).to.be.undefined;
 
@@ -134,7 +134,7 @@ describe('Firebase Deploy Image Phase', () => {
 
 				// Verify containerDeployment config exists
 				expect(functionUnit.config.containerDeployment).to.exist;
-				const containerDeployment = functionUnit.config.containerDeployment!;
+				// const containerDeployment = functionUnit.config.containerDeployment!;
 
 				// Verify firebase.json uses container image format
 				const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
@@ -142,7 +142,7 @@ describe('Firebase Deploy Image Phase', () => {
 
 				const firebaseJson = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
 				expect(firebaseJson.functions.source).to.exist;
-				
+
 				// Verify image reference contains the correct tag
 				expect(firebaseJson.functions.source).to.include('custom-deploy-v1.0.0');
 
@@ -171,7 +171,7 @@ describe('Firebase Deploy Image Phase', () => {
 				expect(firebaseJson.functions.source).to.exist;
 				// Container image format should be: region-docker.pkg.dev/project/repo/image:tag
 				expect(firebaseJson.functions.source).to.match(/^[a-z0-9-]+-docker\.pkg\.dev\/[^/]+\/[^/]+\/[^:]+:[^:]+$/);
-				
+
 				// Verify no runtime field (containers don't use runtime)
 				expect(firebaseJson.functions.runtime).to.be.undefined;
 
