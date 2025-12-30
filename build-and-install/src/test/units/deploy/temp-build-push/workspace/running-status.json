@@ -1,0 +1,11 @@
+{
+  "index": 2,
+  "runtimeParams": {
+    "prepare": true,
+    "environment": "test",
+    "allUnits": true,
+    "buildPushImage": "test-build-push-v1.0.0",
+    "install": true
+  },
+  "completedUnits": []
+}

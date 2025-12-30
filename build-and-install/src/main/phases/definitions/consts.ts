@@ -227,4 +227,28 @@ export const phase_Deploy: Phase<'deploy'> = {
 	filter: (baiParams) => !!baiParams.deploy,
 };
 
-export const phases_Deploy: Phase<string>[][] = [[phase_Publish, phase_Deploy], [phase_PostPublish]];
+export type Phase_BuildPushImage = typeof phase_BuildPushImage;
+export const phaseKey_BuildPushImage = 'build-push-image';
+export const phase_BuildPushImage: Phase<'buildPushImage'> = {
+	key: phaseKey_BuildPushImage,
+	name: 'Build & Push Container Image',
+	method: 'buildPushImage',
+	filter: (baiParams) => !!baiParams.buildPushImage,
+};
+
+export type Phase_DeployImage = typeof phase_DeployImage;
+export const phaseKey_DeployImage = 'deploy-image';
+export const phase_DeployImage: Phase<'deployImage'> = {
+	key: phaseKey_DeployImage,
+	name: 'Deploy Container Image',
+	method: 'deployImage',
+	filter: (baiParams) => !!baiParams.deployImage,
+	dependencyPhase: [phase_BuildPushImage],
+};
+
+export const phases_Deploy: Phase<string>[][] = [
+	[phase_BuildPushImage],
+	[phase_DeployImage],
+	[phase_Publish, phase_Deploy],
+	[phase_PostPublish]
+];

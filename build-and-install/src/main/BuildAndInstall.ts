@@ -47,6 +47,7 @@ export class BuildAndInstall
 	readonly runtimeParams: BaiParams;
 	readonly runningStatus: RunningStatusHandler;
 	readonly phaseManager!: PhaseManager;
+	private _init = false;
 
 	constructor(config: Partial<BAI_Options> = {}) {
 		super();
@@ -60,10 +61,13 @@ export class BuildAndInstall
 		this.pathToProject = defaultConfig.pathToProject;
 		this.runningStatus = new RunningStatusHandler(this.pathToProject, this.runtimeParams);
 		this.workspace = new Workspace();
-		this.workspace.setMinLevel(DebugFlag.DefaultLogLevel);
 	}
 
 	async init() {
+		if (this._init)
+			return;
+
+		this._init = true;
 		await this.runningStatus.init();
 
 		if (this.runtimeParams.debug)
@@ -72,6 +76,7 @@ export class BuildAndInstall
 		if (this.runtimeParams.verbose)
 			DebugFlag.DefaultLogLevel = LogLevel.Verbose;
 
+		this.workspace.setMinLevel(DebugFlag.DefaultLogLevel);
 		this.setMinLevel(DebugFlag.DefaultLogLevel);
 		this.logDebug('Runtime params:', this.runtimeParams);
 		this.unitsMapper = new UnitsMapper();
@@ -103,14 +108,6 @@ export class BuildAndInstall
 		return this.workspace.projectUnits;
 	}
 
-	/**
-	 * @deprecated Use workspace.scannedUnits instead
-	 * Backward compatibility getter for existing tests
-	 */
-	get scannedUnits(): ReadonlyArray<BaseUnit<any>> {
-		return this.workspace.scannedUnits;
-	}
-
 	async run() {
 		const executionPlan = await this.phaseManager.calculateExecutionSteps();
 		let killCounter = 0;
@@ -136,7 +133,7 @@ export class BuildAndInstall
 
 	async build() {
 		await this.init();
-		
+
 		// Scan units from workspace
 		await this.workspace.scanUnits(this.pathToProject, this.unitsMapper);
 
@@ -164,7 +161,7 @@ export class BuildAndInstall
 
 		// Derive active and project units based on runtime params
 		const units = this.workspace.deriveActiveAndProjectUnits(this.runtimeParams);
-		
+
 		const childProjectUnits = this.workspace.getUnitsByKeys<ProjectUnit>(units.projectUnits);
 		nodeProjectUnit.assignUnit(childProjectUnits);
 
