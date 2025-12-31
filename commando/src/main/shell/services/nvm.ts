@@ -55,8 +55,6 @@ export class Cli_NVM
 	 * - Installs NVM via Commando_NVM
 	 * - Configures .bashrc with NVM initialization (if not already present)
 	 * 
-	 * **Note**: The RC file configuration uses `echo` commands instead of
-	 * directly writing the export statements, which is unusual.
 	 * 
 	 * @param commando - Commando_NVM instance to use for installation
 	 * @returns This instance for method chaining
@@ -76,14 +74,17 @@ export class Cli_NVM
 		let rcFileContent: string = '';
 		if (fs.existsSync(rcFile)) {
 			rcFileContent = await _fs.readFile(rcFile, {encoding: 'utf8'});
-			return rcFileContent.includes('NVM_DIR');
+			// If NVM is already configured, don't add it again
+			if (rcFileContent.includes('NVM_DIR'))
+				return this;
 		}
 
-		rcFileContent = `${rcFileContent}\n${rcFileContent.endsWith('\n') ? '' : '\n'}`;
+		// Append NVM initialization to the end of the file
+		rcFileContent = `${rcFileContent}${rcFileContent.endsWith('\n') ? '' : '\n'}`;
 		rcFileContent += `# generated NVM - start\n`;
-		rcFileContent += `echo 'export NVM_DIR="$HOME/.nvm"'\n`;
-		rcFileContent += `echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm'\n`;
-		rcFileContent += `echo '[ -s "$NVM_DIR/bash_completion" ] && \\. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion'\n`;
+		rcFileContent += `export NVM_DIR="$HOME/.nvm"\n`;
+		rcFileContent += `[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm\n`;
+		rcFileContent += `[ -s "$NVM_DIR/bash_completion" ] && \\. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion\n`;
 		rcFileContent += `# generated NVM - end\n`;
 		await _fs.writeFile(rcFile, rcFileContent, {encoding: 'utf8'});
 
@@ -136,12 +137,10 @@ export class Cli_NVM
 	/**
 	 * Uninstalls NVM by removing its directory.
 	 * 
-	 * **Note**: Log message says "Uninstalling PNPM" but this is for NVM (copy-paste error).
-	 * 
 	 * @returns Promise that resolves when uninstall completes
 	 */
 	uninstall = async () => {
-		this.logDebug('Uninstalling PNPM');
+		this.logDebug('Uninstalling NVM');
 		const absolutePathToNVM_Home = process.env[this._homeEnvVar];
 		if (!absolutePathToNVM_Home)
 			return;

@@ -201,22 +201,21 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	/**
-	 * Builds Docker container image and pushes it to Artifact Registry.
+	 * Builds Docker container image using Google Cloud Build and pushes it to Artifact Registry.
 	 *
 	 * **Process**:
 	 * 1. Validates image tag is provided via CLI
 	 * 2. Validates containerDeployment config exists
 	 * 3. Constructs Artifact Registry image reference
 	 * 4. Ensures Dockerfile exists (creates default if missing)
-	 * 5. Builds Docker image
-	 * 6. Authenticates Docker with gcloud for Artifact Registry
-	 * 7. Pushes image to Artifact Registry
+	 * 5. Builds and pushes image using Google Cloud Build (no local Docker required)
 	 *
 	 * **Requirements**:
 	 * - `--build-push-image <tag>` CLI flag with tag value
 	 * - `containerDeployment` config in unit config
-	 * - Docker installed and accessible
 	 * - gcloud CLI installed and authenticated
+	 * - Cloud Build API enabled in GCP project
+	 * - No local Docker daemon required - Cloud Build handles everything
 	 */
 	async buildPushImage() {
 		const imageTag = this.runtimeContext.runtimeParams.buildPushImage;
@@ -238,10 +237,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
 		const imageReference = `${artifactRegistryPath}/${imageName}:${imageTag}`;
 
-		this.logInfo(`Building and pushing container image: ${imageReference}`);
+		this.logInfo(`Building and pushing container image using Cloud Build: ${imageReference}`);
 
-		// Ensure Dockerfile exists
-		const dockerfilePath = containerDeployment.dockerfile || resolve(this.config.fullPath, 'Dockerfile');
+		// Ensure Dockerfile exists in the build context root
+		// Cloud Build uploads the directory, so Dockerfile must be in the root of what we're uploading
+		const dockerfilePath = resolve(this.config.fullPath, containerDeployment.dockerfile || 'Dockerfile');
 		const dockerfileExists = await FileSystemUtils.file.exists(dockerfilePath);
 
 		if (!dockerfileExists) {
@@ -251,7 +251,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				const resolvedTemplatePath = resolve(this.runtimeContext.parentUnit.config.fullPath, templatePath);
 				if (await FileSystemUtils.file.exists(resolvedTemplatePath)) {
 					await FileSystemUtils.file.copy(resolvedTemplatePath, dockerfilePath);
-					this.logInfo(`Copied Dockerfile template from ${templatePath}`);
+					this.logInfo(`Copied Dockerfile template from ${templatePath} to ${dockerfilePath}`);
 				} else {
 					// Create default Dockerfile
 					await this.createDefaultDockerfile(dockerfilePath);
@@ -264,32 +264,51 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			}
 		}
 
-		// Build Docker image
+		// Build and push image using Google Cloud Build
+		// Cloud Build will build the image and push it to Artifact Registry automatically
+		// No local Docker daemon, authentication, or manual push required
 		const commando = this.allocateCommando()
 			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando, `docker build -t ${imageReference} -f ${dockerfilePath} .`, (stdout, stderr, exitCode) => {
-			if (exitCode === 0)
-				return;
+		// Calculate relative Dockerfile path from build context (current directory)
+		// Cloud Build expects relative path from the build context root
+		// Ensure the path is relative to the build context (this.config.fullPath)
+		const dockerfileRelativePath = dockerfilePath.startsWith(this.config.fullPath + '/')
+			? dockerfilePath.substring(this.config.fullPath.length + 1)
+			: dockerfilePath.startsWith(this.config.fullPath)
+				? dockerfilePath.substring(this.config.fullPath.length)
+				: dockerfilePath;
 
-			throw new CommandoException(`Failed to build Docker image with exit code ${exitCode}`, stdout, stderr, exitCode);
-		});
+		// Create temporary cloudbuild.yaml to specify platform (linux/amd64 for Firebase Functions v2)
+		// Cloud Build doesn't support --platform flag directly, so we use a config file
+		const cloudbuildYamlPath = resolve(this.config.fullPath, '.cloudbuild.yaml');
+		const cloudbuildYamlContent = `steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'build'
+    - '--platform=linux/amd64'
+    - '-t'
+    - '${imageReference}'
+    - '-f'
+    - '${dockerfileRelativePath}'
+    - '.'
+images:
+- '${imageReference}'
+`;
+		await FileSystemUtils.file.write(cloudbuildYamlPath, cloudbuildYamlContent);
 
-		// Authenticate Docker with gcloud for Artifact Registry
-		await this.executeAsyncCommando(commando, `gcloud auth configure-docker ${artifactRegistry.region}-docker.pkg.dev --quiet`, (stdout, stderr, exitCode) => {
-			if (exitCode === 0)
-				return;
+		try {
+			// Use projectId from artifactRegistry config for Cloud Build
+			await this.executeAsyncCommando(commando, `gcloud builds submit --config .cloudbuild.yaml --project ${artifactRegistry.projectId} .`, (stdout, stderr, exitCode) => {
+				if (exitCode === 0)
+					return;
 
-			throw new CommandoException(`Failed to configure Docker authentication with exit code ${exitCode}`, stdout, stderr, exitCode);
-		});
-
-		// Push image to Artifact Registry
-		await this.executeAsyncCommando(commando, `docker push ${imageReference}`, (stdout, stderr, exitCode) => {
-			if (exitCode === 0)
-				return;
-
-			throw new CommandoException(`Failed to push Docker image with exit code ${exitCode}`, stdout, stderr, exitCode);
-		});
+				throw new CommandoException(`Failed to build and push Docker image with Cloud Build (exit code ${exitCode})`, stdout, stderr, exitCode);
+			});
+		} finally {
+			// Clean up temporary cloudbuild.yaml file
+			await FileSystemUtils.file.delete(cloudbuildYamlPath);
+		}
 
 		this.logInfo(`Successfully built and pushed image: ${imageReference}`);
 	}

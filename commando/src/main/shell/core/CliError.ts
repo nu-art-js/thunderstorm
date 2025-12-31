@@ -39,8 +39,6 @@ export class CliError
  * Similar to CliError but includes an explicit exit code rather than
  * extracting it from the ExecException.
  * 
- * **Note**: The constructor incorrectly passes `CliError` as the exception
- * type instead of `CommandoException`. This is a bug.
  */
 export class CommandoException
 	extends CustomException {
@@ -61,7 +59,7 @@ export class CommandoException
 	 * @param exitCode - Command exit code
 	 */
 	constructor(message: string, stdout: string, stderr: string, exitCode: number) {
-		super(CliError, message);
+		super(CommandoException, message);
 		this.stdout = stdout;
 		this.stderr = stderr;
 		this.exitCode = exitCode;

@@ -4,16 +4,18 @@ import {CliParam} from './types.js';
 /**
  * Default processor for boolean CLI parameters.
  * 
- * **Note**: Always returns `true` regardless of input. This appears to be
- * a bug - boolean flags typically should return `true` if present, `false` if absent,
- * or use the defaultValue.
+ * Returns `true` if the flag is present (input is provided), otherwise
+ * returns the defaultValue (defaulting to `false` if not provided).
  * 
- * @param input - Optional input string (ignored)
- * @param defaultValue - Optional default value (ignored)
- * @returns Always returns `true`
+ * @param input - Optional input string (flag presence indicator)
+ * @param defaultValue - Optional default value if flag is absent
+ * @returns `true` if flag is present, otherwise `defaultValue ?? false`
  */
 export const DefaultProcessor_Boolean: CliParam<any, boolean>['process'] = (input?: string, defaultValue?: boolean): boolean => {
-	return true;
+	if (input !== undefined && input !== null && input !== '') {
+		return true;
+	}
+	return defaultValue ?? false;
 };
 
 /**
