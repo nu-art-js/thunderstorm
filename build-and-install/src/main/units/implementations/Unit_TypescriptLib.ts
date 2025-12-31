@@ -46,17 +46,19 @@ export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
 	output: string;
 };
 
-const assetExtensions = [
-	'json',
-	'scss',
-	'svg',
-	'png',
-	'jpg',
-	'jpeg',
-	'rules',
-	'_ts',
-	'gif',
-	'csv',
+const assets = [
+	'*.json',
+	'*.scss',
+	'*.svg',
+	'*.png',
+	'*.jpg',
+	'*.jpeg',
+	'*.rules',
+	'*._ts',
+	'*.gif',
+	'*.csv',
+	'*.yaml',
+	'Dockerfile',
 ];
 
 
@@ -279,7 +281,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	protected async copyAssetsToOutput() {
-		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`)
+		const command = `find . \\( -name ${assets.map(pattern => `'${pattern}'`)
 			.join(' -o -name ')} \\) | cpio -pdmuv "${this.config.output}" > /dev/null 2>&1`;
 		await this.allocateCommando(Commando_Basic)
 			.cd(`${this.config.fullPath}/src/main`)
