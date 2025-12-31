@@ -32,8 +32,6 @@
   },
   "dependencies": {
     "@nu-art/slack-shared": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@slack/events-api": "^2.3.0",
     "@slack/web-api": "7.9.3",

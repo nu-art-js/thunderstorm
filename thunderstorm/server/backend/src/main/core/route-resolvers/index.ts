@@ -22,7 +22,6 @@
 import {HttpRoute} from './RouteResolver_ModulePath.js';
 
 export * from './RouteResolver_ModulePath.js';
-export * from './RouteResolver_Dummy.js';
 
 export type RouteResolver = {
 	resolveApi: (urlPrefix?: string) => void

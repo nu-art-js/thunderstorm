@@ -1,0 +1,13 @@
+{
+  "workspace": [
+    "@nu-art/firebase-backend",
+    "@nu-art/firebase-shared",
+    "@nu-art/thunder-db-api-shared",
+    "@nu-art/thunderstorm-shared",
+    "@nu-art/ts-common"
+  ],
+  "external": [
+    "@nu-art/thunderstorm-backend",
+    "firebase-admin"
+  ]
+}

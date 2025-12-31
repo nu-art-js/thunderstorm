@@ -1,0 +1,21 @@
+import {useLocation, useNavigate} from 'react-router-dom';
+import {useEffect} from 'react';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
+import {ModuleFE_RoutingV2} from './ModuleFE_RoutingV2.js';
+
+
+export interface OnLocationChanged {
+	__onLocationChanged: (path: string) => void;
+}
+
+export const dispatch_onLocationChanged = new ThunderDispatcher<OnLocationChanged, '__onLocationChanged'>('__onLocationChanged');
+
+export const LocationChangeListener = () => {
+	const location = useLocation();
+	const navigate = useNavigate();
+	useEffect(() => {
+		dispatch_onLocationChanged.dispatchUI(location.pathname);
+	}, [location]);
+	ModuleFE_RoutingV2.setNavigate(navigate);
+	return <></>;
+};

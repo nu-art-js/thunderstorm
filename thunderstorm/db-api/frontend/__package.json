@@ -1,0 +1,59 @@
+{
+  "name": "@nu-art/thunder-db-api-frontend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Thunder DB API Frontend",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/thunder-http": "?",
+    "@nu-art/thunder-browser-api": "?",
+    "@nu-art/thunder-utils": "?",
+    "@nu-art/thunder-idb": "?",
+    "@nu-art/thunder-db-api-shared": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {},
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

@@ -23,8 +23,6 @@
     "@nu-art/jira-shared": "?",
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",
-    "@nu-art/thunderstorm-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",

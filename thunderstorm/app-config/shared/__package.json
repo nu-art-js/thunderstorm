@@ -37,7 +37,6 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},

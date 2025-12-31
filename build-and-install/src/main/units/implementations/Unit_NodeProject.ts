@@ -31,13 +31,44 @@ import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {IndicesMcpServer} from '../../exports/IndicesMcpServer.js';
 
 
+/**
+ * Configuration for NodeProject (root project unit).
+ */
 type Unit_TypescriptProject_Config = Unit_PackageJson_Config & {
 	globalPackages?: StringMap;
 	isRoot: true
 };
 
+/**
+ * Path declaration for watch mode (which paths to watch for which unit).
+ */
 type PathDeclaration = { fullPath: string, paths: string[], unit: Unit_TypescriptLib };
 
+/**
+ * Root project unit representing the entire monorepo/workspace.
+ * 
+ * **Key Responsibilities**:
+ * - Manages child units (all packages in workspace)
+ * - Handles workspace-level operations (install, watch)
+ * - Creates PNPM workspace configuration
+ * - Manages file watching for hot reload
+ * 
+ * **Phases Implemented**:
+ * - `install()`: Installs all packages using PNPM workspace
+ * - `watch()`: Watches file changes and triggers incremental compilation
+ * - `postPublish()`: Post-publish operations
+ * 
+ * **Watch Mode**:
+ * - Watches TypeScript, SCSS, JSON, SVG files in all child units
+ * - Uses chokidar for file watching
+ * - Debounces changes and compiles affected units in dependency order
+ * - Supports hot reload for units with `hasSelfHotReload` flag
+ * 
+ * **Workspace Management**:
+ * - Creates `pnpm-workspace.yaml` with all child unit paths
+ * - Manages global packages installation
+ * - Handles dependency tree for watch compilation
+ */
 export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_TypescriptProject_Config>
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_Install, Phase_Watch, Phase_PostPublish, Phase_IndicesMcpServer]> {

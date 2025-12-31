@@ -1,0 +1,70 @@
+{
+  "name": "@nu-art/thunder-widgets",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Thunder Widgets and Components",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/thunder-browser-api": "?",
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/thunder-db-api-frontend": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/ts-styles": "?",
+    "react": "?",
+    "react-dom": "?",
+    "react-router-dom": "?",
+    "react-virtualized-auto-sizer": "^1.0.12",
+    "react-window": "^1.8.8",
+    "csstype": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/react-dom": "?",
+    "@types/react-router": "?",
+    "@types/react-router-dom": "?",
+    "@types/react-window": "^1.8.5",
+    "@types/react-virtualized-auto-sizer": "^1.0.1"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+import {AsyncVoidFunction, DBProto, TypedMap} from '@nu-art/ts-common';
+import {IndexedDB_Database} from './IndexedDB_Database.js';
+import {IDB_Config} from './types.js';
+import {IndexedDB_Store} from './IndexedDB_Store.js';
+
+
+export class ModuleFE_IDBManager_Class {
+	databases: TypedMap<IndexedDB_Database> = {};
+
+	register<Proto extends DBProto<any>>(dbConfig: IDB_Config<Proto>, onDBOpenCallback: AsyncVoidFunction) {
+		const indexDb = this.databases[dbConfig.group] || (this.databases[dbConfig.group] = new IndexedDB_Database(dbConfig.group));
+		indexDb.registerStore(dbConfig, onDBOpenCallback);
+
+		return new IndexedDB_Store(dbConfig, this.storeResolver, this.storeExistsResolver);
+	}
+
+	private storeResolver = async <Proto extends DBProto<any>>(dbConfig: IDB_Config<Proto>, write: boolean = false, store?: IDBObjectStore) => {
+		const dbWrapper = this.databases[dbConfig.group];
+		return dbWrapper.getStore(dbConfig, write, store);
+	};
+
+	private storeExistsResolver = async <Proto extends DBProto<any>>(dbConfig: IDB_Config<Proto>) => {
+		const dbWrapper = this.databases[dbConfig.group];
+		return await dbWrapper.storeExists(dbConfig.name);
+	};
+}
+
+export const ModuleFE_IDBManager = new ModuleFE_IDBManager_Class();

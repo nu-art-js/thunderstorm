@@ -40,7 +40,6 @@
   "dependencies": {
     "@nu-art/ts-common": "?",
     "@nu-art/firebase-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",

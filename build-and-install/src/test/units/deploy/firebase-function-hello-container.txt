@@ -1,0 +1,78 @@
+// file: ./firebase-function-hello-container.txt
+//// file: ./firebase-function-hello-container/__package.json
+{
+  "name": "firebase-function-hello",
+  "type": "module",
+  "version": "1.0.0",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "firebase-functions": "^5.0.0"
+  },
+  "unitConfig": {
+    "type": "firebase-function",
+    "label": "firebase-function-hello",
+    "customTSConfig": true,
+    "containerDeployment": {
+      "artifactRegistry": {
+        "region": "us-central1",
+        "repository": "firebase-functions",
+        "projectId": "{{FIREBASE_TEST_PROJECT}}"
+      },
+      "imageName": "firebase-function-hello",
+      "dockerfile": "Dockerfile"
+    },
+    "envs": {
+      "test": {
+        "projectId": "{{FIREBASE_TEST_PROJECT}}",
+        "isLocal": false
+      }
+    }
+  }
+}
+
+//// file: ./firebase-function-hello-container/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
+
+//// file: ./firebase-function-hello-container/src/main/index.ts
+import * as functions from 'firebase-functions';
+
+export const hello = functions.https.onRequest((request, response) => {
+  response.json({
+    message: 'Hello World',
+    deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
+  });
+});
+
+//// file: ./firebase-function-hello-container/dist/index.js
+import * as functions from 'firebase-functions';
+
+
+export const hello = functions.https.onRequest((request, response) => {
+  response.json({
+    message: 'Hello World',
+    deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
+  });
+});
+
+//// file: ./firebase-function-hello-container/dist/package.json
+{
+  "name": "firebase-function-hello",
+  "type": "module",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "firebase-functions": "^5.0.0"
+  }
+}
+

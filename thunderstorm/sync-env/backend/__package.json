@@ -39,10 +39,8 @@
   },
   "dependencies": {
     "@nu-art/thunderstorm-sync-env-shared": "?",
-    "@nu-art/thunderstorm-backend": "?",
     "@nu-art/thunder-db-api-backend": "?",
     "@nu-art/thunder-db-api-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/firebase-backend": "?",
     "@nu-art/ts-common": "?",
     "firebase-admin": "?"

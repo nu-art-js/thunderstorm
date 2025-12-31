@@ -1,3 +1,24 @@
+/**
+ * Phase definitions for the build system.
+ * 
+ * **Phase Groups**:
+ * - `phases_Terminating`: Phases that terminate execution after completion
+ * - `phases_Build`: Main build phases (purge, prepare, install, compile, test, etc.)
+ * - `phases_Launch`: Launch phases (start applications)
+ * - `phases_Deploy`: Deployment phases
+ * 
+ * **Phase Execution Order**:
+ * 1. Build phases run first (prepare, install, compile, test)
+ * 2. Terminating phases can stop execution early
+ * 3. Launch phases start applications
+ * 4. Deploy phases publish/deploy
+ * 
+ * **Phase Filters**: Most phases have filters based on runtime params (e.g., `--lint`, `--test`).
+ * Phases only run if their filter returns true (or no filter is present).
+ * 
+ * **Dependency Phases**: Some phases depend on others (e.g., `compile` depends on `preCompile`).
+ * Dependencies are automatically resolved by PhaseManager.
+ */
 import {Phase} from './types.js';
 
 //######################### Terminating Phases #########################
@@ -206,4 +227,28 @@ export const phase_Deploy: Phase<'deploy'> = {
 	filter: (baiParams) => !!baiParams.deploy,
 };
 
-export const phases_Deploy: Phase<string>[][] = [[phase_Publish, phase_Deploy], [phase_PostPublish]];
+export type Phase_BuildPushImage = typeof phase_BuildPushImage;
+export const phaseKey_BuildPushImage = 'build-push-image';
+export const phase_BuildPushImage: Phase<'buildPushImage'> = {
+	key: phaseKey_BuildPushImage,
+	name: 'Build & Push Container Image',
+	method: 'buildPushImage',
+	filter: (baiParams) => !!baiParams.buildPushImage,
+};
+
+export type Phase_DeployImage = typeof phase_DeployImage;
+export const phaseKey_DeployImage = 'deploy-image';
+export const phase_DeployImage: Phase<'deployImage'> = {
+	key: phaseKey_DeployImage,
+	name: 'Deploy Container Image',
+	method: 'deployImage',
+	filter: (baiParams) => !!baiParams.deployImage,
+	dependencyPhase: [phase_BuildPushImage],
+};
+
+export const phases_Deploy: Phase<string>[][] = [
+	[phase_BuildPushImage],
+	[phase_DeployImage],
+	[phase_Publish, phase_Deploy],
+	[phase_PostPublish]
+];

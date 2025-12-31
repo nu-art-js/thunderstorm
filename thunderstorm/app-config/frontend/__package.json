@@ -38,10 +38,8 @@
   },
   "dependencies": {
     "@nu-art/thunderstorm-app-config-shared": "?",
-    "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/thunder-db-api-frontend": "?",
     "@nu-art/thunder-db-api-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "react": "?"
   },

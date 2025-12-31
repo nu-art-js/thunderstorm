@@ -32,7 +32,7 @@ import {
 } from '../../phases/definitions/index.js';
 import {ProjectUnit_RuntimeContext} from '../base/ProjectUnit.js';
 import {glob} from 'node:fs/promises';
-import {TestType, TestTypes} from '../../params/params.js';
+import {TestType, TestTypes} from '../../core/params.js';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import path from 'node:path';
 import {ExportMapper} from '../../exports/ExportMapper.js';
@@ -70,10 +70,16 @@ const CONST_ESM_PREFIX = 'export NODE_OPTIONS=\'--import data:text/javascript,im
 const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<string>> = {
 	pure: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
-		const testFile = runtimeContext.runtimeParams.testFiles;
-		const grep = testFile?.length ? ` '${testFile.join('\' \'')}'` : ` '${defaultTestPatterns.pure}'`;
+		const files = runtimeContext.runtimeParams.testFiles ?? [`src/test/${defaultTestPatterns.firebase}`].map(file => `'${file}'`);
+		const testCases = runtimeContext.runtimeParams.testCases;
+		const cli_testFiles = ` ${files.join(' ')}`;
+		const cli_testCases = testCases ? ` --grep '${testCases.join('|')}'` : '';
+		const cli_watchFiles = files.map(file => `-watch-files ${file}`).join(' ');
 
-		return `${CONST_ESM_PREFIX} && ${command} -p src/test/${CONST_TS_CONFIG} --timeout 0 ${grep}`;
+		const debugPort = runtimeContext.runtimeParams.testDebugPort;
+		const cli_debug = debugPort ? ` --inspect=${debugPort} -w ${cli_watchFiles}` : '';
+
+		return `${CONST_ESM_PREFIX} && ${command} -p src/test/${CONST_TS_CONFIG} --timeout 0 ${cli_debug}${cli_testFiles}${cli_testCases}`;
 	},
 	firebase: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
@@ -99,6 +105,39 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 	},
 };
 
+/**
+ * TypeScript library unit for building TypeScript packages.
+ *
+ * **Key Responsibilities**:
+ * - Compiles TypeScript to JavaScript
+ * - Runs tests (pure, firebase, ui, mobile)
+ * - Lints code
+ * - Publishes packages
+ * - Manages assets (JSON, SCSS, SVG, images)
+ * - Handles ESM conversion
+ *
+ * **Phases Implemented**:
+ * - `preCompile()`: Prepares compilation (creates output dir, clears if needed)
+ * - `compile()`: Compiles TypeScript using tsc
+ * - `watchCompile()`: Incremental compilation for watch mode
+ * - `runTests()`: Runs tests based on test type
+ * - `lint()`: Lints code using ESLint
+ * - `publish()`: Publishes package to registry
+ * - `convertToESM()`: Converts package to ESM format
+ * - `printDependencyTree()`: Prints dependency tree
+ * - `checkCyclicImports()`: Checks for circular imports
+ *
+ * **Test Types**:
+ * - **pure**: Standard TypeScript tests (ts-mocha)
+ * - **firebase**: Tests with Firebase emulators
+ * - **ui**: UI tests (not implemented)
+ * - **mobile**: Mobile tests (not implemented)
+ *
+ * **Asset Management**: Automatically copies non-TypeScript files (JSON, SCSS, SVG, images)
+ * to output directory during compilation.
+ *
+ * **Dependency Resolution**: Resolves transitive dependencies for compilation order.
+ */
 export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_TypescriptLib_Config>
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test, Phase_Publish, Phase_ToESM, Phase_ExtractDynamicDeps, Phase_MapExports]> {
@@ -315,7 +354,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	public async extractDynamicDeps() {
 		this.setStatus('Extracting dynamic dependencies', 'start');
-		
+
 		// Get all workspace package names from parent unit's child units
 		const workspacePackageNames = new Set<string>();
 		for (const unit of this.runtimeContext.childUnits) {
@@ -325,7 +364,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		// Find all TypeScript files in src/main and src/test
 		const srcMainTs = `${this.config.fullPath}/src/main/**/*.ts`;
 		const srcMainTsx = `${this.config.fullPath}/src/main/**/*.tsx`;
-		
+
 		const allFiles: string[] = [];
 		for await (const file of glob(srcMainTs, {}))
 			allFiles.push(file);
@@ -359,7 +398,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		// Process each file
 		for (const filePath of allFiles) {
 			const content = await FileSystemUtils.file.read(filePath);
-			
+
 			// Extract imports from "import ... from 'package'" and dynamic import('package')
 			processImportMatches(importFromRegex, content);
 			processImportMatches(dynamicImportRegex, content);
@@ -424,7 +463,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		const previousErrors = await ExportMapper.loadPreviousErrors(projectRoot, this.config.key);
 
 		// Map exports
-		const { exports, errors } = await ExportMapper.mapExports(projectRoot, this.config.fullPath, this.config.key, allFiles, previousErrors || undefined);
+		const {exports, errors} = await ExportMapper.mapExports(projectRoot, this.config.fullPath, this.config.key, allFiles, previousErrors || undefined);
 
 		// Write exports to centralized location
 		const indexPath = ExportMapper.getIndexPath(projectRoot, this.config.key);

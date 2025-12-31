@@ -36,7 +36,6 @@
   "dependencies": {
     "@nu-art/ts-common": "?",
     "@nu-art/firebase-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-styles": "?",
     "@nu-art/slack-shared": "?",
     "firebase": "?",

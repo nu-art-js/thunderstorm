@@ -15,8 +15,6 @@
     "@nu-art/ts-common": "?",
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",
-    "@nu-art/thunderstorm-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "mixpanel": "~0.18.1"
   },
   "devDependencies": {},

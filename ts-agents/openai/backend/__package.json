@@ -32,8 +32,6 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-agent-tools-backend": "?",
     "@nu-art/ts-openai-shared": "?",
     "openai": "?",

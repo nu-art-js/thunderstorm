@@ -39,8 +39,6 @@
     "@nu-art/firebase-shared": "?",
     "@nu-art/slack-frontend": "?",
     "@nu-art/slack-shared": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
     "express": "?",

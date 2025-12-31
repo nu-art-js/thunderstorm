@@ -21,7 +21,6 @@
 
 import {ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 import {CustomException} from '@nu-art/ts-common';
-import {Response_DBSync} from './sync-manager/types.js';
 
 
 export class HttpException<E extends ResponseError = ResponseError>
@@ -47,9 +46,4 @@ export type TS_Progress = {
 
 export interface OnRequestListener {
 	__onRequestCompleted: (key: string, success: boolean, requestData?: any) => void;
-}
-
-export type GenericUpdate = {
-	dbKey: string;
-	data: Partial<Response_DBSync<any>>;
 }

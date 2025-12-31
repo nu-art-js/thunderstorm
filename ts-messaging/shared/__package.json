@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "react": "?"
   },
   "devDependencies": {

@@ -32,8 +32,6 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "openai": "?",
     "firebase": "?",
     "firebase-admin": "?",

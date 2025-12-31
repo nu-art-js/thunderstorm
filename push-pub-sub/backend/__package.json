@@ -30,8 +30,6 @@
     "@nu-art/firebase-shared": "?",
     "@nu-art/permissions-backend": "?",
     "@nu-art/permissions-shared": "?",
-    "@nu-art/thunderstorm-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/user-account-backend": "?",
     "@nu-art/user-account-shared": "?",

@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "react": "?",
     "react-dom": "?",
     "react-router-dom": "?",

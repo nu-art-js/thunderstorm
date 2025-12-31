@@ -42,8 +42,6 @@
     "@nu-art/push-pub-sub-shared": "?",
     "@nu-art/slack-backend": "?",
     "@nu-art/slack-shared": "?",
-    "@nu-art/thunderstorm-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/user-account-backend": "?",
     "@nu-art/user-account-shared": "?",
@@ -86,5 +84,14 @@
       "types": "./*.d.ts",
       "import": "./*.js"
     }
+  }
+,
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+
+  "unitConfig": {
+    "type": "typescript-lib"
   }
 }

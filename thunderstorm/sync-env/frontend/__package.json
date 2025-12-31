@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@nu-art/thunderstorm-sync-env-shared": "?",
-    "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/thunder-browser-api": "?",
     "@nu-art/thunder-routing": "?",
     "@nu-art/thunder-ui-modules": "?",
@@ -47,7 +46,6 @@
     "@nu-art/thunder-http": "?",
     "@nu-art/thunder-db-api-frontend": "?",
     "@nu-art/thunder-db-api-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/thunderstorm-sync-manager-frontend": "?",
     "@nu-art/ts-common": "?",
     "react": "?"
