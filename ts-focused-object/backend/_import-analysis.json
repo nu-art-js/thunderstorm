@@ -1,7 +1,7 @@
 {
   "packageName": "@nu-art/ts-focused-object-backend",
   "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/ts-focused-object/backend",
-  "timestamp": "2025-12-30T21:18:13.733Z",
+  "timestamp": "2025-12-31T10:04:11.636Z",
   "imports": [
     {
       "importingPackage": "@nu-art/ts-focused-object-backend",
@@ -90,8 +90,8 @@
     {
       "importingPackage": "@nu-art/ts-focused-object-backend",
       "importedSymbol": "addRoutes",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
       "line": 2,
       "resolved": false,
@@ -102,8 +102,8 @@
     {
       "importingPackage": "@nu-art/ts-focused-object-backend",
       "importedSymbol": "createBodyServerApi",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
       "line": 2,
       "resolved": false,
@@ -259,7 +259,7 @@
   "dependencies": {
     "required": [
       "@nu-art/firebase-backend",
-      "@nu-art/thunderstorm-backend",
+      "@nu-art/thunder-db-api-backend",
       "@nu-art/ts-common",
       "@nu-art/ts-focused-object-shared",
       "@nu-art/user-account-backend"
@@ -267,16 +267,12 @@
     "missing": [],
     "found": [
       "@nu-art/firebase-backend",
-      "@nu-art/thunderstorm-backend",
+      "@nu-art/thunder-db-api-backend",
       "@nu-art/ts-common",
       "@nu-art/ts-focused-object-shared",
       "@nu-art/user-account-backend"
     ],
-    "unused": [
-      "@nu-art/firebase-shared",
-      "@nu-art/thunderstorm-shared",
-      "@nu-art/user-account-shared"
-    ]
+    "unused": []
   },
   "cycles": [],
   "symbolCollisions": []

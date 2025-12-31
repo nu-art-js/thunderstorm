@@ -15,44 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {ModuleFE_RoutingV2, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay} from '@nu-art/thunderstorm-frontend/index';
-
-import {VersionOnScreen} from '@components/VersionOnScreen';
-import {Route_Root} from './Routes.js';
-import {OnLoginStatusUpdated} from '@nu-art/user-account-frontend/index';
-
-
-export class App
-	extends React.Component
-	implements OnLoginStatusUpdated {
-
-	public static dropBlocker<T>(ev: React.DragEvent<T>) {
-		ev.preventDefault();
-		ev.stopPropagation();
-	}
-
-	protected deriveStateFromProps(nextProps: {}) {
-		return {};
-	}
-
-	__onLoginStatusUpdated = () => {
-		const status = ModuleFE_AccountV2.getLoggedStatus();
-		console.log('status update', status);
-	};
-
-	render() {
-		console.log('IM HERE')
-		return <div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
+import { ModuleFE_RoutingV2, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay } from "@nu-art/thunder-routing/index";
+import { VersionOnScreen } from '@components/VersionOnScreen';
+import { Route_Root } from './Routes.js';
+import { OnLoginStatusUpdated } from '@nu-art/user-account-frontend/index';
+export class App extends React.Component implements OnLoginStatusUpdated {
+    public static dropBlocker<T>(ev: React.DragEvent<T>) {
+        ev.preventDefault();
+        ev.stopPropagation();
+    }
+    protected deriveStateFromProps(nextProps: {}) {
+        return {};
+    }
+    __onLoginStatusUpdated = () => {
+        const status = ModuleFE_AccountV2.getLoggedStatus();
+        console.log('status update', status);
+    };
+    render() {
+        console.log('IM HERE');
+        return <div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
 				{/*<BugReport>*/}
 				{ModuleFE_RoutingV2.generateRoutes(Route_Root)}
 				{/*</BugReport>*/}
-				<VersionOnScreen/>
-				<TS_DialogOverlay/>
-				<TS_ToastOverlay/>
-				<TS_PopupMenuOverlay/>
+				<VersionOnScreen />
+				<TS_DialogOverlay />
+				<TS_ToastOverlay />
+				<TS_PopupMenuOverlay />
 			</div>;
-	}
+    }
 }
-

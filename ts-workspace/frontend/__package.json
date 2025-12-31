@@ -21,12 +21,11 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/ts-workspace-shared": "?",
-    "@nu-art/firebase-frontend": "?",
-    "@nu-art/firebase-shared": "?",
+    "@nu-art/thunder-browser-api": "?",
+    "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/user-account-frontend": "?",
-    "@nu-art/user-account-shared": "?",
+    "@nu-art/ts-workspace-shared": "?",
+    "@nu-art/web-client": "?",
     "express": "?",
     "firebase": "?",
     "firebase-admin": "?",

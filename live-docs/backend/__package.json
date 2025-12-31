@@ -38,9 +38,9 @@
     }
   ],
   "dependencies": {
-    "@nu-art/live-docs-shared": "?",
     "@nu-art/firebase-backend": "?",
-    "@nu-art/firebase-shared": "?",
+    "@nu-art/live-docs-shared": "?",
+    "@nu-art/thunder-db-api-backend": "?",
     "@nu-art/ts-common": "?",
     "express": "?",
     "firebase": "?",

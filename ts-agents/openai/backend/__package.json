@@ -31,13 +31,14 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "?",
+    "@nu-art/thunder-db-api-backend": "?",
     "@nu-art/ts-agent-tools-backend": "?",
+    "@nu-art/ts-common": "?",
     "@nu-art/ts-openai-shared": "?",
-    "openai": "?",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
+    "openai": "?",
     "react": "?",
     "sinon": "^20.0.0"
   },

@@ -23,7 +23,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "?"
+    "@nu-art/thunder-db-api-shared": "?"
   },
   "type": "module",
   "exports": {
@@ -35,8 +35,7 @@
       "types": "./*.d.ts",
       "import": "./*.js"
     }
-  }
-,
+  },
   "unitConfig": {
     "type": "typescript-lib"
   }

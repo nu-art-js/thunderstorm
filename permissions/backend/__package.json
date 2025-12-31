@@ -35,10 +35,13 @@
     "test": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files '**/*.ts' src/test/__all-tests.ts"
   },
   "dependencies": {
-    "@nu-art/permissions-shared": "?",
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",
-    "@nu-art/google-services-backend": "?",
+    "@nu-art/permissions-shared": "?",
+    "@nu-art/thunder-action-processor-shared": "?",
+    "@nu-art/thunder-db-api-backend": "?",
+    "@nu-art/thunder-db-api-shared": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/user-account-backend": "?",
     "@nu-art/user-account-shared": "?",

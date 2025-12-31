@@ -38,6 +38,11 @@
   },
   "dependencies": {
     "@nu-art/conflict-resolution-shared": "?",
+    "@nu-art/thunder-db-api-frontend": "?",
+    "@nu-art/thunder-db-api-shared": "?",
+    "@nu-art/thunder-http": "?",
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
     "react": "?"

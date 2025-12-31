@@ -32,9 +32,10 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "react": "?",
+    "@nu-art/web-client": "?",
     "pdf.js": "^0.1.0",
-    "pdfjs-dist": "5.4.149"
+    "pdfjs-dist": "5.4.149",
+    "react": "?"
   },
   "devDependencies": {
     "@types/pdfjs-dist": "2.10.378",

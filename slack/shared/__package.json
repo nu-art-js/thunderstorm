@@ -31,17 +31,18 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?",
-    "react": "?",
-    "react-dom": "?",
-    "react-router-dom": "?",
-    "@slack/web-api": "7.9.3",
     "@slack/events-api": "^2.3.0",
+    "@slack/web-api": "7.9.3",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
     "google-auth-library": "?",
     "moment": "?",
+    "react": "?",
+    "react-dom": "?",
+    "react-router-dom": "?",
     "request": "^2.88.0"
   },
   "devDependencies": {

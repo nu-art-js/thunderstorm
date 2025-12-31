@@ -32,6 +32,8 @@
   },
   "dependencies": {
     "@nu-art/slack-shared": "?",
+    "@nu-art/thunder-db-api-backend": "?",
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?",
     "@slack/events-api": "^2.3.0",
     "@slack/web-api": "7.9.3",

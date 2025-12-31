@@ -15,26 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm-frontend/index';
-
-export class Parent
-	extends ComponentSync {
-
-	protected deriveStateFromProps(nextProps: any) {
-		return {};
-	}
-
-	constructor(props: any) {
-		super(props);
-	}
-
-	render() {
-		return <div>
+import { ComponentSync } from "@nu-art/thunder-routing/index";
+export class Parent extends ComponentSync {
+    protected deriveStateFromProps(nextProps: any) {
+        return {};
+    }
+    constructor(props: any) {
+        super(props);
+    }
+    render() {
+        return <div>
 			<h1>Hi</h1>
 			{this.props.children}
 		</div>;
-	}
-
+    }
 }

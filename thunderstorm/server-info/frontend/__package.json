@@ -37,9 +37,9 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/thunder-server-info-shared": "?",
-    "@nu-art/thunder-browser-api": "?",
     "@nu-art/firebase-frontend": "?",
+    "@nu-art/thunder-db-api-shared": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},

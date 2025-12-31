@@ -1,7 +1,7 @@
 {
   "packageName": "@nu-art/permissions-frontend",
   "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/permissions/frontend",
-  "timestamp": "2025-12-30T21:18:13.728Z",
+  "timestamp": "2025-12-31T10:04:11.621Z",
   "imports": [
     {
       "importingPackage": "@nu-art/permissions-frontend",
@@ -318,8 +318,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ApiDefCaller",
-      "sourcePackage": "@nu-art/thunderstorm-shared",
-      "importPath": "@nu-art/thunderstorm-shared",
+      "sourcePackage": "@nu-art/thunder-db-api-shared",
+      "importPath": "@nu-art/thunder-db-api-shared",
       "filePath": "src/main/_entity/permission-user/ModuleFE_PermissionUser.ts",
       "line": 2,
       "resolved": false,
@@ -330,8 +330,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "DispatcherDef",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-user/ModuleFE_PermissionUser.ts",
       "line": 3,
       "resolved": false,
@@ -342,8 +342,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ThunderDispatcherV3",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-user/ModuleFE_PermissionUser.ts",
       "line": 3,
       "resolved": false,
@@ -414,8 +414,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ApiDefCaller",
-      "sourcePackage": "@nu-art/thunderstorm-shared",
-      "importPath": "@nu-art/thunderstorm-shared",
+      "sourcePackage": "@nu-art/thunder-db-api-shared",
+      "importPath": "@nu-art/thunder-db-api-shared",
       "filePath": "src/main/_entity/permission-project/ModuleFE_PermissionProject.ts",
       "line": 2,
       "resolved": false,
@@ -426,8 +426,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "DispatcherDef",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-project/ModuleFE_PermissionProject.ts",
       "line": 3,
       "resolved": false,
@@ -438,8 +438,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ThunderDispatcherV3",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-project/ModuleFE_PermissionProject.ts",
       "line": 3,
       "resolved": false,
@@ -498,8 +498,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ApiDefCaller",
-      "sourcePackage": "@nu-art/thunderstorm-shared",
-      "importPath": "@nu-art/thunderstorm-shared",
+      "sourcePackage": "@nu-art/thunder-db-api-shared",
+      "importPath": "@nu-art/thunder-db-api-shared",
       "filePath": "src/main/_entity/permission-group/ModuleFE_PermissionGroup.ts",
       "line": 2,
       "resolved": false,
@@ -510,8 +510,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "DispatcherDef",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-group/ModuleFE_PermissionGroup.ts",
       "line": 3,
       "resolved": false,
@@ -522,8 +522,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ThunderDispatcherV3",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-group/ModuleFE_PermissionGroup.ts",
       "line": 3,
       "resolved": false,
@@ -582,8 +582,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "DispatcherDef",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-domain/ModuleFE_PermissionDomain.ts",
       "line": 2,
       "resolved": false,
@@ -594,8 +594,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ThunderDispatcherV3",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-domain/ModuleFE_PermissionDomain.ts",
       "line": 2,
       "resolved": false,
@@ -642,8 +642,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ApiDefCaller",
-      "sourcePackage": "@nu-art/thunderstorm-shared",
-      "importPath": "@nu-art/thunderstorm-shared",
+      "sourcePackage": "@nu-art/thunder-db-api-shared",
+      "importPath": "@nu-art/thunder-db-api-shared",
       "filePath": "src/main/_entity/permission-api/ModuleFE_PermissionAPI.ts",
       "line": 2,
       "resolved": false,
@@ -654,8 +654,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "DispatcherDef",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-api/ModuleFE_PermissionAPI.ts",
       "line": 3,
       "resolved": false,
@@ -666,8 +666,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ThunderDispatcherV3",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-api/ModuleFE_PermissionAPI.ts",
       "line": 3,
       "resolved": false,
@@ -714,8 +714,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ModuleFE_BaseApi",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-access-level/ModuleFE_PermissionAccessLevel.ts",
       "line": 1,
       "resolved": false,
@@ -726,8 +726,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ApiDefCaller",
-      "sourcePackage": "@nu-art/thunderstorm-shared",
-      "importPath": "@nu-art/thunderstorm-shared",
+      "sourcePackage": "@nu-art/thunder-db-api-shared",
+      "importPath": "@nu-art/thunder-db-api-shared",
       "filePath": "src/main/_entity/permission-access-level/ModuleFE_PermissionAccessLevel.ts",
       "line": 2,
       "resolved": false,
@@ -738,8 +738,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "DispatcherDef",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-access-level/ModuleFE_PermissionAccessLevel.ts",
       "line": 3,
       "resolved": false,
@@ -750,8 +750,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "ThunderDispatcherV3",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend/core/db-api-gen/types",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/_entity/permission-access-level/ModuleFE_PermissionAccessLevel.ts",
       "line": 3,
       "resolved": false,
@@ -1158,8 +1158,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "InferProps",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/ui/permission-editors/editor-base.tsx",
       "line": 6,
       "resolved": false,
@@ -1170,8 +1170,8 @@
     {
       "importingPackage": "@nu-art/permissions-frontend",
       "importedSymbol": "InferState",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend",
+      "sourcePackage": "@nu-art/thunder-db-api-frontend",
+      "importPath": "@nu-art/thunder-db-api-frontend",
       "filePath": "src/main/ui/permission-editors/editor-base.tsx",
       "line": 6,
       "resolved": false,
@@ -2779,8 +2779,9 @@
   "dependencies": {
     "required": [
       "@nu-art/permissions-shared",
+      "@nu-art/thunder-db-api-frontend",
+      "@nu-art/thunder-db-api-shared",
       "@nu-art/thunderstorm-frontend",
-      "@nu-art/thunderstorm-shared",
       "@nu-art/ts-common",
       "@nu-art/ts-styles",
       "@nu-art/user-account-frontend"
@@ -2788,17 +2789,14 @@
     "missing": [],
     "found": [
       "@nu-art/permissions-shared",
+      "@nu-art/thunder-db-api-frontend",
+      "@nu-art/thunder-db-api-shared",
       "@nu-art/thunderstorm-frontend",
-      "@nu-art/thunderstorm-shared",
       "@nu-art/ts-common",
       "@nu-art/ts-styles",
       "@nu-art/user-account-frontend"
     ],
-    "unused": [
-      "@nu-art/firebase-frontend",
-      "@nu-art/firebase-shared",
-      "@nu-art/user-account-shared"
-    ]
+    "unused": []
   },
   "cycles": [],
   "symbolCollisions": []

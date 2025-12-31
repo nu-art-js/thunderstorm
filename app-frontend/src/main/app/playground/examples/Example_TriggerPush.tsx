@@ -17,49 +17,41 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm-frontend/index';
-import {_setTimeout, Second} from '@nu-art/ts-common';
-import {ExampleModule} from '@modules/ExampleModule';
-import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub-frontend/index';
-import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub/shared/types';
-
+import { ComponentSync } from "@nu-art/thunder-routing/index";
+import { _setTimeout, Second } from '@nu-art/ts-common';
+import { ExampleModule } from '@modules/ExampleModule';
+import { ModuleFE_PushPubSub } from '@nu-art/push-pub-sub-frontend/index';
+import { BaseSubscriptionData, DB_Notifications } from "@nu-art/push-pub-sub-shared/shared/types";
 export type State = {
-	notifications: DB_Notifications[]
-}
-
-class Example_TriggerPush_Renderer
-	extends ComponentSync<{}, State> {
-
-	protected deriveStateFromProps(nextProps: {}): State {
-		return {notifications: []};
-	}
-
-	render() {
-		return <div className={'ll_h_v'}>
+    notifications: DB_Notifications[];
+};
+class Example_TriggerPush_Renderer extends ComponentSync<{}, State> {
+    protected deriveStateFromProps(nextProps: {}): State {
+        return { notifications: [] };
+    }
+    render() {
+        return <div className={'ll_h_v'}>
 			<button onClick={ModuleFE_PushPubSub.requestPermissions}>request permissions</button>
 			<button onClick={() => this.registerForPush()}>Register</button>
 			<button onClick={() => this.triggerPush()}>Trigger Push</button>
 			<button onClick={() => this.triggerPush(Second)}>Trigger Delayed Push</button>
 			{this.state.notifications.map(_notification => <div>{_notification.read.toString()}</div>)}
 		</div>;
-	}
-
-	private triggerPush(timeout?: number) {
-		return _setTimeout(() => {
-			ExampleModule.testPush();
-		}, timeout);
-	}
-
-	private registerForPush() {
-		const mySubscriptions: BaseSubscriptionData[] = [{
-			topic: 'key',
-			props: {a: 'prop'}
-		}, {
-			topic: 'test',
-			props: {id: 'test1'}
-		}];
-		ModuleFE_PushPubSub.v1.registerAll(mySubscriptions);
-	}
+    }
+    private triggerPush(timeout?: number) {
+        return _setTimeout(() => {
+            ExampleModule.testPush();
+        }, timeout);
+    }
+    private registerForPush() {
+        const mySubscriptions: BaseSubscriptionData[] = [{
+                topic: 'key',
+                props: { a: 'prop' }
+            }, {
+                topic: 'test',
+                props: { id: 'test1' }
+            }];
+        ModuleFE_PushPubSub.v1.registerAll(mySubscriptions);
+    }
 }
-
-export const Example_TriggerPush = {renderer: Example_TriggerPush_Renderer, name: 'Trigger Push'};
+export const Example_TriggerPush = { renderer: Example_TriggerPush_Renderer, name: 'Trigger Push' };

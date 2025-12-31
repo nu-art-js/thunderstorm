@@ -15,27 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {LL_V_C, TS_ErrorBoundary} from '@nu-art/thunderstorm-frontend/index';
-
-
-export class PG_Example
-	extends React.Component<React.PropsWithChildren<{ name: string }>> {
-
-	constructor(p: { name: string }) {
-		super(p);
-	}
-
-	render() {
-		return (
-			<LL_V_C className="ts-playground__group-example">
+import { LL_V_C, TS_ErrorBoundary } from "@nu-art/thunder-routing/index";
+export class PG_Example extends React.Component<React.PropsWithChildren<{
+    name: string;
+}>> {
+    constructor(p: {
+        name: string;
+    }) {
+        super(p);
+    }
+    render() {
+        return (<LL_V_C className="ts-playground__group-example">
 				<div className="ts-playground__header">{this.props.name}</div>
 				<TS_ErrorBoundary>
 					{this.props.children}
 				</TS_ErrorBoundary>
-			</LL_V_C>
-		);
-	}
+			</LL_V_C>);
+    }
 }
-

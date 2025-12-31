@@ -37,7 +37,10 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/thunder-utils": "?",
+    "@nu-art/thunderstorm-frontend": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "history": "^4.9.0",
     "pako": "^2.1.0",

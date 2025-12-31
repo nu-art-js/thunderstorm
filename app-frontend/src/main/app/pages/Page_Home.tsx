@@ -15,43 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {Hello} from '../Hello.js';
-import {ModuleFE_Toaster} from '@nu-art/thunderstorm-frontend/index';
-import {ExampleModule} from '@modules/ExampleModule';
-
-
-export class Page_Home
-	extends React.Component {
-	constructor(props: {}) {
-		super(props);
-
-		this.state = {
-			formFields: {},
-		};
-	}
-
-	showAppToasterSuccessExample = () => {
-		ModuleFE_Toaster.toastSuccess('Simple success message');
-	};
-
-	showAppToasterErrorExample = () => {
-		ModuleFE_Toaster.toastError('Simple error message');
-	};
-
-	showAppToasterInfoExample = () => {
-		ModuleFE_Toaster.toastInfo('Simple info message');
-	};
-
-	callServerApi_CustomError = () => {
-		ExampleModule.callCustomErrorApi();
-	};
-
-	render() {
-		return <>
-			<Hello.renderer/>
-			<button style={{marginRight: 8}} onClick={this.callServerApi_CustomError}>Server API - Custom Error</button>
+import { Hello } from '../Hello.js';
+import { ModuleFE_Toaster } from "@nu-art/thunder-db-api-frontend/index";
+import { ExampleModule } from '@modules/ExampleModule';
+export class Page_Home extends React.Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            formFields: {},
+        };
+    }
+    showAppToasterSuccessExample = () => {
+        ModuleFE_Toaster.toastSuccess('Simple success message');
+    };
+    showAppToasterErrorExample = () => {
+        ModuleFE_Toaster.toastError('Simple error message');
+    };
+    showAppToasterInfoExample = () => {
+        ModuleFE_Toaster.toastInfo('Simple info message');
+    };
+    callServerApi_CustomError = () => {
+        ExampleModule.callCustomErrorApi();
+    };
+    render() {
+        return <>
+			<Hello.renderer />
+			<button style={{ marginRight: 8 }} onClick={this.callServerApi_CustomError}>Server API - Custom Error</button>
 		</>;
-	}
+    }
 }

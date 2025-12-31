@@ -21,8 +21,8 @@
   "author": "TacB0sS",
   "dependencies": {
     "@nu-art/jira-shared": "?",
-    "@nu-art/firebase-backend": "?",
-    "@nu-art/firebase-shared": "?",
+    "@nu-art/thunder-db-api-backend": "?",
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",

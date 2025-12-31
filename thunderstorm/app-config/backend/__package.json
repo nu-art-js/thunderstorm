@@ -37,10 +37,8 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/thunderstorm-app-config-shared": "?",
     "@nu-art/thunder-db-api-backend": "?",
-    "@nu-art/thunder-db-api-shared": "?",
-    "@nu-art/firebase-backend": "?",
+    "@nu-art/thunderstorm-app-config-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},

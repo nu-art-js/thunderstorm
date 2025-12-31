@@ -31,7 +31,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-dependency-viewer-shared": "?",
+    "@nu-art/thunder-db-api-shared": "?",
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/ts-common": "?",
     "compression": "^1.7.4",
     "d3": "?",

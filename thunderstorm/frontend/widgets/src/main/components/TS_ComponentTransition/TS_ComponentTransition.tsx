@@ -1,96 +1,80 @@
-import {BadImplementationException} from '@nu-art/ts-common';
+import { BadImplementationException } from '@nu-art/ts-common';
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm-frontend';
-import {_className} from '@nu-art/thunderstorm-frontend';
-
+import { ComponentSync } from "@nu-art/thunder-routing";
+import { _className } from "@nu-art/thunder-routing";
 type TransitionPhase = 'mount' | 'enter' | 'enter-done' | 'exit' | 'exit-done' | 'unmount';
-
 type Props = React.PropsWithChildren<{
-	trigger: boolean;
-	mountTimeout?: number;
-	unmountTimeout?: number;
-	transitionTimeout: number;
-	transitionPrefix?: string;
-	onEnterDone?: () => void;
-	onExitDone?: () => void;
-	skipAnimationOnMount?: boolean;
+    trigger: boolean;
+    mountTimeout?: number;
+    unmountTimeout?: number;
+    transitionTimeout: number;
+    transitionPrefix?: string;
+    onEnterDone?: () => void;
+    onExitDone?: () => void;
+    skipAnimationOnMount?: boolean;
 }>;
-
 type State = {
-	transitionPhase: TransitionPhase;
-}
-
+    transitionPhase: TransitionPhase;
+};
 export class TS_ComponentTransition extends ComponentSync<Props, State> {
-
-	static defaultProps: Partial<Props> = {
-		unmountTimeout: 0,
-		mountTimeout: 0,
-	};
-
-	shouldReDeriveState(nextProps: Readonly<Props>): boolean {
-		return this.props?.trigger !== nextProps.trigger;
-	}
-
-	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
-		return true;
-	}
-
-	protected deriveStateFromProps(nextProps: Props, state: State): State {
-		//First load
-		if (!state.transitionPhase)
-			state.transitionPhase = nextProps.trigger
-				? nextProps.skipAnimationOnMount ? 'enter-done' : 'mount'
-				: 'unmount';
-		//Triggered change
-		else
-			state.transitionPhase = nextProps.trigger ? 'mount' : 'exit';
-
-		return state;
-	}
-
-	private triggerNextTimeout = () => {
-		switch (this.state.transitionPhase) {
-			case 'mount':
-				setTimeout(() => {
-					this.setState({transitionPhase: 'enter'});
-				}, this.props.mountTimeout);
-				break;
-
-			case 'enter':
-				setTimeout(() => {
-					this.setState({transitionPhase: 'enter-done'});
-					this.props.onEnterDone?.();
-				}, this.props.transitionTimeout);
-				break;
-
-			case 'exit':
-				setTimeout(() => {
-					this.setState({transitionPhase: 'exit-done'});
-				}, this.props.transitionTimeout);
-				break;
-
-			case 'exit-done':
-				setTimeout(() => {
-					this.setState({transitionPhase: 'unmount'});
-				}, this.props.unmountTimeout);
-		}
-	};
-
-	render() {
-		this.triggerNextTimeout();
-		if (this.state.transitionPhase === 'unmount')
-			return '';
-
-		if (!this.props.children)
-			throw new BadImplementationException('Component Expects at least one child');
-
-		return <>
+    static defaultProps: Partial<Props> = {
+        unmountTimeout: 0,
+        mountTimeout: 0,
+    };
+    shouldReDeriveState(nextProps: Readonly<Props>): boolean {
+        return this.props?.trigger !== nextProps.trigger;
+    }
+    shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+        return true;
+    }
+    protected deriveStateFromProps(nextProps: Props, state: State): State {
+        //First load
+        if (!state.transitionPhase)
+            state.transitionPhase = nextProps.trigger
+                ? nextProps.skipAnimationOnMount ? 'enter-done' : 'mount'
+                : 'unmount';
+        //Triggered change
+        else
+            state.transitionPhase = nextProps.trigger ? 'mount' : 'exit';
+        return state;
+    }
+    private triggerNextTimeout = () => {
+        switch (this.state.transitionPhase) {
+            case 'mount':
+                setTimeout(() => {
+                    this.setState({ transitionPhase: 'enter' });
+                }, this.props.mountTimeout);
+                break;
+            case 'enter':
+                setTimeout(() => {
+                    this.setState({ transitionPhase: 'enter-done' });
+                    this.props.onEnterDone?.();
+                }, this.props.transitionTimeout);
+                break;
+            case 'exit':
+                setTimeout(() => {
+                    this.setState({ transitionPhase: 'exit-done' });
+                }, this.props.transitionTimeout);
+                break;
+            case 'exit-done':
+                setTimeout(() => {
+                    this.setState({ transitionPhase: 'unmount' });
+                }, this.props.unmountTimeout);
+        }
+    };
+    render() {
+        this.triggerNextTimeout();
+        if (this.state.transitionPhase === 'unmount')
+            return '';
+        if (!this.props.children)
+            throw new BadImplementationException('Component Expects at least one child');
+        return <>
 			{React.Children.map(this.props.children, child => {
-				return React.cloneElement(child as React.ReactElement, {
-					className: _className((child as React.ReactElement).props.className, this.props.transitionPrefix ? `${this.props.transitionPrefix}-${this.state.transitionPhase}` : this.state.transitionPhase),
-					style: {transitionDuration: `${this.props.transitionTimeout}ms`}
-				});
-			})}
+                return React.cloneElement(child as React.ReactElement, {
+                    className: _className((child as React.ReactElement).props.className, this.props.transitionPrefix ? `${this.props.transitionPrefix}-${this.state.transitionPhase}` : this.state.transitionPhase),
+                    style: { transitionDuration: `${this.props.transitionTimeout}ms` }
+                });
+            })}
 		</>;
-	}
+    }
 }

@@ -19,71 +19,51 @@
  * limitations under the License.
  */
 import './TS_ToolTip.scss';
-import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity.js';
-import {resolveContent} from '@nu-art/ts-common';
-import {Model_ToolTip, mouseInteractivity_ToolTip, ToolTipListener} from '../../../component-modules/mouse-interactivity/types.js';
-import {ModuleFE_MouseInteractivity} from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity.js';
-import {OnWindowResized} from '@nu-art/thunderstorm-frontend'ModuleFE_Window.js';
-
-export class TS_ToolTip
-	extends TS_MouseInteractivity<Model_ToolTip>
-	implements OnWindowResized, ToolTipListener {
-
-	private timeout: NodeJS.Timeout | undefined = undefined;
-
-	__onWindowResized = () => {
-		if (this.state.model?.id)
-			ModuleFE_MouseInteractivity.hide(mouseInteractivity_ToolTip);
-	};
-
-	__onToolTipDisplay = (model?: Model_ToolTip) => {
-		//Clear timeout if one exists
-		if (this.timeout)
-			clearTimeout(this.timeout);
-
-		//If a model is given
-		if (model)
-			return this.setState({model, open: true});
-
-		//Model is not given
-		const allowContentHover = this.state.model?.contentHoverDelay;
-		if (allowContentHover)
-			this.timeout = setTimeout(() => {
-				this.setState({model: undefined, open: false});
-			}, allowContentHover);
-
-		else
-			this.setState({model: undefined, open: false});
-	};
-
-	private onContentMouseEnter = () => {
-		if (!this.state.model?.contentHoverDelay)
-			return;
-
-		//Clear the timeout to stop hiding the content
-		if (this.timeout)
-			clearTimeout(this.timeout);
-	};
-
-	private onContentMouseLeave = () => {
-		ModuleFE_MouseInteractivity.hide(mouseInteractivity_ToolTip);
-	};
-
-	render() {
-		const {model, open} = this.state;
-
-		if (!model || !open)
-			return '';
-
-		return <div
-			className={'ts-tooltip__content'}
-			id={model.id}
-			ref={this.ref}
-			onMouseEnter={this.onContentMouseEnter}
-			onMouseLeave={this.onContentMouseLeave}
-			onMouseMove={this.onContentMouseEnter}
-		>
+import { TS_MouseInteractivity } from '../base/TS_MouseInteractivity.js';
+import { resolveContent } from '@nu-art/ts-common';
+import { Model_ToolTip, mouseInteractivity_ToolTip, ToolTipListener } from '../../../component-modules/mouse-interactivity/types.js';
+import { ModuleFE_MouseInteractivity } from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity.js';
+import { OnWindowResized } from "@nu-art/thunder-browser-api";
+ModuleFE_Window.js;
+';;
+export class TS_ToolTip extends TS_MouseInteractivity<Model_ToolTip> implements OnWindowResized, ToolTipListener {
+    private timeout: NodeJS.Timeout | undefined = undefined;
+    __onWindowResized = () => {
+        if (this.state.model?.id)
+            ModuleFE_MouseInteractivity.hide(mouseInteractivity_ToolTip);
+    };
+    __onToolTipDisplay = (model?: Model_ToolTip) => {
+        //Clear timeout if one exists
+        if (this.timeout)
+            clearTimeout(this.timeout);
+        //If a model is given
+        if (model)
+            return this.setState({ model, open: true });
+        //Model is not given
+        const allowContentHover = this.state.model?.contentHoverDelay;
+        if (allowContentHover)
+            this.timeout = setTimeout(() => {
+                this.setState({ model: undefined, open: false });
+            }, allowContentHover);
+        else
+            this.setState({ model: undefined, open: false });
+    };
+    private onContentMouseEnter = () => {
+        if (!this.state.model?.contentHoverDelay)
+            return;
+        //Clear the timeout to stop hiding the content
+        if (this.timeout)
+            clearTimeout(this.timeout);
+    };
+    private onContentMouseLeave = () => {
+        ModuleFE_MouseInteractivity.hide(mouseInteractivity_ToolTip);
+    };
+    render() {
+        const { model, open } = this.state;
+        if (!model || !open)
+            return '';
+        return <div className={'ts-tooltip__content'} id={model.id} ref={this.ref} onMouseEnter={this.onContentMouseEnter} onMouseLeave={this.onContentMouseLeave} onMouseMove={this.onContentMouseEnter}>
 			{resolveContent(model.content, () => this.forceUpdate())}
 		</div>;
-	}
+    }
 }

@@ -1,0 +1,165 @@
+{
+  "packageName": "@nu-art/storm-http",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/thunderstorm/frontend/http/backend",
+  "timestamp": "2025-12-31T10:04:11.626Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/module-pack.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "ApiDef",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "BaseHttpModule_Class",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "BaseHttpRequest",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "TypedApi",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "BadImplementationException",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "composeUrl",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "StaticLogger",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "StringMap",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "ApiError_GeneralErrorMessage",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common/core/exceptions/types",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 25,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "ApiErrorResponse",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common/core/exceptions/types",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 25,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/storm-http",
+      "importedSymbol": "ResponseError",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common/core/exceptions/types",
+      "filePath": "src/main/modules/AxiosHttpModule.ts",
+      "line": 25,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

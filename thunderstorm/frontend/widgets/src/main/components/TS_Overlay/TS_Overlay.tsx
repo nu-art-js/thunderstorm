@@ -18,45 +18,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
 import './TS_Overlay.scss';
-import {_className} from '@nu-art/thunderstorm-frontend';
-
-
+import { _className } from "@nu-art/thunder-routing";
 type Props = React.PropsWithChildren<{
-	flat?: boolean
-	showOverlay: boolean
-	onClickOverlay: (event: React.MouseEvent<HTMLDivElement>) => void
-	className?: string;
+    flat?: boolean;
+    showOverlay: boolean;
+    onClickOverlay: (event: React.MouseEvent<HTMLDivElement>) => void;
+    className?: string;
 }>;
-
-export class TS_Overlay
-	extends React.Component<Props> {
-
-	render() {
-		if (!this.props.showOverlay)
-			return this.props.children;
-
-		const overlayChild = <div
-			className="ts-overlay__child"
-			onClick={this.props.onClickOverlay}
-			onContextMenu={this.props.onClickOverlay}
-		>{this.props.children}</div>;
-
-		return <>
-			<div
-				className={_className('ts-overlay', this.props.className)}
-				onClick={this.props.onClickOverlay}
-				onContextMenu={this.props.onClickOverlay}
-				onMouseMove={e => e.stopPropagation()}
-				onMouseOver={e => e.stopPropagation()}
-				onMouseEnter={e => e.stopPropagation()}
-				onMouseLeave={e => e.stopPropagation()}
-				onMouseOut={e => e.stopPropagation()}>
+export class TS_Overlay extends React.Component<Props> {
+    render() {
+        if (!this.props.showOverlay)
+            return this.props.children;
+        const overlayChild = <div className="ts-overlay__child" onClick={this.props.onClickOverlay} onContextMenu={this.props.onClickOverlay}>{this.props.children}</div>;
+        return <>
+			<div className={_className('ts-overlay', this.props.className)} onClick={this.props.onClickOverlay} onContextMenu={this.props.onClickOverlay} onMouseMove={e => e.stopPropagation()} onMouseOver={e => e.stopPropagation()} onMouseEnter={e => e.stopPropagation()} onMouseLeave={e => e.stopPropagation()} onMouseOut={e => e.stopPropagation()}>
 				{!this.props.flat && overlayChild}
 			</div>
 			{this.props.flat && overlayChild}
 		</>;
-	}
+    }
 }

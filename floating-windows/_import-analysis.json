@@ -1,7 +1,7 @@
 {
   "packageName": "@nu-art/floating-windows",
   "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/floating-windows",
-  "timestamp": "2025-12-30T21:18:13.726Z",
+  "timestamp": "2025-12-31T10:04:11.619Z",
   "imports": [
     {
       "importingPackage": "@nu-art/floating-windows",
@@ -66,8 +66,8 @@
     {
       "importingPackage": "@nu-art/floating-windows",
       "importedSymbol": "_className",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend",
+      "sourcePackage": "@nu-art/thunder-routing",
+      "importPath": "@nu-art/thunder-routing",
       "filePath": "src/main/_ui/TS_FloatingWindow/TS_FloatingWindow.tsx",
       "line": 2,
       "resolved": false,
@@ -78,8 +78,8 @@
     {
       "importingPackage": "@nu-art/floating-windows",
       "importedSymbol": "ComponentSync",
-      "sourcePackage": "@nu-art/thunderstorm-frontend",
-      "importPath": "@nu-art/thunderstorm-frontend",
+      "sourcePackage": "@nu-art/thunder-routing",
+      "importPath": "@nu-art/thunder-routing",
       "filePath": "src/main/_ui/TS_FloatingWindow/TS_FloatingWindow.tsx",
       "line": 2,
       "resolved": false,
@@ -198,18 +198,17 @@
   ],
   "dependencies": {
     "required": [
+      "@nu-art/thunder-routing",
       "@nu-art/thunderstorm-frontend",
       "@nu-art/ts-common"
     ],
     "missing": [],
     "found": [
+      "@nu-art/thunder-routing",
       "@nu-art/thunderstorm-frontend",
       "@nu-art/ts-common"
     ],
-    "unused": [
-      "@nu-art/ts-styles",
-      "@nu-art/thunderstorm-shared"
-    ]
+    "unused": []
   },
   "cycles": [],
   "symbolCollisions": []

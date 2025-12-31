@@ -1,0 +1,239 @@
+{
+  "packageName": "@nu-art/thunderstorm-app-config-backend",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/thunderstorm/app-config/backend",
+  "timestamp": "2025-12-31T10:04:11.624Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "createQueryServerApi",
+      "sourcePackage": "@nu-art/thunderstorm-backend",
+      "importPath": "@nu-art/thunderstorm-backend",
+      "filePath": "src/main/ModuleBE_AppConfigAPI.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "addRoutes",
+      "sourcePackage": "@nu-art/thunderstorm-backend",
+      "importPath": "@nu-art/thunderstorm-backend",
+      "filePath": "src/main/ModuleBE_AppConfigAPI.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "ModuleBE_BaseApi_Class",
+      "sourcePackage": "@nu-art/thunderstorm-backend",
+      "importPath": "@nu-art/thunderstorm-backend",
+      "filePath": "src/main/ModuleBE_AppConfigAPI.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "ApiDef_AppConfig",
+      "sourcePackage": "@nu-art/thunderstorm-app-config-shared",
+      "importPath": "@nu-art/thunderstorm-app-config-shared",
+      "filePath": "src/main/ModuleBE_AppConfigAPI.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "RequestBody_GetResolverByKey",
+      "sourcePackage": "@nu-art/thunderstorm-app-config-shared",
+      "importPath": "@nu-art/thunderstorm-app-config-shared",
+      "filePath": "src/main/ModuleBE_AppConfigAPI.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "DBProto_AppConfig",
+      "sourcePackage": "@nu-art/thunderstorm-app-config-shared",
+      "importPath": "@nu-art/thunderstorm-app-config-shared",
+      "filePath": "src/main/ModuleBE_AppConfigAPI.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "DB_AppConfig",
+      "sourcePackage": "@nu-art/thunderstorm-app-config-shared",
+      "importPath": "@nu-art/thunderstorm-app-config-shared",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "DBDef_AppConfig",
+      "sourcePackage": "@nu-art/thunderstorm-app-config-shared",
+      "importPath": "@nu-art/thunderstorm-app-config-shared",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "DBProto_AppConfig",
+      "sourcePackage": "@nu-art/thunderstorm-app-config-shared",
+      "importPath": "@nu-art/thunderstorm-app-config-shared",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "DBApiConfigV3",
+      "sourcePackage": "@nu-art/thunderstorm-backend",
+      "importPath": "@nu-art/thunderstorm-backend",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "ModuleBE_BaseDB",
+      "sourcePackage": "@nu-art/thunderstorm-backend",
+      "importPath": "@nu-art/thunderstorm-backend",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "_keys",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "ApiException",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "Logger",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "PreDB",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "TypedKeyValue",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "TypedMap",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ModuleBE_AppConfigDB.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-app-config-backend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/module-pack.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunderstorm-app-config-shared",
+      "@nu-art/thunderstorm-backend",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunderstorm-app-config-shared",
+      "@nu-art/thunderstorm-backend",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

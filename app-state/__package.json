@@ -39,8 +39,10 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/thunderstorm-frontend": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/ts-styles": "?",
     "react": "?"
   },
   "devDependencies": {

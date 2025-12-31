@@ -36,9 +36,7 @@
     "directory": "dist",
     "linkDirectory": true
   },
-  "dependencies": {
-    "@nu-art/ts-common": "?"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "unitConfig": {
     "type": "typescript-lib"

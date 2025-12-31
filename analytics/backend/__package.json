@@ -12,9 +12,8 @@
   },
   "dependencies": {
     "@nu-art/analytics-shared": "?",
+    "@nu-art/thunder-db-api-backend": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/firebase-backend": "?",
-    "@nu-art/firebase-shared": "?",
     "mixpanel": "~0.18.1"
   },
   "devDependencies": {},

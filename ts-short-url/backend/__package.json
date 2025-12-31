@@ -31,12 +31,12 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-short-url-shared": "?",
     "@nu-art/firebase-backend": "?",
-    "@nu-art/firebase-shared": "?",
     "@nu-art/permissions-backend": "?",
     "@nu-art/permissions-shared": "?",
+    "@nu-art/thunder-db-api-backend": "?",
     "@nu-art/ts-common": "?",
+    "@nu-art/ts-short-url-shared": "?",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",

@@ -38,16 +38,16 @@
     }
   ],
   "dependencies": {
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/firebase-shared": "?",
+    "express": "?",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
+    "moment": "?",
     "react": "?",
     "react-dom": "?",
     "react-router-dom": "?",
-    "moment": "?",
-    "express": "?",
     "request": "^2.88.0"
   },
   "devDependencies": {

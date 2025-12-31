@@ -1,0 +1,191 @@
+{
+  "packageName": "@nu-art/thunder-db-api-shared",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/thunderstorm/db-api/shared",
+  "timestamp": "2025-12-31T10:04:11.626Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "ResponseError",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common/core/exceptions/types",
+      "filePath": "src/main/types.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "DBDef_V3",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/types.ts",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "EntityDependencyError",
+      "sourcePackage": "@nu-art/firebase-shared",
+      "importPath": "@nu-art/firebase-shared",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 22,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "FirestoreQuery",
+      "sourcePackage": "@nu-art/firebase-shared",
+      "importPath": "@nu-art/firebase-shared",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 22,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "DB_BaseObject",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "DBDef_V3",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "DBProto",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "IndexKeys",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "Metadata",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 23,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "ApiDefResolver",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "BodyApi",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "HttpMethod",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "QueryApi",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-db-api-shared",
+      "importedSymbol": "ResponseError",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common/core/exceptions/types",
+      "filePath": "src/main/db-api-gen/api-utils.ts",
+      "line": 25,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/firebase-shared",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/firebase-shared",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

@@ -18,73 +18,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Dispatcher, Module} from '@nu-art/ts-common';
-import {ModuleFE_XHR} from './http/ModuleFE_XHR.js';
-import {
-	ApiDef,
-	ApiDef_ForceUpgrade,
-	ApiDefCaller,
-	ApiStruct_ForceUpgrade,
-	HeaderKey_AppVersion,
-	HeaderKey_BrowserType,
-	HttpMethod,
-	QueryApi,
-	UpgradeRequired
-} from '@nu-art/thunderstorm-shared';
-import {browserType} from '../utils/tools.js';
-import {apiWithQuery} from '../core/typed-api.js';
-
-
+import { Dispatcher, Module } from '@nu-art/ts-common';
+import { ModuleFE_XHR } from './http/ModuleFE_XHR.js';
+import { ApiDef, ApiDef_ForceUpgrade, ApiDefCaller, ApiStruct_ForceUpgrade, HeaderKey_AppVersion, HeaderKey_BrowserType, HttpMethod, QueryApi, UpgradeRequired } from "@nu-art/thunder-db-api-shared";
+import { browserType } from '../utils/tools.js';
+import { apiWithQuery } from '../core/typed-api.js';
 type Config = {
-	assertVersionUrl: string
-}
-
+    assertVersionUrl: string;
+};
 export interface OnUpgradeRequired {
-	__onUpgradeRequired(response: UpgradeRequired): void;
+    __onUpgradeRequired(response: UpgradeRequired): void;
 }
-
 export interface OnUpgradeRequired {
-	__onUpgradeRequired(response: UpgradeRequired): void;
+    __onUpgradeRequired(response: UpgradeRequired): void;
 }
-
 const dispatch_onUpgradeRequired = new Dispatcher<OnUpgradeRequired, '__onUpgradeRequired'>('__onUpgradeRequired');
-
-class ModuleFE_ForceUpgrade_Class
-	extends Module<Config>
-	implements ApiDefCaller<ApiStruct_ForceUpgrade> {
-	readonly v1: ApiDefCaller<ApiStruct_ForceUpgrade>['v1'];
-
-	constructor() {
-		super();
-		this.v1 = {
-			assertAppVersion: apiWithQuery(ApiDef_ForceUpgrade.v1.assertAppVersion)
-		};
-	}
-
-	protected init(): void {
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_AppVersion, `${process.env.appVersion}`);
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_BrowserType, `${browserType()}`);
-	}
-
-	compareVersion = () => {
-		const def: ApiDef<QueryApi<UpgradeRequired>> =
-			{method: HttpMethod.GET, path: this.config.assertVersionUrl};
-
-		// this.v1.assertAppVersion({}).execute((response) => {
-		// 	dispatch_onUpgradeRequired.dispatchModule(response);
-		// });
-		ModuleFE_XHR
-			.createRequest(def)
-			.setRelativeUrl(this.config.assertVersionUrl)
-			.execute((response) => {
-				dispatch_onUpgradeRequired.dispatchModule(response);
-			});
-	};
-
-	async __postInit() {
-
-	}
+class ModuleFE_ForceUpgrade_Class extends Module<Config> implements ApiDefCaller<ApiStruct_ForceUpgrade> {
+    readonly v1: ApiDefCaller<ApiStruct_ForceUpgrade>['v1'];
+    constructor() {
+        super();
+        this.v1 = {
+            assertAppVersion: apiWithQuery(ApiDef_ForceUpgrade.v1.assertAppVersion)
+        };
+    }
+    protected init(): void {
+        ModuleFE_XHR.addDefaultHeader(HeaderKey_AppVersion, `${process.env.appVersion}`);
+        ModuleFE_XHR.addDefaultHeader(HeaderKey_BrowserType, `${browserType()}`);
+    }
+    compareVersion = () => {
+        const def: ApiDef<QueryApi<UpgradeRequired>> = { method: HttpMethod.GET, path: this.config.assertVersionUrl };
+        // this.v1.assertAppVersion({}).execute((response) => {
+        // 	dispatch_onUpgradeRequired.dispatchModule(response);
+        // });
+        ModuleFE_XHR
+            .createRequest(def)
+            .setRelativeUrl(this.config.assertVersionUrl)
+            .execute((response) => {
+            dispatch_onUpgradeRequired.dispatchModule(response);
+        });
+    };
+    async __postInit() {
+    }
 }
-
 export const ModuleFE_ForceUpgrade = new ModuleFE_ForceUpgrade_Class();

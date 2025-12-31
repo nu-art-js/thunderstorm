@@ -1,13 +1,13 @@
 {
   "packageName": "@nu-art/ts-short-url-shared",
   "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/ts-short-url/shared",
-  "timestamp": "2025-12-30T21:18:13.735Z",
+  "timestamp": "2025-12-31T10:04:11.639Z",
   "imports": [
     {
       "importingPackage": "@nu-art/ts-short-url-shared",
       "importedSymbol": "ApiDefResolver",
-      "sourcePackage": "@nu-art/thunderstorm-shared",
-      "importPath": "@nu-art/thunderstorm-shared",
+      "sourcePackage": "@nu-art/thunder-db-api-shared",
+      "importPath": "@nu-art/thunder-db-api-shared",
       "filePath": "src/main/_entity/short-url/api-def.ts",
       "line": 1,
       "resolved": false,
@@ -18,8 +18,8 @@
     {
       "importingPackage": "@nu-art/ts-short-url-shared",
       "importedSymbol": "HttpMethod",
-      "sourcePackage": "@nu-art/thunderstorm-shared",
-      "importPath": "@nu-art/thunderstorm-shared",
+      "sourcePackage": "@nu-art/thunder-db-api-shared",
+      "importPath": "@nu-art/thunder-db-api-shared",
       "filePath": "src/main/_entity/short-url/api-def.ts",
       "line": 1,
       "resolved": false,
@@ -30,8 +30,8 @@
     {
       "importingPackage": "@nu-art/ts-short-url-shared",
       "importedSymbol": "QueryApi",
-      "sourcePackage": "@nu-art/thunderstorm-shared",
-      "importPath": "@nu-art/thunderstorm-shared",
+      "sourcePackage": "@nu-art/thunder-db-api-shared",
+      "importPath": "@nu-art/thunder-db-api-shared",
       "filePath": "src/main/_entity/short-url/api-def.ts",
       "line": 1,
       "resolved": false,
@@ -162,19 +162,15 @@
   ],
   "dependencies": {
     "required": [
-      "@nu-art/thunderstorm-shared",
+      "@nu-art/thunder-db-api-shared",
       "@nu-art/ts-common"
     ],
     "missing": [],
     "found": [
-      "@nu-art/thunderstorm-shared",
+      "@nu-art/thunder-db-api-shared",
       "@nu-art/ts-common"
     ],
-    "unused": [
-      "@nu-art/permissions-shared",
-      "@nu-art/ts-styles",
-      "@nu-art/firebase-shared"
-    ]
+    "unused": []
   },
   "cycles": [],
   "symbolCollisions": []

@@ -15,24 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {ComponentSync, ModuleFE_RoutingV2, TS_NavLink} from '@nu-art/thunderstorm-frontend/index';
-import {Parent} from './Parent.js';
-import {Route_Child2} from './Routes.js';
-
-export class Child1
-	extends ComponentSync {
-
-	protected deriveStateFromProps(nextProps: any) {
-		return {};
-	}
-
-	render() {
-		return <Parent>
+import { ComponentSync, ModuleFE_RoutingV2, TS_NavLink } from "@nu-art/thunder-routing/index";
+import { Parent } from './Parent.js';
+import { Route_Child2 } from './Routes.js';
+export class Child1 extends ComponentSync {
+    protected deriveStateFromProps(nextProps: any) {
+        return {};
+    }
+    render() {
+        return <Parent>
 			<div>Child1</div>
 			<TS_NavLink route={Route_Child2}>Child2</TS_NavLink>
 		</Parent>;
-	}
-
+    }
 }

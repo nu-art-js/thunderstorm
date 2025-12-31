@@ -11,6 +11,7 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},

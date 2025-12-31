@@ -37,10 +37,11 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
+    "history": "^4.9.0",
     "react": "?",
-    "react-router-dom": "?",
-    "history": "^4.9.0"
+    "react-router-dom": "?"
   },
   "devDependencies": {
     "@types/react": "?",

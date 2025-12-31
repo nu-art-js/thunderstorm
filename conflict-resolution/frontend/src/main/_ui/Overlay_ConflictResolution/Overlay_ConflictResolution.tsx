@@ -1,25 +1,18 @@
-import {DBEntityDependencies} from '@nu-art/thunder-db-api-shared';
-import {ComponentSync} from '@nu-art/thunderstorm-frontend/index';
+import { DBEntityDependencies } from '@nu-art/thunder-db-api-shared';
+import { ComponentSync } from "@nu-art/thunder-routing/index";
 import './Overlay_ConflictResolution.scss';
-import {Panel_ConflictResolution} from '../Panel_ConflictResolution/Panel_ConflictResolution.js';
-import {OnShowConflictResolution} from '../../_dispatchers/index.js';
-
+import { Panel_ConflictResolution } from '../Panel_ConflictResolution/Panel_ConflictResolution.js';
+import { OnShowConflictResolution } from '../../_dispatchers/index.js';
 type State = {
-	dependencies?: DBEntityDependencies
+    dependencies?: DBEntityDependencies;
 };
-
-export class Overlay_ConflictResolution
-	extends ComponentSync<{}, State>
-	implements OnShowConflictResolution {
-
-	__onShowConflictResolution = (dependencies?: DBEntityDependencies) => {
-		this.setState({dependencies});
-	};
-
-	render() {
-		if (!this.state.dependencies)
-			return <></>;
-
-		return <Panel_ConflictResolution dependencies={this.state.dependencies}/>;
-	}
+export class Overlay_ConflictResolution extends ComponentSync<{}, State> implements OnShowConflictResolution {
+    __onShowConflictResolution = (dependencies?: DBEntityDependencies) => {
+        this.setState({ dependencies });
+    };
+    render() {
+        if (!this.state.dependencies)
+            return <></>;
+        return <Panel_ConflictResolution dependencies={this.state.dependencies}/>;
+    }
 }

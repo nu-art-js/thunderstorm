@@ -31,15 +31,14 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "?",
-    "firebase": "?",
-    "firebase-admin": "?",
-    "firebase-functions": "?",
-    "react": "?",
     "compression": "^1.7.4",
     "d3": "?",
     "d3-graphviz": "?",
     "d3-selection": "?",
+    "firebase": "?",
+    "firebase-admin": "?",
+    "firebase-functions": "?",
+    "react": "?",
     "ts-graphviz": "?"
   },
   "devDependencies": {

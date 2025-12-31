@@ -37,8 +37,10 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunder-browser-api": "?",
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/thunder-browser-api": "?"
+    "@nu-art/ts-styles": "?"
   },
   "devDependencies": {},
   "unitConfig": {

@@ -26,34 +26,24 @@
   "dependencies": {
     "@app/app-shared": "?",
     "@nu-art/bug-report-backend": "?",
-    "@nu-art/bug-report-shared": "?",
-    "@nu-art/jira-backend": "?",
-    "@nu-art/jira-shared": "?",
     "@nu-art/file-upload-backend": "?",
-    "@nu-art/file-upload-shared": "?",
     "@nu-art/firebase-backend": "?",
-    "@nu-art/firebase-shared": "?",
-    "@nu-art/google-services-backend": "?",
+    "@nu-art/firebase-backend-functions": "?",
     "@nu-art/live-docs-backend": "?",
-    "@nu-art/live-docs-shared": "?",
     "@nu-art/permissions-backend": "?",
-    "@nu-art/permissions-shared": "?",
     "@nu-art/push-pub-sub-backend": "?",
-    "@nu-art/push-pub-sub-shared": "?",
     "@nu-art/slack-backend": "?",
-    "@nu-art/slack-shared": "?",
+    "@nu-art/thunder-db-api-backend": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/user-account-backend": "?",
-    "@nu-art/user-account-shared": "?",
+    "body-parser": "^1.18.3",
+    "compression": "^1.7.4",
+    "debug": "^3.1.0",
+    "express": "?",
+    "file-type": "^16.3.0",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
     "firebase-functions-test": "^0.1.6",
-    "body-parser": "^1.18.3",
-    "file-type": "^16.3.0",
-    "compression": "^1.7.4",
-    "debug": "^3.1.0",
-    "express": "?",
     "js-base64": "^2.5.1",
     "moment": "?"
   },
@@ -83,13 +73,11 @@
       "types": "./*.d.ts",
       "import": "./*.js"
     }
-  }
-,
+  },
   "publishConfig": {
     "directory": "dist",
     "linkDirectory": true
   },
-
   "unitConfig": {
     "type": "typescript-lib"
   }

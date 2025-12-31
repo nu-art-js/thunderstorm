@@ -1,17 +1,13 @@
-import {ModuleFE_Toaster} from '@nu-art/thunderstorm-frontend/index';
+import { ModuleFE_Toaster } from "@nu-art/thunder-db-api-frontend/index";
 import * as React from 'react';
-
-export class Example_Analytics_Render
-	extends React.Component {
-
-	render() {
-		return <div onClick={this.addEvent} style={{border: 'solid 1px gray', padding: 10}}>
+export class Example_Analytics_Render extends React.Component {
+    render() {
+        return <div onClick={this.addEvent} style={{ border: 'solid 1px gray', padding: 10 }}>
 			Click to add event
 		</div>;
-	}
-	addEvent = () => {
-		ModuleFE_Toaster.toastInfo('No Analytics set up yet');
-	};
+    }
+    addEvent = () => {
+        ModuleFE_Toaster.toastInfo('No Analytics set up yet');
+    };
 }
-
-export const Example_Analytics = {renderer: Example_Analytics_Render, name: 'Analytics'};
+export const Example_Analytics = { renderer: Example_Analytics_Render, name: 'Analytics' };

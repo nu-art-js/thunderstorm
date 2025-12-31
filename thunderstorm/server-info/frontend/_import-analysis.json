@@ -1,0 +1,203 @@
+{
+  "packageName": "@nu-art/thunder-server-info-frontend",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/thunderstorm/server-info/frontend",
+  "timestamp": "2025-12-31T10:04:11.630Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/module-pack.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "compareVersions",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "currentTimeMillis",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "exists",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "ModuleManager",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "RuntimeVersion",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "ApiDef_ServerInfo",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared/server-info/api",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "ApiStruct_ServerInfo",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared/server-info/api",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "ApiCallerRouter",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "ApiDefCaller",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "Default_ServerInfoNodePath",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "ServerInfoFirebaseState",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "ModuleFE_FirebaseListener",
+      "sourcePackage": "@nu-art/firebase-frontend",
+      "importPath": "@nu-art/firebase-frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-server-info-frontend",
+      "importedSymbol": "RefListenerFE",
+      "sourcePackage": "@nu-art/firebase-frontend",
+      "importPath": "@nu-art/firebase-frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener",
+      "filePath": "src/main/server-info/ModuleFE_ServerInfo.ts",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/firebase-frontend",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/firebase-frontend",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

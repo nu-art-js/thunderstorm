@@ -38,17 +38,14 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/thunderstorm-sync-manager-shared": "?",
-    "@nu-art/thunder-browser-api": "?",
-    "@nu-art/thunder-routing": "?",
-    "@nu-art/thunder-ui-modules": "?",
-    "@nu-art/thunder-utils": "?",
-    "@nu-art/thunder-http": "?",
+    "@nu-art/firebase-frontend": "?",
     "@nu-art/thunder-db-api-frontend": "?",
     "@nu-art/thunder-db-api-shared": "?",
-    "@nu-art/firebase-frontend": "?",
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/thunderstorm-frontend": "?",
+    "@nu-art/thunderstorm-sync-manager-shared": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/ts-styles": "?",
+    "@nu-art/web-client": "?",
     "react": "?",
     "react-dom": "?"
   },

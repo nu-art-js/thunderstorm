@@ -18,20 +18,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {KeyboardEvent} from 'react';
-import {_className} from '@nu-art/thunderstorm-frontend';
-import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput.js';
+import { KeyboardEvent } from 'react';
+import { _className } from "@nu-art/thunder-routing";
+import { TS_BaseInput, TS_BaseInputProps } from './TS_BaseInput.js';
 import './TS_Input.scss';
-
-
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
-
 export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, HTMLInputElement> & {
-	trim?: boolean,
-	forceAcceptKeys?: MetaKeys[]
-}
-
+    trim?: boolean;
+    forceAcceptKeys?: MetaKeys[];
+};
 /**
  * A better way to capture user input
  *
@@ -40,66 +35,44 @@ export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, 
  * </code>
  *
  */
-export class TS_Input<Key extends string = string>
-	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
-	static defaultProps = {
-		forceAcceptKeys: ['ctrlKey', 'metaKey'] as MetaKeys[]
-	};
-
-	onKeyDown = (ev: KeyboardEvent<HTMLInputElement>) => {
-		let value = ev.currentTarget.value;
-		if (!(ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)) {
-			if (ev.key === 'Enter') {
-				ev.persist();
-				if (this.props.trim)
-					value = value.trim();
-
-				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
-				ev.target.blur();
-
-				if (this.props.onAccept) {
-					if (value !== this.props.value)
-						this.props.onAccept(value, ev);
-					ev.stopPropagation();
-				}
-			}
-
-			if (ev.key === 'Escape' && this.props.onCancel) {
-				this.props.onCancel();
-				ev.stopPropagation();
-			}
-		}
-
-		if (ev.key === 'Enter' && this.props.forceAcceptKeys?.find(key => ev[key]))
-			if (this.props.onAccept) {
-				if (value !== this.props.value)
-					this.props.onAccept(value, ev);
-				ev.stopPropagation();
-			}
-
-		this.props.onKeyDown?.(ev);
-	};
-
-	render() {
-		const {onAccept, innerRef, trim, forceAcceptKeys, focus, ...props} = this.props;
-
-		return <input
-			{...props}
-			autoFocus={focus}
-			ref={innerRef}
-			onBlur={(event) => {
-				const value = event.target.value;
-				this.setState({value});
-				props.onBlur?.(value, event);
-			}}
-			name={props.name || props.id}
-			placeholder={this.state.placeholder}
-			className={_className('ts-input', props.disabled ? 'disabled' : undefined, props.className)}
-			value={this.state.value}
-			onChange={this.changeValue}
-			onKeyDown={this.onKeyDown}
-			autoComplete={props.autoComplete ? 'on' : 'off'}
-			disabled={props.disabled}
-		/>;
-	}
+export class TS_Input<Key extends string = string> extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
+    static defaultProps = {
+        forceAcceptKeys: ['ctrlKey', 'metaKey'] as MetaKeys[]
+    };
+    onKeyDown = (ev: KeyboardEvent<HTMLInputElement>) => {
+        let value = ev.currentTarget.value;
+        if (!(ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)) {
+            if (ev.key === 'Enter') {
+                ev.persist();
+                if (this.props.trim)
+                    value = value.trim();
+                //@ts-ignore - despite what typescript says, ev.target does have a blur function.
+                ev.target.blur();
+                if (this.props.onAccept) {
+                    if (value !== this.props.value)
+                        this.props.onAccept(value, ev);
+                    ev.stopPropagation();
+                }
+            }
+            if (ev.key === 'Escape' && this.props.onCancel) {
+                this.props.onCancel();
+                ev.stopPropagation();
+            }
+        }
+        if (ev.key === 'Enter' && this.props.forceAcceptKeys?.find(key => ev[key]))
+            if (this.props.onAccept) {
+                if (value !== this.props.value)
+                    this.props.onAccept(value, ev);
+                ev.stopPropagation();
+            }
+        this.props.onKeyDown?.(ev);
+    };
+    render() {
+        const { onAccept, innerRef, trim, forceAcceptKeys, focus, ...props } = this.props;
+        return <input {...props} autoFocus={focus} ref={innerRef} onBlur={(event) => {
+                const value = event.target.value;
+                this.setState({ value });
+                props.onBlur?.(value, event);
+            }} name={props.name || props.id} placeholder={this.state.placeholder} className={_className('ts-input', props.disabled ? 'disabled' : undefined, props.className)} value={this.state.value} onChange={this.changeValue} onKeyDown={this.onKeyDown} autoComplete={props.autoComplete ? 'on' : 'off'} disabled={props.disabled}/>;
+    }
 }

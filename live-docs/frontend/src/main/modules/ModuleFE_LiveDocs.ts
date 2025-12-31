@@ -15,55 +15,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Module} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery, ToastBuilder} from '@nu-art/thunderstorm-frontend/index';
-import {DB_Document, LiveDocReqParams} from '@nu-art/live-docs-shared';
-import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '@nu-art/live-docs-shared/api';
-import {ApiDefCaller} from '@nu-art/thunder-db-api-shared';
-import {DefaultLiveDocEditor} from '../utils.js';
-
-
+import { Module } from '@nu-art/ts-common';
+import { apiWithBody, apiWithQuery, ToastBuilder } from "@nu-art/thunder-db-api-frontend/index";
+import { DB_Document, LiveDocReqParams } from '@nu-art/live-docs-shared';
+import { ApiDef_LiveDoc, ApiStruct_LiveDoc } from '@nu-art/live-docs-shared/api';
+import { ApiDefCaller } from '@nu-art/thunder-db-api-shared';
+import { DefaultLiveDocEditor } from '../utils.js';
 export type LiveDocActionResolver = (doc: DB_Document) => ToastBuilder;
-
-export class ModuleFE_LiveDocs_Class
-	extends Module
-	implements ApiDefCaller<ApiStruct_LiveDoc> {
-
-	private docs: { [key: string]: DB_Document } = {};
-	private toasterResolver: LiveDocActionResolver = DefaultLiveDocEditor;
-	readonly v1: ApiDefCaller<ApiStruct_LiveDoc>['v1'];
-
-	constructor() {
-		super();
-
-		this.v1 = {
-			get: apiWithQuery(ApiDef_LiveDoc.v1.get, this.onGotDoc),
-			upsert: apiWithBody(ApiDef_LiveDoc.v1.upsert, this.onGotDoc),
-			history: apiWithQuery(ApiDef_LiveDoc.v1.history, this.onGotDoc),
-		};
-	}
-
-	protected init(): void {
-	}
-
-	onGotDoc = async (response: DB_Document, params: LiveDocReqParams) => {
-		const _doc = this.docs[params.key];
-		if (_doc && response.document === _doc.document)
-			return;
-
-		this.docs[params.key] = response;
-		this.toasterResolver(response).show();
-	};
-
-	get(key: string) {
-		return this.docs[key];
-	}
-
-	setActionsResolver(resolver: LiveDocActionResolver) {
-		this.toasterResolver = resolver;
-	}
-
+export class ModuleFE_LiveDocs_Class extends Module implements ApiDefCaller<ApiStruct_LiveDoc> {
+    private docs: {
+        [key: string]: DB_Document;
+    } = {};
+    private toasterResolver: LiveDocActionResolver = DefaultLiveDocEditor;
+    readonly v1: ApiDefCaller<ApiStruct_LiveDoc>['v1'];
+    constructor() {
+        super();
+        this.v1 = {
+            get: apiWithQuery(ApiDef_LiveDoc.v1.get, this.onGotDoc),
+            upsert: apiWithBody(ApiDef_LiveDoc.v1.upsert, this.onGotDoc),
+            history: apiWithQuery(ApiDef_LiveDoc.v1.history, this.onGotDoc),
+        };
+    }
+    protected init(): void {
+    }
+    onGotDoc = async (response: DB_Document, params: LiveDocReqParams) => {
+        const _doc = this.docs[params.key];
+        if (_doc && response.document === _doc.document)
+            return;
+        this.docs[params.key] = response;
+        this.toasterResolver(response).show();
+    };
+    get(key: string) {
+        return this.docs[key];
+    }
+    setActionsResolver(resolver: LiveDocActionResolver) {
+        this.toasterResolver = resolver;
+    }
 }
-
 export const ModuleFE_LiveDocs = new ModuleFE_LiveDocs_Class();

@@ -15,56 +15,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {StorageKey} from '@nu-art/thunderstorm-frontend/index';
-import {_values, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
-import {PanelConfig} from '../index.js';
-import {Workspace} from '@nu-art/ts-workspace-shared';
-
+import { StorageKey } from "@nu-art/thunder-browser-api/index";
+import { _values, BadImplementationException, Module, TypedMap } from '@nu-art/ts-common';
+import { PanelConfig } from '../index.js';
+import { Workspace } from '@nu-art/ts-workspace-shared';
 type Config = {
-	defaultConfigs: TypedMap<PanelConfig>,
-	accountResolver: () => string,
+    defaultConfigs: TypedMap<PanelConfig>;
+    accountResolver: () => string;
 };
-
-export class ModuleFE_Workspace_Class
-	extends Module<Config> {
-
-	private workspacesToUpsert: TypedMap<any> = {};
-	private upsertRunnable: any;
-
-	public getWorkspaceConfigByKey = (key: string): PanelConfig<any> => {
-		const workspace = this.getWorkspaceByKey(key);
-		const config = workspace?.config || this.config.defaultConfigs[key];
-		if (!config)
-			throw new BadImplementationException(`Could not find config for key ${key}`);
-
-		return config;
-	};
-
-	private getWorkspaceByKey = (key: string): Workspace | undefined => {
-		return this.getStorageKeyForWorkspace(key).get();
-	};
-
-	private getStorageKeyForWorkspace = (key: string): StorageKey<Workspace> => new StorageKey<Workspace>(`workspace_key__${key}`);
-
-	public setWorkspaceByKey = async (key: string, config: PanelConfig<any>) => {
-		this.workspacesToUpsert[key] = {key: key, config: config};
-
-		clearTimeout(this.upsertRunnable);
-
-		this.upsertRunnable = setTimeout(async () => {
-			const values = _values(this.workspacesToUpsert);
-			values.forEach(workspace => {
-				this.logInfo('SET WORKSPACE KEY', `KEY: ${workspace.key}`);
-				this.getStorageKeyForWorkspace(workspace.key).set(workspace);
-			});
-			this.workspacesToUpsert = {};
-		}, 500);
-	};
-
-	public deleteWorkspaceByKey = async (key: string) => {
-		this.getStorageKeyForWorkspace(key).delete();
-	};
+export class ModuleFE_Workspace_Class extends Module<Config> {
+    private workspacesToUpsert: TypedMap<any> = {};
+    private upsertRunnable: any;
+    public getWorkspaceConfigByKey = (key: string): PanelConfig<any> => {
+        const workspace = this.getWorkspaceByKey(key);
+        const config = workspace?.config || this.config.defaultConfigs[key];
+        if (!config)
+            throw new BadImplementationException(`Could not find config for key ${key}`);
+        return config;
+    };
+    private getWorkspaceByKey = (key: string): Workspace | undefined => {
+        return this.getStorageKeyForWorkspace(key).get();
+    };
+    private getStorageKeyForWorkspace = (key: string): StorageKey<Workspace> => new StorageKey<Workspace>(`workspace_key__${key}`);
+    public setWorkspaceByKey = async (key: string, config: PanelConfig<any>) => {
+        this.workspacesToUpsert[key] = { key: key, config: config };
+        clearTimeout(this.upsertRunnable);
+        this.upsertRunnable = setTimeout(async () => {
+            const values = _values(this.workspacesToUpsert);
+            values.forEach(workspace => {
+                this.logInfo('SET WORKSPACE KEY', `KEY: ${workspace.key}`);
+                this.getStorageKeyForWorkspace(workspace.key).set(workspace);
+            });
+            this.workspacesToUpsert = {};
+        }, 500);
+    };
+    public deleteWorkspaceByKey = async (key: string) => {
+        this.getStorageKeyForWorkspace(key).delete();
+    };
 }
-
 export const ModuleFE_Workspace = new ModuleFE_Workspace_Class();

@@ -1,0 +1,95 @@
+{
+  "packageName": "@nu-art/thunderstorm-archiving-frontend",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/thunderstorm/archiving/frontend",
+  "timestamp": "2025-12-31T10:04:11.625Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/thunderstorm-archiving-frontend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ModuleFE_Archiving.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-archiving-frontend",
+      "importedSymbol": "ApiDef_Archiving",
+      "sourcePackage": "@nu-art/thunderstorm-archiving-shared",
+      "importPath": "@nu-art/thunderstorm-archiving-shared",
+      "filePath": "src/main/ModuleFE_Archiving.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-archiving-frontend",
+      "importedSymbol": "ApiDefCaller",
+      "sourcePackage": "@nu-art/thunderstorm-archiving-shared",
+      "importPath": "@nu-art/thunderstorm-archiving-shared",
+      "filePath": "src/main/ModuleFE_Archiving.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-archiving-frontend",
+      "importedSymbol": "ApiStruct_Archiving",
+      "sourcePackage": "@nu-art/thunderstorm-archiving-shared",
+      "importPath": "@nu-art/thunderstorm-archiving-shared",
+      "filePath": "src/main/ModuleFE_Archiving.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-archiving-frontend",
+      "importedSymbol": "apiWithBody",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ModuleFE_Archiving.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunderstorm-archiving-frontend",
+      "importedSymbol": "apiWithQuery",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ModuleFE_Archiving.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunderstorm-archiving-shared",
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunderstorm-archiving-shared",
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

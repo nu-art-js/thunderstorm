@@ -37,9 +37,11 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/thunderstorm-archiving-shared": "?",
-    "@nu-art/thunder-db-api-backend": "?",
     "@nu-art/firebase-backend": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/thunder-db-api-backend": "?",
+    "@nu-art/thunder-db-api-shared": "?",
+    "@nu-art/thunderstorm-archiving-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},
@@ -54,4 +56,3 @@
     }
   }
 }
-

@@ -1,41 +1,32 @@
 import * as React from 'react';
-import {PermissionsComponent, Props_PermissionComponent} from './PermissionsComponent.js';
-import {_className} from '@nu-art/thunderstorm-frontend/index';
-import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
-
+import { PermissionsComponent, Props_PermissionComponent } from './PermissionsComponent.js';
+import { _className } from "@nu-art/thunder-routing/index";
+import { ResolvableContent, resolveContent } from '@nu-art/ts-common';
 type Props = Props_PermissionComponent & {
-	forceLock?: boolean;
-	value?: ResolvableContent<React.ReactNode>;
-	className?: string;
-	style?: React.CSSProperties;
+    forceLock?: boolean;
+    value?: ResolvableContent<React.ReactNode>;
+    className?: string;
+    style?: React.CSSProperties;
 };
-
 type State = {
-	forceLock?: boolean;
+    forceLock?: boolean;
 };
-
-export class PermissionsEditableComponent
-	extends PermissionsComponent<Props, State> {
-
-	protected deriveStateFromProps(nextProps: Props, state: State) {
-		state.forceLock = nextProps.forceLock;
-		return state;
-	}
-
-	protected renderFallback = () => {
-		if (!this.props.value)
-			return <></>;
-
-		const className = _className('permissions-editable__value', this.props.className);
-		return <div className={className} style={this.props.style}>
+export class PermissionsEditableComponent extends PermissionsComponent<Props, State> {
+    protected deriveStateFromProps(nextProps: Props, state: State) {
+        state.forceLock = nextProps.forceLock;
+        return state;
+    }
+    protected renderFallback = () => {
+        if (!this.props.value)
+            return <></>;
+        const className = _className('permissions-editable__value', this.props.className);
+        return <div className={className} style={this.props.style}>
 			{resolveContent(this.props.value)}
 		</div>;
-	};
-
-	protected renderPermitted = () => {
-		if (this.props.forceLock)
-			return this.renderFallback();
-
-		return <>{this.props.children}</>;
-	};
+    };
+    protected renderPermitted = () => {
+        if (this.props.forceLock)
+            return this.renderFallback();
+        return <>{this.props.children}</>;
+    };
 }

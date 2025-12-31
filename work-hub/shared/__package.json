@@ -21,7 +21,6 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/ts-common": "?",
     "react": "?"
   },
   "devDependencies": {

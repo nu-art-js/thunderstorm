@@ -38,9 +38,8 @@
   },
   "dependencies": {
     "@nu-art/thunder-routing": "?",
-    "@nu-art/firebase-shared": "?",
+    "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/ts-styles": "?",
     "react": "?"
   },
   "devDependencies": {

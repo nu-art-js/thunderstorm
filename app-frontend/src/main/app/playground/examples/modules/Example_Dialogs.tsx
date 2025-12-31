@@ -15,40 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {ModuleFE_Toaster} from '@nu-art/thunderstorm-frontend/index';
-
-
-class Example_Dialogs_Renderer
-	extends React.Component {
-	constructor(props: {}) {
-		super(props);
-
-		this.state = {
-			formFields: {},
-		};
-	}
-
-	showAppToasterSuccessExample = () => {
-		ModuleFE_Toaster.toastSuccess('Simple success message');
-	};
-
-	showAppToasterErrorExample = () => {
-		ModuleFE_Toaster.toastError('Simple error message');
-	};
-
-	showAppToasterInfoExample = () => {
-		ModuleFE_Toaster.toastInfo('Simple info message');
-	};
-
-	render() {
-		return <>
-			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Default Success Example</button>
-			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Default Failure Example</button>
-			<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Default Info Example</button>
+import { ModuleFE_Toaster } from "@nu-art/thunder-db-api-frontend/index";
+class Example_Dialogs_Renderer extends React.Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            formFields: {},
+        };
+    }
+    showAppToasterSuccessExample = () => {
+        ModuleFE_Toaster.toastSuccess('Simple success message');
+    };
+    showAppToasterErrorExample = () => {
+        ModuleFE_Toaster.toastError('Simple error message');
+    };
+    showAppToasterInfoExample = () => {
+        ModuleFE_Toaster.toastInfo('Simple info message');
+    };
+    render() {
+        return <>
+			<button style={{ marginRight: 8 }} onClick={this.showAppToasterSuccessExample}>Toaster Default Success Example</button>
+			<button style={{ marginRight: 8 }} onClick={this.showAppToasterErrorExample}>Toaster Default Failure Example</button>
+			<button style={{ marginRight: 8 }} onClick={this.showAppToasterInfoExample}>Toaster Default Info Example</button>
 		</>;
-	}
+    }
 }
-
-export const Example_Dialogs = {renderer: Example_Dialogs_Renderer, name: 'Dialog Examples'};
+export const Example_Dialogs = { renderer: Example_Dialogs_Renderer, name: 'Dialog Examples' };

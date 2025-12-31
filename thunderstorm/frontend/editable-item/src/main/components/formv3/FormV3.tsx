@@ -18,57 +18,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {ComponentType} from 'react';
-import {_keys} from '@nu-art/ts-common';
-import {EditableItem, UIProps_EditableItem} from '../../core/EditableItem.js';
-import {EditableRef} from '../../index.js';
-import {ComponentSync, TS_PropRenderer} from '@nu-art/thunderstorm-frontend';
-
-
+import { ComponentType } from 'react';
+import { _keys } from '@nu-art/ts-common';
+import { EditableItem, UIProps_EditableItem } from '../../core/EditableItem.js';
+import { EditableRef } from '../../index.js';
+import { ComponentSync, TS_PropRenderer } from "@nu-art/thunder-routing";
 export type Props_FormV3<T> = {
-	className?: string,
-	editable: EditableItem<T>
-	renderers: {
-		[K in keyof T]?: {
-			label: string
-			editor: ComponentType<UIProps_EditableItem<any, any, T[K]>>
-			//
-		}
-	}
-}
-
-type State_FormV3<T> = {
-	editable: EditableItem<T>
+    className?: string;
+    editable: EditableItem<T>;
+    renderers: {
+        [K in keyof T]?: {
+            label: string;
+            editor: ComponentType<UIProps_EditableItem<any, any, T[K]>>;
+        };
+    };
 };
-
-export class Component_FormV3<T>
-	extends ComponentSync<Props_FormV3<T>, State_FormV3<T>> {
-	static defaultProps = {};
-
-	constructor(p: Props_FormV3<T>) {
-		super(p);
-	}
-
-	protected deriveStateFromProps(nextProps: Props_FormV3<T>, state?: Partial<EditableRef<T>>): (EditableRef<T>) {
-		const _state = (state || {}) as EditableRef<T>;
-		_state.editable = nextProps.editable;
-		return _state;
-	}
-
-	render() {
-		return (
-			<div className={`ll_v_c ${this.props.className}`} style={{justifyContent: 'space-evenly'}}>
+type State_FormV3<T> = {
+    editable: EditableItem<T>;
+};
+export class Component_FormV3<T> extends ComponentSync<Props_FormV3<T>, State_FormV3<T>> {
+    static defaultProps = {};
+    constructor(p: Props_FormV3<T>) {
+        super(p);
+    }
+    protected deriveStateFromProps(nextProps: Props_FormV3<T>, state?: Partial<EditableRef<T>>): (EditableRef<T>) {
+        const _state = (state || {}) as EditableRef<T>;
+        _state.editable = nextProps.editable;
+        return _state;
+    }
+    render() {
+        return (<div className={`ll_v_c ${this.props.className}`} style={{ justifyContent: 'space-evenly' }}>
 				{_keys(this.props.renderers).map(key => this.renderField(this.state.editable, key))}
-			</div>
-		);
-	}
-
-	private renderField<K extends keyof T>(editable: EditableItem<T>, prop: K) {
-		const renderer = this.props.renderers[prop]!;
-		const Editor = renderer.editor;
-		return <TS_PropRenderer.Vertical label={renderer.label}>
+			</div>);
+    }
+    private renderField<K extends keyof T>(editable: EditableItem<T>, prop: K) {
+        const renderer = this.props.renderers[prop]!;
+        const Editor = renderer.editor;
+        return <TS_PropRenderer.Vertical label={renderer.label}>
 			<Editor editable={editable} prop={prop}/>
 		</TS_PropRenderer.Vertical>;
-	}
+    }
 }

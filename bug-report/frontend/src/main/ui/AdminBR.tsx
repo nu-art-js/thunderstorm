@@ -16,50 +16,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {ComponentSync,} from '@nu-art/thunderstorm-frontend/index';
-import {DB_BugReport} from '@nu-art/bug-report-shared/api';
-import {__stringify} from '@nu-art/ts-common';
-import {OnRequestListener} from '@nu-art/thunder-db-api-shared';
-import {ModuleFE_BugReportAdmin, RequestKey_GetLog} from '../modules/ModuleFE_BugReportAdmin.js';
-
-
-export class AdminBR
-	extends ComponentSync
-	implements OnRequestListener {
-
-	protected deriveStateFromProps(nextProps: any) {
-		return {...nextProps};
-	}
-
-	render() {
-		const logs = ModuleFE_BugReportAdmin.getLogs();
-		return (
-			<div>
+import { ComponentSync, } from "@nu-art/thunder-routing/index";
+import { DB_BugReport } from '@nu-art/bug-report-shared/api';
+import { __stringify } from '@nu-art/ts-common';
+import { OnRequestListener } from '@nu-art/thunder-db-api-shared';
+import { ModuleFE_BugReportAdmin, RequestKey_GetLog } from '../modules/ModuleFE_BugReportAdmin.js';
+export class AdminBR extends ComponentSync implements OnRequestListener {
+    protected deriveStateFromProps(nextProps: any) {
+        return { ...nextProps };
+    }
+    render() {
+        const logs = ModuleFE_BugReportAdmin.getLogs();
+        return (<div>
 				<button onClick={() => ModuleFE_BugReportAdmin.v1.retrieveLogs({}).execute()}>click to display logs</button>
 				<div>
-					<table style={{width: '100%'}}>{logs.map(this.createRow)}</table>
+					<table style={{ width: '100%' }}>{logs.map(this.createRow)}</table>
 				</div>
-			</div>
-		);
-	}
-
-	private createRow = (report: DB_BugReport) => <tr>
-		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>{report.description}</td>
-		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>{report.reports[0].path}</td>
-		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>{__stringify(report.tickets)}</td>
-		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>
+			</div>);
+    }
+    private createRow = (report: DB_BugReport) => <tr>
+		<td style={{ padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px' }}>{report.description}</td>
+		<td style={{ padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px' }}>{report.reports[0].path}</td>
+		<td style={{ padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px' }}>{__stringify(report.tickets)}</td>
+		<td style={{ padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px' }}>
 			<button onClick={() => ModuleFE_BugReportAdmin.downloadMultiLogs(report.reports)}>download</button>
 		</td>
 	</tr>;
-
-	__onRequestCompleted = (key: string, success: boolean) => {
-		switch (key) {
-			default:
-				return;
-
-			case RequestKey_GetLog:
-				this.forceUpdate();
-		}
-	};
+    __onRequestCompleted = (key: string, success: boolean) => {
+        switch (key) {
+            default:
+                return;
+            case RequestKey_GetLog:
+                this.forceUpdate();
+        }
+    };
 }

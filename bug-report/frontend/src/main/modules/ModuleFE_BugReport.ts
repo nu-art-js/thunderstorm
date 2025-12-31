@@ -15,41 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {addItemToArray, BeLogged, LogClient_MemBuffer, LogLevel, LogLevelOrdinal, Module} from '@nu-art/ts-common';
-import {apiWithBody} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller} from '@nu-art/thunder-db-api-shared';
-import {ApiDef_BugReport, ApiStruct_BugReport, TicketDetails} from '@nu-art/bug-report-shared/api';
-
-
+import { addItemToArray, BeLogged, LogClient_MemBuffer, LogLevel, LogLevelOrdinal, Module } from '@nu-art/ts-common';
+import { apiWithBody } from "@nu-art/thunder-db-api-frontend/index";
+import { ApiDefCaller } from '@nu-art/thunder-db-api-shared';
+import { ApiDef_BugReport, ApiStruct_BugReport, TicketDetails } from '@nu-art/bug-report-shared/api';
 export const RequestKey_BugReportApi = 'BugReport';
-
-export class ModuleFE_BugReport_Class
-	extends Module {
-
-	private readonly reports: LogClient_MemBuffer[] = [];
-	readonly v1: ApiDefCaller<ApiStruct_BugReport>['v1'];
-
-	constructor() {
-		super();
-		addItemToArray(this.reports, new LogClient_MemBuffer('default'));
-		addItemToArray(this.reports, new LogClient_MemBuffer('info')
-			.setFilter(level => LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(LogLevel.Info)));
-
-		this.v1 = {
-			sendBugReport: apiWithBody(ApiDef_BugReport.v1.sendBugReport, this.sendBugReportCallback),
-		};
-	}
-
-	protected init(): void {
-		this.reports.forEach(report => BeLogged.addClient(report));
-	}
-
-	private sendBugReportCallback = async (response: TicketDetails[]) => {
-		// const jiraTicket = response.find(ticket => ticket.platform === Platform_Jira);
-		// if(jiraTicket)
-		// 	Dialog_JiraOpened.show(jiraTicket.issueId)
-	};
+export class ModuleFE_BugReport_Class extends Module {
+    private readonly reports: LogClient_MemBuffer[] = [];
+    readonly v1: ApiDefCaller<ApiStruct_BugReport>['v1'];
+    constructor() {
+        super();
+        addItemToArray(this.reports, new LogClient_MemBuffer('default'));
+        addItemToArray(this.reports, new LogClient_MemBuffer('info')
+            .setFilter(level => LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(LogLevel.Info)));
+        this.v1 = {
+            sendBugReport: apiWithBody(ApiDef_BugReport.v1.sendBugReport, this.sendBugReportCallback),
+        };
+    }
+    protected init(): void {
+        this.reports.forEach(report => BeLogged.addClient(report));
+    }
+    private sendBugReportCallback = async (response: TicketDetails[]) => {
+        // const jiraTicket = response.find(ticket => ticket.platform === Platform_Jira);
+        // if(jiraTicket)
+        // 	Dialog_JiraOpened.show(jiraTicket.issueId)
+    };
 }
-
 export const ModuleFE_BugReport = new ModuleFE_BugReport_Class();

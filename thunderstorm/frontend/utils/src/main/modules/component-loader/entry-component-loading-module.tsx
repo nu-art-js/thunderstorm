@@ -18,45 +18,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Module} from '@nu-art/ts-common';
+import { Module } from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {ModuleFE_XHR} from '../http/ModuleFE_XHR.js';
-import {ModuleFE_RoutingV2} from '../routing/ModuleFE_RoutingV2.js';
-import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '@nu-art/thunderstorm-shared';
-
-
-type ScriptLoaderBinder = QueryApi<string>
-
-export class PageLoadingModule_Class
-	extends Module<{}> {
-
-	private readonly injected: { [src: string]: HTMLScriptElement } = {};
-
-	loadScript(src: string, progressListener: (progress: number) => void) {
-		const apiDef: ApiDef<ScriptLoaderBinder> = {
-			method: HttpMethod.GET,
-			baseUrl: ModuleFE_RoutingV2.getOrigin(),
-			path: src
-		};
-		ModuleFE_XHR
-			.createRequest<ScriptLoaderBinder>(apiDef)
-			.setOnProgressListener((ev: TS_Progress) => {
-				const progress = ev.loaded / ev.total;
-				progressListener(progress);
-			})
-			.execute(response => {
-				const divElement: HTMLScriptElement = document.createElement('script');
-				// divElement.innerHTML = response;
-				divElement.id = src;
-				divElement.async = true;
-				this.injected[src] = divElement;
-			});
-	}
-
-	getNode(src: string) {
-		return this.injected[src];
-	}
+import { ModuleFE_XHR } from '../http/ModuleFE_XHR.js';
+import { ModuleFE_RoutingV2 } from '../routing/ModuleFE_RoutingV2.js';
+import { ApiDef, HttpMethod, QueryApi, TS_Progress } from "@nu-art/thunder-db-api-shared";
+type ScriptLoaderBinder = QueryApi<string>;
+export class PageLoadingModule_Class extends Module<{}> {
+    private readonly injected: {
+        [src: string]: HTMLScriptElement;
+    } = {};
+    loadScript(src: string, progressListener: (progress: number) => void) {
+        const apiDef: ApiDef<ScriptLoaderBinder> = {
+            method: HttpMethod.GET,
+            baseUrl: ModuleFE_RoutingV2.getOrigin(),
+            path: src
+        };
+        ModuleFE_XHR
+            .createRequest<ScriptLoaderBinder>(apiDef)
+            .setOnProgressListener((ev: TS_Progress) => {
+            const progress = ev.loaded / ev.total;
+            progressListener(progress);
+        })
+            .execute(response => {
+            const divElement: HTMLScriptElement = document.createElement('script');
+            // divElement.innerHTML = response;
+            divElement.id = src;
+            divElement.async = true;
+            this.injected[src] = divElement;
+        });
+    }
+    getNode(src: string) {
+        return this.injected[src];
+    }
 }
-
 export const EntryComponentLoadingModule = new PageLoadingModule_Class();

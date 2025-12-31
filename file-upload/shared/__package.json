@@ -31,23 +31,20 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/firebase-shared": "?",
-    "@nu-art/ts-styles": "?",
-    "@nu-art/push-pub-sub-shared": "?",
-    "@nu-art/permissions-shared": "?",
-    "@nu-art/user-account-shared": "?",
-    "@nu-art/ts-common": "?",
     "@google-cloud/common": "?",
-    "@google-cloud/storage": "?",
     "@google-cloud/firestore": "?",
-    "react": "?",
-    "jszip": "^3.2.2",
+    "@google-cloud/storage": "?",
+    "@nu-art/push-pub-sub-shared": "?",
+    "@nu-art/thunder-db-api-shared": "?",
+    "@nu-art/ts-common": "?",
     "express": "?",
+    "file-type": "^21.0.0",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
     "google-auth-library": "?",
-    "file-type": "^21.0.0"
+    "jszip": "^3.2.2",
+    "react": "?"
   },
   "devDependencies": {
     "@types/react": "?",

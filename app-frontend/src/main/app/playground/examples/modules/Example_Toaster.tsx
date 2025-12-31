@@ -15,63 +15,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {ModuleFE_Toaster} from '@nu-art/thunderstorm-frontend/index';
-
-
-class Example_Toaster_Renderer
-	extends React.Component {
-	constructor(props: {}) {
-		super(props);
-
-		this.state = {
-			formFields: {},
-		};
-	}
-
-	showAppToasterSuccessExample = () => {
-		ModuleFE_Toaster.toastSuccess('Simple success message');
-	};
-
-	showAppToasterErrorExample = () => {
-		ModuleFE_Toaster.toastError('Simple error message');
-	};
-
-	showAppToasterInfoExample = () => {
-		ModuleFE_Toaster.toastInfo('Simple info message');
-	};
-
-	showAppToasterCustomInfoExample = () => {
-		ModuleFE_Toaster.toastInfo('Simple info message', 3000);
-	};
-	showAppToasterCustomErrorExample = () => {
-		ModuleFE_Toaster.toastError('Custom Error message closes in 8 sec', 8000);
-	};
-	showAppToasterCustomSuccessExample = () => {
-		ModuleFE_Toaster.toastSuccess('Custom Success message closes time by thunder default');
-	};
-
-	// showAppToasterLiveDocsExample = () => {
-	// 	new ToastBuilder().setContent("kaki").setActions([<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>edit</button>]).show();
-	// };
-
-	render() {
-		return <>
+import { ModuleFE_Toaster } from "@nu-art/thunder-db-api-frontend/index";
+class Example_Toaster_Renderer extends React.Component {
+    constructor(props: {}) {
+        super(props);
+        this.state = {
+            formFields: {},
+        };
+    }
+    showAppToasterSuccessExample = () => {
+        ModuleFE_Toaster.toastSuccess('Simple success message');
+    };
+    showAppToasterErrorExample = () => {
+        ModuleFE_Toaster.toastError('Simple error message');
+    };
+    showAppToasterInfoExample = () => {
+        ModuleFE_Toaster.toastInfo('Simple info message');
+    };
+    showAppToasterCustomInfoExample = () => {
+        ModuleFE_Toaster.toastInfo('Simple info message', 3000);
+    };
+    showAppToasterCustomErrorExample = () => {
+        ModuleFE_Toaster.toastError('Custom Error message closes in 8 sec', 8000);
+    };
+    showAppToasterCustomSuccessExample = () => {
+        ModuleFE_Toaster.toastSuccess('Custom Success message closes time by thunder default');
+    };
+    // showAppToasterLiveDocsExample = () => {
+    // 	new ToastBuilder().setContent("kaki").setActions([<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>edit</button>]).show();
+    // };
+    render() {
+        return <>
 			<div>
-				<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Default Success Example</button>
-				<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Default Failure Example</button>
-				<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Default Info Example</button>
+				<button style={{ marginRight: 8 }} onClick={this.showAppToasterSuccessExample}>Toaster Default Success Example</button>
+				<button style={{ marginRight: 8 }} onClick={this.showAppToasterErrorExample}>Toaster Default Failure Example</button>
+				<button style={{ marginRight: 8 }} onClick={this.showAppToasterInfoExample}>Toaster Default Info Example</button>
 				{/*<button style={{marginRight: 8}} onClick={this.showAppToasterLiveDocsExample}>Toaster Default Live Docs Example</button>*/}
 			</div>
-			<hr/>
+			<hr />
 			<div>
-				<button style={{marginRight: 8}} onClick={this.showAppToasterCustomSuccessExample}>Toaster Custom Success Example</button>
-				<button style={{marginRight: 8}} onClick={this.showAppToasterCustomErrorExample}>Toaster Custom Failure Example</button>
-				<button style={{marginRight: 8}} onClick={this.showAppToasterCustomInfoExample}>Toaster Custom Info Example</button>
+				<button style={{ marginRight: 8 }} onClick={this.showAppToasterCustomSuccessExample}>Toaster Custom Success Example</button>
+				<button style={{ marginRight: 8 }} onClick={this.showAppToasterCustomErrorExample}>Toaster Custom Failure Example</button>
+				<button style={{ marginRight: 8 }} onClick={this.showAppToasterCustomInfoExample}>Toaster Custom Info Example</button>
 			</div>
 		</>;
-	}
+    }
 }
-
-export const Example_Toaster = {renderer: Example_Toaster_Renderer, name: 'Toaster Examples'};
+export const Example_Toaster = { renderer: Example_Toaster_Renderer, name: 'Toaster Examples' };

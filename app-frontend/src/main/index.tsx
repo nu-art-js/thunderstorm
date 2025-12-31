@@ -15,33 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 // tslint:disable:no-import-side-effect
 import './res/styles/styles.scss';
-
-import {App} from './app/App.js';
-import {ModuleFE_ForceUpgrade, Thunder} from '@nu-art/thunderstorm-frontend/index';
-import {ModulePack_Frontend_LiveDocs} from '@nu-art/live-docs-frontend/index';
-import {ExampleModule} from '@modules/ExampleModule';
-import {ModulePack_Frontend_PushPubSub} from '@nu-art/push-pub-sub-frontend/index';
-import {ModuleFE_BugReport} from '@nu-art/bug-report-frontend/index';
-import {Module} from '@nu-art/ts-common';
-import {ModulePack_Frontend_Uploader} from '@nu-art/file-upload-frontend/index';
-import {ModuleFE_Permissions} from '@nu-art/permissions-frontend/index';
-
-
+import { App } from './app/App.js';
+import { ModuleFE_ForceUpgrade, Thunder } from "@nu-art/web-client/index";
+import { ModulePack_Frontend_LiveDocs } from '@nu-art/live-docs-frontend/index';
+import { ExampleModule } from '@modules/ExampleModule';
+import { ModulePack_Frontend_PushPubSub } from '@nu-art/push-pub-sub-frontend/index';
+import { ModuleFE_BugReport } from '@nu-art/bug-report-frontend/index';
+import { Module } from '@nu-art/ts-common';
+import { ModulePack_Frontend_Uploader } from '@nu-art/file-upload-frontend/index';
+import { ModuleFE_Permissions } from '@nu-art/permissions-frontend/index';
 const modules: Module[] = [
-	ModuleFE_ForceUpgrade,
-	ExampleModule,
-	ModuleFE_BugReport
+    ModuleFE_ForceUpgrade,
+    ExampleModule,
+    ModuleFE_BugReport
 ];
-ModuleFE_Permissions.setDefaultConfig({projectId: 'thunderstorm-staging'});
-
+ModuleFE_Permissions.setDefaultConfig({ projectId: 'thunderstorm-staging' });
 new Thunder()
-	.setConfig(require('./config.js').config)
-	.addModules(...ModulePack_Frontend_PushPubSub)
-	.addModules(...ModulePack_Frontend_LiveDocs)
-	.addModules(...ModulePack_Frontend_Uploader)
-	.addModules(...modules)
-	.setMainApp(App)
-	.build();
+    .setConfig(require('./config.js').config)
+    .addModules(...ModulePack_Frontend_PushPubSub)
+    .addModules(...ModulePack_Frontend_LiveDocs)
+    .addModules(...ModulePack_Frontend_Uploader)
+    .addModules(...modules)
+    .setMainApp(App)
+    .build();

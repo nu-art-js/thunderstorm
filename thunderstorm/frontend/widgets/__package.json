@@ -38,16 +38,19 @@
   },
   "dependencies": {
     "@nu-art/thunder-browser-api": "?",
-    "@nu-art/thunder-routing": "?",
     "@nu-art/thunder-db-api-frontend": "?",
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/thunderstorm-frontend": "?",
+    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
+    "@nu-art/web-client": "?",
+    "csstype": "^3.0.0",
     "react": "?",
     "react-dom": "?",
     "react-router-dom": "?",
     "react-virtualized-auto-sizer": "^1.0.12",
-    "react-window": "^1.8.8",
-    "csstype": "^3.0.0"
+    "react-window": "^1.8.8"
   },
   "devDependencies": {
     "@types/react": "?",

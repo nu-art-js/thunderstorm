@@ -31,10 +31,8 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/permissions-shared": "?",
-    "@nu-art/ts-styles": "?",
-    "@nu-art/firebase-shared": "?",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",

@@ -18,52 +18,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm-frontend';
-import {Toast_Model, ToastListener, ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster.js';
-
-
-type State = { model?: Toast_Model };
-
+import { ComponentSync } from "@nu-art/thunder-routing";
+import { Toast_Model, ToastListener, ModuleFE_Toaster } from '../../component-modules/ModuleFE_Toaster.js';
+type State = {
+    model?: Toast_Model;
+};
 export type ToastProps = {
-	id?: string
-}
-
-export class TS_ToastOverlay
-	extends ComponentSync<ToastProps, State>
-	implements ToastListener {
-
-	protected deriveStateFromProps(nextProps: ToastProps): State {
-		return {model: this.state?.model};
-	}
-
-	__showToast = (model?: Toast_Model): void => {
-		this.setState({model});
-
-		if (!model)
-			return;
-
-		const duration = model.duration;
-		if (duration <= 0)
-			return;
-
-		setTimeout(() => ModuleFE_Toaster.hideToast(model), duration);
-	};
-
-	render() {
-		const toast = this.state.model;
-		if (!toast?.content)
-			return null;
-
-		return this.renderToaster(toast);
-	}
-
-	protected renderToaster(toast: Toast_Model): React.ReactNode {
-		return (
-			<div className="ts-toaster">
+    id?: string;
+};
+export class TS_ToastOverlay extends ComponentSync<ToastProps, State> implements ToastListener {
+    protected deriveStateFromProps(nextProps: ToastProps): State {
+        return { model: this.state?.model };
+    }
+    __showToast = (model?: Toast_Model): void => {
+        this.setState({ model });
+        if (!model)
+            return;
+        const duration = model.duration;
+        if (duration <= 0)
+            return;
+        setTimeout(() => ModuleFE_Toaster.hideToast(model), duration);
+    };
+    render() {
+        const toast = this.state.model;
+        if (!toast?.content)
+            return null;
+        return this.renderToaster(toast);
+    }
+    protected renderToaster(toast: Toast_Model): React.ReactNode {
+        return (<div className="ts-toaster">
 				{toast.content}
-			</div>
-		);
-	}
+			</div>);
+    }
 }

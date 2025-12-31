@@ -1,19 +1,14 @@
 import * as React from 'react';
-import {AppToolsScreen, ATS_3rd_Party, Button, ComponentSync, LL_H_C, LL_H_T, LL_V_L} from '@nu-art/thunderstorm-frontend/index';
-import {TS_TextAreaV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_TextArea/index';
-import {ModuleFE_OpenAI} from '../modules/ModuleFE_OpenAI.js';
-import {__stringify} from '@nu-art/ts-common';
-
-
-type ATS_OpenAI_Props = {
-	//
-};
+import { AppToolsScreen, ATS_3rd_Party, Button, ComponentSync, LL_H_C, LL_H_T, LL_V_L } from "@nu-art/thunder-routing/index";
+import { TS_TextAreaV2 } from '@nu-art/thunderstorm-frontend/components/TS_V2_TextArea/index';
+import { ModuleFE_OpenAI } from '../modules/ModuleFE_OpenAI.js';
+import { __stringify } from '@nu-art/ts-common';
+type ATS_OpenAI_Props = {};
 type ATS_OpenAI_State = {
-	directive: string
-	input: string
-	output?: string
+    directive: string;
+    input: string;
+    output?: string;
 };
-
 /**
  * in this example the backend config should be something of this sort:
  *
@@ -28,64 +23,49 @@ type ATS_OpenAI_State = {
  * }
  * ```
  */
-export class ATS_OpenAI
-	extends ComponentSync<ATS_OpenAI_Props, ATS_OpenAI_State> {
-
-	static screen: AppToolsScreen = {name: `OpenAI`, renderer: this, group: ATS_3rd_Party};
-
-	static defaultProps = {
-		modules: [],
-		pageTitle: () => this.screen.name
-	};
-
-	protected deriveStateFromProps(nextProps: ATS_OpenAI_Props, state = {} as ATS_OpenAI_State): ATS_OpenAI_State {
-		return {output: undefined, input: '', directive: ''};
-	}
-
-	constructor(p: ATS_OpenAI_Props) {
-		super(p);
-	}
-
-	render() {
-		let value = this.state.output;
-		try {
-			if (value)
-				value = __stringify(JSON.parse(value), true);
-		} catch (e: any) {
-			// not a pure json response
-		}
-
-		this.logInfo(value);
-		return <LL_H_T>
+export class ATS_OpenAI extends ComponentSync<ATS_OpenAI_Props, ATS_OpenAI_State> {
+    static screen: AppToolsScreen = { name: `OpenAI`, renderer: this, group: ATS_3rd_Party };
+    static defaultProps = {
+        modules: [],
+        pageTitle: () => this.screen.name
+    };
+    protected deriveStateFromProps(nextProps: ATS_OpenAI_Props, state = {} as ATS_OpenAI_State): ATS_OpenAI_State {
+        return { output: undefined, input: '', directive: '' };
+    }
+    constructor(p: ATS_OpenAI_Props) {
+        super(p);
+    }
+    render() {
+        let value = this.state.output;
+        try {
+            if (value)
+                value = __stringify(JSON.parse(value), true);
+        }
+        catch (e: any) {
+            // not a pure json response
+        }
+        this.logInfo(value);
+        return <LL_H_T>
 			<LL_V_L>
 				App dev screen for OpenAI
 				<Button onClick={this.sendRequest}>Test</Button>
 			</LL_V_L>
 			<LL_V_L>
-				<TS_TextAreaV2
-					className={'ts-textarea'}
-					style={{width: 1008, height: 200, marginBottom: 8, fontFamily: 'monospace', fontSize: 15}}
-					value={this.state.directive}
-					onChange={(value) => this.setState({directive: value})}/>
+				<TS_TextAreaV2 className={'ts-textarea'} style={{ width: 1008, height: 200, marginBottom: 8, fontFamily: 'monospace', fontSize: 15 }} value={this.state.directive} onChange={(value) => this.setState({ directive: value })}/>
 				<LL_H_C>
-					<TS_TextAreaV2
-						className={'ts-textarea'}
-						style={{width: 500, height: 500, marginRight: 8, fontFamily: 'monospace', fontSize: 15}}
-						value={this.state.input}
-						onChange={(value) => this.setState({input: value})}/>
-					<TS_TextAreaV2 className={'ts-textarea'} style={{width: 500, height: 500, fontFamily: 'monospace', fontSize: 15}} disabled value={value}/>
+					<TS_TextAreaV2 className={'ts-textarea'} style={{ width: 500, height: 500, marginRight: 8, fontFamily: 'monospace', fontSize: 15 }} value={this.state.input} onChange={(value) => this.setState({ input: value })}/>
+					<TS_TextAreaV2 className={'ts-textarea'} style={{ width: 500, height: 500, fontFamily: 'monospace', fontSize: 15 }} disabled value={value}/>
 				</LL_H_C>
 			</LL_V_L>
 		</LL_H_T>;
-	}
-
-	private sendRequest = async (e: React.MouseEvent) => {
-		this.setState({output: undefined});
-		const response = await ModuleFE_OpenAI.v1.test({
-			directive: this.state.directive,
-			message: this.state.input
-		}).executeSync();
-		this.logWarning(response);
-		this.setState({output: response.response});
-	};
+    }
+    private sendRequest = async (e: React.MouseEvent) => {
+        this.setState({ output: undefined });
+        const response = await ModuleFE_OpenAI.v1.test({
+            directive: this.state.directive,
+            message: this.state.input
+        }).executeSync();
+        this.logWarning(response);
+        this.setState({ output: response.response });
+    };
 }

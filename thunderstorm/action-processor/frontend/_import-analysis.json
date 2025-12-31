@@ -1,0 +1,107 @@
+{
+  "packageName": "@nu-art/thunder-action-processor-frontend",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/thunderstorm/action-processor/frontend",
+  "timestamp": "2025-12-31T10:04:11.624Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/thunder-action-processor-frontend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/module-pack.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-action-processor-frontend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleFE_ActionProcessor.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-action-processor-frontend",
+      "importedSymbol": "ApiDef_ActionProcessing",
+      "sourcePackage": "@nu-art/thunder-action-processor-shared",
+      "importPath": "@nu-art/thunder-action-processor-shared",
+      "filePath": "src/main/modules/ModuleFE_ActionProcessor.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-action-processor-frontend",
+      "importedSymbol": "ApiStruct_ActionProcessing",
+      "sourcePackage": "@nu-art/thunder-action-processor-shared",
+      "importPath": "@nu-art/thunder-action-processor-shared",
+      "filePath": "src/main/modules/ModuleFE_ActionProcessor.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-action-processor-frontend",
+      "importedSymbol": "_keys",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ATS_ActionProcessor/ATS_ActionProcessor.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-action-processor-frontend",
+      "importedSymbol": "TypedMap",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ATS_ActionProcessor/ATS_ActionProcessor.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-action-processor-frontend",
+      "importedSymbol": "ActionMetaData",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared/action-processor/index",
+      "filePath": "src/main/ATS_ActionProcessor/ATS_ActionProcessor.tsx",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunder-action-processor-shared",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunder-action-processor-shared",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

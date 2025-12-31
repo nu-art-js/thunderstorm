@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/ts-styles": "?",
     "react": "?"
   },
   "devDependencies": {

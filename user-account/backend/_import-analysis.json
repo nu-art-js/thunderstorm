@@ -1,7 +1,7 @@
 {
   "packageName": "@nu-art/user-account-backend",
   "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/user-account/backend",
-  "timestamp": "2025-12-30T21:18:13.735Z",
+  "timestamp": "2025-12-31T10:04:11.640Z",
   "imports": [
     {
       "importingPackage": "@nu-art/user-account-backend",
@@ -378,8 +378,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "DBApiConfigV3",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/session/ModuleBE_SessionDB.ts",
       "line": 17,
       "resolved": false,
@@ -390,8 +390,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "ModuleBE_BaseDB",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/session/ModuleBE_SessionDB.ts",
       "line": 17,
       "resolved": false,
@@ -438,8 +438,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "MemKey_HttpResponse",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend/modules/server/consts",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend/modules/server/consts",
       "filePath": "src/main/_entity/session/ModuleBE_SessionDB.ts",
       "line": 20,
       "resolved": false,
@@ -450,8 +450,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "ResponseHeaderKey_JWTToken",
-      "sourcePackage": "@nu-art/thunderstorm-shared",
-      "importPath": "@nu-art/thunderstorm-shared",
+      "sourcePackage": "@nu-art/thunder-db-api-shared",
+      "importPath": "@nu-art/thunder-db-api-shared",
       "filePath": "src/main/_entity/session/ModuleBE_SessionDB.ts",
       "line": 21,
       "resolved": false,
@@ -546,8 +546,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "HeaderKey",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/session/consts.ts",
       "line": 4,
       "resolved": false,
@@ -630,8 +630,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "DBApiConfigV3",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/login-attempts/ModuleBE_LoginAttemptDB.ts",
       "line": 1,
       "resolved": false,
@@ -642,8 +642,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "ModuleBE_BaseDB",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/login-attempts/ModuleBE_LoginAttemptDB.ts",
       "line": 1,
       "resolved": false,
@@ -762,8 +762,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "MemKey_HttpRequest",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend/modules/server/consts",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend/modules/server/consts",
       "filePath": "src/main/_entity/login-attempts/ModuleBE_LoginAttemptDB.ts",
       "line": 14,
       "resolved": false,
@@ -798,8 +798,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "createApisForDBModuleV3",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/login-attempts/module-pack.ts",
       "line": 1,
       "resolved": false,
@@ -810,8 +810,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "DBApiConfigV3",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/failed-login-attempt/ModuleBE_FailedLoginAttemptDB.ts",
       "line": 1,
       "resolved": false,
@@ -822,8 +822,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "ModuleBE_BaseDB",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/failed-login-attempt/ModuleBE_FailedLoginAttemptDB.ts",
       "line": 1,
       "resolved": false,
@@ -1014,8 +1014,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "createApisForDBModuleV3",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/failed-login-attempt/module-pack.ts",
       "line": 1,
       "resolved": false,
@@ -1182,8 +1182,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "addRoutes",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/account/ModuleBE_AccountDB.ts",
       "line": 17,
       "resolved": false,
@@ -1194,8 +1194,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "createBodyServerApi",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/account/ModuleBE_AccountDB.ts",
       "line": 17,
       "resolved": false,
@@ -1206,8 +1206,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "createQueryServerApi",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/account/ModuleBE_AccountDB.ts",
       "line": 17,
       "resolved": false,
@@ -1218,8 +1218,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "ModuleBE_BaseDB",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/account/ModuleBE_AccountDB.ts",
       "line": 17,
       "resolved": false,
@@ -1626,8 +1626,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "addRoutes",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/account/ModuleBE_SAML.ts",
       "line": 21,
       "resolved": false,
@@ -1638,8 +1638,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "createBodyServerApi",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/account/ModuleBE_SAML.ts",
       "line": 21,
       "resolved": false,
@@ -1650,8 +1650,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "createQueryServerApi",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/account/ModuleBE_SAML.ts",
       "line": 21,
       "resolved": false,
@@ -1662,8 +1662,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "MemKey_HttpResponse",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend/modules/server/consts",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend/modules/server/consts",
       "filePath": "src/main/_entity/account/ModuleBE_SAML.ts",
       "line": 22,
       "resolved": false,
@@ -1758,8 +1758,8 @@
     {
       "importingPackage": "@nu-art/user-account-backend",
       "importedSymbol": "createApisForDBModuleV3",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/_entity/account/module-pack.ts",
       "line": 2,
       "resolved": false,
@@ -1774,7 +1774,8 @@
       "@nu-art/firebase-shared",
       "@nu-art/google-services-backend",
       "@nu-art/slack-backend",
-      "@nu-art/thunderstorm-backend",
+      "@nu-art/thunder-db-api-backend",
+      "@nu-art/thunder-db-api-shared",
       "@nu-art/thunderstorm-shared",
       "@nu-art/ts-common",
       "@nu-art/user-account-shared"
@@ -1785,14 +1786,13 @@
       "@nu-art/firebase-shared",
       "@nu-art/google-services-backend",
       "@nu-art/slack-backend",
-      "@nu-art/thunderstorm-backend",
+      "@nu-art/thunder-db-api-backend",
+      "@nu-art/thunder-db-api-shared",
       "@nu-art/thunderstorm-shared",
       "@nu-art/ts-common",
       "@nu-art/user-account-shared"
     ],
-    "unused": [
-      "@nu-art/slack-shared"
-    ]
+    "unused": []
   },
   "cycles": [],
   "symbolCollisions": []

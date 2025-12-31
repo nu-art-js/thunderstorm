@@ -1,13 +1,13 @@
 {
   "packageName": "app-backend",
   "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/app-backend",
-  "timestamp": "2025-12-30T21:18:13.723Z",
+  "timestamp": "2025-12-31T10:04:11.614Z",
   "imports": [
     {
       "importingPackage": "app-backend",
       "importedSymbol": "AxiosHttpModule",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/index.ts",
       "line": 21,
       "resolved": false,
@@ -18,8 +18,8 @@
     {
       "importingPackage": "app-backend",
       "importedSymbol": "HttpServer",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/index.ts",
       "line": 21,
       "resolved": false,
@@ -30,8 +30,8 @@
     {
       "importingPackage": "app-backend",
       "importedSymbol": "ModuleBE_ForceUpgrade",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/index.ts",
       "line": 21,
       "resolved": false,
@@ -42,8 +42,8 @@
     {
       "importingPackage": "app-backend",
       "importedSymbol": "RouteResolver_ModulePath",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/index.ts",
       "line": 21,
       "resolved": false,
@@ -54,8 +54,8 @@
     {
       "importingPackage": "app-backend",
       "importedSymbol": "Storm",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/index.ts",
       "line": 21,
       "resolved": false,
@@ -162,8 +162,8 @@
     {
       "importingPackage": "app-backend",
       "importedSymbol": "Firebase_ExpressFunction",
-      "sourcePackage": "@nu-art/firebase-backend",
-      "importPath": "@nu-art/firebase-backend",
+      "sourcePackage": "@nu-art/firebase-backend-functions",
+      "importPath": "@nu-art/firebase-backend-functions",
       "filePath": "src/main/index.ts",
       "line": 36,
       "resolved": false,
@@ -209,9 +209,9 @@
     },
     {
       "importingPackage": "app-backend",
-      "importedSymbol": "ModuleBE_FirestoreListener",
-      "sourcePackage": "@nu-art/firebase-backend",
-      "importPath": "@nu-art/firebase-backend",
+      "importedSymbol": "FirestoreFunctionModule",
+      "sourcePackage": "@nu-art/firebase-backend-functions",
+      "importPath": "@nu-art/firebase-backend-functions",
       "filePath": "src/main/modules/CollectionChangedListener.ts",
       "line": 19,
       "resolved": false,
@@ -342,8 +342,8 @@
     {
       "importingPackage": "app-backend",
       "importedSymbol": "addRoutes",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/modules/ExampleModule.ts",
       "line": 21,
       "resolved": false,
@@ -354,8 +354,8 @@
     {
       "importingPackage": "app-backend",
       "importedSymbol": "createBodyServerApi",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/modules/ExampleModule.ts",
       "line": 21,
       "resolved": false,
@@ -366,8 +366,8 @@
     {
       "importingPackage": "app-backend",
       "importedSymbol": "createQueryServerApi",
-      "sourcePackage": "@nu-art/thunderstorm-backend",
-      "importPath": "@nu-art/thunderstorm-backend",
+      "sourcePackage": "@nu-art/thunder-db-api-backend",
+      "importPath": "@nu-art/thunder-db-api-backend",
       "filePath": "src/main/modules/ExampleModule.ts",
       "line": 21,
       "resolved": false,
@@ -473,9 +473,9 @@
     },
     {
       "importingPackage": "app-backend",
-      "importedSymbol": "ModuleBE_ExpressFunction_V2",
-      "sourcePackage": "@nu-art/firebase-backend",
-      "importPath": "@nu-art/firebase-backend",
+      "importedSymbol": "FirebaseFunctionModule",
+      "sourcePackage": "@nu-art/firebase-backend-functions",
+      "importPath": "@nu-art/firebase-backend-functions",
       "filePath": "src/main/modules/ValueChangedListener.ts",
       "line": 18,
       "resolved": false,
@@ -507,7 +507,7 @@
       "@nu-art/permissions-backend",
       "@nu-art/push-pub-sub-backend",
       "@nu-art/slack-backend",
-      "@nu-art/thunderstorm-backend",
+      "@nu-art/thunder-db-api-backend",
       "@nu-art/ts-common"
     ],
     "missing": [],
@@ -521,24 +521,10 @@
       "@nu-art/permissions-backend",
       "@nu-art/push-pub-sub-backend",
       "@nu-art/slack-backend",
-      "@nu-art/thunderstorm-backend",
+      "@nu-art/thunder-db-api-backend",
       "@nu-art/ts-common"
     ],
-    "unused": [
-      "@nu-art/bug-report-shared",
-      "@nu-art/jira-backend",
-      "@nu-art/jira-shared",
-      "@nu-art/file-upload-shared",
-      "@nu-art/firebase-shared",
-      "@nu-art/google-services-backend",
-      "@nu-art/live-docs-shared",
-      "@nu-art/permissions-shared",
-      "@nu-art/push-pub-sub-shared",
-      "@nu-art/slack-shared",
-      "@nu-art/thunderstorm-shared",
-      "@nu-art/user-account-backend",
-      "@nu-art/user-account-shared"
-    ]
+    "unused": []
   },
   "cycles": [],
   "symbolCollisions": []
