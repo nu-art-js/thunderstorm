@@ -5,7 +5,7 @@ import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.j
 import {DB_Account, DBProto_Account} from '@nu-art/user-account-shared';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_AccountThumbnail.scss';
-import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@nu-art/thunder-db-api-frontend';
 
 
 type Props = {

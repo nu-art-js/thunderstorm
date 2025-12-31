@@ -3,7 +3,7 @@ import {_className, AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L, TS_Pr
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor.js';
 import {DB_Account, DBProto_Account} from '@nu-art/user-account-shared';
 import {generateUUID} from '@nu-art/ts-common';
-import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@nu-art/thunder-db-api-frontend';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.js';
 
 

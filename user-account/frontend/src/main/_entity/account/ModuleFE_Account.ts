@@ -18,7 +18,7 @@ import {
 	UI_Account
 } from '@nu-art/user-account-shared';
 import {SessionKeyFE_Account, StorageKey_DeviceId, StorageKey_TabId} from './consts.js';
-import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@nu-art/thunder-db-api-frontend';
 import {asArray, cloneObj, composeUrl, DB_BaseObject, Exception, generateHex, KB, TS_Object} from '@nu-art/ts-common';
 import {ModuleFE_Session, OnSessionUpdated} from '../session/ModuleFE_Session.js';
 

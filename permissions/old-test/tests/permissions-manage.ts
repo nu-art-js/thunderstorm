@@ -26,7 +26,7 @@ import {
     ModuleBE_PermissionGroup,
     ModuleBE_PermissionUserDB
 } from '../_main.js';
-import {ApiException} from '@nu-art/thunderstorm-backend';
+import {ApiException} from '@nu-art/thunder-db-api-backend';
 import {generateHex, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {ModuleBE_Account} from '@nu-art/user-account-backend';
 

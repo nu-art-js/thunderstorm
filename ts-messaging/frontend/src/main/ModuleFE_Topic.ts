@@ -4,7 +4,7 @@
  * and topic filtering based on collection and reference criteria.
  */
 
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunder-db-api-frontend';
 import {ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
 import {DBDef_Topic, DBProto_Topic, UI_Topic} from '@nu-art/ts-messaging-shared';
 

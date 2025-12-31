@@ -24,7 +24,7 @@ import {
 	Module,
 	TypedMap
 } from '@nu-art/ts-common';
-import {promisifyRequest} from '@nu-art/thunderstorm-backend';
+import {promisifyRequest} from '@nu-art/thunder-db-api-backend';
 import {CoreOptions, Headers, Response, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils.js';
 import {JiraVersion, JiraVersion_Create} from '@nu-art/jira-shared/version';

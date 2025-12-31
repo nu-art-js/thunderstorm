@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunder-db-api-backend';
 import {Clause_Where} from '@nu-art/firebase-shared';
 import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates} from '@nu-art/ts-common';
 import {FirestoreTransaction} from '@nu-art/firebase-backend';

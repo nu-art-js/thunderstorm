@@ -35,7 +35,7 @@ import {
 
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm-backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunder-db-api-backend';
 import {ApiDef_LiveDoc} from '@nu-art/live-docs-shared/api';
 
 

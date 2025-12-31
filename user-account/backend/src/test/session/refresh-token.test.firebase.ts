@@ -1,5 +1,5 @@
 import {currentTimeMillis, generateHex, JwtTools} from '@nu-art/ts-common';
-import {stormTester} from '@nu-art/thunderstorm-backend/test/StormTest';
+import {stormTester} from '@nu-art/thunder-db-api-backend/test/StormTest';
 import {TimeProxy} from '@nu-art/ts-common/utils/time-proxy';
 import {expect} from 'chai';
 import {DefaultStormTestConfig_Session, ModuleDummy_AccountsUser} from '../utils/helpers.js';

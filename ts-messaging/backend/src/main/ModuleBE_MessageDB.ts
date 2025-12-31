@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunder-db-api-backend';
 import {DBDef_message, DBProto_Message} from '@nu-art/ts-messaging-shared';
 import {getAuditorId, ModuleBE_AccountDB} from '@nu-art/user-account-backend';
 import {arrayToMap} from '@nu-art/ts-common';

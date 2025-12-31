@@ -25,6 +25,7 @@
     "build": "tsc -b -f"
   },
   "dependencies": {
+    "@nu-art/thunder-db-api-frontend": "?",
     "@nu-art/push-pub-sub-shared": "?",
     "@nu-art/firebase-frontend": "?",
     "@nu-art/firebase-shared": "?",

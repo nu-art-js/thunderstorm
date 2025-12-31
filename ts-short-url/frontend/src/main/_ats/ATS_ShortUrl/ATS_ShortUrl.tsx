@@ -4,7 +4,7 @@ import {DispatcherType_ShortUrl, ModuleFE_ShortUrl} from '../../_entity/short-ur
 import {Component_ShortUrlEditor} from './components/Component_ShortUrlEditor.js';
 import {sortArray, voidFunction} from '@nu-art/ts-common';
 import {TS_EditableItemController} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemController/index';
-import {ApiCallerEventType, DispatcherInterface} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ApiCallerEventType, DispatcherInterface} from '@nu-art/thunder-db-api-frontend';
 import {DB_ShortUrl, DBProto_ShortUrl} from '@nu-art/ts-short-url-shared';
 
 

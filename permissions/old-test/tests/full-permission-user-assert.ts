@@ -31,7 +31,7 @@ import {
 import {FirestoreTransaction} from '@nu-art/firebase-backend';
 import {cleanup} from './_core.js';
 import {__custom, __scenario} from '@nu-art/testelot';
-import {ApiException} from '@nu-art/thunderstorm-backend';
+import {ApiException} from '@nu-art/thunder-db-api-backend';
 
 
 function makeAlphaBetIdForTestOnly(length: number) {

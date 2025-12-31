@@ -1,8 +1,8 @@
 import {generateHex, ModuleManager} from '@nu-art/ts-common';
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
 import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase-backend';
-import {ModuleBE_APIs, Storm} from '@nu-art/thunderstorm-backend';
-import {RouteResolver_Dummy} from '@nu-art/thunderstorm-backend/modules/server/route-resolvers/RouteResolver_Dummy';
+import {ModuleBE_APIs, Storm} from '@nu-art/thunder-db-api-backend';
+import {RouteResolver_Dummy} from '@nu-art/thunder-db-api-backend/modules/server/route-resolvers/RouteResolver_Dummy';
 import {ModuleBE_PermissionsAssert} from '../main/index.js';
 import {ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {ModuleBE_PermissionProject} from '../main/modules/management/ModuleBE_PermissionProject.js';

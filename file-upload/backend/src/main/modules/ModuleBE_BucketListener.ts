@@ -21,7 +21,7 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_StorageListener} from '@nu-art/firebase-backend';
 import {PermissionsGroup_PushMessanger} from '@nu-art/push-pub-sub-backend/core/permissions';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
-import {DefaultDef_ServiceAccount, RequiresServiceAccount, ServiceAccountCredentials} from '@nu-art/thunderstorm-backend/modules/_tdb/service-accounts';
+import {DefaultDef_ServiceAccount, RequiresServiceAccount, ServiceAccountCredentials} from '@nu-art/thunder-db-api-backend/modules/_tdb/service-accounts';
 import {StorageEvent} from 'firebase-functions/storage';
 
 

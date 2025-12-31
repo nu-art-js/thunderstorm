@@ -39,7 +39,7 @@ import {
 	ModuleBE_BaseDB,
 	ModuleBE_SyncManager,
 	ServerApi_Middleware
-} from '@nu-art/thunderstorm-backend';
+} from '@nu-art/thunder-db-api-backend';
 import {ApiModule, HttpMethod} from '@nu-art/thunderstorm-shared';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account-backend';
 import {
@@ -56,7 +56,7 @@ import {
 	MemKey_HttpRequestMethod,
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl
-} from '@nu-art/thunderstorm-backend/modules/server/consts';
+} from '@nu-art/thunder-db-api-backend/modules/server/consts';
 import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts.js';
 import {PermissionKey_BE} from '../PermissionKey_BE.js';
 import {ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity.js';

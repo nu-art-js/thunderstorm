@@ -1,6 +1,6 @@
 import {filterInstances, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionDomainDB} from './_entity.js';
-import {AppConfigKey_BE, ModuleBE_AppConfigDB} from '@nu-art/thunderstorm-backend';
+import {AppConfigKey_BE, ModuleBE_AppConfigDB} from '@nu-art/thunder-db-api-backend';
 import {Const_PermissionKeyType, DB_PermissionKeyData} from '@nu-art/permissions-shared';
 
 type Resolver = () => Promise<DB_PermissionKeyData>;

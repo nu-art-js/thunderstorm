@@ -1,7 +1,7 @@
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {generateHex} from '@nu-art/ts-common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
+import {stormTester, StormTestInput} from '@nu-art/thunder-db-api-backend/test/StormTest';
 import {DefaultStormTestConfig_SessionAndAccount, ModuleDummy_Claims, TestHelper_InterceptJwtHeader} from './utils/helpers.js';
 import { Account_RegisterAccount, PasswordAssertionConfig } from '@nu-art/user-account-shared';
 import { ModuleBE_AccountDB } from './_main.js';

@@ -1,8 +1,8 @@
 import {Day, exists, Module, TEST_JwtTools, TypedKeyValue} from '@nu-art/ts-common';
-import {ModuleBE_APIs, ModuleBE_SyncManager} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_APIs, ModuleBE_SyncManager} from '@nu-art/thunder-db-api-backend';
 import {TimeProxy} from '@nu-art/ts-common/utils/time-proxy';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
-import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
+import {MemKey_HttpResponse} from '@nu-art/thunder-db-api-backend/modules/server/consts';
 import {BaseSessionClaims, CollectSessionData, ModuleBE_AccountDB, ModuleBE_SessionDB} from '../_main.js';
 
 export class DummyAccountModule_Class

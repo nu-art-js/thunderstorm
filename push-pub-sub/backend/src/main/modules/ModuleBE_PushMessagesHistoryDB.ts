@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunder-db-api-backend';
 import {DBDef_PushMessagesHistory, DBProto_PushMessagesHistory} from '@nu-art/push-pub-sub-shared/push-messages-history/index';
 
 

@@ -11,7 +11,7 @@ import {
 	RuntimeModules,
 	TypedMap,
 } from '@nu-art/ts-common';
-import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm-backend';
+import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunder-db-api-backend';
 import {
 	ApiDef_Permissions,
 	DB_PermissionAccessLevel,
@@ -38,7 +38,7 @@ import {
 	PermissionsPackage_Permissions
 } from '../permissions.js';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert.js';
-import {PerformProjectSetup} from '@nu-art/thunderstorm-backend/modules/action-processor/Action_SetupProject';
+import {PerformProjectSetup} from '@nu-art/thunder-db-api-backend/modules/action-processor/Action_SetupProject';
 import {
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB,

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 import {DBDef_TempAssets, DBProto_AssetsTemp } from '@nu-art/file-upload-shared';
-import {ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_BaseDB} from '@nu-art/thunder-db-api-backend';
 
 
 export class ModuleBE_AssetsTemp_Class

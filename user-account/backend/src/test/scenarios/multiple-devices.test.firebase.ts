@@ -1,9 +1,9 @@
 import {md5} from '@nu-art/ts-common';
 import {ModuleBE_AccountDB} from '../_main.js';
-import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
+import {stormTester, StormTestInput} from '@nu-art/thunder-db-api-backend/test/StormTest';
 import {DefaultStormTestConfig_SessionAndAccount, TestHelper_InterceptJwtHeader, TestHelper_NoPasswordAssertion} from '../utils/helpers.js';
 import {runScenario} from '@nu-art/ts-common/testing/consts';
-import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
+import {MemKey_HttpResponse} from '@nu-art/thunder-db-api-backend/modules/server/consts';
 import {expect} from 'chai';
 
 

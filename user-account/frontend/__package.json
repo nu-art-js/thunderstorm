@@ -34,6 +34,7 @@
     "test": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files 'src/test/**/*.test.ts' src/test/**/*.test.ts"
   },
   "dependencies": {
+    "@nu-art/thunder-db-api-frontend": "?",
     "@nu-art/user-account-shared": "?",
     "@nu-art/firebase-frontend": "?",
     "@nu-art/firebase-shared": "?",

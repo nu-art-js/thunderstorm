@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunder-db-api-backend';
 import {
 	DBDef_LoginAttempt,
 	DBProto_LoginAttempt,
@@ -11,7 +11,7 @@ import {filterKeys, UniqueId} from '@nu-art/ts-common';
 import {OnLoginFailed} from './dispatchers.js';
 import {OnUserLogin} from '../account/index.js';
 import {SafeDB_Account} from '@nu-art/user-account-shared';
-import {MemKey_HttpRequest} from '@nu-art/thunderstorm-backend/modules/server/consts';
+import {MemKey_HttpRequest} from '@nu-art/thunder-db-api-backend/modules/server/consts';
 
 
 type Config = DBApiConfigV3<DBProto_LoginAttempt> & {}

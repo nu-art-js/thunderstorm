@@ -2,7 +2,7 @@ import {apiWithBody, ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunders
 import {currentTimeMillis} from '@nu-art/ts-common';
 import {ApiDef_Assets, ApiStruct_Assets, DBDef_Assets, DBProto_Assets} from '@nu-art/file-upload-shared';
 import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
-import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@nu-art/thunder-db-api-frontend';
 
 
 export interface OnAssetsUpdated {

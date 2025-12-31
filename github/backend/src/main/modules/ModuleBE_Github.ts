@@ -19,7 +19,7 @@ import {BadImplementationException, currentTimeMillis, Exception, JwtTools, Minu
 import {Octokit, RestEndpointMethodTypes} from '@octokit/rest';
 import {OctokitResponse, ReposGetContentResponseData} from '@octokit/types';
 import * as path from 'path';
-import {promisifyRequest} from '@nu-art/thunderstorm-backend';
+import {promisifyRequest} from '@nu-art/thunder-db-api-backend';
 
 
 type Config = {

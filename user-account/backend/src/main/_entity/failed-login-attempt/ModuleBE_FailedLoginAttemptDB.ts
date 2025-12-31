@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
+import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunder-db-api-backend';
 import {
 	DB_FailedLoginAttempt,
 	DBDef_FailedLoginAttempt,

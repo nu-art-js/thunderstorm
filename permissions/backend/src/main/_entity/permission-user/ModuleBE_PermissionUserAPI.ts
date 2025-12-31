@@ -1,4 +1,4 @@
-import {addRoutes, createBodyServerApi, ModuleBE_BaseApi_Class} from '@nu-art/thunderstorm-backend';
+import {addRoutes, createBodyServerApi, ModuleBE_BaseApi_Class} from '@nu-art/thunder-db-api-backend';
 import {ApiDef_PermissionUser, DBProto_PermissionUser} from '@nu-art/permissions-shared';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB.js';
 

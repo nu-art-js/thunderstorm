@@ -1,7 +1,7 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {PartialProperties} from '@nu-art/ts-common';
-import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
+import {stormTester, StormTestInput} from '@nu-art/thunder-db-api-backend/test/StormTest';
 import {DefaultStormTestConfig_SessionAndAccount} from './utils/helpers.js';
 import { Account_CreateAccount, Request_RegisterAccount } from '@nu-art/user-account-shared';
 import {MemKey_AccountEmail, ModuleBE_AccountDB} from './_main.js';

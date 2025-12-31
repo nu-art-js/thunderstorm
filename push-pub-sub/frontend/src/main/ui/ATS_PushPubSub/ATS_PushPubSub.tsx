@@ -21,7 +21,7 @@ import {OnPushMessageReceived, PushMessage_Payload} from '@nu-art/push-pub-sub-s
 import './ATS_PushPubSub.scss';
 import {TS_InputV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_Input/index';
 import {ModuleFE_PushSubscription} from '../../modules/ModuleFE_PushSubscription.js';
-import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@nu-art/thunder-db-api-frontend';
 import {DBProto_PushSubscription} from '@nu-art/push-pub-sub-shared/push-subscription/index';
 
 

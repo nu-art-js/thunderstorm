@@ -21,7 +21,7 @@ import {__custom, __scenario} from '@nu-art/testelot';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {MyTester} from './core.js';
 import {AxiosHttpModule} from '@nu-art/thunderstorm-frontend/modules/http/AxiosHttpModule';
-import {HttpMethod} from '@nu-art/thunderstorm-backend';
+import {HttpMethod} from '@nu-art/thunder-db-api-backend';
 import {StaticLogger} from '@nu-art/ts-common';
 
 

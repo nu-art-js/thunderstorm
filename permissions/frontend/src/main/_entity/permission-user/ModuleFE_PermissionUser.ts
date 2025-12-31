@@ -1,6 +1,6 @@
 import {apiWithBody, ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
 import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunder-db-api-frontend';
 import {ApiDef_PermissionUser, ApiStruct_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser} from '@nu-art/permissions-shared';
 
 

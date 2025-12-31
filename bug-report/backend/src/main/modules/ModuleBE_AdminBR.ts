@@ -21,7 +21,7 @@ import {Module} from '@nu-art/ts-common';
 import {ApiDef_AdminBugReport, DB_BugReport, Paths} from '@nu-art/bug-report-shared/api';
 
 import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend';
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm-backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunder-db-api-backend';
 
 
 type Config = {

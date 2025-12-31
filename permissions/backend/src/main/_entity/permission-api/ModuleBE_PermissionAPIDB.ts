@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB, ServerApi,} from '@nu-art/thunderstorm-backend';
+import {DBApiConfigV3, ModuleBE_BaseDB, ServerApi,} from '@nu-art/thunder-db-api-backend';
 import {DB_PermissionAPI, DBDef_PermissionAPI, DBProto_PermissionAPI} from '@nu-art/permissions-shared';
 import {dbObjectToId, filterInstances, PreDB, UniqueId} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB} from '../permission-access-level/index.js';

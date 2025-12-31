@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
+import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunder-db-api-backend';
 import {DB_PermissionDomain, DBDef_PermissionDomain, DBProto_PermissionDomain} from '@nu-art/permissions-shared';
 import {ApiException} from '@nu-art/ts-common';
 import {Transaction} from 'firebase-admin/firestore';

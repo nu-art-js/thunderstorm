@@ -1,4 +1,4 @@
-import {createApisForDBModuleV3, DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
+import {createApisForDBModuleV3, DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunder-db-api-backend';
 import {DBDef_PushSubscription, DBProto_PushSubscription} from '@nu-art/push-pub-sub-shared/push-subscription/index';
 
 

@@ -23,7 +23,7 @@
 
 import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
 import {ChatPostMessageArguments, WebAPICallResult, WebClient, WebClientOptions,} from '@slack/web-api';
-import {addRoutes, AxiosHttpModule, createBodyServerApi} from '@nu-art/thunderstorm-backend';
+import {addRoutes, AxiosHttpModule, createBodyServerApi} from '@nu-art/thunder-db-api-backend';
 import {ApiDef_Slack, PreSendSlackStructuredMessage} from '@nu-art/slack-shared';
 import {Stream} from 'stream';
 import {postSlackMessageErrorHandler} from './utils.js';

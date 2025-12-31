@@ -18,7 +18,7 @@
 import {ModuleBE_LiveDocs} from '../_main.js';
 import {assert, auditBy} from '@nu-art/ts-common';
 import {cleanup} from './_core.js';
-import {ApiException} from '@nu-art/thunderstorm-backend';
+import {ApiException} from '@nu-art/thunder-db-api-backend';
 
 
 export function getNoneExistingDoc() {

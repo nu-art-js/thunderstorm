@@ -19,7 +19,7 @@
 // import {
 // 	ServerApi,
 // 	ApiResponse
-// } from '@nu-art/thunderstorm-backend';
+// } from '@nu-art/thunder-db-api-backend';
 //
 // import {
 // 	HttpMethod,
@@ -27,7 +27,7 @@
 // } from '@nu-art/thunderstorm-shared';
 //
 // // import {ProjectFirestoreBackup} from "@nu-art/firebase-backend-firestore-backup";
-// import {ExpressRequest} from '@nu-art/thunderstorm-backend';
+// import {ExpressRequest} from '@nu-art/thunder-db-api-backend';
 //
 //
 // class ServerApi_RegisterExternalProject

@@ -1,5 +1,5 @@
 import {filterInstances} from '@nu-art/ts-common';
-import {ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_BaseDB} from '@nu-art/thunder-db-api-backend';
 import {ModulePackBE_Messaging} from './module-pack.js';
 import {
 	DefaultAccessLevel_Admin,
