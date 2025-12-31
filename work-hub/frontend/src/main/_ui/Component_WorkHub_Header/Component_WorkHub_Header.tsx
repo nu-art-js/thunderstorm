@@ -1,5 +1,5 @@
 import {FC} from 'react';
-import {LL_H_C} from '@nu-art/thunderstorm-frontend';
+import {LL_H_C} from '@nu-art/thunder-routing';
 import {WorkHubTab} from '@nu-art/work-hub-shared';
 import './Component_WorkHub_Header.scss';
 import {Component_WorkHub_Tab} from '../Component_WorkHub_Tab/Component_WorkHub_Tab.js';

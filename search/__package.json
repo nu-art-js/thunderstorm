@@ -37,6 +37,8 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/web-client": "?",
+    "@nu-art/thunder-routing": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
     "react": "?"

@@ -8,7 +8,7 @@ import {
 	Model_PopUp,
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp
-} from '@nu-art/thunderstorm-frontend';
+} from '@nu-art/thunder-routing';
 import {WorkHubItem_MenuAction, WorkHubItem_MenuSection} from './types.js';
 import {ModuleFE_WorkHub} from '../../_module/index.js';
 import './Component_WorkHubActionMenu.scss';

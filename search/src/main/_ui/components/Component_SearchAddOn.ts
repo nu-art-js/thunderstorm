@@ -1,4 +1,4 @@
-import {ComponentSync} from '@nu-art/thunderstorm-frontend';
+import {ComponentSync} from '@nu-art/thunder-routing';
 import {compare} from '@nu-art/ts-common';
 import {SearchAddOn, SearchAddOnDef, SearchAddOnRenderer, SearchContext} from '../../_core/index.js';
 

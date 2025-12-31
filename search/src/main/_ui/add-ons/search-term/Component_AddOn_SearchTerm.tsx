@@ -1,10 +1,10 @@
-import {LL_H_C, TS_Input} from '@nu-art/thunderstorm-frontend';
+import {LL_H_C, TS_Input} from '@nu-art/thunder-routing';
 import {SearchAddOn} from '../../../_core/index.js';
 import {Component_SearchAddOn} from '../../components/Component_SearchAddOn.js';
 import {AddOn_SearchTerm, AddOnDef_SearchTerm} from './types.js';
 import './Component_AddOn_SearchTerm.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {InferProps, InferState} from '@nu-art/thunderstorm-frontend';
+import {InferProps, InferState} from '@nu-art/thunder-routing';
 
 type Props = {
 	placeholder?: string;

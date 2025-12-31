@@ -37,6 +37,7 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunder-routing": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",

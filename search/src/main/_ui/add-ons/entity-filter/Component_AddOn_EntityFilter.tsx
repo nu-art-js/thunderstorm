@@ -1,6 +1,6 @@
 import {Component_SearchAddOn} from '../../components/Component_SearchAddOn.js';
 import {AddOn_EntityFilter, AddOnDef_EntityFilter} from './types.js';
-import {InferProps, InferState, LL_H_C, SimpleListAdapter, TS_DropDown, TS_PropRenderer} from '@nu-art/thunderstorm-frontend';
+import {InferProps, InferState, LL_H_C, SimpleListAdapter, TS_DropDown, TS_PropRenderer} from '@nu-art/thunder-routing';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_AddOn_EntityFilter.scss';
 import {SearchAddOn, SearchItem} from '../../../_core/index.js';

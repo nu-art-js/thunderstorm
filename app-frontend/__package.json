@@ -25,6 +25,7 @@
     "launch": "webpack-dev-server --open --mode development --env dev true"
   },
   "dependencies": {
+    "@nu-art/thunder-routing": "?",
     "@nu-art/bug-report-frontend": "?",
     "@nu-art/bug-report-shared": "?",
     "@nu-art/file-upload-frontend": "?",

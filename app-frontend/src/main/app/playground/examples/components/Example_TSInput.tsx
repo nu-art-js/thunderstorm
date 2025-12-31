@@ -21,7 +21,7 @@ import {
 	Example_NewProps,
 	TS_Input,
 	TS_InputProps
-} from '@nu-art/thunderstorm-frontend';
+} from '@nu-art/thunder-routing';
 
 type TestType = {
 	prop1?: string,

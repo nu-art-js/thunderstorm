@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync, LL_V_L, VirtualizedList} from '@nu-art/thunderstorm-frontend';
+import {ComponentSync, LL_V_L, VirtualizedList} from '@nu-art/thunder-routing';
 import {SearchContext, SearchItem, SearchResult, SearchResultsRenderer} from '../../../_core/index.js';
 import './Component_SearchResults.scss';
 import {filterInstances, ResolvableContent} from '@nu-art/ts-common';

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync, LL_H_C, ModuleFE_Thunderstorm, stopPropagation} from '@nu-art/thunderstorm-frontend';
+import {ComponentSync, LL_H_C, ModuleFE_Thunder from '@nu-art/web-client';
 import './Component_SearchMeta.scss';
 import {filterInstances, formatTimestamp, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_CSVParser} from '@nu-art/thunderstorm-frontend/modules/ModuleFE_CSVParser';

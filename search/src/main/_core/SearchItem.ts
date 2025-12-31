@@ -1,7 +1,7 @@
 import {CSSProperties, ReactNode} from 'react';
 import {DBProto} from '@nu-art/ts-common';
 import {SearchAddOnDef, SearchResult} from './SearchAddOn.js';
-import {ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend';
+import {ModuleFE_BaseDB} from '@nu-art/thunder-routing';
 
 type AddOnTuple = readonly SearchAddOnDef<any, any, any, any>[]
 
