@@ -43,8 +43,6 @@
     "@nu-art/thunder-http": "?",
     "@nu-art/thunder-idb": "?",
     "@nu-art/thunder-utils": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?"
   },

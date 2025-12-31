@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "@nu-art/thunder-action-processor-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},

@@ -41,7 +41,6 @@
     "@nu-art/thunder-db-api-frontend": "?",
     "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/thunder-routing": "?",
-    "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/ts-common": "?",
     "express": "?",
     "file-type": "^21.0.0",

@@ -41,8 +41,6 @@
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/thunder-db-api-backend": "?",
-    "@nu-art/thunderstorm-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/thunderstorm-sync-manager-shared": "?",
     "@nu-art/ts-common": "?",
     "firebase-admin": "?"

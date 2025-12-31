@@ -28,7 +28,6 @@
     "@nu-art/bug-report-backend": "?",
     "@nu-art/file-upload-backend": "?",
     "@nu-art/firebase-backend": "?",
-    "@nu-art/firebase-backend-functions": "?",
     "@nu-art/live-docs-backend": "?",
     "@nu-art/permissions-backend": "?",
     "@nu-art/push-pub-sub-backend": "?",

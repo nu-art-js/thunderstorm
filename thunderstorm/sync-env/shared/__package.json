@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@nu-art/thunder-db-api-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "unitConfig": {

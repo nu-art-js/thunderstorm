@@ -41,7 +41,6 @@
     "@nu-art/firebase-backend": "?",
     "@nu-art/google-services-backend": "?",
     "@nu-art/thunder-db-api-backend": "?",
-    "@nu-art/thunderstorm-backend": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},

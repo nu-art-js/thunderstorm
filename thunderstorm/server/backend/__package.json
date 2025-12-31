@@ -42,7 +42,6 @@
     "@nu-art/thunder-backup-backend": "?",
     "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/thunder-server-info-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},

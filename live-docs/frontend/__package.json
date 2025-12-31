@@ -41,7 +41,6 @@
     "@nu-art/live-docs-shared": "?",
     "@nu-art/thunder-db-api-frontend": "?",
     "@nu-art/thunder-db-api-shared": "?",
-    "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/ts-common": "?",
     "express": "?",
     "firebase": "?",

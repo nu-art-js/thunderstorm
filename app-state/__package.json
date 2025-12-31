@@ -40,8 +40,6 @@
   },
   "dependencies": {
     "@nu-art/thunder-routing": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "react": "?"
   },
