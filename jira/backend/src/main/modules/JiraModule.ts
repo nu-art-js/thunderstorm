@@ -28,7 +28,7 @@ import {promisifyRequest} from '@nu-art/thunder-db-api-backend';
 import {CoreOptions, Headers, Response, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils.js';
 import {JiraVersion, JiraVersion_Create} from '@nu-art/jira-shared/version';
-import { HeaderKey_ContentType, HttpMethod } from '@nu-art/thunderstorm-shared';
+import { HeaderKey_ContentType, HttpMethod } from '@nu-art/thunder-db-api-shared';
 
 
 type Config = {

@@ -1,4 +1,4 @@
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunder-db-api-shared';
 import {DB_BaseObject, Minute, UniqueId} from '@nu-art/ts-common';
 import {AccountType, DB_Account, UI_Account} from './types.js';
 import {DB_Session, QueryParam_RedirectUrl} from '../session/index.js';

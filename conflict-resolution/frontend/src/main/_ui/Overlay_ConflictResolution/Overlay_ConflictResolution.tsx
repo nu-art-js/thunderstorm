@@ -1,4 +1,4 @@
-import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
+import {DBEntityDependencies} from '@nu-art/thunder-db-api-shared';
 import {ComponentSync} from '@nu-art/thunderstorm-frontend/index';
 import './Overlay_ConflictResolution.scss';
 import {Panel_ConflictResolution} from '../Panel_ConflictResolution/Panel_ConflictResolution.js';

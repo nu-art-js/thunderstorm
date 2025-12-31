@@ -1,4 +1,4 @@
-import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
+import {DBEntityDependencies} from '@nu-art/thunder-db-api-shared';
 import {Adapter, AdapterBuilder, ComponentSync, TS_Tree} from '@nu-art/thunderstorm-frontend/index';
 import {calculateConflictResolutionTree} from './tree-calculation.js';
 import {ConflictResolutionTreeRenderers} from './tree-rendering.js';

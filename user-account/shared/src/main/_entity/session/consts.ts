@@ -1,4 +1,4 @@
-import {HeaderKey_Authorization} from '@nu-art/thunderstorm-shared';
+import {HeaderKey_Authorization} from '@nu-art/thunder-db-api-shared';
 
 export const accountGroupName = 'account';
 export const QueryParam_Email = 'userEmail';

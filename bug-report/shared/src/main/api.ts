@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunder-db-api-shared';
 import {Auditable, DB_Object} from '@nu-art/ts-common';
 
 export type TicketDetails = {

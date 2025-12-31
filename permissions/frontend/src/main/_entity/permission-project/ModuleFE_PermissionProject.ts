@@ -1,5 +1,5 @@
 import {ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
+import {ApiDefCaller} from '@nu-art/thunder-db-api-shared';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunder-db-api-frontend';
 import {ApiStruct_PermissionProject, DBDef_PermissionProject, DBProto_PermissionProject} from '@nu-art/permissions-shared';
 

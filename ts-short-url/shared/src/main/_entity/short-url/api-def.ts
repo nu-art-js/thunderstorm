@@ -1,4 +1,4 @@
-import {ApiDefResolver, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, HttpMethod, QueryApi} from '@nu-art/thunder-db-api-shared';
 import {DB_BaseObject, Minute} from '@nu-art/ts-common';
 
 

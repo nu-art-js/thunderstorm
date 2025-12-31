@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunder-db-api-shared';
 import {Minute, PreDB, StringMap} from '@nu-art/ts-common';
 import {DB_PermissionProject} from './_entity.js';
 

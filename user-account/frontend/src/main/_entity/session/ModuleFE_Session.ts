@@ -10,7 +10,7 @@ import {
 	TS_Object,
 	TypedKeyValue
 } from '@nu-art/ts-common';
-import {BaseHttpRequest, HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
+import {BaseHttpRequest, HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/thunder-db-api-shared';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm-shared/no-auth-listener';
 import {QueryParam_SessionId} from '@nu-art/user-account-shared';
 

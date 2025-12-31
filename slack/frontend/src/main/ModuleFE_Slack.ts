@@ -1,5 +1,5 @@
 import {Module} from '@nu-art/ts-common';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
+import {ApiDefCaller} from '@nu-art/thunder-db-api-shared';
 import {ApiDef_Slack, ApiStruct_Slack} from '@nu-art/slack-shared';
 import {apiWithBody} from '@nu-art/thunderstorm-frontend/index';
 

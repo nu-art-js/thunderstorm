@@ -21,7 +21,7 @@ import {ApiDef_AssetUploader, ApiStruct_AssetUploader, FileStatus, OnFileStatusC
 import {ModuleBase_AssetUploader} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader';
 import {BaseSubscriptionData, PushMessage_Payload} from '@nu-art/push-pub-sub-shared';
 import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub-frontend/modules/ModuleFE_PushPubSub';
-import {ApiDef, ApiDefCaller, BaseHttpRequest, TypedApi} from '@nu-art/thunderstorm-shared';
+import {ApiDef, ApiDefCaller, BaseHttpRequest, TypedApi} from '@nu-art/thunder-db-api-shared';
 import {generateHex} from '@nu-art/ts-common';
 import {PushMessage_FileUploaded} from '@nu-art/file-upload-shared/assets/messages';
 

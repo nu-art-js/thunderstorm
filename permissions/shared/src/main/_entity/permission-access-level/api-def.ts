@@ -1,4 +1,4 @@
-import {ApiDefResolver} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver} from '@nu-art/thunder-db-api-shared';
 
 export type ApiStruct_PermissionAccessLevel = {
 	_v1: {}

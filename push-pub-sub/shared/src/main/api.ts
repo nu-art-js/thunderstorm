@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunder-db-api-shared';
 import {BaseSubscriptionData, PushMessage, Request_PushRegister} from './types.js';
 
 

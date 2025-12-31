@@ -1,4 +1,4 @@
-import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
+import {DBEntityDependencies} from '@nu-art/thunder-db-api-shared';
 import {ConflictResolutionTree} from './types.js';
 import {DBProto, RuntimeModules, StaticLogger, UniqueId, _keys} from '@nu-art/ts-common';
 import {ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend/index';

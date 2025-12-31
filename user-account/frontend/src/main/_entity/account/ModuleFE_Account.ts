@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {apiWithBody, apiWithQuery, ModuleFE_BaseApi, ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller, HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm-shared';
+import {ApiDefCaller, HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunder-db-api-shared';
 import {dispatcher_onAuthRequired} from '@nu-art/thunderstorm-shared/no-auth-listener';
 import {
 	Account_ChangeThumbnail,

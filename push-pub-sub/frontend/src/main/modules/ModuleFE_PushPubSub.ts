@@ -18,7 +18,7 @@
 
 import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {apiWithBody, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
+import {ApiDefCaller} from '@nu-art/thunder-db-api-shared';
 import {MessagingWrapperFE} from '@nu-art/firebase-frontend/index';
 import {
 	ApiDef_PushMessages,

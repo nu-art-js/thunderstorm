@@ -19,7 +19,7 @@ import {ApiDef_CollectionActions} from '@nu-art/thunderstorm-shared/collection-a
 import {DefaultDef_Domain, DefaultDef_Package} from './types.js';
 import {ApiDef_Account, DBDef_Accounts} from '@nu-art/user-account-shared';
 import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '@nu-art/permissions-shared/permission-keys';
-import {ApiDef_SyncEnv} from '@nu-art/thunderstorm-shared';
+import {ApiDef_SyncEnv} from '@nu-art/thunder-db-api-shared';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 

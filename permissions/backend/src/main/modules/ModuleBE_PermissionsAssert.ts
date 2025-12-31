@@ -40,7 +40,7 @@ import {
 	ModuleBE_SyncManager,
 	ServerApi_Middleware
 } from '@nu-art/thunder-db-api-backend';
-import {ApiModule, HttpMethod} from '@nu-art/thunderstorm-shared';
+import {ApiModule, HttpMethod} from '@nu-art/thunder-db-api-shared';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account-backend';
 import {
 	ApiDef_PermissionsAssert,

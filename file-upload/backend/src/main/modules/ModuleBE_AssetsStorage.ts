@@ -20,7 +20,7 @@ import {AxiosHttpModule, OnSyncEnvCompleted} from '@nu-art/thunder-db-api-backen
 import {filterInstances, Module, NotImplementedYetException, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend';
 import {ApiDef_Assets, DB_Asset} from '@nu-art/file-upload-shared';
-import {HttpMethod} from '@nu-art/thunderstorm-shared';
+import {HttpMethod} from '@nu-art/thunder-db-api-shared';
 import {ModuleBE_AssetsDB} from './ModuleBE_AssetsDB.js';
 
 

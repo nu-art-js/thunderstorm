@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseHttpRequest} from '@nu-art/thunderstorm-shared';
+import {BaseHttpRequest} from '@nu-art/thunder-db-api-shared';
 import {Auditable, DB_Object, TS_Object} from '@nu-art/ts-common';
 import {FileStatus} from '../types.js';
 

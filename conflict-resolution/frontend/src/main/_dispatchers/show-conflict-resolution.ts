@@ -1,4 +1,4 @@
-import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
+import {DBEntityDependencies} from '@nu-art/thunder-db-api-shared';
 import {ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
 
 export interface OnShowConflictResolution {

@@ -24,7 +24,7 @@
 // import {
 // 	HttpMethod,
 // 	QueryApi
-// } from '@nu-art/thunderstorm-shared';
+// } from '@nu-art/thunder-db-api-shared';
 //
 // // import {ProjectFirestoreBackup} from "@nu-art/firebase-backend-firestore-backup";
 // import {ExpressRequest} from '@nu-art/thunder-db-api-backend';

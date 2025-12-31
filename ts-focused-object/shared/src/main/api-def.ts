@@ -1,4 +1,4 @@
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunder-db-api-shared';
 import {FocusedEntity} from './types.js';
 
 export type FocusedItem_Update = {

@@ -1,4 +1,4 @@
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunder-db-api-shared';
 import {PreSendSlackStructuredMessage} from './types.js';
 import {SlackBlock, ThreadPointer} from './base-slack-builder/index.js';
 import {WebAPICallResult} from '@slack/web-api';

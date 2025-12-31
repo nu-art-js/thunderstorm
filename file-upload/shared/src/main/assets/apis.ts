@@ -1,4 +1,4 @@
-import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
+import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunder-db-api-shared';
 import {DB_Asset} from './types1.js';
 import {DB_BaseObject} from '@nu-art/ts-common';
 import {UI_Asset} from './types.js';

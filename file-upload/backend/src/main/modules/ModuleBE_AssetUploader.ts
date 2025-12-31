@@ -20,7 +20,7 @@
 import {ModuleBase_AssetUploader, UploaderConfig,} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader';
 import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule} from '@nu-art/thunder-db-api-backend';
 import {ApiDef_AssetUploader, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
-import {ApiDef, BaseHttpRequest, TypedApi} from '@nu-art/thunderstorm-shared';
+import {ApiDef, BaseHttpRequest, TypedApi} from '@nu-art/thunder-db-api-shared';
 
 
 export type ServerFilesToUpload = UI_Asset & {
