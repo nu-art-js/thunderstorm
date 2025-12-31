@@ -37,6 +37,7 @@
     "@nu-art/permissions-shared": "?",
     "@nu-art/push-pub-sub-frontend": "?",
     "@nu-art/push-pub-sub-shared": "?",
+    "@nu-art/push-pub-sub": "?",
     "@nu-art/thunderstorm-frontend": "?",
     "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",

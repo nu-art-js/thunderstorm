@@ -18,7 +18,7 @@
  */
 
 import * as React from 'react';
-import {ICONS} from '@app/common/frontend/icons/index';
+import {ICONS} from '../../../../../res/icons.js';
 import {BaseNodeRenderer,} from '@nu-art/thunderstorm-frontend/index';
 import { Plague} from './consts.js';
 import {Playground_DropdownSingleAndMulti} from './Example_Dropdown_SingleAndMulti.js';

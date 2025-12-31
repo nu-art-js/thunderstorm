@@ -1,41 +1,19 @@
-import {BaiParams} from '../../core/params.js';
+import {BaiParams} from '../../params/params.js';
 
-/**
- * Phase definition for build system execution.
- * 
- * **Phase Structure**:
- * - Phases are grouped into phase groups (arrays of phases)
- * - Phases in a group can run in parallel
- * - Phase groups run sequentially
- * 
- * **Key Properties**:
- * - `key`: Unique identifier for the phase
- * - `method`: Method name that units must implement (e.g., 'compile', 'test')
- * - `filter`: Optional function to determine if phase should run based on runtime params
- * - `unitCategory`: Which units participate ('active' or 'project')
- * - `dependencyPhase`: Phases that must complete before this phase runs
- * - `terminateAfterPhase`: If true, stops execution after this phase completes
- * 
- * **Unit Participation**:
- * - Units must implement the phase method to participate
- * - Units must be in the correct category (active/project)
- * - Phase filter must pass (if present)
- * 
- * **Examples**: See `phase/consts.ts` for all phase definitions.
- */
 export type Phase<PhaseMethod extends string> = {
-	/** Unique identifier for the phase */
+	//Key identifier of the phase, Unique
 	key: string;
-	/** Display name for the phase */
+	//Name of the phase - to be displayed in the runner status
 	name: string
-	/** Method name that units must implement */
+	//The method in the units that this phase is demanding be implemented
 	method: PhaseMethod
-	/** Optional filter to determine if phase should run based on runtime params */
+	//Filter to determine if the phase will run
 	filter?: (params: BaiParams) => boolean;
-	/** If true, terminates execution after this phase completes */
+	//Should the runner terminate after the phase, only matters if the phase did run
 	terminateAfterPhase?: boolean;
-	/** Phases that must complete before this phase runs */
+	//Phases that are dependency of this phase and must run for this phase to work
 	dependencyPhase?: Phase<string>[];
-	/** Unit category: 'project' = all project units (active + dependencies), 'active' = only active units (default) */
+	//Unit category determines which units participate in this phase
+	//"project" = all project units (active + dependencies), "active" = only active units (default)
 	unitCategory?: "project" | "active";
 }

@@ -1,0 +1,233 @@
+{
+  "packageName": "@nu-art/ts-workspace-frontend",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/ts-workspace/frontend",
+  "timestamp": "2025-12-30T21:18:13.735Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "DB_Object",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ui/types.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "ResolvableContent",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ui/types.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "TypedMap",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ui/types.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "BaseAsyncState",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/ui/types.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "StorageKey",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/modules/ModuleFE_Workspace.ts",
+      "line": 19,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "_values",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleFE_Workspace.ts",
+      "line": 20,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "BadImplementationException",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleFE_Workspace.ts",
+      "line": 20,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleFE_Workspace.ts",
+      "line": 20,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "TypedMap",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleFE_Workspace.ts",
+      "line": 20,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "Workspace",
+      "sourcePackage": "@nu-art/ts-workspace-shared",
+      "importPath": "@nu-art/ts-workspace-shared",
+      "filePath": "src/main/modules/ModuleFE_Workspace.ts",
+      "line": 22,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "ComponentAsync",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/ui/Panels.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "ComponentSync",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/ui/Panels.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "compare",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ui/Panels.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "resolveContent",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ui/Panels.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "_className",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/ui/TS_Workspace.tsx",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "BaseAsyncState",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/ui/TS_Workspace.tsx",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-workspace-frontend",
+      "importedSymbol": "ComponentSync",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/ui/TS_Workspace.tsx",
+      "line": 24,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/ts-common",
+      "@nu-art/ts-workspace-shared"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/ts-common",
+      "@nu-art/ts-workspace-shared"
+    ],
+    "unused": [
+      "@nu-art/firebase-frontend",
+      "@nu-art/firebase-shared",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/user-account-frontend",
+      "@nu-art/user-account-shared"
+    ]
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

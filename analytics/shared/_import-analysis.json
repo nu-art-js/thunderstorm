@@ -1,0 +1,81 @@
+{
+  "packageName": "@nu-art/analytics-shared",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/analytics/shared",
+  "timestamp": "2025-12-30T21:18:13.723Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/analytics-shared",
+      "importedSymbol": "ApiDefResolver",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/api-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-shared",
+      "importedSymbol": "BodyApi",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/api-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-shared",
+      "importedSymbol": "HttpMethod",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/api-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-shared",
+      "importedSymbol": "TypedMap",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-shared",
+      "importedSymbol": "UniqueId",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

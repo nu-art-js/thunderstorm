@@ -1,0 +1,253 @@
+{
+  "packageName": "@nu-art/json-to-object-renderer",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/json-to-object-renderer",
+  "timestamp": "2025-12-30T21:18:13.727Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "EditableContentType",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/Editor_JsonToObject.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "EditableItem",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/Editor_JsonToObject.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "TS_EditableContent",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/Editor_JsonToObject.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "__stringify",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/Editor_JsonToObject.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "tsValidateResult",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/Editor_JsonToObject.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "ValidatorTypeResolver",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/Editor_JsonToObject.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "TS_TextAreaV2",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/components/TS_V2_TextArea/index",
+      "filePath": "src/main/Editor_JsonToObject.tsx",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "InferProps",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/utils/types",
+      "filePath": "src/main/Editor_JsonToObject.tsx",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "InferState",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/utils/types",
+      "filePath": "src/main/Editor_JsonToObject.tsx",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "AppToolsScreen",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "ComponentSync",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "EditableItem",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "InferProps",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "InferState",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "LL_V_L",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "TS_Button",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "TS_PropRenderer",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "tsValidateString",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/json-to-object-renderer",
+      "importedSymbol": "ValidatorTypeResolver",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ATS_JsonToObject/ATS_JsonToObject.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/ts-common"
+    ],
+    "unused": [
+      "@nu-art/firebase-shared",
+      "@nu-art/ts-styles",
+      "@nu-art/thunderstorm-shared"
+    ]
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

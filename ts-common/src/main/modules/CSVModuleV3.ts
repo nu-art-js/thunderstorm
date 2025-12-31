@@ -24,19 +24,6 @@ import {Readable, Writable} from 'stream';
 import {Module} from '../core/module.js';
 import * as csv from 'fast-csv';
 
-/**
- * CSV module v3 for reading and writing CSV data using streams.
- * 
- * Provides stream-based CSV processing using the `fast-csv` library.
- * Supports reading from Readable streams and writing to Writable streams,
- * with row-by-row processing for memory efficiency.
- * 
- * **Features**:
- * - Stream-based processing (memory efficient for large files)
- * - Header row support (first row treated as column names)
- * - Row trimming (whitespace removed from values)
- * - Custom formatters and transformers
- */
 export class CSVModuleV3_Class
 	extends Module {
 
@@ -47,32 +34,10 @@ export class CSVModuleV3_Class
 	protected init() {
 	}
 
-	/**
-	 * Reads CSV data from a stream, processing each row.
-	 * 
-	 * Parses CSV with headers and calls the processor function for each row.
-	 * The processor receives the row data, row number (0-indexed), and the parser stream.
-	 * 
-	 * **Note**: The processor can call methods on the stream (e.g., `stream.destroy()`)
-	 * to control parsing.
-	 * 
-	 * @template T - Row data type
-	 * @param stream - Readable stream containing CSV data
-	 * @param processor - Function called for each row
-	 * @returns Promise that resolves when stream ends
-	 */
 	public readFromStream = async <T>(stream: Readable, processor: (item: T, rowNumber: number, stream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>) => void): Promise<void> => {
 		return this.readImpl<T>(stream, processor);
 	};
 
-	/**
-	 * Internal implementation of stream reading.
-	 * 
-	 * @template T - Row data type
-	 * @param stream - Readable stream containing CSV data
-	 * @param processor - Function called for each row
-	 * @returns Promise that resolves when stream ends
-	 */
 	protected readImpl = async <T>(stream: Readable, processor: (item: T, rowNumber: number, stream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>) => void): Promise<void> => {
 		return new Promise<void>((resolve, reject) => {
 			let rowIndex = 0;
@@ -96,15 +61,6 @@ export class CSVModuleV3_Class
 		return this.writeImpl<I>(writable, items, options);
 	};
 
-	/**
-	 * Internal implementation of stream writing.
-	 * 
-	 * @template I - Input item type
-	 * @param writable - Writable stream to write CSV to
-	 * @param items - Array of items to write
-	 * @param options - CSV formatting options
-	 * @returns Promise that resolves when writing completes
-	 */
 	protected writeImpl = <I>(writable: Writable, items: I[], options?: csv.FormatterOptionsArgs<any, any>) => {
 		return new Promise<void>((resolve, reject) => {
 			csv.writeToStream(writable, items as csv.FormatterRow[], options)
@@ -113,42 +69,16 @@ export class CSVModuleV3_Class
 		});
 	};
 
-	/**
-	 * Creates a CSV formatter stream with optional transformation.
-	 * 
-	 * Returns a stream that formats objects as CSV with headers.
-	 * The transformer function can modify each row before formatting.
-	 * 
-	 * @param transformer - Optional function to transform each row (default: identity)
-	 * @returns CSV formatter stream
-	 */
 	public provideFormatter = (transformer: (item: any) => any = item => item) => {
 		return csv.format({headers: true})
 			.transform(transformer);
 	};
 
-	/**
-	 * Creates a CSV parser stream with optional transformation.
-	 * 
-	 * Returns a stream that parses CSV and transforms each row.
-	 * Headers are parsed and values are trimmed.
-	 * 
-	 * @param transformer - Optional function to transform each parsed row (default: identity)
-	 * @returns CSV parser stream with transformation
-	 */
 	public provideFormatterFromCsv = (transformer: (item: any) => any = item => item) => {
 		return csv.parse({headers: true, trim: true})
 			.transform(transformer);
 	};
 
-	/**
-	 * Parses a CSV string into an array of objects.
-	 * 
-	 * **Note**: Contains console.log statements that should be removed in production.
-	 * 
-	 * @param str - CSV string to parse
-	 * @returns Promise resolving to array of parsed row objects
-	 */
 	public fromString = async (str: string) => {
 		return new Promise<any[]>((resolve, reject) => {
 			const data: any[] = [];

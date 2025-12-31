@@ -47,45 +47,19 @@ const DefaultConfig = {
 		useKeysAsHeaders: true,
 	}
 };
-/**
- * Options for reading CSV files.
- * 
- * @template T - Type of the resulting objects
- */
 export type ReadOptions<T extends Partial<StringMap> = {}> = {
-	/** Maps CSV column names to object property names */
 	columnsToProps?: ReadPropsMap<T>,
-	/** Custom function to transform values during parsing */
 	mapValues?: (header: string, value: string, index: number) => any,
-	/** Quote character used in CSV */
 	quote?: string,
-	/** Custom headers (if CSV doesn't have a header row) */
 	headers?: string[]
 }
-
-/**
- * Maps CSV column names to object property names.
- */
 export type ReadPropsMap<T extends TS_Object = TS_Object> = {
 	[s: string]: keyof T;
 };
-
-/**
- * Maps object property names to CSV column names.
- */
 export type WritePropsMap<T extends TS_Object = TS_Object> = {
 	[P in keyof T]: string;
 };
 
-/**
- * Module for reading and writing CSV files.
- * 
- * Provides functionality to:
- * - Read CSV files and convert to objects
- * - Write objects to CSV files
- * - Map between CSV columns and object properties
- * - Transform values during read/write operations
- */
 class CSVModule_Class
 	extends Module<Config> {
 
@@ -97,9 +71,6 @@ class CSVModule_Class
 		this.setDefaultConfig(DefaultConfig);
 	}
 
-	/**
-	 * Initializes the CSV exporter with the configured options.
-	 */
 	protected init() {
 		this.csvExporter = CSVModule_Class.createExporter(this.config.options);
 	}

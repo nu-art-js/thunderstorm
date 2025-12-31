@@ -1,0 +1,34 @@
+{
+  "packageName": "@nu-art/conflict-resolution-shared",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/conflict-resolution/shared",
+  "timestamp": "2025-12-30T21:18:13.725Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/conflict-resolution-shared",
+      "importedSymbol": "DBProto",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/types.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/ts-common"
+    ],
+    "unused": [
+      "@nu-art/ts-styles",
+      "@nu-art/thunderstorm-shared"
+    ]
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

@@ -9,8 +9,8 @@ import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
-import {CONST_PackageJSON} from '../../../main/config/consts.js';
-import {FilesCache} from '../../../main/core/FilesCache.js';
+import {CONST_PackageJSON} from '../../../main/core/consts.js';
+import {FilesCache} from '../../../main/v3/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 

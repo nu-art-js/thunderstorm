@@ -1,0 +1,297 @@
+{
+  "packageName": "@nu-art/ts-messaging-shared",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/ts-messaging/shared",
+  "timestamp": "2025-12-30T21:18:13.734Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "DBDef_V3",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/topic/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "tsValidateString",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/topic/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "tsValidateUniqueId",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/topic/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "DB_Object",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/topic/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "DBProto",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/topic/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "Proto_DB_Object",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/topic/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "VersionsDeclaration",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/topic/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "DBDef_V3",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "deleteKeysObject",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "exists",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "InvalidResult",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "removeDBObjectKeys",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "tsValidate",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "tsValidateString",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "tsValidateUniqueId",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "tsValidateValue",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "ValidatorTypeResolver",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/db-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "AuditableV2",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/types.ts",
+      "line": 6,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "DB_Object",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/types.ts",
+      "line": 6,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "DBProto",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/types.ts",
+      "line": 6,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "Proto_DB_Object",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/types.ts",
+      "line": 6,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "UniqueId",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/types.ts",
+      "line": 6,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-messaging-shared",
+      "importedSymbol": "VersionsDeclaration",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/message/types.ts",
+      "line": 6,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/ts-common"
+    ],
+    "unused": [
+      "@nu-art/thunderstorm-shared"
+    ]
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

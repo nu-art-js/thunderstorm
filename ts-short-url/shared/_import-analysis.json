@@ -1,0 +1,181 @@
+{
+  "packageName": "@nu-art/ts-short-url-shared",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/ts-short-url/shared",
+  "timestamp": "2025-12-30T21:18:13.735Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "ApiDefResolver",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/_entity/short-url/api-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "HttpMethod",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/_entity/short-url/api-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "QueryApi",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/_entity/short-url/api-def.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "DB_BaseObject",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/api-def.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "Minute",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/api-def.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "DBDef_V3",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/db-def.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "tsValidateGeneralUrl",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/db-def.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "tsValidateShortUrl",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/db-def.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "tsValidateString",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/db-def.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "DB_Object",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "DBProto",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "Proto_DB_Object",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-short-url-shared",
+      "importedSymbol": "VersionsDeclaration",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_entity/short-url/types.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "unused": [
+      "@nu-art/permissions-shared",
+      "@nu-art/ts-styles",
+      "@nu-art/firebase-shared"
+    ]
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

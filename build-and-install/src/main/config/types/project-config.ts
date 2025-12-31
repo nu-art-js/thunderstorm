@@ -22,9 +22,6 @@ export type BAI_Config = {
 		packageJson?: TypedMap<string>
 	}
 	files?: {
-		docker?: {
-			dockerfile?: string
-		}
 		tests?: {
 			firebase?: {
 				'firebase.json'?: string

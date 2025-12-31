@@ -1,0 +1,216 @@
+{
+  "packageName": "@nu-art/floating-windows",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/floating-windows",
+  "timestamp": "2025-12-30T21:18:13.726Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_modules/ModuleFE_FloatingWindows.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "removeFromArrayByIndex",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_modules/ModuleFE_FloatingWindows.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "ThunderDispatcher",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_dispatchers/focus-window.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "ThunderDispatcher",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_dispatchers/models-updated.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "ComponentSync",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_ui/TS_FloatingWindows/TS_FloatingWindows.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "_className",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/_ui/TS_FloatingWindow/TS_FloatingWindow.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "ComponentSync",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend",
+      "filePath": "src/main/_ui/TS_FloatingWindow/TS_FloatingWindow.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "BadImplementationException",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_ui/TS_FloatingWindow/TS_FloatingWindow.tsx",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "Debounce",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_ui/TS_FloatingWindow/TS_FloatingWindow.tsx",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "Second",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_ui/TS_FloatingWindow/TS_FloatingWindow.tsx",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "AppToolsScreen",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_ui/ATS_FloatingWindows/ATS_FloatingWindows.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "Button",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_ui/ATS_FloatingWindows/ATS_FloatingWindows.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "ComponentSync",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_ui/ATS_FloatingWindows/ATS_FloatingWindows.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "LL_H_C",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_ui/ATS_FloatingWindows/ATS_FloatingWindows.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "LL_V_L",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_ui/ATS_FloatingWindows/ATS_FloatingWindows.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/floating-windows",
+      "importedSymbol": "thunderstormCapabilitiesGroup",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/consts",
+      "filePath": "src/main/_ui/ATS_FloatingWindows/ATS_FloatingWindows.tsx",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/ts-common"
+    ],
+    "unused": [
+      "@nu-art/ts-styles",
+      "@nu-art/thunderstorm-shared"
+    ]
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

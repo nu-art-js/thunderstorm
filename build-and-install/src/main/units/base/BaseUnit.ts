@@ -14,6 +14,7 @@ import {
 	TimeCounter,
 	timeCounter
 } from '@nu-art/ts-common';
+import {dispatcher_UnitStatusChange} from '../../_archived/old/PhaseRunnerDispatcher.js';
 import {CommandoInteractive} from '@nu-art/commando/shell/index';
 import {BaseCommando} from '@nu-art/commando/shell/core/BaseCommando';
 import {MergeTypes} from '@nu-art/commando/shell/core/class-merger';
@@ -21,24 +22,16 @@ import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {BAI_Config} from '../../config/types/index.js';
 import {UnitsDependencyMapper} from '../../dependencies/UnitsDependencyMapper.js';
-import {BaiParams} from '../../core/params.js';
+import {BaiParams} from '../../params/params.js';
 import {Workspace} from '../../workspace/Workspace.js';
 
 
-/**
- * Base configuration for all units.
- */
 export type BaseUnit_Config = {
 	key: string;
 	label: string;
 	isTopLevelApp?: boolean;
 }
 
-/**
- * Runtime context provided to all units during execution.
- * 
- * Contains version, config, dependency mapper, runtime params, and workspace reference.
- */
 export type UnitRuntimeContext = {
 	version: string
 	baiConfig: Readonly<BAI_Config>,
@@ -49,28 +42,6 @@ export type UnitRuntimeContext = {
 	workspace?: Workspace;  // Optional workspace reference for advanced queries
 };
 
-/**
- * Base class for all units in the build system.
- * 
- * **Unit Lifecycle**:
- * 1. **Discovery**: Units are discovered by UnitsMapper from file system
- * 2. **Initialization**: Constructor sets up config and logging
- * 3. **Context Setup**: `setupRuntimeContext()` provides runtime information
- * 4. **Phase Execution**: Phases call unit methods (e.g., `compile()`, `test()`)
- * 5. **Termination**: `kill()` stops all running processes
- * 
- * **Key Features**:
- * - **Commando Integration**: Allocates Commando instances for shell commands
- * - **Process Management**: Tracks and kills subprocesses on termination
- * - **Logging**: Buffered logging with status tracking
- * - **Time Tracking**: Measures operation duration
- * 
- * **Phase Methods**: Units implement phase methods (e.g., `prepare()`, `compile()`, `test()`)
- * that are called by PhaseManager. Methods are discovered via reflection.
- * 
- * **Status Tracking**: Units track their status ('Pending Initialization', 'Running', etc.)
- * for monitoring and debugging.
- */
 export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_Context extends UnitRuntimeContext = UnitRuntimeContext>
 	extends Logger {
 
@@ -171,6 +142,8 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 
 		this.log(logLevel, false, [`Unit status update: ${this.unitStatus} => ${status}${operationDuration}`]);
 		this.unitStatus = `${status}${operationDuration}`;
+
+		dispatcher_UnitStatusChange.dispatch(this);
 	}
 
 	protected addToClassStack = (cls: Function) => {

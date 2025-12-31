@@ -37,6 +37,7 @@
     "@nu-art/user-account-shared": "?",
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",
+    "@nu-art/google-services-backend": "?",
     "@nu-art/slack-backend": "?",
     "@nu-art/slack-shared": "?",
     "@nu-art/thunderstorm-backend": "?",
@@ -54,7 +55,6 @@
     "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
-    "@nu-art/google-services-backend": "?",
     "@types/react": "?",
     "@types/express": "?",
     "@types/history": "^4.7.2",

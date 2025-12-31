@@ -1,32 +1,24 @@
 {
   "name": "@nu-art/build-and-install",
   "version": "$THUNDERSTORM_VERSION",
-  "description": "A build system for monorepos that orchestrates building, testing, and deploying units with dependency-aware phase execution",
+  "description": "",
   "type": "module",
   "keywords": [
-    "typescript",
-    "build-system",
-    "monorepo",
-    "dependency-management",
-    "phase-execution",
-    "workspace",
-    "units",
-    "automation",
+    "TacB0sS",
+    "infra",
     "nu-art",
-    "thunderstorm",
-    "build-and-install"
+    "commando"
   ],
   "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {
-    "url": "https://github.com/nu-art-js/thunderstorm/issues?q=is%3Aissue+label%3Abuild-and-install"
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
   },
   "publishConfig": {
     "directory": "dist"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
-    "directory": "_thunderstorm/build-and-install"
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

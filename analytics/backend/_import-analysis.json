@@ -1,0 +1,303 @@
+{
+  "packageName": "@nu-art/analytics-backend",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/analytics/backend",
+  "timestamp": "2025-12-30T21:18:13.722Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "Analytics_UpdateLexicon",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/plugins/AnalyticsPlugin_Base.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "Analytics_UpdateUser",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/plugins/AnalyticsPlugin_Base.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "TSAnalyticsEvent",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/plugins/AnalyticsPlugin_Base.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "debounce",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/plugins/AnalyticsPlugin_Base.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "Logger",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/plugins/AnalyticsPlugin_Base.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "LogLevel",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/plugins/AnalyticsPlugin_Base.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "QueueV2",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common/utils/queue-v2",
+      "filePath": "src/main/plugins/AnalyticsPlugin_Base.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "TSAnalyticsEvent",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/plugins/AnalyticsPlugin_Logger.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "Analytics_UpdateLexicon",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/plugins/AnalyticsPlugin_MixedPanels.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "Analytics_UpdateUser",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/plugins/AnalyticsPlugin_MixedPanels.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "TSAnalyticsEvent",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/plugins/AnalyticsPlugin_MixedPanels.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "_keys",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/plugins/AnalyticsPlugin_MixedPanels.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "BadImplementationException",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/plugins/AnalyticsPlugin_MixedPanels.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "exists",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/plugins/AnalyticsPlugin_MixedPanels.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "MissingDataException",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/plugins/AnalyticsPlugin_MixedPanels.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "TypedMap",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/plugins/AnalyticsPlugin_MixedPanels.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_modules/ModuleBE_Analytics.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "addRoutes",
+      "sourcePackage": "@nu-art/thunderstorm-backend",
+      "importPath": "@nu-art/thunderstorm-backend",
+      "filePath": "src/main/_modules/ModuleBE_Analytics.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "createBodyServerApi",
+      "sourcePackage": "@nu-art/thunderstorm-backend",
+      "importPath": "@nu-art/thunderstorm-backend",
+      "filePath": "src/main/_modules/ModuleBE_Analytics.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "Analytics_SendEvent",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/_modules/ModuleBE_Analytics.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "Analytics_UpdateLexicon",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/_modules/ModuleBE_Analytics.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "Analytics_UpdateUser",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/_modules/ModuleBE_Analytics.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-backend",
+      "importedSymbol": "ApiDef_Analytics",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/_modules/ModuleBE_Analytics.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/analytics-shared",
+      "@nu-art/thunderstorm-backend",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/analytics-shared",
+      "@nu-art/thunderstorm-backend",
+      "@nu-art/ts-common"
+    ],
+    "unused": [
+      "@nu-art/firebase-backend",
+      "@nu-art/firebase-shared",
+      "@nu-art/thunderstorm-shared"
+    ]
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

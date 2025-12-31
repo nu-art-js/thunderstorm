@@ -1,0 +1,157 @@
+{
+  "packageName": "@nu-art/slack-frontend",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/slack/frontend",
+  "timestamp": "2025-12-30T21:18:13.730Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/ModuleFE_Slack.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "ApiDefCaller",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/ModuleFE_Slack.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "ApiDef_Slack",
+      "sourcePackage": "@nu-art/slack-shared",
+      "importPath": "@nu-art/slack-shared",
+      "filePath": "src/main/ModuleFE_Slack.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "ApiStruct_Slack",
+      "sourcePackage": "@nu-art/slack-shared",
+      "importPath": "@nu-art/slack-shared",
+      "filePath": "src/main/ModuleFE_Slack.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "apiWithBody",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/ModuleFE_Slack.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "BaseSlackBuilder",
+      "sourcePackage": "@nu-art/slack-shared",
+      "importPath": "@nu-art/slack-shared",
+      "filePath": "src/main/SlackBuilderFE.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "AppToolsScreen",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_ats/ATS_SlackMessageBuilder/ATS_SlackMessageBuilder.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "Button",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_ats/ATS_SlackMessageBuilder/ATS_SlackMessageBuilder.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "ComponentSync",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_ats/ATS_SlackMessageBuilder/ATS_SlackMessageBuilder.tsx",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "generateHex",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_ats/ATS_SlackMessageBuilder/ATS_SlackMessageBuilder.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/slack-frontend",
+      "importedSymbol": "ServerErrorSeverity",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_ats/ATS_SlackMessageBuilder/ATS_SlackMessageBuilder.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/slack-shared",
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/slack-shared",
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

@@ -1,6 +1,5 @@
 import {
 	ImplementationMissingException,
-	tsValidate,
 	tsValidate_OptionalArray,
 	tsValidateAnyString,
 	tsValidateBoolean,
@@ -13,7 +12,7 @@ import {
 import {UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
 import {Unit_FirebaseFunctionsApp} from '../../implementations/firebase/Unit_FirebaseFunctionsApp.js';
 import {resolve} from 'path';
-import {BaiParam_SetEnv} from '../../../core/params.js';
+import {BaiParam_SetEnv} from '../../../params/params.js';
 
 
 type EnvConfig = {
@@ -38,16 +37,6 @@ const valuesValidator = {
 	isLocal: tsValidateBoolean(false),
 };
 
-const containerDeploymentValidator = {
-	artifactRegistry: {
-		region: tsValidateAnyString,
-		repository: tsValidateAnyString,
-		projectId: tsValidateAnyString,
-	},
-	imageName: tsValidateOptionalAnyString,
-	dockerfile: tsValidateOptionalAnyString,
-};
-
 export class UnitMapper_FirebaseFunction_Class
 	extends UnitMapper_Node<Unit_FirebaseFunctionsApp, UnitConfigJSON_FirebaseFunction> {
 
@@ -59,12 +48,6 @@ export class UnitMapper_FirebaseFunction_Class
 		basePort: tsValidateOptionalAnyNumber,
 		sslKey: tsValidateOptionalAnyString,
 		sslCert: tsValidateOptionalAnyString,
-		containerDeployment: (value: any) => {
-			if (value === undefined || value === null)
-				return undefined; // Optional, so undefined is valid
-			tsValidate(value, containerDeploymentValidator);
-			return undefined; // Valid
-		},
 		...UnitMapper_Node.tsValidator_Node,
 	};
 

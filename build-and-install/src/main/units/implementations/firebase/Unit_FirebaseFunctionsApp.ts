@@ -4,7 +4,7 @@ import {FirebasePackageConfig} from '../../../config/types/index.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../templates/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/index.js';
+import {Phase_Deploy, Phase_Launch} from '../../../phases/definitions/index.js';
 import {resolve} from 'path';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
@@ -31,47 +31,14 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	sslCert: string
 	pathToEmulatorData: string
 	sources?: string[];
-	containerDeployment?: {
-		artifactRegistry: {
-			region: string;        // e.g., 'us-central1'
-			repository: string;     // e.g., 'firebase-functions'
-			projectId: string;     // GCP project ID
-		};
-		imageName?: string;       // Defaults to unit.config.key
-		dockerfile?: string;      // Path to Dockerfile, defaults to './Dockerfile'
-	};
 };
 
 // const CONST_VersionApp = 'version-app.json';
 
 
-/**
- * Firebase Functions application unit.
- *
- * **Key Features**:
- * - Extends Unit_TypescriptLib (compiles TypeScript)
- * - Manages Firebase Functions configuration
- * - Supports emulator with SSL and debug ports
- * - Handles function deployment
- *
- * **Phases Implemented**:
- * - `prepare()`: Sets up Firebase Functions config
- * - `compile()`: Compiles TypeScript for functions
- * - `launch()`: Starts Firebase Functions emulator
- * - `deploy()`: Deploys functions to Firebase
- *
- * **Configuration**:
- * - `debugPort`: Port for Node.js debugger
- * - `basePort`: Base port for emulator
- * - `sslKey`/`sslCert`: SSL certificates for emulator
- * - `pathToEmulatorData`: Path for emulator data persistence
- * - `envConfig`: Environment config (projectId, identityAccount)
- *
- * **Emulator**: Runs Firebase Functions emulator with log filtering and error detection.
- */
 export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Config = Unit_FirebaseFunctionsApp_Config>
 	extends Unit_TypescriptLib<C>
-	implements UnitPhaseImplementor<[Phase_Launch, Phase_Deploy, Phase_BuildPushImage, Phase_DeployImage]> {
+	implements UnitPhaseImplementor<[Phase_Launch, Phase_Deploy]> {
 
 	public functions: StringMap = {};
 
@@ -200,184 +167,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		this.logInfo(`Functions: `, this.functions);
 	}
 
-	/**
-	 * Builds Docker container image and pushes it to Artifact Registry.
-	 *
-	 * **Process**:
-	 * 1. Validates image tag is provided via CLI
-	 * 2. Validates containerDeployment config exists
-	 * 3. Constructs Artifact Registry image reference
-	 * 4. Ensures Dockerfile exists (creates default if missing)
-	 * 5. Builds Docker image
-	 * 6. Authenticates Docker with gcloud for Artifact Registry
-	 * 7. Pushes image to Artifact Registry
-	 *
-	 * **Requirements**:
-	 * - `--build-push-image <tag>` CLI flag with tag value
-	 * - `containerDeployment` config in unit config
-	 * - Docker installed and accessible
-	 * - gcloud CLI installed and authenticated
-	 */
-	async buildPushImage() {
-		const imageTag = this.runtimeContext.runtimeParams.buildPushImage;
-		if (!imageTag) {
-			throw new ImplementationMissingException('Image tag is required. Use --build-push-image <tag>');
-		}
-
-		const containerDeployment = this.config.containerDeployment;
-		if (!containerDeployment) {
-			throw new ImplementationMissingException(`Missing containerDeployment config in unit ${this.config.key}`);
-		}
-
-		const artifactRegistry = containerDeployment.artifactRegistry;
-		if (!artifactRegistry) {
-			throw new ImplementationMissingException(`Missing artifactRegistry in containerDeployment config for unit ${this.config.key}`);
-		}
-
-		const imageName = containerDeployment.imageName || this.config.key;
-		const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
-		const imageReference = `${artifactRegistryPath}/${imageName}:${imageTag}`;
-
-		this.logInfo(`Building and pushing container image: ${imageReference}`);
-
-		// Ensure Dockerfile exists
-		const dockerfilePath = containerDeployment.dockerfile || resolve(this.config.fullPath, 'Dockerfile');
-		const dockerfileExists = await FileSystemUtils.file.exists(dockerfilePath);
-
-		if (!dockerfileExists) {
-			// Check if there's a template in baiConfig
-			const templatePath = this.runtimeContext.baiConfig.files?.docker?.dockerfile;
-			if (templatePath) {
-				const resolvedTemplatePath = resolve(this.runtimeContext.parentUnit.config.fullPath, templatePath);
-				if (await FileSystemUtils.file.exists(resolvedTemplatePath)) {
-					await FileSystemUtils.file.copy(resolvedTemplatePath, dockerfilePath);
-					this.logInfo(`Copied Dockerfile template from ${templatePath}`);
-				} else {
-					// Create default Dockerfile
-					await this.createDefaultDockerfile(dockerfilePath);
-					this.logInfo(`Created default Dockerfile at ${dockerfilePath}`);
-				}
-			} else {
-				// Create default Dockerfile
-				await this.createDefaultDockerfile(dockerfilePath);
-				this.logInfo(`Created default Dockerfile at ${dockerfilePath}`);
-			}
-		}
-
-		// Build Docker image
-		const commando = this.allocateCommando()
-			.cd(this.config.fullPath);
-
-		await this.executeAsyncCommando(commando, `docker build -t ${imageReference} -f ${dockerfilePath} .`, (stdout, stderr, exitCode) => {
-			if (exitCode === 0)
-				return;
-
-			throw new CommandoException(`Failed to build Docker image with exit code ${exitCode}`, stdout, stderr, exitCode);
-		});
-
-		// Authenticate Docker with gcloud for Artifact Registry
-		await this.executeAsyncCommando(commando, `gcloud auth configure-docker ${artifactRegistry.region}-docker.pkg.dev --quiet`, (stdout, stderr, exitCode) => {
-			if (exitCode === 0)
-				return;
-
-			throw new CommandoException(`Failed to configure Docker authentication with exit code ${exitCode}`, stdout, stderr, exitCode);
-		});
-
-		// Push image to Artifact Registry
-		await this.executeAsyncCommando(commando, `docker push ${imageReference}`, (stdout, stderr, exitCode) => {
-			if (exitCode === 0)
-				return;
-
-			throw new CommandoException(`Failed to push Docker image with exit code ${exitCode}`, stdout, stderr, exitCode);
-		});
-
-		this.logInfo(`Successfully built and pushed image: ${imageReference}`);
-	}
-
-	/**
-	 * Deploys container image from Artifact Registry to Firebase Functions.
-	 *
-	 * **Process**:
-	 * 1. Validates image tag is provided via CLI
-	 * 2. Validates containerDeployment config exists
-	 * 3. Reconstructs image reference (same logic as buildPushImage)
-	 * 4. Updates firebase.json to use container image format
-	 * 5. Deploys using Firebase CLI
-	 * 6. Parses deployment output for function URLs
-	 *
-	 * **Requirements**:
-	 * - `--deploy-image <tag>` CLI flag with tag value
-	 * - `containerDeployment` config in unit config
-	 * - Image must already exist in Artifact Registry (built via buildPushImage)
-	 * - Firebase CLI installed and authenticated
-	 */
-	async deployImage() {
-		const imageTag = this.runtimeContext.runtimeParams.deployImage;
-		if (!imageTag) {
-			throw new ImplementationMissingException('Image tag is required. Use --deploy-image <tag>');
-		}
-
-		const containerDeployment = this.config.containerDeployment;
-		if (!containerDeployment) {
-			throw new ImplementationMissingException(`Missing containerDeployment config in unit ${this.config.key}`);
-		}
-
-		const artifactRegistry = containerDeployment.artifactRegistry;
-		if (!artifactRegistry) {
-			throw new ImplementationMissingException(`Missing artifactRegistry in containerDeployment config for unit ${this.config.key}`);
-		}
-
-		const imageName = containerDeployment.imageName || this.config.key;
-		const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
-		const imageReference = `${artifactRegistryPath}/${imageName}:${imageTag}`;
-
-		this.logInfo(`Deploying container image: ${imageReference}`);
-
-		// Update firebase.json to use container image
-		// This will be done in resolveFunctionsJSON when deployImage tag is present
-		await this.resolveConfigs();
-
-		// Deploy using Firebase CLI
-		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.config.fullPath)
-			.setLogLevelFilter(deployLogFilter)
-			// example: Function URL (hello(us-central1)): https://hello-kv65k7yylq-uc.a.run.app
-			.onLog(/.*Function URL.*?\((.*?)\(.*(https:\/\/.*?)$/, match => {
-				this.functions[match[1]] = match[2];
-			});
-
-		const debug = this.runtimeContext.runtimeParams.verbose ? ' --debug' : '';
-		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')}${debug} deploy --only functions --force`, (stdout, stderr, exitCode) => {
-			if (exitCode === 0)
-				return;
-
-			throw new CommandoException(`Failed to deploy function with exit code ${exitCode}`, stdout, stderr, exitCode);
-		});
-
-		this.logInfo(`Functions deployed: `, this.functions);
-	}
-
-	/**
-	 * Creates a default Dockerfile for Firebase Functions.
-	 *
-	 * **Default Dockerfile**:
-	 * - Uses Node.js 22 base image
-	 * - Sets working directory
-	 * - Copies dist/ and package.json
-	 * - Installs production dependencies
-	 * - Runs the compiled application
-	 */
-	private async createDefaultDockerfile(dockerfilePath: string) {
-		const dockerfileContent = `FROM node:22
-WORKDIR /workspace
-COPY dist/ ./dist/
-COPY package.json ./
-RUN npm install --production
-CMD ["node", "dist/index.js"]
-`;
-		await FileSystemUtils.file.write(dockerfilePath, dockerfileContent);
-	}
-
 	//######################### ResolveConfig Logic #########################
 
 	private getEnvConfig() {
@@ -454,11 +243,6 @@ CMD ["node", "dist/index.js"]
 		const envConfig = this.getEnvConfig();
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseJSON}`;
 		let fileContent;
-
-		// Check if container deployment is active
-		const deployImageTag = this.runtimeContext.runtimeParams.deployImage;
-		const isContainerDeployment = !!deployImageTag && !!this.config.containerDeployment;
-
 		if (envConfig.isLocal) {
 			const port = this.config.basePort;
 			fileContent = {
@@ -499,22 +283,7 @@ CMD ["node", "dist/index.js"]
 					logging: {port: port + 10}
 				}
 			};
-		} else if (isContainerDeployment) {
-			// Container-based deployment
-			const containerDeployment = this.config.containerDeployment!;
-			const artifactRegistry = containerDeployment.artifactRegistry;
-			const imageName = containerDeployment.imageName || this.config.key;
-			const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
-			const imageReference = `${artifactRegistryPath}/${imageName}:${deployImageTag}`;
-
-			fileContent = {
-				functions: {
-					source: imageReference,
-					ignore: this.config.ignore,
-				}
-			};
 		} else {
-			// Source-based deployment (existing behavior)
 			fileContent = {
 				functions: {
 					source: this.config.output.replace(`${this.config.fullPath}/`, ''),

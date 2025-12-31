@@ -40,26 +40,6 @@ export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 	sources?: string[];
 };
 
-/**
- * Firebase Hosting application unit.
- * 
- * **Key Features**:
- * - Extends Unit_TypescriptLib (compiles TypeScript)
- * - Manages Firebase hosting configuration (firebase.json, .firebaserc)
- * - Supports multiple environments (local, staging, production)
- * - Implements launch and deploy phases
- * 
- * **Phases Implemented**:
- * - `prepare()`: Resolves Firebase hosting config files
- * - `compile()`: Compiles TypeScript (without declarations)
- * - `launch()`: Starts Firebase hosting emulator
- * - `deploy()`: Deploys to Firebase hosting
- * 
- * **Configuration**:
- * - `servingPort`: Port for local hosting server
- * - `hostingConfig`: Firebase hosting configuration (public folder, rewrites)
- * - `envConfig`: Environment-specific config (projectId, isLocal)
- */
 export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = Unit_FirebaseHostingApp_Config>
 	extends Unit_TypescriptLib<C>
 	implements UnitPhaseImplementor<[Phase_Launch, Phase_Deploy]> {

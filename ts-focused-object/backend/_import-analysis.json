@@ -1,0 +1,283 @@
+{
+  "packageName": "@nu-art/ts-focused-object-backend",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/ts-focused-object/backend",
+  "timestamp": "2025-12-30T21:18:13.733Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "_keys",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "cloneObj",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "compare",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "currentTimeMillis",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "flatArray",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "UniqueId",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "addRoutes",
+      "sourcePackage": "@nu-art/thunderstorm-backend",
+      "importPath": "@nu-art/thunderstorm-backend",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "createBodyServerApi",
+      "sourcePackage": "@nu-art/thunderstorm-backend",
+      "importPath": "@nu-art/thunderstorm-backend",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "Header_DeviceId",
+      "sourcePackage": "@nu-art/user-account-backend",
+      "importPath": "@nu-art/user-account-backend",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "Header_TabId",
+      "sourcePackage": "@nu-art/user-account-backend",
+      "importPath": "@nu-art/user-account-backend",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "MemKey_AccountId",
+      "sourcePackage": "@nu-art/user-account-backend",
+      "importPath": "@nu-art/user-account-backend",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "OnPreLogout",
+      "sourcePackage": "@nu-art/user-account-backend",
+      "importPath": "@nu-art/user-account-backend",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "ModuleBE_Firebase",
+      "sourcePackage": "@nu-art/firebase-backend",
+      "importPath": "@nu-art/firebase-backend",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "ApiDef_FocusedObject",
+      "sourcePackage": "@nu-art/ts-focused-object-shared",
+      "importPath": "@nu-art/ts-focused-object-shared",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "FocusData_Map",
+      "sourcePackage": "@nu-art/ts-focused-object-shared",
+      "importPath": "@nu-art/ts-focused-object-shared",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "FocusedEntity",
+      "sourcePackage": "@nu-art/ts-focused-object-shared",
+      "importPath": "@nu-art/ts-focused-object-shared",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "FocusedItem_Update",
+      "sourcePackage": "@nu-art/ts-focused-object-shared",
+      "importPath": "@nu-art/ts-focused-object-shared",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "DefaultTTL_FocusedObject",
+      "sourcePackage": "@nu-art/ts-focused-object-shared",
+      "importPath": "@nu-art/ts-focused-object-shared/consts",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 6,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "getRelationalPath",
+      "sourcePackage": "@nu-art/ts-focused-object-shared",
+      "importPath": "@nu-art/ts-focused-object-shared/consts",
+      "filePath": "src/main/modules/ModuleBE_FocusedObject.ts",
+      "line": 6,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/ts-focused-object-backend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/module-pack.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/firebase-backend",
+      "@nu-art/thunderstorm-backend",
+      "@nu-art/ts-common",
+      "@nu-art/ts-focused-object-shared",
+      "@nu-art/user-account-backend"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/firebase-backend",
+      "@nu-art/thunderstorm-backend",
+      "@nu-art/ts-common",
+      "@nu-art/ts-focused-object-shared",
+      "@nu-art/user-account-backend"
+    ],
+    "unused": [
+      "@nu-art/firebase-shared",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/user-account-shared"
+    ]
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

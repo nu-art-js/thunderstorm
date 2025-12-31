@@ -2,12 +2,8 @@ import {Constructor} from '@nu-art/ts-common';
 
 
 /**
- * Recursively merges the instance types of multiple constructors.
- * 
- * Creates an intersection type of all constructor instance types.
- * Used for the plugin system to combine multiple classes into one.
- * 
- * @template T - Array of constructor types
+ * Type utility to recursively merge the types of constructors in an array.
+ * @template T - An array of constructors.
  */
 export type MergeTypes<T extends Constructor<any>[]> =
 	T extends [a: Constructor<infer A>, ...rest: infer R] ?
@@ -17,21 +13,10 @@ export type MergeTypes<T extends Constructor<any>[]> =
 		: {};
 
 /**
- * Merges multiple classes into a single class constructor.
- * 
- * Creates a new class that combines all properties and methods from
- * the provided plugin classes. Properties are copied from prototype
- * descriptors during construction.
- * 
- * **Use Case**: Plugin system for Commando - allows combining
- * BaseCommando with plugin classes (e.g., Commando_Git, Commando_NVM).
- * 
- * **Limitation**: Only copies own properties from prototypes, not
- * inherited properties or static members.
- * 
- * @template T - Array of constructor types
- * @param plugins - Constructor classes to merge
- * @returns New constructor that merges all plugin classes
+ * Function to merge multiple classes into a single class.
+ * @template T - An array of constructors.
+ * @param {...T} plugins - The constructors to merge.
+ * @returns {Constructor<MergeTypes<T>>} - A new constructor that merges all the provided constructors.
  */
 export function MergeClass<T extends Constructor<any>[]>(...plugins: T): Constructor<MergeTypes<T>> {
 	class SuperClass {
@@ -55,14 +40,10 @@ export function MergeClass<T extends Constructor<any>[]>(...plugins: T): Constru
 }
 
 /**
- * Creates an instance of a merged class from multiple constructors.
- * 
- * Convenience function that merges classes and immediately instantiates
- * the result. Used by BaseCommando._create() to create plugin instances.
- * 
- * @template T - Array of constructor types
- * @param plugins - Constructor classes to merge and instantiate
- * @returns Instance of the merged class
+ * Function to create an instance of a class that merges multiple classes.
+ * @template T - An array of constructors.
+ * @param {...T} plugins - The constructors to merge.
+ * @returns {MergeTypes<T>} - An instance of the merged class.
  */
 export function CreateMergedInstance<T extends Constructor<any>[]>(...plugins: T): MergeTypes<T> {
 	const SuperClass = MergeClass(...plugins);

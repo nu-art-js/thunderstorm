@@ -3,41 +3,14 @@ import {CommandBuilder} from './CommandBuilder.js';
 import {CreateMergedInstance} from './class-merger.js';
 
 
-/**
- * Base class for shell command execution with plugin support.
- * 
- * Provides a fluent API for building shell commands with indentation support.
- * Uses a plugin system that merges multiple classes into a single instance
- * using the class-merger utility.
- * 
- * **Plugin System**: The `_create()` method uses class merging to combine
- * BaseCommando with plugin classes, creating a single instance with methods
- * from all merged classes.
- * 
- * **Command Building**: Commands are built using the CommandBuilder, which
- * supports indentation and newline handling. The builder accumulates commands
- * until `execute()` is called.
- * 
- * **Note**: The `builder` field is marked readonly but is actually set via
- * `@ts-ignore` in `_create()`. This is a type safety issue.
- */
 export class BaseCommando {
-	/** Command builder for accumulating shell commands */
 	protected readonly builder: CommandBuilder;
-	/** Debug mode flag (enables verbose logging) */
 	protected _debug: boolean = false;
 
 	/**
-	 * Creates a new BaseCommando instance merged with provided plugins.
-	 * 
-	 * Uses class merging to combine BaseCommando with plugin classes into
-	 * a single instance. The builder is initialized after merging.
-	 * 
-	 * **Note**: Uses `@ts-ignore` to set the readonly `builder` field.
-	 * 
-	 * @template T - Array of constructor types to merge
-	 * @param plugins - Plugin classes to merge with BaseCommando
-	 * @returns Merged instance with BaseCommando and all plugin methods
+	 * Creates a new instance of BaseCommando merged with the provided plugins.
+	 * @param {Constructor<any>[]} plugins - The plugins to merge with BaseCommando.
+	 * @returns The Super type merged of BaseCommando and all the plugins provided new instance of BaseCommando merged with the plugins.
 	 */
 	static _create<T extends Constructor<any>[]>(...plugins: T) {
 		const _commando = CreateMergedInstance(BaseCommando, ...plugins);
@@ -55,12 +28,9 @@ export class BaseCommando {
 	}
 
 	/**
-	 * Toggles or sets debug mode.
-	 * 
-	 * When debug is enabled, shell execution provides verbose logging.
-	 * 
-	 * @param debug - Optional value to set (if omitted, toggles current state)
-	 * @returns This instance for method chaining
+	 * Toggles or sets the debug mode.
+	 * @param {boolean} [debug] - If provided, sets the debug mode to this value. Otherwise, toggles the current debug mode.
+	 * @returns {boolean} - The current state of debug mode.
 	 */
 	debug(debug?: boolean): this {
 		this._debug = debug ?? !this._debug;

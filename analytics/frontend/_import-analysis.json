@@ -1,0 +1,109 @@
+{
+  "packageName": "@nu-art/analytics-frontend",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/analytics/frontend",
+  "timestamp": "2025-12-30T21:18:13.722Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/analytics-frontend",
+      "importedSymbol": "TSAnalyticsEventMetadata",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/_utils/get-metadata.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-frontend",
+      "importedSymbol": "Thunder",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_utils/get-metadata.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-frontend",
+      "importedSymbol": "ApiDef_Analytics",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/_modules/ModuleFE_Analytics.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-frontend",
+      "importedSymbol": "ApiStruct_Analytics",
+      "sourcePackage": "@nu-art/analytics-shared",
+      "importPath": "@nu-art/analytics-shared",
+      "filePath": "src/main/_modules/ModuleFE_Analytics.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-frontend",
+      "importedSymbol": "apiWithBody",
+      "sourcePackage": "@nu-art/thunderstorm-frontend",
+      "importPath": "@nu-art/thunderstorm-frontend/index",
+      "filePath": "src/main/_modules/ModuleFE_Analytics.ts",
+      "line": 2,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-frontend",
+      "importedSymbol": "ApiDefCaller",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/_modules/ModuleFE_Analytics.ts",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/analytics-frontend",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/_modules/ModuleFE_Analytics.ts",
+      "line": 4,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/analytics-shared",
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/analytics-shared",
+      "@nu-art/thunderstorm-frontend",
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}
