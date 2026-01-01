@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/web-client",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Web Client",
   "keywords": [
     "TacB0sS",
@@ -38,9 +38,17 @@
   },
   "dependencies": {
     "@nu-art/thunder-action-processor-frontend": "?",
-    "@nu-art/ts-common": "?"
+    "@nu-art/ts-common": "?",
+    "react": "?",
+    "history": "?",
+    "react-dom": "?",
+    "axios": "?"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/history": "?",
+    "@types/react-dom": "?"
+  },
   "unitConfig": {
     "type": "typescript-lib"
   },

@@ -1,4 +1,4 @@
-import {AppToolsScreen, ComponentSync, EditableItem, InferProps, InferState, LL_V_L, TS_Button, TS_PropRenderer} from '@nu-art/thunder-routing';
+import {AppToolsScreen, ComponentSync, EditableItem, InferProps, InferState, LL_V_L, TS_Button, TS_PropRenderer} from "@nu-art/thunder-routing";
 import {Editor_JsonToObject} from '../Editor_JsonToObject.js';
 import {tsValidateString, ValidatorTypeResolver} from '@nu-art/ts-common';
 

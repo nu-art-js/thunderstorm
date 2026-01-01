@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/editable-item",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Editable Item - DB Entity Editor",
   "keywords": [
     "TacB0sS",

@@ -1,4 +1,4 @@
-import { Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer } from "@nu-art/thunder-routing/index";
+import { Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer } from "@nu-art/thunder-routing";
 import { ThisShouldNotHappenException } from '@nu-art/ts-common';
 import { ModuleFE_Account, SessionKeyFE_Account } from '../../_entity.js';
 type Props = {

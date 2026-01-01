@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunderstorm-app-config-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunderstorm App Config Frontend",
   "keywords": [
     "TacB0sS",

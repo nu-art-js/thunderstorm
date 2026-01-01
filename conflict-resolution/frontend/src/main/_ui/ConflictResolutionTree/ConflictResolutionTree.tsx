@@ -1,5 +1,5 @@
 import { DBEntityDependencies } from '@nu-art/thunder-db-api-shared';
-import { Adapter, AdapterBuilder, ComponentSync, TS_Tree } from "@nu-art/thunder-routing/index";
+import { Adapter, AdapterBuilder, ComponentSync, TS_Tree } from "@nu-art/thunder-routing";
 import { calculateConflictResolutionTree } from './tree-calculation.js';
 import { ConflictResolutionTreeRenderers } from './tree-rendering.js';
 import { ModuleFE_ConflictResolution } from '../../_modules/ModuleFE_ConflictResolution.js';

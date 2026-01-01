@@ -1,7 +1,7 @@
 import { _keys, arrayToMap, mergeObject, Module, RuntimeModules, TypedMap } from '@nu-art/ts-common';
 import { Readable, Writable } from 'stream';
 import { DataStatus } from '@nu-art/thunderstorm-frontend/core/db-api-gen/consts';
-import { ModuleFE_BaseDB } from "@nu-art/thunder-routing/modules/db-api-gen/ModuleFE_BaseDB";
+import { ModuleFE_BaseDB } from "@nu-art/thunder-routing";
 import { ModuleFE_CSVParser, PapaparseConfig } from '@nu-art/thunderstorm-frontend/modules/ModuleFE_CSVParser';
 import { ModuleSyncType } from '@nu-art/thunderstorm-frontend/modules/db-api-gen/types';
 import { Thunder } from "@nu-art/web-client/core/Thunder";

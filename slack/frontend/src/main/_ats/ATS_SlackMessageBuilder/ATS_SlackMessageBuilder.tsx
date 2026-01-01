@@ -1,4 +1,4 @@
-import { AppToolsScreen, Button, ComponentSync } from "@nu-art/thunder-routing/index";
+import { AppToolsScreen, Button, ComponentSync } from "@nu-art/thunder-routing";
 import { SlackBuilderFE } from '../../SlackBuilderFE.js';
 import { generateHex, ServerErrorSeverity } from '@nu-art/ts-common';
 export class ATS_SlackMessageBuilder extends ComponentSync {

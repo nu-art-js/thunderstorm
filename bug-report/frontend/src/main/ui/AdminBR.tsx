@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentSync, } from "@nu-art/thunder-routing/index";
+import { ComponentSync, } from "@nu-art/thunder-routing";
 import { DB_BugReport } from '@nu-art/bug-report-shared/api';
 import { __stringify } from '@nu-art/ts-common';
 import { OnRequestListener } from '@nu-art/thunder-db-api-shared';

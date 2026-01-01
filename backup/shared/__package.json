@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-backup-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Backup functionality - Shared types and definitions",
   "keywords": [
     "TacB0sS",
@@ -32,6 +32,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},

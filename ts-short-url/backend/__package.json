@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-short-url-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "ts-short-url - Express & Typescript based backend framework Backend",
   "keywords": [
     "TacB0sS",

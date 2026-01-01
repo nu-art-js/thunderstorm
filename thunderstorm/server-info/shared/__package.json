@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-server-info-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder Server Info Shared",
   "keywords": [
     "TacB0sS",

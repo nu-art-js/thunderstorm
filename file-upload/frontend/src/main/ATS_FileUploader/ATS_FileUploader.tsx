@@ -1,6 +1,6 @@
 import { FirebaseAnalyticsModule } from '@nu-art/firebase-frontend/index';
 // import {TS_Icons} from '@nu-art/ts-styles';
-import { AppToolsScreen, ATS_Fullstack, ComponentSync, LL_H_C, LL_H_T, LL_V_L, openContent, TS_DragAndDrop } from "@nu-art/thunder-routing/index";
+import { AppToolsScreen, ATS_Fullstack, ComponentSync, LL_H_C, LL_H_T, LL_V_L, openContent, TS_DragAndDrop } from "@nu-art/thunder-routing";
 import { ModuleFE_AssetUploader } from '../modules/ModuleFE_AssetUploader.js';
 import { ModuleFE_Assets } from '../modules/ModuleFE_Assets.js';
 import { ResolvableContent, resolveContent, sortArray } from '@nu-art/ts-common';

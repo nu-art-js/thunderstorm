@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { AdapterBuilder, Example_NewProps, Props_DropDown, SimpleListAdapter, TS_DropDown, } from "@nu-art/thunder-routing/index";
+import { AdapterBuilder, Example_NewProps, Props_DropDown, SimpleListAdapter, TS_DropDown, } from "@nu-art/thunder-routing";
 import * as React from 'react';
 import { flatPlaguesWithTitles, ItemRenderer_Plague, Plague, plagues, PlagueWithTitle, RendererMap_Plague } from './consts.js';
 import { Filter } from '@nu-art/ts-common';

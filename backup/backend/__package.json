@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-backup-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Backup functionality - Backend modules",
   "keywords": [
     "TacB0sS",

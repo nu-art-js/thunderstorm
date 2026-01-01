@@ -3,7 +3,7 @@ import { TS_PropRenderer } from "@nu-art/thunder-routing";
 import { DBProto } from '@nu-art/ts-common';
 import { ComponentSync } from "@nu-art/thunder-routing";
 type Props_Controller = {};
-import { InferState } from "@nu-art/thunder-routing/utils/types";
+import { InferState } from "@nu-art/thunder-routing";
 import { EditableRef } from './types.js';
 type _State<Item> = EditableRef<Item> & {
     tag?: string;

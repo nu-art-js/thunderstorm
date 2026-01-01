@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/storm-http",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder HTTP Client",
   "keywords": [
     "TacB0sS",

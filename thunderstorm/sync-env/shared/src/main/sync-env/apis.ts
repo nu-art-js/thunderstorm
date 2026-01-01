@@ -1,6 +1,5 @@
 import { Minute, UniqueId } from '@nu-art/ts-common';
-import { ApiDefResolver, BodyApi, HttpMethod, QueryApi } from "@nu-art/thunder-db-api-shared/types";
-import { BackupMetaData } from '@nu-art/thunderstorm-shared/_entity';
+import { ApiDefResolver, BodyApi, HttpMethod, QueryApi } from "@nu-art/thunder-db-api-shared";
 export type Request_FetchFromEnv = {
     backupId: string;
     env: string;

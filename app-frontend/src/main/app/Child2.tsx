@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import { ComponentSync, TS_NavLink } from "@nu-art/thunder-routing/index";
+import { ComponentSync, TS_NavLink } from "@nu-art/thunder-routing";
 import { Parent } from './Parent.js';
 import { Route_Child1 } from './Routes.js';
 export class Child2 extends ComponentSync {

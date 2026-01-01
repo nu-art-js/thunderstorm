@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunderstorm-app-config-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunderstorm App Config Shared",
   "keywords": [
     "TacB0sS",

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-db-api-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder DB API Frontend",
   "keywords": [
     "TacB0sS",

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-openai-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "ts-openai - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",

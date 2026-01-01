@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ComponentSync, ThunderDispatcher } from "@nu-art/thunder-routing/index";
+import { ComponentSync, ThunderDispatcher } from "@nu-art/thunder-routing";
 import * as React from 'react';
 import { ExampleModule } from '@modules/ExampleModule';
 import { Second } from '@nu-art/ts-common';

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-routing",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder Routing Modules",
   "keywords": [
     "TacB0sS",
@@ -37,6 +37,9 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunder-db-api-shared": "?",
+    "@nu-art/web-client": "?",
+    "@nu-art/thunder-utils": "?",
     "@nu-art/ts-common": "?",
     "history": "^4.9.0",
     "react": "?",

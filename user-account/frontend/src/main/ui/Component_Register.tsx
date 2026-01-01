@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { _className, Button, ComponentSync, Grid, LL_H_C, LL_V_C, TS_PropRenderer } from "@nu-art/thunder-routing/index";
+import { _className, Button, ComponentSync, Grid, LL_H_C, LL_V_C, TS_PropRenderer } from "@nu-art/thunder-routing";
 import { _keys, addItemToArray, filterInstances } from '@nu-art/ts-common';
 import { Account_RegisterAccount, AccountEmail, assertPasswordRules, PasswordAssertionConfig, PasswordAssertionType, PasswordAssertionType_LowerCaseLetters, PasswordAssertionType_MaxLength, PasswordAssertionType_MinLength, PasswordAssertionType_Numbers, PasswordAssertionType_SpecialChars, PasswordFailureReport, PasswordWithCheck, Request_RegisterAccount } from '@nu-art/user-account-shared';
 import { ModuleFE_Account, StorageKey_DeviceId } from '../_entity.js';

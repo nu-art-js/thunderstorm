@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {TS_Route} from '@nu-art/thunder-routing';
+import {TS_Route} from "@nu-art/thunder-routing";
 import {Page_Playground} from './playground/Page_Playground.js';
 import {Parent} from './Parent.js';
 import {Child2} from './Child2.js';

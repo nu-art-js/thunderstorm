@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import { ComponentSync } from "@nu-art/thunder-routing/core/ComponentSync";
+import { ComponentSync } from "@nu-art/thunder-routing";
 import Example_LineGraph, { D3ChartData } from './d3components/Example_LineGraph.js';
 import Example_TableGraph, { TableData } from './d3components/Example_TableGraph.js';
 export type Coordinates = {

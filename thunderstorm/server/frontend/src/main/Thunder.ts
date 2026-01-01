@@ -49,6 +49,7 @@ import {
 	indexedDBAsyncCheckLog,
 	navigationTimingLog
 } from './thunder-helpers.js';
+import {StorageKey} from './modules/ModuleFE_LocalStorage.js';
 
 export const Storage_AppVersion = new StorageKey<string>('app-version').withstandDeletion();
 

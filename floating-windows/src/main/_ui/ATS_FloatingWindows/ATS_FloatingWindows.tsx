@@ -1,4 +1,4 @@
-import { AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L } from "@nu-art/thunder-routing/index";
+import { AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L } from "@nu-art/thunder-routing";
 import { thunderstormCapabilitiesGroup } from '@nu-art/thunderstorm-frontend/consts';
 import { Model_FloatingWindow } from '../../types.js';
 import { ModuleFE_FloatingWindows } from '../../_modules/ModuleFE_FloatingWindows.js';

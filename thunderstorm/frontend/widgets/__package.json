@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-widgets",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder Widgets and Components",
   "keywords": [
     "TacB0sS",
@@ -37,7 +37,7 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/thunder-browser-api": "?",
+    "@nu-art/web-client": "?",
     "@nu-art/thunder-db-api-frontend": "?",
     "@nu-art/thunder-routing": "?",
     "@nu-art/ts-common": "?",

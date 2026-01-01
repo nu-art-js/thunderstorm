@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-import {BaseHttpRequest} from './BaseHttpRequest.js';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 import {DBDef_V3} from '@nu-art/ts-common';
 
@@ -51,6 +50,14 @@ export type UrlQueryParams = { [key: string]: string | undefined; };
  * IB - Input Body
  */
 export type TypedApi<M extends string, R, B, P extends QueryParams | undefined, IB = B, IP = P, E extends ResponseError = ResponseError> = {
+	Method: M,
+	Response: R,
+	Body: B;
+	Params: P,
+	InternalParams: IP,
+	InternalBody: IB
+	Error: E
+
 	M: M,
 	R: R,
 	B: B,
@@ -58,7 +65,6 @@ export type TypedApi<M extends string, R, B, P extends QueryParams | undefined, 
 	IP: IP,
 	IB: IB
 	E: E
-	Body: B;
 }
 
 export type BodyApi<R, B, IB = B,
@@ -75,12 +81,12 @@ export type EmptyApi<R, M extends HttpMethod_Empty,
 	P extends QueryParams = never, B = never> = TypedApi<M, R, B, P, B, P, E>
 
 export type ApiDef<API extends TypedApi<any, any, any, any, any>> = {
-	method: API['M'],
+	method: API['Method'],
 	fullUrl?: string
 	baseUrl?: string
 	path: string
 	timeout?: number
-	errors?: API['E']['type']
+	errors?: API['Error']['type']
 }
 
 export type ApiStruct = { [k: string]: (TypedApi<any, any, any, any, any> | ApiStruct) }
@@ -95,13 +101,7 @@ export type ApiDefCaller<API_Struct extends ApiStruct> = API_Struct extends Type
 	: API_Struct extends ApiStruct ? ApiCallerRouter<API_Struct> : never;
 export type ApiCallerRouter<API_Struct extends ApiStruct> = { [P in keyof API_Struct]: ApiDefCaller<API_Struct[P]> };
 
-export type ApiCaller_Query<API extends QueryApi<any, any, any, any, HttpMethod_Query>> = API['IP'] extends undefined
-	? () => BaseHttpRequest<API>
-	: (query: API['IP']) => BaseHttpRequest<API>;
-export type ApiCaller_Body<API extends BodyApi<any, any, any, any, HttpMethod_Body>> = API['IB'] extends undefined
-	? () => BaseHttpRequest<API>
-	: (query: API['IB']) => BaseHttpRequest<API>;
-export type ApiCaller_Any<API extends TypedApi<any, any, any, any, any>> = (body: API['IB'], query: API['IP']) => BaseHttpRequest<API>;
+export type ApiCaller_Any<API extends TypedApi<any, any, any, any, any>> = (body: API['InternalBody'], query: API['InternalParams']) => Promise<API['Response']>;
 
 export type ApiCaller<API> =
 	API extends QueryApi<any, any, any, any, HttpMethod_Query> ? ApiCaller_Query<API> :
@@ -110,3 +110,12 @@ export type ApiCaller<API> =
 
 export type DBModuleType = { dbDef?: DBDef_V3<any> };
 export type ApiModule = { dbModule?: DBModuleType, apiDef?: { [name: string]: { [name: string]: { path: string } } } }
+
+
+export type ApiCaller_Query<API extends QueryApi<any, any, any, any, HttpMethod_Query>> = API['InternalParams'] extends undefined
+	? () => Promise<API['Response']>
+	: (query: API['InternalParams']) => Promise<API['Response']>;
+export type ApiCaller_Body<API extends BodyApi<any, any, any, any, HttpMethod_Body>> = API['InternalBody'] extends undefined
+	? () => Promise<API['Response']>
+	: (query: API['InternalBody']) => Promise<API['Response']>;
+

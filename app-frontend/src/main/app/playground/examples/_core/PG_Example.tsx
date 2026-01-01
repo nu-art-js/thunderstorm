@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import { LL_V_C, TS_ErrorBoundary } from "@nu-art/thunder-routing/index";
+import { LL_V_C, TS_ErrorBoundary } from "@nu-art/thunder-routing";
 export class PG_Example extends React.Component<React.PropsWithChildren<{
     name: string;
 }>> {

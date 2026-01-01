@@ -1,5 +1,5 @@
 import { DBEntityDependencies } from '@nu-art/thunder-db-api-shared';
-import { ComponentSync } from "@nu-art/thunder-routing/index";
+import { ComponentSync } from "@nu-art/thunder-routing";
 import './Overlay_ConflictResolution.scss';
 import { Panel_ConflictResolution } from '../Panel_ConflictResolution/Panel_ConflictResolution.js';
 import { OnShowConflictResolution } from '../../_dispatchers/index.js';

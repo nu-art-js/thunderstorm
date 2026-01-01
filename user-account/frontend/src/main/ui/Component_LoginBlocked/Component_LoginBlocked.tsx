@@ -1,4 +1,4 @@
-import { ComponentSync, LL_H_C } from "@nu-art/thunder-routing/index";
+import { ComponentSync, LL_H_C } from "@nu-art/thunder-routing";
 import { currentTimeMillis, Second } from '@nu-art/ts-common';
 type Props = {
     blockedUntil: number;

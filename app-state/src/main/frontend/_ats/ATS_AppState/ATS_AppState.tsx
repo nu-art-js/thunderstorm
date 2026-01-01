@@ -1,4 +1,4 @@
-import { AppToolsScreen, Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer } from "@nu-art/thunder-routing/index";
+import { AppToolsScreen, Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer } from "@nu-art/thunder-routing";
 import { thunderstormCapabilitiesGroup } from '@nu-art/thunderstorm-frontend/consts';
 import { PageStateManager } from '../../_modules/ModuleFE_AppState.js';
 import { md5 } from '@nu-art/ts-common';

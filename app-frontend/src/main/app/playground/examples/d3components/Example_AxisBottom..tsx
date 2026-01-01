@@ -18,7 +18,7 @@
  */
 import * as React from 'react';
 import { ReactNode } from 'react';
-import { ComponentSync } from "@nu-art/thunder-routing/index";
+import { ComponentSync } from "@nu-art/thunder-routing";
 import { ScaleLinear } from 'd3-scale';
 type Props = {
     xScale: ScaleLinear<number, number, any>;

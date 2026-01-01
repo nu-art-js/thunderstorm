@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/live-docs-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Live docs Frontend",
   "keywords": [
     "TacB0sS",

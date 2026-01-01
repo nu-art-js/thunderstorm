@@ -2,7 +2,7 @@ import * as React from 'react';
 import { LL_V_L, ModuleFE_BaseApi } from '@nu-art/thunderstorm-frontend/index';
 import { DBProto } from '@nu-art/ts-common';
 import './editor-base.scss';
-import { TS_EditableContent } from "@nu-art/thunder-routing/components/TS_EditableContent/TS_EditableContent";
+import { TS_EditableContent } from "@nu-art/thunder-routing";
 import { InferProps, InferState } from '@nu-art/thunder-db-api-frontend';
 import { EditableRef } from '@nu-art/thunderstorm-frontend/editable-item';
 //Editors refactor WIP

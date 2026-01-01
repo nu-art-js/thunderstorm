@@ -1,4 +1,4 @@
-import { _className, AppToolsScreen, Button, ComponentSync, genericNotificationAction, LL_H_C, LL_V_L, ModuleFE_RoutingV2, TS_AppTools, TS_NavLink } from "@nu-art/thunder-routing/index";
+import { _className, AppToolsScreen, Button, ComponentSync, genericNotificationAction, LL_H_C, LL_V_L, ModuleFE_RoutingV2, TS_AppTools, TS_NavLink } from "@nu-art/thunder-routing";
 import './ATS_Permissions.scss';
 import { ModuleFE_PermissionsAssert } from '../../modules/ModuleFE_PermissionsAssert.js';
 import { ModuleFE_Account } from '@nu-art/user-account-frontend/index';

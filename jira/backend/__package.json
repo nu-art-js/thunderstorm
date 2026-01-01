@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/jira-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Jira api Module Backend",
   "keywords": [
     "TacB0sS",

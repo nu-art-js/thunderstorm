@@ -17,7 +17,7 @@
  */
 import * as React from 'react';
 import { ExampleModule, RequestKey_GetApi, RequestKey_PostApi, } from '@modules/ExampleModule';
-import { ComponentSync, ModuleFE_ForceUpgrade } from "@nu-art/thunder-routing/index";
+import { ComponentSync, ModuleFE_ForceUpgrade } from "@nu-art/thunder-routing";
 import { LiveDoc } from '@nu-art/live-docs-frontend/index';
 import { AdminBR } from '@nu-art/bug-report-frontend/index';
 import { OnRequestListener } from '@nu-art/thunder-db-api-shared';

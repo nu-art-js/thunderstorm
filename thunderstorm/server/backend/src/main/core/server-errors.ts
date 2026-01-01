@@ -21,7 +21,7 @@
 
 import {MemKey_HttpRequestBody, MemKey_HttpRequestHeaders, MemKey_HttpRequestQuery, MemKey_HttpRequestUrl} from './consts.js';
 import {__stringify, _keys, ApiException, isErrorOfType, StaticLogger, StringMap} from '@nu-art/ts-common';
-import {HttpErrorHandler} from '../../utils/types.js';
+import {HttpErrorHandler} from './types.js';
 
 
 export type AppPropsResolver = () => Promise<StringMap>;

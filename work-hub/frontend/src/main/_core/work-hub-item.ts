@@ -1,7 +1,7 @@
 import {Logger} from '@nu-art/ts-common';
 import {ModuleFE_WorkHub} from '../_module/index.js';
 import {MouseEvent, ReactNode} from 'react';
-import {ModuleFE_BaseDB} from '@nu-art/thunder-routing';
+import {ModuleFE_BaseDB} from "@nu-art/thunder-routing";
 import {WorkHubTab} from '@nu-art/work-hub-shared';
 import {Component_WorkHubActionMenu} from '../_ui/Component_WorkHubActionMenu/Component_WorkHubActionMenu.js';
 import {WorkHubItem_MenuSection} from '../_ui/Component_WorkHubActionMenu/types.js';

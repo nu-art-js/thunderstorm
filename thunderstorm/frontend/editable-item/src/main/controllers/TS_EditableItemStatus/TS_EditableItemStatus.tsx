@@ -1,6 +1,6 @@
 import { TS_EditableContent } from '../TS_EditableContent/TS_EditableContent.js';
 import { EditableItem_Status, EditableItemStatus_Creating, EditableItemStatus_ErrorSaving, EditableItemStatus_FailedValidation, EditableItemStatus_Saved, EditableItemStatus_SavedWithErrors, EditableItemStatus_Saving, EditableItemStatus_Unknown, EditableItemStatus_UnsavedChanges, EditableItemStatusListener } from '../../core/EditableItem.js';
-import { InferProps, InferState } from "@nu-art/thunder-routing/utils/types";
+import { InferProps, InferState } from "@nu-art/thunder-routing";
 type Props = {
     labels: {
         [K in EditableItem_Status]: string;

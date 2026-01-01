@@ -18,31 +18,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { AxiosHttpModule } from '../modules/http/AxiosHttpModule.js';
-import { _ServerBodyApi, _ServerQueryApi } from '../modules/server/server-api.js';
-import { ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi } from "@nu-art/thunder-db-api-shared";
-import { ServerApi_Middleware } from '../utils/types.js';
-export function createQueryServerApi<API extends QueryApi<any, any, any, any, HttpMethod_Query>>(apiDef: ApiDef<API>, action: (params: API['P']) => Promise<API['R']>, ...middleware: ServerApi_Middleware[]) {
-    return new _ServerQueryApi<API>(apiDef, action).setMiddlewares(...middleware);
+
+import {_ServerBodyApi, _ServerQueryApi} from './server-api.js';
+import {ApiDef, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi} from '@nu-art/thunder-db-api-shared';
+import {ServerApi_Middleware} from './types.js';
+
+export function createQueryServerApi<API extends QueryApi<any, any, any, any, HttpMethod_Query>>(apiDef: ApiDef<API>, action: (params: API['Params']) => Promise<API['Response']>, ...middleware: ServerApi_Middleware[]) {
+	return new _ServerQueryApi<API>(apiDef, action).setMiddlewares(...middleware);
 }
-export function createBodyServerApi<API extends BodyApi<any, any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>, action: (body: API['B']) => Promise<API['R']>, ...middleware: ServerApi_Middleware[]) {
-    return new _ServerBodyApi<API>(apiDef, action).setMiddlewares(...middleware);
+
+export function createBodyServerApi<API extends BodyApi<any, any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>, action: (body: API['Body']) => Promise<API['Response']>, ...middleware: ServerApi_Middleware[]) {
+	return new _ServerBodyApi<API>(apiDef, action).setMiddlewares(...middleware);
 }
-export function apiWithQueryAxios<API extends QueryApi<any, any>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], params: API['P'], request: BaseHttpRequest<API>) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
-    return (params: API['P']): BaseHttpRequest<API> => {
-        return AxiosHttpModule
-            .createRequest<API>(apiDef)
-            .setUrlParams(params)
-            .setOnError(onError)
-            .setOnCompleted(onCompleted);
-    };
-}
-export function apiWithBodyAxios<API extends BodyApi<any, any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
-    return (body: API['B']): BaseHttpRequest<API> => {
-        return AxiosHttpModule
-            .createRequest<API>(apiDef)
-            .setBodyAsJson(body)
-            .setOnError(onError)
-            .setOnCompleted(onCompleted);
-    };
-}
+
+// export function apiWithQueryAxios<API extends QueryApi<any, any>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], params: API['P'], request: BaseHttpRequest<API>) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+// 	return (params: API['Params']): API['Response'] => {
+// 		return AxiosHttpModule
+// 			.createRequest<API>(apiDef)
+// 			.setUrlParams(params)
+// 			.setOnError(onError)
+// 			.setOnCompleted(onCompleted).execute();
+// 	};
+// }
+//
+// export function apiWithBodyAxios<API extends BodyApi<any, any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+// 	return (body: API['Body']): API['Response'] => {
+// 		return AxiosHttpModule
+// 			.createRequest<API>(apiDef)
+// 			.setBodyAsJson(body)
+// 			.setOnError(onError)
+// 			.setOnCompleted(onCompleted).execute();
+// 	};
+// }

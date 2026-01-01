@@ -22,7 +22,7 @@
 import {filterInstances, ImplementationMissingException} from '@nu-art/ts-common';
 import * as React from 'react';
 
-export type Browser = 'chrome';//| "firefox" | "blink" | "edge" | "ie" | "safari" | "opera"
+export type Browser = 'chrome' | 'unknown';//| "firefox" | "blink" | "edge" | "ie" | "safari" | "opera"
 
 export function browserType(): Browser {
 	if (navigator?.vendor.includes('Google')) {

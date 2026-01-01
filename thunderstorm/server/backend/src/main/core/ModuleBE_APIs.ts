@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common/core/module';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
-import {ServerApi} from './server/server-api.js';
+import {ServerApi} from './server-api.js';
 import {TestResetListener} from '@nu-art/ts-common/testing/types';
 
 

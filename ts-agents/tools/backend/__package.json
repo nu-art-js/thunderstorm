@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-agent-tools-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "",
   "keywords": [
     "TacB0sS",

@@ -1,5 +1,5 @@
 import './Component_ShortUrlEditor.scss';
-import { EditableRef, TS_EditableContent, TS_EditableItemStatus } from "@nu-art/thunder-routing/editable-item";
+import { EditableRef, TS_EditableContent, TS_EditableItemStatus } from "@nu-art/thunder-routing";
 import { Button, InferProps, InferState, LL_H_C, ModuleFE_Thunderstorm, TS_Card, TS_PropRenderer } from '@nu-art/thunderstorm-frontend/index';
 import { TS_InputV2 } from '@nu-art/thunderstorm-frontend/components/TS_V2_Input/index';
 import { TS_Icons } from '@nu-art/ts-styles';

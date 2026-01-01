@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunderstorm-archiving-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunderstorm Archiving Shared",
   "keywords": [
     "TacB0sS",

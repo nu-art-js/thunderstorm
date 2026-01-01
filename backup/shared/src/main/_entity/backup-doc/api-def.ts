@@ -1,4 +1,4 @@
-import {ApiDefResolver, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared/types';
+import {ApiDefResolver, HttpMethod, QueryApi} from '@nu-art/thunder-db-api-shared';
 import {FetchBackupDoc} from './types.js';
 
 export type Request_BackupId = {

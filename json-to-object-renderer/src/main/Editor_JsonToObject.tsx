@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
-import { EditableContentType, EditableItem, TS_EditableContent } from '@nu-art/thunder-routing';
+import { EditableContentType, EditableItem, TS_EditableContent } from "@nu-art/thunder-routing";
 import { __stringify, tsValidateResult, ValidatorTypeResolver } from '@nu-art/ts-common';
 import { TS_TextAreaV2 } from '@nu-art/thunderstorm-frontend/components/TS_V2_TextArea/index';
-import { InferProps, InferState } from "@nu-art/thunder-routing/utils/types";
+import { InferProps, InferState } from "@nu-art/thunder-routing";
 import './Editor_JsonToObject.scss';
 type Props<T> = {
     validator: ValidatorTypeResolver<EditableContentType<T>>;

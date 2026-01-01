@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/user-account-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "User Account Frontend",
   "keywords": [
     "TacB0sS",
@@ -34,7 +34,7 @@
     "test": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files 'src/test/**/*.test.ts' src/test/**/*.test.ts"
   },
   "dependencies": {
-    "@nu-art/thunder-browser-api": "?",
+    "@nu-art/web-client": "?",
     "@nu-art/thunder-db-api-frontend": "?",
     "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/thunder-routing": "?",

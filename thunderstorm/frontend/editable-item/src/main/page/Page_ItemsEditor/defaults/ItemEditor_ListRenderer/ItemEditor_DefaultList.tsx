@@ -9,7 +9,7 @@ import { ApiCallerEventType } from "@nu-art/thunder-db-api-frontend/core/db-api-
 import { MenuAction } from '../../Page_ItemsEditor.js';
 import { Model_PopUp, ModuleFE_MouseInteractivity, mouseInteractivity_PopUp } from '@nu-art/thunderstorm-frontend';
 import { Button, VirtualizedList } from '@nu-art/thunderstorm-frontend';
-import { InferProps, InferState } from "@nu-art/thunder-routing/utils/types";
+import { InferProps, InferState } from "@nu-art/thunder-routing";
 export type Props_ListRenderer<Proto extends DBProto<any>> = {
     module: ModuleFE_BaseApi<Proto>;
     selected?: Partial<Proto['uiType']>;

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {ModuleFE_RoutingV2 from '@nu-art/thunder-routing';
+import {ModuleFE_RoutingV2 from "@nu-art/thunder-routing";
 import {Page_Home} from '../pages/Page_Home.js';
 import {Page_ApiGen} from '../pages/Page_ApiGen.js';
 import {Example_Dialogs} from '../playground/examples/modules/Example_Dialogs.js';

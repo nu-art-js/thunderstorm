@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import { Adapter, ComponentSync, LL_V_C, NodeRendererProps, TreeNode, TS_Tree, } from "@nu-art/thunder-routing/index";
+import { Adapter, ComponentSync, LL_V_C, NodeRendererProps, TreeNode, TS_Tree, } from "@nu-art/thunder-routing";
 type State = {
     focused?: string;
     actionMessage: string;

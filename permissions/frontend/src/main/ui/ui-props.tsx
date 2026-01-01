@@ -1,4 +1,4 @@
-import { ComponentSync, LL_V_L, MultiSelect_Selector } from "@nu-art/thunder-routing/index";
+import { ComponentSync, LL_V_L, MultiSelect_Selector } from "@nu-art/thunder-routing";
 import { dbObjectToId, sortArray, UniqueId } from '@nu-art/ts-common';
 import { StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2 } from "@nu-art/editable-item/components/TS_MultiSelect/index";
 import { ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_PermissionGroup } from '../_entity.js';

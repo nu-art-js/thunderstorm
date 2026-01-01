@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-idb",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder IndexedDB Infrastructure",
   "keywords": [
     "TacB0sS",
@@ -37,7 +37,7 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/thunder-browser-api": "?",
+    "@nu-art/web-client": "?",
     "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?"

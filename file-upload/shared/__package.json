@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/file-upload-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "File Uploader - Express & Typescript based backend framework Shared",
   "keywords": [
     "TacB0sS",

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/app-state",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "App State",
   "keywords": [
     "TacB0sS",

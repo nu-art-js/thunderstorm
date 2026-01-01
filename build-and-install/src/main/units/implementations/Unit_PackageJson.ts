@@ -16,23 +16,23 @@ export type Unit_PackageJson_Config = Config_ProjectUnit & { packageJson: TS_Pac
 
 /**
  * Base class for all units that have a package.json file.
- * 
+ *
  * **Key Responsibilities**:
  * - Manages package.json template transformation
  * - Handles dependency derivation (lib and dist dependencies)
  * - Implements prepare and purge phases
- * 
+ *
  * **Dependency Management**:
  * - `deriveLibDependencies()`: Creates workspace dependencies for development
  * - `deriveDistDependencies()`: Creates versioned dependencies for distribution
- * 
+ *
  * **Template System**: Uses FileSystemUtils to transform package.json templates
  * with runtime parameters (THUNDERSTORM_VERSION, __ENV__, etc.).
- * 
+ *
  * **Phases Implemented**:
  * - `prepare()`: Generates package.json from template with resolved dependencies
  * - `purge()`: Deletes package.json and node_modules
- * 
+ *
  * **Base For**: Unit_NodeProject, Unit_TypescriptLib, Unit_FirebaseHosting, etc.
  */
 export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJson_Config>
@@ -53,7 +53,11 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 
 	protected deriveDistDependencies(): StringMap {
 		const params = this.runtimeContext.childUnits.reduce((dependencies, unit) => {
-			dependencies[unit.config.key] = (unit as Unit_PackageJson).config.packageJson.version;
+			try {
+				dependencies[unit.config.key] = (unit as Unit_PackageJson).config.packageJson.version;
+			} catch (e: any) {
+				this.logError('Error getting dependency version for unit', unit.config.key, e);
+			}
 			return dependencies;
 		}, {
 			...this.runtimeContext.baiConfig.templateParams?.packageJson,
@@ -76,12 +80,12 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 
 	/**
 	 * Prepares package.json by generating it from template with resolved dependencies.
-	 * 
+	 *
 	 * **Process**:
 	 * 1. Derives lib dependencies (workspace:* for development)
 	 * 2. Transforms package.json template with params
 	 * 3. Writes transformed package.json to disk
-	 * 
+	 *
 	 * **Template Params**: Includes THUNDERSTORM_VERSION, __ENV__, and child unit versions.
 	 */
 	async prepare() {
@@ -93,7 +97,7 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 
 	/**
 	 * Purges package.json and node_modules folder.
-	 * 
+	 *
 	 * Used by `--purge` flag to clean up before reinstall.
 	 */
 	async purge() {

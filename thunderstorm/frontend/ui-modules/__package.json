@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-ui-modules",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder UI Component Modules",
   "keywords": [
     "TacB0sS",
@@ -37,6 +37,7 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunder-routing": "?",
     "@nu-art/ts-common": "?",
     "react": "?",
     "react-dom": "?"

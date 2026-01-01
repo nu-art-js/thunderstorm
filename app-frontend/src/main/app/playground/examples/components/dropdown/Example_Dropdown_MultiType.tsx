@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { AdapterBuilder, LL_V_C, TreeItem, TS_DropDown } from "@nu-art/thunder-routing/index";
+import { AdapterBuilder, LL_V_C, TreeItem, TS_DropDown } from "@nu-art/thunder-routing";
 import * as React from 'react';
 import { ICONS } from '../../../../../res/icons.js';
 import { flatPlaguesWithTitles, Plague, RendererMap_Plague } from './consts.js';

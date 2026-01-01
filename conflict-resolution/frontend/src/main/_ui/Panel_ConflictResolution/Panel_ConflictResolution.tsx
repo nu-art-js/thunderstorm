@@ -1,5 +1,5 @@
 import { DBEntityDependencies } from '@nu-art/thunder-db-api-shared';
-import { Button, ComponentSync, LL_H_C, LL_V_L, ModuleFE_BaseDB } from "@nu-art/thunder-routing/index";
+import { Button, ComponentSync, LL_H_C, LL_V_L, ModuleFE_BaseDB } from "@nu-art/thunder-routing";
 import { _keys, _values, filterDuplicates, flatArray, RuntimeModules } from '@nu-art/ts-common';
 import { dispatch_ShowConflictResolution } from '../../_dispatchers/index.js';
 import { TS_Icons } from '@nu-art/ts-styles/icons/index';

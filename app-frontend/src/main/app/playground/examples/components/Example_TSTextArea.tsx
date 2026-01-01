@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import { Example_NewProps, TS_TextArea, TS_TextAreaProps, } from "@nu-art/thunder-routing/index";
+import { Example_NewProps, TS_TextArea, TS_TextAreaProps, } from "@nu-art/thunder-routing";
 type TestType = {
     prop1?: string;
     prop2?: string;

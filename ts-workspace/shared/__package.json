@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-workspace-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "TS Workspace Shared",
   "keywords": [
     "TacB0sS",

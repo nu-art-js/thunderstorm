@@ -17,7 +17,7 @@
  */
 import * as React from 'react';
 import { ReactNode } from 'react';
-import { ComponentSync } from "@nu-art/thunder-routing/core/ComponentSync";
+import { ComponentSync } from "@nu-art/thunder-routing";
 import { ScaleLinear, scaleLinear } from 'd3-scale';
 import AxisLeft from './Example_AxisX.js';
 import AxisBottom from './Example_AxisBottom.';

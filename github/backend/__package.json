@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/github-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Github api Module Backend",
   "keywords": [
     "TacB0sS",

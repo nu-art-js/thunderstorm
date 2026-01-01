@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-dependency-viewer-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "ts-dependency-viewer - Express & Typescript based backend framework Shared",
   "keywords": [
     "TacB0sS",

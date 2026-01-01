@@ -1,8 +1,8 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {QueryParams} from '@nu-art/thunderstorm-shared';
 import {IncomingHttpHeaders} from 'http';
-import {ExpressRequest} from '../../utils/types.js';
 import {ApiResponse} from './server-api.js';
+import {QueryParams} from '@nu-art/thunder-db-api-shared';
+import {ExpressRequest} from './types.js';
 
 
 export const MemKey_HttpRequest = new MemKey<ExpressRequest>('http-request', true);

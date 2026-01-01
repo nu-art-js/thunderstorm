@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import { ComponentSync } from "@nu-art/thunder-routing/core/ComponentSync";
+import { ComponentSync } from "@nu-art/thunder-routing";
 import { scaleLinear } from 'd3-scale';
 import AxisLeft from './d3components/Example_AxisX.js';
 import AxisBottom from './d3components/Example_AxisBottom.';
-import { TS_Input } from "@nu-art/thunder-routing/index";
+import { TS_Input } from "@nu-art/thunder-routing";
 export type Coordinates = {
     x: number;
     y: number;

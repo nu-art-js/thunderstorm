@@ -1,9 +1,8 @@
 import {_keys, filterInstances, LogLevel, merge, Module, Promise_all_sequentially, RuntimeModules} from '@nu-art/ts-common';
-import {addRoutes} from '../ModuleBE_APIs.js';
-import {createBodyServerApi} from '../../core/typed-api.js';
-import {ApiDef_CollectionActions, CollectionActions_Check, CollectionActions_Upgrade} from '../../shared.js';
 import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB.js';
 import {dispatch_CollectEntityDependencies} from './dispatcher.js';
+import {addRoutes, createBodyServerApi} from '@nu-art/express-server';
+import {ApiDef_CollectionActions, CollectionActions_Check, CollectionActions_Upgrade} from '@nu-art/thunder-action-processor-shared';
 
 class ModuleBE_CollectionActions_Class
 	extends Module {

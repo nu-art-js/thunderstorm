@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/build-and-install",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "",
   "type": "module",
   "keywords": [

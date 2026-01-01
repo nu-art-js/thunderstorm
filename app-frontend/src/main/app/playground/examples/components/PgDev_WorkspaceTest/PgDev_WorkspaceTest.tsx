@@ -1,4 +1,4 @@
-import { ComponentSync, SimpleListAdapter, TS_DropDown, } from "@nu-art/thunder-routing/index";
+import { ComponentSync, SimpleListAdapter, TS_DropDown, } from "@nu-art/thunder-routing";
 import { PanelConfig, TS_HorizontalWorkspace, TS_VerticalWorkspace, TS_Workspace } from '@nu-art/ts-workspace-frontend/index';
 import * as React from 'react';
 const leftPanel = (props: {}) => <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%', background: '#ffccbb' }}>Left

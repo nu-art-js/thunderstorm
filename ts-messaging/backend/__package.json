@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-messaging-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Backend module for Thunderstorm messaging system that handles topics, discussions and messages management with Firebase integration",
   "keywords": [
     "TacB0sS",

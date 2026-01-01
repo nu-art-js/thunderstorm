@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
-import {ModuleFE_RoutingV2} from './modules/routing/index.js';
+import {ModuleFE_Routing} from './ModuleFE_Routing.js';
 
 export const ModulePackFE_Routing: Module[] = [
-	ModuleFE_RoutingV2,
+	ModuleFE_Routing,
 ];

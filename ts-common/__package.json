@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-common",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "js and ts infra",
   "type": "module",
   "keywords": [

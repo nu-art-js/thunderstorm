@@ -37,18 +37,13 @@ import {
 	Module,
 	UniqueId
 } from '@nu-art/ts-common';
-import {
-	CollectionActionType,
-	DocWrapperV3,
-	FirestoreCollectionV3,
-	MemKey_DeletedDocs,
-	ModuleBE_Firebase,
-	PostWriteProcessingData,
-} from '@nu-art/firebase-backend';
+import {FirestoreCollectionV3, ModuleBE_Firebase,} from '@nu-art/firebase-backend';
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def.js';
 import {Transaction} from 'firebase-admin/firestore';
 import {dispatch_onItemsDeleted, dispatch_onItemsUpdated} from './dispatchers.js';
-import { EntityDependencyCollection } from '../collection-actions/dispatcher.js';
+import {EntityDependencyCollection} from '../collection-actions/dispatcher.js';
+import {DBEntityDependencies} from '@nu-art/thunder-action-processor-shared';
+import {MemKey_DeletedDocs} from '@nu-art/firebase-backend/firestore-v3/consts';
 
 
 export type BaseDBApiConfigV3 = {

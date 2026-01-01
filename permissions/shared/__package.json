@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/permissions-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Permissions Shared",
   "keywords": [
     "TacB0sS",

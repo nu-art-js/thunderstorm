@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import { ComponentSync } from "@nu-art/thunder-routing/index";
+import { ComponentSync } from "@nu-art/thunder-routing";
 export class Parent extends ComponentSync {
     protected deriveStateFromProps(nextProps: any) {
         return {};

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/slack-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Storm - Express & Typescript based backend framework Backend",
   "keywords": [
     "TacB0sS",

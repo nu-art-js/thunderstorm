@@ -1,7 +1,7 @@
 import { DBEntityDependencies } from '@nu-art/thunder-db-api-shared';
 import { ConflictResolutionTree } from './types.js';
 import { DBProto, RuntimeModules, StaticLogger, UniqueId, _keys } from '@nu-art/ts-common';
-import { ModuleFE_BaseDB } from "@nu-art/thunder-routing/index";
+import { ModuleFE_BaseDB } from "@nu-art/thunder-routing";
 const getItem = (dbKey: string, itemId: UniqueId): DBProto<any>['dbType'] | undefined => {
     const module = RuntimeModules().filter(module => (module as ModuleFE_BaseDB<any>).dbDef?.dbKey === dbKey)[0] as ModuleFE_BaseDB<any>;
     if (!module) {

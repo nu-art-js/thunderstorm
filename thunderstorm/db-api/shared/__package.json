@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-db-api-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder DB API Shared",
   "keywords": [
     "TacB0sS",

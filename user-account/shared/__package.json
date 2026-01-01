@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/user-account-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "User Account Shared",
   "keywords": [
     "TacB0sS",

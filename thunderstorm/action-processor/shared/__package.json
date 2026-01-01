@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-action-processor-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder Action Processor Shared",
   "keywords": [
     "TacB0sS",
@@ -37,6 +37,7 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},

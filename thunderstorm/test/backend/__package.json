@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunderstorm-test-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunderstorm Test Backend",
   "keywords": [
     "TacB0sS",

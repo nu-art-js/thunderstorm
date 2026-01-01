@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { PermissionsComponent, Props_PermissionComponent } from './PermissionsComponent.js';
-import { _className } from "@nu-art/thunder-routing/index";
+import { _className } from "@nu-art/thunder-routing";
 import { ResolvableContent, resolveContent } from '@nu-art/ts-common';
 type Props = Props_PermissionComponent & {
     forceLock?: boolean;

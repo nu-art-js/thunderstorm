@@ -1,4 +1,4 @@
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types.js';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunder-db-api-shared';
 import {Minute} from '@nu-art/ts-common';
 
 

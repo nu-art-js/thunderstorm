@@ -1,5 +1,5 @@
 import {UniqueId} from '@nu-art/ts-common';
-import {ApiDefResolver, BodyApi, HttpMethod} from '../types.js';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunder-db-api-shared';
 import {DBEntityDependencies} from './types.js';
 
 export type CollectionActions_Upgrade = {

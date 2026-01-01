@@ -2,7 +2,7 @@ import {BadImplementationException, lastElement, mergeObject, Module, removeFrom
 import {WorkHubTab} from '@nu-art/work-hub-shared';
 import {ModuleFE_WorkHub_TabActions} from './types.js';
 import {dispatch_OnWorkHubTabSelected, dispatch_OnWorkHubTabsUpdated} from '../../dispatchers.js';
-import {StorageKey} from '@nu-art/thunder-routing';
+import {StorageKey} from "@nu-art/thunder-routing";
 import {WorkHubItem} from '../../_core/work-hub-item.js';
 
 class ModuleFE_WorkHub_Class

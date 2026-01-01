@@ -26,7 +26,7 @@ import { Stream } from 'stream';
 import { parse } from 'url';
 import { HttpServer } from './HttpServer.js';
 // noinspection TypeScriptPreferShortImport
-import { ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware } from '../../utils/types.js';
+import { ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware } from './types.js';
 import { MemKey_HttpRequest, MemKey_HttpRequestBody, MemKey_HttpRequestHeaders, MemKey_HttpRequestMethod, MemKey_HttpRequestPath, MemKey_HttpRequestQuery, MemKey_HttpRequestUrl, MemKey_HttpResponse } from './consts.js';
 import { MemKey, MemStorage } from '@nu-art/ts-common/mem-storage/MemStorage';
 import { ApiDef, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi, QueryParams, TypedApi } from "@nu-art/thunder-db-api-shared";

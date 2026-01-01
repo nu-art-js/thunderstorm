@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-action-processor-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder Action Processor Frontend",
   "keywords": [
     "TacB0sS",

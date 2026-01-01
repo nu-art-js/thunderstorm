@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/json-to-object-renderer",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunderstorm",
   "keywords": [
     "TacB0sS",

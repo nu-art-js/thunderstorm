@@ -1,5 +1,5 @@
 import './ATS_ShortUrl.scss';
-import { AppToolsScreen, ATS_Fullstack, Button, ComponentSync, LL_H_C, LL_V_L, TS_AppTools } from "@nu-art/thunder-routing/index";
+import { AppToolsScreen, ATS_Fullstack, Button, ComponentSync, LL_H_C, LL_V_L, TS_AppTools } from "@nu-art/thunder-routing";
 import { DispatcherType_ShortUrl, ModuleFE_ShortUrl } from '../../_entity/short-url/index.js';
 import { Component_ShortUrlEditor } from './components/Component_ShortUrlEditor.js';
 import { sortArray, voidFunction } from '@nu-art/ts-common';

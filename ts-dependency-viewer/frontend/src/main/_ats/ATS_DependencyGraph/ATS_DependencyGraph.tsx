@@ -1,4 +1,4 @@
-import { AppToolsScreen, ATS_Frontend, ComponentSync } from "@nu-art/thunder-routing/index";
+import { AppToolsScreen, ATS_Frontend, ComponentSync } from "@nu-art/thunder-routing";
 import { Component_DependencyViewer } from '../../dependency-viewer/Component_DependencyViewer.js';
 type State = {};
 export class ATS_DependencyViewer extends ComponentSync<{}, State> {

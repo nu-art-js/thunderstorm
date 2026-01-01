@@ -1,11 +1,10 @@
 import { _values, ApiException, BadImplementationException, exists, isErrorOfType, Logger, LogLevel, Module, resolveContent, TypedMap } from '@nu-art/ts-common';
 // import {ApiDefServer} from '../../utils/api-caller-types.js';
 import { ApiDef_ActionProcessing, Request_ActionToProcess } from "@nu-art/thunder-action-processor-shared/action-processor/index";
-import { createBodyServerApi, createQueryServerApi } from '../../core/typed-api.js';
-import { addRoutes } from '../ModuleBE_APIs.js';
 import { ActionDeclaration } from './types.js';
 import { RAD_SetupProject } from './Action_SetupProject.js';
 import { HttpCodes } from '@nu-art/ts-common/core/exceptions/http-codes';
+import {addRoutes} from '@nu-art/express-server/src/main/core/ModuleBE_APIs.js';
 type Action = {
     action: (data: any) => Promise<any>;
     declaration: ActionDeclaration;

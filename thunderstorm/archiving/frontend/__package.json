@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunderstorm-archiving-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunderstorm Archiving Frontend",
   "keywords": [
     "TacB0sS",

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ModuleFE_Account } from '@nu-art/user-account-frontend/index';
 import { ModuleFE_PermissionUser } from '../../_entity.js';
 import { Page_ItemsEditor } from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
-import { InferProps, TS_PropRenderer, TS_Route } from "@nu-art/thunder-routing/index";
+import { InferProps, TS_PropRenderer, TS_Route } from "@nu-art/thunder-routing";
 import { MultiSelect } from '../ui-props.js';
 import { Component_BasePermissionItemEditor } from './editor-base.js';
 import { EditableRef, Props_EditableItemControllerProto, TS_EditableItemControllerProto } from '@nu-art/thunderstorm-frontend/editable-item';

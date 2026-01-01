@@ -162,7 +162,7 @@ export class BuildAndInstall
 		// Derive active and project units based on runtime params
 		const units = this.workspace.deriveActiveAndProjectUnits(this.runtimeParams);
 
-		const childProjectUnits = this.workspace.getUnitsByKeys<ProjectUnit>(units.projectUnits);
+		const childProjectUnits = this.workspace.getUnitsByKeys<ProjectUnit>(units.projectUnits, ProjectUnit);
 		nodeProjectUnit.assignUnit(childProjectUnits);
 
 		this.logDebug(`Parent unit: ${nodeProjectUnit.config.key}`);

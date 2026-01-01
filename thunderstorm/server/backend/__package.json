@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/express-server",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Express Server",
   "keywords": [
     "TacB0sS",
@@ -37,14 +37,17 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "compression": "?",
+    "cors": "?",
+    "@nu-art/api-core": "?",
     "@nu-art/firebase-backend": "?",
-    "@nu-art/thunder-action-processor-backend": "?",
-    "@nu-art/thunder-backup-backend": "?",
     "@nu-art/thunder-db-api-shared": "?",
-    "@nu-art/thunder-server-info-backend": "?",
     "@nu-art/ts-common": "?"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/compression": "^1.7.0"
+  },
   "unitConfig": {
     "type": "typescript-lib"
   },

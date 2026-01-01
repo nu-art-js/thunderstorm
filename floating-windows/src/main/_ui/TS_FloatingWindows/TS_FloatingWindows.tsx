@@ -1,4 +1,4 @@
-import { ComponentSync } from "@nu-art/thunder-routing/index";
+import { ComponentSync } from "@nu-art/thunder-routing";
 import { ModuleFE_FloatingWindows } from '../../_modules/ModuleFE_FloatingWindows.js';
 import { FloatingWindows_WindowsUpdated } from '../../_dispatchers/models-updated.js';
 import './TS_FloatingWindows.scss';

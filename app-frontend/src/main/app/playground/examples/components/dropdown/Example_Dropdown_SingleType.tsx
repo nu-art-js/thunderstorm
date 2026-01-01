@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ICONS } from '../../../../../res/icons.js';
-import { Adapter, BaseNodeRenderer, ComponentSync, LL_V_C, SimpleListAdapter, TS_Checkbox, TS_DropDown } from "@nu-art/thunder-routing/index";
+import { Adapter, BaseNodeRenderer, ComponentSync, LL_V_C, SimpleListAdapter, TS_Checkbox, TS_DropDown } from "@nu-art/thunder-routing";
 import { Plague, plagues } from './consts.js';
 import { Filter } from '@nu-art/ts-common';
 type State = {

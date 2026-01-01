@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import { ModuleFE_RoutingV2, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay } from "@nu-art/thunder-routing/index";
+import { ModuleFE_RoutingV2, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay } from "@nu-art/thunder-routing";
 import { VersionOnScreen } from '@components/VersionOnScreen';
 import { Route_Root } from './Routes.js';
 import { OnLoginStatusUpdated } from '@nu-art/user-account-frontend/index';

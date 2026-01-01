@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-utils",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder Frontend Utilities",
   "keywords": [
     "TacB0sS",

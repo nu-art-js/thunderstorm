@@ -17,7 +17,7 @@
  */
 import * as React from 'react';
 import { ReactNode } from 'react';
-import { ComponentSync } from "@nu-art/thunder-routing/core/ComponentSync";
+import { ComponentSync } from "@nu-art/thunder-routing";
 import { scaleLinear } from 'd3-scale';
 import { AxesLabels, Coordinates, D3ChartData } from './Example_LineGraph.js';
 import AxisLeft from './Example_AxisX.js';

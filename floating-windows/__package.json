@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/floating-windows",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Floating Windows",
   "keywords": [
     "TacB0sS",

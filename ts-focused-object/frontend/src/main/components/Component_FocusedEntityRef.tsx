@@ -1,4 +1,4 @@
-import { ComponentSync, LL_H_C, Show } from "@nu-art/thunder-routing/index";
+import { ComponentSync, LL_H_C, Show } from "@nu-art/thunder-routing";
 import { FocusData_Map, FocusedEntity } from '@nu-art/ts-focused-object-shared';
 import { compare, filterDuplicates, UniqueId } from '@nu-art/ts-common';
 import { ModuleFE_FocusedObject, OnFocusedDataReceived } from '../modules/ModuleFE_FocusedObject.js';

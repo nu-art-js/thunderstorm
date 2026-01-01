@@ -17,7 +17,7 @@
 //  */
 //
 // import * as React from "react";
-// import {ComponentSync} from '@nu-art/thunder-routing';
+// import {ComponentSync} from "@nu-art/thunder-routing";
 // import {_keys} from "@nu-art/ts-common";
 // import {
 // 	KeyboardListener,

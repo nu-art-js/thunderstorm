@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/thunder-db-api-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Thunder DB API Backend",
   "keywords": [
     "TacB0sS",
@@ -37,6 +37,8 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/thunder-action-processor-shared": "?",
+    "@nu-art/express-server": "?",
     "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/firebase-backend": "?",
