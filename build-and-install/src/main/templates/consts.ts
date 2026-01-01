@@ -5,8 +5,9 @@ import {dirname} from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const CONST_FirebaseConfig = `${__dirname}/.firebase_config`;
-const CONST_BackendProxy = `${__dirname}/backend-proxy`;
+const CONST_FirebaseConfig = `${__dirname}/firebase/config`;
+const CONST_FirebaseFunctions = `${__dirname}/firebase/functions`;
+const CONST_BackendProxy = `${__dirname}/backend/proxy`;
 
 export const Const_FirebaseConfigKeys = [
 	'databaseRules',
@@ -39,6 +40,15 @@ export const Default_Files: ProjectConfig_DefaultFileRoutes = {
 	backend: {
 		proxy: `${CONST_BackendProxy}/proxy._ts`
 	}
+};
+
+/**
+ * Template file paths for Firebase Functions container builds.
+ * These are used when no custom templates are specified in baiConfig.
+ */
+export const FunctionBuildTemplateFiles = {
+	dockerfile: `${CONST_FirebaseFunctions}/dockerfile`,
+	cloudbuildYaml: `${CONST_FirebaseFunctions}/cloudbuild.yaml`,
 };
 
 const Default_OutputPath = './.trash';

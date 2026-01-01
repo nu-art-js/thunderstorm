@@ -1,4 +1,5 @@
 import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
+import {BadImplementationException, tsValidate, tsValidateRegexp} from '@nu-art/ts-common';
 
 
 export const BaiParam_AllUnits: BaseCliParam<'allUnits', boolean> = {
@@ -210,12 +211,24 @@ export const BaiParam_Deploy: BaseCliParam<'deploy', boolean> = {
 	]
 };
 
+// Docker image tag validation: alphanumeric with dots, underscores, hyphens
+// Cannot start with period or hyphen, max 128 characters
+// Pattern: starts with alphanumeric, followed by 0-127 more alphanumeric/separator chars
+const imageTagRegex = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$/;
+
 export const BaiParam_BuildPushImage: BaseCliParam<'buildPushImage', string> = {
 	keys: ['--build-push-image', '-bpi'],
 	keyName: 'buildPushImage',
 	type: 'string',
 	group: 'Deployment',
 	description: 'Build Docker container image and push to Artifact Registry. Usage: --build-push-image <tag>',
+	process: (value) => {
+		if (!value)
+			throw new BadImplementationException('Image tag is required. Use --build-push-image=<tag>');
+
+		tsValidate(value, tsValidateRegexp(imageTagRegex, true));
+		return value;
+	},
 };
 
 export const BaiParam_DeployImage: BaseCliParam<'deployImage', string> = {
@@ -224,6 +237,12 @@ export const BaiParam_DeployImage: BaseCliParam<'deployImage', string> = {
 	type: 'string',
 	group: 'Deployment',
 	description: 'Deploy container image from Artifact Registry to Firebase Functions. Usage: --deploy-image <tag>',
+	process: (value) => {
+		if (!value)
+			throw new BadImplementationException('Image tag is required. Use --deploy-image=<tag>');
+		tsValidate(value, tsValidateRegexp(imageTagRegex, true));
+		return value;
+	},
 	dependencies: [
 		{param: BaiParam_BuildPushImage, value: (currentValue: string) => currentValue}, // Auto-enable build+push with same tag when deploy is requested
 	]

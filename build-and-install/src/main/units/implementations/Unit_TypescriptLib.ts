@@ -58,7 +58,7 @@ const assets = [
 	'*.gif',
 	'*.csv',
 	'*.yaml',
-	'Dockerfile',
+	'dockerfile',
 ];
 
 
