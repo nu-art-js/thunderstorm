@@ -1,12 +1,13 @@
 import {
 	ImplementationMissingException,
-	tsValidate,
 	tsValidate_OptionalArray,
 	tsValidateAnyString,
 	tsValidateBoolean,
 	tsValidateDynamicObject,
 	tsValidateOptionalAnyNumber,
 	tsValidateOptionalAnyString,
+	tsValidateOptionalObject,
+	tsValidateRegexp,
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
@@ -38,13 +39,18 @@ const valuesValidator = {
 	isLocal: tsValidateBoolean(false),
 };
 
+// Docker image name validation: lowercase, alphanumeric with dots, underscores, hyphens
+// Cannot start/end with separators, no consecutive separators
+// Pattern: starts with alphanumeric, optionally followed by (separator + alphanumeric) groups
+const imageNameRegex = /^[a-z0-9]+([._-][a-z0-9]+)*$/;
+
 const containerDeploymentValidator = {
 	artifactRegistry: {
 		region: tsValidateAnyString,
 		repository: tsValidateAnyString,
 		projectId: tsValidateAnyString,
 	},
-	imageName: tsValidateOptionalAnyString,
+	imageName: tsValidateRegexp(imageNameRegex, true), // Required: Docker image name matching Artifact Registry rules
 	dockerfile: tsValidateOptionalAnyString,
 };
 
@@ -59,12 +65,7 @@ export class UnitMapper_FirebaseFunction_Class
 		basePort: tsValidateOptionalAnyNumber,
 		sslKey: tsValidateOptionalAnyString,
 		sslCert: tsValidateOptionalAnyString,
-		containerDeployment: (value: any) => {
-			if (value === undefined || value === null)
-				return undefined; // Optional, so undefined is valid
-			tsValidate(value, containerDeploymentValidator);
-			return undefined; // Valid
-		},
+		containerDeployment: tsValidateOptionalObject(containerDeploymentValidator),
 		...UnitMapper_Node.tsValidator_Node,
 	};
 

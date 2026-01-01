@@ -2,7 +2,7 @@ import {UnitPhaseImplementor} from '../../../core/types.js';
 import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, CONST_VersionApp} from '../../../config/consts.js';
 import {FirebasePackageConfig} from '../../../config/types/index.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
-import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile} from '../../../templates/consts.js';
+import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/index.js';
 import {resolve} from 'path';
@@ -37,7 +37,7 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 			repository: string;     // e.g., 'firebase-functions'
 			projectId: string;     // GCP project ID
 		};
-		imageName?: string;       // Defaults to unit.config.key
+		imageName: string;         // Required: Docker image name (must be lowercase, alphanumeric with dots, underscores, or hyphens)
 		dockerfile?: string;      // Path to Dockerfile, defaults to './Dockerfile'
 	};
 };
@@ -218,97 +218,56 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	 * - No local Docker daemon required - Cloud Build handles everything
 	 */
 	async buildPushImage() {
-		const imageTag = this.runtimeContext.runtimeParams.buildPushImage;
-		if (!imageTag) {
-			throw new ImplementationMissingException('Image tag is required. Use --build-push-image <tag>');
-		}
-
 		const containerDeployment = this.config.containerDeployment;
-		if (!containerDeployment) {
+		if (!containerDeployment)
 			throw new ImplementationMissingException(`Missing containerDeployment config in unit ${this.config.key}`);
-		}
+
+		const imageTag = this.runtimeContext.runtimeParams.buildPushImage;
+		// Tag is validated by CLI param processor
 
 		const artifactRegistry = containerDeployment.artifactRegistry;
-		if (!artifactRegistry) {
-			throw new ImplementationMissingException(`Missing artifactRegistry in containerDeployment config for unit ${this.config.key}`);
-		}
+		const imageName = containerDeployment.imageName;
 
-		const imageName = containerDeployment.imageName || this.config.key;
 		const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
 		const imageReference = `${artifactRegistryPath}/${imageName}:${imageTag}`;
 
 		this.logInfo(`Building and pushing container image using Cloud Build: ${imageReference}`);
 
-		// Ensure Dockerfile exists in the build context root
-		// Cloud Build uploads the directory, so Dockerfile must be in the root of what we're uploading
-		const dockerfilePath = resolve(this.config.fullPath, containerDeployment.dockerfile || 'Dockerfile');
-		const dockerfileExists = await FileSystemUtils.file.exists(dockerfilePath);
+		// Generate Dockerfile in the output folder (never pollute workspace)
+		// Cloud Build uploads the directory, so we'll reference it from output folder
+		const buildOutputFolder = resolve(this.config.fullPath, '.trash/build-image');
+		await FileSystemUtils.folder.delete(buildOutputFolder);
+		await FileSystemUtils.folder.create(buildOutputFolder);
+		const dockerfilePath = resolve(buildOutputFolder, containerDeployment.dockerfile || 'dockerfile');
 
-		if (!dockerfileExists) {
-			// Check if there's a template in baiConfig
-			const templatePath = this.runtimeContext.baiConfig.files?.docker?.dockerfile;
-			if (templatePath) {
-				const resolvedTemplatePath = resolve(this.runtimeContext.parentUnit.config.fullPath, templatePath);
-				if (await FileSystemUtils.file.exists(resolvedTemplatePath)) {
-					await FileSystemUtils.file.copy(resolvedTemplatePath, dockerfilePath);
-					this.logInfo(`Copied Dockerfile template from ${templatePath} to ${dockerfilePath}`);
-				} else {
-					// Create default Dockerfile
-					await this.createDefaultDockerfile(dockerfilePath);
-					this.logInfo(`Created default Dockerfile at ${dockerfilePath}`);
-				}
-			} else {
-				// Create default Dockerfile
-				await this.createDefaultDockerfile(dockerfilePath);
-				this.logInfo(`Created default Dockerfile at ${dockerfilePath}`);
-			}
-		}
+		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.dockerfile, dockerfilePath, {});
+		this.logInfo(`Created Dockerfile from template at ${dockerfilePath}`);
 
-		// Build and push image using Google Cloud Build
-		// Cloud Build will build the image and push it to Artifact Registry automatically
-		// No local Docker daemon, authentication, or manual push required
 		const commando = this.allocateCommando()
 			.cd(this.config.fullPath);
 
-		// Calculate relative Dockerfile path from build context (current directory)
-		// Cloud Build expects relative path from the build context root
-		// Ensure the path is relative to the build context (this.config.fullPath)
-		const dockerfileRelativePath = dockerfilePath.startsWith(this.config.fullPath + '/')
-			? dockerfilePath.substring(this.config.fullPath.length + 1)
-			: dockerfilePath.startsWith(this.config.fullPath)
-				? dockerfilePath.substring(this.config.fullPath.length)
-				: dockerfilePath;
+		let dockerfileRelativePath;
+		if (containerDeployment.dockerfile)
+			dockerfileRelativePath = resolve(containerDeployment.dockerfile);
+		else
+			dockerfileRelativePath = resolve(buildOutputFolder, 'dockerfile');
 
-		// Create temporary cloudbuild.yaml to specify platform (linux/amd64 for Firebase Functions v2)
-		// Cloud Build doesn't support --platform flag directly, so we use a config file
-		const cloudbuildYamlPath = resolve(this.config.fullPath, '.cloudbuild.yaml');
-		const cloudbuildYamlContent = `steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args:
-    - 'build'
-    - '--platform=linux/amd64'
-    - '-t'
-    - '${imageReference}'
-    - '-f'
-    - '${dockerfileRelativePath}'
-    - '.'
-images:
-- '${imageReference}'
-`;
-		await FileSystemUtils.file.write(cloudbuildYamlPath, cloudbuildYamlContent);
 
-		try {
-			// Use projectId from artifactRegistry config for Cloud Build
-			await this.executeAsyncCommando(commando, `gcloud builds submit --config .cloudbuild.yaml --project ${artifactRegistry.projectId} .`, (stdout, stderr, exitCode) => {
-				if (exitCode === 0)
-					return;
+		const cloudbuildYamlPath = resolve(buildOutputFolder, '.cloudbuild.yaml');
 
-				throw new CommandoException(`Failed to build and push Docker image with Cloud Build (exit code ${exitCode})`, stdout, stderr, exitCode);
-			});
-		} finally {
-			// Clean up temporary cloudbuild.yaml file
-			await FileSystemUtils.file.delete(cloudbuildYamlPath);
-		}
+		// Load template and apply parameters
+		const cloudbuildTemplateParams: StringMap = {
+			IMAGE_REFERENCE: imageReference,
+			DOCKERFILE_PATH: dockerfileRelativePath,
+		};
+		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.cloudbuildYaml, cloudbuildYamlPath, cloudbuildTemplateParams);
+
+		await this.executeAsyncCommando(commando, `gcloud builds submit --config ${cloudbuildYamlPath} --project ${artifactRegistry.projectId} .`, (stdout, stderr, exitCode) => {
+			if (exitCode === 0)
+				return;
+
+			throw new CommandoException(`Failed to build and push Docker image with Cloud Build (exit code ${exitCode})`, stdout, stderr, exitCode);
+		});
 
 		this.logInfo(`Successfully built and pushed image: ${imageReference}`);
 	}
@@ -332,9 +291,7 @@ images:
 	 */
 	async deployImage() {
 		const imageTag = this.runtimeContext.runtimeParams.deployImage;
-		if (!imageTag) {
-			throw new ImplementationMissingException('Image tag is required. Use --deploy-image <tag>');
-		}
+		// Tag is validated by CLI param processor
 
 		const containerDeployment = this.config.containerDeployment;
 		if (!containerDeployment) {
@@ -342,11 +299,8 @@ images:
 		}
 
 		const artifactRegistry = containerDeployment.artifactRegistry;
-		if (!artifactRegistry) {
-			throw new ImplementationMissingException(`Missing artifactRegistry in containerDeployment config for unit ${this.config.key}`);
-		}
+		const imageName = containerDeployment.imageName;
 
-		const imageName = containerDeployment.imageName || this.config.key;
 		const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
 		const imageReference = `${artifactRegistryPath}/${imageName}:${imageTag}`;
 
@@ -376,26 +330,6 @@ images:
 		this.logInfo(`Functions deployed: `, this.functions);
 	}
 
-	/**
-	 * Creates a default Dockerfile for Firebase Functions.
-	 *
-	 * **Default Dockerfile**:
-	 * - Uses Node.js 22 base image
-	 * - Sets working directory
-	 * - Copies dist/ and package.json
-	 * - Installs production dependencies
-	 * - Runs the compiled application
-	 */
-	private async createDefaultDockerfile(dockerfilePath: string) {
-		const dockerfileContent = `FROM node:22
-WORKDIR /workspace
-COPY dist/ ./dist/
-COPY package.json ./
-RUN npm install --production
-CMD ["node", "dist/index.js"]
-`;
-		await FileSystemUtils.file.write(dockerfilePath, dockerfileContent);
-	}
 
 	//######################### ResolveConfig Logic #########################
 
@@ -522,7 +456,8 @@ CMD ["node", "dist/index.js"]
 			// Container-based deployment
 			const containerDeployment = this.config.containerDeployment!;
 			const artifactRegistry = containerDeployment.artifactRegistry;
-			const imageName = containerDeployment.imageName || this.config.key;
+			const imageName = containerDeployment.imageName;
+
 			const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
 			const imageReference = `${artifactRegistryPath}/${imageName}:${deployImageTag}`;
 
