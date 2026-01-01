@@ -246,11 +246,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const commando = this.allocateCommando()
 			.cd(this.config.fullPath);
 
-		let dockerfileRelativePath;
-		if (containerDeployment.dockerfile)
-			dockerfileRelativePath = resolve(containerDeployment.dockerfile);
-		else
-			dockerfileRelativePath = resolve(buildOutputFolder, 'dockerfile');
+		// Calculate relative Dockerfile path from build context (current directory)
+		// Cloud Build expects relative path from the build context root (this.config.fullPath)
+		const dockerfileName = containerDeployment.dockerfile || 'dockerfile';
+		const dockerfileRelativePath = `.trash/build-image/${dockerfileName}`;
 
 
 		const cloudbuildYamlPath = resolve(buildOutputFolder, '.cloudbuild.yaml');
@@ -262,7 +261,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		};
 		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.cloudbuildYaml, cloudbuildYamlPath, cloudbuildTemplateParams);
 
-		await this.executeAsyncCommando(commando, `gcloud builds submit --config ${cloudbuildYamlPath} --project ${artifactRegistry.projectId} .`, (stdout, stderr, exitCode) => {
+		// Cloud Build config path must also be relative to build context
+		const cloudbuildYamlRelativePath = `.trash/build-image/.cloudbuild.yaml`;
+		await this.executeAsyncCommando(commando, `gcloud builds submit --config ${cloudbuildYamlRelativePath} --project ${artifactRegistry.projectId} .`, (stdout, stderr, exitCode) => {
 			if (exitCode === 0)
 				return;
 

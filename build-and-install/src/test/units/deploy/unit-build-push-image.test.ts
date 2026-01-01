@@ -1,5 +1,5 @@
 // file: ./tests/units/deploy/unit-build-push-image.test.ts
-import {DebugFlag, generateHex, LogLevel, sleep} from '@nu-art/ts-common';
+import {DebugFlag, generateHex, LogLevel, sleep, tsValidateAnyString, tsValidateResult} from '@nu-art/ts-common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {phase_BuildPushImage, phase_Compile, phase_Install, phase_Prepare, Unit_FirebaseFunctionsApp} from '../../_common.js';
@@ -122,21 +122,30 @@ describe('Firebase Build Push Image Phase', () => {
 			},
 			result: async (bai: BuildAndInstall) => {
 				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+				functionUnit.logDebug('=== Verifying function unit exists ===');
 				expect(functionUnit).to.exist;
 
 				// Verify containerDeployment config exists
+				functionUnit.logDebug('=== Verifying containerDeployment config ===');
 				expect(functionUnit.config.containerDeployment).to.exist;
 				const containerDeployment = functionUnit.config.containerDeployment!;
-				expect(containerDeployment.artifactRegistry).to.exist;
-				expect(containerDeployment.artifactRegistry.region).to.exist;
-				expect(containerDeployment.artifactRegistry.repository).to.exist;
-				expect(containerDeployment.artifactRegistry.projectId).to.exist;
+				
+				// Validate artifactRegistry structure using tsValidateResult
+				const artifactRegistryValidator = {
+					region: tsValidateAnyString,
+					repository: tsValidateAnyString,
+					projectId: tsValidateAnyString,
+				};
+				const validationResult = tsValidateResult(containerDeployment.artifactRegistry, artifactRegistryValidator, undefined, false);
+				expect(validationResult).to.be.undefined;
 
 				// Verify Dockerfile was created (if it didn't exist)
-				const dockerfilePath = resolve(functionUnit.config.fullPath, containerDeployment.dockerfile || 'Dockerfile');
+				const dockerfilePath = resolve(functionUnit.config.fullPath, '.trash/build-image', containerDeployment.dockerfile || 'dockerfile');
+				functionUnit.logDebug(`=== Verifying Dockerfile exists at: ${dockerfilePath} ===`);
 				expect(existsSync(dockerfilePath)).to.be.true;
 
 				// Verify Dockerfile content
+				functionUnit.logDebug('=== Verifying Dockerfile content ===');
 				const dockerfileContent = readFileSync(dockerfilePath, 'utf-8');
 				expect(dockerfileContent).to.include('FROM node:22');
 				expect(dockerfileContent).to.include('WORKDIR /workspace');
@@ -144,6 +153,7 @@ describe('Firebase Build Push Image Phase', () => {
 				expect(dockerfileContent).to.include('COPY package.json');
 
 				// Verify output directory exists with compiled files
+				functionUnit.logDebug('=== Verifying compiled output files ===');
 				const compiledJs = resolve(functionUnit.config.output, 'index.js');
 				expect(existsSync(compiledJs)).to.be.true;
 
@@ -168,18 +178,22 @@ describe('Firebase Build Push Image Phase', () => {
 			},
 			result: async (bai: BuildAndInstall) => {
 				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+				functionUnit.logDebug('=== Verifying function unit exists ===');
 				expect(functionUnit).to.exist;
 
 				// Verify containerDeployment config exists
+				functionUnit.logDebug('=== Verifying containerDeployment config ===');
 				expect(functionUnit.config.containerDeployment).to.exist;
 				const containerDeployment = functionUnit.config.containerDeployment!;
 
 				// Verify image name construction
+				functionUnit.logDebug('=== Verifying image name ===');
 				const imageName = containerDeployment.imageName || functionUnit.config.key;
 				expect(imageName).to.exist;
 
 				// Verify Dockerfile exists
-				const dockerfilePath = resolve(functionUnit.config.fullPath, containerDeployment.dockerfile || 'Dockerfile');
+				const dockerfilePath = resolve(functionUnit.config.fullPath, '.trash/build-image', containerDeployment.dockerfile || 'dockerfile');
+				functionUnit.logDebug(`=== Verifying Dockerfile exists at: ${dockerfilePath} ===`);
 				expect(existsSync(dockerfilePath)).to.be.true;
 
 				functionUnit.logDebug('=== Custom Image Name Test Completed ===');
@@ -193,13 +207,16 @@ describe('Firebase Build Push Image Phase', () => {
 			},
 			result: async (bai: BuildAndInstall) => {
 				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+				functionUnit.logDebug('=== Verifying function unit exists ===');
 				expect(functionUnit).to.exist;
 
 				// Verify Dockerfile exists
-				const dockerfilePath = resolve(functionUnit.config.fullPath, 'Dockerfile');
+				const dockerfilePath = resolve(functionUnit.config.fullPath, '.trash/build-image', 'dockerfile');
+				functionUnit.logDebug(`=== Verifying Dockerfile exists at: ${dockerfilePath} ===`);
 				expect(existsSync(dockerfilePath)).to.be.true;
 
 				// Verify Dockerfile content is valid
+				functionUnit.logDebug('=== Verifying Dockerfile content is valid ===');
 				const dockerfileContent = readFileSync(dockerfilePath, 'utf-8');
 				expect(dockerfileContent.length).to.be.greaterThan(0);
 
