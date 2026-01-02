@@ -1,4 +1,4 @@
-import {_keys, arrayToMap, Constructor, flatArray, Logger, TypedMap} from '@nu-art/ts-common';
+import {_keys, AnyConstructor, arrayToMap, BadImplementationException, flatArray, ImplementationMissingException, Logger, TypedMap} from '@nu-art/ts-common';
 import {BaiParams} from '../core/params.js';
 import {UnitsMapper} from '../units/discovery/UnitsMapper.js';
 import {UnitDependentNode, UnitsDependencyMapper} from '../dependencies/UnitsDependencyMapper.js';
@@ -111,7 +111,7 @@ export class Workspace
 	 */
 	deriveActiveAndProjectUnits(runtimeParams: BaiParams): { activeUnits: string[], projectUnits: string[] } {
 		if (!this.unitsDependencyMapper) {
-			throw new Error('Dependency mapper must be initialized before deriving units. Call initializeDependencyMapper() first.');
+			throw new BadImplementationException('Dependency mapper must be initialized before deriving units. Call initializeDependencyMapper() first.');
 		}
 
 		const unitKeySet = new Set<string>();
@@ -139,6 +139,9 @@ export class Workspace
 
 			activeUnits.push(...matched);
 			projectUnits.push(...matched, ...transitive);
+
+			if (!activeUnits.length)
+				throw new ImplementationMissingException('No unit found matching these filters: ' + usePackageKeys.join(', '));
 
 			// If buildTree flag is set, make transitive dependencies active too
 			if (runtimeParams.buildTree) {
@@ -173,7 +176,7 @@ export class Workspace
 	/**
 	 * Get multiple units by their keys, optionally filtered by class type
 	 */
-	getUnitsByKeys<T extends BaseUnit>(keys: string[], className?: Constructor<T>): T[] {
+	getUnitsByKeys<T extends BaseUnit>(keys: string[], className?: AnyConstructor<T>): T[] {
 		const units = keys.map(key => this.unitKeyToUnitMap[key]).filter(Boolean) as BaseUnit[];
 
 		if (className) {

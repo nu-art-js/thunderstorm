@@ -85,18 +85,18 @@ export type SubsetObjectByValue<T, ExpectedType> = SubsetObjectByKeys<T, SubsetK
 
 /**
  * Extracts optional keys from a type.
- * 
+ *
  * Returns a union of all keys that are optional in the type.
- * 
+ *
  * @template T - Object type
  */
 export type OptionalKeys<T extends TS_Object> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
 
 /**
  * Extracts mandatory keys from a type that match a value type.
- * 
+ *
  * Returns keys that are required AND have values extending the specified type.
- * 
+ *
  * @template T - Object type
  * @template V - Value type to filter by
  */
@@ -108,7 +108,7 @@ export type MandatoryKeys<T extends TS_Object, V = any> = Exclude<{
 
 /**
  * Makes all optional keys required.
- * 
+ *
  * @template T - Object type
  * @template Keys - Optional keys to require (default: all optional keys)
  */
@@ -118,7 +118,7 @@ export type RequireOptionals<T extends TS_Object, Keys extends OptionalKeys<T> =
 
 /**
  * Requires exactly one of the optional keys to be present.
- * 
+ *
  * @template T - Object type
  * @template Keys - Optional keys (default: all optional keys)
  */
@@ -128,7 +128,7 @@ export type RequireOneOptional<T extends TS_Object, Keys extends OptionalKeys<T>
 
 /**
  * Requires at least one of the specified keys to be present.
- * 
+ *
  * @template T - Object type
  * @template Keys - Keys to require at least one of (default: all keys)
  */
@@ -140,9 +140,9 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
 
 /**
  * Requires exactly one of the specified keys to be present.
- * 
+ *
  * All other specified keys must be undefined.
- * 
+ *
  * @template T - Object type
  * @template Keys - Keys to require exactly one of (default: all keys)
  */
@@ -157,14 +157,20 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
 /** Constructor type for a class */
 export type Constructor<T> = new (...args: any) => T
 
+/** Constructor type for a class */
+export type AbstractConstructor<T> = abstract new (...args: any) => T
+
+/** Constructor type for a class */
+export type AnyConstructor<T> = AbstractConstructor<T> | Constructor<T>
+
 /** Extracts the element type from an array type */
 export type ArrayType<T> = T extends (infer I)[] ? I : never;
 
 /**
  * Extracts the innermost element type from nested arrays.
- * 
+ *
  * Recursively unwraps array types until reaching a non-array type.
- * 
+ *
  * @template T - Nested array type
  */
 export type NestedArrayType<T extends any[]> =
@@ -173,7 +179,7 @@ export type NestedArrayType<T extends any[]> =
 
 /**
  * Makes specified properties optional while keeping others required.
- * 
+ *
  * @template T - Object type
  * @template K - Keys to make optional
  */
@@ -184,7 +190,7 @@ export type KeyValue = TypedKeyValue<string, string>;
 
 /**
  * Typed key-value pair.
- * 
+ *
  * @template KeyType - Key type
  * @template ValueType - Value type
  */
@@ -201,14 +207,14 @@ export type TS_Object = { [s: string]: any };
 
 /**
  * Map with string keys and typed values.
- * 
+ *
  * @template ValueType - Value type for all entries
  */
 export type TypedMap<ValueType> = { [s: string]: ValueType };
 
 /**
  * Transforms all properties of an object to a single value type.
- * 
+ *
  * @template T - Object type
  * @template ValueType - Target value type
  */
@@ -216,7 +222,7 @@ export type TypedMapValue<T extends TS_Object, ValueType> = { [P in keyof T]: Va
 
 /**
  * Type that requires at least the specified keys, with others optional.
- * 
+ *
  * @template T - Object type
  * @template K - Required keys
  */
@@ -231,7 +237,7 @@ export type DB_BaseObject = {
 
 /**
  * Full database object with all metadata fields.
- * 
+ *
  * Includes versioning, timestamps, and optional metadata.
  */
 export type DB_Object = DB_BaseObject & {
@@ -254,16 +260,16 @@ export type UniqueId = string;
 
 /**
  * Database pointer (reference to another database object).
- * 
+ *
  * Contains the database key (collection name) and object ID.
  */
 export type DBPointer = { dbKey: string; id: UniqueId };
 
 /**
  * Pre-database type (object before DB metadata is added).
- * 
+ *
  * Removes DB metadata keys and optionally other specified keys.
- * 
+ *
  * @template T - Database object type
  * @template K - Additional keys to remove
  */
@@ -271,16 +277,16 @@ export type PreDB<T extends DB_Object, K extends keyof T = never> = PartialPrope
 
 /**
  * Removes all database metadata keys from a type.
- * 
+ *
  * @template T - Database object type
  */
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
 
 /**
  * Index keys type for querying by indexed fields.
- * 
+ *
  * Allows querying by any combination of indexed keys.
- * 
+ *
  * @template T - Object type
  * @template Ks - Indexed keys
  */
@@ -288,9 +294,9 @@ export type IndexKeys<T extends Object, Ks extends keyof T> = { [K in Ks]?: T[K]
 
 /**
  * Unique parameter type for database queries.
- * 
+ *
  * Can be either a unique ID string or an object with indexed keys.
- * 
+ *
  * @template Type - Database object type
  * @template Ks - Unique keys (default: '_id')
  */
@@ -303,9 +309,9 @@ export type Draftable = { _isDraft: boolean };
 
 /**
  * Content that can be either a value or a function that returns a value.
- * 
+ *
  * Use `resolveContent()` to resolve to the actual value.
- * 
+ *
  * @template T - Value type
  * @template K - Function parameter types
  */
@@ -313,7 +319,7 @@ export type ResolvableContent<T, K extends any[] = any[]> = T | ((...param: K) =
 
 /**
  * Extracts the resolved type from ResolvableContent.
- * 
+ *
  * @template T - ResolvableContent type
  */
 export type ResolvedContent<T extends ResolvableContent<any, any>> = T extends ResolvableContent<infer R, any> ? R : never;
@@ -340,7 +346,7 @@ export type AuditBy = {
 
 /**
  * Simplified audit information (v2).
- * 
+ *
  * Only stores the auditor ID, not full audit details.
  */
 export type AuditableV2 = {
@@ -362,14 +368,14 @@ export type Timestamp = {
 
 /**
  * Extracts keys from a type that are functions.
- * 
+ *
  * @template T - Object type
  */
 export type FunctionKeys<T> = { [K in keyof T]: T[K] extends (...args: any) => any ? K : never }[keyof T];
 
 /**
  * Void value constant (undefined, but typed as void).
- * 
+ *
  * Useful for type-safe void values in generic contexts.
  */
 export const Void = (() => {
@@ -385,18 +391,18 @@ export type PackageJson = {
 
 /**
  * Unwraps a Promise type to get the resolved value type.
- * 
+ *
  * If T is a Promise, returns the inner type. Otherwise returns T.
- * 
+ *
  * @template T - Type that may be a Promise
  */
 export type DeflatePromise<T> = T extends Promise<infer A> ? A : T
 
 /**
  * Extracts the return type from a function, unwrapping Promises.
- * 
+ *
  * Gets the function's return type and unwraps it if it's a Promise.
- * 
+ *
  * @template T - Function type
  */
 export type ReturnPromiseType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? DeflatePromise<R> : never;
@@ -414,10 +420,10 @@ export type ValidReturnValue = string | number | object;
 
 /**
  * Narrows an array type to the longest valid prefix.
- * 
+ *
  * Returns the longest array type where all elements are ValidReturnValue.
  * If none are valid, returns Default.
- * 
+ *
  * @template Default - Default type if no valid elements
  * @template T1-T6 - Element types to check
  */
@@ -431,9 +437,9 @@ export type NarrowArray<Default, T1, T2, T3, T4, T5, T6> =
 
 /**
  * Merges multiple types into a single intersection type.
- * 
+ *
  * Recursively merges all types in the array into one type.
- * 
+ *
  * @template T - Array of types to merge
  */
 export type MergeTypes<T extends unknown[]> =
@@ -441,9 +447,9 @@ export type MergeTypes<T extends unknown[]> =
 
 /**
  * Converts a union type to an intersection type.
- * 
+ *
  * Uses conditional type distribution to transform U | V into U & V.
- * 
+ *
  * @template U - Union type
  */
 export type UnionToIntersection<U> =
@@ -451,14 +457,14 @@ export type UnionToIntersection<U> =
 
 /**
  * Array type that guarantees at least one element.
- * 
+ *
  * @template T - Element type
  */
 export type NonEmptyArray<T> = [T, ...T[]];
 
 /**
  * Extracts keys from a type where the value extends a specific type.
- * 
+ *
  * @template T - Object type
  * @template K - Key to check
  * @template Ex - Expected value type
@@ -467,7 +473,7 @@ export type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : nev
 
 /**
  * Recursively omits a key from an object type and all nested objects.
- * 
+ *
  * @template T - Object type
  * @template OmitKey - Key to omit recursively
  */
@@ -477,9 +483,9 @@ export type RecursiveOmit<T, OmitKey extends keyof any> = {
 
 /**
  * Recursively makes all properties optional.
- * 
+ *
  * Applies Partial recursively to nested objects, but preserves arrays as-is.
- * 
+ *
  * @template T - Type to make recursively partial
  */
 export type RecursivePartial<T> = {
@@ -490,9 +496,9 @@ export type RecursivePartial<T> = {
 
 /**
  * Recursively makes all properties readonly.
- * 
+ *
  * Applies Readonly recursively to nested objects and arrays.
- * 
+ *
  * @template T - Type to make recursively readonly
  */
 export type RecursiveReadonly<T> = T extends undefined ? undefined
@@ -502,9 +508,9 @@ export type RecursiveReadonly<T> = T extends undefined ? undefined
 
 /**
  * Recursively removes readonly modifiers.
- * 
+ *
  * Converts Readonly types back to mutable types recursively.
- * 
+ *
  * @template T - Type to make recursively writable
  */
 export type RecursiveWritable<T> =
@@ -593,9 +599,9 @@ export type DotNotationValueType<ObjectType extends object, Path extends string>
 
 /**
  * Creates an exact type that prevents extra properties.
- * 
+ *
  * Ensures the type matches exactly - no additional string keys allowed.
- * 
+ *
  * @template T - Type to make exact
  */
 export type Exact<T> = { [K in keyof T]: T[K]; } & { [K: string]: never; };
@@ -610,7 +616,7 @@ export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
 /**
  * Async function that returns a Promise.
- * 
+ *
  * @template T - Return type (default: void)
  */
 export type AsyncVoidFunction<T = void> = () => Promise<T>;
@@ -620,13 +626,13 @@ declare const brand: unique symbol;
 
 /**
  * Brands a type with a unique identifier.
- * 
+ *
  * Creates a nominal type from a structural type, preventing accidental
  * mixing of types that have the same structure but different meanings.
- * 
+ *
  * @template T - Base type
  * @template Brand - Brand identifier string
- * 
+ *
  * @example
  * ```typescript
  * type UserId = Brand<string, 'UserId'>;
