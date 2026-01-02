@@ -3,27 +3,23 @@ import {CliParam} from './types.js';
 
 /**
  * Default processor for boolean CLI parameters.
- * 
- * Returns `true` if the flag is present (input is provided), otherwise
- * returns the defaultValue (defaulting to `false` if not provided).
- * 
+ *
+ * Returns the defaultValue or `true` if the flag is present
+ *
  * @param input - Optional input string (flag presence indicator)
  * @param defaultValue - Optional default value if flag is absent
  * @returns `true` if flag is present, otherwise `defaultValue ?? false`
  */
 export const DefaultProcessor_Boolean: CliParam<any, boolean>['process'] = (input?: string, defaultValue?: boolean): boolean => {
-	if (input !== undefined && input !== null && input !== '') {
-		return true;
-	}
-	return defaultValue ?? false;
+	return defaultValue ?? true;
 };
 
 /**
  * Default processor for string CLI parameters.
- * 
+ *
  * Returns the input string, or defaultValue if input is empty/missing.
  * Throws if input is empty and no default is provided.
- * 
+ *
  * @param input - Optional input string
  * @param defaultValue - Optional default value
  * @returns Processed string value
@@ -42,10 +38,10 @@ export const DefaultProcessor_String: CliParam<any, string>['process'] = (input?
 
 /**
  * Default processor for number CLI parameters.
- * 
+ *
  * Parses the input as a number, or returns defaultValue if input is missing.
  * Throws if input is not a valid number or if input is empty and no default provided.
- * 
+ *
  * @param input - Optional input string
  * @param defaultValue - Optional default value
  * @returns Parsed number value
@@ -67,7 +63,7 @@ export const DefaultProcessor_Number: CliParam<any, number>['process'] = (input?
 
 /**
  * Map of default processors by type name.
- * 
+ *
  * Used by CLIParamsResolver to assign processors when not provided.
  * Keys match the type strings from `TypeOfTypeAsString`.
  */
