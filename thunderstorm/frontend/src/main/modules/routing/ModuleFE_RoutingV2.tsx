@@ -1,6 +1,8 @@
 import {ComponentClass, FunctionComponent} from 'react';
+// @ts-ignore - unstable_HistoryRouter may not be in types but is available in React Router v6.4+
+import * as ReactRouterDOM from 'react-router-dom';
 import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
-import {createBrowserHistory, History} from 'history';
+// Removed createBrowserHistory - BrowserRouter doesn't use it, we use window.history directly
 import {TS_Route} from './types.js';
 import {_keys, BadImplementationException, composeQueryParams, composeUrl, exists, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
@@ -8,6 +10,8 @@ import {QueryParams, UrlQueryParams} from '@nu-art/thunderstorm-shared';
 import {mouseEventHandler, stopPropagation} from '../../utils/tools.js';
 import {AwaitModules} from '../../components/AwaitModules/AwaitModules.js';
 import {AwaitSync} from '../../components/AwaitSync/AwaitSync.js';
+
+const HistoryRouter = (ReactRouterDOM as any).unstable_HistoryRouter;
 
 
 export interface OnLocationChanged {
@@ -31,26 +35,33 @@ class ModuleFE_RoutingV2_Class
 	private routesMapByPath: {
 		[fullPath: string]: TS_Route
 	} = {};
-	private readonly history: History<any>;
 
 	constructor() {
 		super();
-		this.history = createBrowserHistory();
-		this.history.listen((location) => {
-			dispatch_onLocationChanged.dispatchUI(location.pathname);
+		// Listen to browser navigation events (back/forward buttons, etc.)
+		window.addEventListener('popstate', () => {
+			dispatch_onLocationChanged.dispatchUI(window.location.pathname);
 		});
 	}
 
 	// ######################## Public Functions ########################
 
-	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {
+	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>, hash?: string) {
 		const fullPath = this.getFullPath(route.key);
 		try {
-			const url = composeUrl(fullPath, params, window.location.hash);
-			if (window.location.href === url)
-				return this.logWarning(`attempting to set same route: ${url}`);
+			const queryString = composeQueryParams(params);
+			const search = queryString.length > 0 ? `?${queryString}` : '';
+			const url = composeUrl(fullPath, params, hash);
+			
+			if (url === window.location.href)
+				return this.logWarning(`attempting to set same route: ${fullPath}${search}`);
 
-			this.history.push(url);
+			// Also update window.location to trigger BrowserRouter's popstate listener
+			// This ensures React Router detects the navigation change
+			window.history.pushState({}, '', url);
+
+			// Manually dispatch popstate event to trigger BrowserRouter update
+			window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 		} catch (e: any) {
 			this.logError(`cannot resolve route for route: `, route, e);
 			throw e;
@@ -69,6 +80,8 @@ class ModuleFE_RoutingV2_Class
 			{this.routeBuilder(rootRoute)}
 		</Routes>;
 
+		// Use BrowserRouter - unstable_HistoryRouter has compatibility issues
+		// We'll use window.location changes to trigger React Router updates
 		return <BrowserRouter>
 			<RoutesRenderer/>
 		</BrowserRouter>;
@@ -286,12 +299,29 @@ class ModuleFE_RoutingV2_Class
 	// ######################## Navigation Methods ########################
 
 	/**
+	 * Convert location descriptor to URL string using composeUrl
+	 */
+	private locationToUrl(location: { pathname: string; search?: string; hash?: string }): string {
+		// Parse search params if provided as string
+		const params: { [key: string]: string } = {};
+		if (location.search) {
+			const searchParams = new URLSearchParams(location.search.startsWith('?') ? location.search.substring(1) : location.search);
+			searchParams.forEach((value, key) => {
+				params[key] = value;
+			});
+		}
+		const hash = location.hash?.startsWith('#') ? location.hash.substring(1) : location.hash;
+		return composeUrl(location.pathname, params, hash);
+	}
+
+	/**
 	 * Navigate to a pathname with optional query params (adds to history)
 	 * @param location - Location descriptor with pathname and optional search
 	 */
 	push(location: { pathname: string; search?: string; hash?: string }) {
-		const url = this.composeLocationUrl(location);
-		this.history.push(url);
+		const url = this.locationToUrl(location);
+		window.history.pushState({}, '', url);
+		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 	}
 
 	/**
@@ -299,8 +329,9 @@ class ModuleFE_RoutingV2_Class
 	 * @param location - Location descriptor with pathname and optional search
 	 */
 	replace(location: { pathname: string; search?: string; hash?: string }) {
-		const url = this.composeLocationUrl(location);
-		this.history.replace(url);
+		const url = this.locationToUrl(location);
+		window.history.replaceState({}, '', url);
+		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 	}
 
 	// ######################## Private Helper Methods ########################
@@ -352,23 +383,15 @@ class ModuleFE_RoutingV2_Class
 		return encodedQueryParams;
 	}
 
-	private createLocationDataFromQueryParams(encodedQueryParams?: UrlQueryParams, pathname: string = window.location.pathname): string {
-		const cleanPathname = !pathname.endsWith('/') ? pathname : pathname.substring(0, pathname.length - 1);
-		const search = encodedQueryParams ? this.composeQuery(encodedQueryParams) : '';
-		return search.length > 0 ? `${cleanPathname}?${search}` : cleanPathname;
-	}
-
 	private updateQueryParams(encodedQueryParams: UrlQueryParams) {
-		const url = this.createLocationDataFromQueryParams(encodedQueryParams);
-		this.history.replace(url);
+		const search = this.composeQuery(encodedQueryParams);
+		const url = `${window.location.pathname}${search ? `?${search}` : ''}`;
+		window.history.replaceState({}, '', url);
+		
+		// Manually dispatch popstate event to trigger BrowserRouter update
+		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 	}
 
-	private composeLocationUrl(location: { pathname: string; search?: string; hash?: string }): string {
-		const cleanPathname = !location.pathname.endsWith('/') ? location.pathname : location.pathname.substring(0, location.pathname.length - 1);
-		const search = location.search || '';
-		const hash = location.hash || '';
-		return `${cleanPathname}${search}${hash}`;
-	}
 }
 
 export const TS_NavLink = (props: {
