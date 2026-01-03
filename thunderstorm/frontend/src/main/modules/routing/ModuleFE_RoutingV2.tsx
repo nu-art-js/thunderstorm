@@ -1,6 +1,5 @@
 import {ComponentClass, FunctionComponent} from 'react';
 // @ts-ignore - unstable_HistoryRouter may not be in types but is available in React Router v6.4+
-import * as ReactRouterDOM from 'react-router-dom';
 import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
 // Removed createBrowserHistory - BrowserRouter doesn't use it, we use window.history directly
 import {TS_Route} from './types.js';
@@ -10,8 +9,6 @@ import {QueryParams, UrlQueryParams} from '@nu-art/thunderstorm-shared';
 import {mouseEventHandler, stopPropagation} from '../../utils/tools.js';
 import {AwaitModules} from '../../components/AwaitModules/AwaitModules.js';
 import {AwaitSync} from '../../components/AwaitSync/AwaitSync.js';
-
-const HistoryRouter = (ReactRouterDOM as any).unstable_HistoryRouter;
 
 
 export interface OnLocationChanged {
@@ -52,7 +49,7 @@ class ModuleFE_RoutingV2_Class
 			const queryString = composeQueryParams(params);
 			const search = queryString.length > 0 ? `?${queryString}` : '';
 			const url = composeUrl(fullPath, params, hash);
-			
+
 			if (url === window.location.href)
 				return this.logWarning(`attempting to set same route: ${fullPath}${search}`);
 
@@ -387,7 +384,7 @@ class ModuleFE_RoutingV2_Class
 		const search = this.composeQuery(encodedQueryParams);
 		const url = `${window.location.pathname}${search ? `?${search}` : ''}`;
 		window.history.replaceState({}, '', url);
-		
+
 		// Manually dispatch popstate event to trigger BrowserRouter update
 		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 	}
