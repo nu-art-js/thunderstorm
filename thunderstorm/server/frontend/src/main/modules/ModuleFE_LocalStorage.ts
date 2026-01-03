@@ -23,8 +23,8 @@
  * Created by tacb0ss on 27/07/2018.
  */
 import {_keys, exists, merge, Module, ResolvableContent, resolveContent, TS_Object, TypedMap} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '@nu-art/thunderstorm-frontend';
-import {OnClearWebsiteData} from '@nu-art/thunder-utils/dist/index.js';
+import {ThunderDispatcher} from '../thunder-dispatcher.js';
+import {OnClearWebsiteData} from '../clearWebsiteDataDispatcher.js';
 
 
 export interface OnStorageKeyChangedListener {

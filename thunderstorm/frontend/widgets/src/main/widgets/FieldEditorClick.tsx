@@ -1,7 +1,7 @@
 import { HTMLProps, ReactNode } from 'react';
 import { EditorType, FieldEditor, FieldEditorInputProps } from './FieldEditor.js';
 import { ComponentSync } from "@nu-art/thunder-routing";
-import { StorageKey } from '@nu-art/thunder-browser-api';
+import { StorageKey } from '@nu-art/web-client';
 import { InputType } from '../components/TS_Input/TS_BaseInput.js';
 type State = {
     isEditing: boolean;

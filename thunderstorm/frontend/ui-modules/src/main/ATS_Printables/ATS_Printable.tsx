@@ -7,7 +7,7 @@ import {TS_AppTools} from '../../components/TS_AppTools/index.js';
 import './ATS_Printable.scss';
 import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
 import {Button} from '../../components/Button/Button.js';
-import {ModuleFE_Print} from '@nu-art/thunder-browser-api/src/main/modules/ModuleFE_Print.js';
+import {ModuleFE_Print} from '@nu-art/web-client//modules/ModuleFE_Print.js';
 import {TS_Printable} from '../../components/TS_Printable/index.js';
 import {generateArray} from '@nu-art/ts-common';
 

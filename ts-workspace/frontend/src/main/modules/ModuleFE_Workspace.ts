@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { StorageKey } from "@nu-art/thunder-browser-api/index";
+import { StorageKey } from "@nu-art/web-client/index";
 import { _values, BadImplementationException, Module, TypedMap } from '@nu-art/ts-common';
 import { PanelConfig } from '../index.js';
 import { Workspace } from '@nu-art/ts-workspace-shared';

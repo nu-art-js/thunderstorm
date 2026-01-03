@@ -1,6 +1,6 @@
 import {AsyncVoidFunction, Logger, LogLevel, md5, sortArray} from '@nu-art/ts-common';
 import {IDB_Config} from './types.js';
-import {StorageKey} from '@nu-art/thunder-browser-api';
+import {StorageKey} from '@nu-art/web-client';
 
 type VersionData = {
 	version: number;

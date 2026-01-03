@@ -1,4 +1,4 @@
-import { StorageKey } from "@nu-art/thunder-browser-api/index";
+import { StorageKey } from "@nu-art/web-client/index";
 import { _SessionKey_Account, DB_Account } from '@nu-art/user-account-shared';
 import { HeaderKey_DeviceId, HeaderKey_TabId } from "@nu-art/thunder-db-api-shared/headers";
 import { SessionKey_FE } from '../session/ModuleFE_Session.js';

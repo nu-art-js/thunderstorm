@@ -1,10 +1,10 @@
 import { ComponentSync } from "@nu-art/thunder-routing";
 import { AppToolsScreen, TS_AppTools } from '../TS_AppTools/index.js';
 import { thunderstormATSGroups } from '../../consts.js';
-import { LL_H_C, LL_V_L } from '@nu-art/thunder-widgets/src/main/components/Layouts/index.js';
+import { LL_H_C, LL_V_L } from '@nu-art/thunder-widgets//components/Layouts/index.js';
 import './ats.scss';
-import { TS_PropRenderer } from '@nu-art/thunder-widgets/src/main/components/TS_PropRenderer/index.js';
-import { TS_CollapsableContainerV2 } from '@nu-art/thunder-widgets/src/main/components/TS_CollapsableContainerV2/TS_CollapsableContainerV2.js';
+import { TS_PropRenderer } from '@nu-art/thunder-widgets//components/TS_PropRenderer/index.js';
+import { TS_CollapsableContainerV2 } from '@nu-art/thunder-widgets//components/TS_CollapsableContainerV2/TS_CollapsableContainerV2.js';
 const lorem = () => <p className={'lorem'}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sagittis mauris quis elit tristique tempor. Sed in
 	pellentesque nisi, eu
 	luctus purus. Nam id mi libero. Morbi non auctor elit, eu sodales ex. Aliquam eget diam porttitor, vestibulum orci non, eleifend tortor. Curabitur finibus

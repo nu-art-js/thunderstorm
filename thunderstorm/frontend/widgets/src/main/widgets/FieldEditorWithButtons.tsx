@@ -1,6 +1,6 @@
 import { HTMLProps } from 'react';
 import { FieldEditor, FieldEditorInputProps } from './FieldEditor.js';
-import { StorageKey } from '@nu-art/thunder-browser-api';
+import { StorageKey } from '@nu-art/web-client';
 import { ComponentSync } from "@nu-art/thunder-routing";
 import { InputType } from '../components/TS_Input/TS_BaseInput.js';
 type State = {

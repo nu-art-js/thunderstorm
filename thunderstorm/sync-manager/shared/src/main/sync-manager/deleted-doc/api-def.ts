@@ -1,4 +1,4 @@
-import {ApiDefResolver} from '../../types.js';
+import {ApiDefResolver} from '@nu-art/thunder-db-api-shared';
 
 export type RequestType_DeletedDoc = {};
 export type ResponseType_DeletedDoc = {};

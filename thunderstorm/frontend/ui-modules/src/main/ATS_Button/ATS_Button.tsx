@@ -1,10 +1,10 @@
 import { thunderstormATSGroups } from '../../consts.js';
 import { ComponentSync } from "@nu-art/thunder-routing";
-import { LL_H_C, LL_V_L } from '@nu-art/thunder-widgets/src/main/components/Layouts/index.js';
+import { LL_H_C, LL_V_L } from '@nu-art/thunder-widgets//components/Layouts/index.js';
 import { AppToolsScreen, TS_AppTools } from '../TS_AppTools/index.js';
-import { Button } from '@nu-art/thunder-widgets/src/main/components/Button/Button.js';
+import { Button } from '@nu-art/thunder-widgets//components/Button/Button.js';
 import './ATS_Button.scss';
-import { TS_PropRenderer } from '@nu-art/thunder-widgets/src/main/components/TS_PropRenderer/index.js';
+import { TS_PropRenderer } from '@nu-art/thunder-widgets//components/TS_PropRenderer/index.js';
 import { generateHex } from '@nu-art/ts-common';
 type Props = {};
 type State = {

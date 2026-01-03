@@ -15,7 +15,7 @@ export * from './components/TS_Tree/index.js';
 export * from './components/TS_Checkbox/index.js';
 export * from './components/TS_Checkbox/TS_CheckboxV2.js';
 export * from './components/TS_CheckboxGroup/index.js';
-export * from '../../../ui-modules/src/main/TS_AppTools/index.js';
+export * from '../../../ui-modules//TS_AppTools/index.js';
 export * from './components/TS_Loader/index.js';
 export * from './components/TS_Dialog/index.js';
 export * from './components/Button/Button.js';

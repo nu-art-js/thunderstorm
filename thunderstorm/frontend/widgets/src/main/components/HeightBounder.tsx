@@ -1,7 +1,7 @@
 import {HTMLAttributes} from 'react';
 import {ComponentSync} from '../core/ComponentSync.js';
 
-import {OnWindowResized} from '@nu-art/thunder-browser-api';
+import {OnWindowResized} from '@nu-art/web-client';
 
 type BounderProps = HTMLAttributes<HTMLDivElement>;
 

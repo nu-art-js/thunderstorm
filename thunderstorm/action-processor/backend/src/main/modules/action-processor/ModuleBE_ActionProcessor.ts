@@ -4,7 +4,7 @@ import { ApiDef_ActionProcessing, Request_ActionToProcess } from "@nu-art/thunde
 import { ActionDeclaration } from './types.js';
 import { RAD_SetupProject } from './Action_SetupProject.js';
 import { HttpCodes } from '@nu-art/ts-common/core/exceptions/http-codes';
-import {addRoutes} from '@nu-art/express-server/src/main/core/ModuleBE_APIs.js';
+import {addRoutes} from '@nu-art/express-server//core/ModuleBE_APIs.js';
 type Action = {
     action: (data: any) => Promise<any>;
     declaration: ActionDeclaration;

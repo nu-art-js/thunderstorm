@@ -20,10 +20,10 @@
  */
 import * as React from 'react';
 import './TS_AppTools.scss';
-import { LL_H_C, LL_V_L } from '@nu-art/thunder-widgets/src/main/components/Layouts/index.js';
-import { StorageKey } from '@nu-art/thunder-browser-api';
+import { LL_H_C, LL_V_L } from '@nu-art/thunder-widgets//components/Layouts/index.js';
+import { StorageKey } from '@nu-art/web-client';
 import { _className } from "@nu-art/thunder-routing";
-import { TS_ErrorBoundary } from '@nu-art/thunder-widgets/src/main/components/TS_ErrorBoundary/index.js';
+import { TS_ErrorBoundary } from '@nu-art/thunder-widgets//components/TS_ErrorBoundary/index.js';
 import { TS_Route } from "@nu-art/thunder-routing";
 import { TS_NavLink } from "@nu-art/thunder-routing";
 import { md5, sortArray, ThisShouldNotHappenException, TypedMap } from '@nu-art/ts-common';
@@ -31,7 +31,7 @@ import { Outlet } from 'react-router-dom';
 import { TS_AppTools_Default } from './TS_AppTools_Default.js';
 import { AppToolsScreen } from './types.js';
 import { TS_Icons } from '@nu-art/ts-styles';
-import { TS_CollapsableContainer } from '@nu-art/thunder-widgets/src/main/components/TS_CollapsableContainer/index.js';
+import { TS_CollapsableContainer } from '@nu-art/thunder-widgets//components/TS_CollapsableContainer/index.js';
 type CollapseState = {
     navbarCollapse: boolean;
     groups: TypedMap<boolean>;

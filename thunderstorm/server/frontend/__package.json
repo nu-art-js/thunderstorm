@@ -39,6 +39,7 @@
   "dependencies": {
     "@nu-art/thunder-action-processor-frontend": "?",
     "@nu-art/ts-common": "?",
+    "react-router-dom": "?",
     "react": "?",
     "history": "?",
     "react-dom": "?",
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@types/react": "?",
+    "@types/react-router-dom": "?",
     "@types/history": "?",
     "@types/react-dom": "?"
   },

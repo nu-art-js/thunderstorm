@@ -1,6 +1,6 @@
 import { ComponentSync } from "@nu-art/thunder-routing";
 import { TS_Route } from "@nu-art/thunder-routing";
-import { LL_V_L } from '@nu-art/thunder-widgets/src/main/components/Layouts/index.js';
+import { LL_V_L } from '@nu-art/thunder-widgets//components/Layouts/index.js';
 export class TS_AppTools_Default extends ComponentSync {
     static Route: TS_Route = {
         key: 'app-tools-default',

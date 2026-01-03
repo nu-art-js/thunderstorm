@@ -53,7 +53,9 @@
 import {_keys, composeQueryParams, exists, Module,} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {ThunderDispatcher} from '../thunder-dispatcher.js';
-import {UrlQueryParams} from '@nu-art/thunder-db-api-shared/src/main/index.js';
+import {encodeUrlParams} from '@nu-art/ts-common';
+
+export type UrlQueryParams = { [key: string]: string | undefined; };
 
 export type OnUrlParamsChangedListener = {
 	__onUrlParamsChanged: VoidFunction
@@ -376,73 +378,6 @@ export function getQueryParameter(name: string) {
  */
 export function getUrlQuery() {
 	return ModuleFE_BrowserHistory.getQueryParams();
-}
-
-/**
- * @deprecated Use ModuleFE_RoutingV2.encodeUrlParams() or import from routing module instead
- *
- * Migration:
- * // Old:
- * const encoded = encodeUrlParams(params);
- *
- * // New:
- * import {encodeUrlParams} from "@nu-art/thunder-routing";
- * // OR
- * import {ModuleFE_RoutingV2} from "@nu-art/thunder-routing";
- * const encoded = ModuleFE_RoutingV2.encodeUrlParams(params);
- */
-function encodeUrlParams(queryParams?: UrlQueryParams) {
-	const encodedQueryParams = {...queryParams};
-	_keys(encodedQueryParams).forEach(key => {
-		const value = encodedQueryParams[key];
-		if (!value) {
-			delete encodedQueryParams[key];
-			return;
-		}
-
-		encodedQueryParams[key] = encodeURIComponent(value);
-	});
-	return encodedQueryParams;
-}
-
-/**
- * @deprecated Use ModuleFE_RoutingV2.composeQuery() or import from routing module instead
- *
- * Migration:
- * // Old:
- * const query = composeQuery(params);
- *
- * // New:
- * import {composeQuery} from "@nu-art/thunder-routing";
- * // OR
- * import {ModuleFE_RoutingV2} from "@nu-art/thunder-routing";
- * const query = ModuleFE_RoutingV2.composeQuery(params);
- */
-function composeQuery(queryParams?: UrlQueryParams) {
-	const queryAsString = composeQueryParams(queryParams);
-	if (queryAsString.length === 0)
-		return '';
-
-	return queryAsString;
-}
-
-/**
- * @deprecated Use ModuleFE_RoutingV2.composeURL() or import from routing module instead
- *
- * Migration:
- * // Old:
- * const url = composeURL('/path', params);
- *
- * // New:
- * import {composeURL} from "@nu-art/thunder-routing";
- * // OR
- * import {ModuleFE_RoutingV2} from "@nu-art/thunder-routing";
- * const url = ModuleFE_RoutingV2.composeURL('/path', params);
- */
-// @ts-ignore
-function composeURL(url: string, queryParams?: UrlQueryParams) {
-	const queryAsString = composeQuery(queryParams);
-	return `${url}${queryAsString.length > 0 ? `?${queryAsString}` : ''}`;
 }
 
 export const ModuleFE_BrowserHistory = new ModuleFE_BrowserHistory_Class();

@@ -58,12 +58,11 @@ import {
 	EventType_UpsertAll,
 	syncDispatcher
 } from '../../core/db-api-gen/consts.js';
-import {StorageKey} from '@nu-art/thunder-browser-api';
+import {StorageKey} from '@nu-art/web-client';
 import {ThunderDispatcher} from '@nu-art/thunderstorm-frontend';
-import {IndexDb_Query, ReduceFunction, IndexedDB_Store, DBConfigV3, ModuleFE_IDBManager} from '@nu-art/thunder-idb';
+import {DBConfigV3, IndexDb_Query, IndexedDB_Store, ModuleFE_IDBManager, ReduceFunction} from '@nu-art/thunder-idb';
 import {CustomMemCreators, ModuleSyncType} from './types.js';
 import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types.js';
-
 
 export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfig<Proto> = DBApiFEConfig<Proto>>
 	extends Module<Config>

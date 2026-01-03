@@ -1,5 +1,5 @@
 import {Module} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '@nu-art/thunderstorm-frontend';
+import { ThunderDispatcher } from '../thunder-dispatcher.js';
 
 export interface OnConnectivityChange {
 	__onConnectivityChange(): void;

@@ -20,7 +20,7 @@
  */
 
 import {Module,} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '@nu-art/thunderstorm-frontend';
+import { ThunderDispatcher } from '../thunder-dispatcher.js';
 
 
 type Config = {}

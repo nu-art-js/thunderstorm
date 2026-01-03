@@ -1,4 +1,4 @@
-import { ApiDefResolver, BodyApi, HttpMethod } from "@nu-art/thunder-db-api-shared/types";
+import { ApiDefResolver, BodyApi, HttpMethod } from "@nu-art/thunder-db-api-shared";
 import { Minute } from '@nu-art/ts-common';
 import { DeltaSyncModule, FullSyncModule, NoNeedToSyncModule, SyncDbData } from './types.js';
 export type SyncManagerAPI_SmartSync = {

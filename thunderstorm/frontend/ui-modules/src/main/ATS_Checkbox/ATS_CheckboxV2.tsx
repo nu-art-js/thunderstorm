@@ -1,9 +1,9 @@
 import { thunderstormATSGroups } from '../../consts.js';
 import { ComponentSync } from "@nu-art/thunder-routing";
-import { Grid } from '@nu-art/thunder-widgets/src/main/components/Layouts/index.js';
+import { Grid } from '@nu-art/thunder-widgets//components/Layouts/index.js';
 import { AppToolsScreen } from '../TS_AppTools/index.js';
 import './ATS_CheckboxV2.scss';
-import { TS_CheckboxV2 } from '@nu-art/thunder-widgets/src/main/components/TS_Checkbox/TS_CheckboxV2.js';
+import { TS_CheckboxV2 } from '@nu-art/thunder-widgets//components/TS_Checkbox/TS_CheckboxV2.js';
 import { voidFunction } from '@nu-art/ts-common';
 type State = {
     checked: boolean | undefined;

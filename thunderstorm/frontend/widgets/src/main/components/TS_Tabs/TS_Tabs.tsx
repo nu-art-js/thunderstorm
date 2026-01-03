@@ -22,7 +22,7 @@ import * as React from 'react';
 import {ComponentSync} from '@nu-art/thunderstorm-frontend';
 import {_className, stopPropagation} from '@nu-art/thunderstorm-frontend';
 import './TS_Tabs.scss';
-import {StorageKey} from '@nu-art/thunder-browser-api';
+import {StorageKey} from '@nu-art/web-client';
 
 
 export type Tab = {

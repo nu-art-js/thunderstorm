@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ComponentSync } from "@nu-art/thunder-routing";
 import { _className } from "@nu-art/thunder-routing";
 import './Label.scss';
-import { OnWindowResized } from '@nu-art/thunder-browser-api';
+import { OnWindowResized } from '@nu-art/web-client';
 type Props = React.PropsWithChildren<{
     tooltip?: React.ReactNode; //The content that will appear in the tooltip
     className?: string;

@@ -19,6 +19,7 @@ class ModuleFE_StorageCleaner_Class
 			//Delete only local storage keys
 			if (!storageKey.getPersistence())
 				return;
+
 			localStorage.removeItem(storageKey.key);
 			this.logDebug(`Cleared local-storage for key ${storageKey.key}`);
 		});

@@ -16,14 +16,7 @@
  * limitations under the License.
  */
 
-import {
-	CliParam,
-	CliParamsModule,
-	compare,
-	flatArray,
-	TestCase,
-	TestSuit
-} from "../_main.js";
+import {CliParamsModule, compare, flatArray, TestCase, TestSuit} from '../_main.js';
 import {
 	CliParam_TestArray,
 	CliParam_TestArrayOptional,
@@ -31,8 +24,7 @@ import {
 	CliParam_TestStringDefault,
 	CliParam_TestStringOptional,
 	CliTestParam
-} from "./consts.js";
-import {asArray} from '../../src/main/index.js';
+} from './consts.js';
 
 type CliTestInput = {
 	param: CliTestParam<any, any>;

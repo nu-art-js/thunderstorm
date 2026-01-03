@@ -1,8 +1,8 @@
 import { ComponentSync } from "@nu-art/thunder-routing";
 import { AppToolsScreen, TS_AppTools } from '../TS_AppTools/index.js';
-import { LL_H_C, LL_V_L } from '@nu-art/thunder-widgets/src/main/components/Layouts/index.js';
-import { TS_PropRenderer } from '@nu-art/thunder-widgets/src/main/components/TS_PropRenderer/index.js';
-import { TS_TextArea } from '@nu-art/thunder-widgets/src/main/components/TS_Input/TS_TextArea.js';
+import { LL_H_C, LL_V_L } from '@nu-art/thunder-widgets//components/Layouts/index.js';
+import { TS_PropRenderer } from '@nu-art/thunder-widgets//components/TS_PropRenderer/index.js';
+import { TS_TextArea } from '@nu-art/thunder-widgets//components/TS_Input/TS_TextArea.js';
 import './ATS_TextArea.scss';
 type State = {
     regularValue?: string;

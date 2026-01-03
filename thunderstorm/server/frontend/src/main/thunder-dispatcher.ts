@@ -86,4 +86,3 @@ export class ThunderDispatcher<T,
 		}));
 	}
 }
-

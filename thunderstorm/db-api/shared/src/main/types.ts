@@ -39,7 +39,6 @@ export type HttpMethod_Body = 'post' | 'put' | 'patch'
 export type HttpMethod_Empty = 'options' | 'head'
 
 export type QueryParams = { [key: string]: string | number | undefined; };
-export type UrlQueryParams = { [key: string]: string | undefined; };
 
 /**
  * P - Params

@@ -2,7 +2,7 @@ import {ComponentSync} from './ComponentSync.js';
 import {TS_Route} from '../modules/routing/types.js';
 import * as React from 'react';
 import {generateUUID} from '@nu-art/ts-common';
-import {Thunder} from './Thunder.js';
+import {Thunder} from '@nu-art/web-client//Thunder.js';
 import {stopPropagation} from '../utils/tools.js';
 import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2.js';
 import {TS_DialogOverlay} from '../components/TS_Dialog/index.js';

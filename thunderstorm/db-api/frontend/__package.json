@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@nu-art/firebase-shared": "?",
-    "@nu-art/thunder-browser-api": "?",
+    "@nu-art/web-client": "?",
     "@nu-art/thunder-db-api-shared": "?",
     "@nu-art/thunder-http": "?",
     "@nu-art/thunder-idb": "?",

@@ -23,7 +23,7 @@
  * Created by tacb0ss on 28/07/2018.
  */
 import {BaseComponent} from './ComponentBase.js';
-import {InferProps, InferState} from '@nu-art/thunder-utils/src/main/utils/types.js';
+import {InferProps, InferState} from '@nu-art/thunder-utils//utils/types.js';
 
 
 export abstract class ComponentSync<P = any, S = any>

@@ -24,4 +24,4 @@ export * from './TS_TextArea.js';
 export * from './TS_Input.js';
 
 //Export ATS
-export * from '@nu-art/thunder-ui-modules/src/main/ATS_TextArea/ATS_TextArea.js';
+export * from '@nu-art/thunder-ui-modules//ATS_TextArea/ATS_TextArea.js';

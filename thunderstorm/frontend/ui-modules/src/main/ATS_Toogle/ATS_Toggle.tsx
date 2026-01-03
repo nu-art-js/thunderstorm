@@ -1,4 +1,4 @@
-import { TS_Toggle } from '@nu-art/thunder-widgets/src/main/components/TS_Toggle/TS_Toggle.js';
+import { TS_Toggle } from '@nu-art/thunder-widgets//components/TS_Toggle/TS_Toggle.js';
 import { ComponentSync } from "@nu-art/thunder-routing";
 import { AppToolsScreen } from '../TS_AppTools/index.js';
 type State = {

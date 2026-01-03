@@ -46,7 +46,7 @@ export const getBrowseAndDeviceLogs = () => {
 export const getJSEngineLogs = () => {
 	console.error('JS engine');
 	console.warn('JS Engine hints:', {
-		hasChromeObj: !!window.chrome,
+		hasChromeObj: !!(window as any).chrome,
 		crossOriginIsolated: window.crossOriginIsolated,
 		sharedArrayBuffer: typeof SharedArrayBuffer !== 'undefined',
 		wasm: typeof WebAssembly !== 'undefined'

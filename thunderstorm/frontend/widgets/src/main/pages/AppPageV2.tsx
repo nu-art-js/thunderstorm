@@ -20,7 +20,7 @@
  */
 
 import {ComponentAsync} from './ComponentAsync.js';
-import {dispatch_onPageTitleChanged} from './consts.js';
+import {dispatch_onPageTitleChanged} from '@nu-art/web-client//consts.js';
 
 export abstract class AppPageV2<P extends {} = {}, S extends {} = {}>
 	extends ComponentAsync<P, S> {

@@ -1,5 +1,5 @@
 import { HTMLProps, ReactNode } from 'react';
-import { StorageKey } from '@nu-art/thunder-browser-api';
+import { StorageKey } from '@nu-art/web-client';
 import { ComponentSync } from "@nu-art/thunder-routing";
 import { TS_Input, TS_InputProps } from '../components/TS_Input/TS_Input.js';
 import { TS_TextArea } from '../components/TS_Input/TS_TextArea.js';

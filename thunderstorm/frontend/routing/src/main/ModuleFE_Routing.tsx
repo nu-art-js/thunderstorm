@@ -1,9 +1,8 @@
 import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
 import {TS_Route} from './types.js';
-import {_keys, BadImplementationException, composeQueryParams, composeUrl, exists, Module, removeItemFromArray} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, composeUrl, encodeUrlParams, exists, Module, removeItemFromArray, RouteParams, StringMap} from '@nu-art/ts-common';
 import {createBrowserHistory, History} from 'history';
 import {ThunderDispatcher} from '@nu-art/web-client';
-import { QueryParams, UrlQueryParams } from '@nu-art/thunder-db-api-shared';
 import {mouseEventHandler, stopPropagation} from '@nu-art/thunder-utils';
 
 export interface OnLocationChanged {
@@ -39,7 +38,7 @@ class ModuleFE_Routing_Class
 
 	// ######################## Public Functions ########################
 
-	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {
+	goToRoute<P extends RouteParams>(route: TS_Route<P>, params?: Partial<P>) {
 		const fullPath = this.getFullPath(route.key);
 		try {
 			const url = composeUrl(fullPath, params, window.location.hash);
@@ -53,7 +52,7 @@ class ModuleFE_Routing_Class
 		}
 	}
 
-	redirect<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {
+	redirect<P extends RouteParams>(route: TS_Route<P>, params?: Partial<P>) {
 		const url = composeUrl(this.getFullPath(route.key), params);
 		return <Navigate to={url}/>;
 	}
@@ -142,7 +141,7 @@ class ModuleFE_Routing_Class
 	/**
 	 * Get all query parameters from the current URL (decoded)
 	 */
-	getQueryParams(): UrlQueryParams {
+	getQueryParams(): StringMap {
 		const params = this.getEncodedQueryParams();
 		_keys(params).forEach(key => {
 			const _param = params[key];
@@ -173,8 +172,8 @@ class ModuleFE_Routing_Class
 	 * Replace all query parameters on the current route
 	 * @param queryParams - The query parameters to set
 	 */
-	setQuery(queryParams: UrlQueryParams) {
-		const encodedQueryParams = this.encodeUrlParams(queryParams);
+	setQuery(queryParams: RouteParams) {
+		const encodedQueryParams = encodeUrlParams(queryParams);
 		this.updateQueryParams(encodedQueryParams);
 	}
 
@@ -251,11 +250,11 @@ class ModuleFE_Routing_Class
 
 	// ######################## Private Helper Methods ########################
 
-	private getEncodedQueryParams(): UrlQueryParams {
-		const queryParams: UrlQueryParams = {};
+	private getEncodedQueryParams(): StringMap {
+		const queryParams: StringMap = {};
 		let queryAsString = window.location.search;
 		if (!queryAsString || queryAsString.length === 0)
-			return {};
+			return queryParams;
 
 		while (queryAsString.startsWith('?') || queryAsString.startsWith('/?')) {
 			if (queryAsString.startsWith('?'))
@@ -271,41 +270,14 @@ class ModuleFE_Routing_Class
 			const parts = param.split('=');
 			return {key: parts[0], value: parts[1]?.length === 0 ? undefined : parts[1]};
 		}).reduce((toRet, param) => {
-			toRet[param.key] = param.value;
+			if (param.value)
+				toRet[param.key] = param.value;
 			return toRet;
 		}, queryParams);
 	}
 
-	private composeQuery(queryParams?: UrlQueryParams): string {
-		const queryAsString = composeQueryParams(queryParams);
-		if (queryAsString.length === 0)
-			return '';
-
-		return queryAsString;
-	}
-
-	private encodeUrlParams(queryParams?: UrlQueryParams): UrlQueryParams {
-		const encodedQueryParams = {...queryParams};
-		_keys(encodedQueryParams).forEach(key => {
-			const value = encodedQueryParams[key];
-			if (!value) {
-				delete encodedQueryParams[key];
-				return;
-			}
-
-			encodedQueryParams[key] = encodeURIComponent(value);
-		});
-		return encodedQueryParams;
-	}
-
-	private createLocationDataFromQueryParams(encodedQueryParams?: UrlQueryParams, pathname: string = window.location.pathname): string {
-		const cleanPathname = !pathname.endsWith('/') ? pathname : pathname.substring(0, pathname.length - 1);
-		const search = encodedQueryParams ? this.composeQuery(encodedQueryParams) : '';
-		return search.length > 0 ? `${cleanPathname}?${search}` : cleanPathname;
-	}
-
-	private updateQueryParams(encodedQueryParams: UrlQueryParams) {
-		const url = this.createLocationDataFromQueryParams(encodedQueryParams);
+	private updateQueryParams(params: RouteParams, pathname: string = window.location.pathname) {
+		const url = composeUrl(pathname, params, window.location.hash);
 		this.history.replace(url);
 	}
 
@@ -344,46 +316,3 @@ export const TS_NavLink = (props: {
 export const ModuleFE_Routing = new ModuleFE_Routing_Class();
 
 // ######################## Utility Functions ########################
-
-/**
- * Encode URL query parameters
- * @param queryParams - Query parameters to encode
- * @returns Encoded query parameters
- */
-export function encodeUrlParams(queryParams?: UrlQueryParams): UrlQueryParams {
-	const encodedQueryParams = {...queryParams};
-	_keys(encodedQueryParams).forEach(key => {
-		const value = encodedQueryParams[key];
-		if (!value) {
-			delete encodedQueryParams[key];
-			return;
-		}
-
-		encodedQueryParams[key] = encodeURIComponent(value);
-	});
-	return encodedQueryParams;
-}
-
-/**
- * Compose a query string from query parameters
- * @param queryParams - Query parameters to compose
- * @returns Query string (without leading ?)
- */
-export function composeQuery(queryParams?: UrlQueryParams): string {
-	const queryAsString = composeQueryParams(queryParams);
-	if (queryAsString.length === 0)
-		return '';
-
-	return queryAsString;
-}
-
-/**
- * Compose a full URL with query parameters
- * @param url - Base URL
- * @param queryParams - Optional query parameters
- * @returns Full URL with query string
- */
-export function composeURL(url: string, queryParams?: UrlQueryParams): string {
-	const queryAsString = composeQuery(queryParams);
-	return `${url}${queryAsString.length > 0 ? `?${queryAsString}` : ''}`;
-}
