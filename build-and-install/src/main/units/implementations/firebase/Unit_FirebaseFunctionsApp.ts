@@ -320,8 +320,20 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				this.functions[match[1]] = match[2];
 			});
 
-		const debug = this.runtimeContext.runtimeParams.verbose ? ' --debug' : '';
-		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')}${debug} deploy --only functions --force`, (stdout, stderr, exitCode) => {
+		// For container deployment, use gcloud functions deploy with --image flag
+		// Firebase CLI doesn't support deploying pre-built container images directly
+		const functionName = 'hello'; // TODO: Extract from function exports or config
+		const region = artifactRegistry.region;
+		const gcloudDeployCommand = `gcloud functions deploy ${functionName} --gen2 --runtime=nodejs22 --region=${region} --source=${this.config.output.replace(`${this.config.fullPath}/`, '')} --entry-point=hello --trigger-http --allow-unauthenticated --image=${imageReference} --project=${artifactRegistry.projectId}`;
+
+		// Check for dry run mode
+		if (this.runtimeContext.runtimeParams.dryRun) {
+			this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
+			this.logInfo(`[DRY RUN] Would deploy image: ${imageReference}`);
+			return;
+		}
+
+		await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
 			if (exitCode === 0)
 				return;
 
@@ -455,16 +467,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			};
 		} else if (isContainerDeployment) {
 			// Container-based deployment
-			const containerDeployment = this.config.containerDeployment!;
-			const artifactRegistry = containerDeployment.artifactRegistry;
-			const imageName = containerDeployment.imageName;
-
-			const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
-			const imageReference = `${artifactRegistryPath}/${imageName}:${deployImageTag}`;
-
+			// For container deployment, source must still point to a directory (Firebase CLI requirement)
+			// The container image is specified via environment variable or function code
 			fileContent = {
 				functions: {
-					source: imageReference,
+					source: this.config.output.replace(`${this.config.fullPath}/`, ''),
 					ignore: this.config.ignore,
 				}
 			};

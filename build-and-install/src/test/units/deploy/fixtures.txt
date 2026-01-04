@@ -79,7 +79,8 @@ service firebase.storage {
     "eslint": "latest",
     "@typescript-eslint/parser": "latest",
     "@typescript-eslint/eslint-plugin": "latest",
-    "undici-types": "^7.8.0"
+    "undici-types": "^7.8.0",
+    "firebase-tools": "latest"
   },
   "unitConfig": {
     "type": "node-project",
