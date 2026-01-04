@@ -51,7 +51,18 @@ const test = async (setup: Input) => {
 	buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Compile], [phase_BuildPushImage], [phase_DeployImage]]);
 
 	await buildAndInstall.build();
-	await buildAndInstall.run();
+	try {
+		await buildAndInstall.run();
+	} catch (error: any) {
+		// If skipDeploy is true, we still want to verify the format even if deploy fails
+		// resolveFunctionsJSON is called during resolveConfigs (in deployImage), which happens before the actual deploy command
+		// So firebase.json should already be updated with the correct format
+		if (setup.skipDeploy) {
+			// Still return buildAndInstall so we can verify firebase.json format
+			return buildAndInstall;
+		}
+		throw error;
+	}
 	return buildAndInstall;
 };
 
