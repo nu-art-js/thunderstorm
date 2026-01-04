@@ -2,7 +2,7 @@
 import {DebugFlag, generateHex, LogLevel, sleep} from '@nu-art/ts-common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {phase_BuildPushImage, phase_Compile, phase_DeployImage, phase_Install, phase_Prepare, Unit_FirebaseFunctionsApp} from '../../_common.js';
+import {phase_Compile, phase_DeployImage, phase_Install, phase_Prepare, Unit_FirebaseFunctionsApp} from '../../_common.js';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
@@ -26,7 +26,7 @@ const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspac
 type Input = {
 	fixtures: string[];
 	imageTag?: string;
-	skipDeploy?: boolean;
+	useDryRun?: boolean;
 };
 type Output = (bai: BuildAndInstall) => Promise<void>;
 
@@ -45,24 +45,16 @@ const test = async (setup: Input) => {
 	const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	buildAndInstall.runtimeParams.allUnits = true;
 	buildAndInstall.runtimeParams.environment = 'test';
-	const imageTag = setup.imageTag || 'test-deploy-v1.0.0';
-	buildAndInstall.runtimeParams.buildPushImage = imageTag;
-	buildAndInstall.runtimeParams.deployImage = imageTag;
-	buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Compile], [phase_BuildPushImage], [phase_DeployImage]]);
+	// For deploy tests, use 'latest' tag to deploy existing images (assumes image already exists)
+	const deployImageTag = setup.imageTag || 'latest';
+	buildAndInstall.runtimeParams.deployImage = deployImageTag;
+
+	// Deploy tests don't build images - they assume images with 'latest' tag already exist
+	buildAndInstall.runtimeParams.dryRun = !!setup.useDryRun;
+	buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Compile], [phase_DeployImage]]);
 
 	await buildAndInstall.build();
-	try {
-		await buildAndInstall.run();
-	} catch (error: any) {
-		// If skipDeploy is true, we still want to verify the format even if deploy fails
-		// resolveFunctionsJSON is called during resolveConfigs (in deployImage), which happens before the actual deploy command
-		// So firebase.json should already be updated with the correct format
-		if (setup.skipDeploy) {
-			// Still return buildAndInstall so we can verify firebase.json format
-			return buildAndInstall;
-		}
-		throw error;
-	}
+	await buildAndInstall.run();
 	return buildAndInstall;
 };
 
@@ -85,8 +77,8 @@ describe('Firebase Deploy Image Phase', () => {
 		it('Functions - Deploy Container Image to Firebase', runTestCase({
 			input: {
 				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-				imageTag: 'test-deploy-image-v1.0.0',
-				skipDeploy: false
+				imageTag: 'latest',
+				useDryRun: false
 			},
 			result: async (bai: BuildAndInstall) => {
 				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
@@ -106,9 +98,9 @@ describe('Firebase Deploy Image Phase', () => {
 
 				// Verify container image format (source should be the image reference, not a path)
 				expect(firebaseJson.functions.source).to.exist;
-				const imageName = containerDeployment.imageName || functionUnit.config.key;
+				const imageName = containerDeployment.imageName; // imageName is mandatory
 				const artifactRegistryPath = `${containerDeployment.artifactRegistry.region}-docker.pkg.dev/${containerDeployment.artifactRegistry.projectId}/${containerDeployment.artifactRegistry.repository}`;
-				const expectedImageReference = `${artifactRegistryPath}/${imageName}:test-deploy-image-v1.0.0`;
+				const expectedImageReference = `${artifactRegistryPath}/${imageName}:latest`;
 				expect(firebaseJson.functions.source).to.equal(expectedImageReference);
 
 				// Verify runtime is not set (container images don't need runtime)
@@ -124,10 +116,21 @@ describe('Firebase Deploy Image Phase', () => {
 
 				// Verify function URLs were captured (if deployment succeeded)
 				expect(functionUnit.functions).to.exist;
-				if (Object.keys(functionUnit.functions).length > 0) {
-					const functionName = Object.keys(functionUnit.functions)[0];
-					expect(functionUnit.functions[functionName]).to.include('https://');
-				}
+				expect(Object.keys(functionUnit.functions).length).to.be.greaterThan(0);
+
+				// Verify deployment ID in function response
+				functionUnit.logDebug('=== Verifying deployment ID in deployed functions ===');
+				const functionName = Object.keys(functionUnit.functions)[0];
+				const functionUrl = functionUnit.functions[functionName];
+				expect(functionUrl).to.include('https://');
+
+				// Make HTTP request to verify deployment ID
+				const response = await fetch(functionUrl);
+				expect(response.ok).to.be.true;
+				const data = await response.json() as { message?: string; deploymentId?: string };
+				expect(data.deploymentId).to.exist;
+				expect(data.deploymentId).to.equal(deploymentId);
+				expect(data.message).to.equal('Hello World');
 
 				functionUnit.logDebug('=== Deploy Image Testing Completed ===');
 			}
@@ -136,8 +139,8 @@ describe('Firebase Deploy Image Phase', () => {
 		it('Functions - Deploy Image with Custom Image Name', runTestCase({
 			input: {
 				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-				imageTag: 'custom-deploy-v1.0.0',
-				skipDeploy: false
+				imageTag: 'latest',
+				useDryRun: false
 			},
 			result: async (bai: BuildAndInstall) => {
 				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
@@ -154,8 +157,8 @@ describe('Firebase Deploy Image Phase', () => {
 				const firebaseJson = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
 				expect(firebaseJson.functions.source).to.exist;
 
-				// Verify image reference contains the correct tag
-				expect(firebaseJson.functions.source).to.include('custom-deploy-v1.0.0');
+				// Verify image reference contains the latest tag
+				expect(firebaseJson.functions.source).to.include(':latest');
 
 				functionUnit.logDebug('=== Custom Image Name Deploy Test Completed ===');
 			}
@@ -164,8 +167,8 @@ describe('Firebase Deploy Image Phase', () => {
 		it('Functions - Verify Container Image Format in firebase.json', runTestCase({
 			input: {
 				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-				imageTag: 'format-test-v1.0.0',
-				skipDeploy: true
+				imageTag: 'latest',
+				useDryRun: true
 			},
 			result: async (bai: BuildAndInstall) => {
 				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
