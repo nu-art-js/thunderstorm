@@ -274,21 +274,56 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	/**
-	 * Deploys container image from Artifact Registry to Firebase Functions.
+	 * Discovers exported functions from the compiled dist/index.js file.
+	 * Parses export statements to extract function names.
+	 *
+	 * @returns Array of function names found in exports
+	 */
+	private async discoverExportedFunctions(): Promise<string[]> {
+		const indexPath = resolve(this.config.output, 'index.js');
+		const content = await FileSystemUtils.file.read(indexPath);
+
+		const functionNames: string[] = [];
+		// Match patterns like: export const hello = ... or export const helloWorld = ...
+		const exportConstRegex = /export\s+const\s+(\w+)\s*=/g;
+		let match;
+		while ((match = exportConstRegex.exec(content)) !== null) {
+			functionNames.push(match[1]);
+		}
+
+		// Also match: export { hello, world } or export { hello as helloWorld }
+		const exportNamedRegex = /export\s*\{\s*([^}]+)\s*\}/g;
+		while ((match = exportNamedRegex.exec(content)) !== null) {
+			const exports = match[1].split(',').map(e => e.trim());
+			for (const exp of exports) {
+				// Handle "name as alias" or just "name"
+				const nameMatch = exp.match(/(\w+)(?:\s+as\s+\w+)?/);
+				if (nameMatch) {
+					functionNames.push(nameMatch[1]);
+				}
+			}
+		}
+
+		return functionNames;
+	}
+
+	/**
+	 * Deploys container image from Artifact Registry to Firebase Functions using gcloud.
 	 *
 	 * **Process**:
 	 * 1. Validates image tag is provided via CLI
 	 * 2. Validates containerDeployment config exists
 	 * 3. Reconstructs image reference (same logic as buildPushImage)
-	 * 4. Updates firebase.json to use container image format
-	 * 5. Deploys using Firebase CLI
+	 * 4. Discovers exported functions from dist/index.js
+	 * 5. Deploys each function separately using gcloud functions deploy with --docker-image
 	 * 6. Parses deployment output for function URLs
 	 *
 	 * **Requirements**:
 	 * - `--deploy-image <tag>` CLI flag with tag value
 	 * - `containerDeployment` config in unit config
 	 * - Image must already exist in Artifact Registry (built via buildPushImage)
-	 * - Firebase CLI installed and authenticated
+	 * - gcloud CLI installed and authenticated
+	 * - Cloud Functions API enabled in GCP project
 	 */
 	async deployImage() {
 		const imageTag = this.runtimeContext.runtimeParams.deployImage;
@@ -307,38 +342,64 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		this.logInfo(`Deploying container image: ${imageReference}`);
 
-		// Update firebase.json to use container image
-		// This will be done in resolveFunctionsJSON when deployImage tag is present
+		// Update firebase.json (keeps source as dist directory for container deployment)
 		await this.resolveConfigs();
 
-		// Deploy using Firebase CLI
+		// Discover exported functions from compiled code
+		const functionNames = await this.discoverExportedFunctions();
+		if (functionNames.length === 0) {
+			throw new ImplementationMissingException(`No exported functions found in ${this.config.output}/index.js`);
+		}
+
+		this.logInfo(`Discovered ${functionNames.length} function(s): ${functionNames.join(', ')}`);
+
+		const region = artifactRegistry.region;
+		const projectId = artifactRegistry.projectId;
+
+		// Deploy each function separately with the same image but different entry points
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.config.fullPath)
 			.setLogLevelFilter(deployLogFilter)
-			// example: Function URL (hello(us-central1)): https://hello-kv65k7yylq-uc.a.run.app
-			.onLog(/.*Function URL.*?\((.*?)\(.*(https:\/\/.*?)$/, match => {
+			// Parse gcloud output for function URLs
+			// Example: httpsTrigger:
+			//   url: https://hello-kv65k7yylq-uc.a.run.app
+			.onLog(/url:\s*(https:\/\/[^\s]+)/, match => {
+				// Extract function name from URL or use the last deployed function name
+				// We'll track this per function deployment
+				const url = match[1];
+				// Try to extract function name from URL pattern: https://functionName-xxx-xx.a.run.app
+				const urlMatch = url.match(/https:\/\/([^-]+)-/);
+				if (urlMatch) {
+					this.functions[urlMatch[1]] = url;
+				}
+			})
+			// Also match: Function URL (hello(us-central1)): https://hello-kv65k7yylq-uc.a.run.app
+			.onLog(/Function URL.*?\((.*?)\(.*(https:\/\/.*?)$/, match => {
 				this.functions[match[1]] = match[2];
 			});
 
-		// For container deployment, use gcloud functions deploy with --image flag
-		// Firebase CLI doesn't support deploying pre-built container images directly
-		const functionName = 'hello'; // TODO: Extract from function exports or config
-		const region = artifactRegistry.region;
-		const gcloudDeployCommand = `gcloud functions deploy ${functionName} --gen2 --runtime=nodejs22 --region=${region} --source=${this.config.output.replace(`${this.config.fullPath}/`, '')} --entry-point=hello --trigger-http --allow-unauthenticated --image=${imageReference} --project=${artifactRegistry.projectId}`;
-
 		// Check for dry run mode
 		if (this.runtimeContext.runtimeParams.dryRun) {
-			this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
-			this.logInfo(`[DRY RUN] Would deploy image: ${imageReference}`);
+			this.logInfo(`[DRY RUN] Would deploy ${functionNames.length} function(s) with image: ${imageReference}`);
+			for (const functionName of functionNames) {
+				const gcloudDeployCommand = `gcloud functions deploy ${functionName} --gen2 --project=${projectId} --region=${region} --runtime=nodejs22 --trigger-http --allow-unauthenticated --docker-image=${imageReference} --entry-point=${functionName}`;
+				this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
+			}
 			return;
 		}
 
-		await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
-			if (exitCode === 0)
-				return;
+		// Deploy each function
+		for (const functionName of functionNames) {
+			this.logInfo(`Deploying function: ${functionName}`);
+			const gcloudDeployCommand = `gcloud functions deploy ${functionName} --gen2 --project=${projectId} --region=${region} --runtime=nodejs22 --trigger-http --allow-unauthenticated --docker-image=${imageReference} --entry-point=${functionName}`;
 
-			throw new CommandoException(`Failed to deploy function with exit code ${exitCode}`, stdout, stderr, exitCode);
-		});
+			await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
+				if (exitCode === 0)
+					return;
+
+				throw new CommandoException(`Failed to deploy function ${functionName} with exit code ${exitCode}`, stdout, stderr, exitCode);
+			});
+		}
 
 		this.logInfo(`Functions deployed: `, this.functions);
 	}
@@ -467,8 +528,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			};
 		} else if (isContainerDeployment) {
 			// Container-based deployment
-			// For container deployment, source must still point to a directory (Firebase CLI requirement)
-			// The container image is specified via environment variable or function code
+			// For container deployment, source must still point to a directory (for compatibility)
+			// The container image is specified via --docker-image flag in gcloud functions deploy
 			fileContent = {
 				functions: {
 					source: this.config.output.replace(`${this.config.fullPath}/`, ''),
