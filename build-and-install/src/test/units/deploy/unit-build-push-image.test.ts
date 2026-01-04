@@ -109,7 +109,7 @@ describe('Firebase Build Push Image Phase', () => {
 	before(async function () {
 		this.timeout(60000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt', 'firebase-function-nested-deps.txt'], params);
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt', 'firebase-function-nested-deps.txt', 'firebase-function-hello-container.txt'], params);
 		await workspaceCreator.setupWorkspace(['workspace-deploy.txt'], params);
 	});
 

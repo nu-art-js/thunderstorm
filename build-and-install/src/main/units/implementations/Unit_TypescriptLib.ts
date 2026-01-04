@@ -72,7 +72,7 @@ const CONST_ESM_PREFIX = 'export NODE_OPTIONS=\'--import data:text/javascript,im
 const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<string>> = {
 	pure: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
-		const files = runtimeContext.runtimeParams.testFiles ?? [`src/test/${defaultTestPatterns.firebase}`].map(file => `'${file}'`);
+		const files = runtimeContext.runtimeParams.testFiles ?? [`src/test/${defaultTestPatterns.pure}`].map(file => `'${file}'`);
 		const testCases = runtimeContext.runtimeParams.testCases;
 		const cli_testFiles = ` ${files.join(' ')}`;
 		const cli_testCases = testCases ? ` --grep '${testCases.join('|')}'` : '';
