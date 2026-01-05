@@ -168,6 +168,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 			this.logVerbose('listening unit:', declaration.unit.config.key);
 			declaration.unit.logVerbose('listening paths:', declaration.paths.join('\n'));
 		});
+
 		const paths = pathDeclarations.flatMap(path => path.paths);
 		this.watcher = chokidar.watch(paths);
 		// set all events to watch and handle them
@@ -229,6 +230,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 				const libsToCompile = unitsMapper.getReverseDependencies(changedKeys);
 				const fullDependencyTree: BaseUnit[][] = (await unitsMapper.buildDependencyTree(libsToCompile))
 					.map(units => units.map(unitKey => keyToInnerUnitMap[unitKey]));
+
 				if (this.runtimeContext.runtimeParams.watchBuildTree) {
 					unitDependencyTree = fullDependencyTree;
 				} else {
@@ -251,6 +253,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					noBuild: false,
 					continue: false
 				};
+
 				const activeUnitKeys = this.runtimeContext.childUnits.map(unit => unit.config.key);
 				const phaseManager = new PhaseManager(new RunningStatusHandler(this.config.fullPath, watchRuntimeParams).isolate(), [[phase_CompileWatch]], unitDependencyTree, activeUnitKeys, activeUnitKeys);
 				// @ts-ignore

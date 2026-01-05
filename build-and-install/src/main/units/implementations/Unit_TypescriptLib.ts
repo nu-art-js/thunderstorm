@@ -9,7 +9,8 @@ import {
 	merge,
 	NotImplementedYetException,
 	RecursivePartial,
-	TypedMap
+	TypedMap,
+	WhoCallThisException
 } from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, CONST_PackageJSONTemplate, CONST_TS_CONFIG} from '../../config/consts.js';
@@ -302,6 +303,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	 * watch compile is a subset of the general watch action
 	 */
 	public async watchCompile() {
+		this.logDebug(new WhoCallThisException('watchCompile'));
 		await this.compileImpl();
 		await this.copyAssetsToOutput();
 		await this.copyPackageJSONToOutput();

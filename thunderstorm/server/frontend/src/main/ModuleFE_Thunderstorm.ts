@@ -19,9 +19,7 @@
  * limitations under the License.
  */
 import {BadImplementationException, Module} from '@nu-art/ts-common';
-import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster.js';
 import {dispatch_onClearWebsiteData} from './clearWebsiteDataDispatcher.js';
-import {base64ToBlob} from './tools.js';
 
 type Config = {
 	appName: string;
@@ -69,35 +67,36 @@ class ModuleFE_Thunderstorm_Class
 		return await dispatch_onClearWebsiteData.dispatchModuleAsync();
 	}
 
-	async copyToClipboard(toCopy: string, customSuccessMessage?: string) {
-		try {
-			await navigator.clipboard.writeText(toCopy);
-			ModuleFE_Toaster.toastInfo(customSuccessMessage ?? `Copied to Clipboard:\n"${toCopy}"`);
-		} catch (e) {
-			ModuleFE_Toaster.toastError(`Failed to copy to Clipboard:\n"${toCopy}"`);
-		}
-	}
+	// async copyToClipboard(toCopy: string, customSuccessMessage?: string) {
+	// 	try {
+	// 		await navigator.clipboard.writeText(toCopy);
+	// 		ModuleFE_Toaster.toastInfo(customSuccessMessage ?? `Copied to Clipboard:\n"${toCopy}"`);
+	// 	} catch (e) {
+	// 		ModuleFE_Toaster.toastError(`Failed to copy to Clipboard:\n"${toCopy}"`);
+	// 	}
+	// }
+	//
+	// async readFileContent(file: File) {
+	// 	const fullUrl = URL.createObjectURL(file);
+	// 	const response = await fetch(fullUrl);
+	// 	const content = await response.text();
+	// 	URL.revokeObjectURL(fullUrl);
+	// 	return content;
+	// }
+	//
+	// async writeToClipboard(imageAsBase64: string, contentType = 'image/png') {
+	// 	try {
+	// 		// const clipboardItem = new ClipboardItem({'image/png': imageAsBase64});
+	// 		const clipboardItem = new ClipboardItem({contentType: await base64ToBlob(imageAsBase64)});
+	// 		await navigator.clipboard.write([clipboardItem]);
+	//
+	// 		// TODO: Render Blob in toast
+	// 		ModuleFE_Toaster.toastInfo(`Copied image Clipboard`);
+	// 	} catch (error) {
+	// 		ModuleFE_Toaster.toastError(`Failed to copy image to Clipboard`);
+	// 	}
+	// }
 
-	async readFileContent(file: File) {
-		const fullUrl = URL.createObjectURL(file);
-		const response = await fetch(fullUrl);
-		const content = await response.text();
-		URL.revokeObjectURL(fullUrl);
-		return content;
-	}
-
-	async writeToClipboard(imageAsBase64: string, contentType = 'image/png') {
-		try {
-			// const clipboardItem = new ClipboardItem({'image/png': imageAsBase64});
-			const clipboardItem = new ClipboardItem({contentType: await base64ToBlob(imageAsBase64)});
-			await navigator.clipboard.write([clipboardItem]);
-
-			// TODO: Render Blob in toast
-			ModuleFE_Toaster.toastInfo(`Copied image Clipboard`);
-		} catch (error) {
-			ModuleFE_Toaster.toastError(`Failed to copy image to Clipboard`);
-		}
-	}
 
 	getAppName() {
 		return this.config.appName;

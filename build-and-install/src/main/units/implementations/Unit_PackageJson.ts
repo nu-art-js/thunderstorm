@@ -52,7 +52,9 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	}
 
 	protected deriveDistDependencies(): StringMap {
-		const params = this.runtimeContext.childUnits.reduce((dependencies, unit) => {
+		const dependenciesKeys = Object.keys(this.config.dependencies);
+		this.logWarning(dependenciesKeys);
+		const params = this.runtimeContext.childUnits.filter(unit => dependenciesKeys.includes(unit.config.key)).reduce((dependencies, unit) => {
 			try {
 				dependencies[unit.config.key] = (unit as Unit_PackageJson).config.packageJson.version;
 			} catch (e: any) {
@@ -68,8 +70,9 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 		};
 	}
 
-	protected deriveLibDependencies() {
-		return this.runtimeContext.childUnits.reduce((dependencies, unit) => {
+	protected deriveWorkspaceDependencies() {
+		const dependenciesKeys = Object.keys(this.config.dependencies);
+		return this.runtimeContext.childUnits.filter(unit => dependenciesKeys.includes(unit.config.key)).reduce((dependencies, unit) => {
 			dependencies[unit.config.key] = 'workspace:*';
 			return dependencies;
 		}, {...this.runtimeContext.baiConfig.templateParams?.packageJson, __ENV__: this.runtimeContext.runtimeParams.environment} as StringMap);
@@ -90,10 +93,11 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	 */
 	async prepare() {
 		const targetPath = resolve(this.config.fullPath, CONST_PackageJSON);
-		const params = this.deriveLibDependencies();
+		const params = this.deriveWorkspaceDependencies();
 		const packageJson = FileSystemUtils.file.template.transform(__stringify(this.config.packageJson, true), params);
 		await FileSystemUtils.file.template.write(targetPath, packageJson, params, DEFAULT_OLD_TEMPLATE_PATTERN);
 	}
+
 
 	/**
 	 * Purges package.json and node_modules folder.
