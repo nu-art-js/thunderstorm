@@ -1,12 +1,14 @@
 // file: ./tests/units/deploy/unit-deploy-image.test.ts
-import {DebugFlag, generateHex, isErrorOfType, LogLevel, sleep} from '@nu-art/ts-common';
+import {DebugFlag, isErrorOfType, LogLevel, sleep} from '@nu-art/ts-common';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
 import {phase_Compile, phase_DeployImage, phase_Install, phase_Prepare, Unit_FirebaseFunctionsApp} from '../../_common.js';
+import type {Unit_FirebaseFunctionsApp_Config} from '../../../main/units/implementations/firebase/Unit_FirebaseFunctionsApp.js';
 import {PhaseAggregatedException} from '../../../main/exceptions/PhaseAggregatedException.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
+import {execSync} from 'child_process';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
@@ -29,13 +31,15 @@ type Input = {
 	fixtures: string[];
 	imageTag?: string;
 	useDryRun?: boolean;
+	deployFunction?: string;
+	deleteFunction?: string;
+	deleteFunctions?: boolean;
 };
 type Output = (bai: BuildAndInstall) => Promise<void>;
 
-const deploymentId = generateHex(16);
 const params = {
-	DEPLOYMENT_ID_PLACEHOLDER: deploymentId,
-	FIREBASE_TEST_PROJECT: 'nu-art-thunderstorm-test'
+	FIREBASE_TEST_PROJECT: 'nu-art-thunderstorm-test',
+	DEPLOYMENT_ID_PLACEHOLDER: 'DEPLOYMENT_ID_PLACEHOLDER'
 };
 
 const test = async (setup: Input) => {
@@ -49,12 +53,20 @@ const test = async (setup: Input) => {
 	buildAndInstall.runtimeParams.environment = 'test';
 	const imageTag = setup.imageTag || 'latest';
 	buildAndInstall.runtimeParams.deployImage = imageTag;
-	buildAndInstall.runtimeParams.dryRun = !!setup.useDryRun;
-	// Deploy tests assume image already exists (built separately)
-	// Only run prepare, install, compile, and deploy phases
-	buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Compile], [phase_DeployImage]]);
+	// Don't set dryRun yet - we need prepare() to run first to create firebase.json
+	if (setup.deployFunction) {
+		buildAndInstall.runtimeParams.deployFunction = setup.deployFunction;
+	}
+	if (setup.deleteFunction) {
+		buildAndInstall.runtimeParams.deleteFunction = setup.deleteFunction;
+	}
+	if (setup.deleteFunctions !== undefined) {
+		buildAndInstall.runtimeParams.deleteFunctions = setup.deleteFunctions;
+	}
 
+	buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Compile], [phase_DeployImage]]);
 	await buildAndInstall.build();
+
 	try {
 		await buildAndInstall.run();
 	} catch (error: any) {
@@ -117,124 +129,259 @@ describe('Firebase Deploy Image Phase', () => {
 		await workspaceCreator.setupWorkspace(['workspace-deploy.txt'], params);
 	});
 
-	describe('Deploy Image Phase', () => {
-		it('Functions - Deploy Container Image to Firebase', runTestCase({
-			input: {
-				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-				imageTag: 'latest',
-				useDryRun: false
-			},
-			result: async (bai: BuildAndInstall) => {
-				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
-				expect(functionUnit).to.exist;
+	it('Functions - Deploy Container Image to Firebase', runTestCase({
+		input: {
+			fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
+			imageTag: 'latest',
+			useDryRun: false,
+			deleteFunction: 'hello' // Delete function before deploying to ensure fresh deployment
+		},
+		result: async (bai: BuildAndInstall) => {
+			const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+			functionUnit.logDebug('=== Verifying function unit exists ===');
+			expect(functionUnit).to.exist;
 
-				// Verify containerDeployment config exists
-				expect(functionUnit.config.containerDeployment).to.exist;
-				const containerDeployment = functionUnit.config.containerDeployment!;
-				expect(containerDeployment.artifactRegistry).to.exist;
+			// Verify containerDeployment config exists
+			functionUnit.logDebug('=== Verifying containerDeployment config ===');
+			expect(functionUnit.config.containerDeployment).to.exist;
+			const containerDeployment = functionUnit.config.containerDeployment!;
+			expect(containerDeployment.artifactRegistry).to.exist;
 
-				// Verify firebase.json was created with container image format
-				const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
-				expect(existsSync(firebaseJsonPath)).to.be.true;
+			// Verify firebase.json was created with container image format
+			functionUnit.logDebug('=== Verifying firebase.json exists and format ===');
+			const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
+			expect(existsSync(firebaseJsonPath)).to.be.true;
 
-				const firebaseJson = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
-				expect(firebaseJson.functions).to.exist;
+			const firebaseJson = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
+			expect(firebaseJson.functions).to.exist;
 
-				// Verify source points to dist directory (not image reference)
-				// Container image is specified via --docker-image flag in gcloud deploy, not in firebase.json
-				expect(firebaseJson.functions.source).to.exist;
-				expect(firebaseJson.functions.source).to.equal('dist');
+			// Verify source points to dist directory (not image reference)
+			// Container image is specified via --docker-image flag in gcloud deploy, not in firebase.json
+			functionUnit.logDebug('=== Verifying firebase.json source configuration ===');
+			expect(firebaseJson.functions.source).to.exist;
+			expect(firebaseJson.functions.source).to.equal('dist');
 
-				// Verify runtime is not set (container images don't need runtime)
-				expect(firebaseJson.functions.runtime).to.be.undefined;
+			// Verify runtime is not set (container images don't need runtime)
+			functionUnit.logDebug('=== Verifying runtime is not set for container deployment ===');
+			expect(firebaseJson.functions.runtime).to.be.undefined;
 
-				// Verify .firebaserc was created
-				const firebaseRcPath = resolve(functionUnit.config.fullPath, CONST_FirebaseRC);
-				expect(existsSync(firebaseRcPath)).to.be.true;
+			// Verify .firebaserc was created
+			functionUnit.logDebug('=== Verifying .firebaserc exists ===');
+			const firebaseRcPath = resolve(functionUnit.config.fullPath, CONST_FirebaseRC);
+			expect(existsSync(firebaseRcPath)).to.be.true;
 
-				// Verify output directory exists with files
-				const compiledJs = resolve(functionUnit.config.output, 'index.js');
-				expect(existsSync(compiledJs)).to.be.true;
+			// Verify output directory exists with files
+			functionUnit.logDebug('=== Verifying compiled output files ===');
+			const compiledJs = resolve(functionUnit.config.output, 'index.js');
+			expect(existsSync(compiledJs)).to.be.true;
 
-				// Verify function URLs were captured (if deployment succeeded)
-				expect(functionUnit.functions).to.exist;
-				if (Object.keys(functionUnit.functions).length > 0) {
-					const functionName = Object.keys(functionUnit.functions)[0];
-					expect(functionUnit.functions[functionName]).to.include('https://');
-				}
+			// Verify function URLs were captured (if deployment succeeded)
+			functionUnit.logDebug('=== Verifying function URLs were captured ===');
+			expect(functionUnit.functions).to.exist;
+			expect(Object.keys(functionUnit.functions).length).to.be.greaterThan(0);
 
-				functionUnit.logDebug('=== Deploy Image Testing Completed ===');
-			}
-		})).timeout(300000); // Skip by default - requires Firebase CLI authentication and Docker
+			// Verify deployed function and deployment-id label match
+			await verifyDeployedFunctionWithLabel(
+				containerDeployment,
+				bai.runtimeParams.deployImage || 'latest',
+				functionUnit,
+				'hello',
+				{message: 'Hello World'}
+			);
 
-		it('Functions - Deploy Image with Custom Image Name', runTestCase({
-			input: {
-				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-				imageTag: 'latest',
-				useDryRun: false
-			},
-			result: async (bai: BuildAndInstall) => {
-				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
-				expect(functionUnit).to.exist;
+			functionUnit.logDebug('=== Deploy Image Testing Completed ===');
+		}
+	})).timeout(300000); // Skip by default - requires Firebase CLI authentication and Docker
 
-				// Verify containerDeployment config exists
-				expect(functionUnit.config.containerDeployment).to.exist;
-				// const containerDeployment = functionUnit.config.containerDeployment!;
+	it('Functions - Deploy Image with Custom Image Name', runTestCase({
+		input: {
+			fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
+			imageTag: 'latest',
+			useDryRun: false,
+			deleteFunction: 'hello' // Delete function before deploying to ensure fresh deployment
+		},
+		result: async (bai: BuildAndInstall) => {
+			const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+			functionUnit.logDebug('=== Verifying function unit exists ===');
+			expect(functionUnit).to.exist;
 
-				// Verify firebase.json uses container image format
-				const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
-				expect(existsSync(firebaseJsonPath)).to.be.true;
+			// Verify containerDeployment config exists
+			functionUnit.logDebug('=== Verifying containerDeployment config ===');
+			expect(functionUnit.config.containerDeployment).to.exist;
+			// const containerDeployment = functionUnit.config.containerDeployment!;
 
-				const firebaseJson = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
-				expect(firebaseJson.functions.source).to.exist;
+			// Verify firebase.json uses container image format
+			functionUnit.logDebug('=== Verifying firebase.json exists and format ===');
+			const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
+			expect(existsSync(firebaseJsonPath)).to.be.true;
 
-				// Verify source points to dist directory (not image reference)
-				expect(firebaseJson.functions.source).to.equal('dist');
+			const firebaseJson = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
+			functionUnit.logDebug('=== Verifying firebase.json source configuration ===');
+			expect(firebaseJson.functions.source).to.exist;
 
-				functionUnit.logDebug('=== Custom Image Name Deploy Test Completed ===');
-			}
-		})).timeout(300000);
+			// Verify source points to dist directory (not image reference)
+			expect(firebaseJson.functions.source).to.equal('dist');
 
-		it('Functions - Verify Container Image Format in firebase.json', runTestCase({
-			input: {
-				fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-				imageTag: 'latest',
-				useDryRun: true
-			},
-			result: async (bai: BuildAndInstall) => {
-				const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
-				expect(functionUnit).to.exist;
+			// Verify function URLs were captured and verify via HTTP
+			functionUnit.logDebug('=== Verifying function URLs were captured ===');
+			expect(functionUnit.functions).to.exist;
+			expect(Object.keys(functionUnit.functions).length).to.be.greaterThan(0);
 
-				// Verify firebase.json was created
-				const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
-				expect(existsSync(firebaseJsonPath)).to.be.true;
+			const functionUrl = functionUnit.functions['hello'];
+			expect(functionUrl).to.exist;
+			expect(functionUrl).to.include('https://');
 
-				const firebaseJson = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
-				expect(firebaseJson.functions).to.exist;
+			// Verify deployed function via HTTP request
+			functionUnit.logDebug('=== Verifying deployed function via HTTP request ===');
+			const response = await fetch(functionUrl);
+			expect(response.ok).to.be.true;
 
-				// Verify source points to dist directory (not image reference)
-				// Container image is specified via --docker-image flag in gcloud deploy, not in firebase.json
-				expect(firebaseJson.functions.source).to.exist;
-				expect(firebaseJson.functions.source).to.equal('dist');
+			const data = await response.json();
+			expect(data.message).to.equal('Hello World');
+			expect(data.deploymentId).to.exist;
+			// expect(data.deploymentId).to.equal(deploymentId);
 
-				// Verify no runtime field (containers don't use runtime)
-				expect(firebaseJson.functions.runtime).to.be.undefined;
+			functionUnit.logDebug('=== Custom Image Name Deploy Test Completed ===');
+		}
+	})).timeout(300000);
 
-				functionUnit.logDebug('=== Container Image Format Test Completed ===');
-			}
-		})).timeout(300000);
-	});
+	// it('Functions - Verify Container Image Format in firebase.json', runTestCase({
+	// 	input: {
+	// 		fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
+	// 		imageTag: 'latest',
+	// 		useDryRun: true
+	// 	},
+	// 	result: async (bai: BuildAndInstall) => {
+	// 		const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+	// 		functionUnit.logDebug('=== Verifying function unit exists ===');
+	// 		expect(functionUnit).to.exist;
+	//
+	// 		// Verify firebase.json was created
+	// 		functionUnit.logDebug('=== Verifying firebase.json exists ===');
+	// 		const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
+	// 		expect(existsSync(firebaseJsonPath)).to.be.true;
+	//
+	// 		const firebaseJson = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
+	// 		functionUnit.logDebug('=== Verifying firebase.json functions configuration ===');
+	// 		expect(firebaseJson.functions).to.exist;
+	//
+	// 		// Verify source points to dist directory (not image reference)
+	// 		// Container image is specified via --docker-image flag in gcloud deploy, not in firebase.json
+	// 		functionUnit.logDebug('=== Verifying firebase.json source configuration ===');
+	// 		expect(firebaseJson.functions.source).to.exist;
+	// 		expect(firebaseJson.functions.source).to.equal('dist');
+	//
+	// 		// Verify no runtime field (containers don't use runtime)
+	// 		// Runtime should not exist in the object for container deployment
+	// 		functionUnit.logDebug('=== Verifying runtime is not set for container deployment ===');
+	// 		if (firebaseJson.functions.hasOwnProperty('runtime')) {
+	// 			// If runtime exists, it should be undefined or not set for container deployment
+	// 			expect(firebaseJson.functions.runtime).to.be.undefined;
+	// 		}
+	//
+	// 		functionUnit.logDebug('=== Container Image Format Test Completed ===');
+	// 	}
+	// })).timeout(300000);
 
-	describe('Deployment Verification', () => {
-		it('Functions - Verify deployed container endpoint returns expected content', async function () {
-			this.skip(); // Skip by default - requires actual deployment
-			// This test would make an HTTP request to the deployed function
-			// const response = await fetch('https://<region>-FIREBASE_TEST_PROJECT.cloudfunctions.net/hello');
-			// const data = await response.json();
-			// expect(data.message).to.equal('Hello World');
-			// expect(data.deploymentId).to.exist;
-		});
-	});
+	// it('Functions - Deploy Single Function', runTestCase({
+	// 	input: {
+	// 		fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
+	// 		imageTag: 'latest',
+	// 		useDryRun: true,
+	// 		deployFunction: 'hello',
+	// 		deleteFunction: 'hello' // Delete function before deploying to ensure fresh deployment
+	// 	},
+	// 	result: async (bai: BuildAndInstall) => {
+	// 		const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+	// 		functionUnit.logDebug('=== Verifying function unit exists ===');
+	// 		expect(functionUnit).to.exist;
+	//
+	// 		// Verify functions config exists and includes the expected function
+	// 		functionUnit.logDebug('=== Verifying functions config exists and includes hello ===');
+	// 		expect(functionUnit.config.functions).to.exist;
+	// 		expect(Array.isArray(functionUnit.config.functions)).to.be.true;
+	// 		expect(functionUnit.config.functions.length).to.be.greaterThan(0);
+	// 		expect(functionUnit.config.functions).to.include('hello');
+	//
+	// 		// Verify firebase.json was created
+	// 		functionUnit.logDebug('=== Verifying firebase.json exists ===');
+	// 		const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
+	// 		expect(existsSync(firebaseJsonPath)).to.be.true;
+	//
+	// 		functionUnit.logDebug('=== Deploy Single Function Test Completed ===');
+	// 	}
+	// })).timeout(300000);
+
+	// it('Functions - Deploy All Functions', runTestCase({
+	// 	input: {
+	// 		fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
+	// 		imageTag: 'latest',
+	// 		useDryRun: true,
+	// 		deleteFunctions: true // Delete all functions before deploying to ensure fresh deployment
+	// 	},
+	// 	result: async (bai: BuildAndInstall) => {
+	// 		const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+	// 		functionUnit.logDebug('=== Verifying function unit exists ===');
+	// 		expect(functionUnit).to.exist;
+	//
+	// 		// Verify functions config exists
+	// 		functionUnit.logDebug('=== Verifying functions config exists ===');
+	// 		expect(functionUnit.config.functions).to.exist;
+	// 		expect(functionUnit.config.functions.length).to.be.greaterThan(0);
+	//
+	// 		// Verify firebase.json was created
+	// 		functionUnit.logDebug('=== Verifying firebase.json exists ===');
+	// 		const firebaseJsonPath = resolve(functionUnit.config.fullPath, CONST_FirebaseJSON);
+	// 		expect(existsSync(firebaseJsonPath)).to.be.true;
+	//
+	// 		functionUnit.logDebug('=== Deploy All Functions Test Completed ===');
+	// 	}
+	// })).timeout(300000);
+
+	it('Functions - Validate Function Existence', runTestCase({
+		input: {
+			fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
+			imageTag: 'latest',
+			useDryRun: false,
+			deleteFunction: 'hello' // Delete function before deploying to ensure fresh deployment
+		},
+		result: async (bai: BuildAndInstall) => {
+			const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+			functionUnit.logDebug('=== Verifying function unit exists ===');
+			expect(functionUnit).to.exist;
+
+			// Verify functions config exists and contains 'hello'
+			functionUnit.logDebug('=== Verifying functions config exists and contains hello ===');
+			expect(functionUnit.config.functions).to.exist;
+			expect(functionUnit.config.functions).to.include('hello');
+
+			// The validation happens during deployImage(), so if we get here without error,
+			// the function exists in dist/index.js
+			functionUnit.logDebug('=== Verifying functions array is not empty ===');
+			expect(functionUnit.config.functions.length).to.be.greaterThan(0);
+
+			// Verify function URLs were captured and verify via HTTP
+			functionUnit.logDebug('=== Verifying function URLs were captured ===');
+			expect(functionUnit.functions).to.exist;
+			expect(Object.keys(functionUnit.functions).length).to.be.greaterThan(0);
+
+			const functionUrl = functionUnit.functions['hello'];
+			expect(functionUrl).to.exist;
+			expect(functionUrl).to.include('https://');
+
+			// Verify deployed function via HTTP request
+			functionUnit.logDebug('=== Verifying deployed function via HTTP request ===');
+			const response = await fetch(functionUrl);
+			expect(response.ok).to.be.true;
+
+			const data = await response.json();
+			expect(data.message).to.equal('Hello World');
+			expect(data.deploymentId).to.exist;
+
+			functionUnit.logDebug('=== Validate Function Existence Test Completed ===');
+		}
+	})).timeout(300000);
+
 
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')
@@ -244,6 +391,7 @@ describe('Firebase Deploy Image Phase', () => {
 	});
 
 	after(async function () {
+		this.timeout(10000);
 		await sleep(1000);
 		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);
@@ -251,4 +399,154 @@ describe('Firebase Deploy Image Phase', () => {
 		await CommandoPool.killAll();
 	});
 });
+
+/**
+ * Fetches Docker image labels from Artifact Registry using Docker Registry API v2.
+ *
+ * @param containerDeployment - Container deployment configuration
+ * @param imageTag - Image tag to fetch (defaults to 'latest')
+ * @param logger - Optional logger for debug messages
+ * @returns Promise resolving to the labels object
+ */
+async function fetchImageLabels(
+	containerDeployment: Unit_FirebaseFunctionsApp_Config['containerDeployment'],
+	imageTag: string = 'latest',
+	logger?: { logDebug: (message: string, ...args: any[]) => void }
+): Promise<Record<string, string>> {
+	if (!containerDeployment) {
+		throw new Error('containerDeployment config is required');
+	}
+
+	const artifactRegistry = containerDeployment.artifactRegistry;
+	const imageName = containerDeployment.imageName;
+
+	// Build image reference components
+	const registryHost = `${artifactRegistry.region}-docker.pkg.dev`;
+	const repoPath = `${artifactRegistry.projectId}/${artifactRegistry.repository}`;
+
+	logger?.logDebug('=== Fetching image labels ===', {registryHost, repoPath, imageName, imageTag});
+
+	// Get access token
+	const accessToken = execSync('gcloud auth print-access-token', {encoding: 'utf-8'}).trim();
+
+	// Fetch manifest to get config digest
+	const manifestUrl = `https://${registryHost}/v2/${repoPath}/${imageName}/manifests/${imageTag}`;
+	const manifestResponse = await fetch(manifestUrl, {
+		headers: {
+			'Authorization': `Bearer ${accessToken}`,
+			'Accept': 'application/vnd.docker.distribution.manifest.v2+json'
+		}
+	});
+
+	if (!manifestResponse.ok) {
+		throw new Error(`Failed to fetch manifest: ${manifestResponse.status} ${manifestResponse.statusText}`);
+	}
+
+	const manifest = await manifestResponse.json();
+	const configDigest = manifest.config.digest;
+
+	// Fetch config blob
+	const configUrl = `https://${registryHost}/v2/${repoPath}/${imageName}/blobs/${configDigest}`;
+	const configResponse = await fetch(configUrl, {
+		headers: {
+			'Authorization': `Bearer ${accessToken}`
+		},
+		redirect: 'follow' // Follow redirects
+	});
+
+	if (!configResponse.ok) {
+		throw new Error(`Failed to fetch config blob: ${configResponse.status} ${configResponse.statusText}`);
+	}
+
+	const configJson = await configResponse.json();
+	const labels = configJson.config?.Labels || {};
+
+	logger?.logDebug('=== Image labels ===', labels);
+
+	return labels;
+}
+
+/**
+ * Fetches and validates the deployment-id label from a Docker image in Artifact Registry.
+ *
+ * @param containerDeployment - Container deployment configuration
+ * @param imageTag - Image tag to fetch (defaults to 'latest')
+ * @param logger - Optional logger for debug messages
+ * @returns Promise resolving to the deployment-id label value
+ * @throws If deployment-id label is missing or invalid
+ */
+async function fetchDeploymentIdLabel(
+	containerDeployment: Unit_FirebaseFunctionsApp_Config['containerDeployment'],
+	imageTag: string = 'latest',
+	logger?: { logDebug: (message: string, ...args: any[]) => void }
+): Promise<string> {
+	logger?.logDebug('=== Fetching deployment-id label from image ===');
+
+	const labels = await fetchImageLabels(containerDeployment, imageTag, logger);
+
+	// Verify deployment-id label exists
+	if (!labels['deployment-id']) {
+		throw new Error('deployment-id label not found in image');
+	}
+
+	const deploymentIdFromLabel = labels['deployment-id'];
+	if (typeof deploymentIdFromLabel !== 'string') {
+		throw new Error(`deployment-id label must be a string, got ${typeof deploymentIdFromLabel}`);
+	}
+
+	return deploymentIdFromLabel;
+}
+
+/**
+ * Verifies a deployed function by:
+ * 1. Fetching the deployment-id label from the Docker image
+ * 2. Verifying the function URL exists
+ * 3. Making an HTTP request to the function
+ * 4. Validating the response matches expected data
+ * 5. Verifying the deployment-id from the label matches the response
+ *
+ * @param containerDeployment - Container deployment configuration
+ * @param imageTag - Image tag to fetch (defaults to 'latest')
+ * @param functionUnit - Firebase Functions unit with function URLs
+ * @param functionName - Name of the function to verify
+ * @param expectedData - Expected data in the function response (partial match)
+ * @param logger - Optional logger for debug messages
+ * @throws If any verification step fails
+ */
+async function verifyDeployedFunctionWithLabel(
+	containerDeployment: Unit_FirebaseFunctionsApp_Config['containerDeployment'],
+	imageTag: string,
+	functionUnit: Unit_FirebaseFunctionsApp,
+	functionName: string,
+	expectedData: Record<string, any>,
+	logger?: { logDebug: (message: string, ...args: any[]) => void }
+): Promise<void> {
+	// Fetch deployment-id label from Docker image
+	const deploymentIdFromLabel = await fetchDeploymentIdLabel(
+		containerDeployment,
+		imageTag,
+		logger || functionUnit
+	);
+
+	// Verify function URL exists
+	const functionUrl = functionUnit.functions[functionName];
+	expect(functionUrl).to.exist;
+	expect(functionUrl).to.include('https://');
+
+	// Verify deployed function via HTTP request
+	(logger || functionUnit).logDebug('=== Verifying deployed function via HTTP request ===');
+	const response = await fetch(functionUrl);
+	expect(response.ok).to.be.true;
+
+	const data = await response.json();
+
+	// Verify expected data matches
+	for (const [key, value] of Object.entries(expectedData)) {
+		expect(data[key]).to.equal(value);
+	}
+
+	// Verify deployment-id exists and matches label
+	expect(data.deploymentId).to.exist;
+	expect(data.deploymentId).to.equal(deploymentIdFromLabel);
+}
 

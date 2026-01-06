@@ -30,6 +30,7 @@ type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
 	ignore?: string[],
 	sslKey?: string
 	sslCert?: string
+	functions: string[];  // Required: Array of function names to deploy
 };
 
 const valuesValidator = {
@@ -65,6 +66,7 @@ export class UnitMapper_FirebaseFunction_Class
 		basePort: tsValidateOptionalAnyNumber,
 		sslKey: tsValidateOptionalAnyString,
 		sslCert: tsValidateOptionalAnyString,
+		functions: tsValidate_OptionalArray(tsValidateAnyString), // Required: non-empty array validated in process
 		containerDeployment: tsValidateOptionalObject(containerDeploymentValidator),
 		...UnitMapper_Node.tsValidator_Node,
 	};
@@ -89,6 +91,12 @@ export class UnitMapper_FirebaseFunction_Class
 		};
 
 		const {type, ...unitConfig} = context.packageJson.unitConfig;
+		
+		// Validate functions array is required and non-empty
+		if (!unitConfig.functions || !Array.isArray(unitConfig.functions) || unitConfig.functions.length === 0) {
+			throw new ImplementationMissingException(`Missing or empty 'functions' array in unit config for ${context.baseConfig.key}. Functions must be explicitly declared.`);
+		}
+
 		return new Unit_FirebaseFunctionsApp({
 			...context.baseConfig,
 			...Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction,

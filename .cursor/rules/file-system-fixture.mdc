@@ -1,0 +1,46 @@
+---
+description: when discussing, generating or parsing file system as a batch
+alwaysApply: false
+---
+Blueprint: File System Fixture Format
+
+Purpose
+- Define a single, strict text format for representing a tree of files that our tooling can materialize into a real workspace.
+
+Core Syntax
+- Each file begins with a header line:
+  // file: ./relative/path/from/repo/root.ext
+- In case of nested fixtures within fixtures, the escaping of the file header line would have an additional leading //
+  // file: ./relative/path/from/repo/root.ext
+  //// file: ./i/am/a/file/in/the/inner/fixture.ext
+- Immediately after the header, the file’s exact contents follow until the next header or end of document.
+- Paths are POSIX-style and MUST begin with ./
+- Empty files are represented by a header followed by nothing (or a single newline).
+- By default, a fixture describes the full content of the files that should be created/updated. Files not listed are left untouched.
+- The last occurrence of a given path in the same fixture wins. Avoid duplicates.
+- Header lines MUST be unique and can appear in any order. Recommended: group by folder depth, then alphabetically for readability.
+- Always add a version header in the first line, and bump it on each iteration -- version: vX
+- Each fixture canvas must be code/other and should have it's own dedicated context. do not mix canvases context and override canvas of context A with context B, if needed create a new one
+
+
+Comments & Prose
+- The canvas itself is the source-of-truth; include only the headers and file contents.
+- Do NOT wrap with Markdown fences.
+- Do NOT add explanatory comments inside code files unless they are part of the file’s actual content.
+
+Common Mistakes (don’t)
+- Don’t include Markdown fences (``` … ```).
+- Don’t omit ./ in paths.
+- Don’t use Windows backslashes in paths.
+- Don’t place prose between file blocks.
+- Don’t add canvas comments; discuss in chat.
+
+Versioning Note
+
+Ready-to-Use Skeleton
+// file: ./<path>/<name>.<ext>
+<content>
+// file: ./<another>/<path>/<name>.<ext>
+<content>
+//// file: ./<nested>/<file>/<name>.<ext>
+<content>
