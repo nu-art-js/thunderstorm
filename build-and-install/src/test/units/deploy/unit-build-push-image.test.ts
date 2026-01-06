@@ -32,7 +32,7 @@ type Output = (bai: BuildAndInstall) => Promise<void>;
 
 const params = {
 	FIREBASE_TEST_PROJECT: 'nu-art-thunderstorm-test',
-	DEPLOYMENT_ID_PLACEHOLDER: undefined
+	DEPLOYMENT_ID_PLACEHOLDER: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
 };
 
 const test = async (setup: Input) => {
@@ -131,7 +131,7 @@ describe('Firebase Build Push Image Phase', () => {
 			imageTag: 'test-build-push-v1.0.0'
 		},
 		result: async (bai: BuildAndInstall) => {
-			const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
 			functionUnit.logDebug('=== Verifying function unit exists ===');
 			expect(functionUnit).to.exist;
 
@@ -187,7 +187,7 @@ describe('Firebase Build Push Image Phase', () => {
 			imageTag: 'custom-image-v1.0.0'
 		},
 		result: async (bai: BuildAndInstall) => {
-			const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
 			functionUnit.logDebug('=== Verifying function unit exists ===');
 			expect(functionUnit).to.exist;
 
@@ -216,7 +216,7 @@ describe('Firebase Build Push Image Phase', () => {
 			imageTag: 'custom-dockerfile-v1.0.0'
 		},
 		result: async (bai: BuildAndInstall) => {
-			const functionUnit = bai.projectUnits.find(unit => unit.config.key === 'firebase-function-hello') as Unit_FirebaseFunctionsApp;
+			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
 			functionUnit.logDebug('=== Verifying function unit exists ===');
 			expect(functionUnit).to.exist;
 

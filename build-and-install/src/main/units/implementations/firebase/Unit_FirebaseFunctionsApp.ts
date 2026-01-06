@@ -274,6 +274,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			'build.user': process.env.USER || '',
 		};
 
+		this.logDebug(`Metadata: `, metadata);
 		// Load template (no params needed as we use Cloud Build substitutions)
 		const labels = Object.entries(metadata)
 			.map(([key, value]) => `      - '--label=${key}=${value}'`)
