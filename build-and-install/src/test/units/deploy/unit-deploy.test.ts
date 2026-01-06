@@ -201,26 +201,6 @@ describe('Firebase Deploy Phase', () => {
 		}).timeout(300000);
 	});
 
-	describe('Deployment Verification', () => {
-		it('Functions - Verify deployed endpoint returns expected content', async function () {
-			this.skip(); // Skip by default - requires actual deployment
-			// This test would make an HTTP request to the deployed function
-			// const response = await fetch('https://<region>-FIREBASE_TEST_PROJECT.cloudfunctions.net/hello');
-			// const data = await response.json();
-			// expect(data.message).to.equal('Hello World');
-			// expect(data.deploymentId).to.exist;
-		});
-
-		it('Hosting - Verify deployed site returns expected content', async function () {
-			this.skip(); // Skip by default - requires actual deployment
-			// This test would make an HTTP request to the deployed hosting
-			// const response = await fetch('https://FIREBASE_TEST_PROJECT.web.app/');
-			// const html = await response.text();
-			// expect(html).to.include('Hello World');
-			// expect(html).to.include('Deployment ID:');
-		});
-	});
-
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')
 			suiteHasFailures = true;
@@ -229,6 +209,7 @@ describe('Firebase Deploy Phase', () => {
 	});
 
 	after(async function () {
+		this.timeout(10000);
 		await sleep(1000);
 		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);

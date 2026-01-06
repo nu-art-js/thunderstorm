@@ -31,6 +31,7 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	sslCert: string
 	pathToEmulatorData: string
 	sources?: string[];
+	functions: string[];            // Required: Array of function names to deploy
 	containerDeployment?: {
 		artifactRegistry: {
 			region: string;        // e.g., 'us-central1'
@@ -74,6 +75,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	implements UnitPhaseImplementor<[Phase_Launch, Phase_Deploy, Phase_BuildPushImage, Phase_DeployImage]> {
 
 	public functions: StringMap = {};
+	public injectedMetadata: StringMap = {};
 
 	static staggerCount: number = 0;
 	static DefaultConfig_FirebaseFunction = {
@@ -230,8 +232,17 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
 		const imageReference = `${artifactRegistryPath}/${imageName}:${imageTag}`;
+		const imageReferenceLatest = `${artifactRegistryPath}/${imageName}:latest`;
 
-		this.logInfo(`Building and pushing container image using Cloud Build: ${imageReference}`);
+		this.logInfo(`Building and pushing container image using Cloud Build:`);
+		this.logInfo(`  Tagged: ${imageReference}`);
+		this.logInfo(`  Latest: ${imageReferenceLatest}`);
+
+		// Check for dry run mode
+		if (this.runtimeContext.runtimeParams.dryRun) {
+			this.logInfo(`[DRY RUN] Would build and push image: ${imageReference} and ${imageReferenceLatest}`);
+			return;
+		}
 
 		// Generate Dockerfile in the output folder (never pollute workspace)
 		// Cloud Build uploads the directory, so we'll reference it from output folder
@@ -251,15 +262,32 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const dockerfileName = containerDeployment.dockerfile || 'dockerfile';
 		const dockerfileRelativePath = `.trash/build-image/${dockerfileName}`;
 
+		const metadata = {
+			...this.injectedMetadata,
+			'build.timestamp': new Date().toISOString(),
+			'build.tag': imageTag,
+			'build.project': artifactRegistry.projectId,
+			'build.image-name': imageName,
+			'version': this.runtimeContext.version,
+			'git.commit': process.env.GIT_COMMIT || '',
+			'git.branch': process.env.GIT_BRANCH || '',
+			'build.user': process.env.USER || '',
+		};
+
+		// Load template (no params needed as we use Cloud Build substitutions)
+		const labels = Object.entries(metadata)
+			.map(([key, value]) => `      - '--label=${key}=${value}'`)
+			.join('\n');
+
+		const params = {
+			IMAGE_REFERENCE: imageReference,
+			IMAGE_REFERENCE_LATEST: imageReferenceLatest,
+			DOCKERFILE_PATH: dockerfileRelativePath,
+			LABELS: labels
+		};
 
 		const cloudbuildYamlPath = resolve(buildOutputFolder, '.cloudbuild.yaml');
-
-		// Load template and apply parameters
-		const cloudbuildTemplateParams: StringMap = {
-			IMAGE_REFERENCE: imageReference,
-			DOCKERFILE_PATH: dockerfileRelativePath,
-		};
-		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.cloudbuildYaml, cloudbuildYamlPath, cloudbuildTemplateParams);
+		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.cloudbuildYaml, cloudbuildYamlPath, params);
 
 		// Cloud Build config path must also be relative to build context
 		const cloudbuildYamlRelativePath = `.trash/build-image/.cloudbuild.yaml`;
@@ -270,7 +298,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			throw new CommandoException(`Failed to build and push Docker image with Cloud Build (exit code ${exitCode})`, stdout, stderr, exitCode);
 		});
 
-		this.logInfo(`Successfully built and pushed image: ${imageReference}`);
+		this.logInfo(`Successfully built and pushed images: ${imageReference} and ${imageReferenceLatest}`);
 	}
 
 	/**
@@ -291,20 +319,120 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			functionNames.push(match[1]);
 		}
 
-		// Also match: export { hello, world } or export { hello as helloWorld }
-		const exportNamedRegex = /export\s*\{\s*([^}]+)\s*\}/g;
-		while ((match = exportNamedRegex.exec(content)) !== null) {
-			const exports = match[1].split(',').map(e => e.trim());
-			for (const exp of exports) {
-				// Handle "name as alias" or just "name"
-				const nameMatch = exp.match(/(\w+)(?:\s+as\s+\w+)?/);
-				if (nameMatch) {
-					functionNames.push(nameMatch[1]);
-				}
+		return functionNames;
+	}
+
+	/**
+	 * Validates that all configured functions exist in the compiled dist/index.js file.
+	 * Throws ImplementationMissingException if any configured function is missing.
+	 */
+	private async validateFunctionsExist(): Promise<void> {
+		const configuredFunctions = this.config.functions;
+		const exportedFunctions = await this.discoverExportedFunctions();
+		const exportedSet = new Set(exportedFunctions);
+
+		const missingFunctions = configuredFunctions.filter(func => !exportedSet.has(func));
+		if (missingFunctions.length > 0) {
+
+			throw new ImplementationMissingException(
+				`Configured functions not found in dist/index.js: ${missingFunctions.join(', ')}. ` +
+				`Available exports: ${exportedFunctions.length > 0 ? exportedFunctions.join(', ') : 'none'}`
+			);
+		}
+	}
+
+	/**
+	 * Deletes a single function using gcloud run services delete.
+	 *
+	 * @param functionName Name of the function to delete (original function name with underscores)
+	 */
+	private async deleteFunction(functionName: string): Promise<void> {
+		const containerDeployment = this.config.containerDeployment;
+		if (!containerDeployment) {
+			throw new ImplementationMissingException(`Missing containerDeployment config in unit ${this.config.key}`);
+		}
+
+		const artifactRegistry = containerDeployment.artifactRegistry;
+		const region = artifactRegistry.region;
+		const projectId = artifactRegistry.projectId;
+
+		// Cloud Run service names cannot contain underscores, convert to dashes
+		const serviceName = functionName.replace(/_/g, '-');
+
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.cd(this.config.fullPath)
+			.setLogLevelFilter(deployLogFilter);
+
+		// Use gcloud run services delete (Gen2 functions run on Cloud Run)
+		const deleteCommand = `gcloud run services delete ${serviceName} --region=${region} --project=${projectId} --quiet`;
+
+		// Check for dry run mode
+		if (this.runtimeContext.runtimeParams.dryRun) {
+			this.logInfo(`[DRY RUN] Would execute: ${deleteCommand}`);
+			return;
+		}
+
+		this.logInfo(`Deleting function: ${functionName} (service: ${serviceName})`);
+		await this.executeAsyncCommando(commando, deleteCommand, (stdout, stderr, exitCode) => {
+			// Ignore errors for non-existent functions (function might already be deleted)
+			if (exitCode === 0)
+				return;
+
+			// Check if error is about function not found
+			const errorText = (stderr || stdout || '').toLowerCase();
+			if (errorText.includes('not found') || errorText.includes('does not exist')) {
+				this.logWarning(`Function ${functionName} not found (may already be deleted)`);
+				return;
+			}
+
+			// Re-throw other errors
+			throw new CommandoException(`Failed to delete function ${functionName} with exit code ${exitCode}`, stdout, stderr, exitCode);
+		});
+	}
+
+	/**
+	 * Deletes multiple functions.
+	 * Determines which functions to delete based on CLI parameters.
+	 *
+	 * @returns Array of function names that were deleted (or would be deleted in dry run)
+	 */
+	private async deleteFunctions() {
+		const deleteFunctionParam = this.runtimeContext.runtimeParams.deleteFunction;
+		const deleteFunctionsFlag = this.runtimeContext.runtimeParams.deleteFunctions;
+		const deployFunctionParam = this.runtimeContext.runtimeParams.deployFunction;
+
+		let functionsToDelete: string[] = [];
+
+		// Determine which functions to delete
+		if (deleteFunctionParam) {
+			// Delete specific function
+			functionsToDelete = [deleteFunctionParam];
+		} else if (deleteFunctionsFlag) {
+			// Delete based on context
+			if (deployFunctionParam) {
+				// Delete only the function being deployed
+				functionsToDelete = [deployFunctionParam];
+			} else {
+				// Delete all functions from config
+				functionsToDelete = this.config.functions;
 			}
 		}
 
-		return functionNames;
+		if (functionsToDelete.length === 0) {
+			return [];
+		}
+
+		this.logInfo(`Deleting ${functionsToDelete.length} function(s): ${functionsToDelete.join(', ')}`);
+
+		// Delete each function
+		for (const functionName of functionsToDelete) {
+			await this.deleteFunction(functionName);
+		}
+
+		if (functionsToDelete.length > 0) {
+			this.logInfo(`Deleted ${functionsToDelete.length} function(s) before deployment`);
+		}
+
 	}
 
 	/**
@@ -313,14 +441,16 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	 * **Process**:
 	 * 1. Validates image tag is provided via CLI
 	 * 2. Validates containerDeployment config exists
-	 * 3. Reconstructs image reference (same logic as buildPushImage)
-	 * 4. Discovers exported functions from dist/index.js
-	 * 5. Deploys each function separately using gcloud functions deploy with --docker-image
-	 * 6. Parses deployment output for function URLs
+	 * 3. Validates configured functions exist in dist/index.js
+	 * 4. Deletes functions if requested via CLI flags
+	 * 5. Determines which functions to deploy (single or all)
+	 * 6. Deploys each function separately using gcloud functions deploy with --docker-image
+	 * 7. Parses deployment output for function URLs
 	 *
 	 * **Requirements**:
 	 * - `--deploy-image <tag>` CLI flag with tag value
 	 * - `containerDeployment` config in unit config
+	 * - `functions` array in unit config
 	 * - Image must already exist in Artifact Registry (built via buildPushImage)
 	 * - gcloud CLI installed and authenticated
 	 * - Cloud Functions API enabled in GCP project
@@ -338,20 +468,32 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const imageName = containerDeployment.imageName;
 
 		const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
-		const imageReference = `${artifactRegistryPath}/${imageName}:${imageTag}`;
+		// Use 'latest' tag if no specific tag provided, otherwise use the provided tag
+		const imageTagToUse = imageTag || 'latest';
+		const imageReference = `${artifactRegistryPath}/${imageName}:${imageTagToUse}`;
 
 		this.logInfo(`Deploying container image: ${imageReference}`);
 
-		// Update firebase.json (keeps source as dist directory for container deployment)
-		await this.resolveConfigs();
+		// Validate that configured functions exist in compiled code
+		await this.validateFunctionsExist();
 
-		// Discover exported functions from compiled code
-		const functionNames = await this.discoverExportedFunctions();
-		if (functionNames.length === 0) {
-			throw new ImplementationMissingException(`No exported functions found in ${this.config.output}/index.js`);
+		// Delete functions if requested
+		await this.deleteFunctions();
+
+		// Determine which functions to deploy
+		const deployFunctionParam = this.runtimeContext.runtimeParams.deployFunction;
+		let functionsToDeploy: string[];
+
+		if (deployFunctionParam) {
+			// Deploy single function
+			if (!this.config.functions.includes(deployFunctionParam))
+				throw new ImplementationMissingException(`Function '${deployFunctionParam}' not found in configured functions: ${this.config.functions.join(', ')}`);
+
+			functionsToDeploy = [deployFunctionParam];
+		} else {
+			// Deploy all functions from config
+			functionsToDeploy = this.config.functions;
 		}
-
-		this.logInfo(`Discovered ${functionNames.length} function(s): ${functionNames.join(', ')}`);
 
 		const region = artifactRegistry.region;
 		const projectId = artifactRegistry.projectId;
@@ -359,43 +501,41 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		// Deploy each function separately with the same image but different entry points
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.config.fullPath)
-			.setLogLevelFilter(deployLogFilter)
-			// Parse gcloud output for function URLs
-			// Example: httpsTrigger:
-			//   url: https://hello-kv65k7yylq-uc.a.run.app
-			.onLog(/url:\s*(https:\/\/[^\s]+)/, match => {
-				// Extract function name from URL or use the last deployed function name
-				// We'll track this per function deployment
-				const url = match[1];
-				// Try to extract function name from URL pattern: https://functionName-xxx-xx.a.run.app
-				const urlMatch = url.match(/https:\/\/([^-]+)-/);
-				if (urlMatch) {
-					this.functions[urlMatch[1]] = url;
-				}
-			})
-			// Also match: Function URL (hello(us-central1)): https://hello-kv65k7yylq-uc.a.run.app
-			.onLog(/Function URL.*?\((.*?)\(.*(https:\/\/.*?)$/, match => {
-				this.functions[match[1]] = match[2];
-			});
+			.setLogLevelFilter(deployLogFilter);
 
-		// Check for dry run mode
-		if (this.runtimeContext.runtimeParams.dryRun) {
-			this.logInfo(`[DRY RUN] Would deploy ${functionNames.length} function(s) with image: ${imageReference}`);
-			for (const functionName of functionNames) {
-				const gcloudDeployCommand = `gcloud functions deploy ${functionName} --gen2 --project=${projectId} --region=${region} --runtime=nodejs22 --trigger-http --allow-unauthenticated --docker-image=${imageReference} --entry-point=${functionName}`;
-				this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
-			}
-			return;
-		}
+
+		this.logInfo(`Deploying ${functionsToDeploy.length} function(s): ${functionsToDeploy.join(', ')}`);
 
 		// Deploy each function
-		for (const functionName of functionNames) {
+		for (const functionName of functionsToDeploy) {
+			// Cloud Run service names cannot contain underscores, convert to dashes
+			// But FUNCTION_TARGET must use the original function name (with underscore) as it's exported in code
+			const serviceName = functionName.replace(/_/g, '-');
+
 			this.logInfo(`Deploying function: ${functionName}`);
-			const gcloudDeployCommand = `gcloud functions deploy ${functionName} --gen2 --project=${projectId} --region=${region} --runtime=nodejs22 --trigger-http --allow-unauthenticated --docker-image=${imageReference} --entry-point=${functionName}`;
+			this.logInfo(`  Service name: ${serviceName} (Cloud Run requires dashes, not underscores)`);
+			this.logInfo(`  Function target: ${functionName} (original function name for FUNCTION_TARGET)`);
+
+			// Note: gcloud functions deploy doesn't support --image flag for pre-built containers
+			// We need to use the Cloud Functions API directly or wait for gcloud update
+			// For now, using gcloud run deploy as Gen2 functions run on Cloud Run
+			// Set FUNCTION_TARGET env var to specify the entry point
+			// Use --format to get the URL directly from the output
+			const gcloudDeployCommand = `gcloud run deploy ${serviceName} --image=${imageReference} --region=${region} --platform=managed --allow-unauthenticated --project=${projectId} --set-env-vars=FUNCTION_TARGET=${functionName} --format="value(status.url)"`;
+			if (this.runtimeContext.runtimeParams.dryRun) {
+				this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
+				continue;
+			}
 
 			await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
-				if (exitCode === 0)
+				if (exitCode === 0) {
+					// Parse URL from stdout (--format="value(status.url)" outputs just the URL)
+					const urlMatch = stdout.match(/https:\/\/[^\s]+/);
+					if (urlMatch) {
+						this.functions[functionName] = urlMatch[0];
+					}
 					return;
+				}
 
 				throw new CommandoException(`Failed to deploy function ${functionName} with exit code ${exitCode}`, stdout, stderr, exitCode);
 			});

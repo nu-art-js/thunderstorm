@@ -169,8 +169,17 @@ export class Workspace
 	/**
 	 * Get a unit by its key
 	 */
-	getUnitByKey<T extends BaseUnit>(key: string): T | undefined {
-		return this.unitKeyToUnitMap[key] as T | undefined;
+	getUnitByKey<T extends BaseUnit>(key: string): T | undefined ;
+	getUnitByKey<T extends BaseUnit>(key: string, className: AnyConstructor<T>): T;
+	getUnitByKey<T extends BaseUnit>(key: string, className?: AnyConstructor<T>): T | undefined {
+		const unit = this.unitKeyToUnitMap[key];
+		if (!unit)
+			throw new BadImplementationException(`Unit with key '${key}' not found.`);
+
+		if (className && !unit.isInstanceOf(className))
+			throw new BadImplementationException(`Unit with key '${key}' is not of type: ${className.name}`);
+
+		return unit as T | undefined;
 	}
 
 	/**
@@ -179,9 +188,8 @@ export class Workspace
 	getUnitsByKeys<T extends BaseUnit>(keys: string[], className?: AnyConstructor<T>): T[] {
 		const units = keys.map(key => this.unitKeyToUnitMap[key]).filter(Boolean) as BaseUnit[];
 
-		if (className) {
+		if (className)
 			return units.filter(unit => unit.isInstanceOf(className)) as T[];
-		}
 
 		return units as T[];
 	}

@@ -1,0 +1,256 @@
+---
+alwaysApply: true
+---
+
+# Testing Conventions
+
+This rule defines the standard testing patterns used across the codebase. There are 4 main test types, each with specific use cases and patterns.
+
+## Test Types
+
+### 1. Simple Unit Tests (Pure Function Tests)
+
+**Use When**: Testing pure functions with simple input/output, no external dependencies.
+
+**Pattern**:
+- Import `TestSuite`, `defaultTestProcessor`, `runSingleTestCase` from `@nu-art/ts-common/testing`
+- Define `Input` and `Result` types
+- Create a `test` function that takes `Input` and returns `Promise<Result>`
+- Use `runTestCase` wrapper that calls `runSingleTestCase`
+- Test cases use `{ input: {...}, result: ... }` or `{ input: {...}, error: { expected: '...' } }`
+
+**Structure**:
+```typescript
+type Input = { /* input properties */ };
+type Result = { /* result type */ };
+type TestSuite_Feature = TestSuite<Input, Result>;
+type TestCase_Feature = TestSuite_Feature['testcases'][number];
+
+const test = async (input: Input): Promise<Result> => { /* logic */ };
+const runTestCase = (testCase: TestCase_Feature) => () => runSingleTestCase(test, testCase);
+
+describe('Feature', () => {
+  it('description', runTestCase({ input: {...}, result: ... }));
+});
+```
+
+---
+
+### 2. Workspace-Based Tests (File System Tests)
+
+**Use When**: Testing file system operations, build/compile phases, or anything requiring temporary workspaces.
+
+**Pattern**:
+- Use `TestWorkspaceCreator` to create temporary workspaces from fixture files
+- Fixture files use `// file: path/to/file` headers to define file structure
+- Setup workspace in `before()` hook
+- Clean up in `after()` hook with proper error handling
+- Use `FilesCache.clear()` when needed
+- Always call `CommandoPool.killAll()` in cleanup
+
+**Structure**:
+```typescript
+const fixtureExtractor = new TestWorkspaceCreator(fixturesDir, tempDir);
+const workspaceCreator = new TestWorkspaceCreator(tempDir, workspaceDir);
+
+type Input = { fixtures: string[] };
+type Output = () => Promise<void>;
+
+const test = async (input: Input): Promise<Output> => {
+  FilesCache.clear();
+  await workspaceCreator.setupWorkspace(input.fixtures);
+  // ... setup logic
+  return async () => { /* assertions */ };
+};
+
+describe('Feature', () => {
+  let suiteHasFailures: boolean | undefined;
+  
+  before(async function () {
+    await FileSystemUtils.folder.delete(tempDir);
+    await fixtureExtractor.setupWorkspace(['base-fixtures.txt']);
+  });
+  
+  it('test', runTestCase({ input: { fixtures: [...] }, result: async () => {...} }));
+  
+  afterEach(function () {
+    if (this.currentTest?.state === 'failed') suiteHasFailures = true;
+  });
+  
+  after(async function () {
+    if (suiteHasFailures === false) await FileSystemUtils.folder.delete(tempDir);
+    await CommandoPool.killAll();
+  });
+});
+```
+
+**Fixture Format**: See `.cursor/rules/file-system-fixture.mdc` for the complete specification of fixture file format. Key points:
+- Use `// file: ./path/to/file.ext` headers for files
+- Use `//// file: ./path/to/file.ext` for nested fixtures (double `//` for each nesting level)
+- Paths must be POSIX-style and begin with `./`
+- File contents follow immediately after the header
+
+---
+
+### 3. Storm/Firebase Module Tests (Backend Integration Tests)
+
+**Use When**: Testing backend modules with Firebase emulators, database operations, or API endpoints.
+
+**Pattern**:
+- Use `stormTester` wrapper from `@nu-art/thunderstorm-backend/testing`
+- Define `DefaultStormTestConfig_*` objects for shared setup
+- Test cases include `description` field
+- Use `before`/`after` hooks in test config for module setup/cleanup
+- Tests run within `stormTester` wrapper
+
+**Structure**:
+```typescript
+import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/testing';
+
+type Input = { /* test input */ };
+type Result = boolean | object | void;
+type TestCase_Feature = {
+  description?: string;
+  input: Input;
+} & ({ result: Result } | { error: { expected: string } });
+
+const test = async (input: Input): Promise<Result> => { /* logic */ };
+const runTestCase = (testCase: TestCase_Feature) => async () => runSingleTestCase(test, testCase);
+
+const DefaultStormTest: StormTestInput = {
+  ...DefaultStormTestConfig_Base,
+  before: async () => { /* setup */ },
+  after: async () => { /* cleanup */ }
+};
+
+describe('Feature', () => {
+  it('test', async () => {
+    await stormTester(DefaultStormTest, runTestCase({
+      description: 'test',
+      input: {...},
+      result: ...
+    }));
+  });
+});
+```
+
+---
+
+### 4. Deployment/Integration Tests (External Service Tests)
+
+**Use When**: Testing actual deployments to external services, verifying deployed endpoints.
+
+**Pattern**:
+- Similar to workspace-based tests but with deployment configuration
+- Long timeout values (300000ms+)
+- Often skipped by default using `.skip()` or `this.skip()`
+- Verifies deployment artifacts and makes HTTP requests to deployed services
+- Uses `BuildAndInstall` with `runtimeParams.deploy = true`
+
+**Structure**:
+```typescript
+type Input = { fixtures: string[]; skipDeploy?: boolean };
+type Output = (bai: BuildAndInstall) => Promise<void>;
+
+const test = async (input: Input) => {
+  FilesCache.clear();
+  await workspaceCreator.setupWorkspace(input.fixtures);
+  const bai = new BuildAndInstall({pathToProject: workspaceDir});
+  bai.runtimeParams.deploy = true;
+  await bai.build();
+  await bai.run();
+  return bai;
+};
+
+describe('Deployment', () => {
+  it('deploy', runTestCase({
+    input: { fixtures: [...] },
+    result: async (bai) => {
+      // Verify deployment artifacts
+      // Make HTTP requests
+    }
+  })).timeout(300000);
+  
+  it('verify endpoint', async function () {
+    this.skip(); // Skip by default
+  });
+});
+```
+
+---
+
+## Common Patterns
+
+### Test Model Structure
+All test cases follow this structure:
+```typescript
+{
+  description?: string;
+  input: Input;
+} & (
+  { result: ExpectedResult | ((result: ExpectedResult) => Promise<any>) } |
+  { error: { expected: string | RegExp, message?: string } }
+)
+```
+
+### Error Testing
+```typescript
+{ input: {...}, error: { expected: 'Error message' } }
+```
+
+### Result Validation
+```typescript
+// Simple value
+{ input: {...}, result: expectedValue }
+
+// Async validation
+{ input: {...}, result: async (actual) => { expect(actual).to.equal(expected); } }
+```
+
+### Cleanup Pattern
+```typescript
+let suiteHasFailures: boolean | undefined;
+
+afterEach(function () {
+  if (this.currentTest?.state === 'failed') suiteHasFailures = true;
+  suiteHasFailures ??= false;
+});
+
+after(async function () {
+  await sleep(1000);
+  if (suiteHasFailures === false) await FileSystemUtils.folder.delete(tempDir);
+  await CommandoPool.killAll();
+});
+```
+
+---
+
+## File Naming
+
+- Unit tests: `*.test.ts`
+- Firebase/Storm tests: `*.test.firebase.ts`
+- Fixture files: `*.txt` or `fixtures.txt`
+- Test helpers: `helpers.ts` or `utils/helpers.ts`
+
+---
+
+## Best Practices
+
+1. **Isolation**: Each test must be independent
+2. **Cleanup**: Always clean up temporary files, workspaces, and processes
+3. **Timeouts**: Set appropriate timeouts for async operations
+4. **Error Messages**: Provide clear, descriptive error messages
+5. **Fixture Reuse**: Extract common fixtures to shared files
+6. **Test Data**: Use realistic but minimal test data
+7. **Skip Expensive Tests**: Mark deployment/external service tests with `.skip()` by default
+8. **Cache Management**: Clear caches when needed (`FilesCache.clear()`)
+9. **Resource Cleanup**: Always call `CommandoPool.killAll()` in after hooks
+
+---
+
+## When to Use Which Type
+
+- **Simple Unit Tests**: Pure functions, utilities, data transformations
+- **Workspace-Based Tests**: Build system, file operations, compilation, linting
+- **Storm/Firebase Tests**: Backend modules, database operations, API endpoints
+- **Deployment Tests**: Actual deployments, external service integration, end-to-end flows

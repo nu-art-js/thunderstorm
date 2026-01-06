@@ -248,6 +248,47 @@ export const BaiParam_DeployImage: BaseCliParam<'deployImage', string> = {
 	]
 };
 
+export const BaiParam_DeployFunction: BaseCliParam<'deployFunction', string> = {
+	keys: ['--deploy-function', '-df'],
+	keyName: 'deployFunction',
+	type: 'string',
+	group: 'Deployment',
+	description: 'Deploy a specific function by name. Usage: --deploy-function <functionName>',
+	process: (value) => {
+		if (!value)
+			throw new BadImplementationException('Function name is required. Use --deploy-function=<functionName>');
+		// Function name validation - just ensure it's a non-empty string
+		if (typeof value !== 'string' || value.trim().length === 0)
+			throw new BadImplementationException('Function name must be a non-empty string');
+		return value;
+	},
+};
+
+export const BaiParam_DeleteFunctions: BaseCliParam<'deleteFunctions', boolean> = {
+	keys: ['--delete-functions'],
+	keyName: 'deleteFunctions',
+	type: 'boolean',
+	group: 'Deployment',
+	description: 'Delete functions before deployment. Behavior depends on other flags.',
+};
+
+export const BaiParam_DeleteFunction: BaseCliParam<'deleteFunction', string> = {
+	keys: ['--delete-function', '-delfn'],
+	keyName: 'deleteFunction',
+	type: 'string',
+	group: 'Deployment',
+	description: 'Delete a specific function by name before deployment. Usage: --delete-function=<functionName>',
+	process: (value) => {
+		if (!value)
+			throw new BadImplementationException('Function name is required. Use --delete-function=<functionName>');
+		// Function name validation - just ensure it's a non-empty string
+		if (typeof value !== 'string' || value.trim().length === 0)
+			throw new BadImplementationException('Function name must be a non-empty string');
+		return value;
+	},
+	dependencies: [{param: BaiParam_DeleteFunctions, value: true}]
+};
+
 export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
 	keys: ['--debug', '-d'],
 	keyName: 'debug',
@@ -439,6 +480,9 @@ export const AllBaiParams = [
 	BaiParam_Deploy,
 	BaiParam_BuildPushImage,
 	BaiParam_DeployImage,
+	BaiParam_DeployFunction,
+	BaiParam_DeleteFunctions,
+	BaiParam_DeleteFunction,
 	BaiParam_DebugBackend,
 
 	BaiParam_Debug,

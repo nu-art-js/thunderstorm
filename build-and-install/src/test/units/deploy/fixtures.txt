@@ -105,6 +105,7 @@ service firebase.storage {
     "type": "firebase-function",
     "label": "firebase-function-hello",
     "customTSConfig": true,
+    "functions": ["hello"],
     "containerDeployment": {
       "artifactRegistry": {
         "region": "us-central1",

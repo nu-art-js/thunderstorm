@@ -1,13 +1,17 @@
 steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args:
-    - 'build'
-    - '--platform=linux/amd64'
-    - '-t'
-    - '{{IMAGE_REFERENCE}}'
-    - '-f'
-    - '{{DOCKERFILE_PATH}}'
-    - '.'
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--platform=linux/amd64'
+      - '-t'
+      - '{{IMAGE_REFERENCE}}'
+      - '-t'
+      - '{{IMAGE_REFERENCE_LATEST}}'
+      - '-f'
+      - '{{DOCKERFILE_PATH}}'
+{{LABELS}}
+      - '.'
 images:
-- '{{IMAGE_REFERENCE}}'
+  - '{{IMAGE_REFERENCE}}'
+  - '{{IMAGE_REFERENCE_LATEST}}'
 

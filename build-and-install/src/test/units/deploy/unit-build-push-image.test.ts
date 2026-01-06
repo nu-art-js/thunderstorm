@@ -30,17 +30,20 @@ type Input = {
 };
 type Output = (bai: BuildAndInstall) => Promise<void>;
 
-const deploymentId = generateHex(16);
 const params = {
-	DEPLOYMENT_ID_PLACEHOLDER: deploymentId,
-	FIREBASE_TEST_PROJECT: 'nu-art-thunderstorm-test'
+	FIREBASE_TEST_PROJECT: 'nu-art-thunderstorm-test',
+	DEPLOYMENT_ID_PLACEHOLDER: undefined
 };
 
 const test = async (setup: Input) => {
 	FilesCache.clear();
 
 	// Setup workspace with template parameters for deployment ID replacement
-	await workspaceCreator.setupWorkspace(setup.fixtures, params);
+	const deploymentId = generateHex(16);
+	await workspaceCreator.setupWorkspace(setup.fixtures, {
+		...params,
+		DEPLOYMENT_ID_PLACEHOLDER: deploymentId,
+	});
 
 	const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	buildAndInstall.runtimeParams.allUnits = true;
@@ -49,6 +52,9 @@ const test = async (setup: Input) => {
 	buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Compile], [phase_BuildPushImage]]);
 
 	await buildAndInstall.build();
+	const functionUnit = buildAndInstall.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
+	functionUnit.injectedMetadata['deployment-id'] = deploymentId;
+
 	try {
 		await buildAndInstall.run();
 	} catch (error: any) {
@@ -56,7 +62,7 @@ const test = async (setup: Input) => {
 		// The test will verify setup (config, Dockerfile) which doesn't require Cloud Build to succeed
 		if (error instanceof PhaseAggregatedException) {
 			// Check if any of the errors are Cloud Build related (auth, API, project not set, etc.)
-			const hasCloudBuildError = error.errors.some(err => {
+			const specificError = error.errors.find(err => {
 				const commandoError = isErrorOfType(err.cause, CommandoException);
 				if (commandoError) {
 					const stderr = commandoError.stderr || '';
@@ -87,7 +93,10 @@ const test = async (setup: Input) => {
 				}
 				return false;
 			});
-			if (hasCloudBuildError) {
+
+			if (specificError) {
+				throw specificError;
+
 				// Cloud Build not available or not configured - expected in test environment, continue to verify setup
 				return buildAndInstall;
 			}
@@ -109,7 +118,10 @@ describe('Firebase Build Push Image Phase', () => {
 	before(async function () {
 		this.timeout(60000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt', 'firebase-function-nested-deps.txt', 'firebase-function-hello-container.txt'], params);
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt',
+																									 'fixtures.txt',
+																									 'firebase-function-nested-deps.txt',
+																									 'firebase-function-hello-container.txt'], params);
 		await workspaceCreator.setupWorkspace(['workspace-deploy.txt'], params);
 	});
 
@@ -237,6 +249,7 @@ describe('Firebase Build Push Image Phase', () => {
 	});
 
 	after(async function () {
+		this.timeout(10000);
 		await sleep(1000);
 		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);
