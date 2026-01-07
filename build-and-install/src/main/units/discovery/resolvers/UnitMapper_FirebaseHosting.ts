@@ -6,6 +6,7 @@ import {
 	tsValidateMustExist,
 	tsValidateOptional,
 	tsValidateOptionalAnyNumber,
+	tsValidateOptionalObject,
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
@@ -20,6 +21,14 @@ const valuesValidator = {
 	isLocal: tsValidateBoolean(false),
 };
 
+const hostingDeploymentValidator = {
+	artifactRegistry: {
+		region: tsValidateAnyString,
+		repository: tsValidateAnyString,
+		projectId: tsValidateAnyString,
+	},
+};
+
 
 export class UnitMapper_FirebaseHosting_Class
 	extends UnitMapper_Node<Unit_FirebaseHostingApp, UnitConfigJSON_FirebaseHosting> {
@@ -29,6 +38,7 @@ export class UnitMapper_FirebaseHosting_Class
 		servingPort: tsValidateOptionalAnyNumber,
 		envs: tsValidateDynamicObject<TypedMap<FirebaseHosting_EnvConfig>>(valuesValidator, tsValidateAnyString),
 		hostingConfig: tsValidateOptional,
+		hostingDeployment: tsValidateOptionalObject(hostingDeploymentValidator),
 		...UnitMapper_Node.tsValidator_Node,
 	};
 

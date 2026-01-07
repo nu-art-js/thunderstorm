@@ -74,7 +74,7 @@ const test = async (setup: Input) => {
 		// The test will verify setup (config, firebase.json) which doesn't require deployment to succeed
 		if (error instanceof PhaseAggregatedException) {
 			// Check if any of the errors are gcloud/Firebase CLI related
-			const hasDeployError = error.errors.some(err => {
+			const specificError = error.errors.find(err => {
 				const commandoError = isErrorOfType(err.cause, CommandoException);
 				if (commandoError) {
 					const stderr = commandoError.stderr || '';
@@ -103,10 +103,9 @@ const test = async (setup: Input) => {
 				}
 				return false;
 			});
-			if (hasDeployError) {
-				// Deployment not available or not configured - expected in test environment, continue to verify setup
-				return buildAndInstall;
-			}
+
+			if (specificError)
+				throw specificError;
 		}
 		// Re-throw other errors
 		throw error;

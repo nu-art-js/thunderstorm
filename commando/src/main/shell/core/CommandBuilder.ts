@@ -16,11 +16,11 @@ const defaultOptions: Options = {
 
 /**
  * Builds shell commands with indentation and formatting support.
- * 
+ *
  * Accumulates commands in an array and formats them with proper indentation.
  * Supports custom newline delimiters and indentation levels. Commands can
  * be split across multiple lines using the newline delimiter.
- * 
+ *
  * **Behavior**:
  * - Commands are trimmed before adding
  * - Empty commands are preserved (for spacing)
@@ -28,8 +28,10 @@ const defaultOptions: Options = {
  * - `reset()` returns the accumulated command and clears the builder
  */
 export class CommandBuilder {
+	private initialCommands: string[] = [];
+
 	/** Array of accumulated command strings */
-	commands: string[] = [];
+	commands: string[];
 	/** Current indentation level (number of indent steps) */
 	private indentation: number = 0;
 	/** Configuration options for formatting */
@@ -41,6 +43,7 @@ export class CommandBuilder {
 	 */
 	constructor(options: Partial<Options> = defaultOptions) {
 		this.option = options as Options;
+		this.commands = [...this.initialCommands];
 	}
 
 	/**
@@ -50,6 +53,10 @@ export class CommandBuilder {
 	protected getIndentation = (): string => {
 		return ' '.repeat(this.option.indentation * this.indentation);
 	};
+
+	setMark() {
+		this.initialCommands = [...this.commands];
+	}
 
 	/**
 	 * Increases the current indentation level by one.
@@ -76,13 +83,13 @@ export class CommandBuilder {
 
 	/**
 	 * Appends a command to the command list with proper indentation.
-	 * 
+	 *
 	 * **Behavior**:
 	 * - Splits the command by the newline delimiter (allows multi-line commands)
 	 * - Trims each line
 	 * - Applies current indentation to non-empty lines
 	 * - Preserves empty lines as-is (for spacing)
-	 * 
+	 *
 	 * @param command - Command string to append (can contain newlines)
 	 * @returns This instance for method chaining
 	 */
@@ -114,6 +121,7 @@ export class CommandBuilder {
 	reset(): string {
 		const command = this.getCommand();
 		this.commands.length = 0;
+		this.commands.push(...this.initialCommands);
 		return command;
 	}
 }

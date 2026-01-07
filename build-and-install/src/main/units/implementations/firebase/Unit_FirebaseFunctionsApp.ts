@@ -9,7 +9,7 @@ import {resolve} from 'path';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
-import {deployLogFilter} from './common.js';
+import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',
@@ -244,6 +244,15 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			return;
 		}
 
+		// Ensure Artifact Registry repository exists
+		const commando = this.allocateCommando();
+		await ensureArtifactRegistryRepository(
+			commando,
+			artifactRegistry,
+			'docker',
+			this
+		);
+
 		// Generate Dockerfile in the output folder (never pollute workspace)
 		// Cloud Build uploads the directory, so we'll reference it from output folder
 		const buildOutputFolder = resolve(this.config.fullPath, '.trash/build-image');
@@ -254,8 +263,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.dockerfile, dockerfilePath, {});
 		this.logInfo(`Created Dockerfile from template at ${dockerfilePath}`);
 
-		const commando = this.allocateCommando()
-			.cd(this.config.fullPath);
+		commando.cd(this.config.fullPath);
 
 		// Calculate relative Dockerfile path from build context (current directory)
 		// Cloud Build expects relative path from the build context root (this.config.fullPath)
