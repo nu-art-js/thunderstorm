@@ -94,12 +94,8 @@ const test = async (setup: Input) => {
 				return false;
 			});
 
-			if (specificError) {
+			if (specificError)
 				throw specificError;
-
-				// Cloud Build not available or not configured - expected in test environment, continue to verify setup
-				return buildAndInstall;
-			}
 		}
 		// Re-throw other errors
 		throw error;

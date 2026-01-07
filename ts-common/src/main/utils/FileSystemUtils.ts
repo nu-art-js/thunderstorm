@@ -212,6 +212,28 @@ export const FileSystemUtils = {
 				return assertFolder(pathToFolder);
 			return _fs.mkdir(pathToFolder, {recursive: true});
 		},
+
+		/**
+		 * Copies a folder and all its contents recursively.
+		 *
+		 * Uses Node.js built-in `fs.promises.cp` for efficient recursive copying.
+		 * Creates the target folder if it doesn't exist.
+		 *
+		 * @param sourcePath - Path to source folder
+		 * @param targetPath - Path to target folder
+		 * @param mustExist - If true, throws if source folder doesn't exist. If false, silently returns (default: true)
+		 */
+		copy: async (sourcePath: string, targetPath: string, mustExist = true) => {
+			if (!await assertExists(sourcePath, mustExist, 'Folder'))
+				return;
+			await assertFolder(sourcePath);
+
+			// Create target folder parent directory
+			await FileSystemUtils.folder.create(resolve(targetPath, '..'));
+
+			// Use Node.js built-in recursive copy (available in Node.js 16.7.0+)
+			return _fs.cp(sourcePath, targetPath, {recursive: true});
+		},
 		/**
 		 * Folder listing operations.
 		 */

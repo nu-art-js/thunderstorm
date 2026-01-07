@@ -1,13 +1,13 @@
 ---
-alwaysApply: true
+description: When dealing with project packages relations and structure
+alwaysApply: false
 ---
-
 This project is using a custom build mechanism called Build and Install(bai), it uses templated __package.json that in the build process is converted to package.json.
 
 The dependencies are resolved via the pnpm workspace/* and importing something from a dependency is not done using the relative path to that file, but rather using the package-name that file resides in.
 
 Every package has a src/main where the source resides, and a src/test for the tests, bai takes care of the compilation to the dist folder that is later connected to pnpm
-ModuleBE_EHRInstanceDB_Class
+
 Most capabilities/feature/tools of this Framework and project are such that they have multi domains, e.g. shared, frontend and backend; these dedicated packages must be collected under a single folder representing the capability, for example: messaging capability will have a messaging folder and inner folders: shared, frontend and backend.
 
 sometime some packages are standalone and are associated with a single domain they can be anywhere in the project but following the package folder strcture and rules

@@ -1,7 +1,7 @@
 ---
-alwaysApply: true
+description: When dealing with package construct and outline features
+alwaysApply: false
 ---
-
 # Package Maintenance Standards
 
 ## Core Principle

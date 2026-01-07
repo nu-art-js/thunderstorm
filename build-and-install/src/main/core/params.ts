@@ -221,7 +221,7 @@ export const BaiParam_BuildPushImage: BaseCliParam<'buildPushImage', string> = {
 	keyName: 'buildPushImage',
 	type: 'string',
 	group: 'Deployment',
-	description: 'Build Docker container image and push to Artifact Registry. Usage: --build-push-image <tag>',
+	description: `Build Docker container image and push to Artifact Registry. Usage: --build-push-image=<tag>`,
 	process: (value) => {
 		if (!value)
 			throw new BadImplementationException('Image tag is required. Use --build-push-image=<tag>');

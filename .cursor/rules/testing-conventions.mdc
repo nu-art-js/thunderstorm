@@ -1,7 +1,7 @@
 ---
-alwaysApply: true
+description: when create/edit tests
+alwaysApply: false
 ---
-
 # Testing Conventions
 
 This rule defines the standard testing patterns used across the codebase. There are 4 main test types, each with specific use cases and patterns.

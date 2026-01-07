@@ -193,6 +193,13 @@ export const hello = functions.https.onRequest((request, response) => {
         }
       ]
     },
+    "hostingDeployment": {
+      "artifactRegistry": {
+        "region": "us-central1",
+        "repository": "hosting-builds",
+        "projectId": "{{FIREBASE_TEST_PROJECT}}"
+      }
+    },
     "envs": {
       "test": {
         "config": {},
@@ -200,6 +207,17 @@ export const hello = functions.https.onRequest((request, response) => {
         "isLocal": false
       }
     }
+  }
+}
+
+//// file: ./firebase-hosting-hello/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true
   }
 }
 
