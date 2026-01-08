@@ -1,7 +1,7 @@
 import {FirebasePackageConfig} from '../../../config/types/index.js';
 import {UnitPhaseImplementor} from '../../../core/types.js';
 import {ImplementationMissingException, LogLevel, StringMap, TS_Object, TypedMap} from '@nu-art/ts-common';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_VersionApp} from '../../../config/consts.js';
+import {CONST_DeployHostingDir, CONST_DeploymentMetadata, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_HostingBuildTarball, CONST_StagingDir, CONST_TrashDir, CONST_VersionApp} from '../../../config/consts.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
 import {UnitConfigJSON_Node} from '../../discovery/resolvers/UnitMapper_Node.js';
@@ -270,11 +270,11 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		this.logDebug(`Metadata: `, metadata);
 
 		// Create staging directory for tarball contents
-		const buildOutputDir = resolve(this.config.fullPath, '.trash');
-		const stagingDir = resolve(buildOutputDir, 'staging');
+		const buildOutputDir = resolve(this.config.fullPath, CONST_TrashDir);
+		const stagingDir = resolve(buildOutputDir, CONST_StagingDir);
 		await FileSystemUtils.folder.delete(stagingDir);
 		await FileSystemUtils.folder.create(stagingDir);
-		const tarballPath = resolve(buildOutputDir, 'hosting-build.tar.gz');
+		const tarballPath = resolve(buildOutputDir, CONST_HostingBuildTarball);
 
 		// Ensure firebase.json and .firebaserc exist (they should from prepare phase)
 		await this.resolveHostingRC();
@@ -289,12 +289,12 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		await FileSystemUtils.file.copy(firebaseJsonPath, resolve(stagingDir, CONST_FirebaseJSON));
 		await FileSystemUtils.file.copy(firebaseRcPath, resolve(stagingDir, CONST_FirebaseRC));
 		await FileSystemUtils.folder.copy(this.config.output, resolve(stagingDir, outputDirName));
-		await FileSystemUtils.file.write.json(resolve(stagingDir, 'deployment-metadata.json'), metadata);
+		await FileSystemUtils.file.write.json(resolve(stagingDir, CONST_DeploymentMetadata), metadata);
 
 		// Create tarball from staging directory contents
 		// Note: Use explicit file list to include hidden files (.*) which * wildcard doesn't match
 		commando.cd(stagingDir);
-		await this.executeAsyncCommando(commando, `tar -czf ${tarballPath} ${CONST_FirebaseJSON} ${CONST_FirebaseRC} deployment-metadata.json ${outputDirName}`, (stdout, stderr, exitCode) => {
+		await this.executeAsyncCommando(commando, `tar -czf ${tarballPath} ${CONST_FirebaseJSON} ${CONST_FirebaseRC} ${CONST_DeploymentMetadata} ${outputDirName}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Failed to create tarball (exit code ${exitCode})`, stdout, stderr, exitCode);
 		});
@@ -361,7 +361,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		}
 
 		// Setup temp directory for deployment
-		const deployTempDir = resolve(this.config.fullPath, '.trash/deploy-hosting');
+		const deployTempDir = resolve(this.config.fullPath, `${CONST_TrashDir}/${CONST_DeployHostingDir}`);
 		await FileSystemUtils.folder.delete(deployTempDir);
 		await FileSystemUtils.folder.create(deployTempDir);
 

@@ -8,6 +8,8 @@ import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
+import {CONST_DeployHostingDir, CONST_DeploymentId, CONST_DeploymentMetadata, CONST_TrashDir} from '../../../main/config/consts.js';
+import {CONST_TestFixture_HostingHello} from './test-consts.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
@@ -127,7 +129,7 @@ describe('Firebase Deploy Hosting Phase', () => {
 			imageTag: 'test-build-hosting-v1.0.0', // Must match a version that was built
 		},
 		result: async (bai: BuildAndInstall) => {
-			const hostingUnit = bai.workspace.getUnitByKey<Unit_FirebaseHostingApp>('firebase-hosting-hello', Unit_FirebaseHostingApp);
+			const hostingUnit = bai.workspace.getUnitByKey<Unit_FirebaseHostingApp>(CONST_TestFixture_HostingHello, Unit_FirebaseHostingApp);
 			hostingUnit.logDebug('=== Verifying hosting unit exists ===');
 			expect(hostingUnit).to.exist;
 
@@ -166,12 +168,12 @@ describe('Firebase Deploy Hosting Phase', () => {
 
 			// Extract deployment-id from tarball metadata
 			hostingUnit.logDebug('=== Extracting deployment-id from tarball metadata ===');
-			const deployTempDir = resolve(hostingUnit.config.fullPath, '.trash/deploy-hosting');
-			const metadataPath = resolve(deployTempDir, 'deployment-metadata.json');
+			const deployTempDir = resolve(hostingUnit.config.fullPath, `${CONST_TrashDir}/${CONST_DeployHostingDir}`);
+			const metadataPath = resolve(deployTempDir, CONST_DeploymentMetadata);
 			expect(existsSync(metadataPath)).to.be.true;
 			
 			const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
-			const deploymentId = metadata['deployment-id'];
+			const deploymentId = metadata[CONST_DeploymentId];
 			expect(deploymentId).to.exist;
 			hostingUnit.logDebug(`=== Deployment ID from tarball: ${deploymentId} ===`);
 

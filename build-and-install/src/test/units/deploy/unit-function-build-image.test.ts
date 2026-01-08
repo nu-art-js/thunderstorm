@@ -8,6 +8,8 @@ import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
+import {CONST_DeploymentId} from '../../../main/config/consts.js';
+import {CONST_TestFixture_FunctionHello} from './test-consts.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
@@ -52,8 +54,8 @@ const test = async (setup: Input) => {
 	buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Compile], [phase_BuildPushImage]]);
 
 	await buildAndInstall.build();
-	const functionUnit = buildAndInstall.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
-	functionUnit.injectedMetadata['deployment-id'] = deploymentId;
+	const functionUnit = buildAndInstall.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>(CONST_TestFixture_FunctionHello, Unit_FirebaseFunctionsApp);
+	functionUnit.injectedMetadata[CONST_DeploymentId] = deploymentId;
 
 	try {
 		await buildAndInstall.run();
@@ -127,7 +129,7 @@ describe('Firebase Build Push Image Phase', () => {
 			imageTag: 'test-build-push-v1.0.0'
 		},
 		result: async (bai: BuildAndInstall) => {
-			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
+			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>(CONST_TestFixture_FunctionHello, Unit_FirebaseFunctionsApp);
 			functionUnit.logDebug('=== Verifying function unit exists ===');
 			expect(functionUnit).to.exist;
 
@@ -183,7 +185,7 @@ describe('Firebase Build Push Image Phase', () => {
 			imageTag: 'custom-image-v1.0.0'
 		},
 		result: async (bai: BuildAndInstall) => {
-			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
+			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>(CONST_TestFixture_FunctionHello, Unit_FirebaseFunctionsApp);
 			functionUnit.logDebug('=== Verifying function unit exists ===');
 			expect(functionUnit).to.exist;
 
@@ -212,7 +214,7 @@ describe('Firebase Build Push Image Phase', () => {
 			imageTag: 'custom-dockerfile-v1.0.0'
 		},
 		result: async (bai: BuildAndInstall) => {
-			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
+			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>(CONST_TestFixture_FunctionHello, Unit_FirebaseFunctionsApp);
 			functionUnit.logDebug('=== Verifying function unit exists ===');
 			expect(functionUnit).to.exist;
 

@@ -1,5 +1,5 @@
 import {UnitPhaseImplementor} from '../../../core/types.js';
-import {CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, CONST_VersionApp} from '../../../config/consts.js';
+import {CONST_BuildImageDir, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_LatestTag, CONST_PackageJSON, CONST_TrashDir, CONST_VersionApp} from '../../../config/consts.js';
 import {FirebasePackageConfig} from '../../../config/types/index.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
@@ -85,7 +85,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		sslKey: '.ssl/key.pem',
 		sslCert: '.ssl/cert.pem',
 		output: 'dist',
-		pathToEmulatorData: '.trash/data',
+		pathToEmulatorData: `${CONST_TrashDir}/data`,
 	};
 
 	readonly emulatorLogStrings = {
@@ -255,7 +255,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		// Generate Dockerfile in the output folder (never pollute workspace)
 		// Cloud Build uploads the directory, so we'll reference it from output folder
-		const buildOutputFolder = resolve(this.config.fullPath, '.trash/build-image');
+		const buildOutputFolder = resolve(this.config.fullPath, `${CONST_TrashDir}/${CONST_BuildImageDir}`);
 		await FileSystemUtils.folder.delete(buildOutputFolder);
 		await FileSystemUtils.folder.create(buildOutputFolder);
 		const dockerfilePath = resolve(buildOutputFolder, containerDeployment.dockerfile || 'dockerfile');
@@ -268,7 +268,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		// Calculate relative Dockerfile path from build context (current directory)
 		// Cloud Build expects relative path from the build context root (this.config.fullPath)
 		const dockerfileName = containerDeployment.dockerfile || 'dockerfile';
-		const dockerfileRelativePath = `.trash/build-image/${dockerfileName}`;
+		const dockerfileRelativePath = `${CONST_TrashDir}/${CONST_BuildImageDir}/${dockerfileName}`;
 
 		const metadata = {
 			...this.injectedMetadata,
@@ -299,7 +299,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.cloudbuildYaml, cloudbuildYamlPath, params);
 
 		// Cloud Build config path must also be relative to build context
-		const cloudbuildYamlRelativePath = `.trash/build-image/.cloudbuild.yaml`;
+		const cloudbuildYamlRelativePath = `${CONST_TrashDir}/${CONST_BuildImageDir}/.cloudbuild.yaml`;
 		await this.executeAsyncCommando(commando, `gcloud builds submit --config ${cloudbuildYamlRelativePath} --project ${artifactRegistry.projectId} .`, (stdout, stderr, exitCode) => {
 			if (exitCode === 0)
 				return;
@@ -478,7 +478,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		const artifactRegistryPath = `${artifactRegistry.region}-docker.pkg.dev/${artifactRegistry.projectId}/${artifactRegistry.repository}`;
 		// Use 'latest' tag if no specific tag provided, otherwise use the provided tag
-		const imageTagToUse = imageTag || 'latest';
+		const imageTagToUse = imageTag || CONST_LatestTag;
 		const imageReference = `${artifactRegistryPath}/${imageName}:${imageTagToUse}`;
 
 		this.logInfo(`Deploying container image: ${imageReference}`);
