@@ -224,8 +224,8 @@ describe('Firebase Build Hosting Phase', () => {
 	after(async function () {
 		this.timeout(10000);
 		await sleep(1000);
-		// if (suiteHasFailures === false)
-		// 	await FileSystemUtils.folder.delete(pathToTemp);
+		if (suiteHasFailures === false)
+		 	await FileSystemUtils.folder.delete(pathToTemp);
 
 		await CommandoPool.killAll();
 	});
