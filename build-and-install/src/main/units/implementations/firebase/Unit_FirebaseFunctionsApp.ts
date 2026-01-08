@@ -24,7 +24,7 @@ type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string
 export type FunctionTriggerType = 'http' | 'schedule' | 'eventarc';
 
 export type FunctionResourceConfig = {
-	cpu?: string;          // CPU allocation (e.g., '1', '2', '4')
+	cpu?: string | number; // CPU allocation (e.g., '1', '2', '4' or 1, 2, 4)
 	memory?: string;       // Memory allocation (e.g., '512Mi', '1Gi', '2Gi', '4Gi', '8Gi')
 	timeout?: number;      // Timeout in seconds (default: 300, max: 3600)
 	concurrency?: number; // Container concurrency (default: 80, max: 1000)
@@ -687,81 +687,52 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 			await FileSystemUtils.file.write.json(envVarsFile, envVars);
 
-			// Build Cloud Run service YAML definition
+			// Build Cloud Run service YAML definition using template
 			const resources = functionConfig.resources;
-			const serviceYaml = {
-				apiVersion: 'serving.knative.dev/v1',
-				kind: 'Service',
-				metadata: {
-					name: serviceName,
-					labels: {
-						'goog-cloudfunctions-runtime': 'nodejs22',
-						'cloud.googleapis.com/location': region,
-						'goog-managed-by': 'cloudfunctions'
-					},
-					annotations: {
-						'serving.knative.dev/creator': `service-${runtimeProjectId}@gcf-admin-robot.iam.gserviceaccount.com`,
-						'run.googleapis.com/client-name': 'cli-firebase',
-						'cloudfunctions.googleapis.com/function-id': functionName,
-						'run.googleapis.com/ingress': 'all',
-						'run.googleapis.com/ingress-status': 'all'
-					}
-				},
-				spec: {
-					template: {
-						metadata: {
-							labels: {},
-							annotations: {
-								'autoscaling.knative.dev/maxScale': (resources?.maxInstances ?? 100).toString(),
-								'autoscaling.knative.dev/minScale': (resources?.minInstances ?? 0).toString(),
-								'run.googleapis.com/startup-cpu-boost': 'true',
-								'cloudfunctions.googleapis.com/trigger-type': trigger === 'http' ? 'HTTP_TRIGGER' : 'EVENT_TRIGGER'
-							}
-						},
-						spec: {
-							containerConcurrency: resources?.concurrency ?? 100,
-							timeoutSeconds: resources?.timeout ?? 540,
-							// Only include serviceAccountName if explicitly configured
-							// If omitted, Cloud Run uses the default Cloud Run service account
-							...(functionConfig.serviceAccountName ? { serviceAccountName: functionConfig.serviceAccountName } : {}),
-							containers: [{
-								name: 'worker',
-								image: imageReference,
-								ports: [{
-									name: 'http1',
-									containerPort: 8080
-								}],
-								env: Object.entries(envVars).map(([name, value]) => ({
-									name,
-									value
-								})),
-								resources: {
-									limits: {
-										cpu: resources?.cpu || '1',
-										memory: resources?.memory || '2Gi'
-									}
-								},
-								startupProbe: {
-									timeoutSeconds: 240,
-									periodSeconds: 240,
-									failureThreshold: 1,
-									tcpSocket: {
-										port: 8080
-									}
-								}
-							}]
-						}
-					},
-					traffic: [{
-						percent: 100,
-						latestRevision: true
-					}]
-				}
+			
+			// Generate environment variables as YAML array
+			// Indentation: 8 spaces for list item, 10 spaces for value (under env: which is at 8 spaces)
+			const envVarsYaml = Object.entries(envVars)
+				.map(([name, value]) => {
+					// Escape YAML string values that might contain special characters
+					const escapedValue = typeof value === 'string' && (value.includes(':') || value.includes("'") || value.includes('"') || value.includes('\n'))
+						? JSON.stringify(value)
+						: value;
+					return `        - name: ${name}\n          value: ${escapedValue}`;
+				})
+				.join('\n');
+
+			// Generate service account line conditionally
+			const serviceAccountYaml = functionConfig.serviceAccountName
+				? `      serviceAccountName: ${functionConfig.serviceAccountName}`
+				: '';
+
+			// Build template parameters
+			// Convert cpu to string if it's a number
+			const cpuValue = resources?.cpu !== undefined 
+				? (typeof resources.cpu === 'number' ? resources.cpu.toString() : resources.cpu)
+				: '1';
+			
+			const serviceYamlParams = {
+				SERVICE_NAME: serviceName,
+				FUNCTION_NAME: functionName,
+				REGION: region,
+				RUNTIME_PROJECT_ID: runtimeProjectId,
+				IMAGE_REFERENCE: imageReference,
+				TRIGGER_TYPE: trigger === 'http' ? 'HTTP_TRIGGER' : 'EVENT_TRIGGER',
+				MAX_INSTANCES: (resources?.maxInstances ?? 100).toString(),
+				MIN_INSTANCES: (resources?.minInstances ?? 0).toString(),
+				CONCURRENCY: (resources?.concurrency ?? 100).toString(),
+				TIMEOUT: (resources?.timeout ?? 540).toString(),
+				CPU: cpuValue,
+				MEMORY: resources?.memory || '2Gi',
+				ENV_VARS: envVarsYaml,
+				SERVICE_ACCOUNT: serviceAccountYaml
 			};
 
-			// Write service YAML file
+			// Generate service YAML from template
 			const serviceYamlFile = resolve(buildOutputDir, `service-${functionName}.yaml`);
-			await FileSystemUtils.file.write(serviceYamlFile, __stringify(serviceYaml, true));
+			await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.serviceYaml, serviceYamlFile, serviceYamlParams);
 			this.logInfo(`Created service YAML at ${serviceYamlFile}`);
 
 			// Deploy using gcloud run services replace
