@@ -556,19 +556,29 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 			// Set required environment variables for Firebase Admin SDK
 			// FIREBASE_CONFIG is required by Firebase Admin SDK to determine database URL and other services
-			const envVars = [
-				`FUNCTION_TARGET=${functionName}`,
-				`GCLOUD_PROJECT=${runtimeProjectId}`,
-				`GOOGLE_CLOUD_PROJECT=${runtimeProjectId}`,  // Some services use this instead
-				`FIREBASE_CONFIG=${JSON.stringify(firebaseConfig)}`  // Firebase configuration JSON
-			].join(',');
+			// Use env-vars-file to avoid shell escaping issues with JSON values containing special characters
+			const firebaseConfigJson = JSON.stringify(firebaseConfig);
+
+			// Create temporary file for environment variables
+			// This avoids shell escaping issues with JSON values containing braces, commas, and quotes
+			const buildOutputDir = resolve(this.config.fullPath, CONST_TrashDir);
+			const envVarsFile = resolve(buildOutputDir, `env-vars-${functionName}.json`);
+			const envVars = {
+				FUNCTION_TARGET: functionName,
+				GCLOUD_PROJECT: runtimeProjectId,
+				GOOGLE_CLOUD_PROJECT: runtimeProjectId,
+				FIREBASE_CONFIG: firebaseConfigJson
+			};
+			await FileSystemUtils.file.write.json(envVarsFile, envVars);
 
 			// Note: gcloud functions deploy doesn't support --image flag for pre-built containers
 			// We need to use the Cloud Functions API directly or wait for gcloud update
 			// For now, using gcloud run deploy as Gen2 functions run on Cloud Run
 			// Set FUNCTION_TARGET env var to specify the entry point
 			// Use --format to get the URL directly from the output
-			const gcloudDeployCommand = `gcloud run deploy ${serviceName} --image=${imageReference} --region=${region} --platform=managed --allow-unauthenticated --project=${runtimeProjectId} --set-env-vars=${envVars} --format="value(status.url)"`;
+			// Use --env-vars-file to avoid shell escaping issues with JSON values
+			const envVarsFileRelative = envVarsFile.replace(`${this.config.fullPath}/`, '');
+			const gcloudDeployCommand = `gcloud run deploy ${serviceName} --image=${imageReference} --region=${region} --platform=managed --allow-unauthenticated --project=${runtimeProjectId} --env-vars-file=${envVarsFileRelative} --format="value(status.url)"`;
 			if (this.runtimeContext.runtimeParams.dryRun) {
 				this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
 				continue;
