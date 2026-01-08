@@ -156,9 +156,9 @@ describe('Firebase Build Push Image Phase', () => {
 			functionUnit.logDebug('=== Verifying Dockerfile content ===');
 			const dockerfileContent = readFileSync(dockerfilePath, 'utf-8');
 			expect(dockerfileContent).to.include('FROM node:22');
-			expect(dockerfileContent).to.include('WORKDIR /workspace/dist');
+			expect(dockerfileContent).to.include('WORKDIR /workspace');
 			expect(dockerfileContent).to.include('COPY dist/');
-			expect(dockerfileContent).to.include('--source=index.js');
+			expect(dockerfileContent).to.include('COPY package.json');
 
 			// Verify output directory exists with compiled files
 			functionUnit.logDebug('=== Verifying compiled output files ===');
