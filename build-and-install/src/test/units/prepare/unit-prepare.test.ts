@@ -7,7 +7,7 @@ import {Unit_TypescriptLib} from '../../_common.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {existsSync} from 'fs';
-import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {FilesCache} from '../../../main/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {sleep} from '@nu-art/ts-common';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';

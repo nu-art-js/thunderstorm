@@ -1,0 +1,18 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+    - 'build'
+    - '--platform=linux/amd64'
+    - '-t'
+    - '${_IMAGE_REFERENCE}'
+    - '-t'
+    - '${_IMAGE_REFERENCE_LATEST}'
+    - '-f'
+    - '${_DOCKERFILE_PATH}'
+    - '--label=test.environment=manual-test'
+    - '--label=test.build-timestamp=${_BUILD_TIMESTAMP}'
+    - '.'
+images:
+- '${_IMAGE_REFERENCE}'
+- '${_IMAGE_REFERENCE_LATEST}'
+

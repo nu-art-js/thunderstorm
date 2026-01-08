@@ -8,9 +8,28 @@ import {removeAnsiCodes} from '../tools.js';
 
 const Super = MergeClass(BaseCommando, Commando_Programming, Commando_Basic);
 
+/**
+ * NVM (Node Version Manager) plugin for Commando.
+ * 
+ * Provides NVM operations for managing Node.js versions:
+ * - Install NVM
+ * - Apply NVM to shell session
+ * - Install specific Node.js versions
+ * - Get installed Node.js versions
+ * 
+ * Extends Commando_Programming and Commando_Basic (merged).
+ */
 export class Commando_NVM
 	extends Super {
 
+	/**
+	 * Applies NVM to the shell session.
+	 * 
+	 * Exports NVM_DIR, sources nvm.sh, and runs `nvm use`.
+	 * Must be called before using NVM commands in an interactive shell.
+	 * 
+	 * @returns This instance for method chaining
+	 */
 	applyNVM(): this {
 		this.append('export NVM_DIR="$HOME/.nvm"')
 			.append('[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm')
@@ -19,6 +38,13 @@ export class Commando_NVM
 		return this;
 	}
 
+	/**
+	 * Installs NVM by downloading and executing the install script.
+	 * 
+	 * @param version - NVM version to install
+	 * @returns This instance for method chaining
+	 * @throws Exception if installation fails (non-zero exit code)
+	 */
 	async install(version: string) {
 		this.append(`curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v${version}/install.sh" | bash`);
 		await this.execute((stdout, stderr, exitCode) => {
@@ -28,12 +54,25 @@ export class Commando_NVM
 		return this;
 	}
 
+	/**
+	 * Gets the installed NVM version.
+	 * 
+	 * Only executes if NVM is available (checks with `command -v nvm`).
+	 * 
+	 * @returns Promise resolving to NVM version string
+	 */
 	async getVersion() {
 		return this.if('[[ -x "$(command -v nvm)" ]]', (commando) => {
 			commando.append('nvm --version');
 		}).execute((stdout) => stdout);
 	}
 
+	/**
+	 * Installs a specific Node.js version via NVM.
+	 * 
+	 * @param requiredVersion - Node.js version to install (e.g., '18.0.0')
+	 * @returns This instance for method chaining
+	 */
 	async installNodeVersion(requiredVersion: string) {
 		await this.append(`nvm install ${requiredVersion}`)
 			.execute();
@@ -41,6 +80,14 @@ export class Commando_NVM
 		return this;
 	}
 
+	/**
+	 * Gets all installed Node.js versions.
+	 * 
+	 * Parses `nvm ls` output to extract version numbers, removing ANSI codes
+	 * and filtering out invalid entries.
+	 * 
+	 * @returns Promise resolving to array of version strings (without 'v' prefix)
+	 */
 	getInstalledNodeVersions = async () => {
 		function extractInstalledVersions(rawOutput: string) {
 			const cleanedOutput = removeAnsiCodes(rawOutput);

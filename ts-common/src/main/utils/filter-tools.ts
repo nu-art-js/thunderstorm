@@ -19,33 +19,34 @@
 import {filterInstances, sortArray} from './array-tools.js';
 
 
+/** Special regex characters that need escaping */
 const specialChars = ['(', ')', '?', '[', ']', '*', '\\', '/'];
 
 /**
- * # Filter
- *
- * ## <ins>Intro:</ins>
- *
- * A filter tool for filtering a collection or testing items by comparing string values</br>
- * This tool aims to simplify filtering arrays of strings or objects containing string fields
- * by defining which fields are tested (via a mapper function) testing those fields against a string
- *
- * ## <ins>Example data:</ins>
- *
- * type T in the following examples will be:
- *
- * ```js
- * type T = {
- *   name: string;
- * }
- * ```
- *
- * items:
- * ```js
- * const item1: T = {name: 'Matan'};
- * const item2: T = {name: 'Adam'};
- * const item3: T = {name: 'Itay'};
- * const items: T[] = [item1, item2, item3];
+ * Filter utility for filtering collections by string matching.
+ * 
+ * Provides flexible filtering of arrays by testing string fields against a filter text.
+ * Supports both literal matching and regex matching modes. Can filter single items or
+ * entire arrays, and includes sorting capabilities.
+ * 
+ * **Features**:
+ * - Field mapping: Specify which fields to test via a mapper function
+ * - Regex mode: Optionally treat filter text as regex pattern
+ * - Case-insensitive matching
+ * - Sorting: `filterSort()` sorts results by match quality (exact > contains > partial)
+ * 
+ * @template T - Type of items to filter
+ * 
+ * @example
+ * ```typescript
+ * type User = { name: string; email: string };
+ * const users: User[] = [
+ *   { name: 'Alice', email: 'alice@example.com' },
+ *   { name: 'Bob', email: 'bob@example.com' }
+ * ];
+ * 
+ * const filter = new Filter<User>((user) => [user.name, user.email]);
+ * const results = filter.filter(users, 'alice'); // Returns users matching 'alice'
  * ```
  */
 export class Filter<T> {
@@ -54,6 +55,20 @@ export class Filter<T> {
 	private originFilterText?: string;
 	private _filter!: RegExp;
 
+	/**
+	 * Translates a filter string into a RegExp pattern.
+	 * 
+	 * **Behavior**:
+	 * - Trims and lowercases the input
+	 * - Collapses multiple spaces to single space
+	 * - In regex mode: Escapes special characters and allows regex patterns
+	 * - In literal mode: Treats input as literal text (escapes special chars)
+	 * - Wraps pattern with `.*?` at start and `.*` at end for substring matching
+	 * 
+	 * @param filter - Filter text to translate
+	 * @param regexp - If true, allows regex patterns. If false, treats as literal.
+	 * @returns RegExp pattern for matching
+	 */
 	static translateStringToRegexFilter = (filter: string, regexp: boolean): RegExp => {
 		filter = (filter || '').trim();
 		filter = filter.toLowerCase();
@@ -156,6 +171,18 @@ export class Filter<T> {
 		return items.filter(this.filterImpl);
 	}
 
+	/**
+	 * Filters and sorts items by match quality.
+	 * 
+	 * Filters items first, then sorts them by match quality:
+	 * - Priority 0: Exact match (value equals filter text)
+	 * - Priority 1: Contains match (value contains filter text)
+	 * - Priority 2: Partial match (regex match)
+	 * 
+	 * @param items - Array of items to filter and sort
+	 * @param filterText - Filter text to match against
+	 * @returns Filtered and sorted array (exact matches first, then contains, then partial)
+	 */
 	filterSort(items: T[], filterText: string): T[] {
 		this.prepareFilter(filterText);
 		const text = filterText.toLowerCase();
