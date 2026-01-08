@@ -209,8 +209,13 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	 * 1. Validates image tag is provided via CLI
 	 * 2. Validates containerDeployment config exists
 	 * 3. Constructs Artifact Registry image reference
-	 * 4. Ensures Dockerfile exists (creates default if missing)
-	 * 5. Builds and pushes image using Google Cloud Build (no local Docker required)
+	 * 4. Creates isolated staging directory with only required files (dist/, Dockerfile, .cloudbuild.yaml)
+	 * 5. Builds and pushes image using Google Cloud Build from staging directory (no local Docker required)
+	 *
+	 * **Staging Directory Structure**:
+	 * - `dist/` - Contains compiled code and package.json (copied from output)
+	 * - `Dockerfile` - Container build instructions
+	 * - `.cloudbuild.yaml` - Cloud Build configuration
 	 *
 	 * **Requirements**:
 	 * - `--build-push-image <tag>` CLI flag with tag value
@@ -253,22 +258,26 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			this
 		);
 
-		// Generate Dockerfile in the output folder (never pollute workspace)
-		// Cloud Build uploads the directory, so we'll reference it from output folder
-		const buildOutputFolder = resolve(this.config.fullPath, `${CONST_TrashDir}/${CONST_BuildImageDir}`);
-		await FileSystemUtils.folder.delete(buildOutputFolder);
-		await FileSystemUtils.folder.create(buildOutputFolder);
-		const dockerfilePath = resolve(buildOutputFolder, containerDeployment.dockerfile || 'dockerfile');
+		// Create isolated staging directory for container build
+		// This ensures we have full control over what goes into the image
+		const buildOutputDir = resolve(this.config.fullPath, CONST_TrashDir);
+		const stagingDir = resolve(buildOutputDir, CONST_BuildImageDir);
+		await FileSystemUtils.folder.delete(stagingDir);
+		await FileSystemUtils.folder.create(stagingDir);
 
+		// Copy only what's needed: the entire dist folder (which contains package.json)
+		const distTargetPath = resolve(stagingDir, 'dist');
+		await FileSystemUtils.folder.copy(this.config.output, distTargetPath);
+
+		this.logInfo(`Created staging directory at ${stagingDir}`);
+		this.logInfo(`  - Copied dist/ from ${this.config.output} (includes package.json)`);
+
+		// Generate Dockerfile in staging directory
+		// Build context will be staging directory
+		const dockerfileName = containerDeployment.dockerfile || 'Dockerfile';
+		const dockerfilePath = resolve(stagingDir, dockerfileName);
 		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.dockerfile, dockerfilePath, {});
-		this.logInfo(`Created Dockerfile from template at ${dockerfilePath}`);
-
-		commando.cd(this.config.fullPath);
-
-		// Calculate relative Dockerfile path from build context (current directory)
-		// Cloud Build expects relative path from the build context root (this.config.fullPath)
-		const dockerfileName = containerDeployment.dockerfile || 'dockerfile';
-		const dockerfileRelativePath = `${CONST_TrashDir}/${CONST_BuildImageDir}/${dockerfileName}`;
+		this.logInfo(`Created Dockerfile at ${dockerfilePath}`);
 
 		const metadata = {
 			...this.injectedMetadata,
@@ -283,7 +292,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		};
 
 		this.logDebug(`Metadata: `, metadata);
-		// Load template (no params needed as we use Cloud Build substitutions)
 		const labels = Object.entries(metadata)
 			.map(([key, value]) => `      - '--label=${key}=${value}'`)
 			.join('\n');
@@ -291,16 +299,17 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const params = {
 			IMAGE_REFERENCE: imageReference,
 			IMAGE_REFERENCE_LATEST: imageReferenceLatest,
-			DOCKERFILE_PATH: dockerfileRelativePath,
+			DOCKERFILE_PATH: dockerfileName,  // Simple path since build context is staging dir
 			LABELS: labels
 		};
 
-		const cloudbuildYamlPath = resolve(buildOutputFolder, '.cloudbuild.yaml');
+		// Generate cloudbuild.yaml in staging directory
+		const cloudbuildYamlPath = resolve(stagingDir, '.cloudbuild.yaml');
 		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.cloudbuildYaml, cloudbuildYamlPath, params);
 
-		// Cloud Build config path must also be relative to build context
-		const cloudbuildYamlRelativePath = `${CONST_TrashDir}/${CONST_BuildImageDir}/.cloudbuild.yaml`;
-		await this.executeAsyncCommando(commando, `gcloud builds submit --config ${cloudbuildYamlRelativePath} --project ${artifactRegistry.projectId} .`, (stdout, stderr, exitCode) => {
+		// Build from staging directory - this ensures only staging contents are uploaded
+		commando.cd(stagingDir);
+		await this.executeAsyncCommando(commando, `gcloud builds submit --config .cloudbuild.yaml --project ${artifactRegistry.projectId} .`, (stdout, stderr, exitCode) => {
 			if (exitCode === 0)
 				return;
 
