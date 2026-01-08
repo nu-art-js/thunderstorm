@@ -9,8 +9,8 @@ import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
-import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../main/core/consts.js';
-import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../main/config/consts.js';
+import {FilesCache} from '../../../main/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
@@ -201,26 +201,6 @@ describe('Firebase Deploy Phase', () => {
 		}).timeout(300000);
 	});
 
-	describe('Deployment Verification', () => {
-		it('Functions - Verify deployed endpoint returns expected content', async function () {
-			this.skip(); // Skip by default - requires actual deployment
-			// This test would make an HTTP request to the deployed function
-			// const response = await fetch('https://<region>-FIREBASE_TEST_PROJECT.cloudfunctions.net/hello');
-			// const data = await response.json();
-			// expect(data.message).to.equal('Hello World');
-			// expect(data.deploymentId).to.exist;
-		});
-
-		it('Hosting - Verify deployed site returns expected content', async function () {
-			this.skip(); // Skip by default - requires actual deployment
-			// This test would make an HTTP request to the deployed hosting
-			// const response = await fetch('https://FIREBASE_TEST_PROJECT.web.app/');
-			// const html = await response.text();
-			// expect(html).to.include('Hello World');
-			// expect(html).to.include('Deployment ID:');
-		});
-	});
-
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')
 			suiteHasFailures = true;
@@ -229,6 +209,7 @@ describe('Firebase Deploy Phase', () => {
 	});
 
 	after(async function () {
+		this.timeout(10000);
 		await sleep(1000);
 		if (suiteHasFailures === false)
 			await FileSystemUtils.folder.delete(pathToTemp);

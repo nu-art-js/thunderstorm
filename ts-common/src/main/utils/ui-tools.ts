@@ -1,31 +1,28 @@
 /**
- * Creates a debounced function that delays invoking the provided function until after a specified
- * timeout has elapsed since the last time the debounced function was called. It also ensures that
- * the function is called at least once after a maximum timeout, even if the debounced function
- * keeps being called.
- *
- * @param func - The function to debounce. It can be a regular function or an asynchronous function.
- * @param timeout - The number of milliseconds to delay (default 500ms).
- * @param maxTimeout - The maximum time to wait before invoking the function, regardless of
- *                     continuous calls to the debounced function (default 1000ms).
- *
- * @returns A new function that, when called, will delay the invocation of the original function
- *          until the specified timeout has elapsed since the last call. If the returned function
- *          is continually called, it will still invoke the original function after the maxTimeout
- *          has elapsed.
- *
- * @template Args - The type of the arguments that the provided function accepts.
- *
+ * Creates a debounced function with maximum timeout guarantee.
+ * 
+ * Delays function invocation until `timeout` ms after the last call, but guarantees
+ * execution after `maxTimeout` ms even if calls continue. This combines debounce
+ * behavior with throttle-like guarantees.
+ * 
+ * **Behavior**:
+ * - Each call resets the `timeout` timer
+ * - If `maxTimeout` elapses, function executes regardless of recent calls
+ * - After execution, timers reset and the cycle repeats
+ * 
+ * @template Args - Function argument types
+ * @param func - Function to debounce (can be async)
+ * @param timeout - Delay in milliseconds (default: 500)
+ * @param maxTimeout - Maximum wait time in milliseconds (default: 1000)
+ * @returns Debounced function
+ * 
  * @example
- * const debouncedFunc = debounce((arg1, arg2) => {
- *   console.log(arg1, arg2);
- * }, 500, 1000);
- *
- * // Call the function repeatedly
- * debouncedFunc("hello", "world");
- * debouncedFunc("foo", "bar");
- * // The original function will be invoked after 500ms since the last call,
- * // or at least once after 1000ms, regardless of continuous calls.
+ * ```typescript
+ * const debounced = debounce((msg) => console.log(msg), 500, 1000);
+ * debounced('a'); // Resets timer
+ * debounced('b'); // Resets timer
+ * // Executes after 500ms of no calls, OR after 1000ms total
+ * ```
  */
 export const debounce = <Args extends any[]>(func: (...params: Args) => any | Promise<any>, timeout: number = 500, maxTimeout: number = 1000) => {
 	let timer: NodeJS.Timeout;
@@ -46,6 +43,24 @@ export const debounce = <Args extends any[]>(func: (...params: Args) => any | Pr
 	};
 };
 
+/**
+ * Creates a queued debounced function that prevents concurrent execution.
+ * 
+ * Similar to `debounce()` but ensures the function never runs concurrently.
+ * If a call occurs while the function is executing, it queues another execution
+ * after the current one completes.
+ * 
+ * **Behavior**:
+ * - Standard debounce behavior (resets timer on each call)
+ * - Maximum timeout guarantee (executes after maxTimeout)
+ * - If function is running when timeout triggers, queues execution for after completion
+ * 
+ * @template Args - Function argument types
+ * @param func - Async function to debounce
+ * @param timeout - Delay in milliseconds (default: 500)
+ * @param maxTimeout - Maximum wait time in milliseconds (default: 1000)
+ * @returns Queued debounced function
+ */
 export const queuedDebounce = <Args extends any[]>(func: (...params: Args) => any | Promise<any>, timeout: number = 500, maxTimeout: number = 1000) => {
 	let timer: NodeJS.Timeout;
 	let defaultTimer: NodeJS.Timeout | undefined;
@@ -84,19 +99,47 @@ export const queuedDebounce = <Args extends any[]>(func: (...params: Args) => an
 	return debounceFunc;
 };
 
+/**
+ * Return type for awaited debounce - returns a Promise that resolves with the function result.
+ */
 export type AwaitedDebounceInstance<Args extends any[], ReturnValue> = (...args: Args) => Promise<ReturnValue | undefined>
 
+/**
+ * Parameters for awaited debounce.
+ */
 type DebounceParams<Args extends any[], ReturnValue = any> = {
+	/** Async function to debounce */
 	func: (...params: Args) => Promise<ReturnValue>,
+	/** Delay in milliseconds (default: 500) */
 	timeout?: number,
+	/** Maximum wait time in milliseconds (default: 1000) */
 	fallbackTimeout?: number
 }
 
+/**
+ * Internal timer storage for awaited debounce.
+ */
 type Timers = {
 	timer?: NodeJS.Timeout,
 	fallbackTimer?: NodeJS.Timeout
 };
 
+/**
+ * Creates a debounced function that returns a Promise resolving to the function result.
+ * 
+ * Similar to `debounce()` but returns a Promise that resolves when the function executes.
+ * Useful when you need to await the debounced function's result.
+ * 
+ * **Behavior**:
+ * - Standard debounce (resets timer on each call)
+ * - Maximum timeout guarantee (executes after fallbackTimeout)
+ * - Returns Promise that resolves with function result or rejects with function error
+ * 
+ * @template Args - Function argument types
+ * @template ReturnValue - Function return type
+ * @param params - Debounce configuration
+ * @returns Debounced function that returns a Promise
+ */
 export const awaitedDebounce = <Args extends any[], ReturnValue = any>(params: DebounceParams<Args, ReturnValue>): AwaitedDebounceInstance<Args, ReturnValue> => {
 	const timers: Timers = {};
 	const _clearTimeout = (timer: keyof Timers) => {

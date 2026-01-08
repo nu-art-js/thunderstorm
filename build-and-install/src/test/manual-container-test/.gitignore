@@ -1,0 +1,16 @@
+# Configuration (user should copy from example)
+config/test-config.env
+
+# Build artifacts
+test-function/dist/
+test-function/node_modules/
+test-function/package-lock.json
+test-function/.dockerignore
+test-function/Dockerfile
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+*~
+

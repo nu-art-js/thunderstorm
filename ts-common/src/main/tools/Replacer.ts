@@ -21,20 +21,43 @@ import {KeyValue, TS_Object} from '../utils/types.js';
 import {ValidationException} from '../validator/validator-core.js';
 
 
+/**
+ * String replacement utility with parameter substitution and loop support.
+ * 
+ * Provides template string processing with:
+ * - Parameter substitution: `${param}` or `${${param}}` (nested)
+ * - For-each loops: `{{foreach item in array}}...{{/foreach}}`
+ * - Fallback replacer support (chain of replacers)
+ * - Strict mode (throws on missing params) or non-strict mode
+ * - Recursive replacement (processes replacements in replacement results)
+ * 
+ * **Parameter syntax**: `${param}` or `${${nested}}` for nested parameter access
+ * **Loop syntax**: `{{foreach item in array}}...content...{{/foreach}}`
+ */
 export class Replacer
 	extends Logger {
+	/** Whether to throw errors on missing parameters (default: true) */
 	private strictMode = true;
+	/** Runtime parameter key */
 	private static RuntimeParam = '__runtime';
+	/** Indicator prefix for runtime parameters */
 	private static Indicator_RuntimeParam = '__';
 
+	/** Regex for matching all parameter groups */
 	private static Regexp_paramGroup = /\$\{(\{?.*?\}?)\}/g;
+	/** Regex for matching a single parameter */
 	private static Regexp_param = /\$\{(\{?.*?\}?)\}/;
 
+	/** Regex for matching for-each loop start */
 	private static Regexp_forLoopGroupStart = /\{\{foreach (.*?) in (.*?)\}\}/g;
+	/** Regex for matching for-each loop parameters */
 	private static Regexp_forLoopParam = /\{\{foreach (.*?) in (.*?)\}\}/;
 
+	/** Input object containing parameter values */
 	private input: TS_Object = {};
+	/** Aliases for parameter names */
 	private aliases: KeyValue[] = [];
+	/** Optional fallback replacer to use when parameter is missing */
 	private fallbackReplacer?: Replacer;
 
 	constructor() {
@@ -61,6 +84,16 @@ export class Replacer
 		return this;
 	}
 
+	/**
+	 * Replaces parameters and loops in content recursively.
+	 * 
+	 * Processes loops first, then parameters. If any replacements were made,
+	 * recursively processes again to handle nested replacements.
+	 * 
+	 * @param _content - Template content to process
+	 * @param runtime - Optional runtime parameters (merged with input)
+	 * @returns Processed content with all replacements applied
+	 */
 	public replace(_content = '', runtime?: TS_Object) {
 		let content = this.replaceLoops(_content, runtime);
 		content = this.replaceParams(content, runtime);

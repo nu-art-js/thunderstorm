@@ -1,0 +1,654 @@
+---
+description: when making UI editors for database entities or form data
+alwaysApply: false
+---
+# EditableItem Pattern
+
+## Overview
+
+The `EditableItem` pattern is the **mandatory** way to edit database entities in Thunderstorm. It provides optimistic concurrency control, conflict detection, validation, and serves as the **single source of truth** for entity data, updates, errors, and state.
+
+**Critical Rule**: **ALWAYS use EditableItem for editing DB entities. Never manually edit entities without it.**
+
+## Key Concepts
+
+### EditableItem as Source of Truth
+
+The `EditableItem` instance is the **single source of truth** for:
+- **Data**: Current item state (`editable.item`)
+- **Updates**: Change tracking and auto-save
+- **Errors**: Validation errors and save errors
+- **Status**: Saving state, conflict state, validation state
+- **Original State**: For detecting changes (`hasChanges()`)
+
+### Optimistic Concurrency Control with `__updated`
+
+Thunderstorm uses the `__updated` field (timestamp) for optimistic concurrency control:
+
+1. **Backend Check**: Before allowing updates, backend checks:
+   ```typescript
+   if ((currDBItem?.__updated || 0) > ((item as DB_Object).__updated || currentTimeMillis()))
+     throw HttpCodes._4XX.ENTITY_IS_OUTDATED(461)
+   ```
+
+2. **461 Error**: If entity was modified by another user/client, backend returns `ENTITY_IS_OUTDATED` (461)
+
+3. **Critical**: The `__updated` field **MUST be preserved** when saving
+   - `EditableDBItemV3` automatically preserves `__updated` when saving
+   - **NEVER remove or modify `__updated` manually** - this would bypass concurrency control
+   - Removing `__updated` is an anti-pattern that breaks data integrity
+
+## EditableItem Types
+
+### EditableItem<T>
+
+Base class for editing any item type (form data, non-DB items, nested properties).
+
+```typescript
+import {EditableItem} from '@nu-art/thunderstorm-frontend';
+
+// For form data or non-DB items
+const editable = new EditableItem<FormData>({
+  email: '',
+  password: ''
+})
+  .setSaveAction(async (data) => {
+    return await ModuleFE_SomeModule._v1.create({data}).executeSync();
+  })
+  .setAutoSave(false);
+```
+
+### EditableDBItemV3<Proto>
+
+Extends `EditableItem` specifically for database entities. **MUST be used for all DB entity edits.**
+
+**Key Features**:
+- Automatically preserves `__updated` field when saving
+- Handles conflict detection via `setConflictingItem()`
+- Uses `module.v1.upsert(_item).executeSync()` for saves
+- Merges server response with local UI changes
+- Validates using module's validator
+- Provides debounced auto-save
+
+```typescript
+import {EditableDBItemV3} from '@nu-art/thunderstorm-frontend';
+import {ModuleFE_SomeEntity} from '@app/some-entity-frontend';
+
+// For database entities
+const editable = new EditableDBItemV3(item, ModuleFE_SomeEntity)
+  .setAutoSave(true)  // Auto-save when changes detected
+  .setOnChanged(async (editable) => {
+    // Handle changes - update UI, show notifications, etc.
+    forceUpdate();
+  })
+  .setOnError(async (item, err) => {
+    // Handle save errors (including 461 conflicts)
+    if (err.code === 461) {
+      // Handle outdated entity conflict
+    }
+  });
+```
+
+## Usage Patterns
+
+### Functional Approach (Recommended)
+
+While React class components exist (`TS_EditableItemController`), prefer using `EditableItem` directly in functional components:
+
+```typescript
+import {useState, useEffect} from 'react';
+import {EditableDBItemV3} from '@nu-art/thunderstorm-frontend';
+import {ModuleFE_Project} from '@app/project-frontend';
+
+function ProjectEditor({projectId}: {projectId: string}) {
+  const [editable, setEditable] = useState<EditableDBItemV3<Proto_Project>>();
+  
+  useEffect(() => {
+    const item = ModuleFE_Project.cache.unique(projectId);
+    if (!item) return;
+    
+    const editableInstance = new EditableDBItemV3(item, ModuleFE_Project)
+      .setAutoSave(true)
+      .setOnChanged(async (editable) => {
+        setEditable(editable); // Trigger re-render
+      });
+    
+    setEditable(editableInstance);
+    
+    // Cleanup
+    return () => {
+      // EditableItem handles its own lifecycle
+    };
+  }, [projectId]);
+  
+  if (!editable) return <div>Loading...</div>;
+  
+  return (
+    <div>
+      <input
+        value={editable.item.name || ''}
+        onChange={(e) => editable.update('name', e.target.value)}
+      />
+      <div>Status: {editable.getStatus()}</div>
+      {editable.hasErrors() && <div>Validation errors</div>}
+    </div>
+  );
+}
+```
+
+### Accessing Data and State
+
+```typescript
+// Get current item data
+const currentData = editable.item;
+
+// Get specific property
+const name = editable.get('name', 'default');
+
+// Check for changes
+if (editable.hasChanges()) {
+  // Show unsaved changes warning
+}
+
+// Check status
+const status = editable.getStatus();
+// Statuses: 'saving', 'saved', 'unsaved-changes', 'error-saving', 
+//           'failed-validation', 'saved-with-errors', 'creating', 'unknown'
+
+// Check for errors
+if (editable.hasErrors()) {
+  const nameError = editable.hasError('name');
+}
+
+// Check for conflicts
+if (editable.conflictingItem) {
+  // Entity was updated externally
+}
+```
+
+### Updating Values
+
+```typescript
+// Update single property
+await editable.update('name', 'New Name');
+
+// Update multiple properties
+await editable.updateObj({
+  name: 'New Name',
+  description: 'New Description'
+});
+
+// Update array item
+await editable.updateArrayAt(newItem, index);
+
+// Remove array item
+await editable.removeArrayItem(index);
+```
+
+### Saving
+
+```typescript
+// Manual save
+try {
+  const savedItem = await editable.save();
+  // Handle success
+} catch (err) {
+  if (err.code === 461) {
+    // Entity is outdated - handle conflict
+    // EditableItem automatically calls setConflictingItem()
+  }
+}
+
+// Auto-save (if enabled)
+editable.setAutoSave(true);
+// Changes automatically save after debounce period
+```
+
+## Editable Components
+
+Thunderstorm provides editable versions of form components that integrate with `EditableItem`. These components follow a two-stage factory pattern:
+
+1. **First call**: Create component factory with infrastructure props (templating props)
+2. **Second call**: Use the factory with `editable` and `prop` to render the component
+
+### Pattern Overview
+
+```typescript
+// Step 1: Create factory with templating props
+const Input = TS_InputV2.editable({saveEvent: ['blur']});
+
+// Step 2: Use with EditableItem
+<Input
+  editable={editable}
+  prop="name"
+  placeholder="Enter name"
+/>
+```
+
+### TS_InputV2 - Text Input
+
+**Available factories**:
+- `editable` - Required string
+- `editableOptional` - Optional string
+- `editableNumber` - Required number
+- `editableNumberOptional` - Optional number
+- `editableTime` - Required time (number | string)
+- `editableTimeOptional` - Optional time
+- `editableString` - String (non-editable-item version)
+- `editableArray` - Array of strings
+
+**Example - Required String**:
+```typescript
+import {TS_InputV2} from '@nu-art/thunderstorm-frontend';
+
+// Create factory
+const TextInput = TS_InputV2.editable({
+  type: 'text',
+  saveEvent: ['blur', 'accept'],  // Save on blur or Ctrl+Enter
+  trim: true
+});
+
+// Use in component
+function MyForm({editable}: {editable: EditableItem<FormData>}) {
+  return (
+    <TextInput
+      editable={editable}
+      prop="name"
+      placeholder="Enter name"
+      showErrorTooltip={true}
+    />
+  );
+}
+```
+
+**Example - Optional String**:
+```typescript
+const OptionalInput = TS_InputV2.editableOptional({
+  type: 'text',
+  saveEvent: ['change']  // Save on every change
+});
+
+<OptionalInput
+  editable={editable}
+  prop="description"
+  placeholder="Optional description"
+/>
+```
+
+**Example - Number Input**:
+```typescript
+const NumberInput = TS_InputV2.editableNumber({
+  type: 'number',
+  saveEvent: ['blur']
+});
+
+<NumberInput
+  editable={editable}
+  prop="age"
+  placeholder="Enter age"
+/>
+```
+
+**Example - Time Input**:
+```typescript
+const TimeInput = TS_InputV2.editableTime({
+  type: 'time',
+  saveEvent: ['accept']  // Save on Ctrl+Enter
+});
+
+<TimeInput
+  editable={editable}
+  prop="startTime"
+/>
+```
+
+**Save Events**:
+- `'change'` - Save on every change (immediate)
+- `'blur'` - Save when input loses focus
+- `'accept'` - Save on Enter or Ctrl+Enter (default)
+
+### TS_TextAreaV2 - Textarea
+
+**Available factories**:
+- `editable` - Required string
+- `editableString` - String (non-editable-item version)
+
+**Example**:
+```typescript
+import {TS_TextAreaV2} from '@nu-art/thunderstorm-frontend';
+
+const TextArea = TS_TextAreaV2.editable({
+  saveEvent: ['blur'],
+  resizeWithText: true,  // Auto-resize with content
+  trim: true
+});
+
+<TextArea
+  editable={editable}
+  prop="description"
+  placeholder="Enter description"
+  rows={5}
+  showErrorTooltip={true}
+/>
+```
+
+### TS_DropDown - Dropdown/Select
+
+**Available factories**:
+- `prepareEditable` - For use with EditableItem
+
+**Example**:
+```typescript
+import {TS_DropDown} from '@nu-art/thunderstorm-frontend';
+import {Adapter} from '@nu-art/thunderstorm-frontend/components/adapter';
+
+// Create adapter for options
+const statusAdapter = new Adapter([
+  {id: 'active', label: 'Active'},
+  {id: 'inactive', label: 'Inactive'},
+  {id: 'pending', label: 'Pending'}
+]);
+
+// Create factory
+const StatusDropdown = TS_DropDown.prepareEditable({
+  adapter: statusAdapter,
+  placeholder: 'Select status'
+});
+
+// Use in component
+<StatusDropdown
+  editable={editable}
+  prop="status"
+  showErrorTooltip={true}
+/>
+```
+
+**Example - With Dynamic Adapter**:
+```typescript
+const DynamicDropdown = TS_DropDown.prepareEditable({
+  adapter: (filter?: string) => {
+    // Return filtered adapter based on search
+    const items = allItems.filter(item => 
+      !filter || item.label.toLowerCase().includes(filter.toLowerCase())
+    );
+    return new Adapter(items);
+  },
+  placeholder: 'Search and select...'
+});
+
+<DynamicDropdown
+  editable={editable}
+  prop="selectedItem"
+/>
+```
+
+### Component Props
+
+All editable components accept:
+
+```typescript
+type EditableComponentProps = {
+  // Required EditableItem props
+  editable: EditableItem<T>
+  prop: K  // Property key to edit
+  
+  // Optional overrides
+  onChange?: (value: ValueType) => void  // Override default update behavior
+  saveEvent?: ('blur' | 'accept' | 'change')[]  // Override templating saveEvent
+  
+  // Error handling
+  showErrorTooltip?: boolean  // Show tooltip on error
+  ignoreError?: boolean  // Ignore validation errors
+  
+  // Standard HTML props
+  placeholder?: string
+  className?: string
+  disabled?: boolean
+  // ... other component-specific props
+}
+```
+
+### Error Handling
+
+Editable components automatically display validation errors from `EditableItem`:
+
+```typescript
+// Component automatically shows error if editable.hasError('name') returns truthy
+<TextInput
+  editable={editable}
+  prop="name"
+  showErrorTooltip={true}  // Show tooltip on hover
+/>
+
+// Check for errors programmatically
+if (editable.hasError('name')) {
+  const error = editable.hasError('name');
+  // Display custom error UI
+}
+```
+
+### Complete Form Example
+
+```typescript
+import {useState, useEffect} from 'react';
+import {EditableItem, TS_InputV2, TS_TextAreaV2, TS_DropDown} from '@nu-art/thunderstorm-frontend';
+import {Adapter} from '@nu-art/thunderstorm-frontend/components/adapter';
+
+interface ProjectFormData {
+  name: string;
+  description?: string;
+  status: 'active' | 'inactive';
+}
+
+function ProjectForm() {
+  const [editable, setEditable] = useState<EditableItem<ProjectFormData>>();
+  
+  useEffect(() => {
+    setEditable(new EditableItem<ProjectFormData>({
+      name: '',
+      status: 'active'
+    }));
+  }, []);
+  
+  if (!editable) return null;
+  
+  // Create component factories
+  const NameInput = TS_InputV2.editable({
+    type: 'text',
+    saveEvent: ['blur'],
+    trim: true
+  });
+  
+  const DescriptionTextArea = TS_TextAreaV2.editable({
+    saveEvent: ['blur'],
+    resizeWithText: true
+  });
+  
+  const StatusDropdown = TS_DropDown.prepareEditable({
+    adapter: new Adapter([
+      {id: 'active', label: 'Active'},
+      {id: 'inactive', label: 'Inactive'}
+    ]),
+    placeholder: 'Select status'
+  });
+  
+  return (
+    <form>
+      <NameInput
+        editable={editable}
+        prop="name"
+        placeholder="Project name"
+        showErrorTooltip={true}
+      />
+      
+      <DescriptionTextArea
+        editable={editable}
+        prop="description"
+        placeholder="Description (optional)"
+      />
+      
+      <StatusDropdown
+        editable={editable}
+        prop="status"
+      />
+      
+      {editable.hasErrors() && (
+        <div>Please fix validation errors</div>
+      )}
+      
+      <button
+        onClick={async () => {
+          await editable.save();
+        }}
+        disabled={editable.isSaving()}
+      >
+        {editable.isSaving() ? 'Saving...' : 'Save'}
+      </button>
+    </form>
+  );
+}
+```
+
+### Non-EditableItem Versions
+
+Most components also have non-editable versions for use without EditableItem:
+
+```typescript
+// Direct usage without EditableItem
+<TS_InputV2
+  value={someValue}
+  onChange={(value) => setSomeValue(value)}
+  type="text"
+/>
+
+// Or use editableString factory (no EditableItem integration)
+const DirectInput = TS_InputV2.editableString({
+  type: 'text',
+  saveEvent: ['blur']
+});
+
+<DirectInput
+  value={someValue}
+  onChange={(value) => setSomeValue(value)}
+/>
+```
+
+
+## React Component Wrappers (Legacy)
+
+While these exist, prefer using `EditableItem` directly in functional components:
+
+### TS_EditableItemController (Legacy)
+
+Class component wrapper that automatically creates `EditableDBItemV3` and handles cache updates:
+
+```typescript
+<TS_EditableItemController
+  module={ModuleFE_Project}
+  item={projectId}
+  editor={ProjectEditorComponent}
+  autoSave={true}
+  onSave={(item) => {
+    // Handle successful save
+  }}
+  onError={(item, err) => {
+    // Handle errors
+  }}
+/>
+```
+
+### TS_EditableItemControllerProto (Legacy)
+
+Similar to `TS_EditableItemController` but uses `ProtoComponent` pattern.
+
+## Examples from Beamz Project
+
+### Form Data (Non-DB Item)
+
+```typescript
+// Component_SignInForm_Login.tsx
+state.formData ??= new EditableItem({
+  deviceId: StorageKey_DeviceId.get()
+} as Account_Login['request']);
+
+// Later in component
+const data = this.state.formData.item as Account_Login['request'];
+await ModuleFE_Account._v1.login(data).executeSync();
+```
+
+### DB Entity with EditableDBItemV3
+
+```typescript
+// In component
+const item = ModuleFE_Organization.cache.unique(orgId);
+const editable = new EditableDBItemV3(item, ModuleFE_Organization)
+  .setAutoSave(true)
+  .setOnChanged(async (editable) => {
+    this.setState({editable});
+  });
+```
+
+## Anti-Patterns (What NOT to Do)
+
+### ❌ Never Manually Edit DB Entities
+
+```typescript
+// WRONG - Direct manipulation
+const item = ModuleFE_Project.cache.unique(projectId);
+item.name = 'New Name';  // ❌ Bypasses EditableItem
+await ModuleFE_Project._v1.upsert(item).executeSync();  // ❌ No __updated preservation
+```
+
+### ❌ Never Remove `__updated` Field
+
+```typescript
+// WRONG - Removing __updated bypasses concurrency control
+const item = {...entity};
+delete item.__updated;  // ❌ BREAKS CONCURRENCY CONTROL
+await ModuleFE_Project._v1.upsert(item).executeSync();
+```
+
+### ❌ Never Use Raw Module API for Edits
+
+```typescript
+// WRONG - Direct API calls without EditableItem
+await ModuleFE_Project._v1.upsert({
+  _id: projectId,
+  name: 'New Name'
+  // Missing __updated - will cause 461 errors or data loss
+}).executeSync();
+```
+
+### ✅ Always Use EditableItem
+
+```typescript
+// CORRECT - Use EditableItem
+const editable = new EditableDBItemV3(item, ModuleFE_Project);
+await editable.update('name', 'New Name');
+// EditableItem automatically preserves __updated
+```
+
+## Backend Implementation
+
+The backend concurrency check is in:
+- **Location**: `firebase/backend/src/main/firestore-v3/DocWrapperV3.ts`
+- **Check**: `if ((currDBItem?.__updated || 0) > ((item as DB_Object).__updated || currentTimeMillis()))`
+- **Error**: `HttpCodes._4XX.ENTITY_IS_OUTDATED` (461)
+
+## Related Files
+
+- `_thunderstorm/thunderstorm/frontend/src/main/utils/EditableItem.ts` - Core implementation
+- `_thunderstorm/thunderstorm/frontend/src/main/components/TS_EditableItemController/` - React wrapper (legacy)
+- `_thunderstorm/firebase/backend/src/main/firestore-v3/DocWrapperV3.ts` - Backend concurrency check
+- `_thunderstorm/ts-common/src/main/core/exceptions/http-codes.ts` - HTTP error codes (461)
+
+## Summary
+
+1. **Always use `EditableDBItemV3` for DB entity edits**
+2. **EditableItem is the source of truth** - use it for data, errors, status
+3. **Never remove `_id` or `__updated` fields** - they are critical for concurrency control
+4. **Prefer functional approach** - use EditableItem directly in functional components
+5. **Handle conflicts** - use `setConflictingItem()` for conflict detection
+6. **Use auto-save** - enable auto-save for better UX (debounced saves)
+7. **`defaultDispatcher` are internal for the module**
+8. **When starting a new project, we need to make a base library of components that will serve that project**
