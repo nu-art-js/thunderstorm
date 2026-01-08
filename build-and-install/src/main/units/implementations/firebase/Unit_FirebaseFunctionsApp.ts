@@ -514,7 +514,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		}
 
 		const region = artifactRegistry.region;
-		const projectId = artifactRegistry.projectId;
+		// Use runtime project ID (where function is deployed), not Artifact Registry project ID
+		const envConfig = this.getEnvConfig();
+		const runtimeProjectId = envConfig.projectId;
 
 		// Deploy each function separately with the same image but different entry points
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
@@ -534,12 +536,20 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			this.logInfo(`  Service name: ${serviceName} (Cloud Run requires dashes, not underscores)`);
 			this.logInfo(`  Function target: ${functionName} (original function name for FUNCTION_TARGET)`);
 
+			// Set required environment variables for Firebase Admin SDK
+			// GCLOUD_PROJECT is needed for Firebase Admin SDK to determine database URL
+			const envVars = [
+				`FUNCTION_TARGET=${functionName}`,
+				`GCLOUD_PROJECT=${runtimeProjectId}`,
+				`GOOGLE_CLOUD_PROJECT=${runtimeProjectId}`  // Some services use this instead
+			].join(',');
+
 			// Note: gcloud functions deploy doesn't support --image flag for pre-built containers
 			// We need to use the Cloud Functions API directly or wait for gcloud update
 			// For now, using gcloud run deploy as Gen2 functions run on Cloud Run
 			// Set FUNCTION_TARGET env var to specify the entry point
 			// Use --format to get the URL directly from the output
-			const gcloudDeployCommand = `gcloud run deploy ${serviceName} --image=${imageReference} --region=${region} --platform=managed --allow-unauthenticated --project=${projectId} --set-env-vars=FUNCTION_TARGET=${functionName} --format="value(status.url)"`;
+			const gcloudDeployCommand = `gcloud run deploy ${serviceName} --image=${imageReference} --region=${region} --platform=managed --allow-unauthenticated --project=${runtimeProjectId} --set-env-vars=${envVars} --format="value(status.url)"`;
 			if (this.runtimeContext.runtimeParams.dryRun) {
 				this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
 				continue;
