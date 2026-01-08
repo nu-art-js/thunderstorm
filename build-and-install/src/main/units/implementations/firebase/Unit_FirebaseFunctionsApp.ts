@@ -536,12 +536,23 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			this.logInfo(`  Service name: ${serviceName} (Cloud Run requires dashes, not underscores)`);
 			this.logInfo(`  Function target: ${functionName} (original function name for FUNCTION_TARGET)`);
 
+			// Construct Firebase configuration JSON (matches Firebase Functions deployment format)
+			// Convert region format (e.g., "us-central1" -> "us-central")
+			const locationId = region.replace(/\d+$/, ''); // Remove trailing digits
+			const firebaseConfig = {
+				projectId: runtimeProjectId,
+				databaseURL: `https://${runtimeProjectId}-default-rtdb.firebaseio.com`,
+				storageBucket: `${runtimeProjectId}.appspot.com`,
+				locationId: locationId
+			};
+
 			// Set required environment variables for Firebase Admin SDK
-			// GCLOUD_PROJECT is needed for Firebase Admin SDK to determine database URL
+			// FIREBASE_CONFIG is required by Firebase Admin SDK to determine database URL and other services
 			const envVars = [
 				`FUNCTION_TARGET=${functionName}`,
 				`GCLOUD_PROJECT=${runtimeProjectId}`,
-				`GOOGLE_CLOUD_PROJECT=${runtimeProjectId}`  // Some services use this instead
+				`GOOGLE_CLOUD_PROJECT=${runtimeProjectId}`,  // Some services use this instead
+				`FIREBASE_CONFIG=${JSON.stringify(firebaseConfig)}`  // Firebase configuration JSON
 			].join(',');
 
 			// Note: gcloud functions deploy doesn't support --image flag for pre-built containers
