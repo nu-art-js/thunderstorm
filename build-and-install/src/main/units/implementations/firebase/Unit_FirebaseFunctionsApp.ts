@@ -514,7 +514,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		}
 
 		const region = artifactRegistry.region;
-		const projectId = artifactRegistry.projectId;
+		const projectId = this.config.envConfig.projectId;
 
 		// Deploy each function separately with the same image but different entry points
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
