@@ -10,6 +10,8 @@ import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {execSync} from 'child_process';
 import {expect} from 'chai';
+import {CONST_DeploymentId, CONST_LatestTag} from '../../../main/config/consts.js';
+import {CONST_TestFixture_FunctionHello} from './test-consts.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
@@ -51,7 +53,7 @@ const test = async (setup: Input) => {
 	const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	buildAndInstall.runtimeParams.allUnits = true;
 	buildAndInstall.runtimeParams.environment = 'test';
-	const imageTag = setup.imageTag || 'latest';
+	const imageTag = setup.imageTag || CONST_LatestTag;
 	buildAndInstall.runtimeParams.deployImage = imageTag;
 	// Don't set dryRun yet - we need prepare() to run first to create firebase.json
 	if (setup.deployFunction) {
@@ -131,12 +133,12 @@ describe('Firebase Deploy Image Phase', () => {
 	it('Functions - Deploy Container Image to Firebase', runTestCase({
 		input: {
 			fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-			imageTag: 'latest',
+			imageTag: CONST_LatestTag,
 			useDryRun: false,
 			deleteFunction: 'hello' // Delete function before deploying to ensure fresh deployment
 		},
 		result: async (bai: BuildAndInstall) => {
-			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
+			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>(CONST_TestFixture_FunctionHello, Unit_FirebaseFunctionsApp);
 			functionUnit.logDebug('=== Verifying function unit exists ===');
 			expect(functionUnit).to.exist;
 
@@ -182,7 +184,7 @@ describe('Firebase Deploy Image Phase', () => {
 			// Verify deployed function and deployment-id label match
 			await verifyDeployedFunctionWithLabel(
 				containerDeployment,
-				bai.runtimeParams.deployImage || 'latest',
+				bai.runtimeParams.deployImage || CONST_LatestTag,
 				functionUnit,
 				'hello',
 				{message: 'Hello World'}
@@ -195,12 +197,12 @@ describe('Firebase Deploy Image Phase', () => {
 	it('Functions - Deploy Image with Custom Image Name', runTestCase({
 		input: {
 			fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-			imageTag: 'latest',
+			imageTag: CONST_LatestTag,
 			useDryRun: false,
 			deleteFunction: 'hello' // Delete function before deploying to ensure fresh deployment
 		},
 		result: async (bai: BuildAndInstall) => {
-			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
+			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>(CONST_TestFixture_FunctionHello, Unit_FirebaseFunctionsApp);
 			functionUnit.logDebug('=== Verifying function unit exists ===');
 			expect(functionUnit).to.exist;
 
@@ -229,7 +231,7 @@ describe('Firebase Deploy Image Phase', () => {
 			// Verify deployed function and deployment-id label match
 			await verifyDeployedFunctionWithLabel(
 				containerDeployment,
-				bai.runtimeParams.deployImage || 'latest',
+				bai.runtimeParams.deployImage || CONST_LatestTag,
 				functionUnit,
 				'hello',
 				{message: 'Hello World'}
@@ -242,12 +244,12 @@ describe('Firebase Deploy Image Phase', () => {
 	it('Functions - Validate Function Existence', runTestCase({
 		input: {
 			fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'],
-			imageTag: 'latest',
+			imageTag: CONST_LatestTag,
 			useDryRun: false,
 			deleteFunction: 'hello' // Delete function before deploying to ensure fresh deployment
 		},
 		result: async (bai: BuildAndInstall) => {
-			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>('firebase-function-hello', Unit_FirebaseFunctionsApp);
+			const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>(CONST_TestFixture_FunctionHello, Unit_FirebaseFunctionsApp);
 			functionUnit.logDebug('=== Verifying function unit exists ===');
 			expect(functionUnit).to.exist;
 
@@ -274,7 +276,7 @@ describe('Firebase Deploy Image Phase', () => {
 			// Verify deployed function and deployment-id label match
 			await verifyDeployedFunctionWithLabel(
 				containerDeployment,
-				bai.runtimeParams.deployImage || 'latest',
+				bai.runtimeParams.deployImage || CONST_LatestTag,
 				functionUnit,
 				'hello',
 				{message: 'Hello World'}
@@ -387,11 +389,11 @@ async function fetchDeploymentIdLabel(
 	const labels = await fetchImageLabels(containerDeployment, imageTag, logger);
 
 	// Verify deployment-id label exists
-	if (!labels['deployment-id']) {
+	if (!labels[CONST_DeploymentId]) {
 		throw new Error('deployment-id label not found in image');
 	}
 
-	const deploymentIdFromLabel = labels['deployment-id'];
+	const deploymentIdFromLabel = labels[CONST_DeploymentId];
 	if (typeof deploymentIdFromLabel !== 'string') {
 		throw new Error(`deployment-id label must be a string, got ${typeof deploymentIdFromLabel}`);
 	}

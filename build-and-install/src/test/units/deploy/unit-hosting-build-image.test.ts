@@ -8,6 +8,8 @@ import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
+import {CONST_DeploymentId, CONST_DeploymentMetadata, CONST_HostingBuildTarball, CONST_StagingDir, CONST_TrashDir} from '../../../main/config/consts.js';
+import {CONST_TestFixture_HostingHello} from './test-consts.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
@@ -55,8 +57,8 @@ const test = async (setup: Input) => {
 	buildAndInstall.setPhases([[phase_Prepare], [phase_Install], [phase_Compile], [phase_BuildPushImage]]);
 
 	await buildAndInstall.build();
-	const hostingUnit = buildAndInstall.workspace.getUnitByKey<Unit_FirebaseHostingApp>('firebase-hosting-hello', Unit_FirebaseHostingApp);
-	hostingUnit.injectedMetadata['deployment-id'] = deploymentId;
+	const hostingUnit = buildAndInstall.workspace.getUnitByKey<Unit_FirebaseHostingApp>(CONST_TestFixture_HostingHello, Unit_FirebaseHostingApp);
+	hostingUnit.injectedMetadata[CONST_DeploymentId] = deploymentId;
 
 	// In tests, delete existing version if it exists to avoid conflicts
 	// In real project lifecycle, version uniqueness must be preserved
@@ -138,7 +140,7 @@ describe('Firebase Build Hosting Phase', () => {
 			imageTag: 'test-build-hosting-v1.0.0'
 		},
 		result: async (bai: BuildAndInstall) => {
-			const hostingUnit = bai.workspace.getUnitByKey<Unit_FirebaseHostingApp>('firebase-hosting-hello', Unit_FirebaseHostingApp);
+			const hostingUnit = bai.workspace.getUnitByKey<Unit_FirebaseHostingApp>(CONST_TestFixture_HostingHello, Unit_FirebaseHostingApp);
 			hostingUnit.logDebug('=== Verifying hosting unit exists ===');
 			expect(hostingUnit).to.exist;
 
@@ -158,13 +160,13 @@ describe('Firebase Build Hosting Phase', () => {
 
 			// Verify deployment-metadata.json was created in staging directory
 			hostingUnit.logDebug('=== Verifying deployment-metadata.json exists ===');
-			const stagingDir = resolve(hostingUnit.config.fullPath, '.trash/staging');
-			const metadataPath = resolve(stagingDir, 'deployment-metadata.json');
+			const stagingDir = resolve(hostingUnit.config.fullPath, `${CONST_TrashDir}/${CONST_StagingDir}`);
+			const metadataPath = resolve(stagingDir, CONST_DeploymentMetadata);
 			expect(existsSync(metadataPath)).to.be.true;
 
 			// Verify metadata content
 			const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
-			expect(metadata['deployment-id']).to.exist;
+			expect(metadata[CONST_DeploymentId]).to.exist;
 			expect(metadata['build.timestamp']).to.exist;
 			expect(metadata['build.tag']).to.equal('test-build-hosting-v1.0.0');
 			expect(metadata['build.project']).to.equal(hostingDeployment.artifactRegistry.projectId);
@@ -172,12 +174,12 @@ describe('Firebase Build Hosting Phase', () => {
 
 			// Verify tarball was created
 			hostingUnit.logDebug('=== Verifying tarball exists ===');
-			const tarballPath = resolve(hostingUnit.config.fullPath, '.trash/hosting-build.tar.gz');
+			const tarballPath = resolve(hostingUnit.config.fullPath, `${CONST_TrashDir}/${CONST_HostingBuildTarball}`);
 			expect(existsSync(tarballPath)).to.be.true;
 
 			// Verify package name from package.json
 			const packageName = hostingUnit.config.packageJson.name;
-			expect(packageName).to.equal('firebase-hosting-hello');
+			expect(packageName).to.equal(CONST_TestFixture_HostingHello);
 
 			// Try to verify package exists in Artifact Registry (if accessible)
 			try {
