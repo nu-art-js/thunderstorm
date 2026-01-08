@@ -242,10 +242,7 @@ export const BaiParam_DeployImage: BaseCliParam<'deployImage', string> = {
 			throw new BadImplementationException('Image tag is required. Use --deploy-image=<tag>');
 		tsValidate(value, tsValidateRegexp(imageTagRegex, true));
 		return value;
-	},
-	dependencies: [
-		{param: BaiParam_BuildPushImage, value: (currentValue: string) => currentValue}, // Auto-enable build+push with same tag when deploy is requested
-	]
+	}
 };
 
 export const BaiParam_DeployFunction: BaseCliParam<'deployFunction', string> = {
