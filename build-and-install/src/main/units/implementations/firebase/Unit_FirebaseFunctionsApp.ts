@@ -1,13 +1,5 @@
 import {UnitPhaseImplementor} from '../../../core/types.js';
-import {
-	CONST_BuildImageDir,
-	CONST_FirebaseJSON,
-	CONST_FirebaseRC,
-	CONST_LatestTag,
-	CONST_PackageJSON,
-	CONST_TrashDir,
-	CONST_VersionApp
-} from '../../../config/consts.js';
+import {CONST_BuildImageDir, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_LatestTag, CONST_PackageJSON, CONST_TrashDir, CONST_VersionApp} from '../../../config/consts.js';
 import {FirebasePackageConfig} from '../../../config/types/index.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
@@ -28,6 +20,26 @@ export const firebaseFunctionEmulator_WarningStrings: string[] = [
 ];
 
 type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean };
+
+export type FunctionTriggerType = 'http' | 'schedule' | 'eventarc';
+
+export type FunctionResourceConfig = {
+	cpu?: string;          // CPU allocation (e.g., '1', '2', '4')
+	memory?: string;       // Memory allocation (e.g., '512Mi', '1Gi', '2Gi', '4Gi', '8Gi')
+	timeout?: number;      // Timeout in seconds (default: 300, max: 3600)
+	concurrency?: number; // Container concurrency (default: 80, max: 1000)
+	minInstances?: number; // Minimum number of instances (default: 0)
+	maxInstances?: number; // Maximum number of instances (default: 100)
+};
+
+export type FunctionConfig = {
+	name: string;          // Function name (must match exported function name)
+	trigger: FunctionTriggerType; // Trigger type: 'http', 'schedule', or 'eventarc'
+	schedule?: string;    // Schedule expression (required for 'schedule' trigger, e.g., 'every 24 hours', '0 2 * * *')
+	serviceAccountName?: string; // Optional: Service account email (if omitted, uses default Cloud Run service account)
+	resources?: FunctionResourceConfig; // Per-function resource configuration
+};
+
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig?: FirebasePackageConfig;
 	pathToFirebaseConfig: string,
@@ -39,7 +51,8 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	sslCert: string
 	pathToEmulatorData: string
 	sources?: string[];
-	functions: string[];            // Required: Array of function names to deploy
+	// Support both legacy format (string[]) and new format (FunctionConfig[])
+	functions: string[] | FunctionConfig[]; // Array of function names (legacy) or function configs
 	containerDeployment?: {
 		artifactRegistry: {
 			region: string;        // e.g., 'us-central1'
@@ -349,15 +362,50 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	/**
+	 * Normalizes function configuration to FunctionConfig[] format.
+	 * Handles both legacy format (string[]) and new format (FunctionConfig[]).
+	 */
+	private normalizeFunctionConfigs(): FunctionConfig[] {
+		if (this.config.functions.length === 0)
+			return [];
+
+		// Check if it's already in FunctionConfig format
+		if (typeof this.config.functions[0] === 'object') {
+			return this.config.functions as FunctionConfig[];
+		}
+
+		// Legacy format: convert string[] to FunctionConfig[]
+		return (this.config.functions as string[]).map(name => ({
+			name,
+			trigger: 'http' as FunctionTriggerType
+		}));
+	}
+
+	/**
+	 * Gets function names from configuration (for backward compatibility).
+	 */
+	private getFunctionNames(): string[] {
+		return this.normalizeFunctionConfigs().map(f => f.name);
+	}
+
+	/**
+	 * Gets function config by name.
+	 */
+	private getFunctionConfig(functionName: string): FunctionConfig | undefined {
+		return this.normalizeFunctionConfigs().find(f => f.name === functionName);
+	}
+
+	/**
 	 * Validates that all configured functions exist in the compiled dist/index.js file.
 	 * Throws ImplementationMissingException if any configured function is missing.
 	 */
 	private async validateFunctionsExist(): Promise<void> {
-		const configuredFunctions = this.config.functions;
+		const configuredFunctions = this.normalizeFunctionConfigs();
+		const functionNames = configuredFunctions.map(f => f.name);
 		const exportedFunctions = await this.discoverExportedFunctions();
 		const exportedSet = new Set(exportedFunctions);
 
-		const missingFunctions = configuredFunctions.filter(func => !exportedSet.has(func));
+		const missingFunctions = functionNames.filter(func => !exportedSet.has(func));
 		if (missingFunctions.length > 0) {
 
 			throw new ImplementationMissingException(
@@ -380,7 +428,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		const artifactRegistry = containerDeployment.artifactRegistry;
 		const region = artifactRegistry.region;
-		const projectId = artifactRegistry.projectId;
+		// Use runtime project ID (where function is deployed), not Artifact Registry project ID
+		const envConfig = this.getEnvConfig();
+		const runtimeProjectId = envConfig.projectId;
 
 		// Cloud Run service names cannot contain underscores, convert to dashes
 		const serviceName = functionName.replace(/_/g, '-');
@@ -390,7 +440,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			.setLogLevelFilter(deployLogFilter);
 
 		// Use gcloud run services delete (Gen2 functions run on Cloud Run)
-		const deleteCommand = `gcloud run services delete ${serviceName} --region=${region} --project=${projectId} --quiet`;
+		const deleteCommand = `gcloud run services delete ${serviceName} --region=${region} --project=${runtimeProjectId} --quiet`;
 
 		// Check for dry run mode
 		if (this.runtimeContext.runtimeParams.dryRun) {
@@ -404,9 +454,18 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			if (exitCode === 0)
 				return;
 
-			// Check if error is about function not found
+			// Check if error is about function/service not found
+			// gcloud returns various messages like "could not be found", "not found", "does not exist"
 			const errorText = (stderr || stdout || '').toLowerCase();
-			if (errorText.includes('not found') || errorText.includes('does not exist')) {
+			const notFoundPatterns = [
+				'not found',
+				'could not be found',
+				'does not exist',
+				'cannot be found',
+				'no such service'
+			];
+
+			if (notFoundPatterns.some(pattern => errorText.includes(pattern))) {
 				this.logWarning(`Function ${functionName} not found (may already be deleted)`);
 				return;
 			}
@@ -427,6 +486,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const deleteFunctionsFlag = this.runtimeContext.runtimeParams.deleteFunctions;
 		const deployFunctionParam = this.runtimeContext.runtimeParams.deployFunction;
 
+		const functionNames = this.getFunctionNames();
 		let functionsToDelete: string[] = [];
 
 		// Determine which functions to delete
@@ -440,7 +500,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				functionsToDelete = [deployFunctionParam];
 			} else {
 				// Delete all functions from config
-				functionsToDelete = this.config.functions;
+				functionsToDelete = functionNames;
 			}
 		}
 
@@ -470,16 +530,52 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	 * 3. Validates configured functions exist in dist/index.js
 	 * 4. Deletes functions if requested via CLI flags
 	 * 5. Determines which functions to deploy (single or all)
-	 * 6. Deploys each function separately using gcloud functions deploy with --docker-image
-	 * 7. Parses deployment output for function URLs
+	 * 6. Generates Cloud Run service YAML definitions for each function
+	 * 7. Sets required environment variables (FIREBASE_CONFIG, GCLOUD_PROJECT, FUNCTION_TARGET, etc.)
+	 * 8. Deploys each function using `gcloud run services replace` with YAML definition
+	 * 9. Retrieves function URLs after successful deployment
+	 *
+	 * **Environment Variables Set**:
+	 * - `FUNCTION_TARGET`: Function name to invoke
+	 * - `GCLOUD_PROJECT`: Runtime project ID
+	 * - `GOOGLE_CLOUD_PROJECT`: Runtime project ID (alternative)
+	 * - `FIREBASE_CONFIG`: JSON string with projectId, databaseURL, storageBucket, locationId
+	 * - `EVENTARC_CLOUD_EVENT_SOURCE`: Eventarc source path
+	 * - `LOG_EXECUTION_ID`: Set to 'true' for execution ID logging
+	 *
+	 * **Function Configuration**:
+	 * Functions can be configured in two formats:
+	 * 1. **Legacy format** (string[]): Simple array of function names (all default to HTTP trigger)
+	 * 2. **New format** (FunctionConfig[]): Array of function config objects with:
+	 *    - `name`: Function name (must match exported function name)
+	 *    - `trigger`: Trigger type ('http', 'schedule', or 'eventarc')
+	 *    - `schedule`: Schedule expression (required for 'schedule' trigger, e.g., 'every 24 hours', '0 2 * * *')
+	 *    - `resources`: Per-function resource configuration:
+	 *      - `cpu`: CPU allocation (e.g., '1', '2', '4')
+	 *      - `memory`: Memory allocation (e.g., '512Mi', '1Gi', '2Gi', '4Gi', '8Gi')
+	 *      - `timeout`: Timeout in seconds (default: 300, max: 3600)
+	 *      - `concurrency`: Container concurrency (default: 80, max: 1000)
+	 *      - `minInstances`: Minimum number of instances (default: 0)
+	 *      - `maxInstances`: Maximum number of instances (default: 100)
+	 *
+	 * **Trigger Types**:
+	 * - `http`: HTTP-triggered function (deployed as Cloud Run service)
+	 * - `schedule`: Scheduled function (requires `schedule` property, deployed as Cloud Run service with Cloud Scheduler)
+	 * - `eventarc`: Event-triggered function (deployed as Cloud Run service with Eventarc)
 	 *
 	 * **Requirements**:
 	 * - `--deploy-image <tag>` CLI flag with tag value
 	 * - `containerDeployment` config in unit config
-	 * - `functions` array in unit config
+	 * - `functions` array in unit config (legacy or new format)
 	 * - Image must already exist in Artifact Registry (built via buildPushImage)
 	 * - gcloud CLI installed and authenticated
 	 * - Cloud Functions API enabled in GCP project
+	 * - Cloud Scheduler API enabled (for scheduled functions)
+	 *
+	 * **Note on Request Size Limits**:
+	 * The `PayloadTooLargeError` is typically caused by Express body-parser limits, not Cloud Run limits.
+	 * Configure `bodyParserLimit` in your HttpServer module config to increase the limit (default: 200kb).
+	 * Cloud Run supports request bodies up to 32MB, but Express must be configured to accept them.
 	 */
 	async deployImage() {
 		const imageTag = this.runtimeContext.runtimeParams.deployImage;
@@ -508,17 +604,20 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		// Determine which functions to deploy
 		const deployFunctionParam = this.runtimeContext.runtimeParams.deployFunction;
-		let functionsToDeploy: string[];
+		const allFunctionConfigs = this.normalizeFunctionConfigs();
+		let functionsToDeploy: FunctionConfig[];
 
 		if (deployFunctionParam) {
 			// Deploy single function
-			if (!this.config.functions.includes(deployFunctionParam))
-				throw new ImplementationMissingException(`Function '${deployFunctionParam}' not found in configured functions: ${this.config.functions.join(', ')}`);
-
-			functionsToDeploy = [deployFunctionParam];
+			const functionConfig = this.getFunctionConfig(deployFunctionParam);
+			if (!functionConfig) {
+				const functionNames = this.getFunctionNames();
+				throw new ImplementationMissingException(`Function '${deployFunctionParam}' not found in configured functions: ${functionNames.join(', ')}`);
+			}
+			functionsToDeploy = [functionConfig];
 		} else {
 			// Deploy all functions from config
-			functionsToDeploy = this.config.functions;
+			functionsToDeploy = allFunctionConfigs;
 		}
 
 		const region = artifactRegistry.region;
@@ -532,10 +631,13 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			.setLogLevelFilter(deployLogFilter);
 
 
-		this.logInfo(`Deploying ${functionsToDeploy.length} function(s): ${functionsToDeploy.join(', ')}`);
+		this.logInfo(`Deploying ${functionsToDeploy.length} function(s): ${functionsToDeploy.map(f => f.name).join(', ')}`);
 
 		// Deploy each function
-		for (const functionName of functionsToDeploy) {
+		for (const functionConfig of functionsToDeploy) {
+			const functionName = functionConfig.name;
+			const trigger = functionConfig.trigger;
+
 			// Cloud Run service names cannot contain underscores, convert to dashes
 			// But FUNCTION_TARGET must use the original function name (with underscore) as it's exported in code
 			const serviceName = functionName.replace(/_/g, '-');
@@ -543,6 +645,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			this.logInfo(`Deploying function: ${functionName}`);
 			this.logInfo(`  Service name: ${serviceName} (Cloud Run requires dashes, not underscores)`);
 			this.logInfo(`  Function target: ${functionName} (original function name for FUNCTION_TARGET)`);
+			this.logInfo(`  Trigger type: ${trigger}`);
+
+			// Validate trigger-specific requirements
+			if (trigger === 'schedule' && !functionConfig.schedule) {
+				throw new ImplementationMissingException(`Function '${functionName}' has trigger type 'schedule' but no schedule expression is configured. Add 'schedule' property to function config.`);
+			}
 
 			// Construct Firebase configuration JSON (matches Firebase Functions deployment format)
 			// Convert region format (e.g., "us-central1" -> "us-central")
@@ -563,22 +671,103 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			// This avoids shell escaping issues with JSON values containing braces, commas, and quotes
 			const buildOutputDir = resolve(this.config.fullPath, CONST_TrashDir);
 			const envVarsFile = resolve(buildOutputDir, `env-vars-${functionName}.json`);
-			const envVars = {
+			const envVars: Record<string, string> = {
 				FUNCTION_TARGET: functionName,
 				GCLOUD_PROJECT: runtimeProjectId,
 				GOOGLE_CLOUD_PROJECT: runtimeProjectId,
-				FIREBASE_CONFIG: firebaseConfigJson
+				FIREBASE_CONFIG: firebaseConfigJson,
+				EVENTARC_CLOUD_EVENT_SOURCE: `projects/${runtimeProjectId}/locations/${region}/services/${serviceName}`,
+				LOG_EXECUTION_ID: 'true'
 			};
+
+			// Add schedule-specific environment variable if needed
+			if (trigger === 'schedule' && functionConfig.schedule) {
+				envVars.SCHEDULE = functionConfig.schedule;
+			}
+
 			await FileSystemUtils.file.write.json(envVarsFile, envVars);
 
-			// Note: gcloud functions deploy doesn't support --image flag for pre-built containers
-			// We need to use the Cloud Functions API directly or wait for gcloud update
-			// For now, using gcloud run deploy as Gen2 functions run on Cloud Run
-			// Set FUNCTION_TARGET env var to specify the entry point
-			// Use --format to get the URL directly from the output
-			// Use --env-vars-file to avoid shell escaping issues with JSON values
-			const envVarsFileRelative = envVarsFile.replace(`${this.config.fullPath}/`, '');
-			const gcloudDeployCommand = `gcloud run deploy ${serviceName} --image=${imageReference} --region=${region} --platform=managed --allow-unauthenticated --project=${runtimeProjectId} --env-vars-file=${envVarsFileRelative} --format="value(status.url)"`;
+			// Build Cloud Run service YAML definition
+			const resources = functionConfig.resources;
+			const serviceYaml = {
+				apiVersion: 'serving.knative.dev/v1',
+				kind: 'Service',
+				metadata: {
+					name: serviceName,
+					labels: {
+						'goog-cloudfunctions-runtime': 'nodejs22',
+						'cloud.googleapis.com/location': region,
+						'goog-managed-by': 'cloudfunctions'
+					},
+					annotations: {
+						'serving.knative.dev/creator': `service-${runtimeProjectId}@gcf-admin-robot.iam.gserviceaccount.com`,
+						'run.googleapis.com/client-name': 'cli-firebase',
+						'cloudfunctions.googleapis.com/function-id': functionName,
+						'run.googleapis.com/ingress': 'all',
+						'run.googleapis.com/ingress-status': 'all'
+					}
+				},
+				spec: {
+					template: {
+						metadata: {
+							labels: {},
+							annotations: {
+								'autoscaling.knative.dev/maxScale': (resources?.maxInstances ?? 100).toString(),
+								'autoscaling.knative.dev/minScale': (resources?.minInstances ?? 0).toString(),
+								'run.googleapis.com/startup-cpu-boost': 'true',
+								'cloudfunctions.googleapis.com/trigger-type': trigger === 'http' ? 'HTTP_TRIGGER' : 'EVENT_TRIGGER'
+							}
+						},
+						spec: {
+							containerConcurrency: resources?.concurrency ?? 100,
+							timeoutSeconds: resources?.timeout ?? 540,
+							// Only include serviceAccountName if explicitly configured
+							// If omitted, Cloud Run uses the default Cloud Run service account
+							...(functionConfig.serviceAccountName ? { serviceAccountName: functionConfig.serviceAccountName } : {}),
+							containers: [{
+								name: 'worker',
+								image: imageReference,
+								ports: [{
+									name: 'http1',
+									containerPort: 8080
+								}],
+								env: Object.entries(envVars).map(([name, value]) => ({
+									name,
+									value
+								})),
+								resources: {
+									limits: {
+										cpu: resources?.cpu || '1',
+										memory: resources?.memory || '2Gi'
+									}
+								},
+								startupProbe: {
+									timeoutSeconds: 240,
+									periodSeconds: 240,
+									failureThreshold: 1,
+									tcpSocket: {
+										port: 8080
+									}
+								}
+							}]
+						}
+					},
+					traffic: [{
+						percent: 100,
+						latestRevision: true
+					}]
+				}
+			};
+
+			// Write service YAML file
+			const serviceYamlFile = resolve(buildOutputDir, `service-${functionName}.yaml`);
+			await FileSystemUtils.file.write(serviceYamlFile, __stringify(serviceYaml, true));
+			this.logInfo(`Created service YAML at ${serviceYamlFile}`);
+
+			// Deploy using gcloud run services replace
+			const serviceYamlFileRelative = serviceYamlFile.replace(`${this.config.fullPath}/`, '');
+			const gcloudDeployCommand = `gcloud run services replace ${serviceYamlFileRelative} --region=${region} --project=${runtimeProjectId}`;
+
 			if (this.runtimeContext.runtimeParams.dryRun) {
 				this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
 				continue;
@@ -586,15 +775,27 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 			await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
 				if (exitCode === 0) {
-					// Parse URL from stdout (--format="value(status.url)" outputs just the URL)
-					const urlMatch = stdout.match(/https:\/\/[^\s]+/);
-					if (urlMatch) {
-						this.functions[functionName] = urlMatch[0];
-					}
+					// Get service URL after successful deployment
 					return;
 				}
 
 				throw new CommandoException(`Failed to deploy function ${functionName} with exit code ${exitCode}`, stdout, stderr, exitCode);
+			});
+
+			// Get service URL after deployment
+			const getUrlCommand = `gcloud run services describe ${serviceName} --region=${region} --project=${runtimeProjectId} --format="value(status.url)"`;
+			await this.executeAsyncCommando(commando, getUrlCommand, (stdout, stderr, exitCode) => {
+				if (exitCode === 0) {
+					const url = stdout.trim();
+					if (url) {
+						this.functions[functionName] = url;
+						this.logInfo(`Function ${functionName} deployed at: ${url}`);
+					}
+					return;
+				}
+
+				// URL retrieval failure is not critical, log warning but don't fail
+				this.logWarning(`Failed to retrieve URL for function ${functionName}: ${stderr || stdout}`);
 			});
 		}
 
