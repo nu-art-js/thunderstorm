@@ -1,18 +1,22 @@
 import {
 	ImplementationMissingException,
 	tsValidate_OptionalArray,
+	tsValidateAnyNumber,
 	tsValidateAnyString,
 	tsValidateBoolean,
+	tsValidateCustom,
 	tsValidateDynamicObject,
 	tsValidateOptionalAnyNumber,
 	tsValidateOptionalAnyString,
 	tsValidateOptionalObject,
 	tsValidateRegexp,
+	tsValidateResult,
+	tsValidateUnion,
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
 import {UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
-import {Unit_FirebaseFunctionsApp} from '../../implementations/firebase/Unit_FirebaseFunctionsApp.js';
+import {Unit_FirebaseFunctionsApp, FunctionConfig} from '../../implementations/firebase/Unit_FirebaseFunctionsApp.js';
 import {resolve} from 'path';
 import {BaiParam_SetEnv} from '../../../core/params.js';
 
@@ -30,7 +34,7 @@ type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
 	ignore?: string[],
 	sslKey?: string
 	sslCert?: string
-	functions: string[];  // Required: Array of function names to deploy
+	functions: string[] | FunctionConfig[];  // Required: Array of function names (legacy) or function configs
 };
 
 const valuesValidator = {
@@ -55,6 +59,41 @@ const containerDeploymentValidator = {
 	dockerfile: tsValidateOptionalAnyString,
 };
 
+// Validator for FunctionResourceConfig
+const functionResourceConfigValidator = {
+	cpu: tsValidateUnion([tsValidateAnyString, tsValidateAnyNumber], false), // CPU can be string ('1', '2') or number (1, 2)
+	memory: tsValidateOptionalAnyString,
+	timeout: tsValidateOptionalAnyNumber,
+	concurrency: tsValidateOptionalAnyNumber,
+	minInstances: tsValidateOptionalAnyNumber,
+	maxInstances: tsValidateOptionalAnyNumber,
+};
+
+// Validator for FunctionConfig
+const functionConfigValidator = {
+	name: tsValidateAnyString,
+	trigger: tsValidateValue(['http', 'schedule', 'eventarc']),
+	schedule: tsValidateOptionalAnyString,
+	serviceAccountName: tsValidateOptionalAnyString,
+	resources: tsValidateOptionalObject(functionResourceConfigValidator),
+};
+
+// Validator for functions array: accepts either string[] or FunctionConfig[]
+// Uses custom validator to check type first, then validate accordingly
+const functionItemValidator = tsValidateCustom((input?: string | FunctionConfig) => {
+	if (typeof input === 'string') {
+		// Legacy format: just a string (function name)
+		return tsValidateResult(input, tsValidateAnyString);
+	}
+	if (typeof input === 'object' && input !== null) {
+		// New format: FunctionConfig object
+		return tsValidateResult(input, tsValidateOptionalObject(functionConfigValidator));
+	}
+	return 'Function item must be either a string (function name) or an object (FunctionConfig)';
+});
+
+const functionsArrayValidator = tsValidate_OptionalArray(functionItemValidator);
+
 export class UnitMapper_FirebaseFunction_Class
 	extends UnitMapper_Node<Unit_FirebaseFunctionsApp, UnitConfigJSON_FirebaseFunction> {
 
@@ -66,7 +105,7 @@ export class UnitMapper_FirebaseFunction_Class
 		basePort: tsValidateOptionalAnyNumber,
 		sslKey: tsValidateOptionalAnyString,
 		sslCert: tsValidateOptionalAnyString,
-		functions: tsValidate_OptionalArray(tsValidateAnyString), // Required: non-empty array validated in process
+		functions: functionsArrayValidator, // Required: non-empty array validated in process, accepts string[] or FunctionConfig[]
 		containerDeployment: tsValidateOptionalObject(containerDeploymentValidator),
 		...UnitMapper_Node.tsValidator_Node,
 	};

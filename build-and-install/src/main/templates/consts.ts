@@ -49,6 +49,7 @@ export const Default_Files: ProjectConfig_DefaultFileRoutes = {
 export const FunctionBuildTemplateFiles = {
 	dockerfile: `${CONST_FirebaseFunctions}/dockerfile`,
 	cloudbuildYaml: `${CONST_FirebaseFunctions}/cloudbuild.yaml`,
+	serviceYaml: `${CONST_FirebaseFunctions}/service.yaml`,
 };
 
 const Default_OutputPath = './.trash';
