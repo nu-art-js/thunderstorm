@@ -694,9 +694,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			// Indentation: 8 spaces for list item, 10 spaces for value (under env: which is at 8 spaces)
 			const envVarsYaml = Object.entries(envVars)
 				.map(([name, value]) => {
-					// Escape YAML string values that might contain special characters
-					const escapedValue = typeof value === 'string' && (value.includes(':') || value.includes("'") || value.includes('"') || value.includes('\n'))
-						? JSON.stringify(value)
+					// Always quote string values to prevent YAML from interpreting them as booleans/numbers
+					// This is critical for values like 'true', 'false', 'yes', 'no', etc.
+					const escapedValue = typeof value === 'string'
+						? JSON.stringify(value) // JSON.stringify adds quotes and escapes special characters
 						: value;
 					return `        - name: ${name}\n          value: ${escapedValue}`;
 				})
