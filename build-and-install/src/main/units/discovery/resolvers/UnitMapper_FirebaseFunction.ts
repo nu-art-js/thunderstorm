@@ -4,19 +4,17 @@ import {
 	tsValidateAnyNumber,
 	tsValidateAnyString,
 	tsValidateBoolean,
-	tsValidateCustom,
 	tsValidateDynamicObject,
 	tsValidateOptionalAnyNumber,
 	tsValidateOptionalAnyString,
 	tsValidateOptionalObject,
 	tsValidateRegexp,
 	tsValidateResult,
-	tsValidateUnion,
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
 import {UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
-import {Unit_FirebaseFunctionsApp, FunctionConfig} from '../../implementations/firebase/Unit_FirebaseFunctionsApp.js';
+import {FunctionConfig, Unit_FirebaseFunctionsApp} from '../../implementations/firebase/Unit_FirebaseFunctionsApp.js';
 import {resolve} from 'path';
 import {BaiParam_SetEnv} from '../../../core/params.js';
 
@@ -61,7 +59,7 @@ const containerDeploymentValidator = {
 
 // Validator for FunctionResourceConfig
 const functionResourceConfigValidator = {
-	cpu: tsValidateUnion([tsValidateAnyString, tsValidateAnyNumber], false), // CPU can be string ('1', '2') or number (1, 2)
+	cpu: tsValidateAnyNumber,
 	memory: tsValidateOptionalAnyString,
 	timeout: tsValidateOptionalAnyNumber,
 	concurrency: tsValidateOptionalAnyNumber,
@@ -80,7 +78,7 @@ const functionConfigValidator = {
 
 // Validator for functions array: accepts either string[] or FunctionConfig[]
 // Uses custom validator to check type first, then validate accordingly
-const functionItemValidator = tsValidateCustom((input?: string | FunctionConfig) => {
+const functionItemValidator = (input?: string | FunctionConfig) => {
 	if (typeof input === 'string') {
 		// Legacy format: just a string (function name)
 		return tsValidateResult(input, tsValidateAnyString);
@@ -90,7 +88,7 @@ const functionItemValidator = tsValidateCustom((input?: string | FunctionConfig)
 		return tsValidateResult(input, tsValidateOptionalObject(functionConfigValidator));
 	}
 	return 'Function item must be either a string (function name) or an object (FunctionConfig)';
-});
+};
 
 const functionsArrayValidator = tsValidate_OptionalArray(functionItemValidator);
 
@@ -130,7 +128,7 @@ export class UnitMapper_FirebaseFunction_Class
 		};
 
 		const {type, ...unitConfig} = context.packageJson.unitConfig;
-		
+
 		// Validate functions array is required and non-empty
 		if (!unitConfig.functions || !Array.isArray(unitConfig.functions) || unitConfig.functions.length === 0) {
 			throw new ImplementationMissingException(`Missing or empty 'functions' array in unit config for ${context.baseConfig.key}. Functions must be explicitly declared.`);
@@ -141,7 +139,7 @@ export class UnitMapper_FirebaseFunction_Class
 			...Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction,
 			...unitConfig,
 			envConfig,
-			isTopLevelApp:true,
+			isTopLevelApp: true,
 			hasSelfHotReload: unitConfig.hasSelfHotReload ?? false,
 			packageJson: context.packageJson,
 			customESLintConfig: context.customESLintConfig,
