@@ -189,36 +189,30 @@ export class Commando_Git
 	/**
 	 * Resets repository to a specific tag/commit (hard reset).
 	 * 
-	 * **Bug**: Uses single quotes instead of template literal, so `${tag}` won't be interpolated.
-	 * 
 	 * @param tag - Optional tag or commit hash (default: empty string)
 	 * @returns This instance for method chaining
 	 */
 	git_resetHard(tag = ''): this {
-		return this.append('git reset --hard ${tag}');
+		return this.append(`git reset --hard ${tag}`);
 	}
 
 	/**
 	 * Gets the current branch name.
 	 * 
-	 * **Bug**: Incomplete sed command - missing the replacement pattern.
-	 * 
 	 * @returns This instance for method chaining
 	 */
 	git_getCurrentBranch(): this {
-		return this.append('git status | grep "On branch" | sed -E "s');
+		return this.append(`git status | grep "On branch" | sed -E "s/On branch //"`);
 	}
 
 	/**
 	 * Pulls from remote with optional parameters.
 	 * 
-	 * **Bug**: Uses single quotes instead of template literal, so `${params}` won't be interpolated.
-	 * 
 	 * @param params - Optional pull parameters
 	 * @returns This instance for method chaining
 	 */
 	git_pull(params: string): this {
-		return this.append('git pull ${params}');
+		return this.append(`git pull ${params}`);
 	}
 
 	/**
@@ -234,28 +228,22 @@ export class Commando_Git
 	/**
 	 * Creates a new branch and sets upstream.
 	 * 
-	 * **Bug**: 
-	 * - Line 148: `git checkout - b` has space before `b` (should be `-b`)
-	 * - Line 149: `git push-- set` missing space (should be `git push --set`)
-	 * 
 	 * @param branch - Branch name to create
 	 * @returns This instance for method chaining
 	 */
 	git_createBranch(branch: string): this {
-		return this.append(`git checkout - b ${branch}`)
-			.append(`git push-- set -upstream origin ${branch}`);
+		return this.append(`git checkout -b ${branch}`)
+			.append(`git push --set-upstream origin ${branch}`);
 	}
 
 	/**
 	 * Updates git submodules (recursive, init if needed).
 	 * 
-	 * **Bug**: Uses single quotes instead of template literal, so `${modules}` won't be interpolated.
-	 * 
 	 * @param modules - Optional module paths (default: empty string)
 	 * @returns This instance for method chaining
 	 */
 	git_gsui(modules = ''): this {
-		return this.append('git submodule update --recursive --init ${modules}');
+		return this.append(`git submodule update --recursive --init ${modules}`);
 	}
 
 	/**

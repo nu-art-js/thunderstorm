@@ -202,6 +202,27 @@ export class CommandoInteractive
 		return this;
 	}
 
+	mark() {
+		this.builder.setMark();
+		return this;
+	}
+
+	/**
+	 * Appends a command to run in the background and tracks its PID.
+	 *
+	 * **Behavior**:
+	 * - Runs command with `&` (background)
+	 * - Captures PID using `pid=$!` and echoes it with unique key
+	 * - Waits for the process to complete
+	 * - Calls pidListener when PID is detected
+	 *
+	 * **Use Case**: Running long-running processes while continuing
+	 * to execute other commands in the same shell session.
+	 *
+	 * @param command - Command to run in background
+	 * @param pidListener - Optional callback when PID is detected
+	 * @returns This instance for method chaining
+	 */
 	appendAsync(command: string, pidListener?: ShellPidListener) {
 		const pidUniqueKey = generateHex(16);
 		const regexp = new RegExp(`${pidUniqueKey}=(\\d+)`);

@@ -24,6 +24,22 @@ export const CONST_TS_CONFIG = 'tsconfig.json';
 export const CONST_PNPM_WORKSPACE = 'pnpm-workspace.yaml';
 /** PNPM lock file name (pnpm-lock.yaml) */
 export const CONST_PNPM_LOCK = 'pnpm-lock.yaml';
+/** Trash directory name (.trash) */
+export const CONST_TrashDir = '.trash';
+/** Deployment metadata file name (deployment-metadata.json) */
+export const CONST_DeploymentMetadata = 'deployment-metadata.json';
+/** Deployment ID metadata key (deployment-id) */
+export const CONST_DeploymentId = 'deployment-id';
+/** Default version tag (latest) */
+export const CONST_LatestTag = 'latest';
+/** Hosting build tarball name (hosting-build.tar.gz) */
+export const CONST_HostingBuildTarball = 'hosting-build.tar.gz';
+/** Staging directory name (staging) */
+export const CONST_StagingDir = 'staging';
+/** Deploy hosting temp directory name (deploy-hosting) */
+export const CONST_DeployHostingDir = 'deploy-hosting';
+/** Build image temp directory name (build-image) */
+export const CONST_BuildImageDir = 'build-image';
 
 /** Memory storage key for packages configuration */
 export const MemKey_Packages = new MemKey<RuntimeProjectConfig>('bai-packages', true);

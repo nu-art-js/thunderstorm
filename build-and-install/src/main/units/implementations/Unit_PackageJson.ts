@@ -7,6 +7,7 @@ import {TS_PackageJSON} from '../discovery/types.js';
 import {Phase_Prepare, Phase_Purge} from '../../phases/definitions/index.js';
 import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {Unit_NodeProject} from './Unit_NodeProject.js';
 
 
 /**
@@ -54,7 +55,7 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	protected deriveDistDependencies(): StringMap {
 		const dependenciesKeys = Object.keys(this.config.dependencies);
 		this.logWarning(dependenciesKeys);
-		const params = this.runtimeContext.childUnits.filter(unit => dependenciesKeys.includes(unit.config.key)).reduce((dependencies, unit) => {
+		const params = (this.runtimeContext.parentUnit as Unit_NodeProject).innerUnits.filter(unit => dependenciesKeys.includes(unit.config.key)).reduce((dependencies, unit) => {
 			try {
 				dependencies[unit.config.key] = (unit as Unit_PackageJson).config.packageJson.version;
 			} catch (e: any) {

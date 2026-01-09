@@ -27,9 +27,9 @@ export class ModuleManagerTester
 
 /**
  * Runs a single test case within a test suite.
- * 
+ *
  * Creates an Mocha `it()` test with the test case description and processor.
- * 
+ *
  * @template Input - Input type
  * @template ExpectedResult - Expected result type
  * @param testSuit - Test suite configuration
@@ -41,13 +41,13 @@ export function testSuite_RunTest<Input, ExpectedResult>(testSuit: TestSuite<Inp
 
 /**
  * Sets up and runs a test suite with Mocha hooks.
- * 
+ *
  * Configures `before()` and `after()` hooks if provided, and runs each test case
  * in its own MemStorage context for isolation.
- * 
+ *
  * **Note**: Each test case runs in a fresh MemStorage context to prevent
  * state leakage between tests.
- * 
+ *
  * @template Input - Input type
  * @template ExpectedResult - Expected result type
  * @param testSuit - Test suite configuration
@@ -76,13 +76,13 @@ export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input
 
 /**
  * Default test processor for async test cases.
- * 
+ *
  * Validates that either `expectedResult` or `error` is provided, then:
  * - If error is expected: Asserts the promise rejects with the expected error
  * - If result is expected: Awaits the promise and validates the result
  *   - If expectedResult is a function: Calls it with the actual result
  *   - Otherwise: Deep equals comparison
- * 
+ *
  * @template Result - Actual result type
  * @template ExpectedResult - Expected result type
  */
@@ -90,7 +90,7 @@ export type DefaultTestProcessor<Result = any, ExpectedResult = Result> = (promi
 
 /**
  * Default implementation of test processor.
- * 
+ *
  * Handles both success and error cases, with flexible result validation.
  */
 export const defaultTestProcessor: DefaultTestProcessor = async (promisedResult, expectedResult, error) => {
@@ -106,6 +106,8 @@ export const defaultTestProcessor: DefaultTestProcessor = async (promisedResult,
 	} catch (e: any) {
 		if (typeof error === 'function')
 			return await error(e);
+
+		throw e;
 	}
 
 	if (typeof expectedResult === 'function')
@@ -117,10 +119,10 @@ export const defaultTestProcessor: DefaultTestProcessor = async (promisedResult,
 
 /**
  * Creates a test scenario runner function.
- * 
+ *
  * Returns a function that can be used as a Mocha test. If no test case is provided,
  * creates a default test case that accepts any result.
- * 
+ *
  * @template Result - Actual result type
  * @template ExpectedResult - Expected result type
  * @param test - Async function to test
@@ -144,10 +146,10 @@ export const runScenario = <Result, ExpectedResult = Result>(test: () => Promise
 
 /**
  * Runs a single test case with input.
- * 
+ *
  * Resolves the test case, extracts expected result or error, and runs the test
  * in a fresh MemStorage context.
- * 
+ *
  * @template Input - Input type
  * @template Result - Actual result type
  * @template ExpectedResult - Expected result type
@@ -165,10 +167,10 @@ export const runSingleTestCase = async <Input, Result, ExpectedResult = Result>(
 
 /**
  * Expects an async action to fail (throw an error).
- * 
+ *
  * If the action succeeds, returns an expectation that will fail.
  * If it throws, returns an expectation that will pass.
- * 
+ *
  * @param action - Async function that should throw
  * @returns Chai expectation
  */
@@ -185,7 +187,7 @@ export const expectFailAsync = async (action: () => Promise<void>) => {
 
 /**
  * Dispatcher for resetting modules between tests.
- * 
+ *
  * Modules implementing `TestResetListener` can register to receive reset calls
  * via this dispatcher. The test framework calls this to reset module state.
  */

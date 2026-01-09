@@ -1,6 +1,6 @@
 FROM node:22
 WORKDIR /workspace
-COPY ../../../../dist ./dist/
-COPY ../../../../package.json ./
+COPY dist/ ./dist/
+COPY package.json ./
 RUN npm install --production
 CMD ["node", "dist/index.js"]

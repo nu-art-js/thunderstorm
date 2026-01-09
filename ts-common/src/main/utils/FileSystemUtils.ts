@@ -46,14 +46,14 @@ async function assertExists(path: string, mustExist: boolean, type: 'File' | 'Fo
 
 /**
  * Default template pattern for `{{variable}}` syntax.
- * 
+ *
  * Matches `{{variableName}}` where variableName is any non-whitespace sequence.
  */
 export const DEFAULT_TEMPLATE_PATTERN = new RegExp(`\{\{(\\S*?)\}\}`);
 
 /**
  * Legacy template pattern for `$variable` syntax.
- * 
+ *
  * Matches `$variableName` where variableName is 3+ alphanumeric characters, dashes, or underscores.
  * Uses negative lookbehind to avoid matching escaped `\$variable`.
  */
@@ -61,7 +61,7 @@ export const DEFAULT_OLD_TEMPLATE_PATTERN = new RegExp(`(?<!\\\\)\\$([a-zA-Z][\\
 
 /**
  * File system utility object providing async file and folder operations.
- * 
+ *
  * Provides a structured API for file system operations with:
  * - File operations: read, write, copy, delete, template processing
  * - Folder operations: create, delete, empty, list, iterate
@@ -69,7 +69,7 @@ export const DEFAULT_OLD_TEMPLATE_PATTERN = new RegExp(`(?<!\\\\)\\$([a-zA-Z][\\
  * - Automatic folder creation for file operations
  * - Template variable substitution
  * - JSON read/write helpers
- * 
+ *
  * **Error handling**: Most operations throw `BadImplementationException` on errors.
  * Some operations have `mustExist` parameters to control error behavior.
  */
@@ -124,15 +124,20 @@ export const FileSystemUtils = {
 				const content = await FileSystemUtils.file.read(pathToFile);
 				return FileSystemUtils.file.template.transform(content, params, pattern);
 			},
-			transform: (input: string, params: StringMap, pattern = DEFAULT_TEMPLATE_PATTERN) => {
-				let match;
-				while (match = input.match(pattern)) {
-					const value = params[match[1]];
-					if (!exists(value))
-						throw new BadImplementationException(`Missing template param: ${match[1]}`);
+			transform: (input: string, params: StringMap, _pattern = DEFAULT_TEMPLATE_PATTERN) => {
+				const flags = _pattern.flags.includes('g') ? _pattern.flags : _pattern.flags + 'g';
+				const pattern = new RegExp(_pattern.source, flags);
 
-					input = input.replace(match[0], value);
-				}
+				return input.replace(pattern, (match, param) => {
+					if (!Object.hasOwn(params, param))
+						throw new BadImplementationException(`Missing template param: ${param}`);
+
+					const value = params[param];
+					if (!exists(value))
+						throw new BadImplementationException(`Template param value is empty: ${param}`);
+
+					return value;
+				});
 
 				return input;
 			},
@@ -153,7 +158,7 @@ export const FileSystemUtils = {
 	folder: {
 		/**
 		 * Checks if a path is a folder.
-		 * 
+		 *
 		 * @param pathToFile - Path to check
 		 * @returns true if path is a folder, false otherwise
 		 */
@@ -163,9 +168,9 @@ export const FileSystemUtils = {
 
 		/**
 		 * Deletes a folder and all its contents recursively.
-		 * 
+		 *
 		 * Uses `force: true` to handle read-only files and other edge cases.
-		 * 
+		 *
 		 * @param pathToFolder - Path to folder to delete
 		 * @param mustExist - If true, throws if folder doesn't exist. If false, silently returns (default: false)
 		 */
@@ -178,9 +183,9 @@ export const FileSystemUtils = {
 
 		/**
 		 * Empties a folder by deleting all its contents.
-		 * 
+		 *
 		 * Removes all files and subdirectories but keeps the folder itself.
-		 * 
+		 *
 		 * @param pathToFolder - Path to folder to empty
 		 * @param mustExist - If true, throws if folder doesn't exist. If false, silently returns (default: true)
 		 */
@@ -196,10 +201,10 @@ export const FileSystemUtils = {
 
 		/**
 		 * Creates a folder and all necessary parent directories.
-		 * 
+		 *
 		 * If the folder already exists, verifies it's actually a folder (throws if it's a file).
 		 * Uses `recursive: true` to create parent directories as needed.
-		 * 
+		 *
 		 * @param pathToFolder - Path to folder to create
 		 */
 		create: async (pathToFolder: string) => {
@@ -207,13 +212,35 @@ export const FileSystemUtils = {
 				return assertFolder(pathToFolder);
 			return _fs.mkdir(pathToFolder, {recursive: true});
 		},
+
+		/**
+		 * Copies a folder and all its contents recursively.
+		 *
+		 * Uses Node.js built-in `fs.promises.cp` for efficient recursive copying.
+		 * Creates the target folder if it doesn't exist.
+		 *
+		 * @param sourcePath - Path to source folder
+		 * @param targetPath - Path to target folder
+		 * @param mustExist - If true, throws if source folder doesn't exist. If false, silently returns (default: true)
+		 */
+		copy: async (sourcePath: string, targetPath: string, mustExist = true) => {
+			if (!await assertExists(sourcePath, mustExist, 'Folder'))
+				return;
+			await assertFolder(sourcePath);
+
+			// Create target folder parent directory
+			await FileSystemUtils.folder.create(resolve(targetPath, '..'));
+
+			// Use Node.js built-in recursive copy (available in Node.js 16.7.0+)
+			return _fs.cp(sourcePath, targetPath, {recursive: true});
+		},
 		/**
 		 * Folder listing operations.
 		 */
 		list: Object.assign(async (pathToFolder: string) => {
 			/**
 			 * Lists all entries in a folder.
-			 * 
+			 *
 			 * @param pathToFolder - Path to folder
 			 * @returns Array of entry names (files and folders)
 			 */
@@ -221,9 +248,9 @@ export const FileSystemUtils = {
 		}, {
 			/**
 			 * Iterates over all entries in a folder and calls a callback for each.
-			 * 
+			 *
 			 * Processes entries in parallel. The callback receives the full resolved path.
-			 * 
+			 *
 			 * @param pathToFolder - Path to folder
 			 * @param callback - Async function called for each entry
 			 */
@@ -233,9 +260,9 @@ export const FileSystemUtils = {
 			}, {
 				/**
 				 * Iterates over files only in a folder.
-				 * 
+				 *
 				 * Filters out directories and calls the callback only for files.
-				 * 
+				 *
 				 * @param pathToFolder - Path to folder
 				 * @param callback - Async function called for each file
 				 */
@@ -249,9 +276,9 @@ export const FileSystemUtils = {
 				},
 				/**
 				 * Iterates over folders only in a directory.
-				 * 
+				 *
 				 * Filters out files and calls the callback only for folders.
-				 * 
+				 *
 				 * @param pathToFolder - Path to folder
 				 * @param callback - Async function called for each subfolder
 				 */
@@ -267,15 +294,15 @@ export const FileSystemUtils = {
 		}),
 		/**
 		 * Recursively iterates over files and folders with filtering.
-		 * 
+		 *
 		 * Traverses the directory tree recursively. For each entry:
 		 * 1. Calls `filter()` - if it returns false, skips the entry
 		 * 2. If it's a file, calls `processor()`
 		 * 3. If it's a folder, recursively processes its contents
-		 * 
+		 *
 		 * **Note**: The filter is called for each entry before processing. If filter
 		 * returns false for a folder, its contents are not processed.
-		 * 
+		 *
 		 * @param pathToDir - Path to directory to iterate
 		 * @param options - Iterator options with filter and processor functions
 		 * @throws BadImplementationException if path is neither file nor folder
@@ -305,7 +332,7 @@ export const FileSystemUtils = {
 	symlink: {
 		/**
 		 * Creates a symbolic link.
-		 * 
+		 *
 		 * @param targetPath - Path that the symlink points to
 		 * @param linkPath - Path where the symlink will be created
 		 */
@@ -315,9 +342,9 @@ export const FileSystemUtils = {
 
 		/**
 		 * Deletes a symbolic link.
-		 * 
+		 *
 		 * Uses `lstat()` to check if the path is actually a symlink (not following it).
-		 * 
+		 *
 		 * @param pathToLink - Path to symlink to delete
 		 * @param mustExist - If true, throws if symlink doesn't exist. If false, silently returns (default: false)
 		 * @throws BadImplementationException if path exists but is not a symlink
@@ -333,7 +360,7 @@ export const FileSystemUtils = {
 
 		/**
 		 * Reads the target path of a symbolic link.
-		 * 
+		 *
 		 * @param pathToLink - Path to symlink
 		 * @returns Target path that the symlink points to
 		 */

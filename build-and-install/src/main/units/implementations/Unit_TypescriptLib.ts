@@ -47,17 +47,19 @@ export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
 	output: string;
 };
 
-const assetExtensions = [
-	'json',
-	'scss',
-	'svg',
-	'png',
-	'jpg',
-	'jpeg',
-	'rules',
-	'_ts',
-	'gif',
-	'csv',
+const assets = [
+	'*.json',
+	'*.scss',
+	'*.svg',
+	'*.png',
+	'*.jpg',
+	'*.jpeg',
+	'*.rules',
+	'*._ts',
+	'*.gif',
+	'*.csv',
+	'*.yaml',
+	'dockerfile',
 ];
 
 
@@ -71,7 +73,7 @@ const CONST_ESM_PREFIX = 'export NODE_OPTIONS=\'--import data:text/javascript,im
 const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<string>> = {
 	pure: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
-		const files = runtimeContext.runtimeParams.testFiles ?? [`src/test/${defaultTestPatterns.firebase}`].map(file => `'${file}'`);
+		const files = runtimeContext.runtimeParams.testFiles ?? [`src/test/${defaultTestPatterns.pure}`].map(file => `'${file}'`);
 		const testCases = runtimeContext.runtimeParams.testCases;
 		const cli_testFiles = ` ${files.join(' ')}`;
 		const cli_testCases = testCases ? ` --grep '${testCases.join('|')}'` : '';
@@ -280,7 +282,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	}
 
 	protected async copyAssetsToOutput() {
-		const command = `find . \\( -name ${assetExtensions.map(suffix => `'*.${suffix}'`)
+		const command = `find . \\( -name ${assets.map(pattern => `'${pattern}'`)
 			.join(' -o -name ')} \\) | cpio -pdmuv "${this.config.output}" > /dev/null 2>&1`;
 		await this.allocateCommando(Commando_Basic)
 			.cd(`${this.config.fullPath}/src/main`)

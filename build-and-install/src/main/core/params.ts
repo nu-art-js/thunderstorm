@@ -1,4 +1,5 @@
 import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
+import {BadImplementationException, tsValidate, tsValidateRegexp} from '@nu-art/ts-common';
 
 
 export const BaiParam_AllUnits: BaseCliParam<'allUnits', boolean> = {
@@ -210,12 +211,24 @@ export const BaiParam_Deploy: BaseCliParam<'deploy', boolean> = {
 	]
 };
 
+// Docker image tag validation: alphanumeric with dots, underscores, hyphens
+// Cannot start with period or hyphen, max 128 characters
+// Pattern: starts with alphanumeric, followed by 0-127 more alphanumeric/separator chars
+const imageTagRegex = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$/;
+
 export const BaiParam_BuildPushImage: BaseCliParam<'buildPushImage', string> = {
 	keys: ['--build-push-image', '-bpi'],
 	keyName: 'buildPushImage',
 	type: 'string',
 	group: 'Deployment',
-	description: 'Build Docker container image and push to Artifact Registry. Usage: --build-push-image <tag>',
+	description: `Build Docker container image and push to Artifact Registry. Usage: --build-push-image=<tag>`,
+	process: (value) => {
+		if (!value)
+			throw new BadImplementationException('Image tag is required. Use --build-push-image=<tag>');
+
+		tsValidate(value, tsValidateRegexp(imageTagRegex, true));
+		return value;
+	},
 };
 
 export const BaiParam_DeployImage: BaseCliParam<'deployImage', string> = {
@@ -224,9 +237,53 @@ export const BaiParam_DeployImage: BaseCliParam<'deployImage', string> = {
 	type: 'string',
 	group: 'Deployment',
 	description: 'Deploy container image from Artifact Registry to Firebase Functions. Usage: --deploy-image <tag>',
-	dependencies: [
-		{param: BaiParam_BuildPushImage, value: (currentValue: string) => currentValue}, // Auto-enable build+push with same tag when deploy is requested
-	]
+	process: (value) => {
+		if (!value)
+			throw new BadImplementationException('Image tag is required. Use --deploy-image=<tag>');
+		tsValidate(value, tsValidateRegexp(imageTagRegex, true));
+		return value;
+	}
+};
+
+export const BaiParam_DeployFunction: BaseCliParam<'deployFunction', string> = {
+	keys: ['--deploy-function', '-df'],
+	keyName: 'deployFunction',
+	type: 'string',
+	group: 'Deployment',
+	description: 'Deploy a specific function by name. Usage: --deploy-function <functionName>',
+	process: (value) => {
+		if (!value)
+			throw new BadImplementationException('Function name is required. Use --deploy-function=<functionName>');
+		// Function name validation - just ensure it's a non-empty string
+		if (typeof value !== 'string' || value.trim().length === 0)
+			throw new BadImplementationException('Function name must be a non-empty string');
+		return value;
+	},
+};
+
+export const BaiParam_DeleteFunctions: BaseCliParam<'deleteFunctions', boolean> = {
+	keys: ['--delete-functions'],
+	keyName: 'deleteFunctions',
+	type: 'boolean',
+	group: 'Deployment',
+	description: 'Delete functions before deployment. Behavior depends on other flags.',
+};
+
+export const BaiParam_DeleteFunction: BaseCliParam<'deleteFunction', string> = {
+	keys: ['--delete-function', '-delfn'],
+	keyName: 'deleteFunction',
+	type: 'string',
+	group: 'Deployment',
+	description: 'Delete a specific function by name before deployment. Usage: --delete-function=<functionName>',
+	process: (value) => {
+		if (!value)
+			throw new BadImplementationException('Function name is required. Use --delete-function=<functionName>');
+		// Function name validation - just ensure it's a non-empty string
+		if (typeof value !== 'string' || value.trim().length === 0)
+			throw new BadImplementationException('Function name must be a non-empty string');
+		return value;
+	},
+	dependencies: [{param: BaiParam_DeleteFunctions, value: true}]
 };
 
 export const BaiParam_Debug: BaseCliParam<'debug', boolean> = {
@@ -420,6 +477,9 @@ export const AllBaiParams = [
 	BaiParam_Deploy,
 	BaiParam_BuildPushImage,
 	BaiParam_DeployImage,
+	BaiParam_DeployFunction,
+	BaiParam_DeleteFunctions,
+	BaiParam_DeleteFunction,
 	BaiParam_DebugBackend,
 
 	BaiParam_Debug,

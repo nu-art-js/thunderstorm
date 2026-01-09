@@ -178,7 +178,7 @@ export class PhaseManager
 	}
 
 	/**
-	 * Executes the planned steps sequentially.
+	 * Executes the planned steps sequentially.d
 	 * 
 	 * **Execution Model**:
 	 * - Steps run sequentially (one after another)

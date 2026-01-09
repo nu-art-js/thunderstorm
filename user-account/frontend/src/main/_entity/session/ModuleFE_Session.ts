@@ -87,16 +87,30 @@ class ModuleFE_Session_Class
 			this.StorageKey_SessionId.set(sessionId);
 		});
 
+		const prevSessionId = this.StorageKey_SessionId.get();
 		let sessionId = ModuleFE_RoutingV2.getQueryParameter(QueryParam_SessionId);
-		if (sessionId)
-			ModuleFE_RoutingV2.removeQueryParam(QueryParam_SessionId);
-		else
-			sessionId = this.StorageKey_SessionId.get();
-
 		if (sessionId) {
+			setTimeout(() => ModuleFE_RoutingV2.removeQueryParam(QueryParam_SessionId), 5000);
 			this.StorageKey_SessionId.set(sessionId);
-			this.onSessionUpdated(sessionId);
+			if (sessionId === prevSessionId)
+				this.onSessionUpdated(sessionId)
+					.then(() => console.log('on session updated'))
+					.catch(err => console.error('Error on session updated', err));
+
+			return;
 		}
+
+		if (!prevSessionId)
+			return;
+
+		this.isSessionValid().then((sessionValid) => {
+			if (!sessionValid)
+				return this.StorageKey_SessionId.delete();
+
+			this.onSessionUpdated(prevSessionId)
+				.then(() => console.log('on session updated'))
+				.catch(err => console.error('Error on session updated', err));
+		});
 	}
 
 	setSessionKey(sessionKey: ResolvableContent<string>) {

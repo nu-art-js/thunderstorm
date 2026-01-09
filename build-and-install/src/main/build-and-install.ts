@@ -12,6 +12,7 @@ import {BuildAndInstall} from './BuildAndInstall.js';
 	await buildAndInstall.run();
 })()
 	.catch((err) => {
+		console.error(err);
 		process.exit(2);
 	})
 	.then(() => process.exit(0));

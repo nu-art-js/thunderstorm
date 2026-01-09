@@ -1,9 +1,15 @@
+import {ComponentClass, FunctionComponent} from 'react';
+// @ts-ignore - unstable_HistoryRouter may not be in types but is available in React Router v6.4+
 import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
+// Removed createBrowserHistory - BrowserRouter doesn't use it, we use window.history directly
 import {TS_Route} from './types.js';
-import {_keys, BadImplementationException, composeUrl, encodeUrlParams, exists, Module, removeItemFromArray, RouteParams, StringMap} from '@nu-art/ts-common';
-import {createBrowserHistory, History} from 'history';
-import {ThunderDispatcher} from '@nu-art/web-client';
-import {mouseEventHandler, stopPropagation} from '@nu-art/thunder-utils';
+import {_keys, BadImplementationException, composeQueryParams, composeUrl, exists, Module, removeItemFromArray} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher.js';
+import {QueryParams, UrlQueryParams} from '@nu-art/thunderstorm-shared';
+import {mouseEventHandler, stopPropagation} from '../../utils/tools.js';
+import {AwaitModules} from '../../components/AwaitModules/AwaitModules.js';
+import {AwaitSync} from '../../components/AwaitSync/AwaitSync.js';
+
 
 export interface OnLocationChanged {
 	__onLocationChanged: (path: string) => void;
@@ -12,7 +18,7 @@ export interface OnLocationChanged {
 export const dispatch_onLocationChanged = new ThunderDispatcher<OnLocationChanged, '__onLocationChanged'>('__onLocationChanged');
 
 
-class ModuleFE_Routing_Class
+class ModuleFE_RoutingV2_Class
 	extends Module<{}> {
 
 	// ######################## Inner Data ########################
@@ -26,33 +32,40 @@ class ModuleFE_Routing_Class
 	private routesMapByPath: {
 		[fullPath: string]: TS_Route
 	} = {};
-	private readonly history: History<any>;
 
 	constructor() {
 		super();
-		this.history = createBrowserHistory();
-		this.history.listen((location) => {
-			dispatch_onLocationChanged.dispatchUI(location.pathname);
+		// Listen to browser navigation events (back/forward buttons, etc.)
+		window.addEventListener('popstate', () => {
+			dispatch_onLocationChanged.dispatchUI(window.location.pathname);
 		});
 	}
 
 	// ######################## Public Functions ########################
 
-	goToRoute<P extends RouteParams>(route: TS_Route<P>, params?: Partial<P>) {
+	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>, hash?: string) {
 		const fullPath = this.getFullPath(route.key);
 		try {
-			const url = composeUrl(fullPath, params, window.location.hash);
-			if (window.location.href === url)
-				return this.logWarning(`attempting to set same route: ${url}`);
+			const queryString = composeQueryParams(params);
+			const search = queryString.length > 0 ? `?${queryString}` : '';
+			const url = composeUrl(fullPath, params, hash);
 
-			this.history.push(url);
+			if (url === window.location.href)
+				return this.logWarning(`attempting to set same route: ${fullPath}${search}`);
+
+			// Also update window.location to trigger BrowserRouter's popstate listener
+			// This ensures React Router detects the navigation change
+			window.history.pushState({}, '', url);
+
+			// Manually dispatch popstate event to trigger BrowserRouter update
+			window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 		} catch (e: any) {
 			this.logError(`cannot resolve route for route: `, route, e);
 			throw e;
 		}
 	}
 
-	redirect<P extends RouteParams>(route: TS_Route<P>, params?: Partial<P>) {
+	redirect<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {
 		const url = composeUrl(this.getFullPath(route.key), params);
 		return <Navigate to={url}/>;
 	}
@@ -64,6 +77,8 @@ class ModuleFE_Routing_Class
 			{this.routeBuilder(rootRoute)}
 		</Routes>;
 
+		// Use BrowserRouter - unstable_HistoryRouter has compatibility issues
+		// We'll use window.location changes to trigger React Router updates
 		return <BrowserRouter>
 			<RoutesRenderer/>
 		</BrowserRouter>;
@@ -117,7 +132,57 @@ class ModuleFE_Routing_Class
 	};
 
 	private resolveRouteComponent = (route: TS_Route) => {
-		return route.Component;
+		if (!route.Component)
+			return undefined;
+
+		const shouldAwaitModules = !!route.modulesToAwait;
+		const shouldAwaitSync = !!route.awaitSync;
+
+		//No awaiting of any type
+		if (!shouldAwaitModules && !shouldAwaitSync)
+			return route.Component;
+
+		//Awaiting both modules and sync
+		if (shouldAwaitModules && shouldAwaitSync) {
+			if (route.Component.prototype?.render) {
+				const Component = route.Component as ComponentClass;
+				return () => <AwaitSync customLoader={route.awaitSyncLoader}>
+					<AwaitModules modules={route.modulesToAwait!}
+												customLoader={route.awaitModulesLoader}><Component/></AwaitModules>
+				</AwaitSync>;
+			}
+			const component = route.Component as FunctionComponent;
+			return () => <AwaitSync customLoader={route.awaitSyncLoader}>
+				<AwaitModules modules={route.modulesToAwait!}
+											customLoader={route.awaitModulesLoader}>{component({})}</AwaitModules>
+			</AwaitSync>;
+		}
+
+		//Awaiting only modules
+		if (shouldAwaitModules && !shouldAwaitSync) {
+			//route.Component is a class component
+			if (route.Component.prototype?.render) {
+				const Component = route.Component as ComponentClass;
+				return () => <AwaitModules modules={route.modulesToAwait!} customLoader={route.awaitModulesLoader}><Component/></AwaitModules>;
+			}
+
+			//route.Component is a function component
+			const component = route.Component as FunctionComponent;
+			return () => <AwaitModules modules={route.modulesToAwait!}
+																 customLoader={route.awaitModulesLoader}>{component({})}</AwaitModules>;
+		}
+
+		//Awaiting only sync
+		if (shouldAwaitModules && !shouldAwaitSync) {
+			if (route.Component.prototype.render) {
+				const Component = route.Component as ComponentClass;
+				return () => <AwaitSync customLoader={route.awaitSyncLoader}><Component/></AwaitSync>;
+			}
+
+			//route.Component is a function component
+			const component = route.Component as FunctionComponent;
+			return () => <AwaitSync customLoader={route.awaitSyncLoader}>{component({})}</AwaitSync>;
+		}
 	};
 
 	getRouteByKey(routeKey: string): TS_Route | undefined {
@@ -141,7 +206,7 @@ class ModuleFE_Routing_Class
 	/**
 	 * Get all query parameters from the current URL (decoded)
 	 */
-	getQueryParams(): StringMap {
+	getQueryParams(): UrlQueryParams {
 		const params = this.getEncodedQueryParams();
 		_keys(params).forEach(key => {
 			const _param = params[key];
@@ -172,8 +237,8 @@ class ModuleFE_Routing_Class
 	 * Replace all query parameters on the current route
 	 * @param queryParams - The query parameters to set
 	 */
-	setQuery(queryParams: RouteParams) {
-		const encodedQueryParams = encodeUrlParams(queryParams);
+	setQuery(queryParams: UrlQueryParams) {
+		const encodedQueryParams = this.encodeUrlParams(queryParams);
 		this.updateQueryParams(encodedQueryParams);
 	}
 
@@ -231,12 +296,29 @@ class ModuleFE_Routing_Class
 	// ######################## Navigation Methods ########################
 
 	/**
+	 * Convert location descriptor to URL string using composeUrl
+	 */
+	private locationToUrl(location: { pathname: string; search?: string; hash?: string }): string {
+		// Parse search params if provided as string
+		const params: { [key: string]: string } = {};
+		if (location.search) {
+			const searchParams = new URLSearchParams(location.search.startsWith('?') ? location.search.substring(1) : location.search);
+			searchParams.forEach((value, key) => {
+				params[key] = value;
+			});
+		}
+		const hash = location.hash?.startsWith('#') ? location.hash.substring(1) : location.hash;
+		return composeUrl(location.pathname, params, hash);
+	}
+
+	/**
 	 * Navigate to a pathname with optional query params (adds to history)
 	 * @param location - Location descriptor with pathname and optional search
 	 */
 	push(location: { pathname: string; search?: string; hash?: string }) {
-		const url = this.composeLocationUrl(location);
-		this.history.push(url);
+		const url = this.locationToUrl(location);
+		window.history.pushState({}, '', url);
+		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 	}
 
 	/**
@@ -244,17 +326,18 @@ class ModuleFE_Routing_Class
 	 * @param location - Location descriptor with pathname and optional search
 	 */
 	replace(location: { pathname: string; search?: string; hash?: string }) {
-		const url = this.composeLocationUrl(location);
-		this.history.replace(url);
+		const url = this.locationToUrl(location);
+		window.history.replaceState({}, '', url);
+		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 	}
 
 	// ######################## Private Helper Methods ########################
 
-	private getEncodedQueryParams(): StringMap {
-		const queryParams: StringMap = {};
+	private getEncodedQueryParams(): UrlQueryParams {
+		const queryParams: UrlQueryParams = {};
 		let queryAsString = window.location.search;
 		if (!queryAsString || queryAsString.length === 0)
-			return queryParams;
+			return {};
 
 		while (queryAsString.startsWith('?') || queryAsString.startsWith('/?')) {
 			if (queryAsString.startsWith('?'))
@@ -270,23 +353,42 @@ class ModuleFE_Routing_Class
 			const parts = param.split('=');
 			return {key: parts[0], value: parts[1]?.length === 0 ? undefined : parts[1]};
 		}).reduce((toRet, param) => {
-			if (param.value)
-				toRet[param.key] = param.value;
+			toRet[param.key] = param.value;
 			return toRet;
 		}, queryParams);
 	}
 
-	private updateQueryParams(params: RouteParams, pathname: string = window.location.pathname) {
-		const url = composeUrl(pathname, params, window.location.hash);
-		this.history.replace(url);
+	private composeQuery(queryParams?: UrlQueryParams): string {
+		const queryAsString = composeQueryParams(queryParams);
+		if (queryAsString.length === 0)
+			return '';
+
+		return queryAsString;
 	}
 
-	private composeLocationUrl(location: { pathname: string; search?: string; hash?: string }): string {
-		const cleanPathname = !location.pathname.endsWith('/') ? location.pathname : location.pathname.substring(0, location.pathname.length - 1);
-		const search = location.search || '';
-		const hash = location.hash || '';
-		return `${cleanPathname}${search}${hash}`;
+	private encodeUrlParams(queryParams?: UrlQueryParams): UrlQueryParams {
+		const encodedQueryParams = {...queryParams};
+		_keys(encodedQueryParams).forEach(key => {
+			const value = encodedQueryParams[key];
+			if (!value) {
+				delete encodedQueryParams[key];
+				return;
+			}
+
+			encodedQueryParams[key] = encodeURIComponent(value);
+		});
+		return encodedQueryParams;
 	}
+
+	private updateQueryParams(encodedQueryParams: UrlQueryParams) {
+		const search = this.composeQuery(encodedQueryParams);
+		const url = `${window.location.pathname}${search ? `?${search}` : ''}`;
+		window.history.replaceState({}, '', url);
+
+		// Manually dispatch popstate event to trigger BrowserRouter update
+		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
+	}
+
 }
 
 export const TS_NavLink = (props: {
@@ -294,7 +396,7 @@ export const TS_NavLink = (props: {
 	ignoreClickOnSameRoute?: boolean;
 } & Partial<NavLinkProps>) => {
 	const {route, children, ignoreClickOnSameRoute, ..._props} = props;
-	const fullPath = ModuleFE_Routing.getFullPath(route.key);
+	const fullPath = ModuleFE_RoutingV2.getFullPath(route.key);
 	if (!fullPath)
 		throw new BadImplementationException(`Route with key ${route.key} is not defined in routing module`);
 
@@ -313,6 +415,49 @@ export const TS_NavLink = (props: {
 	>{children}</NavLink>;
 };
 
-export const ModuleFE_Routing = new ModuleFE_Routing_Class();
+export const ModuleFE_RoutingV2 = new ModuleFE_RoutingV2_Class();
 
 // ######################## Utility Functions ########################
+
+/**
+ * Encode URL query parameters
+ * @param queryParams - Query parameters to encode
+ * @returns Encoded query parameters
+ */
+export function encodeUrlParams(queryParams?: UrlQueryParams): UrlQueryParams {
+	const encodedQueryParams = {...queryParams};
+	_keys(encodedQueryParams).forEach(key => {
+		const value = encodedQueryParams[key];
+		if (!value) {
+			delete encodedQueryParams[key];
+			return;
+		}
+
+		encodedQueryParams[key] = encodeURIComponent(value);
+	});
+	return encodedQueryParams;
+}
+
+/**
+ * Compose a query string from query parameters
+ * @param queryParams - Query parameters to compose
+ * @returns Query string (without leading ?)
+ */
+export function composeQuery(queryParams?: UrlQueryParams): string {
+	const queryAsString = composeQueryParams(queryParams);
+	if (queryAsString.length === 0)
+		return '';
+
+	return queryAsString;
+}
+
+/**
+ * Compose a full URL with query parameters
+ * @param url - Base URL
+ * @param queryParams - Optional query parameters
+ * @returns Full URL with query string
+ */
+export function composeURL(url: string, queryParams?: UrlQueryParams): string {
+	const queryAsString = composeQuery(queryParams);
+	return `${url}${queryAsString.length > 0 ? `?${queryAsString}` : ''}`;
+}
