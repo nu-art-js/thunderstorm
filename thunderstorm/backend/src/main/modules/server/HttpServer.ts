@@ -132,7 +132,7 @@ export class HttpServer_Class
 
 		const parserLimit = this.config.bodyParserLimit;
 		if (parserLimit)
-			this.getExpress().use(express.json({limit: parserLimit}));
+			this.getExpress().use(express.json({limit: parserLimit, type: 'application/json'}));
 		this.getExpress().use(compression());
 		for (const middleware of HttpServer_Class.expressMiddleware) {
 			this.getExpress().use(middleware);
