@@ -45,7 +45,7 @@ export class ModuleFE_Workspace_Class
 		return this.getStorageKeyForWorkspace(key).get();
 	};
 
-	private getStorageKeyForWorkspace = (key: string): StorageKey<Workspace> => new StorageKey<Workspace>(`workspace_key__${key}`);
+	private getStorageKeyForWorkspace = (key: string): StorageKey<Workspace> => new StorageKey<Workspace>(`workspace_key__${key}`).sameInstance();
 
 	public setWorkspaceByKey = async (key: string, config: PanelConfig<any>) => {
 		this.workspacesToUpsert[key] = {key: key, config: config};
@@ -55,7 +55,7 @@ export class ModuleFE_Workspace_Class
 		this.upsertRunnable = setTimeout(async () => {
 			const values = _values(this.workspacesToUpsert);
 			values.forEach(workspace => {
-				this.logInfo('SET WORKSPACE KEY', `KEY: ${workspace.key}`);
+				this.logDebug('SET WORKSPACE KEY', `KEY: ${workspace.key}`);
 				this.getStorageKeyForWorkspace(workspace.key).set(workspace);
 			});
 			this.workspacesToUpsert = {};
