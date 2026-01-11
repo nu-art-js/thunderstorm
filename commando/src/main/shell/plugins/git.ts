@@ -21,14 +21,14 @@ type GitPushParams = {
 
 /**
  * Git operations plugin for Commando.
- * 
+ *
  * Provides Git command methods via a fluent API. Extends Commando_Programming
  * and Commando_Basic (merged via class-merger).
- * 
+ *
  * **Usage**: Access via `git()` method which returns an object with all
  * Git operations. Methods build commands but don't execute them until
  * `execute()` is called.
- * 
+ *
  * **Operations**:
  * - Repository operations: clone, fetch, pull, push
  * - Branch operations: checkout, create, merge, get current
@@ -63,7 +63,7 @@ export class Commando_Git
 
 	/**
 	 * Clones a Git repository.
-	 * 
+	 *
 	 * @param url - Repository URL to clone
 	 * @param options - Optional clone parameters (branch, recursive, output folder)
 	 * @returns This instance for method chaining
@@ -98,7 +98,7 @@ export class Commando_Git
 
 	/**
 	 * Checks out a branch.
-	 * 
+	 *
 	 * @param branch - Branch name to checkout
 	 * @returns This instance for method chaining
 	 */
@@ -108,7 +108,7 @@ export class Commando_Git
 
 	/**
 	 * Creates or updates a tag (force).
-	 * 
+	 *
 	 * @param tagName - Tag name to create/update
 	 * @returns This instance for method chaining
 	 */
@@ -118,7 +118,7 @@ export class Commando_Git
 
 	/**
 	 * Commits changes with a message.
-	 * 
+	 *
 	 * @param commitMessage - Commit message
 	 * @returns This instance for method chaining
 	 */
@@ -129,7 +129,7 @@ export class Commando_Git
 
 	/**
 	 * Stages a specific file.
-	 * 
+	 *
 	 * @param file - File path to stage
 	 * @returns This instance for method chaining
 	 */
@@ -140,7 +140,7 @@ export class Commando_Git
 
 	/**
 	 * Stages all files in the current directory.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	git_addAll(): this {
@@ -150,7 +150,7 @@ export class Commando_Git
 
 	/**
 	 * Stages all files and commits with a message.
-	 * 
+	 *
 	 * @param commitMessage - Commit message
 	 * @returns This instance for method chaining
 	 */
@@ -160,7 +160,7 @@ export class Commando_Git
 
 	/**
 	 * Pushes to a remote branch.
-	 * 
+	 *
 	 * @param options - Push parameters (remote, branch, tags, force)
 	 * @returns This instance for method chaining
 	 */
@@ -170,7 +170,7 @@ export class Commando_Git
 
 	/**
 	 * Pushes all tags to remote (force).
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	git_pushTags(): this {
@@ -179,7 +179,7 @@ export class Commando_Git
 
 	/**
 	 * Fetches from remote.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	git_fetch(): this {
@@ -188,7 +188,7 @@ export class Commando_Git
 
 	/**
 	 * Resets repository to a specific tag/commit (hard reset).
-	 * 
+	 *
 	 * @param tag - Optional tag or commit hash (default: empty string)
 	 * @returns This instance for method chaining
 	 */
@@ -198,7 +198,7 @@ export class Commando_Git
 
 	/**
 	 * Gets the current branch name.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	git_getCurrentBranch(): this {
@@ -207,7 +207,7 @@ export class Commando_Git
 
 	/**
 	 * Pulls from remote with optional parameters.
-	 * 
+	 *
 	 * @param params - Optional pull parameters
 	 * @returns This instance for method chaining
 	 */
@@ -217,7 +217,7 @@ export class Commando_Git
 
 	/**
 	 * Merges a branch into the current branch.
-	 * 
+	 *
 	 * @param mergeFrom - Branch to merge from
 	 * @returns This instance for method chaining
 	 */
@@ -227,7 +227,7 @@ export class Commando_Git
 
 	/**
 	 * Creates a new branch and sets upstream.
-	 * 
+	 *
 	 * @param branch - Branch name to create
 	 * @returns This instance for method chaining
 	 */
@@ -238,7 +238,7 @@ export class Commando_Git
 
 	/**
 	 * Updates git submodules (recursive, init if needed).
-	 * 
+	 *
 	 * @param modules - Optional module paths (default: empty string)
 	 * @returns This instance for method chaining
 	 */
@@ -248,7 +248,7 @@ export class Commando_Git
 
 	/**
 	 * Shows git status.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	git_status(): this {

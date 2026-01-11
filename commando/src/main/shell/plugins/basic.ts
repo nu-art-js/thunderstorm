@@ -21,13 +21,13 @@ type Cli_CpdirOptions = {
 
 /**
  * Basic shell command plugin for Commando.
- * 
+ *
  * Provides common file system and shell operations:
  * - Directory navigation (`cd`, `pwd`)
  * - File operations (`ls`, `cat`, `mkdir`, `rm`, `rmdir`, `cpdir`)
  * - Variable assignment
  * - Echo with options (escape sequences, file output)
- * 
+ *
  * **Usage**: Merge with BaseCommando or other Commando classes to add
  * these methods. Typically included via `CommandoPool.allocateCommando()`.
  */
@@ -36,15 +36,15 @@ export class Commando_Basic
 
 	/**
 	 * Changes directory and optionally executes commands in that directory.
-	 * 
+	 *
 	 * **Behavior**:
 	 * - Changes to the specified directory
 	 * - Increases indentation (for script readability)
 	 * - If `toRun` provided, executes the block and returns to previous directory
 	 * - If `toRun` not provided, caller must call `cd_()` to return
-	 * 
+	 *
 	 * **Note**: Uses `cd -` to return to previous directory (OLDPWD).
-	 * 
+	 *
 	 * @param folderName - Directory path to change to
 	 * @param toRun - Optional command block to execute in the directory
 	 * @returns This instance for method chaining
@@ -63,10 +63,10 @@ export class Commando_Basic
 
 	/**
 	 * Appends a custom command string.
-	 * 
+	 *
 	 * Allows adding arbitrary shell commands that aren't covered by
 	 * the built-in methods.
-	 * 
+	 *
 	 * @param command - Custom shell command to append
 	 * @returns This instance for method chaining
 	 */
@@ -97,9 +97,9 @@ export class Commando_Basic
 
 	/**
 	 * Creates a directory (with parent directories if needed).
-	 * 
+	 *
 	 * Uses `mkdir -p` to create directory and all parent directories.
-	 * 
+	 *
 	 * @param dirName - Directory path to create
 	 * @returns This instance for method chaining
 	 */
@@ -110,7 +110,7 @@ export class Commando_Basic
 
 	/**
 	 * Removes a file or directory.
-	 * 
+	 *
 	 * @param dirPath - Path to remove
 	 * @param options - Optional force flag
 	 * @returns This instance for method chaining
@@ -126,7 +126,7 @@ export class Commando_Basic
 
 	/**
 	 * Removes a directory recursively.
-	 * 
+	 *
 	 * @param dirPath - Directory path to remove
 	 * @param options - Optional force flag
 	 * @returns This instance for method chaining
@@ -142,7 +142,7 @@ export class Commando_Basic
 
 	/**
 	 * Copies a directory.
-	 * 
+	 *
 	 * @param srcPath - Source directory path
 	 * @param destPath - Destination directory path
 	 * @param options - Optional contentOnly flag (copies contents, not directory itself)
@@ -160,7 +160,7 @@ export class Commando_Basic
 
 	/**
 	 * Displays file contents.
-	 * 
+	 *
 	 * @param fileName - File path to display
 	 * @returns This instance for method chaining
 	 */
@@ -171,15 +171,15 @@ export class Commando_Basic
 
 	/**
 	 * Echoes text with optional escape sequences and file output.
-	 * 
+	 *
 	 * **Escape Sequences**: When `escape` is true, enables interpretation
 	 * of backslash escapes (e.g., `\n`, `\t`).
-	 * 
+	 *
 	 * **File Output**: Can append or overwrite to a file.
-	 * 
+	 *
 	 * **Escaping**: Automatically escapes backslashes, newlines, and tabs
 	 * in the log string for safe shell execution.
-	 * 
+	 *
 	 * @param log - Text to echo
 	 * @param options - Optional echo configuration
 	 * @returns This instance for method chaining
@@ -204,9 +204,9 @@ export class Commando_Basic
 
 	/**
 	 * Assigns a value to a shell variable (array or scalar).
-	 * 
+	 *
 	 * Creates a bash array if value is an array, otherwise creates a scalar variable.
-	 * 
+	 *
 	 * @param varName - Variable name
 	 * @param value - Value(s) to assign (string or array of strings)
 	 * @returns This instance for method chaining

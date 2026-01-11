@@ -5,16 +5,16 @@ import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
 
 /**
  * Mapper for discovering root NodeProject unit.
- * 
+ *
  * **Discovery Criteria**:
  * - Must have `package.json` with `unitConfig.type === 'node-project'`
  * - Typically the monorepo root
- * 
+ *
  * **Unit Creation**:
  * - Creates `Unit_NodeProject` instance
  * - Marks as root and top-level app
  * - Enables hot reload
- * 
+ *
  * **Usage**: Automatically registered by `BuildAndInstall.prepareUnitsMapper()`.
  * There should typically be only one NodeProject unit per workspace.
  */
@@ -32,7 +32,7 @@ export class UnitMapper_NodeProject_Class
 
 	/**
 	 * Creates a Unit_NodeProject instance from resolved context.
-	 * 
+	 *
 	 * @param context - Resolved node unit context
 	 * @returns Unit_NodeProject instance
 	 */

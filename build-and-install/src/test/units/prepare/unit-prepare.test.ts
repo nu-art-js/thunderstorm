@@ -11,7 +11,7 @@ import {FilesCache} from '../../../main/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {sleep} from '@nu-art/ts-common';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
-import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 const dirname = ___dirname(import.meta.url);
 

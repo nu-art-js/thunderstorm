@@ -12,12 +12,12 @@ const DefaultVenvFolder = '.venv';
 
 /**
  * Python 3 plugin for Commando.
- * 
+ *
  * Provides Python virtual environment operations:
  * - Create virtual environments
  * - Activate virtual environments
  * - Install requirements from requirements.txt
- * 
+ *
  * Extends Commando_Programming and Commando_Basic (merged).
  */
 export class Commando_Python3
@@ -25,9 +25,9 @@ export class Commando_Python3
 
 	/**
 	 * Activates a Python virtual environment.
-	 * 
+	 *
 	 * Sources the activation script for the virtual environment.
-	 * 
+	 *
 	 * @param venvFolder - Virtual environment folder path (default: '.venv')
 	 * @returns This instance for method chaining
 	 */
@@ -39,7 +39,7 @@ export class Commando_Python3
 
 	/**
 	 * Creates a Python virtual environment.
-	 * 
+	 *
 	 * @param venvFolder - Virtual environment folder path (default: '.venv')
 	 * @returns This instance for method chaining
 	 * @throws Exception if virtual environment creation fails
@@ -55,7 +55,7 @@ export class Commando_Python3
 
 	/**
 	 * Installs Python packages from a requirements file.
-	 * 
+	 *
 	 * @param pathToRequirementsFile - Path to requirements.txt file (default: './requirements.txt')
 	 * @returns This instance for method chaining
 	 */

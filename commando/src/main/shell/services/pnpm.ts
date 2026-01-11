@@ -6,10 +6,10 @@ import {Commando_PNPM} from '../plugins/pnpm.js';
 
 /**
  * PNPM package manager service for managing PNPM installations.
- * 
+ *
  * Handles installation, version management, and package operations.
  * Works with Commando_PNPM plugin to execute PNPM commands.
- * 
+ *
  * **Features**:
  * - Install/uninstall PNPM
  * - Version management
@@ -45,10 +45,10 @@ export class Cli_PNPM
 
 	/**
 	 * Installs PNPM with the expected version.
-	 * 
+	 *
 	 * Checks if PNPM is already installed with the expected version.
 	 * Uninstalls and reinstalls if version mismatch.
-	 * 
+	 *
 	 * @param commando - Commando_PNPM instance to use for installation
 	 * @returns This instance for method chaining
 	 */
@@ -69,18 +69,18 @@ export class Cli_PNPM
 
 	/**
 	 * Checks if PNPM is installed.
-	 * 
+	 *
 	 * Verifies environment variable is set.
-	 * 
+	 *
 	 * @returns True if PNPM_HOME environment variable is set
 	 */
 	isInstalled = () => !!process.env[this._homeEnvVar];
 
 	/**
 	 * Installs packages using PNPM.
-	 * 
+	 *
 	 * Delegates to Commando_PNPM.installPackages().
-	 * 
+	 *
 	 * @param commando - Commando_PNPM instance to use
 	 * @returns Promise that resolves when packages are installed
 	 */
@@ -90,7 +90,7 @@ export class Cli_PNPM
 
 	/**
 	 * Uninstalls PNPM by removing its home directory.
-	 * 
+	 *
 	 * @returns Promise that resolves when uninstall completes
 	 */
 	uninstall = async () => {

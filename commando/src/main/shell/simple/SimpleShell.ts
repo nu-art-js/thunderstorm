@@ -12,7 +12,7 @@ export type CliOptions = ExecOptions & {
 
 /**
  * Converts input to string, handling Buffer and ArrayBufferLike types.
- * 
+ *
  * @param input - String, Buffer, or ArrayBufferLike to convert
  * @returns UTF-8 string representation
  */
@@ -27,10 +27,10 @@ function toStringWithNewlines(input: string | Buffer<ArrayBufferLike>): string {
 
 /**
  * Simple shell command executor using Node.js child_process.
- * 
+ *
  * Executes shell commands synchronously via `exec()` and handles
  * output conversion. Supports debug logging and custom shell/options.
- * 
+ *
  * **Behavior**:
  * - Uses `/bin/bash` as default shell
  * - Converts Buffer output to UTF-8 strings
@@ -48,13 +48,13 @@ export class SimpleShell
 
 	/**
 	 * Executes a shell command and returns stdout/stderr.
-	 * 
+	 *
 	 * **Behavior**:
 	 * - Logs command in debug mode (wrapped in triple quotes)
 	 * - Converts Buffer output to UTF-8 strings
 	 * - Logs stdout as info, stderr as error
 	 * - Throws CliError if command fails (non-zero exit code)
-	 * 
+	 *
 	 * @param command - Shell command string to execute
 	 * @returns Promise resolving to stdout and stderr strings
 	 * @throws CliError if command execution fails
@@ -75,7 +75,7 @@ export class SimpleShell
 				if (stderr)
 					this.logError(stderr);
 
-				resolve({stdout:toStringWithNewlines(stdout), stderr:toStringWithNewlines(stderr)});
+				resolve({stdout: toStringWithNewlines(stdout), stderr: toStringWithNewlines(stderr)});
 			});
 		});
 	};

@@ -20,6 +20,7 @@ export type TsConfigCompilerOptions = {
 	allowSyntheticDefaultImports?: boolean;
 	noUnusedLocals?: boolean;
 	strict?: boolean;
+	types?: string[];
 	paths?: TypedMap<string[]>;
 	baseUrl?: string;
 	rootDir?: string;

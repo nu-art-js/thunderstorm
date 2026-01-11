@@ -1,5 +1,13 @@
 import {UnitPhaseImplementor} from '../../../core/types.js';
-import {CONST_BuildImageDir, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_LatestTag, CONST_PackageJSON, CONST_TrashDir, CONST_VersionApp} from '../../../config/consts.js';
+import {
+	CONST_BuildImageDir,
+	CONST_FirebaseJSON,
+	CONST_FirebaseRC,
+	CONST_LatestTag,
+	CONST_PackageJSON,
+	CONST_TrashDir,
+	CONST_VersionApp
+} from '../../../config/consts.js';
 import {FirebasePackageConfig} from '../../../config/types/index.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
@@ -689,7 +697,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 			// Build Cloud Run service YAML definition using template
 			const resources = functionConfig.resources;
-			
+
 			// Generate environment variables as YAML array
 			// Indentation: 8 spaces for list item, 10 spaces for value (under env: which is at 8 spaces)
 			const envVarsYaml = Object.entries(envVars)
@@ -710,10 +718,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 			// Build template parameters
 			// Convert cpu to string if it's a number
-			const cpuValue = resources?.cpu !== undefined 
+			const cpuValue = resources?.cpu !== undefined
 				? (typeof resources.cpu === 'number' ? resources.cpu.toString() : resources.cpu)
 				: '1';
-			
+
 			const serviceYamlParams = {
 				SERVICE_NAME: serviceName,
 				FUNCTION_NAME: functionName,

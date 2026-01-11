@@ -2,7 +2,8 @@
 
 ## Overview
 
-This is a fully isolated, self-contained test environment for manually testing container image build and deployment for Firebase Functions. It is completely decoupled from the BAI build system and can be used independently to experiment with container deployment configurations.
+This is a fully isolated, self-contained test environment for manually testing container image build and deployment for Firebase Functions. It is completely
+decoupled from the BAI build system and can be used independently to experiment with container deployment configurations.
 
 ## Prerequisites
 
@@ -16,11 +17,11 @@ Before using this test environment, ensure you have:
    ```
 
 2. **Required GCP APIs enabled**
-   - Cloud Build API (`cloudbuild.googleapis.com`)
-   - Artifact Registry API (`artifactregistry.googleapis.com`)
-   - Cloud Run API (`run.googleapis.com`)
-   - Cloud Functions API (`cloudfunctions.googleapis.com`)
-   
+    - Cloud Build API (`cloudbuild.googleapis.com`)
+    - Artifact Registry API (`artifactregistry.googleapis.com`)
+    - Cloud Run API (`run.googleapis.com`)
+    - Cloud Functions API (`cloudfunctions.googleapis.com`)
+
    Enable them with:
    ```bash
    gcloud services enable cloudbuild.googleapis.com
@@ -38,10 +39,10 @@ Before using this test environment, ensure you have:
    ```
 
 4. **Required IAM permissions**
-   - Cloud Build Service Account: `PROJECT_NUMBER@cloudbuild.gserviceaccount.com`
-   - Artifact Registry Writer
-   - Cloud Run Admin
-   - Service Account User
+    - Cloud Build Service Account: `PROJECT_NUMBER@cloudbuild.gserviceaccount.com`
+    - Artifact Registry Writer
+    - Cloud Run Admin
+    - Service Account User
 
 ## Quick Start
 
@@ -84,24 +85,26 @@ All configuration is centralized in `config/test-config.env`. Source this file i
 
 ### Configuration Parameters
 
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `GCP_PROJECT_ID` | Your GCP project ID | `nu-art-thunderstorm-test` |
-| `ARTIFACT_REGISTRY_REGION` | Region for Artifact Registry | `us-central1` |
-| `ARTIFACT_REGISTRY_REPOSITORY` | Repository name in Artifact Registry | `firebase-functions` |
-| `IMAGE_NAME` | Docker image name (must match Artifact Registry naming) | `manual-test-function` |
-| `IMAGE_TAG` | Image tag/version | `v1.0.0` or `latest` |
-| `DEPLOY_REGION` | Region for function deployment | `us-central1` |
-| `FUNCTION_NAMES` | Comma-separated list of function names | `manual_hello,manual_goodbye` |
+| Parameter                      | Description                                             | Example                       |
+|--------------------------------|---------------------------------------------------------|-------------------------------|
+| `GCP_PROJECT_ID`               | Your GCP project ID                                     | `nu-art-thunderstorm-test`    |
+| `ARTIFACT_REGISTRY_REGION`     | Region for Artifact Registry                            | `us-central1`                 |
+| `ARTIFACT_REGISTRY_REPOSITORY` | Repository name in Artifact Registry                    | `firebase-functions`          |
+| `IMAGE_NAME`                   | Docker image name (must match Artifact Registry naming) | `manual-test-function`        |
+| `IMAGE_TAG`                    | Image tag/version                                       | `v1.0.0` or `latest`          |
+| `DEPLOY_REGION`                | Region for function deployment                          | `us-central1`                 |
+| `FUNCTION_NAMES`               | Comma-separated list of function names                  | `manual_hello,manual_goodbye` |
 
 ### Image Reference Format
 
 The full image reference is constructed as:
+
 ```
 {ARTIFACT_REGISTRY_REGION}-docker.pkg.dev/{GCP_PROJECT_ID}/{ARTIFACT_REGISTRY_REPOSITORY}/{IMAGE_NAME}:{IMAGE_TAG}
 ```
 
 Example:
+
 ```
 us-central1-docker.pkg.dev/nu-art-thunderstorm-test/firebase-functions/manual-test-function:latest
 ```
@@ -113,18 +116,21 @@ us-central1-docker.pkg.dev/nu-art-thunderstorm-test/firebase-functions/manual-te
 **Script**: `scripts/build-image.sh`
 
 **What it does**:
+
 - Compiles TypeScript source code
 - Builds Docker image using Cloud Build
 - Tags image with both specified tag and `latest`
 - Pushes to Artifact Registry
 
 **Expected Results**:
+
 - TypeScript compilation succeeds
 - Docker image built successfully
 - Image pushed to Artifact Registry with tags: `{IMAGE_TAG}` and `latest`
 - Output shows image reference
 
 **Manual Command**:
+
 ```bash
 cd test-function
 npm run build
@@ -141,6 +147,7 @@ gcloud builds submit \
 **Script**: `scripts/deploy-function.sh <function-name>`
 
 **What it does**:
+
 - Validates image exists in Artifact Registry
 - Deploys function using `gcloud run deploy`
 - Sets `FUNCTION_TARGET` environment variable
@@ -148,12 +155,14 @@ gcloud builds submit \
 - Outputs function URL
 
 **Expected Results**:
+
 - Function deployed successfully
 - Function URL displayed in output
 - Function accessible via HTTP
 - `FUNCTION_TARGET` environment variable set correctly
 
 **Manual Command**:
+
 ```bash
 gcloud run deploy ${FUNCTION_NAME} \
   --image=${IMAGE_REFERENCE} \
@@ -167,16 +176,19 @@ gcloud run deploy ${FUNCTION_NAME} \
 ### 3. Test Function
 
 **What to do**:
+
 - Use the function URL from deployment output
 - Make HTTP request to the function
 - Verify response contains expected JSON
 
 **Expected Results**:
+
 - HTTP 200 response
 - JSON response with function data
 - Response includes deployment ID or other identifying information
 
 **Manual Command**:
+
 ```bash
 curl https://${FUNCTION_NAME}-XXXXX-${REGION}.a.run.app
 ```
@@ -186,14 +198,17 @@ curl https://${FUNCTION_NAME}-XXXXX-${REGION}.a.run.app
 **Script**: `scripts/delete-function.sh <function-name>`
 
 **What it does**:
+
 - Deletes the Cloud Run service (function)
 - Handles errors gracefully if function doesn't exist
 
 **Expected Results**:
+
 - Function deleted successfully
 - No error if function already deleted
 
 **Manual Command**:
+
 ```bash
 gcloud run services delete ${FUNCTION_NAME} \
   --region=${DEPLOY_REGION} \
@@ -204,6 +219,7 @@ gcloud run services delete ${FUNCTION_NAME} \
 ## Expected Results
 
 ### Build Phase
+
 - ✅ TypeScript compiles without errors
 - ✅ Docker image builds successfully
 - ✅ Image tagged with both `{IMAGE_TAG}` and `latest`
@@ -211,17 +227,20 @@ gcloud run services delete ${FUNCTION_NAME} \
 - ✅ Image reference output: `{REGION}-docker.pkg.dev/{PROJECT}/{REPO}/{IMAGE}:{TAG}`
 
 ### Deploy Phase
+
 - ✅ Function deployed to Cloud Run
 - ✅ Function URL generated: `https://{FUNCTION}-{HASH}-{REGION}.a.run.app`
 - ✅ `FUNCTION_TARGET` environment variable set
 - ✅ Function accessible without authentication
 
 ### Test Phase
+
 - ✅ HTTP request returns 200 OK
 - ✅ Response contains expected JSON structure
 - ✅ Function executes correctly
 
 ### Delete Phase
+
 - ✅ Function removed from Cloud Run
 - ✅ No resources remaining
 
@@ -232,6 +251,7 @@ gcloud run services delete ${FUNCTION_NAME} \
 **Error**: `The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable`
 
 **Solutions**:
+
 1. Verify Dockerfile uses `functions-framework` correctly
 2. Check that `FUNCTION_TARGET` is set correctly
 3. Ensure the function is exported in `dist/index.js`
@@ -242,6 +262,7 @@ gcloud run services delete ${FUNCTION_NAME} \
 **Error**: `Image not found in Artifact Registry`
 
 **Solutions**:
+
 1. Verify image was built and pushed successfully
 2. Check image reference format matches exactly
 3. Verify you have read permissions on Artifact Registry
@@ -252,6 +273,7 @@ gcloud run services delete ${FUNCTION_NAME} \
 **Error**: `Build failed` or `Permission denied`
 
 **Solutions**:
+
 1. Verify Cloud Build API is enabled
 2. Check Cloud Build service account has Artifact Registry Writer role
 3. Verify Dockerfile path is correct
@@ -262,6 +284,7 @@ gcloud run services delete ${FUNCTION_NAME} \
 **Error**: `403 Forbidden` or connection timeout
 
 **Solutions**:
+
 1. Verify `--allow-unauthenticated` flag was used
 2. Check IAM permissions on Cloud Run service
 3. Verify function is deployed in the correct region
@@ -270,6 +293,7 @@ gcloud run services delete ${FUNCTION_NAME} \
 ## Manual Commands Reference
 
 ### Build Image
+
 ```bash
 # Load config
 source config/test-config.env
@@ -292,6 +316,7 @@ gcloud builds submit \
 ```
 
 ### Deploy Function
+
 ```bash
 # Load config
 source config/test-config.env
@@ -310,6 +335,7 @@ gcloud run deploy ${FUNCTION_NAME} \
 ```
 
 ### Delete Function
+
 ```bash
 # Load config
 source config/test-config.env
@@ -322,6 +348,7 @@ gcloud run services delete ${FUNCTION_NAME} \
 ```
 
 ### Verify Image Exists
+
 ```bash
 gcloud artifacts docker images list \
   ${ARTIFACT_REGISTRY_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPOSITORY}/${IMAGE_NAME} \
@@ -329,6 +356,7 @@ gcloud artifacts docker images list \
 ```
 
 ### View Function Logs
+
 ```bash
 gcloud run services logs read ${FUNCTION_NAME} \
   --region=${DEPLOY_REGION} \
@@ -340,6 +368,7 @@ gcloud run services logs read ${FUNCTION_NAME} \
 All parameters used in scripts and commands:
 
 ### Environment Variables (from config/test-config.env)
+
 - `GCP_PROJECT_ID`: GCP project ID
 - `ARTIFACT_REGISTRY_REGION`: Region for Artifact Registry (e.g., `us-central1`)
 - `ARTIFACT_REGISTRY_REPOSITORY`: Repository name in Artifact Registry
@@ -349,10 +378,12 @@ All parameters used in scripts and commands:
 - `FUNCTION_NAMES`: Comma-separated list of function names (e.g., `manual_hello,manual_goodbye`)
 
 ### Derived Variables
+
 - `IMAGE_REFERENCE`: Full image reference constructed from above variables
 - `FUNCTION_TARGET`: Environment variable set during deployment to specify which function to invoke
 
 ### gcloud Command Flags
+
 - `--gen2`: Use Cloud Functions Gen2 (not used with gcloud run deploy)
 - `--region`: Region for deployment
 - `--platform=managed`: Use fully managed Cloud Run

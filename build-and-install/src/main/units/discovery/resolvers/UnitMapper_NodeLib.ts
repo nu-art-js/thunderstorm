@@ -6,18 +6,18 @@ import {resolve} from 'path';
 
 /**
  * Mapper for discovering TypeScript library units.
- * 
+ *
  * **Discovery Criteria**:
  * - Must have `package.json` with `unitConfig.type === 'typescript-lib'`
  * - Must have `publishConfig.directory` (output directory)
  * - Must have TypeScript source files
- * 
+ *
  * **Unit Creation**:
  * - Creates `Unit_TypescriptLib` instance
  * - Configures output directory from `publishConfig.directory`
  * - Sets hot reload flag from `unitConfig.hasSelfHotReload`
  * - Detects custom ESLint/TSConfig files
- * 
+ *
  * **Usage**: Automatically registered by `BuildAndInstall.prepareUnitsMapper()`.
  */
 export class UnitMapper_NodeLib_Class
@@ -34,7 +34,7 @@ export class UnitMapper_NodeLib_Class
 
 	/**
 	 * Creates a Unit_TypescriptLib instance from resolved context.
-	 * 
+	 *
 	 * @param context - Resolved node unit context
 	 * @returns Unit_TypescriptLib instance
 	 * @throws BadImplementationException if publishConfig.directory is missing

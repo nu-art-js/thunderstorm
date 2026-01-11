@@ -10,7 +10,7 @@ import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {sleep} from '@nu-art/ts-common';
-import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
+import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 const dirname = ___dirname(import.meta.url);
 

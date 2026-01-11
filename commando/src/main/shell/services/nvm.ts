@@ -9,10 +9,10 @@ const CONST__FILE_NVMRC = '.nvmrc';
 
 /**
  * NVM (Node Version Manager) service for managing Node.js installations.
- * 
+ *
  * Handles installation, version management, and configuration of NVM.
  * Works with Commando_NVM plugin to execute NVM commands.
- * 
+ *
  * **Features**:
  * - Install/uninstall NVM
  * - Configure shell RC files (.bashrc, .zshrc)
@@ -48,14 +48,14 @@ export class Cli_NVM
 
 	/**
 	 * Installs NVM and configures shell RC files.
-	 * 
+	 *
 	 * **Behavior**:
 	 * - Checks if NVM is already installed with expected version
 	 * - Uninstalls if version mismatch
 	 * - Installs NVM via Commando_NVM
 	 * - Configures .bashrc with NVM initialization (if not already present)
-	 * 
-	 * 
+	 *
+	 *
 	 * @param commando - Commando_NVM instance to use for installation
 	 * @returns This instance for method chaining
 	 */
@@ -93,16 +93,16 @@ export class Cli_NVM
 
 	/**
 	 * Checks if NVM is installed.
-	 * 
+	 *
 	 * Verifies both environment variable and directory existence.
-	 * 
+	 *
 	 * @returns True if NVM is installed
 	 */
 	isInstalled = () => !!process.env[this._homeEnvVar] && fs.existsSync(process.env[this._homeEnvVar]!);
 
 	/**
 	 * Reads the required Node.js version from .nvmrc file.
-	 * 
+	 *
 	 * @returns Promise resolving to version string from .nvmrc
 	 * @throws Error if .nvmrc file doesn't exist
 	 */
@@ -117,9 +117,9 @@ export class Cli_NVM
 
 	/**
 	 * Installs required Node.js version if not already installed.
-	 * 
+	 *
 	 * Reads .nvmrc, checks installed versions, and installs if missing.
-	 * 
+	 *
 	 * @param commando - Commando_NVM instance to use
 	 * @returns True if version was installed, false if already present
 	 */
@@ -136,7 +136,7 @@ export class Cli_NVM
 
 	/**
 	 * Uninstalls NVM by removing its directory.
-	 * 
+	 *
 	 * @returns Promise that resolves when uninstall completes
 	 */
 	uninstall = async () => {
@@ -150,7 +150,7 @@ export class Cli_NVM
 
 	/**
 	 * Installs a specific Node.js version via NVM.
-	 * 
+	 *
 	 * @param commando - Commando_NVM instance to use
 	 * @param requiredVersion - Optional version (defaults to .nvmrc value)
 	 * @returns Promise that resolves when installation completes

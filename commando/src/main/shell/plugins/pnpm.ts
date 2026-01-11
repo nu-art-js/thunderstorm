@@ -9,12 +9,12 @@ const Super = MergeClass(BaseCommando, Commando_Programming, Commando_Basic, Com
 
 /**
  * PNPM package manager plugin for Commando.
- * 
+ *
  * Provides PNPM operations:
  * - Install PNPM
  * - Get PNPM version
  * - Install packages (with store prune and force flags)
- * 
+ *
  * Extends Commando_NVM, Commando_Programming, and Commando_Basic (merged).
  * Requires NVM for Node.js version management.
  */
@@ -23,9 +23,9 @@ export class Commando_PNPM
 
 	/**
 	 * Installs packages using PNPM.
-	 * 
+	 *
 	 * Prunes the store, then installs with force flag and no frozen lockfile.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	async installPackages() {
@@ -39,7 +39,7 @@ export class Commando_PNPM
 
 	/**
 	 * Installs PNPM by downloading and executing the install script.
-	 * 
+	 *
 	 * @param version - PNPM version to install
 	 * @returns This instance for method chaining
 	 */
@@ -53,9 +53,9 @@ export class Commando_PNPM
 
 	/**
 	 * Gets the installed PNPM version.
-	 * 
+	 *
 	 * Only executes if PNPM is available (checks with `command -v pnpm`).
-	 * 
+	 *
 	 * @returns Promise resolving to PNPM version string (trimmed)
 	 */
 	async getVersion() {

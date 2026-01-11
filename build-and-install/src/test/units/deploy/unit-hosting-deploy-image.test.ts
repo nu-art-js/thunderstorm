@@ -162,7 +162,7 @@ describe('Firebase Deploy Hosting Phase', () => {
 			hostingUnit.logDebug('=== Verifying hosting URLs were captured ===');
 			expect(hostingUnit.hosting).to.exist;
 			expect(Object.keys(hostingUnit.hosting).length).to.be.greaterThan(0);
-			
+
 			const hostingUrl = Object.keys(hostingUnit.hosting)[0];
 			expect(hostingUrl).to.include('https://');
 
@@ -171,7 +171,7 @@ describe('Firebase Deploy Hosting Phase', () => {
 			const deployTempDir = resolve(hostingUnit.config.fullPath, `${CONST_TrashDir}/${CONST_DeployHostingDir}`);
 			const metadataPath = resolve(deployTempDir, CONST_DeploymentMetadata);
 			expect(existsSync(metadataPath)).to.be.true;
-			
+
 			const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
 			const deploymentId = metadata[CONST_DeploymentId];
 			expect(deploymentId).to.exist;
@@ -183,7 +183,7 @@ describe('Firebase Deploy Hosting Phase', () => {
 			expect(response.ok).to.be.true;
 			const htmlContent = await response.text();
 			expect(htmlContent).to.include('Hello World');
-			
+
 			// Verify deployment-id in deployed HTML matches tarball metadata
 			expect(htmlContent).to.include(`Deployment ID: ${deploymentId}`);
 			hostingUnit.logDebug(`=== Deployment ID verified in deployed app: ${deploymentId} ===`);

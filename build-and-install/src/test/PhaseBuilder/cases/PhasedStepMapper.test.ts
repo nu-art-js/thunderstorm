@@ -1,7 +1,6 @@
 import {TestModel} from '@nu-art/ts-common/testing/types';
-import {BaiParams, BaseUnit, ExecutionStep, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
+import {BaiParams, BaseUnit, ExecutionStep, Phase, PhaseManager, RunningStatusHandler, ScheduledStep} from '../../_common.js';
 import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {RunningStatusHandler} from '../../_common.js';
 import {flatArray} from '@nu-art/ts-common';
 
 // test input type

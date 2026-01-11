@@ -21,7 +21,7 @@ import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {resolve} from 'path';
 import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {PhaseManager} from '../../phases/PhaseManager.js';
-import {phase_CompileWatch, Phase_Install, Phase_IndicesMcpServer, Phase_PostPublish, Phase_Watch} from '../../phases/definitions/index.js';
+import {phase_CompileWatch, Phase_IndicesMcpServer, Phase_Install, Phase_PostPublish, Phase_Watch} from '../../phases/definitions/index.js';
 import {UnitsDependencyMapper} from '../../dependencies/UnitsDependencyMapper.js';
 import {BaseUnit} from '../base/BaseUnit.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';
@@ -46,24 +46,24 @@ type PathDeclaration = { fullPath: string, paths: string[], unit: Unit_Typescrip
 
 /**
  * Root project unit representing the entire monorepo/workspace.
- * 
+ *
  * **Key Responsibilities**:
  * - Manages child units (all packages in workspace)
  * - Handles workspace-level operations (install, watch)
  * - Creates PNPM workspace configuration
  * - Manages file watching for hot reload
- * 
+ *
  * **Phases Implemented**:
  * - `install()`: Installs all packages using PNPM workspace
  * - `watch()`: Watches file changes and triggers incremental compilation
  * - `postPublish()`: Post-publish operations
- * 
+ *
  * **Watch Mode**:
  * - Watches TypeScript, SCSS, JSON, SVG files in all child units
  * - Uses chokidar for file watching
  * - Debounces changes and compiles affected units in dependency order
  * - Supports hot reload for units with `hasSelfHotReload` flag
- * 
+ *
  * **Workspace Management**:
  * - Creates `pnpm-workspace.yaml` with all child unit paths
  * - Manages global packages installation

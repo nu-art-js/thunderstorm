@@ -9,7 +9,7 @@ steps:
       - '{{IMAGE_REFERENCE_LATEST}}'
       - '-f'
       - '{{DOCKERFILE_PATH}}'
-{{LABELS}}
+  {{LABELS}}
       - '.'
 images:
   - '{{IMAGE_REFERENCE}}'

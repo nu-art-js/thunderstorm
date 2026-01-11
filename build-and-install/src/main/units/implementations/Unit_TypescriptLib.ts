@@ -610,6 +610,42 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		}, {} as TypedMap<string[]>);
 	}
 
+	/**
+	 * Extracts @types/* package names from dependencies and devDependencies.
+	 * Includes both the current package and the root project's @types dependencies.
+	 * Maps @types/package-name to package-name for the types array.
+	 *
+	 * @returns Array of type names (without @types/ prefix), sorted alphabetically
+	 */
+	protected deriveTypesFromPackageJson(): string[] {
+		const types = new Set<string>();
+
+		// Helper function to extract @types from a package.json dependencies object
+		const extractTypesFromDeps = (deps: Record<string, string> | undefined) => {
+			if (!deps) return;
+			for (const depName of Object.keys(deps)) {
+				if (depName.startsWith('@types/')) {
+					// Extract type name: @types/node -> node, @types/react-dom -> react-dom
+					const typeName = depName.substring(7); // Remove '@types/' prefix
+					types.add(typeName);
+				}
+			}
+		};
+
+		// Check current package's dependencies
+		extractTypesFromDeps(this.config.packageJson.dependencies);
+		extractTypesFromDeps(this.config.packageJson.devDependencies);
+
+		// Check root project's dependencies (parentUnit is Unit_NodeProject which extends Unit_PackageJson)
+		const parentUnit = this.runtimeContext.parentUnit as Unit_PackageJson;
+		if (parentUnit?.config?.packageJson) {
+			extractTypesFromDeps(parentUnit.config.packageJson.dependencies);
+			extractTypesFromDeps(parentUnit.config.packageJson.devDependencies);
+		}
+
+		// Return sorted array for consistent output
+		return Array.from(types).sort();
+	}
 
 	protected async resolveTSConfig(srcFolder: string, sourceFolderType: string, tsConfigOverride?: RecursivePartial<TsConfig>) {
 		const entryPath = pathResolve(srcFolder, sourceFolderType);
@@ -636,10 +672,12 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			const templateConfig = await FileSystemUtils.file.read.json<TsConfig>(projectDefaultTsConfig);
 
 			// Build the override config with conditional sourceMap settings
+			const derivedTypes = this.deriveTypesFromPackageJson();
 			const overrideConfig: RecursivePartial<TsConfig> = {
 				...tsConfigOverride,
 				compilerOptions: {
 					...tsConfigOverride?.compilerOptions,
+					...(derivedTypes.length > 0 ? {types: derivedTypes} : {}),
 					...(this.runtimeContext.runtimeParams.publish ? {} : {
 						sourceMap: true,
 						sourceRoot: entryPath
