@@ -21,7 +21,7 @@
 
 import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {ModuleFE_XHR} from '../http/ModuleFE_XHR.js';
+import {ModuleFE_XHR} from '../../../../../../http-infra/frontend/src/main/ModuleFE_XHR.js';
 import {ModuleFE_RoutingV2} from '../routing/ModuleFE_RoutingV2.js';
 import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '@nu-art/thunderstorm-shared';
 

@@ -26,7 +26,7 @@ import {
 	Response_BackupDocs,
 	Response_FetchBackupMetadata
 } from '@nu-art/thunderstorm-shared';
-import {AxiosHttpModule} from '../http/AxiosHttpModule.js';
+import {AxiosHttpModule} from '../../../../../../http-infra/backend/src/main/AxiosHttpModule.js';
 import {MemKey_HttpRequest} from '../server/consts.js';
 import {ModuleBE_BaseApi_Class} from '../db-api-gen/ModuleBE_BaseApi.js';
 import {Storm} from '../../core/Storm.js';

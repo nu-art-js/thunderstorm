@@ -29,11 +29,11 @@ import {
 	Minute,
 	ModuleManager
 } from '@nu-art/ts-common';
-import {HttpMethod, TypedApi} from './types.js';
-import {HttpException, TS_Progress} from './request-types.js';
+import {HttpMethod, TypedApi} from '@nu-art/thunderstorm-shared/src/main/types';
+import {HttpException, TS_Progress} from '@nu-art/thunderstorm-shared/src/main/request-types';
 import {ApiErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
-import {dispatcher_onAuthRequired} from './no-auth-listener.js';
-import {DefaultHttpServerConfig} from './consts.js';
+import {dispatcher_onAuthRequired} from '@nu-art/thunderstorm-shared/src/main/no-auth-listener';
+import {DefaultHttpServerConfig} from '@nu-art/thunderstorm-shared/src/main/consts';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 
 

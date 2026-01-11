@@ -127,7 +127,7 @@ export * from './modules/ModuleFE_Print.js';
 export * from './modules/clearWebsiteDataDispatcher.js';
 export * from './modules/ModuleFE_BaseTheme.js';
 export * from './modules/routing/index.js';
-export * from './modules/http/ModuleFE_XHR.js';
+export * from '../../../../http-infra/frontend/src/main/ModuleFE_XHR.js';
 export * from './modules/action-processor/ModuleFE_ActionProcessor.js';
 export * from './modules/component-loader/index.js';
 export * from './modules/ModuleFE_StorageCleaner.js';

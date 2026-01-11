@@ -20,7 +20,7 @@
  */
 
 import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi} from '@nu-art/thunderstorm-shared';
-import {ModuleFE_XHR} from '../modules/http/ModuleFE_XHR.js';
+import {ModuleFE_XHR} from '../../../../../http-infra/frontend/src/main/ModuleFE_XHR.js';
 
 
 type ApiQueryReturnType<API extends QueryApi<any, any, any, any, HttpMethod_Query>> = API['P'] extends undefined ? () => BaseHttpRequest<API> : (params: API['P']) => BaseHttpRequest<API>

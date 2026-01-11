@@ -20,7 +20,7 @@
  */
 
 import {Dispatcher, Module} from '@nu-art/ts-common';
-import {ModuleFE_XHR} from './http/ModuleFE_XHR.js';
+import {ModuleFE_XHR} from '../../../../../http-infra/frontend/src/main/ModuleFE_XHR.js';
 import {
 	ApiDef,
 	ApiDef_ForceUpgrade,

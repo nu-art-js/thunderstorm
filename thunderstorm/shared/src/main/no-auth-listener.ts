@@ -1,4 +1,4 @@
-import {BaseHttpRequest} from './BaseHttpRequest.js';
+import {BaseHttpRequest} from '../../../../http-infra/shared/src/main/BaseHttpRequest.js';
 import {Dispatcher} from '@nu-art/ts-common';
 
 

@@ -24,8 +24,8 @@ export * from './request-types.js';
 export * from './force-upgrade.js';
 export * from './consts.js';
 export * from './server-info/index.js';
-export * from './BaseHttpRequest.js';
-export * from './BaseHttpModule.js';
+export * from '../../../../http-infra/shared/src/main/BaseHttpRequest.js';
+export * from '../../../../http-infra/shared/src/main/BaseHttpModule.js';
 //db-api-generator
 export * from './db-api-gen/apiV1.js';
 export * from './db-api-gen/apiV2.js';

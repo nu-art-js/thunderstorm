@@ -24,7 +24,7 @@ import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster.js';
 import {composeURL} from './routing/ModuleFE_RoutingV2.js';
 import {GenericUpdate, HttpMethod, QueryApi, UrlQueryParams} from '@nu-art/thunderstorm-shared';
 import {base64ToBlob} from '../utils/tools.js';
-import {ModuleFE_XHR} from './http/ModuleFE_XHR.js';
+import {ModuleFE_XHR} from '../../../../../http-infra/frontend/src/main/ModuleFE_XHR.js';
 import {dispatch_onClearWebsiteData} from './clearWebsiteDataDispatcher.js';
 import {ModuleFE_BaseApi} from './db-api-gen/ModuleFE_BaseApi.js';
 

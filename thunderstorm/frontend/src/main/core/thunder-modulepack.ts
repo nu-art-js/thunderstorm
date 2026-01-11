@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
 import {ModuleFE_Thunderstorm} from '../modules/ModuleFE_Thunderstorm.js';
-import {ModuleFE_XHR} from '../modules/http/ModuleFE_XHR.js';
+import {ModuleFE_XHR} from '../../../../../http-infra/frontend/src/main/ModuleFE_XHR.js';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster.js';
 import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog.js';
 import {ModuleFE_RoutingV2} from '../modules/routing/index.js';

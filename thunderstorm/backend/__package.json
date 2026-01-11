@@ -43,7 +43,6 @@
     "@nu-art/google-services-backend": "?",
     "@nu-art/ts-common": "?",
     "abort-controller": "^3.0.0",
-    "axios": "^1.13.1",
     "body-parser": "^1.19.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",

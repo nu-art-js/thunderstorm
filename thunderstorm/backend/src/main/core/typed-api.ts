@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {AxiosHttpModule} from '../modules/http/AxiosHttpModule.js';
+import {AxiosHttpModule} from '../../../../../http-infra/backend/src/main/AxiosHttpModule.js';
 import {_ServerBodyApi, _ServerQueryApi} from '../modules/server/server-api.js';
 import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi} from '@nu-art/thunderstorm-shared';
 import {ServerApi_Middleware} from '../utils/types.js';
