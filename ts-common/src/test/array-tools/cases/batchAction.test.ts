@@ -1,4 +1,5 @@
-import {batchAction, generateArray, runSingleTestCase, TestSuite} from '../../_main.js';
+import {batchAction, generateArray} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
@@ -7,8 +8,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any[];
-export type TestSuite_batchAction = TestSuite<Input, Result>;
-export type TestCase_batchAction = TestSuite_batchAction['testcases'][number];
+export type TestCase_batchAction = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return batchAction(input.array, input.chunk, input.action);

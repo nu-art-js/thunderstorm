@@ -1,12 +1,12 @@
-import {filterFalsy, runSingleTestCase, TestSuite} from '../../_main.js';
+import {filterFalsy} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
 };
 
 export type Result = any[];
-export type TestSuite_filterFalsy = TestSuite<Input, Result>;
-export type TestCase_filterFalsy = TestSuite_filterFalsy['testcases'][number];
+export type TestCase_filterFalsy = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return filterFalsy(input.array);

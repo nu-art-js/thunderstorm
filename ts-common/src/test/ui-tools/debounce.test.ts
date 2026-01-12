@@ -1,6 +1,5 @@
-import {TestSuite} from '../../main/testing/types.js';
 import {debounce, timeout} from '../../main/index.js';
-import {runSingleTestCase} from '../../main/testing/consts.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input = {
 	timer?: number;
@@ -8,8 +7,7 @@ export type Input = {
 };
 
 export type Result = { value: number };
-export type TestSuite_Debounce = TestSuite<Input, Result>;
-export type TestCase_Debounce = TestSuite_Debounce['testcases'][number];
+export type TestCase_Debounce = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	let counter = 0;

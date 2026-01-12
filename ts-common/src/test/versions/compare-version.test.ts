@@ -1,6 +1,5 @@
-import {TestSuite} from '../../main/testing/types.js';
 import {compareVersions} from '../../main/index.js';
-import {runSingleTestCase} from '../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input = {
 	firstVersion: string;
@@ -8,8 +7,7 @@ export type Input = {
 };
 
 export type Result = -1 | 0 | 1;
-export type TestSuite_CompareVersion = TestSuite<Input, Result>;
-export type TestCase_CompareVersion = TestSuite_CompareVersion['testcases'][number];
+export type TestCase_CompareVersion = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return compareVersions(input.firstVersion, input.secondVersion);

@@ -4,7 +4,7 @@ import {promises as fsp} from 'fs';
 import path, {resolve} from 'node:path';
 import assert from 'node:assert/strict';
 import {JSONCSVModule_Class} from '../../main/modules/JSONCSVModule.js';
-import {runSingleTestCase, TestSuite} from '../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {___dirname} from '../../main/esm.js';
 import {FileSystemUtils} from '../../main/utils/FileSystemUtils.js';
 
@@ -14,8 +14,7 @@ export type Input = {
 };
 
 export type Result = (args: { input: Input }) => Promise<void>;
-export type TestSuite_CSVWrite = TestSuite<Input, Result>;
-export type TestCase_CSVWrite = TestSuite_CSVWrite['testcases'][number];
+export type TestCase_CSVWrite = TestModel<Input, Result>;
 
 const headers: (keyof TestData)[] = ['id', 'name', 'optional', 'innerObject', 'innerArray', 'arrayOfObjects'];
 const testFilesDir = path.join(___dirname(import.meta.url), 'test-files');

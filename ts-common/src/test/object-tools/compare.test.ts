@@ -1,4 +1,5 @@
-import {compare, runSingleTestCase, TestSuite} from '../_main.js';
+import {compare} from '../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	one: any;
@@ -6,8 +7,7 @@ export type Input<T = any> = {
 };
 
 export type Result = boolean;
-export type TestSuite_compare = TestSuite<Input, Result>;
-export type TestCase_compare = TestSuite_compare['testcases'][number];
+export type TestCase_compare = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return compare(input.one, input.two);

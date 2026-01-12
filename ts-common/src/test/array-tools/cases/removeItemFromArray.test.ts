@@ -1,4 +1,5 @@
-import {removeItemFromArray, runSingleTestCase, TestSuite} from '../../_main.js';
+import {removeItemFromArray} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
@@ -6,8 +7,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any[];
-export type TestSuite_removeItemFromArray = TestSuite<Input, Result>;
-export type TestCase_removeItemFromArray = TestSuite_removeItemFromArray['testcases'][number];
+export type TestCase_removeItemFromArray = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return removeItemFromArray(input.array, input.item);
