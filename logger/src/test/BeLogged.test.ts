@@ -4,11 +4,15 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {TestSuite} from '@nu-art/ts-common/testing/types.js';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts.js';
-import {BeLogged, LogClient_MemBuffer, LogLevel, Logger} from '../main/index.js';
+import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {BeLogged, LogClient_MemBuffer, Logger, LogLevel} from '../main/index.js';
 import {createTestBuffer, getBufferContent} from './helpers.js';
 import {expect} from 'chai';
+
+// Global cleanup to ensure all clients are removed after all tests
+after(() => {
+	BeLogged.removeAllClients();
+});
 
 type Input_AddClient = { clientCount: number };
 type Result_AddClient = { added: boolean };

@@ -8,7 +8,7 @@ import {_logger_finalDate, _logger_getPrefix, _logger_timezoneOffset, LogClient}
 import {LogLevel, LogParam} from './types.js';
 
 /** Array of primitive types that can be combined with prefix */
-const PrimitiveLogParams: LogParam[] = ['string', 'number', 'boolean'];
+const PrimitiveLogParams: string[] = ['string', 'number', 'boolean'];
 
 /**
  * CSS style object for browser console styling.
@@ -66,8 +66,8 @@ class LogClient_BrowserGroups_Class
 			prefix = `%c ${prefix}`;
 
 		//If the first log param is a primitive combine it with the prefix
-		if (PrimitiveLogParams.includes(typeof toLog[0])) {
-			prefix += ` ${toLog[0]}`;
+		if (toLog[0] != null && PrimitiveLogParams.includes(typeof toLog[0])) {
+			prefix += ` ${String(toLog[0])}`;
 			toLog.shift();
 		}
 

@@ -4,11 +4,15 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {TestSuite} from '@nu-art/ts-common/testing/types.js';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts.js';
-import {Logger, LogLevel, BeLogged, LogClient_MemBuffer} from '../main/index.js';
+import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {BeLogged, Logger, LogLevel} from '../main/index.js';
 import {createTestBuffer, getBufferContent} from './helpers.js';
 import {expect} from 'chai';
+
+// Global cleanup to ensure all clients are removed after all tests
+after(() => {
+	BeLogged.removeAllClients();
+});
 
 type Input_LoggerCreate = { tag?: string };
 type Result_LoggerCreate = { tag: string; hasFlag: boolean };
@@ -18,6 +22,7 @@ type TestCase_LoggerCreate = TestSuite_LoggerCreate['testcases'][number];
 
 const test_LoggerCreate = async (input: Input_LoggerCreate): Promise<Result_LoggerCreate> => {
 	const logger = new Logger(input.tag);
+	// @ts-ignore - access protected property for testing
 	const hasFlag = logger._DEBUG_FLAG !== undefined;
 	return { tag: logger.tag, hasFlag };
 };
@@ -50,9 +55,13 @@ const test_LoggerLog = async (input: Input_LoggerLog): Promise<Result_LoggerLog>
 	BeLogged.addClient(buffer);
 	
 	const logger = new Logger(input.tag);
+	// @ts-ignore - access protected property for testing
 	logger._DEBUG_FLAG.enable(input.enabled);
 	if (input.minLevel) {
 		logger.setMinLevel(input.minLevel);
+	} else {
+		// Set min level to Verbose to allow all levels unless specified
+		logger.setMinLevel(LogLevel.Verbose);
 	}
 	
 	logger.log(input.level, false, [input.message]);
@@ -69,27 +78,42 @@ const runTestCase_LoggerLog = (testCase: TestCase_LoggerLog) => () => runSingleT
 describe('Logger - Log Levels', () => {
 	it('should log verbose message when enabled', runTestCase_LoggerLog({
 		input: { tag: 'TestLogger', level: LogLevel.Verbose, enabled: true, message: 'verbose test' },
-		result: { logged: true, content: expect.stringContaining('verbose test') }
+		result: async (result) => {
+			expect(result.logged).to.be.true;
+			expect(result.content).to.include('verbose test');
+		}
 	}));
 
 	it('should log debug message when enabled', runTestCase_LoggerLog({
 		input: { tag: 'TestLogger', level: LogLevel.Debug, enabled: true, message: 'debug test' },
-		result: { logged: true, content: expect.stringContaining('debug test') }
+		result: async (result) => {
+			expect(result.logged).to.be.true;
+			expect(result.content).to.include('debug test');
+		}
 	}));
 
 	it('should log info message when enabled', runTestCase_LoggerLog({
 		input: { tag: 'TestLogger', level: LogLevel.Info, enabled: true, message: 'info test' },
-		result: { logged: true, content: expect.stringContaining('info test') }
+		result: async (result) => {
+			expect(result.logged).to.be.true;
+			expect(result.content).to.include('info test');
+		}
 	}));
 
 	it('should log warning message when enabled', runTestCase_LoggerLog({
 		input: { tag: 'TestLogger', level: LogLevel.Warning, enabled: true, message: 'warning test' },
-		result: { logged: true, content: expect.stringContaining('warning test') }
+		result: async (result) => {
+			expect(result.logged).to.be.true;
+			expect(result.content).to.include('warning test');
+		}
 	}));
 
 	it('should log error message when enabled', runTestCase_LoggerLog({
 		input: { tag: 'TestLogger', level: LogLevel.Error, enabled: true, message: 'error test' },
-		result: { logged: true, content: expect.stringContaining('error test') }
+		result: async (result) => {
+			expect(result.logged).to.be.true;
+			expect(result.content).to.include('error test');
+		}
 	}));
 
 	it('should not log when disabled', runTestCase_LoggerLog({
@@ -104,12 +128,18 @@ describe('Logger - Log Levels', () => {
 
 	it('should log at min level', runTestCase_LoggerLog({
 		input: { tag: 'TestLogger', level: LogLevel.Info, enabled: true, minLevel: LogLevel.Info, message: 'at min' },
-		result: { logged: true, content: expect.stringContaining('at min') }
+		result: async (result) => {
+			expect(result.logged).to.be.true;
+			expect(result.content).to.include('at min');
+		}
 	}));
 
 	it('should log above min level', runTestCase_LoggerLog({
 		input: { tag: 'TestLogger', level: LogLevel.Error, enabled: true, minLevel: LogLevel.Info, message: 'above min' },
-		result: { logged: true, content: expect.stringContaining('above min') }
+		result: async (result) => {
+			expect(result.logged).to.be.true;
+			expect(result.content).to.include('above min');
+		}
 	}));
 });
 
@@ -118,6 +148,7 @@ describe('Logger - Convenience Methods', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		const logger = new Logger('Test');
+		logger.setMinLevel(LogLevel.Verbose);
 		logger.logVerbose('verbose message');
 		expect(getBufferContent(buffer)).to.include('verbose message');
 		BeLogged.removeClient(buffer);
@@ -127,6 +158,7 @@ describe('Logger - Convenience Methods', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		const logger = new Logger('Test');
+		logger.setMinLevel(LogLevel.Verbose);
 		logger.logDebug('debug message');
 		expect(getBufferContent(buffer)).to.include('debug message');
 		BeLogged.removeClient(buffer);
@@ -177,7 +209,9 @@ describe('Logger - Multiple Loggers', () => {
 		const logger1 = new Logger('Logger1');
 		const logger2 = new Logger('Logger2');
 		
+		// @ts-ignore - access protected property for testing
 		logger1._DEBUG_FLAG.enable(true);
+		// @ts-ignore - access protected property for testing
 		logger2._DEBUG_FLAG.enable(false);
 		
 		logger1.logInfo('logger1 message');
@@ -202,6 +236,7 @@ describe('Logger - Tag Management', () => {
 		const logger = new TestLogger();
 		expect(logger.tag).to.equal('InitialTag');
 		
+		// @ts-ignore - access protected method for testing
 		logger.setTag('NewTag');
 		expect(logger.tag).to.equal('NewTag');
 	});

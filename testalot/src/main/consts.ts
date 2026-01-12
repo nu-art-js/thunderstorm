@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {TestCase_Error, TestModel, TestSuite} from './types.js';
+import {TestCase_Error, TestModel} from './types.js';
 import chai, {expect} from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
@@ -17,62 +17,7 @@ function resolveContent<T = any, P extends any[] = any[]>(content: T | ((...para
 	return typeof content === 'function' ? (content as (...param: P) => T)(...param) : content as T;
 }
 
-/**
- * Void value constant.
- */
 const Void = undefined;
-
-/**
- * Async function that returns void.
- */
-const voidFunction = Object.freeze(async () => {
-});
-
-
-/**
- * Runs a single test case within a test suite.
- *
- * Creates an Mocha `it()` test with the test case description and processor.
- *
- * @template Input - Input type
- * @template ExpectedResult - Expected result type
- * @param testSuit - Test suite configuration
- * @param testCase - Test case to run
- */
-export function testSuite_RunTest<Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>, testCase: TestModel<Input, ExpectedResult>) {
-	it(resolveContent(resolveContent(testCase).description!, testCase), () => testSuit.processor(testCase)).timeout(testSuit.timeout || 5000);
-}
-
-/**
- * Sets up and runs a test suite with Mocha hooks.
- *
- * Configures `before()` and `after()` hooks if provided, and runs each test case.
- *
- * @template Input - Input type
- * @template ExpectedResult - Expected result type
- * @param testSuit - Test suite configuration
- * @param testcases - Optional test cases (uses testSuit.testcases if not provided)
- */
-export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>, ...testcases: TestSuite<Input, ExpectedResult>['testcases']) => {
-	if (testSuit.before)
-		before(() => {
-			testSuit.before?.();
-			console.log(`[${testSuit.label}] -----  Before Finished  -----`);
-		});
-
-	(testcases.length > 0 ? testcases : testSuit.testcases).forEach(testCase => {
-		testSuite_RunTest(testSuit, resolveContent(testCase));
-	});
-
-
-	//Run pre-process
-	if (testSuit.after)
-		after(() => {
-			console.log(`[${testSuit.label}] -----  After Started  -----`);
-			testSuit.after?.();
-		});
-
-};
 
 /**
  * Default test processor for async test cases.
@@ -162,25 +107,3 @@ export const runSingleTestCase = async <Input, Result, ExpectedResult = Result>(
 	const error = 'error' in testCase ? testCase.error : undefined;
 	return processor(test(testCase.input), expectedResult, error);
 };
-
-
-/**
- * Expects an async action to fail (throw an error).
- *
- * If the action succeeds, returns an expectation that will fail.
- * If it throws, returns an expectation that will pass.
- *
- * @param action - Async function that should throw
- * @returns Chai expectation
- */
-export const expectFailAsync = async (action: () => Promise<void>) => {
-	try {
-		await action();
-		return expect(voidFunction);
-	} catch (e) {
-		return expect(() => {
-			throw e;
-		});
-	}
-};
-

@@ -29,7 +29,10 @@
   "scripts": {
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.0.0",
+    "chai-as-promised": "^7.0.0"
+  },
   "unitConfig": {
     "type": "typescript-lib"
   },
@@ -37,10 +40,6 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
-    },
-    "./testing": {
-      "types": "./testing/index.d.ts",
-      "import": "./testing/index.js"
     }
   }
 }

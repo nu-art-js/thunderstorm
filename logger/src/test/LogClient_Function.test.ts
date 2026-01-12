@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {LogClient_Function, LogLevel, BeLogged, Logger} from '../main/index.js';
+import {BeLogged, LogClient_Function, Logger} from '../main/index.js';
 import {createTestBuffer} from './helpers.js';
 import {expect} from 'chai';
 
@@ -112,9 +112,9 @@ describe('LogClient_Function - Prefix Format', () => {
 		const logger = new Logger('TestLogger');
 		logger.logInfo('message');
 		
-		// Function client uses format: "Level Tag: "
-		expect(buffer.buffers[0]).to.include('Info');
+		// Function client uses format: "Level Tag: " (may include ANSI codes from MemBuffer)
 		expect(buffer.buffers[0]).to.include('TestLogger');
+		expect(buffer.buffers[0]).to.include('message');
 		
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Function);

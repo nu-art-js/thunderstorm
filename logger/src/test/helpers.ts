@@ -67,9 +67,10 @@ export function getBufferContent(buffer: LogClient_MemBuffer): string {
 
 /**
  * Cleans up all log clients (useful for test teardown).
+ * 
+ * Removes all clients from BeLogged and stops them, which clears
+ * any active intervals or timers that might keep the process alive.
  */
 export function cleanupLogClients(): void {
-	// Note: BeLogged doesn't expose a way to get all clients,
-	// so this is a placeholder for future enhancement
-	// For now, tests should manually remove clients they add
+	BeLogged.removeAllClients();
 }

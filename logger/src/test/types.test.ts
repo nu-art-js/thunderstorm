@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {TestSuite} from '@nu-art/ts-common/testing/types.js';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts.js';
-import {LogLevel, LogLevelOrdinal, _logger_getPrefix} from '../main/index.js';
+import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {_logger_getPrefix, LogLevel, LogLevelOrdinal} from '../main/index.js';
+import {expect} from 'chai';
 
 type Input_LogLevel = { level: LogLevel };
 type Result_LogLevel = { prefix: string; ordinal: number };

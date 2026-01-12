@@ -182,9 +182,9 @@ export class Logger {
 	 * @param level - Log level to check
 	 * @returns true if the message should be logged, false otherwise
 	 */
-	private assertCanPrint(level: LogLevel) {
+	private assertCanPrint(level: LogLevel): boolean {
 		if (!this._DEBUG_FLAG.isEnabled())
-			return;
+			return false;
 
 		return this._DEBUG_FLAG.canLog(level);
 	}
@@ -346,9 +346,9 @@ export abstract class StaticLogger {
 	 * @param level - Log level to check
 	 * @returns true if the message should be logged, false otherwise
 	 */
-	private static assertCanPrint(level: LogLevel) {
+	private static assertCanPrint(level: LogLevel): boolean {
 		if (!this._DEBUG_FLAG.isEnabled())
-			return;
+			return false;
 
 		return this._DEBUG_FLAG.canLog(level);
 	}
