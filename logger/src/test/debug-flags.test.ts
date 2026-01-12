@@ -4,15 +4,14 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {DebugFlag, DebugFlags, LogLevel} from '../main/index.js';
 import {expect} from 'chai';
 
 type Input_CreateFlag = { key: string; minLevel?: LogLevel };
 type Result_CreateFlag = { flag: DebugFlag; registered: boolean };
 
-type TestSuite_CreateFlag = TestSuite<Input_CreateFlag, Result_CreateFlag>;
-type TestCase_CreateFlag = TestSuite_CreateFlag['testcases'][number];
+type TestCase_CreateFlag = TestModel<Input_CreateFlag, Result_CreateFlag>;
 
 const test_CreateFlag = async (input: Input_CreateFlag): Promise<Result_CreateFlag> => {
 	const flag = DebugFlags.createFlag(input.key, input.minLevel);
@@ -46,8 +45,7 @@ describe('DebugFlags - Create Flag', () => {
 type Input_EnableDisable = { key: string; enable: boolean };
 type Result_EnableDisable = { enabled: boolean };
 
-type TestSuite_EnableDisable = TestSuite<Input_EnableDisable, Result_EnableDisable>;
-type TestCase_EnableDisable = TestSuite_EnableDisable['testcases'][number];
+type TestCase_EnableDisable = TestModel<Input_EnableDisable, Result_EnableDisable>;
 
 const test_EnableDisable = async (input: Input_EnableDisable): Promise<Result_EnableDisable> => {
 	const flag = DebugFlags.createFlag(input.key);
@@ -83,8 +81,7 @@ describe('DebugFlags - Enable/Disable', () => {
 type Input_MinLevel = { key: string; minLevel: LogLevel; testLevel: LogLevel };
 type Result_MinLevel = { canLog: boolean };
 
-type TestSuite_MinLevel = TestSuite<Input_MinLevel, Result_MinLevel>;
-type TestCase_MinLevel = TestSuite_MinLevel['testcases'][number];
+type TestCase_MinLevel = TestModel<Input_MinLevel, Result_MinLevel>;
 
 const test_MinLevel = async (input: Input_MinLevel): Promise<Result_MinLevel> => {
 	const flag = DebugFlags.createFlag(input.key);

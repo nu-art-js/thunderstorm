@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {BeLogged, LogClient_File, Logger} from '../main/index.js';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
@@ -24,8 +24,7 @@ const pathToWorkspace = resolve(pathToTemp, './workspace');
 type Input_FileLog = { logDir: string; message: string };
 type Result_FileLog = { fileExists: boolean; content: string };
 
-type TestSuite_FileLog = TestSuite<Input_FileLog, Result_FileLog>;
-type TestCase_FileLog = TestSuite_FileLog['testcases'][number];
+type TestCase_FileLog = TestModel<Input_FileLog, Result_FileLog>;
 
 const test_FileLog = async (input: Input_FileLog): Promise<Result_FileLog> => {
 	const logDir = resolve(pathToWorkspace, input.logDir);

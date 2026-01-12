@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {BeLogged, LogClient, LogLevel, LogPrefixComposer} from '../main/index.js';
 import {expect} from 'chai';
 
@@ -32,8 +32,7 @@ class TestLogClient extends LogClient {
 type Input_PrefixComposer = { composer: LogPrefixComposer; tag: string; level: LogLevel };
 type Result_PrefixComposer = { prefix: string };
 
-type TestSuite_PrefixComposer = TestSuite<Input_PrefixComposer, Result_PrefixComposer>;
-type TestCase_PrefixComposer = TestSuite_PrefixComposer['testcases'][number];
+type TestCase_PrefixComposer = TestModel<Input_PrefixComposer, Result_PrefixComposer>;
 
 const test_PrefixComposer = async (input: Input_PrefixComposer): Promise<Result_PrefixComposer> => {
 	const client = new TestLogClient();
@@ -69,8 +68,7 @@ describe('LogClient - Prefix Composer', () => {
 type Input_ClientFilter = { filter: (level: LogLevel, tag: string) => boolean; level: LogLevel; tag: string };
 type Result_ClientFilter = { logged: boolean };
 
-type TestSuite_ClientFilter = TestSuite<Input_ClientFilter, Result_ClientFilter>;
-type TestCase_ClientFilter = TestSuite_ClientFilter['testcases'][number];
+type TestCase_ClientFilter = TestModel<Input_ClientFilter, Result_ClientFilter>;
 
 const test_ClientFilter = async (input: Input_ClientFilter): Promise<Result_ClientFilter> => {
 	const client = new TestLogClient();

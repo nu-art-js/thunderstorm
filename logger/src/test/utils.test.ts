@@ -4,15 +4,14 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {_logger_convertLogParamsToStrings, _logger_indentNewLineBy, _logger_logException, _logger_logObject, LogParam} from '../main/index.js';
 import {expect} from 'chai';
 
 type Input_ConvertParams = { params: LogParam[] };
 type Result_ConvertParams = { strings: string[] };
 
-type TestSuite_ConvertParams = TestSuite<Input_ConvertParams, Result_ConvertParams>;
-type TestCase_ConvertParams = TestSuite_ConvertParams['testcases'][number];
+type TestCase_ConvertParams = TestModel<Input_ConvertParams, Result_ConvertParams>;
 
 const test_ConvertParams = async (input: Input_ConvertParams): Promise<Result_ConvertParams> => {
 	const strings = _logger_convertLogParamsToStrings(input.params);
@@ -128,8 +127,7 @@ describe('Utils - Log Exception', () => {
 type Input_LogObject = { obj: object };
 type Result_LogObject = { stringified: string };
 
-type TestSuite_LogObject = TestSuite<Input_LogObject, Result_LogObject>;
-type TestCase_LogObject = TestSuite_LogObject['testcases'][number];
+type TestCase_LogObject = TestModel<Input_LogObject, Result_LogObject>;
 
 const test_LogObject = async (input: Input_LogObject): Promise<Result_LogObject> => {
 	const stringified = _logger_logObject(input.obj);
@@ -172,8 +170,7 @@ describe('Utils - Log Object', () => {
 type Input_IndentNewLine = { prefix: string; input: string };
 type Result_IndentNewLine = { indented: string };
 
-type TestSuite_IndentNewLine = TestSuite<Input_IndentNewLine, Result_IndentNewLine>;
-type TestCase_IndentNewLine = TestSuite_IndentNewLine['testcases'][number];
+type TestCase_IndentNewLine = TestModel<Input_IndentNewLine, Result_IndentNewLine>;
 
 const test_IndentNewLine = async (input: Input_IndentNewLine): Promise<Result_IndentNewLine> => {
 	const indented = _logger_indentNewLineBy(input.prefix, input.input);
