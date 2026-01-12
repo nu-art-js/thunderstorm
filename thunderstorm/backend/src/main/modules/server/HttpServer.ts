@@ -131,8 +131,21 @@ export class HttpServer_Class
 		});
 
 		const parserLimit = this.config.bodyParserLimit;
-		if (parserLimit)
-			this.getExpress().use(express.json({limit: parserLimit, type: 'application/json'}));
+		if (parserLimit) {
+			const jsonParser = express.json({limit: parserLimit, type: 'application/json'});
+
+			this.getExpress().use((req, res, next) => {
+				// If upstream already set a body OR the stream is already consumed, skip parsing.
+				const alreadyHasBody = (req as any).body !== undefined;
+				const notReadable = !req.readable;
+
+				if (alreadyHasBody || notReadable)
+					return next();
+
+				return jsonParser(req, res, next);
+			});
+		}
+
 		this.getExpress().use(compression());
 		for (const middleware of HttpServer_Class.expressMiddleware) {
 			this.getExpress().use(middleware);
