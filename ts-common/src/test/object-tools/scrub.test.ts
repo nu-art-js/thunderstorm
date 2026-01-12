@@ -1,4 +1,5 @@
-import {runSingleTestCase, scrub, ScrubConfig, TestSuite} from '../_main.js';
+import {scrub, ScrubConfig} from '../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input = {
 	item: any;
@@ -6,8 +7,7 @@ export type Input = {
 };
 
 export type Result = any;
-export type TestSuite_scrub = TestSuite<Input, Result>;
-export type TestCase_Scrub = TestSuite_scrub['testcases'][number];
+export type TestCase_Scrub = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<void> => {
 	return scrub(input.item, input.config);

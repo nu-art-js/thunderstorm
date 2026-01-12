@@ -1,4 +1,5 @@
-import {groupArrayBy, runSingleTestCase, TestSuite} from '../../_main.js';
+import {groupArrayBy} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
@@ -6,8 +7,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any[];
-export type TestSuite_groupArrayBy = TestSuite<Input, Result>;
-export type TestCase_groupArrayBy = TestSuite_groupArrayBy['testcases'][number];
+export type TestCase_groupArrayBy = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return groupArrayBy(input.array, input.mapper);

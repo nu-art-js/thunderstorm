@@ -1,4 +1,5 @@
-import {sortArray, runSingleTestCase, TestSuite} from '../../_main.js';
+import {sortArray} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
@@ -7,8 +8,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any[];
-export type TestSuite_sortArray = TestSuite<Input, Result>;
-export type TestCase_sortArray = TestSuite_sortArray['testcases'][number];
+export type TestCase_sortArray = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return sortArray(input.array, input.map, input.invert);

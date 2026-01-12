@@ -1,4 +1,5 @@
-import {findDuplicates, runSingleTestCase, TestSuite} from '../../_main.js';
+import {findDuplicates} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array1: T[];
@@ -6,8 +7,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any[];
-export type TestSuite_findDuplicates = TestSuite<Input, Result>;
-export type TestCase_findDuplicates = TestSuite_findDuplicates['testcases'][number];
+export type TestCase_findDuplicates = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return findDuplicates(input.array1, input.array2);
