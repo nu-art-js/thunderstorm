@@ -4,15 +4,14 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {_logger_getPrefix, LogLevel, LogLevelOrdinal} from '../main/index.js';
 import {expect} from 'chai';
 
 type Input_LogLevel = { level: LogLevel };
 type Result_LogLevel = { prefix: string; ordinal: number };
 
-type TestSuite_LogLevel = TestSuite<Input_LogLevel, Result_LogLevel>;
-type TestCase_LogLevel = TestSuite_LogLevel['testcases'][number];
+type TestCase_LogLevel = TestModel<Input_LogLevel, Result_LogLevel>;
 
 const test_LogLevel = async (input: Input_LogLevel): Promise<Result_LogLevel> => {
 	const prefix = _logger_getPrefix(input.level);

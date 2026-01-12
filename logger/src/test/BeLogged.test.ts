@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {BeLogged, LogClient_MemBuffer, Logger, LogLevel} from '../main/index.js';
 import {createTestBuffer, getBufferContent} from './helpers.js';
 import {expect} from 'chai';
@@ -17,8 +17,7 @@ after(() => {
 type Input_AddClient = { clientCount: number };
 type Result_AddClient = { added: boolean };
 
-type TestSuite_AddClient = TestSuite<Input_AddClient, Result_AddClient>;
-type TestCase_AddClient = TestSuite_AddClient['testcases'][number];
+type TestCase_AddClient = TestModel<Input_AddClient, Result_AddClient>;
 
 const test_AddClient = async (input: Input_AddClient): Promise<Result_AddClient> => {
 	const clients: LogClient_MemBuffer[] = [];
@@ -63,8 +62,7 @@ describe('BeLogged - Add Client', () => {
 type Input_RemoveClient = { addClients: number; removeClients: number };
 type Result_RemoveClient = { removed: boolean };
 
-type TestSuite_RemoveClient = TestSuite<Input_RemoveClient, Result_RemoveClient>;
-type TestCase_RemoveClient = TestSuite_RemoveClient['testcases'][number];
+type TestCase_RemoveClient = TestModel<Input_RemoveClient, Result_RemoveClient>;
 
 const test_RemoveClient = async (input: Input_RemoveClient): Promise<Result_RemoveClient> => {
 	const clients: LogClient_MemBuffer[] = [];

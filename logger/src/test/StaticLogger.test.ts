@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {BeLogged, LogLevel, StaticLogger} from '../main/index.js';
 import {createTestBuffer, getBufferContent} from './helpers.js';
 import {expect} from 'chai';
@@ -12,8 +12,7 @@ import {expect} from 'chai';
 type Input_StaticLog = { tag: string; level: LogLevel; message: string };
 type Result_StaticLog = { logged: boolean; content: string };
 
-type TestSuite_StaticLog = TestSuite<Input_StaticLog, Result_StaticLog>;
-type TestCase_StaticLog = TestSuite_StaticLog['testcases'][number];
+type TestCase_StaticLog = TestModel<Input_StaticLog, Result_StaticLog>;
 
 const test_StaticLog = async (input: Input_StaticLog): Promise<Result_StaticLog> => {
 	const buffer = createTestBuffer();

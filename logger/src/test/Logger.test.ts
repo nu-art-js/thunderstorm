@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {BeLogged, Logger, LogLevel} from '../main/index.js';
 import {createTestBuffer, getBufferContent} from './helpers.js';
 import {expect} from 'chai';
@@ -17,8 +17,7 @@ after(() => {
 type Input_LoggerCreate = { tag?: string };
 type Result_LoggerCreate = { tag: string; hasFlag: boolean };
 
-type TestSuite_LoggerCreate = TestSuite<Input_LoggerCreate, Result_LoggerCreate>;
-type TestCase_LoggerCreate = TestSuite_LoggerCreate['testcases'][number];
+type TestCase_LoggerCreate = TestModel<Input_LoggerCreate, Result_LoggerCreate>;
 
 const test_LoggerCreate = async (input: Input_LoggerCreate): Promise<Result_LoggerCreate> => {
 	const logger = new Logger(input.tag);
@@ -47,8 +46,7 @@ describe('Logger - Creation', () => {
 type Input_LoggerLog = { tag: string; level: LogLevel; enabled: boolean; minLevel?: LogLevel; message: string };
 type Result_LoggerLog = { logged: boolean; content: string };
 
-type TestSuite_LoggerLog = TestSuite<Input_LoggerLog, Result_LoggerLog>;
-type TestCase_LoggerLog = TestSuite_LoggerLog['testcases'][number];
+type TestCase_LoggerLog = TestModel<Input_LoggerLog, Result_LoggerLog>;
 
 const test_LoggerLog = async (input: Input_LoggerLog): Promise<Result_LoggerLog> => {
 	const buffer = createTestBuffer();

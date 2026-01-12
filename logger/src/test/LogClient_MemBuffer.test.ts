@@ -4,15 +4,14 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {BeLogged, LogClient_MemBuffer, Logger} from '../main/index.js';
 import {expect} from 'chai';
 
 type Input_BufferRotation = { messageSize: number; maxSize: number; maxBuffers: number };
 type Result_BufferRotation = { bufferCount: number; rotated: boolean };
 
-type TestSuite_BufferRotation = TestSuite<Input_BufferRotation, Result_BufferRotation>;
-type TestCase_BufferRotation = TestSuite_BufferRotation['testcases'][number];
+type TestCase_BufferRotation = TestModel<Input_BufferRotation, Result_BufferRotation>;
 
 const test_BufferRotation = async (input: Input_BufferRotation): Promise<Result_BufferRotation> => {
 	const buffer = new LogClient_MemBuffer('test', input.maxBuffers, input.maxSize);
