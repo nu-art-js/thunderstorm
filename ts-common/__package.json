@@ -37,6 +37,8 @@
     "run-tests": "ts-mocha --timeout 50000 -p src/test/tsconfig.json src/test/run-all-tests.ts"
   },
   "dependencies": {
+    "@nu-art/testalot": "?",
+    "@nu-art/logger": "?",
     "fast-csv": "^5.0.2",
     "export-to-csv": "0.2.1",
     "moment": "?",

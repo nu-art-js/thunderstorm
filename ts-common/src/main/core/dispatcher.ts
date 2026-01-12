@@ -17,7 +17,7 @@
  */
 
 import {FunctionKeys, ReturnPromiseType} from '../utils/types.js';
-import {Logger} from './logger/Logger.js';
+import {Logger} from './logger/index.js';
 
 
 /**

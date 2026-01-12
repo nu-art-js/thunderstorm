@@ -1,5 +1,5 @@
 import {BadImplementationException} from '../core/exceptions/exceptions.js';
-import {Logger} from '../core/logger/Logger.js';
+import {Logger} from '../core/logger/index.js';
 import {isPromise} from './promise-tools.js';
 import {exists} from './tools.js';
 
