@@ -12,7 +12,7 @@ export type ResolvableContent<T, K extends any[] = any[]> = T | ((...param: K) =
 
 /**
  * Test case input/output type.
- * 
+ *
  * @template Input - Input type for the test
  * @template Result - Expected result type
  */
@@ -23,7 +23,7 @@ export type Types<Input, Result> = {
 
 /**
  * Error expectation for test cases.
- * 
+ *
  * Can be:
  * - Object with expected error message/pattern and optional constructor
  * - Function that validates the error
@@ -32,13 +32,13 @@ export type TestCase_Error = { expected: string | RegExp, message?: string, cons
 
 /**
  * Test case model with input and expected result or error.
- * 
+ *
  * Supports:
  * - Resolvable content (value or function)
  * - Optional description (can reference the test case itself)
  * - Expected result (value or validation function)
  * - Expected error (object or validation function)
- * 
+ *
  * @template Input - Input type
  * @template ExpectedResult - Expected result type
  */
@@ -55,7 +55,7 @@ export type TestModel<Input, ExpectedResult> = ResolvableContent<
 
 /**
  * Function that processes a test case.
- * 
+ *
  * @template Input - Input type
  * @template ExpectedResult - Expected result type
  */
@@ -63,11 +63,12 @@ export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, Expe
 
 /**
  * Test suite configuration.
- * 
+ *
  * Defines a collection of test cases with setup/teardown hooks.
- * 
+ *
  * @template Input - Input type for test cases
  * @template ExpectedResult - Expected result type
+ * @deprecated
  */
 export type TestSuite<Input, ExpectedResult> = {
 	/** Optional setup function (runs before all tests) */
@@ -86,14 +87,15 @@ export type TestSuite<Input, ExpectedResult> = {
 
 /**
  * Interface for modules that support test reset functionality.
- * 
+ *
  * Modules implementing this interface can be reset to a clean state
  * between tests via the `dispatcher_resetTests` dispatcher.
+ * @deprecated should be moved up in the package hierarchy
  */
 export interface TestResetListener {
 	/**
 	 * Resets the module to a clean state for testing.
-	 * 
+	 *
 	 * Called by the test framework to reset module state between tests.
 	 */
 	__resetForTests: () => Promise<any>;

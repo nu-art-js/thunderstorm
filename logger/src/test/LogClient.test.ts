@@ -4,10 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {TestSuite} from '@nu-art/ts-common/testing/types.js';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts.js';
-import {LogClient, LogLevel, LogPrefixComposer, BeLogged, LogClient_MemBuffer} from '../main/index.js';
-import {createTestBuffer, getBufferContent} from './helpers.js';
+import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {BeLogged, LogClient, LogLevel, LogPrefixComposer} from '../main/index.js';
 import {expect} from 'chai';
 
 // Create a testable LogClient implementation
@@ -16,7 +14,7 @@ class TestLogClient extends LogClient {
 	public initialized = false;
 	public stopped = false;
 
-	protected logMessage(level: LogLevel, bold: boolean, prefix: string, ...toLog: any[]): void {
+	protected logMessage(level: LogLevel, bold: boolean, prefix: string, toLog: any[]): void {
 		this.loggedMessages.push({ level, bold, prefix, toLog });
 	}
 

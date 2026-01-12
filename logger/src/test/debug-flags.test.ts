@@ -4,8 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {TestSuite} from '@nu-art/ts-common/testing/types.js';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts.js';
+import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
 import {DebugFlag, DebugFlags, LogLevel} from '../main/index.js';
 import {expect} from 'chai';
 
@@ -37,6 +36,7 @@ describe('DebugFlags - Create Flag', () => {
 		input: { key: 'TestFlag2', minLevel: LogLevel.Warning },
 		result: async (result) => {
 			expect(result.flag).to.be.instanceOf(DebugFlag);
+			result.flag.enable(true);
 			expect(result.flag.canLog(LogLevel.Warning)).to.be.true;
 			expect(result.flag.canLog(LogLevel.Debug)).to.be.false;
 		}

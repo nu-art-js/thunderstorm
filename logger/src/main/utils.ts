@@ -45,6 +45,15 @@ export function _logger_convertLogParamsToStrings(params: LogParam[]): string[] 
 		if (typeof toLog === 'number')
 			return `${toLog}`;
 
+		if (typeof toLog === 'function')
+			return 'function';
+
+		if (typeof toLog === 'symbol')
+			return 'symbol';
+
+		if (typeof toLog === 'bigint')
+			return `BigInt(${toLog.toString()})`;
+
 		// @ts-ignore
 		if (toLog.stack)
 			return _logger_logException(toLog as Error);

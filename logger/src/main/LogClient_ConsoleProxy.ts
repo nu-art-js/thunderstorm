@@ -80,19 +80,26 @@ export abstract class LogClient_ConsoleProxy
 	 */
 	init() {
 		super.init();
-		// @ts-ignore
-		this['originalConsoleError'] = console.error;
+
+		// Guard against multiple initializations - only save original if not already saved
+		if (!this.originalConsoleError) {
+			// @ts-ignore
+			this['originalConsoleError'] = console.error;
+		}
 
 		console.error = (...args: any[]) => {
 			this.originalConsoleError(...args);
 			this.logMessage.bind(this)(LogLevel.Error, false, `${new Date().toISOString()} ${_logger_getPrefix(LogLevel.Error)} unhandled error`, args);
 		};
 
-		// Flush logs every 2 minutes
-		this.flushInterval = setInterval(() => {
-			if (!this.activeRequest && this.buffers.length > 0)
-				this.flushLogs();
-		}, 60 * 1000); // 2 minutes
+		// Only set up interval if not already set
+		if (!this.flushInterval) {
+			// Flush logs every 60 seconds (not 2 minutes as comment says)
+			this.flushInterval = setInterval(async () => {
+				if (!this.activeRequest && this.buffers.length > 0)
+					await this.flushLogs();
+			}, 60 * 1000);
+		}
 	}
 
 	/**
@@ -134,15 +141,17 @@ export abstract class LogClient_ConsoleProxy
 		this.buffers.push(...logs);
 
 		if (this.buffers.length >= this.maxBuffers && !this.activeRequest) {
-			this.flushLogs();
+			setTimeout(async () => {
+				await this.flushLogs();
+			}, 0); // 2 minutes
 		} else {
 			// trigger flush on error
 			if (level === LogLevel.Error && !this.errorLogTimeout)
-				this.errorLogTimeout = setTimeout(() => {
+				this.errorLogTimeout = setTimeout(async () => {
 					this.errorLogTimeout = undefined;
 
 					if (!this.activeRequest)
-						this.flushLogs();
+						await this.flushLogs();
 				}, 500);
 		}
 	}

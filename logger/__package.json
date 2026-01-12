@@ -33,7 +33,9 @@
     "run-tests": "ts-mocha --timeout 50000 -p src/test/tsconfig.json src/test/run-all-tests.ts"
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
   "unitConfig": {
     "type": "typescript-lib"
   },

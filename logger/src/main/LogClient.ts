@@ -57,7 +57,7 @@ export abstract class LogClient {
 	 * @param prefix - Composed prefix string (timestamp, level indicator, tag)
 	 * @param toLog - Array of values to log
 	 */
-	protected abstract logMessage(level: LogLevel, bold: boolean, prefix: string, ...toLog: LogParam[]): void;
+	protected abstract logMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]): void;
 
 	/**
 	 * Sets a custom prefix composer for this log client.

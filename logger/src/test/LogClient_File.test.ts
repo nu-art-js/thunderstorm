@@ -4,20 +4,22 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {TestSuite} from '@nu-art/ts-common/testing/types.js';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts.js';
-import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator.js';
-import {FileSystemUtils} from '@nu-art/ts-common/utils/file-system.js';
-import {LogClient_File, LogLevel, BeLogged, Logger} from '../main/index.js';
+import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {BeLogged, LogClient_File, Logger} from '../main/index.js';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
+import {mkdir, rm} from 'fs/promises';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {expect} from 'chai';
+
+// Global cleanup to ensure all clients are removed after all tests
+after(() => {
+	BeLogged.removeAllClients();
+});
 
 const dirname = ___dirname(import.meta.url);
 const pathToTemp = resolve(dirname, './temp');
 const pathToWorkspace = resolve(pathToTemp, './workspace');
-const workspaceCreator = new TestWorkspaceCreator(pathToTemp, pathToWorkspace);
 
 type Input_FileLog = { logDir: string; message: string };
 type Result_FileLog = { fileExists: boolean; content: string };
@@ -55,8 +57,8 @@ describe('LogClient_File - File Logging', () => {
 	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {
-		await FileSystemUtils.folder.delete(pathToTemp);
-		await workspaceCreator.setupWorkspace([]);
+		await rm(pathToTemp, {recursive: true, force: true});
+		await mkdir(pathToWorkspace, {recursive: true});
 	});
 
 	it('should create log file and write logs', runTestCase_FileLog({
@@ -83,7 +85,7 @@ describe('LogClient_File - File Logging', () => {
 	after(async function () {
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		if (suiteHasFailures === false) {
-			await FileSystemUtils.folder.delete(pathToTemp);
+			await rm(pathToTemp, {recursive: true, force: true});
 		}
 	});
 });
@@ -92,8 +94,8 @@ describe('LogClient_File - Log Rotation', () => {
 	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {
-		await FileSystemUtils.folder.delete(pathToTemp);
-		await workspaceCreator.setupWorkspace([]);
+		await rm(pathToTemp, {recursive: true, force: true});
+		await mkdir(pathToWorkspace, {recursive: true});
 	});
 
 	it('should rotate logs when max size is exceeded', async () => {
@@ -128,7 +130,7 @@ describe('LogClient_File - Log Rotation', () => {
 	after(async function () {
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		if (suiteHasFailures === false) {
-			await FileSystemUtils.folder.delete(pathToTemp);
+			await rm(pathToTemp, {recursive: true, force: true});
 		}
 	});
 });
@@ -137,8 +139,8 @@ describe('LogClient_File - Existing File Handling', () => {
 	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {
-		await FileSystemUtils.folder.delete(pathToTemp);
-		await workspaceCreator.setupWorkspace([]);
+		await rm(pathToTemp, {recursive: true, force: true});
+		await mkdir(pathToWorkspace, {recursive: true});
 	});
 
 	it('should append to existing log file', async () => {
@@ -180,7 +182,7 @@ describe('LogClient_File - Existing File Handling', () => {
 	after(async function () {
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		if (suiteHasFailures === false) {
-			await FileSystemUtils.folder.delete(pathToTemp);
+			await rm(pathToTemp, {recursive: true, force: true});
 		}
 	});
 });

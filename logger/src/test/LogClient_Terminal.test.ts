@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {LogClient_Terminal, LogLevel, NoColor, BeLogged, Logger} from '../main/index.js';
-import {createTestBuffer, getBufferContent} from './helpers.js';
+import {BeLogged, LogClient_Terminal, Logger, LogLevel, NoColor} from '../main/index.js';
+import {createTestBuffer} from './helpers.js';
 import {expect} from 'chai';
 
 describe('LogClient_Terminal - Color Codes', () => {

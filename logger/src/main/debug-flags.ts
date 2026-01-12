@@ -34,7 +34,7 @@ export class DebugFlag {
 	/** Default minimum log level for new debug flags */
 	public static DefaultLogLevel = LogLevel.Info;
 	/** Unique identifier for this debug flag (typically matches logger tag) */
-	private readonly key: string;
+	private key: string;
 	/** Minimum log level that will be output when this flag is enabled */
 	private minLogLevel: LogLevel;
 
@@ -70,7 +70,14 @@ export class DebugFlag {
 	 * @param newKey - New key/identifier for this flag
 	 */
 	rename(newKey: string) {
-		DebugFlags.rename(this.key, newKey);
+		const oldKey = this.key;
+		DebugFlags.rename(oldKey, newKey);
+		this.key = newKey;
+		// Update ActiveDebugFlags if the flag is enabled
+		const activeIndex = DebugFlags.instance.ActiveDebugFlags.indexOf(oldKey);
+		if (activeIndex > -1) {
+			DebugFlags.instance.ActiveDebugFlags[activeIndex] = newKey;
+		}
 	}
 
 	/**
@@ -118,6 +125,9 @@ export class DebugFlag {
 	 * @returns true if the message should be logged, false otherwise
 	 */
 	canLog(level: LogLevel) {
+		if (!this.isEnabled())
+			return false;
+		
 		return LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(this.minLogLevel);
 	}
 

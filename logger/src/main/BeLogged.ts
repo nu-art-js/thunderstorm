@@ -117,6 +117,18 @@ class BeLogged_Class {
 	public rewriteConsole(lineCount: number) {
 		this.lineCount = lineCount;
 	}
+
+	/**
+	 * Removes all registered log clients and stops them.
+	 * 
+	 * Useful for test cleanup to ensure no clients remain active.
+	 */
+	public removeAllClients() {
+		const clients = [...this.clients];
+		for (const client of clients) {
+			this.removeClient(client);
+		}
+	}
 }
 
 /**
