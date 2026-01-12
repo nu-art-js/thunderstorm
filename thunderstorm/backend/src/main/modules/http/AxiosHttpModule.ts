@@ -48,8 +48,10 @@ export class AxiosHttpModule_Class extends BaseHttpModule_Class {
 			.setRequestOption(this.requestOption)
 			.addHeaders(this.getDefaultHeaders());
 
-		if (apiDef.fullUrl) request.setUrl(apiDef.fullUrl);
-		else request.setOrigin(apiDef.baseUrl ?? this.origin).setRelativeUrl(apiDef.path);
+		if (apiDef.fullUrl)
+			request.setUrl(apiDef.fullUrl);
+		else
+			request.setOrigin(apiDef.baseUrl ?? this.origin).setRelativeUrl(apiDef.path);
 
 		return request;
 	}
