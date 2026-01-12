@@ -22,7 +22,7 @@
 import {Module} from './module.js';
 import {Dispatcher} from './dispatcher.js';
 import {BadImplementationException} from './exceptions/exceptions.js';
-import {Logger} from './logger/Logger.js';
+import {Logger} from './logger/index.js';
 import {addItemToArray} from '../utils/array-tools.js';
 import {exists} from '../utils/tools.js';
 
@@ -31,7 +31,7 @@ const _modules: Module[] = [];
 
 /**
  * Returns the internal modules array. Used by Dispatcher to resolve modules.
- * 
+ *
  * @internal
  */
 export function moduleResolver() {
@@ -67,41 +67,41 @@ const modulesInterface = {
 
 /**
  * Runtime function to access all registered modules.
- * 
+ *
  * @returns The modules interface for querying modules
  */
 export const RuntimeModules = () => ModuleManager.instance.modules;
 
 /**
  * Runtime function to get the application version.
- * 
+ *
  * @returns The version string if set, undefined otherwise
  */
 export const RuntimeVersion = () => ModuleManager.instance.version;
 
 /**
  * Runtime function to get the current environment.
- * 
+ *
  * @returns The environment string (typically overridden by subclasses)
  */
 export const RuntimeEnvironment = () => ModuleManager.instance.getEnvironment();
 
 /**
  * Singleton manager that coordinates the lifecycle of all modules in an application.
- * 
+ *
  * ModuleManager is responsible for:
  * - Registering modules (via `addModulePack()`)
  * - Injecting configuration into modules
  * - Initializing modules in order
  * - Validating modules after initialization
  * - Providing runtime access to modules
- * 
+ *
  * The initialization sequence is:
  * 1. Config injection: Each module receives its config from `this.config[moduleName]`
  * 2. Manager injection: Each module receives a reference to this ModuleManager
  * 3. Module initialization: `init()` is called on each module (errors are caught and logged)
  * 4. Module validation: `validate()` is called on each module
- * 
+ *
  * @example
  * ```typescript
  * class MyApp extends ModuleManager {
@@ -114,7 +114,7 @@ export const RuntimeEnvironment = () => ModuleManager.instance.getEnvironment();
  *     });
  *   }
  * }
- * 
+ *
  * const app = new MyApp();
  * app.init();
  * ```
@@ -133,10 +133,10 @@ export class ModuleManager
 
 	/**
 	 * Creates a new ModuleManager instance.
-	 * 
+	 *
 	 * Enforces singleton pattern - only one instance can exist. Also registers
 	 * the module resolver with the Dispatcher system.
-	 * 
+	 *
 	 * @throws {BadImplementationException} If an instance already exists
 	 */
 	protected constructor() {
@@ -150,7 +150,7 @@ export class ModuleManager
 
 	/**
 	 * Resets the ModuleManager state for testing purposes.
-	 * 
+	 *
 	 * @internal
 	 */
 	// @ts-ignore
@@ -162,11 +162,11 @@ export class ModuleManager
 
 	/**
 	 * Sets the application-wide configuration.
-	 * 
+	 *
 	 * Configuration is keyed by module name and will be injected into each module
 	 * during initialization. The config object structure should match module names:
 	 * `{ ModuleName: { ...moduleConfig } }`
-	 * 
+	 *
 	 * @param config - Configuration object keyed by module names
 	 * @returns This instance for method chaining
 	 */
@@ -177,7 +177,7 @@ export class ModuleManager
 
 	/**
 	 * Sets the application version string.
-	 * 
+	 *
 	 * @param version - Version string (e.g., "1.0.0")
 	 * @returns This instance for method chaining
 	 */
@@ -189,10 +189,10 @@ export class ModuleManager
 
 	/**
 	 * Registers a pack of modules with the manager.
-	 * 
+	 *
 	 * Modules are deduplicated - if a module is already registered, it won't be
 	 * added again. This allows module packs to be safely combined.
-	 * 
+	 *
 	 * @param modules - Array of module instances to register
 	 * @returns This instance for method chaining
 	 */
@@ -208,18 +208,18 @@ export class ModuleManager
 
 	/**
 	 * Initializes all registered modules in the correct sequence.
-	 * 
+	 *
 	 * The initialization process:
 	 * 1. Sets the global log level if specified in config
 	 * 2. Validates that no modules are undefined (catches cyclic import issues)
 	 * 3. Injects ModuleManager reference and config into each module
 	 * 4. Calls `init()` on each module (errors are caught and logged, but don't stop initialization)
 	 * 5. Calls `validate()` on each module after all have been initialized
-	 * 
+	 *
 	 * **Note**: If a module's `init()` throws an error, the error is logged but initialization
 	 * continues for other modules. The failed module will not have `initiated` set to true,
 	 * but `validate()` will still be called on it.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 * @throws {BadImplementationException} If any module is undefined (cyclic import issue)
 	 */
@@ -268,7 +268,7 @@ export class ModuleManager
 
 	/**
 	 * Convenience method that calls `init()`. Provided for API consistency.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	build() {
@@ -277,10 +277,10 @@ export class ModuleManager
 
 	/**
 	 * Returns the current environment string.
-	 * 
+	 *
 	 * Base implementation returns an empty string. Subclasses (like BaseStorm)
 	 * should override this to return the actual environment (e.g., "development", "production").
-	 * 
+	 *
 	 * @returns Environment string (empty string by default)
 	 */
 	public getEnvironment(): string {

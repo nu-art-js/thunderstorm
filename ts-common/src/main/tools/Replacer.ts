@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Logger} from '../core/logger/Logger.js';
+import {Logger} from '../core/logger/index.js';
 import {KeyValue, TS_Object} from '../utils/types.js';
 import {ValidationException} from '../validator/validator-core.js';
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Logger} from '../core/logger/Logger.js';
+import {Logger} from '../core/logger/index.js';
 import {addItemToArray, removeItemFromArray, sortArray} from './array-tools.js';
 
 

@@ -1,6 +1,6 @@
 import {mkdirSync, readFileSync, rmSync, writeFileSync} from 'fs';
 import {dirname, resolve} from 'path';
-import {Logger} from '../core/logger/Logger.js';
+import {Logger} from '../core/logger/index.js';
 import {StringMap} from '../utils/index.js';
 import {FileSystemUtils} from '../utils/FileSystemUtils.js';
 

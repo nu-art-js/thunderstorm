@@ -22,7 +22,7 @@
 // noinspection TypeScriptPreferShortImport
 import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from './types.js';
 import {Constructor, UniqueId} from '../../utils/types.js';
-import {_logger_logException} from '../logger/utils.js';
+import {_logger_logException} from '../logger/index.js';
 
 
 /**
