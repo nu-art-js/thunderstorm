@@ -85,19 +85,3 @@ export type TestSuite<Input, ExpectedResult> = {
 	timeout?: number,
 }
 
-/**
- * Interface for modules that support test reset functionality.
- *
- * Modules implementing this interface can be reset to a clean state
- * between tests via the `dispatcher_resetTests` dispatcher.
- * @deprecated should be moved up in the package hierarchy
- */
-export interface TestResetListener {
-	/**
-	 * Resets the module to a clean state for testing.
-	 *
-	 * Called by the test framework to reset module state between tests.
-	 */
-	__resetForTests: () => Promise<any>;
-}
-

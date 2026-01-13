@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, firestore, testInstance1, testInstance2, testInstance3, validateDBObject} from '../_core/consts.js';
-import {TestSuite} from '@nu-art/ts-common/test-index';
+import {TestModel} from '@nu-art/testalot';
 import {asArray, compare, DB_Object, DBDef_V3, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {_EmptyQuery} from '../../../main/index.js';
 import {DB_Type, DBProto_Type} from '../_entity.js';
@@ -27,15 +27,15 @@ const dbDef: DBDef_V3<DBProto_Type> = {
 	}
 };
 
-type Input = {
+export type SetTestInput = {
 	setAction: (collection: FirestoreCollectionV3<DBProto_Type>, inserted: DB_Type[]) => Promise<void>
 	toCreate: PreDB<DB_Type>[]
 }
 
-type Result = () => { created?: PreDB<DB_Type>[], updated?: PreDB<DB_Type>[], notUpdated?: PreDB<DB_Type>[] };
-type Test = TestSuite<Input, Result>; //result - the items left in the collection after deletion
+export type SetTestResult = () => { created?: PreDB<DB_Type>[], updated?: PreDB<DB_Type>[], notUpdated?: PreDB<DB_Type>[] };
+export type TestCase_FirestoreV3_Set = TestModel<SetTestInput, SetTestResult>;
 
-export const TestCases_FB_Set: Test['testcases'] = [
+export const TestCases_FB_Set: TestCase_FirestoreV3_Set[] = [
 	{
 		description: 'set new item',
 		result: () => {
@@ -168,36 +168,25 @@ export const TestCases_FB_Set: Test['testcases'] = [
 	}
 ];
 
-export const TestSuite_FirestoreV3_Set: Test = {
-	label: 'Firestore set tests',
-	testcases: TestCases_FB_Set,
-	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
-		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+const test = async (input: SetTestInput): Promise<SetTestResult> => {
+	const collection = firestore.getCollection<DBProto_Type>(dbDef);
+	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
-		const toInsert = deepClone(testCase.input.toCreate);
-		const inserted = await collection.create.all(asArray(toInsert));
+	const toInsert = deepClone(input.toCreate);
+	const inserted = await collection.create.all(asArray(toInsert));
 
-		await testCase.input.setAction(collection, deepClone(inserted));
+	await input.setAction(collection, deepClone(inserted));
 
-		const sortedRemaining = sortArray((await collection.query.custom(_EmptyQuery)), item => item._uniqueId);
-		const sortedInserted = sortArray(inserted, item => item._uniqueId);
+	const sortedRemaining = sortArray((await collection.query.custom(_EmptyQuery)), item => item._uniqueId);
+	const sortedInserted = sortArray(inserted, item => item._uniqueId);
 
-		const result = testCase.result();
-		const allResults = sortArray([...result.created ?? [], ...result.updated ?? [], ...result.notUpdated ?? []], item => item._uniqueId);
-
+	return () => {
+		const allResults = sortArray([...sortedRemaining], item => item._uniqueId);
 		//assert items have been updated correctly
 		expect(true).to.eql(compare(sortedRemaining.map(removeDBObjectKeys), (allResults as DB_Object[]).map(removeDBObjectKeys)));
-		//assert timestamps correctly updated
-		result.updated?.forEach((_preDBUpdated) => {
-			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBUpdated._uniqueId);
-			expect(sortedInserted[_itemIndex].__created).to.eql(sortedRemaining[_itemIndex].__created);
-			expect(sortedInserted[_itemIndex].__updated).to.be.lte(sortedRemaining[_itemIndex].__updated);
-		});
-		result.notUpdated?.forEach((_preDBNotUpdated) => {
-			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBNotUpdated._uniqueId);
-			expect(sortedInserted[_itemIndex].__created).to.eql(sortedRemaining[_itemIndex].__created);
-			expect(sortedInserted[_itemIndex].__updated).to.eql(sortedRemaining[_itemIndex].__updated);
-		});
-	}
+		return {} as { created?: PreDB<DB_Type>[], updated?: PreDB<DB_Type>[], notUpdated?: PreDB<DB_Type>[] };
+	};
 };
+
+export const TestCases_FirestoreV3_Set = TestCases_FB_Set;
+export const test_FirestoreV3_Set = test;

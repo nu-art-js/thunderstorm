@@ -155,7 +155,6 @@ export type CollectionTestInput = {
 	innerId?: string
 	check: (collectionOuter: FirestoreCollectionV3<DBProto_Type_Complex>, collectionInner: FirestoreCollectionV3<DBProto_Type_Complex>) => Promise<void>
 }
-export type CollectionTest = TestSuite<CollectionTestInput, TestInputValue>;
 
 export const id_outer1 = '1cdcc47ff3778ba10721e2a95ba3f531';
 export const id_inner1 = '3d6cd1a475751ea9a0c0189d1dabef48';

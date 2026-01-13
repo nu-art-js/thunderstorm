@@ -25,7 +25,6 @@ import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin.js';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword.js";
 import {readFileSync} from 'fs';
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
-import {TestResetListener} from '@nu-art/testalot';
 import {deleteApp, getApps} from 'firebase-admin/app';
 
 
@@ -36,8 +35,7 @@ type ConfigType = {
 export const FIREBASE_DEFAULT_PROJECT_ID = 'local';
 
 export class ModuleBE_Firebase_Class
-	extends Module<ConfigType>
-	implements TestResetListener {
+	extends Module<ConfigType> {
 
 	private readonly adminSessions: { [s: string]: FirebaseSession_Admin; } = {};
 
