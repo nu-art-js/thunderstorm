@@ -365,3 +365,10 @@ export function getMin<T>(arr: T[], mapper: (item: T) => number = (item) => item
 	const sorted = sortArray(arr, mapper);
 	return sorted[0];
 }
+
+export function randomFromArray<T>(arr?: T[]): T | undefined {
+	if (!arr?.length)
+		return;
+
+	return arr[Math.floor((Math.random() * arr.length))];
+}
