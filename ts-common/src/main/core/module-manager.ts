@@ -154,7 +154,12 @@ export class ModuleManager
 	 * @internal
 	 */
 	// @ts-ignore
-	private static __resetForTests() {
+	static async destroy() {
+		await Promise.all(_modules.map(async module => {
+			// @ts-ignore
+			return await module.destroy();
+		}));
+
 		_modules.length = 0;
 		// @ts-ignore
 		delete ModuleManager.instance;
@@ -183,7 +188,7 @@ export class ModuleManager
 	 */
 	public setVersion(version: string) {
 		// @ts-ignore
-		this.version = version;
+		this['version'] = version;
 		return this;
 	}
 

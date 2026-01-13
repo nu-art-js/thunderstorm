@@ -297,4 +297,8 @@ export abstract class Module<Config = any,
 	protected validate(): void {
 		// ignorance is bliss
 	}
+
+	protected async destroy(){
+
+	}
 }

@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts.js';
-import {TestSuite} from '@nu-art/ts-common/test-index';
+import {TestModel} from '@nu-art/testalot';
 import {
 	asArray,
 	compare,
@@ -21,12 +21,12 @@ import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/Firestor
 chai.use(require('chai-as-promised'));
 
 
-type Input = {
+export type DeleteTestInput = {
 	deleteAction: (collection: FirestoreCollectionV3<DBProto_Type>, inserted: DB_Type[]) => Promise<void>
 	toInsert: PreDB<DB_Type>[]
 }
 
-type Test = TestSuite<Input, PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
+export type TestCase_FirestoreV3_Delete = TestModel<DeleteTestInput, PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
 
 const dbDef: DBDef_V3<DBProto_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
@@ -43,7 +43,7 @@ const dbDef: DBDef_V3<DBProto_Type> = {
 	}
 };
 
-export const TestCases_FB_Delete: Test['testcases'] = [
+export const TestCases_FB_Delete: TestCase_FirestoreV3_Delete[] = [
 	{
 		description: 'insert 1 & delete.unique',
 		result: [],
@@ -168,18 +168,18 @@ export const TestCases_FB_Delete: Test['testcases'] = [
 	},
 ];
 
-export const TestSuite_FirestoreV3_Delete: Test = {
-	label: 'Firestore delete tests',
-	testcases: TestCases_FB_Delete,
-	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
-		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+const test = async (input: DeleteTestInput): Promise<PreDB<DB_Type>[]> => {
+	const collection = firestore.getCollection<DBProto_Type>(dbDef);
+	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
-		const toInsert = deepClone(testCase.input.toInsert);
-		const inserted = await collection.create.all(asArray(toInsert));
+	const toInsert = deepClone(input.toInsert);
+	const inserted = await collection.create.all(asArray(toInsert));
 
-		await testCase.input.deleteAction(collection, inserted);
-		const remainingDBItems = await collection.query.custom(_EmptyQuery);
-		expect(true).to.eql(compare(sortArray(remainingDBItems.map(removeDBObjectKeys), item => item.stringValue), sortArray(testCase.result, item => item.stringValue)));
-	}
+	await input.deleteAction(collection, inserted);
+	const remainingDBItems = await collection.query.custom(_EmptyQuery);
+	const remaining = remainingDBItems.map(removeDBObjectKeys);
+	return sortArray(remaining, item => item.stringValue);
 };
+
+export const TestCases_FirestoreV3_Delete = TestCases_FB_Delete;
+export const test_FirestoreV3_Delete = test;
