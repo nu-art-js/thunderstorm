@@ -1,7 +1,7 @@
 // file: ./tests/units/deploy/unit-deploy-hosting.test.ts
 import {DebugFlag, isErrorOfType, LogLevel, sleep} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {phase_Compile, phase_DeployImage, phase_Install, phase_Prepare, Unit_FirebaseHostingApp} from '../../_common.js';
 import {PhaseAggregatedException} from '../../../main/exceptions/PhaseAggregatedException.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';

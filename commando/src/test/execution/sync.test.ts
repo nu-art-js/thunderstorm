@@ -1,7 +1,7 @@
 import {Commando_Basic, CommandoInteractive} from '../_common.js';
 import {Result_Raw, TestCase_CommandoExecution, TestCases_CommandoExecution, TestInput_CommandoBuilder, TestResult_CommandoOutput} from './cases.js';
 import {describe} from 'mocha';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {runSingleTestCase} from '@nu-art/testalot';
 
 const test = async (input: TestInput_CommandoBuilder): Promise<TestResult_CommandoOutput> => {
 	const commando = CommandoInteractive.create(Commando_Basic);

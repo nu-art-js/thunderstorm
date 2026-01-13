@@ -13,7 +13,7 @@ This rule defines the standard testing patterns used across the codebase. There 
 **Use When**: Testing pure functions with simple input/output, no external dependencies.
 
 **Pattern**:
-- Import `TestSuite`, `defaultTestProcessor`, `runSingleTestCase` from `@nu-art/ts-common/testing`
+- Import `TestSuite`, `defaultTestProcessor`, `runSingleTestCase` from `@nu-art/testalot`
 - Define `Input` and `Result` types
 - Create a `test` function that takes `Input` and returns `Promise<Result>`
 - Use `runTestCase` wrapper that calls `runSingleTestCase`

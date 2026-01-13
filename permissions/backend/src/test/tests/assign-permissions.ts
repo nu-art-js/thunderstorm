@@ -1,4 +1,4 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 import {BadImplementationException, dbObjectToId, filterInstances, reduceToMap, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account-backend';

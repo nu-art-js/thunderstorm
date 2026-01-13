@@ -1,7 +1,7 @@
 // file: ./tests/units/deploy/unit-deploy-image-dry-run.test.ts
 import {DebugFlag, LogLevel, sleep} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {phase_Compile, phase_DeployImage, phase_Prepare, Unit_FirebaseFunctionsApp} from '../../_common.js';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';

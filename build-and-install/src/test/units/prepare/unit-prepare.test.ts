@@ -1,6 +1,6 @@
 // file: ./tests/phase-execution/prepare-phase.test.ts
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {resolve} from 'path';
 import {expect} from 'chai';
 import {Unit_TypescriptLib} from '../../_common.js';

@@ -1,5 +1,5 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {DefaultTestProcessor, defaultTestProcessor, runSingleTestCase, TestCase_Error} from '@nu-art/ts-common/testing';
+import {TestSuite} from '@nu-art/testalot';
+import {DefaultTestProcessor, defaultTestProcessor, runSingleTestCase, TestCase_Error} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {Commando_Basic, CommandoInteractive, ShellLogProcessor, SimpleTestCommando} from '../../_common.js';
 import {ExpectedResult, Result_Raw, TestResult_CommandoOutput} from '../cases.js';

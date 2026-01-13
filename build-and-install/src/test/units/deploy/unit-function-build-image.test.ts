@@ -1,7 +1,7 @@
 // file: ./tests/units/deploy/unit-build-push-image.test.ts
 import {DebugFlag, generateHex, isErrorOfType, LogLevel, sleep, tsValidateAnyString, tsValidateResult} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {phase_BuildPushImage, phase_Compile, phase_Install, phase_Prepare, Unit_FirebaseFunctionsApp} from '../../_common.js';
 import {PhaseAggregatedException} from '../../../main/exceptions/PhaseAggregatedException.js';
 import {CommandoException} from '@nu-art/commando/shell/core/CliError';

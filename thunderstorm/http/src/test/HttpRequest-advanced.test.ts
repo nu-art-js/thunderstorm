@@ -20,7 +20,7 @@
  */
 
 import {ApiDef, BodyApi, HttpClient_Class, HttpException, HttpMethod, HttpRequest, QueryApi, TS_Progress} from '../main/index.js';
-import {runSingleTestCase, TestSuite} from '@nu-art/ts-common/testing';
+import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
 import {createTestApiDef, createTestClient} from './helpers.js';
 import {expect} from 'chai';
 

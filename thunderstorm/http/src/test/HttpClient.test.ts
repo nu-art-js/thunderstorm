@@ -20,7 +20,7 @@
  */
 
 import {HttpClient_Class, HttpMethod, QueryApi} from '../main/index.js';
-import {runSingleTestCase, TestSuite} from '@nu-art/ts-common/testing';
+import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
 import {createTestApiDef, createTestClient} from './helpers.js';
 import {expect} from 'chai';
 

@@ -1,6 +1,6 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 import {tsValidateEmail, tsValidateResult} from '@nu-art/ts-common';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {runSingleTestCase} from '@nu-art/testalot';
 
 type EmailValidationInput = string;
 type EmailValidationSuite = TestSuite<EmailValidationInput, boolean>;

@@ -1,6 +1,6 @@
-import {TestModel} from '@nu-art/ts-common/testing/types';
+import {TestModel} from '@nu-art/testalot';
 import {BaiParams, BaseUnit, ExecutionStep, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {runSingleTestCase} from '@nu-art/testalot';
 import {RunningStatusHandler} from '../../_common.js';
 import {flatArray} from '@nu-art/ts-common';
 

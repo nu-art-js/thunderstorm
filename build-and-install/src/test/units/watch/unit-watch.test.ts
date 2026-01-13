@@ -7,8 +7,8 @@ import '../../UnitsDependencyMapper/dependency-mapper.test.js';
 import '../../UnitsDependencyMapper/dependency-filter.test.js';
 import '../../UnitsDependencyMapper/transitive-dependencies.test.js';
 
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase} from '@nu-art/testalot';
 import {phase_Install, phase_Prepare, Unit_NodeProject, Unit_TypescriptLib} from '../../_common.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';

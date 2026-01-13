@@ -1,7 +1,7 @@
 import {Module} from '@nu-art/ts-common/core/module';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
 import {ServerApi} from './server/server-api.js';
-import {TestResetListener} from '@nu-art/ts-common/testing/types';
+import {TestResetListener} from '@nu-art/testalot';
 
 
 export class ModuleBE_APIs_Class

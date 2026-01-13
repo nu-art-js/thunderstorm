@@ -1,6 +1,6 @@
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {runSingleTestCase} from '@nu-art/testalot';
 import {Commando_Basic, CommandoInteractive, SimpleTestCommando} from '../_common.js';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 
 // Input and output types
 export type Input = (commando: SimpleTestCommando) => void;

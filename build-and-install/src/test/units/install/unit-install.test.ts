@@ -1,7 +1,7 @@
 // file: ./tests/phase-execution/install-phase.test.ts
 
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase} from '@nu-art/testalot';
 import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {expect} from 'chai';
