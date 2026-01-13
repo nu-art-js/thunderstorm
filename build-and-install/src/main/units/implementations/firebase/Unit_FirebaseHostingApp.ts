@@ -135,7 +135,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	private async resolveHostingRC() {
 		const envConfig = this.getEnvConfig();
-		const rcConfig = {projects: {default: envConfig.projectId}};
+		const rcConfig = { projects: { default: envConfig.projectId } };
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseRC}`;
 		await FileSystemUtils.file.write.json(targetPath, rcConfig);
 	}
@@ -153,7 +153,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 				hosting: this.config.hostingConfig ?? {
 					'public': 'dist',
 					'rewrites': [
-						{'source': '**', 'destination': '/index.html'}
+						{ 'source': '**', 'destination': '/index.html' }
 					]
 				}
 			};
@@ -223,8 +223,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	async buildPushImage() {
 		const hostingDeployment = this.config.hostingDeployment;
 		if (!hostingDeployment) {
-			// Not a hosting deployment, skip (Functions will handle it)
-			return;
+			throw new ImplementationMissingException(`Missing hostingDeployment config in unit ${this.config.key}`);
 		}
 
 		const buildTag = this.runtimeContext.runtimeParams.buildPushImage;
@@ -340,8 +339,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	async deployImage() {
 		const hostingDeployment = this.config.hostingDeployment;
 		if (!hostingDeployment) {
-			// Not a hosting deployment, skip (Functions will handle it)
-			return;
+			throw new ImplementationMissingException(`Missing hostingDeployment config in unit ${this.config.key}`);
 		}
 
 		const deployTag = this.runtimeContext.runtimeParams.deployImage;
@@ -351,6 +349,9 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 		const artifactRegistry = hostingDeployment.artifactRegistry;
 		const packageName = this.config.packageJson.name;
+		const region = artifactRegistry.region;
+		const repository = artifactRegistry.repository;
+		const projectId = artifactRegistry.projectId;
 
 		this.logInfo(`Deploying hosting package: ${packageName}:${deployTag}`);
 
@@ -362,6 +363,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 		// Setup temp directory for deployment
 		const deployTempDir = resolve(this.config.fullPath, `${CONST_TrashDir}/${CONST_DeployHostingDir}`);
+		this.logInfo(`Setting up deployment directory: ${deployTempDir}`);
 		await FileSystemUtils.folder.delete(deployTempDir);
 		await FileSystemUtils.folder.create(deployTempDir);
 
@@ -372,9 +374,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 		// Download tarball from Artifact Registry
 		// Note: --destination must be a directory, not a file path
-		const region = artifactRegistry.region;
-		const repository = artifactRegistry.repository;
-		const projectId = artifactRegistry.projectId;
+		this.logInfo(`Downloading hosting package from Artifact Registry from: ${projectId}/${repository}/${packageName}/${deployTag}`);
 
 		await this.executeAsyncCommando(commando, `gcloud artifacts generic download --package=${packageName} --version=${deployTag} --destination=${deployTempDir} --location=${region} --repository=${repository} --project=${projectId}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
@@ -383,6 +383,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 		// Find the downloaded file (gcloud downloads with auto-generated name based on package and version)
 		// The file will be named: {packageName}-{version}.tar.gz
+		this.logInfo(`Locating downloaded tarball...`);
 		const downloadedFiles = await FileSystemUtils.folder.list(deployTempDir);
 		const tarballFile = downloadedFiles.find(file => file.endsWith('.tar.gz'));
 		if (!tarballFile) {
@@ -391,9 +392,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		const tarballPath = resolve(deployTempDir, tarballFile);
 		this.logDebug(`Downloaded tarball: ${tarballPath}`);
 
-		this.logInfo(`Downloaded tarball: ${tarballPath}`);
-
 		// Extract tarball directly to deployTempDir (contains firebase.json, .firebaserc, and dist/)
+		this.logInfo(`Extracting hosting package...`);
 		await this.executeAsyncCommando(commando, `tar -xzf ${tarballPath} -C ${deployTempDir}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0) {
 				throw new CommandoException(`Failed to extract tarball (exit code ${exitCode})`, stdout, stderr, exitCode);
@@ -404,6 +404,9 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 		// firebase.json and .firebaserc are already in deployTempDir from tarball extraction
 		// Deploy using firebase CLI
+		const envConfig = this.getEnvConfig();
+		this.logInfo(`Deploying to Firebase Hosting: ${deployTempDir} => ${envConfig.projectId}`);
+
 		const deployCommando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(deployTempDir)
 			.setLogLevelFilter(deployLogFilter)
