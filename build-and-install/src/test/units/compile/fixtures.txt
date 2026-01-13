@@ -67,6 +67,17 @@ export const = 5;
       "customTSConfig": true
     }
 }
+//// file: ./src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node"
+  }
+}
+
+
+//// file: ./src/main/index.ts
+export const x = 5;
 
 // file: ./lib-compile--fail.txt
 //// file: ./__package.json

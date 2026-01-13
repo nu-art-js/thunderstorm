@@ -1,6 +1,6 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 import {BadImplementationException} from '@nu-art/ts-common';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {BaseCliParam, CliParams} from '../../main/cli-params/types.js';
 import {CLIParamsResolver} from '../../main/cli-params/CLIParamsResolver.js';
 

@@ -32,7 +32,7 @@ import {
 } from '@nu-art/ts-common';
 import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend/index.js';
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
-import {TestModel, TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestModel, TestSuite} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {DB_Type, DB_Type_Complex, DBProto_Type_Complex, TestInputValue} from '../_entity.js';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';

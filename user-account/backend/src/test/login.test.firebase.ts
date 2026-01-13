@@ -1,6 +1,6 @@
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase} from '@nu-art/testalot';
 import {generateHex} from '@nu-art/ts-common';
 import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
 import {DefaultStormTestConfig_SessionAndAccount} from './utils/helpers.js';

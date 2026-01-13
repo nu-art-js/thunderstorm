@@ -1,8 +1,8 @@
 // version: v2;
 // file: ./test/units/migration/unit-to-esm.test.ts
 import {DebugFlag, LogLevel, sleep} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {phase_Prepare, phase_ToESM} from '../../_common.js';
 import {resolve} from 'path';
 import {expect} from 'chai';

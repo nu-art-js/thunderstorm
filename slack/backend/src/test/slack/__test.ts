@@ -1,6 +1,6 @@
 import {TestSuite_SlackServerAPIError} from './slack.js';
 import {ConfigType_ModuleBE_Slack, ModuleBE_Slack} from '../../main/index.js';
-import {ModuleManagerTester, testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {ModuleManagerTester, testSuiteTester} from '@nu-art/testalot';
 import {Second} from '@nu-art/ts-common';
 
 

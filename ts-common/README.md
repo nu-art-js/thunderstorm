@@ -118,7 +118,7 @@ The package provides logical export points:
 - **Validator** (`@nu-art/ts-common/validator`): Validation system
 - **DB** (`@nu-art/ts-common/db`): Database types and utilities
 - **Modules** (`@nu-art/ts-common/modules`): Reusable module implementations
-- **Testing** (`@nu-art/ts-common/testing`): Testing utilities
+- **Testing** (`@nu-art/testalot`): Testing utilities
 
 ## Documentation
 

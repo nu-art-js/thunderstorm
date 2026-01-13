@@ -46,7 +46,9 @@
     "@nu-art/ts-common": "?",
     "axios": "^1.13.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
   "unitConfig": {
     "type": "typescript-lib"
   },

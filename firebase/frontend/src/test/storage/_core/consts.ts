@@ -1,5 +1,5 @@
 import {BucketWrapper, ModuleBE_Firebase} from '../../../main/backend/index.js';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 import {BadImplementationException} from '@nu-art/ts-common';
 import '../../firestore-v3/_core/consts.js';
 

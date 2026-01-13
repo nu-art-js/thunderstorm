@@ -1,7 +1,6 @@
 // file: ./tests/phase-execution/compile-phase.test.ts
 import {DebugFlag, LogLevel, sleep} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {defaultTestProcessor, runSingleTestCase, TestSuite} from '@nu-art/testalot';
 import {phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {existsSync} from 'fs';

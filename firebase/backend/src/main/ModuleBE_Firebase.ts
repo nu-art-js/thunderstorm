@@ -25,7 +25,7 @@ import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin.js';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword.js";
 import {readFileSync} from 'fs';
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
-import {TestResetListener} from '@nu-art/ts-common/testing/types';
+import {TestResetListener} from '@nu-art/testalot';
 import {deleteApp, getApps} from 'firebase-admin/app';
 
 

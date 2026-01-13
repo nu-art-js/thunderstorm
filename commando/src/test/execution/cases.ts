@@ -1,5 +1,5 @@
 import {SimpleTestCommando} from '../_common.js';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 
 export type TestInput_CommandoBuilder = (commando: SimpleTestCommando) => void;
 export type TestResult_CommandoOutput = {

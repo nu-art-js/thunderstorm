@@ -42,6 +42,9 @@
     "@nu-art/ts-common": "?",
     "@nu-art/commando": "?"
   },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
   "unitConfig": {
     "type": "typescript-lib"
   },

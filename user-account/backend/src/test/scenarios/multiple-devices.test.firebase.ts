@@ -2,7 +2,7 @@ import {md5} from '@nu-art/ts-common';
 import {ModuleBE_AccountDB} from '../_main.js';
 import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
 import {DefaultStormTestConfig_SessionAndAccount, TestHelper_InterceptJwtHeader, TestHelper_NoPasswordAssertion} from '../utils/helpers.js';
-import {runScenario} from '@nu-art/ts-common/testing/consts';
+import {runScenario} from '@nu-art/testalot';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
 import {expect} from 'chai';
 

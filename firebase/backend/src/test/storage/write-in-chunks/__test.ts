@@ -1,4 +1,4 @@
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@nu-art/testalot';
 import {TestSuite_WriteInChunks} from './write-in-chunks.js';
 
 

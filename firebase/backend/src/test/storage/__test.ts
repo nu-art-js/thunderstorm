@@ -1,4 +1,4 @@
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@nu-art/testalot';
 import {TestSuite_Storage_Write} from './write-to-files/write-to-files.js';
 import {TestSuite_GetAdminBucket} from './bucket-utils/getMainBucket.js';
 import {TestSuite_GetOrCreateBucket} from './bucket-utils/getOrCreateBucket.js';

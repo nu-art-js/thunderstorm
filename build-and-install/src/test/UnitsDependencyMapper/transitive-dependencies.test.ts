@@ -1,6 +1,6 @@
 import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 
 export type Input = { units: UnitDependentNode[], target: string };
 export type Result = string[];

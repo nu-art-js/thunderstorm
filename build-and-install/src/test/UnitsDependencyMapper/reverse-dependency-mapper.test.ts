@@ -2,8 +2,8 @@
 // Motivation: From a changed lib, find all apps (and intermediate libs) that depend on it
 
 import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 
 export type ReverseFilterInput = { units: UnitDependentNode[], changed: string[] };
 export type ReverseFilterResult = string[];

@@ -1,6 +1,6 @@
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp, Unit_NodeProject, Unit_TypescriptLib} from '../_common.js';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
+import {TestSuite} from '@nu-art/testalot';
 import {resolve} from 'path';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {BuildAndInstall} from '../../main/build-and-install-v3.js';
