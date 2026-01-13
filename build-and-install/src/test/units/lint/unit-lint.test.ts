@@ -1,7 +1,6 @@
 // file: ./tests/phase-execution/lint-phase.test.ts
 
-import {TestSuite} from '@nu-art/testalot';
-import {runSingleTestCase} from '@nu-art/testalot';
+import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
 import {phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {expect} from 'chai';
@@ -21,7 +20,6 @@ const pathToWorkspace = resolve(pathToTemp, './workspace');
 const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
-let unit: Unit_TypescriptLib;
 let buildAndInstall: BuildAndInstall;
 
 
@@ -31,7 +29,7 @@ type Output = () => void;
 const test = async (setup: Input): Promise<void> => {
 	FilesCache.clear();
 	await workspaceCreator.setupWorkspace(setup.fixtures, '', false);
-	unit = buildAndInstall.projectUnits.find(unit => unit.config.key == 'lib-lint') as Unit_TypescriptLib;
+	const unit = buildAndInstall.workspace.getUnitByKey('lib-lint', Unit_TypescriptLib);
 	await unit.lint();
 };
 
@@ -50,8 +48,9 @@ describe('TypescriptLib - Lint Phase', () => {
 		await workspaceCreator.setupWorkspace(['project-lib-lint.txt'], 'lib-lint');
 
 		buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
-		await buildAndInstall.build();
 		buildAndInstall.setPhases([[phase_Prepare], [phase_Install]]);
+
+		await buildAndInstall.build();
 		await buildAndInstall.run();
 	});
 
