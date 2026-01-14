@@ -1,6 +1,5 @@
 import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
-import {TestSuite} from '@nu-art/testalot';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
+import {TestModel, defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 
 type Input = {
 	nodes: UnitDependentNode[]
@@ -8,8 +7,7 @@ type Input = {
 };
 type Result = string[][];
 
-type TestSuite_UnitsDependencyMapper = TestSuite<Input, Result>;
-type TestCase_UnitsDependencyMapper = TestSuite_UnitsDependencyMapper['testcases'][number];
+type TestCase_UnitsDependencyMapper = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	const unitsDependencyMapper = new UnitsDependencyMapper(input.nodes);

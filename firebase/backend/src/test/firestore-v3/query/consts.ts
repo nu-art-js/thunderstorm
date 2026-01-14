@@ -15,7 +15,7 @@ import {
 	testInstance3,
 	testInstance4,
 	testInstance5
-} from '../_core/consts.js';
+} from '../../_entity/_core/consts.js';
 import {_EmptyQuery} from '../../../main/index.js';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 import {DBProto_Type, DB_Type, TestInputValue} from '../_entity.js';

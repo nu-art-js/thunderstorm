@@ -33,7 +33,7 @@ import {
 	Request_UpdateDocument,
 } from '@nu-art/live-docs-shared';
 
-import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase-backend';
+import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase-backend/v1';
 
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm-backend';
 import {ApiDef_LiveDoc} from '@nu-art/live-docs-shared/api';

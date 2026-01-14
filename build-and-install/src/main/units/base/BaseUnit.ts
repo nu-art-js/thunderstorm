@@ -14,11 +14,11 @@ import {
 	TimeCounter,
 	timeCounter
 } from '@nu-art/ts-common';
-import {CommandoInteractive} from '@nu-art/commando/shell/index';
-import {BaseCommando} from '@nu-art/commando/shell/core/BaseCommando';
-import {MergeTypes} from '@nu-art/commando/shell/core/class-merger';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
-import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
+import {CommandoInteractive} from '@nu-art/commando';
+import {BaseCommando} from '@nu-art/commando';
+import {MergeTypes} from '@nu-art/commando';
+import {CommandoPool} from '@nu-art/commando';
+import {Commando_Basic} from '@nu-art/commando';
 import {BAI_Config} from '../../config/types/index.js';
 import {UnitsDependencyMapper} from '../../dependencies/UnitsDependencyMapper.js';
 import {BaiParams} from '../../core/params.js';

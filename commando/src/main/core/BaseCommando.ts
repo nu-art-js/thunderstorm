@@ -5,19 +5,19 @@ import {CreateMergedInstance} from './class-merger.js';
 
 /**
  * Base class for shell command execution with plugin support.
- * 
+ *
  * Provides a fluent API for building shell commands with indentation support.
  * Uses a plugin system that merges multiple classes into a single instance
  * using the class-merger utility.
- * 
+ *
  * **Plugin System**: The `_create()` method uses class merging to combine
  * BaseCommando with plugin classes, creating a single instance with methods
  * from all merged classes.
- * 
+ *
  * **Command Building**: Commands are built using the CommandBuilder, which
  * supports indentation and newline handling. The builder accumulates commands
  * until `execute()` is called.
- * 
+ *
  * **Note**: The `builder` field is marked readonly but is actually set via
  * `@ts-ignore` in `_create()`. This is a type safety issue.
  */
@@ -29,12 +29,12 @@ export class BaseCommando {
 
 	/**
 	 * Creates a new BaseCommando instance merged with provided plugins.
-	 * 
+	 *
 	 * Uses class merging to combine BaseCommando with plugin classes into
 	 * a single instance. The builder is initialized after merging.
-	 * 
+	 *
 	 * **Note**: Uses `@ts-ignore` to set the readonly `builder` field.
-	 * 
+	 *
 	 * @template T - Array of constructor types to merge
 	 * @param plugins - Plugin classes to merge with BaseCommando
 	 * @returns Merged instance with BaseCommando and all plugin methods
@@ -56,9 +56,9 @@ export class BaseCommando {
 
 	/**
 	 * Toggles or sets debug mode.
-	 * 
+	 *
 	 * When debug is enabled, shell execution provides verbose logging.
-	 * 
+	 *
 	 * @param debug - Optional value to set (if omitted, toggles current state)
 	 * @returns This instance for method chaining
 	 */
@@ -76,6 +76,12 @@ export class BaseCommando {
 		this.builder.append(command);
 		return this;
 	}
+
+	mark() {
+		this.builder.setMark();
+		return this;
+	}
+
 
 	/**
 	 * Increases the current indentation level by one.

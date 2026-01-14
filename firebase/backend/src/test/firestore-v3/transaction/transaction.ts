@@ -1,4 +1,4 @@
-import {CollectionTest, prepareCollectionTest} from '../_core/consts.js';
+import {CollectionTest, prepareCollectionTest} from '../../_entity/_core/consts.js';
 import * as chaiAsPromised from 'chai-as-promised';
 import {transactionTestCases} from './consts.js';
 

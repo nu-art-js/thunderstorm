@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore, validateDBObject} from '../_core/consts.js';
+import {firestore, validateDBObject} from '../../_entity/_core/consts.js';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {composeDbObjectUniqueId} from '../../../main/index.js';

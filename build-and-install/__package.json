@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "chokidar": "^3.6.0",
+    "@nu-art/cli-params": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/commando": "?"
   },

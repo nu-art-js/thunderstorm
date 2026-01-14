@@ -1,13 +1,12 @@
 // version: v2;
 // file: ./test/units/migration/unit-to-esm.test.ts
 import {DebugFlag, LogLevel, sleep} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/testalot';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
+import {TestModel, defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {phase_Prepare, phase_ToESM} from '../../_common.js';
 import {resolve} from 'path';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
@@ -48,8 +47,7 @@ const test = async (setup: Input) => {
 };
 
 
-type TestSuite_ToESM = TestSuite<Input, Output>;
-type TestCase_ToESM = TestSuite_ToESM['testcases'][number];
+type TestCase_ToESM = TestModel<Input, Output>;
 
 const runTestCase = (testCase: TestCase_ToESM, processor = defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 

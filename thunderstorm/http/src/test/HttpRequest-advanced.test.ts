@@ -20,7 +20,7 @@
  */
 
 import {ApiDef, BodyApi, HttpClient_Class, HttpException, HttpMethod, HttpRequest, QueryApi, TS_Progress} from '../main/index.js';
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {createTestApiDef, createTestClient} from './helpers.js';
 import {expect} from 'chai';
 
@@ -38,8 +38,7 @@ type Result = {
 	callbackCalled?: boolean;
 };
 
-type TestSuite_HttpAdvanced = TestSuite<Input, Result>;
-type TestCase_HttpAdvanced = TestSuite_HttpAdvanced['testcases'][number];
+type TestCase_HttpAdvanced = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	const request = input.client.createRequest(input.apiDef);
@@ -110,7 +109,7 @@ describe('HttpRequest - Advanced Features', () => {
 				expect(e.responseCode).to.equal(0);
 			}
 		}
-	}).timeout(5000);
+	}).timeout(30000);
 
 	it('Custom headers', runTestCase({
 		input: {
@@ -125,7 +124,7 @@ describe('HttpRequest - Advanced Features', () => {
 			expect(actual.data.headers['X-Custom-Header']).to.equal('custom-value');
 			expect(actual.data.headers['X-Another-Header']).to.equal('another-value');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Multiple header values', runTestCase({
 		input: {
@@ -141,7 +140,7 @@ describe('HttpRequest - Advanced Features', () => {
 			expect(headerValue).to.include('value1');
 			expect(headerValue).to.include('value2');
 		}
-	}));
+	})).timeout(30000);
 
 	it('URL parameter encoding', runTestCase({
 		input: {
@@ -157,7 +156,7 @@ describe('HttpRequest - Advanced Features', () => {
 			expect(actual.data.args.special).to.equal('value with spaces');
 			expect(actual.data.args.encoded).to.equal('value&with=special');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Relative URL construction', runTestCase({
 		input: {
@@ -168,7 +167,7 @@ describe('HttpRequest - Advanced Features', () => {
 			expect(actual.status).to.equal(200);
 			expect(actual.data.url).to.include('httpbin.org/get');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Absolute URL override', runTestCase({
 		input: {
@@ -183,7 +182,7 @@ describe('HttpRequest - Advanced Features', () => {
 			expect(actual.status).to.equal(200);
 			expect(actual.data.url).to.include('test=absolute');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Callback chaining - multiple onCompleted', async () => {
 		const request = client.createRequest({
@@ -206,7 +205,7 @@ describe('HttpRequest - Advanced Features', () => {
 
 		expect(callback1Called).to.be.true;
 		expect(callback2Called).to.be.true;
-	});
+	}).timeout(30000);
 
 	it('Callback chaining - multiple onError', async () => {
 		const request = client.createRequest({
@@ -233,7 +232,7 @@ describe('HttpRequest - Advanced Features', () => {
 
 		expect(error1Called).to.be.true;
 		expect(error2Called).to.be.true;
-	});
+	}).timeout(30000);
 
 	it('Timeout configuration', async () => {
 		const request = client.createRequest({
@@ -250,7 +249,7 @@ describe('HttpRequest - Advanced Features', () => {
 			// Should timeout or throw error
 			expect(e).to.exist;
 		}
-	}).timeout(10000);
+	}).timeout(30000);
 
 	it('Request with body and compression header', runTestCase({
 		input: {
@@ -263,7 +262,7 @@ describe('HttpRequest - Advanced Features', () => {
 			expect(actual.status).to.equal(200);
 			expect(actual.data.json.test).to.equal('data');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Progress listener callback', async () => {
 		const request = client.createRequest({
@@ -283,5 +282,5 @@ describe('HttpRequest - Advanced Features', () => {
 		// Note: Progress events may not fire for all requests depending on axios configuration
 		// This test verifies the listener can be set without errors
 		expect(request).to.exist;
-	});
+	}).timeout(30000);
 });

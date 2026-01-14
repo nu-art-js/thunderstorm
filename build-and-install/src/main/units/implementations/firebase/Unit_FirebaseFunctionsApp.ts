@@ -3,12 +3,12 @@ import {CONST_BuildImageDir, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_LatestT
 import {FirebasePackageConfig} from '../../../config/types/index.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
-import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
+import {Commando_NVM} from '@nu-art/commando';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/index.js';
 import {resolve} from 'path';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
-import {CommandoException} from '@nu-art/commando/shell/core/CliError';
+import {CommandoException} from '@nu-art/commando';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [

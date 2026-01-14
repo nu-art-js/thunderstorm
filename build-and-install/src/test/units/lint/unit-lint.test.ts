@@ -1,11 +1,11 @@
 // file: ./tests/phase-execution/lint-phase.test.ts
 
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {FilesCache} from '../../../main/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
@@ -24,7 +24,7 @@ let buildAndInstall: BuildAndInstall;
 
 
 type Input = { fixtures: string[] };
-type Output = () => void;
+type Output = () => Promise<void>;
 
 const test = async (setup: Input): Promise<void> => {
 	FilesCache.clear();
@@ -33,8 +33,7 @@ const test = async (setup: Input): Promise<void> => {
 	await unit.lint();
 };
 
-type TestSuite_LintPhase = TestSuite<Input, Output>;
-type TestCase_LintPhase = TestSuite_LintPhase['testcases'][number];
+type TestCase_LintPhase = TestModel<Input, Output>;
 const runTestCase = (testCase: TestCase_LintPhase) => () => runSingleTestCase(test, testCase);
 
 describe('TypescriptLib - Lint Phase', () => {
@@ -55,22 +54,18 @@ describe('TypescriptLib - Lint Phase', () => {
 	});
 
 
-	it('Should pass linting without errors', runTestCase(() => {
-		return {
-			input: {fixtures: ['./project-lib-lint--valid.txt']},
-			result: async () => {
-				expect(true).to.be.true; // Placeholder until lint result is assertable
-			}
-		};
+	it('Should pass linting without errors', runTestCase({
+		input: {fixtures: ['./project-lib-lint--valid.txt']},
+		result: async () => {
+			expect(true).to.be.true; // Placeholder until lint result is assertable
+		}
 	})).timeout(15000);
 
-	it('Should fail linting on invalid code', runTestCase(() => {
-		return {
-			input: {fixtures: ['./project-lib-lint--invalid.txt']},
-			error: {
-				expected: 'Linting failed'
-			}
-		};
+	it('Should fail linting on invalid code', runTestCase({
+		input: {fixtures: ['./project-lib-lint--invalid.txt']},
+		error: {
+			expected: 'Linting failed'
+		}
 	})).timeout(15000);
 
 	afterEach(function () {

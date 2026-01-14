@@ -20,7 +20,7 @@
  */
 
 import {ApiDef, BodyApi, HttpClient_Class, HttpMethod, HttpRequest, QueryApi} from '../main/index.js';
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {createTestApiDef, createTestClient} from './helpers.js';
 import {expect} from 'chai';
 
@@ -41,8 +41,7 @@ type Result = {
 	headers?: Record<string, string>;
 };
 
-type TestSuite_HttpRequest = TestSuite<Input, Result>;
-type TestCase_HttpRequest = TestSuite_HttpRequest['testcases'][number];
+type TestCase_HttpRequest = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	const request = input.client.createRequest(input.apiDef, input.requestData);
@@ -74,7 +73,7 @@ describe('HttpRequest - Basic Methods', () => {
 			expect(actual.data.args.test).to.equal('value');
 			expect(actual.data.url).to.include('test=value');
 		}
-	}));
+	})).timeout(30000);
 
 	it('GET request without parameters', runTestCase({
 		input: {
@@ -85,7 +84,7 @@ describe('HttpRequest - Basic Methods', () => {
 			expect(actual.status).to.equal(200);
 			expect(actual.data.url).to.include('httpbin.org/get');
 		}
-	}));
+	})).timeout(30000);
 
 	it('POST request with JSON body', runTestCase({
 		input: {
@@ -98,7 +97,7 @@ describe('HttpRequest - Basic Methods', () => {
 			expect(actual.data.json.test).to.equal('value');
 			expect(actual.headers?.['content-type']).to.include('application/json');
 		}
-	}));
+	})).timeout(30000);
 
 	it('POST request with plain text body', runTestCase({
 		input: {
@@ -110,7 +109,7 @@ describe('HttpRequest - Basic Methods', () => {
 			expect(actual.status).to.equal(200);
 			expect(actual.data.data).to.equal('plain text body');
 		}
-	}));
+	})).timeout(30000);
 
 	it('PUT request with body', runTestCase({
 		input: {
@@ -122,7 +121,7 @@ describe('HttpRequest - Basic Methods', () => {
 			expect(actual.status).to.equal(200);
 			expect(actual.data.json.data).to.equal('put-data');
 		}
-	}));
+	})).timeout(30000);
 
 	it('PATCH request with body', runTestCase({
 		input: {
@@ -134,7 +133,7 @@ describe('HttpRequest - Basic Methods', () => {
 			expect(actual.status).to.equal(200);
 			expect(actual.data.json.data).to.equal('patch-data');
 		}
-	}));
+	})).timeout(30000);
 
 	it('DELETE request', runTestCase({
 		input: {
@@ -144,7 +143,7 @@ describe('HttpRequest - Basic Methods', () => {
 		result: async (actual) => {
 			expect(actual.status).to.equal(200);
 		}
-	}));
+	})).timeout(30000);
 
 	it('HEAD request', runTestCase({
 		input: {
@@ -155,7 +154,7 @@ describe('HttpRequest - Basic Methods', () => {
 			expect(actual.status).to.equal(200);
 			// HEAD requests typically have no body
 		}
-	}));
+	})).timeout(30000);
 
 	it('OPTIONS request', runTestCase({
 		input: {
@@ -165,7 +164,7 @@ describe('HttpRequest - Basic Methods', () => {
 		result: async (actual) => {
 			expect(actual.status).to.equal(200);
 		}
-	}));
+	})).timeout(30000);
 
 	it('GET request with multiple query parameters', runTestCase({
 		input: {
@@ -180,7 +179,7 @@ describe('HttpRequest - Basic Methods', () => {
 			expect(actual.data.args.param1).to.equal('value1');
 			expect(actual.data.args.param2).to.equal('value2');
 		}
-	}));
+	})).timeout(30000);
 
 	it('POST request with query parameters and body', runTestCase({
 		input: {
@@ -195,5 +194,5 @@ describe('HttpRequest - Basic Methods', () => {
 			expect(actual.data.args.query).to.equal('param');
 			expect(actual.data.json.body).to.equal('data');
 		}
-	}));
+	})).timeout(30000);
 });

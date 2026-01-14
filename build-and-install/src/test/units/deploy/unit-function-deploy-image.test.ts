@@ -1,11 +1,10 @@
 // file: ./tests/units/deploy/unit-deploy-image.test.ts
 import {DebugFlag, isErrorOfType, LogLevel, sleep} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/testalot';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
+import {TestModel, defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {phase_Compile, phase_DeployImage, phase_Install, phase_Prepare, Unit_FirebaseFunctionsApp} from '../../_common.js';
 import type {Unit_FirebaseFunctionsApp_Config} from '../../../main/units/implementations/firebase/Unit_FirebaseFunctionsApp.js';
 import {PhaseAggregatedException} from '../../../main/exceptions/PhaseAggregatedException.js';
-import {CommandoException} from '@nu-art/commando/shell/core/CliError';
+import {CommandoException} from '@nu-art/commando';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {execSync} from 'child_process';
@@ -13,7 +12,7 @@ import {expect} from 'chai';
 import {CONST_DeploymentId, CONST_LatestTag} from '../../../main/config/consts.js';
 import {CONST_TestFixture_FunctionHello} from './test-consts.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../main/config/consts.js';
 import {FilesCache} from '../../../main/core/FilesCache.js';
@@ -115,8 +114,7 @@ const test = async (setup: Input) => {
 	return buildAndInstall;
 };
 
-type TestSuite_DeployImage = TestSuite<Input, Output>;
-type TestCase_DeployImage = TestSuite_DeployImage['testcases'][number];
+type TestCase_DeployImage = TestModel<Input, Output>;
 
 const runTestCase = (testCase: TestCase_DeployImage, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 

@@ -1,6 +1,5 @@
 // file: ./tests/phase-execution/prepare-phase.test.ts
-import {TestSuite} from '@nu-art/testalot';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
+import {TestModel, defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {resolve} from 'path';
 import {expect} from 'chai';
 import {Unit_TypescriptLib} from '../../_common.js';
@@ -10,7 +9,7 @@ import {existsSync} from 'fs';
 import {FilesCache} from '../../../main/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {sleep} from '@nu-art/ts-common';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
 
 const dirname = ___dirname(import.meta.url);
@@ -40,8 +39,7 @@ const test = async (input: Input): Promise<void> => {
 	await unit.prepare();
 };
 
-type TestSuite_Prepare = TestSuite<Input, Output>;
-type TestCase_Prepare = TestSuite_Prepare['testcases'][number];
+type TestCase_Prepare = TestModel<Input, Output>;
 const runTestCase = (testCase: TestCase_Prepare, processor = defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 
 describe('Unit_NodeLib - Prepare Phase', () => {

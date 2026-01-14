@@ -5,7 +5,7 @@
  */
 
 import {TestModel} from '../main/types.js';
-import {defaultTestProcessor, runSingleTestCase, runScenario} from '../main/consts.js';
+import {defaultTestProcessor, runScenario, runSingleTestCase} from '../main/consts.js';
 
 // ============================================================================
 // 1. Input Flow Verification
@@ -389,7 +389,7 @@ describe('ResolvableContent', () => {
 
 	it('Handles function-based test case with description', runTestCase_Resolvable({
 		description: (testCase) => {
-			const resolved = typeof testCase === 'function' ? testCase() : testCase;
+			const resolved = testCase;
 			return `Test with base ${resolved.input.base} and offset ${resolved.input.offset}`;
 		},
 		input: {base: 5, offset: 15},

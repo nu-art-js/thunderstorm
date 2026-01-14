@@ -1,17 +1,16 @@
 // file: ./tests/units/deploy/unit-deploy-hosting.test.ts
 import {DebugFlag, isErrorOfType, LogLevel, sleep} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/testalot';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
+import {TestModel, defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 import {phase_Compile, phase_DeployImage, phase_Install, phase_Prepare, Unit_FirebaseHostingApp} from '../../_common.js';
 import {PhaseAggregatedException} from '../../../main/exceptions/PhaseAggregatedException.js';
-import {CommandoException} from '@nu-art/commando/shell/core/CliError';
+import {CommandoException} from '@nu-art/commando';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
 import {CONST_DeployHostingDir, CONST_DeploymentId, CONST_DeploymentMetadata, CONST_TrashDir} from '../../../main/config/consts.js';
 import {CONST_TestFixture_HostingHello} from './test-consts.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {FilesCache} from '../../../main/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
@@ -108,8 +107,7 @@ const test = async (setup: Input) => {
 	return buildAndInstall;
 };
 
-type TestSuite_DeployHosting = TestSuite<Input, Output>;
-type TestCase_DeployHosting = TestSuite_DeployHosting['testcases'][number];
+type TestCase_DeployHosting = TestModel<Input, Output>;
 
 const runTestCase = (testCase: TestCase_DeployHosting, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 

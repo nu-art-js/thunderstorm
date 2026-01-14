@@ -1,4 +1,4 @@
-import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
+import {BaseCliParam, CliParams} from '@nu-art/cli-params';
 import {BadImplementationException, tsValidate, tsValidateRegexp} from '@nu-art/ts-common';
 
 

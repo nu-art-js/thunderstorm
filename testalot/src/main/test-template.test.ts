@@ -1,6 +1,6 @@
 // test input type - will have the parameters that actually makes a test case unique, its content depends on the test performed
-import {TestSuite} from './types.js';
 import {defaultTestProcessor, runSingleTestCase} from './consts.js';
+import {TestModel} from './types.js';
 
 type Input = { inputA: string, inputB: number, inputC: any };
 
@@ -10,8 +10,7 @@ type Input = { inputA: string, inputB: number, inputC: any };
 type Result = any;
 
 // The testsuite type declaration
-type TestSuite_TemplateType = TestSuite<Input, Result>;
-type TestCase_TemplateType = TestSuite_TemplateType['testcases'][number];
+type TestCase_TemplateType = TestModel<Input, Result>;
 
 const justAGlobalConst = 'just a global const';
 // the test cases, notice these can be a resolvable content, in order to keep bind consts between the input and the output,

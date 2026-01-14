@@ -2,14 +2,12 @@
 // Motivation: From a changed lib, find all apps (and intermediate libs) that depend on it
 
 import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
-import {TestSuite} from '@nu-art/testalot';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
+import {TestModel, defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 
 export type ReverseFilterInput = { units: UnitDependentNode[], changed: string[] };
 export type ReverseFilterResult = string[];
 
-export type TestSuite_UnitsReverseDependency = TestSuite<ReverseFilterInput, ReverseFilterResult>;
-export type TestCase_UnitsReverseDependency = TestSuite_UnitsReverseDependency['testcases'][number];
+export type TestCase_UnitsReverseDependency = TestModel<ReverseFilterInput, ReverseFilterResult>;
 
 const test = async (input: ReverseFilterInput): Promise<ReverseFilterResult> => {
 	const mapper = new UnitsDependencyMapper(input.units);

@@ -1,5 +1,5 @@
 import {queryAllTestCases, queryComplexTestCases, QueryTest, QueryTestInput, queryTestCases, queryWithPagination} from './consts.js';
-import {CollectionTestInput, firestore, prepareCollectionTest} from '../_core/consts.js';
+import {CollectionTestInput, firestore, prepareCollectionTest} from '../../_entity/_core/consts.js';
 import {DBDef_V3, deepClone, tsValidateMustExist, TestInputValue} from '@nu-art/ts-common';
 import {DBProto_Type} from '../_entity.js';
 import {TestModel} from '@nu-art/testalot';

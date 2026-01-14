@@ -1,7 +1,6 @@
 import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
 import {Clause_Where} from '@nu-art/firebase-shared';
 import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates} from '@nu-art/ts-common';
-import {FirestoreTransaction} from '@nu-art/firebase-backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import {ModuleBE_PermissionAPIDB} from '../permission-api/index.js';
@@ -54,7 +53,7 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 		return super.postWriteProcessing(data, actionType, transaction);
 	}
 
-	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
+	protected async assertDeletion(transaction: Transaction, dbInstance: DB_PermissionAccessLevel) {
 		const groups = await ModuleBE_PermissionGroupDB.query.custom({where: {accessLevelIds: {$ac: dbInstance._id}}});
 		const apis = await ModuleBE_PermissionAPIDB.query.custom({where: {accessLevelIds: {$ac: dbInstance._id}}});
 

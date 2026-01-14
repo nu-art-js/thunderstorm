@@ -1,8 +1,7 @@
-import {TestSuite} from '@nu-art/testalot';
+import {defaultTestProcessor, runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {BadImplementationException} from '@nu-art/ts-common';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
-import {BaseCliParam, CliParams} from '../../main/cli-params/types.js';
-import {CLIParamsResolver} from '../../main/cli-params/CLIParamsResolver.js';
+import {BaseCliParam, CliParams} from '../main/types.js';
+import {CLIParamsResolver} from '../main/CLIParamsResolver.js';
 
 export const Param_Help: BaseCliParam<'help', boolean> = {
 	keys: ['--help', '-h'],
@@ -135,8 +134,7 @@ type Input = {
 	input: string | string[]
 }
 type Result = Partial<CliParams<any>>
-type TestSuite_RuntimeParams2 = TestSuite<Input, Result>;
-type TestCase_RuntimeParams = TestSuite_RuntimeParams2['testcases'][number];
+type TestCase_RuntimeParams = TestModel<Input, Result>;
 
 
 const test = async (input: Input): Promise<Result> => {

@@ -68,6 +68,10 @@
       "types": "./index.d.ts",
       "import": "./index.js"
     },
+    "./v1": {
+      "types": "./v1.d.ts",
+      "import": "./v1.js"
+    },
     "./*": {
       "types": "./*.d.ts",
       "import": "./*.js"

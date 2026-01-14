@@ -42,16 +42,14 @@ export type TestCase_Error = { expected: string | RegExp, message?: string, cons
  * @template Input - Input type
  * @template ExpectedResult - Expected result type
  */
-export type TestModel<Input, ExpectedResult> = ResolvableContent<
-	{
-		description?: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
-		input: Input,
-	} &
+export type TestModel<Input, ExpectedResult> = {
+	description?: ResolvableContent<string, [TestModel<Input, ExpectedResult>]>
+	input: Input,
+} &
 	({ result: ExpectedResult | ((result: ExpectedResult) => Promise<any>) } |
 		{
 			error: TestCase_Error
 		})
->
 
 /**
  * Function that processes a test case.
@@ -61,27 +59,4 @@ export type TestModel<Input, ExpectedResult> = ResolvableContent<
  */
 export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, ExpectedResult>) => void | Promise<void>;
 
-/**
- * Test suite configuration.
- *
- * Defines a collection of test cases with setup/teardown hooks.
- *
- * @template Input - Input type for test cases
- * @template ExpectedResult - Expected result type
- * @deprecated
- */
-export type TestSuite<Input, ExpectedResult> = {
-	/** Optional setup function (runs before all tests) */
-	before?: () => (void | Promise<void>);
-	/** Function that processes each test case */
-	processor: TestProcessor<Input, ExpectedResult>;
-	/** Optional teardown function (runs after all tests) */
-	after?: () => (void | Promise<void>);
-	/** Array of test cases */
-	testcases: TestModel<Input, ExpectedResult>[];
-	/** Suite label/name */
-	label: string,
-	/** Optional timeout in milliseconds (default: 5000) */
-	timeout?: number,
-}
 
