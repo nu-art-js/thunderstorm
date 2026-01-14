@@ -1,0 +1,85 @@
+---
+description: BAI build system workflow, phases, and parameters
+alwaysApply: false
+---
+
+# Build System (BAI)
+
+This document describes the BAI (Build and Install) build system workflow, phases, and parameters.
+
+## Overview
+
+By default BAI takes ONLY the packages that are used in the workspace building the dependency tree from the top apps down the tree, if there is a package that is not included in the apps dependency tree they will not be included, if you want to include all the packages, use the `-all` flag
+
+## Build System Workflow
+
+  * **Read bai-config.json**: Loads config
+  * **Discover packages**: Scans for all `__package.json` files recursively
+  * **Build dependency tree**: From app to infra build the dependency tree, and plot the build steps and phases for the included packages
+  * **Environment**: Preserve the env currently used - Final configuration varies by environment
+  * **Prepare**: Process `__package.json` files: 
+    - Replaces `?` → with a dedicated `{{package-name}}` param 
+    - Detects workspace packages → set package-name param values to `workspace:*`
+    - Replaces all params `{{PARAM}}` in `__package.json` templates → replace with their respective values, if a value is missing process fails
+    - Generate actual `package.json` from each template
+  * **Purge**: Clean up all generated files and folders in a package (bai params: -p)
+    - `package.json`
+    - `pnpm-workspace.yaml`
+    - `pnpm-lock.yaml`
+    - `node_modules`
+    - `dist`
+    - and more
+  * **Install**: Install packaged in all the workspace (bai params: -i | init)
+    - Generate `pnpm-workspace.yaml`
+    - Runs `pnpm i` on the entire workspace
+  * **Run lint**: Run lint on the Typescript packages (bai params: --lint)
+  * **Run Compile**: Run the compile phase on the included packages (always runs, to disable use bai params: -nb | --no-build)
+  * **Run Tests**: Run the tests phase on the included packages (bai params: -t | --test)
+  * **Launch Apps**: Launch the apps which packages are included (bai params: -l)
+  * **Deploy Apps**: Deploy the apps which packages are included (bai params: --deploy)
+
+## BAI Parameters
+
+### Environment
+  - `--set-env={env}` or `-se={env}`: Set environment (local, dev, staging, prod)
+
+### Build Control
+  - `--watch` or `-w`: Build and watch for changes
+  - `--watchBuildTree` or `-wbt`: Watch and build entire dependency tree
+  - `-nb` or `--no-build`: Skip build phase
+
+### Testing
+  - `-t` or `--test`: Run tests phase
+  - `-tt` or `--test-type`: Filter by test type (pure, firebase, ui, mobile)
+  - `-tc` or `--test-case`: Run specific test cases (grep pattern)
+  - `-tf` or `--test-file`: Run specific test files (glob pattern)
+  - `-td` or `--test-debug`: Debug port for test debugging
+
+### Package Selection
+  - `-up={pattern}` or `--use-packages={pattern}`: Select packages using regexp pattern
+    - Examples: `-up=app-frontend`, `-up=app-.*`, `-up=.*-frontend`
+  - `-all`: Include all packages (not just those in dependency tree)
+
+### Launching
+  - `-l`: Launch apps
+  - `-lbd` or `--debug-backend`: Launch backend in debug mode
+
+### Deployment
+  - `--deploy`: Deploy apps
+
+### Other
+  - `--verbose`: Verbose logging
+  - `--debug`: Print script parameters
+  - `-p`: Purge generated files
+
+To view all of BAI parameters run `bai -h`
+
+## Test Execution
+
+See [Running Tests](../tests/running-tests.mdc) for detailed information on running tests with BAI.
+
+## See Also
+
+- [Project Structure](./structure.mdc) - Project structure and configuration
+- [Running Tests](../tests/running-tests.mdc) - How to run tests with BAI
+- [Package Structure](../package/structure.mdc) - Package-level structure

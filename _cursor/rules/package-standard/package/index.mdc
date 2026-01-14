@@ -1,0 +1,25 @@
+---
+description: Master package standards - structure, maintenance, and configuration
+alwaysApply: false
+---
+
+# Package Standards
+
+This section covers all package-related standards including structure, maintenance, and configuration.
+
+## Package Files
+
+### [Structure](./structure.mdc)
+Package structure conventions, library and application package organization, and directory layouts.
+
+### [Maintenance](./maintenance.mdc)
+Package maintenance standards including `__package.json` updates, README creation, and export organization.
+
+### [JSON Format](./json-format.mdc)
+Standards for writing and configuring `__package.json` files, including exports, dependencies, and metadata.
+
+## Quick Reference
+
+- **Creating a new package?** → See [Package Structure](./structure.mdc) and [Package Maintenance](./maintenance.mdc)
+- **Updating package.json?** → See [Package JSON Format](./json-format.mdc) and [Package Maintenance](./maintenance.mdc)
+- **Organizing exports?** → See [Package Maintenance](./maintenance.mdc) for export point standards

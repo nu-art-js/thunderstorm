@@ -158,3 +158,9 @@ When organizing exports:
 - **Always** add logical export points that reflect the codebase structure
 - **Always** ensure keywords are relevant and descriptive
 - **Always** attribute contributors appropriately
+
+## See Also
+
+- [Package Structure](./structure.mdc) - Package structure conventions
+- [Package JSON Format](./json-format.mdc) - Detailed package.json writing standards
+- [Documentation Process](../documentation/process.mdc) - Complete documentation workflow

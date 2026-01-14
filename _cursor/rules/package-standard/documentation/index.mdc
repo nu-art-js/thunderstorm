@@ -1,0 +1,22 @@
+---
+description: Master documentation standards and process
+alwaysApply: false
+---
+
+# Documentation Standards
+
+This section covers all documentation-related standards and processes for packages in the thunderstorm monorepo.
+
+## Documentation Files
+
+### [Standards](./standards.mdc)
+When and how to document code, what to document vs. what to skip, and documentation format guidelines.
+
+### [Process](./process.mdc)
+The systematic process for documenting packages, including analysis, documentation, maintenance, and issue tracking.
+
+## Quick Reference
+
+- **Editing code?** → See [Documentation Standards](./standards.mdc) for when to update docs
+- **Documenting a package?** → See [Documentation Process](./process.mdc) for the complete workflow
+- **What to document?** → See [Documentation Standards](./standards.mdc) for guidelines on what needs documentation

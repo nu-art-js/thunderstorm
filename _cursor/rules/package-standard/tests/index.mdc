@@ -1,0 +1,40 @@
+---
+description: Master test conventions file - overview of all test types and patterns
+alwaysApply: false
+---
+
+# Testing Conventions
+
+This rule defines the standard testing patterns used across the codebase. There are 4 main test types, each with specific use cases and patterns.
+
+## [Common Patterns](./common-patterns.mdc)
+All tests share a common set of conventions and patterns that must be followed.
+How the test file is structured, test model structure, error testing, result validation, cleanup patterns
+
+## Package Structure (Tests Location)
+
+```
+{PackageRoot}/
+├── src/main/    # Source files
+└── src/test/    # Test files
+```
+
+## See Also
+
+- [Running Tests](./running-tests.mdc) - How to run tests using BAI
+
+
+## Test Types
+
+### 1. [Simple Unit Tests](./unit-tests.mdc)
+**Use When**: Testing pure functions with simple input/output, no external dependencies.
+for example, compare version function test, or a simple utility or data transformations function.
+
+### 2. [Workspace-Based Tests](./workspace-tests.mdc)
+**Use When**: Testing file system operations, tests that requires unfolding a temporary file system workspaces to perform the test.
+for example, testing if delete file works you will need to create a temporary directory and a file in it and delete it in the test.
+
+### 3. [Firebase/Storm Module Tests](./firebase-tests.mdc)
+**Use When**: Testing backend modules with Firebase emulators, database operations, or API endpoints.
+testing functionality of a module that requires a ModuleManager initialization.
+for example, user login and session management (these are both modules that utilize Firestore and require the full ecosystem to be initialized).
