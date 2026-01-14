@@ -113,3 +113,7 @@ setName(name: string): void { ... }
 - **Always** document undocumented code when editing files (unless self-explanatory)
 - **Never** add documentation that just repeats what the code already clearly states
 - When in doubt, err on the side of documenting (especially for public APIs)
+
+## See Also
+
+- [Documentation Process](./process.mdc) - Complete workflow for documenting packages

@@ -7,31 +7,15 @@ alwaysApply: false
 
 BAI supports running tests with flexible filtering options for any package in your Thunderstorm project. This guide covers all test-related commands and parameters.
 
-## Basic Test Commands
-
-```bash
-# Run all tests in selected packages
-bai -t -up=my-package -tt=pure
-
-# Run specific test case (grep pattern)
-bai -t -tc="My Test Case Name" -up=my-package -tt=pure
-
-# Run specific test file
-bai -t -tf="my-test.test.ts" -up=my-package -tt=pure
-
-# Skip build phase (useful when only running tests)
-bai -t -up=my-package -tt=pure -nb --verbose
-```
-
 ## Test Parameters
 
 ### Required Parameters
 
-- **`-t` or `--test`**: Enable test phase (required to run tests)
+- **`--test`**: Enable test phase (required to run tests)
 
 ### Test Type Selection
 
-- **`-tt` or `--test-type`**: Filter by test type (can specify multiple)
+- **`--test-type`**: Filter by test type (can specify multiple)
   - `pure`: Standard TypeScript tests using `ts-mocha` - pattern: `**/*.test.ts`
   - `firebase`: Tests with Firebase emulators - pattern: `**/*.test.firebase.ts`
   - `ui`: UI tests (not implemented yet)
@@ -39,37 +23,36 @@ bai -t -up=my-package -tt=pure -nb --verbose
 
 ### Test Filtering
 
-- **`-tc` or `--test-case`**: Run specific test cases (grep pattern matching test names)
+- **`--test-case`**: Run specific test cases (grep pattern matching test names)
   - Supports regex patterns
   - Multiple patterns can be combined with `|` (OR)
-  - Example: `-tc="Build|Deploy"` runs tests matching either pattern
+  - Example: `--test-case="Build|Deploy"` runs tests matching either pattern
 
-- **`-tf` or `--test-file`**: Run specific test files (glob pattern)
+- **`--test-file`**: Run specific test files (glob pattern)
   - Supports glob patterns like `**/*.test.ts`
   - Can specify multiple files
 
 ### Package Selection
 
-- **`-up` or `--use-packages`**: Select packages using regex pattern
-  - Examples: `-up=build-and-install`, `-up=app-.*`, `-up=.*-frontend`
+- **`--use-packages`**: Select packages using regex pattern
+  - Examples: `--use-package=build-and-install`, `--use-package=app-.*`, `--use-package=.*-frontend`
   - Only matching packages will have tests executed
 
 ### Other Useful Flags
 
-- **`-nb` or `--no-build`**: Skip build phase (useful for test-only runs)
-- **`-td` or `--test-debug`**: Debug port for test debugging (e.g., `-td=9229`)
+- **`--no-build`**: Skip build phase (useful for test-only runs)
 - **`--verbose`**: Enable verbose logging for detailed test output
 
 ## Test Types Explained
 
-### Pure Tests (`-tt=pure`)
+### Pure Tests (`--test-type=pure`)
 
 Standard TypeScript tests that don't require external services:
 - **Pattern**: `**/*.test.ts`
 - **Command**: Uses `ts-mocha` with ESM support
 - **Use case**: Unit tests, integration tests that don't need emulators
 
-### Firebase Tests (`-tt=firebase`)
+### Firebase Tests (`--test-type=firebase`)
 
 Tests that require Firebase emulators:
 - **Pattern**: `**/*.test.firebase.ts`
@@ -78,38 +61,54 @@ Tests that require Firebase emulators:
 
 ## Examples
 
+### Basic Test Commands
+
+```bash
+# Run pure tests in selected packages
+bai --test --use-package=my-package --test-type=pure
+
+# Run specific test case (grep pattern)
+bai --test --test-case="My Test Case Name" --use-package=my-package --test-type=pure
+
+# Run specific test file
+bai --test --test-file="my-test.test.ts" --use-package=my-package --test-type=pure
+
+# Skip build phase (useful when only running tests)
+bai --test --use-package=my-package --test-type=pure -nb --verbose
+```
+
 ### Run All Tests in a Package
 
 ```bash
 # Run all pure tests in build-and-install package
-bai -t -up=build-and-install -tt=pure --verbose -nb
+bai --test --use-package=build-and-install --test-type=pure --verbose -nb
 ```
 
 ### Run Specific Test Case
 
 ```bash
 # Run a specific test case by name
-bai -t -tc="Functions - Build and Push Container Image" -up=build-and-install -tt=pure -nb
+bai --test --test-case="Functions - Build and Push Container Image" --use-package=build-and-install --test-type=pure -nb
 
 # Run multiple test cases (OR pattern)
-bai -t -tc="Build|Deploy" -up=my-package -tt=pure -nb
+bai --test --test-case="Build|Deploy" --use-package=my-package --test-type=pure -nb
 ```
 
 ### Run Specific Test File
 
 ```bash
 # Run all tests in a specific file
-bai -t -tf="unit-build-push-image.test.ts" -up=build-and-install -tt=pure -nb
+bai --test --test-file="unit-build-push-image.test.ts" --use-package=build-and-install --test-type=pure -nb
 
 # Run multiple test files using glob pattern
-bai -t -tf="**/unit-deploy*.test.ts" -up=build-and-install -tt=pure -nb
+bai --test --test-file="**/unit-deploy*.test.ts" --use-package=build-and-install --test-type=pure -nb
 ```
 
 ### Debug Tests
 
 ```bash
 # Run tests with debugger on port 9229
-bai -t -up=my-package -tt=pure -td=9229 -nb
+bai --test --use-package=my-package --test-type=pure -td=9229 -nb
 
 # Then attach debugger in your IDE to localhost:9229
 ```
@@ -118,42 +117,31 @@ bai -t -up=my-package -tt=pure -td=9229 -nb
 
 ```bash
 # Run Firebase tests (requires Firebase emulators)
-bai -t -up=my-package -tt=firebase -nb
+bai --test --use-package=my-package --test-type=firebase -nb
 ```
 
 ### Run Tests for Multiple Packages
 
 ```bash
 # Run tests for all packages matching pattern
-bai -t -up="app-.*" -tt=pure -nb
+bai --test --use-package="app-.*" --test-type=pure -nb
 
 # Run tests for all frontend packages
-bai -t -up=".*-frontend" -tt=pure -nb
+bai --test --use-package=".*-frontend" --test-type=pure -nb
 ```
 
 ### Common Workflows
 
 ```bash
 # Quick test run (skip build, verbose output)
-bai -t -up=my-package -tt=pure -nb --verbose
+bai --test --use-package=my-package --test-type=pure -nb --verbose
 
 # Run specific test case with verbose output
-bai -t -tc="My Test" -up=my-package -tt=pure -nb --verbose
+bai --test --test-case="My Test" --use-package=my-package --test-type=pure -nb --verbose
 
 # Run all tests in package (with build)
-bai -t -up=my-package -tt=pure --verbose
+bai --test --use-package=my-package --test-type=pure --verbose
 ```
-
-## Test Execution Flow
-
-1. **Package Discovery**: BAI discovers packages matching `-up` pattern
-2. **Test Phase**: For each matching package, runs test phase
-3. **Command Building**: `TestsCommandComposer` builds appropriate test command based on test type
-4. **Test Execution**: Tests execute with:
-   - ESM support (via `NODE_OPTIONS`)
-   - Proper TypeScript compilation (`ts-mocha -p src/test/tsconfig.json`)
-   - Timeout disabled (`--timeout 0`)
-   - Optional debug port if `-td` specified
 
 ## Troubleshooting
 
@@ -161,13 +149,13 @@ bai -t -up=my-package -tt=pure --verbose
 
 If no tests are found:
 - Check that test files match the pattern for the test type (`**/*.test.ts` for pure, `**/*.test.firebase.ts` for firebase)
-- Verify the package matches the `-up` pattern
+- Verify the package matches the `--use-package` pattern
 - Ensure test files are in `src/test/` directory
 
 ### Build Errors
 
 If you get build errors when running tests:
-- Fix build errors first, then run tests
+- Fix build errors first, then run the specific tests that had failed
 
 ### Firebase Emulator Issues
 
@@ -175,8 +163,3 @@ If Firebase tests fail:
 - Ensure Firebase emulators are properly configured
 - Check that `firebase.json` and `.firebaserc` are set up correctly
 - Verify emulator ports are available
-
-## See Also
-
-- `bai -h` - View all BAI parameters
-- `_thunderstorm/.cursor/rules/project-structure.mdc` - General BAI workflow documentation

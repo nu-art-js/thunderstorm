@@ -1,0 +1,22 @@
+---
+description: Master project structure and build system standards
+alwaysApply: false
+---
+
+# Project Standards
+
+This section covers project-level structure, build system, and monorepo organization standards.
+
+## Project Files
+
+### [Structure](./structure.mdc)
+Project structure, monorepo workspace organization, file structure, and project-level conventions.
+
+### [Build System](./build-system.mdc)
+BAI (Build and Install) build system workflow, build phases, parameters, and configuration.
+
+## Quick Reference
+
+- **Understanding project structure?** → See [Project Structure](./structure.mdc)
+- **Using the build system?** → See [Build System](./build-system.mdc)
+- **Configuring BAI?** → See [Build System](./build-system.mdc)

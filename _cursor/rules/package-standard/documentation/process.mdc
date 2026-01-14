@@ -29,7 +29,7 @@ Before starting documentation:
 
 ### 2. Documentation Phase
 
-Follow the documentation standards (see `.cursor/rules/documentation.mdc`):
+Follow the documentation standards (see [Documentation Standards](./standards.mdc)):
 
 - **Start with core infrastructure**: Document base classes, managers, and foundational components first
 - **Then utilities and helpers**: Document utility functions and helper modules
@@ -46,7 +46,7 @@ Follow the documentation standards (see `.cursor/rules/documentation.mdc`):
 
 ### 3. Package Maintenance Phase
 
-Apply package maintenance standards (see `.cursor/rules/package-maintenance.mdc`):
+Apply package maintenance standards (see [Package Maintenance](../package/maintenance.mdc)):
 
 - **Update `__package.json`**:
   - Improve description (clear, concise, purpose-focused)
@@ -136,6 +136,11 @@ Before considering a package "done":
 - **This is an iterative process**: Don't try to document everything in one pass
 - **Focus on one package at a time**: Complete documentation, maintenance, and issue tracking before moving to the next
 - **Preserve context**: When documenting, look at usages in other packages to understand purpose
-- **Follow the standards**: Always refer back to documentation.mdc and package-maintenance.mdc
+- **Follow the standards**: Always refer back to [Documentation Standards](./standards.mdc) and [Package Maintenance](../package/maintenance.mdc)
 - **Track issues as you go**: Don't wait until the end to document issues
 - **Be thorough but efficient**: Document what matters, skip what's obvious
+
+## See Also
+
+- [Documentation Standards](./standards.mdc) - What and how to document
+- [Package Maintenance](../package/maintenance.mdc) - Package.json and README standards
