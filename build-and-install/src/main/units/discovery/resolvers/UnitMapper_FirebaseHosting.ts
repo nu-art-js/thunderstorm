@@ -7,6 +7,7 @@ import {
 	tsValidateOptional,
 	tsValidateOptionalAnyNumber,
 	tsValidateOptionalObject,
+	tsValidateRegexp,
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
@@ -21,12 +22,18 @@ const valuesValidator = {
 	isLocal: tsValidateBoolean(false),
 };
 
+// Artifact Registry generic package name validation: lowercase, alphanumeric with dots, underscores, hyphens
+// Cannot start/end with separators, no consecutive separators
+// Pattern: starts with alphanumeric, optionally followed by (separator + alphanumeric) groups
+const packageNameRegex = /^[a-z0-9]+([._-][a-z0-9]+)*$/;
+
 const hostingDeploymentValidator = {
 	artifactRegistry: {
 		region: tsValidateAnyString,
 		repository: tsValidateAnyString,
 		projectId: tsValidateAnyString,
 	},
+	packageName: tsValidateRegexp(packageNameRegex, true), // Required: Generic package name matching Artifact Registry rules
 };
 
 
