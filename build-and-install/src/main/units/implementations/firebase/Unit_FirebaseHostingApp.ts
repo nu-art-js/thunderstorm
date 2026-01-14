@@ -44,6 +44,7 @@ export type Unit_FirebaseHostingApp_Config = Unit_TypescriptLib_Config & {
 			repository: string;
 			projectId: string;
 		};
+		packageName: string;         // Required: Generic package name (must comply with Artifact Registry naming restrictions)
 	};
 };
 
@@ -216,7 +217,8 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	 *
 	 * **Requirements**:
 	 * - `--build-push-image <tag>` CLI flag with tag value
-	 * - `hostingDeployment` config in unit config
+	 * - `hostingDeployment` config in unit config with `packageName` field
+	 * - `packageName` must comply with Artifact Registry naming restrictions
 	 * - gcloud CLI installed and authenticated
 	 * - Artifact Registry API enabled in GCP project
 	 */
@@ -232,7 +234,10 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		}
 
 		const artifactRegistry = hostingDeployment.artifactRegistry;
-		const packageName = this.config.packageJson.name;
+		const packageName = hostingDeployment.packageName;
+		if (!packageName) {
+			throw new ImplementationMissingException(`Missing packageName in hostingDeployment config for unit ${this.config.key}`);
+		}
 
 		this.logInfo(`Building and uploading hosting package to Artifact Registry:`);
 		this.logInfo(`  Package: ${packageName}`);
@@ -331,7 +336,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 	 *
 	 * **Requirements**:
 	 * - `--deploy-image <tag>` CLI flag with tag value
-	 * - `hostingDeployment` config in unit config
+	 * - `hostingDeployment` config in unit config with `packageName` field
 	 * - Package must already exist in Artifact Registry (built via buildPushImage)
 	 * - gcloud CLI installed and authenticated
 	 * - Firebase CLI (installed via npm in temp directory)
@@ -348,7 +353,10 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		}
 
 		const artifactRegistry = hostingDeployment.artifactRegistry;
-		const packageName = this.config.packageJson.name;
+		const packageName = hostingDeployment.packageName;
+		if (!packageName) {
+			throw new ImplementationMissingException(`Missing packageName in hostingDeployment config for unit ${this.config.key}`);
+		}
 		const region = artifactRegistry.region;
 		const repository = artifactRegistry.repository;
 		const projectId = artifactRegistry.projectId;
