@@ -20,7 +20,7 @@
  */
 
 import {ApiDef, HttpClient_Class, HttpException, HttpMethod, QueryApi} from '../main/index.js';
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {createTestClient} from './helpers.js';
 import {expect} from 'chai';
 
@@ -31,8 +31,7 @@ type Input = {
 
 type Result = HttpException;
 
-type TestSuite_HttpErrors = TestSuite<Input, Result>;
-type TestCase_HttpErrors = TestSuite_HttpErrors['testcases'][number];
+type TestCase_HttpErrors = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	const client = input.client;
@@ -64,7 +63,7 @@ describe('HttpRequest - Error Handling', () => {
 			expect(actual.responseCode).to.equal(400);
 			expect(actual.message).to.include('400');
 		}
-	}));
+	})).timeout(30000);
 
 	it('401 Unauthorized', runTestCase({
 		input: {client, statusCode: 401},
@@ -72,14 +71,14 @@ describe('HttpRequest - Error Handling', () => {
 			expect(actual.responseCode).to.equal(401);
 			expect(actual.message).to.include('401');
 		}
-	}));
+	})).timeout(30000);
 
 	it('403 Forbidden', runTestCase({
 		input: {client, statusCode: 403},
 		result: async (actual) => {
 			expect(actual.responseCode).to.equal(403);
 		}
-	}));
+	})).timeout(30000);
 
 	it('404 Not Found', runTestCase({
 		input: {client, statusCode: 404},
@@ -87,7 +86,7 @@ describe('HttpRequest - Error Handling', () => {
 			expect(actual.responseCode).to.equal(404);
 			expect(actual.message).to.include('404');
 		}
-	}));
+	})).timeout(30000);
 
 	it('500 Internal Server Error', runTestCase({
 		input: {client, statusCode: 500},
@@ -95,21 +94,21 @@ describe('HttpRequest - Error Handling', () => {
 			expect(actual.responseCode).to.equal(500);
 			expect(actual.message).to.include('500');
 		}
-	}));
+	})).timeout(30000);
 
 	it('502 Bad Gateway', runTestCase({
 		input: {client, statusCode: 502},
 		result: async (actual) => {
 			expect(actual.responseCode).to.equal(502);
 		}
-	}));
+	})).timeout(30000);
 
 	it('503 Service Unavailable', runTestCase({
 		input: {client, statusCode: 503},
 		result: async (actual) => {
 			expect(actual.responseCode).to.equal(503);
 		}
-	}));
+	})).timeout(30000);
 
 	it('Error callback execution', async () => {
 		const client = createTestClient();
@@ -135,7 +134,7 @@ describe('HttpRequest - Error Handling', () => {
 		expect(errorCallbackCalled).to.be.true;
 		expect(capturedError).to.exist;
 		expect(capturedError!.responseCode).to.equal(404);
-	});
+	}).timeout(30000);
 
 	it('Error response parsing', runTestCase({
 		input: {client, statusCode: 400},
@@ -143,5 +142,5 @@ describe('HttpRequest - Error Handling', () => {
 			expect(actual.responseCode).to.equal(400);
 			expect(actual.errorResponse).to.exist;
 		}
-	}));
+	})).timeout(30000);
 });

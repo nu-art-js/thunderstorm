@@ -1,7 +1,7 @@
-import {LogTypes} from '@nu-art/commando/shell/types';
+import {LogTypes} from '@nu-art/commando';
 import {Logger, LogLevel} from '@nu-art/ts-common';
-import {CommandoException} from '@nu-art/commando/shell/core/CliError';
-import {CommandoInteractive} from '@nu-art/commando/shell/index';
+import {CommandoException} from '@nu-art/commando';
+import {CommandoInteractive} from '@nu-art/commando';
 
 const warn = ['missing required API'];
 const info = ['=== Deploying', 'functions: Successfully deployed function'];

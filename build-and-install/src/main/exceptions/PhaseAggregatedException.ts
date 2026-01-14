@@ -1,7 +1,7 @@
 import {CustomException, isErrorOfType, Logger} from '@nu-art/ts-common';
 import {ScheduledStep} from '../phases/PhaseManager.js';
 import {UnitPhaseException} from './UnitPhaseException.js';
-import {CommandoException} from '@nu-art/commando/shell/core/CliError';
+import {CommandoException} from '@nu-art/commando';
 
 /**
  * Exception thrown when one or more phases fail during execution.

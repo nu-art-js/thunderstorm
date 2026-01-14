@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts.js';
+import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../../_entity/_core/consts.js';
 import {TestModel} from '@nu-art/testalot';
 import {
 	asArray,

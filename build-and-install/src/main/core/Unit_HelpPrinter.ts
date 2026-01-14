@@ -1,5 +1,5 @@
 import {_keys, LogLevel, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {BaseCliParam, CliParams} from '@nu-art/commando/cli-params/types';
+import {BaseCliParam, CliParams} from '@nu-art/cli-params';
 import {AllBaiParams, BaiParam_AllUnits, BaiParam_NoBuild, BaiParam_Prepare} from './params.js';
 import {UnitPhaseImplementor} from './types.js';
 import {Phase} from '../phases/definitions/index.js';

@@ -20,7 +20,7 @@
  */
 
 import {HttpClient_Class, HttpMethod, QueryApi} from '../main/index.js';
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {createTestApiDef, createTestClient} from './helpers.js';
 import {expect} from 'chai';
 
@@ -41,8 +41,7 @@ type Result = {
 	headers: { [key: string]: string | string[] };
 };
 
-type TestSuite_HttpClient = TestSuite<Input, Result>;
-type TestCase_HttpClient = TestSuite_HttpClient['testcases'][number];
+type TestCase_HttpClient = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	const client = input.client;
@@ -88,7 +87,7 @@ describe('HttpClient - Configuration', () => {
 			compress: false,
 			headers: {}
 		}
-	}));
+	})).timeout(30000);
 
 	it('Origin with trailing slash removed', runTestCase({
 		input: {
@@ -100,7 +99,7 @@ describe('HttpClient - Configuration', () => {
 			compress: false,
 			headers: {}
 		}
-	}));
+	})).timeout(30000);
 
 	it('Custom timeout configuration', runTestCase({
 		input: {
@@ -113,7 +112,7 @@ describe('HttpClient - Configuration', () => {
 			expect(actual.timeout).to.equal(5000);
 			expect(actual.origin).to.equal('https://httpbin.org');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Compression configuration', runTestCase({
 		input: {
@@ -128,7 +127,7 @@ describe('HttpClient - Configuration', () => {
 			compress: true,
 			headers: {}
 		}
-	}));
+	})).timeout(30000);
 
 	it('Default header - string value', runTestCase({
 		input: {
@@ -142,7 +141,7 @@ describe('HttpClient - Configuration', () => {
 		result: async (actual) => {
 			expect(actual.headers['x-test-header']).to.deep.equal(['test-value']);
 		}
-	}));
+	})).timeout(30000);
 
 	it('Default header - array value', runTestCase({
 		input: {
@@ -156,7 +155,7 @@ describe('HttpClient - Configuration', () => {
 		result: async (actual) => {
 			expect(actual.headers['x-test-header']).to.deep.equal(['value1', 'value2']);
 		}
-	}));
+	})).timeout(30000);
 
 	it('Default header - function value', runTestCase({
 		input: {
@@ -170,7 +169,7 @@ describe('HttpClient - Configuration', () => {
 		result: async (actual) => {
 			expect(actual.headers['x-test-header']).to.deep.equal(['dynamic-value']);
 		}
-	}));
+	})).timeout(30000);
 
 	it('Multiple default headers', runTestCase({
 		input: {
@@ -186,7 +185,7 @@ describe('HttpClient - Configuration', () => {
 			expect(actual.headers['x-header-1']).to.deep.equal(['value1']);
 			expect(actual.headers['x-header-2']).to.deep.equal(['value2']);
 		}
-	}));
+	})).timeout(30000);
 
 	it('Default headers inherited by requests', async () => {
 		const client = createTestClient();
@@ -196,5 +195,5 @@ describe('HttpClient - Configuration', () => {
 		const request = client.createRequest(apiDef);
 		const response = await request.execute();
 		expect(response.headers['X-Test-Header']).to.equal('test-value');
-	});
+	}).timeout(30000);
 });

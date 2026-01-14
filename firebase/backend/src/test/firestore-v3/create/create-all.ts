@@ -1,4 +1,4 @@
-import {duplicateObjectToCreate, firestore, testInstance2} from '../_core/consts.js';
+import {duplicateObjectToCreate, firestore, testInstance2} from '../../_entity/_core/consts.js';
 import {asArray, deepClone} from '@nu-art/ts-common';
 import {createTestCases, CreateTestInput} from './consts.js';
 import * as chaiAsPromised from 'chai-as-promised';

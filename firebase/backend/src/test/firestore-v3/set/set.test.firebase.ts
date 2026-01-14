@@ -3,7 +3,7 @@ import {TestCases_FirestoreV3_Set, test_FirestoreV3_Set} from './set.js';
 import {compare, DB_Object, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
 import {expect} from 'chai';
 import {_EmptyQuery} from '../../../main/index.js';
-import {firestore} from '../_core/consts.js';
+import {firestore} from '../../_entity/_core/consts.js';
 import {DBProto_Type} from '../_entity.js';
 import {DBDef_V3, tsValidateMustExist} from '@nu-art/ts-common';
 

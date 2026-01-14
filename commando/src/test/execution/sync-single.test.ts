@@ -1,5 +1,5 @@
 import {Commando_Basic, CommandoInteractive, SimpleTestCommando} from '../_common.js';
-import {TestInput_CommandoBuilder, TestResult_CommandoOutput, Result_Raw, TestCases_CommandoExecution, TestSuite_CommandoExecution} from './cases.js';
+import {TestCase_CommandoExecution, TestCases_CommandoExecution, TestInput_CommandoBuilder, TestResult_CommandoOutput, Result_Raw} from './cases.js';
 import {runSingleTestCase} from '@nu-art/testalot';
 import {describe} from 'mocha';
 
@@ -33,7 +33,7 @@ const test = async (input: TestInput_CommandoBuilder): Promise<TestResult_Comman
 		});
 	});
 };
-const runTestCase = (testCase: TestSuite_CommandoExecution['testcases'][number]) => runSingleTestCase(test, testCase);
+const runTestCase = (testCase: TestCase_CommandoExecution) => runSingleTestCase(test, testCase);
 
 describe('Commando - Single Shared Commando Execution', () => {
 	before(() => {

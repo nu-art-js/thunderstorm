@@ -21,8 +21,8 @@ import {Workspace} from './workspace/Workspace.js';
 import {resolve} from 'path';
 import {CONST_BaiConfig, CONST_NodeModules, CONST_VersionApp} from './config/consts.js';
 import {UnitMapper_FirebaseFunction, UnitMapper_FirebaseHosting, UnitMapper_NodeLib, UnitMapper_NodeProject} from './units/discovery/resolvers/index.js';
-import {CLIParamsResolver} from '@nu-art/commando/cli-params/CLIParamsResolver';
-import {BaseCliParam} from '@nu-art/commando/cli-params/types';
+import {CLIParamsResolver} from '@nu-art/cli-params';
+import {BaseCliParam} from '@nu-art/cli-params';
 import {RunningStatusHandler} from './runtime/RunningStatusHandler.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 

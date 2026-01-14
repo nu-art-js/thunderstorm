@@ -1,4 +1,4 @@
-import {TestSuite} from '@nu-art/testalot';
+import {TestModel} from '@nu-art/testalot';
 import {BaiParams, BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
 import {flatArray, voidFunction} from '@nu-art/ts-common';
 import {runSingleTestCase} from '@nu-art/testalot';
@@ -14,8 +14,7 @@ type Input = {
 
 type Output = ScheduledStep[];
 
-type TestSuite_CalcExecutionSteps = TestSuite<Input, Output>;
-type TestCase_CalcExecutionSteps = TestSuite_CalcExecutionSteps['testcases'][number];
+type TestCase_CalcExecutionSteps = TestModel<Input, Output>;
 
 
 async function test(input: Input) {

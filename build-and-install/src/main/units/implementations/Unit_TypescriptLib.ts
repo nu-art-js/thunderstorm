@@ -13,9 +13,9 @@ import {
 } from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, CONST_PackageJSONTemplate, CONST_TS_CONFIG} from '../../config/consts.js';
-import {CommandoException} from '@nu-art/commando/shell/core/CliError';
-import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
+import {CommandoException} from '@nu-art/commando';
+import {Commando_NVM} from '@nu-art/commando';
+import {Commando_Basic} from '@nu-art/commando';
 import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {

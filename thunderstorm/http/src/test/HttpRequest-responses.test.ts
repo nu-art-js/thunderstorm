@@ -20,7 +20,7 @@
  */
 
 import {ApiDef, HttpClient_Class, HttpException, HttpMethod, HttpRequest, QueryApi} from '../main/index.js';
-import {runSingleTestCase, TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {createTestApiDef, createTestClient} from './helpers.js';
 import {expect} from 'chai';
 
@@ -37,8 +37,7 @@ type Result = {
 	headers?: Record<string, string | string[]>;
 };
 
-type TestSuite_HttpResponses = TestSuite<Input, Result>;
-type TestCase_HttpResponses = TestSuite_HttpResponses['testcases'][number];
+type TestCase_HttpResponses = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	const request = input.client.createRequest(input.apiDef);
@@ -73,7 +72,7 @@ describe('HttpRequest - Response Types', () => {
 			expect(actual.data.url).to.exist;
 			expect(actual.contentType).to.include('application/json');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Text response', runTestCase({
 		input: {
@@ -85,7 +84,7 @@ describe('HttpRequest - Response Types', () => {
 			expect(actual.status).to.equal(200);
 			expect(typeof actual.data).to.equal('string');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Binary/Blob response', runTestCase({
 		input: {
@@ -98,7 +97,7 @@ describe('HttpRequest - Response Types', () => {
 			expect(actual.data).to.be.instanceof(ArrayBuffer);
 			expect(actual.data.byteLength).to.equal(100);
 		}
-	}));
+	})).timeout(30000);
 
 	it('Stream response', runTestCase({
 		input: {
@@ -111,7 +110,7 @@ describe('HttpRequest - Response Types', () => {
 			// Stream response should be a readable stream
 			expect(actual.data).to.exist;
 		}
-	})).timeout(10000);
+	})).timeout(30000);
 
 	it('Response headers access', runTestCase({
 		input: {
@@ -123,7 +122,7 @@ describe('HttpRequest - Response Types', () => {
 			expect(actual.contentType).to.exist;
 			expect(actual.contentType).to.include('application/json');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Empty response (204)', async () => {
 		// httpbin doesn't have a 204 endpoint, so we'll test with a status that returns minimal content
@@ -145,7 +144,7 @@ describe('HttpRequest - Response Types', () => {
 				expect(e.responseCode).to.equal(204);
 			}
 		}
-	});
+	}).timeout(30000);
 
 	it('Large JSON response', runTestCase({
 		input: {
@@ -156,7 +155,7 @@ describe('HttpRequest - Response Types', () => {
 			expect(actual.status).to.equal(200);
 			expect(actual.data).to.be.an('object');
 		}
-	}));
+	})).timeout(30000);
 
 	it('Response with custom headers', runTestCase({
 		input: {
@@ -168,5 +167,5 @@ describe('HttpRequest - Response Types', () => {
 			expect(actual.status).to.equal(200);
 			expect(actual.data['X-Custom-Header']).to.equal('custom-value');
 		}
-	}));
+	})).timeout(30000);
 });

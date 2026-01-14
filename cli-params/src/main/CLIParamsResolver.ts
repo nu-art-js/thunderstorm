@@ -50,7 +50,7 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 	 * 
 	 * @param params - Parameter definitions (may be incomplete)
 	 */
-	constructor(params: BaseCliParam<string, any>[]) {
+	private constructor(params: BaseCliParam<string, any>[]) {
 		this.params = this.translate(params);
 	}
 

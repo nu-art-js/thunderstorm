@@ -136,9 +136,9 @@ service firebase.storage {
 }
 
 //// file: ./firebase-function-hello/src/main/index.ts
-import * as functions from 'firebase-functions';
+import {onRequest} from 'firebase-functions/v2/https';
 
-export const hello = functions.https.onRequest((request, response) => {
+export const hello = onRequest((request, response) => {
   response.json({
     message: 'Hello World',
     deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
@@ -146,10 +146,9 @@ export const hello = functions.https.onRequest((request, response) => {
 });
 
 //// file: ./firebase-function-hello/dist/index.js
-import * as functions from 'firebase-functions';
+import {onRequest} from 'firebase-functions/v2/https';
 
-
-export const hello = functions.https.onRequest((request, response) => {
+export const hello = onRequest((request, response) => {
   response.json({
     message: 'Hello World',
     deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'

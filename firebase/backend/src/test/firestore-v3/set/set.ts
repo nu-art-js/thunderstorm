@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {duplicateObjectToCreate, firestore, testInstance1, testInstance2, testInstance3, validateDBObject} from '../_core/consts.js';
+import {duplicateObjectToCreate, firestore, testInstance1, testInstance2, testInstance3, validateDBObject} from '../../_entity/_core/consts.js';
 import {TestModel} from '@nu-art/testalot';
 import {asArray, compare, DB_Object, DBDef_V3, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {_EmptyQuery} from '../../../main/index.js';

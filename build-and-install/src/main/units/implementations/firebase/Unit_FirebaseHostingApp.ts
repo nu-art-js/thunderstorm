@@ -1,14 +1,21 @@
 import {FirebasePackageConfig} from '../../../config/types/index.js';
 import {UnitPhaseImplementor} from '../../../core/types.js';
 import {ImplementationMissingException, LogLevel, StringMap, TS_Object, TypedMap} from '@nu-art/ts-common';
-import {CONST_DeployHostingDir, CONST_DeploymentMetadata, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_HostingBuildTarball, CONST_StagingDir, CONST_TrashDir, CONST_VersionApp} from '../../../config/consts.js';
-import {Commando_NVM} from '@nu-art/commando/shell/plugins/nvm';
-import {Commando_Basic} from '@nu-art/commando/shell/plugins/basic';
+import {
+	CONST_DeployHostingDir,
+	CONST_DeploymentMetadata,
+	CONST_FirebaseJSON,
+	CONST_FirebaseRC,
+	CONST_HostingBuildTarball,
+	CONST_StagingDir,
+	CONST_TrashDir,
+	CONST_VersionApp
+} from '../../../config/consts.js';
+import {Commando_Basic, Commando_NVM, CommandoException} from '@nu-art/commando';
 import {UnitConfigJSON_Node} from '../../discovery/resolvers/UnitMapper_Node.js';
 import {resolve} from 'path';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/index.js';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
-import {CommandoException} from '@nu-art/commando/shell/core/CliError';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
@@ -135,7 +142,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 	private async resolveHostingRC() {
 		const envConfig = this.getEnvConfig();
-		const rcConfig = { projects: { default: envConfig.projectId } };
+		const rcConfig = {projects: {default: envConfig.projectId}};
 		const targetPath = `${this.config.fullPath}/${CONST_FirebaseRC}`;
 		await FileSystemUtils.file.write.json(targetPath, rcConfig);
 	}
@@ -153,7 +160,7 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 				hosting: this.config.hostingConfig ?? {
 					'public': 'dist',
 					'rewrites': [
-						{ 'source': '**', 'destination': '/index.html' }
+						{'source': '**', 'destination': '/index.html'}
 					]
 				}
 			};

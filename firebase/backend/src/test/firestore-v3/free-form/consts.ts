@@ -1,4 +1,4 @@
-import {firestore} from '../_core/consts.js';
+import {firestore} from '../../_entity/_core/consts.js';
 import {expect} from 'chai';
 import {ArrayType, DBDef_V3, exists, tsValidateMustExist} from '@nu-art/ts-common';
 import {DB_FreeForm, DBProto_FreeForm, TestModel_FreeForm} from './types.js';

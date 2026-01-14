@@ -1,6 +1,6 @@
 import {TestSuite} from '@nu-art/testalot';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
-import {firestore, testInstance1} from '../_core/consts.js';
+import {firestore, testInstance1} from '../../_entity/_core/consts.js';
 import {expect} from 'chai';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 import {DB_Type, DBProto_Type} from '../_entity.js';

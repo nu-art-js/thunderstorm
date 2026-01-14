@@ -1,10 +1,9 @@
 import {compare, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
 import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
-import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts.js';
-import {_EmptyQuery} from '../../../main/index.js';
-import {DB_Type, DBProto_Type, TestInputValue} from '../_entity.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../../_entity/_core/consts.js';
+import {DBProto_Type, TestInputValue} from '../../_entity/type/shared/index.js';
+import { FirestoreCollectionV3 } from '../../_main.js';
 
 
 export type CreateTestInput = {

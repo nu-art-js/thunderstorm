@@ -1,4 +1,4 @@
-import {TestSuite} from '@nu-art/testalot';
+import {TestModel} from '@nu-art/testalot';
 import {DefaultTestProcessor, defaultTestProcessor, runSingleTestCase, TestCase_Error} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {Commando_Basic, CommandoInteractive, ShellLogProcessor, SimpleTestCommando} from '../../_common.js';
@@ -64,7 +64,7 @@ const testAsync = async (input: Input): Promise<TestResult_CommandoOutput> => {
 	});
 };
 
-type TestSuite_CommandoAsync = TestSuite<Input, ExpectedResult>;
+type TestCase_CommandoAsync = TestModel<Input, ExpectedResult>;
 
 const testValidator: DefaultTestProcessor = async (promisedResult: Promise<TestResult_CommandoOutput>, expectedResult?: (ExpectedResult | (() => Promise<any>)), error?: TestCase_Error) => {
 	if (typeof error === 'object')
@@ -107,7 +107,7 @@ const testValidator: DefaultTestProcessor = async (promisedResult: Promise<TestR
 		expect(actualResult.exitCode).to.equal(expectedResult.exitCode);
 
 };
-const runTestCase = (testCase: TestSuite_CommandoAsync['testcases'][number], processor?: typeof defaultTestProcessor) => () => runSingleTestCase(testAsync, testCase, processor);
+const runTestCase = (testCase: TestCase_CommandoAsync, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(testAsync, testCase, processor);
 
 describe('Commando - Async Execution', () => {
 	before(() => {

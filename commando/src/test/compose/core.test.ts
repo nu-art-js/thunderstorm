@@ -1,14 +1,12 @@
-import {runSingleTestCase} from '@nu-art/testalot';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {Commando_Basic, CommandoInteractive, SimpleTestCommando} from '../_common.js';
-import {TestSuite} from '@nu-art/testalot';
 
 // Input and output types
 export type Input = (commando: SimpleTestCommando) => void;
 export type Result = string;
 
-// TestSuite and TestCase types
-export type TestSuite_CommandComposition = TestSuite<Input, Result>;
-export type TestCase_CommandComposition = TestSuite_CommandComposition['testcases'][number];
+// TestCase types
+export type TestCase_CommandComposition = TestModel<Input, Result>;
 
 const runTestCase = (testCase: TestCase_CommandComposition) => {
 	return () => runSingleTestCase(test, testCase);

@@ -2,11 +2,10 @@ import {runSingleTestCase} from '@nu-art/testalot';
 import {test_FirestoreV3_Create} from './create.js';
 import {test_FirestoreV3_CreateAll} from './create-all.js';
 import {createTestCases} from './consts.js';
-import {duplicateObjectToCreate, testInstance2} from '../_core/consts.js';
+import {duplicateObjectToCreate, testInstance2} from '../../_entity/_core/consts.js';
 import {deepClone} from '@nu-art/ts-common';
 import {expect} from 'chai';
 import {CreateTestInput} from './consts.js';
-import {FirestoreTransaction} from '../../../main/index.js';
 
 const runTestCase_Create = (testCase: { description?: string; input: CreateTestInput; result: any }) => () => runSingleTestCase(test_FirestoreV3_Create, testCase);
 const runTestCase_CreateAll = (testCase: { description?: string; input: CreateTestInput; result: any }) => () => runSingleTestCase(test_FirestoreV3_CreateAll, testCase);
@@ -41,7 +40,7 @@ describe('Firestore v3 - Create', () => {
 			value: [duplicateObjectToCreate],
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
-				const promise = collection.runTransaction(async (transaction: FirestoreTransaction) => {
+				const promise = collection.runTransaction(async (transaction) => {
 					return collection.create.item(toCreate, transaction);
 				});
 				await expect(promise).to.be.rejectedWith();
