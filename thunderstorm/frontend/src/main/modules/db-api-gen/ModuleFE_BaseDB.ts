@@ -498,6 +498,8 @@ export class MemCache<Proto extends DBProto<any>> {
 		else
 			allItems = await this.module.IDB.query();
 
+		//Upgrade Items
+		await this.module.upgradeInstances(allItems);
 		const frozenItems = allItems.map((item: any) => Object.freeze(item));
 
 		this.setCache(frozenItems);
