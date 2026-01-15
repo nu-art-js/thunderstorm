@@ -341,13 +341,13 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	/**
-	 * Discovers exported functions from the compiled dist/index.js file.
+	 * Discovers exported functions from the source src/main/index.ts file.
 	 * Parses export statements to extract function names.
 	 *
 	 * @returns Array of function names found in exports
 	 */
 	private async discoverExportedFunctions(): Promise<string[]> {
-		const indexPath = resolve(this.config.output, 'index.js');
+		const indexPath = resolve(this.config.fullPath, 'src/main/index.ts');
 		const content = await FileSystemUtils.file.read(indexPath);
 
 		const functionNames: string[] = [];
@@ -396,7 +396,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	/**
-	 * Validates that all configured functions exist in the compiled dist/index.js file.
+	 * Validates that all configured functions exist in the source src/main/index.ts file.
 	 * Throws ImplementationMissingException if any configured function is missing.
 	 */
 	private async validateFunctionsExist(): Promise<void> {
@@ -409,7 +409,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		if (missingFunctions.length > 0) {
 
 			throw new ImplementationMissingException(
-				`Configured functions not found in dist/index.js: ${missingFunctions.join(', ')}. ` +
+				`Configured functions not found in src/main/index.ts: ${missingFunctions.join(', ')}. ` +
 				`Available exports: ${exportedFunctions.length > 0 ? exportedFunctions.join(', ') : 'none'}`
 			);
 		}
@@ -527,7 +527,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	 * **Process**:
 	 * 1. Validates image tag is provided via CLI
 	 * 2. Validates containerDeployment config exists
-	 * 3. Validates configured functions exist in dist/index.js
+	 * 3. Validates configured functions exist in src/main/index.ts
 	 * 4. Deletes functions if requested via CLI flags
 	 * 5. Determines which functions to deploy (single or all)
 	 * 6. Generates Cloud Run service YAML definitions for each function
