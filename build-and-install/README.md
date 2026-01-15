@@ -1,199 +1,211 @@
 # @nu-art/build-and-install
 
-A build system for monorepos that orchestrates building, testing, and deploying units with dependency-aware phase execution.
+A **graph-driven build and execution engine** for large TypeScript monorepos.
 
-## Overview
+Build-and-install (BAI) discovers executable units from the filesystem, builds a dependency graph between them, and executes lifecycle phases in a deterministic, dependency-aware order.
 
-Build-and-install is a sophisticated build orchestration system designed for TypeScript monorepos. It discovers units (packages/apps) in your workspace, resolves their dependencies, and executes phases (prepare, compile, test, deploy, etc.) in the correct order.
+It replaces ad-hoc scripts and linear pipelines with a **single, consistent execution model** for build, test, deploy, and publish workflows.
 
-## Key Features
+---
 
-- **Unit Discovery**: Automatically scans workspace and discovers units (NodeLib, NodeProject, Firebase, etc.)
-- **Dependency Resolution**: Builds dependency tree and executes units in correct order
-- **Phase Execution**: Runs phases (prepare, compile, test, lint, deploy) with parallel execution where possible
-- **Resume Support**: Can resume from last completed step with `--continue` flag
-- **Selective Execution**: Work on specific units with `--use-package` flag
-- **Dry Run**: Preview execution plan without running phases
+## What BAI is (and isn’t)
 
-## Quick Start
+**BAI is:**
+- a dependency-graph–based execution engine
+- phase-oriented, not script-oriented
+- deterministic and resumable
+- parallel where safe, ordered where required
 
-```typescript
-import {BuildAndInstall} from '@nu-art/build-and-install';
+**BAI is not:**
+- a simple build script
+- a task runner
+- a fixed pipeline definition
+
+Execution behavior is always *derived*, never hard-coded.
+
+---
+
+## Core model
+
+BAI operates on four primitives:
+
+```
+Units + Dependencies + Phases + Runtime Intent
+```
+
+Everything else is an implementation detail.
+
+---
+
+## Mental model
+
+```
+Filesystem
+   ↓
+Unit discovery
+   ↓
+Dependency graph
+   ↓
+Active / project unit selection
+   ↓
+Phase filtering
+   ↓
+Execution plan
+   ↓
+Parallel, dependency-safe execution
+```
+
+---
+
+## Units
+
+A **unit** is an executable node discovered from the workspace.
+
+Examples include:
+- Node libraries
+- Applications
+- Firebase hosting projects
+- Firebase functions
+
+Units:
+- are discovered automatically
+- declare dependencies on other units
+- may implement lifecycle methods (e.g. `prepare`, `compile`, `test`, `lint`, `deploy`, `publish`)
+
+A unit participates in a phase **only if it implements the phase method**.
+
+---
+
+## Dependency graph
+
+BAI builds a directed dependency graph between all discovered units.
+
+This graph is the single source of truth used to:
+- compute transitive dependencies
+- derive execution layers
+- enforce safe execution order
+- enable parallelism without race conditions
+
+---
+
+## Active vs project units
+
+At runtime, units are divided into:
+
+- **Project units**  
+  The full dependency closure of the workspace.
+
+- **Active units**  
+  Units explicitly targeted by the current run.
+
+Some phases operate only on active units, while others require the full project set.
+
+This distinction enables fast, targeted execution without sacrificing correctness.
+
+---
+
+## Phases
+
+A **phase** is a declarative lifecycle step.
+
+Each phase defines:
+- a unique key
+- a method name units must implement
+- optional runtime filters
+- optional dependencies on other phases
+- the unit category it applies to (`active` or `project`)
+
+Phases are grouped:
+- phase groups run sequentially
+- phases within a group run in parallel
+- units within a phase run in dependency order
+
+---
+
+## Workspace & execution engine
+
+The workspace manages all discovered units and their relationships:
+- **Scanned units**: all units discovered from the filesystem
+- **Active units**: execution targets derived from runtime intent
+- **Project units**: active units plus their transitive dependencies
+
+The execution engine:
+- calculates an execution plan from phases × dependency layers
+- executes units in a dependency-safe order
+- supports graceful interruption and resumption
+
+---
+
+## CLI-driven execution
+
+The CLI expresses **intent**, not execution logic.
+
+Common capabilities include:
+- selecting specific units (`--use-package`, `--application`)
+- including dependency trees (`--build-tree`)
+- resuming failed runs (`--continue`)
+- simulating execution (`--dry-run`)
+- cleaning or purging outputs
+- enabling debug or verbose logging
+
+Execution behavior is always derived from:
+
+```
+Units + Dependencies + Phases + Runtime Parameters
+```
+
+---
+
+## Embedding (advanced)
+
+BAI can also be embedded programmatically:
+
+```ts
+import { BuildAndInstall } from '@nu-art/build-and-install';
 
 const bai = new BuildAndInstall();
-await bai.build();  // Discover units, resolve dependencies
-await bai.run();    // Execute phases
+await bai.build();
+await bai.run();
 ```
 
-## Core Concepts
+This is intended for advanced orchestration or tooling scenarios.
 
-### Units
+---
 
-Units are discovered packages/projects in your workspace:
-- **BaseUnit**: Generic unit base class
-- **ProjectUnit**: Units with file paths and dependencies
-- **Unit Types**: NodeProject, NodeLib, FirebaseHosting, FirebaseFunction, etc.
+## Extensibility
 
-### Phases
+BAI is designed to be extended via:
+- custom unit types
+- custom phases
+- custom unit discovery rules
 
-Phases are execution steps that units can implement:
-- **Prepare**: Setup and preparation
-- **Compile**: Build TypeScript/JavaScript
-- **Test**: Run tests
-- **Lint**: Lint code
-- **Deploy**: Deploy to production
-- **Terminating**: Cleanup operations
+Extensions integrate naturally into the dependency graph and execution model.
 
-### Workspace
+---
 
-The `Workspace` class manages all units:
-- **Scanned Units**: All units discovered from file system
-- **Active Units**: Units selected for execution
-- **Project Units**: Active units + their transitive dependencies
+## State & recovery
 
-### Phase Manager
+Execution state is persisted to allow safe recovery after failures or interruptions.
 
-The `PhaseManager` orchestrates phase execution:
-- Calculates execution plan (which phases run on which units)
-- Executes phases in dependency order
-- Handles errors and aggregates exceptions
-- Supports graceful shutdown (SIGINT)
+Using `--continue`, BAI can resume execution from the last completed step without re-running successful work.
 
-## CLI Parameters
+---
 
-Common runtime parameters (see `AllBaiParams` for complete list):
+## When to use BAI
 
-- `--use-package <pattern>`: Work on specific units (regex pattern)
-- `--build-tree`: Include transitive dependencies in active units
-- `--continue`: Resume from last completed step
-- `--dry-run`: Log execution plan without running
-- `--install`: Run `pnpm install` on all units
-- `--clean`: Delete output folders
-- `--purge`: Delete node_modules and clean
-- `--debug`: Enable debug logging
-- `--verbose`: Enable verbose logging
+- Large monorepos
+- Multi-package dependency graphs
+- Unified build / test / deploy workflows
+- Deterministic and resumable execution
 
-## Architecture
+## When not to use BAI
 
-### Build Process
+- Single-package projects
+- Linear, one-off scripts
+- Projects without meaningful dependencies
 
-1. **Initialization**: Set up logging, CLI params, workspace
-2. **Discovery**: Scan workspace for units using UnitsMapper
-3. **Dependency Resolution**: Build dependency tree
-4. **Unit Selection**: Derive active/project units based on runtime params
-5. **Context Setup**: Provide runtime context to all units
-6. **Execution Planning**: Calculate which phases run on which units
-7. **Phase Execution**: Execute phases in dependency order
-
-### Execution Model
-
-- **Phase Groups**: Phases that can run in parallel
-- **Unit Layers**: Units grouped by dependency level (dependencies first)
-- **Steps**: Combinations of phase groups × unit layers
-- **Parallel Execution**: Units in same layer run phases in parallel
-
-## Unit Types
-
-### NodeProject
-
-Root project unit (monorepo root). Discovers child units and manages workspace.
-
-### NodeLib
-
-TypeScript library unit. Implements compile, test, lint phases.
-
-### FirebaseHosting
-
-Firebase hosting app unit. Implements deploy phase.
-
-### FirebaseFunction
-
-Firebase function unit. Implements deploy phase.
-
-## Extension Points
-
-### Custom Units
-
-Extend `ProjectUnit` or `BaseUnit` to create custom unit types:
-
-```typescript
-export class MyCustomUnit extends ProjectUnit<MyConfig> {
-  async compile() {
-    // Custom compile logic
-  }
-}
-```
-
-### Custom Phases
-
-Add custom phases to phase groups:
-
-```typescript
-const customPhase: Phase = {
-  key: 'my-phase',
-  name: 'My Phase',
-  method: 'myPhase',
-  unitCategory: 'active'
-};
-
-bai.setPhases([...DefaultPhases, [[customPhase]]]);
-```
-
-### Custom Unit Mappers
-
-Create custom unit discovery rules:
-
-```typescript
-export class MyUnitMapper extends UnitMapper_Base<MyUnit> {
-  async resolveUnit(path: string, projectRoot: string): Promise<MyUnit | undefined> {
-    // Custom discovery logic
-  }
-}
-
-bai.prepareUnitsMapper(mapper => {
-  mapper.addRules(MyUnitMapper);
-});
-```
-
-## Configuration
-
-### BAI Config
-
-Create `bai-config.json` in project root:
-
-```json
-{
-  "units": [],
-  "phases": []
-}
-```
-
-### Version File
-
-Create `version-app.json` in project root:
-
-```json
-{
-  "version": "1.0.0"
-}
-```
-
-## Error Handling
-
-- **UnitPhaseException**: Thrown when a phase fails on a unit
-- **PhaseAggregatedException**: Aggregates multiple phase errors
-- **BadImplementationException**: Thrown for configuration errors
-
-## State Persistence
-
-Execution state is saved to `.trash/output/running-status.json`:
-- Current step index
-- Completed units
-- Runtime parameters
-
-Use `--continue` to resume from saved state.
+---
 
 ## License
 
 Apache-2.0
-

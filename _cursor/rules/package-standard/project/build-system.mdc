@@ -9,6 +9,7 @@ This document describes the BAI (Build and Install) build system workflow, phase
 
 ## Overview
 
+BAI is a cli build system that simplifies and orchestrates a monorepo lifecycle.
 By default BAI takes ONLY the packages that are used in the workspace building the dependency tree from the top apps down the tree, if there is a package that is not included in the apps dependency tree they will not be included, if you want to include all the packages, use the `-all` flag
 
 ## Build System Workflow
