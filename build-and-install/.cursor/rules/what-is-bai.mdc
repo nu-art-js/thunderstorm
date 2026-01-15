@@ -1,0 +1,245 @@
+---
+description: Read this document before attempting to explain, modify, extend, or reason about the Build-And-Install (BAI) system, as it defines the authoritative entities, responsibilities, and execution flow.
+alwaysApply: false
+---
+
+# BAI Ecosystem – Capability & Entity Index
+
+This document defines the **structural model** of the Build-And-Install (BAI) ecosystem.
+
+It is intended for **agents and contributors** that need to understand:
+- what entities exist in BAI,
+- what each entity is responsible for,
+- how entities connect in the execution flow.
+
+This is **not** a deep dive and **not** an operational guide.
+It is a high-level index that future instructions can reliably build upon.
+
+---
+
+## System scope
+
+BAI is a **graph-driven execution engine** for monorepos.
+
+It models a workspace as executable units connected by dependencies, then executes lifecycle phases over those units in a deterministic and dependency-safe manner.
+
+All behavior emerges from the interaction of the entities described below.
+
+---
+
+## Top-level execution flow (orientation)
+
+At a high level, execution flows through the following stages:
+
+1. CLI parameters are parsed into **runtime intent**
+2. The workspace is scanned and **units are discovered**
+3. A **dependency graph** is constructed between units
+4. Units are classified as **active** or **project** units
+5. **Phases** are filtered and ordered
+6. **Execution steps** are constructed from phases × dependency layers
+7. Steps are executed by the **phase manager**
+
+Each stage corresponds to concrete entities described below.
+
+---
+
+## Core entities
+
+### Units
+
+A **unit** is the smallest executable entity in BAI.
+
+Conceptually, a unit represents *something that can participate in lifecycle phases*.
+
+Responsibilities:
+- represent a concrete part of the workspace (library, app, service, etc.)
+- declare dependencies on other units
+- optionally implement lifecycle methods (e.g. `prepare`, `compile`, `test`, `deploy`)
+
+Units do **not** control execution order and do **not** orchestrate other units.
+
+#### Unit categories
+
+- **node-project**
+  Represents the root project. Acts as the entry point for workspace discovery.
+    - **MUST** be present in root `__package.json` template
+    - Identifies the project root to the build system
+    - Required for BAI to function correctly
+    - `pnpm.overrides` will be specified in this unit
+
+- **typescript-lib**
+  Represents a TypeScript/JavaScript library.
+    - Compiles TypeScript to JavaScript
+    - Generates type definitions
+    - Used for: shared, frontend, and backend library packages
+
+- **firebase-hosting**
+  Represents a Firebase hosting application.
+
+- **firebase-function**
+  Represents a Firebase function or function group.
+
+All unit types share the same execution model and differ only in:
+- how they are discovered
+- which phases they implement
+
+---
+
+### Unit mapper
+
+A **unit mapper** is responsible for discovering units from the filesystem.
+
+Responsibilities:
+- inspect filesystem paths
+- detect known project structures
+- instantiate the appropriate unit type
+- assert expect config exists (implementation specific)
+
+Unit mappers:
+- do not resolve dependencies
+- do not execute logic
+- only participate during the discovery phase
+
+Multiple mappers can be registered to support multiple unit types.
+
+---
+
+### Workspace
+
+The **workspace** is the container that holds all discovered units.
+
+Responsibilities:
+- store discovered units
+- provide lookup and filtering utilities
+- coordinate dependency graph construction
+
+The workspace does not execute phases; it only manages structure and relationships.
+
+---
+
+### Dependency mapper
+
+The **dependency mapper** builds and manages the dependency graph between units.
+
+Responsibilities:
+- resolve direct dependencies declared by units
+- compute transitive dependencies
+- derive topological layers
+- detect invalid or cyclic dependency structures
+
+The dependency graph produced here is the **authoritative source** for execution order.
+
+---
+
+### Runtime intent (CLI parameters)
+
+Runtime intent is derived from CLI parameters.
+
+Responsibilities:
+- define which units are **active** targets
+- influence dependency closure (e.g. include transitive dependencies)
+- enable or disable phases
+- control execution modes (dry-run, continue, watch, etc.)
+
+Runtime intent **does not** define execution order.
+It only affects *selection and filtering*.
+
+---
+
+### Active units vs project units
+
+BAI distinguishes between two unit sets:
+
+- **Active units**
+  Units explicitly targeted by the current run.
+
+- **Project units**
+  Active units plus all required transitive dependencies.
+
+This distinction allows BAI to:
+- execute only what is necessary
+- preserve correctness by including dependencies where required
+
+---
+
+### Phases
+
+A **phase** is a declarative lifecycle definition.
+
+Responsibilities:
+- declare a lifecycle step (e.g. compile, test, deploy)
+- specify which units may participate
+- optionally depend on other phases
+
+A phase defines:
+- a unique key
+- a method name units must implement
+- optional runtime filters
+- an applicable unit category (`active` or `project`)
+
+Phases contain no execution logic themselves.
+
+---
+
+### Phase groups
+
+Phases are organized into **phase groups**.
+
+Rules:
+- phase groups execute sequentially
+- phases within a group may execute in parallel
+
+Phase grouping defines *when* phases may overlap, not *how* they execute.
+
+---
+
+### Execution steps
+
+An **execution step** is a concrete runtime construct.
+
+It is formed by combining:
+- a phase
+- a dependency layer of units
+
+Responsibilities:
+- represent the smallest schedulable execution unit
+- ensure all dependencies of a unit are completed before execution
+
+Execution steps are computed, not manually defined.
+
+---
+
+### Phase manager
+
+The **phase manager** is the central execution coordinator.
+
+Responsibilities:
+- construct execution steps
+- schedule steps in the correct order
+- execute steps with safe parallelism
+- track progress and failures
+- support interruption and resumption
+
+The phase manager does not understand unit semantics; it only enforces structure.
+
+---
+
+## Execution guarantees
+
+From the interaction of these entities, BAI guarantees:
+
+- deterministic execution order
+- dependency-safe parallelism
+- resumable execution
+- consistent behavior across CLI and programmatic usage
+
+---
+
+## Intent of this document
+
+This document exists to:
+- provide a stable mental model for agents
+- serve as an index for deeper instructions
+- reduce ambiguity in future extension guides
+
+Subsequent documents may assume familiarity with all entities defined here.

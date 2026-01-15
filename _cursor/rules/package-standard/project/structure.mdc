@@ -45,12 +45,6 @@ The project uses a custom thunderstorm monorepo build system called "Build and I
   - `package.json`
   - `tsconfig.json` in source folders (main / test / etc)
 
-## Typical Dependencies
-
-- **Shared packages**: `@nu-art/ts-common`, `@nu-art/thunderstorm-shared`
-- **Frontend packages**: Product shared package, `@nu-art/thunderstorm-frontend`, React dependencies
-- **Backend packages**: Product shared package, `@nu-art/thunderstorm-backend`, Express/Firebase dependencies
-
 ## Structure
 
 - **Base configs**: Stored in `.config/tsconfig-*.json` at project root
