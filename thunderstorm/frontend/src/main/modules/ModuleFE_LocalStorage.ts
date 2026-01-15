@@ -108,16 +108,19 @@ export class StorageModule_Class
 		delete this.cache[key];
 	}
 
-	public get(key: string, fallbackValue?: ResolvableContent<GetType>, persist: boolean = true): string | number | object | undefined {
+	public get(key: string, fallbackValue?: ResolvableContent<GetType>, persist: boolean = true, sameInstance: boolean = false): string | number | object | undefined {
+		const returnValue = (value: string | number | object | undefined) => {
+			return sameInstance ? value : deepClone(value);
+		};
 		if (this.cache[key])
-			return deepClone(this.cache[key]);
+			return returnValue(this.cache[key]);
 
 		const value = this.getStorage(persist).getItem(key);
 		if (!exists(value))
 			return resolveContent(fallbackValue);
 
 		this.cache[key] = JSON.parse(value);
-		return deepClone(this.cache[key]);
+		return returnValue(this.cache[key]);
 	}
 
 	public query<T>(query: RegExp): T[] {
@@ -165,6 +168,7 @@ export class StorageKey<ValueType = string | number | object> {
 	readonly key: string;
 	private readonly persist: boolean;
 	private _onChange?: (after?: ValueType, before?: ValueType) => Promise<void>;
+	private isSameInstance: boolean = false;
 
 	constructor(key: string, persist: boolean = true) {
 		this.key = key;
@@ -186,7 +190,7 @@ export class StorageKey<ValueType = string | number | object> {
 	get(fallbackValue: ResolvableContent<ValueType>): ValueType;
 	get(fallbackValue?: ResolvableContent<ValueType>): ValueType {
 		// @ts-ignore
-		return ModuleFE_LocalStorage.get(this.key, fallbackValue, this.persist) as unknown as ValueType;
+		return ModuleFE_LocalStorage.get(this.key, fallbackValue, this.persist, this.isSameInstance) as unknown as ValueType;
 	}
 
 	patch(value: ValueType extends TS_Object ? Partial<ValueType> : ValueType) {
@@ -223,4 +227,14 @@ export class StorageKey<ValueType = string | number | object> {
 	}
 
 	getPersistence = () => this.persist;
+
+	/**
+	 * Sets the isSameInstance flag to true.
+	 * Any subsequent calls to get will return the same instance as in the cache, instead of a copy
+	 * @deprecated
+	 */
+	sameInstance = () => {
+		this.isSameInstance = true;
+		return this;
+	};
 }
