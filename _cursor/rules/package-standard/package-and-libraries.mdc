@@ -1,0 +1,83 @@
+---
+description: Package and library structure conventions
+alwaysApply: false
+---
+
+# Package and Library Structure
+
+This document describes the structure of packages and libraries in the thunderstorm monorepo.
+
+## Package Type Standards
+
+We have two package types:
+
+- **infra-package** - Standards for `@nu-art/*` infrastructure packages (see [Infra Package JSON Format](./infra-package.mdc))
+- **app-package** - Standards for `@app/*` application packages (see [App Package JSON Format](./app-package.mdc))
+
+## Package (Single Domain)
+
+A **package** is a single-domain capability contained in one folder:
+
+```
+{package-name}/
+    ├── __package.json    # Template file (source of truth)
+    ├── LICENSE           # License file
+    ├── src/
+    │   ├── main/         # Source files with module exports
+    │   └── test/         # Test files (where applicable)
+    └── _docs/            # Documentation files (where applicable)
+```
+
+- Contains a single `__package.json` at the root
+- Has `src/main/` for source code
+- Has `src/test/` for tests
+- Single domain (shared, frontend, or backend)
+- `tsconfig.json` is auto-generated in source folders unless explicitly defined
+
+## Library (Multi-Domain Capability)
+
+A **library** is a capability that spans multiple domains (shared, frontend, backend) organized in separate folders:
+
+```
+{lib-name}/
+    ├── __package.json    # Template file (source of truth)
+    ├── _docs/            # Will hold all the mds describing the lib
+    ├── shared/           # Shared types and interfaces (unitConfig.type: "typescript-lib")
+    │   ├── LICENSE
+    │   ├── src/main/
+    │   │   └── {db-entity-name} (when have db entities)
+    │   └── src/test/ (where applicable)
+    ├── frontend/         # Frontend modules and UI components (unitConfig.type: "typescript-lib")
+    │   ├── LICENSE
+    │   ├── src/main/
+    │   │   ├── components (where applicable)
+    │   │   ├── utils (where applicable)
+    │   │   ├── pages (where applicable, each will be exposed only by its route)
+    │   │   ├── modules (will hold all the modules and a single module-pack or contextual module-packs)
+    │   │   └── index.ts (will contextually export lib function)
+    │   └── src/test/ (where applicable)
+    └── backend/          # Backend modules and services (unitConfig.type: "typescript-lib")
+        ├── LICENSE
+        ├── src/main/
+        │   ├── services (where applicable)
+        │   ├── entities (where applicable)
+        │   ├── modules (will hold all the modules and a single module-pack or contextual module-packs)
+        │   └── index.ts (will contextually export lib function)
+        └── src/test/ (where applicable)
+```
+
+- Has separate package domain folders as described above for each domain: `shared/`, `frontend/`, `backend/`. Not all lib folders may have all domains.
+- Each domain folder is a separate package with its own structure
+- Each domain folder has its own `LICENSE`, `src/main/`, and `src/test/`
+
+**Key Difference**: A library groups related multi-domain packages under one folder, while a package is a single-domain unit.
+
+## Application Packages
+
+```
+app/
+    ├── frontend/        # Frontend application (unitConfig.type: "firebase-hosting")
+    └── backend/         # Backend application (unitConfig.type: "firebase-function")
+```
+
+Application packages follow the same structure as single-domain packages but use `firebase-hosting` or `firebase-function` unit types.
