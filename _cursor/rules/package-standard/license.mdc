@@ -1,0 +1,40 @@
+---
+description: License requirements for packages in the thunderstorm based monorepo project
+alwaysApply: false
+---
+
+# License Standards
+
+This document defines license requirements for packages in the thunderstorm monorepo.
+
+## Thunderstorm Infra Packages
+
+All `@nu-art/*` infrastructure packages must use:
+
+- **License**: `"license": "Apache-2.0"`
+- **License File**: Include a `LICENSE` file with Apache 2.0 license text
+- **Visibility**: Public packages, published to NPM
+- **Usage**: Can be used by anyone (open source)
+
+## App-Level Packages
+
+All `@app/*` application packages must use:
+
+- **License**: Proprietary (organization-specific)
+- **License File**: Include a `LICENSE` file with proprietary license text
+- **Visibility**: Private packages, never published to NPM
+- **Usage**: **No one can use** - proprietary to the organization
+
+## Requirements
+
+- Every package must have a `LICENSE` file
+- The license file must match the package type (Apache-2.0 for infra, proprietary for app)
+- License files must be placed at the package root (for single-domain) or in each domain package folder (for multi-domain libraries)
+
+## Enforcement
+
+- **Always** include a LICENSE file when creating new packages
+- **Always** set the correct `license` field in `__package.json`
+- **Never** publish app-level packages to NPM (they are private and proprietary)
+- **Always** use Apache-2.0 for infra packages that will be published
+- **Always** check if the package moved and in need of license update

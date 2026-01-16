@@ -1,0 +1,86 @@
+---
+description: Instructions for writing a package README.md file
+alwaysApply: false
+---
+
+
+# Purpose
+
+Every package must have a README.md file that helps other developers understand, discover, and use the package effectively.
+
+
+# Writing Guidelines
+
+## Clarity
+
+- Use clear, concise language
+- Avoid jargon unless necessary
+- Explain concepts that may not be obvious
+
+## Examples
+
+- Include realistic, workable examples
+- Show both simple and complex use cases
+- Update examples when API changes
+
+## Structure
+
+- Use proper heading hierarchy (H1 → H2 → H3)
+- Keep sections focused and scannable
+- Use code blocks with appropriate language tags
+
+## Completeness
+
+- Document all public exports
+- Explain non-obvious behavior
+- Include important constraints or limitations
+
+# Best Practices
+
+1. **Start with purpose**: Make it immediately clear what the package does
+2. **Show, don't just tell**: Include code examples for key features
+3. **Keep it current**: Update README when package functionality changes
+4. **Be concise**: Focus on essential information
+5. **Link to details**: Reference detailed documentation if available in `_docs/` folder
+
+# Common Mistakes to Avoid
+
+- Don't include installation instructions for external packages (this is a monorepo)
+- Don't duplicate information already in code documentation
+- Don't use vague descriptions - be specific about what the package does
+- Don't forget to document sub-exports if they exist
+- Don't include outdated examples
+
+
+# Required Sections
+
+## 1. Package Purpose
+
+Provide a clear, concise description of what the package provides. This should be 2-4 sentences that:
+- Explain what the package does
+- Describe its primary use cases
+- Identify the target audience or context
+
+
+## 2. Installation and usage
+
+Explain how to install or use the package in the monorepo context:
+    - add the package name as a dependency in `__package.json` of the using package.
+    - import and use the modules in the app module pack (when applicable) frontend and backend respectively.
+    - explain the config data needed to initialize the modules (when applicable)  frontend and backend respectively.
+    - import and use functionality from the package (when applicable).
+
+## 3. Key Features
+
+Provide a high-level overview of the package structure and exports points and add oneliner to describe their purpose
+List the main capabilities and use cases, if required add a usage example
+
+## 4. API Overview
+
+Describe the package APIs in high level.
+
+
+## 5. Examples
+
+Add examples to demonstrate the functionality of the package.
+
