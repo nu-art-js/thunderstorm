@@ -1,6 +1,6 @@
 // test input type - will have the parameters that actually makes a test case unique, its content depends on the test performed
-import {defaultTestProcessor, runSingleTestCase} from './consts.js';
-import {TestModel} from './types.js';
+import {defaultTestProcessor, runSingleTestCase} from '../main/consts.js';
+import {TestModel} from '../main/types.js';
 
 type Input = { inputA: string, inputB: number, inputC: any };
 
