@@ -1,11 +1,13 @@
 ---
-alwaysApply: true
+description: How to write documentation, and when to document.
+alwaysApply: false
 ---
 
 # Documentation Standards
 
 ## Core Principle
-**Documentation must be maintained in sync with code changes, but avoid redundant documentation that adds no value.**
+ - Documentation must be maintained in sync with code changes!
+ - Avoid redundant documentation that adds no value.**
 
 ## When Editing Code
 
@@ -45,7 +47,7 @@ Document code when any of the following apply:
    - Example: Complex calculations, state machines, intricate business rules
 
 3. **Side Effects**: The function has side effects beyond its obvious purpose
-   - Example: A getter that also initializes something, or a setter that triggers events
+   - Example: A getter that also initializes something, or a setter that triggers events (though these patterns should raise a red flag)
 
 4. **Non-Obvious Parameters/Returns**: Parameters or return values need explanation
    - Example: Complex objects, enums with specific meanings, optional behaviors
@@ -113,7 +115,3 @@ setName(name: string): void { ... }
 - **Always** document undocumented code when editing files (unless self-explanatory)
 - **Never** add documentation that just repeats what the code already clearly states
 - When in doubt, err on the side of documenting (especially for public APIs)
-
-## See Also
-
-- [Documentation Process](./process.mdc) - Complete workflow for documenting packages

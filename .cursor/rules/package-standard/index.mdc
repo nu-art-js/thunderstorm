@@ -1,0 +1,149 @@
+---
+description: Master orchestrator for package standards - defines how a thunderstorm package should be structured, documented, tested, and maintained
+alwaysApply: false
+---
+
+# Package Standard
+
+This is the master document that defines the standard for a thunderstorm infra package and the expected requirements to validate their existence and accuracy.
+
+## Overview
+
+A well-structured package in the thunderstorm monorepo should have:
+- **Proper documentation** - Code documentation, README, files license header and package metadata
+- **Comprehensive tests** - Appropriate test coverage using the correct test patterns
+- **Clear structure** - Logical organization following package structure conventions
+- **Maintainable metadata** - Proper `__package.json` configuration with logical exports
+- **Quality standards** - Following documentation, markdown, coding rules and code quality conventions
+
+## Package Requirements
+
+In order to document accurately, we need to understand the package purpose.
+In order to be concise we need to summarize the package purpose in 2-4 sentences.
+In order to provide examples on how to use the package we need to find and understand examples in the workspace, if no examples were found, we will infer based code logic.
+In order to assert the package functionality we need to make sure we have test coverage for the package.
+In order for other developers to understand the package we need to provide a README.md file.
+In order for other developers to understand we need to document the all symbols in the package source code.
+In order for other developers to discover the package we need to add a good description and keywords to the `__package.json`.
+In order to allow ease of use, we need to provide good logical exports in the package's `__package.json`.
+In order to be proactive and efficient, while going over the code we need to track issues and document them in ISSUES.md.
+In order to be compatible we need to have a LICENSE file matching the project standard.
+In order to provide clarity we need to add a copyright header to all source files.
+In order to be BAI compatible we need to add a unitConfig to the unit's `__package.json`.
+In order to be BAI compatible we need to make sure all the source files are ESM.
+
+
+# Package Checklist (Agent Process)
+
+Step-by-step checklist to bring a package to standard. Work through the phases in order. For each phase, apply the rules in the cited files; do not re-explain them here.
+
+---
+
+## Phase 1: Understand the Package
+
+**Goal**: Know what the package does, how it is structured, and how it is used.
+
+- [ ] Package type (infra vs app) and layout (single-domain vs library) — see [package-and-libraries.mdc](../package-and-libraries.mdc)
+- [ ] Entry points and public exports; confirm each resolves to `src/main/` and build output
+- [ ] Purpose (2–4 sentences), runtime deps from imports, usages in workspace (or infer from code)
+
+---
+
+## Phase 2: Update `__package.json`
+
+**Goal**: `__package.json` reflects the package and complies with BAI and monorepo rules.
+
+- [ ] Apply [package.json/package.json-common.mdc](../package.json/package.json-common.mdc)
+- [ ] Infra: [package.json/package.json-infra-package.mdc](../package.json/package.json-infra-package.mdc) — App: [package.json/package.json-app-package.mdc](../package.json/package.json-app-package.mdc)
+- [ ] License field and LICENSE file — [license.mdc](../license.mdc)
+
+---
+
+## Phase 3: Update README.md
+
+**Goal**: README helps developers understand, discover, and use the package.
+
+- [ ] Create or update README per [README.mdc](../README.mdc)
+
+---
+
+## Phase 4: Documentation (JSDoc and `_docs`)
+
+**Goal**: Code and docs in sync; document only what adds value.
+
+- [ ] JSDoc and `_docs/` per [documentation.mdc](../documentation.mdc)
+- [ ] Ensure `_docs/` (if present) is consistent with code and README
+
+---
+
+## Phase 5: Copyright and License
+
+**Goal**: Correct legal headers and license files.
+
+- [ ] Copyright header on all `src/main/` (and `src/test/` if required) — [index.mdc](../index.mdc)
+- [ ] LICENSE file and `__package.json` license — [license.mdc](../license.mdc)
+
+---
+
+## Phase 6: Tests
+
+**Goal**: Appropriate test coverage.
+
+- [ ] Tests under `src/test/` per [tests/index.mdc](../tests/index.mdc) and the matching test-type file: [unit-tests.mdc](../tests/unit-tests.mdc), [workspace-tests.mdc](../tests/workspace-tests.mdc), [firebase-tests.mdc](../tests/firebase-tests.mdc)
+- [ ] Common patterns — [tests/common-patterns.mdc](../tests/common-patterns.mdc)
+- [ ] Coverage for main behavior
+
+---
+
+## Phase 7: ISSUES.md
+
+**Goal**: Capture problems and follow-ups without blocking the checklist.
+
+- [ ] Create or update `ISSUES.md` at package root (or per domain for libraries)
+- [ ] Log: type safety, logic, quality, missing/wrong imports, multiple contexts, performance, error handling
+- [ ] Use a consistent format, e.g.:
+
+```markdown
+## File: `path/to/file.ts`
+
+### Symbol: `functionName()` or `ClassName.field`
+
+**Issue**: Short description
+
+**Details**: Explanation, optional code, suggested fix
+```
+
+---
+
+## Phase 8: Final Validation
+
+**Goal**: Package is consistent and build/lint-clean.
+
+- [ ] Invariants — [package.json/package.json-common.mdc](../package.json/package.json-common.mdc) (Non-negotiable invariants)
+- [ ] No new linter errors
+- [ ] Public exports in `__package.json` and in README per [README.mdc](../README.mdc)
+
+---
+
+## Completion Summary
+
+| Phase | Done |
+|-------|------|
+| 1. Understand the package | ☐ |
+| 2. Update `__package.json` | ☐ |
+| 3. Update README.md | ☐ |
+| 4. Documentation (JSDoc, _docs) | ☐ |
+| 5. Copyright and license | ☐ |
+| 6. Tests | ☐ |
+| 7. ISSUES.md | ☐ |
+| 8. Final validation | ☐ |
+
+---
+
+## Agent Notes
+
+- **One package at a time**: Finish all phases for one package before switching.
+- **Iterative**: Multiple passes are fine.
+- **Refer to the rules**: Each phase cites the files that define the details; this process only sequences and checks.
+- **Track as you go**: Update ISSUES.md during Phases 1–6, not only at the end.
+- **Context**: Use workspace usages and unit-type definitions for structure, exports, and `unitConfig`.
