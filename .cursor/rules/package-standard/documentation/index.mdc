@@ -1,0 +1,22 @@
+---
+description: Master documentation standards and process
+alwaysApply: false
+---
+
+# Documentation
+
+This section covers documentation standards and the package checklist for the thunderstorm monorepo.
+
+## Documentation Files
+
+### [Process](./process.mdc)
+Holistic package checklist for agents: understand the package, update `__package.json` and README, add documentation, copyright, license, tests, and ISSUES.md. Follow this when bringing a package to standard.
+
+### [Standards](../documentation.mdc)
+When and how to document code, what to document vs. what to skip, and documentation format guidelines. Lives at `package-standard/documentation.mdc`.
+
+## Quick Reference
+
+- **Bringing a package to standard?** → See [Process](./process.mdc) for the full checklist
+- **Editing code?** → See [documentation.mdc](../documentation.mdc) for when to update docs
+- **What to document?** → See [documentation.mdc](../documentation.mdc) for guidelines
