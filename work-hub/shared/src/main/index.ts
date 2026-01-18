@@ -1,7 +1,2 @@
-export type WorkHubTab = {
-	itemKey: string;
-	id: string;
-	label: string;
-	tag?: string;
-	renderArgs: any;
-};
+export * from './types.js';
+export * from './utils.js';

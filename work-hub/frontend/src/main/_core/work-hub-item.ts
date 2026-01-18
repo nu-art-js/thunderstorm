@@ -1,4 +1,4 @@
-import {Logger} from '@nu-art/ts-common';
+import {generateHex, Logger} from '@nu-art/ts-common';
 import {ModuleFE_WorkHub} from '../_module/index.js';
 import {MouseEvent, ReactNode} from 'react';
 import {ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend';
@@ -51,13 +51,17 @@ export class WorkHubItem<Args extends any = void>
 	// ######################## Public Methods ########################
 
 	public openTab = (id: string, label: string, args: Args) => {
-		ModuleFE_WorkHub.tabs.add({
+		ModuleFE_WorkHub.tabs.add(this.prepareTab(id, label, args));
+	};
+
+	public prepareTab = (id: string, label: string, args: Args): WorkHubTab => {
+		return {
 			itemKey: this.key,
 			tag: this.tabTag,
 			id,
 			label,
 			renderArgs: args,
-		});
+		};
 	};
 
 	public closeTab = (tabId: string) => {
@@ -74,5 +78,13 @@ export class WorkHubItem<Args extends any = void>
 
 	public updateArgs = (tabId: string, args: Partial<Args>) => {
 		ModuleFE_WorkHub.tabs.updateArgs(tabId, args);
+	};
+
+	public openNewTabsInContext = (tabId: string, newTabs: WorkHubTab[], customGroupName?: string) => {
+		const currentGroupKey = ModuleFE_WorkHub.group.getKeyForTabId(tabId);
+		if (currentGroupKey)
+			return ModuleFE_WorkHub.group.addTabs(currentGroupKey, newTabs);
+		else
+			ModuleFE_WorkHub.group.create(generateHex(4), tabId,newTabs, customGroupName ?? 'New Group');
 	};
 }
