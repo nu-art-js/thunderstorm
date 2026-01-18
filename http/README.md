@@ -1,8 +1,8 @@
-# @nu-art/thunderstorm-http
+# @nu-art/http-client
 
 Type-safe HTTP client library for Thunderstorm with fluent API, comprehensive logging, and full request/response type safety.
 
-## Overview
+## 1. Package Purpose
 
 This package provides a powerful, type-safe HTTP client built on Axios with:
 
@@ -13,18 +13,24 @@ This package provides a powerful, type-safe HTTP client built on Axios with:
 - **Request cancellation**: Built-in AbortController support
 - **Default configuration**: Centralized client configuration for headers, timeouts, and callbacks
 
-## Installation
+## 2. Installation and usage
 
-```bash
-pnpm add @nu-art/thunderstorm-http
+In the monorepo, add the package as a dependency in `__package.json` of the consuming package:
+
+```json
+"dependencies": {
+  "@nu-art/http-client": "?"
+}
 ```
+
+Import and use the client in your code. When using the default client, call `setDefaultConfig` and `init()` before creating requests.
 
 ## Quick Start
 
 ### Basic Usage
 
 ```typescript
-import {HttpClient, HttpRequest, HttpMethod} from '@nu-art/thunderstorm-http';
+import {HttpClient, HttpRequest, HttpMethod} from '@nu-art/http-client';
 
 // Create a client with default configuration
 const client = new HttpClient();
@@ -57,7 +63,7 @@ const user = await request
 ### Using the Default Client
 
 ```typescript
-import {httpClient} from '@nu-art/thunderstorm-http';
+import {httpClient} from '@nu-art/http-client';
 
 // Configure the default client
 httpClient.setDefaultConfig({
@@ -69,14 +75,14 @@ httpClient.init();
 const request = httpClient.createRequest({...});
 ```
 
-## Key Features
+## 3. Key Features
 
 ### Type-Safe API Definitions
 
 Define your APIs with full type safety:
 
 ```typescript
-import {BodyApi, QueryApi, TypedApi} from '@nu-art/thunderstorm-http';
+import {BodyApi, QueryApi, TypedApi} from '@nu-art/http-client';
 
 // POST request with body
 type CreateUserApi = BodyApi<
@@ -186,7 +192,7 @@ request.setMinLevel(LogLevel.Verbose);
 // - Completion/errors
 ```
 
-## API Reference
+## 4. API Overview
 
 ### HttpClient
 
@@ -233,6 +239,10 @@ Exception thrown on request failures, containing:
 - `ApiDef<API>`: API definition for request creation
 - `ResponseError<K, Data>`: Error response type
 - `HttpMethod`: HTTP method enumeration
+
+## 5. Examples
+
+See **Quick Start** and the code blocks in **Key Features** for typical usage.
 
 ## Package Structure
 
@@ -283,7 +293,7 @@ import {
   composeQueryParams,
   encodeUrlParams,
   HttpCodes
-} from '@nu-art/thunderstorm-http';
+} from '@nu-art/http-client';
 ```
 
 ## License
