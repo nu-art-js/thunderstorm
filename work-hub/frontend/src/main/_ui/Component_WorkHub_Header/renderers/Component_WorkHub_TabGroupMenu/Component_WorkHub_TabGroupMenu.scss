@@ -1,0 +1,45 @@
+@use '@nu-art/ts-styles' as S;
+
+#pop-up__work-hub-tab-group-menu {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #333;
+  box-shadow: 0 0 15px 0 #BAB8E6;
+  padding: 8px;
+  gap: 8px;
+
+  .ts-input {
+    min-height: unset;
+    height: 28px;
+    width: 100%;
+    border: 2px solid S.dark-blue(4);
+    border-radius: 4px;
+    outline: none;
+    font: {
+      size: 14px;
+      weight: 500;
+    }
+  }
+
+  .color-selection {
+    width: 100%;
+    padding: 0 4px;
+    justify-content: space-between;
+
+    & > div {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--color);
+      cursor: pointer;
+
+      &.selected {
+        outline: 2px solid #fff;
+        outline-offset: -5px;
+      }
+    }
+  }
+}

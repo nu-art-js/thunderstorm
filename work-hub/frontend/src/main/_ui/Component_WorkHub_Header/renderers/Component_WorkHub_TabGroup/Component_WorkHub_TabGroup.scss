@@ -1,0 +1,58 @@
+@use '@nu-art/ts-styles' as S;
+
+.ts-collapsable-container-v2.c__work-hub-tab-group {
+  $FG: var(--color-fg, S.gray(1));
+  $BG: var(--color-bg, S.gray(5));
+
+  width: unset;
+  flex-direction: row;
+  background: none;
+  gap: 4px;
+  transition: gap 0.3s ease;
+  flex-shrink: 0;
+  padding-bottom: 3px;
+  border-bottom: 2px solid $FG;
+
+  .ts-collapsable-container-v2__header {
+    height: 32px;
+    width: fit-content;
+    border-radius: 6px;
+    background: $BG;
+
+    & > .icon--wrapper {
+      display: none;
+    }
+
+    .ts-collapsable-container-v2__header-content {
+      padding: 0 8px;
+      border-radius: 6px;
+      color: $FG
+    }
+  }
+
+  .ts-collapsable-container-v2__content {
+    width: unset;
+    height: 32px;
+    grid-template-rows: unset;
+    grid-template-columns: 1fr;
+    transition: grid-template-columns 0.3s ease;
+
+    .ts-collapsable-container-v2__content-inner {
+      height: 100%;
+      width: unset;
+
+      & > .ll_h_c {
+        gap: 8px;
+      }
+    }
+  }
+
+  &.collapsed {
+    gap: 0;
+
+    .ts-collapsable-container-v2__content {
+      grid-template-rows: unset;
+      grid-template-columns: 0fr;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import {CSSProperties, MouseEvent} from 'react';
+import {CSSProperties, Fragment, MouseEvent} from 'react';
 import {
 	_className,
 	Button,
@@ -14,6 +14,7 @@ import {ModuleFE_WorkHub} from '../../_module/index.js';
 import './Component_WorkHubActionMenu.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {generateHex} from '@nu-art/ts-common';
+import {isWorkHubTabGroup, WorkHubTabGroup} from '@nu-art/work-hub-shared';
 
 type Props = {
 	tabId: string;
@@ -38,11 +39,31 @@ export class Component_WorkHubActionMenu
 	// ######################## Logic ########################
 
 	private generateGeneralSection = (): WorkHubItem_MenuSection => {
-		return {
-			actions: [
-				{label: 'Close', action: () => ModuleFE_WorkHub.tabs.remove(this.props.tabId)}
-			]
-		};
+		const currentGroupKey = ModuleFE_WorkHub.group.getKeyForTabId(this.props.tabId);
+		const availableGroups = ModuleFE_WorkHub.tabs.get().filter(i => isWorkHubTabGroup(i) && i.groupKey !== currentGroupKey) as WorkHubTabGroup[];
+		const actions: WorkHubItem_MenuAction[] = [
+			{label: 'Close', action: () => ModuleFE_WorkHub.tabs.remove(this.props.tabId)},
+			{
+				label: 'Move to group',
+				innerActions: [
+					{
+						label: 'New Tab Group',
+						separatorAfter: true,
+						action: () => ModuleFE_WorkHub.group.create(generateHex(4), this.props.tabId),
+					},
+					...availableGroups.map(g => ({
+						label: g.label,
+						action: () => ModuleFE_WorkHub.group.addTabs(g.groupKey, [this.props.tabId]),
+					}))
+				],
+			}
+		];
+		if (currentGroupKey)
+			actions.push({
+				label: 'Remove from group',
+				action: () => ModuleFE_WorkHub.tabs.removeFromGroup(this.props.tabId),
+			});
+		return {actions};
 	};
 
 	private getSections = (): WorkHubItem_MenuSection[] => {
@@ -78,16 +99,18 @@ export class Component_WorkHubActionMenu
 	};
 
 	private render_ActionButton = (action: WorkHubItem_MenuAction, index: number) => {
-		return <Button
-			key={index}
-			variant={'work-hub-menu-action'}
-			disabled={action.disabled}
-			onClick={async () => {
-				await action.action!();
-				this.closeMenu();
-			}}>
-			{action.label}
-		</Button>;
+		return <Fragment key={index}>
+			<Button
+				variant={'work-hub-menu-action'}
+				disabled={action.disabled}
+				onClick={async () => {
+					await action.action!();
+					this.closeMenu();
+				}}>
+				{action.label}
+			</Button>
+			{action.separatorAfter && <div className={'action-menu__separator'}/>}
+		</Fragment>;
 	};
 
 	private render_ActionWithInner = (action: WorkHubItem_MenuAction, index: number) => {
@@ -101,6 +124,7 @@ export class Component_WorkHubActionMenu
 				<div className={'work-hub-menu-action__label'}>{action.label}</div>
 				{hasInner && <TS_Icons.treeCollapse.component/>}
 			</LL_H_C>
+			{action.separatorAfter && <div className={'action-menu__separator'}/>}
 			{renderInner && <LL_V_L className={'work-hub-menu-action__inner-actions'}>
 				{action.innerActions?.map(this.render_Action)}
 			</LL_V_L>}
