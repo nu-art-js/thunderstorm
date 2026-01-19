@@ -21,7 +21,7 @@ import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {resolve} from 'path';
 import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {PhaseManager} from '../../phases/PhaseManager.js';
-import {phase_CompileWatch, Phase_Install, Phase_IndicesMcpServer, Phase_PostPublish, Phase_Watch} from '../../phases/definitions/index.js';
+import {phase_CompileWatch, Phase_Install, Phase_IndicesMcpServer, Phase_PostPublish, Phase_Watch, phase_Prepare} from '../../phases/definitions/index.js';
 import {UnitsDependencyMapper} from '../../dependencies/UnitsDependencyMapper.js';
 import {BaseUnit} from '../base/BaseUnit.js';
 import {CommandoException} from '@nu-art/commando';
@@ -252,7 +252,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 					continue: false
 				};
 				const activeUnitKeys = this.runtimeContext.childUnits.map(unit => unit.config.key);
-				const phaseManager = new PhaseManager(new RunningStatusHandler(this.config.fullPath, watchRuntimeParams).isolate(), [[phase_CompileWatch]], unitDependencyTree, activeUnitKeys, activeUnitKeys);
+				const phaseManager = new PhaseManager(new RunningStatusHandler(this.config.fullPath, watchRuntimeParams).isolate(), [[phase_Prepare],[phase_CompileWatch]], unitDependencyTree, activeUnitKeys, activeUnitKeys);
 				// @ts-ignore
 				phaseManager.setTag('PhaseManager-Watcher');
 				const executionPlan = await phaseManager.calculateExecutionSteps();
