@@ -1,4 +1,5 @@
-import {reduceToMap, runSingleTestCase, TestSuite} from '../../_main.js';
+import {reduceToMap} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
@@ -8,8 +9,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any;
-export type TestSuite_reduceToMap = TestSuite<Input, Result>;
-export type TestCase_reduceToMap = TestSuite_reduceToMap['testcases'][number];
+export type TestCase_reduceToMap = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return reduceToMap(input.array, input.keyResolver, input.mapper, input.map || {});

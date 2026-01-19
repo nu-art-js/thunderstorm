@@ -1,0 +1,52 @@
+{
+  "name": "@nu-art/logger",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Flexible logging infrastructure with multiple output targets, debug flags, and log rotation support",
+  "type": "module",
+  "keywords": [
+    "typescript",
+    "logging",
+    "logger",
+    "log-client",
+    "debug-flags",
+    "log-rotation",
+    "nu-art",
+    "thunderstorm"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues?q=is%3Aissue+label%3Alogger"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/logger"
+  },
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc",
+    "typedocs": "typedoc --options typedoc.json",
+    "run-tests": "ts-mocha --timeout 50000 -p src/test/tsconfig.json src/test/run-all-tests.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./testing": {
+      "types": "./testing/index.d.ts",
+      "import": "./testing/index.js"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {firestore, testInstance1} from '../_core/consts.js';
 import {expect} from 'chai';

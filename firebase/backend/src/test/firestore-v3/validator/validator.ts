@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {CollectionTest, prepareCollectionTest} from '../_core/consts.js';
+import {CollectionTest, prepareCollectionTest} from '../../_entity/_core/consts.js';
 import {DB_Type_Complex} from '../_entity.js';
 
 chai.use(require('chai-as-promised'));

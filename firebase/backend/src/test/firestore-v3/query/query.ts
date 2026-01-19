@@ -1,7 +1,8 @@
-import {queryAllTestCases, queryComplexTestCases, QueryTest, queryTestCases, queryWithPagination} from './consts.js';
-import {CollectionTest, firestore, prepareCollectionTest} from '../_core/consts.js';
-import {DBDef_V3, deepClone, tsValidateMustExist} from '@nu-art/ts-common';
+import {queryAllTestCases, queryComplexTestCases, QueryTest, QueryTestInput, queryTestCases, queryWithPagination} from './consts.js';
+import {CollectionTestInput, firestore, prepareCollectionTest} from '../../_entity/_core/consts.js';
+import {DBDef_V3, deepClone, tsValidateMustExist, TestInputValue} from '@nu-art/ts-common';
 import {DBProto_Type} from '../_entity.js';
+import {TestModel} from '@nu-art/testalot';
 
 const dbDef: DBDef_V3<DBProto_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
@@ -18,58 +19,58 @@ const dbDef: DBDef_V3<DBProto_Type> = {
 	}
 };
 
-export const TestCases_FB_QueryUnique: QueryTest['testcases'] = [
+export const TestCases_FB_QueryUnique: QueryTest[] = [
 	...queryTestCases
 ];
 
-export const TestCases_FB_QueryPagination: QueryTest['testcases'] = [
+export const TestCases_FB_QueryPagination: QueryTest[] = [
 	...queryWithPagination
 ];
 
-export const TestCases_FB_QueryAll: CollectionTest['testcases'] = [
+export const TestCases_FB_QueryAll: TestModel<CollectionTestInput, TestInputValue>[] = [
 	...queryAllTestCases
 ];
 
-export const TestCases_FB_QueryComplex1: CollectionTest['testcases'] = [
+export const TestCases_FB_QueryComplex1: TestModel<CollectionTestInput, TestInputValue>[] = [
 	...queryComplexTestCases,
 ];
 
-export const TestSuite_FirestoreV3_QueryUnique: QueryTest = {
-	label: 'Firestore query.custom tests',
-	testcases: TestCases_FB_QueryUnique,
-	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
-		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-		const toInsert = deepClone(testCase.input.value);
-		await collection.create.all(toInsert);
-		await testCase.input.check(collection, testCase.result);
-	}
+const test_QueryUnique = async (input: QueryTestInput): Promise<TestInputValue> => {
+	const collection = firestore.getCollection<DBProto_Type>(dbDef);
+	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	const toInsert = deepClone(input.value);
+	await collection.create.all(toInsert);
+	await input.check(collection, input.value);
+	return input.value;
 };
 
-export const TestSuite_FireStoreV3_QueryWithPagination: QueryTest = {
-	label: 'Firestore query.custom with pagination tests',
-	testcases: TestCases_FB_QueryPagination,
-	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
-		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-		const toInsert = deepClone(testCase.input.value);
-		await collection.create.all(toInsert);
-		await testCase.input.check(collection, testCase.result);
-	}
+const test_QueryWithPagination = async (input: QueryTestInput): Promise<TestInputValue> => {
+	const collection = firestore.getCollection<DBProto_Type>(dbDef);
+	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	const toInsert = deepClone(input.value);
+	await collection.create.all(toInsert);
+	await input.check(collection, input.value);
+	return input.value;
 };
 
-export const TestSuite_FirestoreV3_QueryAll: CollectionTest = {
-	label: 'Firestore query.all tests',
-	testcases: TestCases_FB_QueryAll,
-	processor: async (testCase) => {
-		await prepareCollectionTest(testCase);
-	}
+const test_QueryAll = async (input: CollectionTestInput): Promise<TestInputValue> => {
+	await prepareCollectionTest({input, result: []});
+	return [];
 };
 
-export const TestSuite_FirestoreV3_QueryComplex1: CollectionTest = {
-	label: 'Firestore referenced query tests',
-	testcases: TestCases_FB_QueryComplex1,
-	processor: async (testCase) => {
-		await prepareCollectionTest(testCase);
-	}
+const test_QueryComplex1 = async (input: CollectionTestInput): Promise<TestInputValue> => {
+	await prepareCollectionTest({input, result: []});
+	return [];
 };
+
+export const TestCases_FirestoreV3_QueryUnique = TestCases_FB_QueryUnique;
+export const test_FirestoreV3_QueryUnique = test_QueryUnique;
+
+export const TestCases_FirestoreV3_QueryWithPagination = TestCases_FB_QueryPagination;
+export const test_FirestoreV3_QueryWithPagination = test_QueryWithPagination;
+
+export const TestCases_FirestoreV3_QueryAll = TestCases_FB_QueryAll;
+export const test_FirestoreV3_QueryAll = test_QueryAll;
+
+export const TestCases_FirestoreV3_QueryComplex1 = TestCases_FB_QueryComplex1;
+export const test_FirestoreV3_QueryComplex1 = test_QueryComplex1;

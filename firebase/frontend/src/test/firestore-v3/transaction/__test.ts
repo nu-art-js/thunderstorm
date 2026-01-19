@@ -1,4 +1,4 @@
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@nu-art/testalot';
 import {TestSuite_FirestoreV3_Transaction} from './transaction.js';
 
 describe('Firestore v3 - Transaction', () => {

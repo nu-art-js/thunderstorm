@@ -1,5 +1,5 @@
 import {SimpleTestCommando} from '../_common.js';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestModel} from '@nu-art/testalot';
 
 export type TestInput_CommandoBuilder = (commando: SimpleTestCommando) => void;
 export type TestResult_CommandoOutput = {
@@ -19,8 +19,7 @@ export type Result_Raw = {
 	err: string[],
 };
 
-export type TestSuite_CommandoExecution = TestSuite<TestInput_CommandoBuilder, TestResult_CommandoOutput>;
-export type TestCase_CommandoExecution = TestSuite_CommandoExecution['testcases'][number];
+export type TestCase_CommandoExecution = TestModel<TestInput_CommandoBuilder, TestResult_CommandoOutput>;
 export const TestCases_CommandoExecution: TestCase_CommandoExecution[] = [
 	{
 		description: 'echo command output',

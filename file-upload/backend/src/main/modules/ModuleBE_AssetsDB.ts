@@ -42,11 +42,10 @@ import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus
 import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
-import {firestore} from 'firebase-admin';
 import {FileMetadata} from '@google-cloud/storage';
 import {fileTypeFromBuffer} from 'file-type';
-import {FileWrapper, FirestoreTransaction} from '@nu-art/firebase-backend';
-import Transaction = firestore.Transaction;
+import {FileWrapper} from '@nu-art/firebase-backend';
+import {Transaction} from 'firebase-admin/firestore';
 
 
 type MyConfig = DBApiConfigV3<DBProto_Assets> & {
@@ -161,7 +160,7 @@ export class ModuleBE_AssetsDB_Class
 
 	}
 
-	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: FirestoreTransaction): Promise<DB_Asset> {
+	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: Transaction): Promise<DB_Asset> {
 		const dbAsset = await this.query.uniqueCustom({where});
 		const signedUrl = (dbAsset.signedUrl?.validUntil || 0) > currentTimeMillis() ? dbAsset.signedUrl : undefined;
 		if (!signedUrl) {

@@ -79,7 +79,8 @@ service firebase.storage {
     "eslint": "latest",
     "@typescript-eslint/parser": "latest",
     "@typescript-eslint/eslint-plugin": "latest",
-    "undici-types": "^7.8.0"
+    "undici-types": "^7.8.0",
+    "firebase-tools": "latest"
   },
   "unitConfig": {
     "type": "node-project",
@@ -104,6 +105,16 @@ service firebase.storage {
     "type": "firebase-function",
     "label": "firebase-function-hello",
     "customTSConfig": true,
+    "functions": ["hello"],
+    "containerDeployment": {
+      "artifactRegistry": {
+        "region": "us-central1",
+        "repository": "firebase-functions",
+        "projectId": "{{FIREBASE_TEST_PROJECT}}"
+      },
+      "imageName": "firebase-function-hello",
+      "dockerfile": "Dockerfile"
+    },
     "envs": {
       "test": {
         "projectId": "{{FIREBASE_TEST_PROJECT}}",
@@ -125,9 +136,9 @@ service firebase.storage {
 }
 
 //// file: ./firebase-function-hello/src/main/index.ts
-import * as functions from 'firebase-functions';
+import {onRequest} from 'firebase-functions/v2/https';
 
-export const hello = functions.https.onRequest((request, response) => {
+export const hello = onRequest((request, response) => {
   response.json({
     message: 'Hello World',
     deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
@@ -135,10 +146,9 @@ export const hello = functions.https.onRequest((request, response) => {
 });
 
 //// file: ./firebase-function-hello/dist/index.js
-import * as functions from 'firebase-functions';
+import {onRequest} from 'firebase-functions/v2/https';
 
-
-export const hello = functions.https.onRequest((request, response) => {
+export const hello = onRequest((request, response) => {
   response.json({
     message: 'Hello World',
     deploymentId: '{{DEPLOYMENT_ID_PLACEHOLDER}}'
@@ -182,6 +192,13 @@ export const hello = functions.https.onRequest((request, response) => {
         }
       ]
     },
+    "hostingDeployment": {
+      "artifactRegistry": {
+        "region": "us-central1",
+        "repository": "hosting-builds",
+        "projectId": "{{FIREBASE_TEST_PROJECT}}"
+      }
+    },
     "envs": {
       "test": {
         "config": {},
@@ -189,6 +206,17 @@ export const hello = functions.https.onRequest((request, response) => {
         "isLocal": false
       }
     }
+  }
+}
+
+//// file: ./firebase-hosting-hello/src/main/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true
   }
 }
 

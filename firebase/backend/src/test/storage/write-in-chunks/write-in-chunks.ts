@@ -1,5 +1,5 @@
 import {dataInChunksInput, getSpecificBucketInput, storage, WriteInChunks} from '../_core/consts.js';
-import {firestore} from '../../firestore-v3/_core/consts.js';
+import {firestore} from '../../_entity/_core/consts.js';
 import {
     __stringify,
     DB_Object,

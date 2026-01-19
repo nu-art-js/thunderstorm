@@ -1,0 +1,55 @@
+{
+  "name": "@nu-art/cli-params",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Shell command execution framework with interactive sessions, CLI parameter resolution, and plugin system for building and executing shell scripts programmatically",
+  "type": "module",
+  "keywords": [
+    "shell",
+    "command-execution",
+    "cli",
+    "bash",
+    "interactive-shell",
+    "shell-scripts",
+    "cli-params",
+    "command-line",
+    "nu-art",
+    "thunderstorm",
+    "cli-params",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues?q=is%3Aissue+label%3Acli-params"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/cli-params"
+  },
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

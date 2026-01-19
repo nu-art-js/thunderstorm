@@ -23,7 +23,7 @@ import {DBApiConfigV3, ModuleBE_BaseDB} from '../../modules/db-api-gen/ModuleBE_
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {Readable} from 'stream';
-import {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import {FirestoreCollectionV3} from '@nu-art/firebase-backend';
 import {ApiDef, BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
 import {addRoutes} from '../../modules/ModuleBE_APIs.js';
 import {ApiDef_BackupDoc, Request_BackupId, Response_BackupDocs} from '@nu-art/thunderstorm-shared/_entity/backup-doc/api-def';

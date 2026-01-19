@@ -1,0 +1,36 @@
+---
+description: Simple unit tests pattern for pure functions
+alwaysApply: false
+---
+
+# Simple Unit Tests (Pure Function Tests)
+
+**Use When**: Testing pure functions with simple input/output, no external dependencies.
+
+## Pattern
+
+- Import `Test`, `defaultTestProcessor`, `runSingleTestCase` from `@nu-art/testalot`
+- Define `Input` and `Result` types
+- Create a `test` function that takes `Input` and returns `Promise<Result>`
+- Use `runTestCase` wrapper that calls `runSingleTestCase`
+- Test cases use `{ input: {...}, result: ... }` or `{ input: {...}, error: { expected: '...' } }`
+
+## Structure
+
+```typescript
+type Input = { /* input properties */ };
+type Result = { /* result type */ };
+type TestCase_Feature = TestModel<Input, Result>;
+
+const test = async (input: Input): Promise<Result> => { /* logic */ };
+const runTestCase = (testCase: TestCase_Feature) => () => runSingleTestCase(test, testCase);
+
+describe('Feature', () => {
+  it('description', runTestCase({ input: {...}, result: ... }));
+});
+```
+
+## File Naming
+
+- **Test files**: `*.test.ts`
+- **Test helpers**: `helpers.ts` or `utils/helpers.ts`

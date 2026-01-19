@@ -54,7 +54,7 @@ import {
 	SessionKey_Account_BE,
 } from '../session/index.js';
 import {ModuleBE_FailedLoginAttemptDB} from '../failed-login-attempt/index.js';
-import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase-backend';
+import {QueryDocumentSnapshot} from 'firebase-admin/firestore';
 import Transaction = firestore.Transaction;
 
 
@@ -202,9 +202,9 @@ export class ModuleBE_AccountDB_Class
 			const firestoreQuery = FirestoreInterfaceV3.buildQuery<DBProto_Account>(this.collection, {where: {email: credentials.email}});
 			let results;
 			if (transaction)
-				results = (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
+				results = (await transaction.get(firestoreQuery)).docs as QueryDocumentSnapshot<DB_Account>[];
 			else
-				results = (await firestoreQuery.get()).docs as FirestoreType_DocumentSnapshot<DB_Account>[];
+				results = (await firestoreQuery.get()).docs as QueryDocumentSnapshot<DB_Account>[];
 
 			if (results.length !== 1)
 				if (results.length === 0) {

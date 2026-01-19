@@ -1,10 +1,11 @@
-import {duplicateObjectToCreate, firestore} from '../_core/consts.js';
+import {duplicateObjectToCreate, firestore} from '../../_entity/_core/consts.js';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import * as chaiAsPromised from 'chai-as-promised';
-import {CreateTest, createTestCases} from './consts.js';
+import {createTestCases, CreateTestInput} from './consts.js';
 import {expect} from 'chai';
 import {DB_Type, DBProto_Type, TestInputValue} from '../_entity.js';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {TestModel} from '@nu-art/testalot';
 
 const chai = await import("'chai'");
 chai.use(chaiAsPromised);
@@ -24,7 +25,9 @@ export const createTests_dbDef: DBDef_V3<DBProto_Type> = {
 	}
 };
 
-export const TestCases_FB_Create: CreateTest['testcases'] = [
+export type TestCase_FirestoreV3_Create = TestModel<CreateTestInput, TestInputValue>;
+
+export const TestCases_FB_Create: TestCase_FirestoreV3_Create[] = [
 	...createTestCases,
 	{
 		description: 'object exists',
@@ -69,21 +72,22 @@ export const TestCases_FB_Create: CreateTest['testcases'] = [
 	}
 ];
 
+const test = async (input: CreateTestInput): Promise<TestInputValue> => {
+	const collection = firestore.getCollection<DBProto_Type>(createTests_dbDef);
+	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
-export const TestSuite_FirestoreV3_Create: CreateTest = {
-	label: 'Firestore create tests',
-	testcases: TestCases_FB_Create,
-	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(createTests_dbDef);
-		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	const toCreate = deepClone(input.value);
 
-		const toCreate = deepClone(testCase.input.value);
+	await createImpl(toCreate, collection);
 
-		await createImpl(toCreate, collection);
+	if (input.check)
+		await input.check(collection, input.value);
 
-		await testCase.input.check!(collection, testCase.result);
-	}
+	return input.value;
 };
+
+export const TestCases_FirestoreV3_Create = TestCases_FB_Create;
+export const test_FirestoreV3_Create = test;
 
 async function createImpl(toCreate: TestInputValue, collection: FirestoreCollectionV3<DBProto_Type>) {
 	if (Array.isArray(toCreate))

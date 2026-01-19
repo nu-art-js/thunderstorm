@@ -1,7 +1,12 @@
-import {testSuiteTester} from '../../main/testing/consts.js';
-import {TestSuite_Queue} from './queue.js';
+import {runSingleTestCase} from '@nu-art/testalot';
+import {TestCases_Queue, testQueue, queueProcessor, TestCase_Queue} from './queue.js';
 
+const runTestCase = (testCase: TestCase_Queue) => {
+	return () => runSingleTestCase(testQueue, testCase, queueProcessor);
+};
 
 describe('queue test', () => {
-	testSuiteTester(TestSuite_Queue);
+	TestCases_Queue.forEach(testCase => {
+		it(testCase.description || 'queue', runTestCase(testCase)).timeout(100000);
+	});
 });

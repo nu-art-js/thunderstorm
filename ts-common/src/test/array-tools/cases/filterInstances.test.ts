@@ -1,12 +1,12 @@
-import {filterInstances, runSingleTestCase, TestSuite} from '../../_main.js';
+import {filterInstances} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
 };
 
 export type Result = any[];
-export type TestSuite_filterInstances = TestSuite<Input, Result>;
-export type TestCase_filterInstances = TestSuite_filterInstances['testcases'][number];
+export type TestCase_filterInstances = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return filterInstances(input.array);

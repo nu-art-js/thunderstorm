@@ -1,6 +1,6 @@
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {runSingleTestCase} from '@nu-art/testalot';
 import {generateHex} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
 import {DefaultStormTestConfig_SessionAndAccount, ModuleDummy_Claims, TestHelper_InterceptJwtHeader} from './utils/helpers.js';
 import { Account_RegisterAccount, PasswordAssertionConfig } from '@nu-art/user-account-shared';

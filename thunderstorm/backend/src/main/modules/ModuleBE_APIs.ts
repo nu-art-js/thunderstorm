@@ -1,17 +1,15 @@
 import {Module} from '@nu-art/ts-common/core/module';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
 import {ServerApi} from './server/server-api.js';
-import {TestResetListener} from '@nu-art/ts-common/testing/types';
 
 
 export class ModuleBE_APIs_Class
-	extends Module
-	implements TestResetListener {
+	extends Module {
 
 	private readonly routes: ServerApi<any>[] = [];
 
-	async __resetForTests() {
-		this.logWarning('__resetForTests');
+	async destroy() {
+		this.logWarning('destroy');
 		this.routes.length = 0;
 	}
 

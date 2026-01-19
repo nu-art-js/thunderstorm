@@ -1,0 +1,19 @@
+FROM node:22
+WORKDIR /workspace/dist
+
+# Copy dist folder (which contains package.json and all compiled code)
+COPY dist/ ./
+
+# Install dependencies including functions-framework
+RUN npm install --production && \
+    npm install -g @google-cloud/functions-framework
+
+# Expose the port that Cloud Run will use
+EXPOSE 8080
+
+# Use functions-framework to run the function
+# FUNCTION_TARGET environment variable (set by deployment) specifies which exported function to invoke
+# PORT is automatically set by Cloud Run (default 8080)
+# The framework will load index.js (since we're already in the dist directory)
+CMD ["functions-framework", "--source=index.js"]
+

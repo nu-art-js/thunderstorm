@@ -54,6 +54,7 @@
     "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
+    "@nu-art/testalot": "?",
     "@nu-art/google-services-backend": "?",
     "@types/react": "?",
     "@types/express": "?",

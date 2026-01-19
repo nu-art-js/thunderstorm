@@ -19,16 +19,45 @@
 import {TS_Object} from '../utils/types.js';
 
 
+/**
+ * Configuration options for CSV serialization.
+ * 
+ * @template T - Object type being serialized
+ */
 export type CSVProps<T extends TS_Object = TS_Object> = {
+	/** Decimal separator for numbers (default: '.') */
 	decimalSeparator?: string,
+	/** Whether to include header row (default: true) */
 	withHeaders?: boolean,
+	/** Character to wrap fields containing special characters (default: '"') */
 	fieldWrapper?: string,
+	/** Line separator character (default: '\n') */
 	lineSeparator?: string,
+	/** Field separator character (default: ',') */
 	fieldSeparator?: string,
+	/** Function to map column keys to header names (default: key.toString()) */
 	columnNames?: ((key: keyof T) => string),
+	/** Array of column keys to include, in order */
 	columns: (keyof T)[]
 }
 
+/**
+ * Serializes an array of objects to CSV string format.
+ * 
+ * **Features**:
+ * - Customizable separators and wrappers
+ * - Automatic field escaping (wraps fields containing separators or line breaks)
+ * - Column ordering via `columns` array
+ * - Optional header row
+ * 
+ * **Escaping**: Fields containing the field separator or line separator are wrapped
+ * in the field wrapper character. Field wrapper characters in values are escaped with backslash.
+ * 
+ * @template T - Object type
+ * @param items - Array of objects to serialize
+ * @param _csvProps - CSV configuration options
+ * @returns CSV string
+ */
 export function csvSerializer<T extends TS_Object = TS_Object>(items: T[], _csvProps: CSVProps<T>) {
 	const csvProps: Required<CSVProps<T>> = {
 		decimalSeparator: '.',

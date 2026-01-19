@@ -37,3 +37,6 @@
 
 //// file: ./lib-linked/dist/index.js
 module.exports = { linked: true };
+
+//// file: ./lib-linked/src/main/index.js
+export const linked = true;

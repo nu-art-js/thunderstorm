@@ -1,10 +1,9 @@
 import {compare, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
-import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts.js';
-import {_EmptyQuery} from '../../../main/index.js';
-import {DB_Type, DBProto_Type, TestInputValue} from '../_entity.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../../_entity/_core/consts.js';
+import {DBProto_Type, TestInputValue} from '../../_entity/type/shared/index.js';
+import { FirestoreCollectionV3 } from '../../_main.js';
 
 
 export type CreateTestInput = {
@@ -12,8 +11,6 @@ export type CreateTestInput = {
 	expectCreateToThrow?: boolean;
 	check?: (collection: FirestoreCollectionV3<DBProto_Type>, expectedItem: TestInputValue) => Promise<void>
 }
-
-export type CreateTest = TestSuite<CreateTestInput, TestInputValue>;
 const items: PreDB<DB_Type>[] = [
 	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
 	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
@@ -30,7 +27,7 @@ const items: PreDB<DB_Type>[] = [
 	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
 	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5];
 
-export const createTestCases: CreateTest['testcases'] = [
+export const createTestCases: TestModel<CreateTestInput, TestInputValue>[] = [
 	{
 		description: '1 item',
 		result: [duplicateObjectToCreate],
