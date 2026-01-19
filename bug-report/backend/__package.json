@@ -48,8 +48,7 @@
     "moment": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
-    "request": "^2.88.0"
+    "react-router-dom": "?"
   },
   "devDependencies": {
     "@types/express": "?",

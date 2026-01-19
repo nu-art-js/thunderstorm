@@ -10,8 +10,8 @@
     "typescript",
     "type-safe",
     "api",
-    "request",
-    "response",
+    "http-request",
+    "http-response",
     "infra",
     "nu-art",
     "thunderstorm"

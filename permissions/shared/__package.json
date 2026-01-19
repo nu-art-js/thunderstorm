@@ -48,8 +48,7 @@
     "react-router-dom": "?",
     "moment": "?",
     "saml2-js": "^4.0.1",
-    "express": "?",
-    "request": "^2.88.0"
+    "express": "?"
   },
   "devDependencies": {
     "@types/react": "?",
