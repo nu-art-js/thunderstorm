@@ -7,11 +7,10 @@ import '../../UnitsDependencyMapper/dependency-mapper.test.js';
 import '../../UnitsDependencyMapper/dependency-filter.test.js';
 import '../../UnitsDependencyMapper/transitive-dependencies.test.js';
 
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestModel, runSingleTestCase} from '@nu-art/testalot';
 import {phase_Install, phase_Prepare, Unit_NodeProject, Unit_TypescriptLib} from '../../_common.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {resolve} from 'path';
@@ -73,8 +72,7 @@ const test = async (setup: Input): Promise<boolean> => {
 	return fulfilled;
 };
 
-type TestSuite_WatchPhase = TestSuite<Input, Output>;
-type TestCase_WatchPhase = TestSuite_WatchPhase['testcases'][number];
+type TestCase_WatchPhase = TestModel<Input, Output>;
 const runTestCase = (testCase: TestCase_WatchPhase) => () => runSingleTestCase(test, testCase);
 
 describe('Phase Watch - 1 Lib', () => {

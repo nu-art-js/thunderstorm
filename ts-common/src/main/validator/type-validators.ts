@@ -7,6 +7,21 @@ import {_keys} from '../utils/object-tools.js';
 import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 
+/**
+ * Validates a dynamic object where both keys and values are validated.
+ * 
+ * Validates each key-value pair in the object using separate validators.
+ * Returns an object with validation errors keyed by the object's keys.
+ * 
+ * **Error aggregation**: If both key and value fail validation, combines both errors.
+ * If only one fails, reports that specific error.
+ * 
+ * @template T - Object type to validate
+ * @param valuesValidator - Validator for object values
+ * @param keysValidator - Validator for object keys
+ * @param mandatory - Whether the object itself is required (default: true)
+ * @returns Validator that validates both keys and values
+ */
 export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<string>, mandatory = true) => {
 	return [tsValidateExists(mandatory),
 					(input?: T) => {
@@ -19,7 +34,7 @@ export const tsValidateDynamicObject = <T extends object>(valuesValidator: Valid
 							const _keyRes = tsValidateResult(key, keysValidator);
 
 							if (_valRes && _keyRes)
-								res[key as keyof T] = `Key: ${_keyRes}}\nValue: ${_valRes}` as InvalidResult<T[keyof T]>;
+								res[key as keyof T] = `Key: ${_keyRes}\nValue: ${_valRes}` as InvalidResult<T[keyof T]>;
 							else if (_valRes)
 								res[key as keyof T] = 'Value: ' + __stringify(_valRes, true) as InvalidResult<T[keyof T]>;
 							else if (_keyRes)
@@ -31,6 +46,19 @@ export const tsValidateDynamicObject = <T extends object>(valuesValidator: Valid
 					}];
 };
 
+/**
+ * Validates input against multiple validators (union type).
+ * 
+ * The input must pass at least one of the provided validators. If all validators
+ * fail, returns an array with an error message and all validation results.
+ * 
+ * **Early exit**: Returns undefined (valid) as soon as one validator passes.
+ * 
+ * @template T - Type to validate
+ * @param validators - Array of validators to try
+ * @param mandatory - Whether input is required (default: true)
+ * @returns Validator that tries each validator until one passes
+ */
 export const tsValidateUnion = <T>(validators: ValidatorTypeResolver<T>[], mandatory = true) => {
 	return [tsValidateExists(mandatory),
 					(input?: any) => {
@@ -64,6 +92,24 @@ export const tsValidateUnionV3 = <T>(validatorObject: validatorObject<T>, mandat
 					}];
 };
 
+/**
+ * Validates an array by validating each element.
+ * 
+ * Applies the validator to each element in the array. Returns an array of
+ * validation results (one per element) if any elements fail. Supports multiple
+ * validators (all must pass for each element) and minimum length checking.
+ * 
+ * **Strict mode**: When `strict=true`, validation errors include element indices.
+ * When `strict=false`, errors may be less specific.
+ * 
+ * @template T - Array type
+ * @template I - Element type
+ * @param validator - Validator(s) to apply to each element (can be array for multiple validators)
+ * @param mandatory - Whether array is required (default: true)
+ * @param minimumLength - Minimum array length (default: 0)
+ * @param strict - Whether to use strict validation mode (default: true)
+ * @returns Validator that validates each array element
+ */
 export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayType<T>>(validator: ValidatorTypeResolver<I> | ValidatorTypeResolver<I>[], mandatory = true, minimumLength = 0, strict = true): Validator<I[]> => {
 	return [tsValidateExists(mandatory),
 					...asArray(validator).map(validator => {
@@ -81,6 +127,18 @@ export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayT
 					})];
 };
 
+/**
+ * Validates a string with optional length constraints.
+ * 
+ * Supports:
+ * - Single maximum length: `length = 10` (max 10 chars)
+ * - Range: `length = [5, 10]` (min 5, max 10 chars)
+ * - No limit: `length = -1` (any length)
+ * 
+ * @param length - Maximum length, or [min, max] range, or -1 for no limit (default: -1)
+ * @param mandatory - Whether string is required (default: true)
+ * @returns Validator for strings
+ */
 export const tsValidateString = (length: number | [number, number] = -1, mandatory = true): Validator<string> => {
 	return [tsValidateExists(mandatory),
 					(input?: string) => {
@@ -204,6 +262,17 @@ export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<st
 					}];
 };
 
+/**
+ * Validates a timestamp is within a specified time interval from now.
+ * 
+ * Checks that the timestamp is between `(now - interval)` and `now`.
+ * If no interval is provided, defaults to checking if timestamp is between 0 and now
+ * (essentially any past or present timestamp).
+ * 
+ * @param interval - Maximum age in milliseconds (default: current time, i.e., any past timestamp)
+ * @param mandatory - Whether timestamp is required (default: true)
+ * @returns Validator for timestamps
+ */
 export const tsValidateTimestamp = (interval?: number, mandatory = true): Validator<number> => {
 	return [tsValidateExists(mandatory),
 					(input?: number) => {
@@ -258,6 +327,22 @@ export const tsValidator_valueByKey = <T>(validatorObject: {
 	}) as ValidatorTypeResolver<T>;
 };
 
+/**
+ * Validates an array of objects using different validators based on a key value.
+ * 
+ * For each object in the array, looks up a validator from `validatorMap` using
+ * the value of the specified `key`. This enables polymorphic validation where
+ * different object types in the array are validated differently.
+ * 
+ * **Example**: Array of shapes where each shape has a `type` field ('circle' or 'square'),
+ * and different validators are used based on the type.
+ * 
+ * @template T - Object type
+ * @param key - Key to use for validator lookup
+ * @param validatorMap - Map of key values to validators
+ * @returns Validator for arrays of objects
+ * @throws BadImplementationException if a key value has no corresponding validator
+ */
 export const tsValidator_ArrayOfObjectsByKey = <T extends object>(key: keyof T, validatorMap: {
 	[k: string]: ValidatorTypeResolver<T>
 }) => {

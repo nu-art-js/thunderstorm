@@ -1,12 +1,11 @@
 // file: ./tests/phase-execution/test-phase.test.ts
 
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestModel, runSingleTestCase} from '@nu-art/testalot';
 import {phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {sleep} from '@nu-art/ts-common';
@@ -21,7 +20,7 @@ const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixture
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
 type Input = { fixtures: string[] };
-type Output = () => void;
+type Output = () => Promise<void>;
 
 const test = async (setup: Input): Promise<void> => {
 	const buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
@@ -32,8 +31,7 @@ const test = async (setup: Input): Promise<void> => {
 	await unit.runTests();
 };
 
-type TestSuite_TestPhase = TestSuite<Input, Output>;
-type TestCase_TestPhase = TestSuite_TestPhase['testcases'][number];
+type TestCase_TestPhase = TestModel<Input, Output>;
 const runTestCase = (testCase: TestCase_TestPhase) => () => runSingleTestCase(test, testCase);
 
 describe('TypescriptLib - Test Phase', () => {

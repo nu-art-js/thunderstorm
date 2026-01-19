@@ -15,6 +15,7 @@
   "unitConfig": {
     "type": "firebase-function",
     "label": "firebase-function-nested-deps",
+    "functions": ["hello"],
     "customTSConfig": true,
     "envs": {
       "test": {

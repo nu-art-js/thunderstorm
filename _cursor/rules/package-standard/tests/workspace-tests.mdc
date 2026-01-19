@@ -1,0 +1,89 @@
+---
+description: Workspace-based tests pattern for file system operations
+alwaysApply: false
+---
+
+# Workspace-Based Tests (File System Tests)
+
+**Use When**: Testing file system operations, build/compile phases, or anything requiring temporary workspaces.
+
+## Pattern
+
+- Use `TestWorkspaceCreator` to create temporary workspaces from fixture files
+- Fixture files use `// file: path/to/file` headers to define file structure
+- Setup workspace in `before()` hook
+- Clean up in `after()` hook with proper error handling
+- Use `FilesCache.clear()` when needed
+- Always call `CommandoPool.killAll()` in cleanup
+
+## Structure
+
+```typescript
+const fixtureExtractor = new TestWorkspaceCreator(fixturesDir, tempDir);
+const workspaceCreator = new TestWorkspaceCreator(tempDir, workspaceDir);
+
+type Input = { fixtures: string[] };
+type Output = () => Promise<void>;
+
+const test = async (input: Input): Promise<Output> => {
+  FilesCache.clear();
+  await workspaceCreator.setupWorkspace(input.fixtures);
+  // ... setup logic
+  return async () => { /* assertions */ };
+};
+
+describe('Feature', () => {
+  let suiteHasFailures: boolean | undefined;
+  
+  before(async function () {
+    await FileSystemUtils.folder.delete(tempDir);
+    await fixtureExtractor.setupWorkspace(['base-fixtures.txt']);
+  });
+  
+  it('test', runTestCase({ input: { fixtures: [...] }, result: async () => {...} }));
+  
+  afterEach(function () {
+    if (this.currentTest?.state === 'failed') suiteHasFailures = true;
+  });
+  
+  after(async function () {
+    if (suiteHasFailures === false) await FileSystemUtils.folder.delete(tempDir);
+    await CommandoPool.killAll();
+  });
+});
+```
+
+## Cleanup Pattern
+
+Standard cleanup pattern for workspace-based tests:
+
+```typescript
+let suiteHasFailures: boolean | undefined;
+
+afterEach(function () {
+  if (this.currentTest?.state === 'failed')
+    suiteHasFailures = true;
+
+  suiteHasFailures ??= false;
+});
+
+after(async function () {
+  await sleep(1000);
+  if (suiteHasFailures === false)
+    await FileSystemUtils.folder.delete(tempDir);
+
+  await CommandoPool.killAll();
+});
+```
+
+**Key Points**:
+- Track suite failures to avoid cleaning up on test failures (for debugging)
+- Always call `CommandoPool.killAll()` to clean up processes
+- Add a small delay before cleanup to ensure processes have finished
+
+
+## File Naming
+
+- **Test files**: `*.test.ts`
+- **Fixture files**: `*.txt` or `fixtures.txt` (in `fixtures/` directory)
+- **Test helpers**: `helpers.ts` or `utils/helpers.ts`

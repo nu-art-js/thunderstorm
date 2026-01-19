@@ -1,0 +1,166 @@
+---
+description: When dealing with package construct and outline features
+alwaysApply: false
+---
+# Package Maintenance Standards
+
+## Core Principle
+**Every package should have proper metadata, documentation, and logical export structure that reflects its purpose and organization.**
+
+## When Creating or Editing Packages
+
+### 1. Update `__package.json`
+
+When creating a new package or making large-scale edits to an existing package, ensure:
+
+#### Keywords
+- Include relevant, descriptive keywords that help users discover the package
+- Use consistent naming conventions (e.g., project prefix, technology stack)
+- Include domain-specific terms (e.g., "logging", "validation", "database")
+- Avoid generic or overly broad keywords
+
+#### Description
+- Provide a clear, concise description of the package's purpose
+- Update description if the package's scope changes significantly
+
+#### Repository URLs (Monorepo vs Standalone)
+- **Monorepo Packages**: All packages in a monorepo should use the monorepo repository URL
+  - `homepage`: Point to the monorepo homepage (e.g., `https://github.com/org/monorepo`)
+  - `bugs.url`: Point to the monorepo issues (e.g., `https://github.com/org/monorepo/issues`)
+  - `repository.url`: Point to the monorepo repository (e.g., `git+ssh://git@github.com:org/monorepo.git`)
+  - Optionally include package name in issues URL for better tracking (e.g., `https://github.com/org/monorepo/issues?q=is%3Aissue+label%3Apackage-name`)
+  
+- **Standalone Packages**: Use package-specific repository URLs
+  - Each package has its own repository and issue tracker
+
+#### Contributors
+- Attribute contributors in the `contributors` field (if applicable)
+- Maintain author information accurately
+
+#### Export Points
+- **New Packages**: MUST use explicit ESM export points (no wildcards)
+  - Define logical export paths that reflect the package structure
+  - Example: `./core`, `./utils`, `./validator`, `./db`, `./modules`
+  - Each export should have both `types` and `import` fields
+  
+- **Existing Packages (Refactoring Phase)**: 
+  - Allow wildcard exports (`./*`) for backward compatibility
+  - BUT also add logical export points alongside wildcards
+  - Gradually migrate to explicit exports as packages mature
+
+#### Logical Export Structure
+- Export points should represent logical groupings in the codebase
+- Common patterns:
+  - `./core` - Core infrastructure (modules, managers, base classes)
+  - `./utils` - Utility functions
+  - `./validator` - Validation logic
+  - `./db` - Database types and utilities
+  - `./modules` - Reusable module implementations
+  - `./testing` - Testing utilities (if applicable)
+  - `./types` - Type definitions (if separate from main exports)
+
+### 2. Create/Update README.md
+
+Every package should have a README that includes:
+
+- **Package Purpose**: Clear description of what the package provides
+- **Installation**: How to install/use the package
+- **Quick Start**: Basic usage examples
+- **Key Features**: Main capabilities and use cases
+- **API Overview**: High-level structure and main exports
+- **Documentation Links**: Links to detailed docs if available
+- **Contributing**: Guidelines if applicable
+
+### 3. Export Point Organization
+
+When organizing exports:
+
+1. **Main Entry Point** (`index.ts`):
+   - Should export the most commonly used items
+   - Can use wildcard exports (`export * from ...`) for convenience
+   - Should be well-organized by logical grouping
+
+2. **Sub-Exports** (e.g., `./core`, `./utils`):
+   - Should be created when logical groupings exist
+   - Should match the directory structure when possible
+   - Should be documented in README
+
+3. **Type Exports**:
+   - Ensure TypeScript types are properly exported
+   - Use `types` field in package.json exports
+
+## Examples
+
+### ✅ Good Package.json Exports (New Package)
+```json
+{
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./core": {
+      "types": "./core/index.d.ts",
+      "import": "./core/index.js"
+    },
+    "./utils": {
+      "types": "./utils/index.d.ts",
+      "import": "./utils/index.js"
+    }
+  }
+}
+```
+
+### ✅ Good Package.json Exports (Existing Package - Refactoring)
+```json
+{
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./core": {
+      "types": "./core/index.d.ts",
+      "import": "./core/index.js"
+    },
+    "./utils": {
+      "types": "./utils/index.d.ts",
+      "import": "./utils/index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}
+```
+
+### ❌ Bad Package.json Exports (New Package)
+```json
+{
+  "exports": {
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}
+```
+**Why**: New packages should have explicit exports, not just wildcards.
+
+## Enforcement
+
+- **Always** update `__package.json` when creating new packages
+- **Always** update `__package.json` when making large-scale changes to existing packages
+- **Always** create/update README.md for new packages or significant changes
+- **Always** use explicit exports for new packages
+- **Allow** wildcard exports for existing packages during refactoring phase
+- **Always** add logical export points that reflect the codebase structure
+- **Always** ensure keywords are relevant and descriptive
+- **Always** attribute contributors appropriately
+
+## See Also
+
+- [Package Structure](./structure.mdc) - Package structure conventions
+- [Package JSON Format](./json-format.mdc) - Detailed package.json writing standards
+- [Documentation Process](../documentation/process.mdc) - Complete documentation workflow

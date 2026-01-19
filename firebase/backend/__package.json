@@ -51,6 +51,7 @@
     "ws": "^8.13.0"
   },
   "devDependencies": {
+    "@nu-art/testalot": "?",
     "@types/compression": "^1.0.1",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
@@ -66,6 +67,10 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
+    },
+    "./v1": {
+      "types": "./v1.d.ts",
+      "import": "./v1.js"
     },
     "./*": {
       "types": "./*.d.ts",

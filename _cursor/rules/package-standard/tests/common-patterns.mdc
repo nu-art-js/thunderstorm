@@ -1,0 +1,53 @@
+---
+description: Common test patterns, error testing, result validation, and cleanup
+alwaysApply: false
+---
+
+# Common Test Patterns
+
+This document covers common patterns used across all test types.
+
+## Test Model Structure
+
+All test cases follow this structure (Declaration):
+
+```typescript
+type Input = { /* input properties */ };
+type Result = { /* result type */ };
+type TestCase_Feature = TestModel<Input, Result>;
+```
+
+## Test case asserting an error using the `error` field:
+
+```typescript
+{ input: {...}, error: { expected: 'Error message' } }
+```
+
+The `expected` field can be:
+- A string (exact match)
+- A RegExp (pattern match)
+
+## Test case asserting the result value using the `result` field with the expected value:
+For simple value logic:
+
+```typescript
+{ input: {...}, result: expectedValue }
+```
+
+## Test case asserting the result value using the `result` field with async validation function:
+For complex validation logic:
+
+```typescript
+{ input: {...}, result: async (actual) => { 
+  expect(actual).to.equal(expected); 
+  // Additional assertions
+} }
+```
+
+## Best Practices
+
+1. **Isolation**: Each test must be independent
+2. **Timeouts**: Set appropriate timeouts for async operations
+3. **Error Messages**: Provide clear, descriptive error messages
+4. **Test Data**: Use realistic but minimal test data
+5. **Assertion Grouping**: Add logging before distinct groups of assertions to identify where tests fail. When multiple assertions are grouped together, there's no way to know which assertion failed without context, so log before each distinct validation group.

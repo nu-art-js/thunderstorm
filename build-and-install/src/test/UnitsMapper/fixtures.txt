@@ -26,6 +26,7 @@
   "unitConfig": {
     "basePort": 1,
     "debugPort": 2,
+    "functions": [""],
     "type": "firebase-function",
     "label": "function-1",
     "envs": {

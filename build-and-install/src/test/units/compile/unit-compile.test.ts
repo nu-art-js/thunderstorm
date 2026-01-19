@@ -1,16 +1,15 @@
 // file: ./tests/phase-execution/compile-phase.test.ts
 import {DebugFlag, LogLevel, sleep} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {defaultTestProcessor, runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {phase_Install, phase_Prepare, Unit_TypescriptLib} from '../../_common.js';
 import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
-import {CONST_PackageJSON} from '../../../main/core/consts.js';
-import {FilesCache} from '../../../main/v3/core/FilesCache.js';
+import {CONST_PackageJSON} from '../../../main/config/consts.js';
+import {FilesCache} from '../../../main/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
@@ -49,8 +48,7 @@ const test = async (setup: Input): Promise<void> => {
 		await unitLib1.compile();
 };
 
-type TestSuite_PhaseCompile = TestSuite<Input, Output>;
-type TestCase_PhaseCompile = TestSuite_PhaseCompile['testcases'][number];
+type TestCase_PhaseCompile = TestModel<Input, Output>;
 
 const runTestCase = (testCase: TestCase_PhaseCompile, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 

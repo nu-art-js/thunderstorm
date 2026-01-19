@@ -1,6 +1,7 @@
 // file: ./tests/filter/filterAsync.test.ts
 
-import {filterAsync, runSingleTestCase, TestSuite} from '../../_main.js';
+import {filterAsync} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
@@ -8,8 +9,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any[];
-export type TestSuite_filterAsync = TestSuite<Input, Result>;
-export type TestCase_filterAsync = TestSuite_filterAsync['testcases'][number];
+export type TestCase_filterAsync = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return filterAsync(input.array, input.filter);

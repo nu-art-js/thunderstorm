@@ -1,0 +1,45 @@
+{
+  "name": "@nu-art/testalot",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "Testing utilities and test framework helpers for TypeScript projects",
+  "type": "module",
+  "keywords": [
+    "typescript",
+    "testing",
+    "test-framework",
+    "mocha",
+    "test-utilities",
+    "nu-art",
+    "thunderstorm"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues?q=is%3Aissue+label%3Atestalot"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/testalot"
+  },
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "^4.0.0",
+    "chai-as-promised": "^7.0.0"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

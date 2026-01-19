@@ -1,10 +1,9 @@
 import {Unit_FirebaseFunctionsApp, Unit_FirebaseHostingApp, Unit_NodeProject, Unit_TypescriptLib} from '../_common.js';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {defaultTestProcessor, runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {resolve} from 'path';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {BuildAndInstall} from '../../main/build-and-install-v3.js';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import {___dirname} from '@nu-art/ts-common/esm';
 import { FileSystemUtils } from '@nu-art/ts-common/utils/FileSystemUtils';
 
@@ -26,8 +25,7 @@ export type Result = {
 	relativePath: string,
 	outputPath: string | undefined,
 }[]
-export type TestSuite_UnitsMapper = TestSuite<Input, Result>;
-export type TestCase_UnitsMapper = TestSuite_UnitsMapper['testcases'][number];
+export type TestCase_UnitsMapper = TestModel<Input, Result>;
 
 
 let buildAndInstall: BuildAndInstall;

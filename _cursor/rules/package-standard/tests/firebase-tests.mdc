@@ -1,0 +1,50 @@
+---
+description: Storm/Firebase module tests pattern for backend integration
+alwaysApply: false
+---
+
+# Storm/Firebase Module Tests (Backend Integration Tests)
+
+**Use When**: Testing backend modules with Firebase emulators, database operations, or API endpoints.
+
+## Pattern
+
+- Use `stormTester` wrapper from `@nu-art/thunderstorm-backend/testing`
+- Define `DefaultStormTestConfig_*` objects for shared setup
+- Test cases include `description` field
+- Use `before`/`after` hooks in test config for module setup/cleanup
+- Tests run within `stormTester` wrapper
+
+## Structure
+
+```typescript
+import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/testing';
+
+type Input = { /* test input */ };
+type Result = boolean | object | void;
+type TestCase_Feature = TestModel<Input, Result>;
+
+const test = async (input: Input): Promise<Result> => { /* logic */ };
+const runTestCase = (testCase: TestCase_Feature) => async () => runSingleTestCase(test, testCase);
+
+const DefaultStormTest: StormTestInput = {
+  ...DefaultStormTestConfig_Base,
+  before: async () => { /* setup */ },
+  after: async () => { /* cleanup */ }
+};
+
+describe('Feature', () => {
+  it('test', async () => {
+    await stormTester(DefaultStormTest, runTestCase({
+      description: 'test',
+      input: {...},
+      result: ...
+    }));
+  });
+});
+```
+
+## File Naming
+
+- **Test files**: `*.test.firebase.ts`
+- **Test helpers**: `helpers.ts` or `utils/helpers.ts`

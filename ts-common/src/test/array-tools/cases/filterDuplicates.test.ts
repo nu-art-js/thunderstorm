@@ -1,4 +1,5 @@
-import {filterDuplicates, runSingleTestCase, TestSuite} from '../../_main.js';
+import {filterDuplicates} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
@@ -6,8 +7,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any[];
-export type TestSuite_filterDuplicates = TestSuite<Input, Result>;
-export type TestCase_filterDuplicates = TestSuite_filterDuplicates['testcases'][number];
+export type TestCase_filterDuplicates = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return filterDuplicates(input.array, input.mapper);

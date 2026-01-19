@@ -1,6 +1,5 @@
-import {TestSuite} from '../../main/testing/types.js';
 import {ReplacerV2, ReplacerV2_Input} from '../../main/replacer-v2/ReplacerV2.js';
-import {runSingleTestCase} from '../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input = {
 	text: string;
@@ -8,8 +7,7 @@ export type Input = {
 };
 
 export type Result = string;
-export type TestSuite_replacerV2 = TestSuite<Input, Result>;
-export type TestCase_replacerV2 = TestSuite_replacerV2['testcases'][number];
+export type TestCase_replacerV2 = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return new ReplacerV2().replace(input.text, input.input);

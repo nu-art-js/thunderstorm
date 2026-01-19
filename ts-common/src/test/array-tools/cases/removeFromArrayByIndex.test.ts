@@ -1,4 +1,5 @@
-import {removeFromArrayByIndex, runSingleTestCase, TestSuite} from '../../_main.js';
+import {removeFromArrayByIndex} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
@@ -6,8 +7,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any[];
-export type TestSuite_removeFromArrayByIndex = TestSuite<Input, Result>;
-export type TestCase_removeFromArrayByIndex = TestSuite_removeFromArrayByIndex['testcases'][number];
+export type TestCase_removeFromArrayByIndex = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return removeFromArrayByIndex(input.array, input.index);

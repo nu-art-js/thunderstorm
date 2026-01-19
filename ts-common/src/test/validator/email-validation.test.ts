@@ -1,11 +1,9 @@
-import {TestSuite} from '../../main/testing/types.js';
 import {tsValidateEmail, tsValidateResult} from '../../main/index.js';
-import {runSingleTestCase} from '../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input = string;
 export type Result = boolean;
-export type TestSuite_EmailValidation = TestSuite<Input, Result>;
-export type TestCase_EmailValidation = TestSuite_EmailValidation['testcases'][number];
+export type TestCase_EmailValidation = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	let result: string | undefined | boolean = tsValidateResult(input, tsValidateEmail);
