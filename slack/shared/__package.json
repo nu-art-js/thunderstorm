@@ -42,8 +42,7 @@
     "firebase-admin": "?",
     "firebase-functions": "?",
     "google-auth-library": "?",
-    "moment": "?",
-    "request": "^2.88.0"
+    "moment": "?"
   },
   "devDependencies": {
     "@types/react": "?",

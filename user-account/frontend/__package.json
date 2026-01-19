@@ -50,7 +50,6 @@
     "moment": "?",
     "pako": "^2.1.0",
     "react": "?",
-    "request": "^2.88.0",
     "saml2-js": "^4.0.1",
     "xmlbuilder": "^15.1.1"
   },
