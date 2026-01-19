@@ -3,8 +3,7 @@ import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase-backend';
 import {RouteResolver_Dummy} from '../modules/server/route-resolvers/RouteResolver_Dummy.js';
 import {Storm} from '../core/Storm.js';
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
-import {dispatcher_resetTests} from '@nu-art/ts-common/testing/consts';
-import {TestModel} from '@nu-art/ts-common/testing/types';
+import {TestModel} from '@nu-art/testalot';
 
 type StormTestConfig = {
 	databaseName?: string,
@@ -50,10 +49,8 @@ export class StormTest {
 		return this;
 	}
 
-	async cleanup() {
-		await dispatcher_resetTests.dispatchModuleAsync();
-		// @ts-ignore
-		ModuleManager.__resetForTests();
+	async destroy() {
+		await ModuleManager.destroy();
 	}
 }
 
@@ -69,7 +66,7 @@ export const stormTester = async <TestCase extends TestModel<any, any>>(stormTes
 		await stormTestInput.after?.();
 
 		// only then we clean infra stuff, like firebase apps
-		await stormTest.cleanup();
+		await stormTest.destroy();
 	}
 };
 

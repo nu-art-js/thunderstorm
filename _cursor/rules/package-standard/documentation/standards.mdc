@@ -1,0 +1,119 @@
+---
+alwaysApply: true
+---
+
+# Documentation Standards
+
+## Core Principle
+**Documentation must be maintained in sync with code changes, but avoid redundant documentation that adds no value.**
+
+## When Editing Code
+
+### 1. Update Existing Documentation
+- When modifying a function, class, method, or global that has existing documentation, **always update the documentation** to reflect the changes
+- If behavior, parameters, return values, or side effects change, the documentation must be updated accordingly
+
+### 2. Document Undocumented Code
+When editing a file, if you encounter:
+- **Methods/functions** without documentation
+- **Classes** without documentation  
+- **Global variables/constants** without documentation
+- **Complex logic blocks** that aren't self-explanatory
+
+**You must document them** unless they fall under the "Don't Document" exceptions below.
+
+## When NOT to Document (Avoid Redundancy)
+
+### Self-Explanatory Code
+Do NOT document code that is immediately obvious from its name and signature:
+
+**Examples of code that typically doesn't need documentation:**
+- `getUserId()` - name clearly indicates what it does
+- `setName(name: string)` - straightforward setter
+- `isActive: boolean` - obvious property
+- Simple getters/setters with no side effects
+- Trivial utility functions where the name fully describes the behavior
+
+### When Documentation IS Needed
+Document code when any of the following apply:
+
+1. **Implicit Behavior**: The function does something not obvious from its name
+   - Example: `getUserId()` actually fetches from cache first, then API, then creates if missing
+   - Example: `setName()` also triggers validation and updates related records
+
+2. **Complex Logic**: The implementation is non-trivial or has non-obvious algorithms
+   - Example: Complex calculations, state machines, intricate business rules
+
+3. **Side Effects**: The function has side effects beyond its obvious purpose
+   - Example: A getter that also initializes something, or a setter that triggers events
+
+4. **Non-Obvious Parameters/Returns**: Parameters or return values need explanation
+   - Example: Complex objects, enums with specific meanings, optional behaviors
+
+5. **Performance Considerations**: Important performance characteristics
+   - Example: O(n²) complexity, caching behavior, async operations
+
+6. **Business Logic**: Domain-specific rules or constraints
+   - Example: Validation rules, permission checks, workflow states
+
+7. **Error Handling**: Non-standard error handling or edge cases
+   - Example: Specific error conditions, retry logic, fallback behaviors
+
+## Documentation Format
+
+- Use JSDoc for TypeScript/JavaScript
+- Use clear, concise language
+- Focus on **why** and **what** (implicit behavior), not just **what** (obvious behavior)
+- Include examples for complex APIs
+- Document parameters, return values, and exceptions when non-obvious
+
+## Examples
+
+### ✅ Good Documentation (Non-Redundant)
+```typescript
+/**
+ * Retrieves the user ID, checking cache first, then API, and creating
+ * a new user record if none exists. This method is idempotent and safe
+ * to call multiple times.
+ */
+async getUserId(): Promise<string> { ... }
+```
+
+### ❌ Redundant Documentation (Don't Do This)
+```typescript
+/**
+ * Gets the user ID
+ * @returns The user ID
+ */
+getUserId(): string { ... }
+```
+
+### ✅ Good Documentation (Explains Implicit Behavior)
+```typescript
+/**
+ * Sets the user's name and automatically triggers validation, updates
+ * the display name cache, and notifies all connected clients via WebSocket.
+ * Throws if name contains invalid characters or exceeds 50 characters.
+ */
+setName(name: string): void { ... }
+```
+
+### ❌ Redundant Documentation (Don't Do This)
+```typescript
+/**
+ * Sets the name
+ * @param name The name to set
+ */
+setName(name: string): void { ... }
+```
+
+## Enforcement
+
+- **Always** update docs when changing documented code
+- **Always** document undocumented code when editing files (unless self-explanatory)
+- **Never** add documentation that just repeats what the code already clearly states
+- When in doubt, err on the side of documenting (especially for public APIs)
+
+## See Also
+
+- [Documentation Process](./process.mdc) - Complete workflow for documenting packages

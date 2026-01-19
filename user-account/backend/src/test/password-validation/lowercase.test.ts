@@ -1,5 +1,5 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestSuite} from '@nu-art/testalot';
+import {runSingleTestCase} from '@nu-art/testalot';
 import {assertPasswordRules, PasswordAssertionConfig, PasswordFailureReport} from '@nu-art/user-account-shared';
 
 

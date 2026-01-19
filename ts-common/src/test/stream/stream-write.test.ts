@@ -1,7 +1,6 @@
-import {TestSuite} from '../../main/testing/types.js';
 import * as fs from 'fs';
 import {format} from 'fast-csv';
-import {runSingleTestCase} from '../../main/testing/consts.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {StreamTest_Items, StreamTest_ToTransformed} from './test-helper.js';
 import {FileSystemUtils} from '../../main/utils/FileSystemUtils.js';
 import path, {resolve} from 'node:path';
@@ -10,8 +9,7 @@ import assert from 'node:assert/strict';
 
 export type Input = string;
 export type Result = undefined;
-export type TestSuite_StreamWrite = TestSuite<Input, Result>;
-export type TestCase_StreamWrite = TestSuite_StreamWrite['testcases'][number];
+export type TestCase_StreamWrite = TestModel<Input, Result>;
 
 const testFilesDir = path.join(___dirname(import.meta.url), 'test-files');
 

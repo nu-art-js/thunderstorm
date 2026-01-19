@@ -1,15 +1,19 @@
-import {duplicateObjectToCreate, firestore, testInstance2} from '../_core/consts.js';
+import {duplicateObjectToCreate, firestore, testInstance2} from '../../_entity/_core/consts.js';
 import {asArray, deepClone} from '@nu-art/ts-common';
-import {CreateTest, createTestCases} from './consts.js';
+import {createTestCases, CreateTestInput} from './consts.js';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {createTests_dbDef} from './create.js';
 import {DBProto_Type} from '../../_entity/type/shared/index.js';
+import {TestInputValue} from '../_entity.js';
+import {TestModel} from '@nu-art/testalot';
 
 const chai = await import("'chai'");
 chai.use(chaiAsPromised);
 
-export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
+export type TestCase_FirestoreV3_CreateAll = TestModel<CreateTestInput, TestInputValue>;
+
+export const TestCases_FB_CreateAll: TestCase_FirestoreV3_CreateAll[] = [
 	...createTestCases,
 	{
 		description: 'create.all with one object that already exists',
@@ -79,17 +83,19 @@ export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
 	}
 ];
 
-export const TestSuite_FirestoreV3_CreateAll: CreateTest = {
-	label: 'Firestore createAll tests',
-	testcases: TestCases_FB_CreateAll,
-	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(createTests_dbDef);
-		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+const test = async (input: CreateTestInput): Promise<TestInputValue> => {
+	const collection = firestore.getCollection<DBProto_Type>(createTests_dbDef);
+	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
-		const toCreate = deepClone(testCase.input.value);
+	const toCreate = deepClone(input.value);
 
-		await collection.create.all(asArray(toCreate));
+	await collection.create.all(asArray(toCreate));
 
-		await testCase.input.check!(collection, testCase.result);
-	}
+	if (input.check)
+		await input.check(collection, input.value);
+
+	return input.value;
 };
+
+export const TestCases_FirestoreV3_CreateAll = TestCases_FB_CreateAll;
+export const test_FirestoreV3_CreateAll = test;

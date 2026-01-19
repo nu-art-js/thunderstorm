@@ -16,9 +16,17 @@
  * limitations under the License.
  */
 
+/** Storage capacity constants in bytes (binary/base-1024 units) */
+
+/** 1 byte */
 export const Byte = 1;
+/** 1 kilobyte (1024 bytes) */
 export const KB = Byte * 1024;
+/** 1 megabyte (1024 KB) */
 export const MB = KB * 1024;
+/** 1 gigabyte (1024 MB) */
 export const GB = MB * 1024;
+/** 1 terabyte (1024 GB) */
 export const TB = GB * 1024;
+/** 1 petabyte (1024 TB) */
 export const PB = TB * 1024;

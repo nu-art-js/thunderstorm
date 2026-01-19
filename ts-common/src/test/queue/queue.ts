@@ -1,7 +1,6 @@
-import {TestSuite} from '../../main/testing/types.js';
-import {debounce, filterDuplicates, generateArray, sleep} from '../../main/index.js';
+import {filterDuplicates, generateArray, sleep} from '../../main/index.js';
 import {QueueItem, QueueV2} from '../../main/utils/queue-v2.js';
-
+import {TestModel, defaultTestProcessor, DefaultTestProcessor} from '@nu-art/testalot';
 
 type Input<T = any> = {
 	filter?: (number: Readonly<QueueItem<number, any>>[]) => Readonly<QueueItem<number, any>>[]
@@ -10,7 +9,15 @@ type Input<T = any> = {
 	items: number[]
 }
 
-const TestCases_Queue: TestSuite<Input, any> ['testcases'] = [
+export type TestCase_Queue = TestModel<Input, any>;
+
+const queueProcessor: DefaultTestProcessor<undefined, any> = async (promisedResult, expectedResult, error) => {
+	// The test function returns undefined, so we just wait for it to complete
+	await promisedResult;
+	// No result validation needed for queue test
+};
+
+export const TestCases_Queue: TestCase_Queue[] = [
 	// {
 	// 	description: 'queue',
 	// 	result: {},
@@ -31,26 +38,22 @@ const TestCases_Queue: TestSuite<Input, any> ['testcases'] = [
 	},
 ];
 
-export const TestSuite_Queue: TestSuite<Input, any> = {
-	timeout: 100000,
-	label: 'debounce',
-	testcases: TestCases_Queue,
-	processor: async (testCase) => {
-		const queue = new QueueV2<number>(testCase.description, async (item) => {
-			console.log(`Item: ${item} - Start`);
-			await sleep(item * 1000);
-			console.log(`Item: ${item} - End`);
-		}).setParallelCount(testCase.input.parallel ?? 1)
-		  .setSorter(testCase.input.sort)
-		  .setFilter(testCase.input.filter);
-		console.log('adding items');
-		testCase.input.items.forEach(item => queue.addItemImpl(item));
-		sleep(2000).then(() => {
-			console.log('adding again');
-			testCase.input.items.forEach(item => queue.addItemImpl(item));
-		});
-		console.log('------- Started');
-		await queue.executeSync();
-		console.log('------- Ended');
-	}
+export const testQueue = async (input: Input): Promise<undefined> => {
+	const queue = new QueueV2<number>('queue', async (item) => {
+		console.log(`Item: ${item} - Start`);
+		await sleep(item * 1000);
+		console.log(`Item: ${item} - End`);
+	}).setParallelCount(input.parallel ?? 1)
+	  .setSorter(input.sort)
+	  .setFilter(input.filter);
+	console.log('adding items');
+	input.items.forEach(item => queue.addItemImpl(item));
+	sleep(2000).then(() => {
+		console.log('adding again');
+		input.items.forEach(item => queue.addItemImpl(item));
+	});
+	console.log('------- Started');
+	await queue.executeSync();
+	console.log('------- Ended');
+	return undefined;
 };

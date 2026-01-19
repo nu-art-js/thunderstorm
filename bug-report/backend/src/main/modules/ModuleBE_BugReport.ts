@@ -19,7 +19,7 @@
 
 import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
 
-import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend';
+import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend/v1';
 
 
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm-backend';

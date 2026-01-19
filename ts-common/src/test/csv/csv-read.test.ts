@@ -1,8 +1,7 @@
-import {TestSuite} from '../../main/testing/types.js';
 import {keysToStringify, TestData, testData} from './test-data.js';
 import * as fs from 'fs';
 import {JSONCSVModule_Class} from '../../main/modules/JSONCSVModule.js';
-import {runSingleTestCase} from '../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {writeFile} from 'node:fs/promises';
 import {FileSystemUtils} from '../../main/utils/FileSystemUtils.js';
 import {___dirname} from '../../main/esm.js';
@@ -10,8 +9,7 @@ import {resolve} from 'node:path';
 
 export type Input = string;
 export type Result = TestData[];
-export type TestSuite_CSVRead = TestSuite<Input, Result>;
-export type TestCase_CSVRead = TestSuite_CSVRead['testcases'][number];
+export type TestCase_CSVRead = TestModel<Input, Result>;
 
 const dirname = ___dirname(import.meta.url);
 const test = async (input: Input): Promise<Result> => {

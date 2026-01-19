@@ -1,8 +1,8 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 import {AssertionException, reduceToMap, UniqueId} from '@nu-art/ts-common';
 import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../main/index.js';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@nu-art/testalot';
 import {
 	Failed_Log,
 	permissionTestCleanup,

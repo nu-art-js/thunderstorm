@@ -1,16 +1,15 @@
 // file: ./tests/phase-execution/install-phase.test.ts
 
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {expect} from 'chai';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
-import {CommandoPool} from '@nu-art/commando/shell/core/CommandoPool';
+import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
-import {FilesCache} from '../../../main/v3/core/FilesCache.js';
-import {CONST_NodeModules} from '../../../main/core/consts.js';
-import {phase_Install, phase_Prepare} from '../../../main/v3/phase/index.js';
+import {FilesCache} from '../../../main/core/FilesCache.js';
+import {CONST_NodeModules} from '../../../main/config/consts.js';
+import {phase_Install, phase_Prepare} from '../../../main/phases/definitions/index.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {sleep} from '@nu-art/ts-common';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
@@ -26,7 +25,7 @@ const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspac
 const pathToProject = pathToWorkspace; // alias for clarity
 
 type Input = { fixtures: string[] };
-type Output = () => void;
+type Output = () => Promise<void>;
 
 const runInstallTest = async (setup: Input): Promise<void> => {
 	FilesCache.clear();
@@ -38,7 +37,7 @@ const runInstallTest = async (setup: Input): Promise<void> => {
 	await buildAndInstall.run();
 };
 
-const runTestCase = (test: (input: Input) => Promise<void>) => (testCase: TestSuite<Input, Output>['testcases'][number]) =>
+const runTestCase = (test: (input: Input) => Promise<void>) => (testCase: TestModel<Input, Output>) =>
 	() => runSingleTestCase(test, testCase);
 
 describe('NodeProject - Install Phase (Project Packages)', () => {
@@ -51,14 +50,14 @@ describe('NodeProject - Install Phase (Project Packages)', () => {
 		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
 	});
 
-	it('Should installPackages', run(() => ({
+	it('Should installPackages', run({
 		input: {fixtures: ['workspace.txt', './project-root--with-linked-package.txt']},
 		result: async () => {
 			assertLocalPackageInstalled();
 		}
-	}))).timeout(10000);
+	})).timeout(10000);
 
-	it('Should link a local typescript library into root node_modules', run(() => ({
+	it('Should link a local typescript library into root node_modules', run({
 		input: {fixtures: ['workspace.txt', './project-root--with-linked-package.txt']},
 		result: async () => {
 			const linkedPath = resolve(pathToProject, `${CONST_NodeModules}/lib-linked`);
@@ -68,7 +67,7 @@ describe('NodeProject - Install Phase (Project Packages)', () => {
 			const expectedPath = resolve(pathToWorkspace, 'lib-linked/dist');
 			expect(realPath).to.equal(expectedPath);
 		}
-	}))).timeout(10000);
+	})).timeout(10000);
 
 	afterEach(function () {
 		if (this.currentTest?.state === 'failed')

@@ -1,12 +1,10 @@
 import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestModel, defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 
 export type Input = { units: UnitDependentNode[], target: string[], exclude?: string[] };
 export type Result = string[];
 
-export type TestSuite_UnitsDependencyFilter = TestSuite<Input, Result>;
-export type TestCase_UnitsDependencyFilter = TestSuite_UnitsDependencyFilter['testcases'][number];
+export type TestCase_UnitsDependencyFilter = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	const filter = new UnitsDependencyMapper(input.units);
