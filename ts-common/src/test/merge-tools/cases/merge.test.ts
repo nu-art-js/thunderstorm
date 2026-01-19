@@ -1,4 +1,5 @@
-import {merge, runSingleTestCase, TestSuite} from '../../_main.js';
+import {merge} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input = {
 	one: any;
@@ -6,8 +7,7 @@ export type Input = {
 };
 
 export type Result = any;
-export type TestSuite_merge = TestSuite<Input, Result>;
-export type TestCase_merge = TestSuite_merge['testcases'][number];
+export type TestCase_merge = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return merge(input.one, input.two);

@@ -1,4 +1,5 @@
-import {flatArray, runSingleTestCase, TestSuite} from '../../_main.js';
+import {flatArray} from '../../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 
 export type Input<T = any> = {
 	array: T[];
@@ -6,8 +7,7 @@ export type Input<T = any> = {
 };
 
 export type Result = any[];
-export type TestSuite_flatArray = TestSuite<Input, Result>;
-export type TestCase_flatArray = TestSuite_flatArray['testcases'][number];
+export type TestCase_flatArray = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	return flatArray(input.array, input.result);

@@ -1,5 +1,5 @@
 import {compare, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestSuite} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts.js';
 import {_EmptyQuery} from '../../../main/index.js';

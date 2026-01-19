@@ -18,18 +18,22 @@
 
 export * from './auth/firebase-session.js';
 export * from './auth/FirebaseSession_Admin.js';
-export * from './functions/firebase-function.js';
-export * from './ModuleBE_Firebase.js';
-export * from './firestore/FirestoreInterface.js';
-export * from './firestore/FirestoreCollection.js';
-export * from './firestore/FirestoreTransaction.js';
-export * from './firestore/FirestoreWrapperBE.js';
-export * from './firestore/types.js';
+
 export * from './database/DatabaseWrapperBE.js';
 export * from './storage/types.js';
-export * from './storage/StorageWrapperBE.js';
+
+export * from './firestore-v3/consts.js';
+export * from './firestore-v3/DocWrapperV3.js';
+export * from './firestore-v3/FirestoreCollectionV3.js';
+export * from './firestore-v3/FirestoreInterfaceV3.js';
+export * from './firestore-v3/FirestoreWrapperBEV3.js';
+export * from './firestore-v3/types.js';
+
 export * from './push/PushMessagesWrapperBE.js';
 export * from './push/types.js';
+
+export * from './storage/StorageWrapperBE.js';
+
 export * from './functions-v2/ModuleBE_BaseFunction.js';
 export * from './functions-v2/ModuleBE_ExpressFunction_V2.js';
 export * from './functions-v2/ModuleBE_FirebaseDBListener.js';
@@ -37,3 +41,5 @@ export * from './functions-v2/ModuleBE_FirebaseScheduler.js';
 export * from './functions-v2/ModuleBE_FirestoreListener.js';
 export * from './functions-v2/ModuleBE_PubSubFunction.js';
 export * from './functions-v2/ModuleBE_StorageListener.js';
+
+export * from './ModuleBE_Firebase.js';

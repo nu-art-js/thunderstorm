@@ -1,0 +1,49 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: {{SERVICE_NAME}}
+  labels:
+    goog-cloudfunctions-runtime: nodejs22
+    cloud.googleapis.com/location: {{REGION}}
+    goog-managed-by: cloudfunctions
+  annotations:
+    serving.knative.dev/creator: service-{{RUNTIME_PROJECT_ID}}@gcf-admin-robot.iam.gserviceaccount.com
+    run.googleapis.com/client-name: cli-firebase
+    cloudfunctions.googleapis.com/function-id: {{FUNCTION_NAME}}
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      labels: {}
+      annotations:
+        autoscaling.knative.dev/maxScale: '{{MAX_INSTANCES}}'
+        autoscaling.knative.dev/minScale: '{{MIN_INSTANCES}}'
+        run.googleapis.com/startup-cpu-boost: 'true'
+        cloudfunctions.googleapis.com/trigger-type: {{TRIGGER_TYPE}}
+    spec:
+      containerConcurrency: {{CONCURRENCY}}
+      timeoutSeconds: {{TIMEOUT}}
+{{SERVICE_ACCOUNT}}
+      containers:
+      - name: worker
+        image: {{IMAGE_REFERENCE}}
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+{{ENV_VARS}}
+        resources:
+          limits:
+            cpu: '{{CPU}}'
+            memory: {{MEMORY}}
+        startupProbe:
+          timeoutSeconds: 240
+          periodSeconds: 240
+          failureThreshold: 1
+          tcpSocket:
+            port: 8080
+  traffic:
+  - percent: 100
+    latestRevision: true
+

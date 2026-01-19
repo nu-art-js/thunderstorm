@@ -1,9 +1,9 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {DefaultTestProcessor, defaultTestProcessor, runSingleTestCase, TestCase_Error} from '@nu-art/ts-common/testing/consts';
+import {TestModel} from '@nu-art/testalot';
+import {DefaultTestProcessor, defaultTestProcessor, runSingleTestCase, TestCase_Error} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {Commando_Basic, CommandoInteractive, ShellLogProcessor, SimpleTestCommando} from '../../_common.js';
 import {ExpectedResult, Result_Raw, TestResult_CommandoOutput} from '../cases.js';
-import {BadImplementationException, sleep} from '@nu-art/ts-common';
+import {BadImplementationException, sleep, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {___dirname} from '@nu-art/ts-common/esm';
 
 const dirname = ___dirname(import.meta.url);
@@ -64,10 +64,10 @@ const testAsync = async (input: Input): Promise<TestResult_CommandoOutput> => {
 	});
 };
 
-type TestSuite_CommandoAsync = TestSuite<Input, ExpectedResult>;
+type TestCase_CommandoAsync = TestModel<Input, ExpectedResult>;
 
 const testValidator: DefaultTestProcessor = async (promisedResult: Promise<TestResult_CommandoOutput>, expectedResult?: (ExpectedResult | (() => Promise<any>)), error?: TestCase_Error) => {
-	if (error)
+	if (typeof error === 'object')
 		return expect(promisedResult).to.be.rejectedWith(error.expected);
 	else if (!expectedResult)
 		throw new BadImplementationException('MUST provide expectedResult or error');
@@ -75,7 +75,17 @@ const testValidator: DefaultTestProcessor = async (promisedResult: Promise<TestR
 	if (typeof expectedResult === 'function')
 		return await (expectedResult as () => Promise<any>)();
 
-	const actualResult = await promisedResult;
+	let actualResult: TestResult_CommandoOutput | undefined;
+	try {
+		actualResult = await promisedResult;
+	} catch (e: any) {
+		if (typeof error === 'function')
+			return await error(e);
+
+		if (!actualResult)
+			throw new ThisShouldNotHappenException('how did we get to this state??');
+	}
+
 	if (!expectedResult)
 		return;
 
@@ -97,7 +107,7 @@ const testValidator: DefaultTestProcessor = async (promisedResult: Promise<TestR
 		expect(actualResult.exitCode).to.equal(expectedResult.exitCode);
 
 };
-const runTestCase = (testCase: TestSuite_CommandoAsync['testcases'][number], processor?: typeof defaultTestProcessor) => () => runSingleTestCase(testAsync, testCase, processor);
+const runTestCase = (testCase: TestCase_CommandoAsync, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(testAsync, testCase, processor);
 
 describe('Commando - Async Execution', () => {
 	before(() => {

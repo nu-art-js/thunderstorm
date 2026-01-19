@@ -1,5 +1,5 @@
 import {TestSuite_FileDelete} from './file-delete.js';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+import {testSuiteTester} from '@nu-art/testalot';
 import {TestSuite_DeleteFiles} from './deleteFiles.js';
 
 describe('Firebase Storage - Delete Tests', () => {

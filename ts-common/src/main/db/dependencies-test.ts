@@ -1,9 +1,30 @@
+/**
+ * Test/example file for database dependency type system.
+ * 
+ * **Note**: This file contains example/test code demonstrating the dependency
+ * type system. It includes @ts-ignore comments and example types that are not
+ * meant for production use.
+ */
+
 type Proto<dbName extends string> = {
 	dbName: dbName
 }
 
+/**
+ * Type helper that filters out empty objects.
+ * 
+ * Returns never if the object has no keys, otherwise returns the object type.
+ */
 type NonEmptyObject<T> = T extends object ? (keyof T extends never ? never : T) : never;
 
+/**
+ * Generates dot-notation paths for object properties (test/example version).
+ * 
+ * **Note**: This is a test/example implementation. The production version
+ * is in `utils/types.ts` with different logic.
+ * 
+ * @template T - Object type
+ */
 export type DotNotation<T extends object> =
 	NonNullable<T extends object ? {
 			[K in keyof T]: K extends string

@@ -37,6 +37,7 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/testalot": "?",
     "@nu-art/thunderstorm-shared": "?",
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",

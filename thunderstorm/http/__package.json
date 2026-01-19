@@ -1,0 +1,62 @@
+{
+  "name": "@nu-art/http-client",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Type-safe HTTP client with fluent API, comprehensive logging, and request/response type safety",
+  "keywords": [
+    "TacB0sS",
+    "http",
+    "client",
+    "axios",
+    "typescript",
+    "type-safe",
+    "api",
+    "request",
+    "response",
+    "infra",
+    "nu-art",
+    "thunderstorm"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?",
+    "axios": "^1.13.1"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

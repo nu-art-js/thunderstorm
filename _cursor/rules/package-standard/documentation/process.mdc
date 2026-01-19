@@ -1,0 +1,146 @@
+---
+alwaysApply: false
+---
+
+# Package Documentation Process
+
+This document describes the systematic process for documenting packages in the thunderstorm monorepo.
+
+## Overview
+
+When documenting a package, follow this process to ensure consistency and completeness:
+
+1. **Package Analysis** - Understand the package structure and purpose
+2. **Documentation** - Document all files following the documentation standards
+3. **Package Maintenance** - Update package.json and README per package maintenance standards
+4. **Issue Tracking** - Document issues found during the process
+
+## Step-by-Step Process
+
+### 1. Package Analysis
+
+Before starting documentation:
+
+- **Read the package structure**: List all TypeScript files and understand the organization
+- **Identify main entry points**: Check `index.ts` files and main exports
+- **Understand package purpose**: Read existing README (if any), check package.json description
+- **Identify logical groupings**: Note if the package has distinct contexts that could be separate packages
+- **Check dependencies**: Understand what the package depends on and how it's used
+
+### 2. Documentation Phase
+
+Follow the documentation standards (see [Documentation Standards](./standards.mdc)):
+
+- **Start with core infrastructure**: Document base classes, managers, and foundational components first
+- **Then utilities and helpers**: Document utility functions and helper modules
+- **Finally specialized modules**: Document domain-specific implementations
+- **Focus on implicit behavior**: Document what's not obvious from the code
+- **Avoid redundancy**: Don't document self-explanatory code
+
+**Documentation order**:
+1. Core classes and base types
+2. Manager/singleton classes
+3. Utility functions
+4. Specialized implementations
+5. Testing utilities (if applicable)
+
+### 3. Package Maintenance Phase
+
+Apply package maintenance standards (see [Package Maintenance](../package/maintenance.mdc)):
+
+- **Update `__package.json`**:
+  - Improve description (clear, concise, purpose-focused)
+  - Add relevant keywords
+  - Set repository URLs (monorepo vs standalone)
+  - Add logical export points (where index files exist)
+  - Keep wildcard exports for existing packages during refactoring
+- **Create/Update README.md**:
+  - Package purpose and overview
+  - Installation instructions
+  - Quick start examples
+  - Key features
+  - API overview
+  - Package exports documentation
+
+### 4. Issue Tracking
+
+Create or update `ISSUES.md` in the package root:
+
+**Issue Types to Track**:
+
+1. **Type Safety Issues**: Readonly fields being modified, incorrect return types, type mismatches
+2. **Logic Errors**: Broken logic, incorrect implementations, unreachable code
+3. **Code Quality**: Console.log statements, debug code, TODO comments
+4. **Missing Imports**: Functions used but not imported
+5. **Architectural Concerns**: Multiple contexts that could be separate packages
+6. **Performance Issues**: Inefficient algorithms, unnecessary wrapping
+7. **Error Handling**: Missing error handling, incorrect error propagation
+8. **Multiple Contexts**: Package contains distinct contexts that could be separate packages
+
+**Issue Format**:
+```markdown
+## File: `path/to/file.ts`
+
+### Symbol: `functionName()` or `ClassName.field`
+
+**Issue**: Brief description of the issue
+
+**Details**: Detailed explanation, code examples if needed, suggested fixes
+```
+
+### 5. Multiple Contexts Analysis
+
+During documentation, identify if the package has multiple distinct contexts:
+
+**Signs of multiple contexts**:
+- Separate top-level directories with different purposes
+- Different entry points for different use cases
+- Minimal coupling between major components
+- Different dependencies or runtime requirements
+
+**Example**: A package with both "CLI parameter parsing" and "shell command execution" could be split into:
+- `@nu-art/cli-params` - CLI parameter resolution
+- `@nu-art/commando` - Shell command execution
+
+**When found, add to ISSUES.md**:
+```markdown
+## Package Structure
+
+### Multiple Contexts
+
+**Issue**: This package contains multiple distinct contexts that could be separate packages.
+
+**Details**: 
+- Context 1: [Description] - Located in `path/to/context1/`
+- Context 2: [Description] - Located in `path/to/context2/`
+
+**Rationale**: [Why they could be separate - different use cases, minimal coupling, etc.]
+
+**Recommendation**: Consider splitting into separate packages for better modularity and independent versioning.
+```
+
+## Completion Checklist
+
+Before considering a package "done":
+
+- [ ] All TypeScript files documented (following documentation standards)
+- [ ] `__package.json` updated (description, keywords, exports, repository URLs)
+- [ ] `README.md` created/updated (purpose, installation, quick start, features, exports)
+- [ ] `ISSUES.md` created/updated (all issues found during documentation)
+- [ ] Multiple contexts analyzed and documented (if applicable)
+- [ ] No linter errors introduced
+- [ ] All exports properly documented
+
+## Notes for Future Agents
+
+- **This is an iterative process**: Don't try to document everything in one pass
+- **Focus on one package at a time**: Complete documentation, maintenance, and issue tracking before moving to the next
+- **Preserve context**: When documenting, look at usages in other packages to understand purpose
+- **Follow the standards**: Always refer back to [Documentation Standards](./standards.mdc) and [Package Maintenance](../package/maintenance.mdc)
+- **Track issues as you go**: Don't wait until the end to document issues
+- **Be thorough but efficient**: Document what matters, skip what's obvious
+
+## See Also
+
+- [Documentation Standards](./standards.mdc) - What and how to document
+- [Package Maintenance](../package/maintenance.mdc) - Package.json and README standards

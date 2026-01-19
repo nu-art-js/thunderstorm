@@ -1,25 +1,27 @@
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestModel} from '@nu-art/testalot';
 import {BaiParams, BaseUnit, Phase, PhaseManager, ScheduledStep} from '../../_common.js';
-import {voidFunction} from '@nu-art/ts-common';
-import {runSingleTestCase} from '@nu-art/ts-common/testing/consts';
-import {RunningStatusHandler} from '../../../main/v3/RunningStatusHandler.js';
+import {flatArray, voidFunction} from '@nu-art/ts-common';
+import {runSingleTestCase} from '@nu-art/testalot';
+import {RunningStatusHandler} from '../../_common.js';
 
 //========================= TestSuite Definition =========================
 
 type Input = {
 	units: BaseUnit<any>[][];
 	phases: Phase<any>[][];
+	activeUnits?: string[]
 };
 
 type Output = ScheduledStep[];
 
-type TestSuite_CalcExecutionSteps = TestSuite<Input, Output>;
-type TestCase_CalcExecutionSteps = TestSuite_CalcExecutionSteps['testcases'][number];
+type TestCase_CalcExecutionSteps = TestModel<Input, Output>;
 
 
 async function test(input: Input) {
 	const {units, phases} = input;
-	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units);
+	const activeUnits = input.activeUnits ?? flatArray(units).map(u => u.config.key);
+	const projectUnitKeys = input.activeUnits ?? flatArray(units).map(u => u.config.key); // For tests, use activeUnits as projectUnits
+	const manager = new PhaseManager(new RunningStatusHandler('output-folder', {} as BaiParams), phases, units, activeUnits, projectUnitKeys);
 	return manager.calculateExecutionSteps();
 }
 
@@ -377,7 +379,7 @@ describe('PhaseManager - calculateExecutionSteps', () => {
 			]],
 			phases: [[mockPhase('build')]]
 		},
-		error: {expected: 'Multiple units with same key: unit-dup'}
+		error: {expected: 'Found duplicate unit: \'unit-dup\''}
 	}));
 
 	it('Unit participates in multiple independent phase groups', () => runTestCase({

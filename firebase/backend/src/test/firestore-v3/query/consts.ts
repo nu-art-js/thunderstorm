@@ -1,8 +1,8 @@
 import {compare, exists, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
+import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {
-	CollectionTest,
+	CollectionTestInput,
 	getSingleItem,
 	id_inner1,
 	id_inner2,
@@ -15,7 +15,7 @@ import {
 	testInstance3,
 	testInstance4,
 	testInstance5
-} from '../_core/consts.js';
+} from '../../_entity/_core/consts.js';
 import {_EmptyQuery} from '../../../main/index.js';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 import {DBProto_Type, DB_Type, TestInputValue} from '../_entity.js';
@@ -26,9 +26,9 @@ export type QueryTestInput = {
 	check: (collection: FirestoreCollectionV3<DBProto_Type>, expectedItem: TestInputValue, expectedIds?: string[]) => Promise<void>
 }
 
-export type QueryTest = TestSuite<QueryTestInput, TestInputValue>;
+export type QueryTest = TestModel<QueryTestInput, TestInputValue>;
 
-export const queryTestCases: QueryTest['testcases'] = [
+export const queryTestCases: QueryTest[] = [
 	{
 		description: 'no items',
 		result: [],
@@ -82,7 +82,7 @@ export const queryTestCases: QueryTest['testcases'] = [
 	},
 ];
 
-export const queryAllTestCases: CollectionTest['testcases'] = [
+export const queryAllTestCases: TestModel<CollectionTestInput, TestInputValue>[] = [
 	{
 		description: 'by 1 id',
 		result: [testInstance1],
@@ -126,7 +126,7 @@ export const queryAllTestCases: CollectionTest['testcases'] = [
 ];
 
 
-export const queryComplexTestCases: CollectionTest['testcases'] = [
+export const queryComplexTestCases: TestModel<CollectionTestInput, TestInputValue>[] = [
 	{
 		description: 'get all referenced objects',
 		result: [testInstance1],
@@ -171,7 +171,7 @@ export const queryComplexTestCases: CollectionTest['testcases'] = [
 	}
 ];
 
-export const queryWithPagination: QueryTest['testcases'] = [
+export const queryWithPagination: QueryTest[] = [
 	{
 		description: 'all out of 10',
 		result: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],

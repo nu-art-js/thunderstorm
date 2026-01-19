@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {parse} from 'fast-csv';
-import {runSingleTestCase, TestSuite} from '../_main.js';
+import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {StreamTest_FromTransformed, StreamTest_Items, StreamTest_Type1} from './test-helper.js';
 import {expect} from 'chai';
 import {___dirname} from '../../main/esm.js';
@@ -9,8 +9,7 @@ import {resolve} from 'node:path';
 
 export type Input = string;
 export type Result = StreamTest_Type1[];
-export type TestSuite_Stream = TestSuite<Input, Result>;
-export type TestCase_Stream = TestSuite_Stream['testcases'][number];
+export type TestCase_Stream = TestModel<Input, Result>;
 const dirname = ___dirname(import.meta.url);
 
 const test = async (input: Input): Promise<Result> => {

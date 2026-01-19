@@ -2,6 +2,15 @@ import {ApiException} from './exceptions.js';
 import {ApiError_GeneralErrorMessage} from './types.js';
 
 
+/**
+ * Creates a factory function for HTTP error exceptions.
+ * 
+ * Returns a function that creates an ApiException with the specified HTTP status code.
+ * The function also has a `code` property for accessing the status code.
+ * 
+ * @param code - HTTP status code
+ * @returns Function that creates ApiException instances, with a `code` property
+ */
 function createGeneralError(code: number) {
 	const errorFunction = (userMessage: string, debugMessage: string = userMessage, cause?: Error) =>
 		new ApiException<ApiError_GeneralErrorMessage>(code, debugMessage, cause).setErrorBody({
@@ -11,6 +20,21 @@ function createGeneralError(code: number) {
 	return Object.assign(errorFunction, {code});
 }
 
+/**
+ * HTTP status code constants organized by status class.
+ * 
+ * Provides:
+ * - Standard HTTP status codes (1XX, 2XX, 3XX, 4XX, 5XX)
+ * - Custom status codes (459-463, 490, 555, 560-561, 598-599)
+ * - Factory functions for 4XX and 5XX errors that create ApiException instances
+ * 
+ * **Usage**:
+ * - For errors: `throw HttpCodes._4XX.NOT_FOUND('User not found', 'User ID: 123')`
+ * - For status codes: `HttpCodes._2XX.OK` (returns 200)
+ * 
+ * **Note**: 4XX and 5XX codes are functions that create exceptions, while
+ * 1XX, 2XX, and 3XX are just numeric constants.
+ */
 export const HttpCodes = {
 	_1XX: {
 		CONTINUE: 100,

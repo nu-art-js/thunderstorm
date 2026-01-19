@@ -1,12 +1,10 @@
 import {UnitDependentNode, UnitsDependencyMapper} from '../_common.js';
-import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {defaultTestProcessor, runSingleTestCase} from '@nu-art/ts-common/testing/consts';
+import {TestModel, defaultTestProcessor, runSingleTestCase} from '@nu-art/testalot';
 
 export type Input = { units: UnitDependentNode[], target: string };
 export type Result = string[];
 
-export type TestSuite_GetTransitiveDependencies = TestSuite<Input, Result>;
-export type TestCase_GetTransitiveDependencies = TestSuite_GetTransitiveDependencies['testcases'][number];
+export type TestCase_GetTransitiveDependencies = TestModel<Input, Result>;
 
 const test = async (input: Input): Promise<Result> => {
 	const mapper = new UnitsDependencyMapper(input.units);

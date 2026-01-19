@@ -1,4 +1,4 @@
-import {firestore, testInstance1} from '../../_core/consts.js';
+import {firestore, testInstance1} from '../../../_entity/_core/consts.js';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {expect} from 'chai';
