@@ -19,8 +19,6 @@
  * limitations under the License.
  */
 
-export * from './modules/proxy/RemoteProxyCaller.js';
-export * from './modules/proxy/ModuleBE_RemoteProxy.js';
 export * from './modules/CleanupScheduler.js';
 export * from './modules/ModuleBE_APIs.js';
 export * from './modules/action-processor/ModuleBE_ActionProcessor.js';
@@ -34,7 +32,6 @@ export * from './modules/http/AxiosHttpModule.js';
 export * from './modules/http/types.js';
 export * from './modules/ModuleBE_ForceUpgrade.js';
 export * from './modules/ModuleBE_ServerInfo.js';
-export * from './utils/promisify-request.js';
 export * from './utils/types.js';
 export * from './utils/file.js';
 export * from './core/Storm.js';
