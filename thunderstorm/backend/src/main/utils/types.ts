@@ -20,7 +20,6 @@
  */
 
 import * as express from 'express';
-import {CoreOptions, UriOptions} from 'request';
 import {ApiException} from '@nu-art/ts-common';
 
 
@@ -29,8 +28,6 @@ export type ExpressRouter = express.Router
 export type ExpressRequest = express.Request<any>
 export type ExpressResponse = express.Response
 export type ExpressRequestHandler = express.RequestHandler
-
-export type RequestOptions = CoreOptions & UriOptions
 
 export type ServerApi_Middleware = () => Promise<any>
 export type HttpErrorHandler = (error: ApiException) => Promise<string>;
