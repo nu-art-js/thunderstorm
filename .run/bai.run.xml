@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="bai" type="NodeJSConfigurationType" folderName="build-and-install" application-parameters="--verbose" path-to-node="$USER_HOME$/.nvm/versions/node/v22.10.0/bin/node" node-parameters="--require ts-node/register" path-to-js-file="node_modules/@nu-art/build-and-install/build-and-install.js" typescript-loader="bundled" working-dir="$PROJECT_DIR$">
+  <configuration default="false" name="bai" type="NodeJSConfigurationType" folderName="build-and-install" application-parameters="--verbose -w" path-to-node="$USER_HOME$/.nvm/versions/node/v22.10.0/bin/node" node-parameters="--require ts-node/register" path-to-js-file="node_modules/@nu-art/build-and-install/build-and-install.js" typescript-loader="bundled" working-dir="$PROJECT_DIR$">
     <EXTENSION ID="com.intellij.javascript.debugger.execution.StartBrowserRunConfigurationExtension">
       <browser with-js-debugger="true" />
     </EXTENSION>
