@@ -1,0 +1,47 @@
+{
+  "name": "@nu-art/idb-shared",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "IndexedDB shared types and definitions",
+  "keywords": [
+    "TacB0sS",
+    "indexeddb",
+    "idb",
+    "shared",
+    "infra",
+    "nu-art",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@types/node": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}
