@@ -1,4 +1,4 @@
-import {DB_AppConfig, DBDef_AppConfig, DBProto_AppConfig } from '@nu-art/thunderstorm-shared';
+import {DB_AppConfig, DBDef_AppConfig, DBProto_AppConfig} from '@nu-art/thunderstorm-shared';
 import {DBApiConfigV3, ModuleBE_BaseDB} from '../../modules/db-api-gen/ModuleBE_BaseDB.js';
 import {_keys, ApiException, Logger, PreDB, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 
@@ -20,7 +20,12 @@ export class ModuleBE_AppConfigDB_Class
 		this.logVerbose('############## Pre Manipulation ##############');
 		this.logVerbose(dbInstance);
 		const appKey = this.keyMap[dbInstance.key];
-		dbInstance.data = await appKey.dataManipulator(dbInstance.data);
+		try {
+			dbInstance.data = await appKey.dataManipulator(dbInstance.data);
+		} catch (err: any) {
+			this.logError(`Failed to manipulate data on key ${dbInstance.key}`);
+			throw err;
+		}
 		this.logVerbose('############## Post Manipulation ##############');
 		this.logVerbose(dbInstance);
 	}
