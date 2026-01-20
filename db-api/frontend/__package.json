@@ -1,0 +1,55 @@
+{
+  "name": "@nu-art/db-api-frontend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "db-api Frontend",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "db-api",
+    "thunderstorm",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/db-api/frontend"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc -b -f"
+  },
+  "dependencies": {
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/firebase-frontend": "?",
+    "@nu-art/firebase-shared": "?",
+    "@nu-art/http-client": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/ts-styles": "?",
+    "firebase": "?",
+    "react": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

@@ -1,0 +1,55 @@
+---
+description: Copyright header requirements for source files in thunderstorm packages
+alwaysApply: false
+---
+
+# Copyright Standards
+
+This document defines copyright header requirements for source files in the thunderstorm monorepo.
+
+## Overview
+
+All source files in `src/main/` (and optionally `src/test/` if required) must include a minimized copyright header at the top of the file. The header identifies the package, and references the license without repeating the license
+
+## Header Format
+
+Copyright headers must be in a block comment format (`/* ... */`) and placed at the very beginning of the file, before any imports or code.
+
+### Standard infra Format
+- **Package description**: Brief 1-2 sentence description of the package purpose
+- **Copyright Year**: Always use the current year
+- **License type**: 
+    - @nu-art/* (Apache 2.0)
+    - @app/* (Proprietery License)
+
+For most files, use the concise format:
+
+```typescript
+/*
+ * @package-name - Brief package description
+ * Copyright (C) YYYY Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+```
+
+**Example:**
+```typescript
+/*
+ * @nu-art/http-client - Type-safe HTTP client for Thunderstorm
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+```
+
+### File Coverage
+
+- **Required**: All files in `src/main/` and `src/test/`
+- **Not required**: Generated files, build outputs, or third-party code
+
+## Enforcement
+
+- **Always** add or update copyright headers when creating or editing source files
+- **Always** use consistent format within a package
+- **Always** update copyright year if file is not current year 
+- **Never** skip headers in `src/main/` files
+- **Never** use inconsistent formats within the same package

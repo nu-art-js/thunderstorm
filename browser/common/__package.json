@@ -1,0 +1,42 @@
+{
+	"name": "@nu-art/browser-common",
+	"version": "$THUNDERSTORM_VERSION",
+	"description": "Common browser infrastructure utilities and helpers with no external dependencies",
+	"type": "module",
+	"keywords": [
+		"browser",
+		"frontend",
+		"infrastructure",
+		"utilities",
+		"nu-art",
+		"thunderstorm",
+		"typescript"
+	],
+	"homepage": "https://github.com/nu-art-js/thunderstorm",
+	"bugs": {
+		"url": "https://github.com/nu-art-js/thunderstorm/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+		"directory": "_thunderstorm/browser/common"
+	},
+	"publishConfig": {
+		"directory": "dist",
+		"linkDirectory": true
+	},
+	"license": "Apache-2.0",
+	"author": "TacB0sS",
+	"scripts": {
+		"build": "tsc"
+	},
+	"unitConfig": {
+		"type": "typescript-lib"
+	},
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js"
+		}
+	}
+}

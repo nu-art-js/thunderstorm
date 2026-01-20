@@ -1,0 +1,48 @@
+{
+  "name": "@nu-art/idb-frontend",
+  "version": "$THUNDERSTORM_VERSION",
+  "description": "IndexedDB infrastructure for frontend applications",
+  "keywords": [
+    "TacB0sS",
+    "indexeddb",
+    "idb",
+    "frontend",
+    "infra",
+    "nu-art",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/idb-shared": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@types/node": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

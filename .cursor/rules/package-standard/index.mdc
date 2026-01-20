@@ -43,7 +43,7 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: Know what the package does, how it is structured, and how it is used.
 
-- [ ] Package type (infra vs app) and layout (single-domain vs library) — see [package-and-libraries.mdc](../package-and-libraries.mdc)
+- [ ] Package type (infra vs app) and layout (single-domain vs library) — see [package-and-libraries.mdc](./package-and-libraries.mdc)
 - [ ] Entry points and public exports; confirm each resolves to `src/main/` and build output
 - [ ] Purpose (2–4 sentences), runtime deps from imports, usages in workspace (or infer from code)
 
@@ -53,9 +53,9 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: `__package.json` reflects the package and complies with BAI and monorepo rules.
 
-- [ ] Apply [package.json/package.json-common.mdc](../package.json/package.json-common.mdc)
-- [ ] Infra: [package.json/package.json-infra-package.mdc](../package.json/package.json-infra-package.mdc) — App: [package.json/package.json-app-package.mdc](../package.json/package.json-app-package.mdc)
-- [ ] License field and LICENSE file — [license.mdc](../license.mdc)
+- [ ] Apply [package.json/package.json-common.mdc](./package.json/package.json-common.mdc)
+- [ ] Infra: [package.json/package.json-infra-package.mdc](./package.json/package.json-infra-package.mdc) — App: [package.json/package.json-app-package.mdc](./package.json/package.json-app-package.mdc)
+- [ ] License field and LICENSE file — [license.mdc](./license.mdc)
 
 ---
 
@@ -63,7 +63,7 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: README helps developers understand, discover, and use the package.
 
-- [ ] Create or update README per [README.mdc](../README.mdc)
+- [ ] Create or update README per [README.mdc](./README.mdc)
 
 ---
 
@@ -71,7 +71,7 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: Code and docs in sync; document only what adds value.
 
-- [ ] JSDoc and `_docs/` per [documentation.mdc](../documentation.mdc)
+- [ ] JSDoc and `_docs/` per [documentation.mdc](./documentation.mdc)
 - [ ] Ensure `_docs/` (if present) is consistent with code and README
 
 ---
@@ -80,8 +80,8 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: Correct legal headers and license files.
 
-- [ ] Copyright header on all `src/main/` (and `src/test/` if required) — [index.mdc](../index.mdc)
-- [ ] LICENSE file and `__package.json` license — [license.mdc](../license.mdc)
+- [ ] Copyright header on all `src/main/` (and `src/test/` if required) — [copyright.mdc](./copyright.mdc)
+- [ ] LICENSE file — [license.mdc](./license.mdc)
 
 ---
 
@@ -89,8 +89,8 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: Appropriate test coverage.
 
-- [ ] Tests under `src/test/` per [tests/index.mdc](../tests/index.mdc) and the matching test-type file: [unit-tests.mdc](../tests/unit-tests.mdc), [workspace-tests.mdc](../tests/workspace-tests.mdc), [firebase-tests.mdc](../tests/firebase-tests.mdc)
-- [ ] Common patterns — [tests/common-patterns.mdc](../tests/common-patterns.mdc)
+- [ ] Tests under `src/test/` per [tests/index.mdc](./tests/index.mdc) and the matching test-type file: [unit-tests.mdc](./tests/unit-tests.mdc), [workspace-tests.mdc](./tests/workspace-tests.mdc), [firebase-tests.mdc](./tests/firebase-tests.mdc)
+- [ ] Common patterns — [tests/common-patterns.mdc](./tests/common-patterns.mdc)
 - [ ] Coverage for main behavior
 
 ---
@@ -119,9 +119,9 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: Package is consistent and build/lint-clean.
 
-- [ ] Invariants — [package.json/package.json-common.mdc](../package.json/package.json-common.mdc) (Non-negotiable invariants)
+- [ ] Invariants — [package.json/package.json-common.mdc](./package.json/package.json-common.mdc) (Non-negotiable invariants)
 - [ ] No new linter errors
-- [ ] Public exports in `__package.json` and in README per [README.mdc](../README.mdc)
+- [ ] Public exports in `__package.json` and in README per [README.mdc](./README.mdc)
 
 ---
 
