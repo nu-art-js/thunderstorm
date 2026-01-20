@@ -106,6 +106,9 @@ export class ModuleBE_Slack_Class
 			channel: channel ?? this.config.defaultChannel,
 		};
 
+		// @ts-ignore - no clue why, their api requires text but it is not in the type
+		message.text = text;
+
 		//Block same message on throttling time
 		const time = this.messageMap[md5(text)];
 		if (time && currentTimeMillis() - time < (this.config.throttlingTime || Minute))
