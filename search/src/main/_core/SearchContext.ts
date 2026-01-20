@@ -2,6 +2,8 @@ import {arrayIncludesAll, BadImplementationException, Debounce, Logger, removeIt
 import {SearchAddOn, SearchAddOnDef, SearchResult} from './SearchAddOn.js';
 import {SearchItem} from './SearchItem.js';
 import {SearchSorter} from './SearchSorter.js';
+import {StorageKey, Thunder} from '@nu-art/thunderstorm-frontend';
+import {OnSyncStatusChangedListener} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
 
 export interface SearchAddOnRenderer {
 	__onSearchFilterChanged: VoidFunction;
@@ -13,7 +15,8 @@ export interface SearchResultsRenderer {
 }
 
 export class SearchContext
-	extends Logger {
+	extends Logger
+	implements OnSyncStatusChangedListener<any> {
 
 	private searchItems: SearchItem<any, any>[];
 	private activeSearchItems: SearchItem<any, any>[];
@@ -23,11 +26,14 @@ export class SearchContext
 
 	private minimumRequiredActiveAddons: number = 0;
 	private readonly searchDebouncer = new Debounce(() => this.search(), 200, 500);
-	private readonly filterDictionary: { [AddOnKey: string]: any } = {};
+	private saveFilterDebounce: Debounce<any, any> | undefined;
+	private readonly filterDictionary: { [AddOnKey: string]: any };
 	private readonly _filterChangeListeners: SearchAddOnRenderer[] = [];
 	private searchResults?: SearchResult[];
 	private searchTime?: number;
 	private readonly _searchResultChangeListeners: SearchResultsRenderer[] = [];
+	private _retainFilters: boolean = false;
+	private readonly filterStorage: StorageKey<{ [AddOnKey: string]: any }>;
 
 	constructor(key: string) {
 		super(`SearchContext-${key}`);
@@ -36,7 +42,20 @@ export class SearchContext
 		this.addOns = [];
 		this.activeAddOns = [];
 		this.sorters = [];
+		this.filterStorage = new StorageKey(`search-context-data__${key}`);
+		this.filterDictionary = this.filterStorage.get({});
+		//Register listeners with a delay to let Thunder instance be created
+		setTimeout(() => {
+			// @ts-ignore
+			Thunder.getInstance().addUIListener(this);
+			this.searchItems.forEach(searchItem => {
+				// @ts-ignore
+				this[searchItem.module.defaultDispatcher.method] = () => this.searchDebouncer.trigger();
+			});
+		});
 	}
+
+	__onSyncStatusChanged = () => this.searchDebouncer.trigger();
 
 	//######################### Factory Logic #########################
 
@@ -61,6 +80,12 @@ export class SearchContext
 
 	public setMinimumRequiredActiveAddOns = (num: number) => {
 		this.minimumRequiredActiveAddons = num;
+		return this;
+	};
+
+	public retainFilters = () => {
+		this._retainFilters = true;
+		this.saveFilterDebounce = new Debounce(() => this.saveFilters(), 200, 500);
 		return this;
 	};
 
@@ -134,6 +159,13 @@ export class SearchContext
 		this._searchResultChangeListeners.forEach(listener => listener.__onSearchResultsChanged());
 	};
 
+	private saveFilters = () => {
+		if (!this._retainFilters)
+			return;
+
+		this.filterStorage.set({...this.filterDictionary});
+	};
+
 	//######################### Public Logic #########################
 
 	public getActiveSearchItems = () => [...this.activeSearchItems];
@@ -147,6 +179,8 @@ export class SearchContext
 	public filter = {
 		set: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key'], value: AddOn['valueType']): void => {
 			this.filterDictionary[key] = value;
+			this.saveFilterDebounce?.trigger();
+			this.saveFilters();
 			//Re-calculate active addons and search items
 			this.setActiveAddOns();
 			this.setActiveSearchItems();
