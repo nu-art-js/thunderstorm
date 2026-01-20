@@ -4,23 +4,23 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBProto, IndexKeys, Logger, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {DBConfig, IndexDb_Query, ReduceFunction} from '@nu-art/idb-shared';
+import {Logger, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {DBConfig, IndexDb_Query, IndexKeys, ReduceFunction} from '@nu-art/idb-shared';
 
 
-type StoreResolver<Proto extends DBProto<any>> = (dbConfig: DBConfig<Proto>, write?: boolean, store?: IDBObjectStore) => Promise<IDBObjectStore>;
-type StoreExistsResolver<Proto extends DBProto<any>> = (dbConfig: DBConfig<Proto>) => Promise<boolean>;
+type StoreResolver<ItemType extends object> = (dbConfig: DBConfig<ItemType>, write?: boolean, store?: IDBObjectStore) => Promise<IDBObjectStore>;
+type StoreExistsResolver<ItemType extends object> = (dbConfig: DBConfig<ItemType>) => Promise<boolean>;
 
-export class IndexedDB_Store<Proto extends DBProto<any>>
+export class IndexedDB_Store<ItemType extends object>
 	extends Logger {
 
-	private config: DBConfig<Proto>;
-	private storeResolver: StoreResolver<Proto>;
-	private storeExistsResolver: StoreExistsResolver<Proto>;
+	private config: DBConfig<ItemType>;
+	private storeResolver: StoreResolver<ItemType>;
+	private storeExistsResolver: StoreExistsResolver<ItemType>;
 
 	// ######################## Init ########################
 
-	constructor(config: DBConfig<Proto>, storeResolver: StoreResolver<Proto>, storeExistsResolver: StoreExistsResolver<Proto>) {
+	constructor(config: DBConfig<ItemType>, storeResolver: StoreResolver<ItemType>, storeExistsResolver: StoreExistsResolver<ItemType>) {
 		super(`IDB_Store-${config.group}`);
 		this.storeResolver = storeResolver;
 		this.storeExistsResolver = storeExistsResolver;
@@ -71,8 +71,8 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		return cursorRequest;
 	};
 
-	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: Proto['dbType']) => void,
-							 endCallback: () => void, limiterCallback?: () => boolean) => {
+	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: ItemType) => void,
+													 endCallback: () => void, limiterCallback?: () => boolean) => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 
@@ -90,16 +90,16 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 
 	// ######################### Data insertion functions #########################
 
-	public async insert(value: Proto['dbType'], _store?: IDBObjectStore): Promise<Proto['dbType']> {
+	public async insert(value: ItemType, _store?: IDBObjectStore): Promise<ItemType> {
 		const store = await this.getStore(true, _store);
 		return new Promise((resolve, reject) => {
 			const request = store.add(value);
 			request.onerror = () => reject(new Error(`Error inserting item in DB - ${this.config.name}`));
-			request.onsuccess = () => resolve(request.result as unknown as Proto['dbType']);
+			request.onsuccess = () => resolve(request.result as unknown as ItemType);
 		});
 	}
 
-	public async insertAll(values: Proto['dbType'][], _store?: IDBObjectStore) {
+	public async insertAll(values: ItemType[], _store?: IDBObjectStore) {
 		const store = await this.getStore(true, _store);
 
 		for (const value of values) {
@@ -107,13 +107,13 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		}
 	}
 
-	public async upsert(value: Proto['dbType'], _store?: IDBObjectStore): Promise<Proto['dbType']> {
+	public async upsert(value: ItemType, _store?: IDBObjectStore): Promise<ItemType> {
 		const store = await this.getStore(true, _store);
 		try {
 			const request = store.put(value);
 			return new Promise((resolve, reject) => {
 				request.onerror = () => reject(new Error(`Error upserting item in DB - ${this.config.name}`));
-				request.onsuccess = () => resolve(request.result as unknown as Proto['dbType']);
+				request.onsuccess = () => resolve(request.result as unknown as ItemType);
 			});
 		} catch (e: any) {
 			this.logError('trying to upsert: ', value);
@@ -121,7 +121,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		}
 	}
 
-	public async upsertAll(values: Proto['dbType'][], _store?: IDBObjectStore) {
+	public async upsertAll(values: ItemType[], _store?: IDBObjectStore) {
 		const store = await this.getStore(true, _store);
 		for (const value of values) {
 			await this.upsert(value, store);
@@ -130,7 +130,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 
 	// ######################### Data collection functions #########################
 
-	public async get(key: IndexKeys<Proto['dbType'], keyof Proto['dbType']>): Promise<Proto['dbType'] | undefined> {
+	public async get(key: IndexKeys<ItemType, keyof ItemType>): Promise<ItemType | undefined> {
 		const map = this.config.uniqueKeys.map(k => key[k]);
 		const request = (await this.getStore()).get(map as IDBValidKey);
 
@@ -140,7 +140,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		});
 	}
 
-	public async query(query: IndexDb_Query): Promise<Proto['dbType'][] | undefined> {
+	public async query(query: IndexDb_Query): Promise<ItemType[] | undefined> {
 		const store = await this.getStore();
 
 		return new Promise((resolve, reject) => {
@@ -160,12 +160,12 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		});
 	}
 
-	public async queryFilter(filter: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<Proto['dbType'][]> {
+	public async queryFilter(filter: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<ItemType[]> {
 		const limit = query?.limit || 0;
 		const cursorRequest = await this.getCursor(query);
-		const matches: Proto['dbType'][] = [];
+		const matches: ItemType[] = [];
 
-		return new Promise<Proto['dbType'][]>((resolve, reject) => {
+		return new Promise<ItemType[]>((resolve, reject) => {
 			this.cursorHandler(cursorRequest,
 				(value) => {
 					if (filter(value))
@@ -177,7 +177,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		});
 	}
 
-	public async WIP_queryMapNew<Type>(mapper: (item: Proto['dbType']) => Type, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<Type[]> {
+	public async WIP_queryMapNew<Type>(mapper: (item: ItemType) => Type, filter?: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<Type[]> {
 		const limit = query?.limit || 0;
 		const cursorRequest = await this.getCursor(query);
 		const matches: Type[] = [];
@@ -194,7 +194,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		});
 	}
 
-	public async WIP_queryMap<Type>(mapper: (item: Proto['dbType']) => Type, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query): Promise<Type[]> {
+	public async WIP_queryMap<Type>(mapper: (item: ItemType) => Type, filter?: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<Type[]> {
 		const limit = query?.limit || 0;
 		const cursorRequest = await this.getCursor(query);
 		const matches: Type[] = [];
@@ -211,11 +211,11 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		});
 	}
 
-	public async queryFind(filter: (item: Proto['dbType']) => boolean): Promise<Proto['dbType'] | undefined> {
-		let match: Proto['dbType'] | undefined = undefined;
+	public async queryFind(filter: (item: ItemType) => boolean): Promise<ItemType | undefined> {
+		let match: ItemType | undefined = undefined;
 		const cursorRequest = await this.getCursor();
 
-		return new Promise<Proto['dbType'] | undefined>((resolve, reject) => {
+		return new Promise<ItemType | undefined>((resolve, reject) => {
 			this.cursorHandler(cursorRequest,
 				(value) => {
 					if (filter(value))
@@ -227,11 +227,11 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		});
 	}
 
-	public async queryReduce<ReturnType>(reducer: ReduceFunction<Proto['dbType'], ReturnType>, initialValue: ReturnType, filter?: (item: Proto['dbType']) => boolean, query?: IndexDb_Query) {
+	public async queryReduce<ReturnType>(reducer: ReduceFunction<ItemType, ReturnType>, initialValue: ReturnType, filter?: (item: ItemType) => boolean, query?: IndexDb_Query) {
 		let acc = initialValue;
 		const alwaysTrue = () => true;
 		const _filter = filter || alwaysTrue;
-		const matches: Proto['dbType'][] = await this.queryFilter(_filter, query);
+		const matches: ItemType[] = await this.queryFilter(_filter, query);
 
 		return new Promise<ReturnType>((resolve, reject) => {
 			matches.forEach((item, index) => acc = reducer(acc, item, index, matches));
@@ -253,7 +253,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		});
 	}
 
-	public async deleteAll(keys: (IndexKeys<Proto['dbType'], keyof Proto['dbType']> | Proto['dbType'])[]): Promise<Proto['dbType'][]> {
+	public async deleteAll(keys: (IndexKeys<ItemType, keyof ItemType> | ItemType)[]): Promise<ItemType[]> {
 		return await Promise.all(keys.map(key => this.delete(key)));
 	}
 
@@ -261,7 +261,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 	 * Delete by the uniqueKey of this collection - usually _id.
 	 * Pass the _id of the item to delete.
 	 */
-	public async delete(key: (IndexKeys<Proto['dbType'], keyof Proto['dbType']> | Proto['dbType'])): Promise<Proto['dbType']> {
+	public async delete(key: (IndexKeys<ItemType, keyof ItemType> | ItemType)): Promise<ItemType> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
 		const store = await this.getStore(true);
 

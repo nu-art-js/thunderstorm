@@ -8,11 +8,11 @@
 export * from '@nu-art/idb-shared';
 
 // Core classes
-export * from './core/IndexedDB_Database.js';
-export * from './core/IndexedDB_Store.js';
-export * from './core/IDBManager.js';
+export * from './IndexedDB_Database.js';
+export * from './IndexedDB_Store.js';
+export * from './IDBManager.js';
 
 // Utilities
 export * from './utils/indexedDBAsyncCheckLog.js';
-export * from './utils/StorageCleaner.js';
+export * from './StorageCleaner.js';
 export * from './utils/StorageKey.js';

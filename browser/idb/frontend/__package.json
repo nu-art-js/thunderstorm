@@ -30,7 +30,8 @@
   },
   "dependencies": {
     "@nu-art/idb-shared": "?",
-    "@nu-art/ts-common": "?"
+    "@nu-art/ts-common": "?",
+    "@nu-art/logger": "?"
   },
   "devDependencies": {
     "@types/node": "?"
