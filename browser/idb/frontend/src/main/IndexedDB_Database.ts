@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {AsyncVoidFunction, Logger, LogLevel, md5, sortArray} from '@nu-art/ts-common';
+import {AsyncVoidFunction} from '@nu-art/ts-common';
 import {DBConfig} from '@nu-art/idb-shared';
-import {StorageKey} from '../utils/StorageKey.js';
+import {Logger, LogLevel} from '@nu-art/logger';
 
 type VersionData = {
 	version: number;
@@ -139,16 +139,6 @@ export class IndexedDB_Database
 			}
 
 			let nextVersion: VersionData | undefined;
-			if (!ignoreCurrentVersion) {
-				nextVersion = this.getNextVersionData();
-				const currentVersionData = this.getCurrentVersionData();
-				this.logDebug(
-					`[OPEN: ${openId}] Attempting open DB: "${this.dbName}"`,
-					`currentVersion: ${currentVersionData?.version ?? 0}, nextVersion: ${nextVersion.version},`,
-					`currentHash: ${currentVersionData?.hash ?? '-'}, nextHash: ${nextVersion.hash}`
-				);
-			}
-
 			const request = IDBAPI.open(this.dbName, nextVersion?.version);
 
 			request.onblocked = (e) => {
@@ -157,7 +147,6 @@ export class IndexedDB_Database
 
 			request.onupgradeneeded = async () => {
 				const upStart = performance.now?.() ?? Date.now();
-				this.logInfo(`[OPEN:${openId}] onupgradeneeded`, `Current Version: ${this.getCurrentVersionData()?.version ?? 0}`, `Next Version: ${nextVersion?.version ?? 'N/A'}`);
 				const db = request.result;
 				const duplicatedStores = new Set<string>();
 				try {
@@ -193,7 +182,6 @@ export class IndexedDB_Database
 						}
 					});
 
-					this.setCurrentVersionData({version: db.version, hash: this.generateVersionHash()});
 					if (duplicatedStores.size)
 						this.logWarningBold(`[OPEN:${openId}] Duplicate store registrations detected`, ...Array.from(duplicatedStores));
 				} catch (e) {
@@ -228,9 +216,7 @@ export class IndexedDB_Database
 					resolve(this);
 					delete this.openPromise;
 
-					// Persist version (again) to ensure it's set even if there was no upgrade
-					this.setCurrentVersionData({version: this.db.version, hash: this.generateVersionHash()});
-					this.logDebug(`[OPEN:${openId}] Completed open()`,'');
+					this.logDebug(`[OPEN:${openId}] Completed open()`, '');
 				} catch (err) {
 					this.logErrorBold(`[OPEN:${openId}] Failure during onDBOpen(): ${err}`);
 					delete this.openPromise;
@@ -285,45 +271,5 @@ export class IndexedDB_Database
 
 		const allDt = (performance.now?.() ?? Date.now()) - allStart;
 		this.logInfo(`[${tag}] onDBOpen: All callbacks completed`, `Completion Time: ${Math.round(allDt)}ms`);
-	};
-
-	// ######################## Version Control ########################
-
-	private getCurrentVersionData = (): VersionData | undefined => {
-		const storage = new StorageKey<VersionData>(`idb-version-data__${this.dbName}`);
-		const data = storage.get();
-		this.logDebug(`[VERSION] getCurrentVersionData => v=${data?.version ?? '-'}`, `Hash: ${data?.hash ?? '-'}`);
-		return data;
-	};
-
-	private setCurrentVersionData = (versionData: VersionData): VersionData => {
-		const storage = new StorageKey<VersionData>(`idb-version-data__${this.dbName}`);
-		storage.set(versionData);
-		this.logDebug(`[VERSION] setCurrentVersionData => v=${versionData.version}`, `Hash: ${versionData.hash}`);
-		return versionData;
-	};
-
-	private generateVersionHash = () => {
-		const stores = sortArray(this.registeredStores, i => i.config.name);
-		const hash = md5(stores.map(i => i.config.name).join(','));
-		this.logDebug(`[VER] generateVersionHash => ${hash} from [${stores.map(s => s.config.name).join(', ')}]`, '');
-		return hash;
-	};
-
-	private getNextVersionData = (): VersionData => {
-		const currentVersionData = this.getCurrentVersionData();
-		const hash = this.generateVersionHash();
-
-		if (hash === currentVersionData?.hash) {
-			this.logDebug(`[VER] Hash unchanged — keeping version ${currentVersionData.version}`, '');
-			return currentVersionData;
-		}
-
-		const next: VersionData = {
-			version: ((currentVersionData?.version ?? 0) + 1),
-			hash
-		};
-		this.logInfo(`[VER] Hash changed — bumping version to ${next.version}`, '');
-		return next;
 	};
 }
