@@ -6,6 +6,7 @@ alwaysApply: false
 # Package and Library Structure
 
 This document describes the structure of packages and libraries in the thunderstorm monorepo.
+must read the project-standard too to understand better the context of this document.
 
 ## Package Type Standards
 
@@ -37,6 +38,7 @@ A **package** is a single-domain capability contained in one folder:
 ## Library (Multi-Domain Capability)
 
 A **library** is a capability that spans multiple domains (shared, frontend, backend) organized in separate folders:
+(The lib root folder should not have a LICENSE file)
 
 ```
 {lib-name}/
