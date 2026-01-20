@@ -30,8 +30,7 @@
     "compression": "^1.7.4",
     "express": "?",
     "firebase-admin": "?",
-    "moment": "?",
-    "request": "^2.88.0"
+    "moment": "?"
   },
   "devDependencies": {
     "@types/debug": "^4.1.2",

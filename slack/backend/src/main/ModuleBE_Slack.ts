@@ -21,7 +21,7 @@
  * Created by AlanBen on 29/08/2019.
  */
 
-import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
+import {currentTimeMillis, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
 import {ChatPostMessageArguments, WebAPICallResult, WebClient, WebClientOptions,} from '@slack/web-api';
 import {addRoutes, AxiosHttpModule, createBodyServerApi} from '@nu-art/thunderstorm-backend';
 import {ApiDef_Slack, PreSendSlackStructuredMessage} from '@nu-art/slack-shared';
@@ -103,7 +103,6 @@ export class ModuleBE_Slack_Class
 
 	public async postMessage(text: string, channel?: string, thread?: ThreadPointer) {
 		const message: PreSendSlackStructuredMessage = {
-			text,
 			channel: channel ?? this.config.defaultChannel,
 		};
 
@@ -155,11 +154,6 @@ export class ModuleBE_Slack_Class
 
 	public async postStructuredMessage(message: PreSendSlackStructuredMessage, thread?: ThreadPointer) {
 		message.channel ??= this.config.defaultChannel;
-		message.text ??= generateHex(8);
-
-		const time = this.messageMap[message.text as string];
-		if (time && currentTimeMillis() - time < (this.config.throttlingTime || Minute))
-			return;
 
 		return await this.postMessageImpl(message as ChatPostMessageArguments, thread);
 	}
@@ -177,9 +171,6 @@ export class ModuleBE_Slack_Class
 			this.logDebug(`Sending message in ${threadPointer ? 'thread' : 'channel'}`, message);
 			const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
 
-			//Add message to map
-			this.messageMap[md5(message.text)] = currentTimeMillis();
-			this.logDebug(`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);
 			return {ts: res.ts, channel: res.channel};
 		} catch (err) {
 			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(postSlackMessageErrorHandler(err, message.channel));

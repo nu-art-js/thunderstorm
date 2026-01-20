@@ -52,7 +52,6 @@
     "react": "?",
     "react-dom": "?",
     "react-router-dom": "?",
-    "request": "^2.88.0",
     "saml2-js": "^4.0.1"
   },
   "devDependencies": {

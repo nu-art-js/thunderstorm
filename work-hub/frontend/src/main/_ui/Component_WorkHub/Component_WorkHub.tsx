@@ -1,6 +1,6 @@
 import {ComponentSync, LL_V_L} from '@nu-art/thunderstorm-frontend';
 import './Component_WorkHub.scss';
-import {WorkHubTab} from '@nu-art/work-hub-shared';
+import {WorkHubTab, WorkHubTabGroup} from '@nu-art/work-hub-shared';
 import {ModuleFE_WorkHub} from '../../_module/index.js';
 import {Component_WorkHub_Header} from '../Component_WorkHub_Header/Component_WorkHub_Header.js';
 import {OnWorkHubTabs} from '../../dispatchers.js';
@@ -16,7 +16,7 @@ type Props = {
 
 type State = {
 	noTabsMessage: string;
-	tabs: WorkHubTab[];
+	items: (WorkHubTabGroup | WorkHubTab)[];
 	headerConfig?: WorkHubHeaderConfig;
 }
 
@@ -28,7 +28,7 @@ export class Component_WorkHub
 
 	__onWorkHubTabsUpdated = () => {
 		this.setState({
-			tabs: ModuleFE_WorkHub.tabs.get(),
+			items: ModuleFE_WorkHub.tabs.get(),
 		});
 	};
 
@@ -38,7 +38,7 @@ export class Component_WorkHub
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.noTabsMessage = nextProps.noTabsMessage;
-		state.tabs = ModuleFE_WorkHub.tabs.get();
+		state.items = ModuleFE_WorkHub.tabs.get();
 		return state;
 	}
 
@@ -51,7 +51,7 @@ export class Component_WorkHub
 	}
 
 	private render_Content = () => {
-		if (!this.state.tabs.length)
+		if (!this.state.items.length)
 			return <div className={'c__work-hub__no-tabs-message'}>{this.state.noTabsMessage}</div>;
 
 		const selectedTab = ModuleFE_WorkHub.tabs.getSelected();
@@ -59,7 +59,7 @@ export class Component_WorkHub
 			throw new BadImplementationException('Has tabs but no selected tab!');
 
 		return <>
-			<Component_WorkHub_Header tabs={this.state.tabs} selectedTabId={selectedTab.id}/>
+			<Component_WorkHub_Header items={this.state.items} selectedTabId={selectedTab.id}/>
 			<Component_WorkHub_TabContent tab={selectedTab}/>
 		</>;
 	};

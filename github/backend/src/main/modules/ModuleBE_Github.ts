@@ -19,7 +19,6 @@ import {BadImplementationException, currentTimeMillis, Exception, JwtTools, Minu
 import {Octokit, RestEndpointMethodTypes} from '@octokit/rest';
 import {OctokitResponse, ReposGetContentResponseData} from '@octokit/types';
 import * as path from 'path';
-import {promisifyRequest} from '@nu-art/thunderstorm-backend';
 
 
 type Config = {
@@ -256,13 +255,15 @@ export class GithubModule_Class
 	}
 
 	async downloadArchive(url: string, branch: string) {
-		const response = await promisifyRequest({uri: url, encoding: null});
-		if (!response || !response.body) {
+		const response = await fetch(url);
+		if (!response.ok) {
 			throw new Exception(`Failed to download archive for branch ${branch} of product ${url}`);
 		}
+		const arrayBuffer = await response.arrayBuffer();
+		const buffer = Buffer.from(arrayBuffer);
 		this.logDebug(`Got archive in zip format.`);
 		// Returns a buffer.
-		return response.body;
+		return buffer;
 	}
 
 	/**
