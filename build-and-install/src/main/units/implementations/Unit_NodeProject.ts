@@ -14,17 +14,14 @@ import {
 import * as chokidar from 'chokidar';
 import {FSWatcher} from 'chokidar';
 import {Unit_TypescriptLib} from './Unit_TypescriptLib.js';
-import {Commando_NVM} from '@nu-art/commando';
-import {Commando_PNPM} from '@nu-art/commando';
-import {PNPM} from '@nu-art/commando';
+import {Commando_NVM, Commando_PNPM, CommandoException, PNPM} from '@nu-art/commando';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {resolve} from 'path';
 import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {PhaseManager} from '../../phases/PhaseManager.js';
-import {phase_CompileWatch, Phase_Install, Phase_IndicesMcpServer, Phase_PostPublish, Phase_Watch, phase_Prepare} from '../../phases/definitions/index.js';
+import {phase_CompileWatch, Phase_IndicesMcpServer, Phase_Install, Phase_PostPublish, phase_Prepare, Phase_Watch} from '../../phases/definitions/index.js';
 import {UnitsDependencyMapper} from '../../dependencies/UnitsDependencyMapper.js';
 import {BaseUnit} from '../base/BaseUnit.js';
-import {CommandoException} from '@nu-art/commando';
 import {CONST_PNPM_LOCK, CONST_PNPM_WORKSPACE} from '../../config/consts.js';
 import {RunningStatusHandler} from '../../runtime/RunningStatusHandler.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
@@ -46,24 +43,24 @@ type PathDeclaration = { fullPath: string, paths: string[], unit: Unit_Typescrip
 
 /**
  * Root project unit representing the entire monorepo/workspace.
- * 
+ *
  * **Key Responsibilities**:
  * - Manages child units (all packages in workspace)
  * - Handles workspace-level operations (install, watch)
  * - Creates PNPM workspace configuration
  * - Manages file watching for hot reload
- * 
+ *
  * **Phases Implemented**:
  * - `install()`: Installs all packages using PNPM workspace
  * - `watch()`: Watches file changes and triggers incremental compilation
  * - `postPublish()`: Post-publish operations
- * 
+ *
  * **Watch Mode**:
  * - Watches TypeScript, SCSS, JSON, SVG files in all child units
  * - Uses chokidar for file watching
  * - Debounces changes and compiles affected units in dependency order
  * - Supports hot reload for units with `hasSelfHotReload` flag
- * 
+ *
  * **Workspace Management**:
  * - Creates `pnpm-workspace.yaml` with all child unit paths
  * - Manages global packages installation
@@ -248,11 +245,14 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 				const watchRuntimeParams = {
 					...this.runtimeContext.runtimeParams,
+					watch: false,
+					prepare: true,
 					noBuild: false,
 					continue: false
 				};
 				const activeUnitKeys = this.runtimeContext.childUnits.map(unit => unit.config.key);
-				const phaseManager = new PhaseManager(new RunningStatusHandler(this.config.fullPath, watchRuntimeParams).isolate(), [[phase_Prepare],[phase_CompileWatch]], unitDependencyTree, activeUnitKeys, activeUnitKeys);
+				const phaseManager = new PhaseManager(new RunningStatusHandler(this.config.fullPath, watchRuntimeParams).isolate(), [[phase_Prepare],
+					[phase_CompileWatch]], unitDependencyTree, activeUnitKeys, activeUnitKeys);
 				// @ts-ignore
 				phaseManager.setTag('PhaseManager-Watcher');
 				const executionPlan = await phaseManager.calculateExecutionSteps();
