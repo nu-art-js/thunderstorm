@@ -36,14 +36,12 @@
     "react": "?",
     "react-dom": "?",
     "react-router-dom": "?",
-    "@slack/web-api": "7.9.3",
-    "@slack/events-api": "^2.3.0",
+    "@slack/web-api": "7.13.0",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
     "google-auth-library": "?",
-    "moment": "?",
-    "request": "^2.88.0"
+    "moment": "?"
   },
   "devDependencies": {
     "@types/react": "?",

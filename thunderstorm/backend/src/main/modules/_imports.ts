@@ -21,7 +21,4 @@
 
 export * from './server/server-api.js';
 export * from './server/HttpServer.js';
-export * from './proxy/RemoteProxyCaller.js';
-export * from './proxy/ModuleBE_RemoteProxy.js';
-export * from '../utils/promisify-request.js';
 export * from './CleanupScheduler.js';

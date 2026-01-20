@@ -35,8 +35,7 @@
     "@nu-art/thunderstorm-backend": "?",
     "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
-    "@slack/events-api": "^2.3.0",
-    "@slack/web-api": "7.9.3",
+    "@slack/web-api": "7.13.0",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
@@ -44,8 +43,7 @@
     "moment": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
-    "request": "^2.88.0"
+    "react-router-dom": "?"
   },
   "devDependencies": {
     "@types/react": "?",

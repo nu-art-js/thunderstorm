@@ -16,19 +16,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	ApiException,
-	BadImplementationException,
-	composeUrl,
-	ImplementationMissingException, MimeType_json,
-	Module,
-	TypedMap
-} from '@nu-art/ts-common';
-import {promisifyRequest} from '@nu-art/thunderstorm-backend';
-import {CoreOptions, Headers, Response, UriOptions} from 'request';
+import {ApiException, BadImplementationException, composeUrl, ImplementationMissingException, MimeType_json, Module, TypedMap} from '@nu-art/ts-common';
+import {CoreOptions, Headers, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils.js';
 import {JiraVersion, JiraVersion_Create} from '@nu-art/jira-shared/version';
-import { HeaderKey_ContentType, HttpMethod } from '@nu-art/thunderstorm-shared';
+import {HeaderKey_ContentType, HttpMethod} from '@nu-art/thunderstorm-shared';
 
 
 type Config = {
@@ -303,11 +295,11 @@ export class ModuleBE_Jira_Class
 	// 		.executeSync();
 	// }
 
-	private handleResponse<T>(response: Response) {
-		if (`${response.statusCode}`[0] !== '2')
-			throw new ApiException(response.statusCode, response.body);
+	private async handleResponse<T>(response: globalThis.Response): Promise<T> {
+		if (!response.ok)
+			throw new ApiException(response.status, await response.text());
 
-		return response.toJSON().body as T;
+		return response.json() as Promise<T>;
 	}
 
 	private async executeGetRequest<T>(url: string, _params?: { [k: string]: string }) {
@@ -323,7 +315,42 @@ export class ModuleBE_Jira_Class
 	}
 
 	private async executeRequest<T>(request: UriOptions & CoreOptions) {
-		const response = await promisifyRequest(request, false);
+		const {uri, method, headers, body, json, formData} = request;
+		
+		// Ensure uri is a string
+		const url = typeof uri === 'string' ? uri : uri.toString();
+		
+		let fetchBody: BodyInit | undefined;
+		const fetchHeaders: HeadersInit = {...headers};
+		
+		if (formData) {
+			// Handle formData (for file uploads)
+			const form = new FormData();
+			for (const [key, value] of Object.entries(formData)) {
+				if (value && typeof value === 'object' && 'value' in value) {
+					const fileData = value as {value: Buffer; options?: {filename?: string}};
+					// Convert Buffer to Uint8Array for Blob
+					const blob = new Blob([new Uint8Array(fileData.value)]);
+					form.append(key, blob, fileData.options?.filename);
+				}
+			}
+			fetchBody = form;
+			// Remove Content-Type header to let browser set it with boundary
+			delete (fetchHeaders as any)[HeaderKey_ContentType];
+		} else if (body) {
+			if (json) {
+				fetchBody = JSON.stringify(body);
+			} else {
+				fetchBody = body as BodyInit;
+			}
+		}
+		
+		const response = await fetch(url, {
+			method: method || HttpMethod.GET,
+			headers: fetchHeaders,
+			body: fetchBody
+		});
+		
 		return this.handleResponse<T>(response);
 	}
 }
