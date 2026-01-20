@@ -57,28 +57,6 @@ type GitPushParams = {
 export class Commando_Git
 	extends Super {
 
-	git() {
-		return {
-			clone: this.git_clone,
-			checkout: this.git_checkout,
-			createTag: this.git_createTag,
-			gitCommit: this.git_gitCommit,
-			add: this.git_add,
-			addAll: this.git_addAll,
-			addAndCommit: this.git_addAndCommit,
-			push: this.git_push,
-			pushTags: this.git_pushTags,
-			fetch: this.git_fetch,
-			resetHard: this.git_resetHard,
-			getCurrentBranch: this.git_getCurrentBranch,
-			pull: this.git_pull,
-			merge: this.git_merge,
-			createBranch: this.git_createBranch,
-			gsui: this.git_gsui,
-			status: this.git_status,
-		};
-	};
-
 	/**
 	 * Clones a Git repository.
 	 * 
