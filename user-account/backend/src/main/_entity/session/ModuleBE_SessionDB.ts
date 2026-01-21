@@ -89,6 +89,15 @@ export class ModuleBE_SessionDB_Class
 		}, {...content} as RecursiveObjectOfPrimitives & BaseSessionClaims);
 	};
 
+	preWriteProcessing = async (instance: DBProto_Session['dbType']) => {
+		if ('sessionId' in instance)
+			delete instance.sessionId;
+		if ('timestamp' in instance)
+			delete instance.timestamp;
+		if ('prevSession' in instance)
+			delete instance.prevSession;
+	};
+
 
 	token = {
 		create: async (initialClaims: BaseSessionClaims, ttlInMs?: number, transaction?: Transaction) => {

@@ -14,6 +14,7 @@ type Props = {
 type State = {
 	tab: WorkHubTab;
 	item: WorkHubItem<any>;
+	renderArgs: any;
 }
 
 export class Component_WorkHub_TabContent
@@ -34,6 +35,7 @@ export class Component_WorkHub_TabContent
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.tab = nextProps.tab;
 		state.item = ModuleFE_WorkHub.workHubItem.getByKey(state.tab.itemKey);
+		state.renderArgs = {...state.tab.renderArgs};
 		return state;
 	}
 
@@ -68,10 +70,9 @@ export class Component_WorkHub_TabContent
 
 	private renderSync = () => {
 		const item = this.state.item;
-		const tab = this.state.tab;
 		return <div className={'c__work-hub-tab-content'} ref={this.ref} tabIndex={0}>
 			<TS_ErrorBoundary>
-				{item.renderer(item, tab.id, tab.renderArgs)}
+				{item.renderer(item, this.state.tab.id, this.state.renderArgs)}
 			</TS_ErrorBoundary>
 		</div>;
 	};
