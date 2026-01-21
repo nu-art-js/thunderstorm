@@ -1,10 +1,9 @@
-import {compareVersions, currentTimeMillis, exists, Module, ModuleManager, RuntimeVersion} from '@nu-art/ts-common';
+import {compareVersions, currentTimeMillis, Module, RuntimeVersion} from '@nu-art/ts-common';
 import {apiWithQuery} from '../core/typed-api.js';
 import {ApiDef_ServerInfo, ApiStruct_ServerInfo} from '@nu-art/thunderstorm-shared/server-info/api';
 import {ApiCallerRouter, ApiDefCaller, Default_ServerInfoNodePath, ServerInfoFirebaseState} from '@nu-art/thunderstorm-shared';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase-frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
 import {DataSnapshot} from 'firebase/database';
-import {ThunderDispatcher} from '../core/thunder-dispatcher.js';
 import {StorageKey} from '../modules/ModuleFE_LocalStorage.js';
 
 export const StorageKey_ServerVersion = new StorageKey<string>('server-version');
@@ -13,7 +12,7 @@ export interface OnServerInfoUpdatedListener {
 	__onServerInfoUpdated: () => void;
 }
 
-const dispatch_OnServerInfoUpdated = new ThunderDispatcher<OnServerInfoUpdatedListener, '__onServerInfoUpdated'>('__onServerInfoUpdated');
+// const dispatch_OnServerInfoUpdated = new ThunderDispatcher<OnServerInfoUpdatedListener, '__onServerInfoUpdated'>('__onServerInfoUpdated');
 
 
 class ModuleFE_ServerInfo_Class
@@ -55,11 +54,6 @@ class ModuleFE_ServerInfo_Class
 		if (!rtdbServerInfoData)
 			return this.logInfo(`Did not receive any ServerInfo via firebase listener`, '');
 
-		if (!exists(ModuleManager.instance.version))
-			ModuleManager.instance.setVersion(rtdbServerInfoData.version);
-
-		StorageKey_ServerVersion.set(rtdbServerInfoData.version);
-		dispatch_OnServerInfoUpdated.dispatchAll();
 	};
 
 	public Version = {
