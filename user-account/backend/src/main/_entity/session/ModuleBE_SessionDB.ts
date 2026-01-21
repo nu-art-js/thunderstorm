@@ -4,6 +4,7 @@ import {
 	currentTimeMillis,
 	Day,
 	Dispatcher,
+	filterInstances,
 	filterKeys,
 	isErrorOfType,
 	JwtTools,
@@ -21,6 +22,7 @@ import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/c
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
 import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {_EmptyQuery} from '@nu-art/firebase-shared';
 import Transaction = firestore.Transaction;
 
 export type BaseSessionClaims = {
@@ -318,6 +320,20 @@ export class ModuleBE_SessionDB_Class
 			}
 		};
 	}
-};
+
+	public cleanOldOrExpiredSessions = async () => {
+		const sessions = await this.query.custom(_EmptyQuery);
+		const toDelete = filterInstances(await Promise.all(sessions.map(async session => {
+			const isExpired = await JwtTools.isJwtExpired(session.sessionIdJwt);
+			if (isExpired)
+				return session;
+
+			const decoded = await JwtTools.decode(session.sessionIdJwt);
+			if ('sessionData' in decoded)
+				return session;
+		})));
+		await this.delete.allItems(toDelete);
+	};
+}
 
 export const ModuleBE_SessionDB = new ModuleBE_SessionDB_Class();

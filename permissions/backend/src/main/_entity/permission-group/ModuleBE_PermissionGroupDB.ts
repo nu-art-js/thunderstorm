@@ -59,7 +59,7 @@ export class ModuleBE_PermissionGroupDB_Class
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId));
 		const users = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionUserDB.query.custom({where: {__groupIds: {$aca: ids}}}));
-		await ModuleBE_PermissionUserDB.invalidateSession(users.map(dbObjectToId));
+		await ModuleBE_PermissionUserDB.rotateSession(users.map(dbObjectToId));
 	}
 
 	private clearUnused = async () => {

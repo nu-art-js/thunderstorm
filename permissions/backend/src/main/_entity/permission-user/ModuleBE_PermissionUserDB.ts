@@ -122,7 +122,7 @@ export class ModuleBE_PermissionUserDB_Class
 		const beforeIds = (asOptionalArray(data.before) ?? []).map(before => before?._id);
 
 		const accountIdToInvalidate = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i?._id))).filter(id => beforeIds.includes(id));
-		await this.invalidateSession(accountIdToInvalidate);
+		await this.rotateSession(accountIdToInvalidate);
 	}
 
 	insertIfNotExist = async (uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) => {
@@ -216,9 +216,6 @@ export class ModuleBE_PermissionUserDB_Class
 
 		// @ts-ignore
 		const tokenCreator = ModuleBE_AccountDB.token.create;
-		// @ts-ignore
-		const invalidateAccount = ModuleBE_AccountDB.token.invalidateAll;
-
 		const envConfigRef = Storm.getInstance().getGlobalEnvConfigRef();
 		const updatedConfig: TS_Object = {};
 
@@ -279,14 +276,20 @@ export class ModuleBE_PermissionUserDB_Class
 			});
 	}
 
-	public async invalidateSession(accountIds: UniqueId[]) {
+	public async rotateSession(accountIds: UniqueId[]) {
 		if (!accountIds.length)
 			return;
 
+		//Collect all sessions connected to account
 		const sessions = await batchActionParallel(accountIds, 10, async ids => await ModuleBE_SessionDB.query.custom({where: {accountId: {$in: ids}}}));
-		await this.runTransaction(async (t) => {
-			await Promise.all(sessions.map(session => ModuleBE_SessionDB._session.invalidate.bySession(session, t)));
-		});
+		//TODO - Make sure new logic in ModuleBE_SessionDB that deletes expired sessions happens before this code, this will be redundant
+		//Filter to sessions that aren't expired
+		const validSessions = filterInstances(await Promise.all(sessions.map(async session => {
+			const isExpired = await JwtTools.isJwtExpired(session.sessionIdJwt);
+			return isExpired ? undefined : session;
+		})));
+		//TODO END
+		await this.runTransaction(async (t) => Promise.all(validSessions.map(session => ModuleBE_SessionDB._session.rotate.reissue.bySession(session, t))));
 	}
 }
 
