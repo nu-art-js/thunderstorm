@@ -13,9 +13,7 @@ import {
 } from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, CONST_PackageJSONTemplate, CONST_TS_CONFIG} from '../../config/consts.js';
-import {CommandoException} from '@nu-art/commando';
-import {Commando_NVM} from '@nu-art/commando';
-import {Commando_Basic} from '@nu-art/commando';
+import {Commando_Basic, Commando_NVM, CommandoException} from '@nu-art/commando';
 import {resolve, resolve as pathResolve} from 'path';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {
@@ -250,6 +248,15 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 	public async prepare(): Promise<void> {
 		await super.prepare();
+		await this.sharedPrepare();
+	}
+
+	public async watchPrepare(): Promise<void> {
+		await super.watchPrepare();
+		await this.sharedPrepare();
+	}
+
+	protected async sharedPrepare() {
 		await FileSystemUtils.folder.create(this.config.output);
 		if (this.config.packageJson.private) {
 			// @ts-ignore

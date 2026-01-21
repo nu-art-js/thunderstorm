@@ -63,6 +63,7 @@ type MessageMap = {
 	[text: string]: number
 }
 
+
 export type ThreadPointer = { ts?: string, channel: string };
 
 export class ModuleBE_Slack_Class
@@ -106,7 +107,7 @@ export class ModuleBE_Slack_Class
 			channel: channel ?? this.config.defaultChannel,
 		};
 
-		// @ts-ignore - no clue why, their api requires text but it is not in the type
+		// @ts-ignore - no clue why, their api requires text but it is not in the te
 		message.text = text;
 
 		//Block same message on throttling time
