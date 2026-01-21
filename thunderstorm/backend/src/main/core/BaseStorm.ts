@@ -40,11 +40,18 @@ export abstract class BaseStorm
 		if (typeof config === 'string')
 			this.innerConfig = {
 				envKey: config,
-				pathToDefaultConfig: `_config/default.json`,
-				pathToEnvOverrideConfig: `_config/${config}.json`,
+				pathToDefaultConfig: `_config/default`,
+				pathToEnvOverrideConfig: `_config/${config}`,
 			};
-		else
-			this.innerConfig = config;
+		else {
+			if (config.pathToDefaultConfig.startsWith('/'))
+				config.pathToDefaultConfig = config.pathToDefaultConfig.substring(1);
+
+			if (config.pathToEnvOverrideConfig.startsWith('/'))
+				config.pathToEnvOverrideConfig = config.pathToEnvOverrideConfig.substring(1);
+			
+			this.innerConfig = config;	
+		}
 	}
 
 	public getEnvironment(): string {
@@ -73,11 +80,11 @@ export abstract class BaseStorm
 		};
 
 		const defaultPromise = new Promise((resolve) => {
-			this.logInfo(`Loading default config from: ${database.getUrl()}${this.innerConfig.pathToDefaultConfig}`);
+			this.logInfo(`Loading default config from: ${database.getUrl()}/${this.innerConfig.pathToDefaultConfig}`);
 			database.listen(`/${this.innerConfig.pathToDefaultConfig}`, listener(resolve));
 		});
 		const envPromise = new Promise((resolve) => {
-			this.logInfo(`Loading env override config from: ${database.getUrl()}${this.innerConfig.pathToEnvOverrideConfig}`);
+			this.logInfo(`Loading env override config from: ${database.getUrl()}/${this.innerConfig.pathToEnvOverrideConfig}`);
 			database.listen(`/${this.innerConfig.pathToEnvOverrideConfig}`, listener(resolve));
 		});
 		const [
