@@ -34,7 +34,12 @@
     "@nu-art/logger": "?"
   },
   "devDependencies": {
-    "@types/node": "?"
+    "@types/node": "?",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.10",
+    "playwright": "?",
+    "@playwright/test": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"
