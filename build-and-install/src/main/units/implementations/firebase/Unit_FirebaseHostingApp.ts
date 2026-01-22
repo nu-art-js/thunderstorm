@@ -401,17 +401,20 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 
 		// Extract tarball directly to deployTempDir (contains firebase.json, .firebaserc, and dist/)
 		this.logInfo(`Extracting hosting package...`);
+		this.logInfo(`Extracting hosting package...`);
 		await this.executeAsyncCommando(commando, `tar -xzf ${tarballPath} -C ${deployTempDir}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0) {
 				throw new CommandoException(`Failed to extract tarball (exit code ${exitCode})`, stdout, stderr, exitCode);
 			}
 		});
-
 		this.logInfo(`Extracted hosting package to: ${deployTempDir}`);
+
+		this.logInfo(`Copying firebase configs..`);
 		const firebaseJsonPath = resolve(this.config.fullPath, CONST_FirebaseJSON);
 		const firebaseRcPath = resolve(this.config.fullPath, CONST_FirebaseRC);
 		await FileSystemUtils.file.copy(firebaseJsonPath, resolve(deployTempDir, CONST_FirebaseJSON));
 		await FileSystemUtils.file.copy(firebaseRcPath, resolve(deployTempDir, CONST_FirebaseRC));
+		this.logDebug(`Copied firebase configs!`);
 
 		// firebase.json and .firebaserc are already in deployTempDir from tarball extraction
 		// Deploy using firebase CLI
