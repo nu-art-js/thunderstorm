@@ -66,7 +66,8 @@ const defaultTestPatterns: Record<TestType, string> = {
 	pure: '**/*.test.ts',
 	firebase: '**/*.test.firebase.ts',
 	ui: '**/*.test.ui.ts',
-	mobile: '**/*.test.mobile.ts'
+	mobile: '**/*.test.mobile.ts',
+	browser: '**/*.test.browser.ts'
 };
 const CONST_ESM_PREFIX = 'export NODE_OPTIONS=\'--import data:text/javascript,import%20%7B%20register%20%7D%20from%20%22node%3Amodule%22%3B%20import%20%7B%20pathToFileURL%20%7D%20from%20%22node%3Aurl%22%3B%20register%28%22ts-node%2Fesm%22%2C%20pathToFileURL%28%22.%2F%22%29%29%3B\'';
 const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<string>> = {
@@ -105,6 +106,19 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 	mobile: async () => {
 		throw new NotImplementedYetException('Mobile tests not implemented yet');
 	},
+	browser: async (config, runtimeContext) => {
+		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
+		const files = runtimeContext.runtimeParams.testFiles ?? [`src/test/${defaultTestPatterns.browser}`].map(file => `'${file}'`);
+		const testCases = runtimeContext.runtimeParams.testCases;
+		const cli_testFiles = ` ${files.join(' ')}`;
+		const cli_testCases = testCases ? ` --grep '${testCases.join('|')}'` : '';
+		const cli_watchFiles = files.map(file => `-watch-files ${file}`).join(' ');
+
+		const debugPort = runtimeContext.runtimeParams.testDebugPort;
+		const cli_debug = debugPort ? ` --inspect=${debugPort} -w ${cli_watchFiles}` : '';
+
+		return `${CONST_ESM_PREFIX} && ${command} -p src/test/${CONST_TS_CONFIG} --timeout 0 ${cli_debug}${cli_testFiles}${cli_testCases}`;
+	},
 };
 
 /**
@@ -112,7 +126,7 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
  *
  * **Key Responsibilities**:
  * - Compiles TypeScript to JavaScript
- * - Runs tests (pure, firebase, ui, mobile)
+ * - Runs tests (pure, firebase, ui, mobile, browser)
  * - Lints code
  * - Publishes packages
  * - Manages assets (JSON, SCSS, SVG, images)
@@ -134,6 +148,7 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
  * - **firebase**: Tests with Firebase emulators
  * - **ui**: UI tests (not implemented)
  * - **mobile**: Mobile tests (not implemented)
+ * - **browser**: Browser tests using Playwright library with mocha (IndexedDB, routing, React components, etc.)
  *
  * **Asset Management**: Automatically copies non-TypeScript files (JSON, SCSS, SVG, images)
  * to output directory during compilation.
@@ -189,6 +204,48 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		mobile: async () => {
 			throw new NotImplementedYetException('Mobile tests not implemented yet');
 		},
+		browser: async (config, runtimeContext) => {
+			const pathToProjectRoot = runtimeContext.parentUnit.config.fullPath;
+			const playwrightConfigPath = resolve(config.fullPath, 'playwright.config.ts');
+
+			// Generate playwright.config.ts if missing
+			if (!await FileSystemUtils.file.exists(playwrightConfigPath)) {
+				const browserConfig = runtimeContext.baiConfig.files?.tests?.browser;
+				const browsers = browserConfig?.browsers ?? ['chromium'];
+				const headless = browserConfig?.headless ?? true;
+				const baseURL = browserConfig?.baseURL;
+				const viewport = browserConfig?.viewport ?? { width: 1280, height: 720 };
+
+				const configContent = this.generatePlaywrightConfig({
+					browsers,
+					headless,
+					baseURL,
+					viewport
+				});
+
+				await FileSystemUtils.file.write(playwrightConfigPath, configContent);
+				this.logInfo(`Generated playwright.config.ts for ${config.key}`);
+			}
+
+			// Ensure browser binaries are installed
+			const commando = this.allocateCommando(Commando_NVM)
+				.cd(config.fullPath);
+
+			const browserConfig = runtimeContext.baiConfig.files?.tests?.browser;
+			const browsersToInstall = browserConfig?.browsers ?? ['chromium'];
+
+			for (const browser of browsersToInstall) {
+				await this.executeAsyncCommando(
+					commando,
+					`npx playwright install ${browser}`,
+					(stdout, stderr, exitCode) => {
+						if (exitCode !== 0) {
+							this.logWarning(`Failed to install ${browser} browser, tests may fail`);
+						}
+					}
+				);
+			}
+		},
 	};
 
 	async runTests() {
@@ -225,6 +282,38 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
 			});
 		}
+	}
+
+	private generatePlaywrightConfig(options: {
+		browsers: string[];
+		headless: boolean;
+		baseURL?: string;
+		viewport: { width: number; height: number };
+	}): string {
+		const baseURLConfig = options.baseURL ? `    baseURL: '${options.baseURL}',` : '';
+		const browserNames = options.browsers.map(browser => {
+			const deviceName = browser === 'webkit' ? 'Safari' : browser.charAt(0).toUpperCase() + browser.slice(1);
+			return `    {
+      name: '${browser}',
+      use: { ...devices['Desktop ${deviceName}'] },
+    }`;
+		}).join(',\n');
+
+		return `import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './src/test',
+  testMatch: '**/*.test.browser.ts',
+  use: {
+    headless: ${options.headless},
+${baseURLConfig ? baseURLConfig + '\n' : ''}    viewport: { width: ${options.viewport.width}, height: ${options.viewport.height} },
+  },
+  projects: [
+${browserNames}
+  ],
+  timeout: 30000,
+});
+`;
 	}
 
 	protected dependencyUnits!: Unit_TypescriptLib[];

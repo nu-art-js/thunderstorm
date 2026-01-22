@@ -31,6 +31,15 @@ export type BAI_Config = {
 				'.firebaserc'?: string
 				baseEmulationPort?: number
 			}
+			browser?: {
+				browsers?: ('chromium' | 'firefox' | 'webkit')[]
+				headless?: boolean
+				baseURL?: string
+				viewport?: {
+					width: number
+					height: number
+				}
+			}
 		}
 		firebase?: {
 			databaseRules?: string
