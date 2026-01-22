@@ -287,25 +287,17 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		await FileSystemUtils.folder.create(stagingDir);
 		const tarballPath = resolve(buildOutputDir, CONST_HostingBuildTarball);
 
-		// Ensure firebase.json and .firebaserc exist (they should from prepare phase)
-		await this.resolveHostingRC();
-		await this.resolveHostingJSON();
-
 		// Copy all files to staging directory
-		const firebaseJsonPath = resolve(this.config.fullPath, CONST_FirebaseJSON);
-		const firebaseRcPath = resolve(this.config.fullPath, CONST_FirebaseRC);
 		const outputDirName = resolve(this.config.output).split('/').pop() || 'dist';
 
 		// Copy firebase.json, .firebaserc, dist folder, and create deployment-metadata.json
-		await FileSystemUtils.file.copy(firebaseJsonPath, resolve(stagingDir, CONST_FirebaseJSON));
-		await FileSystemUtils.file.copy(firebaseRcPath, resolve(stagingDir, CONST_FirebaseRC));
 		await FileSystemUtils.folder.copy(this.config.output, resolve(stagingDir, outputDirName));
 		await FileSystemUtils.file.write.json(resolve(stagingDir, CONST_DeploymentMetadata), metadata);
 
 		// Create tarball from staging directory contents
 		// Note: Use explicit file list to include hidden files (.*) which * wildcard doesn't match
 		commando.cd(stagingDir);
-		await this.executeAsyncCommando(commando, `tar -czf ${tarballPath} ${CONST_FirebaseJSON} ${CONST_FirebaseRC} ${CONST_DeploymentMetadata} ${outputDirName}`, (stdout, stderr, exitCode) => {
+		await this.executeAsyncCommando(commando, `tar -czf ${tarballPath} ${CONST_DeploymentMetadata} ${outputDirName}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Failed to create tarball (exit code ${exitCode})`, stdout, stderr, exitCode);
 		});
@@ -401,9 +393,9 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		this.logInfo(`Locating downloaded tarball...`);
 		const downloadedFiles = await FileSystemUtils.folder.list(deployTempDir);
 		const tarballFile = downloadedFiles.find(file => file.endsWith('.tar.gz'));
-		if (!tarballFile) {
+		if (!tarballFile)
 			throw new ImplementationMissingException(`Downloaded tarball not found in ${deployTempDir}. Files found: ${downloadedFiles.join(', ')}`);
-		}
+
 		const tarballPath = resolve(deployTempDir, tarballFile);
 		this.logDebug(`Downloaded tarball: ${tarballPath}`);
 
@@ -416,6 +408,10 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		});
 
 		this.logInfo(`Extracted hosting package to: ${deployTempDir}`);
+		const firebaseJsonPath = resolve(this.config.fullPath, CONST_FirebaseJSON);
+		const firebaseRcPath = resolve(this.config.fullPath, CONST_FirebaseRC);
+		await FileSystemUtils.file.copy(firebaseJsonPath, resolve(deployTempDir, CONST_FirebaseJSON));
+		await FileSystemUtils.file.copy(firebaseRcPath, resolve(deployTempDir, CONST_FirebaseRC));
 
 		// firebase.json and .firebaserc are already in deployTempDir from tarball extraction
 		// Deploy using firebase CLI
