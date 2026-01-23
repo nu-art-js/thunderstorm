@@ -2,9 +2,6 @@
  * @nu-art/idb-frontend - IndexedDB infrastructure for frontend applications
  * Copyright (C) 2024 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
- *
- * This test file demonstrates Option A: Using Playwright's test runner (@playwright/test)
- * Compare with idb-integration.test.browser.ts which uses Option B: mocha + playwright library
  */
 
 import {test, expect} from '@playwright/test';
@@ -34,7 +31,7 @@ const dbConfig: DBConfig<TestProto> = {
 	indices: []
 };
 
-test.describe('IDBManager - Browser Integration (Playwright Test Runner)', () => {
+test.describe('IDBManager - Browser Integration', () => {
 	test('should register store and insert data', async ({page}) => {
 		// Load the bundled IDB code into browser context
 		// Note: This requires the code to be built first (dist/index.js)

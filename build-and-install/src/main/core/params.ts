@@ -138,7 +138,7 @@ export const BaiParam_Test: BaseCliParam<'test', boolean> = {
 	description: 'Run the tests in all the project packages',
 };
 
-export const TestTypes = ['pure', 'firebase', 'ui', 'mobile', 'browser'];
+export const TestTypes = ['pure', 'firebase', 'ui', 'mobile', 'playwright'];
 export type TestType = typeof TestTypes[number];
 export const BaiParam_TestType: BaseCliParam<'testType', TestType[]> = {
 	keys: ['--test-type', '-tt'],

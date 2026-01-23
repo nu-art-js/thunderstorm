@@ -13,6 +13,4 @@ export * from './IndexedDB_Store.js';
 export * from './IDBManager.js';
 
 // Utilities
-export * from './utils/indexedDBAsyncCheckLog.js';
 export * from './StorageCleaner.js';
-export * from './utils/StorageKey.js';

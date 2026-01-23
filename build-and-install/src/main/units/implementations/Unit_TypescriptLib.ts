@@ -65,7 +65,7 @@ const defaultTestPatterns: Record<TestType, string> = {
 	firebase: '**/*.test.firebase.ts',
 	ui: '**/*.test.ui.ts',
 	mobile: '**/*.test.mobile.ts',
-	browser: '**/*.test.browser.ts'
+	playwright: '**/*.test.playwright.ts'
 };
 const CONST_ESM_PREFIX = 'export NODE_OPTIONS=\'--import data:text/javascript,import%20%7B%20register%20%7D%20from%20%22node%3Amodule%22%3B%20import%20%7B%20pathToFileURL%20%7D%20from%20%22node%3Aurl%22%3B%20register%28%22ts-node%2Fesm%22%2C%20pathToFileURL%28%22.%2F%22%29%29%3B\'';
 const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<string>> = {
@@ -104,18 +104,24 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 	mobile: async () => {
 		throw new NotImplementedYetException('Mobile tests not implemented yet');
 	},
-	browser: async (config, runtimeContext) => {
-		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/ts-mocha');
-		const files = runtimeContext.runtimeParams.testFiles ?? [`src/test/${defaultTestPatterns.browser}`].map(file => `'${file}'`);
+	playwright: async (config, runtimeContext) => {
+		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/playwright');
+
+		// Playwright accepts file paths as arguments (not glob patterns in quotes)
+		const testFiles = runtimeContext.runtimeParams.testFiles;
+		const cli_testFiles = testFiles
+			? ` ${testFiles.join(' ')}`
+			: ` src/test/${defaultTestPatterns.playwright}`;
+
+		// Map test cases to Playwright's --grep option
 		const testCases = runtimeContext.runtimeParams.testCases;
-		const cli_testFiles = ` ${files.join(' ')}`;
 		const cli_testCases = testCases ? ` --grep '${testCases.join('|')}'` : '';
-		const cli_watchFiles = files.map(file => `-watch-files ${file}`).join(' ');
 
+		// Map debug port to Playwright's --debug option
 		const debugPort = runtimeContext.runtimeParams.testDebugPort;
-		const cli_debug = debugPort ? ` --inspect=${debugPort} -w ${cli_watchFiles}` : '';
+		const cli_debug = debugPort ? ` --debug=${debugPort}` : '';
 
-		return `${CONST_ESM_PREFIX} && ${command} -p src/test/${CONST_TS_CONFIG} --timeout 0 ${cli_debug}${cli_testFiles}${cli_testCases}`;
+		return `${command} test${cli_testFiles}${cli_testCases}${cli_debug}`;
 	},
 };
 
@@ -124,7 +130,7 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
  *
  * **Key Responsibilities**:
  * - Compiles TypeScript to JavaScript
- * - Runs tests (pure, firebase, ui, mobile, browser)
+ * - Runs tests (pure, firebase, ui, mobile, playwright)
  * - Lints code
  * - Publishes packages
  * - Manages assets (JSON, SCSS, SVG, images)
@@ -146,7 +152,11 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
  * - **firebase**: Tests with Firebase emulators
  * - **ui**: UI tests (not implemented)
  * - **mobile**: Mobile tests (not implemented)
- * - **browser**: Browser tests using Playwright library with mocha (IndexedDB, routing, React components, etc.)
+ * - **playwright**: Playwright test runner (@playwright/test)
+ *   - Automatic browser instance management (one per worker)
+ *   - Better performance with shared browser instances across test files
+ *   - Built-in fixtures and test isolation
+ *   - Pattern: **\/*.test.playwright.ts
  *
  * **Asset Management**: Automatically copies non-TypeScript files (JSON, SCSS, SVG, images)
  * to output directory during compilation.
@@ -202,17 +212,16 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		mobile: async () => {
 			throw new NotImplementedYetException('Mobile tests not implemented yet');
 		},
-		browser: async (config, runtimeContext) => {
-			const pathToProjectRoot = runtimeContext.parentUnit.config.fullPath;
+		playwright: async (config, runtimeContext) => {
 			const playwrightConfigPath = resolve(config.fullPath, 'playwright.config.ts');
 
 			// Generate playwright.config.ts if missing
 			if (!await FileSystemUtils.file.exists(playwrightConfigPath)) {
-				const browserConfig = runtimeContext.baiConfig.files?.tests?.browser;
-				const browsers = browserConfig?.browsers ?? ['chromium'];
-				const headless = browserConfig?.headless ?? true;
-				const baseURL = browserConfig?.baseURL;
-				const viewport = browserConfig?.viewport ?? { width: 1280, height: 720 };
+				const playwrightConfig = runtimeContext.baiConfig.files?.tests?.playwright;
+				const browsers = playwrightConfig?.browsers ?? ['chromium'];
+				const headless = playwrightConfig?.headless ?? true;
+				const baseURL = playwrightConfig?.baseURL;
+				const viewport = playwrightConfig?.viewport ?? {width: 1280, height: 720};
 
 				const configContent = this.generatePlaywrightConfig({
 					browsers,
@@ -229,8 +238,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			const commando = this.allocateCommando(Commando_NVM)
 				.cd(config.fullPath);
 
-			const browserConfig = runtimeContext.baiConfig.files?.tests?.browser;
-			const browsersToInstall = browserConfig?.browsers ?? ['chromium'];
+			const playwrightConfig = runtimeContext.baiConfig.files?.tests?.playwright;
+			const browsersToInstall = playwrightConfig?.browsers ?? ['chromium'];
 
 			for (const browser of browsersToInstall) {
 				await this.executeAsyncCommando(
@@ -301,7 +310,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 export default defineConfig({
   testDir: './src/test',
-  testMatch: '**/*.test.browser.ts',
+  testMatch: '**/*.test.playwright.ts',
   use: {
     headless: ${options.headless},
 ${baseURLConfig ? baseURLConfig + '\n' : ''}    viewport: { width: ${options.viewport.width}, height: ${options.viewport.height} },

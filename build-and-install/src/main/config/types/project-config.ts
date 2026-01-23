@@ -31,7 +31,7 @@ export type BAI_Config = {
 				'.firebaserc'?: string
 				baseEmulationPort?: number
 			}
-			browser?: {
+			playwright?: {
 				browsers?: ('chromium' | 'firefox' | 'webkit')[]
 				headless?: boolean
 				baseURL?: string
