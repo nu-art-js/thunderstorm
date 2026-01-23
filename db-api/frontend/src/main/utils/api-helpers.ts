@@ -18,12 +18,15 @@
  * limitations under the License.
  */
 
-import {ApiDef, BodyApi, HttpException, HttpMethod_Body, HttpMethod_Query, HttpRequest, QueryApi} from '@nu-art/http-client';
-import {HttpClient} from '@nu-art/http-client';
+import {ApiDef, BodyApi, HttpClient, HttpException, HttpMethod_Body, HttpMethod_Query, HttpRequest, QueryApi} from '@nu-art/http-client';
 
 
-type ApiQueryReturnType<API extends QueryApi<any, any, any, any, HttpMethod_Query>> = API['IP'] extends undefined ? () => HttpRequest<API> : (params: API['IP']) => HttpRequest<API>
-type ApiBodyReturnType<API extends BodyApi<any, any, any, any, HttpMethod_Body>> = API['IB'] extends undefined ? () => HttpRequest<API> : (params: API['IB']) => HttpRequest<API>
+type ApiQueryReturnType<API extends QueryApi<any, any, any, any, HttpMethod_Query>> = API['IP'] extends undefined
+	? () => HttpRequest<API>
+	: (params: API['IP']) => HttpRequest<API>
+type ApiBodyReturnType<API extends BodyApi<any, any, any, any, HttpMethod_Body>> = API['IB'] extends undefined
+	? () => HttpRequest<API>
+	: (params: API['IB']) => HttpRequest<API>
 
 /**
  * Creates a typed HTTP request function for query-based APIs (GET, DELETE).
@@ -38,14 +41,14 @@ type ApiBodyReturnType<API extends BodyApi<any, any, any, any, HttpMethod_Body>>
  * @returns Function that accepts query parameters and returns HttpRequest
  */
 export function apiWithQuery<API extends QueryApi<any, any, any, any, HttpMethod_Query>>(apiDef: ApiDef<API>,
-																						 onCompleted?: (response: API['R'], params: API['IP'], request: HttpRequest<API>) => Promise<any>,
-																						 onError?: (errorResponse: HttpException<API['E']>, input: API['IP'], request: HttpRequest<API>) => Promise<any>): ApiQueryReturnType<API> {
+																																												 onCompleted?: (response: API['R'], params: API['IP'], request: HttpRequest<API>) => Promise<any>,
+																																												 onError?: (errorResponse: HttpException<API['E']>, input: API['IP'], request: HttpRequest<API>) => Promise<any>): ApiQueryReturnType<API> {
 	return ((params: API['IP']): HttpRequest<API> => {
 		return HttpClient
 			.createRequest<API>(apiDef)
 			.setUrlParams(params)
 			.setTimeout(apiDef.timeout || 10000)
-			.setOnError(onError)
+			// .setOnError(onError)
 			.setOnCompleted(onCompleted);
 	}) as ApiQueryReturnType<API>;
 }
@@ -63,14 +66,14 @@ export function apiWithQuery<API extends QueryApi<any, any, any, any, HttpMethod
  * @returns Function that accepts body and returns HttpRequest
  */
 export function apiWithBody<API extends BodyApi<any, any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>,
-																					  onCompleted?: (response: API['R'], body: API['IB'], request: HttpRequest<API>) => Promise<any>,
-																					  onError?: (errorResponse: HttpException<API['E']>, input: API['IP'] | API['IB'], request: HttpRequest<API>) => Promise<any>): ApiBodyReturnType<API> {
+																																											onCompleted?: (response: API['R'], body: API['IB'], request: HttpRequest<API>) => Promise<any>,
+																																											onError?: (errorResponse: HttpException<API['E']>, input: API['IP'] | API['IB'], request: HttpRequest<API>) => Promise<any>): ApiBodyReturnType<API> {
 	return ((body: API['IB']): HttpRequest<API> => {
 		return HttpClient
 			.createRequest<API>(apiDef)
 			.setBodyAsJson(body)
 			.setTimeout(apiDef.timeout || 10000)
-			.setOnError(onError)
+			// .setOnError(onError)
 			.setOnCompleted(onCompleted);
 	}) as ApiBodyReturnType<API>;
 }
