@@ -256,7 +256,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		await this.sharedPrepare();
 	}
 
-	protected async sharedPrepare() {
+	private async sharedPrepare() {
 		await FileSystemUtils.folder.create(this.config.output);
 		if (this.config.packageJson.private) {
 			// @ts-ignore
