@@ -56,6 +56,12 @@ class Component_EditGroup
 					prop={'label'}
 				/>
 			</TS_PropRenderer.Vertical>
+			<TS_PropRenderer.Vertical label={'UI Label'}>
+				<Input_Text_Blur
+					editable={group}
+					prop={'uiLabel'}
+				/>
+			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical label={'Project'}>
 				<DropDown_PermissionProject.editable
 					editable={group}

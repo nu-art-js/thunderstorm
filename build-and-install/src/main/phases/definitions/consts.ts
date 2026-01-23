@@ -1,21 +1,21 @@
 /**
  * Phase definitions for the build system.
- * 
+ *
  * **Phase Groups**:
  * - `phases_Terminating`: Phases that terminate execution after completion
  * - `phases_Build`: Main build phases (purge, prepare, install, compile, test, etc.)
  * - `phases_Launch`: Launch phases (start applications)
  * - `phases_Deploy`: Deployment phases
- * 
+ *
  * **Phase Execution Order**:
  * 1. Build phases run first (prepare, install, compile, test)
  * 2. Terminating phases can stop execution early
  * 3. Launch phases start applications
  * 4. Deploy phases publish/deploy
- * 
+ *
  * **Phase Filters**: Most phases have filters based on runtime params (e.g., `--lint`, `--test`).
  * Phases only run if their filter returns true (or no filter is present).
- * 
+ *
  * **Dependency Phases**: Some phases depend on others (e.g., `compile` depends on `preCompile`).
  * Dependencies are automatically resolved by PhaseManager.
  */
@@ -77,7 +77,7 @@ export const phase_Prepare: Phase<'prepare'> = {
 	name: 'Prepare',
 	method: 'prepare',
 	filter: (baiParams) => baiParams.prepare,
-	unitCategory: "project", // All project units need to be prepared
+	unitCategory: 'project', // All project units need to be prepared
 };
 
 export type Phase_Install = typeof phase_Install;
@@ -136,6 +136,16 @@ export const phase_Compile: Phase<'compile'> = {
 	dependencyPhase: [phase_PreCompile],
 };
 
+export type Phase_PrepareWatch = typeof phase_PrepareWatch;
+export const phaseKey_PrepareWatch = 'watchPrepare';
+export const phase_PrepareWatch: Phase<'watchPrepare'> = {
+	key: phaseKey_PrepareWatch,
+	name: 'Prepare Watch',
+	method: 'watchPrepare',
+	filter: (baiParams) => baiParams.prepare,
+	unitCategory: 'project', // All project units need to be prepared
+};
+
 export type Phase_CompileWatch = typeof phase_CompileWatch;
 export const phaseKey_CompileWatch = 'watchCompile';
 export const phase_CompileWatch: Phase<'watchCompile'> = {
@@ -143,6 +153,7 @@ export const phase_CompileWatch: Phase<'watchCompile'> = {
 	name: 'CompileWatch',
 	method: 'watchCompile',
 	filter: (baiParams) => !baiParams.noBuild,
+	dependencyPhase: [phase_PrepareWatch],
 };
 
 

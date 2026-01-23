@@ -4,7 +4,7 @@ import {UnitPhaseImplementor} from '../../core/types.js';
 import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {resolve} from 'path';
 import {TS_PackageJSON} from '../discovery/types.js';
-import {Phase_Prepare, Phase_Purge} from '../../phases/definitions/index.js';
+import {Phase_Prepare, Phase_PrepareWatch, Phase_Purge} from '../../phases/definitions/index.js';
 import {Commando_NVM} from '@nu-art/commando';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_NodeProject} from './Unit_NodeProject.js';
@@ -38,7 +38,7 @@ export type Unit_PackageJson_Config = Config_ProjectUnit & { packageJson: TS_Pac
  */
 export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJson_Config>
 	extends ProjectUnit<C>
-	implements UnitPhaseImplementor<[Phase_Purge, Phase_Prepare]> {
+	implements UnitPhaseImplementor<[Phase_Purge, Phase_Prepare, Phase_PrepareWatch]> {
 
 
 	constructor(config: C) {
@@ -85,7 +85,15 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	 *
 	 * **Template Params**: Includes THUNDERSTORM_VERSION, __ENV__, and child unit versions.
 	 */
-	async prepare() {
+	async prepare(): Promise<void> {
+		await this._sharedPrepare();
+	}
+
+	async watchPrepare(): Promise<void> {
+		await this._sharedPrepare();
+	}
+
+	private async _sharedPrepare() {
 		const targetPath = resolve(this.config.fullPath, CONST_PackageJSON);
 		const params = this.deriveLibDependencies();
 		const packageJson = FileSystemUtils.file.template.transform(__stringify(this.config.packageJson, true), params);

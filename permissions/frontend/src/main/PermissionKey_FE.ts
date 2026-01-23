@@ -34,10 +34,11 @@ export class PermissionKey_FE<K extends string = string>
 	}
 }
 
+export type ModuleFE_PermissionMapper<Mapper> = {[key in keyof Mapper]: PermissionKey_FE};
 /**
  * Permission mapper type for ModuleFEs
  */
 export type ModuleFE_DefaultPermissions<UIMapper, CollectionMapper> = {
-	ui: { [key in keyof UIMapper]: PermissionKey_FE },
-	collection: { [key in keyof CollectionMapper]: PermissionKey_FE }
+	ui: ModuleFE_PermissionMapper<UIMapper>;
+	collection: ModuleFE_PermissionMapper<CollectionMapper>;
 };

@@ -17,12 +17,12 @@ type State = {
 export class Component_AddOn_SearchTerms
 	extends Component_SearchAddOn<AddOnDef_SearchTerms, Props, State> {
 
+	public addOn: SearchAddOn<AddOnDef_SearchTerms> = AddOn_SearchTerms;
+
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
 		state.placeholder = nextProps.placeholder;
 		return state;
 	}
-
-	public addOn: SearchAddOn<AddOnDef_SearchTerms> = AddOn_SearchTerms;
 
 	render() {
 		return <LL_H_C className={'search-add-on__search-terms'}>

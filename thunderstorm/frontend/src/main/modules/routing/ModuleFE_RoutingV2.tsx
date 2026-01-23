@@ -127,7 +127,7 @@ class ModuleFE_RoutingV2_Class
 		return <Route key={route.key} path={route.path} Component={Component} element={route.element}>
 			{_indexRoute}
 			{children.map(route => this.routeBuilder(route))}
-			{/*{route.fallback && <Route path="*" element={<Navigate to={path}/>}/>}*/}
+			{route.fallback && <Route path="*" element={<Navigate to={path}/>}/>}
 		</Route>;
 	};
 
