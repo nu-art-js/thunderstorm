@@ -40,4 +40,42 @@ describe('compareVersions', () => {
 			}));
 		}
 	}
+
+	describe('Extended version patterns', () => {
+		it('Compare: 1.0.0--rc.17 <> 1.0.0--rc.18', runTestCase({
+			description: 'Compare: 1.0.0--rc.17 <> 1.0.0--rc.18',
+			input: {firstVersion: '1.0.0--rc.17', secondVersion: '1.0.0--rc.18'},
+			result: 1
+		}));
+
+		it('Compare: 1.0.0--rc.17 <> 1.0.0--rc.16', runTestCase({
+			description: 'Compare: 1.0.0--rc.17 <> 1.0.0--rc.16',
+			input: {firstVersion: '1.0.0--rc.17', secondVersion: '1.0.0--rc.16'},
+			result: -1
+		}));
+
+		it('Compare: 1.0.0--rc.17 <> 1.0.0--rc.17', runTestCase({
+			description: 'Compare: 1.0.0--rc.17 <> 1.0.0--rc.17',
+			input: {firstVersion: '1.0.0--rc.17', secondVersion: '1.0.0--rc.17'},
+			result: 0
+		}));
+
+		it('Compare: 1.0.0 <> 1.0.0.1', runTestCase({
+			description: 'Compare: 1.0.0 <> 1.0.0.1',
+			input: {firstVersion: '1.0.0', secondVersion: '1.0.0.1'},
+			result: 1
+		}));
+
+		it('Compare: 1.0.0.1 <> 1.0.0', runTestCase({
+			description: 'Compare: 1.0.0.1 <> 1.0.0',
+			input: {firstVersion: '1.0.0.1', secondVersion: '1.0.0'},
+			result: -1
+		}));
+
+		it('Compare: 1.0.0--rc.17 <> 1.0.0', runTestCase({
+			description: 'Compare: 1.0.0--rc.17 <> 1.0.0',
+			input: {firstVersion: '1.0.0--rc.17', secondVersion: '1.0.0'},
+			result: -1
+		}));
+	});
 });

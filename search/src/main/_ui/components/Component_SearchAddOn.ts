@@ -32,6 +32,7 @@ export abstract class Component_SearchAddOn<
 
 	componentDidMount() {
 		this.props.context.filterChangeListeners.register(this);
+		this.setState({value: this.props.context.filter.get(this.addOn.key)})
 	}
 
 	componentWillUnmount() {
