@@ -95,7 +95,7 @@ export class IndexedDB_Store<ItemType extends object>
 		return new Promise((resolve, reject) => {
 			const request = store.add(value);
 			request.onerror = () => reject(new Error(`Error inserting item in DB - ${this.config.name}`));
-			request.onsuccess = () => resolve(request.result as unknown as ItemType);
+			request.onsuccess = () => resolve(value);
 		});
 	}
 

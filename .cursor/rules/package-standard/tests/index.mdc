@@ -38,3 +38,8 @@ for example, testing if delete file works you will need to create a temporary di
 **Use When**: Testing backend modules with Firebase emulators, database operations, or API endpoints.
 testing functionality of a module that requires a ModuleManager initialization.
 for example, user login and session management (these are both modules that utilize Firestore and require the full ecosystem to be initialized).
+
+### 4. [Playwright Browser Tests](./playwright-tests.mdc)
+**Use When**: Testing frontend code that must run in a real browser environment.
+for example, IndexedDB operations, DOM manipulation, browser-specific APIs, or any code that cannot be tested in Node.js.
+Uses Vite dev server for ESM module resolution and Playwright for browser automation.
