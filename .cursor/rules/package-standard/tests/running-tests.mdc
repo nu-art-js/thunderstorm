@@ -18,6 +18,7 @@ BAI supports running tests with flexible filtering options for any package in yo
 - **`--test-type`**: Filter by test type (can specify multiple)
   - `pure`: Standard TypeScript tests using `ts-mocha` - pattern: `**/*.test.ts`
   - `firebase`: Tests with Firebase emulators - pattern: `**/*.test.firebase.ts`
+  - `playwright`: Browser tests using Playwright + Vite - pattern: `**/*.test.playwright.ts`
   - `ui`: UI tests (not implemented yet)
   - `mobile`: Mobile tests (not implemented yet)
 
@@ -58,6 +59,17 @@ Tests that require Firebase emulators:
 - **Pattern**: `**/*.test.firebase.ts`
 - **Command**: Wrapped in `firebase emulators:exec`
 - **Use case**: Tests that need Firestore, Functions, or other Firebase services
+
+### Playwright Tests (`--test-type=playwright`)
+
+Browser tests that run in a real browser via Playwright:
+- **Pattern**: `**/*.test.playwright.ts`
+- **Command**: Uses Playwright with Vite dev server
+- **Use case**: Testing frontend code requiring real browser APIs (IndexedDB, DOM, etc.)
+- **Requirements**: 
+  - `src/test/index.html` - test page that loads test-entry.ts
+  - `src/test/test-entry.ts` - exposes modules to window object
+  - Root `vite.config.ts` with node polyfills if needed
 
 ## Examples
 
@@ -118,6 +130,19 @@ bai --test --use-package=my-package --test-type=pure -td=9229 -nb
 ```bash
 # Run Firebase tests (requires Firebase emulators)
 bai --test --use-package=my-package --test-type=firebase -nb
+```
+
+### Run Playwright Tests
+
+```bash
+# Run Playwright browser tests
+bai --test --use-package=idb-frontend --test-type=playwright
+
+# Run specific playwright test case
+bai --test --use-package=idb-frontend --test-type=playwright --test-case="should insert and retrieve"
+
+# Run with verbose output
+bai --test --use-package=idb-frontend --test-type=playwright --verbose
 ```
 
 ### Run Tests for Multiple Packages

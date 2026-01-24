@@ -39,6 +39,10 @@ export type BAI_Config = {
 					width: number
 					height: number
 				}
+				vite?: {
+					port?: number
+					configPath?: string // Relative path from project root to vite config (e.g., 'vite.config.ts')
+				}
 			}
 		}
 		firebase?: {

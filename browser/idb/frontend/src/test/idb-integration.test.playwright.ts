@@ -6,7 +6,6 @@
 
 import {test, expect} from '@playwright/test';
 import {DBConfig} from '@nu-art/idb-shared';
-import {DBProto} from '@nu-art/ts-common';
 
 type TestItem = {
 	_id: string;
@@ -14,15 +13,7 @@ type TestItem = {
 	value: number;
 };
 
-type TestProto = DBProto<{
-	type: TestItem;
-	dbKey: 'test-db';
-	generatedKeys: '_id';
-	versions: { current: '1.0.0' };
-	uniqueKeys: '_id';
-}>;
-
-const dbConfig: DBConfig<TestProto> = {
+const dbConfig: DBConfig<TestItem> = {
 	name: 'test-store',
 	group: 'test-database',
 	version: '1.0.0',
@@ -31,33 +22,38 @@ const dbConfig: DBConfig<TestProto> = {
 	indices: []
 };
 
-test.describe('IDBManager - Browser Integration', () => {
-	test('should register store and insert data', async ({page}) => {
-		// Load the bundled IDB code into browser context
-		// Note: This requires the code to be built first (dist/index.js)
-		await page.addScriptTag({path: './dist/index.js'});
+// Test page path relative to package root (Vite runs from package directory)
+const testPagePath = '/src/test/index.html';
 
+test.describe('IDBManager - Browser Integration', () => {
+	test.beforeEach(async ({page}) => {
+		// Navigate to Vite-served test page
+		await page.goto(testPagePath);
+		// Wait for the module to load and expose IDBFrontend on window
+		await page.waitForFunction(() => window.IDBFrontend !== undefined);
+	});
+
+	test('should register store and insert data', async ({page}) => {
 		const result = await page.evaluate(async (config) => {
-			// @ts-ignore - IDBManager is now available in browser context
+			const {IDBManager} = window.IDBFrontend;
 			const store = IDBManager.register(config, async () => {
 				console.log('Database opened');
 			});
 
 			const testItem = {_id: '1', name: 'Test Item', value: 100};
-			await store.insert(testItem);
+			const inserted = await store.insert(testItem);
 
 			const retrieved = await store.get({_id: '1'});
-			return retrieved;
+			return {inserted, retrieved};
 		}, dbConfig);
 
-		expect(result).toEqual({_id: '1', name: 'Test Item', value: 100});
+		expect(result.inserted).toEqual({_id: '1', name: 'Test Item', value: 100});
+		expect(result.retrieved).toEqual({_id: '1', name: 'Test Item', value: 100});
 	});
 
 	test('should query data with filters', async ({page}) => {
-		await page.addScriptTag({path: './dist/index.js'});
-
 		const result = await page.evaluate(async (config) => {
-			// @ts-ignore
+			const {IDBManager} = window.IDBFrontend;
 			const store = IDBManager.register(config, async () => {
 				console.log('Database opened');
 			});
@@ -74,39 +70,41 @@ test.describe('IDBManager - Browser Integration', () => {
 
 		expect(result).toBeInstanceOf(Array);
 		expect(result).toHaveLength(3);
+		expect(result).toContainEqual({_id: '1', name: 'Item 1', value: 100});
+		expect(result).toContainEqual({_id: '2', name: 'Item 2', value: 200});
+		expect(result).toContainEqual({_id: '3', name: 'Item 3', value: 300});
 	});
 
 	test('should delete data', async ({page}) => {
-		await page.addScriptTag({path: './dist/index.js'});
-
 		const result = await page.evaluate(async (config) => {
-			// @ts-ignore
+			const {IDBManager} = window.IDBFrontend;
 			const store = IDBManager.register(config, async () => {
 				console.log('Database opened');
 			});
 
 			// Insert item
-			await store.insert({_id: '1', name: 'Item 1', value: 100});
+			const inserted = await store.insert({_id: '1', name: 'Item 1', value: 100});
 
-			// Delete item
+			// Delete item by key
 			const deleted = await store.delete({_id: '1'});
 
 			// Try to get deleted item
 			const retrieved = await store.get({_id: '1'});
 
-			return {deleted, retrieved};
+			return {inserted, deleted, retrieved};
 		}, dbConfig);
 
+		expect(result.inserted).toEqual({_id: '1', name: 'Item 1', value: 100});
 		expect(result.deleted).toEqual({_id: '1', name: 'Item 1', value: 100});
 		expect(result.retrieved).toBeUndefined();
 	});
 
 	test('should handle multiple stores in same database group', async ({page}) => {
-		await page.addScriptTag({path: './dist/index.js'});
+		type StoreItem = {_id: string; name: string; value: number};
 
 		const result = await page.evaluate(async () => {
-			// @ts-ignore
-			const store1 = IDBManager.register({
+			const {IDBManager} = window.IDBFrontend;
+			const store1 = IDBManager.register<StoreItem>({
 				name: 'store-1',
 				group: 'shared-db',
 				version: '1.0.0',
@@ -115,8 +113,7 @@ test.describe('IDBManager - Browser Integration', () => {
 				indices: []
 			}, async () => {});
 
-			// @ts-ignore
-			const store2 = IDBManager.register({
+			const store2 = IDBManager.register<StoreItem>({
 				name: 'store-2',
 				group: 'shared-db',
 				version: '1.0.0',
@@ -125,15 +122,17 @@ test.describe('IDBManager - Browser Integration', () => {
 				indices: []
 			}, async () => {});
 
-			await store1.insert({_id: '1', name: 'Store 1 Item', value: 100});
-			await store2.insert({_id: '1', name: 'Store 2 Item', value: 200});
+			const inserted1 = await store1.insert({_id: '1', name: 'Store 1 Item', value: 100});
+			const inserted2 = await store2.insert({_id: '1', name: 'Store 2 Item', value: 200});
 
 			const item1 = await store1.get({_id: '1'});
 			const item2 = await store2.get({_id: '1'});
 
-			return {item1, item2};
+			return {inserted1, inserted2, item1, item2};
 		});
 
+		expect(result.inserted1).toEqual({_id: '1', name: 'Store 1 Item', value: 100});
+		expect(result.inserted2).toEqual({_id: '1', name: 'Store 2 Item', value: 200});
 		expect(result.item1).toEqual({_id: '1', name: 'Store 1 Item', value: 100});
 		expect(result.item2).toEqual({_id: '1', name: 'Store 2 Item', value: 200});
 	});

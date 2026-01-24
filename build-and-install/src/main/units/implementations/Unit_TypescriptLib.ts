@@ -107,11 +107,20 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 	playwright: async (config, runtimeContext) => {
 		const command = resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/playwright');
 
-		// Playwright accepts file paths as arguments (not glob patterns in quotes)
-		const testFiles = runtimeContext.runtimeParams.testFiles;
-		const cli_testFiles = testFiles
-			? ` ${testFiles.join(' ')}`
-			: ` src/test/${defaultTestPatterns.playwright}`;
+		// Playwright accepts file paths as arguments (not glob patterns)
+		// If testFiles not explicitly provided, discover them via glob and convert to relative paths
+		let testFiles = runtimeContext.runtimeParams.testFiles;
+		if (!testFiles) {
+			const pattern = resolve(config.fullPath, 'src/test', defaultTestPatterns.playwright);
+			const fileIterator = glob(pattern, {});
+			const absoluteFiles = [];
+			for await (const file of fileIterator)
+				absoluteFiles.push(file);
+
+			testFiles = absoluteFiles.map(file => path.relative(config.fullPath, file));
+		}
+
+		const cli_testFiles = testFiles.length > 0 ? ` ${testFiles.join(' ')}` : '';
 
 		// Map test cases to Playwright's --grep option
 		const testCases = runtimeContext.runtimeParams.testCases;
@@ -223,11 +232,20 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				const baseURL = playwrightConfig?.baseURL;
 				const viewport = playwrightConfig?.viewport ?? {width: 1280, height: 720};
 
+				// Build vite config if specified
+				const viteConfigPath = playwrightConfig?.vite?.configPath;
+				const vitePort = playwrightConfig?.vite?.port ?? 5173;
+				const viteOptions = viteConfigPath ? {
+					port: vitePort,
+					configPath: path.relative(config.fullPath, resolve(runtimeContext.parentUnit.config.fullPath, viteConfigPath))
+				} : undefined;
+
 				const configContent = this.generatePlaywrightConfig({
 					browsers,
 					headless,
 					baseURL,
-					viewport
+					viewport,
+					vite: viteOptions
 				});
 
 				await FileSystemUtils.file.write(playwrightConfigPath, configContent);
@@ -284,6 +302,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				.cd(this.config.fullPath);
 
 			const testCommand = await TestsCommandComposer[testType](this.config, this.runtimeContext);
+
 			await this.executeAsyncCommando(commando, testCommand, (stdout, stderr, exitCode) => {
 				if (exitCode !== 0)
 					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
@@ -296,8 +315,11 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 		headless: boolean;
 		baseURL?: string;
 		viewport: { width: number; height: number };
+		vite?: {
+			port: number;
+			configPath: string; // Relative path from package to vite config
+		};
 	}): string {
-		const baseURLConfig = options.baseURL ? `    baseURL: '${options.baseURL}',` : '';
 		const browserNames = options.browsers.map(browser => {
 			const deviceName = browser === 'webkit' ? 'Safari' : browser.charAt(0).toUpperCase() + browser.slice(1);
 			return `    {
@@ -306,18 +328,51 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
     }`;
 		}).join(',\n');
 
-		return `import { defineConfig, devices } from '@playwright/test';
+		// Build webServer block if vite config is provided
+		const viteConfig = options.vite;
+		const webServerBlock = viteConfig ? `
+  webServer: {
+    command: \`npx vite --config \${resolve(__dirname, '${viteConfig.configPath}')} --port \${vitePort} --host 127.0.0.1\`,
+    url: \`http://127.0.0.1:\${vitePort}/src/test/index.html\`,
+    reuseExistingServer: true,
+    timeout: 60000,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  },
+` : '';
 
+		// Use vite URL as baseURL when vite is configured, otherwise use provided baseURL
+		const baseURL = viteConfig
+			? '`http://127.0.0.1:${vitePort}`'
+			: options.baseURL ? `'${options.baseURL}'` : undefined;
+		const baseURLConfig = baseURL ? `    baseURL: ${baseURL},` : '';
+
+		// Add imports based on whether vite is used
+		const imports = viteConfig
+			? `import {defineConfig, devices} from '@playwright/test';
+import {resolve} from 'path';
+import {fileURLToPath} from 'url';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const vitePort = process.env.VITE_PORT || '${viteConfig.port}';
+`
+			: `import {defineConfig, devices} from '@playwright/test';
+`;
+
+		return `${imports}
 export default defineConfig({
   testDir: './src/test',
   testMatch: '**/*.test.playwright.ts',
+${webServerBlock}
   use: {
     headless: ${options.headless},
 ${baseURLConfig ? baseURLConfig + '\n' : ''}    viewport: { width: ${options.viewport.width}, height: ${options.viewport.height} },
   },
+
   projects: [
 ${browserNames}
   ],
+
   timeout: 30000,
 });
 `;
