@@ -3,26 +3,29 @@ import {
 	ApiException,
 	currentTimeMillis,
 	Day,
+	dbObjectToId,
 	Dispatcher,
-	filterInstances,
 	filterKeys,
+	generateHex,
 	isErrorOfType,
 	JwtTools,
 	md5,
 	MUSTNeverHappenException,
 	RecursiveObjectOfPrimitives,
 	TypedKeyValue,
+	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
 import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
-import {DB_Session, DBDef_Session, DBProto_Session} from '@nu-art/user-account-shared';
+import {AccountType_Service, DB_Session, DBDef_Session, DBProto_Session} from '@nu-art/user-account-shared';
 import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
 import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
+import {ModuleBE_AccountDB} from '../account/ModuleBE_AccountDB.js';
 import Transaction = firestore.Transaction;
 
 export type BaseSessionClaims = {
@@ -211,6 +214,10 @@ export class ModuleBE_SessionDB_Class
 				sessionIdJwt: jwt,
 			}, ['linkedSessionId', 'label'],);
 
+			const idsToDelete = dbSession.validSessionJwtMd5s.slice(1);
+			if (idsToDelete.length)
+				await this.delete.all(idsToDelete, transaction);
+
 			return await this.set.item(dbSession, transaction);
 		},
 		create: Object.assign(async (content: Props_CreateSession, ttlInMs?: number, transaction?: Transaction) => {
@@ -323,16 +330,48 @@ export class ModuleBE_SessionDB_Class
 
 	public cleanOldOrExpiredSessions = async () => {
 		const sessions = await this.query.custom(_EmptyQuery);
-		const toDelete = filterInstances(await Promise.all(sessions.map(async session => {
+		const accounts = await ModuleBE_AccountDB.query.where({type: {$neq: AccountType_Service}});
+		const validAccountIds = new Set<UniqueId>(accounts.map(dbObjectToId));
+		const sessionIdsToDelete = new Set<UniqueId>();
+		const accountSessionMap: TypedMap<DB_Session> = {};
+		this.logWarning(`#### Cleaning ${sessions.length} sessions for ${validAccountIds.size} accounts ####`);
+		//First pass - Collect all sessions that are referenced by newer sessions
+		sessions.forEach(session => {
+			if (validAccountIds.has(session.accountId)) {
+				const currentSession = accountSessionMap[session.accountId];
+				if (!currentSession || currentSession.__created < session.__created) {
+					accountSessionMap[session.accountId] = session;
+					if (currentSession)
+						sessionIdsToDelete.add(currentSession._id);
+				} else {
+					sessionIdsToDelete.add(session._id);
+				}
+			}
+			session.validSessionJwtMd5s.forEach(id => {
+				if (id !== session._id)
+					sessionIdsToDelete.add(id);
+			});
+			if (!session.validSessionJwtMd5s.length)
+				sessionIdsToDelete.add(session._id);
+		});
+
+		//Second pass - collect all sessions that are expired or has the old "sessionData" property in their decoded data
+		await Promise.all(sessions.map(async session => {
+			if (sessionIdsToDelete.has(session._id))
+				return;
+
 			const isExpired = await JwtTools.isJwtExpired(session.sessionIdJwt);
 			if (isExpired)
-				return session;
+				return sessionIdsToDelete.add(session._id);
 
 			const decoded = await JwtTools.decode(session.sessionIdJwt);
 			if ('sessionData' in decoded)
-				return session;
-		})));
-		await this.delete.allItems(toDelete);
+				return sessionIdsToDelete.add(session._id);
+		}));
+
+		//Delete sessions
+		await this.delete.all(Array.from(sessionIdsToDelete));
+		this.logWarning(`### Deleted ${sessionIdsToDelete.size} Sessions! ###`);
 	};
 }
 

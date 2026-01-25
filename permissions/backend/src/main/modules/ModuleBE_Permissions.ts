@@ -209,7 +209,7 @@ class ModuleBE_Permissions_Class
 
 	__performProjectSetup() {
 		return {
-			priority: 0,
+			priority: 100,
 			processor: async () => {
 				const projects = dispatcher_collectPermissionsProjects.dispatchModule();
 				projects.reduce((issues, project) => {
