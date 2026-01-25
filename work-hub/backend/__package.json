@@ -1,7 +1,7 @@
 {
-  "name": "@nu-art/work-hub-frontend",
+  "name": "@nu-art/work-hub-backend",
   "version": "$THUNDERSTORM_VERSION",
-  "description": "TS WorkHub Frontend",
+  "description": "TS WorkHub Backend",
   "keywords": [
     "TacB0sS",
     "express",
@@ -21,34 +21,26 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/work-hub-shared": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/ts-styles": "?",
     "@nu-art/thunderstorm-shared": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/permissions-frontend": "?",
     "@nu-art/permissions-shared": "?",
-    "react": "?"
+    "@nu-art/permissions-backend": "?",
+    "@nu-art/work-hub-shared": "?"
   },
   "devDependencies": {
-    "@types/react": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"
   },
   "type": "module",
   "exports": {
-    "./core": {
-      "types": "./_core/index.d.ts",
-      "import": "./_core/index.js"
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
     },
-    "./ui": {
-      "types": "./_ui/index.d.ts",
-      "import": "./_ui/index.js"
-    },
-    "./modules": {
-      "types": "./_module/ModuleFE_WorkHub/ModuleFE_WorkHub.d.ts",
-      "import": "./_module/ModuleFE_WorkHub/ModuleFE_WorkHub.js"
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
     }
   }
 }
