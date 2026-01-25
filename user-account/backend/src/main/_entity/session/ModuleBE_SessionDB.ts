@@ -6,7 +6,6 @@ import {
 	dbObjectToId,
 	Dispatcher,
 	filterKeys,
-	generateHex,
 	isErrorOfType,
 	JwtTools,
 	md5,
