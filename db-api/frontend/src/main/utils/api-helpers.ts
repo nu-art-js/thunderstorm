@@ -48,7 +48,7 @@ export function apiWithQuery<API extends QueryApi<any, any, any, any, HttpMethod
 			.createRequest<API>(apiDef)
 			.setUrlParams(params)
 			.setTimeout(apiDef.timeout || 10000)
-			// .setOnError(onError)
+			.setOnError(onError)
 			.setOnCompleted(onCompleted);
 	}) as ApiQueryReturnType<API>;
 }
