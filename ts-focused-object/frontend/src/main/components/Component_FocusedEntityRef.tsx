@@ -20,8 +20,7 @@ export class Component_FocusedEntityRef
 	extends ComponentSync<Props, State>
 	implements OnFocusedDataReceived {
 
-	// ######################## Lifecycle ########################
-
+	
 	__onFocusedDataReceived(map: FocusData_Map) {
 		this.reDeriveState();
 	}
@@ -71,8 +70,7 @@ export class Component_FocusedEntityRef
 		}
 	}
 
-	// ######################## Render ########################
-
+	
 	render() {
 		return <LL_H_C className={'component--focused-object'}>
 			{this.state.accountIds.map(id => {

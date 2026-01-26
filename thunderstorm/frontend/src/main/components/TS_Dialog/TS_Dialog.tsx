@@ -58,8 +58,7 @@ export type Props_TSDialog = {
 export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	extends ComponentSync<P & Props_TSDialog, S & State_TSDialog> {
 
-	// ######################## Life Cycle ########################
-
+	
 	__consumeDialogCloseEvent(dialogKey: DialogKey) {
 		return false;
 	}
@@ -71,8 +70,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		this.forceUpdate();
 	}
 
-	// ######################## KeyMap ########################
-
+	
 	/**
 	 * A map held per instance connecting a (keyboard)key to a dialog button.
 	 * This map is filled in by calling _keyActionMapCreator with buttons.
@@ -122,8 +120,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		this.keyActionMap[e.key]?.current?.click(e);
 	};
 
-	// ######################## Utils ########################
-
+	
 	protected _buttonsCreator = (buttons?: DialogButton[]) => {
 		if (!buttons?.length)
 			return undefined;
@@ -142,8 +139,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		ModuleFE_Dialog.close(force, this.props.dialogKey);
 	};
 
-	// ######################## Render - Header ########################
-
+	
 	private dialogHeader = (headerContent: React.ReactNode | undefined) => {
 		return headerContent && <div className={'ts-dialog__header'}>
 			{headerContent}
@@ -154,8 +150,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		return undefined;
 	};
 
-	// ######################## Render - Main ########################
-
+	
 	private dialogBody = (mainContent: React.ReactNode | undefined) => {
 		return mainContent && <div className={'ts-dialog__main'}>
 			{mainContent}
@@ -166,8 +161,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		return undefined;
 	};
 
-	// ######################## Render - Buttons ########################
-
+	
 	private dialogButtons = (buttons: TS_Object) => {
 		if (_values(buttons).every(arr => !arr || !arr.length))
 			return undefined;
@@ -193,8 +187,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		});
 	};
 
-	// ######################## Render ########################
-
+	
 	render() {
 		let buttons = {};
 		let mainContent;

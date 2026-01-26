@@ -14,20 +14,17 @@ export type Props_PermissionComponent = React.PropsWithChildren<{
 export class PermissionsComponent<P extends Props_PermissionComponent = Props_PermissionComponent, S extends {} = {}>
 	extends ComponentSync<P, S> {
 
-	// ######################## Static ########################
-
+	
 	static defaultProps = {
 		modules: [ModuleFE_AppConfig]
 	};
 
-	// ######################## Lifecycle ########################
-
+	
 	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
 		return true;
 	}
 
-	// ######################## Render ########################
-
+	
 	protected renderLoader = () => {
 		return <></>;
 	};

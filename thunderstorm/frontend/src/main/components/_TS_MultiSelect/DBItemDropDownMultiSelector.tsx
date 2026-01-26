@@ -12,7 +12,6 @@ type Props<Proto extends DBProto<any>> = {
 	queryFilter?: (id: UniqueId) => boolean;
 };
 
-// ############################ DB Item ############################
 
 type UISelector<Proto extends DBProto<any>> = (props: {
 	queryFilter: (item: Proto['dbType']) => boolean
@@ -69,7 +68,6 @@ export class DBItemDropDownMultiSelector<Proto extends DBProto<any>>
 	}
 }
 
-// ############################ DB Pointer ############################
 
 type Props_DBPointer<Proto extends DBProto<any>> = {
 	selector: MultiSelect_Selector<DBPointer>,

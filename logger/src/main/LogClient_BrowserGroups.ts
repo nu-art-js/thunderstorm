@@ -40,8 +40,7 @@ class LogClient_BrowserGroups_Class
 		this.setComposer(this.newComposer);
 	}
 
-	// ################## Class Methods - Logging ##################
-
+	
 	private newComposer(tag: string, level: LogLevel) {
 		_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
 		const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23);
@@ -100,8 +99,7 @@ class LogClient_BrowserGroups_Class
 		console.groupEnd();
 	};
 
-	// ################## Class Methods - Styling ##################
-
+	
 	private getLogLevelColor = (logLevel: LogLevel): string => {
 		switch (logLevel) {
 			case LogLevel.Verbose:

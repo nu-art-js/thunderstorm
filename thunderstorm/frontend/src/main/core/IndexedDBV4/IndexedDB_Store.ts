@@ -12,8 +12,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 	private storeResolver: StoreResolver<Proto>;
 	private storeExistsResolver: StoreExistsResolver<Proto>;
 
-	// ######################## Init ########################
-
+	
 	constructor(config: DBConfigV3<Proto>, storeResolver: StoreResolver<Proto>, storeExistsResolver: StoreExistsResolver<Proto>) {
 		super(`IDB_Store-${config.group}`);
 		this.storeResolver = storeResolver;
@@ -25,8 +24,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		};
 	}
 
-	// ######################## DB Interaction ########################
-
+	
 	getStore = async (write = false, store?: IDBObjectStore) => this.storeResolver(this.config, write, store);
 
 	exists = async () => this.storeExistsResolver(this.config);
@@ -48,8 +46,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		});
 	};
 
-	// ######################## Cursor Interaction ########################
-
+	
 	private getCursor = async (query?: IndexDb_Query_V3): Promise<IDBRequest<IDBCursorWithValue | null>> => {
 		const store = await this.getStore();
 
@@ -82,8 +79,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		};
 	};
 
-	// ######################### Data insertion functions #########################
-
+	
 	public async insert(value: Proto['dbType'], _store?: IDBObjectStore): Promise<Proto['dbType']> {
 		const store = await this.getStore(true, _store);
 		return new Promise((resolve, reject) => {
@@ -122,8 +118,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		}
 	}
 
-	// ######################### Data collection functions #########################
-
+	
 	public async get(key: IndexKeys<Proto['dbType'], keyof Proto['dbType']>): Promise<Proto['dbType'] | undefined> {
 		const map = this.config.uniqueKeys.map(k => key[k]);
 		const request = (await this.getStore()).get(map as IDBValidKey);
@@ -233,8 +228,7 @@ export class IndexedDB_Store<Proto extends DBProto<any>>
 		});
 	}
 
-	// ######################### Data deletion functions #########################
-
+	
 	public async clearStore(): Promise<void> {
 		if (!(await this.exists()))
 			return;

@@ -15,8 +15,7 @@ type Props = {
 export class Dialog_ActionProcessorConfirmation
 	extends ComponentSync<Props> {
 
-	// ######################### Static #########################
-
+	
 	static show(action: ActionMetaData, onExecute: () => (void | Promise<void>)) {
 		ModuleFE_Dialog.show({
 			content: <Dialog_ActionProcessorConfirmation action={action} onExecute={onExecute}/>,
@@ -24,13 +23,11 @@ export class Dialog_ActionProcessorConfirmation
 		});
 	}
 
-	// ######################### Life Cycle #########################
-
+	
 	protected deriveStateFromProps(nextProps: Props, state?: Partial<any> | undefined) {
 	}
 
-	// ######################### Logic #########################
-
+	
 	private closeDialog = () => {
 		ModuleFE_Dialog.close(true);
 	};
@@ -40,8 +37,7 @@ export class Dialog_ActionProcessorConfirmation
 		this.closeDialog();
 	};
 
-	// ######################### Render #########################
-
+	
 	private renderHeader = () => {
 		return <LL_H_C className={'dialog__header'}>
 			<div className={'dialog__header__title'}>Refactoring Action Conformation</div>

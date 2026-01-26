@@ -34,16 +34,14 @@ export const permissionsGuardedRenderer = (permissionKey: PermissionKey_FE, rend
 export class Component_SwitchViewV2
 	extends ComponentSync<Props, State> {
 
-	// ######################## Lifecycle ########################
-
+	
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.mode = nextProps.mode;
 		state.modes = nextProps.modes;
 		return state;
 	}
 
-	// ######################## Render ########################
-
+	
 	render() {
 		return resolveContent(this.state.modes[this.state.mode]);
 	}

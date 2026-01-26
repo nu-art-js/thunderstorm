@@ -24,8 +24,7 @@ export class Panel_ConflictResolution
 		return state;
 	}
 
-	// ##################### Logic #####################
-
+	
 	private resolveEntityLabel = () => {
 		const module = RuntimeModules().filter(module => (module as ModuleFE_BaseDB<any>).dbDef?.dbKey === this.props.dependencies.dbKey)[0] as ModuleFE_BaseDB<any>;
 		return module?.dbDef.entityName ?? 'Entity';
@@ -50,8 +49,7 @@ export class Panel_ConflictResolution
 		this.setState({expanded: true});
 	};
 
-	// ##################### Render #####################
-
+	
 	render() {
 		return <LL_V_L id={'panel__conflict-resolution'} className={this.state.expanded ? 'expanded' : undefined}>
 			{this.render_Header()}

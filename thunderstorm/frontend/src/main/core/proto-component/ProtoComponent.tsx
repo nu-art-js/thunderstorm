@@ -21,8 +21,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 	extends ComponentSync<Props, State>
 	implements OnUrlParamsChangedListenerV2 {
 
-	// ######################## Life Cycle ########################
-
+	
 	/**
 	 * Listener for URL changes triggered by ModuleFE_BrowserHistoryV2.
 	 * Will trigger deriveStateFromProps with the new state of the query params set to be the previous state,
@@ -38,8 +37,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 		}
 	};
 
-	// ######################## Class Methods ########################
-
+	
 	/**
 	 * Generates an object connection each query param key given in the props to its current value as read from the URL
 	 */
@@ -54,8 +52,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 		}
 	}
 
-	// ######################## Singulars
-
+	
 	/**
 	 * Will set a value in the URL hash for a given key.
 	 * @param key
@@ -94,8 +91,7 @@ export abstract class ProtoComponent<Def extends ProtoComponentDef<any, any>, P 
 		ModuleFE_BrowserHistoryV2.delete(key);
 	}
 
-	// ######################## Multiples
-
+	
 	/**
 	 * Will merge the given query object into the URL.
 	 * @param query

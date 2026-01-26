@@ -70,8 +70,7 @@ export class ModuleFE_FocusedObject_Class
 		this.initWindowCloseListeners();
 	}
 
-	// ######################## Init listeners ########################
-
+	
 	private initFirebaseListening = () => {
 		this.focusFirebaseListener = ModuleFE_FirebaseListener.createListener(getRelationalPath());
 		this.focusFirebaseListener.startListening(this.onRTDBChange);
@@ -89,8 +88,7 @@ export class ModuleFE_FocusedObject_Class
 		});
 	}
 
-	// ######################## Listener Callbacks ########################
-
+	
 	private onRTDBChange = (snapshot: DataSnapshot) => {
 		this.focusDataMap = snapshot.val() ?? {} as FocusData_Map;
 		this.logDebug('Received firebase focus data', this.focusDataMap);
@@ -126,8 +124,7 @@ export class ModuleFE_FocusedObject_Class
 		this.currentlyFocused = {};
 	};
 
-	// ######################## Timer Interactions ########################
-
+	
 	private triggerKeepAlive = () => {
 		this.clearKeepAlive();
 		//No need to set keepalive timeout if currentlyFocused has no data
@@ -158,8 +155,7 @@ export class ModuleFE_FocusedObject_Class
 		delete this.unfocusTimeout;
 	};
 
-	// ######################## API Logic ########################
-
+	
 	private updateRTDB = () => {
 		//Call API
 		const focusedEntities = this.translateCurrentlyFocusedToFocusedEntities();
@@ -175,8 +171,7 @@ export class ModuleFE_FocusedObject_Class
 			});
 	};
 
-	// ######################## Logic ########################
-
+	
 	public focus = (entities: FocusedEntity[]) => {
 		entities.forEach(entity => {
 			if (!this.currentlyFocused[entity.dbKey])

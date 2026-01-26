@@ -42,7 +42,7 @@ type ApiBodyReturnType<API extends BodyApi<any, any, any, any, HttpMethod_Body>>
  */
 export function apiWithQuery<API extends QueryApi<any, any, any, any, HttpMethod_Query>>(apiDef: ApiDef<API>,
 																																												 onCompleted?: (response: API['R'], params: API['IP'], request: HttpRequest<API>) => Promise<any>,
-																																												 onError?: (errorResponse: HttpException<API['E']>, input: API['IP'], request: HttpRequest<API>) => Promise<any>): ApiQueryReturnType<API> {
+																																												 onError?: (errorResponse: HttpException<API['E']>) => Promise<any>): ApiQueryReturnType<API> {
 	return ((params: API['IP']): HttpRequest<API> => {
 		return HttpClient
 			.createRequest<API>(apiDef)

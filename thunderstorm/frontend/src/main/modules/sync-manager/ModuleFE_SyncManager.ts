@@ -83,8 +83,7 @@ export class ModuleFE_SyncManager_Class
 		}
 	}
 
-	// ######################### Class Properties #########################
-
+	
 	// All the modules that a user has permissions to view and with the last updated timestamp of each collection
 	private syncedModules: SyncDbData[] = [];
 	private readonly currentlySyncingModules: {
@@ -129,8 +128,7 @@ export class ModuleFE_SyncManager_Class
 	}
 
 
-	// ######################### Public Methods #########################
-
+	
 	public setShouldCleanIDBOnFullSync = (cleanIDBOnFullSync: boolean) => {
 		this.cleanIDBOnFullSync = cleanIDBOnFullSync;
 	};
@@ -150,8 +148,7 @@ export class ModuleFE_SyncManager_Class
 		this.syncQueue.cancelAll();
 	};
 
-	// ######################### Smart Sync #########################
-
+	
 	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module) => module.syncType === ModuleSyncType.APISync);
 
 	private getLocalSyncData = (): SyncDbData[] => {
@@ -226,8 +223,7 @@ export class ModuleFE_SyncManager_Class
 		await this.smartSync();
 	}
 
-	// ######################### onSmartSyncCompleted #########################
-
+	
 	/**
 	 * Perform no sync, delta sync and full sync on modules. Intention is to get all modules to DataStatus "ContainsData".
 	 */
@@ -246,8 +242,7 @@ export class ModuleFE_SyncManager_Class
 			dispatch_OnPermissibleModulesUpdated.dispatchUI();
 	};
 
-	// ######################### Sync operations #########################
-
+	
 	private performSync = (data: NoNeedToSyncModule | DeltaSyncModule | FullSyncModule) => {
 		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
 		if (!rtModule)
@@ -411,8 +406,7 @@ export class ModuleFE_SyncManager_Class
 		removeItemFromArray(this.cancelledSyncs, syncId);
 	};
 
-	// ######################### Listening #########################
-
+	
 	public startListening() {
 		const nodePath = resolveContent(this.syncManagerNodePath);
 
@@ -480,8 +474,7 @@ export class ModuleFE_SyncManager_Class
 		return await this.debounceSyncImpl();
 	};
 
-	// ######################### setNodeContext #########################
-
+	
 	public setNodeContext = (nodeContextResolver: ResolvableContent<string>) => this.syncManagerNodePath = nodeContextResolver;
 
 	public setSmartSyncUrl = (baseUrlResolver: ResolvableContent<string | undefined>) => this.smartSyncApiUrl = baseUrlResolver;

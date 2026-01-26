@@ -26,8 +26,7 @@ export class ATS_IDBCacheComparison
 		modulesToAwait: () => this.getCollectionModules()
 	};
 
-	// ######################## Life Cycle ########################
-
+	
 	protected deriveStateFromProps(nextProps: {}, state?: State): State {
 		state ??= this.state ? {...this.state} : {} as State;
 		return state;

@@ -10,8 +10,7 @@ export class ModuleBE_AppConfigDB_Class
 
 	private keyMap: TypedMap<AppConfigKey_BE<any>> = {};
 
-	// ######################## Lifecycle ########################
-
+	
 	constructor() {
 		super(DBDef_AppConfig);
 	}
@@ -43,8 +42,7 @@ export class ModuleBE_AppConfigDB_Class
 		}
 	};
 
-	// ######################## API ########################
-
+	
 	getResolverDataByKey = async (key: string) => {
 		const appConfigKey = this.keyMap[key];
 		if (!appConfigKey)
@@ -53,8 +51,7 @@ export class ModuleBE_AppConfigDB_Class
 		return this.getAppKey(appConfigKey);
 	};
 
-	// ######################## Logic ########################
-
+	
 	registerKey<K extends AppConfigKey_BE<any>>(appConfigKey: K) {
 		this.keyMap[appConfigKey.key] = appConfigKey;
 	}

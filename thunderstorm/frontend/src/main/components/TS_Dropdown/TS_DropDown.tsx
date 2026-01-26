@@ -134,8 +134,7 @@ type EditableDropDownProps<ItemType, EditableType extends {} = any, ValueType ex
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
 
-	// ######################## Static ########################
-
+	
 	static readonly prepareEditable = <T, EditableType extends {} = any, ValueType extends EditableType[keyof EditableType] = EditableType[keyof EditableType]>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
 		return (props: EditableDropDownProps<T, EditableType, ValueType>) => <TS_DropDown<T>
 			{...resolveContent(mandatoryProps)} {...props}
@@ -178,8 +177,7 @@ export class TS_DropDown<ItemType>
 		renderSearch: TS_DropDown.defaultRenderSearch,
 	};
 
-	// ######################## Life Cycle ########################
-
+	
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
 	}
@@ -259,8 +257,7 @@ export class TS_DropDown<ItemType>
 		this.state.treeResizeObserver.observe(treeContainer);
 	}
 
-	// ######################## Logic ########################
-
+	
 	private getBoundingParent() {
 		if (!this.props.boundingParentSelector)
 			return undefined;
@@ -382,8 +379,7 @@ export class TS_DropDown<ItemType>
 		return rect.right - rect.left;
 	};
 
-	// ######################## Render ########################
-
+	
 	render() {
 		const className = _className(
 			'ts-dropdown',
@@ -533,8 +529,7 @@ export class TS_DropDown<ItemType>
 		return this.props.renderSearch!(this);
 	};
 
-	// ######################## To Remove ########################
-	// TODO: THIS IS ALL DUPLICATE SHIT... DELETE ONCE TREE CAN PROPAGATE THE KEYBOARD EVENTS
+		// TODO: THIS IS ALL DUPLICATE SHIT... DELETE ONCE TREE CAN PROPAGATE THE KEYBOARD EVENTS
 
 	private addKeyboardListener = () => {
 		const onKeyboardEventListener = this.inputKeyEventHandler;

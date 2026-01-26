@@ -107,8 +107,7 @@ class ModuleFE_Account_Class
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, defaultTabId!);
 	}
 
-	// ######################## Logic ########################
-
+	
 	getAccounts() {
 		return this.cache.all().map(i => cloneObj(i)) as UI_Account[];
 	}
@@ -195,8 +194,7 @@ class ModuleFE_Account_Class
 		return SessionKeyFE_Account.get();
 	};
 
-	// ######################## API Callbacks ########################
-
+	
 	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
 		await this.onEntriesUpdated([response as DB_Account]);
 	};

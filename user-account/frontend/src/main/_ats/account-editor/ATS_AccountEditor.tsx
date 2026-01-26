@@ -25,15 +25,13 @@ export class ATS_AccountEditor
 		modulesToAwait: [ModuleFE_Account]
 	};
 
-	// ######################### Life Cycle #########################
-
+	
 	protected deriveStateFromProps(nextProps: {}, state: State) {
 		state = this.state ? {...this.state} : {} as State;
 		return state;
 	}
 
-	// ######################### Logic #########################
-
+	
 	private setSelectedAccount = (account?: DB_Account) => {
 		if (!account)
 			this.setState({isPreview: false, selectedUser: undefined});

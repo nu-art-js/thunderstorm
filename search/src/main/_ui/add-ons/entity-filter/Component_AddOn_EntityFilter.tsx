@@ -17,16 +17,14 @@ export class Component_AddOn_EntityFilter
 
 	public addOn: SearchAddOn<AddOnDef_EntityFilter> = AddOn_EntityFilter;
 
-	// ######################### Life Cycle #########################
-
+	
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
 		state.label = nextProps.label ?? 'By Entity';
 		state.activeSearchItems = nextProps.context.getActiveSearchItems();
 		return state;
 	}
 
-	// ######################### Logic #########################
-
+	
 	private onItemSelected = (searchItem: SearchItem<any, any>) => {
 		const items = this.state.value ? [...this.state.value] : [];
 		items.push(searchItem.module.dbDef.dbKey);
@@ -38,8 +36,7 @@ export class Component_AddOn_EntityFilter
 		this.setValue(items);
 	};
 
-	// ######################### Render #########################
-
+	
 	render() {
 		if (!this.state.activeSearchItems)
 			return;

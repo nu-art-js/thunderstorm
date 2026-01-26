@@ -19,8 +19,7 @@ export class ATS_ActionProcessor
 
 	static screen: AppToolsScreen = {name: 'Refactoring Actions', key: 'refactoring-actions', renderer: this, group: ATS_Backend};
 
-	// ######################### Life Cycle #########################
-
+	
 	protected async deriveStateFromProps(nextProps: {}) {
 		const state: State = this.state ? {...this.state} : {} as State;
 		state.actions = await ModuleFE_ActionProcessor.vv1.list({}).executeSync();
@@ -28,8 +27,7 @@ export class ATS_ActionProcessor
 		return state;
 	}
 
-	// ######################### Logic #########################
-
+	
 	private onButtonClick = async (action: ActionMetaData) => {
 		return Dialog_ActionProcessorConfirmation.show(action, async () => {
 			await genericNotificationAction(async () => {
@@ -40,8 +38,7 @@ export class ATS_ActionProcessor
 		});
 	};
 
-	// ######################### Render #########################
-
+	
 	private renderButtons(actionGroup: ActionMetaData[]) {
 		return <LL_H_C className={'action-group__buttons'}>
 			{actionGroup.map(action => {

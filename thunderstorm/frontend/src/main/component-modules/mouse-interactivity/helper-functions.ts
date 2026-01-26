@@ -5,7 +5,6 @@ import {Coordinates, Model_Menu, Model_PopUp, Model_ToolTip, mouseInteractivity_
 import {generateHex, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {stopPropagation} from '../../utils/tools.js';
 
-// ######################### General Helpers #########################
 
 export const resolveRealPosition = (button: HTMLImageElement) => {
 	const pos = button.getBoundingClientRect();
@@ -83,7 +82,6 @@ export class MenuBuilder {
 	}
 }
 
-// ######################### Pop Up Helpers #########################
 type OpenPopUpParams = {
 	id: string,
 	content: ResolvableContent<React.ReactNode, [VoidFunction]>,
@@ -213,7 +211,6 @@ const OpenPopUpAtTopV2 = (props: OpenPopUpParams) => {
 	};
 };
 
-// ######################### Tool Tip Helpers #########################
 
 type ToolTipConfig = {
 	contentHoverDelay?: number,
@@ -350,7 +347,6 @@ const OpenToolTipCustom = (id: string, content: ResolvableContent<React.ReactNod
 	};
 };
 
-// ######################### Menu Helpers #########################
 
 const openMenuAtLeft = (e: React.MouseEvent, content: Adapter) => {
 	return new MenuBuilder(content, calculateCenterPosition(e.currentTarget), {x: -1, y: 0});

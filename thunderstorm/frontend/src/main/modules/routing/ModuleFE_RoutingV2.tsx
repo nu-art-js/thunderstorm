@@ -21,8 +21,7 @@ export const dispatch_onLocationChanged = new ThunderDispatcher<OnLocationChange
 class ModuleFE_RoutingV2_Class
 	extends Module<{}> {
 
-	// ######################## Inner Data ########################
-
+	
 	private routesMapByKey: {
 		[key: string]: {
 			route: TS_Route,
@@ -41,8 +40,7 @@ class ModuleFE_RoutingV2_Class
 		});
 	}
 
-	// ######################## Public Functions ########################
-
+	
 	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>, hash?: string) {
 		const fullPath = this.getFullPath(route.key);
 		try {
@@ -201,8 +199,7 @@ class ModuleFE_RoutingV2_Class
 		return this.routesMapByPath[window.location.pathname];
 	}
 
-	// ######################## Query Param Methods ########################
-
+	
 	/**
 	 * Get all query parameters from the current URL (decoded)
 	 */
@@ -263,8 +260,7 @@ class ModuleFE_RoutingV2_Class
 		this.updateQueryParams(encodedQueryParams);
 	}
 
-	// ######################## URL Utility Methods ########################
-
+	
 	/**
 	 * Get the current location object (compatible with BrowserHistory.getCurrent())
 	 * @returns Object with pathname and search properties
@@ -293,8 +289,7 @@ class ModuleFE_RoutingV2_Class
 		return window.location.origin;
 	}
 
-	// ######################## Navigation Methods ########################
-
+	
 	/**
 	 * Convert location descriptor to URL string using composeUrl
 	 */
@@ -331,8 +326,7 @@ class ModuleFE_RoutingV2_Class
 		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 	}
 
-	// ######################## Private Helper Methods ########################
-
+	
 	private getEncodedQueryParams(): UrlQueryParams {
 		const queryParams: UrlQueryParams = {};
 		let queryAsString = window.location.search;
@@ -417,7 +411,6 @@ export const TS_NavLink = (props: {
 
 export const ModuleFE_RoutingV2 = new ModuleFE_RoutingV2_Class();
 
-// ######################## Utility Functions ########################
 
 /**
  * Encode URL query parameters

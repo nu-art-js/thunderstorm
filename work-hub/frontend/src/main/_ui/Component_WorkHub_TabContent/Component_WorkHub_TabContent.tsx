@@ -23,8 +23,7 @@ export class Component_WorkHub_TabContent
 
 	private ref = createRef<HTMLDivElement>();
 
-	// ######################## Life Cycle ########################
-
+	
 	__onWorkHubTabsUpdated = () => {
 		this.reDeriveState();
 	};
@@ -47,8 +46,7 @@ export class Component_WorkHub_TabContent
 		this.ref.current?.focus();
 	}
 
-	// ######################## Render ########################
-
+	
 	render() {
 		if (this.state.item.modulesToAwait?.length)
 			return this.renderAsync();

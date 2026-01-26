@@ -28,8 +28,7 @@ type State<ItemType> = {
 export class TS_Radio<ItemType>
 	extends ComponentSync<Props<ItemType>, State<ItemType>> {
 
-	// ######################### Life Cycle #########################
-
+	
 	protected deriveStateFromProps(nextProps: Props<ItemType>): State<ItemType> {
 		return {
 			values: nextProps.values,
@@ -39,8 +38,7 @@ export class TS_Radio<ItemType>
 		};
 	}
 
-	// ######################### Logic #########################
-
+	
 	private handleOptionClick = (e: React.MouseEvent<HTMLLabelElement, MouseEvent>, value: ItemType) => {
 		stopPropagation(e);
 		if (this.state.disabled)
@@ -56,8 +54,7 @@ export class TS_Radio<ItemType>
 		this.setState({checked: nextValue});
 	};
 
-	// ######################### Render #########################
-
+	
 	private renderRadioOption = (value: ItemType) => {
 		const className = _className('ts-radio__container', (value === this.state.checked ? 'checked' : ''));
 		return <label

@@ -32,8 +32,7 @@ class Component_AccountThumbnail_Impl
 	extends ComponentSync<Props, State>
 	implements OnAccountsUpdated {
 
-	// ######################### Lifecycle #########################
-
+	
 	shouldReDeriveState() {
 		return true;
 	}
@@ -52,8 +51,7 @@ class Component_AccountThumbnail_Impl
 		return state;
 	}
 
-	// ######################### Logic #########################
-
+	
 	private generateThumbnailAcronym(account: DB_Account) {
 		const accountAcronym = account.displayName ? account.displayName.substring(0, 2).toUpperCase() : account.email.substring(0, 2).toUpperCase();
 		if (!this.props.acronymComposer)
@@ -69,8 +67,7 @@ class Component_AccountThumbnail_Impl
 		this.props.onClick(e, cloneObj(this.state.account));
 	};
 
-	// ######################### Render #########################
-
+	
 	render() {
 		const className = _className('user-thumbnail', this.props.onClick && 'clickable');
 		return <TS_ErrorBoundary>
