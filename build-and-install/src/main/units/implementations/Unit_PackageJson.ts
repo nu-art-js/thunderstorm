@@ -86,14 +86,14 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	 * **Template Params**: Includes THUNDERSTORM_VERSION, __ENV__, and child unit versions.
 	 */
 	async prepare(): Promise<void> {
-		await this.sharedPrepare();
+		await this._sharedPrepare();
 	}
 
 	async watchPrepare(): Promise<void> {
-		await this.sharedPrepare();
+		await this._sharedPrepare();
 	}
 
-	protected async sharedPrepare() {
+	private async _sharedPrepare() {
 		const targetPath = resolve(this.config.fullPath, CONST_PackageJSON);
 		const params = this.deriveLibDependencies();
 		const packageJson = FileSystemUtils.file.template.transform(__stringify(this.config.packageJson, true), params);
