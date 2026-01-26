@@ -118,13 +118,13 @@ export class UnitMapper_FirebaseFunction_Class
 		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
 		const envUnitConfig = context.packageJson.unitConfig.envs[env];
 		if (!envUnitConfig)
-			throw new ImplementationMissingException(`Missing configuration for env: ${env}`);
+			this.logWarning('Package Json config:', context.packageJson.unitConfig);
 
 		const envConfig = {
-			defaultConfig: envUnitConfig.defaultConfig,
-			envConfig: envUnitConfig.envConfig,
-			projectId: envUnitConfig.projectId,
-			isLocal: envUnitConfig.isLocal ?? env === 'local'
+			defaultConfig: envUnitConfig?.defaultConfig,
+			envConfig: envUnitConfig?.envConfig,
+			projectId: envUnitConfig?.projectId,
+			isLocal: envUnitConfig?.isLocal ?? env === 'local'
 		};
 
 		const {type, ...unitConfig} = context.packageJson.unitConfig;
