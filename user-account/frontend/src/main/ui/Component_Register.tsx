@@ -81,8 +81,7 @@ const form: Form<AccountEmail & PasswordWithCheck> = {
 export class Component_Register
 	extends ComponentSync<Props<Request_RegisterAccount>, State<Request_RegisterAccount>> {
 
-	// ######################### Lifecycle #########################
-
+	
 	protected deriveStateFromProps(nextProps: Props<Request_RegisterAccount>, state: State<Request_RegisterAccount>) {
 		state.data ??= {};
 		state.renderPasswordRules = nextProps.renderPasswordRules ?? false;
@@ -93,8 +92,7 @@ export class Component_Register
 		return state;
 	}
 
-	// ######################### Logic #########################
-
+	
 	private getPasswordRuleText = (key: PasswordAssertionType) => {
 		const amount = this.state.passwordAssertionConfig?.[key]!;
 		switch (key) {
@@ -177,8 +175,7 @@ export class Component_Register
 		}
 	};
 
-	// ######################### Render #########################
-
+	
 	render() {
 		const data = this.state.data;
 		return <LL_V_C className="ts-account__authenticate">

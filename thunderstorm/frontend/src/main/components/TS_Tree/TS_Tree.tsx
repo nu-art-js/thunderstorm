@@ -73,8 +73,7 @@ const ignoreToggler = (): void => {
 export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = State_Tree>
 	extends ComponentSync<P, State_Tree> {
 
-	// ######################## Static ########################
-
+	
 	static defaultProps: Partial<Props_Tree> = {
 		checkExpanded: (expanded: TreeNodeExpandState, path: string) => expanded[path]
 	};
@@ -82,8 +81,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	protected containerRefs: { [k: string]: HTMLDivElement } = {};
 	protected rendererRefs: { [k: string]: HTMLDivElement } = {};
 
-	// ######################## Life Cycle ########################
-
+	
 	constructor(props: P) {
 		super(props);
 	}
@@ -126,8 +124,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		}
 	}
 
-	// ######################## Logic ########################
-
+	
 	private onNodeClicked = (e: React.MouseEvent) => {
 		const path = e.currentTarget.getAttribute('data-path');
 		if (!path)
@@ -219,8 +216,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		return currentTarget.getAttribute('data-path') || '';
 	}
 
-	// ######################## Render ########################
-
+	
 	private renderNode = (_data: any, key: string, _path: string, level: number) => {
 		const nodePath = `${_path}${key}/`;
 		const adjustedNode = this.state.adapter.adjust(_data);

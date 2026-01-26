@@ -26,8 +26,7 @@ export class Label
     private readonly activeTooltipClass = 'tooltip-active';
     private readonly invertTooltipClass = 'invert-tooltip';
 
-    // ######################## Life Cycle ########################
-
+    
     __onWindowResized() {
         this.checkOverflow();
     }
@@ -47,8 +46,7 @@ export class Label
         this.checkOverflow();
     }
 
-    // ######################## Logic ########################
-
+    
     private checkOverflow = () => {
         const el = this.labelRef.current;
         if (!el)
@@ -109,8 +107,7 @@ export class Label
         }
     }
 
-    // ######################## Render ########################
-
+    
     render() {
         return <div {...this.getProps()}>
             <div className={'ts-label__content'}>{this.props.children}</div>

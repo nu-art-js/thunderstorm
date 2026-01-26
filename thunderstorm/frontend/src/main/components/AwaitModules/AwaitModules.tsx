@@ -41,8 +41,7 @@ export class AwaitModules
 	extends ComponentSync<Props, State>
 	implements OnSyncStatusChangedListener<any>, QueryAwaitedModules {
 
-	// ######################### Life Cycle #########################
-
+	
 	__onSyncStatusChanged(module: ModuleFE_BaseDB<any, any>): void {
 		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
 		if (this.state.validModules.includes(module))
@@ -85,8 +84,7 @@ export class AwaitModules
 		return state;
 	}
 
-	// ######################### Logic #########################
-
+	
 	protected getUnpreparedModules(): (ModuleFE_BaseDB<any>)[] {
 		return this.state.validModules.filter(module => !this.state.readyModules.includes(module));
 	}
@@ -99,8 +97,7 @@ export class AwaitModules
 		return this.state.validModules.filter(module => module.syncType === ModuleSyncType.APISync && !permissibleModules.includes(module.dbDef.dbKey));
 	};
 
-	// ######################### Render #########################
-
+	
 	protected renderMissingPermissions = () => {
 		const missingPermissionModules = this.getMissingPermissionModules();
 		if (this.props.customMissingPermissionsRenderer)

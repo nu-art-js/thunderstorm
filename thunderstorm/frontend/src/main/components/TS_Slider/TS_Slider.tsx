@@ -27,16 +27,14 @@ type State = {
 export class TS_Slider
 	extends ComponentSync<Props, State> {
 
-	// ######################### Life Cycle #########################
-
+	
 	protected deriveStateFromProps(nextProps: Props): State {
 		return {
 			value: nextProps.value === undefined ? this.getValue() : nextProps.value
 		};
 	}
 
-	// ######################### Logic #########################
-
+	
 	private getValue() {
 		return this.state?.value ?? this.props.startValue ?? (this.props.min + this.props.max) / 2;
 	}
@@ -58,8 +56,7 @@ export class TS_Slider
 		return (((this.state.value ?? this.props.min) - this.props.min) * 100) / (this.props.max - this.props.min);
 	};
 
-	// ######################### Render #########################
-
+	
 	private renderCurrentValue() {
 		return <input
 			className={'ts-slider__current-value'}

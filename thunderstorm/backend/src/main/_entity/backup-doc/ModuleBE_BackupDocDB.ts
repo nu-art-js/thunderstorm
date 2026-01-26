@@ -158,8 +158,7 @@ export class ModuleBE_BackupDocDB_Class
 			.executeSync()) as Readable;
 	};
 
-	// ##################### Collection Interaction #####################
-
+	
 	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
 		return await this.collection.query.custom(ourQuery);
 	};
@@ -176,8 +175,7 @@ export class ModuleBE_BackupDocDB_Class
 		return await this.collection.delete.unique(instance._id);
 	};
 
-	// ##################### Backup Actions #####################
-
+	
 	private getDefaultPath = () => {
 		const nowMs = currentTimeMillis();
 		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
@@ -322,8 +320,7 @@ export class ModuleBE_BackupDocDB_Class
 		return stream.pipe(transformer);
 	};
 
-	// ##################### BackupDoc Fetching #####################
-
+	
 	/**
 	 * @param body - needs to contain backupId with the key to fetch.
 	 */
@@ -384,8 +381,7 @@ class DBModuleReader
 		this.metadata = {collectionsData: [], timestamp: currentTimeMillis()};
 	}
 
-	// ##################### Metadata #####################
-
+	
 	public getMetadata = () => cloneObj(this.metadata);
 
 	private updateMetadata = (module: DBModules, items: any[]) => {
@@ -400,8 +396,7 @@ class DBModuleReader
 		collectionData.numOfDocs += items.length;
 	};
 
-	// ##################### Logic #####################
-
+	
 	private getItems = async () => {
 		if (this.done)
 			return;

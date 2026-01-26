@@ -38,8 +38,7 @@ type State = {
 class TS_EditableText_Base
 	extends ComponentSync<Props, State> {
 
-	// ######################## Life Cycle ########################
-
+	
 	protected deriveStateFromProps(nextProps: Props) {
 		const state = {...this.state} as State;
 		state.original = nextProps.text;
@@ -49,8 +48,7 @@ class TS_EditableText_Base
 		return state;
 	}
 
-	// ######################## Logic ########################
-
+	
 	protected onEnableEdit = () => {
 		if (this.props.disableEdit || this.props.editMode !== undefined)
 			return;
@@ -103,8 +101,7 @@ class TS_EditableText_Base
 		this.onCancelChanges();
 	};
 
-	// ######################## Render ########################
-
+	
 	protected renderText = () => {
 		const textToShow = this.props.shownText ?? this.state.original;
 		return <div

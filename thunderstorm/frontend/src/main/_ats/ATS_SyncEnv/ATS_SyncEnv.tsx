@@ -71,8 +71,7 @@ export class ATS_SyncEnvironment
 		group: ATS_Fullstack
 	};
 
-	// ######################## Life Cycle ########################
-
+	
 	protected deriveStateFromProps(nextProps: {}, state: State) {
 		//Set Initials
 		state.selectedModules ??= new Set<string>();
@@ -97,8 +96,7 @@ export class ATS_SyncEnvironment
 		return state;
 	}
 
-	// ######################## Logic ########################
-
+	
 	private fetchMetadata = async () => {
 		if (!this.state.backupId?.length)
 			return;
@@ -183,8 +181,7 @@ export class ATS_SyncEnvironment
 		return this.state.selectedModules.size === _keys(this.state.moduleList).length;
 	};
 
-	// ######################## Set Data
-
+	
 	private setBackupId = (id: string) => {
 		this.setState({backupId: id}, () => {
 			if (!id)
@@ -233,8 +230,7 @@ export class ATS_SyncEnvironment
 		this.forceUpdate();
 	};
 
-	// ######################## Render ########################
-
+	
 	render() {
 		return <LL_V_L className={'sync-env-page'}>
 			{this.renderHeader()}

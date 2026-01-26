@@ -148,8 +148,7 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 		};
 	};
 
-	// ######################### Data insertion functions #########################
-
+	
 	public async insert(value: Proto['dbType'], _store?: IDBObjectStore): Promise<Proto['dbType']> {
 		const store = await this.store(true, _store);
 		const request = store.add(value);
@@ -188,8 +187,7 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 		}
 	}
 
-	// ######################### Data collection functions #########################
-
+	
 	public async get(key: IndexKeys<Proto['dbType'], keyof Proto['dbType']>): Promise<Proto['dbType'] | undefined> {
 		const map = this.config.uniqueKeys.map(k => key[k]);
 		const request = (await this.store()).get(map as IDBValidKey);
@@ -299,8 +297,7 @@ export class IndexedDBV3<Proto extends DBProto<any>> {
 		});
 	}
 
-	// ######################### Data deletion functions #########################
-
+	
 	public async clearDB(): Promise<void> {
 		const store = await this.store(true);
 		return new Promise((resolve, reject) => {

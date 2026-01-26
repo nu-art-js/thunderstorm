@@ -31,8 +31,7 @@ export class ModuleBE_FocusedObject_Class
 		]);
 	}
 
-	// ######################## Callbacks ########################
-
+	
 	private updateFocusData = async (request: FocusedItem_Update['request']) => {
 		const tabId = Header_TabId.get();
 		const oldFocusMap = await this.getFocusMap();
@@ -64,8 +63,7 @@ export class ModuleBE_FocusedObject_Class
 		await this.setFocusMap(newFocusMap);
 	};
 
-	// ######################## Logic ########################
-
+	
 	private getFocusMap = async () => {
 		const ref = ModuleBE_Firebase.createAdminSession().getDatabase().ref<FocusData_Map>(getRelationalPath());
 		return await ref.get({});
@@ -151,8 +149,7 @@ export class ModuleBE_FocusedObject_Class
 		});
 	};
 
-	// ######################## Logic - Process Nodes ########################
-
+	
 	private processNodes = <T extends NodeProcessorResolution>(map: FocusData_Map, resolution: T, processor: NodeProcessor[T]): boolean => {
 		return flatArray(
 			_keys(map).map(dbKey => { //For every dbKey

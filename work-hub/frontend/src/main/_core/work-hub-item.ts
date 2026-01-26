@@ -18,8 +18,7 @@ export class WorkHubItem<Args extends any = void>
 	private tabTag: string | undefined;
 	private customMenuActionsResolver: MenuResolver;
 
-	// ######################## Builder ########################
-
+	
 	constructor(key: string) {
 		super(`WorkHubItem_${key}`);
 		this.key = key;
@@ -48,8 +47,7 @@ export class WorkHubItem<Args extends any = void>
 		return this;
 	};
 
-	// ######################## Public Methods ########################
-
+	
 	public openTab = (id: string, label: string, args: Args) => {
 		ModuleFE_WorkHub.tabs.add(this.prepareTab(id, label, args));
 	};

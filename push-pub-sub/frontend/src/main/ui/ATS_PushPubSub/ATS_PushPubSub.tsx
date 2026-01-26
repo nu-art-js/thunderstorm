@@ -61,8 +61,7 @@ export class ATS_PushPubSub
 	extends ComponentSync<Props, State>
 	implements OnPushMessageReceived {
 
-	// ######################## Static ########################
-
+	
 	static screen: AppToolsScreen = {
 		name: `Push Messages`,
 		renderer: this,
@@ -70,8 +69,7 @@ export class ATS_PushPubSub
 		modulesToAwait: [ModuleFE_PushSubscription]
 	};
 
-	// ######################## Lifecycle ########################
-
+	
 	__onSubscriptionUpdated(...params: ApiCallerEventType<DBProto_PushSubscription>): void {
 		this.forceUpdate();
 	}
@@ -86,8 +84,7 @@ export class ATS_PushPubSub
 		return {...state, ...ConfigPreset_1.config, receivedPushPayloads: []};
 	}
 
-	// ######################## Logic ########################
-
+	
 	private composeFilter(objProps: ObjProps[]) {
 		return objProps.reduce((toRet, item) => {
 			if (!!item.key && item.key !== '')
@@ -118,8 +115,7 @@ export class ATS_PushPubSub
 		}).executeSync();
 	};
 
-	// ######################## Render ########################
-
+	
 	render() {
 		const className = _className('notification-icon', ModuleFE_PushPubSub.isNotificationEnabled() ? 'notification-enabled' : 'notification-disabled',);
 		const mySubscription = ModuleFE_PushSubscription.cache.all()

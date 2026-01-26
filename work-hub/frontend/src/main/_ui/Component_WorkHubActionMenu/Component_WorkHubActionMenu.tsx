@@ -24,8 +24,7 @@ type Props = {
 export class Component_WorkHubActionMenu
 	extends ComponentSync<Props> {
 
-	// ######################## Static ########################
-
+	
 	static show = (e: MouseEvent<HTMLDivElement>, props: Props) => {
 		const model: Model_PopUp = {
 			id: 'work-hub-action-menu',
@@ -36,8 +35,7 @@ export class Component_WorkHubActionMenu
 		ModuleFE_MouseInteractivity.showContent(model);
 	};
 
-	// ######################## Logic ########################
-
+	
 	private generateGeneralSection = (): WorkHubItem_MenuSection => {
 		const currentGroupKey = ModuleFE_WorkHub.group.getKeyForTabId(this.props.tabId);
 		const availableGroups = ModuleFE_WorkHub.tabs.get().filter(i => isWorkHubTabGroup(i) && i.groupKey !== currentGroupKey) as WorkHubTabGroup[];
@@ -77,8 +75,7 @@ export class Component_WorkHubActionMenu
 		ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
 	};
 
-	// ######################## Render ########################
-
+	
 	render() {
 		const sections = this.getSections();
 		return sections.map(this.render_Section);

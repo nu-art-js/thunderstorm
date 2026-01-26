@@ -88,8 +88,7 @@ export class UrlState<Def extends ProtoComponentDef<any, any>>
 		ModuleFE_BrowserHistoryV2.delete(key);
 	}
 
-	// ######################## Multiples
-
+	
 	/**
 	 * Will merge the given query object into the URL.
 	 * @param query

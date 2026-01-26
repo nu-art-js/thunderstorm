@@ -27,16 +27,10 @@
   },
   "dependencies": {
     "@nu-art/db-api-shared": "?",
-    "@nu-art/firebase-frontend": "?",
-    "@nu-art/firebase-shared": "?",
     "@nu-art/http-client": "?",
-    "@nu-art/ts-common": "?",
-    "@nu-art/ts-styles": "?",
-    "firebase": "?",
-    "react": "?"
-  },
-  "devDependencies": {
-    "@types/react": "?"
+    "@nu-art/idb-frontend": "?",
+    "@nu-art/idb-shared": "?",
+    "@nu-art/ts-common": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

@@ -177,8 +177,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			manipulateQuery: this.manipulateQuery.bind(this)
 		});
 
-		// ############################## API ##############################
-		this.runTransaction = this.collection.runTransaction;
+				this.runTransaction = this.collection.runTransaction;
 		type Callable = {
 			[K: string]: ((p: any) => Promise<any> | any) | Callable
 		}

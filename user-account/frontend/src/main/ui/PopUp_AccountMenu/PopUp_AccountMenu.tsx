@@ -58,8 +58,7 @@ export type PopUp_AccountMenu_Action = {
 export class PopUp_AccountMenu
 	extends ComponentSync<Props, State> {
 
-	// ######################### Static #########################
-
+	
 	static show(e: React.MouseEvent, props: Props, modalProps?: ModalProps) {
 		ModuleFE_MouseInteractivity.showContent({
 			id: 'pop-up__account-menu',
@@ -90,8 +89,7 @@ export class PopUp_AccountMenu
 		menuActions: [PopUp_AccountMenu.Action_AppToolsButton('/app-tools'), PopUp_AccountMenu.Action_EditPassword]
 	};
 
-	// ######################### Life Cycle #########################
-
+	
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
 		state.account = ModuleFE_Account.cache.unique(nextProps.accountId);
 		if (!state.account)
@@ -109,8 +107,7 @@ export class PopUp_AccountMenu
 		return state;
 	}
 
-	// ######################### Logic #########################
-
+	
 	private closePopUp = () => {
 		ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
 	};
@@ -144,8 +141,7 @@ export class PopUp_AccountMenu
 		this.setState({pageKey: undefined});
 	};
 
-	// ######################### Render #########################
-
+	
 	render() {
 		return <TS_ErrorBoundary>
 			{this.renderNoAccount()}
@@ -177,8 +173,7 @@ export class PopUp_AccountMenu
 		return <span className={'account-menu__separator'} style={style}/>;
 	};
 
-	// ######################### Render - Account Parts #########################
-
+	
 	private renderHeader = () => {
 		const account = this.state.account;
 		if (!account)
@@ -228,8 +223,7 @@ export class PopUp_AccountMenu
 		</>;
 	};
 
-	// ######################### Render - Custom Page #########################
-
+	
 	private renderCustomPage = () => {
 		const pageKey = this.state.pageKey;
 		const account = this.state.account;

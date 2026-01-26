@@ -5,14 +5,12 @@ import {__stringify, currentTimeMillis, formatTimestamp, generateHex} from '@nu-
 export class SlackBuilderBE
 	extends BaseSlackBuilder {
 
-	// ######################## Builder Steps ########################
-
+	
 	constructor(channel?: string, blocks?: SlackBlock[], replies?: SlackBlock[][]) {
 		super(channel, blocks, replies);
 	}
 
-	// ######################## Internal Logic ########################
-
+	
 	private convertLongSectionBlocks = () => {
 		const convertBlock = (block: SlackBlock) => {
 			if (block.type !== 'section')

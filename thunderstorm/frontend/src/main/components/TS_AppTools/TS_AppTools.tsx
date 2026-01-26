@@ -52,8 +52,7 @@ type State = CollapseState;
 export class TS_AppTools
 	extends React.Component<{}, State> {
 
-	// ######################### Static #########################
-
+	
 	static Route: TS_Route;
 	static screens: AppToolsScreen[];
 	static headerTail?: () => React.ReactNode;
@@ -86,8 +85,7 @@ export class TS_AppTools
 		return <div className={'app-tools-page__page__header'}>{title}</div>;
 	}
 
-	// ######################### Life Cycle #########################
-
+	
 	constructor(props: {}) {
 		super(props);
 		const collapse = collapseStateStorage.get();
@@ -101,8 +99,7 @@ export class TS_AppTools
 		TS_AppTools.onMountCallback?.();
 	}
 
-	// ######################### Logic #########################
-
+	
 	private toggleGroupCollapse = (key: string) => {
 		const collapse = {...this.state};
 		collapse.groups[key] = !collapse.groups[key];
@@ -145,8 +142,7 @@ export class TS_AppTools
 		return groups;
 	};
 
-	// ######################### Render #########################
-
+	
 	render() {
 		return <LL_V_L className={'ts-app-tools'}>
 			{this.renderHeader()}

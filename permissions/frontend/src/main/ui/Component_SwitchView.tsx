@@ -23,16 +23,14 @@ type State = {
 export class Component_SwitchView
 	extends ComponentSync<Props, State> {
 
-	// ######################## Lifecycle ########################
-
+	
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.mode = nextProps.mode;
 		state.modes = nextProps.modes;
 		return state;
 	}
 
-	// ######################## Logic ########################
-
+	
 	private getModeForKey = (key: string): Mode => {
 		const mode = this.state.modes.find(mode => mode.key === key);
 		if (!mode)
@@ -40,8 +38,7 @@ export class Component_SwitchView
 		return mode;
 	};
 
-	// ######################## Render ########################
-
+	
 	render() {
 		const mode = this.getModeForKey(this.state.mode);
 		if (!mode.permissionKey)

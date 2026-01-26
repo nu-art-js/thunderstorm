@@ -7,8 +7,7 @@ const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB
 class ModuleFE_StorageCleaner_Class
 	extends Module {
 
-	// ######################## Public Functions ########################
-
+	
 	public cleanLocalStorage = (storageKeys?: StorageKey[]): void => {
 		if (!storageKeys?.length) {
 			this.logInfo('Clearing all local-storage');
@@ -85,8 +84,7 @@ class ModuleFE_StorageCleaner_Class
 		}
 	};
 
-	// ######################## Internal Logic ########################
-
+	
 	private cleanIDBImpl = async (info: IDBDatabaseInfo) => {
 		return new Promise<void>((resolve, reject) => {
 			if (!info.name) {

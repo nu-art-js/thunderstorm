@@ -18,8 +18,7 @@ type State = {
 export class Component_CollectionGrid
 	extends ComponentSync<Props, State> {
 
-	// ######################## Life Cycle ########################
-
+	
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.modules = nextProps.modules;
 		state.cacheCountMap ??= {};
@@ -38,8 +37,7 @@ export class Component_CollectionGrid
 			this.refreshCountMaps();
 	}
 
-	// ######################## Logic ########################
-
+	
 	private refreshCountMaps = async () => {
 		const idbCountMap: TypedMap<number> = {};
 		const cacheCountMap: TypedMap<number> = {};
@@ -70,8 +68,7 @@ export class Component_CollectionGrid
 		});
 	};
 
-	// ######################## Render ########################
-
+	
 	render() {
 		const dbKeys = this.getSortedDBKeys();
 		return <Grid className={'collections-grid'} onClick={() => this.refreshCountMaps()}>

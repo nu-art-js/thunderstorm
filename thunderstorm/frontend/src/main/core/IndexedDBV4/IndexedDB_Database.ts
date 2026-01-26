@@ -23,16 +23,14 @@ export class IndexedDB_Database
 	private openPromise?: Promise<IndexedDB_Database>;
 	private registeredStores: RegisteredStore[] = [];
 
-	// ######################## Init ########################
-
+	
 	constructor(dbName: string) {
 		super(`IDB_Database-${dbName}`);
 		this.setMinLevel(LogLevel.Info);
 		this.dbName = dbName;
 	}
 
-	// ######################## DB Interaction ########################
-
+	
 	clearDB = async () => {
 		const t0 = performance.now?.() ?? Date.now();
 		this.logInfo(`[CLEAR] Requested clear for DB="${this.dbName}"`);
@@ -66,8 +64,7 @@ export class IndexedDB_Database
 		});
 	};
 
-	// ######################## Store Interaction ########################
-
+	
 	registerStore = (dbConfig: DBConfigV3<any>, onDBOpenCallback?: AsyncVoidFunction) => {
 		const registeredStore: RegisteredStore = {config: dbConfig, onDBOpenCallback};
 		(this.registeredStores || (this.registeredStores = [])).push(registeredStore);
@@ -281,8 +278,7 @@ export class IndexedDB_Database
 		this.logInfo(`[${tag}] onDBOpen: All callbacks completed`, `Completion Time: ${Math.round(allDt)}ms`);
 	};
 
-	// ######################## Version Control ########################
-
+	
 	private getCurrentVersionData = (): VersionData | undefined => {
 		const storage = new StorageKey<VersionData>(`idb-version-data__${this.dbName}`);
 		const data = storage.get();

@@ -20,15 +20,13 @@ export class TS_Notifications
 	extends ComponentSync<{}, State>
 	implements NotificationListener {
 
-	// ######################### Static #########################
-
+	
 	private overlayClass: string = 'ts-notification-overlay';
 	private containerClass: string = 'ts-notification-container';
 	private transitionTimeout: number = 300;
 	private timeout: NodeJS.Timeout | undefined = undefined;
 
-	// ######################### Life Cycle #########################
-
+	
 	__showNotifications(notifications: DB_Notification[]) {
 		if (notifications.length === 0) { //If there are no notifications to show
 			//Transition notifications out
@@ -53,8 +51,7 @@ export class TS_Notifications
 		};
 	}
 
-	// ######################### Logic #########################
-
+	
 	private onClickToClose = (e: React.MouseEvent, eventType: 'click' | 'contextmenu') => {
 		ModuleFE_Notifications.hideAllNotifications();
 		const elements = document.elementsFromPoint(e.clientX, e.clientY);
@@ -98,8 +95,7 @@ export class TS_Notifications
 		stopPropagation(e);
 	};
 
-	// ######################### Render #########################
-
+	
 	private renderNotification(notification: DB_Notification) {
 		return <LL_V_L className={`ts-notification ts-notification__${notification.status}`} key={notification._id}
 					   onClick={e => this.onNotificationClick(e, notification)}>

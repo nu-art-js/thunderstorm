@@ -147,8 +147,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		};
 	};
 
-	// ######################### Data insertion functions #########################
-
+	
 	public async insert(value: T, _store?: IDBObjectStore): Promise<T> {
 		const store = await this.store(true, _store);
 		const request = store.add(value);
@@ -187,8 +186,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		}
 	}
 
-	// ######################### Data collection functions #########################
-
+	
 	public async get(key: IndexKeys<T, Ks>): Promise<T | undefined> {
 		const map = this.config.uniqueKeys.map(k => key[k]);
 		const request = (await this.store()).get(map as IDBValidKey);
@@ -298,8 +296,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		});
 	}
 
-	// ######################### Data deletion functions #########################
-
+	
 	public async clearDB(): Promise<void> {
 		const store = await this.store(true);
 		return new Promise((resolve, reject) => {
