@@ -5,6 +5,7 @@ import {
 	_keys,
 	ApiException,
 	asOptionalArray,
+	batchAction,
 	batchActionParallel,
 	DB_BaseObject,
 	dbObjectToId,
@@ -43,7 +44,7 @@ export class ModuleBE_PermissionUserDB_Class
 
 	__performProjectSetup() {
 		return {
-			priority: 4,
+			priority: 200,
 			processor: async () => {
 				const accounts = await ModuleBE_AccountDB.query.where({});
 				const permissionsUser = await this.query.all(accounts.map(dbObjectToId));
@@ -289,7 +290,12 @@ export class ModuleBE_PermissionUserDB_Class
 			return isExpired ? undefined : session;
 		})));
 		//TODO END
-		await this.runTransaction(async (t) => Promise.all(validSessions.map(session => ModuleBE_SessionDB._session.rotate.reissue.bySession(session, t))));
+		this.logWarning(`#### Rotating ${validSessions.length} Sessions! ####`);
+		await batchAction(validSessions, 500, async sessions => {
+			await this.runTransaction(async t => {
+				await Promise.all(sessions.map(session => ModuleBE_SessionDB._session.rotate.reissue.bySession(session, t)));
+			});
+		});
 	}
 }
 
