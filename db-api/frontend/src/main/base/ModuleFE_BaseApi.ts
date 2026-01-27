@@ -5,9 +5,9 @@
  */
 
 import {ModuleFE_BaseDB, ModuleSyncType} from './ModuleFE_BaseDB.js';
-import {EventDispatcher, NoOpDispatcher} from '../to-refactor/index.js';
 import {ApiCallContext} from '../decorators/types.js';
 import {ModuleTypes, BaseDBConfig} from './types.js';
+import {EventDispatcher, NoOpDispatcher} from '../to-refactor/dispatcher.js';
 
 
 /**
