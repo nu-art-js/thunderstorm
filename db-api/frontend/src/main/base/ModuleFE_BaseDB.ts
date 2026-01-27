@@ -6,23 +6,19 @@
 
 import {
 	_keys,
-	BadImplementationException,
 	deleteKeysObject,
 	exists,
 	filterDuplicates,
 	InvalidResult,
 	lastElement,
-	Logger,
+	Module,
 	tsValidateResult,
 	ValidationException,
 	voidFunction
 } from '@nu-art/ts-common';
+import {getDatabase, IDB_Store} from '@nu-art/idb-frontend';
 import {
 	DataStatus,
-	DB_Object,
-	DBDef_V3,
-	DBProto,
-	EventDispatcher,
 	EventType_Create,
 	EventType_Delete,
 	EventType_DeleteMulti,
@@ -31,15 +27,29 @@ import {
 	EventType_Unique,
 	EventType_Update,
 	EventType_UpsertAll,
-	getModuleFEConfig,
-	KeysOfDB_Object,
 	MultiApiEvent,
-	NoOpDispatcher,
 	SingleApiEvent
-} from '../to-refactor/index.js';
-import {IDBCache} from '../cache/IDBCache.js';
+} from '../to-refactor/consts.js';
+import {DB_Object, DBConfig, KeysOfDB_Object} from '../to-refactor/db-types.js';
+import {EventDispatcher, NoOpDispatcher} from '../to-refactor/dispatcher.js';
 import {MemCache} from '../cache/MemCache.js';
-import {DBApiFEConfig} from '../to-refactor/db-types.js';
+import {BaseDBConfig, ModuleTypes} from './types.js';
+
+
+/**
+ * Converts DBConfig (db-api shape) to StoreConfig (idb-frontend shape).
+ */
+function dbConfigToStoreConfig<ItemType extends object>(dbConfig: DBConfig<ItemType>): {
+	name: string;
+	uniqueKeys: (keyof ItemType)[];
+	autoIncrement?: boolean;
+} {
+	return {
+		name: dbConfig.name,
+		uniqueKeys: dbConfig.uniqueKeys,
+		autoIncrement: dbConfig.autoIncrement
+	};
+}
 
 
 /**
@@ -61,67 +71,88 @@ export enum ModuleSyncType {
  * - Version upgrade processing
  * - Validation
  *
- * @template Proto - Database prototype type
+ * @template Types - ModuleTypes that define the entity types (decoupled from Proto)
  */
-export abstract class BaseDB<Proto extends DBProto<any>>
-	extends Logger {
+export class ModuleFE_BaseDB<Types extends ModuleTypes>
+	extends Module {
 
-	readonly validator: Proto['modifiablePropsValidator'];
-	readonly cache: MemCache<Proto>;
-	readonly IDB: IDBCache<Proto>;
-	readonly dbDef: DBDef_V3<Proto>;
-	readonly config: DBApiFEConfig<Proto>;
+	readonly validator: Types['validator'];
+	readonly cache: MemCache<Types['dbItem'], Types['uniqueKeys']>;
+	readonly config: BaseDBConfig<Types>;
 	readonly syncType: ModuleSyncType;
+	readonly IDB: IDB_Store<Types['dbItem']>;
 
 	private dataStatus: DataStatus = DataStatus.NoData;
 	private dispatcher: EventDispatcher;
 
 	// Version upgrade processors - maps version string to upgrade function
-	private versionUpgrades: Record<string, (items: Proto['dbType'][]) => Promise<void>> = {};
+	private versionUpgrades: Record<string, (items: Types['dbItem'][]) => Promise<void>> = {};
 
 	protected constructor(
-		dbDef: DBDef_V3<Proto>,
-		syncType: ModuleSyncType = ModuleSyncType.APISync,
+		config: BaseDBConfig<Types>,
+		syncType: ModuleSyncType    = ModuleSyncType.APISync,
 		dispatcher: EventDispatcher = NoOpDispatcher
 	) {
-		super(`BaseDB-${dbDef.dbKey}`);
-		this.dbDef = dbDef;
+		super(`BaseDB-${config.dbKey}`);
+		this.config = config;
 		this.syncType = syncType;
 		this.dispatcher = dispatcher;
-
-		const config = getModuleFEConfig(dbDef);
-		this.config = config;
 		this.validator = config.validator;
 
 		// Initialize caches
-		this.cache = new MemCache<Proto>(config.dbConfig.uniqueKeys);
-		this.IDB = new IDBCache<Proto>(config.dbConfig, config.key);
+		this.cache = new MemCache<Types['dbItem'], Types['uniqueKeys']>(config.uniqueKeys);
+
+		// IDB: one database instance per group so multiple stores share the same DB
+		const db = getDatabase(config.dbConfig.group);
+		const storeConfig = dbConfigToStoreConfig(config.dbConfig);
+		const currentVersion = config.versions[0] ?? '';
+
+		const store = db.createStore(storeConfig, async (): Promise<void> => {
+			const previousVersion = store.getLastVersion();
+			const storeExists = await store.exists();
+			if (!storeExists)
+				return;
+			if (storeExists && (!previousVersion || previousVersion === currentVersion))
+				return;
+			await store.clearAll();
+			store.setLastVersion(currentVersion);
+		}) as IDB_Store<Types['dbItem']>;
+
+		if (config.dbConfig.indices?.length) {
+			for (const idx of config.dbConfig.indices) {
+				const keys = idx.keys;
+				const params = idx.params ? {unique: idx.params.unique, multiEntry: idx.params.multiEntry} : undefined;
+				store.createIndex(idx.id, keys as string | string[], params);
+			}
+		}
+
+		this.IDB = store;
 	}
 
 	/**
 	 * Initialize the module. Must be called before use.
 	 */
-	init() {
-		this.IDB.init();
+	async init(): Promise<void> {
+		await this.IDB.open();
 		this.attachOnLastSyncUpdatedListener();
 	}
 
-	
+
 	setDispatcher(dispatcher: EventDispatcher) {
 		this.dispatcher = dispatcher;
 	}
 
-	private dispatchSingle = (event: SingleApiEvent, item: Proto['dbType']) => {
+	private dispatchSingle = (event: SingleApiEvent, item: Types['dbItem']) => {
 		this.dispatcher.dispatchModule(event, item);
 		this.dispatcher.dispatchUI(event, item);
 	};
 
-	private dispatchMulti = (event: MultiApiEvent, items: Proto['dbType'][]) => {
+	private dispatchMulti = (event: MultiApiEvent, items: Types['dbItem'][]) => {
 		this.dispatcher.dispatchModule(event, items);
 		this.dispatcher.dispatchUI(event, items);
 	};
 
-	
+
 	setDataStatus(status: DataStatus) {
 		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
 		if (this.dataStatus === status)
@@ -134,7 +165,7 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 		return this.dataStatus;
 	}
 
-	
+
 	attachOnLastSyncUpdatedListener = () => {
 		this.IDB.onLastUpdateListener(this.onLastSyncUpdatedListener);
 	};
@@ -148,23 +179,23 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 			return;
 
 		await this.loadCache();
-		this.dispatcher.dispatchAll('update', {} as Proto['dbType']);
+		this.dispatcher.dispatchAll('update', {} as Types['dbItem']);
 	};
 
-	
-	async loadCache(cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean) {
+
+	async loadCache(cacheFilter?: (item: Readonly<Types['dbItem']>) => boolean) {
 		this.logDebug(`Cache is loading`);
 
 		if (cacheFilter)
 			this.cache.setCacheFilter(cacheFilter);
 
 		const existingFilter = this.cache.getCacheFilter();
-		let allItems: Proto['dbType'][];
+		let allItems: Types['dbItem'][];
 
 		if (existingFilter)
 			allItems = await this.IDB.filter(existingFilter);
 		else
-			allItems = await this.IDB.query();
+			allItems = await this.IDB.getAll();
 
 		// Upgrade items
 		await this.upgradeInstances(allItems);
@@ -173,7 +204,7 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 		this.logDebug(`Cache finished loading, count: ${this.cache.all().length}`);
 	}
 
-	
+
 	/**
 	 * Register a version upgrade processor.
 	 *
@@ -182,25 +213,27 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 	 */
 	registerVersionUpgradeProcessor(
 		version: string,
-		processor: (items: Proto['dbType'][]) => Promise<void>
+		processor: (items: Types['dbItem'][]) => Promise<void>
 	) {
 		this.versionUpgrades[version] = processor;
 	}
 
-	async upgradeInstances(instances: Proto['dbType'][], force = false): Promise<Proto['dbType'][]> {
+	async upgradeInstances(instances: Types['dbItem'][], force = false): Promise<Types['dbItem'][]> {
 		if (!_keys(this.versionUpgrades).length) {
-			this.logVerbose(`No registered upgrade processors for module ${this.dbDef.dbKey}`);
+			this.logVerbose(`No registered upgrade processors for module ${this.config.dbKey}`);
 			return instances;
 		}
 
 		// Ensure all items have a version
 		const latestVersion = lastElement(this.config.versions);
-		instances.forEach(instance => {
-			if (!instance._v)
-				instance._v = latestVersion;
-		});
+		if (latestVersion) {
+			instances.forEach(instance => {
+				if (!instance._v)
+					instance._v = latestVersion;
+			});
+		}
 
-		let instancesToSave: Proto['dbType'][] = [];
+		let instancesToSave: Types['dbItem'][] = [];
 
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
 			const version = this.config.versions[i];
@@ -229,36 +262,30 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 		return force ? instances : instancesToSave;
 	}
 
-	
-	validateImpl(_instance: Partial<Proto['uiType']>) {
-		let _generatedProps = this.dbDef.generatedProps;
-		if (!_generatedProps) {
-			if (typeof this.dbDef.generatedPropsValidator !== 'object')
-				throw new BadImplementationException('while using generated props as a function you must provide generated props in db-def explicitly');
 
-			_generatedProps = _keys(this.dbDef.generatedPropsValidator);
-		}
-
-		const instance = deleteKeysObject(_instance as Proto['dbType'], [...KeysOfDB_Object, ..._generatedProps]);
+	validateImpl(_instance: Partial<Types['uiItem']>) {
+		// UIItem is well-defined at app level and already excludes generated props
+		// Just remove DB_Object keys before validation
+		const instance = deleteKeysObject(_instance as Types['dbItem'], KeysOfDB_Object);
 		const results = tsValidateResult(instance, this.validator);
 		if (results)
-			this.onValidationError(instance, results as InvalidResult<Proto['uiType']>);
+			this.onValidationError(_instance as Types['uiItem'], results as InvalidResult<Types['dbItem']>);
 	}
 
-	protected validateInternal(_instance: Partial<Proto['uiType']>) {
+	protected validateInternal(_instance: Partial<Types['uiItem']>) {
 		this.validateImpl(_instance);
 	}
 
-	protected onValidationError(instance: Proto['uiType'], results: InvalidResult<Proto['dbType']>) {
+	protected onValidationError(instance: Types['uiItem'], results: InvalidResult<Types['uiItem']>) {
 		this.logError(`Error validating object:`, instance, 'With Error: ', results);
 		throw new ValidationException('Error validating object', instance, results);
 	}
 
-	
+
 	/**
 	 * Handle multiple entries being deleted.
 	 */
-	onEntriesDeleted = async (items: Proto['dbType'][]): Promise<void> => {
+	onEntriesDeleted = async (items: Types['dbItem'][]): Promise<void> => {
 		await this.IDB.syncIndexDb([], items);
 		this.cache.onEntriesDeleted(items);
 		this.dispatchMulti(EventType_DeleteMulti, items);
@@ -267,7 +294,7 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 	/**
 	 * Handle a single entry being deleted.
 	 */
-	protected onEntryDeleted = async (item: Proto['dbType']): Promise<void> => {
+	protected onEntryDeleted = async (item: Types['dbItem']): Promise<void> => {
 		await this.IDB.syncIndexDb([], [item]);
 		this.cache.onEntriesDeleted([item]);
 		this.dispatchSingle(EventType_Delete, item);
@@ -276,7 +303,7 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 	/**
 	 * Handle multiple entries being updated.
 	 */
-	onEntriesUpdated = async (items: Proto['dbType'][], updateIDBLastSynced: boolean = true): Promise<void> => {
+	onEntriesUpdated = async (items: Types['dbItem'][], updateIDBLastSynced: boolean = true): Promise<void> => {
 		items = await this.upgradeInstances(items);
 		await this.IDB.syncIndexDb(items);
 		this.cache.onEntriesUpdated(items);
@@ -292,7 +319,7 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 	/**
 	 * Handle a single entry being updated.
 	 */
-	onEntryUpdated = async (item: Proto['dbType'], original: Proto['uiType'], updateIDBLastSynced: boolean = true): Promise<void> => {
+	onEntryUpdated = async (item: Types['dbItem'], original: Types['uiItem'], updateIDBLastSynced: boolean = true): Promise<void> => {
 		item = (await this.upgradeInstances([item]))[0];
 		const event = original._id ? EventType_Update : EventType_Create;
 		return this.onEntryUpdatedImpl(event, item, updateIDBLastSynced);
@@ -301,7 +328,7 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 	/**
 	 * Handle an entry being patched.
 	 */
-	protected onEntryPatched = async (item: Proto['dbType'], updateIDBLastSynced: boolean = true): Promise<void> => {
+	protected onEntryPatched = async (item: Types['dbItem'], updateIDBLastSynced: boolean = true): Promise<void> => {
 		item = (await this.upgradeInstances([item]))[0];
 		return this.onEntryUpdatedImpl(EventType_Patch, item, updateIDBLastSynced);
 	};
@@ -309,22 +336,22 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 	/**
 	 * Handle unique query result.
 	 */
-	protected onGotUnique = async (item: Proto['dbType']): Promise<void> => {
+	protected onGotUnique = async (item: Types['dbItem']): Promise<void> => {
 		return this.onEntryUpdatedImpl(EventType_Unique, item);
 	};
 
 	/**
 	 * Handle query results.
 	 */
-	protected onQueryReturned = async (toUpdate: Proto['dbType'][], toDelete: DB_Object[] = []): Promise<void> => {
+	protected onQueryReturned = async (toUpdate: Types['dbItem'][], toDelete: DB_Object[] = []): Promise<void> => {
 		toUpdate = await this.upgradeInstances(toUpdate);
 		await this.IDB.syncIndexDb(toUpdate, toDelete);
 		this.cache.onEntriesUpdated(toUpdate);
-		this.cache.onEntriesDeleted(toDelete as Proto['dbType'][]);
+		this.cache.onEntriesDeleted(toDelete as Types['dbItem'][]);
 		this.dispatchMulti(EventType_Query, toUpdate);
 	};
 
-	private async onEntryUpdatedImpl(event: SingleApiEvent, item: Proto['dbType'], updateIDBLastSynced: boolean = true): Promise<void> {
+	private async onEntryUpdatedImpl(event: SingleApiEvent, item: Types['dbItem'], updateIDBLastSynced: boolean = true): Promise<void> {
 		await this.IDB.syncIndexDb([item]);
 		this.cache.onEntriesUpdated([item]);
 
@@ -336,16 +363,16 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 		this.dispatchSingle(event, item);
 	}
 
-	
+
 	getCollectionName = () => this.config.dbConfig.name;
 
-	getCollectionKey = () => this.dbDef.dbKey;
+	getCollectionKey = () => this.config.dbKey;
 
 	/**
 	 * Clear all data (IDB and cache).
 	 */
 	async clearData() {
-		await this.IDB.clear();
+		await this.IDB.clearAll();
 		this.cache.clear();
 		this.setDataStatus(DataStatus.NoData);
 	}
@@ -353,7 +380,7 @@ export abstract class BaseDB<Proto extends DBProto<any>>
 	/**
 	 * Set cache filter for selective caching.
 	 */
-	protected setCacheFilter = (filter: (item: Readonly<Proto['dbType']>) => boolean) => {
+	protected setCacheFilter = (filter: (item: Readonly<Types['dbItem']>) => boolean) => {
 		this.cache.setCacheFilter(filter);
 	};
 }

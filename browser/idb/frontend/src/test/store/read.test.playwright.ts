@@ -147,7 +147,7 @@ test.describe('IDB_Store - Read Operations', () => {
 		expect(result).toBe(0);
 	});
 
-	test('query() with limit', async ({page}) => {
+	test('getAll() with limit (in-memory)', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -166,7 +166,8 @@ test.describe('IDB_Store - Read Operations', () => {
 				{_id: '5', name: 'Five'},
 			]);
 
-			const limited = await store.query({limit: 3});
+			const all = await store.getAll();
+			const limited = all.slice(0, 3);
 			await db.deleteDatabase();
 
 			return limited.length;
@@ -205,7 +206,7 @@ test.describe('IDB_Store - Read Operations', () => {
 		expect(result).toContainEqual({_id: '3', category: 'A', name: 'Item3'});
 	});
 
-	test('queryFilter() filters items', async ({page}) => {
+	test('getAll() then filter in-memory', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -224,7 +225,8 @@ test.describe('IDB_Store - Read Operations', () => {
 				{_id: '5', value: 5},
 			]);
 
-			const filtered = await store.queryFilter(item => item.value >= 20);
+			const all = await store.getAll();
+			const filtered = all.filter(item => item.value >= 20);
 			await db.deleteDatabase();
 
 			return filtered;
@@ -235,7 +237,7 @@ test.describe('IDB_Store - Read Operations', () => {
 		expect(result).toContainEqual({_id: '4', value: 30});
 	});
 
-	test('queryFilter() with limit stops early', async ({page}) => {
+	test('getAll() then filter and slice (limit)', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -254,8 +256,8 @@ test.describe('IDB_Store - Read Operations', () => {
 				{_id: '5', value: 50},
 			]);
 
-			// All items pass filter, but limit to 2
-			const filtered = await store.queryFilter(item => item.value >= 10, {limit: 2});
+			const all = await store.getAll();
+			const filtered = all.filter(item => item.value >= 10).slice(0, 2);
 			await db.deleteDatabase();
 
 			return filtered.length;
@@ -264,7 +266,7 @@ test.describe('IDB_Store - Read Operations', () => {
 		expect(result).toBe(2);
 	});
 
-	test('queryFind() returns first match', async ({page}) => {
+	test('getAll() then find in-memory', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -281,7 +283,8 @@ test.describe('IDB_Store - Read Operations', () => {
 				{_id: '3', name: 'Three', active: true},
 			]);
 
-			const found = await store.queryFind(item => item.active);
+			const all = await store.getAll();
+			const found = all.find(item => item.active);
 			await db.deleteDatabase();
 
 			return found;
@@ -292,7 +295,7 @@ test.describe('IDB_Store - Read Operations', () => {
 		expect(result!.active).toBe(true);
 	});
 
-	test('queryFind() returns undefined if no match', async ({page}) => {
+	test('getAll() then find returns undefined if no match', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -308,7 +311,8 @@ test.describe('IDB_Store - Read Operations', () => {
 				{_id: '2', value: 20},
 			]);
 
-			const found = await store.queryFind(item => item.value > 100);
+			const all = await store.getAll();
+			const found = all.find(item => item.value > 100);
 			await db.deleteDatabase();
 
 			return found;
@@ -317,7 +321,7 @@ test.describe('IDB_Store - Read Operations', () => {
 		expect(result).toBeUndefined();
 	});
 
-	test('queryMap() transforms items', async ({page}) => {
+	test('getAll() then map in-memory', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -333,7 +337,8 @@ test.describe('IDB_Store - Read Operations', () => {
 				{_id: '2', firstName: 'Jane', lastName: 'Smith'},
 			]);
 
-			const fullNames = await store.queryMap(item => `${item.firstName} ${item.lastName}`);
+			const all = await store.getAll();
+			const fullNames = all.map(item => `${item.firstName} ${item.lastName}`);
 			await db.deleteDatabase();
 
 			return fullNames.sort();
@@ -342,7 +347,7 @@ test.describe('IDB_Store - Read Operations', () => {
 		expect(result).toEqual(['Jane Smith', 'John Doe']);
 	});
 
-	test('queryMap() with filter', async ({page}) => {
+	test('getAll() then filter and map in-memory', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -359,10 +364,8 @@ test.describe('IDB_Store - Read Operations', () => {
 				{_id: '3', name: 'Charlie', active: true},
 			]);
 
-			const activeNames = await store.queryMap(
-				item => item.name,
-				item => item.active
-			);
+			const all = await store.getAll();
+			const activeNames = all.filter(item => item.active).map(item => item.name);
 			await db.deleteDatabase();
 
 			return activeNames.sort();
@@ -371,7 +374,7 @@ test.describe('IDB_Store - Read Operations', () => {
 		expect(result).toEqual(['Alice', 'Charlie']);
 	});
 
-	test('queryReduce() aggregates values', async ({page}) => {
+	test('getAll() then reduce in-memory', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -389,7 +392,8 @@ test.describe('IDB_Store - Read Operations', () => {
 				{_id: '4', amount: 40},
 			]);
 
-			const sum = await store.queryReduce((acc, item) => acc + item.amount, 0);
+			const all = await store.getAll();
+			const sum = all.reduce((acc, item) => acc + item.amount, 0);
 			await db.deleteDatabase();
 
 			return sum;

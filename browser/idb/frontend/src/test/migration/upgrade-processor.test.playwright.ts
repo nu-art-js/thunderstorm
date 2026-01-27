@@ -93,7 +93,7 @@ test.describe('IDB_Store - Upgrade Processor (Lazy Migration)', () => {
 		expect(result).toContainEqual({_id: '3', value: 60, processed: true});
 	});
 
-	test('upgradeProcessor transforms items on queryFilter()', async ({page}) => {
+	test('upgradeProcessor transforms items on getAll() then filter', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -123,8 +123,8 @@ test.describe('IDB_Store - Upgrade Processor (Lazy Migration)', () => {
 			});
 			await db2.open();
 
-			// Filter should work on upgraded items
-			const passing = await storeNew.queryFilter(item => item.grade === 'PASS');
+			const all = await storeNew.getAll();
+			const passing = all.filter(item => item.grade === 'PASS');
 			await db2.deleteDatabase();
 
 			return passing;
@@ -134,7 +134,7 @@ test.describe('IDB_Store - Upgrade Processor (Lazy Migration)', () => {
 		expect(result[0]).toEqual({_id: '2', score: 80, grade: 'PASS'});
 	});
 
-	test('upgradeProcessor transforms items on queryFind()', async ({page}) => {
+	test('upgradeProcessor transforms items on getAll() then find', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -163,8 +163,8 @@ test.describe('IDB_Store - Upgrade Processor (Lazy Migration)', () => {
 			});
 			await db2.open();
 
-			// Find should work on upgraded items
-			const online = await storeNew.queryFind(item => item.status === 'ONLINE');
+			const all = await storeNew.getAll();
+			const online = all.find(item => item.status === 'ONLINE');
 			await db2.deleteDatabase();
 
 			return online;
@@ -173,7 +173,7 @@ test.describe('IDB_Store - Upgrade Processor (Lazy Migration)', () => {
 		expect(result).toEqual({_id: '2', active: true, status: 'ONLINE'});
 	});
 
-	test('upgradeProcessor transforms items on queryMap()', async ({page}) => {
+	test('upgradeProcessor transforms items on getAll() then map', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {IDB_Database} = window.IDBFrontend;
 
@@ -202,8 +202,8 @@ test.describe('IDB_Store - Upgrade Processor (Lazy Migration)', () => {
 			});
 			await db2.open();
 
-			// Map should use upgraded items
-			const fullNames = await storeNew.queryMap(item => item.fullName);
+			const all = await storeNew.getAll();
+			const fullNames = all.map(item => item.fullName);
 			await db2.deleteDatabase();
 
 			return fullNames.sort();
