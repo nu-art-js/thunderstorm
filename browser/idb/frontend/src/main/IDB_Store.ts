@@ -5,9 +5,21 @@
  */
 
 import {Logger, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {IndexDb_Query, IndexKeys, ReduceFunction} from '@nu-art/idb-shared';
+import {ReduceFunction} from '@nu-art/idb-shared';
 import type {IDB_Database} from './IDB_Database.js';
 import {IDB_StoreIndex, IndexConfig, IndexDefinition, IndexKeys as StoreIndexKeys, IndexQueryExecutor} from './IDB_StoreIndex.js';
+
+/**
+ * Optional query for store APIs. All store methods accept this when they support scoping/range.
+ * - indexKey: use this index instead of the primary store
+ * - query: key or range value (used with indexKey for index seek, or as IDBKeyRange for primary)
+ * - limit: max results (where supported)
+ */
+export type IndexDb_Query = {
+	indexKey?: string;
+	query?: IDBValidKey | IDBKeyRange;
+	limit?: number;
+};
 
 
 /** LocalStorage key prefixes for sync metadata */
@@ -31,6 +43,12 @@ export type StoreConfig<ItemType extends object> = {
 	 */
 	upgradeProcessor?: (item: ItemType) => ItemType;
 };
+
+/**
+ * Object containing the store's unique-key fields, used for get/delete lookup.
+ * Distinct from "index keys" (IDB_StoreIndex), which are the field(s) an index is built on.
+ */
+export type StoreKeyLookup<ItemType extends object, Keys extends keyof ItemType = keyof ItemType> = { [K in Keys]?: ItemType[K] };
 
 /**
  * Clear all IDB sync metadata from localStorage for the new IDB_Store pattern.
@@ -66,6 +84,9 @@ export class IDB_Store<ItemType extends object>
 	// LocalStorage keys for sync metadata
 	private readonly lastSyncKey: string;
 	private readonly lastVersionKey: string;
+
+	// Listeners notified when lastSync changes (e.g. from setLastSync / setLastUpdated)
+	private readonly lastSyncListeners: ((after?: number, before?: number) => void | Promise<void>)[] = [];
 
 
 	constructor(config: StoreConfig<ItemType>, database: IDB_Database) {
@@ -177,50 +198,6 @@ export class IDB_Store<ItemType extends object>
 		return this.database.storeExists(this.config.name);
 	}
 
-	async count(): Promise<number> {
-		const store = await this.getStore();
-
-		return new Promise((resolve, reject) => {
-			const request = store.count();
-			request.onsuccess = () => resolve(request.result);
-			request.onerror = () => {
-				this.logError(`Failed getting count`);
-				resolve(-1);
-			};
-		});
-	}
-
-	private async getCursor(query?: IndexDb_Query): Promise<IDBRequest<IDBCursorWithValue | null>> {
-		const store = await this.getStore();
-
-		if (query?.indexKey) {
-			const idbIndex = store.index(query.indexKey);
-			if (!idbIndex)
-				throw new MUSTNeverHappenException(`Index "${query.indexKey}" not found`);
-
-			return idbIndex.openCursor();
-		}
-
-		return store.openCursor();
-	}
-
-	private cursorHandler(
-		cursorRequest: IDBRequest<IDBCursorWithValue | null>,
-		onValue: (value: ItemType) => void,
-		onEnd: () => void,
-		shouldStop?: () => boolean
-	): void {
-		cursorRequest.onsuccess = (event) => {
-			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
-
-			if (!cursor || shouldStop?.())
-				return onEnd();
-
-			onValue(this.upgradeItem(cursor.value));
-			cursor.continue();
-		};
-	}
-
 	async insert(value: ItemType): Promise<ItemType> {
 		const store = await this.getStore(true);
 
@@ -265,7 +242,7 @@ export class IDB_Store<ItemType extends object>
 		}
 	}
 
-	async get(key: IndexKeys<ItemType, keyof ItemType>): Promise<ItemType | undefined> {
+	async get(key: StoreKeyLookup<ItemType>): Promise<ItemType | undefined> {
 		const keyValues = this.config.uniqueKeys.map(k => key[k]);
 		const store = await this.getStore();
 
@@ -276,33 +253,44 @@ export class IDB_Store<ItemType extends object>
 		});
 	}
 
-	async getAll(): Promise<ItemType[]> {
+	/** Returns the store or the named index so getAll/count/openCursor use the same target. */
+	private async getTarget(query?: IndexDb_Query): Promise<IDBObjectStore | IDBIndex> {
 		const store = await this.getStore();
+		if (!query?.indexKey)
+			return store;
+		const index = store.index(query.indexKey);
+		if (!index)
+			throw new MUSTNeverHappenException(`Index "${query.indexKey}" not found`);
+		return index;
+	}
+
+	/**
+	 * Get all items, optionally scoped by index and key/range. All store read APIs use this query shape.
+	 */
+	async getAll(query?: IndexDb_Query): Promise<ItemType[]> {
+		const target = await this.getTarget(query);
 
 		return new Promise((resolve, reject) => {
-			const request = store.getAll();
+			const request = target.getAll(query?.query, query?.limit);
+			request.onsuccess = () => resolve(this.upgradeAll(request.result));
 			request.onerror = () => reject(new Error(`Error getting all from "${this.config.name}"`));
-			request.onsuccess = () => resolve(this.upgradeAll(request.result));
 		});
 	}
 
-	async query(query: IndexDb_Query): Promise<ItemType[]> {
-		const store = await this.getStore();
+	/**
+	 * Count items, optionally scoped by index and key. Uses the same query shape as getAll/filter/etc.
+	 */
+	async count(query?: IndexDb_Query): Promise<number> {
+		const target = await this.getTarget(query);
 
 		return new Promise((resolve, reject) => {
-			let request: IDBRequest;
-
-			if (query.indexKey)
-				request = store.index(query.indexKey).getAll(query.query, query.limit);
-			else
-				request = store.getAll(query.query, query.limit);
-
-			request.onsuccess = () => resolve(this.upgradeAll(request.result));
-			request.onerror = () => reject(new Error(`Error querying "${this.config.name}"`));
+			const request = target.count(query?.query);
+			request.onsuccess = () => resolve(request.result);
+			request.onerror = () => reject(new Error(`Error counting "${this.config.name}"`));
 		});
 	}
 
-	async queryFilter(filter: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<ItemType[]> {
+	async filter(filter: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<ItemType[]> {
 		const limit = query?.limit ?? 0;
 		const cursorRequest = await this.getCursor(query);
 		const matches: ItemType[] = [];
@@ -320,9 +308,9 @@ export class IDB_Store<ItemType extends object>
 		});
 	}
 
-	async queryFind(filter: (item: ItemType) => boolean): Promise<ItemType | undefined> {
+	async find(filter: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<ItemType | undefined> {
 		let match: ItemType | undefined;
-		const cursorRequest = await this.getCursor();
+		const cursorRequest = await this.getCursor(query);
 
 		return new Promise((resolve) => {
 			this.cursorHandler(
@@ -337,7 +325,7 @@ export class IDB_Store<ItemType extends object>
 		});
 	}
 
-	async queryMap<T>(mapper: (item: ItemType) => T, filter?: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<T[]> {
+	async map<T>(mapper: (item: ItemType) => T, filter?: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<T[]> {
 		const limit = query?.limit ?? 0;
 		const cursorRequest = await this.getCursor(query);
 		const results: T[] = [];
@@ -355,132 +343,65 @@ export class IDB_Store<ItemType extends object>
 		});
 	}
 
-	async queryReduce<T>(reducer: ReduceFunction<ItemType, T>, initialValue: T, filter?: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<T> {
-		const items = await this.queryFilter(filter ?? (() => true), query);
+	async reduce<T>(reducer: ReduceFunction<ItemType, T>, initialValue: T, filter?: (item: ItemType) => boolean, query?: IndexDb_Query): Promise<T> {
+		const items = await this.filter(filter ?? (() => true), query);
 		return items.reduce((acc, item, index, arr) => reducer(acc, item, index, arr), initialValue);
 	}
 
-	// ==================== Private Index Methods ====================
-	// These are called via indexQueryExecutor by IDB_StoreIndex
+	// ==================== Cursor (shared by getAll/filter/find/map/reduce) ====================
+	private async getCursor(query?: IndexDb_Query): Promise<IDBRequest<IDBCursorWithValue | null>> {
+		const target = await this.getTarget(query);
+		return target.openCursor(query?.query);
+	}
+
+
+	private cursorHandler(
+		cursorRequest: IDBRequest<IDBCursorWithValue | null>,
+		onValue: (value: ItemType) => void,
+		onEnd: () => void,
+		shouldStop?: () => boolean
+	): void {
+		cursorRequest.onsuccess = (event) => {
+			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
+
+			if (!cursor || shouldStop?.())
+				return onEnd();
+
+			onValue(this.upgradeItem(cursor.value));
+			cursor.continue();
+		};
+	}
+
+	// ==================== Index executor: same APIs with query built from (indexName, value, limit) ====================
+	private queryWithIndex(indexName: string, value: IDBValidKey, limit?: number): IndexDb_Query {
+		return {indexKey: indexName, query: value, limit};
+	}
 
 	private async indexGetAll(indexName: string, value: IDBValidKey, limit?: number): Promise<ItemType[]> {
-		const store = await this.getStore();
-
-		return new Promise((resolve, reject) => {
-			const index = store.index(indexName);
-			if (!index)
-				return reject(new MUSTNeverHappenException(`Index "${indexName}" not found`));
-
-			const request = index.getAll(value, limit);
-			request.onsuccess = () => resolve(this.upgradeAll(request.result));
-			request.onerror = () => reject(new Error(`Error getting from index "${indexName}" on "${this.config.name}"`));
-		});
+		return this.getAll(this.queryWithIndex(indexName, value, limit));
 	}
 
 	private async indexCount(indexName: string, value: IDBValidKey): Promise<number> {
-		const store = await this.getStore();
-
-		return new Promise((resolve, reject) => {
-			const index = store.index(indexName);
-			if (!index)
-				return reject(new MUSTNeverHappenException(`Index "${indexName}" not found`));
-
-			const request = index.count(value);
-			request.onsuccess = () => resolve(request.result);
-			request.onerror = () => reject(new Error(`Error counting index "${indexName}" on "${this.config.name}"`));
-		});
+		return this.count(this.queryWithIndex(indexName, value));
 	}
 
 	private async indexFilter(indexName: string, value: IDBValidKey, filter: (item: ItemType) => boolean, limit?: number): Promise<ItemType[]> {
-		const store = await this.getStore();
-		const matches: ItemType[] = [];
-		const effectiveLimit = limit ?? 0;
-
-		return new Promise((resolve, reject) => {
-			const index = store.index(indexName);
-			if (!index)
-				return reject(new MUSTNeverHappenException(`Index "${indexName}" not found`));
-
-			const request = index.openCursor(value);
-
-			request.onsuccess = (event) => {
-				const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
-
-				if (!cursor || (effectiveLimit > 0 && matches.length >= effectiveLimit))
-					return resolve(matches);
-
-				const item = this.upgradeItem(cursor.value);
-				if (filter(item))
-					matches.push(item);
-
-				cursor.continue();
-			};
-
-			request.onerror = () => reject(new Error(`Error filtering index "${indexName}" on "${this.config.name}"`));
-		});
+		return this.filter(filter, this.queryWithIndex(indexName, value, limit));
 	}
 
 	private async indexFind(indexName: string, value: IDBValidKey, filter: (item: ItemType) => boolean): Promise<ItemType | undefined> {
-		const store = await this.getStore();
-
-		return new Promise((resolve, reject) => {
-			const index = store.index(indexName);
-			if (!index)
-				return reject(new MUSTNeverHappenException(`Index "${indexName}" not found`));
-
-			const request = index.openCursor(value);
-
-			request.onsuccess = (event) => {
-				const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
-
-				if (!cursor)
-					return resolve(undefined);
-
-				const item = this.upgradeItem(cursor.value);
-				if (filter(item))
-					return resolve(item);
-
-				cursor.continue();
-			};
-
-			request.onerror = () => reject(new Error(`Error finding in index "${indexName}" on "${this.config.name}"`));
-		});
+		return this.find(filter, this.queryWithIndex(indexName, value));
 	}
 
 	private async indexMap<T>(indexName: string, value: IDBValidKey, mapper: (item: ItemType) => T, filter?: (item: ItemType) => boolean): Promise<T[]> {
-		const store = await this.getStore();
-		const results: T[] = [];
-
-		return new Promise((resolve, reject) => {
-			const index = store.index(indexName);
-			if (!index)
-				return reject(new MUSTNeverHappenException(`Index "${indexName}" not found`));
-
-			const request = index.openCursor(value);
-
-			request.onsuccess = (event) => {
-				const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
-
-				if (!cursor)
-					return resolve(results);
-
-				const item = this.upgradeItem(cursor.value);
-				if (!filter || filter(item))
-					results.push(mapper(item));
-
-				cursor.continue();
-			};
-
-			request.onerror = () => reject(new Error(`Error mapping index "${indexName}" on "${this.config.name}"`));
-		});
+		return this.map(mapper, filter, this.queryWithIndex(indexName, value));
 	}
 
 	private async indexReduce<T>(indexName: string, value: IDBValidKey, reducer: ReduceFunction<ItemType, T>, initialValue: T, filter?: (item: ItemType) => boolean): Promise<T> {
-		const items = await this.indexFilter(indexName, value, filter ?? (() => true));
-		return items.reduce((acc, item, index, arr) => reducer(acc, item, index, arr), initialValue);
+		return this.reduce(reducer, initialValue, filter ?? (() => true), this.queryWithIndex(indexName, value));
 	}
 
-	async delete(key: IndexKeys<ItemType, keyof ItemType> | ItemType): Promise<ItemType> {
+	async delete(key: StoreKeyLookup<ItemType> | ItemType): Promise<ItemType> {
 		const keyValues = this.config.uniqueKeys.map(k => key[k]);
 		const store = await this.getStore(true);
 
@@ -492,10 +413,6 @@ export class IDB_Store<ItemType extends object>
 			getRequest.onsuccess = () => {
 				const item = this.upgradeItem(getRequest.result);
 
-				// @ts-ignore - check __updated for optimistic concurrency
-				if (key.__updated !== undefined && item?.__updated > key.__updated)
-					return resolve(item);
-
 				const deleteRequest = store.delete(keyValues as IDBValidKey);
 				deleteRequest.onerror = () => reject(new Error(`Error deleting from "${this.config.name}"`));
 				deleteRequest.onsuccess = () => resolve(item);
@@ -503,7 +420,7 @@ export class IDB_Store<ItemType extends object>
 		});
 	}
 
-	async deleteAll(keys: (IndexKeys<ItemType, keyof ItemType> | ItemType)[]): Promise<ItemType[]> {
+	async deleteAll(keys: (StoreKeyLookup<ItemType> | ItemType)[]): Promise<ItemType[]> {
 		return Promise.all(keys.map(key => this.delete(key)));
 	}
 
@@ -530,7 +447,45 @@ export class IDB_Store<ItemType extends object>
 	}
 
 	setLastSync(timestamp: number): void {
+		const before = this.getLastSync();
 		localStorage.setItem(this.lastSyncKey, String(timestamp));
+		this.lastSyncListeners.forEach(listener => {
+			try {
+				listener(timestamp, before);
+			} catch (e: any) {
+				this.logError('lastSync listener error', e);
+			}
+		});
+	}
+
+	/**
+	 * Alias for setLastSync for consumers that use "last updated" wording.
+	 */
+	setLastUpdated(timestamp: number): void {
+		this.setLastSync(timestamp);
+	}
+
+	/**
+	 * Register a listener to run when lastSync / lastUpdated changes.
+	 */
+	onLastUpdateListener(listener: (after?: number, before?: number) => void | Promise<void>): void {
+		this.lastSyncListeners.push(listener);
+	}
+
+	/**
+	 * Open the database. Call before using the store.
+	 */
+	async open(): Promise<void> {
+		await this.database.open();
+	}
+
+	/**
+	 * Upsert items and delete others in one call. Convenience for sync flows.
+	 */
+	async syncIndexDb(toUpdate: ItemType[], toDelete: ItemType[] = []): Promise<void> {
+		await this.upsertAll(toUpdate);
+		if (toDelete.length)
+			await this.deleteAll(toDelete);
 	}
 
 	getLastVersion(): string | null {

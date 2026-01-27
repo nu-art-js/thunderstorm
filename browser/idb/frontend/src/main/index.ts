@@ -4,9 +4,6 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-// Re-export shared types
-export * from '@nu-art/idb-shared';
-
 // Core classes
 export * from './IDB_Database.js';
 export * from './IDB_Store.js';
@@ -14,3 +11,4 @@ export * from './IDB_StoreIndex.js';
 
 // Utilities
 export * from './StorageCleaner.js';
+

@@ -4,9 +4,10 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {BaseDB, ModuleSyncType} from './BaseDB.js';
-import {DBDef_V3, DBProto, EventDispatcher, NoOpDispatcher} from '../to-refactor/index.js';
+import {ModuleFE_BaseDB, ModuleSyncType} from './ModuleFE_BaseDB.js';
+import {EventDispatcher, NoOpDispatcher} from '../to-refactor/index.js';
 import {ApiCallContext} from '../decorators/types.js';
+import {ModuleTypes, BaseDBConfig} from './types.js';
 
 
 /**
@@ -15,13 +16,21 @@ import {ApiCallContext} from '../decorators/types.js';
  * Extends BaseDB with API-specific functionality. Use the @ClientApi and
  * @ClientApiQuery decorators to define API endpoints.
  *
- * @template Proto - Database prototype type
+ * @template Types - ModuleTypes that define the entity types (decoupled from Proto)
  *
  * @example
  * ```typescript
- * class UserModule extends BaseApi<Proto_User> {
+ * type UserModuleTypes = ModuleTypes<DB_User, UI_User, Validator_UI_User, ['_id']>;
+ * 
+ * class UserModule extends BaseApi<UserModuleTypes> {
  *   constructor() {
- *     super(DBDef_User);
+ *     super({
+ *       dbKey: 'user',
+ *       validator: Proto_User.modifiablePropsValidator,
+ *       uniqueKeys: ['_id'],
+ *       versions: ['v1'],
+ *       dbConfig: { name: 'user', group: 'default', version: 'v1', uniqueKeys: ['_id'] }
+ *     });
  *   }
  *
  *   @ClientApi(UserApiDef.v1.upsert, {
@@ -39,21 +48,21 @@ import {ApiCallContext} from '../decorators/types.js';
  * }
  * ```
  */
-export abstract class BaseApi<Proto extends DBProto<any>>
-	extends BaseDB<Proto> {
+export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
+	extends ModuleFE_BaseDB<Types> {
 
 	protected constructor(
-		dbDef: DBDef_V3<Proto>,
+		config: BaseDBConfig<Types>,
 		dispatcher: EventDispatcher = NoOpDispatcher
 	) {
-		super(dbDef, ModuleSyncType.APISync, dispatcher);
+		super(config, ModuleSyncType.APISync, dispatcher);
 	}
 
 	/**
 	 * Clean up data before sending to API.
 	 * Override to add custom cleanup logic.
 	 */
-	protected cleanUp(toUpsert: Proto['uiType']): Proto['uiType'] {
+	protected cleanUp(toUpsert: Types['uiItem']): Types['uiItem'] {
 		return toUpsert;
 	}
 
@@ -71,7 +80,7 @@ export abstract class BaseApi<Proto extends DBProto<any>>
 	 * Standard callback for upsertAll operations.
 	 */
 	protected handleUpsertAllComplete = async (ctx: ApiCallContext<any>) => {
-		const items = ctx.response as Proto['dbType'][];
+		const items = ctx.response as Types['dbItem'][];
 		await this.onEntriesUpdated(items);
 		const lastUpdated = items.reduce((acc, item) => Math.max(acc, item.__updated), -1);
 		this.IDB.setLastUpdated(lastUpdated);

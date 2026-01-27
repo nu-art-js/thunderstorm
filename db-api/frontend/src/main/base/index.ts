@@ -4,5 +4,6 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-export * from './BaseDB.js';
-export * from './BaseApi.js';
+export * from './types.js';
+export * from './ModuleFE_BaseDB.js';
+export * from './ModuleFE_BaseApi.js';

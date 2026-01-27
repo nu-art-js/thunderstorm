@@ -82,14 +82,17 @@ await store.insert({ _id: '1', name: 'Item 1', value: 100 });
 // Upsert data
 await store.upsert({ _id: '1', name: 'Item 1 Updated', value: 200 });
 
-// Query data
-const items = await store.query({ limit: 10 });
-
-// Filter data
-const filtered = await store.queryFilter(item => item.value > 50);
-
-// Get by key
+// Get by primary key (default store access)
 const item = await store.get({ _id: '1' });
+
+// Get all, then filter/map in-memory or use an index
+const all = await store.getAll();
+const limited = all.slice(0, 10);
+const filtered = all.filter(item => item.value > 50);
+
+// Or query via typed index (preferred when querying by a key)
+const byCategory = store.createIndex('by-category', 'category');
+const itemsInCategory = await byCategory.getAll('electronics');
 
 // Delete
 await store.delete({ _id: '1' });

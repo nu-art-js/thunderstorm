@@ -22,7 +22,7 @@ export class MemCache<ItemType extends object, UniqueParams extends (keyof ItemT
 	private readonly keys: UniqueParams;
 	loaded: boolean = false;
 
-	_map!: Readonly<TypedMap<Readonly<ItemType>>>;
+	private _map!: Readonly<TypedMap<Readonly<ItemType>>>;
 	_array!: Readonly<Readonly<ItemType>[]>;
 
 	protected cacheFilter?: (item: Readonly<ItemType>) => boolean;

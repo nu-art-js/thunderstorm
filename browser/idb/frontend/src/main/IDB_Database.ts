@@ -21,6 +21,22 @@ type StoreRegistry = {
 	version: number;        // IDB version
 };
 
+/** Registry: one IDB_Database instance per database name so multiple stores can share the same DB */
+const dbByName: Map<string, IDB_Database> = new Map();
+
+/**
+ * Return the same IDB_Database instance for a given name. Use this when multiple stores
+ * (e.g. from different modules) must live in the same IndexedDB database.
+ */
+export function getDatabase(dbName: string): IDB_Database {
+	let db = dbByName.get(dbName);
+	if (!db) {
+		db = new IDB_Database(dbName);
+		dbByName.set(dbName, db);
+	}
+	return db;
+}
+
 /**
  * IDB_Database - Direct database instantiation pattern
  *
@@ -36,6 +52,8 @@ type StoreRegistry = {
  *
  * await db.open();
  * ```
+ *
+ * For multiple stores in the same DB, use getDatabase('my-database') so they share one instance.
  */
 export class IDB_Database
 	extends Logger {
@@ -131,7 +149,7 @@ export class IDB_Database
 		if (onOpenCallback)
 			this.onOpenCallbacks.set(config.name, onOpenCallback);
 
-		this.logDebug(`[CREATE-STORE] Registered: ${config.name}`, `Keys: ${config.uniqueKeys.join(', ')}`, `Indices: ${config.indices?.length ?? 0}`);
+		this.logDebug(`[CREATE-STORE] Registered: ${config.name}`, `Keys: ${config.uniqueKeys.join(', ')}`);
 
 		return store;
 	}

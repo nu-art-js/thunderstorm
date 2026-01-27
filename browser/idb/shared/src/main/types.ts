@@ -22,12 +22,6 @@ export type DBConfig<ItemType extends object> = {
 	upgradeProcessor?: (store: IDBObjectStore) => void
 };
 
-export type IndexDb_Query = {
-	query?: string | number | string[] | number[],
-	indexKey?: string,
-	limit?: number
-};
-
 
 /**
  * Database index definition.
@@ -47,13 +41,3 @@ export type DBIndex<ItemType extends object> = {
 		unique: boolean;
 	};
 };
-
-/**
- * Index keys type for querying by indexed fields.
- *
- * Allows querying by any combination of indexed keys.
- *
- * @template T - Object type
- * @template Ks - Indexed keys
- */
-export type IndexKeys<T extends Object, Ks extends keyof T> = { [K in Ks]?: T[K] }; // {_id:'all bases belong to us'} || {label: 'all items with this label'}
