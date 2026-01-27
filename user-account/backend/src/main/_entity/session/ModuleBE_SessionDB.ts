@@ -294,7 +294,15 @@ export class ModuleBE_SessionDB_Class
 	private async locateSession(jwt: string) {
 		try {
 			const {dbSession, claims} = await this.runTransaction(async t => {
-				let dbSession = await this._session.query.byJwt(jwt);
+				let dbSession: DB_Session;
+				try {
+					dbSession = await this._session.query.byJwt(jwt);
+				} catch (err: any) {
+					if (isErrorOfType(err, ApiException)?.responseCode === HttpCodes._4XX.NOT_FOUND.code)
+						throw HttpCodes._4XX.UNAUTHORIZED('JWT received in request was not found', err);
+
+					throw err;
+				}
 				const latestJwtValidationResult = await this.jwtHandler.verifySignature(dbSession.sessionIdJwt);
 				if (!latestJwtValidationResult.validated)
 					throw new MUSTNeverHappenException(`JWT received from DB is invalid Session id = ${dbSession._id}`);
@@ -306,9 +314,7 @@ export class ModuleBE_SessionDB_Class
 			MemKey_DB_Session.set(dbSession);
 			MemKey_SessionData.set(claims);
 			MemKey_Jwt.set(dbSession.sessionIdJwt);
-
 			MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, dbSession.sessionIdJwt);
-
 		} catch (err: any) {
 			if (isErrorOfType(err, ApiException))
 				throw err;
