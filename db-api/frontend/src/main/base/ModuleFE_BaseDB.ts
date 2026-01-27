@@ -11,6 +11,7 @@ import {
 	filterDuplicates,
 	InvalidResult,
 	lastElement,
+	MemCache,
 	Module,
 	tsValidateResult,
 	ValidationException,
@@ -32,7 +33,7 @@ import {
 } from '../to-refactor/consts.js';
 import {DB_Object, DBConfig, KeysOfDB_Object} from '../to-refactor/db-types.js';
 import {EventDispatcher, NoOpDispatcher} from '../to-refactor/dispatcher.js';
-import {MemCache} from '../cache/MemCache.js';
+import {composeDbObjectUniqueId, dbObjectToId} from '../to-refactor/utils.js';
 import {BaseDBConfig, ModuleTypes} from './types.js';
 
 
@@ -77,7 +78,7 @@ export class ModuleFE_BaseDB<Types extends ModuleTypes>
 	extends Module {
 
 	readonly validator: Types['validator'];
-	readonly cache: MemCache<Types['dbItem'], Types['uniqueKeys']>;
+	readonly cache: MemCache<Types['dbItem']>;
 	readonly config: BaseDBConfig<Types>;
 	readonly syncType: ModuleSyncType;
 	readonly IDB: IDB_Store<Types['dbItem']>;
@@ -99,8 +100,12 @@ export class ModuleFE_BaseDB<Types extends ModuleTypes>
 		this.dispatcher = dispatcher;
 		this.validator = config.validator;
 
-		// Initialize caches
-		this.cache = new MemCache<Types['dbItem'], Types['uniqueKeys']>(config.uniqueKeys);
+		// Initialize caches (ts-common MemCache with DB id logic from to-refactor)
+		const uniqueKeys = config.uniqueKeys;
+		this.cache = new MemCache<Types['dbItem']>({
+			getId: (item) => dbObjectToId(item as {_id: string}),
+			keyToId: (key) => typeof key === 'string' ? key : composeDbObjectUniqueId(key as Types['dbItem'], uniqueKeys)
+		});
 
 		// IDB: one database instance per group so multiple stores share the same DB
 		const db = getDatabase(config.dbConfig.group);
