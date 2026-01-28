@@ -1,40 +1,40 @@
 /*
- * @nu-art/db-api-frontend - Database API infrastructure for Thunderstorm frontend
- * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * @nu-art/http-client - Type-safe HTTP client for Thunderstorm
+ * Copyright (C) 2024 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
 
-import {resolveApiDef} from '../../../main/decorators/ClientApi.js';
+import {resolveContent} from '@nu-art/ts-common';
 import {strict as assert} from 'node:assert';
 
-describe('resolveApiDef', () => {
+describe('resolveContent (ResolvableContent for ApiDef)', () => {
 	it('returns object unchanged when first arg is object', () => {
 		const apiDef = {method: 'get', path: '/v1/test'};
 		const thisArg = {};
-		const out = resolveApiDef(apiDef, thisArg);
+		const out = resolveContent(apiDef, thisArg);
 		assert.strictEqual(out, apiDef);
 	});
 
-	it('calls getter with thisArg and returns its result when first arg is function', () => {
+	it('calls getter with first arg and returns its result when content is function', () => {
 		const apiDef = {method: 'post', path: '/v1/upsert'};
-		let receivedThis: unknown = null;
-		const getter = function (this: unknown) {
-			receivedThis = this;
+		let receivedArg: unknown = null;
+		const getter = (arg: unknown) => {
+			receivedArg = arg;
 			return apiDef;
 		};
 		const thisArg = {id: 42};
-		const out = resolveApiDef(getter, thisArg);
+		const out = resolveContent(getter, thisArg);
 		assert.strictEqual(out, apiDef);
-		assert.strictEqual(receivedThis, thisArg);
+		assert.strictEqual(receivedArg, thisArg);
 	});
 
 	it('returns ApiDef from getter when getter returns different def per call', () => {
 		let n = 0;
-		const getter = function () {
+		const getter = () => {
 			return {method: 'get', path: `/v1/call-${++n}`};
 		};
-		const first = resolveApiDef(getter, {});
-		const second = resolveApiDef(getter, {});
+		const first = resolveContent(getter, {});
+		const second = resolveContent(getter, {});
 		assert.strictEqual(first.path, '/v1/call-1');
 		assert.strictEqual(second.path, '/v1/call-2');
 	});

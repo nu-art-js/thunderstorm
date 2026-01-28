@@ -162,7 +162,7 @@ export class HttpClient_Class extends Logger {
 	 * - Method, timeout, and request options from client defaults
 	 * - Default headers (evaluated at creation time)
 	 * - Default error and completion callbacks (if set)
-	 * - URL (either fullUrl or composed from baseUrl/origin + path)
+	 * - URL composed from client origin + path
 	 *
 	 * @template API - Typed API definition
 	 * @param apiDef - API definition with method, path, and optional URL configuration
@@ -176,10 +176,7 @@ export class HttpClient_Class extends Logger {
 			.setRequestOption(this.requestOption)
 			.addHeaders(this.getDefaultHeaders());
 
-		if (apiDef.fullUrl)
-			request.setUrl(apiDef.fullUrl);
-		else
-			request.setOrigin(apiDef.baseUrl ?? this.origin).setRelativeUrl(apiDef.path);
+		request.setOrigin(this.origin).setRelativeUrl(apiDef.path);
 
 		if (this.defaultOnError)
 			request.setOnError(this.defaultOnError);

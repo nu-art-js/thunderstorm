@@ -9,7 +9,6 @@ import {
 	TestBaseApi,
 	TestBaseApiUpgrade,
 	TestBaseApiValidation,
-	__setTestHttpClientFactory,
 	testItemBaseDBConfig,
 	createStubCrudApiDefShape,
 	type DB_TestItem,
@@ -28,7 +27,6 @@ declare global {
 			testItemBaseDBConfig: typeof testItemBaseDBConfig;
 			createStubCrudApiDefShape: typeof createStubCrudApiDefShape;
 			cleanupDbApiIDB: typeof cleanupDbApiIDB;
-			__setTestHttpClientFactory: typeof __setTestHttpClientFactory;
 			TestItemTypes: unknown;
 			DB_TestItem: unknown;
 			UI_TestItem: unknown;
@@ -45,7 +43,6 @@ window.DbApiFrontend = {
 	testItemBaseDBConfig,
 	createStubCrudApiDefShape,
 	cleanupDbApiIDB,
-	__setTestHttpClientFactory,
 	TestItemTypes: undefined as unknown as TestItemTypes,
 	DB_TestItem: undefined as unknown as DB_TestItem,
 	UI_TestItem: undefined as unknown as UI_TestItem

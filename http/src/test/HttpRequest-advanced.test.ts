@@ -169,21 +169,6 @@ describe('HttpRequest - Advanced Features', () => {
 		}
 	})).timeout(30000);
 
-	it('Absolute URL override', runTestCase({
-		input: {
-			client,
-			apiDef: {
-				method: HttpMethod.GET,
-				path: '/get',
-				fullUrl: 'https://httpbin.org/get?test=absolute'
-			} as ApiDef<QueryApi<any, any>>
-		},
-		result: async (actual) => {
-			expect(actual.status).to.equal(200);
-			expect(actual.data.url).to.include('test=absolute');
-		}
-	})).timeout(30000);
-
 	it('Callback chaining - multiple onCompleted', async () => {
 		const request = client.createRequest({
 			method: HttpMethod.GET,
