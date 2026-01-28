@@ -352,7 +352,7 @@ export class ModuleBE_SessionDB_Class
 					sessionIdsToDelete.add(session._id);
 				}
 			}
-			session.validSessionJwtMd5s.forEach(id => {
+			session.validSessionJwtMd5s?.forEach(id => {
 				if (id !== session._id)
 					sessionIdsToDelete.add(id);
 			});
