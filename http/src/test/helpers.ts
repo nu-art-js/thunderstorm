@@ -48,12 +48,7 @@ export function assertHttpBinResponse(response: any): void {
  */
 export function createTestApiDef<API extends TypedApi<any, any, any, any>>(
 	method: HttpMethod,
-	path: string,
-	fullUrl?: string
+	path: string
 ): ApiDef<API> {
-	return {
-		method,
-		path,
-		...(fullUrl ? {fullUrl} : {})
-	} as ApiDef<API>;
+	return {method, path} as ApiDef<API>;
 }

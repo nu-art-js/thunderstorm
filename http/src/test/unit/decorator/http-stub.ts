@@ -1,9 +1,9 @@
 /*
- * @nu-art/db-api-frontend - Database API infrastructure for Thunderstorm frontend
- * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * @nu-art/http-client - Type-safe HTTP client for Thunderstorm
+ * Copyright (C) 2024 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  *
- * Stub for HttpClient.createRequest used by unit/decorator tests.
+ * Stub for HttpClient.createRequest used by ApiCaller unit tests.
  */
 
 export type RequestRecorder = {

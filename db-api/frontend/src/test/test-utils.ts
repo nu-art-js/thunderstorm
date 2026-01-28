@@ -7,7 +7,6 @@
  */
 
 import {cleanIDBStorage} from '@nu-art/idb-frontend';
-import {__setTestHttpClientFactory} from '../main/decorators/ClientApi.js';
 import {TestBaseApi, TestBaseApiUpgrade, TestBaseApiValidation} from './unit/run-serialized-by-id/test-base-api.js';
 import {
 	createStubCrudApiDefShape,
@@ -27,6 +26,5 @@ export async function cleanupDbApiIDB(): Promise<void> {
 
 // Re-export test helpers for Playwright tests
 export {TestBaseApi, TestBaseApiUpgrade, TestBaseApiValidation};
-export {__setTestHttpClientFactory};
 export {testItemBaseDBConfig, createStubCrudApiDefShape};
 export type {DB_TestItem, TestItemTypes, UI_TestItem};

@@ -7,9 +7,11 @@
 // Core classes
 export * from './core/HttpClient.js';
 export * from './core/HttpRequest.js';
+export * from './core/ApiCaller.js';
 
 // Types
 export * from './types/api-types.js';
+export * from './types/ApiCaller-types.js';
 export * from './types/error-types.js';
 export * from './types/types.js';
 

@@ -1,11 +1,10 @@
 /*
- * @nu-art/db-api-frontend - Database API infrastructure for Thunderstorm frontend
- * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * @nu-art/http-client - Type-safe HTTP client for Thunderstorm
+ * Copyright (C) 2024 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
 
-import {HttpMethod} from '@nu-art/http-client';
-import {isQueryMethod} from '../../../main/decorators/ClientApi.js';
+import {HttpMethod, isQueryMethod} from '../../../main/index.js';
 import {strict as assert} from 'node:assert';
 
 describe('isQueryMethod', () => {
