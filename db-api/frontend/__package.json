@@ -37,7 +37,9 @@
     "react": "?"
   },
   "devDependencies": {
-    "@types/react": "?"
+    "@types/react": "?",
+    "@playwright/test": "?",
+    "axios": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

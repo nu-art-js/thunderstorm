@@ -24,9 +24,6 @@
 export * from './decorators/index.js';
 
 // Modules
-export * from './ModuleFE_BaseApi.js';
-export * from './ModuleFE_BaseDB.js';
-export * from './types.js';
-
-// Utilities
-export * from './utils/api-helpers.js';
+export * from './base/ModuleFE_BaseApi.js';
+export * from './base/ModuleFE_BaseDB.js';
+export * from './base/types.js';

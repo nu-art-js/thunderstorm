@@ -142,7 +142,6 @@ export class ModuleFE_BaseDB<Types extends ModuleTypes>
 		this.attachOnLastSyncUpdatedListener();
 	}
 
-
 	setDispatcher(dispatcher: EventDispatcher) {
 		this.dispatcher = dispatcher;
 	}

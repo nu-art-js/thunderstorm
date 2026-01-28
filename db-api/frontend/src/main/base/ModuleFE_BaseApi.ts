@@ -5,57 +5,109 @@
  */
 
 import {ModuleFE_BaseDB, ModuleSyncType} from './ModuleFE_BaseDB.js';
-import {ApiCallContext} from '../decorators/types.js';
-import {ModuleTypes, BaseDBConfig} from './types.js';
+import {ClientApi} from '../decorators/ClientApi.js';
+import {ApiCallContext, CrudApiDefShape} from '../decorators/types.js';
+import {BaseDBConfig, ModuleTypes} from './types.js';
 import {EventDispatcher, NoOpDispatcher} from '../to-refactor/dispatcher.js';
+
+
+type RequestType = 'upsert' | 'patch' | 'delete';
+
+type PendingOp = {
+	requestType: RequestType;
+	fn: () => Promise<unknown>;
+	resolve: (value: unknown) => void;
+	reject: (reason: unknown) => void;
+};
+
+type Operation = {
+	running: { requestType: RequestType; promise: Promise<unknown> };
+	pending?: PendingOp;
+};
 
 
 /**
  * Base API module for frontend database operations.
  *
- * Extends BaseDB with API-specific functionality. Use the @ClientApi and
- * @ClientApiQuery decorators to define API endpoints.
+ * CRUD methods (query, queryUnique, upsert, upsertAll, patch, delete, deleteQuery, deleteAll)
+ * are declared and implemented in the base, using @ClientApi / @ClientApiQuery with lazy
+ * getters over readonly crudApiDef. Pass your ApiDef (e.g. MyApiDef.v1) into the constructor;
+ * the base stores it as readonly crudApiDef.
  *
  * @template Types - ModuleTypes that define the entity types (decoupled from Proto)
  *
  * @example
  * ```typescript
- * type UserModuleTypes = ModuleTypes<DB_User, UI_User, Validator_UI_User, ['_id']>;
- * 
- * class UserModule extends BaseApi<UserModuleTypes> {
- *   constructor() {
- *     super({
- *       dbKey: 'user',
- *       validator: Proto_User.modifiablePropsValidator,
- *       uniqueKeys: ['_id'],
- *       versions: ['v1'],
- *       dbConfig: { name: 'user', group: 'default', version: 'v1', uniqueKeys: ['_id'] }
- *     });
- *   }
- *
- *   @ClientApi(UserApiDef.v1.upsert, {
- *     onComplete: (module, ctx) => module.handleUpsertComplete(ctx)
- *   })
- *   async upsert(body: UI_User): Promise<DB_User> {
- *     body = this.cleanUp(body);
- *     this.validateInternal(body);
- *   }
- *
- *   private handleUpsertComplete(ctx: ApiCallContext<typeof UserApiDef.v1.upsert>) {
- *     this.onEntryUpdated(ctx.response, ctx.body!);
- *     this.IDB.setLastUpdated(ctx.response.__updated);
+ * class UserModule extends ModuleFE_BaseApi<UserModuleTypes> {
+ *   constructor(config: BaseDBConfig<UserModuleTypes>) {
+ *     super(config, UserApiDef.v1);
  *   }
  * }
+ * await UserModule.query({});
+ * await UserModule.upsert(uiUser);
  * ```
  */
 export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 	extends ModuleFE_BaseDB<Types> {
 
+	readonly crudApiDef: CrudApiDefShape;
+	private operationsById: Map<string, Operation> = new Map();
+
 	protected constructor(
 		config: BaseDBConfig<Types>,
+		crudApiDef: CrudApiDefShape,
 		dispatcher: EventDispatcher = NoOpDispatcher
 	) {
 		super(config, ModuleSyncType.APISync, dispatcher);
+		this.crudApiDef = crudApiDef;
+	}
+
+	/**
+	 * Run a Promise-returning function serialized per document id.
+	 * Only one upsert/patch/delete runs at a time per id; further work is queued.
+	 * Throws if a delete is running or queued for that id.
+	 */
+	protected runSerializedById<T>(id: string | undefined, requestType: RequestType, fn: () => Promise<T>): Promise<T> {
+		if (id === undefined || id === null || id === '')
+			return fn();
+
+		const op = this.operationsById.get(id);
+		if (op) {
+			if (op.running.requestType === 'delete' || op.pending?.requestType === 'delete')
+				throw new Error(`Item with id ${id} is marked for deletion`);
+			const p = new Promise<T>((resolve, reject) => {
+				const pending: PendingOp = {
+					requestType,
+					fn: fn as () => Promise<unknown>,
+					resolve: resolve as (value: unknown) => void,
+					reject
+				};
+				if (!op.pending) {
+					(op as { pending?: PendingOp }).pending = pending;
+					op.running.promise.finally(() => this.runNext(id));
+				} else
+					reject(new Error(`Item ${id}: only one pending operation allowed`));
+			});
+			return p;
+		}
+
+		const promise = fn();
+		this.operationsById.set(id, {running: {requestType, promise}});
+		promise.finally(() => this.runNext(id));
+		return promise;
+	}
+
+	private runNext(id: string): void {
+		const op = this.operationsById.get(id);
+		if (!op?.pending) {
+			this.operationsById.delete(id);
+			return;
+		}
+		const {pending} = op;
+		(op as { pending?: PendingOp }).pending = undefined;
+		const nextPromise = pending.fn().then(pending.resolve, pending.reject);
+		(op as { running: Operation['running'] }).running = {requestType: pending.requestType, promise: nextPromise};
+		nextPromise.finally(() => this.runNext(id));
 	}
 
 	/**
@@ -66,7 +118,91 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 		return toUpsert;
 	}
 
-	
+	@ClientApi(
+		function (this: ModuleFE_BaseApi<Types>) {
+			return this.crudApiDef.query;
+		},
+		{onComplete: (m, ctx) => m.handleQueryComplete(ctx)}
+	)
+	async query(body: Record<string, unknown> = {}): Promise<Types['dbItem'][]> {
+		void body;
+		return undefined as unknown as Types['dbItem'][];
+	}
+
+	@ClientApi(
+		function (this: ModuleFE_BaseApi<Types>) {
+			return this.crudApiDef.queryUnique;
+		},
+		{onComplete: (m, ctx) => m.handleQueryUniqueComplete(ctx)}
+	)
+	async queryUnique(params: Record<string, unknown>): Promise<Types['dbItem'] | undefined> {
+		void params;
+		return undefined as unknown as Types['dbItem'] | undefined;
+	}
+
+	@ClientApi(
+		function (this: ModuleFE_BaseApi<Types>) {
+			return this.crudApiDef.upsert;
+		},
+		{onComplete: (m, ctx) => m.handleUpsertComplete(ctx)}
+	)
+	async upsert(body: Types['uiItem']): Promise<Types['dbItem']> {
+		body = this.cleanUp(body);
+		this.validateInternal(body);
+		return undefined as unknown as Types['dbItem'];
+	}
+
+	@ClientApi(
+		function (this: ModuleFE_BaseApi<Types>) {
+			return this.crudApiDef.upsertAll;
+		},
+		{onComplete: (m, ctx) => m.handleUpsertAllComplete(ctx)}
+	)
+	async upsertAll(body: Types['uiItem'][]): Promise<Types['dbItem'][]> {
+		void body;
+		return undefined as unknown as Types['dbItem'][];
+	}
+
+	@ClientApi(
+		function (this: ModuleFE_BaseApi<Types>) {
+			return this.crudApiDef.patch;
+		},
+		{onComplete: (m, ctx) => m.handlePatchComplete(ctx)}
+	)
+	async patch(partial: Partial<Types['uiItem']> & { _id: string }): Promise<Types['dbItem']> {
+		void partial;
+		return undefined as unknown as Types['dbItem'];
+	}
+
+	@ClientApi(
+		function (this: ModuleFE_BaseApi<Types>) {
+			return this.crudApiDef.delete;
+		},
+		{onComplete: (m, ctx) => m.handleDeleteComplete(ctx)}
+	)
+	async delete(params: Record<string, unknown>): Promise<void> {
+		void params;
+	}
+
+	@ClientApi(
+		function (this: ModuleFE_BaseApi<Types>) {
+			return this.crudApiDef.deleteQuery;
+		},
+		{onComplete: (m, ctx) => m.handleDeleteQueryComplete(ctx)}
+	)
+	async deleteQuery(body: Record<string, unknown> = {}): Promise<void> {
+		void body;
+	}
+
+	@ClientApi(
+		function (this: ModuleFE_BaseApi<Types>) {
+			return this.crudApiDef.deleteAll;
+		},
+		{}
+	)
+	async deleteAll(_params: Record<string, unknown> = {}): Promise<void> {
+	}
+
 	/**
 	 * Standard callback for upsert operations.
 	 * Updates cache, IDB, and dispatches events.
