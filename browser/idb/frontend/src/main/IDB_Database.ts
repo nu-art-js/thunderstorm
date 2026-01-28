@@ -4,16 +4,14 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {AsyncVoidFunction, currentTimeMillis, generateHex} from '@nu-art/ts-common';
-import {Logger, LogLevel} from '@nu-art/logger';
-import {IDB_Store, StoreConfig} from './IDB_Store.js';
+import { AsyncVoidFunction, currentTimeMillis, generateHex } from '@nu-art/ts-common';
+import { Logger, LogLevel } from '@nu-art/logger';
+import { IDB_Store, StoreConfig } from './IDB_Store.js';
 
 
 /** LocalStorage key prefix for database store registry */
 export const StorageKeyPrefix_DBStores = 'idb-stores--';
 
-//@ts-ignore - set IDBAPI as indexedDB regardless of browser
-const IDBAPI: IDBFactory = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
 type StoreRegistry = {
 	stores: string[];       // Store names
@@ -58,6 +56,9 @@ export function getDatabase(dbName: string): IDB_Database {
 export class IDB_Database
 	extends Logger {
 
+	//@ts-ignore - set IDBAPI as indexedDB regardless of browser
+	private readonly IDBAPI: IDBFactory = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+
 	private readonly dbName: string;
 	private db!: IDBDatabase;
 	private openPromise?: Promise<IDB_Database>;
@@ -94,7 +95,8 @@ export class IDB_Database
 			return this.openPromise;
 		}
 
-		if (!IDBAPI)
+
+		if (!this.IDBAPI)
 			throw new Error('IndexedDB not supported in this browser');
 
 		return this.openPromise = this._openImpl();
@@ -120,7 +122,7 @@ export class IDB_Database
 
 		this.logInfo(`Deleting database`);
 		return new Promise((resolve, reject) => {
-			const request = IDBAPI.deleteDatabase(this.dbName);
+			const request = this.IDBAPI.deleteDatabase(this.dbName);
 			request.onsuccess = () => {
 				localStorage.removeItem(this.registryKey);
 				this.logInfo(`Database deleted`);
@@ -170,9 +172,9 @@ export class IDB_Database
 		this.logDebug(`Version: ${version}, NeedsUpgrade: ${needsUpgrade}`);
 
 		return new Promise((resolve, reject) => {
-			const request = IDBAPI.open(this.dbName, version);
+			const request = this.IDBAPI.open(this.dbName, version);
 
-			request.onblocked = (e) => {
+			request.onblocked = (e: Event) => {
 				this.logWarningBold(`Blocked - another tab holds the connection`, e);
 			};
 
