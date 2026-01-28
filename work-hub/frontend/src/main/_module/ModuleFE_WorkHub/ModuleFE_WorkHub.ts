@@ -1,12 +1,11 @@
 import {BadImplementationException, filterInstances, lastElement, mergeObject, Module, removeFromArrayByIndex, removeItemFromArray} from '@nu-art/ts-common';
-import {isWorkHubTab, isWorkHubTabGroup, WorkHubTab, WorkHubTabGroup} from '@nu-art/work-hub-shared';
+import {isWorkHubTab, isWorkHubTabGroup, PermissionKeys_WorkHubUI, WorkHubTab, WorkHubTabGroup} from '@nu-art/work-hub-shared';
 import {ModuleFE_WorkHub_GroupActions, ModuleFE_WorkHub_TabActions} from './types.js';
 import {dispatch_OnWorkHubTabSelected, dispatch_OnWorkHubTabsUpdated} from '../../dispatchers.js';
 import {StorageKey} from '@nu-art/thunderstorm-frontend';
 import {WorkHubItem} from '../../_core/work-hub-item.js';
 import {workHubTabGroupColors} from '../../_ui/Component_WorkHub_Header/renderers/Component_WorkHub_TabGroup/consts.js';
 import {ModuleFE_PermissionMapper, PermissionKey_FE} from '@nu-art/permissions-frontend';
-import {PermissionKeys_WorkHubUI} from '@nu-art/work-hub-shared';
 
 class ModuleFE_WorkHub_Class
 	extends Module {
@@ -19,6 +18,13 @@ class ModuleFE_WorkHub_Class
 		this._tabStack = this.storage_tabStack.get([]);
 		this._workHubItemMap = {};
 		this.permissions = PermissionKey_FE.generatePermissionKeysByLevels(PermissionKeys_WorkHubUI);
+		if (this._tabs.length && !this._tabStack.length) {
+			let firstTab = this._tabs[0];
+			if (isWorkHubTabGroup(firstTab))
+				firstTab = firstTab.tabs[0];
+
+			this._tabStack.push(firstTab.id);
+		}
 	}
 
 	//######################### Class Properties #########################
