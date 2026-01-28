@@ -4,13 +4,13 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-//@ts-ignore - set IDBAPI as indexedDB regardless of browser
-const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
 /**
  * Clears all IndexedDB databases
  */
 export const cleanIDBStorage = async (): Promise<void> => {
+	//@ts-ignore - set IDBAPI as indexedDB regardless of browser
+	const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 	console.log('Clearing all IDBs');
 	const databases = await IDBAPI.databases();
 	await Promise.all(databases.map(cleanIDBImpl));
@@ -26,6 +26,8 @@ const cleanIDBImpl = async (info: IDBDatabaseInfo): Promise<void> => {
 			return resolve();
 		}
 
+		//@ts-ignore - set IDBAPI as indexedDB regardless of browser
+		const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 		const request = IDBAPI.deleteDatabase(info.name);
 
 		request.onerror = () => {
