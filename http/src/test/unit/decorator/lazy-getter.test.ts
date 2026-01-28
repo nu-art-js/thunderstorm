@@ -4,17 +4,19 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {ApiCaller, HttpClient_Class, HttpMethod} from '../../../main/index.js';
-import {createRequestStub} from './http-stub.js';
-import {strict as assert} from 'node:assert';
+import {ApiCaller, HttpMethod} from '../../../main/index.js';
+import type {QueryApi} from '../../../main/types/api-types.js';
+import {createTestApiDef, createTestClient} from '../../helpers.js';
+import {expect} from 'chai';
 
-const mockResponse = {value: 42};
+type GetResponse = {url: string; args: Record<string, string>};
+type GetApi = QueryApi<GetResponse, {test?: string}>;
 
 describe('ApiCaller decorator - lazy getter', () => {
+	const client = createTestClient();
+
 	it('calls ApiDef getter with this equal to instance and uses returned ApiDef for request', async () => {
-		const {request} = createRequestStub(mockResponse);
-		const httpClient = {createRequest: () => request} as unknown as HttpClient_Class;
-		const apiDefFromGetter = {method: HttpMethod.GET, path: '/v1/lazy'};
+		const apiDefFromGetter = createTestApiDef<GetApi>(HttpMethod.GET, '/get');
 		let receivedThis: unknown = null;
 		class C {
 			getApiDef() {
@@ -24,13 +26,16 @@ describe('ApiCaller decorator - lazy getter', () => {
 
 			@ApiCaller(function (m: C) {
 				return m.getApiDef();
-			}, {httpClient})
-			async fetch() {
+			}, {httpClient: client})
+			async fetch(_p?: Record<string, string>) {
 				return undefined as any;
 			}
 		}
 		const c = new C();
-		await c.fetch();
-		assert.strictEqual(receivedThis, c);
-	});
+		const response = await c.fetch({test: 'lazy'});
+		expect(receivedThis).to.equal(c);
+		expect(response).to.be.an('object');
+		expect(response.args).to.deep.equal({test: 'lazy'});
+		expect(response.url).to.include('test=lazy');
+	}).timeout(30000);
 });

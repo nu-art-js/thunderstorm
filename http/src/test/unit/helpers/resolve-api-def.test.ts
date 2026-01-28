@@ -33,8 +33,8 @@ describe('resolveContent (ResolvableContent for ApiDef)', () => {
 		const getter = () => {
 			return {method: 'get', path: `/v1/call-${++n}`};
 		};
-		const first = resolveContent(getter, {});
-		const second = resolveContent(getter, {});
+		const first = resolveContent(getter);
+		const second = resolveContent(getter);
 		assert.strictEqual(first.path, '/v1/call-1');
 		assert.strictEqual(second.path, '/v1/call-2');
 	});
