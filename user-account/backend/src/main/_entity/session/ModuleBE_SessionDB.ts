@@ -352,12 +352,13 @@ export class ModuleBE_SessionDB_Class
 					sessionIdsToDelete.add(session._id);
 				}
 			}
-			session.validSessionJwtMd5s?.forEach(id => {
-				if (id !== session._id)
-					sessionIdsToDelete.add(id);
-			});
-			if (!session.validSessionJwtMd5s.length)
+			if (!session.validSessionJwtMd5s?.length)
 				sessionIdsToDelete.add(session._id);
+			else
+				session.validSessionJwtMd5s.forEach(id => {
+					if (id !== session._id)
+						sessionIdsToDelete.add(id);
+				});
 		});
 
 		//Second pass - collect all sessions that are expired or has the old "sessionData" property in their decoded data
