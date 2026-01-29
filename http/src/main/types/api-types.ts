@@ -7,7 +7,7 @@
 import type {ResponseError} from './error-types.js';
 import type {QueryParams} from './types.js';
 
-export type ApiType = TypedApi<any, any, any, any>;
+export type GeneralApi = TypedApi<any, any, any, any>;
 
 /**
  * HTTP method enumeration.
@@ -123,7 +123,7 @@ export type EmptyApi<R, M extends HttpMethod_Empty,
  *
  * @template API - Typed API definition
  */
-export type ApiDef<API extends TypedApi<any, any, any, any, any>> = {
+export type ApiDef<API extends GeneralApi> = {
 	method: API['Method'];
 	path: string;
 	timeout?: number;

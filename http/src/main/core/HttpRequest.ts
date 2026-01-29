@@ -10,10 +10,11 @@ import {composeUrl} from '../utils/utils.js';
 import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 // Axios v1+ import style
-import axios, {AxiosRequestConfig as Axios_RequestConfig, AxiosResponse as Axios_Response, CanceledError, ResponseType} from 'axios';
+import {AxiosRequestConfig as Axios_RequestConfig, AxiosResponse as Axios_Response, CanceledError, ResponseType} from 'axios';
 import {HttpException} from '../exceptions/HttpException.js';
 import {TS_Progress} from '../types/error-types.js';
-import {HttpMethod, TypedApi} from '../types/api-types.js';
+import type {HttpClient_Class} from './HttpClient.js';
+import {ApiDef, HttpMethod, GeneralApi} from '../types/api-types.js';
 
 /**
  * Typed HTTP request with fluent builder API and comprehensive logging.
@@ -31,7 +32,7 @@ import {HttpMethod, TypedApi} from '../types/api-types.js';
  *
  * @template API - Typed API definition specifying method, response, body, params, and error types
  */
-export class HttpRequest<API extends TypedApi<any, any, any, any>>
+export class HttpRequest<API extends GeneralApi>
 	extends Logger {
 	key: string;
 	requestData!: any;
@@ -58,26 +59,32 @@ export class HttpRequest<API extends TypedApi<any, any, any, any>>
 	protected status?: number;
 	private requestOption: Axios_RequestConfig = {};
 
+	private readonly client: HttpClient_Class;
+
 	/**
-	 * Creates a new HTTP request instance.
+	 * Creates a new HTTP request bound to a client.
+	 * Config (origin, timeout, headers) is taken from the client; execute() calls client.sendRequest().
 	 *
-	 * Automatically extends timeout to 5 minutes in debug mode for development.
-	 * Initializes AbortController for request cancellation support.
-	 *
-	 * @param requestKey - Identifier for this request (used in logging)
-	 * @param requestData - Optional data associated with the request
-	 * @param shouldCompress - Whether to enable compression (default: false)
+	 * @param apiDef - API definition (method, path, optional timeout)
+	 * @param client - HttpClient that provides config and performs the send
+	 * @param requestData - Optional data (used as request key identifier)
 	 */
-	constructor(requestKey: string, requestData?: any, shouldCompress?: boolean) {
-		const label = `http request: ${requestKey}${requestData ? ` ${requestData}` : ''}`;
+	constructor(apiDef: ApiDef<API>, client: HttpClient_Class, requestData?: any) {
+		const label = `http request: ${apiDef.path}${requestData ? ` ${requestData}` : ''}`;
 		super(label);
-		this.key = requestKey;
+		this.client = client;
+		this.key = apiDef.path;
 		this.requestData = requestData;
 		this.label = label;
-		this.compress = shouldCompress === undefined ? false : shouldCompress;
+		this.method = apiDef.method as HttpMethod;
+		this.compress = client.shouldCompress();
+		this.timeout = apiDef.timeout ?? client.getTimeout();
+		this.setRequestOption(client.getRequestOption());
+		this.addHeaders(client.getDefaultHeaders());
+		this.setOrigin(client.getOrigin()).setRelativeUrl(apiDef.path);
 
 		this.cancelController = new AbortController();
-		this.logVerbose('HttpRequest created', {key: requestKey, requestData, compress: this.compress, timeout: this.timeout});
+		this.logVerbose('HttpRequest created', {key: this.key, requestData, compress: this.compress, timeout: this.timeout});
 	}
 
 	resolveTypedException(exception: HttpException<any> | unknown): API['E'] | undefined {
@@ -372,7 +379,7 @@ export class HttpRequest<API extends TypedApi<any, any, any, any>>
 		this.logInfo(`Calling: ${this.method} - ${fullUrl}`);
 
 		try {
-			this.response = await axios.request<API['R']>(options);
+			this.response = await this.client.sendRequest(options) as Axios_Response<API['R']>;
 			this.status = this.response?.status ?? 200;
 			this.logVerbose('Response received', {status: this.status, headers: this.response.headers});
 		} catch (e: any) {

@@ -9,9 +9,9 @@ import {BadImplementationException, Logger} from '@nu-art/ts-common';
 import {HttpRequest} from './HttpRequest.js';
 
 // Axios v1+ import style
-import {AxiosRequestConfig as Axios_RequestConfig} from 'axios';
+import axios, {AxiosRequestConfig as Axios_RequestConfig, AxiosResponse as Axios_Response} from 'axios';
 import {HttpException} from '../exceptions/HttpException.js';
-import {ApiDef, TypedApi} from '../types/api-types.js';
+import {ApiDef, GeneralApi} from '../types/api-types.js';
 
 /**
  * HTTP client configuration.
@@ -80,8 +80,24 @@ export class HttpClient_Class extends Logger {
 		return this.origin;
 	}
 
+	getTimeout(): number {
+		return this.timeout;
+	}
+
+	getRequestOption(): Axios_RequestConfig {
+		return this.requestOption;
+	}
+
 	shouldCompress() {
 		return this.compress;
+	}
+
+	/**
+	 * Sends the request (single boundary to the real world).
+	 * Override in tests to assert on options and return a mock response.
+	 */
+	async sendRequest(options: Axios_RequestConfig): Promise<Axios_Response> {
+		return axios.request(options);
 	}
 
 	setDefaultOnComplete = (defaultOnComplete: (response: unknown, input: unknown, request: HttpRequest<any>) => Promise<any>) => {
@@ -156,34 +172,20 @@ export class HttpClient_Class extends Logger {
 	}
 
 	/**
-	 * Creates a new typed HTTP request with default configuration applied.
-	 *
-	 * The request is pre-configured with:
-	 * - Method, timeout, and request options from client defaults
-	 * - Default headers (evaluated at creation time)
-	 * - Default error and completion callbacks (if set)
-	 * - URL composed from client origin + path
+	 * Creates a new typed HTTP request bound to this client.
+	 * The request reads config (origin, timeout, headers) from this client and calls sendRequest on it when executing.
 	 *
 	 * @template API - Typed API definition
-	 * @param apiDef - API definition with method, path, and optional URL configuration
+	 * @param apiDef - API definition with method, path, and optional timeout
 	 * @param data - Optional request data (used as request key identifier)
-	 * @returns Configured HttpRequest instance ready for further customization
+	 * @returns HttpRequest instance ready for setUrlParams/setBodyAsJson and execute()
 	 */
-	createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: string): HttpRequest<API> {
-		const request = new HttpRequest<API>(apiDef.path, data, this.shouldCompress())
-			.setMethod(apiDef.method)
-			.setTimeout(this.timeout)
-			.setRequestOption(this.requestOption)
-			.addHeaders(this.getDefaultHeaders());
-
-		request.setOrigin(this.origin).setRelativeUrl(apiDef.path);
-
+	createRequest<API extends GeneralApi>(apiDef: ApiDef<API>, data?: string): HttpRequest<API> {
+		const request = new HttpRequest<API>(apiDef, this, data);
 		if (this.defaultOnError)
 			request.setOnError(this.defaultOnError);
-
 		if (this.defaultOnComplete)
 			request.setOnCompleted(this.defaultOnComplete);
-
 		return request;
 	}
 }
