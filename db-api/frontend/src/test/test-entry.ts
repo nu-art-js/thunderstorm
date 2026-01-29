@@ -4,6 +4,7 @@
  */
 
 import {ModuleFE_BaseApi, ModuleFE_BaseDB} from '../main/base/index.js';
+import {HttpClient} from '@nu-art/http-client';
 import {
 	cleanupDbApiIDB,
 	createStubCrudApiDefShape,
@@ -27,6 +28,7 @@ declare global {
 			testItemBaseDBConfig: typeof testItemBaseDBConfig;
 			createStubCrudApiDefShape: typeof createStubCrudApiDefShape;
 			cleanupDbApiIDB: typeof cleanupDbApiIDB;
+			HttpClient: typeof HttpClient
 			TestItemTypes: unknown;
 			DB_TestItem: unknown;
 			UI_TestItem: unknown;
@@ -46,10 +48,15 @@ window.DbApiFrontend = {
 	testItemBaseDBConfig,
 	createStubCrudApiDefShape,
 	cleanupDbApiIDB,
+	HttpClient,
 	TestItemTypes: undefined as unknown as TestItemTypes,
 	DB_TestItem: undefined as unknown as DB_TestItem,
 	UI_TestItem: undefined as unknown as UI_TestItem
 };
+
+// Note: tests should construct and inject a test HttpClient instance into TestBaseApi
+// instead of relying on global overrides. This keeps tests isolated and avoids
+// modifying prototype behavior at runtime.
 
 export {
 	ModuleFE_BaseDB,
