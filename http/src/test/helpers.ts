@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {ApiDef, HttpClient_Class, HttpConfig, HttpMethod, TypedApi} from '../main/index.js';
+import {ApiDef, HttpClient_Class, HttpConfig, HttpMethod, GeneralApi} from '../main/index.js';
 
 /**
  * Creates a test HttpClient with the specified origin and optional config
@@ -46,7 +46,7 @@ export function assertHttpBinResponse(response: any): void {
 /**
  * Creates a test API definition
  */
-export function createTestApiDef<API extends TypedApi<any, any, any, any>>(
+export function createTestApiDef<API extends GeneralApi>(
 	method: HttpMethod,
 	path: string
 ): ApiDef<API> {
