@@ -11,30 +11,27 @@ const testPagePath = '/src/test/index.html';
 test.describe('BaseApi - upsertAll', () => {
 	test.beforeEach(async ({page}) => {
 		await page.goto(testPagePath);
-		await page.waitForFunction(() => (window as any).DbApiFrontend !== undefined);
-		await page.evaluate(() => (window as any).DbApiFrontend.cleanupDbApiIDB());
+		await page.waitForFunction(() => (window as _Window).DbApiFrontend !== undefined);
+		await page.evaluate(() => (window as _Window).DbApiFrontend.cleanupDbApiIDB());
 	});
 
 	test('upsertAll(body) and handleUpsertAllComplete', async ({page}) => {
 		const result = await page.evaluate(async () => {
-			const {TestBaseApi, __setTestHttpClientFactory} = (window as any).DbApiFrontend;
+			const {TestBaseApi, HttpClient} = (window as _Window).DbApiFrontend;
 			const response = [
 				{_id: '1', name: 'a', __created: 1, __updated: 1, _v: 'v1'},
 				{_id: '2', name: 'b', __created: 2, __updated: 2, _v: 'v1'}
 			];
-			__setTestHttpClientFactory(() => ({
-				setUrlParams: () => {},
-				setBodyAsJson: () => {},
-				execute: () => Promise.resolve(response),
-				getRawResponse: () => ({data: response, status: 200, statusText: 'OK', headers: {}, config: {}})
-			}));
-			const api = new TestBaseApi();
+			const client = new HttpClient();
+			client.setConfig({origin: 'http://127.0.0.1'});
+			(client as any).sendRequest = async () => ({data: response, status: 200, statusText: 'OK', headers: {}, config: {}} as any);
+			const api = new TestBaseApi(client);
 			await api.init();
 			await api.upsertAll([{_id: '1', name: 'a'}, {_id: '2', name: 'b'}]);
 			const all = api.cache.all();
-			__setTestHttpClientFactory(null);
-			return {length: all.length};
+			return {length: all.length, items: all};
 		});
+		console.log('upsert-all items:', JSON.stringify(result.items));
 		expect(result.length).toBe(2);
 	});
 });
