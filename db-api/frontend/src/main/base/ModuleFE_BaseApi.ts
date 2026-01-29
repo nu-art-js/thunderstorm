@@ -5,10 +5,11 @@
  */
 
 import {ModuleFE_BaseDB, ModuleSyncType} from './ModuleFE_BaseDB.js';
-import {ApiCallContext, ApiCaller} from '@nu-art/http-client';
+import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
 import {CrudApiDefShape} from '../decorators/types.js';
 import {BaseDBConfig, ModuleTypes} from './types.js';
-import {EventDispatcher, NoOpDispatcher} from '../to-refactor/dispatcher.js';
+import {EventDispatcher} from '../to-refactor/dispatcher.js';
+import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -25,6 +26,13 @@ type Operation = {
 	pending?: PendingOp;
 };
 
+
+interface Params<Types extends ModuleTypes> {
+	config: BaseDBConfig<Types>,
+	crudApiDef: CrudApiDefShape,
+	dispatcher?: EventDispatcher
+	httpClient?: HttpClient
+}
 
 /**
  * Base API module for frontend database operations.
@@ -51,16 +59,15 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 	extends ModuleFE_BaseDB<Types> {
 
 	readonly crudApiDef: CrudApiDefShape;
+	readonly httpClient: ResolvableContent<HttpClient>;
 	private operationsById: Map<string, Operation> = new Map();
 
-	protected constructor(
-		config: BaseDBConfig<Types>,
-		crudApiDef: CrudApiDefShape,
-		dispatcher: EventDispatcher = NoOpDispatcher
-	) {
-		super(config, ModuleSyncType.APISync, dispatcher);
-		this.crudApiDef = crudApiDef;
+	protected constructor(params: Params<Types>) {
+		super(params.config, ModuleSyncType.APISync, params.dispatcher);
+		this.crudApiDef = params.crudApiDef;
+		this.httpClient = params.httpClient ?? (() => HttpClient.default);
 	}
+
 
 	/**
 	 * Run a Promise-returning function serialized per document id.
@@ -120,7 +127,10 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 
 	@ApiCaller(
 		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.query,
-		{onComplete: (m, ctx) => m.handleQueryComplete(ctx)}
+		{
+			httpClient: m => resolveContent(m.httpClient),
+			onComplete: (m, ctx) => m.handleQueryComplete(ctx)
+		}
 	)
 	async query(body: Record<string, unknown> = {}): Promise<Types['dbItem'][]> {
 		void body;
@@ -129,7 +139,10 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 
 	@ApiCaller(
 		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.queryUnique,
-		{onComplete: (m, ctx) => m.handleQueryUniqueComplete(ctx)}
+		{
+			httpClient: m => resolveContent(m.httpClient),
+			onComplete: (m, ctx) => m.handleQueryUniqueComplete(ctx)
+		}
 	)
 	async queryUnique(params: Record<string, unknown>): Promise<Types['dbItem'] | undefined> {
 		void params;
@@ -138,7 +151,10 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 
 	@ApiCaller(
 		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.upsert,
-		{onComplete: (m, ctx) => m.handleUpsertComplete(ctx)}
+		{
+			httpClient: m => resolveContent(m.httpClient),
+			onComplete: (m, ctx) => m.handleUpsertComplete(ctx)
+		}
 	)
 	async upsert(body: Types['uiItem']): Promise<Types['dbItem']> {
 		body = this.cleanUp(body);
@@ -148,7 +164,10 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 
 	@ApiCaller(
 		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.upsertAll,
-		{onComplete: (m, ctx) => m.handleUpsertAllComplete(ctx)}
+		{
+			httpClient: m => resolveContent(m.httpClient),
+			onComplete: (m, ctx) => m.handleUpsertAllComplete(ctx)
+		}
 	)
 	async upsertAll(body: Types['uiItem'][]): Promise<Types['dbItem'][]> {
 		void body;
@@ -157,7 +176,10 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 
 	@ApiCaller(
 		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.patch,
-		{onComplete: (m, ctx) => m.handlePatchComplete(ctx)}
+		{
+			httpClient: m => resolveContent(m.httpClient),
+			onComplete: (m, ctx) => m.handlePatchComplete(ctx)
+		}
 	)
 	async patch(partial: Partial<Types['uiItem']> & { _id: string }): Promise<Types['dbItem']> {
 		void partial;
@@ -166,7 +188,10 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 
 	@ApiCaller(
 		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.delete,
-		{onComplete: (m, ctx) => m.handleDeleteComplete(ctx)}
+		{
+			httpClient: m => resolveContent(m.httpClient),
+			onComplete: (m, ctx) => m.handleDeleteComplete(ctx)
+		}
 	)
 	async delete(params: Record<string, unknown>): Promise<void> {
 		void params;
@@ -174,13 +199,18 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 
 	@ApiCaller(
 		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.deleteQuery,
-		{onComplete: (m, ctx) => m.handleDeleteQueryComplete(ctx)}
+		{
+			httpClient: m => resolveContent(m.httpClient),
+			onComplete: (m, ctx) => m.handleDeleteQueryComplete(ctx)
+		}
 	)
 	async deleteQuery(body: Record<string, unknown> = {}): Promise<void> {
 		void body;
 	}
 
-	@ApiCaller((m: ModuleFE_BaseApi<Types>) => m.crudApiDef.deleteAll, {})
+	@ApiCaller((m: ModuleFE_BaseApi<Types>) => m.crudApiDef.deleteAll, {
+		httpClient: m => resolveContent(m.httpClient),
+	})
 	async deleteAll(_params: Record<string, unknown> = {}): Promise<void> {
 	}
 

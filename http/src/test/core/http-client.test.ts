@@ -19,13 +19,13 @@
  * limitations under the License.
  */
 
-import {HttpClient_Class, HttpMethod, QueryApi} from '../main/index.js';
+import {HttpClient, HttpMethod, QueryApi} from '../../main/index.js';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
-import {createTestApiDef, createTestClient} from './helpers.js';
+import {createTestApiDef, createTestClient} from '../helpers.js';
 import {expect} from 'chai';
 
 type Input = {
-	client: HttpClient_Class;
+	client: HttpClient;
 	config?: {
 		origin?: string;
 		timeout?: number;
@@ -197,3 +197,4 @@ describe('HttpClient - Configuration', () => {
 		expect(response.headers['X-Test-Header']).to.equal('test-value');
 	}).timeout(30000);
 });
+

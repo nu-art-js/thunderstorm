@@ -13,7 +13,7 @@ import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu
 import {AxiosRequestConfig as Axios_RequestConfig, AxiosResponse as Axios_Response, CanceledError, ResponseType} from 'axios';
 import {HttpException} from '../exceptions/HttpException.js';
 import {TS_Progress} from '../types/error-types.js';
-import type {HttpClient_Class} from './HttpClient.js';
+import type {HttpClient} from './HttpClient.js';
 import {ApiDef, HttpMethod, GeneralApi} from '../types/api-types.js';
 
 /**
@@ -59,7 +59,7 @@ export class HttpRequest<API extends GeneralApi>
 	protected status?: number;
 	private requestOption: Axios_RequestConfig = {};
 
-	private readonly client: HttpClient_Class;
+	private readonly client: HttpClient;
 
 	/**
 	 * Creates a new HTTP request bound to a client.
@@ -69,7 +69,7 @@ export class HttpRequest<API extends GeneralApi>
 	 * @param client - HttpClient that provides config and performs the send
 	 * @param requestData - Optional data (used as request key identifier)
 	 */
-	constructor(apiDef: ApiDef<API>, client: HttpClient_Class, requestData?: any) {
+	constructor(apiDef: ApiDef<API>, client: HttpClient, requestData?: any) {
 		const label = `http request: ${apiDef.path}${requestData ? ` ${requestData}` : ''}`;
 		super(label);
 		this.client = client;

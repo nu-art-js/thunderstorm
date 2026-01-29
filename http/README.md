@@ -23,7 +23,7 @@ In the monorepo, add the package as a dependency in `__package.json` of the cons
 }
 ```
 
-Import and use the client in your code. When using the default client, call `setDefaultConfig` and `init()` before creating requests.
+Import and use the client in your code. Create an `HttpClient` instance and configure it (via `setDefaultConfig`) before creating requests.
 
 ## Quick Start
 
@@ -60,20 +60,7 @@ const user = await request
   .execute();
 ```
 
-### Using the Default Client
-
-```typescript
-import {httpClient} from '@nu-art/http-client';
-
-// Configure the default client
-httpClient.setDefaultConfig({
-  origin: 'https://api.example.com'
-});
-httpClient.init();
-
-// Use it directly
-const request = httpClient.createRequest({...});
-```
+<!-- This package does not export a pre-configured default client. Instantiate `HttpClient` where needed. -->
 
 ## 3. Key Features
 
@@ -272,7 +259,6 @@ import {
   // Core classes
   HttpClient,
   HttpRequest,
-  httpClient,
   
   // Types
   TypedApi,

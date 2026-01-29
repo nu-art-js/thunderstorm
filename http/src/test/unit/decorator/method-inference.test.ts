@@ -5,10 +5,10 @@
  */
 
 import {ApiCaller, HttpMethod} from '../../../main/index.js';
-import type {BodyApi, QueryApi} from '../../../main/types/api-types.js';
-import type {ResponseError} from '../../../main/types/error-types.js';
-import {createTestClient} from '../../helpers.js';
+import type {BodyApi, QueryApi} from '../../../main/index.js';
+import type {ResponseError} from '../../../main/index.js';
 import {expect} from 'chai';
+import {TestHttpClient} from '../../helpers.js';
 
 // httpbin.org response shapes
 type GetResponse = {url: string; args: Record<string, string>; headers: Record<string, string>};
@@ -19,7 +19,8 @@ type PutApi = BodyApi<PostResponse, Record<string, unknown>, Record<string, unkn
 type PatchApi = BodyApi<PostResponse, Record<string, unknown>, Record<string, unknown>, ResponseError, typeof HttpMethod.PATCH>;
 
 describe('ApiCaller decorator - method inference', () => {
-	const client = createTestClient();
+	const client = new TestHttpClient();
+	client.setConfig({ origin: 'https://example.org' });
 
 	it('uses setUrlParams for GET', async () => {
 		class C {
@@ -28,11 +29,14 @@ describe('ApiCaller decorator - method inference', () => {
 				return undefined as any;
 			}
 		}
+		const responseBody = {url: 'https://example.org/get?id=x', args: {id: 'x'}, headers: {}};
+		client.setMockResponse({data: responseBody, status: 200, statusText: 'OK', headers: {}, config: {}});
 		const c = new C();
 		const response = await c.get({id: 'x'});
+		expect(client.lastOptions).to.be.an('object');
+		expect((client.lastOptions!.url as string)).to.include('id=x');
 		expect(response).to.be.an('object');
-		expect(response.args).to.deep.equal({id: 'x'});
-		expect(response.url).to.include('id=x');
+		expect(response).to.deep.equal(responseBody);
 	}).timeout(30000);
 
 	it('uses setUrlParams for DELETE', async () => {
@@ -42,10 +46,13 @@ describe('ApiCaller decorator - method inference', () => {
 				return undefined as any;
 			}
 		}
+		const responseBody = {url: 'https://example.org/delete?_id=y', args: {_id: 'y'}, headers: {}};
+		client.setMockResponse({data: responseBody, status: 200, statusText: 'OK', headers: {}, config: {}});
 		const c = new C();
 		const response = await c.del({_id: 'y'});
-		expect(response).to.be.an('object');
-		expect(response.args).to.deep.equal({_id: 'y'});
+		expect(client.lastOptions).to.be.an('object');
+		expect((client.lastOptions!.url as string)).to.include('_id=y');
+		expect(response).to.deep.equal(responseBody);
 	}).timeout(30000);
 
 	it('uses setBodyAsJson for POST', async () => {
@@ -55,10 +62,13 @@ describe('ApiCaller decorator - method inference', () => {
 				return undefined as any;
 			}
 		}
+		const responseBody = {url: 'https://example.org/post', json: {name: 'foo'}, data: ''};
+		client.setMockResponse({data: responseBody, status: 200, statusText: 'OK', headers: {}, config: {}});
 		const c = new C();
 		const response = await c.post({name: 'foo'});
-		expect(response).to.be.an('object');
-		expect(response.json).to.deep.equal({name: 'foo'});
+		expect(client.lastOptions).to.be.an('object');
+		expect(client.lastOptions!.data).to.deep.equal({name: 'foo'});
+		expect(response).to.deep.equal(responseBody);
 	}).timeout(30000);
 
 	it('uses setBodyAsJson for PUT and PATCH', async () => {
@@ -73,10 +83,16 @@ describe('ApiCaller decorator - method inference', () => {
 				return undefined as any;
 			}
 		}
+		const putBody = {url: 'https://example.org/put', json: {x: 1}};
+		const patchBody = {url: 'https://example.org/patch', json: {y: 2}};
+		client.setMockResponse({data: putBody, status: 200, statusText: 'OK', headers: {}, config: {}});
 		const c = new C();
 		const putResponse = await c.put({x: 1});
-		expect(putResponse.json).to.deep.equal({x: 1});
+		expect(client.lastOptions!.data).to.deep.equal({x: 1});
+		expect(putResponse).to.deep.equal(putBody);
+		client.setMockResponse({data: patchBody, status: 200, statusText: 'OK', headers: {}, config: {}});
 		const patchResponse = await c.patch({y: 2});
-		expect(patchResponse.json).to.deep.equal({y: 2});
+		expect(client.lastOptions!.data).to.deep.equal({y: 2});
+		expect(patchResponse).to.deep.equal(patchBody);
 	}).timeout(30000);
 });

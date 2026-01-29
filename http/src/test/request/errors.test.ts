@@ -19,13 +19,13 @@
  * limitations under the License.
  */
 
-import {ApiDef, HttpClient_Class, HttpException, HttpMethod, QueryApi} from '../main/index.js';
+import {ApiDef, HttpClient, HttpException, HttpMethod, QueryApi} from '../../main/index.js';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
-import {createTestClient} from './helpers.js';
+import {createTestClient} from '../helpers.js';
 import {expect} from 'chai';
 
 type Input = {
-	client: HttpClient_Class;
+	client: HttpClient;
 	statusCode: number;
 };
 
@@ -144,3 +144,4 @@ describe('HttpRequest - Error Handling', () => {
 		}
 	})).timeout(30000);
 });
+

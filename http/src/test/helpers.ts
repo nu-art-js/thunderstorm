@@ -19,36 +19,62 @@
  * limitations under the License.
  */
 
-import {ApiDef, HttpClient_Class, HttpConfig, HttpMethod, GeneralApi} from '../main/index.js';
+import {ApiDef, GeneralApi, HttpClient, HttpConfig, HttpMethod} from '../main/index.js';
+import {AxiosRequestConfig, AxiosResponse} from 'axios';
 
 /**
  * Creates a test HttpClient with the specified origin and optional config
  */
-export function createTestClient(origin: string = 'https://httpbin.org', config?: Partial<HttpConfig>): HttpClient_Class {
-	const client = new HttpClient_Class({
+export function createTestClient(origin: string = 'https://httpbin.org', config?: Partial<HttpConfig>): HttpClient {
+	return new HttpClient({
 		origin,
 		timeout: 30000,
 		compress: false,
 		...config
 	});
-	return client;
 }
 
-/**
- * Asserts that a response from httpbin.org has the expected structure
- */
-export function assertHttpBinResponse(response: any): void {
-	if (!response || typeof response !== 'object') {
-		throw new Error('Expected httpbin response to be an object');
-	}
-}
 
 /**
  * Creates a test API definition
  */
-export function createTestApiDef<API extends GeneralApi>(
-	method: HttpMethod,
-	path: string
-): ApiDef<API> {
+export function createTestApiDef<API extends GeneralApi>(method: HttpMethod, path: string): ApiDef<API> {
 	return {method, path} as ApiDef<API>;
 }
+
+
+export class TestHttpClient
+	extends HttpClient {
+
+	public lastOptions?: AxiosRequestConfig;
+	private mockResponse?: AxiosResponse;
+
+	/** Set a canned axios-like response (partial allowed). Accepts any shape for convenience in tests. */
+	setMockResponse(response: any) {
+		this.mockResponse = response as AxiosResponse;
+	}
+
+	/** Clear recorded options and mock response */
+	reset() {
+		this.lastOptions = undefined;
+		this.mockResponse = undefined;
+	}
+
+	/** Override boundary that performs the real request – tests intercept here. */
+	async sendRequest(options: AxiosRequestConfig): Promise<any> {
+		this.lastOptions = options;
+		if (!this.mockResponse) {
+			// default fallback response
+			return {
+				data: {},
+				status: 200,
+				statusText: 'OK',
+				headers: {},
+				config: options
+			} as any;
+		}
+		return this.mockResponse as any;
+	}
+}
+
+

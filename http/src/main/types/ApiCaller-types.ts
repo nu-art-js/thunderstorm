@@ -4,8 +4,9 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {HttpClient_Class} from '../core/HttpClient.js';
+import type {HttpClient} from '../core/HttpClient.js';
 import type {ApiDef, GeneralApi} from './api-types.js';
+import {ResolvableContent} from '@nu-art/ts-common';
 
 
 /**
@@ -51,7 +52,7 @@ export type ModuleCallback<Module, API extends GeneralApi> =
  */
 export type ApiCallerOptions<Module, API extends GeneralApi> = {
 	onComplete?: ModuleCallback<Module, API>;
-	httpClient?: HttpClient_Class;
+	httpClient?: ResolvableContent<HttpClient, [Module]>;
 };
 
 /** @deprecated Use ApiCallerOptions. */

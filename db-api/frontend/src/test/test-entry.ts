@@ -3,15 +3,15 @@
  * Exposes package exports to window for page.evaluate() — main/ + test-utils only (playwright-tests rule).
  */
 
-import {ModuleFE_BaseDB, ModuleFE_BaseApi} from '../main/base/index.js';
+import {ModuleFE_BaseApi, ModuleFE_BaseDB} from '../main/base/index.js';
 import {
 	cleanupDbApiIDB,
+	createStubCrudApiDefShape,
+	type DB_TestItem,
 	TestBaseApi,
 	TestBaseApiUpgrade,
 	TestBaseApiValidation,
 	testItemBaseDBConfig,
-	createStubCrudApiDefShape,
-	type DB_TestItem,
 	type TestItemTypes,
 	type UI_TestItem
 } from './test-utils.js';
@@ -32,7 +32,10 @@ declare global {
 			UI_TestItem: unknown;
 		};
 	}
+
+	type _Window = typeof window;
 }
+
 
 window.DbApiFrontend = {
 	ModuleFE_BaseDB,
