@@ -19,9 +19,9 @@
  * limitations under the License.
  */
 
-import {ApiDef, BodyApi, HttpClient_Class, HttpMethod, HttpRequest, QueryApi} from '../main/index.js';
+import {ApiDef, BodyApi, HttpClient, HttpMethod, HttpRequest, QueryApi} from '../../main/index.js';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
-import {createTestApiDef, createTestClient} from './helpers.js';
+import {createTestApiDef, createTestClient} from '../helpers.js';
 import {expect} from 'chai';
 
 // Test API types
@@ -29,7 +29,7 @@ type GetApi = QueryApi<{url: string; args: any; headers: any}, {test?: string}>;
 type PostApi = BodyApi<{json: any; data?: string; url: string}, {test?: string}, {test?: string}>;
 
 type Input = {
-	client: HttpClient_Class;
+	client: HttpClient;
 	apiDef: ApiDef<any>;
 	requestData?: string;
 	setup?: (request: HttpRequest<any>) => HttpRequest<any>;
@@ -196,3 +196,4 @@ describe('HttpRequest - Basic Methods', () => {
 		}
 	})).timeout(30000);
 });
+

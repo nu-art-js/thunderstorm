@@ -4,13 +4,13 @@
  * Licensed under the Apache License, Version 2.0
  */
 
+import type {QueryApi} from '../../../main/index.js';
 import {ApiCaller, HttpMethod} from '../../../main/index.js';
-import type {QueryApi} from '../../../main/types/api-types.js';
 import {createTestApiDef, createTestClient} from '../../helpers.js';
 import {expect} from 'chai';
 
-type GetResponse = {url: string; args: Record<string, string>};
-type GetApi = QueryApi<GetResponse, {test?: string}>;
+type GetResponse = { url: string; args: Record<string, string> };
+type GetApi = QueryApi<GetResponse, { test?: string }>;
 
 describe('ApiCaller decorator - lazy getter', () => {
 	const client = createTestClient();
@@ -18,6 +18,7 @@ describe('ApiCaller decorator - lazy getter', () => {
 	it('calls ApiDef getter with this equal to instance and uses returned ApiDef for request', async () => {
 		const apiDefFromGetter = createTestApiDef<GetApi>(HttpMethod.GET, '/get');
 		let receivedThis: unknown = null;
+
 		class C {
 			getApiDef() {
 				receivedThis = this;
@@ -31,6 +32,7 @@ describe('ApiCaller decorator - lazy getter', () => {
 				return undefined as any;
 			}
 		}
+
 		const c = new C();
 		const response = await c.fetch({test: 'lazy'});
 		expect(receivedThis).to.equal(c);

@@ -6,17 +6,21 @@
  * Test-only subclass that exposes runSerializedById for unit tests.
  */
 
-import {ModuleFE_BaseApi} from '../../../main/base/ModuleFE_BaseApi.js';
+import {ModuleFE_BaseApi} from '../../../main/index.js';
+import type {TestItemTypes, TestItemTypesFailingValidator, UI_TestItem} from '../../fixtures/index.js';
 import {createStubCrudApiDefShape, testItemBaseDBConfig, testItemBaseDBConfigFailingValidator, testItemBaseDBConfigUpgrade} from '../../fixtures/index.js';
-import type {TestItemTypes, TestItemTypesFailingValidator} from '../../fixtures/index.js';
-import type {UI_TestItem} from '../../fixtures/index.js';
+import {HttpClient} from '@nu-art/http-client';
 
 /** Test-only subclass exposing protected runSerializedById. Name ends with _Class for Module base. */
 export class TestBaseApi_Class
 	extends ModuleFE_BaseApi<TestItemTypes> {
 
-	constructor() {
-		super(testItemBaseDBConfig, createStubCrudApiDefShape());
+	constructor(client: HttpClient) {
+		super({
+			config: testItemBaseDBConfig,
+			crudApiDef: createStubCrudApiDefShape(),
+			httpClient: client
+		});
 	}
 
 	/** Exposes runSerializedById for tests. */
@@ -34,8 +38,12 @@ export class TestBaseApi_Class
 export class TestBaseApiValidation_Class
 	extends ModuleFE_BaseApi<TestItemTypesFailingValidator> {
 
-	constructor() {
-		super(testItemBaseDBConfigFailingValidator, createStubCrudApiDefShape());
+	constructor(client: HttpClient) {
+		super({
+			config: testItemBaseDBConfigFailingValidator,
+			crudApiDef: createStubCrudApiDefShape(),
+			httpClient: client
+		});
 	}
 
 	validateInternalExposed(data: Partial<UI_TestItem>): void {
@@ -47,8 +55,12 @@ export class TestBaseApiValidation_Class
 export class TestBaseApiUpgrade_Class
 	extends ModuleFE_BaseApi<TestItemTypes> {
 
-	constructor() {
-		super(testItemBaseDBConfigUpgrade, createStubCrudApiDefShape());
+	constructor(client: HttpClient) {
+		super({
+			config: testItemBaseDBConfigUpgrade,
+			crudApiDef: createStubCrudApiDefShape(),
+			httpClient: client
+		});
 	}
 }
 

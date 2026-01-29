@@ -4,10 +4,10 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {ApiDef, ApiType, HttpMethod} from '../types/api-types.js';
-import {HttpClient} from './HttpClient.js';
+import {ApiDef, GeneralApi, HttpMethod} from '../types/api-types.js';
 import type {ApiCallback, ApiCallContext, ApiCallerOptions, RawHttpResponse} from '../types/ApiCaller-types.js';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {HttpClient} from './HttpClient.js';
 
 
 /** True when ApiDef uses query params (GET/DELETE); false when it uses body (POST/PUT/PATCH). */
@@ -19,20 +19,20 @@ export function isQueryMethod(method: string): boolean {
  * TC39 Stage 3 decorator for API calls. Infers body vs query from apiDef.method:
  * GET/DELETE → params, setUrlParams; POST/PUT/PATCH → body, setBodyAsJson.
  *
- * @param apiDefOrGetter - API definition or ResolvableContent (value or getter with instance as first arg)
+ * @param _apiDef - API definition or ResolvableContent (value or getter with instance as first arg)
  * @param options - Optional: onComplete, httpClient (default shared HttpClient)
  */
-export function ApiCaller<API extends ApiType, Module = any>(apiDefOrGetter: ResolvableContent<ApiDef<API>, [Module]>, options?: ApiCallerOptions<Module, API>) {
+export function ApiCaller<API extends GeneralApi, Module = any>(_apiDef: ResolvableContent<ApiDef<API>, [Module]>, options?: ApiCallerOptions<Module, API>) {
 	return function <This extends Module>(originalMethod: (this: This, payload: API['B'] | API['P'], userCallback?: ApiCallback<API>) => unknown, context: ClassMethodDecoratorContext<This>) {
 		return async function (this: This, payload: API['B'] | API['P'], userCallback?: ApiCallback<API>): Promise<API['R']> {
 			await originalMethod.call(this, payload, userCallback);
 
-			const apiDef = resolveContent(apiDefOrGetter, this);
+			const apiDef = resolveContent(_apiDef, this);
 			const method = (apiDef as { method: string }).method;
 			const useQuery = isQueryMethod(method);
 
 			const startTime = Date.now();
-			const client = options?.httpClient ?? HttpClient;
+			const client = resolveContent(options?.httpClient, this) ?? HttpClient.default;
 			const request = client.createRequest(apiDef);
 			if (useQuery)
 				request.setUrlParams(payload as API['P']);

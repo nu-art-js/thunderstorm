@@ -5,6 +5,8 @@
  */
 
 import {expect, test} from '@playwright/test';
+import {HttpClient} from '@nu-art/http-client';
+import {AxiosResponse as Axios_Response} from 'axios';
 
 const testPagePath = '/src/test/index.html';
 
@@ -17,19 +19,15 @@ test.describe('BaseApi - query', () => {
 
 	test('query(body) triggers request and handleQueryComplete updates cache/IDB', async ({page}) => {
 		const result = await page.evaluate(async () => {
-			const {TestBaseApi, __setTestHttpClientFactory} = (window as any).DbApiFrontend;
+			const {TestBaseApi,} = (window as _Window).DbApiFrontend;
 			const response = [{_id: '1', name: 'a', __created: 1, __updated: 1, _v: 'v1'}];
-			__setTestHttpClientFactory(() => ({
-				setUrlParams: () => {},
-				setBodyAsJson: (b: any) => {},
-				execute: () => Promise.resolve(response),
-				getRawResponse: () => ({data: response, status: 200, statusText: 'OK', headers: {}, config: {}})
-			}));
-			const api = new TestBaseApi();
+			const client = new HttpClient();
+			client.sendRequest = async () => ({data: response, status: 200, statusText: 'OK', headers: {}, config: {}} as Axios_Response);
+
+			const api = new TestBaseApi(client);
 			await api.init();
 			await api.query({});
 			const all = api.cache.all();
-			__setTestHttpClientFactory(null);
 			return {length: all.length, first: all[0]};
 		});
 		expect(result.length).toBe(1);

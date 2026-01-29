@@ -5,31 +5,31 @@
  */
 
 import {HttpMethod, isQueryMethod} from '../../../main/index.js';
-import {strict as assert} from 'node:assert';
+import {expect} from 'chai';
 
 describe('isQueryMethod', () => {
 	it('returns true for GET', () => {
-		assert.strictEqual(isQueryMethod(HttpMethod.GET), true);
+		expect(isQueryMethod(HttpMethod.GET)).to.equal(true);
 	});
 
 	it('returns true for DELETE', () => {
-		assert.strictEqual(isQueryMethod(HttpMethod.DELETE), true);
+		expect(isQueryMethod(HttpMethod.DELETE)).to.equal(true);
 	});
 
 	it('returns false for POST', () => {
-		assert.strictEqual(isQueryMethod(HttpMethod.POST), false);
+		expect(isQueryMethod(HttpMethod.POST)).to.equal(false);
 	});
 
 	it('returns false for PUT', () => {
-		assert.strictEqual(isQueryMethod(HttpMethod.PUT), false);
+		expect(isQueryMethod(HttpMethod.PUT)).to.equal(false);
 	});
 
 	it('returns false for PATCH', () => {
-		assert.strictEqual(isQueryMethod(HttpMethod.PATCH), false);
+		expect(isQueryMethod(HttpMethod.PATCH)).to.equal(false);
 	});
 
 	it('returns false for unknown method string', () => {
-		assert.strictEqual(isQueryMethod('OPTIONS'), false);
-		assert.strictEqual(isQueryMethod('HEAD'), false);
+		expect(isQueryMethod('OPTIONS')).to.equal(false);
+		expect(isQueryMethod('HEAD')).to.equal(false);
 	});
 });

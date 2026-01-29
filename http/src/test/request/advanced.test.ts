@@ -19,13 +19,13 @@
  * limitations under the License.
  */
 
-import {ApiDef, BodyApi, HttpClient_Class, HttpException, HttpMethod, HttpRequest, QueryApi, TS_Progress} from '../main/index.js';
+import {ApiDef, BodyApi, HttpClient, HttpException, HttpMethod, HttpRequest, QueryApi, TS_Progress} from '../../main/index.js';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
-import {createTestApiDef, createTestClient} from './helpers.js';
+import {createTestApiDef, createTestClient} from '../helpers.js';
 import {expect} from 'chai';
 
 type Input = {
-	client: HttpClient_Class;
+	client: HttpClient;
 	apiDef: ApiDef<any>;
 	setup?: (request: HttpRequest<any>) => HttpRequest<any>;
 };
@@ -269,3 +269,4 @@ describe('HttpRequest - Advanced Features', () => {
 		expect(request).to.exist;
 	}).timeout(30000);
 });
+

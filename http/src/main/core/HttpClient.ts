@@ -31,7 +31,8 @@ export type HttpConfig = {
  *
  * Extends Logger for built-in logging capabilities.
  */
-export class HttpClient_Class extends Logger {
+export class HttpClient
+	extends Logger {
 	protected origin?: string;
 	protected timeout: number = 10000;
 	protected compress: boolean = true;
@@ -39,6 +40,12 @@ export class HttpClient_Class extends Logger {
 	protected defaultOnComplete?: (response: unknown, input: unknown, request: HttpRequest<any>) => Promise<any>;
 	protected defaultOnError?: (errorResponse: HttpException) => Promise<any>;
 	private requestOption: Axios_RequestConfig = {};
+
+	static default: HttpClient;
+
+	static setDefault(config: HttpConfig) {
+		this.default = new HttpClient(config);
+	}
 
 	/**
 	 * Creates a new HTTP client instance.
@@ -141,11 +148,11 @@ export class HttpClient_Class extends Logger {
 					toRet[key] = [defaultHeader];
 					break;
 
-			case 'function':
-				const functionResult = defaultHeader();
-				// Wrap string results in array, keep arrays as-is
-				toRet[key] = typeof functionResult === 'string' ? [functionResult] : functionResult;
-				break;
+				case 'function':
+					const functionResult = defaultHeader();
+					// Wrap string results in array, keep arrays as-is
+					toRet[key] = typeof functionResult === 'string' ? [functionResult] : functionResult;
+					break;
 
 				case 'object':
 					if (Array.isArray(defaultHeader)) {
@@ -189,5 +196,3 @@ export class HttpClient_Class extends Logger {
 		return request;
 	}
 }
-
-export const HttpClient = new HttpClient_Class();

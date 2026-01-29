@@ -4,21 +4,20 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {ApiCaller, HttpMethod} from '../../../main/index.js';
-import type {ApiCallContext} from '../../../main/types/ApiCaller-types.js';
-import type {BodyApi} from '../../../main/types/api-types.js';
+import {ApiCallContext, ApiCaller, BodyApi, HttpMethod} from '../../../main/index.js';
 import {createTestClient} from '../../helpers.js';
 import {expect} from 'chai';
 
 // httpbin.org POST /post echoes json in response.json
-type PostResponse = {url: string; json?: Record<string, unknown>};
-type UpsertApi = BodyApi<PostResponse, {name: string}>;
+type PostResponse = { url: string; json?: Record<string, unknown> };
+type UpsertApi = BodyApi<PostResponse, { name: string }>;
 
 describe('ApiCaller decorator - callback order', () => {
 	const client = createTestClient();
 
 	it('calls onComplete then userCallback in order with real response', async () => {
 		const order: string[] = [];
+
 		class C {
 			@ApiCaller<UpsertApi, C>(
 				{method: HttpMethod.POST, path: '/post'},
@@ -30,10 +29,11 @@ describe('ApiCaller decorator - callback order', () => {
 					}
 				}
 			)
-			async upsert(_body: {name: string}, userCallback?: (ctx: ApiCallContext<UpsertApi>) => void | Promise<void>) {
+			async upsert(_body: { name: string }, userCallback?: (ctx: ApiCallContext<UpsertApi>) => void | Promise<void>) {
 				return undefined as any;
 			}
 		}
+
 		const c = new C();
 		await c.upsert(
 			{name: 'foo'},
