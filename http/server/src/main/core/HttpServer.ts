@@ -42,6 +42,7 @@ export class HttpServer
 	static default: HttpServer;
 
 	private static readonly expressMiddleware: ExpressRequestHandler[] = [];
+	private readonly instanceMiddleware: ExpressRequestHandler[] = [];
 	private readonly routes: ServerApi<any>[] = [];
 	readonly express!: Express;
 	private server!: Server;
@@ -62,6 +63,12 @@ export class HttpServer
 
 	static addMiddleware(middleware: ExpressRequestHandler): typeof HttpServer {
 		HttpServer.expressMiddleware.push(middleware);
+		return this;
+	}
+
+	/** Adds middleware for this server instance only (runs after static middleware, before routes). Call before init(). */
+	addMiddleware(middleware: ExpressRequestHandler): this {
+		this.instanceMiddleware.push(middleware);
 		return this;
 	}
 
@@ -110,20 +117,19 @@ export class HttpServer
 				if (alreadyHasBody || notReadable)
 					return next();
 
-				return jsonParser(req, res, next);
-			});
-			this.getExpress().use((req, res, next) => {
-				const alreadyHasBody = (req as { body?: unknown }).body !== undefined;
-				const notReadable = !req.readable;
-				if (alreadyHasBody || notReadable)
-					return next();
-
-				return textParser(req, res, next);
+				const ct = (req.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase();
+				if (ct === 'application/json')
+					return jsonParser(req, res, next);
+				if (ct === 'text/plain')
+					return textParser(req, res, next);
+				return next();
 			});
 		}
 
 		this.getExpress().use(compression());
 		for (const middleware of HttpServer.expressMiddleware)
+			this.getExpress().use(middleware);
+		for (const middleware of this.instanceMiddleware)
 			this.getExpress().use(middleware);
 
 		const _cors = this.config.cors ?? {headers: [], responseHeaders: []};

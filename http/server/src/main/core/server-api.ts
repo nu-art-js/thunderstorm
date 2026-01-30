@@ -144,6 +144,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 				MemKey_HttpRequestUrl.set(req.url);
 				MemKey_HttpRequestMethod.set(this.apiDef.method);
 				MemKey_HttpRequestPath.set(req.path);
+				// MemKeys must never be set to undefined/null; use '' for absent body so handlers always get a defined value.
 				MemKey_HttpRequestBody.set(body ?? '');
 
 				if (this.middlewares)

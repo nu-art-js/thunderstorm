@@ -147,6 +147,12 @@ export class MemStorage {
  * Provides a type-safe interface for accessing MemStorage values.
  * Supports unique keys (prevent overwriting), lazy resolution, and assertions.
  * 
+ * **Design – never set nothing**: MemKeys must never be set to undefined or null.
+ * There is no point in setting something that is nothing; it would be like deleting
+ * or overwriting relevant state that should persist. Callers must use a meaningful
+ * empty value for their type (e.g. `''` for string, `{}` for object) when the logical
+ * value is "absent". `set()` throws if given undefined or null.
+ * 
  * **Usage**:
  * ```typescript
  * const userKey = new MemKey<User>('user', true); // unique key
