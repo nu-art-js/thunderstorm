@@ -9,6 +9,5 @@ export * from './consts.js';
 export * from './server-errors.js';
 export * from './server-api.js';
 export * from './HttpServer.js';
-export * from './route-registry.js';
-export * from './attach-routes.js';
-export * from './typed-api.js';
+export * from './api-handler-types.js';
+export * from './api-handler.js';

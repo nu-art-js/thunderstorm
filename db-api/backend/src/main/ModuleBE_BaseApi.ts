@@ -22,7 +22,7 @@
 import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/http-server';
+import {ApiHandler} from '@nu-art/http-server';
 import {DBApiDefGeneratorIDBV3} from './db-api-gen-v3.js';
 import type {ApiDefResolver_DBApiGenIDBV3} from './db-api-gen-v3.js';
 
@@ -46,32 +46,40 @@ export class ModuleBE_BaseApi_Class<Proto extends DBProto<any>>
 
 	init() {
 		this.logDebug(`Adding routes : ${this.apiDef.v1.query.path}`);
-		addRoutes([
-			createBodyServerApi(this.apiDef.v1.query, async (queryBody: FirestoreQuery<Proto['dbType']>) => {
-				const items = await this.dbModule.query.where(queryBody);
-				await this.dbModule.upgradeInstances(items);
-				return items;
-			}),
-			createQueryServerApi(this.apiDef.v1.queryUnique, async (queryObject: DB_BaseObject) => {
-				const toReturnItem = await this.dbModule.query.unique(queryObject._id);
-				if (!toReturnItem)
-					throw new ApiException(404, `Could not find ${this.dbModule.collection.dbDef.entityName} with _id: ${queryObject._id}`);
-				return toReturnItem;
-			}),
-			createBodyServerApi(this.apiDef.v1.upsert, this.dbModule.set.item),
-			createBodyServerApi(this.apiDef.v1.upsertAll, (body: Proto['uiType'][]) => this.dbModule.set.all(body)),
-			createQueryServerApi(this.apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
-			createBodyServerApi(this.apiDef.v1.deleteQuery, this._deleteQuery),
-			createQueryServerApi(this.apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
-			createQueryServerApi(this.apiDef.v1.metadata, this._metadata)
-		]);
 	}
 
-	private _metadata = async (): Promise<Metadata<Proto['dbType']>> => {
-		return {...this.dbModule.dbDef.metadata} as unknown as Metadata<Proto['dbType']>;
-	};
+	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.query)
+	async query(queryBody: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> {
+		const items = await this.dbModule.query.where(queryBody);
+		await this.dbModule.upgradeInstances(items);
+		return items;
+	}
 
-	private _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
+	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.queryUnique)
+	async queryUnique(queryObject: DB_BaseObject): Promise<Proto['dbType']> {
+		const toReturnItem = await this.dbModule.query.unique(queryObject._id);
+		if (!toReturnItem)
+			throw new ApiException(404, `Could not find ${this.dbModule.collection.dbDef.entityName} with _id: ${queryObject._id}`);
+		return toReturnItem;
+	}
+
+	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.upsert)
+	async upsert(body: Proto['uiType']): Promise<Proto['dbType']> {
+		return this.dbModule.set.item(body);
+	}
+
+	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.upsertAll)
+	async upsertAll(body: Proto['uiType'][]): Promise<Proto['dbType'][]> {
+		return this.dbModule.set.all(body);
+	}
+
+	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.delete)
+	async delete(toDeleteObject: DB_BaseObject): Promise<Proto['dbType'] | undefined> {
+		return this.dbModule.delete.unique(toDeleteObject._id);
+	}
+
+	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.deleteQuery)
+	async deleteQuery(query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> {
 		if (!query.where)
 			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);
 
@@ -79,7 +87,17 @@ export class ModuleBE_BaseApi_Class<Proto extends DBProto<any>>
 			throw new ApiException(400, `Cannot delete with property value undefined or null, using query: ${__stringify(query)}`);
 
 		return this.dbModule.delete.query(query);
-	};
+	}
+
+	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.deleteAll)
+	async deleteAll(): Promise<Proto['dbType'][]> {
+		return this.dbModule.delete.query(_EmptyQuery);
+	}
+
+	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.metadata)
+	async metadata(): Promise<Metadata<Proto['dbType']>> {
+		return {...this.dbModule.dbDef.metadata} as unknown as Metadata<Proto['dbType']>;
+	}
 }
 
 export const createApisForDBModuleV3 = <Proto extends DBProto<any>>(dbModule: ModuleBE_BaseDB<Proto>, version?: string) => {
