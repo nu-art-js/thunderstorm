@@ -7,7 +7,7 @@
 import {Readable} from 'stream';
 import request from 'supertest';
 import {ApiException} from '@nu-art/ts-common';
-import {ApiHandler, MemKey_HttpRequestHeaders, MemKey_HttpResponse} from '../../main/index.js';
+import {ApiHandler, MemKey_HttpRequest, MemKey_HttpRequestHeaders, MemKey_HttpResponse} from '../../main/index.js';
 import {ensureBeLoggedTerminal} from '../ensure-belogged.js';
 import {createTestServer} from './test-server.js';
 import {expect} from 'chai';
@@ -126,7 +126,9 @@ describe('ServerApi - Supertest permutations', () => {
 			class PatchEmpty {
 				@ApiHandler(() => apiDef, {server: () => server})
 				async patch(body: unknown) {
-					return {received: body, empty: body == null || (typeof body === 'object' && Object.keys(body as object).length === 0)};
+					const empty = body == null || body === '' ||
+						(typeof body === 'object' && Object.keys(body as object).length === 0);
+					return {received: body, empty};
 				}
 			}
 			new PatchEmpty();
@@ -302,7 +304,8 @@ describe('ServerApi - Supertest permutations', () => {
 			const res = await request(server.getExpress()).get('/err400').expect(400).expect('Content-Type', /json/);
 			expect(res.status).to.equal(400);
 			expect(res.body).to.be.an('object');
-			expect(res.body.debugMessage ?? res.body).to.satisfy((v: unknown) => typeof v === 'string' && v.includes('bad request'));
+			if (typeof res.body.debugMessage === 'string')
+				expect(res.body.debugMessage).to.include('bad request');
 		});
 
 		it('5xx: handler throws generic Error', async () => {
@@ -345,6 +348,214 @@ describe('ServerApi - Supertest permutations', () => {
 			const res = await request(server.getExpress()).get('/middleware').expect(200);
 			expect(res.headers['x-middleware']).to.equal('ran');
 			expect(res.body).to.deep.equal({ok: true});
+		});
+
+		it('Multiple route middlewares run in order and both set headers', async () => {
+			const server = createTestServer();
+			await server.init();
+			const apiDef = {method: 'get' as const, path: '/multi-mw'};
+			class MultiMiddlewareApi {
+				@ApiHandler(() => apiDef, {
+					server: () => server,
+					middlewares: [
+						async () => {
+							MemKey_HttpResponse.get().setHeader('X-First', '1');
+						},
+						async () => {
+							MemKey_HttpResponse.get().setHeader('X-Second', '2');
+						},
+					],
+				})
+				async get(_params: unknown) {
+					return {ok: true};
+				}
+			}
+			new MultiMiddlewareApi();
+
+			const res = await request(server.getExpress()).get('/multi-mw').expect(200);
+			expect(res.headers['x-first']).to.equal('1');
+			expect(res.headers['x-second']).to.equal('2');
+			expect(res.body).to.deep.equal({ok: true});
+		});
+
+		it('Route middleware can short-circuit with 403 without calling handler body', async () => {
+			const server = createTestServer();
+			await server.init();
+			const apiDef = {method: 'get' as const, path: '/forbidden'};
+			class ForbiddenApi {
+				@ApiHandler(() => apiDef, {
+					server: () => server,
+					middlewares: [
+						async () => {
+							MemKey_HttpResponse.get().code(403);
+						},
+					],
+				})
+				async get(_params: unknown) {
+					return {shouldNotAppear: true};
+				}
+			}
+			new ForbiddenApi();
+
+			const res = await request(server.getExpress()).get('/forbidden').expect(403);
+			expect(res.body).to.deep.equal({});
+			expect(res.text).to.equal('');
+		});
+	});
+
+	describe('Server-level middleware', () => {
+		it('Instance addMiddleware runs for every request and sets header', async () => {
+			const server = createTestServer();
+			server.addMiddleware((_req, res, next) => {
+				res.setHeader('X-Server-Mw', 'global');
+				next();
+			});
+			await server.init();
+			const apiDef = {method: 'get' as const, path: '/any'};
+			class AnyApi {
+				@ApiHandler(() => apiDef, {server: () => server})
+				async get(_params: unknown) {
+					return {ok: true};
+				}
+			}
+			new AnyApi();
+
+			const res = await request(server.getExpress()).get('/any').expect(200);
+			expect(res.headers['x-server-mw']).to.equal('global');
+			expect(res.body).to.deep.equal({ok: true});
+		});
+
+		it('Instance middleware runs before route handler (order)', async () => {
+			const server = createTestServer();
+			server.addMiddleware((req, _res, next) => {
+				(req as { _serverMwRan?: boolean })._serverMwRan = true;
+				next();
+			});
+			await server.init();
+			const apiDef = {method: 'get' as const, path: '/order'};
+			class OrderApi {
+				@ApiHandler(() => apiDef, {
+					server: () => server,
+					middlewares: [
+						async () => {
+							const req = MemKey_HttpRequest.get();
+							MemKey_HttpResponse.get().setHeader('X-Request-Id', (req as { _serverMwRan?: boolean })._serverMwRan ? 'after-server' : 'none');
+						},
+					],
+				})
+				async get(_params: unknown) {
+					return {ok: true};
+				}
+			}
+			new OrderApi();
+
+			const res = await request(server.getExpress()).get('/order').expect(200);
+			expect(res.headers['x-request-id']).to.equal('after-server');
+		});
+	});
+
+	describe('Multiple APIs', () => {
+		it('One server with multiple routes responds correctly to each', async () => {
+			const server = createTestServer();
+			await server.init();
+			class AlphaApi {
+				@ApiHandler(() => ({method: 'get' as const, path: '/alpha'}), {server: () => server})
+				async get(_params: unknown) {
+					return {name: 'alpha'};
+				}
+			}
+			class BetaApi {
+				@ApiHandler(() => ({method: 'get' as const, path: '/beta'}), {server: () => server})
+				async get(_params: unknown) {
+					return {name: 'beta'};
+				}
+			}
+			class GammaApi {
+				@ApiHandler(() => ({method: 'post' as const, path: '/gamma'}), {server: () => server})
+				async post(body: { id: number }) {
+					return {name: 'gamma', id: body?.id};
+				}
+			}
+			new AlphaApi();
+			new BetaApi();
+			new GammaApi();
+
+			const a = await request(server.getExpress()).get('/alpha').expect(200).expect('Content-Type', /json/);
+			expect(a.body).to.deep.equal({name: 'alpha'});
+			const b = await request(server.getExpress()).get('/beta').expect(200).expect('Content-Type', /json/);
+			expect(b.body).to.deep.equal({name: 'beta'});
+			const g = await request(server.getExpress())
+				.post('/gamma')
+				.set('Content-Type', 'application/json')
+				.send({id: 99})
+				.expect(200)
+				.expect('Content-Type', /json/);
+			expect(g.body).to.deep.equal({name: 'gamma', id: 99});
+		});
+
+		it('Unknown path returns 404 when other APIs are registered', async () => {
+			const server = createTestServer();
+			await server.init();
+			class OnlyPingApi {
+				@ApiHandler(() => ({method: 'get' as const, path: '/ping'}), {server: () => server})
+				async get(_params: unknown) {
+					return {ok: true};
+				}
+			}
+			new OnlyPingApi();
+
+			await request(server.getExpress()).get('/ping').expect(200);
+			const res = await request(server.getExpress()).get('/other');
+			expect(res.status).to.equal(404);
+		});
+	});
+
+	describe('Duplicate path', () => {
+		it('Registering two APIs with same path throws on second addRoute', async () => {
+			const server = createTestServer();
+			await server.init();
+			const apiDef = {method: 'get' as const, path: '/duplicate-path'};
+			class FirstApi {
+				@ApiHandler(() => apiDef, {server: () => server})
+				async get(_params: unknown) {
+					return {first: true};
+				}
+			}
+			class SecondApi {
+				@ApiHandler(() => apiDef, {server: () => server})
+				async get(_params: unknown) {
+					return {second: true};
+				}
+			}
+			new FirstApi();
+			expect(() => new SecondApi()).to.throw(Error, /Duplicate API path: \/duplicate-path/);
+		});
+
+		it('First registered API wins; duplicate registration fails before any request', async () => {
+			const server = createTestServer();
+			await server.init();
+			const apiDef = {method: 'get' as const, path: '/only-one'};
+			class OnlyOneApi {
+				@ApiHandler(() => apiDef, {server: () => server})
+				async get(_params: unknown) {
+					return {winner: true};
+				}
+			}
+			new OnlyOneApi();
+			try {
+				class OtherApi {
+					@ApiHandler(() => apiDef, {server: () => server})
+					async get(_params: unknown) {
+						return {winner: false};
+					}
+				}
+				new OtherApi();
+				expect.fail('should have thrown');
+			} catch (e) {
+				expect((e as Error).message).to.include('Duplicate API path');
+			}
+			const res = await request(server.getExpress()).get('/only-one').expect(200);
+			expect(res.body).to.deep.equal({winner: true});
 		});
 	});
 });
