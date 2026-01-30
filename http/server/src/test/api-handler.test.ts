@@ -5,12 +5,16 @@
  */
 
 import {ApiHandler, _ServerQueryApi, _ServerBodyApi} from '../main/index.js';
+import type {HttpServer} from '../main/index.js';
+import {ensureBeLoggedTerminal} from './ensure-belogged.js';
 import {expect} from 'chai';
 
 const queryApiDef = {method: 'get' as const, path: '/test-query'};
 const bodyApiDef = {method: 'post' as const, path: '/test-body'};
 
 describe('ApiHandler initializer - route registration', () => {
+	before(() => ensureBeLoggedTerminal());
+
 	it('registers each decorated method on server when instance is created', () => {
 		const added: unknown[] = [];
 		const mockServer = {
@@ -20,12 +24,12 @@ describe('ApiHandler initializer - route registration', () => {
 		};
 
 		class C {
-			@ApiHandler(() => queryApiDef, {server: () => mockServer})
+			@ApiHandler(() => queryApiDef, {server: () => mockServer as unknown as HttpServer})
 			async get(_p: unknown) {
 				return [];
 			}
 
-			@ApiHandler(() => bodyApiDef, {server: () => mockServer})
+			@ApiHandler(() => bodyApiDef, {server: () => mockServer as unknown as HttpServer})
 			async post(_b: unknown) {
 				return {};
 			}
@@ -43,12 +47,12 @@ describe('ApiHandler initializer - route registration', () => {
 		};
 
 		class C {
-			@ApiHandler(() => queryApiDef, {server: () => mockServer})
+			@ApiHandler(() => queryApiDef, {server: () => mockServer as unknown as HttpServer})
 			async get(_p: unknown) {
 				return [];
 			}
 
-			@ApiHandler(() => bodyApiDef, {server: () => mockServer})
+			@ApiHandler(() => bodyApiDef, {server: () => mockServer as unknown as HttpServer})
 			async post(_b: unknown) {
 				return {};
 			}
@@ -79,7 +83,7 @@ describe('ApiHandler initializer - route registration', () => {
 				return {method: 'get' as const, path: dynamicPath};
 			}
 
-			@ApiHandler((m: C) => m.getApiDef(), {server: () => mockServer})
+			@ApiHandler((m: C) => m.getApiDef(), {server: () => mockServer as unknown as HttpServer})
 			async get(_p: unknown) {
 				return [];
 			}
