@@ -36,4 +36,33 @@ test.describe('BaseDB - loadCache', () => {
 		expect(result.items).toContainEqual(expect.objectContaining({_id: '1', name: 'a'}));
 		expect(result.items).toContainEqual(expect.objectContaining({_id: '2', name: 'b'}));
 	});
+
+	test('loadCache with empty IDB leaves cache empty', async ({page}) => {
+		const result = await page.evaluate(async () => {
+			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
+			const client = new HttpClient();
+			client.setConfig({origin: 'http://127.0.0.1'});
+			const api = new TestBaseApi(client);
+			await api.init();
+			await api.loadCache();
+			return {length: api.cache.all().length};
+		});
+		expect(result.length).toBe(0);
+	});
+
+	test('clearData then loadCache leaves cache empty', async ({page}) => {
+		const result = await page.evaluate(async () => {
+			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
+			const client = new HttpClient();
+			client.setConfig({origin: 'http://127.0.0.1'});
+			const api = new TestBaseApi(client);
+			await api.init();
+			await api.onEntriesUpdated([{_id: '1', name: 'x', __created: 1, __updated: 1, _v: 'v1'}]);
+			await api.loadCache();
+			await api.clearData();
+			await api.loadCache();
+			return {length: api.cache.all().length};
+		});
+		expect(result.length).toBe(0);
+	});
 });

@@ -8,29 +8,37 @@ import {expect, test} from '@playwright/test';
 
 const testPagePath = '/src/test/index.html';
 
-test.describe('BaseApi - upsert', () => {
+test.describe('Integration - concurrent operations', () => {
 	test.beforeEach(async ({page}) => {
 		await page.goto(testPagePath);
 		await page.waitForFunction(() => (window as _Window).DbApiFrontend !== undefined);
 		await page.evaluate(() => (window as _Window).DbApiFrontend.cleanupDbApiIDB());
 	});
 
-	test('upsert(body) sends request body, handleUpsertComplete calls onEntryUpdated', async ({page}) => {
+	test('multiple upserts different ids complete and cache has both', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {TestBaseApi, HttpClient} = (window as _Window).DbApiFrontend;
-			const response = {_id: '1', name: 'upserted', __created: 1, __updated: 2, _v: 'v1'};
 			const client = new HttpClient();
-			debugger;
 			client.setConfig({origin: 'http://127.0.0.1'});
-			(client as any).sendRequest = async () => ({data: response, status: 200, statusText: 'OK', headers: {}, config: {}} as any);
+			(client as any).sendRequest = async (req: any) => {
+				const body = req?.data ?? {};
+				const id = body._id ?? 'unknown';
+				const name = body.name ?? 'unknown';
+				return {data: {_id: id, name, __created: 1, __updated: 1, _v: 'v1'}, status: 200, statusText: 'OK', headers: {}, config: {}};
+			};
 			const api = new TestBaseApi(client);
 			await api.init();
-			await api.upsert({_id: '1', name: 'upserted'});
+			await Promise.all([
+				api.upsert({_id: '1', name: 'a'}),
+				api.upsert({_id: '2', name: 'b'})
+			]);
 			const all = api.cache.all();
-			return {length: all.length, item: all[0], items: all};
+			const ids = all.map((x: any) => x._id).sort();
+			const names = all.map((x: any) => x.name).sort();
+			return {length: all.length, ids, names};
 		});
-
-		expect(result.length).toBe(1);
-		expect(result.item?.name).toBe('upserted');
+		expect(result.length).toBe(2);
+		expect(result.ids).toEqual(['1', '2']);
+		expect(result.names).toEqual(['a', 'b']);
 	});
 });

@@ -3,7 +3,7 @@
  * Only imports what's needed for tests to avoid pulling in node-specific dependencies
  */
 
-import {IDB_Database} from '../main/IDB_Database.js';
+import {getDatabase, IDB_Database} from '../main/IDB_Database.js';
 import {IDB_Store} from '../main/IDB_Store.js';
 import {IDB_StoreIndex} from '../main/IDB_StoreIndex.js';
 import {cleanupAllIDB} from './test-utils.js';
@@ -12,6 +12,7 @@ import {cleanupAllIDB} from './test-utils.js';
 declare global {
 	interface Window {
 		IDBFrontend: {
+			getDatabase: typeof getDatabase;
 			IDB_Database: typeof IDB_Database;
 			IDB_Store: typeof IDB_Store;
 			IDB_StoreIndex: typeof IDB_StoreIndex;
@@ -21,10 +22,11 @@ declare global {
 }
 
 window.IDBFrontend = {
+	getDatabase,
 	IDB_Database,
 	IDB_Store,
 	IDB_StoreIndex,
 	cleanupAllIDB,
 };
 
-export {IDB_Database, IDB_Store, IDB_StoreIndex, cleanupAllIDB};
+export {getDatabase, IDB_Database, IDB_Store, IDB_StoreIndex, cleanupAllIDB};
