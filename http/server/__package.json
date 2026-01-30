@@ -1,20 +1,20 @@
 {
-  "name": "@nu-art/db-api-backend",
-  "version": "$THUNDERSTORM_VERSION",
-  "description": "db-api Backend",
+  "name": "@nu-art/http-server",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Express HTTP server and typed ServerApi for Thunderstorm",
   "keywords": [
     "TacB0sS",
+    "http",
+    "server",
     "express",
-    "infra",
-    "nu-art",
-    "db-api",
-    "thunderstorm",
-    "typescript"
+    "api",
+    "typescript",
+    "nu-art"
   ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
-    "directory": "_thunderstorm/db-api/backend"
+    "directory": "_thunderstorm/http-server"
   },
   "publishConfig": {
     "directory": "dist",
@@ -23,18 +23,19 @@
   "license": "Apache-2.0",
   "author": "TacB0sS",
   "scripts": {
-    "build": "tsc -b -f"
+    "build": "tsc && cp package.json dist/"
   },
   "dependencies": {
     "@nu-art/api-types": "?",
-    "@nu-art/db-api-shared": "?",
-    "@nu-art/firebase-backend": "?",
-    "@nu-art/firebase-shared": "?",
-    "@nu-art/http-client": "?",
-    "@nu-art/http-server": "?",
     "@nu-art/ts-common": "?",
-    "firebase": "?",
-    "firebase-admin": "?"
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.17"
   },
   "unitConfig": {
     "type": "typescript-lib"
@@ -44,10 +45,6 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
-    },
-    "./*": {
-      "types": "./*.d.ts",
-      "import": "./*.js"
     }
   }
 }
