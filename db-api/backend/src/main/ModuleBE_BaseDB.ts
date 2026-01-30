@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase-shared';
+import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {
 	_keys,
 	ApiException,
@@ -39,11 +39,21 @@ import {
 	Module,
 	UniqueId
 } from '@nu-art/ts-common';
-import {ModuleBE_Firebase,} from '@nu-art/firebase-backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {DocWrapperV3} from '@nu-art/firebase-backend/firestore-v3/DocWrapperV3';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_DeletedDocs} from '@nu-art/firebase-backend/firestore-v3/consts';
+import {
+	DBApiBEConfig,
+	DBEntityDependencies,
+	DBEntityDependencyError,
+	dispatch_CollectEntityDependencies,
+	EntityDependencyCollection,
+	getModuleBEConfig,
+	ModuleBE_SyncManager,
+	Response_DBSync
+} from './storm-stubs.js';
 
 
 export type BaseDBApiConfigV3 = {
@@ -287,7 +297,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		if (!filtered.length)
 			return undefined;
 
-		const merged = filtered.reduce((acc, dependency) => merge(acc, dependency));
+		const merged = filtered.reduce<DBEntityDependencies>((acc, dependency) => merge(acc, dependency), { dbKey: this.dbDef.dbKey, dependencyMap: {} });
 		return _keys(merged.dependencyMap).length ? merged : undefined;
 	}
 

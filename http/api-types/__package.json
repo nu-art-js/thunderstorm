@@ -1,0 +1,40 @@
+{
+  "name": "@nu-art/api-types",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Shared API and error types for HTTP client and server",
+  "keywords": [
+    "TacB0sS",
+    "api",
+    "types",
+    "typescript",
+    "http",
+    "nu-art"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/api-types"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

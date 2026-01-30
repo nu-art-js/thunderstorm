@@ -22,9 +22,9 @@
 import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
-import {DBApiDefGeneratorIDBV3} from '@nu-art/thunderstorm-shared';
-import {addRoutes} from '../ModuleBE_APIs.js';
-import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/http-server';
+import {DBApiDefGeneratorIDBV3} from './db-api-gen-v3.js';
+import type {ApiDefResolver_DBApiGenIDBV3} from './db-api-gen-v3.js';
 
 
 /**
@@ -36,7 +36,7 @@ export class ModuleBE_BaseApi_Class<Proto extends DBProto<any>>
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDB<Proto>;
-	readonly apiDef;
+	readonly apiDef: ApiDefResolver_DBApiGenIDBV3<Proto>;
 
 	constructor(dbModule: ModuleBE_BaseDB<Proto, any>, version?: string) {
 		super(`GenApiV3(${dbModule.getName()})`);
@@ -47,7 +47,7 @@ export class ModuleBE_BaseApi_Class<Proto extends DBProto<any>>
 	init() {
 		this.logDebug(`Adding routes : ${this.apiDef.v1.query.path}`);
 		addRoutes([
-			createBodyServerApi(this.apiDef.v1.query, async queryBody => {
+			createBodyServerApi(this.apiDef.v1.query, async (queryBody: FirestoreQuery<Proto['dbType']>) => {
 				const items = await this.dbModule.query.where(queryBody);
 				await this.dbModule.upgradeInstances(items);
 				return items;
@@ -59,7 +59,7 @@ export class ModuleBE_BaseApi_Class<Proto extends DBProto<any>>
 				return toReturnItem;
 			}),
 			createBodyServerApi(this.apiDef.v1.upsert, this.dbModule.set.item),
-			createBodyServerApi(this.apiDef.v1.upsertAll, (body) => this.dbModule.set.all(body)),
+			createBodyServerApi(this.apiDef.v1.upsertAll, (body: Proto['uiType'][]) => this.dbModule.set.all(body)),
 			createQueryServerApi(this.apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
 			createBodyServerApi(this.apiDef.v1.deleteQuery, this._deleteQuery),
 			createQueryServerApi(this.apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
