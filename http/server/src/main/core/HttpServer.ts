@@ -10,7 +10,7 @@ import type {Socket} from 'net';
 import * as fs from 'fs';
 import {addItemToArray, LogLevel} from '@nu-art/ts-common';
 import express from 'express';
-import type {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, ExpressRouter} from './types.js';
+import type {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, ExpressRouter} from '../types.js';
 import {ServerApi} from './server-api.js';
 import compression from 'compression';
 import cors from 'cors';
@@ -83,7 +83,7 @@ export class HttpServer
 		return this;
 	}
 
-	protected async init(): Promise<void> {
+	public async init(): Promise<void> {
 		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
 		let baseUrl = this.config.baseUrl ?? '';
 		if (baseUrl) {

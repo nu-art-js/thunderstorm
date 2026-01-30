@@ -338,7 +338,7 @@ export const BaiParam_Publish: BaseCliParam<'publish', PromoteType> = {
 };
 
 export const BaiParam_UsePackage: BaseCliParam<'usePackage', string[]> = {
-	keys: ['-up', '--use-packages'],
+	keys: ['-up', '--use-package'],
 	keyName: 'usePackage',
 	type: 'string[]',
 	group: 'Other',

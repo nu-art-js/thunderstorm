@@ -23,7 +23,7 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {ApiDef, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi, QueryParams, TypedApi} from '@nu-art/api-types';
 import {Stream} from 'stream';
 import {parse} from 'url';
-import type {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from './types.js';
+import type {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from '../types.js';
 import {
 	MemKey_HttpRequest,
 	MemKey_HttpRequestBody,
@@ -34,7 +34,7 @@ import {
 	MemKey_HttpRequestUrl,
 	MemKey_HttpResponse,
 	MemKey_ServerApi
-} from './consts.js';
+} from '../consts.js';
 
 export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	extends Logger {
@@ -134,17 +134,18 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			else
 				this.logVerbose('-- No Body');
 
-			MemKey_ServerApi.set(this);
-			MemKey_HttpRequest.set(req);
-			MemKey_HttpResponse.set(response);
-			MemKey_HttpRequestHeaders.set(req.headers);
-			MemKey_HttpRequestQuery.set(reqQuery);
-			MemKey_HttpRequestUrl.set(req.url);
-			MemKey_HttpRequestMethod.set(this.apiDef.method);
-			MemKey_HttpRequestPath.set(req.path);
-			MemKey_HttpRequestBody.set(body);
-
 			try {
+
+				MemKey_ServerApi.set(this);
+				MemKey_HttpRequest.set(req);
+				MemKey_HttpResponse.set(response);
+				MemKey_HttpRequestHeaders.set(req.headers);
+				MemKey_HttpRequestQuery.set(reqQuery);
+				MemKey_HttpRequestUrl.set(req.url);
+				MemKey_HttpRequestMethod.set(this.apiDef.method);
+				MemKey_HttpRequestPath.set(req.path);
+				MemKey_HttpRequestBody.set(body ?? '');
+
 				if (this.middlewares)
 					await Promise_all_sequentially(this.middlewares);
 
