@@ -232,12 +232,15 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				const baseURL = playwrightConfig?.baseURL;
 				const viewport = playwrightConfig?.viewport ?? {width: 1280, height: 720};
 
-				// Build vite config if specified
-				const viteConfigPath = playwrightConfig?.vite?.configPath;
+				// Vite config: from bai-config, or default to shared _thunderstorm/vite.config.ts when package is under _thunderstorm
+				const projectRoot = runtimeContext.parentUnit.config.fullPath;
+				const viteConfigPathFromConfig = playwrightConfig?.vite?.configPath;
+				const defaultThunderstormVitePath = '_thunderstorm/vite.config.ts';
+				const viteConfigPath = viteConfigPathFromConfig ?? (config.fullPath.includes('_thunderstorm') ? defaultThunderstormVitePath : undefined);
 				const vitePort = playwrightConfig?.vite?.port ?? 5173;
 				const viteOptions = viteConfigPath ? {
 					port: vitePort,
-					configPath: path.relative(config.fullPath, resolve(runtimeContext.parentUnit.config.fullPath, viteConfigPath))
+					configPath: path.relative(config.fullPath, resolve(projectRoot, viteConfigPath))
 				} : undefined;
 
 				const configContent = this.generatePlaywrightConfig({

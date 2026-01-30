@@ -32,6 +32,11 @@ export class TestBaseApi_Class
 	validateInternalExposed(data: Partial<UI_TestItem>): void {
 		this.validateInternal(data);
 	}
+
+	/** Exposes onQueryReturned for tests (e.g. toDelete behaviour). */
+	onQueryReturnedExposed(toUpdate: TestItemTypes['dbItem'][], toDelete: TestItemTypes['dbItem'][] = []): Promise<void> {
+		return this.onQueryReturned(toUpdate, toDelete);
+	}
 }
 
 /** Test-only subclass with failing validator for validation playwright test. */

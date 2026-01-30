@@ -100,4 +100,31 @@ test.describe('runSerializedById', () => {
 		});
 		expect(result).toEqual([1, 2]);
 	});
+
+	test('only one pending: third call for same id while one running and one pending rejects', async ({page}) => {
+		const result = await page.evaluate(async () => {
+			const {TestBaseApi} = (window as any).DbApiFrontend;
+			const api = new TestBaseApi();
+			await api.init();
+			const id = 'pending-1';
+			let resolveOp1: () => void;
+			const op1Promise = new Promise<void>((r) => { resolveOp1 = r; });
+			const op1 = api.runSerializedByIdExposed(id, 'upsert', () => op1Promise);
+			const op2 = api.runSerializedByIdExposed(id, 'upsert', () => Promise.resolve(undefined));
+			let thirdRejected = false;
+			let thirdMessage = '';
+			try {
+				await api.runSerializedByIdExposed(id, 'upsert', () => Promise.resolve(undefined));
+			} catch (e: any) {
+				thirdRejected = true;
+				thirdMessage = e?.message ?? '';
+			}
+			resolveOp1!();
+			await op1;
+			await op2;
+			return {thirdRejected, thirdMessage};
+		});
+		expect(result.thirdRejected).toBe(true);
+		expect(result.thirdMessage).toMatch(/only one pending operation allowed/);
+	});
 });

@@ -28,4 +28,23 @@ test.describe('BaseApi - deleteAll', () => {
 		});
 		expect(result.ok).toBe(true);
 	});
+
+	test('deleteAll with pre-populated cache does not clear cache (no onComplete)', async ({page}) => {
+		const result = await page.evaluate(async () => {
+			const {TestBaseApi, HttpClient} = (window as _Window).DbApiFrontend;
+			const client = new HttpClient();
+			client.setConfig({origin: 'http://127.0.0.1'});
+			(client as any).sendRequest = async () => ({data: undefined, status: 200, statusText: 'OK', headers: {}, config: {}} as any);
+			const api = new TestBaseApi(client);
+			await api.init();
+			await api.onEntriesUpdated([{_id: '1', name: 'a', __created: 1, __updated: 1, _v: 'v1'}]);
+			await api.loadCache();
+			const beforeLength = api.cache.all().length;
+			await api.deleteAll();
+			const afterLength = api.cache.all().length;
+			return {beforeLength, afterLength};
+		});
+		expect(result.beforeLength).toBe(1);
+		expect(result.afterLength).toBe(1);
+	});
 });

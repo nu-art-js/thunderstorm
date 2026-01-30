@@ -10,7 +10,7 @@ export default defineConfig({
 	testMatch: '**/*.test.playwright.ts',
 
 	webServer: {
-		command: `npx vite --config ${resolve(__dirname, '../../../vite.config.ts')} --port ${vitePort} --host 127.0.0.1`,
+		command: `npx vite --config ${resolve(__dirname, '../../vite.config.ts')} --port ${vitePort} --host 127.0.0.1`,
 		url: `http://127.0.0.1:${vitePort}/src/test/index.html`,
 		reuseExistingServer: true,
 		timeout: 60000,

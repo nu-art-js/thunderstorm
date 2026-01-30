@@ -54,4 +54,27 @@ test.describe('BaseDB - sync', () => {
 		expect(result.ids).toContain('2');
 		expect(result.ids).not.toContain('1');
 	});
+
+	test('onQueryReturned with toDelete removes items from cache and IDB', async ({page}) => {
+		const result = await page.evaluate(async () => {
+			const {TestBaseApi} = (window as any).DbApiFrontend;
+			const api = new TestBaseApi();
+			await api.init();
+			const item1 = {_id: '1', name: 'a', __created: 1, __updated: 1, _v: 'v1'};
+			const item2 = {_id: '2', name: 'b', __created: 2, __updated: 2, _v: 'v1'};
+			await api.onEntriesUpdated([item1, item2]);
+			await api.loadCache();
+			await api.onQueryReturnedExposed([item2], [item1]);
+			const all = api.cache.all();
+			const ids = all.map((x: any) => x._id);
+			await api.loadCache();
+			const afterReload = api.cache.all().map((x: any) => x._id);
+			return {length: all.length, ids, afterReload};
+		});
+		expect(result.length).toBe(1);
+		expect(result.ids).toContain('2');
+		expect(result.ids).not.toContain('1');
+		expect(result.afterReload).toContain('2');
+		expect(result.afterReload).not.toContain('1');
+	});
 });

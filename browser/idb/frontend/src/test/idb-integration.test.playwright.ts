@@ -25,48 +25,61 @@ const dbConfig: DBConfig<TestItem> = {
 // Test page path relative to package root (Vite runs from package directory)
 const testPagePath = '/src/test/index.html';
 
+/** Map DBConfig to store setup: get db, create store, open. Used inside page.evaluate. */
+function useStoreFromConfig(config: DBConfig<TestItem>) {
+	return {
+		dbName: config.group,
+		storeConfig: {name: config.name, uniqueKeys: config.uniqueKeys, autoIncrement: config.autoIncrement}
+	};
+}
+
 test.describe('IDBManager - Browser Integration', () => {
 	test.beforeEach(async ({page}) => {
-		// Navigate to Vite-served test page
 		await page.goto(testPagePath);
-		// Wait for the module to load and expose IDBFrontend on window
 		await page.waitForFunction(() => window.IDBFrontend !== undefined);
+		await page.evaluate(() => window.IDBFrontend.cleanupAllIDB());
 	});
 
 	test('should register store and insert data', async ({page}) => {
-		const result = await page.evaluate(async (config) => {
-			const {IDBManager} = window.IDBFrontend;
-			const store = IDBManager.register(config, async () => {
+		const {dbName, storeConfig} = useStoreFromConfig(dbConfig);
+		const result = await page.evaluate(async (args: { dbName: string; storeConfig: { name: string; uniqueKeys: string[]; autoIncrement?: boolean } }) => {
+			const {IDB_Database} = window.IDBFrontend;
+			const db = new IDB_Database(args.dbName);
+			const store = db.createStore<{ _id: string; name: string; value: number }>(args.storeConfig, async () => {
 				console.log('Database opened');
 			});
+			await db.open();
 
 			const testItem = {_id: '1', name: 'Test Item', value: 100};
 			const inserted = await store.insert(testItem);
 
 			const retrieved = await store.get({_id: '1'});
+			await db.deleteDatabase();
 			return {inserted, retrieved};
-		}, dbConfig);
+		}, {dbName, storeConfig});
 
 		expect(result.inserted).toEqual({_id: '1', name: 'Test Item', value: 100});
 		expect(result.retrieved).toEqual({_id: '1', name: 'Test Item', value: 100});
 	});
 
 	test('should query data with filters', async ({page}) => {
-		const result = await page.evaluate(async (config) => {
-			const {IDBManager} = window.IDBFrontend;
-			const store = IDBManager.register(config, async () => {
+		const {dbName, storeConfig} = useStoreFromConfig(dbConfig);
+		const result = await page.evaluate(async (args: { dbName: string; storeConfig: { name: string; uniqueKeys: string[]; autoIncrement?: boolean } }) => {
+			const {IDB_Database} = window.IDBFrontend;
+			const db = new IDB_Database(args.dbName);
+			const store = db.createStore<{ _id: string; name: string; value: number }>(args.storeConfig, async () => {
 				console.log('Database opened');
 			});
+			await db.open();
 
-			// Insert multiple items
 			await store.insert({_id: '1', name: 'Item 1', value: 100});
 			await store.insert({_id: '2', name: 'Item 2', value: 200});
 			await store.insert({_id: '3', name: 'Item 3', value: 300});
 
-			// Query all items
-			const allItems = await store.query({});
+			const allItems = await store.getAll();
+			await db.deleteDatabase();
 			return allItems;
-		}, dbConfig);
+		}, {dbName, storeConfig});
 
 		expect(result).toBeInstanceOf(Array);
 		expect(result).toHaveLength(3);
@@ -76,23 +89,23 @@ test.describe('IDBManager - Browser Integration', () => {
 	});
 
 	test('should delete data', async ({page}) => {
-		const result = await page.evaluate(async (config) => {
-			const {IDBManager} = window.IDBFrontend;
-			const store = IDBManager.register(config, async () => {
+		const {dbName, storeConfig} = useStoreFromConfig(dbConfig);
+		const result = await page.evaluate(async (args: { dbName: string; storeConfig: { name: string; uniqueKeys: string[]; autoIncrement?: boolean } }) => {
+			const {IDB_Database} = window.IDBFrontend;
+			const db = new IDB_Database(args.dbName);
+			const store = db.createStore<{ _id: string; name: string; value: number }>(args.storeConfig, async () => {
 				console.log('Database opened');
 			});
+			await db.open();
 
-			// Insert item
 			const inserted = await store.insert({_id: '1', name: 'Item 1', value: 100});
 
-			// Delete item by key
 			const deleted = await store.delete({_id: '1'});
 
-			// Try to get deleted item
 			const retrieved = await store.get({_id: '1'});
-
+			await db.deleteDatabase();
 			return {inserted, deleted, retrieved};
-		}, dbConfig);
+		}, {dbName, storeConfig});
 
 		expect(result.inserted).toEqual({_id: '1', name: 'Item 1', value: 100});
 		expect(result.deleted).toEqual({_id: '1', name: 'Item 1', value: 100});
@@ -101,26 +114,18 @@ test.describe('IDBManager - Browser Integration', () => {
 
 	test('should handle multiple stores in same database group', async ({page}) => {
 		type StoreItem = {_id: string; name: string; value: number};
-
 		const result = await page.evaluate(async () => {
-			const {IDBManager} = window.IDBFrontend;
-			const store1 = IDBManager.register<StoreItem>({
+			const {getDatabase} = window.IDBFrontend;
+			const db = getDatabase('shared-db');
+			const store1 = db.createStore<StoreItem>({
 				name: 'store-1',
-				group: 'shared-db',
-				version: '1.0.0',
-				autoIncrement: false,
 				uniqueKeys: ['_id'],
-				indices: []
 			}, async () => {});
-
-			const store2 = IDBManager.register<StoreItem>({
+			const store2 = db.createStore<StoreItem>({
 				name: 'store-2',
-				group: 'shared-db',
-				version: '1.0.0',
-				autoIncrement: false,
 				uniqueKeys: ['_id'],
-				indices: []
 			}, async () => {});
+			await db.open();
 
 			const inserted1 = await store1.insert({_id: '1', name: 'Store 1 Item', value: 100});
 			const inserted2 = await store2.insert({_id: '1', name: 'Store 2 Item', value: 200});
@@ -128,6 +133,7 @@ test.describe('IDBManager - Browser Integration', () => {
 			const item1 = await store1.get({_id: '1'});
 			const item2 = await store2.get({_id: '1'});
 
+			await db.deleteDatabase();
 			return {inserted1, inserted2, item1, item2};
 		});
 

@@ -252,7 +252,7 @@ export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
 	 * Standard callback for deleteQuery operations.
 	 */
 	protected handleDeleteQueryComplete = async (ctx: ApiCallContext<any>) => {
-		await this.onEntriesDeleted(ctx.response);
+		await this.onEntriesDeleted(ctx.response ?? []);
 	};
 
 	/**
