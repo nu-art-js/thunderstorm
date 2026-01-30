@@ -30,7 +30,6 @@ test.describe('BaseApi - query', () => {
 			const all = api.cache.all();
 			return {length: all.length, first: all[0]};
 		});
-		console.log('query items:', JSON.stringify(result.all ?? result.items ?? result));
 		expect(result.length).toBe(1);
 		expect(result.first?.name).toBe('a');
 	});
