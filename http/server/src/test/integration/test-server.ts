@@ -16,6 +16,7 @@ const testServerConfig = {
 	port: TestPort,
 	baseUrl: '',
 	cors: {headers: [] as string[], responseHeaders: [] as string[]},
+	bodyParserLimit: 1024,
 } as const;
 
 /** Creates a new HttpServer with the shared test config. Call init(), register routes, startServer(), then terminate() in each test. */

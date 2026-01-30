@@ -101,7 +101,9 @@ export class HttpServer
 
 		const parserLimit = this.config.bodyParserLimit;
 		if (parserLimit) {
-			const jsonParser = express.json({limit: parserLimit as number, type: 'application/json'});
+			const limit = parserLimit as number;
+			const jsonParser = express.json({limit, type: 'application/json'});
+			const textParser = express.text({limit, type: 'text/plain'});
 			this.getExpress().use((req, res, next) => {
 				const alreadyHasBody = (req as { body?: unknown }).body !== undefined;
 				const notReadable = !req.readable;
@@ -109,6 +111,14 @@ export class HttpServer
 					return next();
 
 				return jsonParser(req, res, next);
+			});
+			this.getExpress().use((req, res, next) => {
+				const alreadyHasBody = (req as { body?: unknown }).body !== undefined;
+				const notReadable = !req.readable;
+				if (alreadyHasBody || notReadable)
+					return next();
+
+				return textParser(req, res, next);
 			});
 		}
 
