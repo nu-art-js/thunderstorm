@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
+import {__stringify, _values, ApiException, DB_BaseObject, DBProto, IndexKeys, Metadata, Module} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {ApiHandler} from '@nu-art/http-server';
@@ -71,6 +71,17 @@ export class ModuleBE_BaseApi_Class<Proto extends DBProto<any>>
 	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.upsertAll)
 	async upsertAll(body: Proto['uiType'][]): Promise<Proto['dbType'][]> {
 		return this.dbModule.set.all(body);
+	}
+
+	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.patch)
+	async patch(body: IndexKeys<Proto['dbType'], keyof Proto['dbType']> & Partial<Proto['dbType']>): Promise<Proto['dbType']> {
+		if (body._id === undefined || body._id === null || body._id === '')
+			throw new ApiException(400, `patch requires _id`);
+		const doc = this.dbModule.doc.unique(body._id);
+		const existing = await doc.get();
+		if (!existing)
+			throw new ApiException(404, `Could not find ${this.dbModule.collection.dbDef.entityName} with _id: ${body._id}`);
+		return doc.update(body);
 	}
 
 	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.delete)
