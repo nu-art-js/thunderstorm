@@ -24,6 +24,11 @@ export type HttpMethod_Query = 'get' | 'delete';
 export type HttpMethod_Body = 'post' | 'put' | 'patch';
 export type HttpMethod_Empty = 'options' | 'head';
 
+/** True when ApiDef uses query params (GET/DELETE); false when it uses body (POST/PUT/PATCH). Shared by http-client and http-server. */
+export function isQueryMethod(method: string): boolean {
+	return method === HttpMethod.GET || method === HttpMethod.DELETE;
+}
+
 export type TypedApi<M extends string, R, B, P extends QueryParams | undefined, IB = B, IP = P, E extends ResponseError = ResponseError> = {
 	Method: M;
 	Response: R;
