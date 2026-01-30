@@ -4,12 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {
-	ApiHandler,
-	_ServerQueryApi,
-	_ServerBodyApi,
-	type ServerRouteRegistry
-} from '../main/index.js';
+import {ApiHandler, _ServerQueryApi, _ServerBodyApi} from '../main/index.js';
 import {expect} from 'chai';
 
 const queryApiDef = {method: 'get' as const, path: '/test-query'};
@@ -18,7 +13,7 @@ const bodyApiDef = {method: 'post' as const, path: '/test-body'};
 describe('ApiHandler initializer - route registration', () => {
 	it('registers each decorated method on server when instance is created', () => {
 		const added: unknown[] = [];
-		const mockServer: ServerRouteRegistry = {
+		const mockServer = {
 			addRoute(api: unknown) {
 				added.push(api);
 			}
@@ -41,7 +36,7 @@ describe('ApiHandler initializer - route registration', () => {
 
 	it('registers query API for GET and body API for POST', () => {
 		const added: {api: unknown}[] = [];
-		const mockServer: ServerRouteRegistry = {
+		const mockServer = {
 			addRoute(api: unknown) {
 				added.push({api});
 			}
@@ -72,7 +67,7 @@ describe('ApiHandler initializer - route registration', () => {
 
 	it('resolves apiDef from resolver with instance', () => {
 		const added: {api: unknown}[] = [];
-		const mockServer: ServerRouteRegistry = {
+		const mockServer = {
 			addRoute(api: unknown) {
 				added.push({api});
 			}

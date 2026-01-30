@@ -16,20 +16,11 @@ import {
 	MimeType_json,
 	MUSTNeverHappenException,
 	Promise_all_sequentially,
-	tsValidate,
 	TypedMap,
-	ValidationException,
-	ValidatorTypeResolver
+	ValidationException
 } from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import type {
-	ApiDef,
-	BodyApi,
-	HttpMethod_Body,
-	HttpMethod_Query,
-	QueryApi,
-	TypedApi
-} from '@nu-art/api-types';
+import type {ApiDef, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi, QueryParams, TypedApi} from '@nu-art/api-types';
 import {Stream} from 'stream';
 import {parse} from 'url';
 import type {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from './types.js';
@@ -44,20 +35,16 @@ import {
 	MemKey_HttpResponse,
 	MemKey_ServerApi
 } from './consts.js';
-import type {QueryParams} from '@nu-art/api-types';
 
 export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	extends Logger {
 
 	static isDebug: boolean = false;
 
-	printResponse: boolean = true;
 	printRequest: boolean = true;
 	headersToLog: string[] = [];
 	private url!: string;
 	private middlewares?: ServerApi_Middleware[];
-	private bodyValidator?: ValidatorTypeResolver<API['B']>;
-	private queryValidator?: ValidatorTypeResolver<API['P']>;
 	readonly apiDef: ApiDef<API>;
 	private postCallActions: (() => Promise<any>)[] = [];
 
@@ -91,30 +78,8 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		this.headersToLog.push(...headersToLog);
 	}
 
-	setBodyValidator(bodyValidator: ValidatorTypeResolver<API['B']>) {
-		this.bodyValidator = bodyValidator;
-		return this;
-	}
-
-	setQueryValidator(queryValidator: ValidatorTypeResolver<API['P']>) {
-		this.queryValidator = queryValidator;
-		return this;
-	}
-
 	getUrl(): string {
 		return this.url;
-	}
-
-	dontPrintResponse(): void {
-		(this as { printResponse: boolean }).printResponse = false;
-	}
-
-	dontPrintRequest(): void {
-		(this as { printRequest: boolean }).printRequest = false;
-	}
-
-	setMaxResponsePrintSize(printResponseMaxSizeBytes: number): void {
-		(this as { printResponse: boolean }).printResponse = printResponseMaxSizeBytes > -1;
 	}
 
 	public route(router: ExpressRouter, prefixUrl: string, baseUrl: string) {
@@ -146,6 +111,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		return new MemStorage().init(async () => {
 			const startedAt = currentTimeMillis();
 			const response = new ApiResponse(this, res);
+
 			this.logInfo(`Intercepted Url: ${req.path}`);
 			if (this.headersToLog.length > 0) {
 				const headers: Record<string, string | undefined> = {};
@@ -153,11 +119,13 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 					headers[headerName] = req.header(headerName);
 				this.logDebug('-- Headers: ', headers);
 			}
+
 			const reqQuery = parse(req.url, true).query as API['P'];
 			if (reqQuery && typeof reqQuery === 'object' && Object.keys(reqQuery as QueryParams).length)
 				this.logVerbose('-- Url Params: ', reqQuery);
 			else
 				this.logVerbose('-- No Params');
+
 			const body: API['B'] | string | undefined = req.body;
 			if (body && typeof body === 'object')
 				this.logVerbose('-- Body (Object): ', this.printRequest ? (body as object) : '- Not Printing -');
@@ -165,6 +133,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 				this.logVerbose('-- Body (String): ', this.printRequest ? (body as string) : '- Not Printing -');
 			else
 				this.logVerbose('-- No Body');
+
 			MemKey_ServerApi.set(this);
 			MemKey_HttpRequest.set(req);
 			MemKey_HttpResponse.set(response);
@@ -174,43 +143,55 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			MemKey_HttpRequestMethod.set(this.apiDef.method);
 			MemKey_HttpRequestPath.set(req.path);
 			MemKey_HttpRequestBody.set(body);
+
 			try {
-				this.bodyValidator && tsValidate<API['B']>(body as API['B'], this.bodyValidator);
-				this.queryValidator && tsValidate<API['P']>(reqQuery, this.queryValidator);
 				if (this.middlewares)
 					await Promise_all_sequentially(this.middlewares);
+
 				const toReturn: unknown = await this.process();
 				if (response.isConsumed())
 					return;
+
 				if (!toReturn)
-					return await response.end(200);
+					return response.end(200);
+
 				const responseType = typeof toReturn;
 				if (responseType === 'object')
-					return await response.json(200, toReturn as object);
+					return response.json(200, toReturn as object);
+
 				if (responseType === 'string' && (toReturn as string).toLowerCase().startsWith('<html'))
-					return await response.html(200, toReturn as string);
-				return await response.text(200, toReturn as string);
+					return response.html(200, toReturn as string);
+
+				return response.text(200, toReturn as string);
+
 			} catch (err: unknown) {
 				let e: unknown = err;
 				if (typeof e === 'string')
 					e = new BadImplementationException(`String was thrown: ${e}`);
+
 				if (e !== null && typeof e === 'object' && !(e instanceof Error))
 					e = new BadImplementationException(`Object instance was thrown: ${JSON.stringify(e)}`);
+
 				try {
 					this.logErrorBold(e as Error);
 				} catch {
 					this.logErrorBold('Error while handling error on request...', err instanceof Error ? err : new Error(String(err)));
 				}
+
 				if (isErrorOfType(e, ValidationException))
 					e = new ApiException(400, 'Validator exception', e as Error);
+
 				if (!isErrorOfType(e, ApiException))
 					e = new ApiException(500, 'Unexpected server error', e as Error);
+
 				const apiException = isErrorOfType(e, ApiException);
 				if (!apiException)
 					throw new MUSTNeverHappenException('MUST NEVER REACH HERE!!!');
+
 				this.logErrorBold((e as ApiException).responseBody);
 				if (apiException.responseCode === 500)
 					return response.serverError(apiException as Error & { cause?: Error });
+
 				return response.exception(apiException);
 			} finally {
 				this.logInfo(`Url Complete in: ${req.path} - ${currentTimeMillis() - startedAt}ms`);

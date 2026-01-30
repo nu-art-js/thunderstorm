@@ -10,10 +10,8 @@ import type {Socket} from 'net';
 import * as fs from 'fs';
 import {addItemToArray, LogLevel} from '@nu-art/ts-common';
 import express from 'express';
-import type {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from './types.js';
-import {DefaultApiErrorMessageComposer} from './server-errors.js';
+import type {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, ExpressRouter} from './types.js';
 import {ServerApi} from './server-api.js';
-import {attachRoutes} from './attach-routes.js';
 import compression from 'compression';
 import cors from 'cors';
 import {Logger} from '@nu-art/logger';
@@ -45,7 +43,6 @@ export class HttpServer
 
 	private static readonly expressMiddleware: ExpressRequestHandler[] = [];
 	private readonly routes: ServerApi<any>[] = [];
-	errorMessageComposer: HttpErrorHandler = DefaultApiErrorMessageComposer();
 	readonly express!: Express;
 	private server!: Server;
 	private socketId: number = 0;
@@ -63,11 +60,6 @@ export class HttpServer
 		return (this as { express: Express }).express = express();
 	}
 
-	setErrorMessageComposer(errorMessageComposer: HttpErrorHandler): this {
-		this.errorMessageComposer = errorMessageComposer;
-		return this;
-	}
-
 	static addMiddleware(middleware: ExpressRequestHandler): typeof HttpServer {
 		HttpServer.expressMiddleware.push(middleware);
 		return this;
@@ -75,6 +67,15 @@ export class HttpServer
 
 	getBaseUrl(): string {
 		return this.config.baseUrl ?? '';
+	}
+
+	addRoute(api: ServerApi<any>): void {
+		if (this.routes.some(r => r.apiDef.path === api.apiDef.path))
+			throw new Error(`Duplicate API path: ${api.apiDef.path}`);
+		this.routes.push(api);
+		const pathPrefix = this.config.pathPrefix ?? '';
+		const baseUrl = this.getBaseUrl();
+		api.route(this.getExpress() as unknown as ExpressRouter, pathPrefix, baseUrl);
 	}
 
 	setCustomCorsOriginValidator(validator: CustomOrigin): this {
@@ -163,12 +164,6 @@ export class HttpServer
 		});
 	}
 
-	private attachRegisteredRoutes(): void {
-		const pathPrefix = this.config.pathPrefix ?? '';
-		const baseUrl = this.getBaseUrl();
-		attachRoutes(this.getExpress(), pathPrefix, this.routes, baseUrl);
-	}
-
 	private createServer(): Server {
 		const ssl = this.config.ssl;
 		if (!ssl) {
@@ -189,7 +184,6 @@ export class HttpServer
 	}
 
 	public async startServer(): Promise<void> {
-		this.attachRegisteredRoutes();
 		return new Promise<void>((resolve, reject) => {
 			this.server = this.createServer();
 			this.server.listen(this.config.port);
