@@ -6,10 +6,17 @@
 
 import type {ApiDef, GeneralApi} from '@nu-art/api-types';
 import {isQueryMethod} from '@nu-art/api-types';
+import type {ResolvableContent} from '@nu-art/ts-common';
 import {resolveContent} from '@nu-art/ts-common';
-import type {ApiHandlerOptions, ServerRouteRegistry} from './api-handler-types.js';
-import {createBodyServerApi, createQueryServerApi} from './typed-api.js';
+import {_ServerBodyApi, _ServerQueryApi} from './server-api.js';
 import {HttpServer} from './HttpServer.js';
+import type {ServerApi_Middleware} from './types.js';
+
+/** Configuration options for ApiHandler decorator. Mirror of client ApiCallerOptions. */
+export type ApiHandlerOptions<Module> = {
+	server?: ResolvableContent<HttpServer, [Module]>;
+	middlewares?: ServerApi_Middleware[];
+};
 
 /**
  * TC39 Stage 3 method decorator for server API handlers. Infers query vs body from apiDef.method:
@@ -21,31 +28,18 @@ import {HttpServer} from './HttpServer.js';
  * @param _apiDef - API definition or ResolvableContent (getter with instance as first arg)
  * @param options - Optional: server (default HttpServer singleton), middlewares, validators
  */
-export function ApiHandler<API extends GeneralApi, Module = unknown>(_apiDef: import('@nu-art/ts-common').ResolvableContent<ApiDef<API>, [Module]>, options?: ApiHandlerOptions<Module, API>) {
+export function ApiHandler<API extends GeneralApi, Module = unknown>(_apiDef: import('@nu-art/ts-common').ResolvableContent<ApiDef<API>, [Module]>, options?: ApiHandlerOptions<Module>) {
 	return function <This extends Module>(originalMethod: (this: This, payload: API['B'] | API['P']) => Promise<API['R']>, context: ClassMethodDecoratorContext<This>) {
-		const methodKey = String(context.name);
 		const apiDefResolver = _apiDef as (instance: Module) => ApiDef<any>;
-		const opts = (options ?? {}) as ApiHandlerOptions<Module, API>;
-		let registered = false;
 		context.addInitializer(function (this: This) {
-			if (registered)
-				return;
-			registered = true;
-			const instance = this as unknown as Record<string, (payload: unknown) => Promise<unknown>>;
-			const server = (resolveContent(opts.server, this) ?? HttpServer) as ServerRouteRegistry;
+			const server = (resolveContent(options?.server, this) ?? HttpServer.default);
 			const apiDef = resolveContent(apiDefResolver as (m: Module) => ApiDef<any>, this as unknown as Module) as ApiDef<any>;
-			const boundMethod = instance[methodKey];
-			if (typeof boundMethod !== 'function')
-				throw new Error(`ApiHandler: method "${methodKey}" is not a function`);
-			const action = (payload: unknown) => boundMethod.call(instance, payload);
-			const useQuery = isQueryMethod((apiDef as { method: string }).method);
+			const useQuery = isQueryMethod(apiDef.method);
 			const api = useQuery
-				? createQueryServerApi(apiDef, action as (params: unknown) => Promise<unknown>, ...(opts.middlewares ?? []))
-				: createBodyServerApi(apiDef, action as (body: unknown) => Promise<unknown>, ...(opts.middlewares ?? []));
-			if (opts.bodyValidator)
-				api.setBodyValidator(opts.bodyValidator);
-			if (opts.queryValidator)
-				api.setQueryValidator(opts.queryValidator);
+				? new _ServerQueryApi(apiDef, (payload: API['Params']) => originalMethod.call(this, payload))
+				: new _ServerBodyApi(apiDef, (payload: API['Body']) => originalMethod.call(this, payload));
+
+			api.setMiddlewares(...(options?.middlewares ?? []));
 			server.addRoute(api);
 		});
 		return originalMethod;
