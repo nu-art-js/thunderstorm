@@ -9,8 +9,7 @@ import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
 import {BaseDBConfig} from './types.js';
 import {EventDispatcher} from './to-refactor/dispatcher.js';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {CrudApiTypes, CrudTypes} from '@nu-art/db-api-shared';
-import {CrudApiDef_Type} from '@nu-art/db-api-shared';
+import {CrudApiDef_Type, CrudApiTypes, CrudTypes} from '@nu-art/db-api-shared';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -126,16 +125,16 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 		return toUpsert;
 	}
 
-	@ApiCaller(
+	@ApiCaller<CrudApiTypes<Types>['query']>(
 		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.query,
 		{
 			httpClient: m => resolveContent(m.httpClient),
 			onComplete: (m, ctx) => m.handleQueryComplete(ctx)
 		}
 	)
-	async query(body: Record<string, unknown> = {}): Promise<Types['dbItem'][]> {
+	async query(body: CrudApiTypes<Types>['query']['Params']): Promise<CrudApiTypes<Types>['query']['Response']> {
 		void body;
-		return undefined as unknown as Types['dbItem'][];
+		return undefined as unknown as CrudApiTypes<Types>['query']['Response'];
 	}
 
 	@ApiCaller(
