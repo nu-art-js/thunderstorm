@@ -5,24 +5,26 @@
  */
 
 import type {EntityDependencyError, FirestoreQuery} from '@nu-art/firebase-shared';
-import type {DB_BaseObject, DBDef_V3, DBProto, IndexKeys} from '@nu-art/ts-common';
+import type {DB_BaseObject, IndexKeys, Metadata} from '@nu-art/ts-common';
 import type {BodyApi, QueryApi, ResponseError} from '@nu-art/api-types';
 import {HttpMethod} from '@nu-art/api-types';
+import type {CrudTypes, BaseDBDefBE} from '@nu-art/db-api-shared';
 
-export type ApiStruct_DBApiGenIDBV3<Proto extends DBProto<any>> = {
+export type ApiStruct_DBApiGenIDBV3<Types extends CrudTypes> = {
 	v1: {
-		query: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>>;
-		queryUnique: QueryApi<Proto['dbType'], DB_BaseObject, ResponseError<string, unknown>, string | IndexKeys<Proto['dbType'], keyof Proto['dbType']>>;
-		upsert: BodyApi<Proto['dbType'], Proto['uiType']>;
-		upsertAll: BodyApi<Proto['dbType'][], Proto['uiType'][]>;
-		patch: BodyApi<Proto['dbType'], IndexKeys<Proto['dbType'], keyof Proto['dbType']> & Partial<Proto['dbType']>>;
-		delete: QueryApi<Proto['dbType'] | undefined, DB_BaseObject, EntityDependencyError>;
-		deleteQuery: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>>;
-		deleteAll: QueryApi<Proto['dbType'][]>;
+		query: BodyApi<Types['dbItem'][], FirestoreQuery<Types['dbItem']>>;
+		queryUnique: QueryApi<Types['dbItem'], DB_BaseObject, ResponseError<string, unknown>, string | IndexKeys<Types['dbItem'], keyof Types['dbItem']>>;
+		upsert: BodyApi<Types['dbItem'], Types['uiItem']>;
+		upsertAll: BodyApi<Types['dbItem'][], Types['uiItem'][]>;
+		patch: BodyApi<Types['dbItem'], IndexKeys<Types['dbItem'], keyof Types['dbItem']> & Partial<Types['dbItem']>>;
+		delete: QueryApi<Types['dbItem'] | undefined, DB_BaseObject, EntityDependencyError>;
+		deleteQuery: BodyApi<Types['dbItem'][], FirestoreQuery<Types['dbItem']>>;
+		deleteAll: QueryApi<Types['dbItem'][]>;
+		metadata: QueryApi<Metadata<Types['dbItem']>>;
 	};
 };
 
-export type ApiDefResolver_DBApiGenIDBV3<Proto extends DBProto<any>> = {
+export type ApiDefResolver_DBApiGenIDBV3<Types extends CrudTypes> = {
 	v1: {
 		query: { method: typeof HttpMethod.POST; path: string; timeout?: number };
 		queryUnique: { method: typeof HttpMethod.GET; path: string };
@@ -32,23 +34,25 @@ export type ApiDefResolver_DBApiGenIDBV3<Proto extends DBProto<any>> = {
 		delete: { method: typeof HttpMethod.GET; path: string };
 		deleteQuery: { method: typeof HttpMethod.POST; path: string };
 		deleteAll: { method: typeof HttpMethod.GET; path: string };
+		metadata: { method: typeof HttpMethod.GET; path: string };
 	};
 };
 
-export function DBApiDefGeneratorIDBV3<Proto extends DBProto<any>>(
-	dbDef: DBDef_V3<Proto>,
+export function DBApiDefGeneratorIDBV3<Types extends CrudTypes>(
+	dbDef: BaseDBDefBE,
 	version = 'v1'
-): ApiDefResolver_DBApiGenIDBV3<Proto> {
+): ApiDefResolver_DBApiGenIDBV3<Types> {
 	return {
 		v1: {
-			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/query`, timeout: 60000},
-			queryUnique: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/patch`},
-			delete: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/delete-all`},
+			query: { method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/query`, timeout: 60000 },
+			queryUnique: { method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/query-unique` },
+			upsert: { method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/upsert` },
+			upsertAll: { method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/upsert-all` },
+			patch: { method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/patch` },
+			delete: { method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/delete-unique` },
+			deleteQuery: { method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/delete` },
+			deleteAll: { method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/delete-all` },
+			metadata: { method: HttpMethod.GET, path: `${version}/${dbDef.dbKey}/metadata` },
 		},
 	};
 }

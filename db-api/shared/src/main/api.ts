@@ -20,10 +20,17 @@
 
 import {EntityDependencyError, FirestoreQuery} from '@nu-art/firebase-shared';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/http-client';
+import {ApiDef, BodyApi, GeneralApi, HttpMethod, QueryApi} from '@nu-art/http-client';
 import {Database, DatabasePrototype, IndexKeys} from './types.js';
 import {DB_BaseObject} from './types/db-object.js';
 import {Metadata} from './types/metadata.js';
+
+/** Maps an API struct to ApiDef at each leaf (recursive). Used by DBApiDefGenerator return type. */
+type ApiDefResolver<API_Struct> = API_Struct extends GeneralApi
+	? ApiDef<API_Struct>
+	: API_Struct extends object
+		? { [P in keyof API_Struct]: ApiDefResolver<API_Struct[P]> }
+		: never;
 
 
 /**

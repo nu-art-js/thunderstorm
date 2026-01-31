@@ -65,3 +65,11 @@ export type ApiDef<API extends GeneralApi> = {
 	timeout?: number;
 	errors?: API['Error']['type'];
 };
+
+/** Nested structure of API types (e.g. { v1: { query: BodyApi<...>, ... } }). */
+export type ApiStruct = { [k: string]: GeneralApi | ApiStruct };
+
+/** Maps an API struct to ApiDef at each leaf (recursive). */
+export type ApiDefResolver<API_Struct extends ApiStruct> = API_Struct extends GeneralApi
+	? ApiDef<API_Struct>
+	: { [P in keyof API_Struct]: ApiDefResolver<API_Struct[P]> };
