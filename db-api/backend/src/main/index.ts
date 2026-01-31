@@ -18,4 +18,10 @@
  * limitations under the License.
  */
 
-// Backend exports for db-api infrastructure
+export {ModuleBE_BaseDB, BaseDBApiConfigV3, DBApiConfigV3} from './ModuleBE_BaseDB.js';
+export {ModuleBE_BaseApi_Class, createApisForDBModuleV3} from './ModuleBE_BaseApi.js';
+export type {ApiStruct_DBApiGenIDBV3, ApiDefResolver_DBApiGenIDBV3} from './db-api-gen-v3.js';
+export {DBApiDefGeneratorIDBV3} from './db-api-gen-v3.js';
+export type {DBApiBEConfig, DBEntityDependencies, DBEntityDependencyError, EntityDependencyCollection, Response_DBSync} from './storm-stubs.js';
+export {getModuleBEConfig, ModuleBE_SyncManager, dispatch_CollectEntityDependencies} from './storm-stubs.js';
+export type {CrudTypes, BaseDBDefBE} from '@nu-art/db-api-shared';

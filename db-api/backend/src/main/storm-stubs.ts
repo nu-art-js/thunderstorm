@@ -4,30 +4,24 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {Const_UniqueKeys, Day, DBDef_V3, DB_Object, DBProto, Hour} from '@nu-art/ts-common';
+import {Const_UniqueKeys, Day, DB_Object, Hour} from '@nu-art/ts-common';
 import type {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import type {UniqueId} from '@nu-art/ts-common';
 import {Dispatcher} from '@nu-art/ts-common';
 import type {Transaction} from 'firebase-admin/firestore';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
-import type {UniqueId} from '@nu-art/ts-common';
+import type {BaseDBDefBE, DBApiBEConfigShape} from '@nu-art/db-api-shared';
 
-export type DBApiBEConfig<Proto extends DBProto<any>> = {
-	uniqueKeys: Proto['uniqueKeys'];
-	itemName: string;
-	versions: Proto['versions'];
-	TTL: number;
-	lastUpdatedTTL: number;
-	lockKeys?: Proto['lockKeys'];
-};
+export type {DBApiBEConfigShape as DBApiBEConfig};
 
-export const getModuleBEConfig = <Proto extends DBProto<any, any, any>>(dbDef: DBDef_V3<Proto>): DBApiBEConfig<Proto> => {
+export const getModuleBEConfig = (dbDef: BaseDBDefBE): DBApiBEConfigShape => {
 	return {
 		versions: dbDef.versions,
 		lockKeys: dbDef.lockKeys,
-		uniqueKeys: dbDef.uniqueKeys || Const_UniqueKeys as Proto['uniqueKeys'],
+		uniqueKeys: dbDef.uniqueKeys ?? Const_UniqueKeys as readonly string[],
 		itemName: dbDef.entityName,
-		TTL: dbDef.TTL || Hour * 2,
-		lastUpdatedTTL: dbDef.lastUpdatedTTL || Day,
+		TTL: dbDef.TTL ?? Hour * 2,
+		lastUpdatedTTL: dbDef.lastUpdatedTTL ?? Day,
 	};
 };
 
@@ -45,7 +39,7 @@ export const DBEntityDependencyErrorType = 'entity-has-dependencies';
 export type DBEntityDependencyError = ResponseError<typeof DBEntityDependencyErrorType, DBEntityDependencies>;
 
 export interface EntityDependencyCollection {
-	__collectEntityDependencies: <T extends DBProto<any>>(type: T['dbKey'], itemIds: string[], transaction?: Transaction) => Promise<DBEntityDependencies | undefined>;
+	__collectEntityDependencies: (type: string, itemIds: string[], transaction?: Transaction) => Promise<DBEntityDependencies | undefined>;
 }
 
 export const dispatch_CollectEntityDependencies = new Dispatcher<EntityDependencyCollection, '__collectEntityDependencies'>('__collectEntityDependencies');

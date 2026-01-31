@@ -28,9 +28,7 @@ import {
 	batchActionParallel,
 	currentTimeMillis,
 	DB_Object,
-	DBDef_V3,
 	dbObjectToId,
-	DBProto,
 	DotNotation,
 	filterDuplicates,
 	filterInstances,
@@ -44,6 +42,7 @@ import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} fr
 import {DocWrapperV3} from '@nu-art/firebase-backend/firestore-v3/DocWrapperV3';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_DeletedDocs} from '@nu-art/firebase-backend/firestore-v3/consts';
+import type {CrudTypes, BaseDBDefBE} from '@nu-art/db-api-shared';
 import {
 	DBApiBEConfig,
 	DBEntityDependencies,
@@ -59,35 +58,34 @@ import {
 export type BaseDBApiConfigV3 = {
 	projectId?: string,
 	chunksSize: number
-}
+};
 
-export type DBApiConfigV3<Proto extends DBProto<any>> = BaseDBApiConfigV3 & DBApiBEConfig<Proto>
+export type DBApiConfigV3 = BaseDBApiConfigV3 & DBApiBEConfig;
 const CONST_DefaultWriteChunkSize = 200;
 
 /**
  * An abstract base class used for implementing CRUD operations on a specific collection.
  *
- * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
+ * Typed by CrudTypes (shared with FE); no Proto in the base.
  */
-export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = any,
-	Config extends ConfigType & DBApiConfigV3<Proto> = ConfigType & DBApiConfigV3<Proto>>
+export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
+	Config extends ConfigType & DBApiConfigV3 = ConfigType & DBApiConfigV3>
 	extends Module<Config>
 	implements EntityDependencyCollection {
 
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
 
-	// private static DeleteHardLimit = 250;
-	public collection!: FirestoreCollectionV3<Proto>;
-	public dbDef: DBDef_V3<Proto>;
-	public query!: FirestoreCollectionV3<Proto>['query'];
-	public create!: FirestoreCollectionV3<Proto>['create'];
-	public set!: FirestoreCollectionV3<Proto>['set'];
-	public delete!: FirestoreCollectionV3<Proto>['delete'];
-	public doc!: FirestoreCollectionV3<Proto>['doc'];
-	public runTransaction!: FirestoreCollectionV3<Proto>['runTransaction'];
+	public collection!: FirestoreCollectionV3<any>;
+	public readonly dbDef: BaseDBDefBE;
+	public query!: FirestoreCollectionV3<any>['query'];
+	public create!: FirestoreCollectionV3<any>['create'];
+	public set!: FirestoreCollectionV3<any>['set'];
+	public delete!: FirestoreCollectionV3<any>['delete'];
+	public doc!: FirestoreCollectionV3<any>['doc'];
+	public runTransaction!: FirestoreCollectionV3<any>['runTransaction'];
 
-	protected constructor(dbDef: DBDef_V3<Proto>, appConfig?: BaseDBApiConfigV3) {
+	protected constructor(dbDef: BaseDBDefBE, appConfig?: BaseDBApiConfigV3) {
 		super();
 
 		const config = getModuleBEConfig(dbDef);
@@ -104,44 +102,38 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		this.collectDependencies.bind(this);
 	}
 
-	__collectEntityDependencies = async <T extends DBProto<any>>(type: T['dbKey'], itemIds: string[], transaction?: Transaction): Promise<DBEntityDependencies | undefined> => {
-		//Assert this collection has dependencies fields to go over
-		const dependencyDefs = (this.dbDef.dependencies ?? {}) as Proto['dependencies'];
-		const dependencyDefKeys = _keys(dependencyDefs).filter(key => dependencyDefs[key].dbKey === type) as (keyof Proto['dependencies'])[];
+	__collectEntityDependencies = async (type: string, itemIds: string[], transaction?: Transaction): Promise<DBEntityDependencies | undefined> => {
+		const dependencyDefs = this.dbDef.dependencies ?? {};
+		const dependencyDefKeys = _keys(dependencyDefs).filter((key): key is string => dependencyDefs[key].dbKey === type);
 		if (!dependencyDefKeys.length)
 			return;
 
-		//Collect all conflicting item queries
 		const conflictItemQueries = dependencyDefKeys.reduce((acc, dependencyDefKey) => {
 			const dependencyDef = dependencyDefs[dependencyDefKey];
-			let whereClause: (ids: UniqueId[]) => Clause_Where<Proto['dbType']>;
+			let whereClause: (ids: UniqueId[]) => Clause_Where<Types['dbItem']>;
 			switch (dependencyDef.fieldType) {
 				case 'string':
-					whereClause = ids => ({[dependencyDefKey]: {$in: ids}}) as Clause_Where<Proto['dbType']>;
+					whereClause = ids => ({[dependencyDefKey]: {$in: ids}}) as Clause_Where<Types['dbItem']>;
 					break;
 				case 'string[]':
-					whereClause = ids => ({[dependencyDefKey]: {$aca: ids}}) as Clause_Where<Proto['dbType']>;
+					whereClause = ids => ({[dependencyDefKey]: {$aca: ids}}) as Clause_Where<Types['dbItem']>;
 					break;
 				default:
-					throw new BadImplementationException(`Proto Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
+					throw new BadImplementationException(`Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
 			}
 
 			acc.push(batchActionParallel(itemIds, 10, async ids => this.query.unManipulatedQuery({where: whereClause(ids)}, transaction)));
 			return acc;
-		}, [] as Promise<Proto['dbType'][]>[]);
+		}, [] as Promise<Types['dbItem'][]>[]);
 
 		if (!conflictItemQueries.length)
 			return;
 
-		//Get all conflicting items
 		let conflictingItems = filterInstances((await Promise.all(conflictItemQueries)).flat());
-		conflictingItems = filterDuplicates<Proto['dbType']>(conflictingItems, dbObjectToId);
-		//Filter out conflicting items that were already deleted in this transaction
+		conflictingItems = filterDuplicates<Types['dbItem']>(conflictingItems, dbObjectToId);
 		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
 		if (ignoredInThisTransaction) {
-			//The key associated with this collection
 			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.dbKey];
-			//Filter out all ids of items which were already deleted in this transaction
 			conflictingItems = conflictingItems.filter(object => !ignoredForThisCollection?.has(object._id));
 		}
 		return {
@@ -150,11 +142,11 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		};
 	};
 
-	private mapConflicts = (conflictItems: Proto['dbType'][], itemIds: UniqueId[], conflictFields: (keyof Proto['dependencies'])[]): DBEntityDependencies['dependencyMap'] => {
+	private mapConflicts = (conflictItems: Types['dbItem'][], itemIds: UniqueId[], conflictFields: string[]): DBEntityDependencies['dependencyMap'] => {
 		return itemIds.reduce((acc, itemId) => {
 			const conflictingItems = conflictItems.filter(item => {
 				for (const field of conflictFields) {
-					const value = getDotNotatedValue(field as DotNotation<Proto['dbType']>, item);
+					const value = getDotNotatedValue(field as DotNotation<Types['dbItem']>, item);
 					if (asArray(value).includes(itemId))
 						return true;
 				}
@@ -174,7 +166,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 */
 	init() {
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestoreV3();
-		this.collection = firestore.getCollection<Proto['dbType']>(this.dbDef, {
+		this.collection = firestore.getCollection(this.dbDef as any, {
 			canDeleteItems: this.canDeleteItems.bind(this),
 			preWriteProcessing: this._preWriteProcessing.bind(this),
 			postWriteProcessing: this._postWriteProcessing.bind(this),
@@ -220,7 +212,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 	}
 
-	querySync = async (syncQuery: FirestoreQuery<Proto['dbType']>): Promise<Response_DBSync<Proto['dbType']>> => {
+	querySync = async (syncQuery: FirestoreQuery<Types['dbItem']>): Promise<Response_DBSync<Types['dbItem']>> => {
 		const items = await this.collection.query.custom(syncQuery);
 		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.dbDef.dbKey, syncQuery as FirestoreQuery<DB_Object>);
 
@@ -228,7 +220,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		return {toUpdate: items, toDelete: deletedItems};
 	};
 
-	private _preWriteProcessing = async (dbItem: Proto['uiType'], originalDbInstance: Proto['dbType'], transaction?: Transaction, upgrade = true) => {
+	private _preWriteProcessing = async (dbItem: Types['uiItem'], originalDbInstance: Types['dbItem'], transaction?: Transaction, upgrade = true) => {
 		await this.preWriteProcessing(dbItem, originalDbInstance, transaction);
 	};
 
@@ -239,10 +231,10 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
 	 * @param originalDbInstance - The DB instance fetched from remote firestore.
 	 */
-	protected async preWriteProcessing(dbInstance: Proto['uiType'], originalDbInstance: Proto['dbType'], transaction?: Transaction) {
+	protected async preWriteProcessing(dbInstance: Types['uiItem'], originalDbInstance: Types['dbItem'], transaction?: Transaction) {
 	}
 
-	private _postWriteProcessing = async (data: PostWriteProcessingData<Proto['dbType']>, actionType: CollectionActionType, transaction?: Transaction) => {
+	private _postWriteProcessing = async (data: PostWriteProcessingData<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) => {
 		const now = currentTimeMillis();
 
 		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
@@ -268,10 +260,10 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 * @param actionType create/set/update/delete
 	 * @param transaction
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>, actionType: CollectionActionType, transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) {
 	}
 
-	manipulateQuery(query: FirestoreQuery<Proto['dbType']>): FirestoreQuery<Proto['dbType']> {
+	manipulateQuery(query: FirestoreQuery<Types['dbItem']>): FirestoreQuery<Types['dbItem']> {
 		return query;
 	}
 
@@ -282,7 +274,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 * @param transaction - The transaction object
 	 * @param dbItems - The DB entry that is going to be deleted.
 	 */
-	async canDeleteItems(dbItems: Proto['dbType'][], transaction?: Transaction) {
+	async canDeleteItems(dbItems: Types['dbItem'][], transaction?: Transaction) {
 		const dependencies = await this.collectDependencies(dbItems, transaction);
 		if (dependencies)
 			throw new ApiException<DBEntityDependencyError>(422, 'entity has dependencies').setErrorBody({
@@ -291,7 +283,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 			});
 	}
 
-	async collectDependencies(dbInstances: Proto['dbType'][], transaction?: Transaction): Promise<DBEntityDependencies | undefined> {
+	async collectDependencies(dbInstances: Types['dbItem'][], transaction?: Transaction): Promise<DBEntityDependencies | undefined> {
 		const dependencyResponses = await dispatch_CollectEntityDependencies.dispatchModuleAsync(this.dbDef.dbKey, dbInstances.map(dbObjectToId), transaction);
 		const filtered = filterInstances(dependencyResponses);
 		if (!filtered.length)
@@ -301,14 +293,14 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		return _keys(merged.dependencyMap).length ? merged : undefined;
 	}
 
-	private versionUpgrades: { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> } = {} as { [K in Proto['versions']]: (items: Proto['versions'][K]) => Promise<void> };
+	private versionUpgrades: Record<string, (items: Types['dbItem'][]) => Promise<void>> = {};
 
 	/**
 	 * Upgrades the entity from the given version to the next one (to the same version if the given version is the latest)
 	 * @param version - The version we start from
 	 * @param processor
 	 */
-	registerVersionUpgradeProcessor<K extends Proto['versions']['versions'][number]>(version: K, processor: (items: Proto['versions']['types'][K][]) => Promise<void>) {
+	registerVersionUpgradeProcessor(version: string, processor: (items: Types['dbItem'][]) => Promise<void>) {
 		this.versionUpgrades[version] = processor;
 	}
 
@@ -324,15 +316,15 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 
 	upgradeCollection = async (force = false) => {
 		return this.processCollection(async (instances) => {
-			const instancesToSave: Proto['dbType'][] = await this.upgradeInstances(instances, force);
+			const instancesToSave: Types['dbItem'][] = await this.upgradeInstances(instances, force);
 
 			// @ts-ignore
 			await this.collection.upgradeInstances(instancesToSave);
 		});
 	};
 
-	processCollection = async (processInstances: (instances: Proto['dbType'][]) => Promise<void>) => {
-		let docs: DocWrapperV3<Proto>[];
+	processCollection = async (processInstances: (instances: Types['dbItem'][]) => Promise<void>) => {
+		let docs: DocWrapperV3<any>[];
 		const itemsCount = this.config.chunksSize;
 
 		const query = {
@@ -359,10 +351,10 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		}
 	};
 
-	async upgradeInstances(instances: Proto['dbType'][], force = false) {
-		let instancesToSave: Proto['dbType'][] = [];
+	async upgradeInstances(instances: Types['dbItem'][], force = false) {
+		let instancesToSave: Types['dbItem'][] = [];
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
-			const version = this.config.versions[i] as Proto['versions'][number];
+			const version = this.config.versions[i];
 
 			const instancesToUpgrade = instances.filter(instance => instance._v === version);
 			const nextVersion = this.config.versions[i - 1] ?? version;
