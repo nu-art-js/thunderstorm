@@ -7,7 +7,7 @@
 import {ModuleFE_BaseDB, ModuleSyncType} from './ModuleFE_BaseDB.js';
 import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
 import {CrudApiDefShape} from '../decorators/types.js';
-import {BaseDBConfig, ModuleTypes} from './types.js';
+import {BaseDBConfig, CrudTypes} from './types.js';
 import {EventDispatcher} from '../to-refactor/dispatcher.js';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
@@ -27,7 +27,7 @@ type Operation = {
 };
 
 
-interface Params<Types extends ModuleTypes> {
+interface Params<Types extends CrudTypes> {
 	config: BaseDBConfig<Types>,
 	crudApiDef: CrudApiDefShape,
 	dispatcher?: EventDispatcher
@@ -42,12 +42,12 @@ interface Params<Types extends ModuleTypes> {
  * getters over readonly crudApiDef. Pass your ApiDef (e.g. MyApiDef.v1) into the constructor;
  * the base stores it as readonly crudApiDef.
  *
- * @template Types - ModuleTypes that define the entity types (decoupled from Proto)
+ * @template Types - CrudTypes that define the entity types (decoupled from Proto)
  *
  * @example
  * ```typescript
- * class UserModule extends ModuleFE_BaseApi<UserModuleTypes> {
- *   constructor(config: BaseDBConfig<UserModuleTypes>) {
+ * class UserModule extends ModuleFE_BaseApi<UserCrudTypes> {
+ *   constructor(config: BaseDBConfig<UserCrudTypes>) {
  *     super(config, UserApiDef.v1);
  *   }
  * }
@@ -55,7 +55,7 @@ interface Params<Types extends ModuleTypes> {
  * await UserModule.upsert(uiUser);
  * ```
  */
-export abstract class ModuleFE_BaseApi<Types extends ModuleTypes>
+export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 	extends ModuleFE_BaseDB<Types> {
 
 	readonly crudApiDef: CrudApiDefShape;

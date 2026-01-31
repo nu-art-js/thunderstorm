@@ -4,10 +4,10 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {CrudTypes, ModuleTypes} from '@nu-art/db-api-shared';
+import type {CrudTypes} from '@nu-art/db-api-shared';
 import {DBConfig} from '../to-refactor/db-types.js';
 
-export type {CrudTypes, ModuleTypes};
+export type {CrudTypes};
 
 /**
  * Minimal configuration for BaseDB/BaseApi modules.
@@ -16,7 +16,7 @@ export type {CrudTypes, ModuleTypes};
  *
  * @template Types - CrudTypes that define the entity types
  */
-export type BaseDBConfig<Types extends CrudTypes<any, any, any>> = {
+export type BaseDBConfig<Types extends CrudTypes> = {
 	dbKey: Types['dbKey'];
 	validator: Types['validator'];
 	uniqueKeys: Types['uniqueKeys'];

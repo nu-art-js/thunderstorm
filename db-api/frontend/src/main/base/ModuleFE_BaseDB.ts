@@ -15,6 +15,7 @@ import {
 	Module,
 	tsValidateResult,
 	ValidationException,
+	ValidatorTypeResolver,
 	voidFunction
 } from '@nu-art/ts-common';
 import {getDatabase, IDB_Store} from '@nu-art/idb-frontend';
@@ -34,7 +35,7 @@ import {
 import {DB_Object, DBConfig, KeysOfDB_Object} from '../to-refactor/db-types.js';
 import {EventDispatcher, NoOpDispatcher} from '../to-refactor/dispatcher.js';
 import {composeDbObjectUniqueId, dbObjectToId} from '../to-refactor/utils.js';
-import {BaseDBConfig, ModuleTypes} from './types.js';
+import {BaseDBConfig, CrudTypes} from './types.js';
 
 
 /**
@@ -72,9 +73,9 @@ export enum ModuleSyncType {
  * - Version upgrade processing
  * - Validation
  *
- * @template Types - ModuleTypes that define the entity types (decoupled from Proto)
+ * @template Types - CrudTypes that define the entity types (decoupled from Proto)
  */
-export class ModuleFE_BaseDB<Types extends ModuleTypes>
+export class ModuleFE_BaseDB<Types extends CrudTypes>
 	extends Module {
 
 	readonly validator: Types['validator'];
@@ -127,7 +128,7 @@ export class ModuleFE_BaseDB<Types extends ModuleTypes>
 			for (const idx of config.dbConfig.indices) {
 				const keys = idx.keys;
 				const params = idx.params ? {unique: idx.params.unique, multiEntry: idx.params.multiEntry} : undefined;
-				store.createIndex(idx.id, keys as string | string[], params);
+				store.createIndex(idx.id, keys as (keyof Types['dbItem'])[] | keyof Types['dbItem'], params);
 			}
 		}
 
@@ -260,7 +261,7 @@ export class ModuleFE_BaseDB<Types extends ModuleTypes>
 			}
 
 			instancesToSave = filterDuplicates(instancesToSave);
-			instancesToUpgrade.forEach(instance => instance._v = nextVersion);
+			instancesToUpgrade.forEach(instance => (instance._v = nextVersion));
 		}
 
 		return force ? instances : instancesToSave;
@@ -271,7 +272,7 @@ export class ModuleFE_BaseDB<Types extends ModuleTypes>
 		// UIItem is well-defined at app level and already excludes generated props
 		// Just remove DB_Object keys before validation
 		const instance = deleteKeysObject(_instance as Types['dbItem'], KeysOfDB_Object);
-		const results = tsValidateResult(instance, this.validator);
+		const results = tsValidateResult(instance, this.validator as ValidatorTypeResolver<Omit<Types['dbItem'], keyof DB_Object>>);
 		if (results)
 			this.onValidationError(_instance as Types['uiItem'], results as InvalidResult<Types['dbItem']>);
 	}
@@ -360,7 +361,7 @@ export class ModuleFE_BaseDB<Types extends ModuleTypes>
 		this.cache.onEntriesUpdated([item]);
 
 		// Set last updated if needed
-		const lastUpdated = (item as DB_Object).__updated;
+		const lastUpdated = item.__updated;
 		if ((!this.IDB.getLastSync() && lastUpdated !== 0 || lastUpdated) && updateIDBLastSynced)
 			this.IDB.setLastUpdated(lastUpdated);
 

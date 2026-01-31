@@ -171,7 +171,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 			preWriteProcessing: this._preWriteProcessing.bind(this),
 			postWriteProcessing: this._postWriteProcessing.bind(this),
 			upgradeInstances: this.upgradeInstances.bind(this),
-			manipulateQuery: this.manipulateQuery.bind(this)
+			manipulateQuery: this.manipulateQuery.bind(this) as (query: FirestoreQuery<any>) => FirestoreQuery<any>
 		});
 
 		this.runTransaction = this.collection.runTransaction;
@@ -234,18 +234,19 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	protected async preWriteProcessing(dbInstance: Types['uiItem'], originalDbInstance: Types['dbItem'], transaction?: Transaction) {
 	}
 
-	private _postWriteProcessing = async (data: PostWriteProcessingData<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) => {
+	private _postWriteProcessing = async (data: PostWriteProcessingData<any>, actionType: CollectionActionType, transaction?: Transaction) => {
 		const now = currentTimeMillis();
 
 		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			const latestUpdated = Array.isArray(data.updated) ?
-				data.updated.reduce((toRet, current) => Math.max(toRet, current.__updated), data.updated[0].__updated) :
-				data.updated.__updated;
+			const updated = data.updated as Types['dbItem'] | Types['dbItem'][];
+			const latestUpdated = Array.isArray(updated) ?
+				updated.reduce((toRet, current) => Math.max(toRet, current.__updated), updated[0].__updated) :
+				updated.__updated;
 			await ModuleBE_SyncManager.setLastUpdated(this.dbDef.dbKey, latestUpdated);
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await ModuleBE_SyncManager.onItemsDeleted(this.dbDef.dbKey, asArray(data.deleted), this.config.uniqueKeys, transaction);
+			await ModuleBE_SyncManager.onItemsDeleted(this.dbDef.dbKey, asArray(data.deleted) as DB_Object[], this.config.uniqueKeys as string[], transaction);
 			await ModuleBE_SyncManager.setLastUpdated(this.dbDef.dbKey, now);
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
@@ -260,7 +261,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	 * @param actionType create/set/update/delete
 	 * @param transaction
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<any>, actionType: CollectionActionType, transaction?: Transaction) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<Types['dbItem']>): FirestoreQuery<Types['dbItem']> {
@@ -334,11 +335,9 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		while ((docs = await this.collection.doc.unManipulatedQuery(query)).length > 0) {
 
 			// this is old Backward compatible from before the assertion of unique ids where the doc ref is the _id of the doc
-			const toDelete = docs.filter(doc => {
-				return doc.ref.id !== doc.data!._id;
-			});
+			const toDelete = docs.filter(doc => doc.ref.id !== doc.data?._id);
 
-			const instances = docs.map(d => d.data!);
+			const instances = docs.map(d => d.data!) as Types['dbItem'][];
 			this.logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
 			await processInstances(instances);
 
@@ -375,7 +374,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 			}
 
 			instancesToSave = filterDuplicates(instancesToSave);
-			instancesToUpgrade.forEach(instance => instance._v = nextVersion);
+			instancesToUpgrade.forEach(instance => (instance._v = nextVersion));
 		}
 
 		return force ? instances : instancesToSave;

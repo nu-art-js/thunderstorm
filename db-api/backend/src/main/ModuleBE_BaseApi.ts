@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {__stringify, _values, ApiException, DB_BaseObject, IndexKeys, Metadata, Module} from '@nu-art/ts-common';
+import {__stringify, _values, ApiException, DB_BaseObject, Metadata, Module} from '@nu-art/ts-common';
 import type {CrudTypes} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
@@ -75,7 +75,7 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 	}
 
 	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.patch)
-	async patch(body: IndexKeys<Types['dbItem'], keyof Types['dbItem']> & Partial<Types['dbItem']>): Promise<Types['dbItem']> {
+	async patch(body: Partial<Types['dbItem']> & Pick<Types['dbItem'], '_id'>): Promise<Types['dbItem']> {
 		if (body._id === undefined || body._id === null || body._id === '')
 			throw new ApiException(400, `patch requires _id`);
 		const doc = this.dbModule.doc.unique(body._id);
