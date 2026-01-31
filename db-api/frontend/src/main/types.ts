@@ -5,9 +5,7 @@
  */
 
 import type {CrudTypes} from '@nu-art/db-api-shared';
-import {DBConfig} from '../to-refactor/db-types.js';
-
-export type {CrudTypes};
+import {DBConfig} from './to-refactor/db-types.js';
 
 /**
  * Minimal configuration for BaseDB/BaseApi modules.

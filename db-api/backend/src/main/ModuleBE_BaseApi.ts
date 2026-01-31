@@ -21,11 +21,12 @@
 
 import {__stringify, _values, ApiException, DB_BaseObject, Metadata, Module} from '@nu-art/ts-common';
 import type {CrudTypes} from '@nu-art/db-api-shared';
+import {CrudEmptyQuery, CrudQuery} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
-import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
+import type {FirestoreQuery} from '@nu-art/firebase-shared';
 import {ApiHandler} from '@nu-art/http-server';
-import {DBApiDefGeneratorIDB} from './db-api-gen.js';
-import type {ApiDefResolver_DBApiGenIDB} from './db-api-gen.js';
+import {CrudApiDef} from '@nu-art/db-api-shared';
+import {CrudApiDef_Type} from '@nu-art/db-api-shared/src/main/index';
 
 
 /**
@@ -37,26 +38,26 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDB<Types>;
-	readonly apiDef: ApiDefResolver_DBApiGenIDB<Types>;
+	readonly crudApiDef: CrudApiDef_Type<Types>;
 
 	constructor(dbModule: ModuleBE_BaseDB<Types, any>, version?: string) {
 		super(`GenApi(${dbModule.getName()})`);
 		this.dbModule = dbModule;
-		this.apiDef = DBApiDefGeneratorIDB<Types>(this.dbModule.dbDef, version);
+		this.crudApiDef = CrudApiDef<Types>(this.dbModule.dbDef, version);
 	}
 
 	init() {
-		this.logDebug(`Adding routes : ${this.apiDef.v1.query.path}`);
+		this.logDebug(`Adding routes : ${this.apiDef.query.path}`);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.query)
-	async query(queryBody: FirestoreQuery<Types['dbItem']>): Promise<Types['dbItem'][]> {
-		const items = await this.dbModule.query.where(queryBody);
+	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.query)
+	async query(queryBody: CrudQuery<Types['dbItem']>): Promise<Types['dbItem'][]> {
+		const items = await this.dbModule.query.where(queryBody as FirestoreQuery<Types['dbItem']>);
 		await this.dbModule.upgradeInstances(items);
 		return items;
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.queryUnique)
+	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.queryUnique)
 	async queryUnique(queryObject: DB_BaseObject): Promise<Types['dbItem']> {
 		const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 		if (!toReturnItem)
@@ -64,17 +65,17 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 		return toReturnItem;
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.upsert)
+	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.upsert)
 	async upsert(body: Types['uiItem']): Promise<Types['dbItem']> {
 		return this.dbModule.set.item(body);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.upsertAll)
+	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.upsertAll)
 	async upsertAll(body: Types['uiItem'][]): Promise<Types['dbItem'][]> {
 		return this.dbModule.set.all(body);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.patch)
+	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.patch)
 	async patch(body: Partial<Types['dbItem']> & Pick<Types['dbItem'], '_id'>): Promise<Types['dbItem']> {
 		if (body._id === undefined || body._id === null || body._id === '')
 			throw new ApiException(400, `patch requires _id`);
@@ -85,29 +86,29 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 		return doc.update(body);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.delete)
+	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.delete)
 	async delete(toDeleteObject: DB_BaseObject): Promise<Types['dbItem'] | undefined> {
 		return this.dbModule.delete.unique(toDeleteObject._id);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.deleteQuery)
-	async deleteQuery(query: FirestoreQuery<Types['dbItem']>): Promise<Types['dbItem'][]> {
+	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.deleteQuery)
+	async deleteQuery(query: CrudQuery<Types['dbItem']>): Promise<Types['dbItem'][]> {
 		if (!query.where)
 			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);
 
 		if (_values(query.where).filter(v => v === undefined || v === null).length > 0)
 			throw new ApiException(400, `Cannot delete with property value undefined or null, using query: ${__stringify(query)}`);
 
-		return this.dbModule.delete.query(query);
+		return this.dbModule.delete.query(query as FirestoreQuery<Types['dbItem']>);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.deleteAll)
+	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.deleteAll)
 	async deleteAll(_params?: unknown): Promise<Types['dbItem'][]> {
 		void _params;
-		return this.dbModule.delete.query(_EmptyQuery);
+		return this.dbModule.delete.query(CrudEmptyQuery as FirestoreQuery<Types['dbItem']>);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<any>) => m.apiDef.v1.metadata)
+	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.metadata)
 	async metadata(_params?: unknown): Promise<Metadata<Types['dbItem']>> {
 		void _params;
 		return {...this.dbModule.dbDef.metadata} as unknown as Metadata<Types['dbItem']>;

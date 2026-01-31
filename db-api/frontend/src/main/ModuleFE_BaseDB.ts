@@ -31,11 +31,12 @@ import {
 	EventType_UpsertAll,
 	MultiApiEvent,
 	SingleApiEvent
-} from '../to-refactor/consts.js';
-import {DB_Object, DBConfig, KeysOfDB_Object} from '../to-refactor/db-types.js';
-import {EventDispatcher, NoOpDispatcher} from '../to-refactor/dispatcher.js';
-import {composeDbObjectUniqueId, dbObjectToId} from '../to-refactor/utils.js';
-import {BaseDBConfig, CrudTypes} from './types.js';
+} from './to-refactor/consts.js';
+import {DB_Object, DBConfig, KeysOfDB_Object} from './to-refactor/db-types.js';
+import {EventDispatcher, NoOpDispatcher} from './to-refactor/dispatcher.js';
+import {composeDbObjectUniqueId, dbObjectToId} from './to-refactor/utils.js';
+import {BaseDBConfig} from './types.js';
+import {CrudTypes} from '@nu-art/db-api-shared';
 
 
 /**
@@ -104,7 +105,7 @@ export class ModuleFE_BaseDB<Types extends CrudTypes>
 		// Initialize caches (ts-common MemCache with DB id logic from to-refactor)
 		const uniqueKeys = config.uniqueKeys;
 		this.cache = new MemCache<Types['dbItem']>({
-			getId: (item) => dbObjectToId(item as {_id: string}),
+			getId: (item) => dbObjectToId(item as { _id: string }),
 			keyToId: (key) => typeof key === 'string' ? key : composeDbObjectUniqueId(key as Types['dbItem'], uniqueKeys)
 		});
 
