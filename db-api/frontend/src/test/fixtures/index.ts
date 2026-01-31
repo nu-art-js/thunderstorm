@@ -7,7 +7,7 @@
  */
 
 import {HttpMethod} from '@nu-art/http-client';
-import {BaseDBConfig, CrudTypes} from '../../main/base/types.js';
+import {BaseDBConfig, CrudTypes} from '../../main/types.js';
 import {CrudApiDefShape} from '../../main/decorators/types.js';
 import {DB_Object, DBConfig} from '../../main/to-refactor/db-types.js';
 

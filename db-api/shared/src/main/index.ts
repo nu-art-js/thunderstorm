@@ -20,7 +20,6 @@
 
 export * from './types.js';
 export * from './types/db-object.js';
-export * from './types/metadata.js';
-export * from './frontend-types.js';
 export * from './backend-types.js';
-export * from './api.js';
+export * from './query-types.js';
+export * from './crud-type-def.js';

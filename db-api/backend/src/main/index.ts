@@ -20,8 +20,30 @@
 
 export {ModuleBE_BaseDB, BaseDBApiConfig, DBApiConfig} from './ModuleBE_BaseDB.js';
 export {ModuleBE_BaseApi_Class, createApisForDBModule} from './ModuleBE_BaseApi.js';
-export type {ApiStruct_DBApiGenIDB, ApiDefResolver_DBApiGenIDB} from './db-api-gen.js';
-export {DBApiDefGeneratorIDB} from './db-api-gen.js';
+export type {
+	DBApiDefIDB,
+	DBApiType_Query,
+	DBApiType_QueryUnique,
+	DBApiType_Upsert,
+	DBApiType_UpsertAll,
+	DBApiType_Patch,
+	DBApiType_Delete,
+	DBApiType_DeleteQuery,
+	DBApiType_DeleteAll,
+	DBApiType_Metadata,
+} from '@nu-art/db-api-shared';
+export {
+	DBApiDefGeneratorIDB,
+	dbApiDef_Query,
+	dbApiDef_QueryUnique,
+	dbApiDef_Upsert,
+	dbApiDef_UpsertAll,
+	dbApiDef_Patch,
+	dbApiDef_Delete,
+	dbApiDef_DeleteQuery,
+	dbApiDef_DeleteAll,
+	dbApiDef_Metadata,
+} from '@nu-art/db-api-shared';
 export type {DBApiBEConfig, DBEntityDependencies, DBEntityDependencyError, EntityDependencyCollection, Response_DBSync} from './storm-stubs.js';
 export {getModuleBEConfig, ModuleBE_SyncManager, dispatch_CollectEntityDependencies} from './storm-stubs.js';
 export type {CrudTypes, BaseDBDefBE} from '@nu-art/db-api-shared';

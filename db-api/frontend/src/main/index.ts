@@ -18,12 +18,7 @@
  * limitations under the License.
  */
 
-// Frontend exports for db-api infrastructure
-
-// Decorators
-export * from './decorators/index.js';
-
 // Modules
-export * from './base/ModuleFE_BaseApi.js';
-export * from './base/ModuleFE_BaseDB.js';
-export * from './base/types.js';
+export * from './ModuleFE_BaseApi.js';
+export * from './ModuleFE_BaseDB.js';
+export * from './types.js';

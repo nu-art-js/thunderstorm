@@ -6,10 +6,11 @@
 
 import {ModuleFE_BaseDB, ModuleSyncType} from './ModuleFE_BaseDB.js';
 import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
-import {CrudApiDefShape} from '../decorators/types.js';
-import {BaseDBConfig, CrudTypes} from './types.js';
-import {EventDispatcher} from '../to-refactor/dispatcher.js';
+import {BaseDBConfig} from './types.js';
+import {EventDispatcher} from './to-refactor/dispatcher.js';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {CrudApiTypes, CrudTypes} from '@nu-art/db-api-shared';
+import {CrudApiDef_Type} from '@nu-art/db-api-shared';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -29,7 +30,7 @@ type Operation = {
 
 interface Params<Types extends CrudTypes> {
 	config: BaseDBConfig<Types>,
-	crudApiDef: CrudApiDefShape,
+	crudApiDef: CrudApiDef_Type<Types>,
 	dispatcher?: EventDispatcher
 	httpClient?: HttpClient
 }
@@ -58,7 +59,7 @@ interface Params<Types extends CrudTypes> {
 export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 	extends ModuleFE_BaseDB<Types> {
 
-	readonly crudApiDef: CrudApiDefShape;
+	readonly crudApiDef: CrudApiDef_Type<Types>;
 	readonly httpClient: ResolvableContent<HttpClient>;
 	private operationsById: Map<string, Operation> = new Map();
 
@@ -144,9 +145,9 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 			onComplete: (m, ctx) => m.handleQueryUniqueComplete(ctx)
 		}
 	)
-	async queryUnique(params: Record<string, unknown>): Promise<Types['dbItem'] | undefined> {
+	async queryUnique(params: CrudApiTypes<Types>['queryUnique']['Params']): Promise<CrudApiTypes<Types>['queryUnique']['Response']> {
 		void params;
-		return undefined as unknown as Types['dbItem'] | undefined;
+		return undefined as unknown as CrudApiTypes<Types>['queryUnique']['Response'];
 	}
 
 	@ApiCaller(
@@ -156,10 +157,10 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 			onComplete: (m, ctx) => m.handleUpsertComplete(ctx)
 		}
 	)
-	async upsert(body: Types['uiItem']): Promise<Types['dbItem']> {
+	async upsert(body: CrudApiTypes<Types>['upsert']['Body']): Promise<CrudApiTypes<Types>['upsert']['Response']> {
 		body = this.cleanUp(body);
 		this.validateInternal(body);
-		return undefined as unknown as Types['dbItem'];
+		return undefined as unknown as CrudApiTypes<Types>['upsert']['Response'];
 	}
 
 	@ApiCaller(
@@ -169,32 +170,21 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 			onComplete: (m, ctx) => m.handleUpsertAllComplete(ctx)
 		}
 	)
-	async upsertAll(body: Types['uiItem'][]): Promise<Types['dbItem'][]> {
+	async upsertAll(body: CrudApiTypes<Types>['upsertAll']['Body']): Promise<CrudApiTypes<Types>['upsertAll']['Response']> {
 		void body;
-		return undefined as unknown as Types['dbItem'][];
+		return undefined as unknown as CrudApiTypes<Types>['upsertAll']['Response'];
 	}
 
 	@ApiCaller(
-		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.patch,
-		{
-			httpClient: m => resolveContent(m.httpClient),
-			onComplete: (m, ctx) => m.handlePatchComplete(ctx)
-		}
-	)
-	async patch(partial: Partial<Types['uiItem']> & { _id: string }): Promise<Types['dbItem']> {
-		void partial;
-		return undefined as unknown as Types['dbItem'];
-	}
-
-	@ApiCaller(
-		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.delete,
+		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.deleteUnique,
 		{
 			httpClient: m => resolveContent(m.httpClient),
 			onComplete: (m, ctx) => m.handleDeleteComplete(ctx)
 		}
 	)
-	async delete(params: Record<string, unknown>): Promise<void> {
+	async delete(params: CrudApiTypes<Types>['deleteUnique']['Params']): Promise<CrudApiTypes<Types>['deleteUnique']['Response']> {
 		void params;
+		return undefined as unknown as CrudApiTypes<Types>['deleteUnique']['Response'];
 	}
 
 	@ApiCaller(
@@ -204,15 +194,19 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 			onComplete: (m, ctx) => m.handleDeleteQueryComplete(ctx)
 		}
 	)
-	async deleteQuery(body: Record<string, unknown> = {}): Promise<void> {
+	async deleteQuery(body: Record<string, unknown> = {}): Promise<Types['dbItem'][]> {
 		void body;
+		return undefined as unknown as Types['dbItem'][];
 	}
 
 	@ApiCaller((m: ModuleFE_BaseApi<Types>) => m.crudApiDef.deleteAll, {
 		httpClient: m => resolveContent(m.httpClient),
 	})
-	async deleteAll(_params: Record<string, unknown> = {}): Promise<void> {
+	async deleteAll(params: CrudApiTypes<Types>['deleteAll']['Params']): Promise<CrudApiTypes<Types>['deleteAll']['Response']> {
+		void params;
+		return undefined as unknown as CrudApiTypes<Types>['deleteAll']['Response'];
 	}
+
 
 	/**
 	 * Standard callback for upsert operations.

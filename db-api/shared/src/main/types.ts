@@ -20,7 +20,6 @@
 
 import {DotNotation, DotNotationValueType, SubsetObjectByKeys, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {DB_Object} from './types/db-object.js';
-import {Metadata} from './types/metadata.js';
 
 
 /**
@@ -146,7 +145,6 @@ export type DatabasePrototype<P extends Proto_DB_Object<any, string, any, Versio
 	versions: P['versions']
 	indices: DBIndex<P['type']>[]
 	uniqueParam: Default_UniqueKey | { [K in P['uniqueKeys']]: P['type'][K] }
-	metadata?: Metadata<OmitDBObject<P['type']>>
 	lockKeys?: (keyof P['type'])[]
 	dependencies: DependenciesImpl<P['type'], P['dependencies']>
 }
@@ -176,7 +174,6 @@ export type Database<Proto extends DatabasePrototype<any, any, any>> = {
 	versions: Proto['versions']['versions'];
 	indices?: Proto['indices'];
 	lockKeys?: Proto['lockKeys'];
-	metadata?: Proto['metadata'];
 	dependencies?: Proto['dependencies']
 }
 
