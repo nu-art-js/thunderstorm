@@ -18,24 +18,16 @@
  * limitations under the License.
  */
 
-import type {ValidatorTypeResolver} from '@nu-art/ts-common';
+import type {DB_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
 
 /**
  * Minimal type definition for CRUD modules (frontend and backend).
- *
- * Decoupled from Proto; the application derives this from Proto and passes it in.
- * Used by ModuleFE_BaseDB/ModuleFE_BaseApi and ModuleBE_BaseDB/ModuleBE_BaseApi.
- *
- * @template DBKey - Collection key (e.g. 'account')
- * @template DBItem - Full database object type (has _id and DB metadata)
- * @template UIItem - UI/input type for upsert
- * @template Validator - Validator function type (matches UIItem; BE may ignore)
- * @template UniqueKeys - Array of unique key names
+ * DBItem extends ts-common DB_Object so FE/BE work with dbObjectToId, Response_DBSync, etc.
  */
 export type CrudTypes<
 	DBKey extends string = string,
-	DBItem extends object = object,
-	UIItem extends object = object,
+	DBItem extends DB_Object = DB_Object,
+	UIItem extends object & { _id?: string } = object & { _id?: string },
 	Validator extends ValidatorTypeResolver<UIItem> = ValidatorTypeResolver<UIItem>,
 	UniqueKeys extends (keyof DBItem)[] = (keyof DBItem)[]
 > = {
@@ -46,11 +38,3 @@ export type CrudTypes<
 	readonly uniqueKeys: UniqueKeys;
 };
 
-/** @deprecated Use CrudTypes. Kept for backward compatibility. */
-export type ModuleTypes<
-	DBKey extends string = string,
-	DBItem extends object = object,
-	UIItem extends object = object,
-	Validator extends ValidatorTypeResolver<UIItem> = ValidatorTypeResolver<UIItem>,
-	UniqueKeys extends (keyof DBItem)[] = (keyof DBItem)[]
-> = CrudTypes<DBKey, DBItem, UIItem, Validator, UniqueKeys>;

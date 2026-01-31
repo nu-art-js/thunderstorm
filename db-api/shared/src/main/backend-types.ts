@@ -2,7 +2,7 @@
  * Database API infrastructure library for Thunderstorm.
  *
  * Shared backend type definitions: minimal shapes for BE modules (no Proto).
- * Symmetric to FE ModuleTypes / BaseDBConfig.
+ * Symmetric to FE CrudTypes / BaseDBConfig.
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
