@@ -73,4 +73,3 @@ export function CrudApiDef<Types extends CrudTypes>(dbKey: string, version = 'v1
 		deleteAll: {method: HttpMethod.GET, path: `${version}/${dbKey}/delete-all`},
 	};
 }
-

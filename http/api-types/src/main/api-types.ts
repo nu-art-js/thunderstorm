@@ -29,35 +29,31 @@ export function isQueryMethod(method: string): boolean {
 	return method === HttpMethod.GET || method === HttpMethod.DELETE;
 }
 
-export type TypedApi<M extends string, R, B, P extends QueryParams | undefined, IB = B, IP = P, E extends ResponseError = ResponseError> = {
+export type TypedApi<M extends string, R, B, P extends QueryParams | undefined, E extends ResponseError = ResponseError> = {
 	Method: M;
 	Response: R;
 	Body: B;
 	Params: P;
-	InternalParams: IP;
-	InternalBody: IB;
 	Error: E;
 	M: M;
 	R: R;
 	B: B;
 	P: P;
-	IP: IP;
-	IB: IB;
 	E: E;
 };
 
-export type BodyApi<R, B, IB = B,
+export type BodyApi<R, B,
 	E extends ResponseError = ResponseError,
 	M extends HttpMethod_Body = HttpMethod.POST,
-	P extends QueryParams = never> = TypedApi<M, R, B, P, IB, P, E>;
+	P extends QueryParams = never> = TypedApi<M, R, B, P, E>;
 
 export type QueryApi<R, P extends QueryParams | undefined = QueryParams,
 	E extends ResponseError = ResponseError,
-	IP = P, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P, B, IP, E>;
+	M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P, E>;
 
 export type EmptyApi<R, M extends HttpMethod_Empty,
 	E extends ResponseError = ResponseError,
-	P extends QueryParams = never, B = never> = TypedApi<M, R, B, P, B, P, E>;
+	P extends QueryParams = never, B = never> = TypedApi<M, R, B, P, E>;
 
 export type ApiDef<API extends GeneralApi> = {
 	method: API['Method'];
