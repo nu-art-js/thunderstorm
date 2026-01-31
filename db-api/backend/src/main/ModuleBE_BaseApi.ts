@@ -24,8 +24,8 @@ import type {CrudTypes} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {ApiHandler} from '@nu-art/http-server';
-import {DBApiDefGeneratorIDBV3} from './db-api-gen-v3.js';
-import type {ApiDefResolver_DBApiGenIDBV3} from './db-api-gen-v3.js';
+import {DBApiDefGeneratorIDB} from './db-api-gen.js';
+import type {ApiDefResolver_DBApiGenIDB} from './db-api-gen.js';
 
 
 /**
@@ -37,12 +37,12 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDB<Types>;
-	readonly apiDef: ApiDefResolver_DBApiGenIDBV3<Types>;
+	readonly apiDef: ApiDefResolver_DBApiGenIDB<Types>;
 
 	constructor(dbModule: ModuleBE_BaseDB<Types, any>, version?: string) {
-		super(`GenApiV3(${dbModule.getName()})`);
+		super(`GenApi(${dbModule.getName()})`);
 		this.dbModule = dbModule;
-		this.apiDef = DBApiDefGeneratorIDBV3<Types>(this.dbModule.dbDef, version);
+		this.apiDef = DBApiDefGeneratorIDB<Types>(this.dbModule.dbDef, version);
 	}
 
 	init() {
@@ -114,6 +114,6 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 	}
 }
 
-export const createApisForDBModuleV3 = <Types extends CrudTypes>(dbModule: ModuleBE_BaseDB<Types>, version?: string) => {
+export const createApisForDBModule = <Types extends CrudTypes>(dbModule: ModuleBE_BaseDB<Types>, version?: string) => {
 	return new ModuleBE_BaseApi_Class<Types>(dbModule, version);
 };

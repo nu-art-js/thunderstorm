@@ -10,7 +10,7 @@ import type {BodyApi, QueryApi, ResponseError} from '@nu-art/api-types';
 import {HttpMethod} from '@nu-art/api-types';
 import type {CrudTypes, BaseDBDefBE} from '@nu-art/db-api-shared';
 
-export type ApiStruct_DBApiGenIDBV3<Types extends CrudTypes> = {
+export type ApiStruct_DBApiGenIDB<Types extends CrudTypes> = {
 	v1: {
 		query: BodyApi<Types['dbItem'][], FirestoreQuery<Types['dbItem']>>;
 		queryUnique: QueryApi<Types['dbItem'], DB_BaseObject, ResponseError<string, unknown>, string | IndexKeys<Types['dbItem'], keyof Types['dbItem']>>;
@@ -24,7 +24,7 @@ export type ApiStruct_DBApiGenIDBV3<Types extends CrudTypes> = {
 	};
 };
 
-export type ApiDefResolver_DBApiGenIDBV3<Types extends CrudTypes> = {
+export type ApiDefResolver_DBApiGenIDB<Types extends CrudTypes> = {
 	v1: {
 		query: { method: typeof HttpMethod.POST; path: string; timeout?: number };
 		queryUnique: { method: typeof HttpMethod.GET; path: string };
@@ -38,10 +38,10 @@ export type ApiDefResolver_DBApiGenIDBV3<Types extends CrudTypes> = {
 	};
 };
 
-export function DBApiDefGeneratorIDBV3<Types extends CrudTypes>(
+export function DBApiDefGeneratorIDB<Types extends CrudTypes>(
 	dbDef: BaseDBDefBE,
 	version = 'v1'
-): ApiDefResolver_DBApiGenIDBV3<Types> {
+): ApiDefResolver_DBApiGenIDB<Types> {
 	return {
 		v1: {
 			query: { method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/query`, timeout: 60000 },

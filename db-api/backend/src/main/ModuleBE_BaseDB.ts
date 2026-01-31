@@ -55,12 +55,12 @@ import {
 } from './storm-stubs.js';
 
 
-export type BaseDBApiConfigV3 = {
+export type BaseDBApiConfig = {
 	projectId?: string,
 	chunksSize: number
 };
 
-export type DBApiConfigV3 = BaseDBApiConfigV3 & DBApiBEConfig;
+export type DBApiConfig = BaseDBApiConfig & DBApiBEConfig;
 const CONST_DefaultWriteChunkSize = 200;
 
 /**
@@ -69,7 +69,7 @@ const CONST_DefaultWriteChunkSize = 200;
  * Typed by CrudTypes (shared with FE); no Proto in the base.
  */
 export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
-	Config extends ConfigType & DBApiConfigV3 = ConfigType & DBApiConfigV3>
+	Config extends ConfigType & DBApiConfig = ConfigType & DBApiConfig>
 	extends Module<Config>
 	implements EntityDependencyCollection {
 
@@ -85,7 +85,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	public doc!: FirestoreCollectionV3<any>['doc'];
 	public runTransaction!: FirestoreCollectionV3<any>['runTransaction'];
 
-	protected constructor(dbDef: BaseDBDefBE, appConfig?: BaseDBApiConfigV3) {
+	protected constructor(dbDef: BaseDBDefBE, appConfig?: BaseDBApiConfig) {
 		super();
 
 		const config = getModuleBEConfig(dbDef);
