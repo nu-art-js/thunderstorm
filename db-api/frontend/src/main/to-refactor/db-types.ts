@@ -75,11 +75,11 @@ export type DBProto<T extends DB_Object = DB_Object> = {
 }
 
 /**
- * Database definition (version 3).
+ * Database definition.
  *
  * Contains all configuration needed to define a database collection.
  */
-export type DBDef_V3<Proto extends DBProto<any>> = {
+export type DBDef<Proto extends DBProto<any>> = {
 	dbKey: string;
 	entityName: string;
 	modifiablePropsValidator: Proto['modifiablePropsValidator'];
@@ -110,7 +110,7 @@ export type DBApiFEConfig<Proto extends DBProto<any>> = {
 /**
  * Generate frontend module config from database definition.
  */
-export function getModuleFEConfig<Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): DBApiFEConfig<Proto> {
+export function getModuleFEConfig<Proto extends DBProto<any>>(dbDef: DBDef<Proto>): DBApiFEConfig<Proto> {
 	return {
 		key: dbDef.dbKey,
 		validator: dbDef.modifiablePropsValidator,

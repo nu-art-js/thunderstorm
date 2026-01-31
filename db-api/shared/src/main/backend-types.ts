@@ -30,7 +30,7 @@ export type BaseDBDefBE_Dependency = {
 /**
  * Minimal shape for the dbDef object passed to ModuleBE_BaseDB constructor.
  *
- * Application passes DBDef_V3<Proto> (or equivalent); the base only depends on this shape.
+ * Application passes DBDef<Proto> (or equivalent); the base only depends on this shape.
  * No Proto reference in db-api shared or backend base.
  */
 export type BaseDBDefBE = {
