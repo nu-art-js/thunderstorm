@@ -19,14 +19,14 @@
  * limitations under the License.
  */
 
-import {__stringify, _values, ApiException, DB_BaseObject, Metadata, Module} from '@nu-art/ts-common';
-import type {CrudTypes} from '@nu-art/db-api-shared';
-import {CrudEmptyQuery, CrudQuery} from '@nu-art/db-api-shared';
-import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
-import type {FirestoreQuery} from '@nu-art/firebase-shared';
-import {ApiHandler} from '@nu-art/http-server';
-import {CrudApiDef} from '@nu-art/db-api-shared';
-import {CrudApiDef_Type} from '@nu-art/db-api-shared/src/main/index';
+import { __stringify, _values, ApiException, DB_BaseObject, Metadata, Module } from '@nu-art/ts-common';
+import type { CrudTypes } from '@nu-art/db-api-shared';
+import { CrudEmptyQuery, CrudQuery } from '@nu-art/db-api-shared';
+import { ModuleBE_BaseDB } from './ModuleBE_BaseDB.js';
+import type { FirestoreQuery } from '@nu-art/firebase-shared';
+import { ApiHandler } from '@nu-art/http-server';
+import { CrudApiDef } from '@nu-art/db-api-shared';
+import { CrudApiDef_Type } from '@nu-art/db-api-shared';
 
 
 /**
@@ -111,7 +111,7 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.metadata)
 	async metadata(_params?: unknown): Promise<Metadata<Types['dbItem']>> {
 		void _params;
-		return {...this.dbModule.dbDef.metadata} as unknown as Metadata<Types['dbItem']>;
+		return { ...this.dbModule.dbDef.metadata } as unknown as Metadata<Types['dbItem']>;
 	}
 }
 

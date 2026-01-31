@@ -132,7 +132,7 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 			onComplete: (m, ctx) => m.handleQueryComplete(ctx)
 		}
 	)
-	async query(body: CrudApiTypes<Types>['query']['Params']): Promise<CrudApiTypes<Types>['query']['Response']> {
+	async query(body: CrudApiTypes<Types>['query']['Body'] = {}): Promise<CrudApiTypes<Types>['query']['Response']> {
 		void body;
 		return undefined as unknown as CrudApiTypes<Types>['query']['Response'];
 	}
@@ -193,9 +193,9 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 			onComplete: (m, ctx) => m.handleDeleteQueryComplete(ctx)
 		}
 	)
-	async deleteQuery(body: Record<string, unknown> = {}): Promise<Types['dbItem'][]> {
+	async deleteQuery(body: CrudApiTypes<Types>['deleteQuery']['Body']): Promise<CrudApiTypes<Types>['deleteQuery']['Response']> {
 		void body;
-		return undefined as unknown as Types['dbItem'][];
+		return undefined as unknown as CrudApiTypes<Types>['deleteQuery']['Response'];
 	}
 
 	@ApiCaller((m: ModuleFE_BaseApi<Types>) => m.crudApiDef.deleteAll, {
