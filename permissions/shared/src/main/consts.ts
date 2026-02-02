@@ -60,6 +60,7 @@ export const generateKeyNamesByAccessLevel = <AccessLevel extends PreDBAccessLev
 };
 
 export const defaultPermissionKeySuffix = 'permission-key';
+/** @deprecated Path-based API permission; use function-based permissions and @RequirePermission. API collection deprecated. */
 export const defaultLevelsRouteLookupWords: { [k: string]: string } = {
 	'query': 'Read',
 	'query-unique': 'Read',
