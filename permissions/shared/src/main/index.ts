@@ -27,3 +27,4 @@ export * from './apis.js';
 export * from './consts.js';
 export * from './types.js';
 export * from './permission-keys.js';
+export * from './permission-scope.js';

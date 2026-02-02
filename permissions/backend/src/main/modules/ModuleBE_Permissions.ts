@@ -20,6 +20,7 @@ import {
 	DB_PermissionGroup,
 	DB_PermissionProject,
 	DefaultAccessLevel_Admin,
+	DefaultAccessLevel_Delete,
 	DefaultAccessLevel_NoAccess,
 	DefaultAccessLevel_Read,
 	DefaultAccessLevel_Write,
@@ -29,6 +30,8 @@ import {
 	SessionData_Permissions,
 } from '@nu-art/permissions-shared';
 import {BaseSessionClaims, CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
+import {getRegisteredFunctionPermissions} from '../core/function-permission-registry.js';
+import {md5} from '@nu-art/ts-common';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -220,12 +223,67 @@ class ModuleBE_Permissions_Class
 
 				// Create All Projects
 				await this.createPermissionProjects(projects);
+				// Create domains/levels from function-permission registry (decorator-collected)
+				if (projects.length > 0)
+					await this.createDomainsAndLevelsFromFunctionPermissionRegistry(projects[0]._id);
 				// Create all AppConfigs
 				await this.createPermissionsKeys(projects);
 				//Assign Super Admin if necessary
 				await this.assignSuperAdmin();
 			}
 		};
+	}
+
+	/**
+	 * Creates domains and access levels from the function-permission registry (populated by @RequirePermission decorators).
+	 * New (scopeKey, value) pairs get domains/levels created; not assigned to anyone until explicitly assigned.
+	 */
+	private async createDomainsAndLevelsFromFunctionPermissionRegistry(projectId: string) {
+		const defs = getRegisteredFunctionPermissions();
+		if (defs.length === 0)
+			return;
+
+		this.logInfoBold('Creating domains/levels from function-permission registry');
+		const _auditorId = MemKey_AccountId.get();
+		const uniqueScopeKeys = [...new Set(defs.map(d => d.scopeKey))];
+		const domainIdByScopeKey: TypedMap<string> = {};
+
+		for (const scopeKey of uniqueScopeKeys) {
+			const domainId = md5(`function-permission-domain/${scopeKey}`);
+			domainIdByScopeKey[scopeKey] = domainId;
+			await ModuleBE_PermissionDomainDB.set.all([{
+				_id: domainId,
+				namespace: scopeKey,
+				projectId,
+				_auditorId
+			}]);
+		}
+
+		const levelValueByName: TypedMap<number> = {
+			'No-Access': DefaultAccessLevel_NoAccess.value,
+			'Read': DefaultAccessLevel_Read.value,
+			'Write': DefaultAccessLevel_Write.value,
+			'Delete': DefaultAccessLevel_Delete.value,
+			'Admin': DefaultAccessLevel_Admin.value
+		};
+
+		for (const def of defs) {
+			const domainId = domainIdByScopeKey[def.scopeKey];
+			const levelValue = levelValueByName[def.value] ?? 100;
+			const levelId = md5(`${domainId}/${def.value}`);
+			await ModuleBE_PermissionAccessLevelDB.set.all([{
+				_id: levelId,
+				domainId,
+				name: def.value,
+				value: levelValue,
+				uiLabel: def.value,
+				_auditorId
+			}]);
+			def.domainId = domainId;
+			def.levelId = levelId;
+			def.levelValue = levelValue;
+		}
+		this.logInfoBold(`Created ${uniqueScopeKeys.length} domains and ${defs.length} access levels from function-permission registry`);
 	};
 
 	public async createPermissionProjects(projects: DefaultDef_Project[]) {
@@ -348,8 +406,8 @@ class ModuleBE_Permissions_Class
 	}
 
 	/**
-	 * Creates All the DB_PermissionApi
-	 *
+	 * Creates All the DB_PermissionApi (path-based).
+	 * @deprecated API collection deprecated; use function-based permissions and @RequirePermission. Domains/levels from function-permission registry instead.
 	 * @param projects - predefined permissions projects
 	 * @param domainNameToLevelNameToDBAccessLevel
 	 */

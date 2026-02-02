@@ -60,6 +60,7 @@ import {
 import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts.js';
 import {PermissionKey_BE} from '../PermissionKey_BE.js';
 import {ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity.js';
+import type {FunctionPermissionDef} from '../core/function-permission-registry.js';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -144,6 +145,7 @@ export class ModuleBE_PermissionsAssert_Class
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
+		/** @deprecated Path-based sync filter; use function-based permissions instead. API collection deprecated. */
 		ModuleBE_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDB<any>)[]) => {
 			// return dbModules;
 			//Filter out any module we don't have permission to sync
@@ -206,6 +208,9 @@ export class ModuleBE_PermissionsAssert_Class
 		return {userId: MemKey_AccountEmail.get()};
 	};
 
+	/**
+	 * @deprecated Path-based API permission; use function-based permissions and assertFunctionPermission(def) instead. API collection deprecated.
+	 */
 	async assertUserPermissions(projectId: string, path: string) {
 		// [DomainId]: accessLevel's numerical value
 		const userPermissions = MemKey_UserPermissions.get();
@@ -241,6 +246,26 @@ export class ModuleBE_PermissionsAssert_Class
 		});
 	}
 
+	/**
+	 * Asserts that the user has at least the required level for the function-permission def (from @RequirePermission).
+	 * Call this before invoking a handler when getRequirePermissionDef(handler) returns a def.
+	 */
+	assertFunctionPermission(def: FunctionPermissionDef): void {
+		if (def.domainId === undefined || def.levelValue === undefined)
+			throw new ApiException(503, `Function permission "${def.scopeKey}/${def.value}" not yet provisioned; run project setup to create domains/levels from registry.`);
+
+		const userPermissions = MemKey_UserPermissions.get();
+		const userDomainPermission = userPermissions[def.domainId];
+		if (!exists(userDomainPermission))
+			throw new ApiException(403, 'Missing Access For This Domain');
+
+		if (userDomainPermission < def.levelValue) {
+			this.logErrorBold(`function permission - userLevel < required: "${def.scopeKey}/${def.value}" ${userDomainPermission} < ${def.levelValue}`);
+			throw new ApiException(403, 'Action Forbidden');
+		}
+	}
+
+	/** @deprecated Path-based API lookup; API collection deprecated. Use function-based permissions. */
 	async getApiDetails(_path: string, projectId: string) {
 		let path = _path.substring(0, (_path + '?').indexOf('?')); //Get raw path without query
 		if (path.at(0) === '/')

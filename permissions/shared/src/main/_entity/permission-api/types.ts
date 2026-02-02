@@ -19,6 +19,7 @@ type Proto = Proto_DB_Object<DB_PermissionAPI, 'permissions--api', GeneratedProp
 export type DBProto_PermissionAPI = DBProto<Proto>;
 
 export type UI_PermissionAPI = DBProto_PermissionAPI['uiType'];
+/** @deprecated API collection deprecated; use function-based permissions and @RequirePermission. */
 export type DB_PermissionAPI = DB_Object & AuditableV2 & {
 	projectId: string
 	path: string
