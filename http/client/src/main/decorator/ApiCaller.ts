@@ -5,10 +5,23 @@
  */
 
 import {ApiDef, GeneralApi, HttpMethod} from '../types/api-types.js';
-import type {ApiCallback, ApiCallContext, ApiCallerOptions, RawHttpResponse} from '../types/ApiCaller-types.js';
+import type {ApiCallback, ApiCallContext, RawHttpResponse} from './types.js';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {HttpClient} from './HttpClient.js';
+import {HttpClient} from '../core/HttpClient.js';
 
+/**
+ * Module callback factory - receives module instance and context.
+ */
+export type ModuleCallback<Module, API extends GeneralApi> =
+	(module: Module, ctx: ApiCallContext<API>) => void | Promise<void>;
+
+/**
+ * Configuration options for ApiCaller decorator.
+ */
+export type ApiCallerOptions<Module, API extends GeneralApi> = {
+	onComplete?: ModuleCallback<Module, API>;
+	httpClient?: ResolvableContent<HttpClient, [Module]>;
+};
 
 /** True when ApiDef uses query params (GET/DELETE); false when it uses body (POST/PUT/PATCH). */
 export function isQueryMethod(method: string): boolean {
@@ -69,6 +82,3 @@ export function ApiCaller<API extends GeneralApi, Module = any>(_apiDef: Resolva
 		};
 	};
 }
-
-/** @deprecated Use ApiCaller. Kept for backward compatibility. */
-export const ClientApi = ApiCaller;

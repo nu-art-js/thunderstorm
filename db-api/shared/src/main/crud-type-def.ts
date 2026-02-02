@@ -19,9 +19,7 @@
  */
 
 import {EntityDependencyError} from '@nu-art/firebase-shared';
-import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 import {ApiDef, BodyApi, HttpMethod, QueryApi} from '@nu-art/http-client';
-import {IndexKeys} from './types.js';
 import {DB_BaseObject} from './types/db-object.js';
 import type {DB_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
 import type {CrudQuery} from './query-types.js';
@@ -43,7 +41,7 @@ export type CrudTypes<
 /** Flat CRUD API defs object returned by DBApiDefGeneratorIDB (no v1 wrapper). Generic so ApiHandler infers payload types. */
 export type CrudApiTypes<Types extends CrudTypes = CrudTypes> = {
 	query: BodyApi<Types['dbItem'][], CrudQuery<Types['dbItem']>>;
-	queryUnique: QueryApi<Types['dbItem'], DB_BaseObject, ResponseError<string, unknown>, string | IndexKeys<Types['dbItem'], keyof Types['dbItem']>>;
+	queryUnique: QueryApi<Types['dbItem'], DB_BaseObject>;
 	upsert: BodyApi<Types['dbItem'], Types['uiItem']>;
 	upsertAll: BodyApi<Types['dbItem'][], Types['uiItem'][]>;
 	deleteUnique: QueryApi<Types['dbItem'] | undefined, DB_BaseObject, EntityDependencyError>;
@@ -73,3 +71,4 @@ export function CrudApiDef<Types extends CrudTypes>(dbKey: string, version = 'v1
 		deleteAll: {method: HttpMethod.GET, path: `${version}/${dbKey}/delete-all`},
 	};
 }
+

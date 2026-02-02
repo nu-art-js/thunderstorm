@@ -204,7 +204,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	protected abstract process(): Promise<API['R']>;
 }
 
-export abstract class ServerApi_Get<API extends QueryApi<any, any, any, any, HttpMethod_Query>>
+export abstract class ServerApi_Get<API extends QueryApi<any, any, any, HttpMethod_Query>>
 	extends ServerApi<API> {
 
 	protected constructor(apiDef: ApiDef<API>) {
@@ -212,7 +212,7 @@ export abstract class ServerApi_Get<API extends QueryApi<any, any, any, any, Htt
 	}
 }
 
-export abstract class ServerApi_Post<API extends BodyApi<any, any, any, any, HttpMethod_Body>>
+export abstract class ServerApi_Post<API extends BodyApi<any, any, any, HttpMethod_Body>>
 	extends ServerApi<API> {
 
 	protected constructor(apiDef: ApiDef<API>) {
@@ -240,7 +240,7 @@ export class ServerApi_Redirect<API extends TypedApi<any, any, any, any>>
 	}
 }
 
-export class _ServerQueryApi<API extends QueryApi<any, any, any, any, HttpMethod_Query>>
+export class _ServerQueryApi<API extends QueryApi<any, any, any, HttpMethod_Query>>
 	extends ServerApi_Get<API> {
 
 	private readonly action: (params: API['P']) => Promise<API['R']>;
@@ -255,7 +255,7 @@ export class _ServerQueryApi<API extends QueryApi<any, any, any, any, HttpMethod
 	}
 }
 
-export class _ServerBodyApi<API extends BodyApi<any, any, any, any, HttpMethod_Body>>
+export class _ServerBodyApi<API extends BodyApi<any, any, any, HttpMethod_Body>>
 	extends ServerApi_Post<API> {
 
 	private readonly action: (body: API['B']) => Promise<API['R']>;

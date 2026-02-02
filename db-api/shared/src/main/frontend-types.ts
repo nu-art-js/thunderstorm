@@ -1,7 +1,7 @@
 /*
  * Database API infrastructure library for Thunderstorm.
  *
- * Provides shared types and interfaces for database API operations across frontend and backend.
+ * Shared CRUD type definitions for FE and BE modules (no Proto).
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -18,7 +18,10 @@
  * limitations under the License.
  */
 
-export * from './types.js';
-export * from './types/db-object.js';
-export * from './query-types.js';
-export * from './crud-type-def.js';
+import type {DB_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
+
+/**
+ * Minimal type definition for CRUD modules (frontend and backend).
+ * DBItem extends ts-common DB_Object so FE/BE work with dbObjectToId, Response_DBSync, etc.
+ */
+
