@@ -68,7 +68,6 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 		this.httpClient = params.httpClient ?? (() => HttpClient.default);
 	}
 
-
 	/**
 	 * Run a Promise-returning function serialized per document id.
 	 * Only one upsert/patch/delete runs at a time per id; further work is queued.

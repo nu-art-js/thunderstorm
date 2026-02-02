@@ -10,7 +10,7 @@ import type {UniqueId} from '@nu-art/ts-common';
 import {Dispatcher} from '@nu-art/ts-common';
 import type {Transaction} from 'firebase-admin/firestore';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
-import type {BaseDBDefBE, DBApiBEConfigShape} from '@nu-art/db-api-shared';
+import type {BaseDBDefBE, DBApiBEConfigShape} from './backend-types.js';
 
 export type {DBApiBEConfigShape as DBApiBEConfig};
 

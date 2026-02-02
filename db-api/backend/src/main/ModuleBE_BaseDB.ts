@@ -42,7 +42,8 @@ import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} fr
 import {DocWrapperV3} from '@nu-art/firebase-backend/firestore-v3/DocWrapperV3';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_DeletedDocs} from '@nu-art/firebase-backend/firestore-v3/consts';
-import type {CrudTypes, BaseDBDefBE} from '@nu-art/db-api-shared';
+import type {CrudTypes} from '@nu-art/db-api-shared';
+import type {BaseDBDefBE} from './backend-types.js';
 import {
 	DBApiBEConfig,
 	DBEntityDependencies,

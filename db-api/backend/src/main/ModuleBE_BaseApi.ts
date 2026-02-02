@@ -19,15 +19,19 @@
  * limitations under the License.
  */
 
-import { __stringify, _values, ApiException, DB_BaseObject, Metadata, Module } from '@nu-art/ts-common';
-import type { CrudTypes } from '@nu-art/db-api-shared';
-import { CrudEmptyQuery, CrudQuery } from '@nu-art/db-api-shared';
-import { ModuleBE_BaseDB } from './ModuleBE_BaseDB.js';
-import type { FirestoreQuery } from '@nu-art/firebase-shared';
-import { ApiHandler } from '@nu-art/http-server';
-import { CrudApiDef } from '@nu-art/db-api-shared';
-import { CrudApiDef_Type } from '@nu-art/db-api-shared';
+import {__stringify, _values, ApiException, DB_BaseObject, Module, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import type {CrudApiTypes, CrudTypes} from '@nu-art/db-api-shared';
+import {CrudApiDef, CrudApiDef_Type, CrudEmptyQuery} from '@nu-art/db-api-shared';
+import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
+import type {FirestoreQuery} from '@nu-art/firebase-shared';
+import {ApiHandler, HttpServer} from '@nu-art/http-server';
 
+
+interface Params<Types extends CrudTypes> {
+	dbModule: ModuleBE_BaseDB<Types>
+	crudApiDef: CrudApiDef_Type<Types>,
+	httpServer?: ResolvableContent<HttpServer>
+}
 
 /**
  * A base class used for implementing CRUD operations on a db module collection.
@@ -38,26 +42,37 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDB<Types>;
+	readonly httpServer: ResolvableContent<HttpServer>;
 	readonly crudApiDef: CrudApiDef_Type<Types>;
 
-	constructor(dbModule: ModuleBE_BaseDB<Types, any>, version?: string) {
-		super(`GenApi(${dbModule.getName()})`);
-		this.dbModule = dbModule;
-		this.crudApiDef = CrudApiDef<Types>(this.dbModule.dbDef, version);
+	constructor(params: Params<Types>) {
+		super(`GenApi(${params.dbModule.getName()})`);
+		this.dbModule = params.dbModule;
+		this.crudApiDef = params.crudApiDef;
+		this.httpServer = params.httpServer ?? (() => HttpServer.default);
 	}
 
 	init() {
-		this.logDebug(`Adding routes : ${this.apiDef.query.path}`);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.query)
-	async query(queryBody: CrudQuery<Types['dbItem']>): Promise<Types['dbItem'][]> {
+	@ApiHandler(
+		(m: ModuleBE_BaseApi_Class<Types>) => m.crudApiDef.query,
+		{
+			httpServer: m => resolveContent(m.httpServer)
+		}
+	)
+	async query(queryBody: CrudApiTypes<Types>['query']['Body']): Promise<Types['dbItem'][]> {
 		const items = await this.dbModule.query.where(queryBody as FirestoreQuery<Types['dbItem']>);
 		await this.dbModule.upgradeInstances(items);
 		return items;
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.queryUnique)
+	@ApiHandler(
+		(m: ModuleBE_BaseApi_Class<Types>) => m.crudApiDef.queryUnique,
+		{
+			httpServer: m => resolveContent(m.httpServer)
+		}
+	)
 	async queryUnique(queryObject: DB_BaseObject): Promise<Types['dbItem']> {
 		const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 		if (!toReturnItem)
@@ -65,34 +80,35 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 		return toReturnItem;
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.upsert)
+	@ApiHandler(
+		(m: ModuleBE_BaseApi_Class<Types>) => m.crudApiDef.upsert,
+		{ httpServer: m => resolveContent(m.httpServer) }
+	)
 	async upsert(body: Types['uiItem']): Promise<Types['dbItem']> {
 		return this.dbModule.set.item(body);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.upsertAll)
+	@ApiHandler(
+		(m: ModuleBE_BaseApi_Class<Types>) => m.crudApiDef.upsertAll,
+		{ httpServer: m => resolveContent(m.httpServer) }
+	)
 	async upsertAll(body: Types['uiItem'][]): Promise<Types['dbItem'][]> {
 		return this.dbModule.set.all(body);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.patch)
-	async patch(body: Partial<Types['dbItem']> & Pick<Types['dbItem'], '_id'>): Promise<Types['dbItem']> {
-		if (body._id === undefined || body._id === null || body._id === '')
-			throw new ApiException(400, `patch requires _id`);
-		const doc = this.dbModule.doc.unique(body._id);
-		const existing = await doc.get();
-		if (!existing)
-			throw new ApiException(404, `Could not find ${this.dbModule.dbDef.entityName} with _id: ${body._id}`);
-		return doc.update(body);
-	}
-
-	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.delete)
+	@ApiHandler(
+		(m: ModuleBE_BaseApi_Class<Types>) => m.crudApiDef.deleteUnique,
+		{ httpServer: m => resolveContent(m.httpServer) }
+	)
 	async delete(toDeleteObject: DB_BaseObject): Promise<Types['dbItem'] | undefined> {
 		return this.dbModule.delete.unique(toDeleteObject._id);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.deleteQuery)
-	async deleteQuery(query: CrudQuery<Types['dbItem']>): Promise<Types['dbItem'][]> {
+	@ApiHandler(
+		(m: ModuleBE_BaseApi_Class<Types>) => m.crudApiDef.deleteQuery,
+		{ httpServer: m => resolveContent(m.httpServer) }
+	)
+	async deleteQuery(query: CrudApiTypes<Types>['deleteQuery']['Body']): Promise<Types['dbItem'][]> {
 		if (!query.where)
 			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);
 
@@ -102,19 +118,16 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 		return this.dbModule.delete.query(query as FirestoreQuery<Types['dbItem']>);
 	}
 
-	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.deleteAll)
+	@ApiHandler(
+		(m: ModuleBE_BaseApi_Class<Types>) => m.crudApiDef.deleteAll,
+		{ httpServer: m => resolveContent(m.httpServer) }
+	)
 	async deleteAll(_params?: unknown): Promise<Types['dbItem'][]> {
 		void _params;
 		return this.dbModule.delete.query(CrudEmptyQuery as FirestoreQuery<Types['dbItem']>);
 	}
-
-	@ApiHandler((m: ModuleBE_BaseApi_Class<Types>) => m.apiDef.metadata)
-	async metadata(_params?: unknown): Promise<Metadata<Types['dbItem']>> {
-		void _params;
-		return { ...this.dbModule.dbDef.metadata } as unknown as Metadata<Types['dbItem']>;
-	}
 }
 
 export const createApisForDBModule = <Types extends CrudTypes>(dbModule: ModuleBE_BaseDB<Types>, version?: string) => {
-	return new ModuleBE_BaseApi_Class<Types>(dbModule, version);
+	return new ModuleBE_BaseApi_Class<Types>({ dbModule, crudApiDef: CrudApiDef(dbModule.dbDef.dbKey, version) });
 };

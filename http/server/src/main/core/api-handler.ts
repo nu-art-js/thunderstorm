@@ -14,7 +14,7 @@ import type {ServerApi_Middleware} from '../types.js';
 
 /** Configuration options for ApiHandler decorator. Mirror of client ApiCallerOptions. */
 export type ApiHandlerOptions<Module> = {
-	server?: ResolvableContent<HttpServer, [Module]>;
+	httpServer?: ResolvableContent<HttpServer, [Module]>;
 	middlewares?: ServerApi_Middleware[];
 };
 
@@ -29,9 +29,9 @@ export type ApiHandlerOptions<Module> = {
  * @param options - Optional: server (default HttpServer singleton), middlewares, validators
  */
 export function ApiHandler<API extends GeneralApi, Module = unknown>(_apiDef: ResolvableContent<ApiDef<API>, [Module]>, options?: ApiHandlerOptions<Module>) {
-	return function <This extends Module>(originalMethod: (this: This, payload: API['B'] | API['P']) => Promise<API['R']>, context: ClassMethodDecoratorContext<This>) {
-		context.addInitializer(function (this: This) {
-			const server = (resolveContent(options?.server, this) ?? HttpServer.default);
+	return function (originalMethod: (this: Module, payload: API['B'] | API['P']) => Promise<API['R']>, context: ClassMethodDecoratorContext<Module>) {
+		context.addInitializer(function (this: Module) {
+			const server = (resolveContent(options?.httpServer, this) ?? HttpServer.default);
 			const apiDef = resolveContent(_apiDef, this) as ApiDef<any>;
 			const useQuery = isQueryMethod(apiDef.method);
 			const api = useQuery
