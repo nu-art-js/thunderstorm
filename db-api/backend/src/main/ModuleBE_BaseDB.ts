@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
+import {FirestoreQuery} from '@nu-art/firebase-shared';
 import {
 	_keys,
 	ApiException,
@@ -38,12 +38,10 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType, FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {DocWrapperV3} from '@nu-art/firebase-backend/firestore-v3/DocWrapperV3';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_DeletedDocs} from '@nu-art/firebase-backend/firestore-v3/consts';
-import type {CrudTypes} from '@nu-art/db-api-shared';
-import type {BaseDBDefBE} from './backend-types.js';
 import {
 	DBApiBEConfig,
 	DBEntityDependencies,
@@ -54,6 +52,9 @@ import {
 	ModuleBE_SyncManager,
 	Response_DBSync
 } from './storm-stubs.js';
+import {CrudTypes} from '@nu-art/db-api-shared';
+import {BaseDBDefBE, PostWriteProcessingDataShape} from './backend-types.js';
+import {CrudClause_Where} from '@nu-art/db-api-shared';
 
 
 export type BaseDBApiConfig = {
@@ -62,12 +63,13 @@ export type BaseDBApiConfig = {
 };
 
 export type DBApiConfig = BaseDBApiConfig & DBApiBEConfig;
+
 const CONST_DefaultWriteChunkSize = 200;
 
 /**
  * An abstract base class used for implementing CRUD operations on a specific collection.
  *
- * Typed by CrudTypes (shared with FE); no Proto in the base.
+ * Typed by ModuleTypesBE (symmetric to FE ModuleTypes); no Proto in the base.
  */
 export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	Config extends ConfigType & DBApiConfig = ConfigType & DBApiConfig>
@@ -111,13 +113,13 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 
 		const conflictItemQueries = dependencyDefKeys.reduce((acc, dependencyDefKey) => {
 			const dependencyDef = dependencyDefs[dependencyDefKey];
-			let whereClause: (ids: UniqueId[]) => Clause_Where<Types['dbItem']>;
+			let whereClause: (ids: UniqueId[]) => CrudClause_Where<Types['dbItem']>;
 			switch (dependencyDef.fieldType) {
 				case 'string':
-					whereClause = ids => ({[dependencyDefKey]: {$in: ids}}) as Clause_Where<Types['dbItem']>;
+					whereClause = ids => ({[dependencyDefKey]: {$in: ids}} as CrudClause_Where<Types['dbItem']>);
 					break;
 				case 'string[]':
-					whereClause = ids => ({[dependencyDefKey]: {$aca: ids}}) as Clause_Where<Types['dbItem']>;
+					whereClause = ids => ({[dependencyDefKey]: {$aca: ids}} as CrudClause_Where<Types['dbItem']>);
 					break;
 				default:
 					throw new BadImplementationException(`Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
@@ -166,14 +168,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	 * The collection reference is set in this method.
 	 */
 	init() {
-		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestoreV3();
-		this.collection = firestore.getCollection(this.dbDef as any, {
-			canDeleteItems: this.canDeleteItems.bind(this),
-			preWriteProcessing: this._preWriteProcessing.bind(this),
-			postWriteProcessing: this._postWriteProcessing.bind(this),
-			upgradeInstances: this.upgradeInstances.bind(this),
-			manipulateQuery: this.manipulateQuery.bind(this) as (query: FirestoreQuery<any>) => FirestoreQuery<any>
-		});
+		this.resolveCollection();
 
 		this.runTransaction = this.collection.runTransaction;
 		type Callable = {
@@ -189,7 +184,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 					try {
 						return await (value as Function)(...args);
 					} catch (e: any) {
-						this.logError(`Error while calling "${newPath}"`);
+						(this as any).logError(`Error while calling "${newPath}"`);
 						throw e;
 					}
 				});
@@ -211,6 +206,17 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		this.set = wrapInTryCatch(this.collection.set, 'set');
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
 		this.doc = wrapInTryCatch(this.collection.doc, 'doc');
+	}
+
+	protected resolveCollection() {
+		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestoreV3();
+		this.collection = firestore.getCollection(this.dbDef as any, {
+			canDeleteItems: this.canDeleteItems.bind(this),
+			preWriteProcessing: this._preWriteProcessing.bind(this),
+			postWriteProcessing: this._postWriteProcessing.bind(this) as any,
+			upgradeInstances: this.upgradeInstances.bind(this),
+			manipulateQuery: this.manipulateQuery.bind(this) as any
+		});
 	}
 
 	querySync = async (syncQuery: FirestoreQuery<Types['dbItem']>): Promise<Response_DBSync<Types['dbItem']>> => {
@@ -235,11 +241,11 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	protected async preWriteProcessing(dbInstance: Types['uiItem'], originalDbInstance: Types['dbItem'], transaction?: Transaction) {
 	}
 
-	private _postWriteProcessing = async (data: PostWriteProcessingData<any>, actionType: CollectionActionType, transaction?: Transaction) => {
+	private _postWriteProcessing = async (data: PostWriteProcessingDataShape<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) => {
 		const now = currentTimeMillis();
 
 		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			const updated = data.updated as Types['dbItem'] | Types['dbItem'][];
+			const updated = data.updated;
 			const latestUpdated = Array.isArray(updated) ?
 				updated.reduce((toRet, current) => Math.max(toRet, current.__updated), updated[0].__updated) :
 				updated.__updated;
@@ -247,7 +253,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await ModuleBE_SyncManager.onItemsDeleted(this.dbDef.dbKey, asArray(data.deleted) as DB_Object[], this.config.uniqueKeys as string[], transaction);
+			await ModuleBE_SyncManager.onItemsDeleted(this.dbDef.dbKey, asArray(data.deleted), [...this.config.uniqueKeys], transaction);
 			await ModuleBE_SyncManager.setLastUpdated(this.dbDef.dbKey, now);
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
@@ -262,10 +268,10 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	 * @param actionType create/set/update/delete
 	 * @param transaction
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<any>, actionType: CollectionActionType, transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingDataShape<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) {
 	}
 
-	manipulateQuery(query: FirestoreQuery<Types['dbItem']>): FirestoreQuery<Types['dbItem']> {
+	manipulateQuery(query: FirestoreQuery<any>): FirestoreQuery<any> {
 		return query;
 	}
 
@@ -291,7 +297,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		if (!filtered.length)
 			return undefined;
 
-		const merged = filtered.reduce<DBEntityDependencies>((acc, dependency) => merge(acc, dependency), { dbKey: this.dbDef.dbKey, dependencyMap: {} });
+		const merged = filtered.reduce<DBEntityDependencies>((acc, dependency) => merge(acc, dependency), {dbKey: this.dbDef.dbKey, dependencyMap: {}});
 		return _keys(merged.dependencyMap).length ? merged : undefined;
 	}
 
@@ -336,14 +342,16 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		while ((docs = await this.collection.doc.unManipulatedQuery(query)).length > 0) {
 
 			// this is old Backward compatible from before the assertion of unique ids where the doc ref is the _id of the doc
-			const toDelete = docs.filter(doc => doc.ref.id !== doc.data?._id);
+			const toDelete = docs.filter(doc => {
+				return doc.ref.id !== doc.data!._id;
+			});
 
-			const instances = docs.map(d => d.data!) as Types['dbItem'][];
-			this.logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
+			const instances = docs.map(d => d.data!);
+			(this as any).logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
 			await processInstances(instances);
 
 			if (toDelete.length > 0) {
-				this.logWarning(`Need to delete docs: ${toDelete.length} ${this.dbDef.entityName}s ....`);
+				(this as any).logWarning(`Need to delete docs: ${toDelete.length} ${this.dbDef.entityName}s ....`);
 				await this.collection.delete.multi.allDocs(toDelete);
 			}
 
@@ -360,22 +368,22 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 			const nextVersion = this.config.versions[i - 1] ?? version;
 			const versionTransition = `${version} => ${nextVersion}`;
 			if (instancesToUpgrade.length === 0) {
-				this.logVerbose(`No instances to upgrade from ${versionTransition}`);
+				(this as any).logVerbose(`No instances to upgrade from ${versionTransition}`);
 				continue;
 			}
 
 			const upgradeProcessor = this.versionUpgrades[version];
 			if (!upgradeProcessor) {
-				this.logVerbose(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
-				this.logVerbose(`No upgrade processor for: ${versionTransition}`);
+				(this as any).logVerbose(`Will not update ${instancesToUpgrade.length} instances of version ${versionTransition}`);
+				(this as any).logVerbose(`No upgrade processor for: ${versionTransition}`);
 			} else {
-				this.logVerbose(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
+				(this as any).logVerbose(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
 				await upgradeProcessor?.(instancesToUpgrade);
 				instancesToSave.push(...instancesToUpgrade);
 			}
 
 			instancesToSave = filterDuplicates(instancesToSave);
-			instancesToUpgrade.forEach(instance => (instance._v = nextVersion));
+			instancesToUpgrade.forEach(instance => instance._v = nextVersion);
 		}
 
 		return force ? instances : instancesToSave;

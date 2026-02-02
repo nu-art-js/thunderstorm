@@ -349,11 +349,11 @@ export class ModuleFE_BaseDB<Types extends CrudTypes>
 	/**
 	 * Handle query results.
 	 */
-	protected onQueryReturned = async (toUpdate: Types['dbItem'][], toDelete: DB_Object[] = []): Promise<void> => {
+	protected onQueryReturned = async (toUpdate: Types['dbItem'][], toDelete: Types['dbItem'][] = []): Promise<void> => {
 		toUpdate = await this.upgradeInstances(toUpdate);
 		await this.IDB.syncIndexDb(toUpdate, toDelete);
 		this.cache.onEntriesUpdated(toUpdate);
-		this.cache.onEntriesDeleted(toDelete as Types['dbItem'][]);
+		this.cache.onEntriesDeleted(toDelete);
 		this.dispatchMulti(EventType_Query, toUpdate);
 	};
 

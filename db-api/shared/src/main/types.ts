@@ -19,7 +19,10 @@
  */
 
 import {DotNotation, DotNotationValueType, SubsetObjectByKeys, ValidatorTypeResolver} from '@nu-art/ts-common';
-import {DB_Object} from './types/db-object.js';
+import {DB_BaseObject, DB_Object} from './types/db-object.js';
+import {EntityDependencyError} from '@nu-art/firebase-shared';
+import {ApiDef, BodyApi, HttpMethod, QueryApi} from '@nu-art/http-client';
+import type {CrudQuery} from './query-types.js';
 
 
 /**
@@ -200,3 +203,52 @@ export type TypeOfTypeAsString<ValueType> =
 				ValueType extends boolean ? 'boolean' :
 					ValueType extends object ? 'object' :
 						never;
+
+// --- CRUD API types (shared FE/BE) ---
+
+export type CrudTypes<
+	DBKey extends string = string,
+	DBItem extends DB_Object = DB_Object,
+	UIItem extends object & { _id?: string } = object & { _id?: string },
+	Validator extends ValidatorTypeResolver<UIItem> = ValidatorTypeResolver<UIItem>,
+	UniqueKeys extends (keyof DBItem)[] = (keyof DBItem)[]
+> = {
+	readonly dbKey: DBKey;
+	readonly dbItem: DBItem;
+	readonly uiItem: UIItem;
+	readonly validator: Validator;
+	readonly uniqueKeys: UniqueKeys;
+};
+
+/** Flat CRUD API defs (no v1 wrapper). Generic so ApiHandler infers payload types. */
+export type CrudApiTypes<Types extends CrudTypes = CrudTypes> = {
+	query: BodyApi<Types['dbItem'][], CrudQuery<Types['dbItem']>>;
+	queryUnique: QueryApi<Types['dbItem'], DB_BaseObject>;
+	upsert: BodyApi<Types['dbItem'], Types['uiItem']>;
+	upsertAll: BodyApi<Types['dbItem'][], Types['uiItem'][]>;
+	deleteUnique: QueryApi<Types['dbItem'] | undefined, DB_BaseObject, EntityDependencyError>;
+	deleteQuery: BodyApi<Types['dbItem'][], CrudQuery<Types['dbItem']>>;
+	deleteAll: QueryApi<Types['dbItem'][]>;
+};
+
+export type CrudApiDef_Type<Types extends CrudTypes = CrudTypes> = {
+	query: ApiDef<CrudApiTypes<Types>['query']>;
+	queryUnique: ApiDef<CrudApiTypes<Types>['queryUnique']>;
+	upsert: ApiDef<CrudApiTypes<Types>['upsert']>;
+	upsertAll: ApiDef<CrudApiTypes<Types>['upsertAll']>;
+	deleteUnique: ApiDef<CrudApiTypes<Types>['deleteUnique']>;
+	deleteQuery: ApiDef<CrudApiTypes<Types>['deleteQuery']>;
+	deleteAll: ApiDef<CrudApiTypes<Types>['deleteAll']>;
+};
+
+export function CrudApiDef<Types extends CrudTypes>(dbKey: string, version = 'v1'): CrudApiDef_Type<Types> {
+	return {
+		query: {method: HttpMethod.POST, path: `${version}/${dbKey}/query`, timeout: 60000},
+		queryUnique: {method: HttpMethod.GET, path: `${version}/${dbKey}/query-unique`},
+		upsert: {method: HttpMethod.POST, path: `${version}/${dbKey}/upsert`},
+		upsertAll: {method: HttpMethod.POST, path: `${version}/${dbKey}/upsert-all`},
+		deleteUnique: {method: HttpMethod.GET, path: `${version}/${dbKey}/delete-unique`},
+		deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbKey}/delete-query`},
+		deleteAll: {method: HttpMethod.GET, path: `${version}/${dbKey}/delete-all`},
+	};
+}
