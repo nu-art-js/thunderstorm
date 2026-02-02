@@ -47,6 +47,8 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 
 	constructor(params: Params<Types>) {
 		super(`GenApi(${params.dbModule.getName()})`);
+		if (!params.crudApiDef)
+			throw new Error('ModuleBE_BaseApi: crudApiDef is required');
 		this.dbModule = params.dbModule;
 		this.crudApiDef = params.crudApiDef;
 		this.httpServer = params.httpServer ?? (() => HttpServer.default);

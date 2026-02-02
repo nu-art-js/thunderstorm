@@ -1,0 +1,25 @@
+---
+description: Minimal BAI CLI guide for agents — which commands to run for build, install, and tests. Read before running or suggesting BAI commands.
+alwaysApply: true
+---
+
+# BAI CLI – Minimal agent guide (read first)
+
+**Invoke** (from project root): `bash ./build-and-install.sh [flags]` or `pnpm exec build-and-install [flags]`
+
+| Intent | Command |
+|--------|--------|
+| **Install** deps | `-i` or `--install` |
+| **Build** (prepare + compile) | (default; no flag) |
+| **Skip build** (e.g. only launch) | `-nb` or `--no-build` |
+| **Test** all | `-t` or `--test` |
+| **Test** by type | `-t -tt=pure` \| `-tt=firebase` \| `-tt=playwright` \| `-tt=ui` \| `-tt=mobile` |
+| **Test** one file/case | `-t -tf=<path>` \| `-t -tc=<caseName>` |
+| **Test** with debugger | `-t -td` (or `-td 8010`) |
+| **One package** only | `-up=<name>` or `--use-package=<name>` (regex) |
+| **Package** | `-up=<name> |
+| **Package + its deps ONLY IF NEEDED** | `-up=<name> --build-tree` |
+| **Resume** after failure | `-con` or `--continue` |
+| **Help** | `-h` or `--help` |
+
+**Examples**: `bash ./build-and-install.sh -i` · `bash ./build-and-install.sh -t -tt=pure` · `bash ./build-and-install.sh -up=my-pkg -bt` · `bash ./build-and-install.sh -nb -up=app-backend -l` (launch app, no build)

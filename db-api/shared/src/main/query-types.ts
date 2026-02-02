@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-import {TS_Object} from '@nu-art/ts-common';
+import {DB_Object} from './types/db-object.js';
 
 /** Query comparator operators (same shape as Firestore for wire compatibility). */
 export type CrudQueryComparator<T> =
@@ -37,15 +37,15 @@ export type CrudOrderByDirection = 'desc' | 'asc';
 
 export type CrudWhereValue<Value> =
 	| CrudQueryComparator<Value>
-	| (Value extends TS_Object ? CrudClause_Where<Value> : Value | [Value]);
+	| (Value extends DB_Object ? CrudClause_Where<Value> : Value | [Value]);
 
-export type CrudClause_Where<T extends TS_Object> = { [P in keyof T]?: CrudWhereValue<T[P]> };
+export type CrudClause_Where<T extends DB_Object> = { [P in keyof T]?: CrudWhereValue<T[P]> };
 
-export type CrudClause_OrderBy<T extends TS_Object> = [{ key: keyof T; order: CrudOrderByDirection }];
+export type CrudClause_OrderBy<T extends DB_Object> = [{ key: keyof T; order: CrudOrderByDirection }];
 
-export type CrudClause_Select<T extends TS_Object, K extends keyof T = keyof T> = K[];
+export type CrudClause_Select<T extends DB_Object, K extends keyof T = keyof T> = K[];
 
-export type CrudQuery<T extends TS_Object> = {
+export type CrudQuery<T extends DB_Object> = {
 	select?: CrudClause_Select<T>;
 	orderBy?: CrudClause_OrderBy<T>;
 	where?: CrudClause_Where<T>;
@@ -55,4 +55,4 @@ export type CrudQuery<T extends TS_Object> = {
 
 
 /** Empty query constant (same shape as Firestore _EmptyQuery for wire compatibility). */
-export const CrudEmptyQuery = Object.freeze({where: {}}) as CrudQuery<TS_Object>;
+export const CrudEmptyQuery = Object.freeze({where: {}}) as CrudQuery<DB_Object>;

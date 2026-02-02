@@ -7,17 +7,15 @@
 import {expect} from 'chai';
 import {ApiException} from '@nu-art/ts-common';
 import {CrudApiDef} from '@nu-art/db-api-shared';
-import {createMockFirestoreCollectionV3} from './mocks/MockFirestoreCollectionV3.js';
-import * as TestDB from './TestModuleBE_BaseDB.js';
+import {createMockDbModuleForApi} from './mocks/MockDbModuleForApi.js';
 import {ModuleBE_BaseApi_Class} from '../main/ModuleBE_BaseApi.js';
 
-function setupApi(): { api: ModuleBE_BaseApi_Class<any>; db: InstanceType<typeof TestDB.TestModuleBE_BaseDB_Class> } {
-	const mockCollection = createMockFirestoreCollectionV3();
-	const db = new TestDB.TestModuleBE_BaseDB_Class();
-	TestDB.wireMockCollection(db, mockCollection);
+function setupApi(): { api: ModuleBE_BaseApi_Class<any>; db: ReturnType<typeof createMockDbModuleForApi> } {
+	const db = createMockDbModuleForApi();
+	const crudApiDef = CrudApiDef(db.dbDef.dbKey);
 	const api = new ModuleBE_BaseApi_Class({
 		dbModule: db as any,
-		crudApiDef: CrudApiDef(db.dbDef.dbKey)
+		crudApiDef: crudApiDef
 	});
 	return { api, db };
 }

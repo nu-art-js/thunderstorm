@@ -4,6 +4,18 @@
  * Licensed under the Apache License, Version 2.0
  */
 
+import type {DB_Object} from '@nu-art/ts-common';
+
+/**
+ * Shape of post-write processing data (mirrors firebase PostWriteProcessingData but for DB_Object, no DBProto).
+ * Used so BE can type handlers without depending on DBProto.
+ */
+export type PostWriteProcessingDataShape<T extends DB_Object> = {
+	before?: T | T[];
+	updated?: T | T[];
+	deleted?: T | T[] | null;
+};
+
 /**
  * Minimal dependency definition shape (read by BE for entity dependency collection).
  */

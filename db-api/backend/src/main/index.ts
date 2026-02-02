@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-export type {BaseDBDefBE, BaseDBDefBE_Dependency, DBApiBEConfigShape} from './backend-types.js';
+export type {BaseDBDefBE, BaseDBDefBE_Dependency, DBApiBEConfigShape, PostWriteProcessingDataShape} from './backend-types.js';
 export {ModuleBE_BaseDB, BaseDBApiConfig, DBApiConfig} from './ModuleBE_BaseDB.js';
 export {ModuleBE_BaseApi_Class, createApisForDBModule} from './ModuleBE_BaseApi.js';
 export type {DBApiBEConfig, DBEntityDependencies, DBEntityDependencyError, EntityDependencyCollection, Response_DBSync} from './storm-stubs.js';
