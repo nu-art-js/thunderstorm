@@ -38,33 +38,6 @@ function registerRoute<Module>(params: RouteRegistrationParams<Module>): void {
 	resolveContent(server, params.enclosingClass).addRoute(api);
 }
 
-class PendingRouteRegistry_Class {
-	private readonly pendingRoutes: RouteRegistrationParams[] = [];
-	private flushScheduled = false;
-
-	private flush(): void {
-		this.flushScheduled = false;
-		const batch = this.pendingRoutes.splice(0, this.pendingRoutes.length);
-		for (const item of batch)
-			registerRoute(item);
-	}
-
-	schedule<Module>(item: RouteRegistrationParams<Module>): void {
-		this.pendingRoutes.push(item as RouteRegistrationParams);
-		if (!this.flushScheduled) {
-			this.flushScheduled = true;
-			setTimeout(() => this.flush(), 0);
-		}
-	}
-
-	/** Run the pending flush immediately (e.g. in tests so routes are registered before use). */
-	flushPendingRoutes(): void {
-		this.flush();
-	}
-}
-
-const PendingRouteRegistry = new PendingRouteRegistry_Class();
-
 /**
  * TC39 Stage 3 method decorator for server API handlers. Infers query vs body from apiDef.method:
  * GET/DELETE → params; POST/PUT/PATCH → body. Associates the handler with a server instance
@@ -79,19 +52,14 @@ export function ApiHandler<API extends GeneralApi, Module = unknown>(_apiDef: Re
 	return function (originalMethod: (this: Module, payload: API['B'] | API['P']) => Promise<API['R']>, context: ClassMethodDecoratorContext<Module>) {
 		context.addInitializer(function (this: Module) {
 			const server = (options?.httpServer ?? (() => HttpServer.getDefault()));
+			const apiDef = resolveContent(_apiDef, this);
 			const params: RouteRegistrationParams<Module> = {
 				server,
-				apiDef: _apiDef,
+				apiDef,
 				enclosingClass: this,
 				handler: (payload: unknown) => originalMethod.call(this, payload),
 				options
 			};
-
-			if (typeof _apiDef === 'function') {
-				PendingRouteRegistry.schedule(params);
-				return;
-			}
-
 			registerRoute(params);
 		});
 		return originalMethod;
@@ -99,7 +67,7 @@ export function ApiHandler<API extends GeneralApi, Module = unknown>(_apiDef: Re
 }
 
 
-/** Triggers the deferred route flush immediately. Use after constructing ApiHandler classes so routes are registered before calling handlers (e.g. in tests). */
+/** No-op for backward compatibility. Routes are now registered synchronously when apiDef is a resolver. */
 export function ApiHandler_FlushPendingRoutes(): void {
-	PendingRouteRegistry.flushPendingRoutes();
+	// Routes register synchronously in addInitializer; no deferred flush.
 }
