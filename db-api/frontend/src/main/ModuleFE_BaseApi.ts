@@ -66,7 +66,6 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 		super(params.config, ModuleSyncType.APISync, params.dispatcher);
 		this.crudApiDef = params.crudApiDef;
 		this.httpClient = params.httpClient ?? (() => HttpClient.default);
-		ApiHandler_FlushPendingRoutes();
 	}
 
 	/**

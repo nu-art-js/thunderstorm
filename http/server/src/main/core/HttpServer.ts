@@ -36,10 +36,23 @@ export type HttpServerConfig = {
 
 export type CustomOrigin = (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => (boolean | Promise<boolean>);
 
+const DefaultHttpServerConfig: HttpServerConfig = {
+	tag: 'http-server-default',
+	port: 3000,
+	baseUrl: '',
+	cors: {headers: [], responseHeaders: []}
+};
+
 export class HttpServer
 	extends Logger {
 
 	static default: HttpServer;
+
+	static getDefault(): HttpServer {
+		if (!HttpServer.default)
+			HttpServer.default = new HttpServer(DefaultHttpServerConfig);
+		return HttpServer.default;
+	}
 
 	private static readonly expressMiddleware: ExpressRequestHandler[] = [];
 	private readonly instanceMiddleware: ExpressRequestHandler[] = [];
