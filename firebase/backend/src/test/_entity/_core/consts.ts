@@ -155,6 +155,12 @@ export type CollectionTestInput = {
 	check: (collectionOuter: FirestoreCollectionV3<DBProto_Type_Complex>, collectionInner: FirestoreCollectionV3<DBProto_Type_Complex>) => Promise<void>
 }
 
+export type CollectionTest = {
+	label: string;
+	testcases: TestModel<CollectionTestInput, TestInputValue>[];
+	processor?: (testCase: TestModel<CollectionTestInput, TestInputValue>) => Promise<void>;
+};
+
 export const id_outer1 = '1cdcc47ff3778ba10721e2a95ba3f531';
 export const id_inner1 = '3d6cd1a475751ea9a0c0189d1dabef48';
 export const id_inner2 = 'e5221f2488c24af7f9c4d3e6c28581bb';

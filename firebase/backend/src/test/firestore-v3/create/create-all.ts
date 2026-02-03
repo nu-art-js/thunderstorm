@@ -1,14 +1,14 @@
 import {duplicateObjectToCreate, firestore, testInstance2} from '../../_entity/_core/consts.js';
 import {asArray, deepClone} from '@nu-art/ts-common';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import {createTestCases, CreateTestInput} from './consts.js';
-import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {createTests_dbDef} from './create.js';
-import {DBProto_Type} from '../../_entity/type/shared/index.js';
+import {DBProto_Type} from '../../_entity/type/index.js';
 import {TestInputValue} from '../_entity.js';
 import {TestModel} from '@nu-art/testalot';
 
-const chai = await import("'chai'");
 chai.use(chaiAsPromised);
 
 export type TestCase_FirestoreV3_CreateAll = TestModel<CreateTestInput, TestInputValue>;

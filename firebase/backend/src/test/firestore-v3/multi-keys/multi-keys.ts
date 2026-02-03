@@ -1,18 +1,27 @@
-import * as chai from 'chai';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {firestore, validateDBObject} from '../../_entity/_core/consts.js';
-import {TestSuite} from '@nu-art/ts-common/test-index';
 import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
-import {composeDbObjectUniqueId} from '../../../main/index.js';
-import {DB_Type_MultiKey, DBProto_Type_MultiKey} from '../../_entity/type-multi-key/shared/index.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {_EmptyQuery, composeDbObjectUniqueId} from '@nu-art/firebase-shared';
+import {DB_Type_MultiKey, DBProto_Type_MultiKey} from '../../_entity/type-multi-key/index.js';
+import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
 
+chai.use(chaiAsPromised);
 
-chai.use(require('chai-as-promised'));
+type Input = (collection: FirestoreCollectionV3<DBProto_Type_MultiKey>) => Promise<any>;
 
-type Input = (collection: FirestoreCollectionV3<DBProto_Type_MultiKey>) => Promise<any>
+type TestCase_MultiKeys = {
+	description?: string | ((tc: TestCase_MultiKeys) => string);
+	input: Input;
+	result: PreDB<DB_Type_MultiKey>[];
+};
 
-type Test = TestSuite<Input, PreDB<DB_Type_MultiKey>[]>; //result - the items left in the collection after deletion
+type Test = {
+	label: string;
+	testcases: TestCase_MultiKeys[];
+	processor: (testCase: TestCase_MultiKeys) => Promise<void>;
+};
 
 const dbDef: DBDef_V3<DBProto_Type_MultiKey> = {
 	modifiablePropsValidator: tsValidateMustExist,
@@ -35,7 +44,7 @@ const compareId = (origin: PreDB<DB_Type_MultiKey>, target: DB_Type_MultiKey) =>
 	expect(composeDbObjectUniqueId(origin, dbDef.uniqueKeys!)).to.eql(target._id);
 };
 
-export const TestCases_FB_MultiKeys: Test['testcases'] = [
+export const TestCases_FB_MultiKeys: TestCase_MultiKeys[] = [
 	{
 		description: 'create one item',
 		result: [sampleDoc1],
@@ -94,13 +103,21 @@ export const TestCases_FB_MultiKeys: Test['testcases'] = [
 	},
 ];
 
+export const TestCases_FirestoreV3_MultiKeys = TestCases_FB_MultiKeys;
+
+export const test_FirestoreV3_MultiKeys = async (input: Input): Promise<PreDB<DB_Type_MultiKey>[]> => {
+	const collection = firestore.getCollection(dbDef);
+	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await input(collection);
+	return collection.query.custom(_EmptyQuery).then(items => items.map(i => ({...i, _id: i._id} as PreDB<DB_Type_MultiKey>)));
+};
+
 export const TestSuite_FirestoreV3_MultiKeys: Test = {
 	label: 'Firestore Multi-Keys',
 	testcases: TestCases_FB_MultiKeys,
-	processor: async (testCase) => {
+	processor: async (testCase: TestCase_MultiKeys) => {
 		const collection = firestore.getCollection(dbDef);
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-
 		await testCase.input(collection);
 	}
 };

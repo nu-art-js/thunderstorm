@@ -1,8 +1,8 @@
 import {CollectionTest, firestore, id_inner1, id_inner2, id_inner3, id_inner4, id_outer1, innerQueryCollection, outerQueryCollection} from '../../_entity/_core/consts.js';
 import {expect} from 'chai';
 import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
-import {DBProto_Type_Complex} from '../../_entity/type-complex/shared/index.js';
+import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
+import {DBProto_Type_Complex} from '../../_entity/type-complex/index.js';
 
 
 const transaction_addInner4 = (collectionOuter: FirestoreCollectionV3<DBProto_Type_Complex>, now: number) => {
@@ -26,7 +26,7 @@ const transaction_removeInner2 = (collectionOuter: FirestoreCollectionV3<DBProto
 		const outerItem = (await collectionOuter.query.unique(id_outer1, transaction))!;
 		expect(true).to.eql(exists(outerItem));
 
-		outerItem.refs = outerItem.refs.filter(id => id !== id_inner2);
+		outerItem.refs = outerItem.refs.filter((id: string) => id !== id_inner2);
 
 		await collectionOuter.set.item(outerItem, transaction);
 		console.log(`zevel2 ${currentTimeMillis() - now}`);
@@ -40,7 +40,7 @@ const transaction_removeInner3 = (collectionOuter: FirestoreCollectionV3<DBProto
 		const outerItem = (await collectionOuter.query.unique(id_outer1, transaction))!;
 		expect(true).to.eql(exists(outerItem));
 
-		outerItem.refs = outerItem.refs.filter(id => id !== id_inner3);
+		outerItem.refs = outerItem.refs.filter((id: string) => id !== id_inner3);
 
 		await collectionOuter.set.item(outerItem, transaction);
 
