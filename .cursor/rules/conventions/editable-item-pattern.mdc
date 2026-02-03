@@ -637,8 +637,8 @@ The backend concurrency check is in:
 
 ## Related Files
 
-- `_thunderstorm/thunderstorm/frontend/src/main/utils/EditableItem.ts` - Core implementation
-- `_thunderstorm/thunderstorm/frontend/src/main/components/TS_EditableItemController/` - React wrapper (legacy)
+- `_thunderstorm/thunderstorm-frontend/src/main/utils/EditableItem.ts` - Core implementation
+- `_thunderstorm/thunderstorm-frontend/src/main/components/TS_EditableItemController/` - React wrapper (legacy)
 - `_thunderstorm/firebase/backend/src/main/firestore-v3/DocWrapperV3.ts` - Backend concurrency check
 - `_thunderstorm/ts-common/src/main/core/exceptions/http-codes.ts` - HTTP error codes (461)
 
