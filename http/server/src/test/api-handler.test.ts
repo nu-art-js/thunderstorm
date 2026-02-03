@@ -24,12 +24,12 @@ describe('ApiHandler initializer - route registration', () => {
 		};
 
 		class C {
-			@ApiHandler(() => queryApiDef, {server: () => mockServer as unknown as HttpServer})
+			@ApiHandler(() => queryApiDef, {httpServer: () => mockServer as unknown as HttpServer})
 			async get(_p: unknown) {
 				return [];
 			}
 
-			@ApiHandler(() => bodyApiDef, {server: () => mockServer as unknown as HttpServer})
+			@ApiHandler(() => bodyApiDef, {httpServer: () => mockServer as unknown as HttpServer})
 			async post(_b: unknown) {
 				return {};
 			}
@@ -47,12 +47,12 @@ describe('ApiHandler initializer - route registration', () => {
 		};
 
 		class C {
-			@ApiHandler(() => queryApiDef, {server: () => mockServer as unknown as HttpServer})
+			@ApiHandler(() => queryApiDef, {httpServer: () => mockServer as unknown as HttpServer})
 			async get(_p: unknown) {
 				return [];
 			}
 
-			@ApiHandler(() => bodyApiDef, {server: () => mockServer as unknown as HttpServer})
+			@ApiHandler(() => bodyApiDef, {httpServer: () => mockServer as unknown as HttpServer})
 			async post(_b: unknown) {
 				return {};
 			}
@@ -83,7 +83,7 @@ describe('ApiHandler initializer - route registration', () => {
 				return {method: 'get' as const, path: dynamicPath};
 			}
 
-			@ApiHandler((m: C) => m.getApiDef(), {server: () => mockServer as unknown as HttpServer})
+			@ApiHandler((m: C) => m.getApiDef(), {httpServer: () => mockServer as unknown as HttpServer})
 			async get(_p: unknown) {
 				return [];
 			}

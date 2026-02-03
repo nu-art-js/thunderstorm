@@ -78,7 +78,7 @@ const PendingRouteRegistry = new PendingRouteRegistry_Class();
 export function ApiHandler<API extends GeneralApi, Module = unknown>(_apiDef: ResolvableContent<ApiDef<API>, [Module]>, options?: ApiHandlerOptions<Module>) {
 	return function (originalMethod: (this: Module, payload: API['B'] | API['P']) => Promise<API['R']>, context: ClassMethodDecoratorContext<Module>) {
 		context.addInitializer(function (this: Module) {
-			const server = (resolveContent(options?.httpServer, this) ?? HttpServer.getDefault());
+			const server = (options?.httpServer ?? (() => HttpServer.getDefault()));
 			const params: RouteRegistrationParams<Module> = {
 				server,
 				apiDef: _apiDef,

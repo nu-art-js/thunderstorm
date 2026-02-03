@@ -20,7 +20,7 @@ describe('HttpServer integration - Supertest (in-process)', () => {
 		await server.init();
 
 		class PingApi {
-			@ApiHandler(() => pingApiDef, {server: () => server})
+			@ApiHandler(() => pingApiDef, {httpServer: () => server})
 			async get(_params: unknown): Promise<{ ok: boolean }> {
 				return {ok: true};
 			}
@@ -39,7 +39,7 @@ describe('HttpServer integration - Supertest (in-process)', () => {
 		await server.init();
 
 		class PingOnly {
-			@ApiHandler(() => pingApiDef, {server: () => server})
+			@ApiHandler(() => pingApiDef, {httpServer: () => server})
 			async get(_params: unknown): Promise<{ ok: boolean }> {
 				return {ok: true};
 			}
@@ -55,7 +55,7 @@ describe('HttpServer integration - Supertest (in-process)', () => {
 		await server.init();
 
 		class PingApi {
-			@ApiHandler(() => pingApiDef, {server: () => server})
+			@ApiHandler(() => pingApiDef, {httpServer: () => server})
 			async get(_params: unknown): Promise<{ ok: boolean }> {
 				return {ok: true};
 			}

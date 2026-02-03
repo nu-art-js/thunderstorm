@@ -4,8 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {HttpMethod} from '@nu-art/api-types';
-import {isQueryMethod} from '../main/index.js';
+import {HttpMethod, isQueryMethod} from '@nu-art/api-types';
 import {ensureBeLoggedTerminal} from './ensure-belogged.js';
 import {expect} from 'chai';
 

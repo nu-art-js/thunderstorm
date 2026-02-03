@@ -7,15 +7,25 @@
 import {expect} from 'chai';
 import {ApiException} from '@nu-art/ts-common';
 import {CrudApiDef} from '@nu-art/db-api-shared';
+import {HttpServer} from '@nu-art/http-server';
 import {createMockDbModuleForApi} from './mocks/MockDbModuleForApi.js';
-import {ModuleBE_BaseApi_Class} from '../main/ModuleBE_BaseApi.js';
+import {createApisForDBModule, ModuleBE_BaseApi_Class} from '../main/ModuleBE_BaseApi.js';
+
+const testServerConfig = {
+	tag: 'test',
+	port: 0,
+	baseUrl: '',
+	cors: {headers: [], responseHeaders: []}
+};
 
 function setupApi(): { api: ModuleBE_BaseApi_Class<any>; db: ReturnType<typeof createMockDbModuleForApi> } {
 	const db = createMockDbModuleForApi();
 	const crudApiDef = CrudApiDef(db.dbDef.dbKey);
+	const httpServer = new HttpServer(testServerConfig);
 	const api = new ModuleBE_BaseApi_Class({
 		dbModule: db as any,
-		crudApiDef: crudApiDef
+		crudApiDef: crudApiDef,
+		httpServer: () => httpServer
 	});
 	return { api, db };
 }
@@ -34,6 +44,23 @@ describe('ModuleBE_BaseApi', () => {
 			await api.upsert({ _id: 'id2', name: 'B', _v: 'v1' });
 			const items = await api.query({ where: {} });
 			expect(items).to.have.length(2);
+		});
+
+		it('filters by where clause', async () => {
+			const { api } = setupApi();
+			await api.upsert({ _id: 'id1', name: 'A', tag: 'x', _v: 'v1' });
+			await api.upsert({ _id: 'id2', name: 'B', tag: 'y', _v: 'v1' });
+			await api.upsert({ _id: 'id3', name: 'C', tag: 'x', _v: 'v1' });
+			const items = await api.query({ where: { tag: 'x' } } as any);
+			expect(items).to.have.length(2);
+			expect(items.map((i: { _id: string }) => i._id).sort()).to.deep.equal(['id1', 'id3']);
+		});
+
+		it('returns empty array when where matches nothing', async () => {
+			const { api } = setupApi();
+			await api.upsert({ _id: 'id1', name: 'A', _v: 'v1' });
+			const items = await api.query({ where: { name: 'Nonexistent' } } as any);
+			expect(items).to.deep.equal([]);
 		});
 	});
 
@@ -58,6 +85,17 @@ describe('ModuleBE_BaseApi', () => {
 				expect((e as Error).message).to.include('nonexistent');
 			}
 		});
+
+		it('404 message includes entity name', async () => {
+			const { api } = setupApi();
+			try {
+				await api.queryUnique({ _id: 'missing' });
+				expect.fail('expected ApiException');
+			} catch (e) {
+				expect(e).to.be.instanceOf(ApiException);
+				expect((e as Error).message).to.include('TestEntity');
+			}
+		});
 	});
 
 	describe('upsert', () => {
@@ -68,6 +106,15 @@ describe('ModuleBE_BaseApi', () => {
 			expect(result._id).to.equal('id1');
 			const found = await api.queryUnique({ _id: 'id1' });
 			expect(found).to.deep.include({ _id: 'id1' });
+		});
+
+		it('overwrites existing item when same _id', async () => {
+			const { api } = setupApi();
+			await api.upsert({ _id: 'id1', name: 'First', _v: 'v1' });
+			const result = await api.upsert({ _id: 'id1', name: 'Second', _v: 'v1' });
+			expect(result.name).to.equal('Second');
+			const found = await api.queryUnique({ _id: 'id1' });
+			expect(found.name).to.equal('Second');
 		});
 	});
 
@@ -82,6 +129,19 @@ describe('ModuleBE_BaseApi', () => {
 			expect(result).to.have.length(2);
 			const items = await api.query({ where: {} });
 			expect(items).to.have.length(2);
+		});
+
+		it('returns empty array when given empty array', async () => {
+			const { api } = setupApi();
+			const result = await api.upsertAll([]);
+			expect(result).to.deep.equal([]);
+		});
+
+		it('single item array works', async () => {
+			const { api } = setupApi();
+			const result = await api.upsertAll([{ _id: 'only', _v: 'v1' }]);
+			expect(result).to.have.length(1);
+			expect(result[0]._id).to.equal('only');
 		});
 	});
 
@@ -99,6 +159,12 @@ describe('ModuleBE_BaseApi', () => {
 				expect(e).to.be.instanceOf(ApiException);
 				expect((e as ApiException).responseCode).to.equal(404);
 			}
+		});
+
+		it('returns undefined when _id does not exist', async () => {
+			const { api } = setupApi();
+			const deleted = await api.delete({ _id: 'nonexistent' });
+			expect(deleted).to.be.undefined;
 		});
 	});
 
@@ -138,6 +204,15 @@ describe('ModuleBE_BaseApi', () => {
 			expect(remaining).to.have.length(1);
 			expect(remaining[0]._id).to.equal('id3');
 		});
+
+		it('returns empty array when no items match where', async () => {
+			const { api } = setupApi();
+			await api.upsert({ _id: 'id1', tag: 'a', _v: 'v1' });
+			const deleted = await api.deleteQuery({ where: { tag: 'b' } } as any);
+			expect(deleted).to.deep.equal([]);
+			const remaining = await api.query({ where: {} });
+			expect(remaining).to.have.length(1);
+		});
 	});
 
 	describe('deleteAll', () => {
@@ -149,6 +224,51 @@ describe('ModuleBE_BaseApi', () => {
 			expect(deleted).to.have.length(2);
 			const items = await api.query({ where: {} });
 			expect(items).to.deep.equal([]);
+		});
+
+		it('returns empty array when store is already empty', async () => {
+			const { api } = setupApi();
+			const deleted = await api.deleteAll();
+			expect(deleted).to.deep.equal([]);
+		});
+	});
+
+	describe('createApisForDBModule', () => {
+		it('creates working api with default CrudApiDef', async () => {
+			const db = createMockDbModuleForApi();
+			const api = createApisForDBModule(db);
+			await api.upsert({ _id: 'x', _v: 'v1' } as any);
+			const items = await api.query({ where: {} });
+			expect(items).to.have.length(1);
+			expect(items[0]._id).to.equal('x');
+		});
+	});
+
+	describe('round-trip', () => {
+		it('create, query, upsert again, query, delete, then 404', async () => {
+			const { api } = setupApi();
+			await api.upsert({ _id: 'r1', name: 'Initial', _v: 'v1' });
+			let items = await api.query({ where: {} });
+			expect(items).to.have.length(1);
+			expect(items[0].name).to.equal('Initial');
+
+			await api.upsert({ _id: 'r1', name: 'Updated', _v: 'v1' });
+			items = await api.query({ where: {} });
+			expect(items).to.have.length(1);
+			expect(items[0].name).to.equal('Updated');
+
+			const deleted = await api.delete({ _id: 'r1' });
+			expect(deleted!._id).to.equal('r1');
+			items = await api.query({ where: {} });
+			expect(items).to.deep.equal([]);
+
+			try {
+				await api.queryUnique({ _id: 'r1' });
+				expect.fail('expected 404');
+			} catch (e) {
+				expect(e).to.be.instanceOf(ApiException);
+				expect((e as ApiException).responseCode).to.equal(404);
+			}
 		});
 	});
 });

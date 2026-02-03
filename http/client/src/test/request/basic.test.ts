@@ -26,7 +26,7 @@ import {expect} from 'chai';
 
 // Test API types
 type GetApi = QueryApi<{url: string; args: any; headers: any}, {test?: string}>;
-type PostApi = BodyApi<{json: any; data?: string; url: string}, {test?: string}, {test?: string}>;
+type PostApi = BodyApi<{json: any; data?: string; url: string}, {test?: string}>;
 
 type Input = {
 	client: HttpClient;
