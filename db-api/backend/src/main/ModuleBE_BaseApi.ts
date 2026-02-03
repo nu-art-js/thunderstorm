@@ -24,7 +24,7 @@ import type {CrudApiTypes, CrudTypes} from '@nu-art/db-api-shared';
 import {CrudApiDef, CrudApiDef_Type, CrudEmptyQuery} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
-import {ApiHandler, HttpServer} from '@nu-art/http-server';
+import {ApiHandler, ApiHandler_FlushPendingRoutes, HttpServer} from '@nu-art/http-server';
 
 
 interface Params<Types extends CrudTypes> {
@@ -51,7 +51,8 @@ export class ModuleBE_BaseApi_Class<Types extends CrudTypes>
 			throw new Error('ModuleBE_BaseApi: crudApiDef is required');
 		this.dbModule = params.dbModule;
 		this.crudApiDef = params.crudApiDef;
-		this.httpServer = params.httpServer ?? (() => HttpServer.default);
+		this.httpServer = params.httpServer ?? (() => HttpServer.getDefault());
+		ApiHandler_FlushPendingRoutes();
 	}
 
 	init() {

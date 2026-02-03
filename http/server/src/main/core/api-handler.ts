@@ -12,35 +12,45 @@ import {_ServerBodyApi, _ServerQueryApi} from './server-api.js';
 import {HttpServer} from './HttpServer.js';
 import type {ServerApi_Middleware} from '../types.js';
 
-/** Pending route registration: resolved after constructor so getter sees full instance. */
-type PendingRoute<Module = unknown> = {
-	server: HttpServer;
-	apiDefGetter: ResolvableContent<ApiDef<any>, [Module]>;
-	instance: Module;
-	originalMethod: (payload: unknown) => Promise<unknown>;
-	options: ApiHandlerOptions<Module> | undefined;
+/** Configuration options for ApiHandler decorator. Mirror of client ApiCallerOptions. */
+export type ApiHandlerOptions<Module> = {
+	httpServer?: ResolvableContent<HttpServer, [Module]>;
+	middlewares?: ServerApi_Middleware[];
 };
 
+/** Single shape for registering a route: apiDef (or getter+instance), handler, server, options. */
+type RouteRegistrationParams<Module = unknown> = {
+	server: ResolvableContent<HttpServer, [Module]>;
+	apiDef: ApiDef<any> | ResolvableContent<ApiDef<any>, [Module]>;
+	enclosingClass: Module;
+	handler: (payload: unknown) => Promise<unknown>;
+	options?: ApiHandlerOptions<Module>;
+};
+
+function registerRoute<Module>(params: RouteRegistrationParams<Module>): void {
+	const {server} = params;
+	const apiDef = resolveContent(params.apiDef, params.enclosingClass);
+	const useQuery = isQueryMethod(apiDef.method);
+	const api = useQuery
+		? new _ServerQueryApi(apiDef, params.handler as (params: unknown) => Promise<unknown>)
+		: new _ServerBodyApi(apiDef, params.handler as (body: unknown) => Promise<unknown>);
+	api.setMiddlewares(...(params.options?.middlewares ?? []));
+	resolveContent(server, params.enclosingClass).addRoute(api);
+}
+
 class PendingRouteRegistry_Class {
-	private readonly pendingRoutes: PendingRoute[] = [];
+	private readonly pendingRoutes: RouteRegistrationParams[] = [];
 	private flushScheduled = false;
 
 	private flush(): void {
 		this.flushScheduled = false;
 		const batch = this.pendingRoutes.splice(0, this.pendingRoutes.length);
-		for (const {server, apiDefGetter, instance, originalMethod, options} of batch) {
-			const apiDef = resolveContent(apiDefGetter, instance) as ApiDef<any>;
-			const useQuery = isQueryMethod(apiDef.method);
-			const api = useQuery
-				? new _ServerQueryApi(apiDef, originalMethod as (params: unknown) => Promise<unknown>)
-				: new _ServerBodyApi(apiDef, originalMethod as (body: unknown) => Promise<unknown>);
-			api.setMiddlewares(...(options?.middlewares ?? []));
-			server.addRoute(api);
-		}
+		for (const item of batch)
+			registerRoute(item);
 	}
 
-	schedule<Module>(item: PendingRoute<Module>): void {
-		this.pendingRoutes.push(item as PendingRoute);
+	schedule<Module>(item: RouteRegistrationParams<Module>): void {
+		this.pendingRoutes.push(item as RouteRegistrationParams);
 		if (!this.flushScheduled) {
 			this.flushScheduled = true;
 			setTimeout(() => this.flush(), 0);
@@ -55,12 +65,6 @@ class PendingRouteRegistry_Class {
 
 const PendingRouteRegistry = new PendingRouteRegistry_Class();
 
-/** Configuration options for ApiHandler decorator. Mirror of client ApiCallerOptions. */
-export type ApiHandlerOptions<Module> = {
-	httpServer?: ResolvableContent<HttpServer, [Module]>;
-	middlewares?: ServerApi_Middleware[];
-};
-
 /**
  * TC39 Stage 3 method decorator for server API handlers. Infers query vs body from apiDef.method:
  * GET/DELETE → params; POST/PUT/PATCH → body. Associates the handler with a server instance
@@ -74,28 +78,26 @@ export type ApiHandlerOptions<Module> = {
 export function ApiHandler<API extends GeneralApi, Module = unknown>(_apiDef: ResolvableContent<ApiDef<API>, [Module]>, options?: ApiHandlerOptions<Module>) {
 	return function (originalMethod: (this: Module, payload: API['B'] | API['P']) => Promise<API['R']>, context: ClassMethodDecoratorContext<Module>) {
 		context.addInitializer(function (this: Module) {
-			const server = (resolveContent(options?.httpServer, this) ?? HttpServer.default);
+			const server = (resolveContent(options?.httpServer, this) ?? HttpServer.getDefault());
+			const params: RouteRegistrationParams<Module> = {
+				server,
+				apiDef: _apiDef,
+				enclosingClass: this,
+				handler: (payload: unknown) => originalMethod.call(this, payload),
+				options
+			};
+
 			if (typeof _apiDef === 'function') {
-				PendingRouteRegistry.schedule({
-					server,
-					apiDefGetter: _apiDef,
-					instance: this,
-					originalMethod: (payload: unknown) => originalMethod.call(this, payload),
-					options
-				});
+				PendingRouteRegistry.schedule(params);
 				return;
 			}
-			const apiDef = _apiDef as ApiDef<any>;
-			const useQuery = isQueryMethod(apiDef.method);
-			const api = useQuery
-				? new _ServerQueryApi(apiDef, (payload: API['Params']) => originalMethod.call(this, payload))
-				: new _ServerBodyApi(apiDef, (payload: API['Body']) => originalMethod.call(this, payload));
-			api.setMiddlewares(...(options?.middlewares ?? []));
-			server.addRoute(api);
+
+			registerRoute(params);
 		});
 		return originalMethod;
 	};
 }
+
 
 /** Triggers the deferred route flush immediately. Use after constructing ApiHandler classes so routes are registered before calling handlers (e.g. in tests). */
 export function ApiHandler_FlushPendingRoutes(): void {
