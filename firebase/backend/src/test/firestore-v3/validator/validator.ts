@@ -1,9 +1,10 @@
-import * as chai from 'chai';
+import {CollectionTest, CollectionTestInput, prepareCollectionTest} from '../../_entity/_core/consts.js';
+import {DB_Type_Complex, TestInputValue} from '../_entity.js';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
-import {CollectionTest, prepareCollectionTest} from '../../_entity/_core/consts.js';
-import {DB_Type_Complex} from '../_entity.js';
 
-chai.use(require('chai-as-promised'));
+chai.use(chaiAsPromised);
 
 export const TestCases_FB_Validator: CollectionTest['testcases'] = [
 	{
@@ -140,10 +141,17 @@ export const TestCases_FB_Validator: CollectionTest['testcases'] = [
 	},
 ];
 
+export const TestCases_FirestoreV3_Validator = TestCases_FB_Validator;
+
+export const test_FirestoreV3_Validator = async (input: CollectionTestInput): Promise<TestInputValue> => {
+	await prepareCollectionTest({input, result: []});
+	return [];
+};
+
 export const TestSuite_FirestoreV3_Validator: CollectionTest = {
 	label: 'Firestore validator tests',
 	testcases: TestCases_FB_Validator,
-	processor: async (testCase) => {
+	processor: async (testCase: CollectionTest['testcases'][number]) => {
 		await prepareCollectionTest(testCase);
 	}
 };

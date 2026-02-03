@@ -12,10 +12,20 @@ const getOrCreateTests: BucketUtils['testcases'] = [{
 		input: invalidBucketNameInput
 	}];
 
+export const TestCases_GetOrCreateBucket = getOrCreateTests;
+
+export const test_GetOrCreateBucket = async (input: string | undefined) => {
+	try {
+		return await storage.getOrCreateBucket(input);
+	} catch {
+		return undefined;
+	}
+};
+
 export const TestSuite_GetOrCreateBucket: BucketUtils = {
 	label: 'Firebase Storage - Get or create bucket',
 	testcases: getOrCreateTests,
-	processor: async (testCase) => {
+	processor: async (testCase: BucketUtils['testcases'][number]) => {
 		let result;
 		const expected = await testCase.result?.();
 

@@ -1,10 +1,10 @@
-import * as chai from 'chai';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../../_entity/_core/consts.js';
 import {TestModel} from '@nu-art/testalot';
 import {
 	asArray,
-	compare,
 	DBDef_V3,
 	deepClone,
 	generateHex,
@@ -14,11 +14,11 @@ import {
 	sortArray,
 	tsValidateMustExist
 } from '@nu-art/ts-common';
-import {_EmptyQuery} from '../../../main/index.js';
+import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {DB_Type, DBProto_Type} from '../_entity.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
 
-chai.use(require('chai-as-promised'));
+chai.use(chaiAsPromised);
 
 
 export type DeleteTestInput = {

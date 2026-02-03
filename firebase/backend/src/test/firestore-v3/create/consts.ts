@@ -1,10 +1,12 @@
 import {compare, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
+import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../../_entity/_core/consts.js';
-import {DBProto_Type, TestInputValue} from '../../_entity/type/shared/index.js';
+import {DBProto_Type, DB_Type, TestInputValue} from '../../_entity/type/index.js';
 import { FirestoreCollectionV3 } from '../../_main.js';
 
+export type {TestInputValue};
 
 export type CreateTestInput = {
 	value: TestInputValue;

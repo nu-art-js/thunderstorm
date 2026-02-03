@@ -1,14 +1,15 @@
 import * as chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, firestore, testInstance1, testInstance2, testInstance3, validateDBObject} from '../../_entity/_core/consts.js';
 import {TestModel} from '@nu-art/testalot';
 import {asArray, compare, DB_Object, DBDef_V3, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
-import {_EmptyQuery} from '../../../main/index.js';
+import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {DB_Type, DBProto_Type} from '../_entity.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
+import {Transaction} from 'firebase-admin/firestore';
 
-
-chai.use(require('chai-as-promised'));
+chai.use(chaiAsPromised);
 export const updatedStringValue1 = 'test update';
 export const updatedStringValue2 = 'test update 2';
 
@@ -70,7 +71,7 @@ export const TestCases_FB_Set: TestCase_FirestoreV3_Set[] = [
 		input: {
 			toCreate: [],
 			setAction: async (collection, inserted) => {
-				await collection.runTransaction(async (transaction) => {
+				await collection.runTransaction(async (transaction: Transaction) => {
 					await collection.set.item(deepClone(testInstance1), transaction);
 				});
 			}
@@ -142,7 +143,7 @@ export const TestCases_FB_Set: TestCase_FirestoreV3_Set[] = [
 		input: {
 			toCreate: [testInstance1, testInstance2, testInstance3],
 			setAction: async (collection, inserted) => {
-				await collection.runTransaction(async (transaction) => {
+				await collection.runTransaction(async (transaction: Transaction) => {
 					const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId)!;
 					const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId)!;
 					await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {
@@ -178,7 +179,6 @@ const test = async (input: SetTestInput): Promise<SetTestResult> => {
 	await input.setAction(collection, deepClone(inserted));
 
 	const sortedRemaining = sortArray((await collection.query.custom(_EmptyQuery)), item => item._uniqueId);
-	const sortedInserted = sortArray(inserted, item => item._uniqueId);
 
 	return () => {
 		const allResults = sortArray([...sortedRemaining], item => item._uniqueId);

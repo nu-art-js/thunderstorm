@@ -1,3 +1,4 @@
+import {Transaction} from 'firebase-admin/firestore';
 import {compare, exists, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
 import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
@@ -16,8 +17,8 @@ import {
 	testInstance4,
 	testInstance5
 } from '../../_entity/_core/consts.js';
-import {_EmptyQuery} from '../../../main/index.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {_EmptyQuery} from '@nu-art/firebase-shared';
+import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
 import {DBProto_Type, DB_Type, TestInputValue} from '../_entity.js';
 
 export type QueryTestInput = {
@@ -60,9 +61,9 @@ export const queryTestCases: QueryTest[] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				const items = sortArray(await collection.query.custom(_EmptyQuery), item => item.numeric);
+				const items = sortArray(await collection.query.custom(_EmptyQuery), (item: DB_Type) => item.numeric);
 				expect(items.length).to.eql(5);
-				expect(true).to.eql(compare(items.map(removeDBObjectKeys), expectedResult));
+				expect(true).to.eql(compare(items.map((item: DB_Type) => removeDBObjectKeys(item)), expectedResult));
 			}
 		}
 	},
@@ -72,10 +73,10 @@ export const queryTestCases: QueryTest[] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				await collection.runTransaction(async (transaction) => {
-					const items = sortArray(await collection.query.custom(_EmptyQuery, transaction), item => item.numeric);
+				await collection.runTransaction(async (transaction: Transaction) => {
+					const items = sortArray(await collection.query.custom(_EmptyQuery, transaction), (item: DB_Type) => item.numeric);
 					expect(items.length).to.eql(5);
-					expect(true).to.eql(compare(items.map(removeDBObjectKeys), expectedResult));
+					expect(true).to.eql(compare(items.map((item: DB_Type) => removeDBObjectKeys(item)), expectedResult));
 				});
 			}
 		}
@@ -241,7 +242,7 @@ export const queryWithPagination: QueryTest[] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				await collection.runTransaction(async (transaction) => {
+				await collection.runTransaction(async (transaction: Transaction) => {
 					const items = await collection.query.custom({
 						where: {},
 						orderBy: [{key: 'stringValue', order: 'asc'}],

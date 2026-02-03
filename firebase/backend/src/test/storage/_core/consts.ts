@@ -1,22 +1,26 @@
-import {BucketWrapper, ModuleBE_Firebase} from '../../../main/backend/index.js';
-import {TestSuite} from '@nu-art/testalot';
+import {BucketWrapper, ModuleBE_Firebase} from '../../../main/index.js';
+import {TestModel} from '@nu-art/testalot';
 import {BadImplementationException} from '@nu-art/ts-common';
 import '../../_entity/_core/consts.js';
 
 export const storage = ModuleBE_Firebase.createAdminSession().getStorage();
-
 
 export type FileContent = { value: any, filePath: string, stringify?: boolean };
 export type WriteResult = FileContent | BadImplementationException;
 export type ChunkInput = { rowHeader: string, value: string };
 export type WriteInChunksProps = { data: ChunkInput[][], format?: 'csv' | string };
 
+type TestSuiteLike<Input, Result> = {
+	label: string;
+	testcases: TestModel<Input, Result>[];
+	processor?: (testCase: TestModel<Input, Result>) => Promise<void>;
+};
 
-export type WriteTests = TestSuite<FileContent, WriteResult>;
-export type BucketUtils = TestSuite<string | undefined, undefined | (() => Promise<BucketWrapper>)>;
-export type DeleteFiles = TestSuite<string, number>;
-export type FileDelete = TestSuite<string, boolean>;
-export type WriteInChunks = TestSuite<WriteInChunksProps, boolean>;
+export type WriteTests = TestSuiteLike<FileContent, WriteResult>;
+export type BucketUtils = TestSuiteLike<string | undefined, undefined | (() => Promise<BucketWrapper>)>;
+export type DeleteFiles = TestSuiteLike<string, number>;
+export type FileDelete = TestSuiteLike<string, boolean>;
+export type WriteInChunks = TestSuiteLike<WriteInChunksProps, boolean>;
 
 const testObject: object = {test: 'object', more: {someMore: 'pah'}};
 
