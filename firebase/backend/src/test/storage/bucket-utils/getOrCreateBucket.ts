@@ -27,7 +27,8 @@ export const TestSuite_GetOrCreateBucket: BucketUtils = {
 	testcases: getOrCreateTests,
 	processor: async (testCase: BucketUtils['testcases'][number]) => {
 		let result;
-		const expected = await testCase.result?.();
+		const getExpected = testCase && 'result' in testCase ? (testCase.result as (() => Promise<{ bucketName: string } | undefined>) | undefined) : undefined;
+		const expected = getExpected ? await getExpected() : undefined;
 
 		try {
 			result = await storage.getOrCreateBucket(testCase.input);
