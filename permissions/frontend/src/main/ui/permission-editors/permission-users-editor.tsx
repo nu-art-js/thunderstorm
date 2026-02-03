@@ -2,12 +2,14 @@ import * as React from 'react';
 import {ModuleFE_Account} from '@nu-art/user-account-frontend/index';
 import {ModuleFE_PermissionUser} from '../../_entity.js';
 import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
-import {InferProps, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm-frontend/index';
+import {InferProps, ModuleFE_Toaster, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm-frontend/index';
 import {MultiSelect} from '../ui-props.js';
 import {Component_BasePermissionItemEditor} from './editor-base.js';
 import {EditableRef, Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/editable-item';
-import {sortArray} from '@nu-art/ts-common';
+import {sortArray, StaticLogger} from '@nu-art/ts-common';
 import {DB_PermissionUser, DBProto_PermissionUser} from '@nu-art/permissions-shared';
+import {PermissionKeyFE_AccountManagementAdmin} from '../../core/permission-keys.js';
+import {AccessLevel} from '../../modules/ModuleFE_PermissionsAssert.js';
 
 
 class Component_EditAccount
@@ -63,6 +65,26 @@ export class PermissionUsersEditor
 		itemRenderer: (user) => <>{ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'}</>,
 		EditorRenderer: Controller_EditAccount as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionUser>>>,
 		hideAddItem: true,
-		route: this.Route
+		route: this.Route,
+		contextMenuActions: [
+			{
+				label: 'Delete Account',
+				action: async (item) => {
+					if (PermissionKeyFE_AccountManagementAdmin.getAccessLevel() !== AccessLevel.HasAccess) {
+						ModuleFE_Toaster.toastError('No permissions to delete account!');
+						return true;
+					}
+
+					try {
+						const accountId = (item as unknown as DB_PermissionUser)._id;
+						await ModuleFE_Account._v1.deleteAccount({accountId}).executeSync();
+						return true;
+					} catch (err: any) {
+						StaticLogger.logError(err);
+						ModuleFE_Toaster.toastError(err.errorResponse.debugMessage.split('\n')[0]);
+					}
+				}
+			}
+		]
 	};
 }

@@ -18,7 +18,12 @@ import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm-shared/action-proces
 import {ApiDef_CollectionActions} from '@nu-art/thunderstorm-shared/collection-actions/api-def';
 import {DefaultDef_Domain, DefaultDef_Package} from './types.js';
 import {ApiDef_Account, DBDef_Accounts} from '@nu-art/user-account-shared';
-import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '@nu-art/permissions-shared/permission-keys';
+import {
+	PermissionKey_AccountManagementAdmin,
+	PermissionKey_DeveloperAdmin,
+	PermissionKey_DeveloperViewer,
+	PermissionKey_DeveloperWriter
+} from '@nu-art/permissions-shared/permission-keys';
 import {ApiDef_SyncEnv} from '@nu-art/thunderstorm-shared';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
@@ -45,14 +50,20 @@ const _Domain_PermissionsAssign: DefaultDef_Domain = {
 	dbNames: [DBDef_PermissionGroup.dbKey, DBDef_PermissionUser.dbKey],
 };
 
+export const PermissionKeyBE_AccountManagement = new PermissionKey_BE(PermissionKey_AccountManagementAdmin, () => defaultValueResolverV2(_Domain_AccountManagement._id, DefaultAccessLevel_Admin.name));
+
 const _Domain_AccountManagement: DefaultDef_Domain = {
 	_id: Domain_AccountManagement_ID,
 	namespace: 'Account Management',
 	dbNames: [DBDef_Accounts.dbKey],
+	permissionKeys: [
+		PermissionKeyBE_AccountManagement,
+	],
 	customApis: [
 		{path: ApiDef_Account._v1.createAccount.path, accessLevel: DefaultAccessLevel_Admin.name},
 		{path: ApiDef_Account._v1.createToken.path, accessLevel: DefaultAccessLevel_Admin.name},
 		{path: ApiDef_Account._v1.getSessions.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDef_Account._v1.deleteAccount.path, accessLevel: DefaultAccessLevel_Admin.name},
 	]
 };
 

@@ -17,14 +17,14 @@ import {
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
 import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
-import {AccountType_Service, DB_Session, DBDef_Session, DBProto_Session} from '@nu-art/user-account-shared';
+import {AccountType_Service, DB_Session, DBDef_Session, DBProto_Session, SafeDB_Account} from '@nu-art/user-account-shared';
 import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
 import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
-import {ModuleBE_AccountDB} from '../account/ModuleBE_AccountDB.js';
+import {ModuleBE_AccountDB, OnAccountDeleted} from '../account/ModuleBE_AccountDB.js';
 import Transaction = firestore.Transaction;
 
 export type BaseSessionClaims = {
@@ -58,9 +58,13 @@ type Config = DBApiConfigV3<DBProto_Session> & {
 
 export class ModuleBE_SessionDB_Class
 	extends ModuleBE_BaseDB<DBProto_Session, Config>
-	implements CollectSessionData<TypedKeyValue<'session', { deviceId: string }>> {
+	implements CollectSessionData<TypedKeyValue<'session', { deviceId: string }>>, OnAccountDeleted {
 
 	private jwtHandler!: JWT_Handler<BaseSessionClaims & RecursiveObjectOfPrimitives>;
+
+	__onAccountDeleted = async (account: SafeDB_Account, transaction: Transaction) => {
+		await this.delete.where({accountId: account._id}, transaction);
+	};
 
 	constructor() {
 		super(DBDef_Session);

@@ -20,7 +20,6 @@ import './Component_AccountEditor.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_Account} from '../_entity.js';
 
-
 type Props = {
 	isPreview?: boolean,
 	user?: DB_Account,
@@ -48,6 +47,8 @@ type State = Partial<Account_CreateAccount['request']> & {
 export class Component_AccountEditor
 	extends ComponentSync<Props, State> {
 
+	//######################### Life Cycle #########################
+
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.sessions = [];
 		state.isPreview = !!nextProps.isPreview;
@@ -73,6 +74,8 @@ export class Component_AccountEditor
 
 		return state;
 	}
+
+	//######################### Logic #########################
 
 	private addAccount = async () => {
 		return performAction(async () => {
@@ -108,6 +111,8 @@ export class Component_AccountEditor
 
 		return baseConditions && extraConditions;
 	};
+
+	//######################### Render #########################
 
 	private renderDropdown = () => {
 		if (this.state.isPreview)
@@ -257,7 +262,6 @@ export class Component_AccountEditor
 			{this.state.user.description}
 		</TS_PropRenderer.Vertical>;
 	};
-
 
 	render() {
 		return <LL_V_L className={'account-editor'}>
