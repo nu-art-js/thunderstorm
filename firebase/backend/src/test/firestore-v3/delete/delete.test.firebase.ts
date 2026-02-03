@@ -6,7 +6,7 @@ import {DB_Type} from '../_entity.js';
 
 const runTestCase = (testCase: TestCase_FirestoreV3_Delete) => () => {
 	if (!('result' in testCase))
-		throw new Error('Delete test case must have result');
+		throw new Error('Delete test must have result');
 	const expectedResult = sortArray(testCase.result as PreDB<DB_Type>[], (item: PreDB<DB_Type>) => item.stringValue);
 	return runSingleTestCase(test_FirestoreV3_Delete, {
 		...testCase,

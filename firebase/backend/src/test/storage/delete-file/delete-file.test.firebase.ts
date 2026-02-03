@@ -22,11 +22,15 @@ const runTestCase_DeleteFiles = (testCase: typeof TestCases_DeleteFiles[number])
 };
 
 describe('Firebase Storage - Delete File', () => {
-	TestCases_FileDelete.forEach(testCase => {
-		it(testCase.description || 'file delete test', runTestCase_FileDelete(testCase));
+	describe('FileDelete', () => {
+		TestCases_FileDelete.forEach(testCase => {
+			it(testCase.description || 'file delete test', runTestCase_FileDelete(testCase));
+		});
 	});
 
-	TestCases_DeleteFiles.forEach(testCase => {
-		it(testCase.description || 'delete files test', runTestCase_DeleteFiles(testCase));
+	describe('DeleteFiles', () => {
+		TestCases_DeleteFiles.forEach(testCase => {
+			it(testCase.description || 'delete files test', runTestCase_DeleteFiles(testCase));
+		});
 	});
 });

@@ -11,15 +11,15 @@ const runTestCase_Create = (testCase: TestModel<CreateTestInput, TestInputValue>
 const runTestCase_CreateAll = (testCase: TestModel<CreateTestInput, TestInputValue>) => () => runSingleTestCase(test_FirestoreV3_CreateAll, testCase);
 
 describe('Firestore v3 - Create', () => {
-	it('1 item', runTestCase_Create(createTestCases[0]));
+	it(createTestCases[0].description!, runTestCase_Create(createTestCases[0]));
 
-	it('2 items', runTestCase_Create(createTestCases[1]));
+	it(createTestCases[1].description!, runTestCase_Create(createTestCases[1]));
 
-	it('5 items', runTestCase_Create(createTestCases[2]));
+	it(createTestCases[2].description!, runTestCase_Create(createTestCases[2]));
 
-	it(`${createTestCases[3].description}`, runTestCase_Create(createTestCases[3]));
+	it(createTestCases[3].description!, runTestCase_Create(createTestCases[3]));
 
-	it('2 identical items', runTestCase_Create(createTestCases[4]));
+	it(createTestCases[4].description!, runTestCase_Create(createTestCases[4]));
 
 	it('object exists', runTestCase_Create({
 		description: 'object exists',
@@ -62,15 +62,15 @@ describe('Firestore v3 - Create', () => {
 });
 
 describe('Firestore v3 - CreateAll', () => {
-	it('1 item', runTestCase_CreateAll(createTestCases[0]));
+	it(createTestCases[0].description!, runTestCase_CreateAll(createTestCases[0]));
 
-	it('2 items', runTestCase_CreateAll(createTestCases[1]));
+	it(createTestCases[1].description!, runTestCase_CreateAll(createTestCases[1]));
 
-	it('5 items', runTestCase_CreateAll(createTestCases[2]));
+	it(createTestCases[2].description!, runTestCase_CreateAll(createTestCases[2]));
 
-	it(`${createTestCases[3].description}`, runTestCase_CreateAll(createTestCases[3]));
+	it(createTestCases[3].description!, runTestCase_CreateAll(createTestCases[3]));
 
-	it('2 identical items', runTestCase_CreateAll(createTestCases[4]));
+	it(createTestCases[4].description!, runTestCase_CreateAll(createTestCases[4]));
 
 	it('create.all with one object that already exists', runTestCase_CreateAll({
 		description: 'create.all with one object that already exists',

@@ -27,7 +27,7 @@ const dbDef: DBDef_V3<DBProto_Type> = {
 
 const runTestCase = (testCase: TestCase_FirestoreV3_Set) => async () => {
 	if (!('result' in testCase))
-		throw new Error('Set test case must have result');
+		throw new Error('Set test must have result');
 	await runSingleTestCase(test_FirestoreV3_Set, {
 		...testCase,
 		result: async (_actual) => {
