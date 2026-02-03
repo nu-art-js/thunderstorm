@@ -118,7 +118,7 @@ describe('Firestore v3 - CreateAll', () => {
 			value: [],
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
-				await collection.runTransaction(async (transaction: Transaction) => await expect(collection.create.all([toCreate], transaction)).to.be.fulfilled);
+				await collection.runTransaction(async (transaction) => await expect(collection.create.all([toCreate], transaction)).to.be.fulfilled);
 			}
 		}
 	}));
