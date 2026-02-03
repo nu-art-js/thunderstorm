@@ -10,7 +10,7 @@ type Input = {
 }
 
 type MultiWriteTestCase = { description?: string; input: Input; result: {} };
-type MultiWriteTestSuite = { label: string; testcases: MultiWriteTestCase[]; processor?: (testCase: MultiWriteTestCase) => Promise<void> };
+type MultiWriteTestConfig = { label: string; testcases: MultiWriteTestCase[]; processor?: (testCase: MultiWriteTestCase) => Promise<void> };
 
 const dbDef: DBDef_V3<DBProto_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
@@ -40,7 +40,7 @@ const testcases_MultiWrite: MultiWriteTestCase[] = [
 	}
 ];
 
-const processor_MultiWrite: MultiWriteTestSuite['processor'] = async (testCase: MultiWriteTestCase) => {
+const processor_MultiWrite: MultiWriteTestConfig['processor'] = async (testCase: MultiWriteTestCase) => {
 	const collection = firestore.getCollection<DBProto_Type>(dbDef);
 	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
@@ -59,7 +59,7 @@ export const test_FirestoreV3_Transaction_MultiWrite = async (input: Input): Pro
 	return {};
 };
 
-export const TestSuite_FirestoreV3_Transaction_MultiWrite: MultiWriteTestSuite = {
+export const TestConfig_FirestoreV3_Transaction_MultiWrite: MultiWriteTestConfig = {
 	label: 'Firestore multi-write transaction tests',
 	testcases: testcases_MultiWrite,
 	processor: processor_MultiWrite

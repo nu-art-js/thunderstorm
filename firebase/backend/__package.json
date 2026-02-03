@@ -30,9 +30,10 @@
   "scripts": {
     "build": "tsc",
     "run-tests": "firebase emulators:exec \"npm run test\"",
-    "test": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files '**/*.ts' src/test/firestore-v2/__test.ts",
+    "test": "ts-mocha -p src/test/tsconfig.json --timeout 0 'src/test/**/*.test.firebase.ts'",
+    "test:watch": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files '**/*.ts' 'src/test/**/*.test.firebase.ts'",
     "rtv2": "firebase emulators:exec \"npm run test-v2\"",
-    "test-v2": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files '**/*.ts' src/test/firestore-v2/__test.ts"
+    "test-v2": "ts-mocha -p src/test/tsconfig.json --timeout 0 'src/test/**/*.test.firebase.ts'"
   },
   "dependencies": {
     "@nu-art/firebase-shared": "?",

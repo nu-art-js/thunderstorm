@@ -23,7 +23,7 @@ const getExpectedBucket = (tc: unknown): (() => Promise<{ bucketName: string } |
 
 const runTestCase_GetAdminBucket = (testCase: TestCase_GetAdminBucket) => () => {
 	if (!('result' in testCase))
-		throw new Error('GetAdminBucket test case must have result');
+		throw new Error('GetAdminBucket test must have result');
 	const getExpected = getExpectedBucket(testCase) ?? (async () => ({ bucketName: '' }));
 	return runSingleTestCase(test_GetAdminBucket, {
 		...testCase,
@@ -38,7 +38,7 @@ const runTestCase_GetAdminBucket = (testCase: TestCase_GetAdminBucket) => () => 
 
 const runTestCase_GetOrCreateBucket = (testCase: TestCase_GetOrCreateBucket) => () => {
 	if (!('result' in testCase))
-		throw new Error('GetOrCreateBucket test case must have result');
+		throw new Error('GetOrCreateBucket test must have result');
 	const getExpected = getExpectedBucket(testCase) ?? (() => Promise.resolve(undefined));
 	return runSingleTestCase(test_GetOrCreateBucket, {
 		...testCase,
@@ -52,13 +52,17 @@ const runTestCase_GetOrCreateBucket = (testCase: TestCase_GetOrCreateBucket) => 
 const skipBucketUtilsWithoutStorageEmulator = new Set(['get main bucket', 'get specific bucket']);
 
 describe('Firebase Storage - Bucket Utils', () => {
-	TestCases_GetAdminBucket.forEach((testCase: TestCase_GetAdminBucket) => {
-		const desc = descriptionOf_GetAdminBucket(testCase);
-		(skipBucketUtilsWithoutStorageEmulator.has(desc) ? it.skip : it)(desc, runTestCase_GetAdminBucket(testCase));
+	describe('GetAdminBucket', () => {
+		TestCases_GetAdminBucket.forEach((testCase: TestCase_GetAdminBucket) => {
+			const desc = descriptionOf_GetAdminBucket(testCase);
+			(skipBucketUtilsWithoutStorageEmulator.has(desc) ? it.skip : it)(desc, runTestCase_GetAdminBucket(testCase));
+		});
 	});
 
-	TestCases_GetOrCreateBucket.forEach((testCase: TestCase_GetOrCreateBucket) => {
-		const desc = descriptionOf_GetOrCreateBucket(testCase);
-		(skipBucketUtilsWithoutStorageEmulator.has(desc) ? it.skip : it)(desc, runTestCase_GetOrCreateBucket(testCase));
+	describe('GetOrCreateBucket', () => {
+		TestCases_GetOrCreateBucket.forEach((testCase: TestCase_GetOrCreateBucket) => {
+			const desc = descriptionOf_GetOrCreateBucket(testCase);
+			(skipBucketUtilsWithoutStorageEmulator.has(desc) ? it.skip : it)(desc, runTestCase_GetOrCreateBucket(testCase));
+		});
 	});
 });

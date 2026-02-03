@@ -26,19 +26,27 @@ const runTestCase_QueryAll = (testCase: TestCase_QueryAll) => () => runSingleTes
 const runTestCase_QueryComplex1 = (testCase: TestCase_QueryComplex1) => () => runSingleTestCase(test_FirestoreV3_QueryComplex1, testCase as any);
 
 describe('Firestore v3 - Query', () => {
-	TestCases_FirestoreV3_QueryUnique.forEach((testCase: TestCase_QueryUnique) => {
-		it(descriptionOf(testCase, 'query unique test'), runTestCase_QueryUnique(testCase));
+	describe('QueryUnique', () => {
+		TestCases_FirestoreV3_QueryUnique.forEach((testCase: TestCase_QueryUnique) => {
+			it(descriptionOf(testCase, 'query unique test'), runTestCase_QueryUnique(testCase));
+		});
 	});
 
-	TestCases_FirestoreV3_QueryWithPagination.forEach((testCase: TestCase_QueryWithPagination) => {
-		it(descriptionOf(testCase, 'query pagination test'), runTestCase_QueryWithPagination(testCase));
+	describe('QueryWithPagination', () => {
+		TestCases_FirestoreV3_QueryWithPagination.forEach((testCase: TestCase_QueryWithPagination) => {
+			it(descriptionOf(testCase, 'query pagination test'), runTestCase_QueryWithPagination(testCase));
+		});
 	});
 
-	TestCases_FirestoreV3_QueryAll.forEach((testCase: TestCase_QueryAll) => {
-		it(descriptionOf(testCase, 'query all test'), runTestCase_QueryAll(testCase));
+	describe('QueryAll', () => {
+		TestCases_FirestoreV3_QueryAll.forEach((testCase: TestCase_QueryAll) => {
+			it(descriptionOf(testCase, 'query all test'), runTestCase_QueryAll(testCase));
+		});
 	});
 
-	TestCases_FirestoreV3_QueryComplex1.forEach((testCase: TestCase_QueryComplex1) => {
-		it(descriptionOf(testCase, 'query complex test'), runTestCase_QueryComplex1(testCase));
+	describe('QueryComplex1', () => {
+		TestCases_FirestoreV3_QueryComplex1.forEach((testCase: TestCase_QueryComplex1) => {
+			it(descriptionOf(testCase, 'query complex test'), runTestCase_QueryComplex1(testCase));
+		});
 	});
 });
