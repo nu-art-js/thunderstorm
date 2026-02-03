@@ -15,8 +15,8 @@ type GetResponse = {url: string; args: Record<string, string>; headers: Record<s
 type PostResponse = {url: string; json?: Record<string, unknown>; data?: string};
 type GetApi = QueryApi<GetResponse, {id?: string}>;
 type PostApi = BodyApi<PostResponse, {name?: string}>;
-type PutApi = BodyApi<PostResponse, Record<string, unknown>, Record<string, unknown>, ResponseError, typeof HttpMethod.PUT>;
-type PatchApi = BodyApi<PostResponse, Record<string, unknown>, Record<string, unknown>, ResponseError, typeof HttpMethod.PATCH>;
+type PutApi = BodyApi<PostResponse, Record<string, unknown>, ResponseError, typeof HttpMethod.PUT>;
+type PatchApi = BodyApi<PostResponse, Record<string, unknown>, ResponseError, typeof HttpMethod.PATCH>;
 
 describe('ApiCaller decorator - method inference', () => {
 	const client = new TestHttpClient();
