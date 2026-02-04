@@ -1,4 +1,4 @@
-import {arrayIncludesAll, BadImplementationException, Debounce, Logger, removeItemFromArray} from '@nu-art/ts-common';
+import {arrayIncludesAll, BadImplementationException, Debounce, exists, Logger, removeItemFromArray} from '@nu-art/ts-common';
 import {SearchAddOn, SearchAddOnDef, SearchResult} from './SearchAddOn.js';
 import {SearchItem} from './SearchItem.js';
 import {SearchSorter} from './SearchSorter.js';
@@ -135,7 +135,10 @@ export class SearchContext
 
 		//Cycle filter the results by active add-ons
 		this.activeAddOns.forEach(addOn => {
-			const filterValue = this.filterDictionary[addOn.key];
+			let filterValue = this.filterDictionary[addOn.key];
+			if(exists(addOn.valueTransform))
+				filterValue = addOn.valueTransform(filterValue);
+
 			searchResults = searchResults.filter(result => {
 				const searchItem = searchItemMap[result.dbKey];
 				result.filterResults[addOn.key] = {value: searchItem.addOnMethods[addOn.methodName](result)};
