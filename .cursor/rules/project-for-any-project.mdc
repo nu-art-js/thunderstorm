@@ -1,0 +1,26 @@
+---
+description: Non-negotiable principles and final rules — always obey
+alwaysApply: true
+---
+
+## API and DB conventions (refer to infra packages)
+
+- **TypeScript client API or server API:** Follow the conventions and rules in the **http packages** — see `_thunderstorm/http/` (api-types, client, server). Use their patterns for `ApiDef`, decorators, and request/response typing.
+- **DB storable entity:** Follow the conventions and rules in the **db-api package** — see `_thunderstorm/db-api/` (shared, backend, frontend). Use their patterns for CRUD, collections, and persistence.
+
+## BAI (Build and Install)
+- always read this: _thunderstorm/build-and-install/.cursor/rules/what-is-bai.mdc
+- BAI is the only way to do anything in this repo unless explicitly specified never use pnpm..
+- BAI is a CLI tool; it is **not** run via pnpm. Invoke it independently. See **build-and-install rules** for how to run it: [_thunderstorm/build-and-install/.cursor/rules/how-to-use-bai.mdc](_thunderstorm/build-and-install/.cursor/rules/how-to-use-bai.mdc).
+- To build `bai -up=<packages-regexp>` (use -up to build specific packaes, otherwise it builds the entire monorepo)
+- To run tests `bai -t -tt=<pure|firebase|playwright> -up=<packages-regexp>` (use -up to tests specific packages, otherwise it tests the entire monorepo pakcages)
+- To clean install and setup the mono `bai init` (only in extreme case)
+- if adding a new package, for fast usability checkout project-structure.mds
+
+---
+
+## Final rule (veto)
+
+**It violates the lighthouse** — do not do it - and prompt the user for confirmation
+
+---

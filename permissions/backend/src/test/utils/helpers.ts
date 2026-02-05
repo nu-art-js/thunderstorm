@@ -4,6 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
+import {MemStorage} from '@nu-art/ts-common/mem-storage';
 import {ModuleBE_APIs, ModuleBE_SyncManager} from '@nu-art/thunderstorm-backend';
 import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import type {StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
@@ -23,8 +24,10 @@ export const DefaultStormTestConfig_Permissions: StormTestInput = {
 		ModuleBE_AccountDB: { canRegister: true }
 	},
 	before: async () => {
-		MemKey_AccountId.set(Test_DefaultAccountId);
-		await permissionTestCleanup();
+		await new MemStorage().init(async () => {
+			MemKey_AccountId.set(Test_DefaultAccountId);
+			await permissionTestCleanup();
+		});
 	},
 	after: async () => {
 		await permissionTestCleanup();
