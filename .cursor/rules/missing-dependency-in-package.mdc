@@ -1,0 +1,37 @@
+---
+alwaysApply: true
+---
+
+# Missing Dependency in Package
+
+To save time for a missing dependency, follow these steps:
+
+## Standard Process (Package-Level Dependency)
+
+1. Add it to the respective `__package.json` of that package as a dependency with the value `"?"`
+2. Add the latest version of that package (unless already exists) to the `bai-config.json` file in `templateParams.packageJson`
+3. Add the package to the **package.json** of that package with the same version that is in the bai-config file
+4. From the project root run `pnpm i --no-frozen-lockfile`
+
+This should setup the installation without needing to re-run bai on the entire mono repo.
+
+## Root-Level Dependencies (Build Tools & Test Runners)
+
+**Important**: Some dependencies need to be available at the root level because they are used by the build system or test runners. Examples:
+- `@playwright/test` - Used by BAI test runner (resolved from root `node_modules/.bin/playwright`)
+- Other build tools that BAI executes directly
+
+### Process for Root-Level Dependencies:
+
+1. Add it to the package's `__package.json` as a dependency with value `"?"` (if the package needs it)
+2. Add the latest version to `bai-config.json` in `templateParams.packageJson` (unless already exists)
+3. Add the package to the package's **package.json** with the same version from bai-config
+4. **Also add it to the root `__package.json`** as a devDependency with value `"?"`
+5. **Also add it to the root `package.json`** as a devDependency with the same version from bai-config
+6. From the project root run `pnpm i --no-frozen-lockfile`
+
+### How to Identify Root-Level Dependencies:
+
+- Check if BAI or other build tools reference the dependency from root `node_modules/.bin/`
+- Look for `resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/...')` patterns in build system code
+- Test runners and build tools typically need root-level installation
