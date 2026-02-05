@@ -5,7 +5,7 @@
  */
 
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemStorage} from '@nu-art/ts-common/mem-storage';
 import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../main/index.js';
 import type {FunctionPermissionDef} from '../main/core/function-permission-registry.js';
 import type {TypedMap} from '@nu-art/ts-common';

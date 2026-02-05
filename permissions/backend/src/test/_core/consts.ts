@@ -1,8 +1,5 @@
+import type {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject} from '@nu-art/permissions-shared';
 import {
-	DB_PermissionAccessLevel,
-	DB_PermissionDomain,
-	DB_PermissionGroup,
-	DB_PermissionProject,
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB,
 	ModuleBE_PermissionDomainDB,
@@ -12,8 +9,8 @@ import {
 } from '../../main/index.js';
 import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account-backend';
+import type {UI_Account} from '@nu-art/user-account-shared';
 import {Test_Project, Test_Setup} from './types.js';
-import {UI_Account} from '@nu-art/user-account-backend';
 
 export const permissionTestCleanup = async () => {
 	await ModuleBE_AccountDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
@@ -54,10 +51,12 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 			});
 
 			// Create AccessLevels
-			const levelsToUpsert = domain.levels.map(levelName => ({
-				...levelName,
+			const levelsToUpsert = domain.levels.map((level: { name: string; value: number }) => ({
+				name: level.name,
+				value: level.value,
 				domainId: dbDomain._id,
-				_auditorId: MemKey_AccountId.get()
+				_auditorId: MemKey_AccountId.get(),
+				uiLabel: level.name
 			}));
 			const dbAccessLevels = await ModuleBE_PermissionAccessLevelDB.create.all(levelsToUpsert);
 
@@ -66,8 +65,9 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 
 			// Create Groups
 			await ModuleBE_PermissionGroupDB.create.all(Groups_ToCreate.map(preGroup => ({
-				label: preGroup.label,
-				accessLevelIds: preGroup.accessLevelIds!.map(levelName => accessLevelNameToObjectMap[levelName]._id)
+				label: preGroup.label!,
+				uiLabel: preGroup.label!,
+				accessLevelIds: (preGroup.accessLevelIds as string[]).map((levelName: string) => accessLevelNameToObjectMap[levelName]._id)
 			})) as PreDB<DB_PermissionGroup>[]);
 
 
