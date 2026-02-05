@@ -1,10 +1,15 @@
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject} from '../../main/index.js';
-import {ModuleBE_PermissionProject} from '../main/modules/management/ModuleBE_PermissionProject.js';
-import {ModuleBE_PermissionDomain} from '../main/modules/management/ModuleBE_PermissionDomain.js';
-import {ModuleBE_PermissionApi} from '../main/modules/management/ModuleBE_PermissionApi.js';
-import {ModuleBE_PermissionAccessLevel} from '../main/modules/management/ModuleBE_PermissionAccessLevel.js';
-import {ModuleBE_PermissionGroup} from '../main/modules/assignment/ModuleBE_PermissionGroup.js';
-import {ModuleBE_PermissionUserDB} from '../main/modules/assignment/ModuleBE_PermissionUserDB.js';
+import {
+	DB_PermissionAccessLevel,
+	DB_PermissionDomain,
+	DB_PermissionGroup,
+	DB_PermissionProject,
+	ModuleBE_PermissionAccessLevelDB,
+	ModuleBE_PermissionAPIDB,
+	ModuleBE_PermissionDomainDB,
+	ModuleBE_PermissionGroupDB,
+	ModuleBE_PermissionProjectDB,
+	ModuleBE_PermissionUserDB
+} from '../../main/index.js';
 import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account-backend';
 import {Test_Project, Test_Setup} from './types.js';
@@ -12,11 +17,11 @@ import {UI_Account} from '@nu-art/user-account-backend';
 
 export const permissionTestCleanup = async () => {
 	await ModuleBE_AccountDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-	await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-	await ModuleBE_PermissionDomain.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-	await ModuleBE_PermissionApi.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-	await ModuleBE_PermissionAccessLevel.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-	await ModuleBE_PermissionGroup.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionProjectDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionDomainDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionAPIDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionAccessLevelDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionGroupDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionUserDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 };
 
@@ -29,7 +34,7 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 	const accessLevelsByDomainNameMap: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
 
 	// Create All Projects
-	const nameToProjectMap: TypedMap<DB_PermissionProject> = reduceToMap(await Promise.all(projects.map(project => ModuleBE_PermissionProject.create.item({
+	const nameToProjectMap: TypedMap<DB_PermissionProject> = reduceToMap(await Promise.all(projects.map(project => ModuleBE_PermissionProjectDB.create.item({
 		name: project.name,
 		_auditorId: MemKey_AccountId.get()
 	}))), project => project.name, project => project);
@@ -42,7 +47,7 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 				throw new BadImplementationException(`Same domain ${domain.namespace} was defined twice`);
 
 			// Create Domain
-			const dbDomain = await ModuleBE_PermissionDomain.create.item({
+			const dbDomain = await ModuleBE_PermissionDomainDB.create.item({
 				namespace: domain.namespace,
 				projectId: dbProject._id,
 				_auditorId: MemKey_AccountId.get()
@@ -54,13 +59,13 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 				domainId: dbDomain._id,
 				_auditorId: MemKey_AccountId.get()
 			}));
-			const dbAccessLevels = await ModuleBE_PermissionAccessLevel.create.all(levelsToUpsert);
+			const dbAccessLevels = await ModuleBE_PermissionAccessLevelDB.create.all(levelsToUpsert);
 
 			// Create AccessLevel ID to DbObject map
 			const accessLevelNameToObjectMap = reduceToMap(dbAccessLevels, accessLevel => accessLevel.name, accessLevel => accessLevel);
 
 			// Create Groups
-			await ModuleBE_PermissionGroup.create.all(Groups_ToCreate.map(preGroup => ({
+			await ModuleBE_PermissionGroupDB.create.all(Groups_ToCreate.map(preGroup => ({
 				label: preGroup.label,
 				accessLevelIds: preGroup.accessLevelIds!.map(levelName => accessLevelNameToObjectMap[levelName]._id)
 			})) as PreDB<DB_PermissionGroup>[]);
@@ -75,7 +80,7 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 					accessLevelIds: api.accessLevels.map(accessLevel => accessLevelsByDomainNameMap[accessLevel.domainName][accessLevel.levelName]._id),
 					_auditorId: MemKey_AccountId.get()
 				};
-				await ModuleBE_PermissionApi.create.item(toCreate);
+				await ModuleBE_PermissionAPIDB.create.item(toCreate);
 			}));
 		}));
 	}));
