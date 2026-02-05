@@ -1,0 +1,37 @@
+---
+description: How to use @nu-art/db-api-shared: CrudTypes, CrudApiDef, query types, DB types, shared FE/BE contract
+alwaysApply: false
+---
+
+# How to use @nu-art/db-api-shared
+
+Use this package for types and API definitions shared between db-api frontend and backend so both sides stay in sync. No runtime server or client—only types, query shapes, and CRUD API definitions.
+
+## Dependencies
+
+Add `@nu-art/db-api-shared`; it depends on `@nu-art/ts-common`, `@nu-art/http-client` (for ApiDef/BodyApi/QueryApi in CrudApiTypes), and `@nu-art/firebase-shared` (e.g. EntityDependencyError). Consuming packages typically also use `@nu-art/http-client` or `@nu-art/api-types` where API types are used.
+
+## Core usage
+
+### CrudTypes (entity contract)
+
+- `CrudTypes<DBKey, DBItem, UIItem, Validator, UniqueKeys>`: defines the entity contract—dbKey, dbItem (full DB object), uiItem (UI/modifiable shape), validator, uniqueKeys. Use the same CrudTypes on both FE and BE.
+
+### CrudApiDef and CrudApiTypes
+
+- `CrudApiDef(dbKey, version?)` returns `CrudApiDef_Type<Types>`: API definitions for query, queryUnique, upsert, upsertAll, deleteUnique, deleteQuery, deleteAll (paths like `{version}/{dbKey}/query`, etc.). Use with @nu-art/http-server on BE and @nu-art/http-client on FE.
+- `CrudApiTypes<Types>`: typed API shapes (BodyApi/QueryApi) for each CRUD operation. Backend and frontend use these for handler and caller types.
+
+### Query types
+
+- `CrudQuery<T>`, `CrudClause_Where<T>`, `CrudClause_OrderBy<T>`, `CrudClause_Select<T>`, `CrudQueryComparator`, `CrudWhereValue`: db-agnostic query shape (structurally compatible with Firestore wire format).
+- `CrudEmptyQuery`: constant empty query for “delete all” style operations.
+
+### DB and prototype types
+
+- `DB_Object`, `DB_BaseObject`, `DB_Key`, `DBPointer` from `types/db-object.js`.
+- `Database<Proto>`, `DatabasePrototype<P>`, `Proto_DB_Object`, `OmitDBObject`, `DBIndex`, `VersionsDeclaration`, `TypeOfTypeAsString`, etc.: for defining entity metadata and versioning; used by apps that define DBProtos. Backend base (ModuleBE_BaseDB) uses only the minimal `BaseDBDefBE` shape from db-api-backend, not Proto.
+
+## Convention
+
+- Define CrudTypes and use CrudApiDef with the same dbKey and version on both frontend and backend. Shared is the single place for CRUD API shapes and query types so FE/BE stay aligned.

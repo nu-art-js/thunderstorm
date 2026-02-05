@@ -1,0 +1,40 @@
+---
+description: How to use @nu-art/db-api-frontend: ModuleFE_BaseDB, ModuleFE_BaseApi, CRUD client, cache, IDB, events
+alwaysApply: false
+---
+
+# How to use @nu-art/db-api-frontend
+
+Use this package for type-safe CRUD client modules on the frontend: in-memory cache, IndexedDB persistence, and HTTP calls to the db-api backend via @nu-art/http-client. Same CrudTypes and CrudApiDef as the backend for a shared contract.
+
+## Dependencies
+
+Add `@nu-art/db-api-frontend`, `@nu-art/db-api-shared`, and `@nu-art/http-client`. The package also uses `@nu-art/idb-frontend` and `@nu-art/ts-common`. Optional: `@nu-art/firebase-frontend`, React, etc. per app needs.
+
+## Core usage
+
+### ModuleFE_BaseDB (cache + IDB layer)
+
+- Extend `ModuleFE_BaseDB<Types>` where `Types` is `CrudTypes` from shared.
+- Constructor: `(config: BaseDBConfig<Types>, syncType?: ModuleSyncType, dispatcher?: EventDispatcher)`. `BaseDBConfig` includes `dbKey`, `validator`, `uniqueKeys`, `versions`, `dbConfig` (name, uniqueKeys, group, indices for IDB).
+- Provides: `cache` (MemCache), `IDB` (IDB_Store), `config`, `validator`, `syncType`, `dispatcher`. Call `init()` before use; then `loadCache()`, `registerVersionUpgradeProcessor(version, processor)`, `upgradeInstances`, `clearData`, etc.
+- Override/call: `onEntriesUpdated`, `onEntryUpdated`, `onEntriesDeleted`, `onEntryDeleted`, `onQueryReturned`, `onGotUnique`, `validateImpl`/`onValidationError` as needed. Events are dispatched via `EventDispatcher` (SingleApiEvent, MultiApiEvent).
+
+### ModuleFE_BaseApi (HTTP CRUD layer)
+
+- Extend `ModuleFE_BaseApi<Types>`. Constructor: `{ config: BaseDBConfig<Types>, crudApiDef: CrudApiDef_Type<Types>, dispatcher?, httpClient? }`. Pass the same `CrudApiDef` (e.g. `CrudApiDef(dbKey, 'v1')`) as the backend.
+- CRUD methods are implemented in the base with `@ApiCaller` (from @nu-art/http-client): `query`, `queryUnique`, `upsert`, `upsertAll`, `delete`, `deleteQuery`, `deleteAll`. Each uses `crudApiDef` and optional `httpClient` (default `HttpClient.default`).
+- Override `cleanUp(toUpsert)` to prepare data before upsert. Handlers like `handleUpsertComplete`, `handleQueryComplete` update cache/IDB and dispatch events; override if you need custom behavior.
+- Serialization: `runSerializedById(id, requestType, fn)` runs one upsert/patch/delete at a time per document id to avoid races.
+
+### Types
+
+- `BaseDBConfig<Types>` from frontend types; `CrudTypes`, `CrudApiDef_Type`, `CrudApiTypes` from `@nu-art/db-api-shared`. Use the same Types and CrudApiDef as the backend.
+
+### Events and dispatcher
+
+- Use `EventDispatcher` (or `NoOpDispatcher`) for UI/module updates. Event types in `to-refactor/consts.js` (EventType_Create, EventType_Update, EventType_Query, etc.). Set via `setDispatcher` or in constructor.
+
+## Reference
+
+See `ModuleFE_BaseApi.ts` and `ModuleFE_BaseDB.ts` in this package; ensure backend is using matching `CrudApiDef(dbKey, version)` and `CrudTypes`.

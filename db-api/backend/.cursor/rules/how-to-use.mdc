@@ -1,0 +1,42 @@
+---
+description: How to use @nu-art/db-api-backend: ModuleBE_BaseDB, ModuleBE_BaseApi, CRUD over Firestore, HTTP routes
+alwaysApply: false
+---
+
+# How to use @nu-art/db-api-backend
+
+Use this package to expose type-safe CRUD APIs over Firestore collections in Thunderstorm. Backend modules extend BaseDB (collection + Firestore) and BaseApi (HTTP routes via @nu-art/http-server).
+
+## Dependencies
+
+Add `@nu-art/db-api-backend`, `@nu-art/db-api-shared`, `@nu-art/http-server`, `@nu-art/api-types`, and `@nu-art/firebase-backend` in the consuming package's `__package.json` (and bai-config/package.json per workspace rules).
+
+## Core usage
+
+### ModuleBE_BaseDB (collection layer)
+
+- Extend `ModuleBE_BaseDB<Types>` where `Types` is `CrudTypes<DBKey, DBItem, UIItem, Validator, UniqueKeys>` from shared.
+- Constructor receives `dbDef: BaseDBDefBE` (minimal shape: `dbKey`, `entityName`, `versions`, optional `uniqueKeys`, `dependencies`, `TTL`, `lockKeys`, etc.) and optional `appConfig?: BaseDBApiConfig`.
+- Override hooks: `preWriteProcessing`, `postWriteProcessing`, `canDeleteItems`, `upgradeInstances`, `manipulateQuery`, `collectDependencies` as needed.
+- The module resolves a Firestore collection via `getModuleBEConfig(dbDef)` and Firebase admin; in `init()` it sets `this.query`, `this.set`, `this.delete`, `this.doc`, `this.runTransaction` from the collection.
+- Use `this.dbDef` for entity metadata; use `this.query.where`, `this.set.item`, `this.delete.unique`, etc. for CRUD.
+
+### ModuleBE_BaseApi (HTTP API layer)
+
+- Extend `ModuleBE_BaseApi_Class<Types>` with constructor params: `{ dbModule: ModuleBE_BaseDB<Types>, crudApiDef: CrudApiDef_Type<Types>, httpServer?: ResolvableContent<HttpServer> }`.
+- Or use the factory: `createApisForDBModule(dbModule, version?)` which instantiates `ModuleBE_BaseApi_Class` with `CrudApiDef(dbModule.dbDef.dbKey, version)`.
+- The base class registers HTTP routes via `@ApiHandler` from @nu-art/http-server for: query, queryUnique, upsert, upsertAll, deleteUnique, deleteQuery, deleteAll. Each handler delegates to the dbModule (query, set, delete).
+- Pass the same `CrudTypes` and `CrudApiDef` shape as the frontend so FE/BE stay in sync (shared uses `CrudApiDef(dbKey, version)` and `CrudApiTypes<Types>`).
+
+### Types and API defs
+
+- `CrudTypes`, `CrudApiTypes`, `CrudApiDef_Type`, `CrudApiDef`, `CrudQuery`, `CrudEmptyQuery` come from `@nu-art/db-api-shared`.
+- Backend-specific: `BaseDBDefBE`, `BaseDBDefBE_Dependency`, `DBApiBEConfigShape`, `PostWriteProcessingDataShape` from backend-types; storm-stubs for sync/config (`getModuleBEConfig`, `ModuleBE_SyncManager`, `dispatch_CollectEntityDependencies`, etc.).
+
+### Errors
+
+- Throw `ApiException` (from @nu-art/ts-common) for HTTP errors (e.g. 404, 400); the http-server layer turns them into JSON responses.
+
+## Reference
+
+See `ModuleBE_BaseApi.ts` and `ModuleBE_BaseDB.ts` in this package for the full pattern; db-api-backend tests show a minimal DB module and API module wiring.

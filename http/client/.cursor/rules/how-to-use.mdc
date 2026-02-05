@@ -1,0 +1,38 @@
+---
+description: How to use @nu-art/http-client: HttpClient, HttpRequest, ApiCaller, types
+alwaysApply: false
+---
+
+# How to use @nu-art/http-client
+
+Use this package for type-safe HTTP client for calling backend APIs (e.g. from frontend or another backend).
+
+## Dependency
+
+Add `@nu-art/http-client` and `@nu-art/api-types` in the consuming package's `__package.json` (and bai-config/package.json per workspace rules).
+
+## Core usage
+
+### HttpClient
+
+Create `new HttpClient()`, `setDefaultConfig({ origin, timeout, ... })`, then `init()`. Use `createRequest(apiDef)` to get a typed `HttpRequest`. Alternatively use the shared `HttpClient.default` (used by ApiCaller when no client is passed).
+
+### HttpRequest (fluent)
+
+For GET/DELETE use `setUrlParams(params)`; for POST/PUT/PATCH use `setBodyAsJson(body)`. Then `execute()` for typed response. Supports `addHeader`, `setTimeout`, `setOnError`, `setOnCompleted`, `abort()`.
+
+### ApiCaller decorator (preferred for module methods)
+
+`@ApiCaller(apiDef, options)`. `apiDef` is `ApiDef<API>` or `ResolvableContent<ApiDef<API>, [Module]>`. Options: `httpClient` (default `HttpClient.default`), `onComplete(module, ctx)`. The decorated method receives `(payload, userCallback?)`; the decorator performs the HTTP call and returns the typed result. GET/DELETE → params; POST/PUT/PATCH → body.
+
+### Types
+
+Define APIs with `BodyApi<R, B, IB>`, `QueryApi<R, P, IP>`, `TypedApi`, etc. from `@nu-art/api-types` (or re-exported from client). Use `ApiDef<API>` for `createRequest` / decorators.
+
+### Errors
+
+Catch `HttpException`; it exposes `responseCode`, `errorResponse`, `request`.
+
+## Full API
+
+See package [README](README.md) for HttpClient/HttpRequest methods, callbacks, logging, and cancellation.
