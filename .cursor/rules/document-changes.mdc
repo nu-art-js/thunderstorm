@@ -1,0 +1,45 @@
+---
+description: After making changes, log them in the change history so the next agent can follow up
+alwaysApply: true
+---
+
+# Document Changes in Change History
+
+After **significant** changes (code, docs, or config), add **one new file** per entry. One logical change = one entry. Minor typo-only tweaks can be omitted or folded into one entry.
+
+**When to log:** New or changed code, docs, concepts, or project policy; refactors, fixes, or features the next agent should know about.
+
+**Where to log:** Log in the **repository you changed**. Changes only in the **main repo** → add the entry in the main repo’s `_docs/_handoff/change-history/`. Changes only in a **submodule** (e.g. _thunderstorm, dev-tools) → add the entry in that submodule’s change-history (e.g. that repo’s `_docs/_handoff/change-history/` if it uses the same convention). If you changed both in one session, add one entry in each repo you touched.
+
+---
+
+## Where and format
+
+- **Path (main repo):** _docs/_handoff/change-history/ — use the **current** repo’s path when working in a submodule.
+- **Filename:** `YYYY-MM-DD_HH:MM-summary-slug.md` (underscore before time; sortable).
+- **Content:** Date/time (YYYY-MM-DD HH:MM), one-line summary, packages touched, concepts/docs updated. Use “—” when none.
+
+**Template (copy into new file):**
+
+```markdown
+# YYYY-MM-DD HH:MM — Summary in one line
+- **Packages touched:** (e.g. core/shared, app/backend, _docs) or —
+- **Concepts / docs:** (e.g. Run, ToolGrant; data-model, dependencies-and-stack) or —
+```
+
+---
+
+## Checklist before closing a change
+
+- Filename uses **underscore** before time: `YYYY-MM-DD_HH:MM-summary-slug.md`.
+- **New package:** ISSUES.md, LICENSE, copyright in src, README; see [_docs/execution/package-and-docs-checklist.md](_docs/execution/package-and-docs-checklist.md) and [_thunderstorm/.cursor/rules/package-standard/index.mdc](_thunderstorm/.cursor/rules/package-standard/index.mdc).
+- **Behavior or public API change:** Update that package’s README and any stage/phase docs that describe it.
+- **New tools or artifact kinds:** Consider [_docs/testing/contract-tests.md](_docs/testing/contract-tests.md) and [_docs/testing/strategy.md](_docs/testing/strategy.md). **Workspace tests:** Consider [_docs/testing/fixtures-and-replay.md](_docs/testing/fixtures-and-replay.md).
+
+---
+
+## For the next agent (resuming)
+
+1. Read [_docs/README.md](_docs/README.md) and [_docs/_handoff/agent-context.md](_docs/_handoff/agent-context.md).
+2. Open the **last N** files in [_docs/_handoff/change-history/](_docs/_handoff/change-history/) (e.g. 5–10). Sort by filename (newest first).
+3. Follow the scenario in agent-context that matches the task.

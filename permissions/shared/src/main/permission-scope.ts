@@ -17,7 +17,8 @@
  * limitations under the License.
  */
 
-const PermissionScopeBrand = Symbol('PermissionScope');
+/** Type-only brand for PermissionScope; use definePermissionScope() to create valid instances. */
+declare const PermissionScopeBrand: unique symbol;
 
 /**
  * Branded permission scope for function-based permissions.
@@ -26,19 +27,13 @@ const PermissionScopeBrand = Symbol('PermissionScope');
 export type PermissionScope = {
 	readonly key: string;
 	readonly values: readonly string[];
-	readonly [typeof PermissionScopeBrand]: true;
+	readonly [PermissionScopeBrand]: true;
 };
-
-export { PermissionScopeBrand };
 
 /**
  * Creates a frozen, branded permission scope. Use this to define scopes
  * for the @RequirePermission decorator (e.g. pathway: read, write, delete, admin).
  */
 export function definePermissionScope<K extends string, V extends readonly string[]>(key: K, values: V): PermissionScope & { key: K; values: V } {
-	return Object.freeze({
-		key,
-		values,
-		[PermissionScopeBrand]: true
-	}) as PermissionScope & { key: K; values: V };
+	return Object.freeze({ key, values }) as PermissionScope & { key: K; values: V };
 }
