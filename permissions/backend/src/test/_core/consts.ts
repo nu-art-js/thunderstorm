@@ -26,9 +26,11 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 	domainNameToObjectMap: TypedMap<DB_PermissionDomain>
 	accessLevelsByDomainNameMap: TypedMap<TypedMap<DB_PermissionAccessLevel>>
 	nameToProjectMap: TypedMap<DB_PermissionProject>
+	nameToGroupMap: TypedMap<DB_PermissionGroup>
 }> => {
 	const domainNameToObjectMap: TypedMap<DB_PermissionDomain> = {};
 	const accessLevelsByDomainNameMap: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
+	let nameToGroupMap: TypedMap<DB_PermissionGroup> = {};
 
 	// Create All Projects
 	const nameToProjectMap: TypedMap<DB_PermissionProject> = reduceToMap(await Promise.all(projects.map(project => ModuleBE_PermissionProjectDB.create.item({
@@ -64,12 +66,12 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 			const accessLevelNameToObjectMap = reduceToMap(dbAccessLevels, accessLevel => accessLevel.name, accessLevel => accessLevel);
 
 			// Create Groups
-			await ModuleBE_PermissionGroupDB.create.all(Groups_ToCreate.map(preGroup => ({
+			const dbGroups = await ModuleBE_PermissionGroupDB.create.all(Groups_ToCreate.map(preGroup => ({
 				label: preGroup.label!,
 				uiLabel: preGroup.label!,
 				accessLevelIds: (preGroup.accessLevelIds as string[]).map((levelName: string) => accessLevelNameToObjectMap[levelName]._id)
 			})) as PreDB<DB_PermissionGroup>[]);
-
+			nameToGroupMap = reduceToMap(dbGroups, group => group.label, group => group);
 
 			domainNameToObjectMap[dbDomain.namespace] = dbDomain;
 			accessLevelsByDomainNameMap[domain.namespace] = accessLevelNameToObjectMap;
@@ -88,7 +90,8 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 	return {
 		domainNameToObjectMap,
 		accessLevelsByDomainNameMap,
-		nameToProjectMap
+		nameToProjectMap,
+		nameToGroupMap
 	};
 };
 
@@ -193,6 +196,22 @@ export const Test_Setup2: Test_Setup = {
 			{
 				path: 'v1/stam',
 				accessLevels: [{domainName: Test_Domain1, levelName: Test_AccessLevel_Read}],
+			}
+		],
+		domains: [{
+			namespace: Test_Domain1,
+			levels: Test_AccessLevelsMap
+		}],
+	}],
+};
+
+export const Test_Setup3: Test_Setup = {
+	projects: [{
+		name: TestProject__Name,
+		apis: [
+			{
+				path: 'v1/stam',
+				accessLevels: [{domainName: Test_Domain1, levelName: Test_AccessLevel_Write}],
 			}
 		],
 		domains: [{

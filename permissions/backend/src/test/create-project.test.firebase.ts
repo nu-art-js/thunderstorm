@@ -23,7 +23,8 @@ import {
 	Test_DefaultAccountId,
 	Test_Domain1,
 	Test_Setup1,
-	Test_Setup2
+	Test_Setup2,
+	Test_Setup3
 } from './_core/consts.js';
 import type {Test_Setup} from './_core/types.js';
 import {DefaultStormTestConfig_Permissions} from './utils/helpers.js';
@@ -101,6 +102,26 @@ describe('Permissions - Create Project (path-based assert)', () => {
 				users: [
 					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess }], result: false },
 					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Read }], result: true },
+					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Write }], result: true },
+					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Delete }], result: true },
+					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Admin }], result: true }
+				],
+				check: async (projectId: UniqueId, path: string) => {
+					await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
+				}
+			},
+			result: true
+		}));
+	});
+
+	it('Create Project 3 - API requires Write level', async () => {
+		await stormTester(DefaultStormTest, runTestCase({
+			description: 'Create Project 3',
+			input: {
+				setup: Test_Setup3,
+				users: [
+					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess }], result: false },
+					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Read }], result: false },
 					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Write }], result: true },
 					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Delete }], result: true },
 					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Admin }], result: true }
