@@ -1,0 +1,62 @@
+.refactoring-actions-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 16px;
+
+  &__title {
+    margin: 0 0 16px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .action-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .action-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      &__title {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      &__buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        &__button {
+          padding: 8px 16px;
+          font-size: 16px;
+          cursor: pointer;
+          border: 2px solid #ccc;
+          border-radius: 4px;
+          background: #fff;
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+}
+
+.action-group__button {
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
