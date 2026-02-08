@@ -1,0 +1,117 @@
+---
+description: How to create isolated replicas of Thunderstorm features in standalone libraries
+globs: _thunderstorm/thunderstorm/**/*
+alwaysApply: false
+---
+
+# Thunderstorm Breaking — Isolated Replicas of Features
+
+When planning or performing work that replicates functionality from the Thunderstorm monolith into a standalone library, follow this rule. **We do not remove code from the monolith** — we create an **isolated replica** (a copy in a new library that does not depend on `@nu-art/thunderstorm-*`). The monolith stays as-is. Use the checklists below and update them as work completes.
+
+## What Thunderstorm Is
+
+**Thunderstorm** is the legacy monolithic core that provides shared backend (Storm, HTTP server, typed API, DB base modules), frontend (UI components, editable items, sync clients), and shared types/APIs. It is published as three tightly coupled packages:
+
+- `@nu-art/thunderstorm-backend`
+- `@nu-art/thunderstorm-frontend`
+- `@nu-art/thunderstorm-shared`
+
+Project policy (see how-we-work): **do not add new imports from `@nu-art/thunderstorm-*`**. When a feature must use something that currently lives in Thunderstorm, the goal is to create an **isolated replica** of that feature in a new standalone library that depends only on infra (e.g. `@nu-art/http-*`, `@nu-art/db-api-*`, `@nu-art/ts-common`, `@nu-art/firebase-*`). The original code remains in the monolith; we do not remove it.
+
+## Thunderstorm Monolith — Tangled Domains
+
+The Thunderstorm library contains many intertwined features. Use `_thunderstorm/thunderstorm/feature-list-and-dependency-graph.md` as the source of truth for the full list and dependency graph. Summary of main domains:
+
+**Core / platform (BE):** ModuleBE_APIs, typed-api (createBodyServerApi, createQueryServerApi), HttpServer (server-api, route-resolvers, HeaderKey), Storm / BaseStorm, db-def.
+
+**db-api-gen (BE):** ModuleBE_BaseDB, ModuleBE_BaseApi.
+
+**Sync:** ModuleBE_SyncManager, ModuleFE_SyncManager, sync-manager shared; ModuleBE_SyncEnv, ModuleFE_SyncEnvV2, sync-env shared.
+
+**Backup:** ModuleBE_BackupDocDB, ModuleBE_BackupScheduler.
+
+**Collection actions:** ModuleBE_CollectionActions, dispatcher, ModuleFE_CollectionActions, collection-actions shared.
+
+**Archiving:** ModuleBE_Archiving, ModuleFE_Archiving, archiving shared.
+
+**Action processor:** ModuleBE_ActionProcessor, ModuleFE_ActionProcessor, action-processor shared.
+
+**Entities / app support:** app-config (ModuleBE_AppConfigDB/API, ModuleFE_AppConfig), editable-test, backup-doc, deleted-doc; server-info, force-upgrade, cleanup-scheduler; BaseHttpModule, BaseHttpRequest, route-tools, headers, no-auth-listener.
+
+**Frontend:** EditableItem / EditableDBItemV3, TS_InputV2, TS_TextAreaV2, TS_DropDown, adapter, and many UI components under `thunderstorm/frontend/`.
+
+## Goal
+
+Create **smaller libraries per feature as isolated replicas** so that:
+
+- New and existing apps can depend on focused capability packages (e.g. sync-manager, archiving, editable-item) instead of the whole Thunderstorm monolith.
+- Replica libraries **MUST NOT** depend on `@nu-art/thunderstorm-*`; they use `@nu-art/http-*`, `@nu-art/db-api-*`, `@nu-art/ts-common`, `@nu-art/firebase-*`, etc., as appropriate.
+- The monolith is **not modified**; we copy and adapt, we do not remove.
+
+## Checklist: Features with an isolated replica
+
+Mark when a feature has an **isolated replica** in a standalone library with **no** `@nu-art/thunderstorm-*` dependency (the feature remains in the monolith).
+
+- [x] **db-api-gen** — ModuleBE_BaseDB, ModuleBE_BaseApi → isolated replica at `_thunderstorm/db-api/` (shared, backend, frontend)
+- [ ] **Sync Manager** — ModuleBE_SyncManager, ModuleFE_SyncManager, sync-manager shared (fe/be/shared)
+- [ ] **Sync Env** — ModuleBE_SyncEnv, ModuleFE_SyncEnvV2, sync-env shared (fe/be/shared)
+- [ ] **Backup** — ModuleBE_BackupDocDB, ModuleBE_BackupScheduler (be; shared when FE added)
+- [ ] **Editable item** — EditableItem, EditableDBItemV3, TS_InputV2, TS_TextAreaV2, TS_DropDown, adapter (reference in another branch)
+- [x] **Action Processor** — ModuleBE_ActionProcessor, ModuleFE_ActionProcessor, action-processor shared → isolated replica at `_thunderstorm/action-processor/` (shared, backend, frontend)
+- [x] **App config** — ModuleBE_AppConfigDB/API, ModuleFE_AppConfig, app-config entity → isolated replica at `_thunderstorm/app-config/` (shared, backend, frontend)
+- [ ] **Archiving** — ModuleBE_Archiving, ModuleFE_Archiving, archiving shared
+- [ ] **Collection actions** — ModuleBE_CollectionActions, dispatcher, ModuleFE_CollectionActions, collection-actions shared
+- [ ] **Server info / Force upgrade / Cleanup** — ModuleBE_ServerInfo, ModuleBE_ForceUpgrade, CleanupScheduler, etc.
+- [ ] **Core / platform** — ModuleBE_APIs, typed-api, HttpServer, Storm / BaseStorm, db-def (likely last or as-needed)
+- [ ] **Routing** — route-resolvers, route-tools
+- [ ] **UI (misc)** — remaining frontend components
+- [ ] **MISC** — BaseHttpModule, BaseHttpRequest, headers, no-auth-listener, other shared bits
+
+## How to Create an Isolated Replica of a Feature
+
+1. **Map domains** — Identify which feature(s) you are replicating and which Thunderstorm domains they touch (backend, frontend, shared).
+2. **Map main files** — List the main files/modules needed from each domain (use `feature-list-and-dependency-graph.md` and the codebase).
+3. **Map Thunderstorm utils** — List any utility or type from Thunderstorm that the feature uses (directly or transitively).
+4. **Map non-Thunderstorm deps** — List dependencies on other packages (ts-common, firebase, http, db-api, etc.).
+5. **Create library structure** — Create the new concept library and package skeleton (shared/backend/frontend) per project structure and package-standard.
+6. **Copy main files** — Copy (then adapt) the main feature files into the new library. **Do not remove or change the originals in the monolith.**
+7. **Handle Thunderstorm utils** — For utilities that the feature uses and that live in Thunderstorm:
+   - Prefer: depend on infra that already provides the capability (e.g. http, db-api).
+   - If the utility is small and self-contained: **shallow copy** its functionality into the new library so the new library does not depend on `@nu-art/thunderstorm-*`.
+   - If the utility is large or has many callers: **stop and discuss** with the user before duplicating or introducing a new shared package.
+8. **Other packages** — For utilities from non-Thunderstorm packages, use them as-is (add the correct dependency to the new library).
+
+## Checklist: How to create an isolated replica (per feature)
+
+Use this when creating a replica of one of the features above.
+
+- [ ] **Map domains** — Which feature(s); which Thunderstorm domains (backend, frontend, shared)
+- [ ] **Map main files** — Main files/modules from each domain (use feature-list-and-dependency-graph.md)
+- [ ] **Map Thunderstorm utils** — Utils/types from Thunderstorm used (directly or transitively)
+- [ ] **Map non-Thunderstorm deps** — ts-common, firebase, http, db-api, etc.
+- [ ] **Decide coupling** — Use existing lib, stub, shallow copy, inline, or replicate two features together (see todo.md “How we handle”)
+- [ ] **Create library structure** — New concept library + package skeleton (shared/backend/frontend) per package-standard
+- [ ] **Copy main files** — Copy (do not remove from monolith) then adapt into the new library
+- [ ] **Handle Thunderstorm utils** — Prefer infra (http, db-api); else shallow copy if small; if large → stop and discuss
+- [ ] **Other packages** — Use as-is; add correct dependency to new library
+- [ ] **Tests** — Move existing Thunderstorm tests into new library; add/expand tests (package-standard tests rules); if no tests exists, create tests coverage
+- [ ] **DoD** — Library has no `@nu-art/thunderstorm-*`; all packages compile; all tests pass (`bai -t -tt=... -up=<packages-regexp>`)
+
+## Tests
+
+- If the feature already has tests in Thunderstorm, **copy/replicate them** into the new library’s packages (monolith keeps its tests).
+- Add or extend tests so that the new library has **covered test functionality** where appropriate (see package-standard tests rules).
+
+## Definition of Done
+
+- An **isolated replica** of the feature lives in a **standalone library** that **does not** depend on `@nu-art/thunderstorm-*`. (The monolith is unchanged.)
+- All packages in that library **compile** (build with BAI).
+- All tests in all packages of that library **pass** (`bai -t -tt=... -up=<packages-regexp>`).
+
+**Per-feature checklist:**
+
+- [ ] Isolated replica in a **standalone library** with **no** `@nu-art/thunderstorm-*` dependency; monolith not modified
+- [ ] All packages in that library **compile** (BAI build)
+- [ ] All tests in that library **pass**
+
+Refer to `_thunderstorm/thunderstorm/feature-list-and-dependency-graph.md` and `_thunderstorm/thunderstorm/todo.md` for current replication plans and dependency details.
