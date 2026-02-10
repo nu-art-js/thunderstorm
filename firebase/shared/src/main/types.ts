@@ -80,6 +80,8 @@ export type WhereValue<Value> =
 export type Clause_Where<T extends TS_Object> = { [P in keyof T]?: WhereValue<T[P]> }
 export type Clause_OrderBy<T extends TS_Object> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
 export type Clause_Select<T extends TS_Object, K extends keyof T = keyof T> = K[];
+export type Clause_Limit = number | { page?: number, itemsCount: number };
+
 
 export type FirestoreQuery<T extends TS_Object> = RequireOptionals<FirestoreQueryImpl<T>>
 export type FirestoreQueryImpl<T extends TS_Object> = {
@@ -87,7 +89,7 @@ export type FirestoreQueryImpl<T extends TS_Object> = {
 	orderBy?: Clause_OrderBy<T>
 	where?: Clause_Where<T>
 	withDeleted?: boolean
-	limit?: number | { page?: number, itemsCount: number }
+	limit?: Clause_Limit
 }
 
 export type FirebaseProjectCollections = { projectId: string, collections: string[] };
