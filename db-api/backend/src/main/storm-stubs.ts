@@ -9,7 +9,6 @@ import type {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 import type {UniqueId} from '@nu-art/ts-common';
 import {Dispatcher} from '@nu-art/ts-common';
 import type {Transaction} from 'firebase-admin/firestore';
-import type {SyncNotifier, SyncNotifierOnPostWriteOptions, SyncNotifierPostWriteData} from '@nu-art/db-api-shared';
 import type {BaseDBDefBE, DBApiBEConfigShape} from './backend-types.js';
 
 export type {DBApiBEConfigShape as DBApiBEConfig};
@@ -43,9 +42,3 @@ export interface EntityDependencyCollection {
 }
 
 export const dispatch_CollectEntityDependencies = new Dispatcher<EntityDependencyCollection, '__collectEntityDependencies'>('__collectEntityDependencies');
-
-const ModuleBE_SyncManagerStub: SyncNotifier = {
-	async onPostWrite(_collectionName: string, _data: SyncNotifierPostWriteData, _options: SyncNotifierOnPostWriteOptions): Promise<void> {},
-};
-
-export const ModuleBE_SyncManager = ModuleBE_SyncManagerStub;

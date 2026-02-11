@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {ModuleFE_BaseDB, ModuleSyncType} from './ModuleFE_BaseDB.js';
+import {ModuleFE_BaseDB} from './ModuleFE_BaseDB.js';
 import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
 import {BaseDBConfig} from './types.js';
 import {EventDispatcher} from './to-refactor/dispatcher.js';
@@ -63,7 +63,7 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 	private operationsById: Map<string, Operation> = new Map();
 
 	protected constructor(params: Params<Types>) {
-		super(params.config, ModuleSyncType.APISync, params.dispatcher);
+		super(params.config, params.dispatcher);
 		this.crudApiDef = params.crudApiDef;
 		this.httpClient = params.httpClient ?? (() => HttpClient.default);
 	}

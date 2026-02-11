@@ -16,8 +16,8 @@ Add `@nu-art/db-api-frontend`, `@nu-art/db-api-shared`, and `@nu-art/http-client
 ### ModuleFE_BaseDB (cache + IDB layer)
 
 - Extend `ModuleFE_BaseDB<Types>` where `Types` is `CrudTypes` from shared.
-- Constructor: `(config: BaseDBConfig<Types>, syncType?: ModuleSyncType, dispatcher?: EventDispatcher)`. `BaseDBConfig` includes `dbKey`, `validator`, `uniqueKeys`, `versions`, `dbConfig` (name, uniqueKeys, group, indices for IDB).
-- Provides: `cache` (MemCache), `IDB` (IDB_Store), `config`, `validator`, `syncType`, `dispatcher`. Call `init()` before use; then `loadCache()`, `registerVersionUpgradeProcessor(version, processor)`, `upgradeInstances`, `clearData`, etc.
+- Constructor: `(config: BaseDBConfig<Types>, dispatcher?: EventDispatcher)`. `BaseDBConfig` includes `dbKey`, `validator`, `uniqueKeys`, `versions`, `dbConfig` (name, uniqueKeys, group, indices for IDB).
+- Provides: `cache` (MemCache), `IDB` (IDB_Store), `config`, `validator`, `dispatcher`. Call `init()` before use; then `loadCache()`, `registerVersionUpgradeProcessor(version, processor)`, `upgradeInstances`, `clearData`, `applyBatch(toUpdate, toDelete)`, etc.
 - Override/call: `onEntriesUpdated`, `onEntryUpdated`, `onEntriesDeleted`, `onEntryDeleted`, `onQueryReturned`, `onGotUnique`, `validateImpl`/`onValidationError` as needed. Events are dispatched via `EventDispatcher` (SingleApiEvent, MultiApiEvent).
 
 ### ModuleFE_BaseApi (HTTP CRUD layer)
