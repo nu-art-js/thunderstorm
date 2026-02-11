@@ -7,12 +7,13 @@ metadata:
     cloud.googleapis.com/location: {{REGION}}
     goog-managed-by: cloudfunctions
   annotations:
-    run.googleapis.com/invoker-iam-disabled: 'true'
     serving.knative.dev/creator: service-{{RUNTIME_PROJECT_ID}}@gcf-admin-robot.iam.gserviceaccount.com
     run.googleapis.com/client-name: cli-firebase
     cloudfunctions.googleapis.com/function-id: {{FUNCTION_NAME}}
     run.googleapis.com/ingress: all
     run.googleapis.com/ingress-status: all
+    run.googleapis.com/invoker-iam-disabled: 'true'
+    run.googleapis.com/maxScale: '100'
 spec:
   template:
     metadata:
