@@ -10,6 +10,7 @@ import type {UniqueId} from '@nu-art/ts-common';
 import {Dispatcher} from '@nu-art/ts-common';
 import type {Transaction} from 'firebase-admin/firestore';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
+import type {SyncNotifier} from '@nu-art/db-api-shared';
 import type {BaseDBDefBE, DBApiBEConfigShape} from './backend-types.js';
 
 export type {DBApiBEConfigShape as DBApiBEConfig};
@@ -48,7 +49,7 @@ export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[]; to
 
 type DeletedDBItem = DB_Object & { __collectionName: string; __docId: UniqueId };
 
-const ModuleBE_SyncManagerStub = {
+const ModuleBE_SyncManagerStub: SyncNotifier = {
 	async queryDeleted(_collectionName: string, _query: FirestoreQuery<DB_Object>): Promise<DeletedDBItem[]> {
 		return [];
 	},

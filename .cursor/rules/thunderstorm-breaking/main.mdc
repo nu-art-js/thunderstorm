@@ -53,13 +53,13 @@ Create **smaller libraries per feature as isolated replicas** so that:
 Mark when a feature has an **isolated replica** in a standalone library with **no** `@nu-art/thunderstorm-*` dependency (the feature remains in the monolith).
 
 - [x] **db-api-gen** — ModuleBE_BaseDB, ModuleBE_BaseApi → isolated replica at `_thunderstorm/db-api/` (shared, backend, frontend)
-- [ ] **Sync Manager** — ModuleBE_SyncManager, ModuleFE_SyncManager, sync-manager shared (fe/be/shared)
-- [ ] **Sync Env** — ModuleBE_SyncEnv, ModuleFE_SyncEnvV2, sync-env shared (fe/be/shared)
+- [x] **Sync Manager** — ModuleBE_SyncManager, ModuleFE_SyncManager, sync-manager shared → isolated replica at `_thunderstorm/sync-manager/` (shared, backend, frontend)
+- [x] **Sync Env** — ModuleBE_SyncEnv, ModuleFE_SyncEnvV2, sync-env shared → isolated replica at `_thunderstorm/sync-env/` (shared, backend, frontend)
 - [ ] **Backup** — ModuleBE_BackupDocDB, ModuleBE_BackupScheduler (be; shared when FE added)
 - [ ] **Editable item** — EditableItem, EditableDBItemV3, TS_InputV2, TS_TextAreaV2, TS_DropDown, adapter (reference in another branch)
 - [x] **Action Processor** — ModuleBE_ActionProcessor, ModuleFE_ActionProcessor, action-processor shared → isolated replica at `_thunderstorm/action-processor/` (shared, backend, frontend)
 - [x] **App config** — ModuleBE_AppConfigDB/API, ModuleFE_AppConfig, app-config entity → isolated replica at `_thunderstorm/app-config/` (shared, backend, frontend)
-- [ ] **Archiving** — ModuleBE_Archiving, ModuleFE_Archiving, archiving shared
+- [x] **Archiving** — ModuleBE_Archiving, ModuleFE_Archiving, archiving shared → isolated replica at `_thunderstorm/archiving/` (shared, backend, frontend)
 - [ ] **Collection actions** — ModuleBE_CollectionActions, dispatcher, ModuleFE_CollectionActions, collection-actions shared
 - [ ] **Server info / Force upgrade / Cleanup** — ModuleBE_ServerInfo, ModuleBE_ForceUpgrade, CleanupScheduler, etc.
 - [ ] **Core / platform** — ModuleBE_APIs, typed-api, HttpServer, Storm / BaseStorm, db-def (likely last or as-needed)

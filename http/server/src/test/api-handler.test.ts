@@ -69,7 +69,7 @@ describe('ApiHandler initializer - route registration', () => {
 		expect(bodyApi).to.be.instanceOf(_ServerBodyApi);
 	});
 
-	it('resolves apiDef from resolver with instance', () => {
+	it('resolves apiDef from resolver with instance', async () => {
 		const added: {api: unknown}[] = [];
 		const mockServer = {
 			addRoute(api: unknown) {
@@ -89,6 +89,7 @@ describe('ApiHandler initializer - route registration', () => {
 			}
 		}
 		new C();
+		await new Promise<void>(r => setImmediate(r));
 		expect(added).to.have.length(1);
 		const api = added[0].api as { apiDef: { path: string } };
 		expect(api.apiDef.path).to.equal(dynamicPath);

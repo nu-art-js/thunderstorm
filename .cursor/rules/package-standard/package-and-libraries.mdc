@@ -10,7 +10,7 @@ must read the project-standard too to understand better the context of this docu
 
 ## Package Type Standards
 
-We have two package types:
+We have two package types (infra vs app). A third **structural variant** is the test-only (E2E) TypeScript package.
 
 - **infra-package** - Standards for `@nu-art/*` infrastructure packages (see [Infra Package JSON Format](./infra-package.mdc))
 - **app-package** - Standards for `@app/*` application packages (see [App Package JSON Format](./app-package.mdc))
@@ -34,6 +34,18 @@ A **package** is a single-domain capability contained in one folder:
 - Has `src/test/` for tests
 - Single domain (shared, frontend, or backend)
 - `tsconfig.json` is auto-generated in source folders unless explicitly defined
+
+## Test-only (E2E) TypeScript package
+
+A **test-only** package exists only to run tests that require real runtime behaviour (e.g. real HTTP server + client, real port). It is not published and not consumed by other packages.
+
+- **BAI:** Same unit type `unitConfig.type: "typescript-lib"`. BAI has no test-only unit type; a minimal `src/main` is required so compile succeeds.
+- **Layout:**
+  - `src/main/`: Single minimal file (e.g. `index.ts` with `export {}` or a trivial export). No consumable API.
+  - `src/test/`: All real content — E2E/integration tests and test helpers (e.g. server factory, port cleanup).
+- **Package.json:** `"private": true`; omit or minimise `exports` (nothing imports the package); dependencies = packages under test + test deps (chai, testalot, etc.).
+- **When to use:** E2E tests that must run a real server and client (or similar) and should live in a dedicated package rather than inside one of the packages under test. Example: `@nu-art/http-e2e-tests` under `_thunderstorm/http/e2e/`.
+- **Run:** `bai -t -tt=pure -up=<package-name>` (or the relevant test-type for that package).
 
 ## Library (Multi-Domain Capability)
 

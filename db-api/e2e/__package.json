@@ -1,0 +1,33 @@
+{
+	"name": "@nu-art/db-api-e2e-tests",
+	"version": "{{THUNDERSTORM_VERSION}}",
+	"private": true,
+	"description": "E2E tests for db-api (real HTTP server + client over the wire)",
+	"license": "Apache-2.0",
+	"author": "TacB0sS",
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+		"directory": "_thunderstorm/db-api"
+	},
+	"scripts": {"build": "tsc"},
+	"dependencies": {
+		"@nu-art/api-types": "?",
+		"@nu-art/db-api-backend": "?",
+		"@nu-art/db-api-shared": "?",
+		"@nu-art/firebase-backend": "?",
+		"@nu-art/firebase-shared": "?",
+		"@nu-art/http-client": "?",
+		"@nu-art/http-server": "?",
+		"@nu-art/ts-common": "?",
+		"firebase-admin": "?"
+	},
+	"devDependencies": {
+		"@nu-art/testalot": "?",
+		"@types/chai": "^4.3.4",
+		"chai": "?"
+	},
+	"unitConfig": {"type": "typescript-lib"},
+	"type": "module",
+	"publishConfig": {"directory": "dist", "linkDirectory": true}
+}

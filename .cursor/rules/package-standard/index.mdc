@@ -43,7 +43,7 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: Know what the package does, how it is structured, and how it is used.
 
-- [ ] Package type (infra vs app) and layout (single-domain vs library) — see [package-and-libraries.mdc](./package-and-libraries.mdc)
+- [ ] Package type (infra vs app) and layout (single-domain vs library, or test-only E2E package) — see [package-and-libraries.mdc](./package-and-libraries.mdc) (Test-only subsection for E2E packages)
 - [ ] Entry points and public exports; confirm each resolves to `src/main/` and build output
 - [ ] Purpose (2–4 sentences), runtime deps from imports, usages in workspace (or infer from code)
 

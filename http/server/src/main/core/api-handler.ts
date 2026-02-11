@@ -51,16 +51,25 @@ function registerRoute<Module>(params: RouteRegistrationParams<Module>): void {
 export function ApiHandler<API extends GeneralApi, Module = unknown>(_apiDef: ResolvableContent<ApiDef<API>, [Module]>, options?: ApiHandlerOptions<Module>) {
 	return function (originalMethod: (this: Module, payload: API['B'] | API['P']) => Promise<API['R']>, context: ClassMethodDecoratorContext<Module>) {
 		context.addInitializer(function (this: Module) {
+			const enclosingClass = this;
 			const server = (options?.httpServer ?? (() => HttpServer.getDefault()));
-			const apiDef = resolveContent(_apiDef, this);
-			const params: RouteRegistrationParams<Module> = {
-				server,
-				apiDef,
-				enclosingClass: this,
-				handler: (payload: unknown) => originalMethod.call(this, payload),
-				options
+			const register = () => {
+				const apiDef = resolveContent(_apiDef, enclosingClass);
+				const params: RouteRegistrationParams<Module> = {
+					server,
+					apiDef,
+					enclosingClass,
+					handler: (payload: unknown) => originalMethod.call(enclosingClass, payload),
+					options
+				};
+				registerRoute(params);
 			};
-			registerRoute(params);
+			// Getter that takes instance (e.g. (m) => m.crudApiDef.query) runs before constructor body; defer so instance is fully constructed.
+			const isInstanceGetter = typeof _apiDef === 'function' && _apiDef.length > 0;
+			if (isInstanceGetter)
+				setImmediate(register);
+			else
+				register();
 		});
 		return originalMethod;
 	};

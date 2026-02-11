@@ -1,0 +1,24 @@
+{
+	"name": "@nu-art/http-e2e-tests",
+	"version": "{{THUNDERSTORM_VERSION}}",
+	"private": true,
+	"description": "E2E tests for HTTP client and server (real server + real client over HTTP)",
+	"license": "Apache-2.0",
+	"author": "TacB0sS",
+	"repository": {"type": "git", "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git", "directory": "_thunderstorm/http"},
+	"scripts": {"build": "tsc"},
+	"dependencies": {
+		"@nu-art/api-types": "?",
+		"@nu-art/http-client": "?",
+		"@nu-art/http-server": "?",
+		"@nu-art/ts-common": "?"
+	},
+	"devDependencies": {
+		"@nu-art/testalot": "?",
+		"@types/chai": "^4.3.4",
+		"chai": "?"
+	},
+	"unitConfig": {"type": "typescript-lib"},
+	"type": "module",
+	"publishConfig": {"directory": "dist", "linkDirectory": true}
+}
