@@ -44,7 +44,6 @@ import {CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} fr
 import {DBApiBEConfig, getModuleBEConfig} from '../../core/db-def.js';
 import {ModuleBE_SyncManager} from '../sync-manager/ModuleBE_SyncManager.js';
 import {DocWrapperV3} from '@nu-art/firebase-backend/firestore-v3/DocWrapperV3';
-import {Response_DBSync} from '@nu-art/thunderstorm-shared/sync-manager/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_DeletedDocs} from '@nu-art/firebase-backend/firestore-v3/consts';
 import {dispatch_CollectEntityDependencies, EntityDependencyCollection} from '../collection-actions/dispatcher.js';
@@ -214,14 +213,6 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
 		this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 	}
-
-	querySync = async (syncQuery: FirestoreQuery<Proto['dbType']>): Promise<Response_DBSync<Proto['dbType']>> => {
-		const items = await this.collection.query.custom(syncQuery);
-		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.dbDef.dbKey, syncQuery as FirestoreQuery<DB_Object>);
-
-		await this.upgradeInstances(items);
-		return {toUpdate: items, toDelete: deletedItems};
-	};
 
 	private _preWriteProcessing = async (dbItem: Proto['uiType'], originalDbInstance: Proto['dbType'], transaction?: Transaction, upgrade = true) => {
 		await this.preWriteProcessing(dbItem, originalDbInstance, transaction);

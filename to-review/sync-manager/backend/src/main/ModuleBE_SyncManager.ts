@@ -7,10 +7,11 @@
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
-import type {SyncNotifier, SyncNotifierDeletedItem} from '@nu-art/db-api-shared';
+import type {SyncNotifier, SyncNotifierOnPostWriteOptions, SyncNotifierPostWriteData} from '@nu-art/db-api-shared';
 import type {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {
 	__stringify,
+	asArray,
 	arrayToMap,
 	currentTimeMillis,
 	DB_Object,
@@ -31,6 +32,7 @@ import {
 	FullSyncModule,
 	LastUpdated,
 	NoNeedToSyncModule,
+	Response_DBSync,
 	SmartSync_DeltaSync,
 	SmartSync_FullSync,
 	SmartSync_UpToDateSync,
@@ -113,18 +115,14 @@ export class ModuleBE_SyncManager_Class
 			}
 
 			if (syncRequest.lastUpdated !== remoteSyncData.lastUpdated) {
-				let toUpdate: DB_Object[] = [];
 				const sinceQuery: FirestoreQuery<DB_Object> = {where: {__updated: {$gte: syncRequest.lastUpdated}}};
+				let itemsToReturn: Response_DBSync<any>;
 				try {
-					toUpdate = await moduleToCheck.query.where(sinceQuery);
+					itemsToReturn = await this.querySyncResponse(moduleToCheck, sinceQuery);
 				} catch (e: unknown) {
 					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbKey}`);
 					throw e;
 				}
-				const itemsToReturn = {
-					toUpdate,
-					toDelete: await this.queryDeleted(syncRequest.dbKey, sinceQuery),
-				};
 				syncDataResponse.push({
 					dbKey: syncRequest.dbKey,
 					sync: SmartSync_DeltaSync,
@@ -164,6 +162,16 @@ export class ModuleBE_SyncManager_Class
 		return rtdbSyncData;
 	};
 
+	/**
+	 * Build sync response for a module and query: live items (from module) + deleted items (from this store).
+	 * Replaces the former BaseDB.querySync orchestration.
+	 */
+	querySyncResponse = async (module: ModuleBE_BaseDB<any>, query: FirestoreQuery<DB_Object>): Promise<Response_DBSync<any>> => {
+		const toUpdate = await module.query.custom(query);
+		const toDelete = await this.queryDeleted(module.dbDef.dbKey, query);
+		return {toUpdate, toDelete};
+	};
+
 	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DeletedDBItem> => {
 		const {_id, __updated, __created, _v} = item;
 		const deletedItem: PreDB<DeletedDBItem> = {
@@ -181,7 +189,45 @@ export class ModuleBE_SyncManager_Class
 		return deletedItem;
 	};
 
-	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction?: unknown): Promise<void> {
+	async onPostWrite(collectionName: string, data: SyncNotifierPostWriteData, options: SyncNotifierOnPostWriteOptions): Promise<void> {
+		const now = currentTimeMillis();
+		const uniqueKeys = options.uniqueKeys ?? ['_id'];
+		const transaction = options.transaction as Transaction | undefined;
+
+		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
+			const updated = data.updated;
+			const latestUpdated = Array.isArray(updated) ?
+				updated.reduce((toRet, current) => Math.max(toRet, current.__updated), updated[0].__updated) :
+				updated.__updated;
+			await this.setLastUpdated(collectionName, latestUpdated);
+		}
+
+		if (data.deleted && !(Array.isArray(data.deleted) && data.deleted.length === 0)) {
+			await this.onItemsDeleted(collectionName, asArray(data.deleted), uniqueKeys, transaction);
+			await this.setLastUpdated(collectionName, now);
+		} else if (data.deleted === null)
+			await this.setOldestDeleted(collectionName, now);
+	}
+
+	queryDeleted = async (collectionName: string, query: FirestoreQuery<DB_Object>): Promise<DeletedDBItem[]> => {
+		const finalQuery: FirestoreQuery<DeletedDBItem> = {
+			...query,
+			where: {...query.where, __collectionName: collectionName},
+		};
+		const deletedItems = await this.collection.query.custom(finalQuery);
+		deletedItems.forEach(_item => { _item._id = _item.__docId ?? _item._id; });
+		return deletedItems;
+	};
+
+	private async setLastUpdated(collectionName: string, lastUpdated: number): Promise<void> {
+		await this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData/${collectionName}`, {lastUpdated});
+	}
+
+	private async setOldestDeleted(collectionName: string, oldestDeleted: number): Promise<void> {
+		await this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData/${collectionName}`, {oldestDeleted});
+	}
+
+	private async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction?: unknown): Promise<void> {
 		const toInsert = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
 		const now = currentTimeMillis();
 		toInsert.forEach(item => item.__updated = now);
@@ -190,24 +236,6 @@ export class ModuleBE_SyncManager_Class
 		let deletedCount = await deletedCountRef.get(0);
 		deletedCount += items.length;
 		await deletedCountRef.set(deletedCount);
-	}
-
-	async queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>): Promise<SyncNotifierDeletedItem[]> {
-		const finalQuery: FirestoreQuery<DeletedDBItem> = {
-			...query,
-			where: {...query.where, __collectionName: collectionName},
-		};
-		const deletedItems = await this.collection.query.custom(finalQuery);
-		deletedItems.forEach(_item => { _item._id = _item.__docId ?? _item._id; });
-		return deletedItems;
-	}
-
-	async setLastUpdated(collectionName: string, lastUpdated: number): Promise<void> {
-		await this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData/${collectionName}`, {lastUpdated});
-	}
-
-	async setOldestDeleted(collectionName: string, oldestDeleted: number): Promise<void> {
-		await this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData/${collectionName}`, {oldestDeleted});
 	}
 
 	setModuleFilter = (filter: (modules: (ModuleBE_BaseDB<any>)[]) => Promise<(ModuleBE_BaseDB<any>)[]>): void => {

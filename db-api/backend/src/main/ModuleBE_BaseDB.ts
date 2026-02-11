@@ -26,8 +26,6 @@ import {
 	asArray,
 	BadImplementationException,
 	batchActionParallel,
-	currentTimeMillis,
-	DB_Object,
 	dbObjectToId,
 	DotNotation,
 	filterDuplicates,
@@ -49,8 +47,7 @@ import {
 	dispatch_CollectEntityDependencies,
 	EntityDependencyCollection,
 	getModuleBEConfig,
-	ModuleBE_SyncManager,
-	Response_DBSync
+	ModuleBE_SyncManager
 } from './storm-stubs.js';
 import {CrudTypes, SyncNotifier} from '@nu-art/db-api-shared';
 import {BaseDBDefBE, PostWriteProcessingDataShape} from './backend-types.js';
@@ -219,15 +216,6 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		});
 	}
 
-	querySync = async (syncQuery: FirestoreQuery<Types['dbItem']>): Promise<Response_DBSync<Types['dbItem']>> => {
-		const items = await this.collection.query.custom(syncQuery);
-		const notifier = this.config.syncNotifier ?? ModuleBE_SyncManager;
-		const deletedItems = await notifier.queryDeleted(this.dbDef.dbKey, syncQuery as FirestoreQuery<DB_Object>);
-
-		await this.upgradeInstances(items);
-		return {toUpdate: items, toDelete: deletedItems};
-	};
-
 	private _preWriteProcessing = async (dbItem: Types['uiItem'], originalDbInstance: Types['dbItem'], transaction?: Transaction, upgrade = true) => {
 		await this.preWriteProcessing(dbItem, originalDbInstance, transaction);
 	};
@@ -243,24 +231,8 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	}
 
 	private _postWriteProcessing = async (data: PostWriteProcessingDataShape<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) => {
-		const now = currentTimeMillis();
 		const notifier = this.config.syncNotifier ?? ModuleBE_SyncManager;
-
-		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			const updated = data.updated;
-			const latestUpdated = Array.isArray(updated) ?
-				updated.reduce((toRet, current) => Math.max(toRet, current.__updated), updated[0].__updated) :
-				updated.__updated;
-			await notifier.setLastUpdated(this.dbDef.dbKey, latestUpdated);
-		}
-
-		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await notifier.onItemsDeleted(this.dbDef.dbKey, asArray(data.deleted), [...this.config.uniqueKeys], transaction);
-			await notifier.setLastUpdated(this.dbDef.dbKey, now);
-		} else if (data.deleted === null)
-			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
-			await notifier.setOldestDeleted(this.dbDef.dbKey, now);
-
+		await notifier.onPostWrite(this.dbDef.dbKey, data, {uniqueKeys: [...this.config.uniqueKeys], transaction});
 		await this.postWriteProcessing(data, actionType, transaction);
 	};
 

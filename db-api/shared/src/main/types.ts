@@ -220,6 +220,13 @@ export type CrudTypes<
 	readonly uniqueKeys: UniqueKeys;
 };
 
+/**
+ * Shape of a query result that includes both items to update and items to delete.
+ * Used when applying sync payloads (e.g. from sync manager) via ModuleFE_BaseDB.applySyncResponse.
+ * Sync manager owns Response_DBSync; this type is the structural contract so db-api frontend need not depend on sync-manager.
+ */
+export type QueryResultWithDeletes<T extends DB_Object = DB_Object> = { toUpdate: T[]; toDelete: DB_Object[] };
+
 /** Flat CRUD API defs (no v1 wrapper). Generic so ApiHandler infers payload types. */
 export type CrudApiTypes<Types extends CrudTypes = CrudTypes> = {
 	query: BodyApi<Types['dbItem'][], CrudQuery<Types['dbItem']>>;

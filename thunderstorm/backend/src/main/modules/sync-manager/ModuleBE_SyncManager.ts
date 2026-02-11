@@ -48,6 +48,7 @@ import {
 	FullSyncModule,
 	LastUpdated,
 	NoNeedToSyncModule,
+	Response_DBSync,
 	SmartSync_DeltaSync,
 	SmartSync_FullSync,
 	SmartSync_UpToDateSync,
@@ -157,19 +158,14 @@ export class ModuleBE_SyncManager_Class
 			}
 			// Different lastUpdated timestamp in local and remote - tell local to send a delta sync request for this module
 			if (syncRequest.lastUpdated !== remoteSyncData.lastUpdated) {
-				// delta sync
-				let toUpdate = [];
+				const sinceQuery: FirestoreQuery<DB_Object> = {where: {__updated: {$gte: syncRequest.lastUpdated}}};
+				let itemsToReturn: Response_DBSync<any>;
 				try {
-					toUpdate = await moduleToCheck.query.where({__updated: {$gte: syncRequest.lastUpdated}});
-				} catch (e: any) {
+					itemsToReturn = await this.querySyncResponse(moduleToCheck, sinceQuery);
+				} catch (e: unknown) {
 					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbKey}`);
 					throw e;
 				}
-				const itemsToReturn = {
-					toUpdate: toUpdate,
-					toDelete: await this.queryDeleted(syncRequest.dbKey, {where: {__updated: {$gte: syncRequest.lastUpdated}}})
-				};
-
 				syncDataResponse.push({
 					dbKey: syncRequest.dbKey,
 					sync: SmartSync_DeltaSync,
@@ -221,6 +217,16 @@ export class ModuleBE_SyncManager_Class
 		}
 
 		return rtdbSyncData;
+	};
+
+	/**
+	 * Build sync response for a module and query: live items (from module) + deleted items (from this store).
+	 * Replaces the former BaseDB.querySync orchestration.
+	 */
+	querySyncResponse = async (module: ModuleBE_BaseDB<any>, query: FirestoreQuery<DB_Object>): Promise<Response_DBSync<any>> => {
+		const toUpdate = await module.query.custom(query);
+		const toDelete = await this.queryDeleted(module.dbDef.dbKey, query);
+		return {toUpdate, toDelete};
 	};
 
 	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DeletedDBItem> => {
