@@ -46,17 +46,15 @@ import {
 	DBEntityDependencyError,
 	dispatch_CollectEntityDependencies,
 	EntityDependencyCollection,
-	getModuleBEConfig,
-	ModuleBE_SyncManager
+	getModuleBEConfig
 } from './storm-stubs.js';
-import {CrudTypes, SyncNotifier} from '@nu-art/db-api-shared';
+import {CrudTypes} from '@nu-art/db-api-shared';
 import {BaseDBDefBE, PostWriteProcessingDataShape} from './backend-types.js';
 import {CrudClause_Where} from '@nu-art/db-api-shared';
 
 export type BaseDBApiConfig = {
 	projectId?: string;
 	chunksSize: number;
-	syncNotifier?: SyncNotifier;
 };
 
 export type DBApiConfig = BaseDBApiConfig & DBApiBEConfig;
@@ -231,8 +229,6 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	}
 
 	private _postWriteProcessing = async (data: PostWriteProcessingDataShape<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) => {
-		const notifier = this.config.syncNotifier ?? ModuleBE_SyncManager;
-		await notifier.onPostWrite(this.dbDef.dbKey, data, {uniqueKeys: [...this.config.uniqueKeys], transaction});
 		await this.postWriteProcessing(data, actionType, transaction);
 	};
 

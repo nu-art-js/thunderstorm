@@ -6,6 +6,27 @@
 
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
 
+/** Payload for sync-manager backend onPostWrite (same shape as post-write data from collection hooks). */
+export type SyncPostWriteData = {
+	updated?: DB_Object | DB_Object[];
+	deleted?: DB_Object | DB_Object[] | null;
+};
+
+/** Options for onPostWrite (collection uniqueKeys and optional transaction). */
+export type SyncPostWriteOptions = {
+	uniqueKeys?: string[];
+	transaction?: unknown;
+};
+
+/** One collection the sync-manager backend can query for delta/full sync. App supplies an array of these (e.g. by wrapping ModuleBE_BaseDB). */
+export interface SyncableCollectionBE {
+	readonly dbKey: string;
+	/** Items with __updated >= since. */
+	queryUpdatedSince(since: number): Promise<DB_Object[]>;
+	/** Used to bootstrap lastUpdated for a new module (e.g. max __updated). */
+	getNewestTimestamp(): Promise<number>;
+}
+
 export type LastUpdated = { lastUpdated: number; oldestDeleted?: number };
 export type SyncDataFirebaseState = TypedMap<LastUpdated>;
 export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[]; toDelete: DB_Object[] };

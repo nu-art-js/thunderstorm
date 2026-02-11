@@ -36,7 +36,7 @@ import {DB_Object, DBConfig, KeysOfDB_Object} from './to-refactor/db-types.js';
 import {EventDispatcher, NoOpDispatcher} from './to-refactor/dispatcher.js';
 import {composeDbObjectUniqueId, dbObjectToId} from './to-refactor/utils.js';
 import {BaseDBConfig} from './types.js';
-import {CrudTypes, QueryResultWithDeletes} from '@nu-art/db-api-shared';
+import {CrudTypes} from '@nu-art/db-api-shared';
 
 
 /**
@@ -56,15 +56,6 @@ function dbConfigToStoreConfig<ItemType extends object>(dbConfig: DBConfig<ItemT
 
 
 /**
- * Sync type for frontend modules.
- */
-export enum ModuleSyncType {
-	NoSync,
-	CSVSync,
-	APISync
-}
-
-/**
  * Base database module for frontend.
  *
  * Provides core functionality for managing database entities in the frontend:
@@ -82,7 +73,6 @@ export class ModuleFE_BaseDB<Types extends CrudTypes>
 	readonly validator: Types['validator'];
 	readonly cache: MemCache<Types['dbItem']>;
 	readonly config: BaseDBConfig<Types>;
-	readonly syncType: ModuleSyncType;
 	readonly IDB: IDB_Store<Types['dbItem']>;
 
 	private dataStatus: DataStatus = DataStatus.NoData;
@@ -93,12 +83,10 @@ export class ModuleFE_BaseDB<Types extends CrudTypes>
 
 	protected constructor(
 		config: BaseDBConfig<Types>,
-		syncType: ModuleSyncType    = ModuleSyncType.APISync,
 		dispatcher: EventDispatcher = NoOpDispatcher
 	) {
 		super(`BaseDB-${config.dbKey}`);
 		this.config = config;
-		this.syncType = syncType;
 		this.dispatcher = dispatcher;
 		this.validator = config.validator;
 
@@ -358,11 +346,13 @@ export class ModuleFE_BaseDB<Types extends CrudTypes>
 	};
 
 	/**
-	 * Apply a sync payload (e.g. from sync manager smartSync response).
-	 * Delegates to onQueryReturned. Use this when the sync layer passes a single { toUpdate, toDelete } object.
+	 * Apply a batch of items to update and delete (IDB, cache, dispatch). Updates last-sync from max __updated in toUpdate when present.
 	 */
-	applySyncResponse = async (result: QueryResultWithDeletes<Types['dbItem']>): Promise<void> => {
-		await this.onQueryReturned(result.toUpdate, result.toDelete);
+	applyBatch = async (toUpdate: Types['dbItem'][], toDelete: Types['dbItem'][] = []): Promise<void> => {
+		await this.onQueryReturned(toUpdate, toDelete);
+		const lastUpdated = toUpdate.length ? toUpdate.reduce((acc, item) => Math.max(acc, item.__updated ?? 0), 0) : 0;
+		if (lastUpdated && (!this.IDB.getLastSync() || lastUpdated > this.IDB.getLastSync()))
+			this.IDB.setLastUpdated(lastUpdated);
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: Types['dbItem'], updateIDBLastSynced: boolean = true): Promise<void> {
