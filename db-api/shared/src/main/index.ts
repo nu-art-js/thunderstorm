@@ -21,3 +21,4 @@
 export * from './types.js';
 export * from './types/db-object.js';
 export * from './query-types.js';
+export * from './sync-notifier.js';
