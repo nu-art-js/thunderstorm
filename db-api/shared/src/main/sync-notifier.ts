@@ -4,14 +4,24 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {DB_Object, UniqueId} from '@nu-art/ts-common';
-import type {FirestoreQuery} from '@nu-art/firebase-shared';
+import type { DB_Object } from '@nu-art/ts-common';
 
 /**
- * Item shape returned by queryDeleted (deleted-docs collection entry).
- * Backend may attach __collectionName and __docId for sync payloads.
+ * Payload passed to SyncNotifier.onPostWrite (same shape as post-write data from collection hooks).
  */
-export type SyncNotifierDeletedItem = DB_Object & { __collectionName?: string; __docId?: UniqueId };
+export type SyncNotifierPostWriteData = {
+	before?: DB_Object | DB_Object[];
+	updated?: DB_Object | DB_Object[];
+	deleted?: DB_Object | DB_Object[] | null;
+};
+
+/**
+ * Options for onPostWrite (collection uniqueKeys and optional transaction).
+ */
+export type SyncNotifierOnPostWriteOptions = {
+	uniqueKeys?: string[];
+	transaction?: unknown;
+};
 
 /**
  * Contract for sync side-effects used by ModuleBE_BaseDB.
@@ -19,8 +29,5 @@ export type SyncNotifierDeletedItem = DB_Object & { __collectionName?: string; _
  * BaseDB receives an implementation via config.syncNotifier; when absent, a no-op is used.
  */
 export interface SyncNotifier {
-	queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>): Promise<SyncNotifierDeletedItem[]>;
-	setLastUpdated(collectionName: string, lastUpdated: number): Promise<void>;
-	onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys?: string[], transaction?: unknown): Promise<void>;
-	setOldestDeleted(collectionName: string, oldestDeleted: number): Promise<void>;
+	onPostWrite(collectionName: string, data: SyncNotifierPostWriteData, options: SyncNotifierOnPostWriteOptions): Promise<void>;
 }

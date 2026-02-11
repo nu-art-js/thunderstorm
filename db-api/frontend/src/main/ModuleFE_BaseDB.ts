@@ -36,7 +36,7 @@ import {DB_Object, DBConfig, KeysOfDB_Object} from './to-refactor/db-types.js';
 import {EventDispatcher, NoOpDispatcher} from './to-refactor/dispatcher.js';
 import {composeDbObjectUniqueId, dbObjectToId} from './to-refactor/utils.js';
 import {BaseDBConfig} from './types.js';
-import {CrudTypes} from '@nu-art/db-api-shared';
+import {CrudTypes, QueryResultWithDeletes} from '@nu-art/db-api-shared';
 
 
 /**
@@ -355,6 +355,14 @@ export class ModuleFE_BaseDB<Types extends CrudTypes>
 		this.cache.onEntriesUpdated(toUpdate);
 		this.cache.onEntriesDeleted(toDelete);
 		this.dispatchMulti(EventType_Query, toUpdate);
+	};
+
+	/**
+	 * Apply a sync payload (e.g. from sync manager smartSync response).
+	 * Delegates to onQueryReturned. Use this when the sync layer passes a single { toUpdate, toDelete } object.
+	 */
+	applySyncResponse = async (result: QueryResultWithDeletes<Types['dbItem']>): Promise<void> => {
+		await this.onQueryReturned(result.toUpdate, result.toDelete);
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: Types['dbItem'], updateIDBLastSynced: boolean = true): Promise<void> {

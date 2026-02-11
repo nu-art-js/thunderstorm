@@ -20,3 +20,7 @@ Backend module for sync-manager: implements `SyncNotifier` (used by ModuleBE_Bas
 4. Register the HTTP server (ApiHandler registers the smartSync route at instance creation).
 
 No `@nu-art/thunderstorm-*` dependency.
+
+## Sync response orchestration
+
+The sync manager owns building the sync response for a module + query: `querySyncResponse(module, query)` returns `{ toUpdate, toDelete }` by running the live query on the module and querying deleted items from its own store. Use this for delta (and any full) sync; do not rely on BaseDB for that shape.
