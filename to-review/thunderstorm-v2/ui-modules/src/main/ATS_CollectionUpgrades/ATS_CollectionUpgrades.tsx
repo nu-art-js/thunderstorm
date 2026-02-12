@@ -1,0 +1,70 @@
+import * as React from 'react';
+import {filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
+import './ATS_CollectionUpgrades.scss';
+import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools/index.js';
+import {genericNotificationAction} from '../../components/TS_Notifications/index.js';
+import {LL_H_C} from '../../components/Layouts/index.js';
+import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
+import {ComponentSync} from '../../core/ComponentSync.js';
+import {Button} from '../../components/Button/Button.js';
+import {ModuleFE_CollectionActions} from '../../modules/ModuleFE_CollectionActions.js';
+
+
+type State = {
+	upgradableModules: ModuleFE_BaseApi<any, any>[];
+};
+
+export class ATS_CollectionUpgrades
+	extends ComponentSync<{}, State> {
+
+	static screen: AppToolsScreen = {
+		name: 'Collection Upgrades',
+		key: 'collection-upgrades',
+		renderer: this,
+		group: ATS_Backend,
+	};
+
+	protected deriveStateFromProps(nextProps: {}, state: State) {
+		state.upgradableModules ??= sortArray(filterDuplicates(RuntimeModules().filter((module: ModuleFE_BaseApi<any>) => {
+			return !!module.getCollectionName;
+		}), (module: ModuleFE_BaseApi<any>) => module.getCollectionName()), item => item.getCollectionName());
+
+		return state;
+	}
+
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<any, any>) {
+		this.forceUpdate();
+	}
+
+	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<any, any>, e: React.MouseEvent) => {
+		await genericNotificationAction(async () => {
+			await ModuleFE_CollectionActions.upgrade.collections({
+				dbKeys: [module.dbDef.dbKey],
+				force: e.metaKey,
+			}).setTimeout(5 * Minute).executeSync();
+		}, `Upgrading ${collectionName}`);
+	};
+
+	private upgradeAll = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		await genericNotificationAction(async () => {
+			await ModuleFE_CollectionActions.upgrade.all({force: e.metaKey}).setTimeout(5 * Minute).executeSync();
+		}, `Upgrading all collections`);
+	};
+
+	render() {
+		return <div className={'collection-upgrades-page'}>
+			<Button onClick={e => this.upgradeAll(e)}>Upgrade All</Button>
+			{TS_AppTools.renderPageHeader('Collection Upgrades - To force upgrade click + ⌘/ctrl')}
+			<LL_H_C className={'buttons-container'}>
+				{(this.state.upgradableModules || []).map(module => {
+					const name = module.getCollectionName().replace(/-/g, ' ');
+					return <Button
+						key={name + module.cache.all().length}
+						onClick={(e) => this.upgradeCollection(name, module, e)}
+					>{name} ({module.cache.all().length})</Button>;
+				})}
+			</LL_H_C>
+		</div>;
+	}
+}

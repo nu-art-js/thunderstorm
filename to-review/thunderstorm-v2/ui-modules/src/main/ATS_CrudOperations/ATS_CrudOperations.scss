@@ -1,0 +1,46 @@
+.ats-crud-operations-container {
+  gap: 50px;
+  height: 700px;
+
+  .ats-crud-operations-container__selection {
+    width: 400px;
+    margin: 30px;
+    gap: 50px;
+
+    .ats-crud-operations-container__selection__input {
+      height: 400px;
+      resize: none;
+    }
+
+    .ats-crud-operations-container__selection__buttons {
+      gap: 10px;
+
+      .ats-crud-operations-container__selection__execute {
+        align-self: flex-end;
+      }
+    }
+  }
+
+  .ats-crud-operations-container__result {
+    width: 450px;
+    height: 200px;
+    margin-top: 20px;
+    align-self: flex-start;
+    resize: none;
+    overflow-y: auto;
+  }
+
+  .ats-crud-operations-container__results {
+    width: 400px;
+    max-height: 650px;
+    align-self: flex-start;
+    gap: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .ats-crud-operations-container__results .ats-crud-operations-container__result {
+    height: 200px;
+  }
+
+}

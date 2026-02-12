@@ -1,0 +1,249 @@
+{
+  "packageName": "@nu-art/thunder-routing",
+  "packagePath": "/Users/tacb0ss/dev/nu-art/beamz-editable/_thunderstorm/thunderstorm/frontend/routing",
+  "timestamp": "2025-12-31T10:04:11.628Z",
+  "imports": [
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/module-pack.ts",
+      "line": 1,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "_keys",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_Routing.tsx",
+      "line": 44,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "addItemToArray",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_Routing.tsx",
+      "line": 44,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "BadImplementationException",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_Routing.tsx",
+      "line": 44,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "composeQueryParams",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_Routing.tsx",
+      "line": 44,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_Routing.tsx",
+      "line": 44,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "RouteParams",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_Routing.tsx",
+      "line": 44,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "QueryParams",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/modules/routing/ModuleFE_Routing.tsx",
+      "line": 48,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "_keys",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_RoutingV2.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "BadImplementationException",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_RoutingV2.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "composeQueryParams",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_RoutingV2.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "composeUrl",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_RoutingV2.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "exists",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_RoutingV2.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "Module",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_RoutingV2.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "removeItemFromArray",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/ModuleFE_RoutingV2.tsx",
+      "line": 3,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "QueryParams",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/modules/routing/ModuleFE_RoutingV2.tsx",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "UrlQueryParams",
+      "sourcePackage": "@nu-art/thunderstorm-shared",
+      "importPath": "@nu-art/thunderstorm-shared",
+      "filePath": "src/main/modules/routing/ModuleFE_RoutingV2.tsx",
+      "line": 5,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "composeUrl",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/route.tsx",
+      "line": 22,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    },
+    {
+      "importingPackage": "@nu-art/thunder-routing",
+      "importedSymbol": "RouteParams",
+      "sourcePackage": "@nu-art/ts-common",
+      "importPath": "@nu-art/ts-common",
+      "filePath": "src/main/modules/routing/route.tsx",
+      "line": 22,
+      "resolved": false,
+      "isTypeOnly": false,
+      "isNamespace": false,
+      "isDefault": false
+    }
+  ],
+  "dependencies": {
+    "required": [
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "missing": [],
+    "found": [
+      "@nu-art/thunderstorm-shared",
+      "@nu-art/ts-common"
+    ],
+    "unused": []
+  },
+  "cycles": [],
+  "symbolCollisions": []
+}

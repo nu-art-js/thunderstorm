@@ -1,0 +1,60 @@
+{
+  "name": "@nu-art/thunder-mouse-interactivity-frontend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Thunder Mouse Interactivity Components and Modules",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/thunder-widgets": "?",
+    "@nu-art/ts-common": "?",
+    "react": "?",
+    "react-dom": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/react-dom": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/main/index.d.ts",
+      "import": "./dist/main/index.js"
+    }
+  }
+}
+
