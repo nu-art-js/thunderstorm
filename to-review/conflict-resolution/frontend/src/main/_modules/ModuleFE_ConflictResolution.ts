@@ -1,3 +1,9 @@
+/*
+ * @nu-art/conflict-resolution-frontend - Conflict resolution frontend module
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import {DBEntityDependencies, DBEntityDependencyErrorType} from '@nu-art/thunderstorm-shared';
 import {ModuleFE_XHR} from '@nu-art/thunderstorm-frontend/index';
 import {BadImplementationException, Module, TypedMap, asArray} from '@nu-art/ts-common';

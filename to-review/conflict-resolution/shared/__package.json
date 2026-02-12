@@ -16,12 +16,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/to-review/conflict-resolution/shared"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc -b -f"
   },
   "contributors": [
     {

@@ -1,3 +1,9 @@
+/*
+ * @nu-art/conflict-resolution-frontend - Conflict resolution tree types
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import * as React from 'react';
 import {TreeNode, TreeType} from '@nu-art/thunderstorm-frontend/index';
 import {DBProto, UniqueId} from '@nu-art/ts-common';

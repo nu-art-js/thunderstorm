@@ -186,7 +186,9 @@ Companion to `todo.md`. Features inside the thunderstorm monolith, their depende
 
 ---
 
-### Server info (FE + BE + shared)
+### Server info (FE + BE + shared) — **DEPRECATED**
+
+**Deprecation:** This feature is dead; it will **not** be moved to the new thunderstorm restructure. Do not create an isolated replica.
 
 - **ModuleBE_ServerInfo**
   - **Category:** BE
@@ -202,7 +204,9 @@ Companion to `todo.md`. Features inside the thunderstorm monolith, their depende
 
 ---
 
-### Force upgrade (FE + BE + shared)
+### Force upgrade (FE + BE + shared) — **DEPRECATED**
+
+**Deprecation:** This feature is dead; it will **not** be moved to the new thunderstorm restructure. Do not create an isolated replica.
 
 - **ModuleBE_ForceUpgrade**
   - **Category:** BE

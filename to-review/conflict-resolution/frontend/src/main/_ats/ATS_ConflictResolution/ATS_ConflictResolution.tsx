@@ -1,3 +1,9 @@
+/*
+ * @nu-art/conflict-resolution-frontend - Conflict resolution ATS screen component
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import {filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_ConflictResolution.scss';
 import {

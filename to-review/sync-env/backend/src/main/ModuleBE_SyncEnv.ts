@@ -4,37 +4,16 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {
-	ApiException,
-	arrayToMap,
-	BadImplementationException,
-	Dispatcher,
-	Minute,
-	Module,
-	MUSTNeverHappenException,
-	TypedMap
-} from '@nu-art/ts-common';
+import {ApiException, arrayToMap, BadImplementationException, Dispatcher, Minute, Module, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {Transform, Writable} from 'stream';
 import {firestore} from 'firebase-admin';
-import {
-	ApiDef_SyncEnv,
-	Request_FetchFirebaseBackup,
-	Request_FetchFromEnv,
-	Request_GetMetadata,
-	Response_FetchBackupMetadata
-} from '@nu-art/sync-env-shared';
+import {ApiDef_SyncEnv, Request_FetchFirebaseBackup, Request_FetchFromEnv, Request_GetMetadata, Response_FetchBackupMetadata} from '@nu-art/sync-env-shared';
 import {HttpMethod} from '@nu-art/api-types';
-import {ApiHandler, HttpServer} from '@nu-art/http-server';
+import {ApiHandler} from '@nu-art/http-server';
 import {HttpClient} from '@nu-art/http-client';
-import type {
-	BackupProvider,
-	GetUpsertAllApi,
-	SyncEnvBackendConfig,
-	SyncEnvDBRegistry,
-	SyncEnvBackupInfo
-} from './types.js';
+import type {BackupProvider, GetUpsertAllApi, SyncEnvBackendConfig, SyncEnvBackupInfo, SyncEnvDBRegistry} from './types.js';
 
 export interface OnSyncEnvCompleted {
 	__onSyncEnvCompleted: (env: string, baseUrl: string, requiredHeaders: TypedMap<string>) => void | Promise<void>;
@@ -158,7 +137,7 @@ export class ModuleBE_SyncEnv_Class
 		return this.backupProvider.getBackupInfo(backupId, url, session);
 	}
 
-	@ApiHandler(ApiDef_SyncEnv.vv1.fetchBackupMetadata, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_SyncEnv.vv1.fetchBackupMetadata)
 	async fetchBackupMetadata(queryParams: Request_GetMetadata): Promise<Response_FetchBackupMetadata> {
 		const backupInfo = await this.getBackupInfo(queryParams);
 		if (!backupInfo)
@@ -172,7 +151,7 @@ export class ModuleBE_SyncEnv_Class
 		};
 	}
 
-	@ApiHandler(ApiDef_SyncEnv.vv1.syncToEnv, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_SyncEnv.vv1.syncToEnv)
 	async pushToEnv(body: { env: 'dev' | 'prod'; moduleName: string; items: unknown[] }): Promise<void> {
 		const url = this.syncEnvConfig.urlMap[body.env];
 		if (!url)
@@ -193,13 +172,13 @@ export class ModuleBE_SyncEnv_Class
 
 
 
-	@ApiHandler(ApiDef_SyncEnv.vv1.createBackup, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_SyncEnv.vv1.createBackup)
 	async createBackup(_query?: Record<string, string | number | boolean | undefined>): Promise<{ pathToBackup: string } | undefined> {
 		await this.backupProvider.initiateBackup(true);
 		return undefined;
 	}
 
-	@ApiHandler(ApiDef_SyncEnv.vv1.getLatestBackup, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_SyncEnv.vv1.getLatestBackup)
 	async getLatestBackupId(_query?: Record<string, string | number | boolean | undefined>): Promise<{ latestBackupId: string }> {
 		const result = await this.backupProvider.getLatestBackupId();
 		if (!result?.latestBackupId)
@@ -207,7 +186,7 @@ export class ModuleBE_SyncEnv_Class
 		return result;
 	}
 
-	@ApiHandler(ApiDef_SyncEnv.vv1.syncFromEnvBackup, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_SyncEnv.vv1.syncFromEnvBackup)
 	async syncFromEnvBackup(body: Request_FetchFromEnv): Promise<void> {
 		if (!this.syncEnvConfig.allowSyncEnv)
 			throw new MUSTNeverHappenException('SyncEnv is disabled on this env- to sync into this env, add \'allowSyncEnv: true\'.');
@@ -273,7 +252,7 @@ export class ModuleBE_SyncEnv_Class
 	}
 
 
-	@ApiHandler(ApiDef_SyncEnv.vv1.syncFirebaseFromBackup, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_SyncEnv.vv1.syncFirebaseFromBackup)
 	async syncFirebaseFromBackup(queryParams: Request_FetchFirebaseBackup): Promise<void> {
 		try {
 			this.logDebug('Getting the firebase backup file');

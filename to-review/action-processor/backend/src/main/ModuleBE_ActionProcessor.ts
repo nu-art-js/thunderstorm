@@ -4,20 +4,9 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {
-	_values,
-	ApiException,
-	BadImplementationException,
-	exists,
-	isErrorOfType,
-	Logger,
-	LogLevel,
-	Module,
-	resolveContent,
-	TypedMap,
-} from '@nu-art/ts-common';
+import {_values, ApiException, BadImplementationException, exists, isErrorOfType, Logger, LogLevel, Module, resolveContent, TypedMap,} from '@nu-art/ts-common';
 import {ApiDef_ActionProcessing, Request_ActionToProcess} from '@nu-art/action-processor-shared';
-import {ApiHandler, HttpServer} from '@nu-art/http-server';
+import {ApiHandler} from '@nu-art/http-server';
 import {ActionDeclaration} from './types.js';
 import {RAD_SetupProject} from './Action_SetupProject.js';
 
@@ -48,7 +37,7 @@ export class ModuleBE_ActionProcessor_Class
 		};
 	};
 
-	@ApiHandler(ApiDef_ActionProcessing.vv1.execute, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_ActionProcessing.vv1.execute)
 	async refactor(action: Request_ActionToProcess): Promise<void> {
 		this.logWarning(`RECEIVED ACTION: ${action.key}`);
 
@@ -74,7 +63,7 @@ export class ModuleBE_ActionProcessor_Class
 		}
 	}
 
-	@ApiHandler(ApiDef_ActionProcessing.vv1.list, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_ActionProcessing.vv1.list)
 	async list(_query?: Record<string, string | number | boolean | undefined>): Promise<{ key: string; description: string; group: string; label?: string }[]> {
 		return _values(this.actions)
 			.filter(action => !exists(action.declaration.visible) || resolveContent(action.declaration.visible))
