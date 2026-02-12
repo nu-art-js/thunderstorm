@@ -7,23 +7,7 @@
 import {FirestoreQuery} from '@nu-art/firebase-shared';
 import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
-import type {SyncPostWriteData, SyncPostWriteOptions, SyncableCollectionBE} from '@nu-art/sync-manager-shared';
-import {
-	__stringify,
-	asArray,
-	arrayToMap,
-	currentTimeMillis,
-	DB_Object,
-	exists,
-	filterInstances,
-	LogLevel,
-	Module,
-	PreDB,
-	ResolvableContent,
-	resolveContent,
-	UniqueId
-} from '@nu-art/ts-common';
-import {ApiHandler, HttpServer} from '@nu-art/http-server';
+import type {DBProto_DeletedDoc, SyncableCollectionBE, SyncPostWriteData, SyncPostWriteOptions} from '@nu-art/sync-manager-shared';
 import {
 	ApiDef_SyncManager,
 	DBDef_DeletedDoc,
@@ -38,7 +22,22 @@ import {
 	SyncDataFirebaseState,
 	SyncManagerAPI_SmartSync
 } from '@nu-art/sync-manager-shared';
-import type {DBProto_DeletedDoc} from '@nu-art/sync-manager-shared';
+import {
+	__stringify,
+	arrayToMap,
+	asArray,
+	currentTimeMillis,
+	DB_Object,
+	exists,
+	filterInstances,
+	LogLevel,
+	Module,
+	PreDB,
+	ResolvableContent,
+	resolveContent,
+	UniqueId
+} from '@nu-art/ts-common';
+import {ApiHandler} from '@nu-art/http-server';
 import type {Transaction} from 'firebase-admin/firestore';
 
 type DeletedDBItem = DB_Object & { __collectionName: string; __docId: UniqueId };
@@ -73,7 +72,7 @@ export class ModuleBE_SyncManager_Class
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 	}
 
-	@ApiHandler(() => ApiDef_SyncManager.v1.smartSync, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(() => ApiDef_SyncManager.v1.smartSync)
 	async calculateSmartSync(body: SyncManagerAPI_SmartSync['request']): Promise<SyncManagerAPI_SmartSync['response']> {
 		const frontendCollectionNames = body.modules.map(item => item.dbKey);
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);

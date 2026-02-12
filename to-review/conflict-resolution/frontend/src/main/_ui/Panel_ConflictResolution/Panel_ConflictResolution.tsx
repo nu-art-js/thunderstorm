@@ -1,3 +1,9 @@
+/*
+ * @nu-art/conflict-resolution-frontend - Conflict resolution panel component
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
 import {Button, ComponentSync, LL_H_C, LL_V_L, ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend/index';
 import {_keys, _values, filterDuplicates, flatArray, RuntimeModules} from '@nu-art/ts-common';

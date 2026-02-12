@@ -36,7 +36,7 @@ The Thunderstorm library contains many intertwined features. Use `_thunderstorm/
 
 **Action processor:** ModuleBE_ActionProcessor, ModuleFE_ActionProcessor, action-processor shared.
 
-**Entities / app support:** app-config (ModuleBE_AppConfigDB/API, ModuleFE_AppConfig), editable-test, backup-doc, deleted-doc; server-info, force-upgrade, cleanup-scheduler; BaseHttpModule, BaseHttpRequest, route-tools, headers, no-auth-listener.
+**Entities / app support:** app-config (ModuleBE_AppConfigDB/API, ModuleFE_AppConfig), editable-test, backup-doc, deleted-doc; server-info (deprecated), force-upgrade (deprecated), cleanup-scheduler; BaseHttpModule, BaseHttpRequest, route-tools, headers, no-auth-listener.
 
 **Frontend:** EditableItem / EditableDBItemV3, TS_InputV2, TS_TextAreaV2, TS_DropDown, adapter, and many UI components under `thunderstorm/frontend/`.
 
@@ -55,17 +55,24 @@ Mark when a feature has an **isolated replica** in a standalone library with **n
 - [x] **db-api-gen** — ModuleBE_BaseDB, ModuleBE_BaseApi → isolated replica at `_thunderstorm/db-api/` (shared, backend, frontend)
 - [x] **Sync Manager** — ModuleBE_SyncManager, ModuleFE_SyncManager, sync-manager shared → isolated replica at `_thunderstorm/sync-manager/` (shared, backend, frontend)
 - [x] **Sync Env** — ModuleBE_SyncEnv, ModuleFE_SyncEnvV2, sync-env shared → isolated replica at `_thunderstorm/sync-env/` (shared, backend, frontend)
-- [ ] **Backup** — ModuleBE_BackupDocDB, ModuleBE_BackupScheduler (be; shared when FE added)
+- [x] **Backup** — ModuleBE_BackupDocDB, ModuleBE_BackupScheduler → isolated replica at `_thunderstorm/to-review/backup/` (shared, backend; BE only)
 - [ ] **Editable item** — EditableItem, EditableDBItemV3, TS_InputV2, TS_TextAreaV2, TS_DropDown, adapter (reference in another branch)
 - [x] **Action Processor** — ModuleBE_ActionProcessor, ModuleFE_ActionProcessor, action-processor shared → isolated replica at `_thunderstorm/action-processor/` (shared, backend, frontend)
 - [x] **App config** — ModuleBE_AppConfigDB/API, ModuleFE_AppConfig, app-config entity → isolated replica at `_thunderstorm/app-config/` (shared, backend, frontend)
 - [x] **Archiving** — ModuleBE_Archiving, ModuleFE_Archiving, archiving shared → isolated replica at `_thunderstorm/archiving/` (shared, backend, frontend)
 - [ ] **Collection actions** — ModuleBE_CollectionActions, dispatcher, ModuleFE_CollectionActions, collection-actions shared
-- [ ] **Server info / Force upgrade / Cleanup** — ModuleBE_ServerInfo, ModuleBE_ForceUpgrade, CleanupScheduler, etc.
+- [ ] **Cleanup** — CleanupScheduler, etc.
 - [ ] **Core / platform** — ModuleBE_APIs, typed-api, HttpServer, Storm / BaseStorm, db-def (likely last or as-needed)
 - [ ] **Routing** — route-resolvers, route-tools
 - [ ] **UI (misc)** — remaining frontend components
 - [ ] **MISC** — BaseHttpModule, BaseHttpRequest, headers, no-auth-listener, other shared bits
+
+## Deprecated / not moving to restructure
+
+The following features are **deprecated** and will **not** be replicated as standalone libraries. They remain in the monolith only for legacy compatibility; do not create isolated replicas.
+
+- **Server info** — ModuleBE_ServerInfo, ModuleFE_ServerInfo, server-info shared
+- **Force upgrade** — ModuleBE_ForceUpgrade, ModuleFE_ForceUpgrade
 
 ## How to Create an Isolated Replica of a Feature
 

@@ -1,3 +1,9 @@
+/*
+ * @nu-art/conflict-resolution-frontend - Conflict resolution tree component
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
 import {Adapter, AdapterBuilder, ComponentSync, TS_Tree} from '@nu-art/thunderstorm-frontend/index';
 import {calculateConflictResolutionTree} from './tree-calculation.js';

@@ -1,3 +1,9 @@
+/*
+ * @nu-art/conflict-resolution-frontend - Dispatcher for showing conflict resolution UI
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
 import {ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
 

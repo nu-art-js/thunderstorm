@@ -1,3 +1,9 @@
+/*
+ * @nu-art/conflict-resolution-frontend - Conflict resolution tree renderers
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import * as React from 'react';
 import {ConflictResolutionTree_RendererMap, ConflictResolutionTree_RendererProps} from './types.js';
 import {ConflictResolutionItem} from '@nu-art/conflict-resolution-shared';
