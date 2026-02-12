@@ -1,0 +1,8 @@
+import {UniqueId} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '@nu-art/web-client';
+
+export interface OnDeleteConflicts {
+	__onDeleteConflicts: (entity: string, conflictingIds: UniqueId[]) => void;
+}
+
+export const dispatch_onDeleteConflicts = new ThunderDispatcher<OnDeleteConflicts, '__onDeleteConflicts'>('__onDeleteConflicts');

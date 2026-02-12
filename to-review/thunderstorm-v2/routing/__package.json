@@ -1,0 +1,63 @@
+{
+  "name": "@nu-art/thunder-routing",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Thunder Routing Modules",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?",
+    "history": "^4.9.0",
+    "react": "?",
+    "react-router-dom": "?",
+    "@nu-art/api-types": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/react-dom": "?",
+    "@types/react-router": "?",
+    "@types/react-router-dom": "?",
+    "@types/history": "^4.7.2"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}
