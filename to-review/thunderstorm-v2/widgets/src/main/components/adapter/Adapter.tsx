@@ -23,7 +23,7 @@ import {ComponentType} from 'react';
 import {_keys, BadImplementationException, TS_Object,} from '@nu-art/ts-common';
 import {SimpleTreeNodeRenderer} from '../TS_Tree/SimpleTreeNodeRenderer.js';
 import {_BaseNodeRenderer, NodeRendererProps,} from './BaseRenderer.js';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 // export type TreeItem<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
 // 	item: Item
 // 	type: K

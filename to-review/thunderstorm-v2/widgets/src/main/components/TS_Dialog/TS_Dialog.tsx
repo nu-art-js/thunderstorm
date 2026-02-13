@@ -7,7 +7,8 @@ import {Button} from '../Button/Button.js';
 import {LL_V_L} from '../Layouts/index.js';
 
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {_className, InferState, stopPropagation} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
+import {InferState, stopPropagation} from '@nu-art/web-client';
 
 /**
  * ###DialogButton

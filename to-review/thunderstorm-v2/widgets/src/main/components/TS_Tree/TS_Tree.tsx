@@ -26,7 +26,7 @@ import './TS_Tree.scss';
 import {TreeNodeExpandState} from './types.js';
 import {_keys, exists} from '@nu-art/ts-common';
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 
 export type Props_Tree = {
 	id: string;

@@ -21,7 +21,7 @@
 import * as React from 'react';
 import {HTMLProps} from 'react';
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import './TS_Checkbox.scss';
 import {ComponentProps_Error} from '../types.js';
 

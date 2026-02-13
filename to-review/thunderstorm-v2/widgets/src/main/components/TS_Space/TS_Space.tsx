@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 
 export class TS_Space
 	extends React.Component<{

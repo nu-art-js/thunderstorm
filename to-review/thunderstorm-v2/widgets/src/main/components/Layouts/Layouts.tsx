@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {CSSProperties, HTMLProps} from 'react';
 import './_Layouts.scss';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 
 export type LinearLayoutProps = React.PropsWithChildren<HTMLProps<HTMLDivElement>> & {
 	ref?: React.Ref<any>;

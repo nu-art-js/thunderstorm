@@ -1,6 +1,6 @@
 import {Component, HTMLProps, ReactNode} from 'react';
 import './FrameLayout.scss';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 
 export class FrameLayout
 	extends Component<HTMLProps<HTMLDivElement> & {

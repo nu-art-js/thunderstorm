@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import './TS_Card.scss';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary/index.js';
 import {LinearLayoutProps} from '../Layouts/index.js';

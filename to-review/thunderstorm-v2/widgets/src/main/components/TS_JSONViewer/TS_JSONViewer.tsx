@@ -4,7 +4,7 @@ import {_keys, sortArray} from '@nu-art/ts-common';
 import {TS_Tree} from '../TS_Tree/index.js';
 import {AdapterBuilder} from '../adapter/Adapter.js';
 import {NodeRendererProps} from '../adapter/BaseRenderer.js';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import {LL_H_C} from '../Layouts/index.js';
 import './TS_JSONViewer.scss';
 import {TS_Icons} from '@nu-art/ts-styles';

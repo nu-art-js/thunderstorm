@@ -20,7 +20,8 @@
  */
 import * as React from 'react';
 import './TS_Link.scss';
-import {_className, ModuleFE_Thunderstorm, stopPropagation, UrlTarget} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
+import {ModuleFE_Thunderstorm, stopPropagation, UrlTarget} from '@nu-art/web-client';
 import {composeUrl, RouteParams} from '@nu-art/ts-common';
 
 
