@@ -6,8 +6,8 @@ import {ItemEditor_CustomSort, ItemEditor_FilterType, ItemEditor_MapperType} fro
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter/index.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {EditableDBItemV3, EditableItem} from '../../core/EditableItem.js';
+import {_className} from '@nu-art/thunder-core';
 import {
-	_className,
 	FrameLayout,
 	InferProps,
 	InferState,

@@ -22,7 +22,7 @@ import * as React from 'react';
 import {KeyboardEvent} from 'react';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput.js';
 import './TS_TextArea.scss';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import {getComputedStyleProperty} from '../utils.js';
 
 export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement> & {

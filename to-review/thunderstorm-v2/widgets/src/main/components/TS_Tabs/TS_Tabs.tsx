@@ -20,7 +20,8 @@
  */
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {_className, stopPropagation, StorageKey} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
+import {stopPropagation, StorageKey} from '@nu-art/web-client';
 import './TS_Tabs.scss';
 
 

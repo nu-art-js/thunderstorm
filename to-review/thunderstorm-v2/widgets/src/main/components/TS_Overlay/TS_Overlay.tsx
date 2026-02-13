@@ -20,7 +20,7 @@
  */
 import * as React from 'react';
 import './TS_Overlay.scss';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 
 type Props = React.PropsWithChildren<{
 	flat?: boolean;

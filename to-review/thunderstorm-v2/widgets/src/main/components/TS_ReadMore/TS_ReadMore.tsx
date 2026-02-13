@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync.js';
 import './TS_ReadMore.scss';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 
 type Style = React.CSSProperties & {
 	'--collapsed-height': string;

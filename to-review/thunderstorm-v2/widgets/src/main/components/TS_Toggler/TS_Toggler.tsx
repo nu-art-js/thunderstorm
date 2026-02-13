@@ -1,6 +1,6 @@
 import {ComponentSync} from '../../core/ComponentSync.js';
 import {LL_H_C} from '../Layouts/index.js';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import './TS_Toggler.scss';
 
 type Props<T> = {

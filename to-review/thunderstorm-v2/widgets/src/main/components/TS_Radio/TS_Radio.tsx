@@ -1,7 +1,8 @@
 import * as React from 'react';
 import './TS_Radio.scss';
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {_className, stopPropagation} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
+import {stopPropagation} from '@nu-art/web-client';
 import {Label} from '../Label/Label.js';
 
 type Props<ItemType> = {

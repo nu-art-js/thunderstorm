@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {exists, generateHex, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import './TS_CheckboxV2.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 

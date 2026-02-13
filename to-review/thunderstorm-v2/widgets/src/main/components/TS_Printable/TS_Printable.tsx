@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {HTMLProps} from 'react';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import './TS_Printable.scss';
 
 type Props = HTMLProps<HTMLDivElement> & {

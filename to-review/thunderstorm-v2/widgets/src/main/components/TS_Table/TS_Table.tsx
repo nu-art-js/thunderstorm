@@ -20,7 +20,7 @@
  */
 import {TS_Object} from '@nu-art/ts-common';
 import React, {HTMLProps} from 'react';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import './TS_Table.scss';
 
 export type Header<T extends TableHeaders<any>> = T extends TableHeaders<infer R, infer A, infer P> ? P | {

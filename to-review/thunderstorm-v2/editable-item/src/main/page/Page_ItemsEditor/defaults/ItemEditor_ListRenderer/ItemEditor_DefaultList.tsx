@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {DBProto, sortArray} from '@nu-art/ts-common';
+import {_className} from '@nu-art/thunder-core';
 import {
-	_className,
 	Button,
 	ComponentSync,
 	Model_PopUp,
