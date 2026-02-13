@@ -1,7 +1,7 @@
 import {BadImplementationException} from '@nu-art/ts-common';
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 
 type TransitionPhase = 'mount' | 'enter' | 'enter-done' | 'exit' | 'exit-done' | 'unmount';
 type Props = React.PropsWithChildren<{

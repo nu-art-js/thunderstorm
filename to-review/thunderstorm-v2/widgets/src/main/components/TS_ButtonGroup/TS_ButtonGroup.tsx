@@ -2,7 +2,8 @@ import * as React from 'react';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 import './TS_ButtonGroup.scss';
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {_className, InferProps, InferState} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
+import {InferProps, InferState} from '../../core/component-types.js';
 import {ButtonGroup_Props, ButtonGroup_Props_Controlled, ButtonGroup_State, ButtonGroupItem, ButtonGroupItem_NonControlled} from './types.js';
 import {Button} from '../Button/Button.js';
 

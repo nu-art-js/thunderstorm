@@ -23,7 +23,7 @@
  * Created by tacb0ss on 28/07/2018.
  */
 import {BaseComponent} from './ComponentBase.js';
-import {InferProps, InferState} from '@nu-art/web-client';
+import {InferProps, InferState} from './component-types.js';
 
 
 export abstract class ComponentSync<P = any, S = any>

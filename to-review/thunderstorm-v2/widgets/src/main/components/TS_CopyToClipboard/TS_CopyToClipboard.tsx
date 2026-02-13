@@ -1,4 +1,4 @@
-import {stopPropagation} from '@nu-art/web-client';
+import {stopPropagation} from '@nu-art/thunder-core';
 import {HTMLProps} from 'react';
 import {ModuleFE_Clipboard} from '../../component-modules/ModuleFE_Clipboard.js';
 

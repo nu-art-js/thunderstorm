@@ -23,7 +23,7 @@ import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity.js';
 import {resolveContent} from '@nu-art/ts-common';
 import {Model_ToolTip, mouseInteractivity_ToolTip, ToolTipListener} from '../../../component-modules/mouse-interactivity/types.js';
 import {ModuleFE_MouseInteractivity} from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity.js';
-import {OnWindowResized} from '@nu-art/web-client';
+import {addWindowResizeListener, OnWindowResized, removeWindowResizeListener} from '@nu-art/thunder-core';
 
 export class TS_ToolTip
 	extends TS_MouseInteractivity<Model_ToolTip>
@@ -33,6 +33,15 @@ export class TS_ToolTip
 		if (this.state.model?.id)
 			ModuleFE_MouseInteractivity.hide(mouseInteractivity_ToolTip);
 	};
+
+	componentDidMount() {
+		addWindowResizeListener(this);
+	}
+
+	componentWillUnmount() {
+		removeWindowResizeListener(this);
+	}
+
 	__onToolTipDisplay = (model?: Model_ToolTip) => {
 		//Clear timeout if one exists
 		if (this.timeout)

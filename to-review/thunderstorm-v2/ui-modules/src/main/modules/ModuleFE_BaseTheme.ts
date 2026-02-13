@@ -1,5 +1,5 @@
 import {_keys, Module} from '@nu-art/ts-common';
-import {StorageKey} from '@nu-art/web-client';
+import {StorageKey} from '@nu-art/thunder-core';
 
 
 type Theme = {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
-import {OnWindowResized} from '@nu-art/web-client';
+import {addWindowResizeListener, OnWindowResized, removeWindowResizeListener} from '@nu-art/thunder-core';
 import './Label.scss';
 
 type Props = React.PropsWithChildren<{
@@ -37,7 +37,12 @@ export class Label
 	}
 
 	componentDidMount() {
+		addWindowResizeListener(this);
 		this.checkOverflow();
+	}
+
+	componentWillUnmount() {
+		removeWindowResizeListener(this);
 	}
 
 	componentDidUpdate() {

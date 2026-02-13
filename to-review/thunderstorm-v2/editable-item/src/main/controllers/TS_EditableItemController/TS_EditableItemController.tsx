@@ -3,7 +3,7 @@ import './TS_EditableItemController.scss';
 import {BadImplementationException, DB_Object, DBProto, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {Editable_SaveAction, EditableDBItemV3} from '../../core/EditableItem.js';
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {ComponentSync} from '@nu-art/web-client';
+import {ComponentSync} from '@nu-art/thunder-widgets';
 import {ApiCallerEventType} from '@nu-art/storm-shared';
 import {EditableRef} from '../TS_EditableContent/types.js';
 import {Props_ItemsEditor} from '../../page/Page_ItemsEditor/index.js';

@@ -1,7 +1,7 @@
 import {HTMLAttributes} from 'react';
 import {ComponentSync} from '../core/ComponentSync.js';
 
-import {OnWindowResized} from '@nu-art/web-client';
+import {addWindowResizeListener, OnWindowResized, removeWindowResizeListener} from '@nu-art/thunder-core';
 
 type BounderProps = HTMLAttributes<HTMLDivElement>;
 
@@ -13,6 +13,14 @@ export class HeightBounder
 
 	__onWindowResized(): void {
 		this.forceUpdate();
+	}
+
+	componentDidMount() {
+		addWindowResizeListener(this);
+	}
+
+	componentWillUnmount() {
+		removeWindowResizeListener(this);
 	}
 
 	protected deriveStateFromProps(nextProps: BounderProps): any {

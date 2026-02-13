@@ -23,7 +23,7 @@ import * as React from 'react';
 import {generateHex, Module} from '@nu-art/ts-common';
 import {TS_Tree} from '../../components/TS_Tree/index.js';
 import {Model_Menu, Model_PopUp, Model_ToolTip, MouseInteractivityType, PopUpListener, ToolTipListener} from './types.js';
-import {ThunderDispatcher} from '@nu-art/web-client';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 const showPopUp = new ThunderDispatcher<PopUpListener, '__onPopUpDisplay'>('__onPopUpDisplay');
 const showToolTip = new ThunderDispatcher<ToolTipListener, '__onToolTipDisplay'>('__onToolTipDisplay');

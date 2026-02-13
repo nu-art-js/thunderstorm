@@ -23,7 +23,7 @@ import * as React from 'react';
 import {CSSProperties} from 'react';
 import {BadImplementationException, clamp, debounce, Filter, ResolvableContent, resolveContent, voidFunction} from '@nu-art/ts-common';
 import {_className} from '@nu-art/thunder-core';
-import {stopPropagation} from '@nu-art/web-client';
+import {stopPropagation} from '@nu-art/thunder-core';
 import {Adapter,} from '../adapter/Adapter.js';
 import {TS_Overlay} from '../TS_Overlay/index.js';
 import {TS_Tree} from '../TS_Tree/index.js';

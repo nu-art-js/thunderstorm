@@ -21,7 +21,7 @@
 import * as React from 'react';
 import './TS_AppTools.scss';
 import {LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
-import {_className, StorageKey} from '@nu-art/web-client';
+import {_className, StorageKey} from '@nu-art/thunder-core';
 import {TS_ErrorBoundary} from '@nu-art/thunder-widgets';
 import {TS_NavLink, TS_Route} from '@nu-art/thunder-routing';
 import {md5, sortArray, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';

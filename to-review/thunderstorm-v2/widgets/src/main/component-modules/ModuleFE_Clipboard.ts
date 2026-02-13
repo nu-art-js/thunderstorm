@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
 import {ModuleFE_Toaster} from './ModuleFE_Toaster.js';
-import {base64ToBlob} from '@nu-art/web-client';
+import {base64ToBlob} from '@nu-art/ts-common';
 
 
 class ModuleFE_Clipboard_Class

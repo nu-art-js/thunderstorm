@@ -20,14 +20,14 @@
  */
 import * as React from 'react';
 import './TS_Link.scss';
-import {_className} from '@nu-art/thunder-core';
-import {ModuleFE_Thunderstorm, stopPropagation, UrlTarget} from '@nu-art/web-client';
+import {_className, stopPropagation} from '@nu-art/thunder-core';
 import {composeUrl, RouteParams} from '@nu-art/ts-common';
 
+export type UrlTarget = '_blank' | '_self' | '_parent' | '_top';
 
 type Props = React.PropsWithChildren<{
-	url: string
-	params?: RouteParams
+	url: string;
+	params?: RouteParams;
 	target?: UrlTarget;
 	className?: string;
 }>;
@@ -37,9 +37,9 @@ export class TS_Link
 
 	private handleOnClick = (e: React.MouseEvent) => {
 		stopPropagation(e);
-		const params = this.props.params || {};
-
-		ModuleFE_Thunderstorm.openUrl(composeUrl(this.props.url, params), this.props.target);
+		const params = this.props.params ?? {};
+		const url = composeUrl(this.props.url, params);
+		window.open(url, this.props.target ?? '_self');
 	};
 
 	render() {

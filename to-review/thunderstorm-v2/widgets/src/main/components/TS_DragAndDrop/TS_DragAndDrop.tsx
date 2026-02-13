@@ -3,7 +3,7 @@ import {ComponentSync} from '../../core/ComponentSync.js';
 import './TS_DragAndDrop.scss';
 import {LL_V_L, LL_VH_C} from '../Layouts/index.js';
 import {asArray} from '@nu-art/ts-common';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 
 type DND_State = 'Idle' | 'Dragging' | 'Positive' | 'Negative' | 'PartialNegative';
 const DND_Styles: {

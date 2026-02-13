@@ -9,12 +9,12 @@ import {
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
 	VirtualizedList
-} from '@nu-art/web-client';
+} from '@nu-art/thunder-widgets';
 import './ItemEditor_DefaultList.scss';
 import {ItemEditor_CustomSort, ItemEditor_FilterType} from '../../types.js';
 import {ApiCallerEventType} from '@nu-art/storm-shared';
 import {MenuAction} from '../../Page_ItemsEditor.js';
-import {InferProps, InferState} from '@nu-art/thunder-routing';
+import {InferProps, InferState} from '@nu-art/thunder-widgets';
 
 export type Props_ListRenderer<Proto extends DBProto<any>> = {
 	module: ModuleFE_BaseApi<Proto>;

@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {generateHex, Module, ResolvableContent} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '@nu-art/web-client';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 
 export type Dialog_Model = DialogKey & {
