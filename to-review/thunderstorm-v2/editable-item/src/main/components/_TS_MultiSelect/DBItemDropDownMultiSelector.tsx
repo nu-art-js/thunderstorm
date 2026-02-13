@@ -1,7 +1,8 @@
 import {DBPointer, DBProto, UniqueId} from '@nu-art/ts-common';
 import * as React from 'react';
 import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2} from '../TS_MultiSelect/index.js';
-import {ComponentSync, GenericDropDown_DBPointer_Item, ModuleFE_BaseApi} from '@nu-art/web-client';
+import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {ComponentSync, GenericDropDown_DBPointer_Item} from '@nu-art/web-client';
 import {TS_Icons} from '@nu-art/ts-styles';
 
 type Props<Proto extends DBProto<any>> = {

@@ -1,7 +1,7 @@
 import {Filter, filterDuplicates, ResolvableContent, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import {MandatoryProps_TS_DropDown, TS_DropDown} from '../../components/TS_Dropdown/index.js';
 import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {LL_V_L} from '../../components/Layouts/index.js';
 
 

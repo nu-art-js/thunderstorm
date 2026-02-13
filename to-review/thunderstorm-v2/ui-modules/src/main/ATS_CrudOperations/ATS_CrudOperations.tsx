@@ -1,6 +1,6 @@
 import './ATS_CrudOperations.scss';
 import {AppToolsScreen, ATS_Backend} from '../../components/TS_AppTools/index.js';
-import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
+import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
 import {ComponentSync} from '../../core/ComponentSync.js';
 import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';

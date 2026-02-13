@@ -1,11 +1,11 @@
 import * as React from 'react';
 import {DBProto, sortArray} from '@nu-art/ts-common';
+import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {_className} from '@nu-art/thunder-core';
 import {
 	Button,
 	ComponentSync,
 	Model_PopUp,
-	ModuleFE_BaseApi,
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
 	VirtualizedList

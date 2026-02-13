@@ -6,6 +6,7 @@ import {ItemEditor_CustomSort, ItemEditor_FilterType, ItemEditor_MapperType} fro
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter/index.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {EditableDBItemV3, EditableItem} from '../../core/EditableItem.js';
+import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {_className} from '@nu-art/thunder-core';
 import {
 	FrameLayout,
@@ -14,7 +15,6 @@ import {
 	LL_H_C,
 	LL_H_T,
 	LL_V_L,
-	ModuleFE_BaseApi,
 	ModuleFE_BrowserHistoryV2,
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
