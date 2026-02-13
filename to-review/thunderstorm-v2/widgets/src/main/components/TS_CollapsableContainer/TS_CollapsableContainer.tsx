@@ -3,7 +3,7 @@ import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_CollapsableContainer.scss';
 import {ComponentSync} from '../../core/ComponentSync.js';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import {LL_V_L} from '../Layouts/index.js';
 
 type Props = {

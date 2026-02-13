@@ -48,6 +48,7 @@ export * from './components/form/types.js';
 export * from './components/form/Form.js';
 export * from './components/adapter/Adapter.js';
 export * from './components/adapter/BaseRenderer.js';
+export * from './core/component-types.js';
 export * from './core/ComponentAsync.js';
 export * from './core/ComponentBase.js';
 export * from './core/ComponentSync.js';

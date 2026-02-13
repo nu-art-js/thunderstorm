@@ -8,22 +8,23 @@ import {TS_Icons} from '@nu-art/ts-styles';
 import {EditableDBItemV3, EditableItem} from '../../core/EditableItem.js';
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {_className} from '@nu-art/thunder-core';
+import {InferProps, InferState} from '@nu-art/thunder-widgets';
 import {
 	FrameLayout,
-	InferProps,
-	InferState,
 	LL_H_C,
 	LL_H_T,
 	LL_V_L,
-	ModuleFE_BrowserHistoryV2,
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
 	openContent,
+	TS_ButtonLoader
+} from '@nu-art/thunder-widgets';
+import {TS_Route} from '@nu-art/thunder-routing';
+import {
+	ModuleFE_BrowserHistoryV2,
 	ProtoComponent,
 	ProtoComponentDef,
-	SuperProto,
-	TS_ButtonLoader,
-	TS_Route
+	SuperProto
 } from '@nu-art/web-client';
 import {Props_EditableItemControllerProto} from '../../controllers/TS_EditableItemControllerProto/index.js';
 import {ApiCallerEventType} from '@nu-art/storm-shared';

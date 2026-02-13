@@ -1,5 +1,5 @@
 import './TS_PopUp.scss';
-import {_className, OnWindowResized, stopPropagation} from '@nu-art/web-client';
+import {_className, addWindowResizeListener, OnWindowResized, removeWindowResizeListener, stopPropagation} from '@nu-art/thunder-core';
 import {resolveContent} from '@nu-art/ts-common';
 import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity.js';
 import {Model_PopUp, ModuleFE_MouseInteractivity, mouseInteractivity_PopUp, PopUpListener} from '../../../component-modules/mouse-interactivity/index.js';
@@ -12,6 +12,14 @@ export class TS_PopUp
 	__onWindowResized(): void {
 		if (this.state.model)
 			ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
+	}
+
+	componentDidMount() {
+		addWindowResizeListener(this);
+	}
+
+	componentWillUnmount() {
+		removeWindowResizeListener(this);
 	}
 
 	__onPopUpDisplay = (model?: Model_PopUp) => {

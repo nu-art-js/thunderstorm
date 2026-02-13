@@ -198,3 +198,12 @@ export function createLockedAsyncFunction(fn: () => Promise<void>): () => void {
 		});
 	};
 }
+
+/**
+ * Converts a base64 data URL to a Blob.
+ * @param imageAsBase64 - Data URL (e.g. "data:image/png;base64,...") or base64 string
+ * @returns Promise resolving to the Blob
+ */
+export async function base64ToBlob(imageAsBase64: string): Promise<Blob> {
+	return (await fetch(imageAsBase64)).blob();
+}

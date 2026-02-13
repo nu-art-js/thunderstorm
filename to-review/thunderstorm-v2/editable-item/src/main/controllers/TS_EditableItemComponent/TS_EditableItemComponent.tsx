@@ -1,6 +1,7 @@
 import {ReactNode} from 'react';
 import {ComponentSync} from '@nu-art/thunder-widgets';
-import {InferProps, InferState, TS_PropRenderer} from '@nu-art/thunder-routing';
+import {InferProps, InferState} from '@nu-art/thunder-widgets';
+import {TS_PropRenderer} from '@nu-art/thunder-routing';
 import {DBProto} from '@nu-art/ts-common';
 import {EditableRef} from '../TS_EditableContent/types.js';
 

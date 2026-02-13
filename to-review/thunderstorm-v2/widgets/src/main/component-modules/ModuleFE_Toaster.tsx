@@ -22,7 +22,7 @@
 import * as React from 'react';
 import {Module, Second} from '@nu-art/ts-common';
 import {TS_Toast} from '../components/TS_Toaster/TS_Toast.js';
-import {ThunderDispatcher} from '@nu-art/web-client';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 
 export type Toast_Model = {

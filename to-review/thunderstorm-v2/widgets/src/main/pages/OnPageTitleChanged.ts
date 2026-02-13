@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {ThunderDispatcher} from '@nu-art/web-client';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 export interface OnPageTitleChangedListener {
 	__onPageTitleChanged(title: ReactNode): void;

@@ -5,7 +5,7 @@ import {LL_H_C, LL_V_L} from '../Layouts/index.js';
 import {formatTimestamp} from '@nu-art/ts-common';
 import './TS_Notifications.scss';
 import {TS_ComponentTransition} from '../TS_ComponentTransition/index.js';
-import {_className, stopPropagation} from '@nu-art/web-client';
+import {_className, stopPropagation} from '@nu-art/thunder-core';
 
 type State = {
 	notifications: DB_Notification[];

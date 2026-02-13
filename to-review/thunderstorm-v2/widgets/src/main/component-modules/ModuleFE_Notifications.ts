@@ -1,5 +1,6 @@
 import {addItemToArrayAtIndex, currentTimeMillis, DB_Object, generateHex, Module, removeFromArrayByIndex} from '@nu-art/ts-common';
-import {StorageKey, ThunderDispatcher} from '@nu-art/web-client';
+import {StorageKey} from '@nu-art/thunder-core';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 
 type NS_Normal = 'normal';
@@ -54,7 +55,8 @@ export class ModuleFE_Notifications_Class
 	create(id?: string): UI_Notification {
 		const __created = currentTimeMillis();
 
-		const notification: DB_Notification = this.notificationStorage.get([]).find(n => n._id === id) || {
+		const list = this.notificationStorage.get([]) ?? [];
+		const notification: DB_Notification = list.find(n => n._id === id) ?? {
 			postDelayed: 5000,
 			status: NotificationStatus_Normal,
 			title: '',
@@ -107,7 +109,7 @@ export class ModuleFE_Notifications_Class
 	}
 
 	private upsert(notification: DB_Notification) {
-		const notifications = this.notificationStorage.get([]);
+		const notifications = this.notificationStorage.get([]) ?? [];
 		const index = notifications.findIndex(n => n._id === notification._id);
 		if (index !== -1)
 			notifications[index] = notification;
@@ -155,11 +157,12 @@ export class ModuleFE_Notifications_Class
 	private delete(notification: DB_Notification) {
 		this.hide(notification);
 
-		this.notificationStorage.set(this.notificationStorage.get([]).filter(item => item._id !== notification._id));
+		const list = this.notificationStorage.get([]) ?? [];
+		this.notificationStorage.set(list.filter(item => item._id !== notification._id));
 	}
 
 	showAllNotifications() {
-		const notifications = this.notificationStorage.get([]);
+		const notifications = this.notificationStorage.get([]) ?? [];
 		dispatch_showNotifications.dispatchUI(notifications);
 	}
 

@@ -11,7 +11,7 @@ import {
 	EditableItemStatus_UnsavedChanges,
 	EditableItemStatusListener
 } from '../../core/EditableItem.js';
-import {InferProps, InferState} from '@nu-art/thunder-routing';
+import {InferProps, InferState} from '@nu-art/thunder-widgets';
 
 type Props = {
 	labels: {

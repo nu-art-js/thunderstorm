@@ -20,7 +20,7 @@
  */
 import * as React from 'react';
 import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
-import {_className} from '@nu-art/web-client';
+import {_className} from '@nu-art/thunder-core';
 import './TS_TextAreaV2.scss';
 import {ComponentProps_Error, convertToHTMLDataAttributes} from '../types.js';
 import {getComputedStyleProperty} from '../utils.js';
