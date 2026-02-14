@@ -49,6 +49,7 @@
     "react-window": "^1.8.8"
   },
   "devDependencies": {
+    "@playwright/test": "?",
     "@types/react": "?",
     "@types/react-dom": "?",
     "@types/react-router": "?",

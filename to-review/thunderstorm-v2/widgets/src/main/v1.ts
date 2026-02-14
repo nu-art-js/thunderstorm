@@ -1,8 +1,28 @@
-// Widgets
+/*
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-// Components
-export * from './input/index.js';
-export * from './textarea/index.js';
+/** Package v1 entry: all v1 components only (no V2). */
+
+export * from './input/v1/index.js';
+export * from './textarea/v1/index.js';
 export * from './components/TS_ErrorBoundary/index.js';
 export * from './components/TS_Table/index.js';
 export * from './components/TS_Tabs/index.js';
@@ -10,7 +30,6 @@ export * from './components/TS_Dropdown/index.js';
 export * from './components/TS_Overlay/index.js';
 export * from './components/TS_Tree/index.js';
 export * from './components/TS_Checkbox/index.js';
-export * from './components/TS_Checkbox/TS_CheckboxV2.js';
 export * from './components/TS_CheckboxGroup/index.js';
 export * from './components/TS_Loader/index.js';
 export * from './components/TS_Dialog/index.js';
@@ -21,7 +40,6 @@ export * from './components/TS_DragAndDrop/index.js';
 export * from './components/TS_MemoryMonitor/index.js';
 export * from './components/TS_Link/index.js';
 export * from './components/TS_CollapsableContainer/index.js';
-export * from './components/TS_CollapsableContainerV2/index.js';
 export * from './components/TS_ButtonLoader/index.js';
 export * from './components/TS_Toggler/index.js';
 export * from './components/TS_Space/index.js';
