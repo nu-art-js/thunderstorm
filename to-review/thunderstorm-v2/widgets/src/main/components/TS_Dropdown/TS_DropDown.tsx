@@ -27,7 +27,7 @@ import {stopPropagation} from '@nu-art/thunder-core';
 import {Adapter,} from '../adapter/Adapter.js';
 import {TS_Overlay} from '../TS_Overlay/index.js';
 import {TS_Tree} from '../TS_Tree/index.js';
-import {TS_Input} from '../TS_Input/index.js';
+import {TS_Input} from '../../input/index.js';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts/index.js';
 import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip} from '../types.js';

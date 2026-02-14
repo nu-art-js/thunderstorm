@@ -1,4 +1,4 @@
-/*!
+/*
  * Thunderstorm is a full web app framework!
  *
  * Typescript & Express backend infrastructure that natively runs on firebase function
@@ -19,23 +19,5 @@
  * limitations under the License.
  */
 
-.ts-textarea {
-  //Dimensions
-  width: 100%;
-  min-width: 50px;
-  min-height: 50px;
-
-  padding-block: 4px;
-  padding-inline: 10px;
-
-  //Font
-  font-size: 1rem;
-
-  //Border
-  border: 1px solid black;
-  border-radius: 4px;
-
-  &:focus-visible {
-    outline: 1px solid #3ca0c6;
-  }
-}
+export * from './TS_BaseInput.js';
+export * from './TS_Input.js';

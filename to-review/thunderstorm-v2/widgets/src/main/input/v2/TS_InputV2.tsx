@@ -21,8 +21,8 @@
 import * as React from 'react';
 import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '@nu-art/thunder-core';
-import '../TS_Input/TS_Input.scss';
-import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip} from '../types.js';
+import '../v1/TS_Input.scss';
+import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip} from '../../components/types.js';
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
 type InputState = {
@@ -32,9 +32,9 @@ type InputState = {
 	value?: string;
 	focused?: boolean;
 };
-export type InputType = 'text' | 'number' | 'password' | 'time';
+export type InputTypeV2 = 'text' | 'number' | 'password' | 'time';
 type TypeProps_TS_Input = {
-	type: InputType;
+	type: InputTypeV2;
 };
 type BaseInfraProps_TS_InputV2 = {
 	saveEvent?: ('blur' | 'accept' | 'change')[];
