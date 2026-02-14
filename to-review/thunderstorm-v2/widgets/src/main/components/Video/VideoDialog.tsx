@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog.js';
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {TS_Video_Props} from './types.js';
 import {_className} from '@nu-art/thunder-core';
 import {TS_Video} from './Video.js';

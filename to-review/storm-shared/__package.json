@@ -1,0 +1,23 @@
+{
+	"name": "@nu-art/storm-shared",
+	"version": "$THUNDERSTORM_VERSION",
+	"description": "Shared types for storm packages: collection-actions, editable-test entity, dispatcher and event helpers. No thunderstorm-* dependency.",
+	"keywords": ["TacB0sS", "infra", "nu-art", "storm", "typescript"],
+	"repository": {"type": "git", "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git", "directory": "_thunderstorm/to-review/storm-shared"},
+	"publishConfig": {"directory": "dist", "linkDirectory": true},
+	"license": "Apache-2.0",
+	"author": "TacB0sS",
+	"scripts": {"build": "tsc -b -f"},
+	"dependencies": {
+		"@nu-art/api-types": "?",
+		"@nu-art/ts-common": "?",
+		"react": "?"
+	},
+	"devDependencies": {"@nu-art/testalot": "?", "@types/react": "?"},
+	"unitConfig": {"type": "typescript-lib"},
+	"type": "module",
+	"exports": {
+		".": {"types": "./index.d.ts", "import": "./index.js"},
+		"./*": {"types": "./*.d.ts", "import": "./*.js"}
+	}
+}

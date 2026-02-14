@@ -31,7 +31,7 @@ import {TS_Input} from '../TS_Input/index.js';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts/index.js';
 import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip} from '../types.js';
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 
 
 type State<ItemType> = ComponentProps_Error & {

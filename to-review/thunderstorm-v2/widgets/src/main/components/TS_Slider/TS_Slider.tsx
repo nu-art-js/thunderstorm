@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './TS_Slider.scss';
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
 import {LL_H_C} from '../Layouts/index.js';
 

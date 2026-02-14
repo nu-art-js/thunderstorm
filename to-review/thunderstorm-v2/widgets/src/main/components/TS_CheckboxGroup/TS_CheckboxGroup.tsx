@@ -1,4 +1,4 @@
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
 import './TS_CheckboxGroup.scss';
 import {TS_Checkbox} from '../TS_Checkbox/index.js';

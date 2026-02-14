@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import './TS_DragAndDrop.scss';
 import {LL_V_L, LL_VH_C} from '../Layouts/index.js';
 import {asArray} from '@nu-art/ts-common';

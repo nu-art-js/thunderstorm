@@ -77,13 +77,16 @@ export type NativeProps_TS_InputV2 = Props_TS_InputV2;
  */
 export class TS_InputV2
 	extends React.Component<Props_TS_InputV2, InputState> {
+
 	static readonly editableString = (templateProps: TemplatingProps_TS_InputV2) => {
 		return (props: NativeProps_TS_InputV2) => <TS_InputV2 {...templateProps} {...props}/>;
 	};
+
 	static defaultProps = {
 		forceAcceptKeys: ['ctrlKey', 'metaKey'] as MetaKeys[],
 		saveEvent: ['accept']
 	};
+
 	inputRef: React.RefObject<HTMLInputElement>;
 
 	constructor(props: Props_TS_InputV2) {

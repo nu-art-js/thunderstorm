@@ -1,4 +1,4 @@
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {TS_JSONViewer_Tree, TS_JSONViewer_Tree_Item} from './types.js';
 import {_keys, sortArray} from '@nu-art/ts-common';
 import {TS_Tree} from '../TS_Tree/index.js';

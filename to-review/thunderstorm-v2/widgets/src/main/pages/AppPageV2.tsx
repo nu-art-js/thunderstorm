@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {ComponentAsync} from '../core/ComponentAsync.js';
+import {ComponentAsync} from '../_core/ComponentAsync.js';
 import {dispatch_onPageTitleChanged} from './OnPageTitleChanged.js';
 
 export abstract class AppPageV2<P extends {} = {}, S extends {} = {}>

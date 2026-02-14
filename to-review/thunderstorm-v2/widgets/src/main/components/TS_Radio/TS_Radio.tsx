@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './TS_Radio.scss';
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
 import {stopPropagation} from '@nu-art/thunder-core';
 import {Label} from '../Label/Label.js';

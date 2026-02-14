@@ -6,9 +6,9 @@ import {TS_ErrorBoundary} from '../TS_ErrorBoundary/index.js';
 import {Button} from '../Button/Button.js';
 import {LL_V_L} from '../Layouts/index.js';
 
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
-import {InferState} from '../../core/component-types.js';
+import {InferState} from '../../_core/component-types.js';
 import {stopPropagation} from '@nu-art/thunder-core';
 
 /**
