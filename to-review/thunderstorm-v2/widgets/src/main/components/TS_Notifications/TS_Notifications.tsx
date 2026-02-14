@@ -1,4 +1,4 @@
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {DB_Notification, ModuleFE_Notifications, NotificationListener} from '../../component-modules/ModuleFE_Notifications.js';
 import * as React from 'react';
 import {LL_H_C, LL_V_L} from '../Layouts/index.js';

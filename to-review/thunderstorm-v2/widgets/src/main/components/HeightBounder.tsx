@@ -1,5 +1,5 @@
 import {HTMLAttributes} from 'react';
-import {ComponentSync} from '../core/ComponentSync.js';
+import {ComponentSync} from '../_core/ComponentSync.js';
 
 import {addWindowResizeListener, OnWindowResized, removeWindowResizeListener} from '@nu-art/thunder-core';
 

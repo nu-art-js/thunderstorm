@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {ModuleFE_Toaster, Toast_Model, ToastListener} from '../../component-modules/ModuleFE_Toaster.js';
 
 type State = {

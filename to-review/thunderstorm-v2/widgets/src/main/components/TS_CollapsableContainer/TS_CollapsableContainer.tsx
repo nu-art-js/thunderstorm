@@ -1,8 +1,28 @@
+/**
+ * @deprecated Use TS_CollapsableContainerV2 instead. This component will be removed in a future release.
+ *
+ * ## Migration to V2
+ *
+ * 1. **Import:** Replace `TS_CollapsableContainer` with `TS_CollapsableContainerV2` from the same package.
+ *
+ * 2. **Render props:** V2 uses `ResolvableContent<ReactNode>` — pass `ReactNode` or `() => ReactNode` as before;
+ *    both are supported via `resolveContent()` from `@nu-art/ts-common`.
+ *
+ * 3. **Removed / renamed:**
+ *    - `showCaret` — V2 always shows a caret; use `customCaret` to override (e.g. pass `null` or a custom node if you need to hide it).
+ *    - `flipHeaderOrder` — Not in V2; adjust layout via CSS or wrapper if needed.
+ *    - `maxHeight` — V2 uses CSS-based layout; use `className` or `style` to constrain height if needed.
+ *    - `onMouseEnter` / `onMouseLeave` / `onMouseOver` — Not in V2; attach to a wrapper div if needed.
+ *
+ * 4. **New in V2:** `animated` (CSS transitions), `forceUpdate` (re-render when parent updates). Use `animated={true}` for expand/collapse animation.
+ *
+ * 5. **Controlled / uncontrolled:** Same pattern — `collapsed` for controlled, `initialCollapsed` for uncontrolled; `onCollapseToggle` works the same.
+ */
 import {TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_CollapsableContainer.scss';
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
 import {LL_V_L} from '../Layouts/index.js';
 
@@ -31,6 +51,7 @@ type State = {
 	containerRef: React.RefObject<HTMLDivElement>;
 };
 
+/** @deprecated Use TS_CollapsableContainerV2. See file-level JSDoc for migration. */
 export class TS_CollapsableContainer
 	extends ComponentSync<Props, State> {
 	//######################### Life Cycle #########################

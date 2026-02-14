@@ -21,7 +21,7 @@
 
 
 // Deprecated use AppPageV2
-import {ComponentSync} from '../core/ComponentSync.js';
+import {ComponentSync} from '../_core/ComponentSync.js';
 import {dispatch_onPageTitleChanged} from './OnPageTitleChanged.js';
 
 export abstract class AppPage<P extends object = object, S extends object = object,

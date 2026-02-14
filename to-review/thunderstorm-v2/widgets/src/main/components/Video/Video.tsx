@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync} from '../../core/ComponentSync.js';
+import {ComponentSync} from '../../_core/ComponentSync.js';
 import {TS_Video_Props, TS_VideoConfiguration, TS_VideoControlsConfiguration, TS_VideoSource} from './types.js';
 import {exists} from '@nu-art/ts-common';
 

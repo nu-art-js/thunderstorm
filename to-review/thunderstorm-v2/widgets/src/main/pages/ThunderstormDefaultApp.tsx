@@ -4,7 +4,7 @@ import {TS_DialogOverlay} from '../components/TS_Dialog/index.js';
 import {TS_ToastOverlay} from '../components/TS_Toaster/index.js';
 import {TS_Notifications} from '../components/TS_Notifications/index.js';
 import {TS_MemoryMonitor} from '../components/TS_MemoryMonitor/index.js';
-import {ComponentSync} from '../core/ComponentSync.js';
+import {ComponentSync} from '../_core/ComponentSync.js';
 import {ModuleFE_Routing, TS_Route} from '@nu-art/thunder-routing';
 import {stopPropagation} from '@nu-art/thunder-core';
 import {TS_PopUp, TS_ToolTip} from '../components/TS_MouseInteractivity/index.js';
