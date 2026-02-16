@@ -16,8 +16,8 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
-import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
-import {AccountType_Service, DB_Session, DBDef_Session, DBProto_Session} from '@nu-art/user-account-shared';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {AccountType_Service, DB_Session, DBDef_Session, SessionCrudTypes} from '@nu-art/user-account-shared';
 import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
@@ -46,7 +46,7 @@ export interface CollectSessionData<R extends TypedKeyValue<any, AnyPrimitive>> 
 export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<TypedKeyValue<any, RecursiveObjectOfPrimitives>>, '__collectSessionData'>('__collectSessionData');
 export const Const_Default_SessionJWT_SecretKey = 'jwt-signer--account-session';
 
-type Config = DBApiConfigV3<DBProto_Session> & {
+type Config = {
 	sessionTTLms: number
 	rotationFactor: number
 	maxPrevSession: number
@@ -57,7 +57,7 @@ type Config = DBApiConfigV3<DBProto_Session> & {
 }
 
 export class ModuleBE_SessionDB_Class
-	extends ModuleBE_BaseDB<DBProto_Session, Config>
+	extends ModuleBE_BaseDB<SessionCrudTypes, Config>
 	implements CollectSessionData<TypedKeyValue<'session', { deviceId: string }>> {
 
 	private jwtHandler!: JWT_Handler<BaseSessionClaims & RecursiveObjectOfPrimitives>;

@@ -7,4 +7,5 @@
 export * from './api-types.js';
 export * from './types.js';
 export * from './error-types.js';
+export * from './headers.js';
 export {ApiException} from '@nu-art/ts-common';

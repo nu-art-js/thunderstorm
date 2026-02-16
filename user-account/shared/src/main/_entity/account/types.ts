@@ -1,11 +1,12 @@
+import {CrudTypes} from '@nu-art/db-api-shared';
 import {
-    AuditableV2,
-    DB_BaseObject,
-    DB_Object,
-    DBProto,
-    Proto_DB_Object,
-    TypedKeyValue,
-    VersionsDeclaration
+	AuditableV2,
+	DB_BaseObject,
+	DB_Object,
+	DBProto,
+	Proto_DB_Object,
+	TypedKeyValue,
+	VersionsDeclaration
 } from '@nu-art/ts-common';
 
 export const AccountType_User: AccountType = 'user';
@@ -22,6 +23,16 @@ type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'salt
 export const Account_DbKey = 'user-account--accounts';
 type Proto = Proto_DB_Object<DB_Account, typeof Account_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
 export type DBProto_Account = DBProto<Proto>;
+
+export type AccountCrudTypes = CrudTypes<
+	DBProto_Account['dbKey'],
+	// ts-common dbType has plain _id; db-api-shared expects branded _id — structurally compatible at runtime
+	// @ts-expect-error _id type mismatch
+	DBProto_Account['dbType'],
+	DBProto_Account['uiType'],
+	DBProto_Account['modifiablePropsValidator'],
+	DBProto_Account['uniqueKeys']
+>;
 
 export type UI_Account = DBProto_Account['uiType'];
 export type SafeDB_Account = UI_Account & DB_BaseObject;

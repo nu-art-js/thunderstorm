@@ -4,7 +4,7 @@ import {ValidatorTypeResolver} from '../validator/validator-core.js';
 
 /**
  * Database reference ID structure.
- * 
+ *
  * Represents a reference to another database object with metadata.
  */
 export type DB_RefId = {
@@ -20,9 +20,9 @@ export type DB_RefId = {
 
 /**
  * Database index definition.
- * 
+ *
  * Defines an index on one or more fields of a database object.
- * 
+ *
  * @template T - Database object type
  */
 export type DBIndex<T extends DB_Object> = {
@@ -41,9 +41,9 @@ export type VersionType = string
 
 /**
  * Version declaration for database object versioning.
- * 
+ *
  * Defines available versions and their corresponding types.
- * 
+ *
  * @template Versions - Array of version strings
  * @template Types - Map of version to object type
  */
@@ -56,10 +56,10 @@ export type VersionsDeclaration<Versions extends VersionType[] = ['1.0.0'], Type
 
 /**
  * Type for defining dependencies between database objects.
- * 
+ *
  * Maps dot-notation paths to DBProto definitions, allowing type-safe
  * references to related database objects.
- * 
+ *
  * @template T - Object type with dependencies
  */
 export type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DBProto<any> }
@@ -183,12 +183,12 @@ export type test = TypeOfTypeAsString<DotNotationValueType<{ a?: { b?: string } 
 
 /**
  * Converts a TypeScript type to a string representation.
- * 
+ *
  * Maps types to their string equivalents for metadata/validation:
  * - Arrays: 'string[]', 'number[]', 'boolean[]', 'object[]', or 'array'
  * - Primitives: 'string', 'number', 'boolean'
  * - Objects: 'object'
- * 
+ *
  * @template ValueType - Type to convert
  */
 export type TypeOfTypeAsString<ValueType> =
@@ -206,7 +206,7 @@ export type TypeOfTypeAsString<ValueType> =
 
 /**
  * Metadata for a single property.
- * 
+ *
  * @template ValueType - Property value type
  */
 export type MetadataProperty<ValueType> = {
@@ -221,14 +221,14 @@ export type MetadataProperty<ValueType> = {
 
 /**
  * Metadata for an object type (all properties required).
- * 
+ *
  * @template T - Object type
  */
 export type MetadataObject<T> = { [K in keyof T]-?: MetadataNested<T[K]> };
 
 /**
  * Metadata for a nested type (handles arrays and objects recursively).
- * 
+ *
  * @template T - Type to get metadata for
  */
 export type MetadataNested<T> =
@@ -238,9 +238,9 @@ export type MetadataNested<T> =
 
 /**
  * Metadata type that handles arrays, objects, and primitives.
- * 
+ *
  * Recursively defines metadata for nested structures.
- * 
+ *
  * @template T - Type to get metadata for
  */
 export type Metadata<T> =

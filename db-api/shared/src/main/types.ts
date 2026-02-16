@@ -136,6 +136,7 @@ type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
 export type DatabasePrototype<P extends Proto_DB_Object<any, string, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+	editableType: ModifiableSubType,
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	// dbType: ModifiableSubType & GeneratedSubType & DB_Object,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
@@ -208,20 +209,23 @@ export type TypeOfTypeAsString<ValueType> =
 
 export type CrudTypes<
 	DBKey extends string = string,
-	DBItem extends DB_Object = DB_Object,
-	UIItem extends object & { _id?: string } = object & { _id?: string },
-	Validator extends ValidatorTypeResolver<UIItem> = ValidatorTypeResolver<UIItem>,
-	UniqueKeys extends (keyof DBItem)[] = (keyof DBItem)[]
+	DBType extends DB_Object<DBKey> = DB_Object<DBKey>,
+	UIType extends Partial<DB_Object<DBKey>> = Partial<DB_Object<DBKey>>,
+	EditableType extends object = object,
+	Validator extends ValidatorTypeResolver<EditableType> = ValidatorTypeResolver<EditableType>,
+	UniqueKeys extends (keyof DBType)[] = (keyof DBType)[]
 > = {
 	readonly dbKey: DBKey;
-	readonly dbItem: DBItem;
-	readonly uiItem: UIItem;
+	readonly dbItem: DBType;
+	readonly uiItem: UIType;
 	readonly validator: Validator;
 	readonly uniqueKeys: UniqueKeys;
+	readonly editableType: EditableType;
 };
 
+
 /** Flat CRUD API defs (no v1 wrapper). Generic so ApiHandler infers payload types. */
-export type CrudApiTypes<Types extends CrudTypes = CrudTypes> = {
+export type CrudApiTypes<Types extends CrudTypes<any, any, any> = CrudTypes<any, any, any>> = {
 	query: BodyApi<Types['dbItem'][], CrudQuery<Types['dbItem']>>;
 	queryUnique: QueryApi<Types['dbItem'], DB_BaseObject>;
 	upsert: BodyApi<Types['dbItem'], Types['uiItem']>;
@@ -231,7 +235,7 @@ export type CrudApiTypes<Types extends CrudTypes = CrudTypes> = {
 	deleteAll: QueryApi<Types['dbItem'][]>;
 };
 
-export type CrudApiDef_Type<Types extends CrudTypes = CrudTypes> = {
+export type CrudApiDef_Type<Types extends CrudTypes<any, any, any> = CrudTypes<any, any, any>> = {
 	query: ApiDef<CrudApiTypes<Types>['query']>;
 	queryUnique: ApiDef<CrudApiTypes<Types>['queryUnique']>;
 	upsert: ApiDef<CrudApiTypes<Types>['upsert']>;
@@ -241,7 +245,7 @@ export type CrudApiDef_Type<Types extends CrudTypes = CrudTypes> = {
 	deleteAll: ApiDef<CrudApiTypes<Types>['deleteAll']>;
 };
 
-export function CrudApiDef<Types extends CrudTypes>(dbKey: string, version = 'v1'): CrudApiDef_Type<Types> {
+export function CrudApiDef<Types extends CrudTypes<any, any, any>>(dbKey: string, version = 'v1'): CrudApiDef_Type<Types> {
 	return {
 		query: {method: HttpMethod.POST, path: `${version}/${dbKey}/query`, timeout: 60000},
 		queryUnique: {method: HttpMethod.GET, path: `${version}/${dbKey}/query-unique`},

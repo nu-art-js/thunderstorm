@@ -14,7 +14,8 @@ import {
 	Year
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
-import {addRoutes, createBodyServerApi, createQueryServerApi, ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm-backend';
 import {FirestoreQuery} from '@nu-art/firebase-shared';
 import {FirestoreInterfaceV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreInterfaceV3';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
@@ -32,11 +33,11 @@ import {
 	AccountToAssertPassword,
 	AccountToSpice,
 	AccountType,
-	ApiDef_Account,
+	AccountCrudTypes,
+	ApiDef_UserAccount,
 	assertPasswordRules,
 	DB_Account,
 	DBDef_Accounts,
-	DBProto_Account,
 	PasswordAssertionConfig,
 	PasswordAssertionResponseError,
 	SafeDB_Account,
@@ -92,7 +93,7 @@ type Config = {
 }
 
 export class ModuleBE_AccountDB_Class
-	extends ModuleBE_BaseDB<DBProto_Account, Config>
+	extends ModuleBE_BaseDB<AccountCrudTypes, Config>
 	implements CollectSessionData<_SessionKey_Account> {
 
 	readonly Middleware = async () => {
@@ -110,19 +111,19 @@ export class ModuleBE_AccountDB_Class
 		super.init();
 
 		addRoutes([
-			createQueryServerApi(ApiDef_Account._v1.refreshSession, async () => {
+			createQueryServerApi(ApiDef_UserAccount.refreshSession, async () => {
 				this.logInfo(`Refreshing session for account id = ${MemKey_AccountId.get()}`);
 			}),
-			createBodyServerApi(ApiDef_Account._v1.registerAccount, this.account.register),
-			createBodyServerApi(ApiDef_Account._v1.changePassword, this.account.changePassword),
-			createBodyServerApi(ApiDef_Account._v1.login, this.account.login),
-			createBodyServerApi(ApiDef_Account._v1.createAccount, this.account.create),
-			createQueryServerApi(ApiDef_Account._v1.logout, this.account.logout),
-			createBodyServerApi(ApiDef_Account._v1.createToken, this.token.create),
-			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
-			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
-			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail),
-			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({
+			createBodyServerApi(ApiDef_UserAccount.registerAccount, this.account.register),
+			createBodyServerApi(ApiDef_UserAccount.changePassword, this.account.changePassword),
+			createBodyServerApi(ApiDef_UserAccount.login, this.account.login),
+			createBodyServerApi(ApiDef_UserAccount.createAccount, this.account.create),
+			createQueryServerApi(ApiDef_UserAccount.logout, this.account.logout),
+			createBodyServerApi(ApiDef_UserAccount.createToken, this.token.create),
+			createBodyServerApi(ApiDef_UserAccount.setPassword, this.account.setPassword),
+			createQueryServerApi(ApiDef_UserAccount.getSessions, this.account.getSessions),
+			createBodyServerApi(ApiDef_UserAccount.changeThumbnail, this.account.changeThumbnail),
+			createQueryServerApi(ApiDef_UserAccount.getPasswordAssertionConfig, async () => ({
 				config: this.config.ignorePasswordAssertion
 					? undefined
 					: this.config.passwordAssertion
