@@ -1,49 +1,49 @@
 import './ATS_CrudOperations.scss';
-import {AppToolsScreen, ATS_Backend} from '../../components/TS_AppTools/index.js';
-import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
-import {ComponentSync} from '../../core/ComponentSync.js';
-import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
+import {AppToolsScreen, ATS_Backend} from '../TS_AppTools/index.js';
+import {
+	Button,
+	ComponentSync,
+	LL_H_C,
+	LL_V_L,
+	ModuleFE_Clipboard,
+	ModuleFE_Toaster,
+	SimpleListAdapter,
+	TS_DropDown,
+	TS_TextArea
+} from '@nu-art/thunder-widgets';
+import {ModuleFE_BaseApi, ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
 import {DropDown_DBModules} from './ui-components.js';
-import {TS_DropDown} from '../../components/TS_Dropdown/index.js';
-import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
-import {FirestoreQuery} from '@nu-art/firebase-shared';
-import {DB_BaseObject} from '@nu-art/ts-common';
-import {TS_TextArea} from '../../components/TS_Input/index.js';
-import {Button} from '../../components/Button/Button.js';
-import {ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster.js';
-import type {HttpRequest} from '@nu-art/http-client';
-import {ModuleFE_Thunderstorm} from '../../modules/ModuleFE_Thunderstorm.js';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {FirestoreQuery} from '@nu-art/firebase-shared';
 
 type Action = {
 	label: string;
-	action: (dbModule: ModuleFE_BaseApi<any, any>, input: string) => HttpRequest<any>;
+	action: (dbModule: ModuleFE_BaseApi<any>, parsed: unknown) => Promise<any>;
 };
 const ACTIONS: Action[] = [
 	{
 		label: 'upsert',
-		action: (dbModule, input) => dbModule.v1.upsert(input)
+		action: (dbModule, parsed) => dbModule.upsert(parsed as any)
 	},
 	{
 		label: 'upsert all',
-		action: (dbModule, input) => dbModule.v1.upsertAll(JSON.parse(input))
+		action: (dbModule, parsed) => dbModule.upsertAll(parsed as any[])
 	},
 	{
 		label: 'query',
-		action: (dbModule, input) => dbModule.v1.query(input as unknown as FirestoreQuery<any>)
+		action: (dbModule, parsed) => dbModule.query(parsed as FirestoreQuery<any>)
 	},
 	{
 		label: 'delete',
-		action: (dbModule, input) => dbModule.v1.delete(input as unknown as DB_BaseObject)
+		action: (dbModule, parsed) => dbModule.delete(parsed as any)
 	},
 	{
 		label: 'delete query',
-		action: (dbModule, input) => dbModule.v1.deleteQuery(input as unknown as FirestoreQuery<any>)
+		action: (dbModule, parsed) => dbModule.deleteQuery(parsed as FirestoreQuery<any>)
 	}
 ];
 type State = {
-	dbModuleToRequest?: ModuleFE_BaseApi<any, any>;
+	dbModuleToRequest?: ModuleFE_BaseApi<any>;
 	selectedAction?: Action;
 	input?: string;
 	result?: string | Object | Object[];
@@ -64,12 +64,12 @@ export class ATS_CrudOperations
 		return state;
 	}
 
-	__onSyncStatusChanged(module: ModuleFE_BaseDB<any, any>) {
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<any>) {
 		this.forceUpdate();
 	}
 
 	//######################### Logic #########################
-	private onDBModuleSelected = (module: ModuleFE_BaseApi<any, any>) => {
+	private onDBModuleSelected = (module: ModuleFE_BaseApi<any>) => {
 		this.setState({dbModuleToRequest: module, selectedAction: undefined});
 	};
 	private onDBActionSelected = (action: Action) => {
@@ -84,7 +84,7 @@ export class ATS_CrudOperations
 			return ModuleFE_Toaster.toastError('Cannot Execute without all fields');
 		}
 		try {
-			const response = await selectedAction.action(dbModuleToRequest, JSON.parse(input)).executeSync();
+			const response = await selectedAction.action(dbModuleToRequest, JSON.parse(input));
 			this.setState({result: response});
 		} catch (e: any) {
 			this.setState({result: `error occurred: ${e.message}`});
@@ -108,7 +108,7 @@ export class ATS_CrudOperations
 						if (!result)
 							return;
 						const copyObject = JSON.stringify(result, null, 2);
-						await ModuleFE_Thunderstorm.copyToClipboard(copyObject);
+						await ModuleFE_Clipboard.copyToClipboard(copyObject);
 					}}/>
 				</LL_H_C>
 
@@ -130,4 +130,3 @@ export class ATS_CrudOperations
 		return this.renderResult(result);
 	};
 }
-;

@@ -1,11 +1,8 @@
-import {thunderstormATSGroups} from '../../consts.js';
-import {ComponentSync} from '@nu-art/thunder-widgets';
-import {LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
-import {AppToolsScreen, TS_AppTools} from '@nu-art/web-client';
-import {Button} from '@nu-art/thunder-widgets';
+import {thunderstormATSGroups} from '../consts.js';
+import {Button, ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import './ATS_Button.scss';
-import {TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {generateHex} from '@nu-art/ts-common';
+import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
 
 type Props = {};
 type State = {

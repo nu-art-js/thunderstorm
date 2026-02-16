@@ -1,0 +1,31 @@
+{
+	"name": "@nu-art/thunder-form",
+	"version": "{{THUNDERSTORM_VERSION}}",
+	"description": "Form components and Form V3 (EditableItem-based). Decoupled from widgets; depends on editable-item.",
+	"keywords": ["TacB0sS", "express", "infra", "nu-art", "thunderstorm", "typescript", "form", "editable-item"],
+	"homepage": "https://github.com/nu-art-js/thunderstorm",
+	"bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
+	"repository": {"type": "git", "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"},
+	"license": "Apache-2.0",
+	"author": "TacB0sS",
+	"scripts": {"build": "tsc"},
+	"contributors": [{"name": "TacB0sS"}],
+	"publishConfig": {"directory": "dist", "linkDirectory": true},
+	"dependencies": {
+		"@nu-art/editable-item": "?",
+		"@nu-art/thunder-widgets": "?",
+		"@nu-art/ts-common": "?",
+		"react": "?",
+		"react-dom": "?"
+	},
+	"devDependencies": {
+		"@types/react": "?",
+		"@types/react-dom": "?"
+	},
+	"unitConfig": {"type": "typescript-lib"},
+	"type": "module",
+	"exports": {
+		".": {"types": "./index.d.ts", "import": "./index.js"},
+		"./v3": {"types": "./v3.d.ts", "import": "./v3.js"}
+	}
+}

@@ -1,10 +1,10 @@
 import {ComponentSync} from '@nu-art/thunder-widgets';
-import {AppToolsScreen, TS_AppTools} from '@nu-art/web-client';
-import {thunderstormATSGroups} from '../../consts.js';
+import {thunderstormATSGroups} from '../consts.js';
 import {LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
 import './ats.scss';
 import {TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {TS_CollapsableContainerV2} from '@nu-art/thunder-widgets';
+import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
 
 const lorem = () => <p className={'lorem'}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sagittis mauris quis elit tristique tempor. Sed in
 	pellentesque nisi, eu

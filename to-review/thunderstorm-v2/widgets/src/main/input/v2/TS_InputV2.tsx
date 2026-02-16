@@ -21,7 +21,7 @@
 import * as React from 'react';
 import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '@nu-art/thunder-core';
-import '../v1/TS_Input.scss';
+import '../TS_Input.scss';
 import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip} from '../../components/types.js';
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';

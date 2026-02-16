@@ -1,10 +1,9 @@
-import {thunderstormATSGroups} from '../../consts.js';
-import {ComponentSync} from '@nu-art/thunder-widgets';
-import {Grid} from '@nu-art/thunder-widgets';
-import {AppToolsScreen} from '@nu-art/web-client';
+import {thunderstormATSGroups} from '../consts.js';
+import {ComponentSync, Grid, TS_CheckboxV2} from '@nu-art/thunder-widgets';
 import './ATS_CheckboxV2.scss';
-import {TS_CheckboxV2} from '@nu-art/thunder-widgets';
 import {voidFunction} from '@nu-art/ts-common';
+import {AppToolsScreen} from '../TS_AppTools/index.js';
+
 
 type State = {
 	checked: boolean | undefined;

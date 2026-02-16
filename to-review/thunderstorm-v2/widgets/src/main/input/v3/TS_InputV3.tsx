@@ -21,7 +21,7 @@
 import * as React from 'react';
 import {ChangeEvent, KeyboardEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {_className} from '@nu-art/thunder-core';
-import '../v1/TS_Input.scss';
+import '../TS_Input.scss';
 import {convertToHTMLDataAttributes, getErrorTooltip} from '../../components/types.js';
 import type {NativeProps_TS_InputV2, Props_TS_InputV2, TemplatingProps_TS_InputV2} from '../v2/TS_InputV2.js';
 

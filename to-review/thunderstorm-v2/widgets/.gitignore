@@ -1,3 +1,4 @@
 src/**/*.d.ts
 src/**/*.js
 src/**/*.js.map
+test-results
