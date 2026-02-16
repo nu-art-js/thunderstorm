@@ -1,27 +1,25 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {
 	DBDef_LoginAttempt,
-	DBProto_LoginAttempt,
+	LoginAttemptCrudTypes,
 	LoginMetadata,
 	LoginStatus,
 	LoginStatus_Failed,
-	LoginStatus_Success
+	LoginStatus_Success,
+	SafeDB_Account
 } from '@nu-art/user-account-shared';
 import {filterKeys, UniqueId} from '@nu-art/ts-common';
 import {OnLoginFailed} from './dispatchers.js';
 import {OnUserLogin} from '../account/index.js';
-import {SafeDB_Account} from '@nu-art/user-account-shared';
-import {MemKey_HttpRequest} from '@nu-art/thunderstorm-backend/modules/server/consts';
-
-
-type Config = DBApiConfigV3<DBProto_LoginAttempt> & {}
+import {MemKey_HttpRequest} from '@nu-art/http-server';
 
 /**
  * DB entity that collects login metadata and handles blocking of users that failed
  * login credentials over a number of defined times
  */
 export class ModuleBE_LoginAttemptDB_Class
-	extends ModuleBE_BaseDB<DBProto_LoginAttempt, Config> implements OnLoginFailed, OnUserLogin {
+	extends ModuleBE_BaseDB<LoginAttemptCrudTypes>
+	implements OnLoginFailed, OnUserLogin {
 
 	/**
 	 * Dispatcher that handles failed login events

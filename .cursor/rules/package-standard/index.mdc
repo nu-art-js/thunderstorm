@@ -26,6 +26,7 @@ In order for other developers to understand the package we need to provide a REA
 In order for other developers to understand we need to document the all symbols in the package source code.
 In order for other developers to discover the package we need to add a good description and keywords to the `__package.json`.
 In order to allow ease of use, we need to provide good logical exports in the package's `__package.json`.
+In order to keep a single source of truth, we never re-export symbols from other packages — we only export what the package owns; consumers reference symbols from the package that holds them (see [exports.mdc](./exports.mdc)).
 In order to be proactive and efficient, while going over the code we need to track issues and document them in ISSUES.md.
 In order to be compatible we need to have a LICENSE file matching the project standard.
 In order to provide clarity we need to add a copyright header to all source files.
@@ -45,6 +46,7 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 - [ ] Package type (infra vs app) and layout (single-domain vs library, or test-only E2E package) — see [package-and-libraries.mdc](./package-and-libraries.mdc) (Test-only subsection for E2E packages)
 - [ ] Entry points and public exports; confirm each resolves to `src/main/` and build output
+- [ ] No re-exports: exports are only symbols this package owns — [exports.mdc](./exports.mdc)
 - [ ] Purpose (2–4 sentences), runtime deps from imports, usages in workspace (or infer from code)
 
 ---
@@ -120,6 +122,7 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 **Goal**: Package is consistent and build/lint-clean.
 
 - [ ] Invariants — [package.json/package.json-common.mdc](./package.json/package.json-common.mdc) (Non-negotiable invariants)
+- [ ] No re-exports — [exports.mdc](./exports.mdc)
 - [ ] No new linter errors
 - [ ] Public exports in `__package.json` and in README per [README.mdc](./README.mdc)
 

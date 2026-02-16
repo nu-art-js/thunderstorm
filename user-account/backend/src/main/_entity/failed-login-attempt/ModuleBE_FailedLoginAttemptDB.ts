@@ -1,10 +1,10 @@
-import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {
 	DB_FailedLoginAttempt,
 	DBDef_FailedLoginAttempt,
-	DBProto_FailedLoginAttempt,
 	DefaultMaxLoginAttempts,
-	ErrorType_LoginBlocked
+	ErrorType_LoginBlocked,
+	FailedLoginAttemptCrudTypes
 } from '@nu-art/user-account-shared';
 import {
 	ApiException,
@@ -21,7 +21,7 @@ import {OnUserLogin} from '../account/index.js';
 import {SafeDB_Account} from '@nu-art/user-account-shared';
 
 
-type Config = DBApiConfigV3<DBProto_FailedLoginAttempt> & {
+type Config = {
 	loginBlockedTTL: number;
 	maxLoginAttempts: number;
 	documentTTL: number;
@@ -36,7 +36,7 @@ type LoginBlockedErrorBody = ResponseError<typeof ErrorType_LoginBlocked, {
  * Default login blocked timer is 5 minutes
  */
 export class ModuleBE_FailedLoginAttemptDB_Class
-	extends ModuleBE_BaseDB<DBProto_FailedLoginAttempt, Config> implements OnUserLogin {
+	extends ModuleBE_BaseDB<FailedLoginAttemptCrudTypes, Config> implements OnUserLogin {
 
 	constructor() {
 		super(DBDef_FailedLoginAttempt);

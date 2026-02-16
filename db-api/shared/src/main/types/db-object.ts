@@ -46,3 +46,8 @@ export type DB_Object<Key extends string = string> = DB_BaseObject<Key> & {
  * @template Key - The database key (collection name)
  */
 export type DBPointer<Key extends string> = { dbKey: DB_Key<Key>['key']; id: DB_Key<Key>['id'] };
+
+
+/** @deprecated Unique identifier type (string) - should be replaced by a branded DB_Key<Key>['id'] and the generic version of it is DB_Key['id']*/
+export type UniqueId = string;
+

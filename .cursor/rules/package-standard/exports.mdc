@@ -1,0 +1,31 @@
+---
+description: Package exports and re-export policy
+alwaysApply: false
+---
+
+# Exports and Re-exports
+
+## Rule: No re-exports
+
+**A package must never re-export symbols from another package.**
+
+- Export only symbols that the package **owns** (defined in its own `src/main/`).
+- If code in package B needs a symbol from package A, B must **not** re-export it. Consumers that need that symbol must **import it from the package that holds it** (A), not from B.
+- Add the owning package as a dependency and document in README that consumers should import those symbols from the owning package when needed.
+
+## Rationale
+
+- Single source of truth: the package that defines a symbol is the only place that exports it.
+- Clear dependency graph: imports show which package actually provides each symbol.
+- Avoids drift when the owning package changes or renames exports.
+
+## Allowed
+
+- Exporting only symbols defined in this package.
+- Importing from other packages for internal use (and listing them as dependencies).
+
+## Not allowed
+
+- `export { Foo } from 'other-package'` (re-export).
+- `export * from 'other-package'` (barrel re-export).
+- Exporting a type/function/constant that is implemented or defined in another package.
