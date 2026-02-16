@@ -1,6 +1,4 @@
 import {_keys, EmptyObject, exists, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {openContent} from '../component-modules/mouse-interactivity/helper-functions.js';
-
 
 type CustomErrorLevel = string
 
@@ -28,11 +26,19 @@ export const convertToHTMLDataAttributes = (attributes?: TypedMap<string>, prefi
 	return reduceToMap(_keys(attributes), key => `data-${finalImpl}${key}`, key => attributes[key]);
 };
 
+export type ErrorTooltipAPI = (id: string, content: () => string, config?: { offset?: number }) => Record<string, unknown>;
+
+let errorTooltipAPI: ErrorTooltipAPI | null = null;
+
+export const setErrorTooltipAPI = (api: ErrorTooltipAPI | null) => {
+	errorTooltipAPI = api;
+};
+
 export const getErrorTooltip = (errors?: TypedMap<string>, shouldReturn: boolean = false) => {
-	if (!exists(errors) || !shouldReturn)
+	if (!exists(errors) || !shouldReturn || !errorTooltipAPI)
 		return {};
 
-	return openContent.tooltip.top('input-error-tooltip', () => errors.message, {offset: 6});
+	return errorTooltipAPI('input-error-tooltip', () => errors.message, {offset: 6});
 };
 
 export const resolveEditableError = <T>(errorHandler: ResolveEditableErrorParams<T>) => {

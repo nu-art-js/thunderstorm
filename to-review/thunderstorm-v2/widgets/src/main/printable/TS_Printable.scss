@@ -1,0 +1,43 @@
+.ts-printable {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  &.print-only {
+    display: none;
+  }
+
+  @media print {
+    &.print-only {
+      display: unset;
+    }
+
+    * {
+      overflow: unset;
+    }
+
+    .ts-print__hide {
+      visibility: hidden;
+    }
+
+    .ts-print__dont-break {
+      page-break-inside: avoid !important;
+    }
+
+    .ts-print__break-before {
+      page-break-before: always !important;
+    }
+
+    .ts-print__break-after {
+      page-break-after: always !important;
+    }
+
+    .ts-print__gone {
+      display: none;
+    }
+  }
+}

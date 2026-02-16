@@ -1,13 +1,9 @@
 import {ReactNode} from 'react';
-import {LL_H_C, LL_V_L} from '../../components/Layouts/index.js';
-import {TS_AppTools} from '../../components/TS_AppTools/index.js';
+import {TS_AppTools} from '../TS_AppTools/index.js';
 import './ATS_Printable.scss';
-import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
-import {Button} from '../../components/Button/Button.js';
-import {ModuleFE_Print} from '@nu-art/web-client//modules/ModuleFE_Print.js';
-import {TS_Printable} from '../../components/TS_Printable/index.js';
+import {Button, ComponentSync, LL_H_C, LL_V_L, TS_Printable, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {ComponentSync} from '@nu-art/thunder-utils/dist/components/ComponentSync.js';
+import {ModuleFE_Print} from '../modules/ModuleFE_Print.js';
 
 
 type Created = {

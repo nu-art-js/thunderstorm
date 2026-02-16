@@ -1,6 +1,6 @@
 import {ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer, TS_TextArea} from '@nu-art/thunder-widgets';
-import {AppToolsScreen, TS_AppTools} from '@nu-art/web-client';
 import './ATS_TextArea.scss';
+import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
 
 type State = {
 	regularValue?: string;

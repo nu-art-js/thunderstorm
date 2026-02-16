@@ -1,0 +1,24 @@
+@use '../../styles/declaration/mixins' as *;
+
+.ts-tree {
+  .ts-tree__children-container {
+
+  }
+
+  .ts-tree__node {
+    padding: 4px 0;
+    @include spaces(12);
+
+    &:hover {
+      background: cornsilk;
+    }
+  }
+
+  .ts-tree__selected-node {
+    background: cornsilk;
+  }
+
+  .ts-tree__parent-node {
+
+  }
+}

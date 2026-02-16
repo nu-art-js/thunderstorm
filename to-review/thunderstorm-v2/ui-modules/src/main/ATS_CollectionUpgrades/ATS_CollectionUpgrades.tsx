@@ -1,18 +1,15 @@
 import * as React from 'react';
-import {filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
+import {filterDuplicates, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_CollectionUpgrades.scss';
-import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../../components/TS_AppTools/index.js';
-import {genericNotificationAction} from '../../components/TS_Notifications/index.js';
-import {LL_H_C} from '../../components/Layouts/index.js';
-import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {ModuleFE_BaseDB} from '../../modules/db-api-gen/ModuleFE_BaseDB.js';
-import {ComponentSync} from '../../core/ComponentSync.js';
-import {Button} from '../../components/Button/Button.js';
-import {ModuleFE_CollectionActions} from '../../modules/ModuleFE_CollectionActions.js';
+import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../TS_AppTools/index.js';
+import {Button, ComponentSync, LL_H_C} from '@nu-art/thunder-widgets';
+import {genericNotificationAction} from '@nu-art/thunder-notifications';
+import {ModuleFE_BaseApi, ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
+import {ModuleFE_CollectionActions} from '../modules/ModuleFE_CollectionActions.js';
 
 
 type State = {
-	upgradableModules: ModuleFE_BaseApi<any, any>[];
+	upgradableModules: ModuleFE_BaseApi<any>[];
 };
 
 export class ATS_CollectionUpgrades
@@ -33,22 +30,22 @@ export class ATS_CollectionUpgrades
 		return state;
 	}
 
-	__onSyncStatusChanged(module: ModuleFE_BaseDB<any, any>) {
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<any>) {
 		this.forceUpdate();
 	}
 
-	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<any, any>, e: React.MouseEvent) => {
+	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<any>, e: React.MouseEvent) => {
 		await genericNotificationAction(async () => {
 			await ModuleFE_CollectionActions.upgrade.collections({
-				dbKeys: [module.dbDef.dbKey],
+				dbKeys: [module.getCollectionKey()],
 				force: e.metaKey,
-			}).setTimeout(5 * Minute).executeSync();
+			});
 		}, `Upgrading ${collectionName}`);
 	};
 
 	private upgradeAll = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		await genericNotificationAction(async () => {
-			await ModuleFE_CollectionActions.upgrade.all({force: e.metaKey}).setTimeout(5 * Minute).executeSync();
+			await ModuleFE_CollectionActions.upgrade.all({force: e.metaKey});
 		}, `Upgrading all collections`);
 	};
 

@@ -20,16 +20,14 @@
  */
 import * as React from 'react';
 import './TS_AppTools.scss';
-import {LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
-import {_className, StorageKey} from '@nu-art/thunder-core';
-import {TS_ErrorBoundary} from '@nu-art/thunder-widgets';
+import {LL_H_C, LL_V_L, TS_CollapsableContainer, TS_ErrorBoundary} from '@nu-art/thunder-widgets';
 import {TS_NavLink, TS_Route} from '@nu-art/thunder-routing';
 import {md5, sortArray, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';
 import {Outlet} from 'react-router-dom';
 import {TS_AppTools_Default} from './TS_AppTools_Default.js';
 import {AppToolsScreen} from './types.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {TS_CollapsableContainer} from '@nu-art/thunder-widgets';
+import {_className, StorageKey} from '@nu-art/thunder-core';
 
 type CollapseState = {
 	navbarCollapse: boolean;

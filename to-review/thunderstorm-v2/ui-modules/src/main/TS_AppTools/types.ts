@@ -11,7 +11,7 @@ export type AppToolsScreen = {
 	icon?: React.ComponentType; //Icon for rendering in the navigator
 	group?: string; //For grouping in the navigator
 	children?: TS_Route<any>[]
-	modulesToAwait?: ResolvableContent<(ModuleFE_BaseDB<any, any>)[]>;
+	modulesToAwait?: ResolvableContent<(ModuleFE_BaseDB<any>)[]>;
 }
 
 export const ATS_3rd_Party = '3rd Party';

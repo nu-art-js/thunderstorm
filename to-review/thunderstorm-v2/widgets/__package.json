@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@nu-art/thunder-core": "?",
+    "@nu-art/thunder-notifications": "?",
     "@nu-art/thunder-routing": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
@@ -65,6 +66,18 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
+    },
+    "./v1": {
+      "types": "./v1.d.ts",
+      "import": "./v1.js"
+    },
+    "./v2": {
+      "types": "./v2.d.ts",
+      "import": "./v2.js"
+    },
+    "./v3": {
+      "types": "./v3.d.ts",
+      "import": "./v3.js"
     }
   }
 }

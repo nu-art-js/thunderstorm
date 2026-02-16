@@ -2,9 +2,9 @@ import * as React from 'react';
 import './ATS_Printable.scss';
 import {Button, ComponentSync, LL_H_C, LL_V_L, TS_Printable, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {AppToolsScreen} from '../TS_AppTools/types.js';
-import {ModuleFE_Print, thunderstormCapabilitiesGroup} from '@nu-art/web-client';
-import {TS_AppTools} from '../TS_AppTools/TS_AppTools.js';
 import {generateArray} from '@nu-art/ts-common';
+import {TS_AppTools} from '../TS_AppTools/index.js';
+import {ModuleFE_Print} from '../modules/ModuleFE_Print.js';
 
 
 export class ATS_Printable
@@ -16,7 +16,7 @@ export class ATS_Printable
 	static Screen: AppToolsScreen = {
 		key: 'ats-ts-printable',
 		name: 'Printable',
-		group: thunderstormCapabilitiesGroup,
+		group: "ui",
 		renderer: this,
 	};
 

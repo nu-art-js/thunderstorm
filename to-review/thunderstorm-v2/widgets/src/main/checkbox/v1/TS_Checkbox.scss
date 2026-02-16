@@ -1,0 +1,48 @@
+/*!
+ * Thunderstorm is a full web app framework!
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
+.ts-checkbox {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+
+  .ts-checkbox__content {
+    margin-inline-start: 8px;
+  }
+
+  .ts-checkbox__button {
+    border: 1px solid #68678d50;
+    box-shadow: 0 0 1px 0 #867979;
+    padding: 1px;
+
+    &.ts-checkbox__button__rounded {
+      border-radius: 50%;
+    }
+
+    & .ts-checkbox__button__disabled {
+      // ...
+    }
+
+    .ts-checkbox__button__inner {
+      width: 18px;
+      height: 18px;
+
+      &.ts-checkbox__button__rounded {
+        border-radius: 50%;
+      }
+
+      &.ts-checkbox__button__checked {
+        background: #4fa7ff;
+        border: .5px white solid;
+      }
+
+      &.ts-checkbox__button__unchecked {
+      }
+    }
+  }
+}

@@ -1,8 +1,6 @@
 import {Filter, filterDuplicates, ResolvableContent, RuntimeModules, sortArray} from '@nu-art/ts-common';
-import {MandatoryProps_TS_DropDown, TS_DropDown} from '../../components/TS_Dropdown/index.js';
-import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
+import {LL_V_L, MandatoryProps_TS_DropDown, SimpleListAdapter, TS_DropDown} from '@nu-art/thunder-widgets';
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {LL_V_L} from '../../components/Layouts/index.js';
 
 
 export const Props_DBModulesDropDown: ResolvableContent<MandatoryProps_TS_DropDown<ModuleFE_BaseApi<any>>> = {
@@ -22,7 +20,7 @@ export const Props_DBModulesDropDown: ResolvableContent<MandatoryProps_TS_DropDo
 		),
 	),
 	placeholder: 'DB Module',
-	filter: new Filter(module => [module.dbDef.dbKey, module.getCollectionName()])
+	filter: new Filter(module => [module.getCollectionKey(), module.getCollectionName()])
 };
 
 

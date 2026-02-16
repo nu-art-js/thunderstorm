@@ -1,0 +1,151 @@
+@use '@nu-art/ts-styles' as styles;
+
+.ts-button {
+  ///Reset css attributes
+  all: unset;
+
+  //Dimension attributes
+  min-height: 35px;
+  min-width: 90px;
+  padding: 5px 10px;
+  position: relative;
+
+  //General appearance attributes
+  transition: color 300ms ease-out,
+  background 300ms ease-out,
+  border 300ms ease-out;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  //Inner Content
+  .ts-button__loader {
+    $mask: conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box;
+
+    width: 25px;
+    padding: 6px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% 100%;
+    background: var(--ts-button--content-color);
+    -webkit-mask: $mask;
+    mask: $mask;
+    -webkit-mask-composite: source-out;
+    mask-composite: subtract;
+    animation: l3 1s infinite linear;
+    opacity: 0;
+    transition: opacity 300ms ease-out, translate 300ms ease-out;
+
+    @keyframes l3 {
+      to {
+        transform: rotate(1turn)
+      }
+    }
+  }
+
+  .ts-button__content {
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--ts-button--content-color);
+    opacity: 1;
+    font: {
+      size: 14px;
+      weight: bold;
+      family: inherit;
+    }
+    transition: opacity 300ms ease-out;
+    pointer-events: none;
+  }
+
+  ///Status Overwrites
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  &.action-in-progress {
+    .ts-button__loader {
+      opacity: 1;
+      translate: -50% -50%;
+    }
+
+    .ts-button__content {
+      opacity: 0;
+    }
+  }
+
+  ///Variant Overwrites
+  &[data-variant='primary'] {
+    --ts-button--content-color: #fff;
+
+    &:enabled {
+      @include styles.mouse-interactive-background(styles.dark-blue(2), styles.dark-blue(1));
+      @include styles.mouse-interactive-border-color(styles.dark-blue(2), styles.dark-blue(1));
+    }
+
+    &:disabled {
+      @include styles.mouse-interactive-background(styles.dark-blue(2));
+      @include styles.mouse-interactive-border-color(styles.dark-blue(2));
+    }
+  }
+
+  &[data-variant='secondary'] {
+    --ts-button--content-color: #{styles.black(2)};
+
+    &:enabled {
+      @include styles.mouse-interactive-background(styles.gray(7), styles.gray(6));
+      @include styles.mouse-interactive-border-color(styles.gray(7), styles.gray(6));
+    }
+
+    &:disabled {
+      @include styles.mouse-interactive-background(styles.gray(7));
+      @include styles.mouse-interactive-border-color(styles.gray(7));
+    }
+  }
+
+  &[data-variant='tertiary'] {
+    --ts-button--content-color: #{styles.black(2)};
+
+    &:enabled {
+      @include styles.mouse-interactive-background(transparent, styles.gray(6));
+      @include styles.mouse-interactive-border-color(styles.gray(7), styles.gray(6));
+    }
+
+    &:disabled {
+      @include styles.mouse-interactive-background(transparent);
+      @include styles.mouse-interactive-border-color(styles.gray(7));
+    }
+  }
+
+  &[data-variant='text'] {
+    --ts-button--content-color: #{styles.black(2)};
+
+    &:enabled {
+      @include styles.mouse-interactive-background(transparent, styles.gray(7));
+    }
+
+    &:disabled {
+      @include styles.mouse-interactive-background(transparent);
+    }
+  }
+
+  &[data-variant='dangerous'] {
+    --ts-button--content-color: #fff;
+
+    &:enabled {
+      @include styles.mouse-interactive-background(styles.red(2), styles.red(1));
+      @include styles.mouse-interactive-border-color(styles.red(2), styles.red(1));
+    }
+
+    &:disabled {
+      @include styles.mouse-interactive-background(styles.red(2));
+      @include styles.mouse-interactive-border-color(styles.red(2));
+    }
+  }
+}

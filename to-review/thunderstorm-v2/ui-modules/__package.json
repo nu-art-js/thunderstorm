@@ -37,13 +37,19 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/storm-shared": "?",
+    "@nu-art/thunder-notifications": "?",
     "@nu-art/thunder-widgets": "?",
     "@nu-art/thunder-routing": "?",
+    "@nu-art/firebase-shared": "?",
     "@nu-art/ts-common": "?",
+    "@nu-art/thunder-core": "?",
     "react": "?",
     "react-dom": "?",
     "@nu-art/db-api-frontend": "?",
-    "@nu-art/http-client": "?"
+    "@nu-art/http-client": "?",
+    "@nu-art/ts-styles": "?",
+    "react-router-dom": "?"
   },
   "devDependencies": {
     "@types/react": "?",

@@ -1,12 +1,11 @@
 import {Module} from '@nu-art/ts-common';
-import {ApiDef_CollectionActions, ApiStruct_CollectionActions} from '@nu-art/storm-shared';
-import type {ApiDefCaller} from '@nu-art/storm-shared';
-import {HttpClient} from '@nu-art/http-client';
+import {ApiDef, GeneralApi, HttpClient} from '@nu-art/http-client';
+import {ApiDefCaller, ApiDef_CollectionActions, ApiStruct_CollectionActions} from '@nu-art/storm-shared';
 
 /** Body-API caller using http-client (replaces legacy apiWithBody). */
-function bodyCaller<API extends { R: unknown; B: unknown }>(apiDef: API): (body: API['B']) => Promise<API['R']> {
+function bodyCaller<API extends GeneralApi>(apiDef: ApiDef<API>): (body: API['B']) => Promise<API['R']> {
 	return (body: API['B']) =>
-		HttpClient.default.createRequest(apiDef as any).setBodyAsJson(body).execute();
+		HttpClient.default.createRequest(apiDef).setBodyAsJson(body).execute();
 }
 
 class ModuleFE_CollectionActions_Class
@@ -19,10 +18,10 @@ class ModuleFE_CollectionActions_Class
 		this.upgrade = {
 			collections: bodyCaller(ApiDef_CollectionActions.upgrade.collections),
 			all: bodyCaller(ApiDef_CollectionActions.upgrade.all),
-		};
+		} as ApiDefCaller<ApiStruct_CollectionActions['upgrade']>;
 		this.check = {
 			usage: bodyCaller(ApiDef_CollectionActions.check.usage),
-		};
+		} as ApiDefCaller<ApiStruct_CollectionActions['check']>;
 	}
 }
 
