@@ -16,7 +16,7 @@ export const Component_GoogleSAMLLogin = (props: Props) => {
 		if (!deviceId)
 			throw new MUSTNeverHappenException('Missing deviceId, how did this happen?');
 
-		await ModuleFE_Account._v1.loginSaml({redirectUrl: url, deviceId}).executeSync();
+		await ModuleFE_Account.loginSaml({redirectUrl: url, deviceId});
 	};
 
 	return <Button

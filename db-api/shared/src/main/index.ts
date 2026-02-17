@@ -19,5 +19,7 @@
  */
 
 export * from './types.js';
-export * from './types/db-object.js';
+export * from './utils.js';
+export * from './db-object.js';
 export * from './query-types.js';
+export * from './db-api-dispatcher.js';

@@ -1,55 +1,47 @@
-import {CrudTypes} from '@nu-art/db-api-shared';
-import {
-	AuditableV2,
-	DB_BaseObject,
-	DB_Object,
-	DBProto,
-	Proto_DB_Object,
-	TypedKeyValue,
-	VersionsDeclaration
-} from '@nu-art/ts-common';
+import {CrudTypes, DatabasePrototype, DB_BaseObject, DB_Object, DB_ProtoDef, VersionsDeclaration} from '@nu-art/db-api-shared';
+import {AuditableV2, TypedKeyValue} from '@nu-art/ts-common';
 
 export const AccountType_User: AccountType = 'user';
 export const AccountType_Service: AccountType = 'service';
 export const _accountTypes = ['user', 'service'];
 export const accountTypes = [..._accountTypes] as const;
+
+export const Account_DbKey = 'user-account--accounts';
 export type AccountType = typeof accountTypes[number];
 
+type DBKey = typeof Account_DbKey
 type VersionTypes_Account = { '1.0.0': DB_Account };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_Account>;
 type Dependencies = {};
 type UniqueKeys = '_id';
 type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'saltedPassword';
-export const Account_DbKey = 'user-account--accounts';
-type Proto = Proto_DB_Object<DB_Account, typeof Account_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>;
-export type DBProto_Account = DBProto<Proto>;
+
+export type DatabaseDef_Account = DatabasePrototype<DB_ProtoDef<DB_Account, DBKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
 
 export type AccountCrudTypes = CrudTypes<
-	DBProto_Account['dbKey'],
-	// ts-common dbType has plain _id; db-api-shared expects branded _id — structurally compatible at runtime
-	// @ts-expect-error _id type mismatch
-	DBProto_Account['dbType'],
-	DBProto_Account['uiType'],
-	DBProto_Account['modifiablePropsValidator'],
-	DBProto_Account['uniqueKeys']
+	DatabaseDef_Account['dbKey'],
+	DatabaseDef_Account['dbType'],
+	DatabaseDef_Account['uiType'],
+	DatabaseDef_Account['editableType'],
+	DatabaseDef_Account['modifiablePropsValidator'],
+	DatabaseDef_Account['uniqueKeys']
 >;
 
-export type UI_Account = DBProto_Account['uiType'];
-export type SafeDB_Account = UI_Account & DB_BaseObject;
+export type UI_Account = DatabaseDef_Account['uiType'];
+export type SafeDB_Account = UI_Account & DB_BaseObject<DBKey>;
 
+export type UI_SessionAccount = UI_Account & DB_BaseObject<DBKey> & SessionData_HasPassword;
+export type _SessionKey_Account = TypedKeyValue<'account', UI_SessionAccount>;
 
-export type UI_SessionAccount = UI_Account & DB_BaseObject & SessionData_HasPassword;
-export type _SessionKey_Account = TypedKeyValue<'account', UI_SessionAccount>
-
-export type DB_Account = DB_Object & AuditableV2 & {
-    type: AccountType;
-    email: string;
-    displayName?: string
-    thumbnail?: string
-    salt?: string
-    saltedPassword?: string
-    description?: string // mainly for service accounts, will be used to explain the usage of the account
-    _newPasswordRequired?: boolean
-}
+export type DB_Account = DB_Object<DBKey> & AuditableV2 & {
+	type: AccountType;
+	email: string;
+	displayName?: string;
+	thumbnail?: string;
+	salt?: string;
+	saltedPassword?: string;
+	description?: string; // mainly for service accounts, will be used to explain the usage of the account
+	_newPasswordRequired?: boolean;
+};
 
 export type SessionData_HasPassword = { hasPassword: boolean };

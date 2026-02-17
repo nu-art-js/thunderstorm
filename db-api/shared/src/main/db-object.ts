@@ -51,3 +51,13 @@ export type DBPointer<Key extends string> = { dbKey: DB_Key<Key>['key']; id: DB_
 /** @deprecated Unique identifier type (string) - should be replaced by a branded DB_Key<Key>['id'] and the generic version of it is DB_Key['id']*/
 export type UniqueId = string;
 
+
+/**
+ * Removes all database metadata keys from a type.
+ *
+ * @template T - Database object type
+ */
+export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
+
+/** Default unique key name for database objects */
+export type Default_UniqueKey = '_id';

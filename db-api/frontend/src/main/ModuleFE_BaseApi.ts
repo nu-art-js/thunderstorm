@@ -4,12 +4,10 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {ModuleFE_BaseDB} from './ModuleFE_BaseDB.js';
+import {DBConfig_ModuleFE, EventDispatcher, ModuleFE_BaseDB} from './ModuleFE_BaseDB.js';
 import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
-import {BaseDBConfig} from './types.js';
-import {EventDispatcher} from './to-refactor/dispatcher.js';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import {CrudApiDef_Type, CrudApiTypes, CrudTypes} from '@nu-art/db-api-shared';
+import {CrudApiDef_Type, CrudApiTypes, DB_Prototype} from '@nu-art/db-api-shared';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -27,10 +25,10 @@ type Operation = {
 };
 
 
-interface Params<Types extends CrudTypes> {
-	config: BaseDBConfig<Types>,
-	crudApiDef: CrudApiDef_Type<Types>,
-	dispatcher?: EventDispatcher
+interface Params<Database extends DB_Prototype> {
+	config: DBConfig_ModuleFE<Database>,
+	crudApiDef: CrudApiDef_Type<Database>,
+	dispatcher: EventDispatcher<Database['dbType']>
 	httpClient?: HttpClient
 }
 
@@ -55,14 +53,14 @@ interface Params<Types extends CrudTypes> {
  * await UserModule.upsert(uiUser);
  * ```
  */
-export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
-	extends ModuleFE_BaseDB<Types> {
+export abstract class ModuleFE_BaseApi<Database extends DB_Prototype<any>>
+	extends ModuleFE_BaseDB<Database> {
 
-	readonly crudApiDef: CrudApiDef_Type<Types>;
+	readonly crudApiDef: CrudApiDef_Type<Database>;
 	readonly httpClient: ResolvableContent<HttpClient>;
 	private operationsById: Map<string, Operation> = new Map();
 
-	protected constructor(params: Params<Types>) {
+	protected constructor(params: Params<Database>) {
 		super(params.config, params.dispatcher);
 		this.crudApiDef = params.crudApiDef;
 		this.httpClient = params.httpClient ?? (() => HttpClient.default);
@@ -120,91 +118,90 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 	 * Clean up data before sending to API.
 	 * Override to add custom cleanup logic.
 	 */
-	protected cleanUp(toUpsert: Types['uiItem']): Types['uiItem'] {
+	protected cleanUp(toUpsert: Database['uiType']): Database['uiType'] {
 		return toUpsert;
 	}
 
-	@ApiCaller<CrudApiTypes<Types>['query']>(
-		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.query,
+	@ApiCaller<CrudApiTypes<Database>['query']>(
+		(m: ModuleFE_BaseApi<Database>) => m.crudApiDef.query,
 		{
 			httpClient: m => resolveContent(m.httpClient),
 			onComplete: (m, ctx) => m.handleQueryComplete(ctx)
 		}
 	)
-	async query(body: CrudApiTypes<Types>['query']['Body'] = {}): Promise<CrudApiTypes<Types>['query']['Response']> {
+	async query(body: CrudApiTypes<Database>['query']['Body'] = {}): Promise<CrudApiTypes<Database>['query']['Response']> {
 		void body;
-		return undefined as unknown as CrudApiTypes<Types>['query']['Response'];
+		return undefined as unknown as CrudApiTypes<Database>['query']['Response'];
 	}
 
 	@ApiCaller(
-		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.queryUnique,
+		(m: ModuleFE_BaseApi<Database>) => m.crudApiDef.queryUnique,
 		{
 			httpClient: m => resolveContent(m.httpClient),
 			onComplete: (m, ctx) => m.handleQueryUniqueComplete(ctx)
 		}
 	)
-	async queryUnique(params: CrudApiTypes<Types>['queryUnique']['Params']): Promise<CrudApiTypes<Types>['queryUnique']['Response']> {
+	async queryUnique(params: CrudApiTypes<Database>['queryUnique']['Params']): Promise<CrudApiTypes<Database>['queryUnique']['Response']> {
 		void params;
-		return undefined as unknown as CrudApiTypes<Types>['queryUnique']['Response'];
+		return undefined as unknown as CrudApiTypes<Database>['queryUnique']['Response'];
 	}
 
 	@ApiCaller(
-		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.upsert,
+		(m: ModuleFE_BaseApi<Database>) => m.crudApiDef.upsert,
 		{
 			httpClient: m => resolveContent(m.httpClient),
 			onComplete: (m, ctx) => m.handleUpsertComplete(ctx)
 		}
 	)
-	async upsert(body: CrudApiTypes<Types>['upsert']['Body']): Promise<CrudApiTypes<Types>['upsert']['Response']> {
+	async upsert(body: CrudApiTypes<Database>['upsert']['Body']): Promise<CrudApiTypes<Database>['upsert']['Response']> {
 		body = this.cleanUp(body);
 		this.validateInternal(body);
-		return undefined as unknown as CrudApiTypes<Types>['upsert']['Response'];
+		return undefined as unknown as CrudApiTypes<Database>['upsert']['Response'];
 	}
 
 	@ApiCaller(
-		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.upsertAll,
+		(m: ModuleFE_BaseApi<Database>) => m.crudApiDef.upsertAll,
 		{
 			httpClient: m => resolveContent(m.httpClient),
 			onComplete: (m, ctx) => m.handleUpsertAllComplete(ctx)
 		}
 	)
-	async upsertAll(body: CrudApiTypes<Types>['upsertAll']['Body']): Promise<CrudApiTypes<Types>['upsertAll']['Response']> {
+	async upsertAll(body: CrudApiTypes<Database>['upsertAll']['Body']): Promise<CrudApiTypes<Database>['upsertAll']['Response']> {
 		void body;
-		return undefined as unknown as CrudApiTypes<Types>['upsertAll']['Response'];
+		return undefined as unknown as CrudApiTypes<Database>['upsertAll']['Response'];
 	}
 
 	@ApiCaller(
-		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.deleteUnique,
+		(m: ModuleFE_BaseApi<Database>) => m.crudApiDef.deleteUnique,
 		{
 			httpClient: m => resolveContent(m.httpClient),
 			onComplete: (m, ctx) => m.handleDeleteComplete(ctx)
 		}
 	)
-	async delete(params: CrudApiTypes<Types>['deleteUnique']['Params']): Promise<CrudApiTypes<Types>['deleteUnique']['Response']> {
+	async delete(params: CrudApiTypes<Database>['deleteUnique']['Params']): Promise<CrudApiTypes<Database>['deleteUnique']['Response']> {
 		void params;
-		return undefined as unknown as CrudApiTypes<Types>['deleteUnique']['Response'];
+		return undefined as unknown as CrudApiTypes<Database>['deleteUnique']['Response'];
 	}
 
 	@ApiCaller(
-		(m: ModuleFE_BaseApi<Types>) => m.crudApiDef.deleteQuery,
+		(m: ModuleFE_BaseApi<Database>) => m.crudApiDef.deleteQuery,
 		{
 			httpClient: m => resolveContent(m.httpClient),
 			onComplete: (m, ctx) => m.handleDeleteQueryComplete(ctx)
 		}
 	)
-	async deleteQuery(body: CrudApiTypes<Types>['deleteQuery']['Body']): Promise<CrudApiTypes<Types>['deleteQuery']['Response']> {
+	async deleteQuery(body: CrudApiTypes<Database>['deleteQuery']['Body']): Promise<CrudApiTypes<Database>['deleteQuery']['Response']> {
 		void body;
-		return undefined as unknown as CrudApiTypes<Types>['deleteQuery']['Response'];
+		return undefined as unknown as CrudApiTypes<Database>['deleteQuery']['Response'];
 	}
 
-	@ApiCaller((m: ModuleFE_BaseApi<Types>) => m.crudApiDef.deleteAll, {
+	@ApiCaller((m: ModuleFE_BaseApi<Database>) => m.crudApiDef.deleteAll, {
 		httpClient: m => resolveContent(m.httpClient),
 	})
-	async deleteAll(params: CrudApiTypes<Types>['deleteAll']['Params']): Promise<CrudApiTypes<Types>['deleteAll']['Response']> {
+	async deleteAll(params: CrudApiTypes<Database>['deleteAll']['Params']): Promise<CrudApiTypes<Database>['deleteAll']['Response']> {
 		void params;
-		return undefined as unknown as CrudApiTypes<Types>['deleteAll']['Response'];
+		return undefined as unknown as CrudApiTypes<Database>['deleteAll']['Response'];
 	}
-
 
 	/**
 	 * Standard callback for upsert operations.
@@ -219,7 +216,7 @@ export abstract class ModuleFE_BaseApi<Types extends CrudTypes>
 	 * Standard callback for upsertAll operations.
 	 */
 	protected handleUpsertAllComplete = async (ctx: ApiCallContext<any>) => {
-		const items = ctx.response as Types['dbItem'][];
+		const items = ctx.response as Database['dbType'][];
 		await this.onEntriesUpdated(items);
 		const lastUpdated = items.reduce((acc, item) => Math.max(acc, item.__updated), -1);
 		this.IDB.setLastUpdated(lastUpdated);

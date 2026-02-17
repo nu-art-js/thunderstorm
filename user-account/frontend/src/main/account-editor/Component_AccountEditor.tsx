@@ -54,8 +54,8 @@ export class Component_AccountEditor
 		state.user = nextProps.user;
 
 		const accountId = nextProps.user?._id;
-		if (accountId)
-			ModuleFE_Account._v1.getSessions({_id: accountId}).execute(async (response) => {
+		if (accountId) {
+			void ModuleFE_Account.getSessions({_id: accountId}).then(async response => {
 				const sessions = await Promise.all(response.sessions.map(async session => {
 					const sessionJWT = await JwtTools.decode<SessionJWT>(session.sessionIdJwt);
 
@@ -70,18 +70,19 @@ export class Component_AccountEditor
 
 				this.setState({sessions});
 			});
+		}
 
 		return state;
 	}
 
 	private addAccount = async () => {
 		return performAction(async () => {
-			const account = await ModuleFE_Account._v1.createAccount({
+			const account = await ModuleFE_Account.createAccount({
 				password: this.state.password!,
 				type: this.state.type!,
 				email: this.state.email!,
 				passwordCheck: this.state.password!
-			}).executeSync();
+			});
 			this.props.onComplete?.(account._id);
 			this.setState({
 				email: undefined,
@@ -199,12 +200,11 @@ export class Component_AccountEditor
 					variant={'primary'}
 					onClick={async () => {
 						try {
-							const token = await ModuleFE_Account._v1.createToken({
+							const token = await ModuleFE_Account.createToken({
 								accountId: this.state.user!._id,
 								ttl: this.state.tokenTTL,
 								label: this.state.tokenLabel
-							})
-								.executeSync();
+							});
 							await ModuleFE_Thunderstorm.copyToClipboard(token.token);
 							ModuleFE_Toaster.toastSuccess('Token copied to clipboard');
 							this.reDeriveState();

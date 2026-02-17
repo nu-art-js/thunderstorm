@@ -165,10 +165,10 @@ export class Component_Register
 			return;
 
 		try {
-			await ModuleFE_Account._v1.registerAccount({
+			await ModuleFE_Account.registerAccount({
 				...this.state.data,
 				deviceId: StorageKey_DeviceId.get()
-			} as Request_RegisterAccount).executeSync();
+			} as Request_RegisterAccount);
 		} catch (_err: any) {
 			const err = _err as Error;
 			this.setState({errorMessages: [err.message]});

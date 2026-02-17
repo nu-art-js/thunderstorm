@@ -9,7 +9,7 @@
 import {HttpMethod} from '@nu-art/http-client';
 import {BaseDBConfig, CrudTypes} from '../../main/types.js';
 import {CrudApiDefShape} from '../../main/decorators/types.js';
-import {DB_Object, DBConfig} from '../../main/to-refactor/db-types.js';
+import {DB_Object, DBConfig} from '../../main/db-config.js';
 
 
 /** Minimal test entity: DB_Object plus a name field. */

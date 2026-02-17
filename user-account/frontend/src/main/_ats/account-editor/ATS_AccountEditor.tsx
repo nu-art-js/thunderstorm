@@ -25,7 +25,6 @@ export class ATS_AccountEditor
 		modulesToAwait: [ModuleFE_Account]
 	};
 
-	
 	protected deriveStateFromProps(nextProps: {}, state: State) {
 		state = this.state ? {...this.state} : {} as State;
 		return state;

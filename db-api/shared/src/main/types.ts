@@ -19,47 +19,12 @@
  */
 
 import {DotNotation, DotNotationValueType, SubsetObjectByKeys, ValidatorTypeResolver} from '@nu-art/ts-common';
-import {DB_BaseObject, DB_Object} from './types/db-object.js';
+import {DB_BaseObject, DB_Object, Default_UniqueKey} from './db-object.js';
 import {EntityDependencyError} from '@nu-art/firebase-shared';
 import {ApiDef, BodyApi, HttpMethod, QueryApi} from '@nu-art/http-client';
 import type {CrudQuery} from './query-types.js';
+import {DBIndex} from '@nu-art/idb-shared';
 
-
-/**
- * Removes all database metadata keys from a type.
- *
- * @template T - Database object type
- */
-export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
-
-/**
- * Index keys type for querying by indexed fields.
- *
- * Allows querying by any combination of indexed keys.
- *
- * @template T - Object type
- * @template Ks - Indexed keys
- */
-export type IndexKeys<T extends Object, Ks extends keyof T> = { [K in Ks]?: T[K] }; // {_id:'all bases belong to us'} || {label: 'all items with this label'}
-
-/**
- * Database index definition.
- *
- * Defines an index on one or more fields of a database object.
- *
- * @template T - Database object type
- */
-export type DBIndex<T extends DB_Object> = {
-	/** Index identifier */
-	id: string,
-	/** Field(s) to index (single key or array of keys) */
-	keys: keyof T | (keyof T)[],
-	/** Optional index parameters */
-	params?: { multiEntry: boolean, unique: boolean }
-};
-
-/** Default unique key name for database objects */
-export type Default_UniqueKey = '_id';
 
 /** Version type (semantic version string) */
 export type VersionType = string
@@ -87,7 +52,7 @@ export type VersionsDeclaration<Versions extends VersionType[] = ['1.0.0'], Type
  *
  * @template T - Object type with dependencies
  */
-export type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DatabasePrototype<any> }
+export type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DB_Prototype<any> }
 
 type Exact<T, Shape> = T & {
 	[K in Exclude<keyof Shape, keyof T>]?: never;
@@ -102,13 +67,13 @@ type Exact<T, Shape> = T & {
  * @template UniqueKeys Keys that are unique to each instance of the database object.
  * @template Dependencies (Future Use) Defines dependencies or relationships to other database objects.
  */
-export type Proto_DB_Object<
+export type DB_ProtoSeed<
 	T extends DB_Object,
 	DatabaseKey extends string,
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<VersionType[]>,
 	UniqueKeys extends keyof T = Default_UniqueKey,
-	Dependencies extends Exact<{ [K in DotNotation<T>]?: DatabasePrototype<any> }, Dependencies> = never> = {
+	Dependencies extends Exact<{ [K in DotNotation<T>]?: DB_Prototype<any> }, Dependencies> = never> = {
 
 	type: T,
 	dbKey: DatabaseKey;
@@ -119,7 +84,7 @@ export type Proto_DB_Object<
 }
 
 type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
-	[K in keyof D]: D[K] extends DatabasePrototype<any>
+	[K in keyof D]: D[K] extends DB_Prototype<any>
 		? {
 			dbKey: D[K]['dbKey'],
 			direction?: 'ref' | 'dep' // default is "dep"
@@ -135,7 +100,7 @@ type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
  * @template ModifiableSubType The subset of P's type that is modifiable.
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
-export type DatabasePrototype<P extends Proto_DB_Object<any, string, any, VersionsDeclaration<VersionType[]>, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+export type DB_Prototype<P extends DB_ProtoSeed<any, string, any, VersionsDeclaration<VersionType[]>, any, any> = any, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	editableType: ModifiableSubType,
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	// dbType: ModifiableSubType & GeneratedSubType & DB_Object,
@@ -158,7 +123,7 @@ export type DatabasePrototype<P extends Proto_DB_Object<any, string, any, Versio
  *
  * @template Proto The DBProto type that this definition is based on.
  */
-export type Database<Proto extends DatabasePrototype<any, any, any>> = {
+export type Database<Proto extends DB_Prototype> = {
 	dbKey: Proto['dbKey'];
 	entityName: string;
 	frontend: {
@@ -216,7 +181,7 @@ export type CrudTypes<
 	UniqueKeys extends (keyof DBType)[] = (keyof DBType)[]
 > = {
 	readonly dbKey: DBKey;
-	readonly dbItem: DBType;
+	readonly dbType: DBType;
 	readonly uiItem: UIType;
 	readonly validator: Validator;
 	readonly uniqueKeys: UniqueKeys;
@@ -225,17 +190,17 @@ export type CrudTypes<
 
 
 /** Flat CRUD API defs (no v1 wrapper). Generic so ApiHandler infers payload types. */
-export type CrudApiTypes<Types extends CrudTypes<any, any, any> = CrudTypes<any, any, any>> = {
-	query: BodyApi<Types['dbItem'][], CrudQuery<Types['dbItem']>>;
-	queryUnique: QueryApi<Types['dbItem'], DB_BaseObject>;
-	upsert: BodyApi<Types['dbItem'], Types['uiItem']>;
-	upsertAll: BodyApi<Types['dbItem'][], Types['uiItem'][]>;
-	deleteUnique: QueryApi<Types['dbItem'] | undefined, DB_BaseObject, EntityDependencyError>;
-	deleteQuery: BodyApi<Types['dbItem'][], CrudQuery<Types['dbItem']>>;
-	deleteAll: QueryApi<Types['dbItem'][]>;
+export type CrudApiTypes<Types extends DB_Prototype<any> = DB_Prototype<any>> = {
+	query: BodyApi<Types['dbType'][], CrudQuery<Types['dbType']>>;
+	queryUnique: QueryApi<Types['dbType'], DB_BaseObject>;
+	upsert: BodyApi<Types['dbType'], Types['uiType']>;
+	upsertAll: BodyApi<Types['dbType'][], Types['uiType'][]>;
+	deleteUnique: QueryApi<Types['dbType'] | undefined, DB_BaseObject, EntityDependencyError>;
+	deleteQuery: BodyApi<Types['dbType'][], CrudQuery<Types['dbType']>>;
+	deleteAll: QueryApi<Types['dbType'][]>;
 };
 
-export type CrudApiDef_Type<Types extends CrudTypes<any, any, any> = CrudTypes<any, any, any>> = {
+export type CrudApiDef_Type<Types extends DB_Prototype<any> = DB_Prototype<any>> = {
 	query: ApiDef<CrudApiTypes<Types>['query']>;
 	queryUnique: ApiDef<CrudApiTypes<Types>['queryUnique']>;
 	upsert: ApiDef<CrudApiTypes<Types>['upsert']>;
@@ -245,7 +210,7 @@ export type CrudApiDef_Type<Types extends CrudTypes<any, any, any> = CrudTypes<a
 	deleteAll: ApiDef<CrudApiTypes<Types>['deleteAll']>;
 };
 
-export function CrudApiDef<Types extends CrudTypes<any, any, any>>(dbKey: string, version = 'v1'): CrudApiDef_Type<Types> {
+export function CrudApiDef<Types extends DB_Prototype<any>>(dbKey: string, version = 'v1'): CrudApiDef_Type<Types> {
 	return {
 		query: {method: HttpMethod.POST, path: `${version}/${dbKey}/query`, timeout: 60000},
 		queryUnique: {method: HttpMethod.GET, path: `${version}/${dbKey}/query-unique`},

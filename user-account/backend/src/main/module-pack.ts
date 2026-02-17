@@ -25,19 +25,23 @@ import {
 import {ModuleBE_SecretManager} from '@nu-art/google-services-backend/modules/ModuleBE_SecretManager';
 import {ModulePackBE_LoginAttemptDB} from './_entity/login-attempts/index.js';
 
-export const ModulePackBE_Accounts: Module[] = [
-	...ModulePackBE_AccountDB,
-	...ModulePackBE_SAML,
-	...ModulePackBE_SessionDB,
-	...ModulePackBE_LoginAttemptDB,
-	...ModulePackBE_FailedLoginAttemptDB,
+const modulesWithSAML: Module[] = [
+	...(ModulePackBE_AccountDB as unknown as Module[]),
+	...(ModulePackBE_SAML as unknown as Module[]),
+	...(ModulePackBE_SessionDB as unknown as Module[]),
+	...(ModulePackBE_LoginAttemptDB as unknown as Module[]),
+	...(ModulePackBE_FailedLoginAttemptDB as unknown as Module[]),
 	ModuleBE_SecretManager
 ];
 
-export const ModulePackBE_Accounts_WOSAML: Module[] = [
-	...ModulePackBE_AccountDB,
-	...ModulePackBE_SessionDB,
-	...ModulePackBE_LoginAttemptDB,
-	...ModulePackBE_FailedLoginAttemptDB,
+export const ModulePackBE_Accounts = modulesWithSAML;
+
+const modulesWOSAML: Module[] = [
+	...(ModulePackBE_AccountDB as unknown as Module[]),
+	...(ModulePackBE_SessionDB as unknown as Module[]),
+	...(ModulePackBE_LoginAttemptDB as unknown as Module[]),
+	...(ModulePackBE_FailedLoginAttemptDB as unknown as Module[]),
 	ModuleBE_SecretManager
 ];
+
+export const ModulePackBE_Accounts_WOSAML = modulesWOSAML;

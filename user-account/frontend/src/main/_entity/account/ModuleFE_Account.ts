@@ -1,12 +1,11 @@
 import * as React from 'react';
-import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {apiWithBody, apiWithQuery, ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller, HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm-shared';
+import {BaseDBConfig, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {ApiCaller, ApiCallContext} from '@nu-art/http-client';
+import {ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
+import {HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm-shared';
 import {dispatcher_onAuthRequired} from '@nu-art/thunderstorm-shared/no-auth-listener';
 import {CrudApiDef} from '@nu-art/db-api-shared';
 import {
-	Account_ChangeThumbnail,
-	Account_GetPasswordAssertionConfig,
 	AccountCrudTypes,
 	API_SAML,
 	API_UserAccount,
@@ -16,13 +15,10 @@ import {
 	DBDef_Accounts,
 	PasswordAssertionConfig,
 	QueryParam_SessionId,
-	SAML_Login,
 	UI_Account
 } from '@nu-art/user-account-shared';
-import type {BaseDBConfig} from '@nu-art/db-api-frontend';
 import {SessionKeyFE_Account, StorageKey_DeviceId, StorageKey_TabId} from './consts.js';
-import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
-import {asArray, cloneObj, composeUrl, DB_BaseObject, Exception, generateHex, KB, TS_Object} from '@nu-art/ts-common';
+import {asArray, cloneObj, composeUrl, Exception, generateHex, KB, TS_Object} from '@nu-art/ts-common';
 import {ModuleFE_Session, OnSessionUpdated} from '../session/ModuleFE_Session.js';
 
 
@@ -33,7 +29,6 @@ export interface OnLoginStatusUpdated {
 export interface OnAccountsUpdated {
 	__onAccountsUpdated: (...params: ApiCallerEventType<AccountCrudTypes>) => void;
 }
-
 
 export enum LoggedStatus {
 	VALIDATING,
@@ -46,9 +41,7 @@ export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatus
 export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
 const StorageKey_PasswordAssertionConfig = new StorageKey<PasswordAssertionConfig | undefined>('account__password-assertion-config', false);
 
-type ApiDefCaller_Account = ApiDefCaller<API_UserAccount & API_SAML>;
-
-const accountBaseConfig: BaseDBConfig<AccountCrudTypes> = {
+const accountBaseConfig = {
 	dbKey: DBDef_Accounts.dbKey,
 	validator: DBDef_Accounts.modifiablePropsValidator,
 	uniqueKeys: (DBDef_Accounts.uniqueKeys ?? ['_id']) as AccountCrudTypes['uniqueKeys'],
@@ -59,50 +52,100 @@ const accountBaseConfig: BaseDBConfig<AccountCrudTypes> = {
 		version: DBDef_Accounts.versions[0],
 		uniqueKeys: (DBDef_Accounts.uniqueKeys ?? ['_id']) as (keyof DB_Account)[]
 	}
-};
+} as BaseDBConfig<AccountCrudTypes>;
 
-const accountDispatcher = {
-	dispatchModule: () => dispatch_onAccountsUpdated.dispatchModule(),
-	dispatchUI: () => dispatch_onAccountsUpdated.dispatchUI(),
-	dispatchAll: () => {
-		dispatch_onAccountsUpdated.dispatchModule();
-		dispatch_onAccountsUpdated.dispatchUI();
-	}
-};
 
 class ModuleFE_Account_Class
 	extends ModuleFE_BaseApi<AccountCrudTypes>
-	implements ApiDefCaller_Account, OnLoginStatusUpdated, OnSessionUpdated {
+	implements OnLoginStatusUpdated, OnSessionUpdated {
 
-	readonly _v1: ApiDefCaller_Account;
 	private status: LoggedStatus = LoggedStatus.LOGGED_OUT;
 
 	__onLoginStatusUpdated() {
 		if ([LoggedStatus.LOGGED_OUT, LoggedStatus.SESSION_TIMEOUT].includes(this.status))
-			this._v1.getPasswordAssertionConfig({}).executeSync();
+			void this.getPasswordAssertionConfig({});
 	}
 
 	constructor() {
 		super({
 			config: accountBaseConfig,
-			crudApiDef: CrudApiDef<AccountCrudTypes>(DBDef_Accounts.dbKey),
-			dispatcher: accountDispatcher
+			crudApiDef: CrudApiDef(DBDef_Accounts.dbKey) as import('@nu-art/db-api-shared').CrudApiDef_Type<AccountCrudTypes>
 		});
-		this._v1 = {
-			refreshSession: apiWithQuery(ApiDef_UserAccount.refreshSession),
-			registerAccount: apiWithBody(ApiDef_UserAccount.registerAccount),
-			createAccount: apiWithBody(ApiDef_UserAccount.createAccount, this.onAccountCreated),
-			changePassword: apiWithBody(ApiDef_UserAccount.changePassword),
-			login: apiWithBody(ApiDef_UserAccount.login),
-			logout: apiWithQuery(ApiDef_UserAccount.logout),
-			createToken: apiWithBody(ApiDef_UserAccount.createToken),
-			setPassword: apiWithBody(ApiDef_UserAccount.setPassword),
-			getSessions: apiWithQuery(ApiDef_UserAccount.getSessions),
-			changeThumbnail: apiWithBody(ApiDef_UserAccount.changeThumbnail, this.onThumbnailChanged),
-			loginSaml: apiWithQuery(ApiDef_SAML.loginSaml, this.onLoginCompletedSAML),
-			assertSAML: apiWithBody(ApiDef_SAML.assertSAML),
-			getPasswordAssertionConfig: apiWithQuery(ApiDef_UserAccount.getPasswordAssertionConfig, this.onPasswordAssertionConfig)
-		};
+	}
+
+	@ApiCaller(ApiDef_UserAccount.refreshSession)
+	async refreshSession(_params?: API_UserAccount['refreshSession']['Params']): Promise<API_UserAccount['refreshSession']['Response']> {
+		return undefined as unknown as API_UserAccount['refreshSession']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.registerAccount)
+	async registerAccount(body: API_UserAccount['registerAccount']['Body']): Promise<API_UserAccount['registerAccount']['Response']> {
+		void body;
+		return undefined as unknown as API_UserAccount['registerAccount']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.createAccount, {onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['createAccount']>) => m.onAccountCreated(ctx)})
+	async createAccount(body: API_UserAccount['createAccount']['Body']): Promise<API_UserAccount['createAccount']['Response']> {
+		void body;
+		return undefined as unknown as API_UserAccount['createAccount']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.changePassword)
+	async changePassword(body: API_UserAccount['changePassword']['Body']): Promise<API_UserAccount['changePassword']['Response']> {
+		void body;
+		return undefined as unknown as API_UserAccount['changePassword']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.login)
+	async login(body: API_UserAccount['login']['Body']): Promise<API_UserAccount['login']['Response']> {
+		void body;
+		return undefined as unknown as API_UserAccount['login']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.logout)
+	async logoutApi(_params?: API_UserAccount['logout']['Params']): Promise<API_UserAccount['logout']['Response']> {
+		return undefined as unknown as API_UserAccount['logout']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.createToken)
+	async createToken(body: API_UserAccount['createToken']['Body']): Promise<API_UserAccount['createToken']['Response']> {
+		void body;
+		return undefined as unknown as API_UserAccount['createToken']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.setPassword)
+	async setPassword(body: API_UserAccount['setPassword']['Body']): Promise<API_UserAccount['setPassword']['Response']> {
+		void body;
+		return undefined as unknown as API_UserAccount['setPassword']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.getSessions)
+	async getSessions(params: API_UserAccount['getSessions']['Params']): Promise<API_UserAccount['getSessions']['Response']> {
+		void params;
+		return undefined as unknown as API_UserAccount['getSessions']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.changeThumbnail, {onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['changeThumbnail']>) => m.onThumbnailChanged(ctx)})
+	async changeThumbnail(body: API_UserAccount['changeThumbnail']['Body']): Promise<API_UserAccount['changeThumbnail']['Response']> {
+		void body;
+		return undefined as unknown as API_UserAccount['changeThumbnail']['Response'];
+	}
+
+	@ApiCaller(ApiDef_SAML.loginSaml, {onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_SAML['loginSaml']>) => m.onLoginCompletedSAML(ctx)})
+	async loginSaml(params: API_SAML['loginSaml']['Params']): Promise<API_SAML['loginSaml']['Response']> {
+		void params;
+		return undefined as unknown as API_SAML['loginSaml']['Response'];
+	}
+
+	@ApiCaller(ApiDef_SAML.assertSAML)
+	async assertSAML(body: API_SAML['assertSAML']['Body']): Promise<API_SAML['assertSAML']['Response']> {
+		void body;
+		return undefined as unknown as API_SAML['assertSAML']['Response'];
+	}
+
+	@ApiCaller(ApiDef_UserAccount.getPasswordAssertionConfig, {onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['getPasswordAssertionConfig']>) => m.onPasswordAssertionConfig(ctx)})
+	async getPasswordAssertionConfig(_params?: API_UserAccount['getPasswordAssertionConfig']['Params']): Promise<API_UserAccount['getPasswordAssertionConfig']['Response']> {
+		return undefined as unknown as API_UserAccount['getPasswordAssertionConfig']['Response'];
 	}
 
 	protected init(): void {
@@ -127,7 +170,7 @@ class ModuleFE_Account_Class
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, defaultTabId!);
 	}
 
-	
+
 	getAccounts() {
 		return this.cache.all().map(i => cloneObj(i)) as UI_Account[];
 	}
@@ -173,7 +216,7 @@ class ModuleFE_Account_Class
 
 
 	logout = async (url?: string) => {
-		await this._v1.logout({}).executeSync();
+		await this.logoutApi({});
 		dispatcher_onAuthRequired.dispatchModule(undefined);
 		if (url)
 			return window.location.href = url;
@@ -191,7 +234,7 @@ class ModuleFE_Account_Class
 
 			try {
 				const hash = await this.encodeFile(file);
-				await this._v1.changeThumbnail({accountId: account._id, hash}).executeSync();
+				await this.changeThumbnail({accountId: account._id, hash});
 			} catch (err: any) {
 				this.logError(err.message, err);
 			}
@@ -214,24 +257,24 @@ class ModuleFE_Account_Class
 		return SessionKeyFE_Account.get();
 	};
 
-	
-	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
-		await this.onEntriesUpdated([response as DB_Account]);
+
+	private onAccountCreated = async (ctx: ApiCallContext<API_UserAccount['createAccount']>) => {
+		await this.onEntriesUpdated([ctx.response as DB_Account]);
 	};
 
-	private onThumbnailChanged = async (response: { account: DB_Account }) => {
-		await this.onEntryUpdated(response.account, response.account);
+	private onThumbnailChanged = async (ctx: ApiCallContext<API_UserAccount['changeThumbnail']>) => {
+		await this.onEntryUpdated(ctx.response.account, ctx.response.account);
 	};
 
-	private onLoginCompletedSAML = async (response: SAML_Login['response']) => {
-		if (!response.loginUrl)
+	private onLoginCompletedSAML = async (ctx: ApiCallContext<API_SAML['loginSaml']>) => {
+		if (!ctx.response.loginUrl)
 			return;
 
-		window.location.href = response.loginUrl;
+		window.location.href = ctx.response.loginUrl;
 	};
 
-	private onPasswordAssertionConfig = async (response: { config: PasswordAssertionConfig | undefined }) => {
-		StorageKey_PasswordAssertionConfig.set(response.config);
+	private onPasswordAssertionConfig = async (ctx: ApiCallContext<API_UserAccount['getPasswordAssertionConfig']>) => {
+		StorageKey_PasswordAssertionConfig.set(ctx.response.config);
 	};
 }
 

@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@nu-art/db-api-shared": "?",
+    "@nu-art/api-types": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/thunderstorm-shared": "?",

@@ -7,6 +7,8 @@
  */
 
 
+import {DB_Object} from './db-object.js';
+
 /**
  * Compose a unique ID from an object's unique key fields.
  *
@@ -16,13 +18,19 @@
  * @param keys - Array of keys to use for ID composition
  * @returns Composed unique ID string
  */
-export function composeDbObjectUniqueId<T extends object>(obj: T, keys: (keyof T)[]): string {
+export function composeDbObjectUniqueId<T extends DB_Object>(obj: T, keys: (keyof T)[]): string {
 	return keys.map(key => String(obj[key])).join('-');
 }
 
 /**
  * Extract the _id field from a DB object.
  */
-export function dbObjectToId<T extends { _id: string }>(obj: T): string {
+export function dbObjectToId<T extends DB_Object>(obj: T): string {
 	return obj._id;
 }
+
+/**
+ * Keys that are part of DB_Object (not user-defined fields).
+ */
+export const KeysOfDB_Object: (keyof DB_Object)[] = ['_id', '__created', '__updated', '_v'];
+

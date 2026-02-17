@@ -1,15 +1,9 @@
-import {
-	DBDef_V3,
-	tsValidateBoolean,
-	tsValidateEmail,
-	tsValidateString,
-	tsValidateValue,
-	tsValidator_nonMandatoryString
-} from '@nu-art/ts-common';
-import {_accountTypes, DBProto_Account} from './types.js';
+import {tsValidateBoolean, tsValidateEmail, tsValidateString, tsValidateValue, tsValidator_nonMandatoryString} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {_accountTypes, DatabaseDef_Account} from './types.js';
 import {accountGroupName} from '../session/consts.js';
 
-const modifiablePropsValidator: DBProto_Account['modifiablePropsValidator'] = {
+const modifiablePropsValidator: DatabaseDef_Account['modifiablePropsValidator'] = {
 	email: tsValidateEmail,
 	type: tsValidateValue(_accountTypes),
 	thumbnail: tsValidateString(undefined, false),
@@ -17,20 +11,20 @@ const modifiablePropsValidator: DBProto_Account['modifiablePropsValidator'] = {
 	description: tsValidateString(undefined, false)
 };
 
-const generatedPropsValidator: DBProto_Account['generatedPropsValidator'] = {
+const generatedPropsValidator: DatabaseDef_Account['generatedPropsValidator'] = {
 	_auditorId: tsValidateString(),
 	_newPasswordRequired: tsValidateBoolean(false),
 	salt: tsValidator_nonMandatoryString,
 	saltedPassword: tsValidator_nonMandatoryString,
 };
 
-
-export const DBDef_Accounts: DBDef_V3<DBProto_Account> = {
+export const DBDef_Accounts: Database<DatabaseDef_Account> = {
 	dbKey: 'user-account--accounts',
 	entityName: 'Account',
-	modifiablePropsValidator: modifiablePropsValidator,
-	generatedPropsValidator: generatedPropsValidator,
+	modifiablePropsValidator,
+	generatedPropsValidator,
 	versions: ['1.0.0'],
+	uniqueKeys: ['_id'],
 	frontend: {
 		group: accountGroupName,
 		name: 'account'

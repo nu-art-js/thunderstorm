@@ -36,6 +36,7 @@
   "dependencies": {
     "@nu-art/db-api-frontend": "?",
     "@nu-art/db-api-shared": "?",
+    "@nu-art/http-client": "?",
     "@nu-art/user-account-shared": "?",
     "@nu-art/firebase-frontend": "?",
     "@nu-art/firebase-shared": "?",

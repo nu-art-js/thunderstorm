@@ -28,6 +28,7 @@
   "dependencies": {
     "@nu-art/db-api-shared": "?",
     "@nu-art/idb-frontend": "?",
+    "@nu-art/idb-shared": "?",
     "@nu-art/firebase-frontend": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/http-client": "?",
