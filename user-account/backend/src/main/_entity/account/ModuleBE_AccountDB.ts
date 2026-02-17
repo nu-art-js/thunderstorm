@@ -3,7 +3,6 @@ import {
 	BadImplementationException,
 	cloneObj,
 	compare,
-	DB_BaseObject,
 	dispatch_onApplicationException,
 	Dispatcher,
 	exists,
@@ -13,6 +12,7 @@ import {
 	MUSTNeverHappenException,
 	Year
 } from '@nu-art/ts-common';
+import {DB_BaseObject} from '@nu-art/db-api-shared';
 import {firestore} from 'firebase-admin';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm-backend';
@@ -38,6 +38,7 @@ import {
 	assertPasswordRules,
 	DB_Account,
 	DBDef_Accounts,
+	DBProto_Account,
 	PasswordAssertionConfig,
 	PasswordAssertionResponseError,
 	SafeDB_Account,

@@ -4,10 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {CrudApiDef, CrudTypes} from '@nu-art/db-api-shared';
+import {CrudApiDef} from '@nu-art/db-api-shared';
 import {tsValidateMustExist, tsValidateOptional, tsValidateString} from '@nu-art/ts-common';
-import type {DB_AppConfig, UI_AppConfig} from './types.js';
-import {DBKey_AppConfig, EntityName_AppConfig, Versions_AppConfig} from './types.js';
 
 const validator = {
 	_id: tsValidateOptional,
@@ -15,21 +13,6 @@ const validator = {
 	data: tsValidateMustExist,
 };
 
-export type Types_AppConfig = CrudTypes<
-	typeof DBKey_AppConfig,
-	DB_AppConfig,
-	UI_AppConfig,
-	typeof validator,
-	['_id']
->;
-
-export const CrudTypes_AppConfig: Types_AppConfig = {
-	dbKey: DBKey_AppConfig,
-	dbItem: undefined as unknown as DB_AppConfig,
-	uiItem: undefined as unknown as UI_AppConfig,
-	validator,
-	uniqueKeys: ['_id'],
-};
 
 /** BaseDBDefBE-compatible definition for backend ModuleBE_BaseDB. Includes backend and validators for FirestoreCollectionV3. */
 export const BaseDBDefBE_AppConfig = {
@@ -43,4 +26,4 @@ export const BaseDBDefBE_AppConfig = {
 };
 
 /** CRUD API definition for app-config (used by db-api backend and frontend). */
-export const CrudApiDef_AppConfig = CrudApiDef<Types_AppConfig>(DBKey_AppConfig, 'v1');
+export const CrudApiDef_AppConfig = CrudApiDef<Types_AppConfig>(DBKey_AppConfig);

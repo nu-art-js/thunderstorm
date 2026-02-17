@@ -4,110 +4,81 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {CrudApiDef_Type, DB_Object} from '@nu-art/db-api-shared';
-import {CrudApiDef, CrudTypes} from '@nu-art/db-api-shared';
-import type {DB_Account, UI_Account} from './_entity/account/types.js';
+import type {CrudApiDef_Type} from '@nu-art/db-api-shared';
+import {CrudApiDef} from '@nu-art/db-api-shared';
+import type {AccountCrudTypes} from './_entity/account/types.js';
 import {DBDef_Accounts} from './_entity/account/db-def.js';
-import type {DB_Session, UI_Session} from './_entity/session/types.js';
+import type {SessionCrudTypes} from './_entity/session/types.js';
 import {DBDef_Session} from './_entity/session/db-def.js';
-import type {DB_LoginAttempt, UI_LoginAttempt} from './_entity/login-attempts/types.js';
+import type {LoginAttemptCrudTypes} from './_entity/login-attempts/types.js';
 import {DBDef_LoginAttempt} from './_entity/login-attempts/db-def.js';
-import type {DB_FailedLoginAttempt, UI_FailedLoginAttempt} from './_entity/failed-login-attempt/types.js';
+import type {FailedLoginAttemptCrudTypes} from './_entity/failed-login-attempt/types.js';
 import {DBDef_FailedLoginAttempt} from './_entity/failed-login-attempt/db-def.js';
 
-// DB-api expects DB_Object with branded _id; user-account uses string _id. Cast for CrudTypes compatibility.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AsDBObject<T> = T & DB_Object<any>;
 // --- Account ---
+export type Types_Account = AccountCrudTypes;
 const validator_Account = {...DBDef_Accounts.generatedPropsValidator, ...DBDef_Accounts.modifiablePropsValidator};
-export type Types_Account = CrudTypes<
-	'user-account--accounts',
-	AsDBObject<DB_Account>,
-	UI_Account,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- merged validators from DBDef don't match ValidatorTypeResolver<UIItem> exactly
-	any,
-	['_id', 'email']
->;
 export const CrudTypes_Account = {
-	dbKey: 'user-account--accounts',
-	dbItem: undefined as unknown as AsDBObject<DB_Account>,
-	uiItem: undefined as unknown as UI_Account,
+	dbKey: DBDef_Accounts.dbKey,
+	dbItem: undefined as unknown as AccountCrudTypes['dbItem'],
+	uiItem: undefined as unknown as AccountCrudTypes['uiItem'],
 	validator: validator_Account,
-	uniqueKeys: ['_id', 'email'],
-} as Types_Account;
+	uniqueKeys: (DBDef_Accounts.uniqueKeys ?? ['_id']) as AccountCrudTypes['uniqueKeys'],
+	editableType: undefined as unknown as AccountCrudTypes['editableType'],
+} as AccountCrudTypes;
 export const BaseDBDefBE_Account = {
 	...DBDef_Accounts,
-	uniqueKeys: ['_id', 'email'] as const,
+	uniqueKeys: DBDef_Accounts.uniqueKeys ?? ['_id'],
 };
-// Types_Account has custom uniqueKeys; cast for runtime. Declare as CrudApiDef_Type<any> so consumer builds don't fail constraint.
-export const CrudApiDef_Account: CrudApiDef_Type<any> = CrudApiDef('user-account--accounts', 'v1') as unknown as CrudApiDef_Type<Types_Account>;
+export const CrudApiDef_Account: CrudApiDef_Type<AccountCrudTypes> = CrudApiDef('user-account--accounts', 'v1') as CrudApiDef_Type<AccountCrudTypes>;
 
 // --- Session ---
+export type Types_Session = SessionCrudTypes;
 const validator_Session = {...DBDef_Session.generatedPropsValidator, ...DBDef_Session.modifiablePropsValidator};
-export type Types_Session = CrudTypes<
-	'user-account--sessions',
-	AsDBObject<DB_Session>,
-	UI_Session,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- merged validators from DBDef
-	any,
-	['_id', 'accountId', 'deviceId']
->;
 export const CrudTypes_Session = {
-	dbKey: 'user-account--sessions',
-	dbItem: undefined as unknown as AsDBObject<DB_Session>,
-	uiItem: undefined as unknown as UI_Session,
+	dbKey: DBDef_Session.dbKey,
+	dbItem: undefined as unknown as SessionCrudTypes['dbItem'],
+	uiItem: undefined as unknown as SessionCrudTypes['uiItem'],
 	validator: validator_Session,
-	uniqueKeys: ['_id', 'accountId', 'deviceId'],
-} as Types_Session;
+	uniqueKeys: (DBDef_Session.uniqueKeys ?? ['_id']) as SessionCrudTypes['uniqueKeys'],
+	editableType: undefined as unknown as SessionCrudTypes['editableType'],
+} as SessionCrudTypes;
 export const BaseDBDefBE_Session = {
 	...DBDef_Session,
-	uniqueKeys: ['_id', 'accountId', 'deviceId'] as const,
+	uniqueKeys: DBDef_Session.uniqueKeys ?? ['_id'],
 };
-// Types_Session has custom uniqueKeys; cast for runtime. Declare as CrudApiDef_Type<any> so consumer builds don't fail constraint.
-export const CrudApiDef_Session: CrudApiDef_Type<any> = CrudApiDef('user-account--sessions', 'v1') as unknown as CrudApiDef_Type<Types_Session>;
+export const CrudApiDef_Session: CrudApiDef_Type<SessionCrudTypes> = CrudApiDef('user-account--sessions', 'v1') as CrudApiDef_Type<SessionCrudTypes>;
 
 // --- LoginAttempt ---
+export type Types_LoginAttempt = LoginAttemptCrudTypes;
 const validator_LoginAttempt = {...DBDef_LoginAttempt.generatedPropsValidator, ...DBDef_LoginAttempt.modifiablePropsValidator};
-export type Types_LoginAttempt = CrudTypes<
-	'login-attempt',
-	AsDBObject<DB_LoginAttempt>,
-	UI_LoginAttempt,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- merged validators from DBDef
-	any,
-	['_id']
->;
 export const CrudTypes_LoginAttempt = {
-	dbKey: 'login-attempt',
-	dbItem: undefined as unknown as AsDBObject<DB_LoginAttempt>,
-	uiItem: undefined as unknown as UI_LoginAttempt,
+	dbKey: DBDef_LoginAttempt.dbKey,
+	dbItem: undefined as unknown as LoginAttemptCrudTypes['dbItem'],
+	uiItem: undefined as unknown as LoginAttemptCrudTypes['uiItem'],
 	validator: validator_LoginAttempt,
-	uniqueKeys: ['_id'],
-} as Types_LoginAttempt;
+	uniqueKeys: (DBDef_LoginAttempt.uniqueKeys ?? ['_id']) as LoginAttemptCrudTypes['uniqueKeys'],
+	editableType: undefined as unknown as LoginAttemptCrudTypes['editableType'],
+} as LoginAttemptCrudTypes;
 export const BaseDBDefBE_LoginAttempt = {
 	...DBDef_LoginAttempt,
-	uniqueKeys: ['_id'] as const,
+	uniqueKeys: DBDef_LoginAttempt.uniqueKeys ?? ['_id'],
 };
-export const CrudApiDef_LoginAttempt = CrudApiDef('login-attempt', 'v1') as unknown as CrudApiDef_Type<Types_LoginAttempt>;
+export const CrudApiDef_LoginAttempt: CrudApiDef_Type<LoginAttemptCrudTypes> = CrudApiDef('login-attempt', 'v1') as CrudApiDef_Type<LoginAttemptCrudTypes>;
 
 // --- FailedLoginAttempt ---
+export type Types_FailedLoginAttempt = FailedLoginAttemptCrudTypes;
 const validator_FailedLoginAttempt = {...DBDef_FailedLoginAttempt.generatedPropsValidator, ...DBDef_FailedLoginAttempt.modifiablePropsValidator};
-export type Types_FailedLoginAttempt = CrudTypes<
-	'failed-login-attempt',
-	AsDBObject<DB_FailedLoginAttempt>,
-	UI_FailedLoginAttempt,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- merged validators from DBDef
-	any,
-	['_id']
->;
 export const CrudTypes_FailedLoginAttempt = {
-	dbKey: 'failed-login-attempt',
-	dbItem: undefined as unknown as AsDBObject<DB_FailedLoginAttempt>,
-	uiItem: undefined as unknown as UI_FailedLoginAttempt,
+	dbKey: DBDef_FailedLoginAttempt.dbKey,
+	dbItem: undefined as unknown as FailedLoginAttemptCrudTypes['dbItem'],
+	uiItem: undefined as unknown as FailedLoginAttemptCrudTypes['uiItem'],
 	validator: validator_FailedLoginAttempt,
-	uniqueKeys: ['_id'],
-} as Types_FailedLoginAttempt;
+	uniqueKeys: (DBDef_FailedLoginAttempt.uniqueKeys ?? ['_id']) as FailedLoginAttemptCrudTypes['uniqueKeys'],
+	editableType: undefined as unknown as FailedLoginAttemptCrudTypes['editableType'],
+} as FailedLoginAttemptCrudTypes;
 export const BaseDBDefBE_FailedLoginAttempt = {
 	...DBDef_FailedLoginAttempt,
-	uniqueKeys: ['_id'] as const,
+	uniqueKeys: DBDef_FailedLoginAttempt.uniqueKeys ?? ['_id'],
 };
-export const CrudApiDef_FailedLoginAttempt = CrudApiDef('failed-login-attempt', 'v1') as unknown as CrudApiDef_Type<Types_FailedLoginAttempt>;
+export const CrudApiDef_FailedLoginAttempt: CrudApiDef_Type<FailedLoginAttemptCrudTypes> = CrudApiDef('failed-login-attempt', 'v1') as CrudApiDef_Type<FailedLoginAttemptCrudTypes>;

@@ -274,7 +274,7 @@ export abstract class Module<Config = any,
 	 * }
 	 * ```
 	 */
-	protected init(): void {
+	protected init() {
 		// ignorance is bliss
 	}
 
@@ -298,7 +298,7 @@ export abstract class Module<Config = any,
 		// ignorance is bliss
 	}
 
-	protected async destroy(){
+	protected async destroy() {
 
 	}
 }

@@ -1,36 +1,35 @@
-import {CrudTypes} from '@nu-art/db-api-shared';
-import {DB_Object, DBProto, Proto_DB_Object, TypedKeyValue, UniqueId, VersionsDeclaration} from '@nu-art/ts-common';
+import {CrudTypes, DatabasePrototype, DB_Object, Proto_DB_Object, VersionsDeclaration} from '@nu-art/db-api-shared';
+import {TypedKeyValue} from '@nu-art/ts-common';
+import {DB_Account} from '../account/index.js';
 
 type VersionTypes = { '1.0.0': DB_Session };
-type Versions = VersionsDeclaration<['1.0.0'], VersionTypes>
-type UniqueIds = 'accountId' | 'deviceId';
+type Versions = VersionsDeclaration<['1.0.0'], VersionTypes>;
+type UniqueIds = '_id' | 'accountId' | 'deviceId';
 type DBKey = 'user-account--sessions';
-type GeneratedKeys = keyof DB_Object;
+type GeneratedKeys = keyof DB_Object<DBKey>;
+type Dependencies = {};
 
-type Proto = Proto_DB_Object<DB_Session, DBKey, GeneratedKeys, Versions, UniqueIds>
-export type DBProto_Session = DBProto<Proto>
+type Proto = Proto_DB_Object<DB_Session, DBKey, GeneratedKeys, Versions, UniqueIds, Dependencies>;
+export type DBProto_Session = DatabasePrototype<Proto>;
 
 export type SessionCrudTypes = CrudTypes<
 	DBProto_Session['dbKey'],
-	// @ts-expect-error _id type mismatch (ts-common vs db-api-shared)
 	DBProto_Session['dbType'],
 	DBProto_Session['uiType'],
+	DBProto_Session['editableType'],
 	DBProto_Session['modifiablePropsValidator'],
 	DBProto_Session['uniqueKeys']
 >;
 
-export type UI_Session = DBProto_Session['uiType']
+export type UI_Session = DBProto_Session['uiType'];
 
-export type DB_Session = DB_Object & {
-	// the md5s of the previous session associated with this session for quick query
-	validSessionJwtMd5s: UniqueId[]
+export type DB_Session = DB_Object<DBKey> & {
+	validSessionJwtMd5s: DB_Session['_id'][];
+	label?: string;
+	accountId: DB_Account['_id'];
+	deviceId: string;
+	linkedSessionId?: DB_Session['_id'];
+	sessionIdJwt: string;
+};
 
-	label?: string
-	accountId: UniqueId
-	deviceId: UniqueId
-	// when refreshing a session we are getting a new session object, this is the session id of the db session the new session was created from
-	linkedSessionId?: UniqueId
-	sessionIdJwt: string //jwt
-}
-
-export type _SessionKey_SessionId = TypedKeyValue<'_id', UniqueId>
+export type _SessionKey_SessionId = TypedKeyValue<'_id', DB_Session['_id']>;

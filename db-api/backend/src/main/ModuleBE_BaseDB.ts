@@ -48,9 +48,8 @@ import {
 	EntityDependencyCollection,
 	getModuleBEConfig
 } from './storm-stubs.js';
-import {CrudTypes} from '@nu-art/db-api-shared';
+import {CrudClause_Where, DB_Prototype} from '@nu-art/db-api-shared';
 import {BaseDBDefBE, PostWriteProcessingDataShape} from './backend-types.js';
-import {CrudClause_Where} from '@nu-art/db-api-shared';
 
 export type BaseDBApiConfig = {
 	projectId?: string;
@@ -66,7 +65,7 @@ const CONST_DefaultWriteChunkSize = 200;
  *
  * Typed by ModuleTypesBE (symmetric to FE ModuleTypes); no Proto in the base.
  */
-export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
+export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, ConfigType = any,
 	Config extends ConfigType & DBApiConfig = ConfigType & DBApiConfig>
 	extends Module<Config>
 	implements EntityDependencyCollection {
@@ -108,13 +107,13 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 
 		const conflictItemQueries = dependencyDefKeys.reduce((acc, dependencyDefKey) => {
 			const dependencyDef = dependencyDefs[dependencyDefKey];
-			let whereClause: (ids: UniqueId[]) => CrudClause_Where<Types['dbItem']>;
+			let whereClause: (ids: UniqueId[]) => CrudClause_Where<Database['dbType']>;
 			switch (dependencyDef.fieldType) {
 				case 'string':
-					whereClause = ids => ({[dependencyDefKey]: {$in: ids}} as CrudClause_Where<Types['dbItem']>);
+					whereClause = ids => ({[dependencyDefKey]: {$in: ids}} as CrudClause_Where<Database['dbType']>);
 					break;
 				case 'string[]':
-					whereClause = ids => ({[dependencyDefKey]: {$aca: ids}} as CrudClause_Where<Types['dbItem']>);
+					whereClause = ids => ({[dependencyDefKey]: {$aca: ids}} as CrudClause_Where<Database['dbType']>);
 					break;
 				default:
 					throw new BadImplementationException(`Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
@@ -122,13 +121,13 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 
 			acc.push(batchActionParallel(itemIds, 10, async ids => this.query.unManipulatedQuery({where: whereClause(ids)}, transaction)));
 			return acc;
-		}, [] as Promise<Types['dbItem'][]>[]);
+		}, [] as Promise<Database['dbType'][]>[]);
 
 		if (!conflictItemQueries.length)
 			return;
 
 		let conflictingItems = filterInstances((await Promise.all(conflictItemQueries)).flat());
-		conflictingItems = filterDuplicates<Types['dbItem']>(conflictingItems, dbObjectToId);
+		conflictingItems = filterDuplicates<Database['dbType']>(conflictingItems, dbObjectToId);
 		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
 		if (ignoredInThisTransaction) {
 			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.dbKey];
@@ -140,11 +139,11 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		};
 	};
 
-	private mapConflicts = (conflictItems: Types['dbItem'][], itemIds: UniqueId[], conflictFields: string[]): DBEntityDependencies['dependencyMap'] => {
+	private mapConflicts = (conflictItems: Database['dbType'][], itemIds: UniqueId[], conflictFields: string[]): DBEntityDependencies['dependencyMap'] => {
 		return itemIds.reduce((acc, itemId) => {
 			const conflictingItems = conflictItems.filter(item => {
 				for (const field of conflictFields) {
-					const value = getDotNotatedValue(field as DotNotation<Types['dbItem']>, item);
+					const value = getDotNotatedValue(field as DotNotation<Database['dbType']>, item);
 					if (asArray(value).includes(itemId))
 						return true;
 				}
@@ -214,7 +213,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		});
 	}
 
-	private _preWriteProcessing = async (dbItem: Types['uiItem'], originalDbInstance: Types['dbItem'], transaction?: Transaction, upgrade = true) => {
+	private _preWriteProcessing = async (dbItem: Database['uiType'], originalDbInstance: Database['dbType'], transaction?: Transaction, upgrade = true) => {
 		await this.preWriteProcessing(dbItem, originalDbInstance, transaction);
 	};
 
@@ -225,10 +224,10 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
 	 * @param originalDbInstance - The DB instance fetched from remote firestore.
 	 */
-	protected async preWriteProcessing(dbInstance: Types['uiItem'], originalDbInstance: Types['dbItem'], transaction?: Transaction) {
+	protected async preWriteProcessing(dbInstance: Database['uiType'], originalDbInstance: Database['dbType'], transaction?: Transaction) {
 	}
 
-	private _postWriteProcessing = async (data: PostWriteProcessingDataShape<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) => {
+	private _postWriteProcessing = async (data: PostWriteProcessingDataShape<Database['dbType']>, actionType: CollectionActionType, transaction?: Transaction) => {
 		await this.postWriteProcessing(data, actionType, transaction);
 	};
 
@@ -238,7 +237,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	 * @param actionType create/set/update/delete
 	 * @param transaction
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingDataShape<Types['dbItem']>, actionType: CollectionActionType, transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingDataShape<Database['dbType']>, actionType: CollectionActionType, transaction?: Transaction) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<any>): FirestoreQuery<any> {
@@ -252,7 +251,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 	 * @param transaction - The transaction object
 	 * @param dbItems - The DB entry that is going to be deleted.
 	 */
-	async canDeleteItems(dbItems: Types['dbItem'][], transaction?: Transaction) {
+	async canDeleteItems(dbItems: Database['dbType'][], transaction?: Transaction) {
 		const dependencies = await this.collectDependencies(dbItems, transaction);
 		if (dependencies)
 			throw new ApiException<DBEntityDependencyError>(422, 'entity has dependencies').setErrorBody({
@@ -261,7 +260,7 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 			});
 	}
 
-	async collectDependencies(dbInstances: Types['dbItem'][], transaction?: Transaction): Promise<DBEntityDependencies | undefined> {
+	async collectDependencies(dbInstances: Database['dbType'][], transaction?: Transaction): Promise<DBEntityDependencies | undefined> {
 		const dependencyResponses = await dispatch_CollectEntityDependencies.dispatchModuleAsync(this.dbDef.dbKey, dbInstances.map(dbObjectToId), transaction);
 		const filtered = filterInstances(dependencyResponses);
 		if (!filtered.length)
@@ -271,14 +270,14 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		return _keys(merged.dependencyMap).length ? merged : undefined;
 	}
 
-	private versionUpgrades: Record<string, (items: Types['dbItem'][]) => Promise<void>> = {};
+	private versionUpgrades: Record<string, (items: Database['dbType'][]) => Promise<void>> = {};
 
 	/**
 	 * Upgrades the entity from the given version to the next one (to the same version if the given version is the latest)
 	 * @param version - The version we start from
 	 * @param processor
 	 */
-	registerVersionUpgradeProcessor(version: string, processor: (items: Types['dbItem'][]) => Promise<void>) {
+	registerVersionUpgradeProcessor(version: string, processor: (items: Database['dbType'][]) => Promise<void>) {
 		this.versionUpgrades[version] = processor;
 	}
 
@@ -294,14 +293,14 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 
 	upgradeCollection = async (force = false) => {
 		return this.processCollection(async (instances) => {
-			const instancesToSave: Types['dbItem'][] = await this.upgradeInstances(instances, force);
+			const instancesToSave: Database['dbType'][] = await this.upgradeInstances(instances, force);
 
 			// @ts-ignore
 			await this.collection.upgradeInstances(instancesToSave);
 		});
 	};
 
-	processCollection = async (processInstances: (instances: Types['dbItem'][]) => Promise<void>) => {
+	processCollection = async (processInstances: (instances: Database['dbType'][]) => Promise<void>) => {
 		let docs: DocWrapperV3<any>[];
 		const itemsCount = this.config.chunksSize;
 
@@ -329,8 +328,8 @@ export abstract class ModuleBE_BaseDB<Types extends CrudTypes, ConfigType = any,
 		}
 	};
 
-	async upgradeInstances(instances: Types['dbItem'][], force = false) {
-		let instancesToSave: Types['dbItem'][] = [];
+	async upgradeInstances(instances: Database['dbType'][], force = false) {
+		let instancesToSave: Database['dbType'][] = [];
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
 			const version = this.config.versions[i];
 

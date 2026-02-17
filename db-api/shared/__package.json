@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@nu-art/firebase-shared": "?",
+    "@nu-art/idb-shared": "?",
     "@nu-art/http-client": "?",
     "@nu-art/ts-common": "?"
   },
@@ -38,10 +39,6 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
-    },
-    "./*": {
-      "types": "./*.d.ts",
-      "import": "./*.js"
     }
   }
 }

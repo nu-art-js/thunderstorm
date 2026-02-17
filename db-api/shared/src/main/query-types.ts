@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-import {DB_Object} from './types/db-object.js';
+import {DB_Object} from './db-object.js';
 
 /** Query comparator operators (same shape as Firestore for wire compatibility). */
 export type CrudQueryComparator<T> =

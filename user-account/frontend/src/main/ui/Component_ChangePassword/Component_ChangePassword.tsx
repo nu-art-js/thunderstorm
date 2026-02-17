@@ -34,20 +34,20 @@ export class Component_ChangePassword
 
 		try {
 			if (!this.state.shouldGiveCurrentPassword)
-				await ModuleFE_Account._v1.setPassword({
+				await ModuleFE_Account.setPassword({
 					password: this.state.newPassword,
 					passwordCheck: this.state.newPasswordCheck,
-				}).executeSync();
+				});
 			else {
 				if (!this.state.currentPassword) {
 					this.logError('No current password given');
 					return;
 				}
-				await ModuleFE_Account._v1.changePassword({
+				await ModuleFE_Account.changePassword({
 					oldPassword: this.state.currentPassword,
 					password: this.state.newPassword,
 					passwordCheck: this.state.newPasswordCheck,
-				}).executeSync();
+				});
 			}
 			this.props.postSubmitAction?.();
 		} catch (e: any) {

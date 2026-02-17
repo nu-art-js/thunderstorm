@@ -96,8 +96,7 @@ export class Component_Login
 
 		this.setState({submitting: true, errorMessages: undefined}, async () => {
 			try {
-				await ModuleFE_Account._v1.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Account_Login['request'])
-					.executeSync();
+				await ModuleFE_Account.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Account_Login['request']);
 				this.setState({submitting: false});
 			} catch (err: any) {
 				if (err.errorResponse.error?.type === ErrorType_LoginBlocked) {
