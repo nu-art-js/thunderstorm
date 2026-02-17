@@ -1,18 +1,16 @@
 import * as React from 'react';
-import {BaseDBConfig, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {ApiCaller, ApiCallContext} from '@nu-art/http-client';
-import {ModuleFE_XHR, readFileContent, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
-import {HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/thunderstorm-shared';
-import {dispatcher_onAuthRequired} from '@nu-art/thunderstorm-shared/no-auth-listener';
-import {CrudApiDef} from '@nu-art/db-api-shared';
+import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
+import {ApiCallerEventType, CrudApiDef} from '@nu-art/db-api-shared';
 import {
-	AccountCrudTypes,
 	API_SAML,
 	API_UserAccount,
 	ApiDef_SAML,
 	ApiDef_UserAccount,
+	DatabaseDef_Account,
 	DB_Account,
 	DBDef_Accounts,
+	HeaderKey_DeviceId,
 	PasswordAssertionConfig,
 	QueryParam_SessionId,
 	UI_Account
@@ -27,7 +25,7 @@ export interface OnLoginStatusUpdated {
 }
 
 export interface OnAccountsUpdated {
-	__onAccountsUpdated: (...params: ApiCallerEventType<AccountCrudTypes>) => void;
+	__onAccountsUpdated: (...params: ApiCallerEventType<DB_Account>) => void;
 }
 
 export enum LoggedStatus {
@@ -44,7 +42,7 @@ const StorageKey_PasswordAssertionConfig = new StorageKey<PasswordAssertionConfi
 const accountBaseConfig = {
 	dbKey: DBDef_Accounts.dbKey,
 	validator: DBDef_Accounts.modifiablePropsValidator,
-	uniqueKeys: (DBDef_Accounts.uniqueKeys ?? ['_id']) as AccountCrudTypes['uniqueKeys'],
+	uniqueKeys: (DBDef_Accounts.uniqueKeys ?? ['_id']),
 	versions: DBDef_Accounts.versions,
 	dbConfig: {
 		name: DBDef_Accounts.frontend?.name ?? DBDef_Accounts.dbKey,
@@ -52,11 +50,11 @@ const accountBaseConfig = {
 		version: DBDef_Accounts.versions[0],
 		uniqueKeys: (DBDef_Accounts.uniqueKeys ?? ['_id']) as (keyof DB_Account)[]
 	}
-} as BaseDBConfig<AccountCrudTypes>;
+};
 
 
 class ModuleFE_Account_Class
-	extends ModuleFE_BaseApi<AccountCrudTypes>
+	extends ModuleFE_BaseApi<DatabaseDef_Account>
 	implements OnLoginStatusUpdated, OnSessionUpdated {
 
 	private status: LoggedStatus = LoggedStatus.LOGGED_OUT;
@@ -69,7 +67,9 @@ class ModuleFE_Account_Class
 	constructor() {
 		super({
 			config: accountBaseConfig,
-			crudApiDef: CrudApiDef(DBDef_Accounts.dbKey) as import('@nu-art/db-api-shared').CrudApiDef_Type<AccountCrudTypes>
+			crudApiDef: CrudApiDef(DBDef_Accounts),
+			dispatcher: () => {
+			}
 		});
 	}
 
@@ -166,7 +166,7 @@ class ModuleFE_Account_Class
 			StorageKey_TabId.set(defaultTabId);
 		}
 
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_DeviceId, () => defaultDeviceId!);
+		HttpClient.default.addDefaultHeader(HeaderKey_DeviceId, () => defaultDeviceId!);
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, defaultTabId!);
 	}
 

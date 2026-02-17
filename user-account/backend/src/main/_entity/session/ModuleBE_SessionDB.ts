@@ -17,7 +17,7 @@ import {
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {AccountType_Service, DB_Session, DBDef_Session, DBProto_Session, SessionCrudTypes} from '@nu-art/user-account-shared';
+import {AccountType_Service, DB_Session, DBDef_Session, DBProto_Session, SessionDB_Prototype} from '@nu-art/user-account-shared';
 import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
@@ -57,7 +57,7 @@ type Config = {
 }
 
 export class ModuleBE_SessionDB_Class
-	extends ModuleBE_BaseDB<SessionCrudTypes, Config>
+	extends ModuleBE_BaseDB<SessionDB_Prototype, Config>
 	implements CollectSessionData<TypedKeyValue<'session', { deviceId: string }>> {
 
 	private jwtHandler!: JWT_Handler<BaseSessionClaims & RecursiveObjectOfPrimitives>;

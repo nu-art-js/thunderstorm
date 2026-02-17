@@ -1,9 +1,9 @@
 import {tsValidateArray, tsValidateOptionalId, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
 import {Database} from '@nu-art/db-api-shared';
 import {accountGroupName} from './consts.js';
-import {DBProto_Session} from './types.js';
+import {DatabaseDef_Session} from './types.js';
 
-export const Validator_Modifiable: DBProto_Session['modifiablePropsValidator'] = {
+export const Validator_Modifiable: DatabaseDef_Session['modifiablePropsValidator'] = {
 	label: tsValidateString(100, false),
 	accountId: tsValidateUniqueId,
 	deviceId: tsValidateUniqueId,
@@ -12,9 +12,9 @@ export const Validator_Modifiable: DBProto_Session['modifiablePropsValidator'] =
 	sessionIdJwt: tsValidateString(),
 };
 
-export const Validator_Generated: DBProto_Session['generatedPropsValidator'] = {};
+export const Validator_Generated: DatabaseDef_Session['generatedPropsValidator'] = {};
 
-export const DBDef_Session: Database<DBProto_Session> = {
+export const DBDef_Session: Database<DatabaseDef_Session> = {
 	modifiablePropsValidator: Validator_Modifiable,
 	generatedPropsValidator: Validator_Generated,
 	dbKey: 'user-account--sessions',

@@ -1,24 +1,11 @@
 import * as React from 'react';
-import {Account_CreateAccount, AccountType, accountTypes, DB_Account} from '@nu-art/user-account-shared';
-import {
-	_className,
-	Button,
-	ComponentSync,
-	Grid,
-	LL_H_C,
-	LL_V_L,
-	ModuleFE_Thunderstorm,
-	ModuleFE_Toaster,
-	performAction,
-	SimpleListAdapter,
-	TS_DropDown,
-	TS_Input,
-	TS_PropRenderer
-} from '@nu-art/thunderstorm-frontend/index';
+import {AccountType, accountTypes, DB_Account} from '@nu-art/user-account-shared';
+import {Button, ComponentSync, Grid, LL_H_C, LL_V_L, ModuleFE_Toaster, SimpleListAdapter, TS_DropDown, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, JwtTools, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_Account} from '../_entity.js';
+import {TS_Input} from '@nu-art/thunder-widgets/v3';
 
 
 type Props = {

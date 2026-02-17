@@ -5,11 +5,11 @@
  */
 
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import type {EditableTestCrudTypes} from '../../../shared/db-def.js';
+import type {EditableTestDB_Prototype} from '../../../shared/db-def.js';
 import {editableTestDbDefBE} from '../../../shared/db-def.js';
 
 export class ModuleBE_EditableTestDB_Class
-	extends ModuleBE_BaseDB<EditableTestCrudTypes> {
+	extends ModuleBE_BaseDB<EditableTestDB_Prototype> {
 
 	constructor() {
 		super(editableTestDbDefBE, {chunksSize: 200});

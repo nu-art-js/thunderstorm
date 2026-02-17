@@ -17,7 +17,6 @@ import {
 	ValidationException
 } from '@nu-art/ts-common';
 import {getDatabase, IDB_Store} from '@nu-art/idb-frontend';
-import {DataStatus,} from './to-refactor/consts.js';
 import {
 	ApiCallerEventType,
 	composeDbObjectUniqueId,
@@ -41,11 +40,21 @@ import {DBConfig} from '@nu-art/idb-shared';
 export type EventDispatcher<DBItem extends DB_Object> = (...params: ApiCallerEventType<DBItem>) => void
 
 /**
+ * Data synchronization status for frontend modules.
+ */
+export enum DataStatus {
+	NoData       = 0,
+	ContainsData = 1,
+	UpdatingData = 2
+}
+
+
+/**
  * Minimal configuration for BaseDB/BaseApi modules.
  *
  * Contains only what the module needs to operate, without Proto dependencies.
  *
- * @template Types - CrudTypes that define the entity types
+ * @template Types - DB_Prototype that define the entity types
  */
 export type DBConfig_ModuleFE<Types extends DB_Prototype> = {
 	dbKey: Types['dbKey'];
@@ -65,7 +74,7 @@ export type DBConfig_ModuleFE<Types extends DB_Prototype> = {
  * - Version upgrade processing
  * - Validation
  *
- * @template Types - CrudTypes that define the entity types (decoupled from Proto)
+ * @template Types - DB_Prototype that define the entity types (decoupled from Proto)
  */
 export class ModuleFE_BaseDB<Database extends DB_Prototype>
 	extends Module {

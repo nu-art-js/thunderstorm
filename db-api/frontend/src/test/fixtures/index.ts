@@ -7,7 +7,7 @@
  */
 
 import {HttpMethod} from '@nu-art/http-client';
-import {BaseDBConfig, CrudTypes} from '../../main/types.js';
+import {BaseDBConfig, DB_Prototype} from '../../main/types.js';
 import {CrudApiDefShape} from '../../main/decorators/types.js';
 import {DB_Object, DBConfig} from '../../main/db-config.js';
 
@@ -26,11 +26,11 @@ export const testItemValidator: (item?: UI_TestItem) => undefined = () => undefi
 /** Validator that always fails. Used by validation playwright test. */
 export const failingValidator = (): string => 'invalid';
 
-/** CrudTypes for the test entity (use in test subclasses and BaseDBConfig). */
-export type TestItemTypes = CrudTypes<'test-item', DB_TestItem, UI_TestItem, typeof testItemValidator, (keyof DB_TestItem)[]>;
+/** DB_Prototype for the test entity (use in test subclasses and BaseDBConfig). */
+export type TestItemTypes = DB_Prototype<'test-item', DB_TestItem, UI_TestItem, typeof testItemValidator, (keyof DB_TestItem)[]>;
 
 /** BaseDBConfig for validation tests (validator always fails). */
-export type TestItemTypesFailingValidator = CrudTypes<'test-item', DB_TestItem, UI_TestItem, typeof failingValidator, (keyof DB_TestItem)[]>;
+export type TestItemTypesFailingValidator = DB_Prototype<'test-item', DB_TestItem, UI_TestItem, typeof failingValidator, (keyof DB_TestItem)[]>;
 
 export const testItemBaseDBConfigFailingValidator: BaseDBConfig<TestItemTypesFailingValidator> = {
 	dbKey: 'test-item',

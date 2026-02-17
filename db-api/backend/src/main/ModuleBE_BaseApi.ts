@@ -36,7 +36,7 @@ interface Params<Database extends DB_Prototype> {
 /**
  * A base class used for implementing CRUD operations on a db module collection.
  *
- * Typed by CrudTypes (shared with FE); no Proto in the base.
+ * Typed by DB_Prototype (shared with FE); no Proto in the base.
  */
 export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 	extends Module {
@@ -85,7 +85,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 
 	@ApiHandler(
 		(m: ModuleBE_BaseApi_Class<Database>) => m.crudApiDef.upsert,
-		{ httpServer: m => resolveContent(m.httpServer) }
+		{httpServer: m => resolveContent(m.httpServer)}
 	)
 	async upsert(body: Database['uiType']): Promise<Database['dbType']> {
 		return this.dbModule.set.item(body);
@@ -93,7 +93,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 
 	@ApiHandler(
 		(m: ModuleBE_BaseApi_Class<Database>) => m.crudApiDef.upsertAll,
-		{ httpServer: m => resolveContent(m.httpServer) }
+		{httpServer: m => resolveContent(m.httpServer)}
 	)
 	async upsertAll(body: Database['uiType'][]): Promise<Database['dbType'][]> {
 		return this.dbModule.set.all(body);
@@ -101,7 +101,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 
 	@ApiHandler(
 		(m: ModuleBE_BaseApi_Class<Database>) => m.crudApiDef.deleteUnique,
-		{ httpServer: m => resolveContent(m.httpServer) }
+		{httpServer: m => resolveContent(m.httpServer)}
 	)
 	async delete(toDeleteObject: DB_BaseObject): Promise<Database['dbType'] | undefined> {
 		return this.dbModule.delete.unique(toDeleteObject._id);
@@ -109,7 +109,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 
 	@ApiHandler(
 		(m: ModuleBE_BaseApi_Class<Database>) => m.crudApiDef.deleteQuery,
-		{ httpServer: m => resolveContent(m.httpServer) }
+		{httpServer: m => resolveContent(m.httpServer)}
 	)
 	async deleteQuery(query: CrudApiTypes<Database>['deleteQuery']['Body']): Promise<Database['dbType'][]> {
 		if (!query.where)
@@ -123,7 +123,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 
 	@ApiHandler(
 		(m: ModuleBE_BaseApi_Class<Database>) => m.crudApiDef.deleteAll,
-		{ httpServer: m => resolveContent(m.httpServer) }
+		{httpServer: m => resolveContent(m.httpServer)}
 	)
 	async deleteAll(_params?: unknown): Promise<Database['dbType'][]> {
 		void _params;
@@ -132,5 +132,5 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 }
 
 export const createApisForDBModule = <Database extends DB_Prototype>(dbModule: ModuleBE_BaseDB<Database>, version?: string) => {
-	return new ModuleBE_BaseApi_Class<Database>({ dbModule, crudApiDef: CrudApiDef(dbModule.dbDef.dbKey, version) });
+	return new ModuleBE_BaseApi_Class<Database>({dbModule, crudApiDef: CrudApiDef(dbModule.config, version)});
 };

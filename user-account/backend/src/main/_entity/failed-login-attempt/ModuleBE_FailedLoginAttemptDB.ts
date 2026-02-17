@@ -4,7 +4,7 @@ import {
 	DBDef_FailedLoginAttempt,
 	DefaultMaxLoginAttempts,
 	ErrorType_LoginBlocked,
-	FailedLoginAttemptCrudTypes
+	FailedLoginAttemptDB_Prototype
 } from '@nu-art/user-account-shared';
 import {
 	ApiException,
@@ -36,7 +36,7 @@ type LoginBlockedErrorBody = ResponseError<typeof ErrorType_LoginBlocked, {
  * Default login blocked timer is 5 minutes
  */
 export class ModuleBE_FailedLoginAttemptDB_Class
-	extends ModuleBE_BaseDB<FailedLoginAttemptCrudTypes, Config> implements OnUserLogin {
+	extends ModuleBE_BaseDB<FailedLoginAttemptDB_Prototype, Config> implements OnUserLogin {
 
 	constructor() {
 		super(DBDef_FailedLoginAttempt);

@@ -27,14 +27,14 @@ import {
 	ValidationException,
 	WhoCallThisException
 } from '@nu-art/ts-common';
-/** @nu-art/db-api-shared — CrudTypes: dbKey, dbItem, uiItem, validator, uniqueKeys (use instead of DBProto). */
-import type {CrudTypes} from '@nu-art/db-api-shared';
+/** @nu-art/db-api-shared — DB_Prototype: dbKey, dbItem, uiItem, validator, uniqueKeys (use instead of DBProto). */
+import type {DB_Prototype} from '@nu-art/db-api-shared';
 /** @nu-art/db-api-frontend. Transformation: use ModuleForEditableItem below — db-api has config.dbKey, module.upsert/delete (no v1.executeSync); optional generatedPropKeys replaces dbDef.generatedProps. */
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 
 /** Module shape required by EditableDBItemV3 / editRefV3. Optional generatedPropKeys for stripping server-generated keys when merging. */
-export type ModuleForEditableItem<Types extends CrudTypes> = ModuleFE_BaseApi<Types> & {
-	generatedPropKeys?: (keyof Types['dbItem'])[];
+export type ModuleForEditableItem<Types extends DB_Prototype> = ModuleFE_BaseApi<Types> & {
+	generatedPropKeys?: (keyof Types['dbType'])[];
 };
 
 export type UIProps_EditableItem<EnclosingItem, K extends keyof EnclosingItem, ItemType, Prop extends AssetValueType<EnclosingItem, K, ItemType> = AssetValueType<EnclosingItem, K, ItemType>> = {
@@ -475,27 +475,27 @@ export class EditableItem<T>
 	/**
 	 * Return a new EditableItem for the DB Entity described by the reference id associated with the provided key and module.
 	 *
-	 * @template RefTypes CrudTypes for the referenced entity.
+	 * @template RefTypes DB_Prototype for the referenced entity.
 	 * @template K The type of the key holding the reference id.
 	 * @param key The key of the reference id.
 	 * @param module The module associated with the reference id.
 	 * @param initialValue An initial value to use in case there is no reference id.
 	 * @returns The new EditableItem.
 	 */
-	editRefV3<RefTypes extends CrudTypes, K extends SubsetKeys<keyof T, T, string>>(
+	editRefV3<RefTypes extends DB_Prototype, K extends SubsetKeys<keyof T, T, string>>(
 		key: K,
 		module: ModuleForEditableItem<RefTypes>,
-		initialValue: Partial<RefTypes['uiItem']>
+		initialValue: Partial<RefTypes['uiType']>
 	): EditableDBItemV3<RefTypes> {
 		const itemId = this.item[key] as string;
-		let editingItem: Partial<RefTypes['uiItem']>;
+		let editingItem: Partial<RefTypes['uiType']>;
 		if (!exists(itemId))
 			editingItem = initialValue;
 		else {
 			const cached = module.cache.unique(itemId);
 			if (!exists(cached))
 				throw new MUSTNeverHappenException(`Could not find db item for id: ${itemId} in collection: ${module.config.dbKey}`);
-			editingItem = cached as RefTypes['uiItem'];
+			editingItem = cached as RefTypes['uiType'];
 		}
 		return new EditableDBItemV3<RefTypes>(editingItem, module);
 	}
@@ -531,12 +531,12 @@ export class EditableItem<T>
 
 /**
  * A utility class for editing any item of type T that can be stored in a database.
- * Uses @nu-art/db-api-frontend ModuleFE_BaseApi (CrudTypes); save/delete go through module.upsert / module.delete.
+ * Uses @nu-art/db-api-frontend ModuleFE_BaseApi (DB_Prototype); save/delete go through module.upsert / module.delete.
  *
- * @template Types CrudTypes that define the entity (dbItem, uiItem, etc.).
+ * @template Types DB_Prototype that define the entity (dbItem, uiItem, etc.).
  */
-export class EditableDBItemV3<Types extends CrudTypes>
-	extends EditableItem<Types['uiItem']> {
+export class EditableDBItemV3<Types extends DB_Prototype>
+	extends EditableItem<Types['uiType']> {
 	private readonly module: ModuleForEditableItem<Types>;
 	private debounceInstance: ReturnType<typeof queuedDebounce>;
 	private debounceTimeout: number = 2 * Second;
@@ -549,15 +549,15 @@ export class EditableDBItemV3<Types extends CrudTypes>
 	 * @param debounceInstance Optional debounce instance from a previous editable item.
 	 */
 	constructor(
-		item: Partial<Types['uiItem']>,
+		item: Partial<Types['uiType']>,
 		module: ModuleForEditableItem<Types>,
 		debounceInstance?: AwaitedDebounceInstance<any, any>
 	) {
 		super(item);
 		this.module = module;
-		this.setSaveAction(async (_item: Types['uiItem']) => await module.upsert(_item));
-		this.setDeleteAction(async (item: Types['uiItem']) => {
-			const id = (item as {_id?: string})._id;
+		this.setSaveAction(async (_item: Types['uiType']) => await module.upsert(_item));
+		this.setDeleteAction(async (item: Types['uiType']) => {
+			const id = (item as { _id?: string })._id;
 			if (id == null)
 				return;
 			await module.delete({_id: id} as Parameters<ModuleFE_BaseApi<Types>['delete']>[0]);
@@ -571,25 +571,25 @@ export class EditableDBItemV3<Types extends CrudTypes>
 		this.processResponse.bind(this);
 	}
 
-	async save(consumeError = true): Promise<Types['dbItem']> {
+	async save(consumeError = true): Promise<Types['dbType']> {
 		try {
-			return await super.save(consumeError) as Promise<Types['dbItem']>;
+			return await super.save(consumeError) as Promise<Types['dbType']>;
 		} catch (e: any) {
 			this.handleValidationError(e);
 			if (!consumeError)
 				throw e;
-			return undefined as unknown as Types['dbItem'];
+			return undefined as unknown as Types['dbType'];
 		}
 	}
 
-	private getGeneratedKeys(): (keyof Types['dbItem'])[] {
+	private getGeneratedKeys(): (keyof Types['dbType'])[] {
 		return this.module.generatedPropKeys ?? [];
 	}
 
-	protected processResponse(dbItem: Types['dbItem']): Types['dbItem'] {
-		const keysToStrip = [...KeysOfDB_Object, ...this.getGeneratedKeys()] as (keyof Types['dbItem'])[];
-		const currentUIItem = deleteKeysObject({...this.item} as Types['dbItem'], keysToStrip);
-		return mergeObject(dbItem, currentUIItem) as Types['dbItem'];
+	protected processResponse(dbItem: Types['dbType']): Types['dbType'] {
+		const keysToStrip = [...KeysOfDB_Object, ...this.getGeneratedKeys()] as (keyof Types['dbType'])[];
+		const currentUIItem = deleteKeysObject({...this.item} as Types['dbType'], keysToStrip);
+		return mergeObject(dbItem, currentUIItem) as Types['dbType'];
 	}
 
 	/**
@@ -608,10 +608,10 @@ export class EditableDBItemV3<Types extends CrudTypes>
 		return this;
 	};
 
-	protected hasConflicts(_conflictingItem: Types['dbItem']) {
-		const keysToStrip = [...KeysOfDB_Object, ...this.getGeneratedKeys()] as (keyof Types['dbItem'])[];
-		const item = deleteKeysObject({...this.item} as Types['dbItem'], keysToStrip);
-		const conflictingItem = deleteKeysObject({..._conflictingItem} as Types['dbItem'], keysToStrip);
+	protected hasConflicts(_conflictingItem: Types['dbType']) {
+		const keysToStrip = [...KeysOfDB_Object, ...this.getGeneratedKeys()] as (keyof Types['dbType'])[];
+		const item = deleteKeysObject({...this.item} as Types['dbType'], keysToStrip);
+		const conflictingItem = deleteKeysObject({..._conflictingItem} as Types['dbType'], keysToStrip);
 		return !compare(conflictingItem, item);
 	}
 
@@ -638,11 +638,11 @@ export class EditableDBItemV3<Types extends CrudTypes>
 	 * Validate using the module's validator and clear validation results on success.
 	 * @return ui item if validation succeeded, otherwise void (after handleValidationError).
 	 */
-	validate(): Types['uiItem'] | void {
+	validate(): Types['uiType'] | void {
 		try {
 			this.module.validateImpl(this.item);
 			this.setValidationResults(undefined);
-			return this.item as Types['uiItem'];
+			return this.item as Types['uiType'];
 		} catch (e: any) {
 			this.handleValidationError(e);
 		}
@@ -652,23 +652,23 @@ export class EditableDBItemV3<Types extends CrudTypes>
 	 * Update item from an external source (e.g. sync), merging with current UI state and re-validating.
 	 * @param newItem The item from the third party.
 	 */
-	override updateItem(newItem: Types['uiItem']) {
-		this.logWarning(`updating item externally, __updated: ${(newItem as {__updated?: number}).__updated}`);
-		const keysToStrip = [...KeysOfDB_Object, ...this.getGeneratedKeys()] as (keyof Types['dbItem'])[];
-		const currentUIItem = deleteKeysObject({...this.item} as Types['dbItem'], keysToStrip);
-		super.updateItem(mergeObject(currentUIItem, newItem) as Types['uiItem']);
+	override updateItem(newItem: Types['uiType']) {
+		this.logWarning(`updating item externally, __updated: ${(newItem as { __updated?: number }).__updated}`);
+		const keysToStrip = [...KeysOfDB_Object, ...this.getGeneratedKeys()] as (keyof Types['dbType'])[];
+		const currentUIItem = deleteKeysObject({...this.item} as Types['dbType'], keysToStrip);
+		super.updateItem(mergeObject(currentUIItem, newItem) as Types['uiType']);
 		this.validate();
 	}
 
 	protected handleValidationError(e: Error) {
-		const validationException = isErrorOfType(e, ValidationException<Types['dbItem']>);
+		const validationException = isErrorOfType(e, ValidationException<Types['dbType']>);
 		if (!validationException)
 			throw e;
 		this.logInfo('Validation error while saving');
 		this.setValidationResults({
 			autoSave: this._autoSave,
 			editing: this.validationResults?.editing || !!this.item._id || !this._autoSave,
-			results: validationException.result as InvalidResult<Types['dbItem']>
+			results: validationException.result as InvalidResult<Types['dbType']>
 		});
 		this.setTag(`${this.constructor['name']}-${generateHex(4)}`);
 		this.onChanged?.(this);

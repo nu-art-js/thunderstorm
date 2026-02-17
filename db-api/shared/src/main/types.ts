@@ -52,7 +52,7 @@ export type VersionsDeclaration<Versions extends VersionType[] = ['1.0.0'], Type
  *
  * @template T - Object type with dependencies
  */
-export type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DB_Prototype<any> }
+export type ProtoDependencies<T extends object> = { [K in DotNotation<T>]?: DB_Prototype }
 
 type Exact<T, Shape> = T & {
 	[K in Exclude<keyof Shape, keyof T>]?: never;
@@ -73,7 +73,7 @@ export type DB_ProtoSeed<
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<VersionType[]>,
 	UniqueKeys extends keyof T = Default_UniqueKey,
-	Dependencies extends Exact<{ [K in DotNotation<T>]?: DB_Prototype<any> }, Dependencies> = never> = {
+	Dependencies extends Exact<{ [K in DotNotation<T>]?: DB_Prototype }, Dependencies> = never> = {
 
 	type: T,
 	dbKey: DatabaseKey;
@@ -84,7 +84,7 @@ export type DB_ProtoSeed<
 }
 
 type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
-	[K in keyof D]: D[K] extends DB_Prototype<any>
+	[K in keyof D]: D[K] extends DB_Prototype
 		? {
 			dbKey: D[K]['dbKey'],
 			direction?: 'ref' | 'dep' // default is "dep"
@@ -100,22 +100,22 @@ type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
  * @template ModifiableSubType The subset of P's type that is modifiable.
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
-export type DB_Prototype<P extends DB_ProtoSeed<any, string, any, VersionsDeclaration<VersionType[]>, any, any> = any, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+export type DB_Prototype<ProtoSeed extends DB_ProtoSeed<any, string, any, VersionsDeclaration<VersionType[]>, any, any> = any, ModifiableSubType = Omit<ProtoSeed['type'], ProtoSeed['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<ProtoSeed['type'], ProtoSeed['generatedKeys']>> = {
 	editableType: ModifiableSubType,
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	// dbType: ModifiableSubType & GeneratedSubType & DB_Object,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
-	dbType: P['type'],
-	dbKey: P['dbKey'],
+	dbType: ProtoSeed['type'],
+	dbKey: ProtoSeed['dbKey'],
 	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
-	uniqueKeys: P['uniqueKeys'][],
-	generatedProps: P['generatedKeys'][]
-	versions: P['versions']
-	indices: DBIndex<P['type']>[]
-	uniqueParam: Default_UniqueKey | { [K in P['uniqueKeys']]: P['type'][K] }
-	lockKeys?: (keyof P['type'])[]
-	dependencies: DependenciesImpl<P['type'], P['dependencies']>
+	uniqueKeys: ProtoSeed['uniqueKeys'][],
+	generatedProps: ProtoSeed['generatedKeys'][]
+	versions: ProtoSeed['versions']
+	indices: DBIndex<ProtoSeed['type']>[]
+	uniqueParam: Default_UniqueKey | { [K in ProtoSeed['uniqueKeys']]: ProtoSeed['type'][K] }
+	lockKeys?: (keyof ProtoSeed['type'])[]
+	dependencies: DependenciesImpl<ProtoSeed['type'], ProtoSeed['dependencies']>
 }
 
 /**
@@ -170,54 +170,36 @@ export type TypeOfTypeAsString<ValueType> =
 					ValueType extends object ? 'object' :
 						never;
 
-// --- CRUD API types (shared FE/BE) ---
-
-export type CrudTypes<
-	DBKey extends string = string,
-	DBType extends DB_Object<DBKey> = DB_Object<DBKey>,
-	UIType extends Partial<DB_Object<DBKey>> = Partial<DB_Object<DBKey>>,
-	EditableType extends object = object,
-	Validator extends ValidatorTypeResolver<EditableType> = ValidatorTypeResolver<EditableType>,
-	UniqueKeys extends (keyof DBType)[] = (keyof DBType)[]
-> = {
-	readonly dbKey: DBKey;
-	readonly dbType: DBType;
-	readonly uiItem: UIType;
-	readonly validator: Validator;
-	readonly uniqueKeys: UniqueKeys;
-	readonly editableType: EditableType;
-};
-
 
 /** Flat CRUD API defs (no v1 wrapper). Generic so ApiHandler infers payload types. */
-export type CrudApiTypes<Types extends DB_Prototype<any> = DB_Prototype<any>> = {
-	query: BodyApi<Types['dbType'][], CrudQuery<Types['dbType']>>;
-	queryUnique: QueryApi<Types['dbType'], DB_BaseObject>;
-	upsert: BodyApi<Types['dbType'], Types['uiType']>;
-	upsertAll: BodyApi<Types['dbType'][], Types['uiType'][]>;
-	deleteUnique: QueryApi<Types['dbType'] | undefined, DB_BaseObject, EntityDependencyError>;
-	deleteQuery: BodyApi<Types['dbType'][], CrudQuery<Types['dbType']>>;
-	deleteAll: QueryApi<Types['dbType'][]>;
+export type CrudApiTypes<Proto extends DB_Prototype = DB_Prototype> = {
+	query: BodyApi<Proto['dbType'][], CrudQuery<Proto['dbType']>>;
+	queryUnique: QueryApi<Proto['dbType'], DB_BaseObject>;
+	upsert: BodyApi<Proto['dbType'], Proto['uiType']>;
+	upsertAll: BodyApi<Proto['dbType'][], Proto['uiType'][]>;
+	deleteUnique: QueryApi<Proto['dbType'] | undefined, DB_BaseObject, EntityDependencyError>;
+	deleteQuery: BodyApi<Proto['dbType'][], CrudQuery<Proto['dbType']>>;
+	deleteAll: QueryApi<Proto['dbType'][]>;
 };
 
-export type CrudApiDef_Type<Types extends DB_Prototype<any> = DB_Prototype<any>> = {
-	query: ApiDef<CrudApiTypes<Types>['query']>;
-	queryUnique: ApiDef<CrudApiTypes<Types>['queryUnique']>;
-	upsert: ApiDef<CrudApiTypes<Types>['upsert']>;
-	upsertAll: ApiDef<CrudApiTypes<Types>['upsertAll']>;
-	deleteUnique: ApiDef<CrudApiTypes<Types>['deleteUnique']>;
-	deleteQuery: ApiDef<CrudApiTypes<Types>['deleteQuery']>;
-	deleteAll: ApiDef<CrudApiTypes<Types>['deleteAll']>;
+export type CrudApiDef_Type<Proto extends DB_Prototype = DB_Prototype> = {
+	query: ApiDef<CrudApiTypes<Proto>['query']>;
+	queryUnique: ApiDef<CrudApiTypes<Proto>['queryUnique']>;
+	upsert: ApiDef<CrudApiTypes<Proto>['upsert']>;
+	upsertAll: ApiDef<CrudApiTypes<Proto>['upsertAll']>;
+	deleteUnique: ApiDef<CrudApiTypes<Proto>['deleteUnique']>;
+	deleteQuery: ApiDef<CrudApiTypes<Proto>['deleteQuery']>;
+	deleteAll: ApiDef<CrudApiTypes<Proto>['deleteAll']>;
 };
 
-export function CrudApiDef<Types extends DB_Prototype<any>>(dbKey: string, version = 'v1'): CrudApiDef_Type<Types> {
+export function CrudApiDef<Proto extends DB_Prototype>(database: Database<Proto>, version = 'v1'): CrudApiDef_Type<Proto> {
 	return {
-		query: {method: HttpMethod.POST, path: `${version}/${dbKey}/query`, timeout: 60000},
-		queryUnique: {method: HttpMethod.GET, path: `${version}/${dbKey}/query-unique`},
-		upsert: {method: HttpMethod.POST, path: `${version}/${dbKey}/upsert`},
-		upsertAll: {method: HttpMethod.POST, path: `${version}/${dbKey}/upsert-all`},
-		deleteUnique: {method: HttpMethod.GET, path: `${version}/${dbKey}/delete-unique`},
-		deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbKey}/delete-query`},
-		deleteAll: {method: HttpMethod.GET, path: `${version}/${dbKey}/delete-all`},
+		query: {method: HttpMethod.POST, path: `${version}/${database.dbKey}/query`, timeout: 60000},
+		queryUnique: {method: HttpMethod.GET, path: `${version}/${database.dbKey}/query-unique`},
+		upsert: {method: HttpMethod.POST, path: `${version}/${database.dbKey}/upsert`},
+		upsertAll: {method: HttpMethod.POST, path: `${version}/${database.dbKey}/upsert-all`},
+		deleteUnique: {method: HttpMethod.GET, path: `${version}/${database.dbKey}/delete-unique`},
+		deleteQuery: {method: HttpMethod.POST, path: `${version}/${database.dbKey}/delete-query`},
+		deleteAll: {method: HttpMethod.GET, path: `${version}/${database.dbKey}/delete-all`},
 	};
 }

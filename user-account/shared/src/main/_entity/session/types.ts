@@ -1,5 +1,4 @@
-import {CrudTypes, DatabasePrototype, DB_Object, Proto_DB_Object, VersionsDeclaration} from '@nu-art/db-api-shared';
-import {TypedKeyValue} from '@nu-art/ts-common';
+import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
 import {DB_Account} from '../account/index.js';
 
 type VersionTypes = { '1.0.0': DB_Session };
@@ -9,19 +8,9 @@ type DBKey = 'user-account--sessions';
 type GeneratedKeys = keyof DB_Object<DBKey>;
 type Dependencies = {};
 
-type Proto = Proto_DB_Object<DB_Session, DBKey, GeneratedKeys, Versions, UniqueIds, Dependencies>;
-export type DBProto_Session = DatabasePrototype<Proto>;
+export type DatabaseDef_Session = DB_Prototype<DB_ProtoSeed<DB_Session, DBKey, GeneratedKeys, Versions, UniqueIds, Dependencies>>;
 
-export type SessionCrudTypes = CrudTypes<
-	DBProto_Session['dbKey'],
-	DBProto_Session['dbType'],
-	DBProto_Session['uiType'],
-	DBProto_Session['editableType'],
-	DBProto_Session['modifiablePropsValidator'],
-	DBProto_Session['uniqueKeys']
->;
-
-export type UI_Session = DBProto_Session['uiType'];
+export type UI_Session = DatabaseDef_Session['uiType'];
 
 export type DB_Session = DB_Object<DBKey> & {
 	validSessionJwtMd5s: DB_Session['_id'][];
@@ -31,5 +20,3 @@ export type DB_Session = DB_Object<DBKey> & {
 	linkedSessionId?: DB_Session['_id'];
 	sessionIdJwt: string;
 };
-
-export type _SessionKey_SessionId = TypedKeyValue<'_id', DB_Session['_id']>;
