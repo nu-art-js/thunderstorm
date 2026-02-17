@@ -5,5 +5,5 @@
  */
 
 export * from './api-def.js';
-export * from './crud-types.js';
+export * from './db-def.js';
 export * from './types.js';

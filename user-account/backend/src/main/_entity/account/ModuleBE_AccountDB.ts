@@ -33,7 +33,7 @@ import {
 	AccountToAssertPassword,
 	AccountToSpice,
 	AccountType,
-	AccountCrudTypes,
+	AccountDB_Prototype,
 	ApiDef_UserAccount,
 	assertPasswordRules,
 	DB_Account,
@@ -94,7 +94,7 @@ type Config = {
 }
 
 export class ModuleBE_AccountDB_Class
-	extends ModuleBE_BaseDB<AccountCrudTypes, Config>
+	extends ModuleBE_BaseDB<AccountDB_Prototype, Config>
 	implements CollectSessionData<_SessionKey_Account> {
 
 	readonly Middleware = async () => {

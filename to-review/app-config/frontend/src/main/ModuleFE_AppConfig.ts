@@ -4,41 +4,36 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {
-	ApiDef_AppConfig,
-	CrudApiDef_AppConfig,
-	CrudTypes_AppConfig,
-	DBKey_AppConfig,
-	type RequestBody_GetResolverByKey,
-	type Types_AppConfig
-} from '@nu-art/app-config-shared';
-import type {DB_AppConfig} from '@nu-art/app-config-shared';
-import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {ApiDef_AppConfig, DatabaseDef_AppConfig, DB_AppConfig, DBDef_AppConfig, RequestBody_GetResolverByKey} from '@nu-art/app-config-shared';
+import {DBConfig_ModuleFE, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {ApiCaller, HttpClient} from '@nu-art/http-client';
 import {BadImplementationException, cloneObj} from '@nu-art/ts-common';
+import {CrudApiDef} from '@nu-art/db-api-shared';
 
 type InferType<T> = T extends AppConfigKey_FE<infer V> ? V : never;
 
-const config: import('@nu-art/db-api-frontend').BaseDBConfig<Types_AppConfig> = {
-	dbKey: CrudTypes_AppConfig.dbKey,
-	validator: CrudTypes_AppConfig.validator,
-	uniqueKeys: CrudTypes_AppConfig.uniqueKeys,
+const config: DBConfig_ModuleFE<DatabaseDef_AppConfig> = {
+	dbKey: DBDef_AppConfig.dbKey,
+	validator: DBDef_AppConfig.modifiablePropsValidator,
+	uniqueKeys: (DBDef_AppConfig.uniqueKeys ?? ['_id']),
 	versions: ['1.0.0'],
 	dbConfig: {
-		name: DBKey_AppConfig,
-		group: 'app',
-		version: '1.0.0',
-		uniqueKeys: ['_id'],
+		name: DBDef_AppConfig.frontend?.name ?? DBDef_AppConfig.dbKey,
+		group: DBDef_AppConfig.frontend?.group ?? 'default',
+		version: DBDef_AppConfig.versions[0],
+		uniqueKeys: (DBDef_AppConfig.uniqueKeys ?? ['_id'])
 	},
 };
 
 export class ModuleFE_AppConfig_Class
-	extends ModuleFE_BaseApi<Types_AppConfig> {
+	extends ModuleFE_BaseApi<DatabaseDef_AppConfig> {
 
 	constructor() {
 		super({
 			config,
-			crudApiDef: CrudApiDef_AppConfig,
+			crudApiDef: CrudApiDef(DBDef_AppConfig),
+			dispatcher: () => {
+			}
 		});
 	}
 
@@ -57,9 +52,9 @@ export class ModuleFE_AppConfig_Class
 
 	async set<K extends AppConfigKey_FE<any>>(appConfigKey: K, data: InferType<K>): Promise<void> {
 		const item = this.cache.find(c => (c as DB_AppConfig).key === appConfigKey.key);
-		let toUpsert: Types_AppConfig['uiItem'];
+		let toUpsert: DatabaseDef_AppConfig['uiType'];
 		if (item)
-			toUpsert = cloneObj(item) as Types_AppConfig['uiItem'];
+			toUpsert = cloneObj(item) as DatabaseDef_AppConfig['uiType'];
 		else
 			toUpsert = {key: appConfigKey.key as string, data};
 		(toUpsert as { data: unknown }).data = data;
@@ -95,3 +90,4 @@ export class AppConfigKey_FE<Binder extends { key: string; value: unknown }> {
 		await ModuleFE_AppConfig.deleteByKey(this as AppConfigKey_FE<any>);
 	}
 }
+

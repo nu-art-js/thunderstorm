@@ -3,7 +3,7 @@ import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {_className, AwaitModules, ComponentSync, TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm-frontend/index';
 import {cloneObj, filterDuplicates, MUSTNeverHappenException, ResolvableContent, resolveContent, UniqueId} from '@nu-art/ts-common';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.js';
-import {AccountCrudTypes, DB_Account} from '@nu-art/user-account-shared';
+import {AccountDB_Prototype, DB_Account} from '@nu-art/user-account-shared';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_AccountThumbnail.scss';
 import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
@@ -38,7 +38,7 @@ class Component_AccountThumbnail_Impl
 		return true;
 	}
 
-	__onAccountsUpdated = (...params: ApiCallerEventType<AccountCrudTypes>) => {
+	__onAccountsUpdated = (...params: ApiCallerEventType<AccountDB_Prototype>) => {
 		this.reDeriveState();
 	};
 

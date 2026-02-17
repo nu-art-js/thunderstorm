@@ -1,4 +1,4 @@
-import {CrudTypes, DatabasePrototype, DB_BaseObject, DB_Object, DB_ProtoDef, VersionsDeclaration} from '@nu-art/db-api-shared';
+import {DB_BaseObject, DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
 import {AuditableV2, TypedKeyValue} from '@nu-art/ts-common';
 
 export const AccountType_User: AccountType = 'user';
@@ -16,23 +16,8 @@ type Dependencies = {};
 type UniqueKeys = '_id';
 type GeneratedKeys = keyof AuditableV2 | '_newPasswordRequired' | 'salt' | 'saltedPassword';
 
-export type DatabaseDef_Account = DatabasePrototype<DB_ProtoDef<DB_Account, DBKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
-
-export type AccountCrudTypes = CrudTypes<
-	DatabaseDef_Account['dbKey'],
-	DatabaseDef_Account['dbType'],
-	DatabaseDef_Account['uiType'],
-	DatabaseDef_Account['editableType'],
-	DatabaseDef_Account['modifiablePropsValidator'],
-	DatabaseDef_Account['uniqueKeys']
->;
-
+export type DatabaseDef_Account = DB_Prototype<DB_ProtoSeed<DB_Account, DBKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
 export type UI_Account = DatabaseDef_Account['uiType'];
-export type SafeDB_Account = UI_Account & DB_BaseObject<DBKey>;
-
-export type UI_SessionAccount = UI_Account & DB_BaseObject<DBKey> & SessionData_HasPassword;
-export type _SessionKey_Account = TypedKeyValue<'account', UI_SessionAccount>;
-
 export type DB_Account = DB_Object<DBKey> & AuditableV2 & {
 	type: AccountType;
 	email: string;
@@ -44,4 +29,9 @@ export type DB_Account = DB_Object<DBKey> & AuditableV2 & {
 	_newPasswordRequired?: boolean;
 };
 
+
+export type SafeDB_Account = UI_Account & DB_BaseObject<DBKey>;
+export type UI_SessionAccount = UI_Account & DB_BaseObject<DBKey> & SessionData_HasPassword;
+export type _SessionKey_Account = TypedKeyValue<'account', UI_SessionAccount>;
 export type SessionData_HasPassword = { hasPassword: boolean };
+

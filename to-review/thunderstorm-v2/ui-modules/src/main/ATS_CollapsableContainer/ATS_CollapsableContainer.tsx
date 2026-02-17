@@ -1,7 +1,7 @@
 import {ComponentSync} from '@nu-art/thunder-widgets';
 import {thunderstormATSGroups} from '../consts.js';
 import {LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
-import './ats.scss';
+import './ATS_CollapsableContainer.scss';
 import {TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {TS_CollapsableContainerV2} from '@nu-art/thunder-widgets';
 import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';

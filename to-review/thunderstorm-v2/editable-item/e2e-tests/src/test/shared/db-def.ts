@@ -6,7 +6,7 @@
 
 import {DBDef_V3, tsValidateString} from '@nu-art/ts-common';
 import type {BaseDBDefBE} from '@nu-art/db-api-backend';
-import type {CrudTypes} from '@nu-art/db-api-shared';
+import type {DB_Prototype} from '@nu-art/db-api-shared';
 import type {DBProto_EditableTest, DB_EditableTest, UI_EditableTest} from './types.js';
 
 const Validator_ModifiableProps: DBProto_EditableTest['modifiablePropsValidator'] = {
@@ -44,5 +44,5 @@ export const editableTestDbDefBE: BaseDBDefBE = {
 /** Validator for test entity (accepts any UI item). */
 export const editableTestValidator: (item?: UI_EditableTest) => undefined = () => undefined;
 
-/** CrudTypes for editable-test entity (ModuleBE_BaseDB / ModuleFE_BaseApi). */
-export type EditableTestCrudTypes = CrudTypes<'editable-test', DB_EditableTest, UI_EditableTest, typeof editableTestValidator, (keyof DB_EditableTest)[]>;
+/** DB_Prototype for editable-test entity (ModuleBE_BaseDB / ModuleFE_BaseApi). */
+export type EditableTestDB_Prototype = DB_Prototype<'editable-test', DB_EditableTest, UI_EditableTest, typeof editableTestValidator, (keyof DB_EditableTest)[]>;

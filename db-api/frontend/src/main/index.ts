@@ -21,4 +21,3 @@
 // Modules
 export * from './ModuleFE_BaseApi.js';
 export * from './ModuleFE_BaseDB.js';
-export * from './types.js';

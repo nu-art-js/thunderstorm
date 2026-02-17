@@ -1,6 +1,6 @@
 import {thunderstormATSGroups} from '../consts.js';
 import {ComponentSync, Grid, TS_CheckboxV2} from '@nu-art/thunder-widgets';
-import './ATS_CheckboxV2.scss';
+import './ATS_Checkbox.scss';
 import {voidFunction} from '@nu-art/ts-common';
 import {AppToolsScreen} from '../TS_AppTools/index.js';
 
@@ -52,7 +52,7 @@ class ATS_CheckboxV2_Class
 	};
 }
 
-export const ATS_CheckboxV2: AppToolsScreen = {
+export const ATS_Checkbox: AppToolsScreen = {
 	key: 'checkbox-v2',
 	name: 'Checkbox V2',
 	group: thunderstormATSGroups,

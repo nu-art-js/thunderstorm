@@ -131,10 +131,26 @@ export class UnitsDependencyMapper
 			}
 
 			if (nextLayer.length === 0) {
-				this.logWarning(participatingKeys);
-				this.logWarning(map);
-				this.logWarning(`Cyclic or disconnected dependency detected: ${lastNode?.key ?? '??'} and [${nextLayer.join(', ')}]`);
-				throw new Error('Cyclic or disconnected dependency detected');
+				// Detect and report cycles explicitly
+				const cycles = this.detectCyclesInMap(map);
+				const unresolved = (_keys(map) as string[]).filter(key => !resolved.has(key) && !topLayer.includes(key));
+				let errorMessage = '';
+
+				errorMessage += `Last processed node: ${lastNode?.key ?? '??'}\n`;
+				errorMessage += `Unresolved nodes: [${unresolved.join(', ')}]\n`;
+				errorMessage += 'Cyclic or disconnected dependency detected!\n\n';
+
+				if (cycles.length > 0) {
+					errorMessage += `Found ${cycles.length} cycle(s):\n`;
+					for (const cycle of cycles) {
+						errorMessage += `  Cycle: ${cycle.join(' -> ')}\n`;
+					}
+					errorMessage += '\n';
+				}
+
+				this.logVerbose(`Full dependency graph:`, this.formatDependencyGraph(map));
+				this.logWarning(errorMessage);
+				throw new Error(errorMessage);
 			}
 
 			nextLayer.sort();
@@ -375,5 +391,51 @@ export class UnitsDependencyMapper
 	 */
 	public getLeaves(): string[] {
 		return _values(this.map).filter(node => node.dependsOn.length === 0).map(node => node.key).sort();
+	}
+
+	/**
+	 * Detects cycles in a given dependency map (used for error reporting).
+	 */
+	private detectCyclesInMap(map: TypedMap<UnitDependentNode>): string[][] {
+		const visited = new Set<string>();
+		const inStack = new Set<string>();
+		const cycles: string[][] = [];
+
+		const visit = (key: string, path: string[]): void => {
+			if (inStack.has(key)) {
+				const cycleStart = path.indexOf(key);
+				cycles.push(path.slice(cycleStart).concat(key));
+				return;
+			}
+			if (visited.has(key)) return;
+
+			visited.add(key);
+			inStack.add(key);
+			const node = map[key];
+			if (node)
+				for (const dep of node.dependsOn)
+					visit(dep, path.concat(key));
+			inStack.delete(key);
+		};
+
+		for (const key of _keys(map) as string[])
+			visit(key, []);
+
+		return cycles;
+	}
+
+	/**
+	 * Formats the dependency graph as a readable string for error messages.
+	 */
+	private formatDependencyGraph(map: TypedMap<UnitDependentNode>): string {
+		const lines: string[] = [];
+		for (const key of _keys(map) as string[]) {
+			const node = map[key];
+			const deps = node.dependsOn.length > 0
+				? ` -> [${node.dependsOn.join(', ')}]`
+				: ' (no dependencies)';
+			lines.push(`  ${key}${deps}`);
+		}
+		return lines.join('\n');
 	}
 }

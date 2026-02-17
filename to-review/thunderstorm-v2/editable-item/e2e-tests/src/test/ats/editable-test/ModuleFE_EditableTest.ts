@@ -10,10 +10,10 @@ import {CrudApiDef} from '@nu-art/db-api-shared';
 import {
 	DBDef_EditableTest,
 	editableTestValidator,
-	type EditableTestCrudTypes,
+	type EditableTestDB_Prototype,
 } from '../../shared/db-def.js';
 
-const editableTestBaseDBConfig: BaseDBConfig<EditableTestCrudTypes> = {
+const editableTestBaseDBConfig: BaseDBConfig<EditableTestDB_Prototype> = {
 	dbKey: 'editable-test',
 	validator: editableTestValidator,
 	uniqueKeys: ['_id'],
@@ -31,7 +31,7 @@ const editableTestBaseDBConfig: BaseDBConfig<EditableTestCrudTypes> = {
  * with @nu-art/editable-item's EditableDBItemV3 which expects storm-style module shape.
  */
 export class ModuleFE_EditableTest_Class
-	extends ModuleFE_BaseApi<EditableTestCrudTypes> {
+	extends ModuleFE_BaseApi<EditableTestDB_Prototype> {
 
 	/** Compatibility with EditableDBItemV3 (expects module.v1.upsert(_item).executeSync()). */
 	get v1(): {
@@ -52,7 +52,7 @@ export class ModuleFE_EditableTest_Class
 	constructor() {
 		super({
 			config: editableTestBaseDBConfig,
-			crudApiDef: CrudApiDef<EditableTestCrudTypes>('editable-test', 'v1'),
+			crudApiDef: CrudApiDef<EditableTestDB_Prototype>('editable-test', 'v1'),
 		});
 	}
 }

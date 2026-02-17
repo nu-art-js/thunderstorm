@@ -1,7 +1,7 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {
 	DBDef_LoginAttempt,
-	LoginAttemptCrudTypes,
+	LoginAttemptDB_Prototype,
 	LoginMetadata,
 	LoginStatus,
 	LoginStatus_Failed,
@@ -18,7 +18,7 @@ import {MemKey_HttpRequest} from '@nu-art/http-server';
  * login credentials over a number of defined times
  */
 export class ModuleBE_LoginAttemptDB_Class
-	extends ModuleBE_BaseDB<LoginAttemptCrudTypes>
+	extends ModuleBE_BaseDB<LoginAttemptDB_Prototype>
 	implements OnLoginFailed, OnUserLogin {
 
 	/**

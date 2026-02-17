@@ -18,7 +18,7 @@ import {
 } from '@nu-art/ts-common';
 import {ModuleBE_FirestoreListener} from '@nu-art/firebase-backend';
 import type {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import type {CrudTypes} from '@nu-art/db-api-shared';
+import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {ApiHandler} from '@nu-art/http-server';
 import {ApiDef_Archiving, RequestBody_HardDeleteUnique, RequestQuery_DeleteAll, RequestQuery_GetHistory} from '@nu-art/archiving-shared';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
@@ -27,7 +27,7 @@ type Params = { collectionName: string; docId: string };
 
 export const Const_ArchivedCollectionPath = '/_archived';
 
-type AnyBaseDB = ModuleBE_BaseDB<CrudTypes>;
+type AnyBaseDB = ModuleBE_BaseDB<DB_Prototype>;
 
 /**
  * Handles Firestore database operations with custom logic for archiving and Time-To-Live (TTL).

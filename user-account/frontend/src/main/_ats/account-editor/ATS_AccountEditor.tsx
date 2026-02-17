@@ -1,10 +1,10 @@
 import './ATS_AccountEditor.scss';
-import {_className, AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunderstorm-frontend/index';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor.js';
-import {AccountCrudTypes, DB_Account} from '@nu-art/user-account-shared';
+import {DB_Account} from '@nu-art/user-account-shared';
 import {generateUUID} from '@nu-art/ts-common';
-import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.js';
+import {ComponentSync, LL_H_C} from '@nu-art/thunder-widgets';
+import {AppToolsScreen} from '@nu-art/thunder-ui-modules';
 
 
 type Props = {}
@@ -30,7 +30,7 @@ export class ATS_AccountEditor
 		return state;
 	}
 
-	
+
 	private setSelectedAccount = (account?: DB_Account) => {
 		if (!account)
 			this.setState({isPreview: false, selectedUser: undefined});
@@ -46,6 +46,7 @@ export class ATS_AccountEditor
 	}
 }
 
+
 type ListState = {
 	list: DB_Account[],
 };
@@ -59,7 +60,7 @@ class Component_AccountList
 	extends ComponentSync<ListProps, ListState>
 	implements OnAccountsUpdated {
 
-	__onAccountsUpdated(...params: ApiCallerEventType<AccountCrudTypes>) {
+	__onAccountsUpdated(...params: ApiCallerEventType<>) {
 		this.reDeriveState();
 	}
 
