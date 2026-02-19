@@ -37,6 +37,10 @@ Extend `ServerApi<API>`, `ServerApi_Get<API>`, or `ServerApi_Post<API>`; impleme
 
 MemKeys from `consts.js`: `MemKey_HttpRequest`, `MemKey_HttpRequestBody`, `MemKey_HttpRequestQuery`, `MemKey_HttpResponse`, `MemKey_HttpRequestHeaders`, etc. Use within the same request scope (MemStorage).
 
+### Request headers
+
+Use `HeaderKey` from this package to read and validate request headers (optional processor and response code). It uses `MemKey_HttpRequest` internally. Example: `new HeaderKey(headerNameConstant, 403).setProcessor((v) => v.trim())` then `.get()` in a handler.
+
 ### Sending responses
 
 Use `MemKey_HttpResponse.get()` to get `ApiResponse`: `.json(200, body)`, `.text()`, `.html()`, `.redirect()`, `.exception(apiException)`, `.serverError(error)`. Call exactly one "send" method per request (response is consumed).
