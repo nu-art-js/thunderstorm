@@ -7,7 +7,7 @@
  */
 
 
-import {DB_Object} from './db-object.js';
+import {DB_Object, DB_UniqueId} from './db-object.js';
 
 /**
  * Compose a unique ID from an object's unique key fields.
@@ -25,7 +25,7 @@ export function composeDbObjectUniqueId<T extends DB_Object>(obj: T, keys: (keyo
 /**
  * Extract the _id field from a DB object.
  */
-export function dbObjectToId<T extends DB_Object>(obj: T): string {
+export function dbObjectToId<T extends DB_Object<any>>(obj: T): T['_id'] {
 	return obj._id;
 }
 
@@ -34,3 +34,4 @@ export function dbObjectToId<T extends DB_Object>(obj: T): string {
  */
 export const KeysOfDB_Object: (keyof DB_Object)[] = ['_id', '__created', '__updated', '_v'];
 
+export const stringToUniqueId = <DBKey extends string>(id: string) => id as DB_UniqueId<DBKey>;

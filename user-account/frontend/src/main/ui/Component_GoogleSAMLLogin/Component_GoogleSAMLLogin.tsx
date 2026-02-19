@@ -1,8 +1,8 @@
-import {Button} from '@nu-art/thunderstorm-frontend/index';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_GoogleSAMLLogin.scss';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity.js';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
+import {Button} from '@nu-art/thunder-widgets/v3';
 
 type Props = {
 	text?: string;

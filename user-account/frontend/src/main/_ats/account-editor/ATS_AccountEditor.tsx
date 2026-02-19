@@ -3,8 +3,11 @@ import {Component_AccountEditor} from '../../account-editor/Component_AccountEdi
 import {DB_Account} from '@nu-art/user-account-shared';
 import {generateUUID} from '@nu-art/ts-common';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.js';
-import {ComponentSync, LL_H_C} from '@nu-art/thunder-widgets';
+import {ComponentSync, LL_H_C, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {AppToolsScreen} from '@nu-art/thunder-ui-modules';
+import {Button, LL_V_L} from '@nu-art/thunder-widgets/v3';
+import {_className} from '@nu-art/thunder-core';
+import {ApiCallerEventType} from '@nu-art/db-api-shared';
 
 
 type Props = {}
@@ -60,7 +63,7 @@ class Component_AccountList
 	extends ComponentSync<ListProps, ListState>
 	implements OnAccountsUpdated {
 
-	__onAccountsUpdated(...params: ApiCallerEventType<>) {
+	__onAccountsUpdated(...params: ApiCallerEventType<DB_Account>) {
 		this.reDeriveState();
 	}
 
@@ -80,9 +83,10 @@ class Component_AccountList
 				{
 					this.state.list.map(account => {
 							const className = _className('match_width', 'row', this.props.user?._id === account._id && 'selected');
-							return <TS_PropRenderer.Horizontal onClick={() => this.props.setSelectedAccount(account)}
-																								 key={generateUUID()} className={className}
-																								 label={account.email}/>;
+							return <TS_PropRenderer.Horizontal
+								onClick={() => this.props.setSelectedAccount(account)}
+								key={generateUUID()} className={className}
+								label={account.email}/>;
 						}
 					)
 				}

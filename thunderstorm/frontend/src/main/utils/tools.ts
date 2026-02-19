@@ -95,8 +95,6 @@ export async function readFileAs_ArrayBuffer(file: File) {
 	return readFileContentImpl(file, 'array-buffer') as Promise<ArrayBuffer>;
 }
 
-export const readFileContent = readFileAs_ArrayBuffer;
-
 export async function readFileAs_BinaryString(file: File) {
 	return readFileContentImpl(file, 'binary') as Promise<string>;
 }

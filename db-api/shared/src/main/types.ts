@@ -19,7 +19,7 @@
  */
 
 import {DotNotation, DotNotationValueType, SubsetObjectByKeys, ValidatorTypeResolver} from '@nu-art/ts-common';
-import {DB_BaseObject, DB_Object, Default_UniqueKey} from './db-object.js';
+import {DB_BaseObject, DB_Object, DB_UniqueId, Default_UniqueKey} from './db-object.js';
 import {EntityDependencyError} from '@nu-art/firebase-shared';
 import {ApiDef, BodyApi, HttpMethod, QueryApi} from '@nu-art/http-client';
 import type {CrudQuery} from './query-types.js';
@@ -77,7 +77,7 @@ export type DB_ProtoSeed<
 
 	type: T,
 	dbKey: DatabaseKey;
-	generatedKeys: GeneratedKeys | keyof DB_Object
+	generatedKeys: GeneratedKeys | keyof DB_Object<DatabaseKey>
 	versions: Versions,
 	uniqueKeys: UniqueKeys
 	dependencies: keyof Dependencies extends never ? never : Dependencies
@@ -101,6 +101,7 @@ type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
 export type DB_Prototype<ProtoSeed extends DB_ProtoSeed<any, string, any, VersionsDeclaration<VersionType[]>, any, any> = any, ModifiableSubType = Omit<ProtoSeed['type'], ProtoSeed['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<ProtoSeed['type'], ProtoSeed['generatedKeys']>> = {
+	id: DB_UniqueId<ProtoSeed['dbKey']>
 	editableType: ModifiableSubType,
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	// dbType: ModifiableSubType & GeneratedSubType & DB_Object,
@@ -113,7 +114,7 @@ export type DB_Prototype<ProtoSeed extends DB_ProtoSeed<any, string, any, Versio
 	generatedProps: ProtoSeed['generatedKeys'][]
 	versions: ProtoSeed['versions']
 	indices: DBIndex<ProtoSeed['type']>[]
-	uniqueParam: Default_UniqueKey | { [K in ProtoSeed['uniqueKeys']]: ProtoSeed['type'][K] }
+	uniqueParam: DB_UniqueId<ProtoSeed['dbKey']> | { [K in ProtoSeed['uniqueKeys']]: ProtoSeed['type'][K] }
 	lockKeys?: (keyof ProtoSeed['type'])[]
 	dependencies: DependenciesImpl<ProtoSeed['type'], ProtoSeed['dependencies']>
 }
@@ -192,14 +193,14 @@ export type CrudApiDef_Type<Proto extends DB_Prototype = DB_Prototype> = {
 	deleteAll: ApiDef<CrudApiTypes<Proto>['deleteAll']>;
 };
 
-export function CrudApiDef<Proto extends DB_Prototype>(database: Database<Proto>, version = 'v1'): CrudApiDef_Type<Proto> {
+export function CrudApiDef<Proto extends DB_Prototype>(dbKey: Proto['dbKey'], version = 'v1'): CrudApiDef_Type<Proto> {
 	return {
-		query: {method: HttpMethod.POST, path: `${version}/${database.dbKey}/query`, timeout: 60000},
-		queryUnique: {method: HttpMethod.GET, path: `${version}/${database.dbKey}/query-unique`},
-		upsert: {method: HttpMethod.POST, path: `${version}/${database.dbKey}/upsert`},
-		upsertAll: {method: HttpMethod.POST, path: `${version}/${database.dbKey}/upsert-all`},
-		deleteUnique: {method: HttpMethod.GET, path: `${version}/${database.dbKey}/delete-unique`},
-		deleteQuery: {method: HttpMethod.POST, path: `${version}/${database.dbKey}/delete-query`},
-		deleteAll: {method: HttpMethod.GET, path: `${version}/${database.dbKey}/delete-all`},
+		query: {method: HttpMethod.POST, path: `${version}/${dbKey}/query`, timeout: 60000},
+		queryUnique: {method: HttpMethod.GET, path: `${version}/${dbKey}/query-unique`},
+		upsert: {method: HttpMethod.POST, path: `${version}/${dbKey}/upsert`},
+		upsertAll: {method: HttpMethod.POST, path: `${version}/${dbKey}/upsert-all`},
+		deleteUnique: {method: HttpMethod.GET, path: `${version}/${dbKey}/delete-unique`},
+		deleteQuery: {method: HttpMethod.POST, path: `${version}/${dbKey}/delete-query`},
+		deleteAll: {method: HttpMethod.GET, path: `${version}/${dbKey}/delete-all`},
 	};
 }

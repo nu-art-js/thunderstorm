@@ -1,8 +1,10 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
-import {DB_BaseObject, Minute, UniqueId} from '@nu-art/ts-common';
-import {AccountType, DB_Account, UI_Account} from './types.js';
-import {DB_Session, QueryParam_RedirectUrl} from '../session/index.js';
+import {Minute} from '@nu-art/ts-common';
+import {AccountType, DatabaseDef_Account, DB_Account, UI_Account} from './types.js';
 import {PasswordAssertionConfig} from '../../_enum/password-assertion/index.js';
+import {DB_BaseObject} from '@nu-art/db-api-shared';
+import {DB_Session} from '../session/types.js';
+import {QueryParam_RedirectUrl} from '../session/consts.js';
 
 export type Response_Auth = UI_Account & DB_BaseObject
 export type AccountEmail = { email: string }
@@ -21,10 +23,10 @@ export type API_UserAccount = {
 	changePassword: BodyApi<Response_Auth, PasswordWithCheck & { oldPassword: string }>;
 	login: BodyApi<Response_Auth, AccountEmailWithDevice & AccountPassword>;
 	logout: QueryApi<void>;
-	createToken: BodyApi<{ token: string }, { accountId: UniqueId, ttl: number, label: string }>;
+	createToken: BodyApi<{ token: string }, { accountId: DatabaseDef_Account['id'], ttl: number, label: string }>;
 	setPassword: BodyApi<Response_Auth, PasswordWithCheck>;
-	getSessions: QueryApi<{ sessions: DB_Session[] }, DB_BaseObject>;
-	changeThumbnail: BodyApi<{ account: DB_Account }, { accountId: string; hash: string }>;
+	getSessions: QueryApi<{ sessions: DB_Session[] }, DB_BaseObject<DatabaseDef_Account['dbKey']>>;
+	changeThumbnail: BodyApi<{ account: DB_Account }, { accountId: DatabaseDef_Account['id']; hash: string }>;
 	getPasswordAssertionConfig: QueryApi<{ config: PasswordAssertionConfig | undefined }>;
 }
 

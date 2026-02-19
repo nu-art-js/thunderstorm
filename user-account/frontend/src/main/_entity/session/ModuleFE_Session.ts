@@ -1,4 +1,4 @@
-import {ModuleFE_RoutingV2, ModuleFE_XHR, OnStorageKeyChangedListener, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
+import {OnStorageKeyChangedListener, StorageKey, ThunderDispatcher} from '@nu-art/thunder-core';
 import {
 	BadImplementationException,
 	currentTimeMillis,
@@ -10,9 +10,11 @@ import {
 	TS_Object,
 	TypedKeyValue
 } from '@nu-art/ts-common';
-import {BaseHttpRequest, HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
-import {OnAuthRequiredListener} from '@nu-art/thunderstorm-shared/no-auth-listener';
 import {QueryParam_SessionId} from '@nu-art/user-account-shared';
+import {OnAuthRequiredListener} from './no-auth-listener.js';
+import {HttpClient} from '@nu-art/http-client';
+import {HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/api-types';
+import { ModuleFE_Routing } from '@nu-art/thunder-routing';
 
 export interface OnSessionUpdated {
 	__onSessionUpdated: VoidFunction;
@@ -68,15 +70,15 @@ class ModuleFE_Session_Class
 			await this.onSessionUpdated(sessionAsString);
 		});
 
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_Authorization, () => {
+		HttpClient.default.addDefaultHeader(HeaderKey_Authorization, () => {
 			const sessionJWT = this.StorageKey_SessionId.get();
 			if (!sessionJWT)
 				return '';
 
 			return `Bearer ${sessionJWT}`;
 		});
-		ModuleFE_XHR.setDefaultOnComplete(async (__, _, request) => {
-			if (!request.getUrl().startsWith(ModuleFE_XHR.getOrigin()))
+		HttpClient.default.setDefaultOnComplete(async (__, _, request) => {
+			if (!request.getUrl().startsWith(HttpClient.default.getOrigin()!))
 				return;
 
 			const responseHeader = request.getResponseHeader(ResponseHeaderKey_JWTToken);
@@ -88,9 +90,9 @@ class ModuleFE_Session_Class
 		});
 
 		const prevSessionId = this.StorageKey_SessionId.get();
-		let sessionId = ModuleFE_RoutingV2.getQueryParameter(QueryParam_SessionId);
+		let sessionId = ModuleFE_Routing.getQueryParameter(QueryParam_SessionId);
 		if (sessionId) {
-			setTimeout(() => ModuleFE_RoutingV2.removeQueryParam(QueryParam_SessionId), 5000);
+			setTimeout(() => ModuleFE_Routing.removeQueryParam(QueryParam_SessionId), 5000);
 			this.StorageKey_SessionId.set(sessionId);
 			if (sessionId === prevSessionId)
 				this.onSessionUpdated(sessionId)
@@ -124,7 +126,7 @@ class ModuleFE_Session_Class
 		await this.onSessionUpdated(this.StorageKey_SessionId.get());
 	}
 
-	__onAuthRequiredListener(request: BaseHttpRequest<any>) {
+	__onAuthRequiredListener() {
 		this.StorageKey_SessionId.delete();
 		StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
 	}

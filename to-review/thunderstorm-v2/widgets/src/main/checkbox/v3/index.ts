@@ -6,5 +6,5 @@
  */
 
 /** Same names as v2; only the entry point (./v3) distinguishes. */
-export {TS_CheckboxV3 as TS_CheckboxV2} from './TS_CheckboxV3.js';
+export {TS_CheckboxV3 as TS_Checkbox} from './TS_CheckboxV3.js';
 export type {IconSpec_TS_CheckboxV2, Props_TS_CheckboxV2} from './TS_CheckboxV3.js';

@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import {_className, Button, ComponentSync, Grid, LL_H_C, LL_V_C, TS_PropRenderer} from '@nu-art/thunderstorm-frontend/index';
+import {Button, ComponentSync, Grid, LL_H_C, LL_V_C, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
 import {
-	Account_RegisterAccount,
 	AccountEmail,
+	API_UserAccount,
 	assertPasswordRules,
 	PasswordAssertionConfig,
 	PasswordAssertionType,
@@ -35,7 +35,8 @@ import {
 } from '@nu-art/user-account-shared';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../_entity.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {TS_InputV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_Input/index';
+import {TS_Input} from '@nu-art/thunder-widgets/v3';
+import {_className} from '@nu-art/thunder-core';
 
 type State<T> = {
 	data: Partial<T>
@@ -81,18 +82,18 @@ const form: Form<AccountEmail & PasswordWithCheck> = {
 export class Component_Register
 	extends ComponentSync<Props<Request_RegisterAccount>, State<Request_RegisterAccount>> {
 
-	
+
 	protected deriveStateFromProps(nextProps: Props<Request_RegisterAccount>, state: State<Request_RegisterAccount>) {
 		state.data ??= {};
 		state.renderPasswordRules = nextProps.renderPasswordRules ?? false;
 		if (state.renderPasswordRules) {
-			state.passwordAssertionConfig = ModuleFE_Account.getPasswordAssertionConfig();
+			state.passwordAssertionConfig = ModuleFE_Account.passwordAssertionConfig();
 			state.passwordFailureReport = assertPasswordRules(state.data.password ?? '', state.passwordAssertionConfig);
 		}
 		return state;
 	}
 
-	
+
 	private getPasswordRuleText = (key: PasswordAssertionType) => {
 		const amount = this.state.passwordAssertionConfig?.[key]!;
 		switch (key) {
@@ -111,7 +112,7 @@ export class Component_Register
 		}
 	};
 
-	private onValueChanged = (value: string, id: keyof Account_RegisterAccount['request'], onAccept: boolean = false) => {
+	private onValueChanged = (value: string, id: keyof API_UserAccount['registerAccount']['Body'], onAccept: boolean = false) => {
 		const data = {...this.state.data};
 		data[id] = value;
 		if (id !== 'password')
@@ -175,14 +176,14 @@ export class Component_Register
 		}
 	};
 
-	
+
 	render() {
 		const data = this.state.data;
 		return <LL_V_C className="ts-account__authenticate">
 			{_keys(form).map((key, i) => {
 					const field = form[key];
 					return <TS_PropRenderer.Vertical label={field.label} key={i}>
-						<TS_InputV2
+						<TS_Input
 							id={key}
 							value={data[key]}
 							type={field.type}
@@ -235,3 +236,4 @@ export class Component_Register
 		</Grid>;
 	};
 }
+

@@ -1,24 +1,18 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {
+	DatabaseDef_Account,
+	DatabaseDef_FailedLoginAttempt,
 	DB_FailedLoginAttempt,
 	DBDef_FailedLoginAttempt,
 	DefaultMaxLoginAttempts,
 	ErrorType_LoginBlocked,
-	FailedLoginAttemptDB_Prototype
+	SafeDB_Account,
 } from '@nu-art/user-account-shared';
-import {
-	ApiException,
-	currentTimeMillis, exists,
-	Format_HHmmss_DDMMYYYY,
-	formatTimestamp,
-	Minute,
-	UniqueId
-} from '@nu-art/ts-common';
+import {ApiException, currentTimeMillis, exists, Format_HHmmss_DDMMYYYY, formatTimestamp, Minute} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 import {dispatch_OnLoginFailed} from '../login-attempts/dispatchers.js';
-import {OnUserLogin} from '../account/index.js';
-import {SafeDB_Account} from '@nu-art/user-account-shared';
+import {OnUserLogin} from '../account/ModuleBE_AccountDB.js';
 
 
 type Config = {
@@ -36,7 +30,8 @@ type LoginBlockedErrorBody = ResponseError<typeof ErrorType_LoginBlocked, {
  * Default login blocked timer is 5 minutes
  */
 export class ModuleBE_FailedLoginAttemptDB_Class
-	extends ModuleBE_BaseDB<FailedLoginAttemptDB_Prototype, Config> implements OnUserLogin {
+	extends ModuleBE_BaseDB<DatabaseDef_FailedLoginAttempt, Config>
+	implements OnUserLogin {
 
 	constructor() {
 		super(DBDef_FailedLoginAttempt);
@@ -51,14 +46,12 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 		return this.onLoginSuccessful(account._id);
 	}
 
-	//######################### Public Logic #########################
-
 	/**
 	 * Failed login attempt handler, will take care of updating or managing
 	 * failed login attempt event.
 	 * @param accountId The account that failed login.
 	 */
-	public updateFailedLoginAttempt = async (accountId: UniqueId) => {
+	public updateFailedLoginAttempt = async (accountId: DatabaseDef_Account['id']) => {
 		// Fetch the existing attempt
 		const existingLoginAttempt = await this.getExistingLoginAttempt(accountId);
 
@@ -80,14 +73,12 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 		return this.incrementLoginAttempt(existingLoginAttempt);
 	};
 
-	//######################### Internal Logic #########################
-
 	/**
 	 * After a successful login attempt use this function to validate if user isn't blocked
 	 * or if block time elapsed
 	 * @param accountId The account that successfully logged in
 	 */
-	private onLoginSuccessful = async (accountId: UniqueId) => {
+	private onLoginSuccessful = async (accountId: DatabaseDef_Account['id']) => {
 		const loginAttempt = await this.getExistingLoginAttempt(accountId);
 
 		// fail fast if there's no login attempts document
@@ -106,7 +97,7 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 	};
 
 	// Separate functions to improve logic separation
-	private getExistingLoginAttempt = async (accountId: UniqueId) => {
+	private getExistingLoginAttempt = async (accountId: DatabaseDef_Account['id']) => {
 		return (await this.query.custom({
 			where: {accountId},
 			limit: 1,
@@ -137,8 +128,7 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 		return currentTimeMillis() < blockedUntil;
 	};
 
-	private createNewLoginAttempt = async (accountId: UniqueId) => {
-
+	private createNewLoginAttempt = async (accountId: DatabaseDef_Account['id']) => {
 		return Promise.all([this.set.item({
 			accountId: accountId,
 			count: 1

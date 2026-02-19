@@ -17,12 +17,12 @@
  */
 
 import {_keys, exists, formatTimestamp} from '@nu-art/ts-common';
-import {Account_Login, AccountEmail, AccountPassword, ErrorType_LoginBlocked} from '@nu-art/user-account-shared';
+import {AccountEmail, AccountPassword, API_UserAccount, ErrorType_LoginBlocked} from '@nu-art/user-account-shared';
 import './Component_Login.scss';
-import {Button, ComponentSync, LL_H_C, LL_V_C, ModuleFE_Toaster, TS_PropRenderer} from '@nu-art/thunderstorm-frontend/index';
+import {Button, ComponentSync, LL_H_C, LL_V_C, ModuleFE_Toaster, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity.js';
-import {TS_InputV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_Input/index';
 import {Component_LoginBlocked} from '../Component_LoginBlocked/Component_LoginBlocked.js';
+import {TS_Input} from '@nu-art/thunder-widgets/v3';
 
 type State<T> = {
 	data: Partial<T>
@@ -55,11 +55,11 @@ const form: Form<AccountEmail & AccountPassword> = {
 };
 
 export class Component_Login
-	extends ComponentSync<Props, State<Account_Login['request']>> {
+	extends ComponentSync<Props, State<API_UserAccount['login']['Body']>> {
 
 	//######################### Life Cycle #########################
 
-	protected deriveStateFromProps(nextProps: Props, state: State<Account_Login['request']>) {
+	protected deriveStateFromProps(nextProps: Props, state: State<API_UserAccount['login']['Body']>) {
 		state.data ??= {};
 		return state;
 	}
@@ -67,7 +67,7 @@ export class Component_Login
 	//######################### Logic #########################
 
 	private loginDataValid = () => {
-		const data: Partial<Account_Login['request']> = this.state.data;
+		const data: Partial<API_UserAccount['login']['Body']> = this.state.data;
 		const errors = _keys(form).map(key => {
 			const field = form[key];
 			return data[key] ? undefined : `  * missing ${field.label}`;
@@ -96,7 +96,7 @@ export class Component_Login
 
 		this.setState({submitting: true, errorMessages: undefined}, async () => {
 			try {
-				await ModuleFE_Account.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as Account_Login['request']);
+				await ModuleFE_Account.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as API_UserAccount['login']['Body']);
 				this.setState({submitting: false});
 			} catch (err: any) {
 				if (err.errorResponse.error?.type === ErrorType_LoginBlocked) {
@@ -111,7 +111,7 @@ export class Component_Login
 		});
 	};
 
-	private onValueChanged = (value: string, id: keyof Account_Login['request'], isAccept: boolean = false) => {
+	private onValueChanged = (value: string, id: keyof API_UserAccount['login']['Body'], isAccept: boolean = false) => {
 		const data = {...this.state.data};
 		data[id] = value;
 		this.setState({data, errorMessages: undefined}, () => {
@@ -128,16 +128,16 @@ export class Component_Login
 			{_keys(form).map((key, i) => {
 					const field = form[key];
 					return <TS_PropRenderer.Vertical label={field.label} key={i}>
-						<TS_InputV2
+						<TS_Input
 							id={key}
 							value={data[key]}
 							type={field.type}
 							allowAccept={true}
 							onChange={(value) => {
-								this.onValueChanged(value, key as keyof Account_Login['request']);
+								this.onValueChanged(value, key as keyof API_UserAccount['login']['Body']);
 							}}
 							onAccept={(value) => {
-								this.onValueChanged(value, key as keyof Account_Login['request'], true);
+								this.onValueChanged(value, key as keyof API_UserAccount['login']['Body'], true);
 							}}
 						/>
 					</TS_PropRenderer.Vertical>;

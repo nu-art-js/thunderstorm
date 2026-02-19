@@ -3,7 +3,6 @@ import {
 	ApiException,
 	currentTimeMillis,
 	Day,
-	dbObjectToId,
 	Dispatcher,
 	filterKeys,
 	isErrorOfType,
@@ -12,30 +11,30 @@ import {
 	MUSTNeverHappenException,
 	RecursiveObjectOfPrimitives,
 	TypedKeyValue,
-	TypedMap,
-	UniqueId
+	TypedMap
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {AccountType_Service, DB_Session, DBDef_Session, DBProto_Session, SessionDB_Prototype} from '@nu-art/user-account-shared';
+import {AccountType_Service, DatabaseDef_Account, DatabaseDef_Session, DB_Session, DBDef_Session} from '@nu-art/user-account-shared';
 import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
-import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
 import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {ModuleBE_AccountDB} from '../account/ModuleBE_AccountDB.js';
+import {ResponseHeaderKey_JWTToken} from '@nu-art/api-types';
+import {dbObjectToId, stringToUniqueId} from '@nu-art/db-api-shared';
 import Transaction = firestore.Transaction;
 
 export type BaseSessionClaims = {
-	accountId: string,
+	accountId: DatabaseDef_Account['id'],
 	deviceId: string,
 	label: string,
 };
 
 export type Props_CreateSession = {
-	linkedSessionId?: string
-	prevSessions?: UniqueId[]
+	linkedSessionId?: DatabaseDef_Session['id']
+	prevSessions?: DatabaseDef_Session['id'][]
 	initialClaims: BaseSessionClaims
 };
 
@@ -57,7 +56,7 @@ type Config = {
 }
 
 export class ModuleBE_SessionDB_Class
-	extends ModuleBE_BaseDB<SessionDB_Prototype, Config>
+	extends ModuleBE_BaseDB<DatabaseDef_Session, Config>
 	implements CollectSessionData<TypedKeyValue<'session', { deviceId: string }>> {
 
 	private jwtHandler!: JWT_Handler<BaseSessionClaims & RecursiveObjectOfPrimitives>;
@@ -93,7 +92,7 @@ export class ModuleBE_SessionDB_Class
 		}, {...content} as RecursiveObjectOfPrimitives & BaseSessionClaims);
 	};
 
-	preWriteProcessing = async (instance: DBProto_Session['dbType']) => {
+	preWriteProcessing = async (instance: DatabaseDef_Session['dbType']) => {
 		if ('sessionId' in instance)
 			delete instance.sessionId;
 		if ('timestamp' in instance)
@@ -184,7 +183,7 @@ export class ModuleBE_SessionDB_Class
 			byJwt: async (jwt: string, transaction?: Transaction) => {
 				return await this.query.uniqueCustom({
 					// We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
-					where: {validSessionJwtMd5s: {$ac: md5(jwt)}},
+					where: {validSessionJwtMd5s: {$ac: stringToUniqueId<DatabaseDef_Session['dbKey']>(md5(jwt))}},
 					orderBy: [{key: '__created', order: 'desc'}],
 					limit: 1
 				}, transaction);
@@ -198,7 +197,7 @@ export class ModuleBE_SessionDB_Class
 			return jwt;
 		},
 		save: async (content: Props_CreateSession, jwt: string, transaction?: Transaction) => {
-			const _id = md5(jwt);
+			const _id = stringToUniqueId<DatabaseDef_Session['dbKey']>(md5(jwt));
 			const validSessionJwtMd5s = content.prevSessions ? [_id, ...content.prevSessions] : [_id];
 			if (validSessionJwtMd5s.length > this.config.maxPrevSession)
 				validSessionJwtMd5s.length = this.config.maxPrevSession;
@@ -330,8 +329,8 @@ export class ModuleBE_SessionDB_Class
 	public cleanOldOrExpiredSessions = async () => {
 		const sessions = await this.query.custom(_EmptyQuery);
 		const accounts = await ModuleBE_AccountDB.query.where({type: {$neq: AccountType_Service}});
-		const validAccountIds = new Set<UniqueId>(accounts.map(dbObjectToId));
-		const sessionIdsToDelete = new Set<UniqueId>();
+		const validAccountIds = new Set(accounts.map(dbObjectToId));
+		const sessionIdsToDelete = new Set<DatabaseDef_Session['dbType']['_id']>();
 		const accountSessionMap: TypedMap<DB_Session> = {};
 		this.logWarning(`#### Cleaning ${sessions.length} sessions for ${validAccountIds.size} accounts ####`);
 		//First pass - Collect all sessions that are referenced by newer sessions
@@ -369,7 +368,8 @@ export class ModuleBE_SessionDB_Class
 		}));
 
 		//Delete sessions
-		await this.delete.all(Array.from(sessionIdsToDelete));
+		const ids = Array.from(sessionIdsToDelete);
+		await this.delete.all(ids);
 		this.logWarning(`### Deleted ${sessionIdsToDelete.size} Sessions! ###`);
 	};
 }

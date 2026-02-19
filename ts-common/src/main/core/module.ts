@@ -25,7 +25,7 @@ import {BadImplementationException} from './exceptions/exceptions.js';
 import {merge} from '../utils/merge-tools.js';
 import {Logger, LogLevel} from './logger/index.js';
 import {ValidatorTypeResolver} from '../validator/validator-core.js';
-import {_clearTimeout, _setTimeout, TimerHandler} from '../utils/date-time-tools.js';
+import {lastElement} from '../utils/array-tools.js';
 
 
 /**
@@ -68,6 +68,8 @@ export abstract class Module<Config = any,
 	ConfigValidator extends ValidatorTypeResolver<ModuleConfig> = ValidatorTypeResolver<ModuleConfig>>
 	extends Logger {
 
+	private readonly classStack: string[] = [];
+
 	private name: string;
 	/** Module configuration, merged from default config and ModuleManager-provided config */
 	public readonly config: ModuleConfig = {} as ModuleConfig;
@@ -77,8 +79,7 @@ export abstract class Module<Config = any,
 	protected readonly initiated = false;
 	/** Optional config validator, set via setConfigValidator() */
 	protected readonly configValidator?: ConfigValidator;
-	/** Internal map for managing debounce/throttle timeouts by key */
-	protected timeoutMap: { [k: string]: number } = {};
+
 
 	/**
 	 * Creates a new Module instance.
@@ -99,70 +100,17 @@ export abstract class Module<Config = any,
 		this.name = this.name.replace('_Class', '');
 	}
 
-	/**
-	 * Debounces a function call, canceling any pending execution with the same key
-	 * and scheduling a new execution after the specified delay.
-	 *
-	 * Each call with the same key cancels the previous pending execution and resets
-	 * the timer. Useful for rate-limiting user input or API calls.
-	 *
-	 * @param handler - Function to execute after the delay
-	 * @param key - Unique key to identify this debounced operation. Multiple calls
-	 *              with the same key will cancel previous pending executions.
-	 * @param ms - Delay in milliseconds before executing the handler (default: 0)
-	 *
-	 * @example
-	 * ```typescript
-	 * // Debounce search input
-	 * this.debounce(() => this.performSearch(query), 'search', 300);
-	 * ```
-	 */
-	public debounce(handler: TimerHandler, key: string, ms = 0) {
-		_clearTimeout(this.timeoutMap[key]);
-		this.timeoutMap[key] = _setTimeout(handler, ms);
-	}
+	protected addToClassStack = (cls: Function) => {
+		this.classStack.push(cls.name);
+	};
 
-	// // possibly to add
-	// public async debounceSync(handler: TimerHandler, key: string, ms = 0) {
-	// 	_clearTimeout(this.timeoutMap[key]);
-	//
-	// 	await new Promise((resolve, reject) => {
-	// 		this.timeoutMap[key] = setTimeout(async (..._args) => {
-	// 			try {
-	// 				await handler(..._args);
-	// 				resolve();
-	// 			} catch (e:any) {
-	// 				reject(e);
-	// 			}
-	// 		}, ms) as unknown as number;
-	// 	});
-	// }
+	public isInstanceOf = (cls: Function) => {
+		return this.classStack.includes(cls.name);
+	};
 
-	/**
-	 * Throttles a function call, ensuring it executes at most once per time period.
-	 *
-	 * Unlike debounce, throttle executes immediately if no execution is pending,
-	 * then prevents further executions until the time period expires. Useful for
-	 * limiting the frequency of expensive operations.
-	 *
-	 * @param handler - Function to execute
-	 * @param key - Unique key to identify this throttled operation
-	 * @param ms - Minimum time in milliseconds between executions (default: 0)
-	 *
-	 * @example
-	 * ```typescript
-	 * // Throttle scroll handler
-	 * this.throttle(() => this.updateScrollPosition(), 'scroll', 100);
-	 * ```
-	 */
-	public throttle(handler: TimerHandler, key: string, ms = 0) {
-		if (this.timeoutMap[key])
-			return;
-		this.timeoutMap[key] = _setTimeout(() => {
-			handler();
-			delete this.timeoutMap[key];
-		}, ms);
-	}
+	public isInstanceType = (cls: Function) => {
+		return lastElement(this.classStack) === cls.name;
+	};
 
 	/**
 	 * Sets a config validator for runtime validation of module configuration.

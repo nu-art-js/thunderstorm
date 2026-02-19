@@ -11,6 +11,7 @@ import {
 	DB_Account,
 	DBDef_Accounts,
 	HeaderKey_DeviceId,
+	HeaderKey_TabId,
 	PasswordAssertionConfig,
 	QueryParam_SessionId,
 	UI_Account
@@ -18,6 +19,8 @@ import {
 import {SessionKeyFE_Account, StorageKey_DeviceId, StorageKey_TabId} from './consts.js';
 import {asArray, cloneObj, composeUrl, Exception, generateHex, KB, TS_Object} from '@nu-art/ts-common';
 import {ModuleFE_Session, OnSessionUpdated} from '../session/ModuleFE_Session.js';
+import {readFileAs_ArrayBuffer, StorageKey, ThunderDispatcher} from '@nu-art/thunder-core';
+import {dispatcher_onAuthRequired} from '../session/no-auth-listener.js';
 
 
 export interface OnLoginStatusUpdated {
@@ -67,7 +70,7 @@ class ModuleFE_Account_Class
 	constructor() {
 		super({
 			config: accountBaseConfig,
-			crudApiDef: CrudApiDef(DBDef_Accounts),
+			crudApiDef: CrudApiDef<DatabaseDef_Account>(DBDef_Accounts.dbKey),
 			dispatcher: () => {
 			}
 		});
@@ -148,7 +151,7 @@ class ModuleFE_Account_Class
 		return undefined as unknown as API_UserAccount['getPasswordAssertionConfig']['Response'];
 	}
 
-	protected init(): void {
+	protected init() {
 		super.init();
 
 		let defaultTabId = StorageKey_TabId.get();
@@ -167,7 +170,7 @@ class ModuleFE_Account_Class
 		}
 
 		HttpClient.default.addDefaultHeader(HeaderKey_DeviceId, () => defaultDeviceId!);
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_TabId, defaultTabId!);
+		HttpClient.default.addDefaultHeader(HeaderKey_TabId, () => defaultTabId!);
 	}
 
 
@@ -217,7 +220,7 @@ class ModuleFE_Account_Class
 
 	logout = async (url?: string) => {
 		await this.logoutApi({});
-		dispatcher_onAuthRequired.dispatchModule(undefined);
+		dispatcher_onAuthRequired.dispatchModule();
 		if (url)
 			return window.location.href = url;
 	};
@@ -243,7 +246,7 @@ class ModuleFE_Account_Class
 	};
 
 	private encodeFile = async (file: File) => {
-		const arrayBuffer: ArrayBuffer = await readFileContent(file);
+		const arrayBuffer: ArrayBuffer = await readFileAs_ArrayBuffer(file);
 		if (arrayBuffer.byteLength > 200 * KB)
 			throw new Exception('File size exceeds 200KB');
 
@@ -251,7 +254,7 @@ class ModuleFE_Account_Class
 		return window.btoa(buffer.reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
 	};
 
-	public getPasswordAssertionConfig = () => StorageKey_PasswordAssertionConfig.get();
+	public passwordAssertionConfig = () => StorageKey_PasswordAssertionConfig.get();
 
 	public getCurrentlyLoggedAccount = () => {
 		return SessionKeyFE_Account.get();

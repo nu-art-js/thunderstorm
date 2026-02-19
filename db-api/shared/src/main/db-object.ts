@@ -1,5 +1,7 @@
 type Brand<T, B extends string> = T & { readonly __brand: B };
 
+export type DB_UniqueId<Key extends string> = Brand<string, `id:${Key}`>
+
 /**
  * Database key type with bound id brand.
  *
@@ -9,7 +11,7 @@ type Brand<T, B extends string> = T & { readonly __brand: B };
  * @template Key - The database key (collection name)
  */
 export type DB_Key<Key extends string> = {
-	id: Brand<string, `id:${Key}`>
+	id: DB_UniqueId<Key>
 	key: Key
 };
 
@@ -19,7 +21,7 @@ export type DB_Key<Key extends string> = {
  * @template Key - The database key (collection name)
  */
 export type DB_BaseObject<Key extends string = string> = {
-	_id: DB_Key<Key>['id'];
+	_id: DB_UniqueId<Key>;
 }
 
 /**

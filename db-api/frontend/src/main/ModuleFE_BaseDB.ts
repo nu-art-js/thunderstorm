@@ -92,6 +92,7 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 
 	protected constructor(config: DBConfig_ModuleFE<Database>, dispatcher: EventDispatcher<Database['dbType']>) {
 		super(`BaseDB-${config.dbKey}`);
+		this.addToClassStack(ModuleFE_BaseDB);
 		this.config = config;
 		this.dispatcher = dispatcher;
 		this.validator = config.validator;
@@ -133,12 +134,6 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 		}
 
 		this.IDB = store;
-	}
-
-	/**
-	 * Initialize the module. Must be called before use.
-	 */
-	init() {
 	}
 
 	setDataStatus(status: DataStatus) {
